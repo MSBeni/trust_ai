@@ -49,6 +49,10 @@ class RoadmapAuditTests(unittest.TestCase):
         framework_evidence = {item["path"] for item in framework_requirement["evidence"]}
         self.assertIn("src/trustai/framework_adapter_matrix.py", framework_evidence)
         self.assertIn("tests/test_framework_adapter_matrix.py", framework_evidence)
+        shadow_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "shadow-replay-temporal-holdout")
+        shadow_evidence = {item["path"] for item in shadow_requirement["evidence"]}
+        self.assertIn("docs/specs/temporal-holdout-manifest-v0.1.md", shadow_evidence)
+        self.assertIn("tests/test_temporal_holdout.py", shadow_evidence)
         self.assertGreater(audit["summary"][STATUS_REFERENCE_ATTESTED], 0)
         self.assertIn("TrustAI Roadmap Audit", markdown)
         self.assertIn("Deferred External Authority", markdown)

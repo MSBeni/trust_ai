@@ -2,16 +2,28 @@ from __future__ import annotations
 
 import json
 import math
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .canonical import content_hash, parse_rfc3339, utc_now
+from .canonical import content_hash, parse_rfc3339, utc_now, without_keys
 from .chain import EvidenceChain
 from .contracts import contract_hash
+from .crypto import sign_value, verify_value
 from .gate import OPS
 
 SHADOW_REPLAY_ENTRY_TYPE = "shadow_replay.completed"
 SOAK_REPORT_ENTRY_TYPE = "soak_report.completed"
+TEMPORAL_HOLDOUT_SCHEMA = "trustai.temporal-holdout-manifest/0.1"
+TEMPORAL_HOLDOUT_CHAIN_SCHEMA = "trustai.temporal-holdout-record-chain/0.1"
+TEMPORAL_HOLDOUT_ENTRY_TYPE = "temporal_holdout.manifest_attested"
+
+
+@dataclass
+class TemporalHoldoutVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
 
 
 def load_shadow_replay(path: str | Path) -> dict[str, Any]:
@@ -28,6 +40,19 @@ def load_soak_window(path: str | Path) -> dict[str, Any]:
     return value
 
 
+def load_temporal_holdout_manifest(path: str | Path) -> dict[str, Any]:
+    value = json.loads(Path(path).read_text(encoding="utf-8-sig"))
+    if not isinstance(value, dict):
+        raise ValueError("temporal holdout manifest must contain an object")
+    return value
+
+
+def write_temporal_holdout_manifest(path: str | Path, manifest: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
+
+
 def percentile(values: list[float], pct: float) -> float | None:
     if not values:
         return None
@@ -36,10 +61,273 @@ def percentile(values: list[float], pct: float) -> float | None:
     return ordered[index]
 
 
-def evaluate_shadow_replay(contract: dict[str, Any], replay: dict[str, Any]) -> dict[str, Any]:
-    records = replay.get("records") or replay.get("traffic") or []
+def build_temporal_holdout_manifest(
+    contract: dict[str, Any],
+    replay: dict[str, Any],
+    *,
+    generated_at: str | None = None,
+    key: str | None = None,
+) -> dict[str, Any]:
+    records = _shadow_records(replay)
+    freeze_at = contract["freeze"]["frozen_at"]
+    min_timestamp = contract["holdout"]["min_timestamp"]
+    parse_rfc3339(freeze_at)
+    parse_rfc3339(min_timestamp)
+    generated = generated_at or replay.get("evaluated_at") or utc_now()
+    parse_rfc3339(str(generated))
+
+    record_nodes: list[dict[str, Any]] = []
+    previous_node_hash: str | None = None
+    previous_timestamp: str | None = None
+    for index, record in enumerate(records):
+        if not isinstance(record, dict):
+            raise ValueError(f"shadow replay record {index + 1} is not an object")
+        timestamp = record.get("timestamp")
+        if not timestamp:
+            raise ValueError(f"shadow replay record {index + 1} missing timestamp")
+        parsed_timestamp = parse_rfc3339(str(timestamp))
+        record_id = str(record.get("id") or index + 1)
+        record_hash = content_hash(record)
+        node_body = {
+            "schema": TEMPORAL_HOLDOUT_CHAIN_SCHEMA,
+            "sequence": index,
+            "record_count": len(records),
+            "record_id": record_id,
+            "timestamp": str(timestamp),
+            "record_hash": record_hash,
+            "previous_record_node_hash": previous_node_hash,
+        }
+        node_hash = content_hash(node_body)
+        record_nodes.append(
+            {
+                **node_body,
+                "post_freeze": parsed_timestamp > parse_rfc3339(freeze_at),
+                "post_holdout_minimum": parsed_timestamp >= parse_rfc3339(min_timestamp),
+                "chronological_after_previous": previous_timestamp is None
+                or parsed_timestamp >= parse_rfc3339(previous_timestamp),
+                "record_node_hash": node_hash,
+            }
+        )
+        previous_node_hash = node_hash
+        previous_timestamp = str(timestamp)
+
+    violations = _temporal_holdout_violations(record_nodes, freeze_at, min_timestamp)
+    timestamps = [node["timestamp"] for node in record_nodes]
+    body = {
+        "schema": TEMPORAL_HOLDOUT_SCHEMA,
+        "generated_at": str(generated),
+        "run_id": replay.get("run_id"),
+        "dataset_id": replay.get("dataset_id") or "shadow-replay",
+        "contract": {
+            "id": contract["id"],
+            "hash": contract_hash(contract),
+            "freeze_at": freeze_at,
+            "min_timestamp": min_timestamp,
+            "require_post_freeze": bool(contract.get("holdout", {}).get("require_post_freeze", True)),
+        },
+        "candidate_version": replay.get("candidate_version") or contract["agent"]["version"],
+        "replay_hash": content_hash(replay),
+        "record_count": len(record_nodes),
+        "records_root": record_nodes[-1]["record_node_hash"],
+        "first_record_timestamp": timestamps[0],
+        "last_record_timestamp": timestamps[-1],
+        "earliest_record_timestamp": min(timestamps),
+        "latest_record_timestamp": max(timestamps),
+        "records": record_nodes,
+        "violations": violations,
+        "passed": not violations,
+        "limitations": [
+            "This manifest proves replay record timestamps and record hashes against the registered freeze and holdout boundary.",
+            "It does not prove production traffic completeness without collector or provider-owned production export evidence.",
+        ],
+    }
+    manifest_id = content_hash(body)
+    return {
+        **body,
+        "manifest_id": manifest_id,
+        "signatures": [sign_value({"manifest_id": manifest_id, "temporal_holdout": body}, key)],
+    }
+
+
+def verify_temporal_holdout_manifest(
+    manifest: dict[str, Any],
+    *,
+    contract: dict[str, Any] | None = None,
+    replay: dict[str, Any] | None = None,
+    key: str | None = None,
+) -> TemporalHoldoutVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if manifest.get("schema") != TEMPORAL_HOLDOUT_SCHEMA:
+        errors.append(f"unsupported temporal holdout schema: {manifest.get('schema')}")
+    body = without_keys(manifest, "manifest_id", "signatures")
+    if manifest.get("manifest_id") != content_hash(body):
+        errors.append("manifest_id does not match canonical temporal holdout body")
+
+    signatures = manifest.get("signatures", [])
+    if not isinstance(signatures, list) or not signatures:
+        errors.append("temporal holdout manifest must include at least one signature")
+    else:
+        signed_value = {"manifest_id": manifest.get("manifest_id"), "temporal_holdout": body}
+        if not any(isinstance(signature, dict) and verify_value(signed_value, signature, key) for signature in signatures):
+            errors.append("temporal holdout signature verification failed")
+
+    try:
+        parse_rfc3339(str(manifest.get("generated_at") or ""))
+    except ValueError as exc:
+        errors.append(f"temporal holdout generated_at invalid: {exc}")
+
+    manifest_contract = manifest.get("contract", {})
+    if not isinstance(manifest_contract, dict):
+        errors.append("temporal holdout contract must be an object")
+        manifest_contract = {}
+    freeze_at = str(manifest_contract.get("freeze_at") or "")
+    min_timestamp = str(manifest_contract.get("min_timestamp") or "")
+    try:
+        parse_rfc3339(freeze_at)
+        parse_rfc3339(min_timestamp)
+    except ValueError as exc:
+        errors.append(f"temporal holdout boundary invalid: {exc}")
+
+    records = manifest.get("records", [])
     if not isinstance(records, list) or not records:
-        raise ValueError("shadow replay requires a non-empty records list")
+        errors.append("temporal holdout manifest requires records")
+        records = []
+    if manifest.get("record_count") != len(records):
+        errors.append("temporal holdout record_count does not match records")
+
+    previous_node_hash: str | None = None
+    previous_timestamp: str | None = None
+    expected_violations: list[dict[str, Any]] = []
+    for index, node in enumerate(records):
+        if not isinstance(node, dict):
+            errors.append(f"temporal holdout record {index + 1} must be an object")
+            continue
+        node_body = {
+            "schema": node.get("schema"),
+            "sequence": node.get("sequence"),
+            "record_count": node.get("record_count"),
+            "record_id": node.get("record_id"),
+            "timestamp": node.get("timestamp"),
+            "record_hash": node.get("record_hash"),
+            "previous_record_node_hash": node.get("previous_record_node_hash"),
+        }
+        if node.get("schema") != TEMPORAL_HOLDOUT_CHAIN_SCHEMA:
+            errors.append(f"temporal holdout record {index + 1} has unsupported schema")
+        if node.get("sequence") != index:
+            errors.append(f"temporal holdout record {index + 1} sequence mismatch")
+        if node.get("record_count") != len(records):
+            errors.append(f"temporal holdout record {index + 1} record_count mismatch")
+        if node.get("previous_record_node_hash") != previous_node_hash:
+            errors.append(f"temporal holdout record {index + 1} previous hash mismatch")
+        if node.get("record_node_hash") != content_hash(node_body):
+            errors.append(f"temporal holdout record {index + 1} node hash mismatch")
+        try:
+            parsed_timestamp = parse_rfc3339(str(node.get("timestamp") or ""))
+            expected_post_freeze = parsed_timestamp > parse_rfc3339(freeze_at)
+            expected_post_minimum = parsed_timestamp >= parse_rfc3339(min_timestamp)
+            expected_chronological = previous_timestamp is None or parsed_timestamp >= parse_rfc3339(previous_timestamp)
+            if node.get("post_freeze") is not expected_post_freeze:
+                errors.append(f"temporal holdout record {index + 1} post_freeze mismatch")
+            if node.get("post_holdout_minimum") is not expected_post_minimum:
+                errors.append(f"temporal holdout record {index + 1} post_holdout_minimum mismatch")
+            if node.get("chronological_after_previous") is not expected_chronological:
+                errors.append(f"temporal holdout record {index + 1} chronological_after_previous mismatch")
+            expected_violations.extend(_record_temporal_violations(node, parsed_timestamp, freeze_at, min_timestamp))
+            if not expected_chronological:
+                expected_violations.append(
+                    {
+                        "sequence": index,
+                        "record_id": node.get("record_id"),
+                        "timestamp": node.get("timestamp"),
+                        "violation": "record timestamp is earlier than previous replay record",
+                    }
+                )
+            previous_timestamp = str(node.get("timestamp"))
+        except ValueError as exc:
+            errors.append(f"temporal holdout record {index + 1} timestamp invalid: {exc}")
+        previous_node_hash = node.get("record_node_hash")
+
+    if records:
+        if manifest.get("records_root") != records[-1].get("record_node_hash"):
+            errors.append("temporal holdout records_root does not match final record node hash")
+        timestamps = [str(node.get("timestamp")) for node in records if isinstance(node, dict) and node.get("timestamp")]
+        if timestamps:
+            if manifest.get("first_record_timestamp") != timestamps[0]:
+                errors.append("temporal holdout first_record_timestamp mismatch")
+            if manifest.get("last_record_timestamp") != timestamps[-1]:
+                errors.append("temporal holdout last_record_timestamp mismatch")
+            if manifest.get("earliest_record_timestamp") != min(timestamps):
+                errors.append("temporal holdout earliest_record_timestamp mismatch")
+            if manifest.get("latest_record_timestamp") != max(timestamps):
+                errors.append("temporal holdout latest_record_timestamp mismatch")
+
+    if manifest.get("violations") != expected_violations:
+        errors.append("temporal holdout violations do not match record timestamps")
+    if manifest.get("passed") is not (not expected_violations):
+        errors.append("temporal holdout passed flag does not match violations")
+    if expected_violations:
+        warnings.append("temporal holdout manifest records boundary violations")
+
+    if contract is not None:
+        expected_contract_hash = contract_hash(contract)
+        if manifest_contract.get("id") != contract.get("id"):
+            errors.append("temporal holdout contract id mismatch")
+        if manifest_contract.get("hash") != expected_contract_hash:
+            errors.append("temporal holdout contract hash mismatch")
+        if manifest_contract.get("freeze_at") != contract.get("freeze", {}).get("frozen_at"):
+            errors.append("temporal holdout contract freeze_at mismatch")
+        if manifest_contract.get("min_timestamp") != contract.get("holdout", {}).get("min_timestamp"):
+            errors.append("temporal holdout contract min_timestamp mismatch")
+    if replay is not None:
+        if manifest.get("replay_hash") != content_hash(replay):
+            errors.append("temporal holdout replay_hash mismatch")
+        replay_records = _shadow_records(replay)
+        if len(replay_records) != len(records):
+            errors.append("temporal holdout replay record count mismatch")
+        else:
+            for index, (record, node) in enumerate(zip(replay_records, records)):
+                if node.get("record_hash") != content_hash(record):
+                    errors.append(f"temporal holdout replay record hash mismatch at sequence {index}")
+                if str(record.get("id") or index + 1) != node.get("record_id"):
+                    errors.append(f"temporal holdout replay record id mismatch at sequence {index}")
+                if str(record.get("timestamp") or "") != node.get("timestamp"):
+                    errors.append(f"temporal holdout replay record timestamp mismatch at sequence {index}")
+    return TemporalHoldoutVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
+def append_temporal_holdout_manifest(
+    chain: EvidenceChain,
+    manifest: dict[str, Any],
+    *,
+    contract: dict[str, Any] | None = None,
+    replay: dict[str, Any] | None = None,
+    key: str | None = None,
+) -> dict[str, Any]:
+    result = verify_temporal_holdout_manifest(manifest, contract=contract, replay=replay, key=key)
+    if not result.ok:
+        raise ValueError("invalid temporal holdout manifest: " + "; ".join(result.errors))
+    payload = {
+        "manifest_id": manifest["manifest_id"],
+        "manifest_hash": content_hash(manifest),
+        "run_id": manifest.get("run_id"),
+        "dataset_id": manifest.get("dataset_id"),
+        "contract": manifest.get("contract"),
+        "candidate_version": manifest.get("candidate_version"),
+        "record_count": manifest.get("record_count"),
+        "records_root": manifest.get("records_root"),
+        "first_record_timestamp": manifest.get("first_record_timestamp"),
+        "last_record_timestamp": manifest.get("last_record_timestamp"),
+        "earliest_record_timestamp": manifest.get("earliest_record_timestamp"),
+        "latest_record_timestamp": manifest.get("latest_record_timestamp"),
+        "violation_count": len(manifest.get("violations", [])),
+        "passed": manifest.get("passed"),
+    }
+    return chain.append(TEMPORAL_HOLDOUT_ENTRY_TYPE, payload, key=key, timestamp=manifest.get("generated_at"))
+
+
+def evaluate_shadow_replay(contract: dict[str, Any], replay: dict[str, Any]) -> dict[str, Any]:
+    records = _shadow_records(replay)
 
     freeze_at = parse_rfc3339(contract["freeze"]["frozen_at"])
     min_timestamp = parse_rfc3339(contract["holdout"]["min_timestamp"])
@@ -123,7 +411,7 @@ def evaluate_shadow_replay(contract: dict[str, Any], replay: dict[str, Any]) -> 
 
 def shadow_replay_to_eval_results(contract: dict[str, Any], replay: dict[str, Any]) -> dict[str, Any]:
     evaluation = evaluate_shadow_replay(contract, replay)
-    records = replay.get("records") or replay.get("traffic") or []
+    records = _shadow_records(replay)
     return {
         "run_id": evaluation["run_id"] or "shadow-replay",
         "evaluated_at": evaluation["evaluated_at"],
@@ -153,9 +441,23 @@ def append_shadow_replay(
     key: str | None = None,
 ) -> dict[str, Any]:
     evaluation = evaluate_shadow_replay(contract, replay)
+    holdout_manifest = build_temporal_holdout_manifest(
+        contract,
+        replay,
+        generated_at=evaluation["evaluated_at"],
+        key=key,
+    )
     payload = {
         **evaluation,
         "replay_hash": content_hash(replay),
+        "temporal_holdout_manifest": holdout_manifest,
+        "temporal_holdout": {
+            "manifest_id": holdout_manifest["manifest_id"],
+            "manifest_hash": content_hash(holdout_manifest),
+            "records_root": holdout_manifest["records_root"],
+            "record_count": holdout_manifest["record_count"],
+            "passed": holdout_manifest["passed"],
+        },
         "replay": replay,
     }
     return chain.append(SHADOW_REPLAY_ENTRY_TYPE, payload, key=key, timestamp=evaluation["evaluated_at"])
@@ -231,3 +533,59 @@ def append_soak_report(
         "soak": soak,
     }
     return chain.append(SOAK_REPORT_ENTRY_TYPE, payload, key=key, timestamp=report["evaluated_at"])
+
+
+def _shadow_records(replay: dict[str, Any]) -> list[Any]:
+    records = replay.get("records") or replay.get("traffic") or []
+    if not isinstance(records, list) or not records:
+        raise ValueError("shadow replay requires a non-empty records list")
+    return records
+
+
+def _temporal_holdout_violations(
+    record_nodes: list[dict[str, Any]],
+    freeze_at: str,
+    min_timestamp: str,
+) -> list[dict[str, Any]]:
+    violations: list[dict[str, Any]] = []
+    for node in record_nodes:
+        parsed_timestamp = parse_rfc3339(node["timestamp"])
+        violations.extend(_record_temporal_violations(node, parsed_timestamp, freeze_at, min_timestamp))
+        if node.get("chronological_after_previous") is False:
+            violations.append(
+                {
+                    "sequence": node["sequence"],
+                    "record_id": node["record_id"],
+                    "timestamp": node["timestamp"],
+                    "violation": "record timestamp is earlier than previous replay record",
+                }
+            )
+    return violations
+
+
+def _record_temporal_violations(
+    node: dict[str, Any],
+    parsed_timestamp: Any,
+    freeze_at: str,
+    min_timestamp: str,
+) -> list[dict[str, Any]]:
+    violations: list[dict[str, Any]] = []
+    if freeze_at and parsed_timestamp <= parse_rfc3339(freeze_at):
+        violations.append(
+            {
+                "sequence": node["sequence"],
+                "record_id": node["record_id"],
+                "timestamp": node["timestamp"],
+                "violation": "record is not post-freeze",
+            }
+        )
+    if min_timestamp and parsed_timestamp < parse_rfc3339(min_timestamp):
+        violations.append(
+            {
+                "sequence": node["sequence"],
+                "record_id": node["record_id"],
+                "timestamp": node["timestamp"],
+                "violation": "record is before holdout minimum",
+            }
+        )
+    return violations

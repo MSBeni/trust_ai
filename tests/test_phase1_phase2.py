@@ -61,6 +61,15 @@ class PhaseOneTwoTests(unittest.TestCase):
             )
 
             self.assertEqual(SHADOW_REPLAY_ENTRY_TYPE, shadow_entry["entry_type"])
+            self.assertTrue(shadow_entry["payload"]["temporal_holdout"]["passed"])
+            self.assertEqual(
+                shadow_entry["payload"]["temporal_holdout_manifest"]["manifest_id"],
+                shadow_entry["payload"]["temporal_holdout"]["manifest_id"],
+            )
+            self.assertEqual(
+                shadow_entry["payload"]["temporal_holdout_manifest"]["records_root"],
+                shadow_entry["payload"]["temporal_holdout"]["records_root"],
+            )
             self.assertEqual(MCP_TOOL_CALL_ENTRY_TYPE, mcp_entries[0]["entry_type"])
             self.assertEqual(0, mcp_entries[0]["payload"]["transcript_sequence"])
             self.assertEqual(mcp_entries[0]["payload"]["transcript_node_hash"], mcp_entries[0]["payload"]["transcript_root"])

@@ -570,9 +570,14 @@ from .server import serve
 from .shadow import (
     append_shadow_replay,
     append_soak_report,
+    append_temporal_holdout_manifest,
+    build_temporal_holdout_manifest,
     load_shadow_replay,
     load_soak_window,
+    load_temporal_holdout_manifest,
     shadow_replay_to_eval_results,
+    verify_temporal_holdout_manifest,
+    write_temporal_holdout_manifest,
 )
 from .tamper_stress import (
     build_tamper_stress_report,
@@ -2020,6 +2025,82 @@ def cmd_shadow_replay(args: argparse.Namespace) -> int:
         print(f"eval results: {args.eval_out}")
     print(f"chain root: {chain.tree()['root']}")
     return 0 if entry["payload"]["passed"] else 1
+
+
+def cmd_temporal_holdout_manifest(args: argparse.Namespace) -> int:
+    try:
+        contract = load_contract(args.contract)
+        replay = load_shadow_replay(args.replay)
+        manifest = build_temporal_holdout_manifest(
+            contract,
+            replay,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_temporal_holdout_manifest(manifest, contract=contract, replay=replay, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"temporal holdout manifest generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("temporal holdout manifest generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_temporal_holdout_manifest(args.out, manifest)
+    print(f"temporal holdout manifest: {args.out}")
+    print(f"manifest id: {manifest['manifest_id']}")
+    print(f"records root: {manifest['records_root']}")
+    print(f"passed: {manifest['passed']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0 if manifest["passed"] else 1
+
+
+def cmd_temporal_holdout_verify(args: argparse.Namespace) -> int:
+    try:
+        manifest = load_temporal_holdout_manifest(args.manifest)
+        contract = load_contract(args.contract) if args.contract else None
+        replay = load_shadow_replay(args.replay) if args.replay else None
+    except (OSError, ValueError) as exc:
+        print(f"temporal holdout verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_temporal_holdout_manifest(manifest, contract=contract, replay=replay, key=args.key)
+    if result.ok:
+        print(f"verified temporal holdout manifest: {args.manifest}")
+        print(f"manifest id: {manifest['manifest_id']}")
+        print(f"records root: {manifest['records_root']}")
+        print(f"passed: {manifest['passed']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0 if manifest.get("passed") else 1
+    print(f"temporal holdout verification failed: {args.manifest}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_temporal_holdout_append(args: argparse.Namespace) -> int:
+    try:
+        manifest = load_temporal_holdout_manifest(args.manifest)
+        contract = load_contract(args.contract) if args.contract else None
+        replay = load_shadow_replay(args.replay) if args.replay else None
+    except (OSError, ValueError) as exc:
+        print(f"temporal holdout append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_temporal_holdout_manifest(chain, manifest, contract=contract, replay=replay, key=args.key)
+    except ValueError as exc:
+        print(f"temporal holdout append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"temporal holdout entry: {args.out}")
+    print(f"temporal holdout entry id: {entry['entry_id']}")
+    print(f"manifest id: {manifest['manifest_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0 if manifest.get("passed") else 1
 
 
 def cmd_soak_report(args: argparse.Namespace) -> int:
@@ -11868,6 +11949,29 @@ def build_parser() -> argparse.ArgumentParser:
     _add_state_args(shadow)
     _add_auto_register(shadow)
     shadow.set_defaults(func=cmd_shadow_replay)
+    holdout_manifest = subparsers.add_parser("temporal-holdout-manifest", help="write a signed temporal holdout manifest for shadow replay traffic")
+    holdout_manifest.add_argument("contract")
+    holdout_manifest.add_argument("replay")
+    holdout_manifest.add_argument("--generated-at")
+    holdout_manifest.add_argument("--out", default="artifacts/temporal-holdout-manifest.json")
+    holdout_manifest.add_argument("--key")
+    holdout_manifest.set_defaults(func=cmd_temporal_holdout_manifest)
+
+    holdout_verify = subparsers.add_parser("temporal-holdout-verify", help="verify a signed temporal holdout manifest")
+    holdout_verify.add_argument("manifest")
+    holdout_verify.add_argument("--contract")
+    holdout_verify.add_argument("--replay")
+    holdout_verify.add_argument("--key")
+    holdout_verify.set_defaults(func=cmd_temporal_holdout_verify)
+
+    holdout_append = subparsers.add_parser("temporal-holdout-append", help="append a temporal holdout manifest as chain evidence")
+    holdout_append.add_argument("manifest")
+    holdout_append.add_argument("--contract")
+    holdout_append.add_argument("--replay")
+    holdout_append.add_argument("--out", default="artifacts/temporal-holdout-entry.json")
+    holdout_append.add_argument("--key")
+    _add_state_args(holdout_append)
+    holdout_append.set_defaults(func=cmd_temporal_holdout_append)
 
     soak = subparsers.add_parser("soak-report", help="evaluate and evidence a soak report")
     soak.add_argument("contract")
