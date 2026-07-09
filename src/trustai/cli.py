@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import argparse
 import json
@@ -585,6 +585,13 @@ from .standards import (
     verify_standards_submission,
     write_standards_markdown,
     write_standards_submission,
+)
+from .roadmap_audit import (
+    build_roadmap_audit,
+    load_roadmap_audit,
+    verify_roadmap_audit,
+    write_roadmap_audit,
+    write_roadmap_audit_markdown,
 )
 from .standards_body_submission import (
     append_standards_body_submission_receipt,
@@ -6647,6 +6654,41 @@ def cmd_review_portal_service_append(args: argparse.Namespace) -> int:
     print(f"attestation id: {attestation['attestation_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
+
+def cmd_roadmap_audit(args: argparse.Namespace) -> int:
+    audit = build_roadmap_audit(args.root, roadmap_path=args.roadmap, coverage_path=args.coverage)
+    write_roadmap_audit(args.out, audit)
+    if args.markdown:
+        write_roadmap_audit_markdown(args.markdown, audit)
+        print(f"roadmap audit markdown: {args.markdown}")
+    summary = audit["summary"]
+    print(f"roadmap audit: {args.out}")
+    print(f"audit id: {audit['audit_id']}")
+    print(f"requirements: {summary['requirement_count']}")
+    print(f"implemented locally: {summary['implemented-local']}")
+    print(f"reference-attested: {summary['reference-attested']}")
+    print(f"missing local evidence: {summary['missing-local-evidence']}")
+    return 0
+
+
+def cmd_roadmap_audit_verify(args: argparse.Namespace) -> int:
+    result = verify_roadmap_audit(
+        load_roadmap_audit(args.audit),
+        root=args.root,
+        roadmap_path=args.roadmap,
+        coverage_path=args.coverage,
+    )
+    if result.ok:
+        print(f"verified roadmap audit: {args.audit}")
+        print(f"reference-attested requirements: {result.deferred_external_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"roadmap audit verification failed: {args.audit}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
 
 def cmd_standards_export(args: argparse.Namespace) -> int:
     package = build_standards_submission(args.root, target_body=args.target_body, status=args.status)
@@ -12764,6 +12806,21 @@ def build_parser() -> argparse.ArgumentParser:
     review_portal_service_append.add_argument("--key")
     _add_state_args(review_portal_service_append)
     review_portal_service_append.set_defaults(func=cmd_review_portal_service_append)
+    roadmap_audit = subparsers.add_parser("roadmap-audit", help="write a repository roadmap coverage audit")
+    roadmap_audit.add_argument("--root", default=".")
+    roadmap_audit.add_argument("--roadmap", default="ROADMAP.md")
+    roadmap_audit.add_argument("--coverage", default="docs/architecture/roadmap-coverage.md")
+    roadmap_audit.add_argument("--out", default="artifacts/roadmap-audit.json")
+    roadmap_audit.add_argument("--markdown", default="artifacts/roadmap-audit.md")
+    roadmap_audit.set_defaults(func=cmd_roadmap_audit)
+
+    roadmap_audit_verify = subparsers.add_parser("roadmap-audit-verify", help="verify a repository roadmap coverage audit")
+    roadmap_audit_verify.add_argument("audit")
+    roadmap_audit_verify.add_argument("--root", default=".")
+    roadmap_audit_verify.add_argument("--roadmap", default="ROADMAP.md")
+    roadmap_audit_verify.add_argument("--coverage", default="docs/architecture/roadmap-coverage.md")
+    roadmap_audit_verify.set_defaults(func=cmd_roadmap_audit_verify)
+
     standards_export = subparsers.add_parser("standards-export", help="write a standards submission package for public specs")
     standards_export.add_argument("--root", default=".")
     standards_export.add_argument("--out", default="artifacts/standards-submission.json")
@@ -14216,31 +14273,3 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     return args.func(args)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

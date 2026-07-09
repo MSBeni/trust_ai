@@ -1,4 +1,4 @@
-﻿TrustAI is a reference implementation of an agent trust layer: pre-registered
+TrustAI is a reference implementation of an agent trust layer: pre-registered
 verification contracts, tamper-evident evidence chains, signed large-log tamper stress reports, timestamped promotion
 gates, provider-aware local keyring verification, trust authority receipts, KMS/TSA provider attestations, trust authority KMS/HSM enforcement receipts, deployment manifests, BYOC operator/Object Lock attestations, EU data-plane residency and digital-sovereignty attestations, collector topology manifests, collector service hardening attestations, runtime attestation,
 runtime policy/proof decay, policy engine decision receipts, policy backend enforcement receipts, policy backend service hardening attestations, provider operations service hardening attestations, provider delivery service hardening attestations, provider delivery worker receipts, OTel-style GenAI event ingestion,
@@ -54,9 +54,10 @@ The repository has two GitHub Actions workflows:
 
 - `.github/workflows/python-ci.yml` installs the package from a clean checkout,
   compiles `src/` and `tests/`, runs `python -m trustai demo` to generate the
-  bundled aitrade proof pack, verifies it offline, and runs clean-checkout smoke
-  tests for proof packs, ingestion, re-execution, verifier releases, verifier
-  distribution, Go verifier release workflow controls, and standards metadata.
+  bundled aitrade proof pack, verifies it offline, generates and verifies the
+  roadmap audit, and runs clean-checkout smoke tests for proof packs, ingestion,
+  re-execution, verifier releases, verifier distribution, Go verifier release
+  workflow controls, roadmap coverage, and standards metadata.
 - `.github/workflows/go-verifier.yml` tests the dependency-free Go verifier
   source and cross-builds static verifier artifacts with checksum, SBOM,
   provenance, and hosted build-attestation hooks.
@@ -72,6 +73,8 @@ From the repository root:
 $env:PYTHONPATH = "src"
 python -m trustai demo
 python -m trustai verify artifacts/aitrade-proof-pack.json
+python -m trustai roadmap-audit --out artifacts/roadmap-audit.json --markdown artifacts/roadmap-audit.md
+python -m trustai roadmap-audit-verify artifacts/roadmap-audit.json
 python -m unittest tests.test_go_verifier_source
 python -m trustai verifier-conformance artifacts/aitrade-proof-pack.json --out artifacts/verifier-conformance.json --markdown artifacts/verifier-conformance.md
 python -m trustai verifier-conformance-verify artifacts/verifier-conformance.json
@@ -499,21 +502,3 @@ helm template trustai deploy/helm/trustai
 See `docs/deployment/byoc.md`, `docs/specs/production-trust-v0.1.md`, `docs/specs/keyring-v0.1.md`, `docs/specs/trust-authority-receipt-v0.1.md`, `docs/specs/trust-authority-provider-attestation-v0.1.md`, `docs/specs/trust-authority-kms-enforcement-v0.1.md`, `docs/specs/anchor-provider-receipt-v0.1.md`, `docs/specs/deployment-manifest-v0.1.md`, `docs/specs/byoc-operator-attestation-v0.1.md`, `docs/specs/eu-data-plane-attestation-v0.1.md`, `docs/specs/worm-object-store-v0.1.md`, `docs/specs/human-approval-v0.1.md`, `docs/specs/control-plane-v0.1.md`, `docs/specs/runtime-policy-v0.1.md`, `docs/specs/otel-ingest-v0.1.md`, `docs/specs/collector-topology-v0.1.md`, `docs/specs/collector-service-attestation-v0.1.md`, `docs/specs/collector-worker-v0.1.md`, `docs/specs/framework-adapters-v0.1.md`, `docs/specs/reexecution-report-v0.1.md`, `docs/specs/reexecution-policy-v0.1.md`, `docs/specs/reexecution-runner-v0.1.md`, `docs/specs/reexecution-isolation-attestation-v0.1.md`, `docs/specs/reexecution-runner-service-attestation-v0.1.md`, `docs/specs/reexecution-runner-worker-v0.1.md`, `docs/specs/consumption-exports-v0.1.md`, `docs/specs/provider-delivery-v0.1.md`, `docs/specs/provider-delivery-service-attestation-v0.1.md`, `docs/specs/provider-delivery-worker-v0.1.md`, `docs/specs/provider-webhook-v0.1.md`, `docs/specs/provider-audit-correlation-v0.1.md`, `docs/specs/provider-audit-stream-v0.1.md`, `docs/specs/provider-audit-worker-v0.1.md`, `docs/specs/provider-credential-custody-v0.1.md`, `docs/specs/provider-operations-service-attestation-v0.1.md`, `docs/specs/provider-installation-v0.1.md`, `docs/specs/provider-callback-store-v0.1.md`, `docs/specs/provider-ingress-v0.1.md`, `docs/specs/provider-callback-storage-v0.1.md`, `docs/specs/provider-lifecycle-v0.1.md`, `docs/specs/provider-lifecycle-operation-v0.1.md`, `docs/specs/policy-engine-receipt-v0.1.md`, `docs/specs/policy-backend-enforcement-v0.1.md`, `docs/specs/policy-backend-service-attestation-v0.1.md`, `docs/specs/actuarial-corpus-v0.1.md`, `docs/specs/actuarial-product-v0.1.md`, `docs/specs/underwriting-quote-v0.1.md`, `docs/specs/insurer-partner-service-attestation-v0.1.md`, `docs/specs/insurer-partner-worker-v0.1.md`, `docs/specs/regulator-disclosure-v0.1.md`, `docs/specs/regulator-acceptance-v0.1.md`, `docs/specs/supervised-access-v0.1.md`, `docs/specs/review-portal-service-attestation-v0.1.md`, `docs/specs/eu-ai-act-technical-documentation-v0.1.md`, `docs/specs/standards-submission-v0.1.md`, `docs/specs/standards-body-submission-v0.1.md`, `docs/specs/standards-body-status-v0.1.md`, `docs/specs/standards-body-ballot-v0.1.md`, `docs/specs/standards-body-ballot-system-v0.1.md`, `docs/specs/standards-body-provider-posting-v0.1.md`, `docs/specs/auditor-certification-v0.1.md`, `docs/specs/auditor-program-governance-v0.1.md`, `docs/specs/auditor-program-sponsorship-v0.1.md`, `docs/specs/auditor-accreditation-v0.1.md`, `docs/specs/auditor-accreditation-countersignature-v0.1.md`, `docs/specs/auditor-accreditation-signing-ceremony-v0.1.md`, `docs/specs/auditor-accreditation-signing-audit-v0.1.md`, `docs/specs/auditor-accreditation-kms-enforcement-v0.1.md`, `docs/specs/auditor-credential-registry-v0.1.md`, `docs/specs/trust-network-v0.1.md`, `docs/specs/trust-network-registry-v0.1.md`, `docs/specs/trust-network-registry-status-v0.1.md`, `docs/specs/vendor-identity-v0.1.md`, `docs/specs/identity-provider-attestation-v0.1.md`, `docs/specs/identity-provider-session-v0.1.md`, `docs/specs/identity-provider-lifecycle-operation-v0.1.md`, `docs/specs/identity-provider-lifecycle-worker-v0.1.md`, `docs/specs/procurement-clause-v0.1.md`, `docs/specs/procurement-integration-v0.1.md`, `docs/specs/marketplace-v0.1.md`, `docs/specs/marketplace-distribution-v0.1.md`, `docs/specs/marketplace-author-governance-v0.1.md`, `docs/specs/marketplace-settlement-v0.1.md`, `docs/specs/trust-network-service-attestation-v0.1.md`, `docs/specs/trust-network-worker-v0.1.md`, `docs/specs/verifier-conformance-v0.1.md`, `docs/specs/verifier-release-v0.1.md`, `docs/specs/verifier-distribution-v0.1.md`, `docs/specs/go-verifier-build-attestation-v0.1.md`, `docs/specs/go-verifier-release-workflow-v0.1.md`, `docs/specs/python-sdk-v0.1.md`, `docs/specs/typescript-sdk-v0.1.md`, `docs/specs/insurer-consent-v0.1.md`, and
 `docs/architecture/roadmap-coverage.md` for current coverage and remaining
 production gaps.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

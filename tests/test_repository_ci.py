@@ -1,4 +1,4 @@
-﻿import unittest
+import unittest
 from pathlib import Path
 
 
@@ -17,8 +17,11 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("python -m compileall -q src tests", workflow)
         self.assertIn("python -m trustai demo", workflow)
         self.assertIn("python -m trustai verify artifacts/aitrade-proof-pack.json", workflow)
+        self.assertIn("python -m trustai roadmap-audit --out artifacts/roadmap-audit.json --markdown artifacts/roadmap-audit.md", workflow)
+        self.assertIn("python -m trustai roadmap-audit-verify artifacts/roadmap-audit.json", workflow)
         self.assertIn("tests.test_go_verifier_release_workflow", workflow)
         self.assertIn("tests.test_repository_ci", workflow)
+        self.assertIn("tests.test_roadmap_audit", workflow)
         self.assertIn("tests.test_standards", workflow)
 
     def test_public_repo_has_python_and_go_ci_workflows(self):

@@ -1,4 +1,4 @@
-﻿name: Python CI
+name: Python CI
 
 on:
   push:
@@ -36,6 +36,12 @@ jobs:
       - name: Verify bundled proof pack offline
         run: python -m trustai verify artifacts/aitrade-proof-pack.json
 
+      - name: Generate roadmap audit
+        run: python -m trustai roadmap-audit --out artifacts/roadmap-audit.json --markdown artifacts/roadmap-audit.md
+
+      - name: Verify roadmap audit
+        run: python -m trustai roadmap-audit-verify artifacts/roadmap-audit.json
+
       - name: Run clean-checkout smoke tests
         run: >
           python -m unittest -v
@@ -48,4 +54,5 @@ jobs:
           tests.test_go_verifier_build
           tests.test_go_verifier_release_workflow
           tests.test_repository_ci
+          tests.test_roadmap_audit
           tests.test_standards

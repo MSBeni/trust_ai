@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 import tomllib
@@ -18,6 +18,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/verification-contract-v0.1.md",
     "docs/specs/tamper-stress-report-v0.1.md",
     "docs/specs/production-trust-v0.1.md",
+    "docs/specs/roadmap-audit-v0.1.md",
     "docs/specs/anchor-provider-receipt-v0.1.md",
     "docs/specs/otel-ingest-v0.1.md",
     "docs/specs/collector-topology-v0.1.md",
@@ -1087,15 +1088,3 @@ def _title(text: str) -> str:
         if line.startswith("# "):
             return line[2:].strip()
     return "Untitled Specification"
-
-
-
-
-
-
-
-
-
-
-
-
