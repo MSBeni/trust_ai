@@ -57,7 +57,7 @@ The repository has two GitHub Actions workflows:
   bundled aitrade proof pack, verifies it offline, generates, verifies, appends, and chain-verifies the
   roadmap audit, and runs clean-checkout smoke tests for proof packs, ingestion,
   re-execution, verifier releases, verifier distribution, Go verifier release
-  workflow controls, roadmap coverage, external evidence manifests, semantic roadmap evidence chains, roadmap evidence reports, and standards
+  workflow controls, roadmap coverage, external evidence manifests, semantic roadmap evidence chains, roadmap evidence reports, self-contained roadmap evidence bundles, and standards
   metadata.
 - `.github/workflows/go-verifier.yml` tests the dependency-free Go verifier
   source and cross-builds static verifier artifacts with checksum, SBOM,
@@ -85,6 +85,8 @@ python -m trustai chain-verify --state .trustai/roadmap-evidence-demo/evidence-c
 python -m trustai roadmap-evidence-verify --state .trustai/roadmap-evidence-demo/evidence-chain.json --tenant roadmap-evidence-local --require-external
 python -m trustai roadmap-evidence-report --state .trustai/roadmap-evidence-demo/evidence-chain.json --tenant roadmap-evidence-local --require-external --out artifacts/roadmap-evidence-report.json --markdown artifacts/roadmap-evidence-report.md
 python -m trustai roadmap-evidence-report-verify artifacts/roadmap-evidence-report.json --state .trustai/roadmap-evidence-demo/evidence-chain.json --tenant roadmap-evidence-local --require-external
+python -m trustai roadmap-evidence-bundle --state .trustai/roadmap-evidence-demo/evidence-chain.json --tenant roadmap-evidence-local --require-external --report artifacts/roadmap-evidence-report.json --out artifacts/roadmap-evidence-bundle.json --markdown artifacts/roadmap-evidence-bundle.md
+python -m trustai roadmap-evidence-bundle-verify artifacts/roadmap-evidence-bundle.json --require-external
 python -m unittest tests.test_go_verifier_source
 python -m trustai verifier-conformance artifacts/aitrade-proof-pack.json --out artifacts/verifier-conformance.json --markdown artifacts/verifier-conformance.md
 python -m trustai verifier-conformance-verify artifacts/verifier-conformance.json

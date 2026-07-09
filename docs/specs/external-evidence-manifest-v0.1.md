@@ -109,6 +109,23 @@ supplied chain, and reject reports whose embedded semantic verification no longe
 matches the chain. `roadmap-evidence-report-verify` performs this offline check
 without contacting TrustAI services or live authority systems.
 
+
+## Roadmap Evidence Bundle
+
+`roadmap-evidence-bundle` emits `trustai.roadmap-evidence-bundle/0.1`, a
+self-contained artifact for third-party review. It embeds:
+
+- the evidence-chain snapshot (`spec_version`, tenant ID, tree, and entries),
+- the roadmap evidence report generated from that chain or supplied with `--report`,
+- a summary binding the report hash, report ID, chain tree, and evidence counts,
+- explicit limitations for live authority claims.
+
+`roadmap-evidence-bundle-verify` requires no separate chain state path. It
+recomputes `bundle_id`, reconstructs the embedded evidence chain, verifies that
+the embedded tree matches the entries, verifies the report against that embedded
+chain with the same strictness options, and rejects stale or tampered bundle
+summaries.
+
 ## Verification Rules
 
 A verifier MUST:

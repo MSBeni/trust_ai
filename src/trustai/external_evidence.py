@@ -7,13 +7,14 @@ from pathlib import Path
 from typing import Any
 
 from .canonical import content_hash, parse_rfc3339, utc_now, without_keys
-from .chain import EvidenceChain
+from .chain import CHAIN_SPEC_VERSION, EvidenceChain
 from .merkle import merkle_root, verify_inclusion
 from .roadmap_audit import ROADMAP_AUDIT_ENTRY_TYPE, STATUS_REFERENCE_ATTESTED, verify_roadmap_audit
 
 EXTERNAL_EVIDENCE_SCHEMA = "trustai.external-evidence-manifest/0.1"
 EXTERNAL_EVIDENCE_ENTRY_TYPE = "trustai.external_evidence_manifest.attested"
 ROADMAP_EVIDENCE_REPORT_SCHEMA = "trustai.roadmap-evidence-report/0.1"
+ROADMAP_EVIDENCE_BUNDLE_SCHEMA = "trustai.roadmap-evidence-bundle/0.1"
 
 AUTHORITY_KINDS = {
     "ci-run",
@@ -51,6 +52,13 @@ class RoadmapEvidenceChainVerification:
 
 @dataclass
 class RoadmapEvidenceReportVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class RoadmapEvidenceBundleVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -339,6 +347,90 @@ def verify_roadmap_evidence_report(
     return RoadmapEvidenceReportVerification(ok=not errors, errors=errors, warnings=warnings)
 
 
+def build_roadmap_evidence_bundle(
+    chain: EvidenceChain,
+    *,
+    key: str | None = None,
+    require_external: bool = False,
+    require_complete: bool = False,
+    generated_at: str | None = None,
+    report: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    timestamp = generated_at or utc_now()
+    if report is None:
+        report = build_roadmap_evidence_report(
+            chain,
+            key=key,
+            require_external=require_external or require_complete,
+            require_complete=require_complete,
+            generated_at=timestamp,
+        )
+    else:
+        report = json.loads(json.dumps(report, sort_keys=True))
+    body = {
+        "schema": ROADMAP_EVIDENCE_BUNDLE_SCHEMA,
+        "generated_at": timestamp,
+        "verification_options": {
+            "require_external": require_external or require_complete,
+            "require_complete": require_complete,
+        },
+        "chain": _roadmap_evidence_chain_document(chain),
+        "report": report,
+        "summary": _roadmap_evidence_bundle_summary(chain, report),
+        "limitations": [
+            "This bundle is self-contained for offline chain and roadmap evidence verification.",
+            "It does not include live provider API, KMS/HSM, TSA, cloud object-lock, regulator, insurer, or standards-body fetches.",
+            "External authority claims remain bounded by the evidence entries and artifacts already committed to the bundled chain.",
+        ],
+    }
+    return {**body, "bundle_id": content_hash(body)}
+
+
+def verify_roadmap_evidence_bundle(
+    bundle: dict[str, Any],
+    *,
+    key: str | None = None,
+    require_external: bool = False,
+    require_complete: bool = False,
+) -> RoadmapEvidenceBundleVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    if bundle.get("schema") != ROADMAP_EVIDENCE_BUNDLE_SCHEMA:
+        errors.append(f"unsupported roadmap evidence bundle schema: {bundle.get('schema')}")
+    if bundle.get("bundle_id") != content_hash(without_keys(bundle, "bundle_id")):
+        errors.append("bundle_id does not match canonical bundle body")
+
+    expected_options = {
+        "require_external": require_external or require_complete,
+        "require_complete": require_complete,
+    }
+    if bundle.get("verification_options") != expected_options:
+        errors.append("verification_options do not match verifier options")
+
+    chain = _roadmap_evidence_chain_from_document(bundle.get("chain"), errors)
+    report = bundle.get("report")
+    if not isinstance(report, dict):
+        errors.append("bundle report must be an object")
+        report = {}
+
+    if chain is not None:
+        report_result = verify_roadmap_evidence_report(
+            report,
+            chain,
+            key=key,
+            require_external=require_external or require_complete,
+            require_complete=require_complete,
+        )
+        if not report_result.ok:
+            errors.extend(f"report: {error}" for error in report_result.errors)
+        warnings.extend(report_result.warnings)
+        expected_summary = _roadmap_evidence_bundle_summary(chain, report)
+        if bundle.get("summary") != expected_summary:
+            errors.append("bundle summary does not match bundled chain and report")
+
+    return RoadmapEvidenceBundleVerification(ok=not errors, errors=errors, warnings=warnings)
+
 def append_external_evidence_manifest(
     chain: EvidenceChain,
     manifest: dict[str, Any],
@@ -409,6 +501,15 @@ def load_roadmap_evidence_report(path: str | Path) -> dict[str, Any]:
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
+def write_roadmap_evidence_bundle(path: str | Path, bundle: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(bundle, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_roadmap_evidence_bundle(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
 def write_external_evidence_markdown(path: str | Path, manifest: dict[str, Any]) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -420,6 +521,11 @@ def write_roadmap_evidence_markdown(path: str | Path, report: dict[str, Any]) ->
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(render_roadmap_evidence_markdown(report), encoding="utf-8")
 
+
+def write_roadmap_evidence_bundle_markdown(path: str | Path, bundle: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_roadmap_evidence_bundle_markdown(bundle), encoding="utf-8")
 
 def render_external_evidence_markdown(manifest: dict[str, Any]) -> str:
     rows = "\n".join(
@@ -532,6 +638,38 @@ Semantic verification: {"passed" if verification.get("ok") else "failed"}
 """
 
 
+def render_roadmap_evidence_bundle_markdown(bundle: dict[str, Any]) -> str:
+    summary = bundle.get("summary", {})
+    report = bundle.get("report", {})
+    report_verification = report.get("verification", {}) if isinstance(report, dict) else {}
+    chain = bundle.get("chain", {})
+    tree = chain.get("tree", {}) if isinstance(chain, dict) else {}
+    limitations = "\n".join(f"- {limitation}" for limitation in bundle.get("limitations", []))
+    return f"""# TrustAI Roadmap Evidence Bundle
+
+Bundle ID: `{bundle.get('bundle_id', '')}`
+
+Report ID: `{summary.get('report_id', '')}`
+
+Semantic verification: {"passed" if report_verification.get("ok") else "failed"}
+
+## Chain Snapshot
+
+- Tenant: `{chain.get('tenant_id', '') if isinstance(chain, dict) else ''}`
+- Entries: {summary.get('chain_entry_count', 0)}
+- Tree root: `{tree.get('root', '')}`
+
+## Roadmap Evidence
+
+- Roadmap audit entries: {summary.get('roadmap_audit_entry_count', 0)}
+- External evidence entries: {summary.get('external_evidence_entry_count', 0)}
+- Complete external evidence entries: {summary.get('complete_external_evidence_entry_count', 0)}
+
+## Limitations
+
+{limitations or "- None"}
+"""
+
 def _roadmap_evidence_chain_record(chain: EvidenceChain) -> dict[str, Any]:
     return {
         "tenant_id": chain.tenant_id,
@@ -539,6 +677,49 @@ def _roadmap_evidence_chain_record(chain: EvidenceChain) -> dict[str, Any]:
         "tree": chain.tree(),
     }
 
+
+def _roadmap_evidence_chain_document(chain: EvidenceChain) -> dict[str, Any]:
+    entries = json.loads(json.dumps(chain.entries, sort_keys=True))
+    return {
+        "spec_version": CHAIN_SPEC_VERSION,
+        "tenant_id": chain.tenant_id,
+        "tree": chain.tree(),
+        "entries": entries,
+    }
+
+
+def _roadmap_evidence_chain_from_document(document: Any, errors: list[str]) -> EvidenceChain | None:
+    if not isinstance(document, dict):
+        errors.append("bundle chain must be an object")
+        return None
+    if document.get("spec_version") != CHAIN_SPEC_VERSION:
+        errors.append(f"unsupported bundled chain spec version: {document.get('spec_version')}")
+    tenant_id = document.get("tenant_id")
+    if not isinstance(tenant_id, str) or not tenant_id:
+        errors.append("bundled chain tenant_id is required")
+        tenant_id = "bundle"
+    entries = document.get("entries")
+    if not isinstance(entries, list):
+        errors.append("bundled chain entries must be a list")
+        entries = []
+    chain = EvidenceChain(Path("<roadmap-evidence-bundle>"), tenant_id, json.loads(json.dumps(entries, sort_keys=True)))
+    if document.get("tree") != chain.tree():
+        errors.append("bundled chain tree does not match entries")
+    return chain
+
+
+def _roadmap_evidence_bundle_summary(chain: EvidenceChain, report: dict[str, Any]) -> dict[str, Any]:
+    report_summary = report.get("summary", {}) if isinstance(report, dict) else {}
+    return {
+        "report_id": report.get("report_id") if isinstance(report, dict) else None,
+        "report_hash": content_hash(report),
+        "chain_tree": chain.tree(),
+        "chain_entry_count": len(chain.entries),
+        "roadmap_audit_entry_count": report_summary.get("roadmap_audit_entry_count"),
+        "external_evidence_entry_count": report_summary.get("external_evidence_entry_count"),
+        "complete_external_evidence_entry_count": report_summary.get("complete_external_evidence_entry_count"),
+        "semantic_ok": report_summary.get("semantic_ok"),
+    }
 
 def _roadmap_evidence_summary(
     chain: EvidenceChain,

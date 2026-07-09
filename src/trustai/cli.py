@@ -597,15 +597,20 @@ from .roadmap_audit import (
 from .external_evidence import (
     append_external_evidence_manifest,
     build_external_evidence_manifest,
+    build_roadmap_evidence_bundle,
     build_roadmap_evidence_report,
     load_external_evidence_manifest,
+    load_roadmap_evidence_bundle,
     load_roadmap_evidence_report,
     parse_evidence_arg,
     verify_external_evidence_manifest,
     verify_roadmap_evidence_chain,
+    verify_roadmap_evidence_bundle,
     verify_roadmap_evidence_report,
     write_external_evidence_manifest,
     write_external_evidence_markdown,
+    write_roadmap_evidence_bundle,
+    write_roadmap_evidence_bundle_markdown,
     write_roadmap_evidence_report,
     write_roadmap_evidence_markdown,
 )
@@ -6876,6 +6881,67 @@ def cmd_roadmap_evidence_report_verify(args: argparse.Namespace) -> int:
     return 1
 
 
+def cmd_roadmap_evidence_bundle(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    report = load_roadmap_evidence_report(args.report) if args.report else None
+    bundle = build_roadmap_evidence_bundle(
+        chain,
+        key=args.key,
+        require_external=args.require_external or args.require_complete,
+        require_complete=args.require_complete,
+        report=report,
+    )
+    result = verify_roadmap_evidence_bundle(
+        bundle,
+        key=args.key,
+        require_external=args.require_external or args.require_complete,
+        require_complete=args.require_complete,
+    )
+    if not result.ok:
+        print("roadmap evidence bundle verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_roadmap_evidence_bundle(args.out, bundle)
+    if args.markdown:
+        write_roadmap_evidence_bundle_markdown(args.markdown, bundle)
+        print(f"roadmap evidence bundle markdown: {args.markdown}")
+    summary = bundle["summary"]
+    print(f"roadmap evidence bundle: {args.out}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"report id: {summary['report_id']}")
+    print(f"chain entries: {summary['chain_entry_count']}")
+    print(f"tree root: {summary['chain_tree']['root']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_roadmap_evidence_bundle_verify(args: argparse.Namespace) -> int:
+    bundle = load_roadmap_evidence_bundle(args.bundle)
+    result = verify_roadmap_evidence_bundle(
+        bundle,
+        key=args.key,
+        require_external=args.require_external or args.require_complete,
+        require_complete=args.require_complete,
+    )
+    if result.ok:
+        summary = bundle.get("summary", {})
+        print(f"verified roadmap evidence bundle: {args.bundle}")
+        print(f"bundle id: {bundle.get('bundle_id')}")
+        print(f"report id: {summary.get('report_id')}")
+        print(f"tree root: {summary.get('chain_tree', {}).get('root')}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"roadmap evidence bundle verification failed: {args.bundle}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 1
+
+
 def cmd_external_evidence_append(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
     roadmap_audit = load_roadmap_audit(args.roadmap_audit)
@@ -13087,6 +13153,20 @@ def build_parser() -> argparse.ArgumentParser:
     roadmap_evidence_report_verify.add_argument("--require-external", action="store_true")
     roadmap_evidence_report_verify.add_argument("--require-complete", action="store_true")
     roadmap_evidence_report_verify.set_defaults(func=cmd_roadmap_evidence_report_verify)
+    roadmap_evidence_bundle = subparsers.add_parser("roadmap-evidence-bundle", help="write a self-contained roadmap evidence bundle")
+    _add_state_args(roadmap_evidence_bundle)
+    roadmap_evidence_bundle.add_argument("--require-external", action="store_true")
+    roadmap_evidence_bundle.add_argument("--require-complete", action="store_true")
+    roadmap_evidence_bundle.add_argument("--report", help="verified roadmap evidence report to embed; generated when omitted")
+    roadmap_evidence_bundle.add_argument("--out", default="artifacts/roadmap-evidence-bundle.json")
+    roadmap_evidence_bundle.add_argument("--markdown", default="artifacts/roadmap-evidence-bundle.md")
+    roadmap_evidence_bundle.set_defaults(func=cmd_roadmap_evidence_bundle)
+
+    roadmap_evidence_bundle_verify = subparsers.add_parser("roadmap-evidence-bundle-verify", help="verify a self-contained roadmap evidence bundle offline")
+    roadmap_evidence_bundle_verify.add_argument("bundle")
+    roadmap_evidence_bundle_verify.add_argument("--require-external", action="store_true")
+    roadmap_evidence_bundle_verify.add_argument("--require-complete", action="store_true")
+    roadmap_evidence_bundle_verify.set_defaults(func=cmd_roadmap_evidence_bundle_verify)
 
     standards_export = subparsers.add_parser("standards-export", help="write a standards submission package for public specs")
     standards_export.add_argument("--root", default=".")
