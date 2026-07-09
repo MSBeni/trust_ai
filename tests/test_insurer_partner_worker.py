@@ -1,4 +1,4 @@
-﻿
+
 import copy
 import json
 import os
@@ -30,8 +30,8 @@ ROOT = Path(__file__).resolve().parents[1]
 class InsurerPartnerWorkerTests(unittest.TestCase):
     def _sources(self, tmp: Path):
         helper = InsurerPartnerServiceTests()
-        chain, telemetry, quote, corpus, product = helper._fixtures(tmp)
-        service = helper._attestation(telemetry, quote, corpus, product)
+        chain, telemetry, quote, corpus, product, frontend_bundle_path, frontend_bundle_hash = helper._fixtures(tmp)
+        service = helper._attestation(telemetry, quote, corpus, product, frontend_bundle_path)
         return {
             "chain": chain,
             "telemetry": telemetry,
@@ -39,6 +39,8 @@ class InsurerPartnerWorkerTests(unittest.TestCase):
             "corpus": corpus,
             "product": product,
             "service": service,
+            "frontend_bundle_path": frontend_bundle_path,
+            "frontend_bundle_hash": frontend_bundle_hash,
         }
 
     def _receipt(self, sources):
@@ -48,6 +50,7 @@ class InsurerPartnerWorkerTests(unittest.TestCase):
             underwriting_quote=sources["quote"],
             actuarial_product=sources["product"],
             actuarial_corpora=[sources["corpus"]],
+            frontend_bundle_path=sources["frontend_bundle_path"],
             mode="partner-api-worker",
             environment="aitrade-prod",
             worker_ref="worker:insurer-partner/underwriting",
@@ -103,6 +106,7 @@ class InsurerPartnerWorkerTests(unittest.TestCase):
                 underwriting_quote=sources["quote"],
                 actuarial_product=sources["product"],
                 actuarial_corpora=[sources["corpus"]],
+                frontend_bundle_path=sources["frontend_bundle_path"],
                 now="2026-07-09T00:00:00Z",
             )
             entry = append_insurer_partner_worker_receipt(
@@ -113,6 +117,7 @@ class InsurerPartnerWorkerTests(unittest.TestCase):
                 underwriting_quote=sources["quote"],
                 actuarial_product=sources["product"],
                 actuarial_corpora=[sources["corpus"]],
+                frontend_bundle_path=sources["frontend_bundle_path"],
                 now="2026-07-09T00:00:00Z",
             )
 
@@ -138,6 +143,7 @@ class InsurerPartnerWorkerTests(unittest.TestCase):
                 underwriting_quote=sources["quote"],
                 actuarial_product=sources["product"],
                 actuarial_corpora=[sources["corpus"]],
+                frontend_bundle_path=sources["frontend_bundle_path"],
                 now="2026-07-09T00:00:00Z",
             )
 
@@ -172,6 +178,8 @@ class InsurerPartnerWorkerTests(unittest.TestCase):
                 str(product_path),
                 "--actuarial-corpus",
                 str(corpus_path),
+                "--frontend-bundle",
+                str(sources["frontend_bundle_path"]),
                 "--now",
                 "2026-07-09T00:00:00Z",
             ]

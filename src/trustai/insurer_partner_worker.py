@@ -1,4 +1,3 @@
-﻿
 from __future__ import annotations
 
 import json
@@ -53,6 +52,7 @@ def build_insurer_partner_worker_receipt(
     underwriting_quote: dict[str, Any] | None = None,
     actuarial_product: dict[str, Any] | None = None,
     actuarial_corpora: list[dict[str, Any]] | None = None,
+    frontend_bundle_path: str | Path | None = None,
     mode: str = "scheduled-worker",
     environment: str = "local",
     worker_ref: str,
@@ -170,6 +170,7 @@ def build_insurer_partner_worker_receipt(
         underwriting_quote,
         actuarial_product=actuarial_product,
         actuarial_corpora=actuarial_corpora,
+        frontend_bundle_path=frontend_bundle_path,
         now=now,
         key=key,
     )
@@ -290,6 +291,7 @@ def verify_insurer_partner_worker_receipt(
     underwriting_quote: dict[str, Any] | None = None,
     actuarial_product: dict[str, Any] | None = None,
     actuarial_corpora: list[dict[str, Any]] | None = None,
+    frontend_bundle_path: str | Path | None = None,
     now: str | None = None,
     key: str | None = None,
 ) -> InsurerPartnerWorkerVerification:
@@ -348,6 +350,7 @@ def verify_insurer_partner_worker_receipt(
             underwriting_quote,
             actuarial_product=actuarial_product,
             actuarial_corpora=actuarial_corpora,
+            frontend_bundle_path=frontend_bundle_path,
             now=now,
             key=key,
         )
@@ -387,6 +390,7 @@ def append_insurer_partner_worker_receipt(
     underwriting_quote: dict[str, Any] | None = None,
     actuarial_product: dict[str, Any] | None = None,
     actuarial_corpora: list[dict[str, Any]] | None = None,
+    frontend_bundle_path: str | Path | None = None,
     now: str | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
@@ -397,6 +401,7 @@ def append_insurer_partner_worker_receipt(
         underwriting_quote=underwriting_quote,
         actuarial_product=actuarial_product,
         actuarial_corpora=actuarial_corpora,
+        frontend_bundle_path=frontend_bundle_path,
         now=now,
         key=key,
     )

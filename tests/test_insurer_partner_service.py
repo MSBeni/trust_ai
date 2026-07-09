@@ -1,4 +1,5 @@
 import copy
+import hashlib
 import json
 import os
 import subprocess
@@ -37,6 +38,9 @@ CONSENT = ROOT / "examples" / "aitrade" / "insurer-consent.json"
 
 def _write_json(path: Path, value: object) -> None:
     path.write_text(json.dumps(value, indent=2, sort_keys=True), encoding="utf-8")
+
+def _sha256_ref(path: Path) -> str:
+    return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 class InsurerPartnerServiceTests(unittest.TestCase):
@@ -88,14 +92,22 @@ class InsurerPartnerServiceTests(unittest.TestCase):
             publisher="trustai-local",
             issued_at="2026-07-08T01:00:00Z",
         )
-        return chain, telemetry, quote, corpus, product
+        frontend_bundle_path = tmp / "insurer-partner.bundle.js"
+        frontend_bundle_path.write_text(
+            "export const insurerPartner = {kind: 'underwriting', consent: 'active'};\\n",
+            encoding="utf-8",
+        )
+        frontend_bundle_hash = _sha256_ref(frontend_bundle_path)
+        return chain, telemetry, quote, corpus, product, frontend_bundle_path, frontend_bundle_hash
 
-    def _attestation(self, telemetry, quote, corpus, product, **overrides):
+    def _attestation(self, telemetry, quote, corpus, product, frontend_bundle_path, frontend_bundle_hash=None, **overrides):
+        frontend_bundle_hash = frontend_bundle_hash or _sha256_ref(Path(frontend_bundle_path))
         values = {
             "telemetry": telemetry,
             "underwriting_quote": quote,
             "actuarial_product": product,
             "actuarial_corpora": [corpus],
+            "frontend_bundle_path": frontend_bundle_path,
             "environment": "aitrade-prod",
             "service_kind": "underwriting-integration",
             "service_ref": "insurer-partner:trustai/underwriting-prod",
@@ -106,7 +118,7 @@ class InsurerPartnerServiceTests(unittest.TestCase):
             "service_image_digest": "sha256:trustai-insurer-partner-image",
             "service_binary_hash": "sha256:trustai-insurer-partner-binary",
             "frontend_bundle_ref": "bundle:insurer-partner/underwriter-ui",
-            "frontend_bundle_hash": "sha256:trustai-insurer-partner-frontend",
+            "frontend_bundle_hash": frontend_bundle_hash,
             "api_ref": "api:insurer-partner/v0",
             "queue_ref": "queue:insurer-partner/delivery",
             "policy_system_ref": "policy-system:underwriter/bindings",
@@ -147,8 +159,8 @@ class InsurerPartnerServiceTests(unittest.TestCase):
 
     def test_insurer_partner_service_verifies_and_appends(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
-            chain, telemetry, quote, corpus, product = self._fixtures(Path(tmp_dir))
-            attestation = self._attestation(telemetry, quote, corpus, product)
+            chain, telemetry, quote, corpus, product, frontend_bundle_path, frontend_bundle_hash = self._fixtures(Path(tmp_dir))
+            attestation = self._attestation(telemetry, quote, corpus, product, frontend_bundle_path)
 
             result = verify_insurer_partner_service_attestation(
                 attestation,
@@ -156,6 +168,7 @@ class InsurerPartnerServiceTests(unittest.TestCase):
                 quote,
                 actuarial_product=product,
                 actuarial_corpora=[corpus],
+                frontend_bundle_path=frontend_bundle_path,
                 now="2026-07-09T00:00:00Z",
             )
             entry = append_insurer_partner_service_attestation(
@@ -165,6 +178,7 @@ class InsurerPartnerServiceTests(unittest.TestCase):
                 quote,
                 actuarial_product=product,
                 actuarial_corpora=[corpus],
+                frontend_bundle_path=frontend_bundle_path,
                 now="2026-07-09T00:00:00Z",
             )
 
@@ -173,6 +187,9 @@ class InsurerPartnerServiceTests(unittest.TestCase):
             self.assertEqual("partner-service-attested", attestation["mode"])
             self.assertEqual(quote["quote_id"], attestation["partner"]["quote_id"])
             self.assertEqual(telemetry["consent"]["consent_id"], attestation["risk_transfer"]["consent_id"])
+            self.assertEqual(frontend_bundle_hash, attestation["service"]["frontend_bundle_hash"])
+            self.assertEqual(frontend_bundle_hash, attestation["service"]["frontend_bundle_artifact_hash"])
+            self.assertIn("frontend-bundle", attestation["source"]["required_types"])
             self.assertEqual("env:UNDERWRITER_API_TOKEN", attestation["operation_actor"]["partner_credential"]["ref"])
             self.assertEqual(INSURER_PARTNER_SERVICE_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(attestation["attestation_id"], entry["payload"]["attestation_id"])
@@ -180,8 +197,8 @@ class InsurerPartnerServiceTests(unittest.TestCase):
 
     def test_insurer_partner_service_rejects_source_mismatch(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
-            _, telemetry, quote, corpus, product = self._fixtures(Path(tmp_dir))
-            attestation = self._attestation(telemetry, quote, corpus, product)
+            _, telemetry, quote, corpus, product, frontend_bundle_path, frontend_bundle_hash = self._fixtures(Path(tmp_dir))
+            attestation = self._attestation(telemetry, quote, corpus, product, frontend_bundle_path)
             tampered = copy.deepcopy(telemetry)
             tampered["risk_score"] = 1
 
@@ -191,6 +208,7 @@ class InsurerPartnerServiceTests(unittest.TestCase):
                 quote,
                 actuarial_product=product,
                 actuarial_corpora=[corpus],
+                frontend_bundle_path=frontend_bundle_path,
                 now="2026-07-09T00:00:00Z",
             )
 
@@ -198,22 +216,50 @@ class InsurerPartnerServiceTests(unittest.TestCase):
             self.assertIn("insurer partner service source_artifacts do not match supplied source artifacts", result.errors)
             self.assertIn("underwriting quote source: risk evidence telemetry_hash mismatch", result.errors)
 
+    def test_insurer_partner_service_rejects_frontend_bundle_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            _, telemetry, quote, corpus, product, frontend_bundle_path, _ = self._fixtures(Path(tmp_dir))
+            with self.assertRaisesRegex(ValueError, "frontend_bundle_hash does not match supplied frontend bundle"):
+                self._attestation(
+                    telemetry,
+                    quote,
+                    corpus,
+                    product,
+                    frontend_bundle_path,
+                    frontend_bundle_hash="sha256:not-the-bundle",
+                )
+            attestation = self._attestation(telemetry, quote, corpus, product, frontend_bundle_path)
+            frontend_bundle_path.write_text("export const insurerPartner = {tampered: true};\n", encoding="utf-8")
+
+            result = verify_insurer_partner_service_attestation(
+                attestation,
+                telemetry,
+                quote,
+                actuarial_product=product,
+                actuarial_corpora=[corpus],
+                frontend_bundle_path=frontend_bundle_path,
+                now="2026-07-09T00:00:00Z",
+            )
+
+            self.assertFalse(result.ok)
+            self.assertIn("insurer partner service service.frontend_bundle_hash does not match supplied frontend bundle", result.errors)
+
     def test_insurer_partner_service_rejects_insecure_partner_endpoint(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
-            _, telemetry, quote, corpus, product = self._fixtures(Path(tmp_dir))
-            attestation = self._attestation(telemetry, quote, corpus, product, partner_api_endpoint="http://underwriter.example/api/v1/quotes")
+            _, telemetry, quote, corpus, product, frontend_bundle_path, frontend_bundle_hash = self._fixtures(Path(tmp_dir))
+            attestation = self._attestation(telemetry, quote, corpus, product, frontend_bundle_path, partner_api_endpoint="http://underwriter.example/api/v1/quotes")
 
-            result = verify_insurer_partner_service_attestation(attestation, telemetry, quote, actuarial_product=product, actuarial_corpora=[corpus], now="2026-07-09T00:00:00Z")
+            result = verify_insurer_partner_service_attestation(attestation, telemetry, quote, actuarial_product=product, actuarial_corpora=[corpus], frontend_bundle_path=frontend_bundle_path, now="2026-07-09T00:00:00Z")
 
             self.assertFalse(result.ok)
             self.assertIn("insurer partner service service.partner_api_endpoint must use HTTPS", result.errors)
 
     def test_insurer_partner_service_rejects_weak_replicas(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
-            _, telemetry, quote, corpus, product = self._fixtures(Path(tmp_dir))
-            attestation = self._attestation(telemetry, quote, corpus, product, replicas_min=1, availability_zones=["us-east-1a"])
+            _, telemetry, quote, corpus, product, frontend_bundle_path, frontend_bundle_hash = self._fixtures(Path(tmp_dir))
+            attestation = self._attestation(telemetry, quote, corpus, product, frontend_bundle_path, replicas_min=1, availability_zones=["us-east-1a"])
 
-            result = verify_insurer_partner_service_attestation(attestation, telemetry, quote, actuarial_product=product, actuarial_corpora=[corpus], now="2026-07-09T00:00:00Z")
+            result = verify_insurer_partner_service_attestation(attestation, telemetry, quote, actuarial_product=product, actuarial_corpora=[corpus], frontend_bundle_path=frontend_bundle_path, now="2026-07-09T00:00:00Z")
 
             self.assertFalse(result.ok)
             self.assertIn("insurer partner service service.replicas_min must be an integer >= 2", result.errors)
@@ -222,7 +268,7 @@ class InsurerPartnerServiceTests(unittest.TestCase):
     def test_cli_insurer_partner_service_round_trip(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)
-            _, telemetry, quote, corpus, product = self._fixtures(tmp)
+            _, telemetry, quote, corpus, product, frontend_bundle_path, frontend_bundle_hash = self._fixtures(tmp)
             telemetry_path = tmp / "insurer-risk-telemetry.json"
             quote_path = tmp / "underwriting-quote.json"
             corpus_path = tmp / "actuarial-corpus.json"
@@ -243,6 +289,8 @@ class InsurerPartnerServiceTests(unittest.TestCase):
                 str(product_path),
                 "--actuarial-corpus",
                 str(corpus_path),
+                "--frontend-bundle",
+                str(frontend_bundle_path),
                 "--now",
                 "2026-07-09T00:00:00Z",
             ]
@@ -257,7 +305,7 @@ class InsurerPartnerServiceTests(unittest.TestCase):
                 "--service-image-digest", "sha256:trustai-insurer-partner-image",
                 "--service-binary-hash", "sha256:trustai-insurer-partner-binary",
                 "--frontend-bundle-ref", "bundle:insurer-partner/underwriter-ui",
-                "--frontend-bundle-hash", "sha256:trustai-insurer-partner-frontend",
+                "--frontend-bundle-hash", frontend_bundle_hash,
                 "--api-ref", "api:insurer-partner/v0",
                 "--queue-ref", "queue:insurer-partner/delivery",
                 "--policy-system-ref", "policy-system:underwriter/bindings",

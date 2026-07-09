@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
@@ -45,6 +46,7 @@ def build_insurer_partner_service_attestation(
     *,
     actuarial_product: dict[str, Any] | None = None,
     actuarial_corpora: list[dict[str, Any]] | None = None,
+    frontend_bundle_path: str | Path | None = None,
     mode: str = "partner-service-attested",
     environment: str = "local",
     service_kind: str = "underwriting-integration",
@@ -165,6 +167,12 @@ def build_insurer_partner_service_attestation(
         actuarial_product=actuarial_product,
         actuarial_corpora=corpora,
     )
+    frontend_bundle_artifact = None
+    if frontend_bundle_path is not None:
+        frontend_bundle_artifact = _frontend_bundle_artifact(frontend_bundle_path)
+        if _normalize_sha256_ref(frontend_bundle_hash) != frontend_bundle_artifact["hash"]:
+            raise ValueError("frontend_bundle_hash does not match supplied frontend bundle")
+        source_artifacts.append(frontend_bundle_artifact)
     service = {
         "service_ref": service_ref,
         "version": service_version,
@@ -176,6 +184,7 @@ def build_insurer_partner_service_attestation(
         "service_binary_hash": service_binary_hash,
         "frontend_bundle_ref": frontend_bundle_ref,
         "frontend_bundle_hash": frontend_bundle_hash,
+        "frontend_bundle_artifact_hash": frontend_bundle_artifact["hash"] if frontend_bundle_artifact else None,
         "api_ref": api_ref,
         "queue_ref": queue_ref,
         "policy_system_ref": policy_system_ref,
@@ -273,6 +282,7 @@ def verify_insurer_partner_service_attestation(
     *,
     actuarial_product: dict[str, Any] | None = None,
     actuarial_corpora: list[dict[str, Any]] | None = None,
+    frontend_bundle_path: str | Path | None = None,
     now: str | None = None,
     key: str | None = None,
 ) -> InsurerPartnerServiceVerification:
@@ -322,6 +332,22 @@ def verify_insurer_partner_service_attestation(
         actuarial_product=actuarial_product,
         actuarial_corpora=corpora,
     )
+    if frontend_bundle_path is not None:
+        try:
+            frontend_bundle_artifact = _frontend_bundle_artifact(frontend_bundle_path)
+        except OSError as exc:
+            errors.append(f"insurer partner service frontend bundle source could not be read: {exc}")
+        else:
+            supplied_records.append(frontend_bundle_artifact)
+            service = attestation.get("service")
+            expected_hash = service.get("frontend_bundle_hash") if isinstance(service, dict) else None
+            if _normalize_sha256_ref(str(expected_hash or "")) != frontend_bundle_artifact["hash"]:
+                errors.append("insurer partner service service.frontend_bundle_hash does not match supplied frontend bundle")
+            artifact_hash = service.get("frontend_bundle_artifact_hash") if isinstance(service, dict) else None
+            if artifact_hash is not None and artifact_hash != frontend_bundle_artifact["hash"]:
+                errors.append("insurer partner service service.frontend_bundle_artifact_hash does not match supplied frontend bundle")
+    else:
+        warnings.append("frontend bundle source was not supplied; bundle hash was not replayed")
     source_artifacts = attestation.get("source_artifacts", [])
     if not isinstance(source_artifacts, list) or not source_artifacts:
         errors.append("insurer partner service source_artifacts are required")
@@ -367,6 +393,7 @@ def append_insurer_partner_service_attestation(
     *,
     actuarial_product: dict[str, Any] | None = None,
     actuarial_corpora: list[dict[str, Any]] | None = None,
+    frontend_bundle_path: str | Path | None = None,
     now: str | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
@@ -376,6 +403,7 @@ def append_insurer_partner_service_attestation(
         underwriting_quote,
         actuarial_product=actuarial_product,
         actuarial_corpora=actuarial_corpora,
+        frontend_bundle_path=frontend_bundle_path,
         now=now,
         key=key,
     )
@@ -417,6 +445,26 @@ def _source_artifacts(
             records.append({"type": "actuarial-corpus", "id": _source_id(corpus), "schema": corpus.get("schema"), "hash": content_hash(corpus)})
     return records
 
+
+def _frontend_bundle_artifact(path: str | Path) -> dict[str, Any]:
+    source = Path(path)
+    data = source.read_bytes()
+    suffix = source.suffix.lower()
+    if suffix == ".js":
+        schema = "application/javascript"
+    elif suffix == ".css":
+        schema = "text/css"
+    elif suffix in {".html", ".htm"}:
+        schema = "text/html"
+    else:
+        schema = "application/octet-stream"
+    return {
+        "type": "frontend-bundle",
+        "id": str(path),
+        "schema": schema,
+        "hash": _sha256_ref(data),
+        "size_bytes": len(data),
+    }
 
 def _source_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
     return {
@@ -675,3 +723,12 @@ def _is_sha256_ref(value: str) -> bool:
     if value.startswith("sha256:"):
         return bool(value[7:])
     return len(value) == 64 and all(character in "0123456789abcdef" for character in value.lower())
+
+def _sha256_ref(data: bytes) -> str:
+    return "sha256:" + hashlib.sha256(data).hexdigest()
+
+
+def _normalize_sha256_ref(value: str) -> str:
+    if value.startswith("sha256:"):
+        return value
+    return "sha256:" + value

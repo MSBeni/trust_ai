@@ -5338,22 +5338,23 @@ def cmd_underwriting_quote_append(args: argparse.Namespace) -> int:
     return 0
 
 
-def _load_insurer_partner_service_sources(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any] | None, list[dict[str, Any]]]:
+def _load_insurer_partner_service_sources(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any] | None, list[dict[str, Any]], str | None]:
     telemetry = _load_json(args.telemetry)
     quote = load_underwriting_quote(args.quote)
     actuarial_product = load_actuarial_product(args.actuarial_product) if args.actuarial_product else None
     actuarial_corpora = [load_actuarial_corpus(path) for path in args.actuarial_corpus]
-    return telemetry, quote, actuarial_product, actuarial_corpora
+    return telemetry, quote, actuarial_product, actuarial_corpora, args.frontend_bundle
 
 
 def cmd_insurer_partner_service_attestation(args: argparse.Namespace) -> int:
-    telemetry, quote, actuarial_product, actuarial_corpora = _load_insurer_partner_service_sources(args)
+    telemetry, quote, actuarial_product, actuarial_corpora, frontend_bundle_path = _load_insurer_partner_service_sources(args)
     try:
         attestation = build_insurer_partner_service_attestation(
             telemetry,
             quote,
             actuarial_product=actuarial_product,
             actuarial_corpora=actuarial_corpora,
+            frontend_bundle_path=frontend_bundle_path,
             mode=args.mode,
             environment=args.environment,
             service_kind=args.service_kind,
@@ -5411,6 +5412,7 @@ def cmd_insurer_partner_service_attestation(args: argparse.Namespace) -> int:
         quote,
         actuarial_product=actuarial_product,
         actuarial_corpora=actuarial_corpora,
+        frontend_bundle_path=frontend_bundle_path,
         now=args.now,
         key=args.key,
     )
@@ -5430,13 +5432,14 @@ def cmd_insurer_partner_service_attestation(args: argparse.Namespace) -> int:
 
 def cmd_insurer_partner_service_verify(args: argparse.Namespace) -> int:
     attestation = load_insurer_partner_service_attestation(args.attestation)
-    telemetry, quote, actuarial_product, actuarial_corpora = _load_insurer_partner_service_sources(args)
+    telemetry, quote, actuarial_product, actuarial_corpora, frontend_bundle_path = _load_insurer_partner_service_sources(args)
     result = verify_insurer_partner_service_attestation(
         attestation,
         telemetry,
         quote,
         actuarial_product=actuarial_product,
         actuarial_corpora=actuarial_corpora,
+        frontend_bundle_path=frontend_bundle_path,
         now=args.now,
         key=args.key,
     )
@@ -5454,7 +5457,7 @@ def cmd_insurer_partner_service_verify(args: argparse.Namespace) -> int:
 def cmd_insurer_partner_service_append(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
     attestation = load_insurer_partner_service_attestation(args.attestation)
-    telemetry, quote, actuarial_product, actuarial_corpora = _load_insurer_partner_service_sources(args)
+    telemetry, quote, actuarial_product, actuarial_corpora, frontend_bundle_path = _load_insurer_partner_service_sources(args)
     try:
         entry = append_insurer_partner_service_attestation(
             chain,
@@ -5463,6 +5466,7 @@ def cmd_insurer_partner_service_append(args: argparse.Namespace) -> int:
             quote,
             actuarial_product=actuarial_product,
             actuarial_corpora=actuarial_corpora,
+            frontend_bundle_path=frontend_bundle_path,
             now=args.now,
             key=args.key,
         )
@@ -5479,14 +5483,14 @@ def cmd_insurer_partner_service_append(args: argparse.Namespace) -> int:
     return 0
 
 
-def _load_insurer_partner_worker_sources(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any] | None, list[dict[str, Any]]]:
+def _load_insurer_partner_worker_sources(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any] | None, list[dict[str, Any]], str | None]:
     service_attestation = load_insurer_partner_service_attestation(args.service_attestation)
-    telemetry, quote, actuarial_product, actuarial_corpora = _load_insurer_partner_service_sources(args)
-    return service_attestation, telemetry, quote, actuarial_product, actuarial_corpora
+    telemetry, quote, actuarial_product, actuarial_corpora, frontend_bundle_path = _load_insurer_partner_service_sources(args)
+    return service_attestation, telemetry, quote, actuarial_product, actuarial_corpora, frontend_bundle_path
 
 
 def cmd_insurer_partner_worker(args: argparse.Namespace) -> int:
-    service_attestation, telemetry, quote, actuarial_product, actuarial_corpora = _load_insurer_partner_worker_sources(args)
+    service_attestation, telemetry, quote, actuarial_product, actuarial_corpora, frontend_bundle_path = _load_insurer_partner_worker_sources(args)
     try:
         receipt = build_insurer_partner_worker_receipt(
             service_attestation,
@@ -5494,6 +5498,7 @@ def cmd_insurer_partner_worker(args: argparse.Namespace) -> int:
             underwriting_quote=quote,
             actuarial_product=actuarial_product,
             actuarial_corpora=actuarial_corpora,
+            frontend_bundle_path=frontend_bundle_path,
             mode=args.mode,
             environment=args.environment,
             worker_ref=args.worker_ref,
@@ -5551,6 +5556,7 @@ def cmd_insurer_partner_worker(args: argparse.Namespace) -> int:
         underwriting_quote=quote,
         actuarial_product=actuarial_product,
         actuarial_corpora=actuarial_corpora,
+        frontend_bundle_path=frontend_bundle_path,
         now=args.now,
         key=args.key,
     )
@@ -5570,7 +5576,7 @@ def cmd_insurer_partner_worker(args: argparse.Namespace) -> int:
 
 def cmd_insurer_partner_worker_verify(args: argparse.Namespace) -> int:
     receipt = load_insurer_partner_worker_receipt(args.receipt)
-    service_attestation, telemetry, quote, actuarial_product, actuarial_corpora = _load_insurer_partner_worker_sources(args)
+    service_attestation, telemetry, quote, actuarial_product, actuarial_corpora, frontend_bundle_path = _load_insurer_partner_worker_sources(args)
     result = verify_insurer_partner_worker_receipt(
         receipt,
         service_attestation=service_attestation,
@@ -5578,6 +5584,7 @@ def cmd_insurer_partner_worker_verify(args: argparse.Namespace) -> int:
         underwriting_quote=quote,
         actuarial_product=actuarial_product,
         actuarial_corpora=actuarial_corpora,
+        frontend_bundle_path=frontend_bundle_path,
         now=args.now,
         key=args.key,
     )
@@ -5596,7 +5603,7 @@ def cmd_insurer_partner_worker_verify(args: argparse.Namespace) -> int:
 def cmd_insurer_partner_worker_append(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
     receipt = load_insurer_partner_worker_receipt(args.receipt)
-    service_attestation, telemetry, quote, actuarial_product, actuarial_corpora = _load_insurer_partner_worker_sources(args)
+    service_attestation, telemetry, quote, actuarial_product, actuarial_corpora, frontend_bundle_path = _load_insurer_partner_worker_sources(args)
     try:
         entry = append_insurer_partner_worker_receipt(
             chain,
@@ -5606,6 +5613,7 @@ def cmd_insurer_partner_worker_append(args: argparse.Namespace) -> int:
             underwriting_quote=quote,
             actuarial_product=actuarial_product,
             actuarial_corpora=actuarial_corpora,
+            frontend_bundle_path=frontend_bundle_path,
             now=args.now,
             key=args.key,
         )
@@ -12837,6 +12845,7 @@ def build_parser() -> argparse.ArgumentParser:
         parser.add_argument("quote")
         parser.add_argument("--actuarial-product")
         parser.add_argument("--actuarial-corpus", action="append", default=[])
+        parser.add_argument("--frontend-bundle")
         parser.add_argument("--now")
         parser.add_argument("--key")
 

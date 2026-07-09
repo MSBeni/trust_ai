@@ -26,6 +26,7 @@ Optional source artifacts:
 
 - `actuarial-corpus`
 - `actuarial-product`
+- `frontend-bundle`
 
 The attestation ID is the canonical content hash of the attestation body
 excluding `attestation_id` and `signatures`. The signature covers:
@@ -43,7 +44,8 @@ An attestation must bind:
 
 - Service identity: service reference, version, service kind, HTTPS endpoint,
   partner HTTPS API endpoint, image reference, image digest, binary hash,
-  frontend bundle hash, API reference, queue reference, policy-system reference,
+  frontend bundle hash, optional frontend bundle artifact hash, API reference,
+  queue reference, policy-system reference,
   replica floor, replica ceiling, and at least two availability zones.
 - Partner binding: underwriter name, quote ID, quote reference, quote product,
   partner contract reference, policy-system reference, and optional actuarial
@@ -65,11 +67,13 @@ An attestation must bind:
 `trustai insurer-partner-service-verify` verifies:
 
 1. Attestation schema, canonical hash, and signature.
-2. Source artifact hashes and source summary.
+2. Source artifact hashes and source summary, including frontend bundle replay
+   when supplied.
 3. Underwriting quote signature and telemetry hash binding.
 4. Optional actuarial product signature and corpus bindings.
 5. HTTPS service and partner endpoints.
-6. SHA-256-style service, frontend, audit, access, and delivery roots.
+6. SHA-256-style service, frontend, audit, access, and delivery roots, and
+   supplied bundle digest matches.
 7. Active consent on the insurer telemetry.
 8. Replica and availability-zone minimums.
 9. Redacted credentials and absence of raw secret-like fields.
@@ -90,11 +94,13 @@ An attestation must bind:
 ## Example
 
 ```bash
+INSURER_PARTNER_BUNDLE_HASH="sha256:$(sha256sum artifacts/insurer-partner.bundle.js | awk '{print $1}')"
 python -m trustai insurer-partner-service-attestation \
   artifacts/insurer-risk-telemetry.json \
   artifacts/underwriting-quote.json \
   --actuarial-product artifacts/actuarial-product.json \
   --actuarial-corpus artifacts/actuarial-corpus.json \
+  --frontend-bundle artifacts/insurer-partner.bundle.js \
   --environment aitrade-prod \
   --service-kind underwriting-integration \
   --service-ref insurer-partner:trustai/underwriting-prod \
@@ -105,7 +111,7 @@ python -m trustai insurer-partner-service-attestation \
   --service-image-digest sha256:trustai-insurer-partner-image \
   --service-binary-hash sha256:trustai-insurer-partner-binary \
   --frontend-bundle-ref bundle:insurer-partner/underwriter-ui \
-  --frontend-bundle-hash sha256:trustai-insurer-partner-frontend \
+  --frontend-bundle-hash "$INSURER_PARTNER_BUNDLE_HASH" \
   --api-ref api:insurer-partner/v0 \
   --queue-ref queue:insurer-partner/delivery \
   --policy-system-ref policy-system:underwriter/bindings \
@@ -149,6 +155,7 @@ python -m trustai insurer-partner-service-verify \
   artifacts/underwriting-quote.json \
   --actuarial-product artifacts/actuarial-product.json \
   --actuarial-corpus artifacts/actuarial-corpus.json \
+  --frontend-bundle artifacts/insurer-partner.bundle.js \
   --now 2026-07-09T00:00:00Z
 
 python -m trustai insurer-partner-service-append \
@@ -157,6 +164,7 @@ python -m trustai insurer-partner-service-append \
   artifacts/underwriting-quote.json \
   --actuarial-product artifacts/actuarial-product.json \
   --actuarial-corpus artifacts/actuarial-corpus.json \
+  --frontend-bundle artifacts/insurer-partner.bundle.js \
   --state .trustai/insurer-partner-service-demo/evidence-chain.json \
   --tenant insurer-partner-service-local \
   --out artifacts/insurer-partner-service-entry.json
@@ -169,4 +177,4 @@ use still requires credentialed partner API calls, partner-owned authentication
 events, policy-system workflow IDs, immutable delivery logs, contractual
 redistribution limits for actuarial products, and operated worker fleets. The
 local reference format records the evidence those systems must emit and makes
-the service claims replay-verifiable offline.
+the service claims replay-verifiable offline, including replay of supplied frontend bundle artifacts against the attested bundle hash.
