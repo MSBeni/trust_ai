@@ -91,6 +91,14 @@ from .framework_runtime_service_provider import (
     verify_framework_runtime_service_provider_receipt,
     write_framework_runtime_service_provider_receipt,
 )
+from .framework_runtime_service_authority import (
+    append_framework_runtime_service_authority_dossier,
+    build_framework_runtime_service_authority_dossier,
+    load_framework_runtime_service_authority_dossier,
+    parse_framework_runtime_service_authority_evidence_arg,
+    verify_framework_runtime_service_authority_dossier,
+    write_framework_runtime_service_authority_dossier,
+)
 from .anchor import append_anchor, write_anchor
 from .anchor_provider import (
     ANCHOR_PROVIDER_MODES,
@@ -2959,6 +2967,130 @@ def cmd_framework_runtime_service_provider_append(args: argparse.Namespace) -> i
     print(f"provider receipt id: {receipt['provider_receipt_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
+
+def _load_framework_runtime_service_authority_sources(args: argparse.Namespace, *, require_all: bool) -> dict[str, object]:
+    sources: dict[str, object] = {}
+    if getattr(args, "provider_receipt", None):
+        sources["provider_receipt"] = load_framework_runtime_service_provider_receipt(args.provider_receipt)
+    elif require_all:
+        raise ValueError("framework runtime service provider receipt is required")
+    provider_sources = _load_framework_runtime_service_provider_sources(args, require_all=require_all)
+    sources.update(provider_sources)
+    return sources
+
+
+def cmd_framework_runtime_service_authority(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_framework_runtime_service_authority_sources(args, require_all=True)
+        provider_receipt = sources.pop("provider_receipt")
+        authority_evidence = [
+            parse_framework_runtime_service_authority_evidence_arg(value)
+            for value in (args.authority_evidence or [])
+        ]
+        dossier = build_framework_runtime_service_authority_dossier(
+            provider_receipt,
+            **sources,
+            root=args.root,
+            mode=args.mode,
+            environment=args.environment,
+            dossier_ref=args.dossier_ref,
+            authority_ref=args.authority_ref,
+            producer_ref=args.producer_ref,
+            authority_evidence=authority_evidence,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_framework_runtime_service_authority_dossier(
+            dossier,
+            provider_receipt=provider_receipt,
+            **sources,
+            root=args.root,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime service authority dossier generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("framework runtime service authority dossier generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_framework_runtime_service_authority_dossier(args.out, dossier)
+    print(f"framework runtime service authority dossier: {args.out}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"covered authority requirements: {result.covered_count}/{result.required_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_framework_runtime_service_authority_verify(args: argparse.Namespace) -> int:
+    try:
+        dossier = load_framework_runtime_service_authority_dossier(args.dossier)
+        sources = _load_framework_runtime_service_authority_sources(args, require_all=False)
+        provider_receipt = sources.pop("provider_receipt", None)
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime service authority dossier verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_framework_runtime_service_authority_dossier(
+        dossier,
+        provider_receipt=provider_receipt,
+        **sources,
+        root=args.root,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified framework runtime service authority dossier: {args.dossier}")
+        print(f"dossier id: {dossier['dossier_id']}")
+        print(f"covered authority requirements: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"framework runtime service authority dossier verification failed: {args.dossier}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_framework_runtime_service_authority_append(args: argparse.Namespace) -> int:
+    try:
+        dossier = load_framework_runtime_service_authority_dossier(args.dossier)
+        sources = _load_framework_runtime_service_authority_sources(args, require_all=True)
+        provider_receipt = sources.pop("provider_receipt")
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime service authority dossier append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_framework_runtime_service_authority_dossier(
+            chain,
+            dossier,
+            provider_receipt=provider_receipt,
+            **sources,
+            root=args.root,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"framework runtime service authority dossier append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"framework runtime service authority entry: {args.out}")
+    print(f"framework runtime service authority entry id: {entry['entry_id']}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
 def cmd_mcp_capture(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
     calls = load_mcp_transcript(args.transcript)
@@ -13236,6 +13368,62 @@ def build_parser() -> argparse.ArgumentParser:
     framework_runtime_service_provider_append.add_argument("--key")
     _add_state_args(framework_runtime_service_provider_append)
     framework_runtime_service_provider_append.set_defaults(func=cmd_framework_runtime_service_provider_append)
+
+    def _add_framework_runtime_service_authority_source_args(parser: argparse.ArgumentParser, *, required: bool) -> None:
+        parser.add_argument("--provider-receipt", required=required)
+        _add_framework_runtime_service_provider_source_args(parser, required=required)
+
+    authority_evidence_help = (
+        "repeatable requirement_id,authority_kind,evidence_ref,evidence_hash,"
+        "description[;issuer=...;subject=...;source_uri=...;issued_at=...;expires_at=...]"
+    )
+    framework_runtime_service_authority = subparsers.add_parser(
+        "framework-runtime-service-authority", help="write a signed framework runtime service production-authority dossier"
+    )
+    framework_runtime_service_authority.add_argument("provider_receipt")
+    _add_framework_runtime_service_provider_source_args(framework_runtime_service_authority, required=True)
+    framework_runtime_service_authority.add_argument("--root", default=".")
+    framework_runtime_service_authority.add_argument(
+        "--mode", choices=["local-dossier", "provider-dossier", "production-dossier"], default="provider-dossier"
+    )
+    framework_runtime_service_authority.add_argument("--environment", default="local")
+    framework_runtime_service_authority.add_argument("--dossier-ref", required=True)
+    framework_runtime_service_authority.add_argument("--authority-ref", required=True)
+    framework_runtime_service_authority.add_argument("--producer-ref", required=True)
+    framework_runtime_service_authority.add_argument("--authority-evidence", action="append", default=[], help=authority_evidence_help)
+    framework_runtime_service_authority.add_argument("--generated-at")
+    framework_runtime_service_authority.add_argument("--require-complete", action="store_true")
+    framework_runtime_service_authority.add_argument("--require-fresh", action="store_true")
+    framework_runtime_service_authority.add_argument("--now")
+    framework_runtime_service_authority.add_argument("--out", default="artifacts/framework-runtime-service-authority.json")
+    framework_runtime_service_authority.add_argument("--key")
+    framework_runtime_service_authority.set_defaults(func=cmd_framework_runtime_service_authority)
+
+    framework_runtime_service_authority_verify = subparsers.add_parser(
+        "framework-runtime-service-authority-verify", help="verify a signed framework runtime service production-authority dossier"
+    )
+    framework_runtime_service_authority_verify.add_argument("dossier")
+    _add_framework_runtime_service_authority_source_args(framework_runtime_service_authority_verify, required=False)
+    framework_runtime_service_authority_verify.add_argument("--root", default=".")
+    framework_runtime_service_authority_verify.add_argument("--require-complete", action="store_true")
+    framework_runtime_service_authority_verify.add_argument("--require-fresh", action="store_true")
+    framework_runtime_service_authority_verify.add_argument("--now")
+    framework_runtime_service_authority_verify.add_argument("--key")
+    framework_runtime_service_authority_verify.set_defaults(func=cmd_framework_runtime_service_authority_verify)
+
+    framework_runtime_service_authority_append = subparsers.add_parser(
+        "framework-runtime-service-authority-append", help="append a framework runtime service production-authority dossier as chain evidence"
+    )
+    framework_runtime_service_authority_append.add_argument("dossier")
+    _add_framework_runtime_service_authority_source_args(framework_runtime_service_authority_append, required=True)
+    framework_runtime_service_authority_append.add_argument("--root", default=".")
+    framework_runtime_service_authority_append.add_argument("--require-complete", action="store_true")
+    framework_runtime_service_authority_append.add_argument("--require-fresh", action="store_true")
+    framework_runtime_service_authority_append.add_argument("--now")
+    framework_runtime_service_authority_append.add_argument("--out", default="artifacts/framework-runtime-service-authority-entry.json")
+    framework_runtime_service_authority_append.add_argument("--key")
+    _add_state_args(framework_runtime_service_authority_append)
+    framework_runtime_service_authority_append.set_defaults(func=cmd_framework_runtime_service_authority_append)
     mcp = subparsers.add_parser("mcp-capture", help="append MCP tool call transcripts to the chain")
     mcp.add_argument("transcript")
     _add_state_args(mcp)
