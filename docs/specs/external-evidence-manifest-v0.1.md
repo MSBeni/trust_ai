@@ -117,14 +117,14 @@ self-contained artifact for third-party review. It embeds:
 
 - the evidence-chain snapshot (`spec_version`, tenant ID, tree, and entries),
 - the roadmap evidence report generated from that chain or supplied with `--report`,
-- a summary binding the report hash, report ID, chain tree, and evidence counts,
+- optional embedded source artifacts supplied with `--source-artifact` (`roadmap-audit`, `external-evidence-manifest`, `external-evidence-file`, or `other`) as repository-relative paths, SHA-256 hashes, and base64 content,
+- a summary binding the report hash, report ID, chain tree, evidence counts, and embedded source-artifact count,
 - explicit limitations for live authority claims.
 
 `roadmap-evidence-bundle-verify` requires no separate chain state path. It
 recomputes `bundle_id`, reconstructs the embedded evidence chain, verifies that
 the embedded tree matches the entries, verifies the report against that embedded
-chain with the same strictness options, and rejects stale or tampered bundle
-summaries.
+chain with the same strictness options, decodes and rehashes embedded source artifacts, confirms embedded roadmap-audit and external-evidence-manifest JSON artifacts are committed to the bundled chain by content hash, warns when embedded external-evidence-file artifacts are not referenced by an embedded manifest, and rejects stale or tampered bundle summaries.
 
 ## Verification Rules
 

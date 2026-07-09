@@ -603,6 +603,7 @@ from .external_evidence import (
     load_roadmap_evidence_bundle,
     load_roadmap_evidence_report,
     parse_evidence_arg,
+    parse_bundle_source_artifact_arg,
     verify_external_evidence_manifest,
     verify_roadmap_evidence_chain,
     verify_roadmap_evidence_bundle,
@@ -6884,13 +6885,20 @@ def cmd_roadmap_evidence_report_verify(args: argparse.Namespace) -> int:
 def cmd_roadmap_evidence_bundle(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
     report = load_roadmap_evidence_report(args.report) if args.report else None
-    bundle = build_roadmap_evidence_bundle(
-        chain,
-        key=args.key,
-        require_external=args.require_external or args.require_complete,
-        require_complete=args.require_complete,
-        report=report,
-    )
+    try:
+        source_artifacts = [parse_bundle_source_artifact_arg(item) for item in args.source_artifact]
+        bundle = build_roadmap_evidence_bundle(
+            chain,
+            key=args.key,
+            require_external=args.require_external or args.require_complete,
+            require_complete=args.require_complete,
+            report=report,
+            root=args.root,
+            source_artifacts=source_artifacts,
+        )
+    except ValueError as exc:
+        print(f"roadmap evidence bundle failed: {exc}", file=sys.stderr)
+        return 2
     result = verify_roadmap_evidence_bundle(
         bundle,
         key=args.key,
@@ -6911,6 +6919,7 @@ def cmd_roadmap_evidence_bundle(args: argparse.Namespace) -> int:
     print(f"bundle id: {bundle['bundle_id']}")
     print(f"report id: {summary['report_id']}")
     print(f"chain entries: {summary['chain_entry_count']}")
+    print(f"source artifacts: {summary.get('source_artifact_count', 0)}")
     print(f"tree root: {summary['chain_tree']['root']}")
     for warning in result.warnings:
         print(f"warning: {warning}")
@@ -13158,6 +13167,8 @@ def build_parser() -> argparse.ArgumentParser:
     roadmap_evidence_bundle.add_argument("--require-external", action="store_true")
     roadmap_evidence_bundle.add_argument("--require-complete", action="store_true")
     roadmap_evidence_bundle.add_argument("--report", help="verified roadmap evidence report to embed; generated when omitted")
+    roadmap_evidence_bundle.add_argument("--root", default=".")
+    roadmap_evidence_bundle.add_argument("--source-artifact", action="append", default=[], help="kind,path,description")
     roadmap_evidence_bundle.add_argument("--out", default="artifacts/roadmap-evidence-bundle.json")
     roadmap_evidence_bundle.add_argument("--markdown", default="artifacts/roadmap-evidence-bundle.md")
     roadmap_evidence_bundle.set_defaults(func=cmd_roadmap_evidence_bundle)

@@ -18,6 +18,7 @@ from trustai.external_evidence import (
     load_roadmap_evidence_report,
     load_roadmap_evidence_bundle,
     parse_evidence_arg,
+    parse_bundle_source_artifact_arg,
     render_external_evidence_markdown,
     render_roadmap_evidence_markdown,
     render_roadmap_evidence_bundle_markdown,
@@ -116,6 +117,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertTrue(bundle_result.ok, bundle_result.errors)
             self.assertEqual(report["report_id"], bundle["summary"]["report_id"])
             self.assertEqual(2, bundle["summary"]["chain_entry_count"])
+            self.assertEqual(0, bundle["summary"]["source_artifact_count"])
             self.assertIn("TrustAI Roadmap Evidence Bundle", bundle_markdown)
 
             tampered_bundle = copy.deepcopy(bundle)
@@ -323,6 +325,12 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     "--require-external",
                     "--report",
                     str(report_path),
+                    "--root",
+                    str(tmp_path),
+                    "--source-artifact",
+                    f"roadmap-audit,{audit_path.name},Generated roadmap audit JSON",
+                    "--source-artifact",
+                    f"external-evidence-manifest,{manifest_path.name},Generated external evidence manifest JSON",
                     "--out",
                     str(bundle_path),
                     "--markdown",
@@ -353,7 +361,15 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertTrue(report_markdown_path.exists())
             bundle = load_roadmap_evidence_bundle(bundle_path)
             self.assertEqual(report["report_id"], bundle["summary"]["report_id"])
+            self.assertEqual(2, bundle["summary"]["source_artifact_count"])
+            self.assertEqual(["roadmap-audit", "external-evidence-manifest"], [artifact["kind"] for artifact in bundle["source_artifacts"]])
             self.assertTrue(bundle_markdown_path.exists())
+            self.assertIn("Embedded source artifacts: 2", bundle_markdown_path.read_text(encoding="utf-8"))
+            tampered_bundle = copy.deepcopy(bundle)
+            tampered_bundle["source_artifacts"][0]["sha256"] = "sha256:" + "0" * 64
+            tampered_result = verify_roadmap_evidence_bundle(tampered_bundle, require_external=True)
+            self.assertFalse(tampered_result.ok)
+            self.assertTrue(any("source artifact" in error for error in tampered_result.errors))
 
     def test_complete_external_evidence_manifest_covers_reference_requirements(self):
         audit = build_roadmap_audit(ROOT)
@@ -420,6 +436,17 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual("oss-verifier-and-public-spec", parsed["requirement_id"])
         self.assertEqual("ci-run", parsed["authority_kind"])
         self.assertEqual(FIXTURE, parsed["path"])
+
+    def test_parse_bundle_source_artifact_arg(self):
+        parsed = parse_bundle_source_artifact_arg(
+            "roadmap-audit,artifacts/roadmap-audit.json,Generated roadmap audit JSON"
+        )
+
+        self.assertEqual("roadmap-audit", parsed["kind"])
+        self.assertEqual("artifacts/roadmap-audit.json", parsed["path"])
+        self.assertEqual("Generated roadmap audit JSON", parsed["description"])
+        with self.assertRaisesRegex(ValueError, "source artifact"):
+            parse_bundle_source_artifact_arg("roadmap-audit,artifacts/roadmap-audit.json")
 
 
 if __name__ == "__main__":

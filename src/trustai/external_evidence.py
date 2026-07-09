@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import base64
+import binascii
 import json
 from dataclasses import dataclass
 from hashlib import sha256
@@ -15,6 +17,14 @@ EXTERNAL_EVIDENCE_SCHEMA = "trustai.external-evidence-manifest/0.1"
 EXTERNAL_EVIDENCE_ENTRY_TYPE = "trustai.external_evidence_manifest.attested"
 ROADMAP_EVIDENCE_REPORT_SCHEMA = "trustai.roadmap-evidence-report/0.1"
 ROADMAP_EVIDENCE_BUNDLE_SCHEMA = "trustai.roadmap-evidence-bundle/0.1"
+
+BUNDLE_SOURCE_ARTIFACT_KINDS = {
+    "roadmap-audit",
+    "external-evidence-manifest",
+    "external-evidence-file",
+    "other",
+}
+
 
 AUTHORITY_KINDS = {
     "ci-run",
@@ -355,6 +365,8 @@ def build_roadmap_evidence_bundle(
     require_complete: bool = False,
     generated_at: str | None = None,
     report: dict[str, Any] | None = None,
+    root: str | Path = ".",
+    source_artifacts: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     timestamp = generated_at or utc_now()
     if report is None:
@@ -367,6 +379,7 @@ def build_roadmap_evidence_bundle(
         )
     else:
         report = json.loads(json.dumps(report, sort_keys=True))
+    embedded_source_artifacts = _build_bundle_source_artifacts(Path(root), source_artifacts or [])
     body = {
         "schema": ROADMAP_EVIDENCE_BUNDLE_SCHEMA,
         "generated_at": timestamp,
@@ -376,9 +389,10 @@ def build_roadmap_evidence_bundle(
         },
         "chain": _roadmap_evidence_chain_document(chain),
         "report": report,
-        "summary": _roadmap_evidence_bundle_summary(chain, report),
+        "source_artifacts": embedded_source_artifacts,
+        "summary": _roadmap_evidence_bundle_summary(chain, report, embedded_source_artifacts),
         "limitations": [
-            "This bundle is self-contained for offline chain and roadmap evidence verification.",
+            "This bundle is self-contained for offline chain and roadmap evidence verification when all required source artifacts are embedded.",
             "It does not include live provider API, KMS/HSM, TSA, cloud object-lock, regulator, insurer, or standards-body fetches.",
             "External authority claims remain bounded by the evidence entries and artifacts already committed to the bundled chain.",
         ],
@@ -425,11 +439,14 @@ def verify_roadmap_evidence_bundle(
         if not report_result.ok:
             errors.extend(f"report: {error}" for error in report_result.errors)
         warnings.extend(report_result.warnings)
-        expected_summary = _roadmap_evidence_bundle_summary(chain, report)
+        source_artifacts = bundle.get("source_artifacts", [])
+        _verify_bundle_source_artifacts(chain, source_artifacts, errors, warnings)
+        expected_summary = _roadmap_evidence_bundle_summary(chain, report, source_artifacts if isinstance(source_artifacts, list) else [])
         if bundle.get("summary") != expected_summary:
             errors.append("bundle summary does not match bundled chain and report")
 
     return RoadmapEvidenceBundleVerification(ok=not errors, errors=errors, warnings=warnings)
+
 
 def append_external_evidence_manifest(
     chain: EvidenceChain,
@@ -480,6 +497,13 @@ def parse_evidence_arg(value: str) -> dict[str, Any]:
         "description": description,
     }
 
+
+def parse_bundle_source_artifact_arg(value: str) -> dict[str, Any]:
+    parts = value.split(",", 2)
+    if len(parts) != 3:
+        raise ValueError("source artifact must be kind,path,description")
+    kind, path, description = [part.strip() for part in parts]
+    return {"kind": kind, "path": path, "description": description}
 
 def write_external_evidence_manifest(path: str | Path, manifest: dict[str, Any]) -> None:
     target = Path(path)
@@ -664,11 +688,13 @@ Semantic verification: {"passed" if report_verification.get("ok") else "failed"}
 - Roadmap audit entries: {summary.get('roadmap_audit_entry_count', 0)}
 - External evidence entries: {summary.get('external_evidence_entry_count', 0)}
 - Complete external evidence entries: {summary.get('complete_external_evidence_entry_count', 0)}
+- Embedded source artifacts: {summary.get('source_artifact_count', 0)}
 
 ## Limitations
 
 {limitations or "- None"}
 """
+
 
 def _roadmap_evidence_chain_record(chain: EvidenceChain) -> dict[str, Any]:
     return {
@@ -708,7 +734,117 @@ def _roadmap_evidence_chain_from_document(document: Any, errors: list[str]) -> E
     return chain
 
 
-def _roadmap_evidence_bundle_summary(chain: EvidenceChain, report: dict[str, Any]) -> dict[str, Any]:
+def _build_bundle_source_artifacts(root: Path, source_artifacts: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    artifacts: list[dict[str, Any]] = []
+    for item in source_artifacts:
+        kind = str(item.get("kind") or "")
+        path = str(item.get("path") or "")
+        if kind not in BUNDLE_SOURCE_ARTIFACT_KINDS:
+            raise ValueError(f"unsupported bundle source artifact kind: {kind}")
+        if not path:
+            raise ValueError("bundle source artifact path is required")
+        if not _is_safe_relative_path(path):
+            raise ValueError(f"bundle source artifact path must be repository-relative: {path}")
+        target = root / path
+        if not target.exists() or not target.is_file():
+            raise ValueError(f"bundle source artifact file is missing: {path}")
+        data = target.read_bytes()
+        body = {
+            "kind": kind,
+            "path": Path(path).as_posix(),
+            "sha256": "sha256:" + sha256(data).hexdigest(),
+            "content_b64": base64.b64encode(data).decode("ascii"),
+            "description": str(item.get("description") or ""),
+        }
+        artifacts.append({**body, "artifact_id": content_hash(body)})
+    return artifacts
+
+
+def _verify_bundle_source_artifacts(
+    chain: EvidenceChain,
+    source_artifacts: Any,
+    errors: list[str],
+    warnings: list[str],
+) -> None:
+    if not isinstance(source_artifacts, list):
+        errors.append("bundle source_artifacts must be a list")
+        return
+    manifest_evidence_refs: set[tuple[str, str]] = set()
+    decoded_artifacts: list[tuple[dict[str, Any], bytes]] = []
+    for artifact in source_artifacts:
+        if not isinstance(artifact, dict):
+            errors.append("bundle source artifact must be an object")
+            continue
+        body = without_keys(artifact, "artifact_id")
+        if artifact.get("artifact_id") != content_hash(body):
+            errors.append(f"bundle source artifact id mismatch: {artifact.get('path')}")
+        kind = artifact.get("kind")
+        if kind not in BUNDLE_SOURCE_ARTIFACT_KINDS:
+            errors.append(f"unsupported bundle source artifact kind: {kind}")
+        path = artifact.get("path")
+        if not isinstance(path, str) or not path:
+            errors.append("bundle source artifact path is required")
+        elif not _is_safe_relative_path(path):
+            errors.append(f"bundle source artifact path must be repository-relative: {path}")
+        try:
+            data = base64.b64decode(str(artifact.get("content_b64") or ""), validate=True)
+        except (binascii.Error, ValueError):
+            errors.append(f"bundle source artifact content_b64 invalid: {path}")
+            continue
+        actual_sha = "sha256:" + sha256(data).hexdigest()
+        if artifact.get("sha256") != actual_sha:
+            errors.append(f"bundle source artifact hash mismatch: {path}")
+        decoded_artifacts.append((artifact, data))
+        if kind == "external-evidence-manifest":
+            manifest = _json_source_artifact(artifact, data, errors)
+            if isinstance(manifest, dict):
+                for evidence in manifest.get("evidence", []):
+                    if isinstance(evidence, dict) and evidence.get("path") and evidence.get("sha256"):
+                        manifest_evidence_refs.add((str(evidence.get("path")), str(evidence.get("sha256"))))
+                if not _chain_has_external_manifest(chain, content_hash(manifest)):
+                    errors.append(f"external evidence manifest artifact is not committed to bundled chain: {path}")
+        elif kind == "roadmap-audit":
+            audit = _json_source_artifact(artifact, data, errors)
+            if isinstance(audit, dict) and not _chain_has_roadmap_audit(chain, content_hash(audit)):
+                errors.append(f"roadmap audit artifact is not committed to bundled chain: {path}")
+    for artifact, _data in decoded_artifacts:
+        if artifact.get("kind") != "external-evidence-file":
+            continue
+        ref = (str(artifact.get("path")), str(artifact.get("sha256")))
+        if ref not in manifest_evidence_refs:
+            warnings.append(f"external evidence file artifact is not referenced by an embedded manifest: {artifact.get('path')}")
+
+
+def _json_source_artifact(artifact: dict[str, Any], data: bytes, errors: list[str]) -> dict[str, Any] | None:
+    try:
+        parsed = json.loads(data.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        errors.append(f"bundle source artifact JSON invalid: {artifact.get('path')}: {exc}")
+        return None
+    if not isinstance(parsed, dict):
+        errors.append(f"bundle source artifact JSON must be an object: {artifact.get('path')}")
+        return None
+    return parsed
+
+
+def _chain_has_roadmap_audit(chain: EvidenceChain, audit_hash: str) -> bool:
+    for entry in chain.entries:
+        payload = entry.get("payload", {})
+        if entry.get("entry_type") == ROADMAP_AUDIT_ENTRY_TYPE and isinstance(payload, dict):
+            if payload.get("audit_hash") == audit_hash:
+                return True
+    return False
+
+
+def _chain_has_external_manifest(chain: EvidenceChain, manifest_hash: str) -> bool:
+    for entry in chain.entries:
+        payload = entry.get("payload", {})
+        if entry.get("entry_type") == EXTERNAL_EVIDENCE_ENTRY_TYPE and isinstance(payload, dict):
+            if payload.get("manifest_hash") == manifest_hash:
+                return True
+    return False
+
+def _roadmap_evidence_bundle_summary(chain: EvidenceChain, report: dict[str, Any], source_artifacts: list[Any] | None = None) -> dict[str, Any]:
     report_summary = report.get("summary", {}) if isinstance(report, dict) else {}
     return {
         "report_id": report.get("report_id") if isinstance(report, dict) else None,
@@ -718,8 +854,10 @@ def _roadmap_evidence_bundle_summary(chain: EvidenceChain, report: dict[str, Any
         "roadmap_audit_entry_count": report_summary.get("roadmap_audit_entry_count"),
         "external_evidence_entry_count": report_summary.get("external_evidence_entry_count"),
         "complete_external_evidence_entry_count": report_summary.get("complete_external_evidence_entry_count"),
+        "source_artifact_count": len(source_artifacts or []),
         "semantic_ok": report_summary.get("semantic_ok"),
     }
+
 
 def _roadmap_evidence_summary(
     chain: EvidenceChain,
