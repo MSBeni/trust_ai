@@ -10026,6 +10026,8 @@ def _load_trust_network_service_sources(args: argparse.Namespace) -> dict[str, A
         "registry_status": registry_status,
         "marketplace_catalog": marketplace_catalog,
         "marketplace_distribution": marketplace_distribution,
+
+        "frontend_bundle_path": getattr(args, "frontend_bundle", None),
     }
 
 
@@ -10044,6 +10046,8 @@ def cmd_trust_network_service_attestation(args: argparse.Namespace) -> int:
             registry_status_receipt=sources["registry_status"],
             marketplace_catalog=sources["marketplace_catalog"],
             marketplace_distribution=sources["marketplace_distribution"],
+
+            frontend_bundle_path=sources["frontend_bundle_path"],
             root=args.root,
             mode=args.mode,
             environment=args.environment,
@@ -10117,6 +10121,8 @@ def cmd_trust_network_service_attestation(args: argparse.Namespace) -> int:
         registry_status_receipt=sources["registry_status"],
         marketplace_catalog=sources["marketplace_catalog"],
         marketplace_distribution=sources["marketplace_distribution"],
+
+        frontend_bundle_path=sources["frontend_bundle_path"],
         root=args.root,
         now=args.now,
         key=args.key,
@@ -10152,6 +10158,8 @@ def cmd_trust_network_service_verify(args: argparse.Namespace) -> int:
         registry_status_receipt=sources["registry_status"],
         marketplace_catalog=sources["marketplace_catalog"],
         marketplace_distribution=sources["marketplace_distribution"],
+
+        frontend_bundle_path=sources["frontend_bundle_path"],
         root=args.root,
         now=args.now,
         key=args.key,
@@ -10186,6 +10194,8 @@ def cmd_trust_network_service_append(args: argparse.Namespace) -> int:
             registry_status_receipt=sources["registry_status"],
             marketplace_catalog=sources["marketplace_catalog"],
             marketplace_distribution=sources["marketplace_distribution"],
+
+            frontend_bundle_path=sources["frontend_bundle_path"],
             root=args.root,
             now=args.now,
             key=args.key,
@@ -10227,6 +10237,8 @@ def cmd_trust_network_worker(args: argparse.Namespace) -> int:
             registry_status_receipt=sources["registry_status"],
             marketplace_catalog=sources["marketplace_catalog"],
             marketplace_distribution=sources["marketplace_distribution"],
+
+            frontend_bundle_path=sources["frontend_bundle_path"],
             marketplace_author_governance=sources["marketplace_author_governance"],
             marketplace_settlement=sources["marketplace_settlement"],
             root=args.root,
@@ -10289,6 +10301,8 @@ def cmd_trust_network_worker(args: argparse.Namespace) -> int:
         registry_status_receipt=sources["registry_status"],
         marketplace_catalog=sources["marketplace_catalog"],
         marketplace_distribution=sources["marketplace_distribution"],
+
+        frontend_bundle_path=sources["frontend_bundle_path"],
         marketplace_author_governance=sources["marketplace_author_governance"],
         marketplace_settlement=sources["marketplace_settlement"],
         root=args.root,
@@ -10325,6 +10339,8 @@ def cmd_trust_network_worker_verify(args: argparse.Namespace) -> int:
         registry_status_receipt=sources["registry_status"],
         marketplace_catalog=sources["marketplace_catalog"],
         marketplace_distribution=sources["marketplace_distribution"],
+
+        frontend_bundle_path=sources["frontend_bundle_path"],
         marketplace_author_governance=sources["marketplace_author_governance"],
         marketplace_settlement=sources["marketplace_settlement"],
         root=args.root,
@@ -10362,6 +10378,8 @@ def cmd_trust_network_worker_append(args: argparse.Namespace) -> int:
             registry_status_receipt=sources["registry_status"],
             marketplace_catalog=sources["marketplace_catalog"],
             marketplace_distribution=sources["marketplace_distribution"],
+
+            frontend_bundle_path=sources["frontend_bundle_path"],
             marketplace_author_governance=sources["marketplace_author_governance"],
             marketplace_settlement=sources["marketplace_settlement"],
             root=args.root,
@@ -14582,6 +14600,8 @@ def build_parser() -> argparse.ArgumentParser:
         parser.add_argument("--registry-status")
         parser.add_argument("--marketplace-catalog")
         parser.add_argument("--marketplace-distribution")
+
+        parser.add_argument("--frontend-bundle")
         parser.add_argument("--root", default=".")
         parser.add_argument("--now")
         parser.add_argument("--key")

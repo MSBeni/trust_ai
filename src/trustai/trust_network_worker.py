@@ -61,6 +61,7 @@ def build_trust_network_worker_receipt(
     registry_status_receipt: dict[str, Any] | None = None,
     marketplace_catalog: dict[str, Any] | None = None,
     marketplace_distribution: dict[str, Any] | None = None,
+    frontend_bundle_path: str | Path | None = None,
     marketplace_author_governance: dict[str, Any] | None = None,
     marketplace_settlement: dict[str, Any] | None = None,
     root: str | Path = ".",
@@ -173,6 +174,7 @@ def build_trust_network_worker_receipt(
             registry_status_receipt=registry_status_receipt,
             marketplace_catalog=marketplace_catalog,
             marketplace_distribution=marketplace_distribution,
+            frontend_bundle_path=frontend_bundle_path,
             root=root,
             key=key,
         )
@@ -336,6 +338,7 @@ def verify_trust_network_worker_receipt(
     registry_status_receipt: dict[str, Any] | None = None,
     marketplace_catalog: dict[str, Any] | None = None,
     marketplace_distribution: dict[str, Any] | None = None,
+    frontend_bundle_path: str | Path | None = None,
     marketplace_author_governance: dict[str, Any] | None = None,
     marketplace_settlement: dict[str, Any] | None = None,
     root: str | Path = ".",
@@ -400,6 +403,7 @@ def verify_trust_network_worker_receipt(
                 registry_status_receipt=registry_status_receipt,
                 marketplace_catalog=marketplace_catalog,
                 marketplace_distribution=marketplace_distribution,
+                frontend_bundle_path=frontend_bundle_path,
                 root=root,
                 key=key,
             )
@@ -473,6 +477,7 @@ def append_trust_network_worker_receipt(
     registry_status_receipt: dict[str, Any] | None = None,
     marketplace_catalog: dict[str, Any] | None = None,
     marketplace_distribution: dict[str, Any] | None = None,
+    frontend_bundle_path: str | Path | None = None,
     marketplace_author_governance: dict[str, Any] | None = None,
     marketplace_settlement: dict[str, Any] | None = None,
     root: str | Path = ".",
@@ -494,6 +499,7 @@ def append_trust_network_worker_receipt(
         marketplace_distribution=marketplace_distribution,
         marketplace_author_governance=marketplace_author_governance,
         marketplace_settlement=marketplace_settlement,
+        frontend_bundle_path=frontend_bundle_path,
         root=root,
         key=key,
     )

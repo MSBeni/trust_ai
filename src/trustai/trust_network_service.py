@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
@@ -53,6 +54,7 @@ def build_trust_network_service_attestation(
     registry_status_receipt: dict[str, Any] | None = None,
     marketplace_catalog: dict[str, Any] | None = None,
     marketplace_distribution: dict[str, Any] | None = None,
+    frontend_bundle_path: str | Path | None = None,
     root: str | Path = ".",
     mode: str = "hosted-service-attested",
     environment: str = "local",
@@ -225,6 +227,12 @@ def build_trust_network_service_attestation(
         marketplace_catalog=marketplace_catalog,
         marketplace_distribution=marketplace_distribution,
     )
+    frontend_bundle_artifact = None
+    if frontend_bundle_path is not None:
+        frontend_bundle_artifact = _frontend_bundle_artifact(frontend_bundle_path)
+        if _normalize_sha256_ref(frontend_bundle_hash) != frontend_bundle_artifact["hash"]:
+            raise ValueError("frontend_bundle_hash does not match supplied trust-network frontend bundle")
+        source_artifacts.append(frontend_bundle_artifact)
     service = {
         "service_ref": service_ref,
         "version": service_version,
@@ -236,6 +244,7 @@ def build_trust_network_service_attestation(
         "service_binary_hash": service_binary_hash,
         "frontend_bundle_ref": frontend_bundle_ref,
         "frontend_bundle_hash": frontend_bundle_hash,
+        "frontend_bundle_artifact_hash": frontend_bundle_artifact["hash"] if frontend_bundle_artifact else None,
         "api_ref": api_ref,
         "registry_store_ref": registry_store_ref,
         "search_index_ref": search_index_ref,
@@ -328,6 +337,7 @@ def verify_trust_network_service_attestation(
     registry_status_receipt: dict[str, Any] | None = None,
     marketplace_catalog: dict[str, Any] | None = None,
     marketplace_distribution: dict[str, Any] | None = None,
+    frontend_bundle_path: str | Path | None = None,
     root: str | Path = ".",
     now: str | None = None,
     key: str | None = None,
@@ -382,6 +392,22 @@ def verify_trust_network_service_attestation(
         marketplace_catalog=marketplace_catalog,
         marketplace_distribution=marketplace_distribution,
     )
+    if frontend_bundle_path is not None:
+        try:
+            frontend_bundle_artifact = _frontend_bundle_artifact(frontend_bundle_path)
+        except OSError as exc:
+            errors.append(f"trust-network service frontend bundle source could not be read: {exc}")
+        else:
+            supplied_records.append(frontend_bundle_artifact)
+            service = attestation.get("service")
+            expected_hash = service.get("frontend_bundle_hash") if isinstance(service, dict) else None
+            if _normalize_sha256_ref(str(expected_hash or "")) != frontend_bundle_artifact["hash"]:
+                errors.append("trust-network service service.frontend_bundle_hash does not match supplied frontend bundle")
+            artifact_hash = service.get("frontend_bundle_artifact_hash") if isinstance(service, dict) else None
+            if artifact_hash is not None and artifact_hash != frontend_bundle_artifact["hash"]:
+                errors.append("trust-network service service.frontend_bundle_artifact_hash does not match supplied frontend bundle")
+    else:
+        warnings.append("trust-network frontend bundle source was not supplied; bundle hash was not replayed")
     if supplied_records and source_artifacts:
         for expected in supplied_records:
             actual = _artifact_by_type(source_artifacts, str(expected.get("type")))
@@ -469,6 +495,7 @@ def append_trust_network_service_attestation(
     registry_status_receipt: dict[str, Any] | None = None,
     marketplace_catalog: dict[str, Any] | None = None,
     marketplace_distribution: dict[str, Any] | None = None,
+    frontend_bundle_path: str | Path | None = None,
     root: str | Path = ".",
     now: str | None = None,
     key: str | None = None,
@@ -486,6 +513,7 @@ def append_trust_network_service_attestation(
         registry_status_receipt=registry_status_receipt,
         marketplace_catalog=marketplace_catalog,
         marketplace_distribution=marketplace_distribution,
+        frontend_bundle_path=frontend_bundle_path,
         root=root,
         now=now,
         key=key,
@@ -525,6 +553,27 @@ def _source_artifacts(
         if isinstance(value, dict):
             records.append({"type": name, "id": _source_id(value), "schema": value.get("schema"), "hash": content_hash(value)})
     return records
+
+
+def _frontend_bundle_artifact(path: str | Path) -> dict[str, Any]:
+    source = Path(path)
+    data = source.read_bytes()
+    suffix = source.suffix.lower()
+    if suffix == ".js":
+        schema = "application/javascript"
+    elif suffix == ".css":
+        schema = "text/css"
+    elif suffix in {".html", ".htm"}:
+        schema = "text/html"
+    else:
+        schema = "application/octet-stream"
+    return {
+        "type": "frontend-bundle",
+        "id": str(path),
+        "schema": schema,
+        "hash": _sha256_ref(data),
+        "size_bytes": len(data),
+    }
 
 
 def _source_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
@@ -763,6 +812,7 @@ def _controls(
         {"id": "hosted-trust-network-service-identity", "status": "service-attested" if service.get("service_image_digest") and service.get("service_binary_hash") else "planned-production", "description": "Hosted trust-network service image, binary hash, endpoints, replica floor, and multi-zone evidence are bound."},
         {"id": "hosted-registry-publication-binding", "status": "service-attested" if registry.get("registration_id") and registry.get("registration_hash") else "planned-production", "description": "Signed registry publication receipt, registration reference, vendor, buyer, namespace, and source manifest binding are bound."},
         {"id": "vendor-identity-federation", "status": "service-attested" if security.get("identity_federation_policy_ref") and registry.get("identity_provider") else "planned-production", "description": "Vendor identity-provider binding and hosted identity federation policy evidence are bound."},
+        {"id": "trust-network-frontend-bundle-source-bound", "status": "service-attested" if service.get("frontend_bundle_artifact_hash") else "local-reference", "description": "Frontend bundle source bytes are replay-bound when a bundle artifact is supplied."},
         {"id": "procurement-entitlement-sync", "status": "service-attested" if registry.get("procurement_integration_id") and security.get("procurement_sync_policy_ref") and security.get("entitlement_policy_ref") else "planned-production", "description": "Procurement integration, entitlement store, subscriber authorization, and sync policy evidence are bound."},
         {"id": "marketplace-catalog-distribution-binding", "status": "service-attested" if marketplace.get("catalog_id") and marketplace.get("distribution_id") else "planned-production", "description": "Marketplace catalog, selected assets, subscriber, distribution receipt, target, and entitlement delivery evidence are bound."},
         {"id": "revocation-status-propagation", "status": "service-attested" if registry.get("status_id") and security.get("revocation_policy_ref") and security.get("cache_invalidation_policy_ref") else "planned-production", "description": "Registry status-change, revocation policy, cache invalidation, and propagation evidence are bound."},
@@ -812,6 +862,16 @@ def _check_no_secret_values(value: Any, errors: list[str], path: str = "") -> No
 def _require_text(value: Any, field: str) -> None:
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{field} is required")
+
+
+def _sha256_ref(data: bytes) -> str:
+    return "sha256:" + hashlib.sha256(data).hexdigest()
+
+
+def _normalize_sha256_ref(value: str) -> str:
+    if value.startswith("sha256:"):
+        return value
+    return "sha256:" + value
 
 
 def _is_sha256_ref(value: str) -> bool:

@@ -1,4 +1,5 @@
 import copy
+import hashlib
 import json
 import os
 import subprocess
@@ -35,6 +36,10 @@ POLICY = "examples/aitrade/policy-pack.json"
 
 def _write_json(path: Path, value: object) -> None:
     path.write_text(json.dumps(value, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def _sha256_ref(path: Path) -> str:
+    return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 class TrustNetworkServiceTests(unittest.TestCase):
@@ -94,7 +99,13 @@ class TrustNetworkServiceTests(unittest.TestCase):
             subscriber_ref="oidc:buyer.example/procurement",
             distributed_at="2026-07-14T02:00:00Z",
         )
-        return pack, manifest, vendor, identity_payload, identity_attestation, procurement, integration, registry, status, catalog, distribution
+        frontend_bundle_path = tmp / "trust-network.bundle.js"
+        frontend_bundle_path.write_text(
+            "export const trustNetworkPortal = {kind: 'registry-marketplace', channel: 'buyer'};\n",
+            encoding="utf-8",
+        )
+        frontend_bundle_hash = _sha256_ref(frontend_bundle_path)
+        return pack, manifest, vendor, identity_payload, identity_attestation, procurement, integration, registry, status, catalog, distribution, frontend_bundle_path, frontend_bundle_hash
 
     def _attestation(self, registry, status, catalog, distribution, **overrides):
         values = {
@@ -158,12 +169,14 @@ class TrustNetworkServiceTests(unittest.TestCase):
             "now": "2026-07-15T00:00:00Z",
         }
         values.update(overrides)
+        if values.get("frontend_bundle_path") is not None and "frontend_bundle_hash" not in overrides:
+            values["frontend_bundle_hash"] = _sha256_ref(Path(values["frontend_bundle_path"]))
         return build_trust_network_service_attestation(**values)
 
     def test_trust_network_service_verifies_and_appends(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)
-            pack, manifest, vendor, identity_payload, identity_attestation, procurement, integration, registry, status, catalog, distribution = self._sources(tmp)
+            pack, manifest, vendor, identity_payload, identity_attestation, procurement, integration, registry, status, catalog, distribution, frontend_bundle_path, frontend_bundle_hash = self._sources(tmp)
             attestation = self._attestation(
                 registry,
                 status,
@@ -176,6 +189,7 @@ class TrustNetworkServiceTests(unittest.TestCase):
                 procurement_receipt=procurement,
                 procurement_integration_receipt=integration,
                 proof_packs=[pack],
+            frontend_bundle_path=frontend_bundle_path,
             )
 
             result = verify_trust_network_service_attestation(
@@ -191,6 +205,7 @@ class TrustNetworkServiceTests(unittest.TestCase):
                 registry_status_receipt=status,
                 marketplace_catalog=catalog,
                 marketplace_distribution=distribution,
+                frontend_bundle_path=frontend_bundle_path,
                 root=ROOT,
                 now="2026-07-15T00:00:00Z",
             )
@@ -209,6 +224,7 @@ class TrustNetworkServiceTests(unittest.TestCase):
                 registry_status_receipt=status,
                 marketplace_catalog=catalog,
                 marketplace_distribution=distribution,
+                frontend_bundle_path=frontend_bundle_path,
                 root=ROOT,
                 now="2026-07-15T00:00:00Z",
             )
@@ -219,13 +235,33 @@ class TrustNetworkServiceTests(unittest.TestCase):
             self.assertEqual(status["status_id"], attestation["registry"]["status_id"])
             self.assertEqual(distribution["distribution_id"], attestation["marketplace"]["distribution_id"])
             self.assertEqual("env:MARKETPLACE_API_TOKEN", attestation["operation_actor"]["marketplace_credential"]["ref"])
+            self.assertEqual(frontend_bundle_hash, attestation["service"]["frontend_bundle_hash"])
+            self.assertEqual(frontend_bundle_hash, attestation["service"]["frontend_bundle_artifact_hash"])
+            self.assertIn("frontend-bundle", attestation["source"]["required_types"])
             self.assertEqual(TRUST_NETWORK_SERVICE_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(attestation["attestation_id"], entry["payload"]["attestation_id"])
             self.assertTrue(chain.verify_all().ok)
 
-    def test_trust_network_service_rejects_source_mismatch(self):
+    def test_trust_network_service_rejects_frontend_bundle_mismatch(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
-            pack, manifest, vendor, identity_payload, identity_attestation, procurement, integration, registry, status, catalog, distribution = self._sources(Path(tmp_dir))
+            pack, manifest, vendor, identity_payload, identity_attestation, procurement, integration, registry, status, catalog, distribution, frontend_bundle_path, _ = self._sources(Path(tmp_dir))
+            with self.assertRaisesRegex(ValueError, "frontend_bundle_hash does not match supplied trust-network frontend bundle"):
+                self._attestation(
+                    registry,
+                    status,
+                    catalog,
+                    distribution,
+                    trust_network_manifest=manifest,
+                    vendor_identity_receipt=vendor,
+                    identity_provider_attestation=identity_attestation,
+                    identity_payload=identity_payload,
+                    procurement_receipt=procurement,
+                    procurement_integration_receipt=integration,
+                    proof_packs=[pack],
+                    frontend_bundle_path=frontend_bundle_path,
+                    frontend_bundle_hash="sha256:not-the-trust-network-bundle",
+                )
+
             attestation = self._attestation(
                 registry,
                 status,
@@ -238,6 +274,46 @@ class TrustNetworkServiceTests(unittest.TestCase):
                 procurement_receipt=procurement,
                 procurement_integration_receipt=integration,
                 proof_packs=[pack],
+                frontend_bundle_path=frontend_bundle_path,
+            )
+            frontend_bundle_path.write_text("export const trustNetworkPortal = {tampered: true};\n", encoding="utf-8")
+
+            result = verify_trust_network_service_attestation(
+                attestation,
+                registry,
+                trust_network_manifest=manifest,
+                vendor_identity_receipt=vendor,
+                identity_provider_attestation=identity_attestation,
+                identity_payload=identity_payload,
+                procurement_receipt=procurement,
+                procurement_integration_receipt=integration,
+                proof_packs=[pack],
+                registry_status_receipt=status,
+                marketplace_catalog=catalog,
+                marketplace_distribution=distribution,
+                frontend_bundle_path=frontend_bundle_path,
+                root=ROOT,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertIn("trust-network service service.frontend_bundle_hash does not match supplied frontend bundle", result.errors)
+
+    def test_trust_network_service_rejects_source_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            pack, manifest, vendor, identity_payload, identity_attestation, procurement, integration, registry, status, catalog, distribution, frontend_bundle_path, frontend_bundle_hash = self._sources(Path(tmp_dir))
+            attestation = self._attestation(
+                registry,
+                status,
+                catalog,
+                distribution,
+                trust_network_manifest=manifest,
+                vendor_identity_receipt=vendor,
+                identity_provider_attestation=identity_attestation,
+                identity_payload=identity_payload,
+                procurement_receipt=procurement,
+                procurement_integration_receipt=integration,
+                proof_packs=[pack],
+            frontend_bundle_path=frontend_bundle_path,
             )
             tampered = copy.deepcopy(distribution)
             tampered["subscriber"]["organization"] = "different-buyer"
@@ -264,7 +340,7 @@ class TrustNetworkServiceTests(unittest.TestCase):
 
     def test_trust_network_service_rejects_insecure_endpoint(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
-            _, manifest, vendor, identity_payload, identity_attestation, procurement, integration, registry, status, catalog, distribution = self._sources(Path(tmp_dir))
+            _, manifest, vendor, identity_payload, identity_attestation, procurement, integration, registry, status, catalog, distribution, frontend_bundle_path, frontend_bundle_hash = self._sources(Path(tmp_dir))
             attestation = self._attestation(
                 registry,
                 status,
@@ -277,6 +353,7 @@ class TrustNetworkServiceTests(unittest.TestCase):
                 identity_payload=identity_payload,
                 procurement_receipt=procurement,
                 procurement_integration_receipt=integration,
+            frontend_bundle_path=frontend_bundle_path,
             )
 
             result = verify_trust_network_service_attestation(attestation, registry, registry_status_receipt=status, marketplace_catalog=catalog, marketplace_distribution=distribution, root=ROOT)
@@ -286,7 +363,7 @@ class TrustNetworkServiceTests(unittest.TestCase):
 
     def test_trust_network_service_rejects_weak_replicas(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
-            _, manifest, vendor, identity_payload, identity_attestation, procurement, integration, registry, status, catalog, distribution = self._sources(Path(tmp_dir))
+            _, manifest, vendor, identity_payload, identity_attestation, procurement, integration, registry, status, catalog, distribution, frontend_bundle_path, frontend_bundle_hash = self._sources(Path(tmp_dir))
             attestation = self._attestation(
                 registry,
                 status,
@@ -300,6 +377,7 @@ class TrustNetworkServiceTests(unittest.TestCase):
                 identity_payload=identity_payload,
                 procurement_receipt=procurement,
                 procurement_integration_receipt=integration,
+            frontend_bundle_path=frontend_bundle_path,
             )
 
             result = verify_trust_network_service_attestation(attestation, registry, registry_status_receipt=status, marketplace_catalog=catalog, marketplace_distribution=distribution, root=ROOT)
@@ -311,7 +389,7 @@ class TrustNetworkServiceTests(unittest.TestCase):
     def test_cli_trust_network_service_round_trip(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)
-            pack, manifest, vendor, identity_payload, identity_attestation, procurement, integration, registry, status, catalog, distribution = self._sources(tmp)
+            pack, manifest, vendor, identity_payload, identity_attestation, procurement, integration, registry, status, catalog, distribution, frontend_bundle_path, frontend_bundle_hash = self._sources(tmp)
             pack_path = tmp / "pack.json"
             manifest_path = tmp / "trust-network-manifest.json"
             vendor_path = tmp / "vendor-identity.json"
@@ -352,6 +430,7 @@ class TrustNetworkServiceTests(unittest.TestCase):
                 "--registry-status", str(status_path),
                 "--marketplace-catalog", str(catalog_path),
                 "--marketplace-distribution", str(distribution_path),
+                "--frontend-bundle", str(frontend_bundle_path),
                 "--root", str(ROOT),
                 "--now", "2026-07-15T00:00:00Z",
             ]
@@ -366,7 +445,7 @@ class TrustNetworkServiceTests(unittest.TestCase):
                 "--service-image-digest", "sha256:trustai-trust-network-service-image",
                 "--service-binary-hash", "sha256:trustai-trust-network-service-binary",
                 "--frontend-bundle-ref", "bundle:trust-network/portal",
-                "--frontend-bundle-hash", "sha256:trustai-trust-network-frontend",
+                "--frontend-bundle-hash", frontend_bundle_hash,
                 "--api-ref", "api:trust-network/v0",
                 "--registry-store-ref", "postgres:trustai/trust-network-registry",
                 "--search-index-ref", "opensearch:trustai/trust-network-marketplace",

@@ -34,6 +34,7 @@ Required source artifacts for the default `registry-marketplace` service kind:
 Optional source artifacts:
 
 - `trust-network-registry-status`
+- `frontend-bundle`
 
 The registry receipt may itself replay deeper sources:
 
@@ -60,7 +61,7 @@ An attestation must bind:
 
 - Service identity: service reference, version, service kind, HTTPS registry
   endpoint, HTTPS marketplace endpoint, image reference, image digest, binary
-  hash, frontend bundle hash, API reference, registry store, search index,
+  hash, frontend bundle hash, optional frontend bundle artifact hash, API reference, registry store, search index,
   entitlement store, subscription queue, replica floor, replica ceiling, and at
   least two availability zones.
 - Registry binding: registration ID, registration hash, registration reference,
@@ -84,7 +85,7 @@ An attestation must bind:
 `trustai trust-network-service-verify` checks:
 
 1. Attestation schema, canonical hash, and signature.
-2. Source artifact hashes and source summary.
+2. Source artifact hashes, source summary, and supplied frontend bundle replay when provided.
 3. Trust-network registry receipt signature and deep source bindings when
    source artifacts are supplied.
 4. Optional registry status-change receipt signature and target binding.
@@ -92,7 +93,7 @@ An attestation must bind:
 6. Marketplace distribution signature, catalog binding, selected assets,
    subscriber, and channel.
 7. HTTPS registry and marketplace endpoints.
-8. SHA-256-style service, frontend, audit, access, publication, catalog, and
+8. SHA-256-style service, frontend, supplied frontend bundle digest, audit, access, publication, catalog, and
    distribution roots/hashes.
 9. Replica and availability-zone minimums.
 10. Redacted credentials and absence of raw secret-like fields.
@@ -113,6 +114,7 @@ An attestation must bind:
 ## Example
 
 ```bash
+TRUST_NETWORK_BUNDLE_HASH="sha256:$(sha256sum artifacts/trust-network.bundle.js | awk '{print $1}')"
 python -m trustai trust-network-service-attestation \
   artifacts/trust-network-registry.json \
   --manifest artifacts/trust-network-manifest.json \
@@ -125,6 +127,7 @@ python -m trustai trust-network-service-attestation \
   --registry-status artifacts/trust-network-registry-status.json \
   --marketplace-catalog artifacts/marketplace-catalog.json \
   --marketplace-distribution artifacts/marketplace-distribution.json \
+  --frontend-bundle artifacts/trust-network.bundle.js \
   --root . \
   --environment aitrade-prod \
   --service-kind registry-marketplace \
@@ -136,7 +139,7 @@ python -m trustai trust-network-service-attestation \
   --service-image-digest sha256:trustai-trust-network-service-image \
   --service-binary-hash sha256:trustai-trust-network-service-binary \
   --frontend-bundle-ref bundle:trust-network/portal \
-  --frontend-bundle-hash sha256:trustai-trust-network-frontend \
+  --frontend-bundle-hash "$TRUST_NETWORK_BUNDLE_HASH" \
   --api-ref api:trust-network/v0 \
   --registry-store-ref postgres:trustai/trust-network-registry \
   --search-index-ref opensearch:trustai/trust-network-marketplace \
@@ -195,6 +198,7 @@ python -m trustai trust-network-service-verify \
   --registry-status artifacts/trust-network-registry-status.json \
   --marketplace-catalog artifacts/marketplace-catalog.json \
   --marketplace-distribution artifacts/marketplace-distribution.json \
+  --frontend-bundle artifacts/trust-network.bundle.js \
   --root . \
   --now 2026-07-15T00:00:00Z
 
@@ -211,6 +215,7 @@ python -m trustai trust-network-service-append \
   --registry-status artifacts/trust-network-registry-status.json \
   --marketplace-catalog artifacts/marketplace-catalog.json \
   --marketplace-distribution artifacts/marketplace-distribution.json \
+  --frontend-bundle artifacts/trust-network.bundle.js \
   --state .trustai/trust-network-service-demo/evidence-chain.json \
   --tenant trust-network-service-local \
   --out artifacts/trust-network-service-entry.json
@@ -223,4 +228,4 @@ Production use still requires operated identity-provider sessions, vendor and
 buyer account lifecycle events, immutable registry propagation logs, marketplace
 entitlement logs, subscriber authentication, revocation propagation, billing or
 third-party author governance when applicable, and worker fleets that emit
-signed receipts from live hosted operations.
+signed receipts from live hosted operations. Supplying `--frontend-bundle` replays local frontend bundle bytes against the recorded service hash; production UI claims still require hosted identity sessions and immutable access logs.

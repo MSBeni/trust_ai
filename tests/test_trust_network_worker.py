@@ -41,7 +41,7 @@ def _write_json(path: Path, value: object) -> None:
 class TrustNetworkWorkerTests(unittest.TestCase):
     def _sources(self, tmp: Path):
         helper = service_test_helpers.TrustNetworkServiceTests()
-        pack, manifest, vendor, identity_payload, identity_attestation, procurement, integration, registry, status, catalog, distribution = helper._sources(tmp)
+        pack, manifest, vendor, identity_payload, identity_attestation, procurement, integration, registry, status, catalog, distribution, frontend_bundle_path, frontend_bundle_hash = helper._sources(tmp)
         service = helper._attestation(
             registry,
             status,
@@ -54,6 +54,7 @@ class TrustNetworkWorkerTests(unittest.TestCase):
             procurement_receipt=procurement,
             procurement_integration_receipt=integration,
             proof_packs=[pack],
+            frontend_bundle_path=frontend_bundle_path,
         )
         author = build_marketplace_author_governance(
             catalog,
@@ -138,6 +139,8 @@ class TrustNetworkWorkerTests(unittest.TestCase):
             "catalog": catalog,
             "distribution": distribution,
             "service": service,
+            "frontend_bundle_path": frontend_bundle_path,
+            "frontend_bundle_hash": frontend_bundle_hash,
             "author": author,
             "settlement": settlement,
         }
@@ -156,6 +159,7 @@ class TrustNetworkWorkerTests(unittest.TestCase):
             "registry_status_receipt": sources["status"],
             "marketplace_catalog": sources["catalog"],
             "marketplace_distribution": sources["distribution"],
+            "frontend_bundle_path": sources["frontend_bundle_path"],
             "marketplace_author_governance": sources["author"],
             "marketplace_settlement": sources["settlement"],
             "root": ROOT,
@@ -220,6 +224,7 @@ class TrustNetworkWorkerTests(unittest.TestCase):
                 registry_status_receipt=sources["status"],
                 marketplace_catalog=sources["catalog"],
                 marketplace_distribution=sources["distribution"],
+                frontend_bundle_path=sources["frontend_bundle_path"],
                 marketplace_author_governance=sources["author"],
                 marketplace_settlement=sources["settlement"],
                 root=ROOT,
@@ -240,6 +245,7 @@ class TrustNetworkWorkerTests(unittest.TestCase):
                 registry_status_receipt=sources["status"],
                 marketplace_catalog=sources["catalog"],
                 marketplace_distribution=sources["distribution"],
+                frontend_bundle_path=sources["frontend_bundle_path"],
                 marketplace_author_governance=sources["author"],
                 marketplace_settlement=sources["settlement"],
                 root=ROOT,
@@ -276,6 +282,7 @@ class TrustNetworkWorkerTests(unittest.TestCase):
                 registry_status_receipt=sources["status"],
                 marketplace_catalog=sources["catalog"],
                 marketplace_distribution=sources["distribution"],
+                frontend_bundle_path=sources["frontend_bundle_path"],
                 marketplace_author_governance=sources["author"],
                 marketplace_settlement=tampered,
                 root=ROOT,
@@ -348,6 +355,8 @@ class TrustNetworkWorkerTests(unittest.TestCase):
                 str(paths["catalog"]),
                 "--marketplace-distribution",
                 str(paths["distribution"]),
+                "--frontend-bundle",
+                str(sources["frontend_bundle_path"]),
                 "--marketplace-author-governance",
                 str(paths["author"]),
                 "--marketplace-settlement",
