@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
@@ -25,6 +26,7 @@ class IdentityProviderAttestationVerification:
 def build_identity_provider_attestation(
     identity_payload: dict[str, Any],
     *,
+    identity_payload_path: str | Path | None = None,
     vendor_identity_receipt: dict[str, Any] | None = None,
     proof_packs: list[dict[str, Any]] | None = None,
     trust_network_manifest: dict[str, Any] | None = None,
@@ -68,6 +70,10 @@ def build_identity_provider_attestation(
             raise ValueError("invalid vendor identity receipt: " + "; ".join(result.errors))
         vendor_binding = _vendor_binding(vendor_identity_receipt, subject)
 
+    source_payload = _source_payload_record(identity_payload, inventory)
+    source_artifacts = _source_artifacts(identity_payload, identity_payload_path)
+    _validate_source_artifacts(source_payload, source_artifacts)
+
     body = {
         "schema": IDENTITY_PROVIDER_ATTESTATION_SCHEMA,
         "issued_at": issued,
@@ -82,12 +88,8 @@ def build_identity_provider_attestation(
             "attestation_mode": "local-recorded-export",
             "production_replacement": "provider-authenticated token introspection, SCIM/Graph/Okta API event, or signed identity registry event",
         },
-        "source_payload": {
-            "content_hash": content_hash(identity_payload),
-            "inventory_hash": content_hash(inventory),
-            "record_count": len(inventory.get("agents", [])),
-            "providers": sorted({agent.get("identity_provider") for agent in inventory.get("agents", []) if agent.get("identity_provider")}),
-        },
+        "source_payload": source_payload,
+        "source_artifacts": source_artifacts,
         "subject": {
             "subject_ref": subject_ref or (vendor_identity_receipt or {}).get("vendor", {}).get("subject_ref"),
             "identity_provider": subject["identity_provider"],
@@ -96,9 +98,10 @@ def build_identity_provider_attestation(
             "agent": _agent_summary(subject),
         },
         "vendor_binding": vendor_binding,
-        "controls": _controls_for(authentication_method, vendor_binding is not None),
+        "controls": _controls_for(authentication_method, vendor_binding is not None, len(source_artifacts)),
         "limitations": [
             "This receipt verifies a recorded identity-provider export and binds it to TrustAI vendor/proof evidence.",
+            "When an identity payload path is supplied, it also binds the retained raw export bytes by hash and size for replay.",
             "It does not claim live identity-provider authentication, provider-signed response validation, or legal entity validation outside the supplied references.",
             "Production deployments should replace this local receipt with a provider-authenticated API event or signed identity registry assertion.",
         ],
@@ -115,6 +118,7 @@ def verify_identity_provider_attestation(
     attestation: dict[str, Any],
     *,
     identity_payload: dict[str, Any] | None = None,
+    identity_payload_path: str | Path | None = None,
     vendor_identity_receipt: dict[str, Any] | None = None,
     proof_packs: list[dict[str, Any]] | None = None,
     trust_network_manifest: dict[str, Any] | None = None,
@@ -156,6 +160,22 @@ def verify_identity_provider_attestation(
     if not isinstance(subject, dict) or not subject.get("identity_provider") or not subject.get("identity_id"):
         errors.append("identity provider attestation subject identity_provider and identity_id are required")
 
+    source_payload = attestation.get("source_payload", {})
+    if not isinstance(source_payload, dict):
+        errors.append("identity provider source_payload must be an object")
+        source_payload = {}
+    source_artifacts = attestation.get("source_artifacts", [])
+    if not isinstance(source_artifacts, list):
+        errors.append("identity provider source_artifacts must be a list")
+        source_artifacts = []
+    _verify_source_artifact_records(source_artifacts, source_payload, errors)
+
+    if identity_payload is None and identity_payload_path is not None:
+        try:
+            identity_payload = _load_identity_payload(identity_payload_path)
+        except (OSError, ValueError) as exc:
+            errors.append(f"identity provider payload artifact could not be loaded: {exc}")
+
     selected_subject: dict[str, Any] | None = None
     if identity_payload is None:
         warnings.append("identity provider payload source not supplied; verified attestation binding only")
@@ -170,7 +190,7 @@ def verify_identity_provider_attestation(
                     {agent.get("identity_provider") for agent in inventory.get("agents", []) if agent.get("identity_provider")}
                 ),
             }
-            if attestation.get("source_payload") != expected_payload:
+            if source_payload != expected_payload:
                 errors.append("identity provider source payload binding does not match supplied payload")
             selected = _select_subject(
                 inventory,
@@ -184,6 +204,21 @@ def verify_identity_provider_attestation(
                 errors.append("identity provider subject agent summary does not match supplied payload")
         except ValueError as exc:
             errors.append(f"identity provider payload invalid: {exc}")
+
+    if identity_payload_path is not None and identity_payload is not None:
+        try:
+            supplied_source_artifacts = _source_artifacts(identity_payload, identity_payload_path)
+        except (OSError, ValueError) as exc:
+            errors.append(f"identity provider source artifact could not be read: {exc}")
+            supplied_source_artifacts = []
+        if supplied_source_artifacts:
+            if source_artifacts and source_artifacts != supplied_source_artifacts:
+                errors.append("identity provider source_artifacts do not match supplied identity payload artifact")
+            elif not source_artifacts:
+                warnings.append("identity provider attestation has no source_artifacts; supplied raw export path was not replay-bound")
+            _verify_source_artifact_records(supplied_source_artifacts, source_payload, errors)
+    elif source_artifacts:
+        warnings.append("identity provider source artifact path not supplied; raw export bytes were not replayed")
 
     vendor_binding = attestation.get("vendor_binding")
     if vendor_binding:
@@ -213,6 +248,7 @@ def append_identity_provider_attestation(
     attestation: dict[str, Any],
     *,
     identity_payload: dict[str, Any] | None = None,
+    identity_payload_path: str | Path | None = None,
     vendor_identity_receipt: dict[str, Any] | None = None,
     proof_packs: list[dict[str, Any]] | None = None,
     trust_network_manifest: dict[str, Any] | None = None,
@@ -221,6 +257,7 @@ def append_identity_provider_attestation(
     result = verify_identity_provider_attestation(
         attestation,
         identity_payload=identity_payload,
+        identity_payload_path=identity_payload_path,
         vendor_identity_receipt=vendor_identity_receipt,
         proof_packs=proof_packs,
         trust_network_manifest=trust_network_manifest,
@@ -235,6 +272,7 @@ def append_identity_provider_attestation(
         "subject": attestation.get("subject"),
         "vendor_binding": _vendor_binding_ref(attestation.get("vendor_binding")),
         "source_payload": attestation.get("source_payload"),
+        "source_artifacts": attestation.get("source_artifacts", []),
         "limitations": attestation.get("limitations", []),
     }
     return chain.append(
@@ -256,6 +294,87 @@ def write_identity_provider_attestation(path: str | Path, attestation: dict[str,
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(attestation, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def _source_payload_record(identity_payload: dict[str, Any], inventory: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "content_hash": content_hash(identity_payload),
+        "inventory_hash": content_hash(inventory),
+        "record_count": len(inventory.get("agents", [])),
+        "providers": sorted({agent.get("identity_provider") for agent in inventory.get("agents", []) if agent.get("identity_provider")}),
+    }
+
+
+def _source_artifacts(identity_payload: dict[str, Any], identity_payload_path: str | Path | None) -> list[dict[str, Any]]:
+    if identity_payload_path is None:
+        return []
+    source = Path(identity_payload_path)
+    data = source.read_bytes()
+    return [
+        {
+            "artifact_type": "identity_payload",
+            "path": str(identity_payload_path).replace("\\", "/"),
+            "hash": _sha256_ref(data),
+            "size_bytes": len(data),
+            "media_type": _artifact_media_type(source),
+            "content_hash": content_hash(identity_payload),
+        }
+    ]
+
+
+def _validate_source_artifacts(source_payload: dict[str, Any], records: list[dict[str, Any]]) -> None:
+    errors: list[str] = []
+    _verify_source_artifact_records(records, source_payload, errors)
+    if errors:
+        raise ValueError("invalid identity provider source artifacts: " + "; ".join(errors))
+
+
+def _verify_source_artifact_records(records: list[Any], source_payload: dict[str, Any], errors: list[str]) -> None:
+    seen: set[str] = set()
+    for record in records:
+        if not isinstance(record, dict):
+            errors.append("identity provider source_artifacts entries must be objects")
+            continue
+        artifact_type = str(record.get("artifact_type") or "")
+        if artifact_type != "identity_payload":
+            errors.append(f"identity provider source_artifacts artifact_type unsupported: {artifact_type}")
+            continue
+        if artifact_type in seen:
+            errors.append(f"identity provider source_artifacts duplicate artifact_type: {artifact_type}")
+        seen.add(artifact_type)
+        for field in ("path", "hash", "size_bytes", "media_type", "content_hash"):
+            if record.get(field) in (None, ""):
+                errors.append(f"identity provider source_artifacts {artifact_type}.{field} is required")
+        if not isinstance(record.get("size_bytes"), int) or record.get("size_bytes") < 0:
+            errors.append(f"identity provider source_artifacts {artifact_type}.size_bytes must be a non-negative integer")
+        if not _is_sha256_ref(str(record.get("hash") or "")):
+            errors.append(f"identity provider source_artifacts {artifact_type}.hash must be a sha256 reference")
+        expected_content_hash = str(source_payload.get("content_hash") or "")
+        if expected_content_hash and record.get("content_hash") != expected_content_hash:
+            errors.append("identity provider identity_payload artifact content_hash does not match source_payload content_hash")
+
+
+def _load_identity_payload(path: str | Path) -> dict[str, Any]:
+    value = json.loads(Path(path).read_text(encoding="utf-8-sig"))
+    if not isinstance(value, dict):
+        raise ValueError("identity provider payload artifact must contain an object")
+    return value
+
+
+def _artifact_media_type(path: Path) -> str:
+    if path.suffix.lower() == ".json":
+        return "application/json"
+    return "application/octet-stream"
+
+
+def _sha256_ref(data: bytes) -> str:
+    return "sha256:" + hashlib.sha256(data).hexdigest()
+
+
+def _is_sha256_ref(value: str) -> bool:
+    if value.startswith("sha256:"):
+        return bool(value.removeprefix("sha256:"))
+    return len(value) == 64 and all(character in "0123456789abcdefABCDEF" for character in value)
 
 
 def _select_subject(
@@ -341,6 +460,7 @@ def _subject_from_attestation(subject: dict[str, Any]) -> dict[str, Any]:
         "contract_id": agent.get("contract_id"),
     }
 
+
 def _vendor_binding_ref(binding: dict[str, Any] | None) -> dict[str, Any] | None:
     if not isinstance(binding, dict):
         return None
@@ -377,12 +497,17 @@ def _normalize_provider(provider: str) -> str:
     return normalized
 
 
-def _controls_for(authentication_method: str, has_vendor_binding: bool) -> list[dict[str, str]]:
+def _controls_for(authentication_method: str, has_vendor_binding: bool, source_artifact_count: int) -> list[dict[str, str]]:
     return [
         {
             "id": "identity-provider-export-binding",
             "status": "implemented-reference",
             "description": "Receipt binds a recorded identity-provider export by canonical hash and normalized inventory hash.",
+        },
+        {
+            "id": "identity-provider-source-artifact-replay",
+            "status": "implemented-reference" if source_artifact_count else "local-reference",
+            "description": "Retained raw identity-provider export bytes are replay-bound when supplied.",
         },
         {
             "id": "vendor-proof-evidence-binding",

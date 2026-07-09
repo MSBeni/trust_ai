@@ -1336,6 +1336,7 @@ def cmd_identity_attestation(args: argparse.Namespace) -> int:
     try:
         attestation = build_identity_provider_attestation(
             payload,
+            identity_payload_path=args.identity_payload,
             vendor_identity_receipt=vendor,
             proof_packs=packs,
             trust_network_manifest=manifest,
@@ -1356,6 +1357,7 @@ def cmd_identity_attestation(args: argparse.Namespace) -> int:
     result = verify_identity_provider_attestation(
         attestation,
         identity_payload=payload,
+        identity_payload_path=args.identity_payload,
         vendor_identity_receipt=vendor,
         proof_packs=packs,
         trust_network_manifest=manifest,
@@ -1385,6 +1387,7 @@ def cmd_identity_attestation_verify(args: argparse.Namespace) -> int:
     result = verify_identity_provider_attestation(
         attestation,
         identity_payload=payload,
+        identity_payload_path=args.identity_payload,
         vendor_identity_receipt=vendor,
         proof_packs=packs,
         trust_network_manifest=manifest,
@@ -1415,6 +1418,7 @@ def cmd_identity_attestation_append(args: argparse.Namespace) -> int:
             chain,
             attestation,
             identity_payload=payload,
+            identity_payload_path=args.identity_payload,
             vendor_identity_receipt=vendor,
             proof_packs=packs,
             trust_network_manifest=manifest,

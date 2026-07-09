@@ -21,6 +21,9 @@ Required top-level fields:
   replacement guidance.
 - `source_payload`: canonical hash of the raw identity-provider export,
   normalized inventory hash, record count, and providers represented.
+- `source_artifacts`: optional retained raw identity-provider export artifact
+  path, SHA-256 byte hash, size, media type, and canonical payload hash used
+  for replay.
 - `subject`: selected provider identity id, identity record hash, subject
   reference, and normalized agent summary.
 - `vendor_binding`: optional vendor identity receipt id/hash, vendor identity
@@ -41,20 +44,22 @@ identity inventory adapters.
 - supported provider, authentication method, and observed timestamp;
 - source payload hash and normalized inventory hash when the raw provider export
   is supplied;
+- retained raw export artifact records and supplied identity payload paths when
+  present;
 - selected subject identity id, identity record hash, and agent summary;
 - source vendor identity receipt hash and full verification when supplied;
 - provider identity id and proof-pack agent binding against the vendor receipt.
 
-Without the source identity export or source vendor identity receipt,
-verification can only prove receipt integrity and embedded artifact bindings; it
-emits warnings for missing deep-verification inputs.
+Without the source identity export, retained raw export path, or source vendor
+identity receipt, verification can only prove receipt integrity and embedded
+artifact bindings; it emits warnings for missing deep-verification inputs.
 
 ## Evidence Chain Entry
 
 `trustai identity-attestation-append` verifies the receipt, then appends
 `identity.provider.attested` to an evidence chain. The entry payload records the
 attestation id, attestation hash, authentication metadata, subject, vendor
-binding, source payload hash, and limitations.
+binding, source payload hash, source artifact hashes, and limitations.
 
 ## Reference Commands
 
@@ -67,7 +72,8 @@ python -m trustai identity-attestation-append artifacts/identity-provider-attest
 ## Production Boundary
 
 This local receipt models identity-provider authentication evidence using a
-recorded export. Production deployments still need provider-authenticated API
+recorded export and can replay the retained raw export file by byte hash when
+that file path is supplied. Production deployments still need provider-authenticated API
 responses, signed SCIM/Graph/Okta events, tenant trust configuration, key
 rotation/revocation handling, and legal-entity validation outside the identity
 provider record.

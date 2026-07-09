@@ -1,5 +1,8 @@
 import copy
 import json
+import os
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -30,7 +33,12 @@ IDENTITY = ROOT / "examples" / "aitrade" / "identity-inventory.json"
 
 
 class IdentityProviderAttestationTests(unittest.TestCase):
-    def _proof_sources(self, tmp: Path):
+    def _identity_payload_copy(self, tmp: Path):
+        payload_path = tmp / "identity-inventory.json"
+        payload_path.write_text(IDENTITY.read_text(encoding="utf-8"), encoding="utf-8")
+        return payload_path, json.loads(payload_path.read_text(encoding="utf-8"))
+
+    def _proof_sources(self, tmp: Path, payload=None):
         chain = EvidenceChain.load(tmp / "chain.json", tenant_id="identity-provider-test")
         contract = load_contract(CONTRACT)
         register_contract(chain, contract)
@@ -57,15 +65,18 @@ class IdentityProviderAttestationTests(unittest.TestCase):
             expires_at="2027-07-10T00:00:00Z",
             trust_network_manifest=manifest,
         )
-        payload = json.loads(IDENTITY.read_text(encoding="utf-8"))
+        if payload is None:
+            payload = json.loads(IDENTITY.read_text(encoding="utf-8"))
         return payload, pack, manifest, vendor
 
     def test_identity_provider_attestation_verifies_and_appends(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)
-            payload, pack, manifest, vendor = self._proof_sources(tmp)
+            payload_path, payload = self._identity_payload_copy(tmp)
+            payload, pack, manifest, vendor = self._proof_sources(tmp, payload)
             attestation = build_identity_provider_attestation(
                 payload,
+                identity_payload_path=payload_path,
                 vendor_identity_receipt=vendor,
                 proof_packs=[pack],
                 trust_network_manifest=manifest,
@@ -80,6 +91,7 @@ class IdentityProviderAttestationTests(unittest.TestCase):
             result = verify_identity_provider_attestation(
                 attestation,
                 identity_payload=payload,
+                identity_payload_path=payload_path,
                 vendor_identity_receipt=vendor,
                 proof_packs=[pack],
                 trust_network_manifest=manifest,
@@ -89,6 +101,7 @@ class IdentityProviderAttestationTests(unittest.TestCase):
                 chain,
                 attestation,
                 identity_payload=payload,
+                identity_payload_path=payload_path,
                 vendor_identity_receipt=vendor,
                 proof_packs=[pack],
                 trust_network_manifest=manifest,
@@ -98,8 +111,41 @@ class IdentityProviderAttestationTests(unittest.TestCase):
             self.assertTrue(result.ok, result.errors)
             self.assertEqual("okta-agent-aitrade-risk", attestation["subject"]["identity_id"])
             self.assertTrue(attestation["vendor_binding"]["provider_identity_matches_vendor"])
+            self.assertEqual(1, len(attestation["source_artifacts"]))
+            self.assertIn("identity-provider-source-artifact-replay", {control["id"] for control in attestation["controls"]})
             self.assertEqual(IDENTITY_PROVIDER_ATTESTATION_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(attestation["attestation_id"], entry["payload"]["attestation_id"])
+            self.assertEqual(attestation["source_artifacts"], entry["payload"]["source_artifacts"])
+
+    def test_identity_provider_attestation_detects_source_artifact_tamper(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            payload_path, payload = self._identity_payload_copy(tmp)
+            payload, pack, manifest, vendor = self._proof_sources(tmp, payload)
+            attestation = build_identity_provider_attestation(
+                payload,
+                identity_payload_path=payload_path,
+                vendor_identity_receipt=vendor,
+                proof_packs=[pack],
+                trust_network_manifest=manifest,
+                provider="okta",
+                identity_id="okta-agent-aitrade-risk",
+                issued_at="2026-07-10T01:00:00Z",
+            )
+            payload_path.write_text(payload_path.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+            replay_payload = json.loads(payload_path.read_text(encoding="utf-8"))
+
+            result = verify_identity_provider_attestation(
+                attestation,
+                identity_payload=replay_payload,
+                identity_payload_path=payload_path,
+                vendor_identity_receipt=vendor,
+                proof_packs=[pack],
+                trust_network_manifest=manifest,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertIn("identity provider source_artifacts do not match supplied identity payload artifact", result.errors)
 
     def test_identity_provider_attestation_detects_subject_tamper(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -137,6 +183,96 @@ class IdentityProviderAttestationTests(unittest.TestCase):
                 provider="okta",
                 identity_id="missing-agent",
             )
+
+    def test_cli_identity_provider_attestation_round_trip(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            payload_path, payload = self._identity_payload_copy(tmp)
+            payload, pack, manifest, vendor = self._proof_sources(tmp, payload)
+            pack_path = tmp / "pack.json"
+            manifest_path = tmp / "trust-network-manifest.json"
+            vendor_path = tmp / "vendor-identity-receipt.json"
+            attestation_path = tmp / "identity-provider-attestation.json"
+            entry_path = tmp / "identity-provider-entry.json"
+            state_path = tmp / "identity-provider-chain.json"
+            pack_path.write_text(json.dumps(pack, indent=2, sort_keys=True), encoding="utf-8")
+            manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
+            vendor_path.write_text(json.dumps(vendor, indent=2, sort_keys=True), encoding="utf-8")
+            env = {**os.environ, "PYTHONPATH": str(ROOT / "src")}
+            common_args = [
+                "--vendor-identity",
+                str(vendor_path),
+                "--manifest",
+                str(manifest_path),
+                "--pack",
+                str(pack_path),
+            ]
+
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "identity-attestation",
+                    str(payload_path),
+                    *common_args,
+                    "--provider",
+                    "okta",
+                    "--identity-id",
+                    "okta-agent-aitrade-risk",
+                    "--tenant-ref",
+                    "okta:example-org",
+                    "--issued-at",
+                    "2026-07-10T01:00:00Z",
+                    "--expires-at",
+                    "2027-07-10T01:00:00Z",
+                    "--out",
+                    str(attestation_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "identity-attestation-verify",
+                    str(attestation_path),
+                    "--identity-payload",
+                    str(payload_path),
+                    *common_args,
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "identity-attestation-append",
+                    str(attestation_path),
+                    "--identity-payload",
+                    str(payload_path),
+                    *common_args,
+                    "--state",
+                    str(state_path),
+                    "--tenant",
+                    "identity-provider-local",
+                    "--out",
+                    str(entry_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+            )
+
+            attestation = json.loads(attestation_path.read_text(encoding="utf-8"))
+            self.assertEqual(1, len(attestation["source_artifacts"]))
+            self.assertTrue(entry_path.exists())
 
 
 if __name__ == "__main__":
