@@ -1,0 +1,83 @@
+{
+  "schema": "trustai.framework-runtime-storage-export/0.1",
+  "provider": "redpanda-clickhouse-postgres",
+  "environment": "aitrade-prod",
+  "export_ref": "provider-export:framework-runtime/lg-trace-001",
+  "window_start": "2026-07-09T00:42:00Z",
+  "window_end": "2026-07-09T00:43:00Z",
+  "cursor_ref": "cursor:framework-runtime-storage/before-lg-trace-001",
+  "next_cursor_ref": "cursor:framework-runtime-storage/after-lg-trace-001",
+  "audit_log_ref": "audit-log:framework-runtime/storage-exports",
+  "audit_log_root": "sha256:framework-runtime-storage-export-audit-root",
+  "stream_records": [
+    {
+      "backend": "redpanda",
+      "record_id": "redpanda:framework-runtime/lg-trace-001:4200-4201",
+      "runtime_audit_id": null,
+      "runtime_audit_log_ref": "audit-log:framework-runtime/aitrade",
+      "runtime_audit_log_root": "sha256:framework-runtime-audit-root",
+      "runtime_event_ref": "runtime-audit:langgraph:lg-trace-001:hook-capture",
+      "stream_message_hash": "sha256:framework-runtime-worker-stream-message",
+      "stream_message_ref": "stream-message:framework-runtime/lg-trace-001",
+      "stream_ref": "redpanda:trustai/framework-runtime",
+      "stream_topic": "trustai.framework.runtime.audit",
+      "partition_ref": "redpanda:trustai/framework-runtime/0",
+      "offset_start": 4200,
+      "offset_end": 4201,
+      "worker_run_ref": "worker-run:framework-runtime/langgraph/lg-trace-001/2026-07-09T00:42:05Z",
+      "exported_at": "2026-07-09T00:42:10Z"
+    }
+  ],
+  "storage_records": [
+    {
+      "backend": "s3-object-lock",
+      "kind": "worm_object",
+      "record_id": "worm:framework-runtime/aitrade/lg-trace-001",
+      "ref": "worm:framework-runtime/aitrade/lg-trace-001.json",
+      "hash": "sha256:framework-runtime-worker-storage-object",
+      "runtime_event_ref": "runtime-audit:langgraph:lg-trace-001:hook-capture",
+      "worker_run_ref": "worker-run:framework-runtime/langgraph/lg-trace-001/2026-07-09T00:42:05Z"
+    },
+    {
+      "backend": "clickhouse",
+      "kind": "clickhouse_batch",
+      "record_id": "clickhouse:framework-runtime/lg-trace-001",
+      "ref": "clickhouse:trustai/framework_runtime/batch/lg-trace-001",
+      "hash": "sha256:framework-runtime-worker-clickhouse-batch",
+      "row_count": 2,
+      "runtime_event_ref": "runtime-audit:langgraph:lg-trace-001:hook-capture",
+      "worker_run_ref": "worker-run:framework-runtime/langgraph/lg-trace-001/2026-07-09T00:42:05Z"
+    },
+    {
+      "backend": "postgres",
+      "kind": "postgres_index",
+      "record_id": "postgres:framework-runtime/lg-trace-001",
+      "ref": "postgres:trustai/framework_runtime/lg-trace-001",
+      "hash": "sha256:framework-runtime-worker-postgres-index",
+      "row_count": 1,
+      "runtime_event_ref": "runtime-audit:langgraph:lg-trace-001:hook-capture",
+      "worker_run_ref": "worker-run:framework-runtime/langgraph/lg-trace-001/2026-07-09T00:42:05Z"
+    },
+    {
+      "backend": "postgres",
+      "kind": "control_index",
+      "record_id": "control-index:framework-runtime/lg-trace-001",
+      "ref": "control-index:framework-runtime/lg-trace-001",
+      "hash": "sha256:framework-runtime-worker-control-index",
+      "runtime_event_ref": "runtime-audit:langgraph:lg-trace-001:hook-capture",
+      "worker_run_ref": "worker-run:framework-runtime/langgraph/lg-trace-001/2026-07-09T00:42:05Z"
+    }
+  ],
+  "scheduler_records": [
+    {
+      "record_id": "scheduler:framework-runtime/lg-trace-001",
+      "worker_run_ref": "worker-run:framework-runtime/langgraph/lg-trace-001/2026-07-09T00:42:05Z",
+      "schedule_ref": "schedule:framework-runtime/langgraph/continuous",
+      "lease_ref": "lease:framework-runtime/langgraph/2026-07-09T00:42:05Z",
+      "checkpoint_ref": "checkpoint:framework-runtime/langgraph/aitrade",
+      "checkpoint_hash": "sha256:framework-runtime-worker-checkpoint",
+      "previous_cursor_ref": "cursor:framework-runtime-audit/before-lg-trace-001",
+      "next_cursor_ref": "cursor:framework-runtime-worker/after-lg-trace-001"
+    }
+  ]
+}

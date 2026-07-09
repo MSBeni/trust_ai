@@ -6,7 +6,8 @@ evidence. It is the operational companion to `framework-runtime-audit`: the
 runtime audit receipt proves that a provider/runtime export contains a matching
 hook capture; the worker receipt proves a scheduled worker reconciled that
 export through leases, checkpoints, stream messages, storage writes, metrics,
-and audit roots.
+and audit roots. `framework-runtime-storage` can then bind those worker writes
+to provider-native stream and storage export records.
 
 ## Artifact
 
