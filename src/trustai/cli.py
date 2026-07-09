@@ -126,6 +126,14 @@ from .framework_runtime_service_authority_attestation import (
     verify_framework_runtime_service_authority_attestation,
     write_framework_runtime_service_authority_attestation,
 )
+from .framework_runtime_service_authority_recorded_export import (
+    FRAMEWORK_RUNTIME_SERVICE_AUTHORITY_RECORDED_EXPORT_MODES,
+    append_framework_runtime_service_authority_recorded_export,
+    build_framework_runtime_service_authority_recorded_export,
+    load_framework_runtime_service_authority_recorded_export,
+    verify_framework_runtime_service_authority_recorded_export,
+    write_framework_runtime_service_authority_recorded_export,
+)
 from .anchor import append_anchor, write_anchor
 from .anchor_provider import (
     ANCHOR_PROVIDER_MODES,
@@ -3615,6 +3623,212 @@ def cmd_framework_runtime_service_authority_attestation_append(args: argparse.Na
         print(f"framework runtime service authority attestation entry: {args.out}")
     print(f"framework runtime service authority attestation entry id: {entry['entry_id']}")
     print(f"attestation id: {attestation['attestation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def _load_framework_runtime_service_authority_recorded_export_sources(args: argparse.Namespace, *, require_all: bool) -> dict[str, object]:
+    sources: dict[str, object] = {}
+    if getattr(args, "authority_attestation", None):
+        sources["authority_attestation"] = load_framework_runtime_service_authority_attestation(args.authority_attestation)
+    elif require_all:
+        raise ValueError("framework runtime service authority attestation is required")
+    attestation_sources = _load_framework_runtime_service_authority_attestation_sources(args, require_all=require_all)
+    sources.update(attestation_sources)
+    return sources
+
+
+def _framework_runtime_service_authority_recorded_export_artifact_paths(args: argparse.Namespace, *, require_all: bool) -> dict[str, object]:
+    mapping = {
+        "authority_attestation": getattr(args, "authority_attestation", None),
+        "authority_provider_receipt": getattr(args, "authority_provider_receipt", None),
+        "authority_provider_export": getattr(args, "authority_provider_export", None),
+        "authority_worker": getattr(args, "authority_worker", None),
+        "authority_dossier": getattr(args, "authority_dossier", None) or getattr(args, "dossier", None),
+        "service_provider_receipt": getattr(args, "provider_receipt", None),
+        "service_provider_export": getattr(args, "provider_export", None),
+        "service_worker": getattr(args, "service_worker", None),
+        "service_attestation": getattr(args, "service_attestation", None),
+        "storage_receipt": getattr(args, "storage_receipt", None),
+        "storage_export": getattr(args, "storage_export", None),
+        "runtime_worker": getattr(args, "worker", None),
+        "runtime_audit": getattr(args, "runtime_audit", None),
+        "audit_export": getattr(args, "audit_export", None),
+        "hook_operation": getattr(args, "operation", None),
+        "trace_payload": getattr(args, "trace", None),
+        "hook_release": getattr(args, "release", None),
+        "adapter_matrix": getattr(args, "matrix", None),
+    }
+    missing = [name for name, value in mapping.items() if not value]
+    if require_all and missing:
+        raise ValueError("framework runtime service authority recorded export artifact paths are required: " + ", ".join(missing))
+    return {name: value for name, value in mapping.items() if value}
+
+
+def _framework_runtime_service_authority_recorded_export_verify_kwargs(sources: dict[str, object]) -> dict[str, object]:
+    return {
+        "authority_attestation": sources.get("authority_attestation"),
+        "authority_provider_receipt": sources.get("authority_provider_receipt"),
+        "authority_provider_export": sources.get("authority_provider_export"),
+        "authority_worker": sources.get("authority_worker"),
+        "authority_dossier": sources.get("authority_dossier"),
+        "service_provider_receipt": sources.get("provider_receipt"),
+        "service_provider_export": sources.get("provider_export"),
+        "service_worker": sources.get("service_worker"),
+        "service_attestation": sources.get("service_attestation"),
+        "storage_receipt": sources.get("storage_receipt"),
+        "storage_export": sources.get("storage_export"),
+        "worker": sources.get("worker"),
+        "runtime_audit": sources.get("runtime_audit"),
+        "audit_export": sources.get("audit_export"),
+        "operation": sources.get("operation"),
+        "trace_payload": sources.get("trace_payload"),
+        "release": sources.get("release"),
+        "matrix": sources.get("matrix"),
+    }
+
+
+def cmd_framework_runtime_service_authority_recorded_export(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_framework_runtime_service_authority_recorded_export_sources(args, require_all=True)
+        artifact_paths = _framework_runtime_service_authority_recorded_export_artifact_paths(args, require_all=True)
+        receipt = build_framework_runtime_service_authority_recorded_export(
+            sources["authority_attestation"],
+            authority_provider_receipt=sources["authority_provider_receipt"],
+            authority_provider_export=sources["authority_provider_export"],
+            authority_worker=sources["authority_worker"],
+            authority_dossier=sources["authority_dossier"],
+            service_provider_receipt=sources["provider_receipt"],
+            service_provider_export=sources["provider_export"],
+            service_worker=sources["service_worker"],
+            service_attestation=sources["service_attestation"],
+            storage_receipt=sources["storage_receipt"],
+            storage_export=sources["storage_export"],
+            worker=sources["worker"],
+            runtime_audit=sources["runtime_audit"],
+            audit_export=sources["audit_export"],
+            operation=sources["operation"],
+            trace_payload=sources["trace_payload"],
+            release=sources["release"],
+            matrix=sources["matrix"],
+            artifact_paths=artifact_paths,
+            root=args.root,
+            mode=args.mode,
+            environment=args.environment,
+            recorder_ref=args.recorder_ref,
+            storage_backend=args.storage_backend,
+            retention_ref=args.retention_ref,
+            retention_until=args.retention_until,
+            credential_ref=args.credential_ref,
+            recorded_at=args.recorded_at,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            key=args.key,
+        )
+        result = verify_framework_runtime_service_authority_recorded_export(
+            receipt,
+            **_framework_runtime_service_authority_recorded_export_verify_kwargs(sources),
+            artifact_paths=artifact_paths,
+            root=args.root,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime service authority recorded export generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("framework runtime service authority recorded export generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_framework_runtime_service_authority_recorded_export(args.out, receipt)
+    print(f"framework runtime service authority recorded export: {args.out}")
+    print(f"recorded export id: {receipt['recorded_export_id']}")
+    print(f"authority attestation id: {receipt['source']['attestation_id']}")
+    print(f"artifact root: {receipt['recorded_artifacts']['artifact_root']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_framework_runtime_service_authority_recorded_export_verify(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_framework_runtime_service_authority_recorded_export(args.receipt)
+        sources = _load_framework_runtime_service_authority_recorded_export_sources(args, require_all=False)
+        artifact_paths = _framework_runtime_service_authority_recorded_export_artifact_paths(args, require_all=False)
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime service authority recorded export verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_framework_runtime_service_authority_recorded_export(
+        receipt,
+        **_framework_runtime_service_authority_recorded_export_verify_kwargs(sources),
+        artifact_paths=artifact_paths or None,
+        root=args.root,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified framework runtime service authority recorded export: {args.receipt}")
+        print(f"recorded export id: {receipt['recorded_export_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"framework runtime service authority recorded export verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_framework_runtime_service_authority_recorded_export_append(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_framework_runtime_service_authority_recorded_export(args.receipt)
+        sources = _load_framework_runtime_service_authority_recorded_export_sources(args, require_all=True)
+        artifact_paths = _framework_runtime_service_authority_recorded_export_artifact_paths(args, require_all=True)
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime service authority recorded export append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_framework_runtime_service_authority_recorded_export(
+            chain,
+            receipt,
+            authority_attestation=sources["authority_attestation"],
+            authority_provider_receipt=sources["authority_provider_receipt"],
+            authority_provider_export=sources["authority_provider_export"],
+            authority_worker=sources["authority_worker"],
+            authority_dossier=sources["authority_dossier"],
+            service_provider_receipt=sources["provider_receipt"],
+            service_provider_export=sources["provider_export"],
+            service_worker=sources["service_worker"],
+            service_attestation=sources["service_attestation"],
+            storage_receipt=sources["storage_receipt"],
+            storage_export=sources["storage_export"],
+            worker=sources["worker"],
+            runtime_audit=sources["runtime_audit"],
+            audit_export=sources["audit_export"],
+            operation=sources["operation"],
+            trace_payload=sources["trace_payload"],
+            release=sources["release"],
+            matrix=sources["matrix"],
+            artifact_paths=artifact_paths,
+            root=args.root,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"framework runtime service authority recorded export append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"framework runtime service authority recorded export entry: {args.out}")
+    print(f"framework runtime service authority recorded export entry id: {entry['entry_id']}")
+    print(f"recorded export id: {receipt['recorded_export_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
@@ -14139,6 +14353,58 @@ def build_parser() -> argparse.ArgumentParser:
     framework_runtime_service_authority_attestation_append.add_argument("--key")
     _add_state_args(framework_runtime_service_authority_attestation_append)
     framework_runtime_service_authority_attestation_append.set_defaults(func=cmd_framework_runtime_service_authority_attestation_append)
+    def _add_framework_runtime_service_authority_recorded_export_source_args(parser: argparse.ArgumentParser, *, required: bool) -> None:
+        parser.add_argument("--authority-attestation", required=required)
+        _add_framework_runtime_service_authority_attestation_source_args(parser, required=required)
+
+    framework_runtime_service_authority_recorded_export = subparsers.add_parser(
+        "framework-runtime-service-authority-recorded-export", help="write a signed framework runtime service authority recorded-export receipt"
+    )
+    framework_runtime_service_authority_recorded_export.add_argument("authority_attestation")
+    _add_framework_runtime_service_authority_attestation_source_args(framework_runtime_service_authority_recorded_export, required=True)
+    framework_runtime_service_authority_recorded_export.add_argument("--root", default=".")
+    framework_runtime_service_authority_recorded_export.add_argument(
+        "--mode", choices=sorted(FRAMEWORK_RUNTIME_SERVICE_AUTHORITY_RECORDED_EXPORT_MODES), default="provider-recorded-export"
+    )
+    framework_runtime_service_authority_recorded_export.add_argument("--environment", default="local")
+    framework_runtime_service_authority_recorded_export.add_argument("--recorder-ref", required=True)
+    framework_runtime_service_authority_recorded_export.add_argument("--storage-backend", required=True)
+    framework_runtime_service_authority_recorded_export.add_argument("--retention-ref", required=True)
+    framework_runtime_service_authority_recorded_export.add_argument("--retention-until", required=True)
+    framework_runtime_service_authority_recorded_export.add_argument("--credential-ref", required=True)
+    framework_runtime_service_authority_recorded_export.add_argument("--recorded-at")
+    framework_runtime_service_authority_recorded_export.add_argument("--require-complete", action="store_true")
+    framework_runtime_service_authority_recorded_export.add_argument("--require-fresh", action="store_true")
+    framework_runtime_service_authority_recorded_export.add_argument("--now")
+    framework_runtime_service_authority_recorded_export.add_argument("--out", default="artifacts/framework-runtime-service-authority-recorded-export.json")
+    framework_runtime_service_authority_recorded_export.add_argument("--key")
+    framework_runtime_service_authority_recorded_export.set_defaults(func=cmd_framework_runtime_service_authority_recorded_export)
+
+    framework_runtime_service_authority_recorded_export_verify = subparsers.add_parser(
+        "framework-runtime-service-authority-recorded-export-verify", help="verify a signed framework runtime service authority recorded-export receipt"
+    )
+    framework_runtime_service_authority_recorded_export_verify.add_argument("receipt")
+    _add_framework_runtime_service_authority_recorded_export_source_args(framework_runtime_service_authority_recorded_export_verify, required=False)
+    framework_runtime_service_authority_recorded_export_verify.add_argument("--root", default=".")
+    framework_runtime_service_authority_recorded_export_verify.add_argument("--require-complete", action="store_true")
+    framework_runtime_service_authority_recorded_export_verify.add_argument("--require-fresh", action="store_true")
+    framework_runtime_service_authority_recorded_export_verify.add_argument("--now")
+    framework_runtime_service_authority_recorded_export_verify.add_argument("--key")
+    framework_runtime_service_authority_recorded_export_verify.set_defaults(func=cmd_framework_runtime_service_authority_recorded_export_verify)
+
+    framework_runtime_service_authority_recorded_export_append = subparsers.add_parser(
+        "framework-runtime-service-authority-recorded-export-append", help="append a framework runtime service authority recorded-export receipt as chain evidence"
+    )
+    framework_runtime_service_authority_recorded_export_append.add_argument("receipt")
+    _add_framework_runtime_service_authority_recorded_export_source_args(framework_runtime_service_authority_recorded_export_append, required=True)
+    framework_runtime_service_authority_recorded_export_append.add_argument("--root", default=".")
+    framework_runtime_service_authority_recorded_export_append.add_argument("--out", default="artifacts/framework-runtime-service-authority-recorded-export-entry.json")
+    framework_runtime_service_authority_recorded_export_append.add_argument("--require-complete", action="store_true")
+    framework_runtime_service_authority_recorded_export_append.add_argument("--require-fresh", action="store_true")
+    framework_runtime_service_authority_recorded_export_append.add_argument("--now")
+    framework_runtime_service_authority_recorded_export_append.add_argument("--key")
+    _add_state_args(framework_runtime_service_authority_recorded_export_append)
+    framework_runtime_service_authority_recorded_export_append.set_defaults(func=cmd_framework_runtime_service_authority_recorded_export_append)
     mcp = subparsers.add_parser("mcp-capture", help="append MCP tool call transcripts to the chain")
     mcp.add_argument("transcript")
     _add_state_args(mcp)
