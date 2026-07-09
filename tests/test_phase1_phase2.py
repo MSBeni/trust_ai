@@ -1,5 +1,8 @@
 import copy
 import json
+import os
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -12,6 +15,7 @@ from trustai.compliance import build_compliance_export
 from trustai.contracts import load_contract, register_contract
 from trustai.gate import append_eval_and_gate
 from trustai.insurer import build_insurer_telemetry
+from trustai.lifecycle import DEMOTION_ENTRY_TYPE, append_soak_failure_demotion
 from trustai.mcp_gateway import MCP_TOOL_CALL_ENTRY_TYPE, append_mcp_transcript, load_mcp_transcript
 from trustai.proofpack import compile_proof_pack
 from trustai.shadow import (
@@ -164,6 +168,81 @@ class PhaseOneTwoTests(unittest.TestCase):
             self.assertFalse(result.ok)
             self.assertTrue(any("soak report entry" in error and "passed mismatch" in error for error in result.errors))
             self.assertTrue(any("soak report entry" in error and "outcome mismatch" in error for error in result.errors))
+
+    def test_failed_soak_report_can_emit_demotion_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            chain = EvidenceChain.load(tmp / "chain.json", tenant_id="soak-demotion-test")
+            contract = load_contract(CONTRACT)
+            register_contract(chain, contract)
+            soak = copy.deepcopy(load_soak_window(SOAK))
+            soak["drift_alarms"] = [
+                {
+                    "id": "drift-critical-001",
+                    "severity": "critical",
+                    "description": "Latency drift exceeded the production contract assumption.",
+                }
+            ]
+            soak_entry = append_soak_report(chain, contract, soak)
+
+            demotion_entry = append_soak_failure_demotion(chain, contract, soak_entry)
+
+            self.assertFalse(soak_entry["payload"]["passed"])
+            self.assertEqual(DEMOTION_ENTRY_TYPE, demotion_entry["entry_type"])
+            self.assertEqual(soak_entry["entry_id"], demotion_entry["payload"]["triggering_entry_id"])
+            self.assertEqual("soak_report.completed", demotion_entry["payload"]["trigger"]["entry_type"])
+            self.assertEqual("failed", demotion_entry["payload"]["trigger"]["outcome"])
+            self.assertEqual("drift-critical-001", demotion_entry["payload"]["trigger"]["blocking_drift_alarms"][0]["id"])
+            self.assertIn("blocking drift alarms", demotion_entry["payload"]["reason"])
+            self.assertTrue(chain.verify_all().ok)
+
+    def test_cli_soak_report_demotes_on_failure(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            soak = copy.deepcopy(load_soak_window(SOAK))
+            soak["drift_alarms"] = [
+                {
+                    "id": "drift-critical-cli-001",
+                    "severity": "critical",
+                    "description": "CLI-triggered soak drift failure.",
+                }
+            ]
+            soak_path = tmp / "failed-soak.json"
+            state_path = tmp / "chain.json"
+            demotion_path = tmp / "demotion.json"
+            soak_path.write_text(json.dumps(soak), encoding="utf-8")
+            env = {**os.environ, "PYTHONPATH": str(ROOT / "src")}
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "soak-report",
+                    str(CONTRACT),
+                    str(soak_path),
+                    "--demote-on-failure",
+                    "--auto-register",
+                    "--state",
+                    str(state_path),
+                    "--tenant",
+                    "soak-demotion-cli",
+                    "--demotion-out",
+                    str(demotion_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                capture_output=True,
+                text=True,
+            )
+
+            self.assertEqual(1, completed.returncode, completed.stdout + completed.stderr)
+            demotion = json.loads(demotion_path.read_text(encoding="utf-8"))
+            chain = EvidenceChain.load(state_path, tenant_id="soak-demotion-cli")
+            self.assertEqual(DEMOTION_ENTRY_TYPE, demotion["entry_type"])
+            self.assertEqual("soak_report.completed", demotion["payload"]["trigger"]["entry_type"])
+            self.assertEqual("drift-critical-cli-001", demotion["payload"]["trigger"]["blocking_drift_alarms"][0]["id"])
+            self.assertTrue(chain.verify_all().ok)
 
     def test_shadow_replay_flags_pre_freeze_records(self):
         contract = load_contract(CONTRACT)

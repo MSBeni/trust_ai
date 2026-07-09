@@ -13,7 +13,9 @@ not `passed`.
 `trustai ci-payload` writes an API-ready promotion-check request body for
 GitHub Checks or GitLab commit statuses. The payload includes proof-pack context,
 verification status, the provider request path, body, and a source-report hash so
-CI workers can post the request without reinterpreting the proof pack.
+CI workers can post the request without reinterpreting the proof pack. Soak
+report jobs can also pass `--demote-on-failure` to append a chain-backed
+`promotion_gate.demoted` event when post-promotion soak evidence fails.
 
 ## Provider Installation Manifests
 

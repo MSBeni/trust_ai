@@ -424,7 +424,7 @@ from .identity_provider_session import (
 )
 from .ingest import append_events, append_otlp_traces, load_events
 from .keyring import load_keyring, local_dev_keyring, rotate_local_keyring, verify_chain_with_keyring, write_keyring
-from .lifecycle import append_demotion, append_incident, append_rollback, load_incident
+from .lifecycle import append_demotion, append_incident, append_rollback, append_soak_failure_demotion, load_incident
 from .insurer import build_insurer_telemetry, write_insurer_telemetry
 from .marketplace import (
     append_marketplace_distribution,
@@ -2110,12 +2110,30 @@ def cmd_soak_report(args: argparse.Namespace) -> int:
     if registration_status:
         return registration_status
     entry = append_soak_report(chain, contract, load_soak_window(args.soak), key=args.key)
+    demotion_entry = None
+    if args.demote_on_failure and not entry["payload"].get("passed"):
+        demotion_entry = append_soak_failure_demotion(
+            chain,
+            contract,
+            entry,
+            reason=args.demotion_reason,
+            from_environment=args.from_environment,
+            to_environment=args.to_environment,
+            key=args.key,
+        )
     chain.save()
     print(f"soak report outcome: {entry['payload']['outcome']}")
     print(f"windows checked: {entry['payload']['window_count']}")
+    if args.demote_on_failure and demotion_entry is None:
+        print("soak demotion: not required")
+    if demotion_entry is not None:
+        if args.demotion_out:
+            _write_json(args.demotion_out, demotion_entry)
+            print(f"demotion entry: {args.demotion_out}")
+        print(f"demotion entry id: {demotion_entry['entry_id']}")
+        print(f"{demotion_entry['payload']['from_environment']} -> {demotion_entry['payload']['to_environment']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0 if entry["payload"]["passed"] else 1
-
 
 def cmd_reexecution_runner_run(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
@@ -11976,6 +11994,11 @@ def build_parser() -> argparse.ArgumentParser:
     soak = subparsers.add_parser("soak-report", help="evaluate and evidence a soak report")
     soak.add_argument("contract")
     soak.add_argument("soak")
+    soak.add_argument("--demote-on-failure", action="store_true", help="append a demotion entry when the soak report fails")
+    soak.add_argument("--demotion-reason")
+    soak.add_argument("--demotion-out", default="artifacts/soak-demotion-entry.json")
+    soak.add_argument("--from-environment", default="prod")
+    soak.add_argument("--to-environment", default="shadow")
     _add_state_args(soak)
     _add_auto_register(soak)
     soak.set_defaults(func=cmd_soak_report)

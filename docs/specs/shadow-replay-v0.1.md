@@ -21,7 +21,10 @@ third-party review before a full proof pack is assembled.
 
 Soak reports summarize post-promotion windows and append
 `soak_report.completed` evidence. Blocking high/critical incidents or drift
-alarms fail the report.
+alarms fail the report. `trustai soak-report --demote-on-failure` records the
+failed soak report and appends a `promotion_gate.demoted` entry whose trigger
+binds the failed report entry id, failed metric checks, blocking incidents, and
+blocking drift alarms.
 
 Proof-pack verification replays soak reports from the embedded source soak
 window. The verifier rejects packs when the source soak hash, window timestamps,
