@@ -8,6 +8,7 @@ from typing import Any
 
 from .canonical import content_hash, parse_rfc3339, utc_now, without_keys
 from .chain import EvidenceChain
+from .merkle import merkle_root, verify_inclusion
 from .roadmap_audit import ROADMAP_AUDIT_ENTRY_TYPE, STATUS_REFERENCE_ATTESTED, verify_roadmap_audit
 
 EXTERNAL_EVIDENCE_SCHEMA = "trustai.external-evidence-manifest/0.1"
@@ -37,6 +38,14 @@ class ExternalEvidenceVerification:
     covered_count: int = 0
     required_count: int = 0
 
+@dataclass
+class RoadmapEvidenceChainVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+    audit_entry_count: int = 0
+    external_evidence_entry_count: int = 0
+    complete_external_evidence_entry_count: int = 0
 
 def build_external_evidence_manifest(
     roadmap_audit: dict[str, Any],
@@ -158,6 +167,82 @@ def verify_external_evidence_manifest(
 
 
 
+def verify_roadmap_evidence_chain(
+    chain: EvidenceChain,
+    *,
+    key: str | None = None,
+    require_external: bool = False,
+    require_complete: bool = False,
+) -> RoadmapEvidenceChainVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    chain_result = chain.verify_all(key=key)
+    if not chain_result.ok:
+        errors.extend(f"chain: {error}" for error in chain_result.errors)
+
+    audit_entries: list[dict[str, Any]] = []
+    audit_by_source: dict[tuple[Any, Any], dict[str, Any]] = {}
+    external_entries: list[dict[str, Any]] = []
+    complete_external_count = 0
+
+    for entry in chain.entries:
+        entry_type = entry.get("entry_type")
+        payload = entry.get("payload", {})
+        if not isinstance(payload, dict):
+            errors.append(f"entry {entry.get('index')} payload must be an object")
+            continue
+        if entry_type == ROADMAP_AUDIT_ENTRY_TYPE:
+            audit_entries.append(entry)
+            audit_id = payload.get("audit_id")
+            audit_hash = payload.get("audit_hash")
+            if not audit_id:
+                errors.append(f"roadmap audit entry {entry.get('index')} missing audit_id")
+            if not audit_hash:
+                errors.append(f"roadmap audit entry {entry.get('index')} missing audit_hash")
+            if audit_id and audit_hash:
+                audit_by_source[(audit_id, audit_hash)] = entry
+        elif entry_type == EXTERNAL_EVIDENCE_ENTRY_TYPE:
+            external_entries.append(entry)
+
+    if not audit_entries:
+        errors.append("roadmap evidence chain has no roadmap audit entry")
+    if require_external and not external_entries:
+        errors.append("roadmap evidence chain has no external evidence entry")
+
+    for entry in external_entries:
+        payload = entry.get("payload", {})
+        source = payload.get("source_roadmap_audit")
+        if not isinstance(source, dict):
+            errors.append(f"external evidence entry {entry.get('index')} missing source_roadmap_audit")
+            continue
+        source_key = (source.get("audit_id"), source.get("audit_hash"))
+        audit_entry = audit_by_source.get(source_key)
+        if audit_entry is None:
+            errors.append(f"external evidence entry {entry.get('index')} source roadmap audit is not chained")
+            continue
+        if audit_entry.get("index", -1) >= entry.get("index", -1):
+            errors.append(f"external evidence entry {entry.get('index')} does not follow its source roadmap audit entry")
+
+        proof = payload.get("source_roadmap_audit_inclusion_proof")
+        if not isinstance(proof, dict):
+            errors.append(f"external evidence entry {entry.get('index')} missing source roadmap audit inclusion proof")
+        else:
+            _verify_source_roadmap_audit_inclusion_proof(chain, audit_entry, entry, proof, errors)
+
+        _verify_external_evidence_entry_summary(entry, errors, warnings, require_complete=require_complete)
+        if payload.get("status") == "complete" and payload.get("missing_requirement_count") == 0:
+            complete_external_count += 1
+
+    return RoadmapEvidenceChainVerification(
+        ok=not errors,
+        errors=errors,
+        warnings=warnings,
+        audit_entry_count=len(audit_entries),
+        external_evidence_entry_count=len(external_entries),
+        complete_external_evidence_entry_count=complete_external_count,
+    )
+
 def append_external_evidence_manifest(
     chain: EvidenceChain,
     manifest: dict[str, Any],
@@ -261,6 +346,66 @@ Status: {summary.get('status', '')}
 """
 
 
+
+def _verify_source_roadmap_audit_inclusion_proof(
+    chain: EvidenceChain,
+    audit_entry: dict[str, Any],
+    external_entry: dict[str, Any],
+    proof: dict[str, Any],
+    errors: list[str],
+) -> None:
+    if proof.get("entry_id") != audit_entry.get("entry_id"):
+        errors.append(f"external evidence entry {external_entry.get('index')} source audit proof entry_id mismatch")
+    if proof.get("index") != audit_entry.get("index"):
+        errors.append(f"external evidence entry {external_entry.get('index')} source audit proof index mismatch")
+
+    tree_size = proof.get("tree_size")
+    if not isinstance(tree_size, int):
+        errors.append(f"external evidence entry {external_entry.get('index')} source audit proof tree_size invalid")
+        return
+    audit_index = int(audit_entry.get("index", -1))
+    external_index = int(external_entry.get("index", -1))
+    if tree_size <= audit_index:
+        errors.append(f"external evidence entry {external_entry.get('index')} source audit proof tree_size excludes audit entry")
+        return
+    if tree_size > external_index:
+        errors.append(f"external evidence entry {external_entry.get('index')} source audit proof was not recorded before append")
+        return
+
+    prefix_ids = chain.entry_ids()[:tree_size]
+    expected_root = merkle_root(prefix_ids)
+    if proof.get("tree_root") != expected_root:
+        errors.append(f"external evidence entry {external_entry.get('index')} source audit proof tree_root mismatch")
+    audit_path = proof.get("audit_path")
+    if not isinstance(audit_path, list):
+        errors.append(f"external evidence entry {external_entry.get('index')} source audit proof audit_path invalid")
+        return
+    if not verify_inclusion(str(audit_entry.get("entry_id")), audit_path, str(proof.get("tree_root") or "")):
+        errors.append(f"external evidence entry {external_entry.get('index')} source audit proof inclusion failed")
+
+
+def _verify_external_evidence_entry_summary(
+    entry: dict[str, Any],
+    errors: list[str],
+    warnings: list[str],
+    *,
+    require_complete: bool,
+) -> None:
+    payload = entry.get("payload", {})
+    required = payload.get("required_requirement_count")
+    covered = payload.get("covered_requirement_count")
+    missing = payload.get("missing_requirement_count")
+    status = payload.get("status")
+    if all(isinstance(value, int) for value in (required, covered, missing)) and covered + missing != required:
+        errors.append(f"external evidence entry {entry.get('index')} coverage counts do not add up")
+    if status == "complete" and missing != 0:
+        errors.append(f"external evidence entry {entry.get('index')} is complete but has missing requirements")
+    if status != "complete":
+        message = f"external evidence entry {entry.get('index')} is partial"
+        if require_complete:
+            errors.append(message)
+        else:
+            warnings.append(message)
 
 def _source_roadmap_audit_proof(chain: EvidenceChain, source_roadmap_audit: Any) -> dict[str, Any] | None:
     if not isinstance(source_roadmap_audit, dict):

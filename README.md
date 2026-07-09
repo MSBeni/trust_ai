@@ -57,7 +57,7 @@ The repository has two GitHub Actions workflows:
   bundled aitrade proof pack, verifies it offline, generates, verifies, appends, and chain-verifies the
   roadmap audit, and runs clean-checkout smoke tests for proof packs, ingestion,
   re-execution, verifier releases, verifier distribution, Go verifier release
-  workflow controls, roadmap coverage, external evidence manifests, and standards
+  workflow controls, roadmap coverage, external evidence manifests, semantic roadmap evidence chains, and standards
   metadata.
 - `.github/workflows/go-verifier.yml` tests the dependency-free Go verifier
   source and cross-builds static verifier artifacts with checksum, SBOM,
@@ -82,6 +82,7 @@ python -m trustai external-evidence-manifest artifacts/roadmap-audit.json --evid
 python -m trustai external-evidence-verify artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json
 python -m trustai external-evidence-append artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --state .trustai/roadmap-evidence-demo/evidence-chain.json --tenant roadmap-evidence-local --out artifacts/external-evidence-entry.json
 python -m trustai chain-verify --state .trustai/roadmap-evidence-demo/evidence-chain.json --tenant roadmap-evidence-local
+python -m trustai roadmap-evidence-verify --state .trustai/roadmap-evidence-demo/evidence-chain.json --tenant roadmap-evidence-local --require-external
 python -m unittest tests.test_go_verifier_source
 python -m trustai verifier-conformance artifacts/aitrade-proof-pack.json --out artifacts/verifier-conformance.json --markdown artifacts/verifier-conformance.md
 python -m trustai verifier-conformance-verify artifacts/verifier-conformance.json

@@ -600,6 +600,7 @@ from .external_evidence import (
     load_external_evidence_manifest,
     parse_evidence_arg,
     verify_external_evidence_manifest,
+    verify_roadmap_evidence_chain,
     write_external_evidence_manifest,
     write_external_evidence_markdown,
 )
@@ -6785,6 +6786,29 @@ def cmd_external_evidence_verify(args: argparse.Namespace) -> int:
     return 1
 
 
+def cmd_roadmap_evidence_verify(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    result = verify_roadmap_evidence_chain(
+        chain,
+        key=args.key,
+        require_external=args.require_external or args.require_complete,
+        require_complete=args.require_complete,
+    )
+    if result.ok:
+        print(f"verified roadmap evidence chain: {args.state}")
+        print(f"roadmap audit entries: {result.audit_entry_count}")
+        print(f"external evidence entries: {result.external_evidence_entry_count}")
+        print(f"complete external evidence entries: {result.complete_external_evidence_entry_count}")
+        print(f"tree root: {chain.tree()['root']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"roadmap evidence chain verification failed: {args.state}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 1
 
 def cmd_external_evidence_append(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
@@ -12978,6 +13002,13 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_append.add_argument("--key")
     _add_state_args(external_evidence_append)
     external_evidence_append.set_defaults(func=cmd_external_evidence_append)
+
+    roadmap_evidence_verify = subparsers.add_parser("roadmap-evidence-verify", help="verify linked roadmap audit and external-evidence entries in an evidence chain")
+    _add_state_args(roadmap_evidence_verify)
+    roadmap_evidence_verify.add_argument("--require-external", action="store_true")
+    roadmap_evidence_verify.add_argument("--require-complete", action="store_true")
+    roadmap_evidence_verify.set_defaults(func=cmd_roadmap_evidence_verify)
+
     standards_export = subparsers.add_parser("standards-export", help="write a standards submission package for public specs")
     standards_export.add_argument("--root", default=".")
     standards_export.add_argument("--out", default="artifacts/standards-submission.json")

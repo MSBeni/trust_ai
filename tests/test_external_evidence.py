@@ -14,6 +14,7 @@ from trustai.external_evidence import (
     parse_evidence_arg,
     render_external_evidence_markdown,
     verify_external_evidence_manifest,
+    verify_roadmap_evidence_chain,
 )
 from trustai.roadmap_audit import STATUS_REFERENCE_ATTESTED, append_roadmap_audit, build_roadmap_audit
 
@@ -75,6 +76,41 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertEqual(1, entry["payload"]["covered_requirement_count"])
             self.assertEqual(audit_entry["entry_id"], entry["payload"]["source_roadmap_audit_inclusion_proof"]["entry_id"])
             self.assertTrue(chain.verify_all().ok)
+            semantic_result = verify_roadmap_evidence_chain(chain, require_external=True)
+            strict_result = verify_roadmap_evidence_chain(chain, require_external=True, require_complete=True)
+            self.assertTrue(semantic_result.ok, semantic_result.errors)
+            self.assertFalse(strict_result.ok)
+            self.assertTrue(any("partial" in error for error in strict_result.errors))
+            tampered = EvidenceChain(chain.path, chain.tenant_id, copy.deepcopy(chain.entries))
+            tampered.entries[1]["payload"]["source_roadmap_audit_inclusion_proof"]["tree_root"] = "0" * 64
+            tampered_result = verify_roadmap_evidence_chain(tampered, require_external=True)
+            self.assertFalse(tampered_result.ok)
+            self.assertTrue(any("tree_root mismatch" in error for error in tampered_result.errors))
+
+    def test_roadmap_evidence_chain_rejects_unlinked_external_entry(self):
+        audit = build_roadmap_audit(ROOT)
+        manifest = build_external_evidence_manifest(
+            audit,
+            root=ROOT,
+            evidence=[
+                {
+                    "requirement_id": "oss-verifier-and-public-spec",
+                    "authority_kind": "ci-run",
+                    "path": FIXTURE,
+                    "description": "Recorded verifier workflow run export.",
+                }
+            ],
+        )
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="external-evidence-test")
+            append_external_evidence_manifest(chain, manifest, audit, root=ROOT)
+
+            self.assertTrue(chain.verify_all().ok)
+            result = verify_roadmap_evidence_chain(chain, require_external=True)
+            self.assertFalse(result.ok)
+            self.assertTrue(any("no roadmap audit entry" in error for error in result.errors))
+            self.assertTrue(any("source roadmap audit is not chained" in error for error in result.errors))
 
     def test_external_evidence_append_requires_complete_when_requested(self):
         audit = build_roadmap_audit(ROOT)
@@ -178,6 +214,21 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 check=True,
             )
 
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "roadmap-evidence-verify",
+                    "--state",
+                    str(chain_path),
+                    "--tenant",
+                    "external-evidence-cli",
+                    "--require-external",
+                ],
+                cwd=ROOT,
+                check=True,
+            )
             chain = EvidenceChain.load(chain_path, tenant_id="external-evidence-cli")
             self.assertEqual(2, len(chain.entries))
             self.assertEqual(EXTERNAL_EVIDENCE_ENTRY_TYPE, chain.entries[1]["entry_type"])
@@ -209,6 +260,14 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertTrue(result.ok, result.errors)
         self.assertEqual("complete", manifest["summary"]["status"])
         self.assertEqual(len(requirements), result.covered_count)
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="external-evidence-complete")
+            append_roadmap_audit(chain, audit, root=ROOT)
+            append_external_evidence_manifest(chain, manifest, audit, root=ROOT, require_complete=True)
+            chain_result = verify_roadmap_evidence_chain(chain, require_external=True, require_complete=True)
+            self.assertTrue(chain_result.ok, chain_result.errors)
+            self.assertEqual(1, chain_result.complete_external_evidence_entry_count)
 
     def test_external_evidence_detects_artifact_hash_tamper(self):
         audit = build_roadmap_audit(ROOT)

@@ -67,6 +67,19 @@ SHOULD include that entry inclusion proof in the external-evidence payload. If
 `require_complete` is set and any reference-attested requirement is uncovered,
 append MUST fail.
 
+## Semantic Chain Verification
+
+`roadmap-evidence-verify` verifies the evidence chain itself and then checks the
+roadmap evidence relationships:
+
+1. At least one `trustai.roadmap_audit.attested` entry is present.
+2. Each `trustai.external_evidence_manifest.attested` entry points to a matching
+   prior roadmap audit entry by `audit_id` and `audit_hash`.
+3. The stored `source_roadmap_audit_inclusion_proof` verifies against the prefix
+   tree root that existed before the external-evidence entry was appended.
+4. Coverage counts are internally consistent.
+5. With `--require-complete`, every external-evidence entry must be complete.
+
 ## Verification Rules
 
 A verifier MUST:

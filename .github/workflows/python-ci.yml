@@ -48,6 +48,18 @@ jobs:
       - name: Verify roadmap audit evidence chain
         run: python -m trustai chain-verify --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci
 
+      - name: Generate external evidence manifest
+        run: python -m trustai external-evidence-manifest artifacts/roadmap-audit.json --evidence "oss-verifier-and-public-spec,ci-run,examples/aitrade/external-evidence/go-verifier-workflow-run.json,Recorded Go verifier workflow export" --out artifacts/external-evidence-manifest.json --markdown artifacts/external-evidence-manifest.md
+
+      - name: Verify external evidence manifest
+        run: python -m trustai external-evidence-verify artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json
+
+      - name: Append external evidence manifest to evidence chain
+        run: python -m trustai external-evidence-append artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --out artifacts/external-evidence-entry.json
+
+      - name: Verify roadmap evidence chain semantics
+        run: python -m trustai roadmap-evidence-verify --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --require-external
+
       - name: Run clean-checkout smoke tests
         run: >
           python -m unittest -v
