@@ -1,0 +1,25 @@
+{
+  "schema": "trustai.example-external-evidence/0.1",
+  "authority_kind": "ci-run",
+  "issuer": "GitHub Actions",
+  "repository": "MSBeni/trust_ai",
+  "workflow": ".github/workflows/go-verifier.yml",
+  "ref": "refs/heads/main",
+  "commit": "77d4f95",
+  "status": "recorded-example",
+  "conclusion": "not-live-run",
+  "artifacts": [
+    "trustai-verify-linux-amd64",
+    "trustai-verify-linux-arm64",
+    "trustai-verify-darwin-amd64",
+    "trustai-verify-darwin-arm64",
+    "trustai-verify-windows-amd64.exe",
+    "checksums.txt",
+    "sbom.json",
+    "provenance.json"
+  ],
+  "limitations": [
+    "This checked-in fixture demonstrates manifest hashing only.",
+    "Production evidence must replace it with an exported workflow run, attestation, and artifact checksum set from GitHub Actions."
+  ]
+}

@@ -19,6 +19,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/tamper-stress-report-v0.1.md",
     "docs/specs/production-trust-v0.1.md",
     "docs/specs/roadmap-audit-v0.1.md",
+    "docs/specs/external-evidence-manifest-v0.1.md",
     "docs/specs/anchor-provider-receipt-v0.1.md",
     "docs/specs/otel-ingest-v0.1.md",
     "docs/specs/collector-topology-v0.1.md",

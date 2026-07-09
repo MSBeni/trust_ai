@@ -593,6 +593,14 @@ from .roadmap_audit import (
     write_roadmap_audit,
     write_roadmap_audit_markdown,
 )
+from .external_evidence import (
+    build_external_evidence_manifest,
+    load_external_evidence_manifest,
+    parse_evidence_arg,
+    verify_external_evidence_manifest,
+    write_external_evidence_manifest,
+    write_external_evidence_markdown,
+)
 from .standards_body_submission import (
     append_standards_body_submission_receipt,
     build_standards_body_submission_receipt,
@@ -6685,6 +6693,66 @@ def cmd_roadmap_audit_verify(args: argparse.Namespace) -> int:
             print(f"warning: {warning}")
         return 0
     print(f"roadmap audit verification failed: {args.audit}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_external_evidence_manifest(args: argparse.Namespace) -> int:
+    roadmap_audit = load_roadmap_audit(args.roadmap_audit)
+    evidence = []
+    try:
+        for value in args.evidence or []:
+            evidence.append(parse_evidence_arg(value))
+        manifest = build_external_evidence_manifest(
+            roadmap_audit,
+            root=args.root,
+            evidence=evidence,
+            manifest_ref=args.manifest_ref,
+        )
+    except ValueError as exc:
+        print(f"external evidence manifest failed: {exc}", file=sys.stderr)
+        return 2
+    result = verify_external_evidence_manifest(
+        manifest,
+        roadmap_audit,
+        root=args.root,
+        require_complete=args.require_complete,
+    )
+    if not result.ok:
+        print("external evidence manifest verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_external_evidence_manifest(args.out, manifest)
+    if args.markdown:
+        write_external_evidence_markdown(args.markdown, manifest)
+        print(f"external evidence markdown: {args.markdown}")
+    summary = manifest["summary"]
+    print(f"external evidence manifest: {args.out}")
+    print(f"manifest id: {manifest['manifest_id']}")
+    print(f"status: {summary['status']}")
+    print(f"covered requirements: {summary['covered_requirement_count']}/{summary['required_requirement_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_external_evidence_verify(args: argparse.Namespace) -> int:
+    roadmap_audit = load_roadmap_audit(args.roadmap_audit)
+    result = verify_external_evidence_manifest(
+        load_external_evidence_manifest(args.manifest),
+        roadmap_audit,
+        root=args.root,
+        require_complete=args.require_complete,
+    )
+    if result.ok:
+        print(f"verified external evidence manifest: {args.manifest}")
+        print(f"covered requirements: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"external evidence manifest verification failed: {args.manifest}", file=sys.stderr)
     for error in result.errors:
         print(f"- {error}", file=sys.stderr)
     return 1
@@ -12820,6 +12888,23 @@ def build_parser() -> argparse.ArgumentParser:
     roadmap_audit_verify.add_argument("--roadmap", default="ROADMAP.md")
     roadmap_audit_verify.add_argument("--coverage", default="docs/architecture/roadmap-coverage.md")
     roadmap_audit_verify.set_defaults(func=cmd_roadmap_audit_verify)
+
+    external_evidence = subparsers.add_parser("external-evidence-manifest", help="write a production external-evidence manifest over a roadmap audit")
+    external_evidence.add_argument("roadmap_audit")
+    external_evidence.add_argument("--root", default=".")
+    external_evidence.add_argument("--evidence", action="append", default=[], help="requirement_id,authority_kind,path,description")
+    external_evidence.add_argument("--manifest-ref", default="production-external-evidence")
+    external_evidence.add_argument("--require-complete", action="store_true")
+    external_evidence.add_argument("--out", default="artifacts/external-evidence-manifest.json")
+    external_evidence.add_argument("--markdown", default="artifacts/external-evidence-manifest.md")
+    external_evidence.set_defaults(func=cmd_external_evidence_manifest)
+
+    external_evidence_verify = subparsers.add_parser("external-evidence-verify", help="verify a production external-evidence manifest")
+    external_evidence_verify.add_argument("manifest")
+    external_evidence_verify.add_argument("roadmap_audit")
+    external_evidence_verify.add_argument("--root", default=".")
+    external_evidence_verify.add_argument("--require-complete", action="store_true")
+    external_evidence_verify.set_defaults(func=cmd_external_evidence_verify)
 
     standards_export = subparsers.add_parser("standards-export", help="write a standards submission package for public specs")
     standards_export.add_argument("--root", default=".")
