@@ -49,31 +49,31 @@ jobs:
         run: python -m trustai chain-verify --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci
 
       - name: Generate external evidence manifest
-        run: python -m trustai external-evidence-manifest artifacts/roadmap-audit.json --evidence "oss-verifier-and-public-spec,ci-run,examples/aitrade/external-evidence/go-verifier-workflow-run.json,Recorded Go verifier workflow export" --out artifacts/external-evidence-manifest.json --markdown artifacts/external-evidence-manifest.md
+        run: python -m trustai external-evidence-manifest artifacts/roadmap-audit.json --require-fresh --now 2026-07-09T00:00:00Z --evidence "oss-verifier-and-public-spec,ci-run,examples/aitrade/external-evidence/go-verifier-workflow-run.json,Recorded Go verifier workflow export;issuer=GitHub Actions;subject=trustai go verifier release workflow;source_uri=https://github.com/MSBeni/trust_ai/actions;issued_at=2026-07-08T00:00:00Z;expires_at=2026-12-31T00:00:00Z" --out artifacts/external-evidence-manifest.json --markdown artifacts/external-evidence-manifest.md
 
       - name: Verify external evidence manifest
-        run: python -m trustai external-evidence-verify artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json
+        run: python -m trustai external-evidence-verify artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --require-fresh --now 2026-07-09T00:00:00Z
 
       - name: Append external evidence manifest to evidence chain
-        run: python -m trustai external-evidence-append artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --out artifacts/external-evidence-entry.json
+        run: python -m trustai external-evidence-append artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --require-fresh --now 2026-07-09T00:00:00Z --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --out artifacts/external-evidence-entry.json
 
       - name: Verify roadmap evidence chain semantics
-        run: python -m trustai roadmap-evidence-verify --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --require-external
+        run: python -m trustai roadmap-evidence-verify --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --require-external --require-fresh
 
       - name: Generate roadmap evidence report
-        run: python -m trustai roadmap-evidence-report --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --require-external --out artifacts/roadmap-evidence-report.json --markdown artifacts/roadmap-evidence-report.md
+        run: python -m trustai roadmap-evidence-report --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --require-external --require-fresh --out artifacts/roadmap-evidence-report.json --markdown artifacts/roadmap-evidence-report.md
 
       - name: Verify roadmap evidence report
-        run: python -m trustai roadmap-evidence-report-verify artifacts/roadmap-evidence-report.json --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --require-external
+        run: python -m trustai roadmap-evidence-report-verify artifacts/roadmap-evidence-report.json --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --require-external --require-fresh
 
       - name: Generate roadmap evidence bundle
-        run: python -m trustai roadmap-evidence-bundle --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --require-external --report artifacts/roadmap-evidence-report.json --root . --source-artifact "roadmap-audit,artifacts/roadmap-audit.json,Generated roadmap audit JSON" --source-artifact "external-evidence-manifest,artifacts/external-evidence-manifest.json,Generated external evidence manifest JSON" --include-manifest-evidence --require-source-artifacts --out artifacts/roadmap-evidence-bundle.json --markdown artifacts/roadmap-evidence-bundle.md
+        run: python -m trustai roadmap-evidence-bundle --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --require-external --require-fresh --report artifacts/roadmap-evidence-report.json --root . --source-artifact "roadmap-audit,artifacts/roadmap-audit.json,Generated roadmap audit JSON" --source-artifact "external-evidence-manifest,artifacts/external-evidence-manifest.json,Generated external evidence manifest JSON" --include-manifest-evidence --require-source-artifacts --out artifacts/roadmap-evidence-bundle.json --markdown artifacts/roadmap-evidence-bundle.md
 
       - name: Verify roadmap evidence bundle
-        run: python -m trustai roadmap-evidence-bundle-verify artifacts/roadmap-evidence-bundle.json --require-external --require-source-artifacts
+        run: python -m trustai roadmap-evidence-bundle-verify artifacts/roadmap-evidence-bundle.json --require-external --require-fresh --require-source-artifacts
 
       - name: Extract roadmap evidence bundle sources
-        run: python -m trustai roadmap-evidence-bundle-extract artifacts/roadmap-evidence-bundle.json --out-dir artifacts/roadmap-evidence-bundle-sources --require-external --require-source-artifacts
+        run: python -m trustai roadmap-evidence-bundle-extract artifacts/roadmap-evidence-bundle.json --out-dir artifacts/roadmap-evidence-bundle-sources --require-external --require-fresh --require-source-artifacts
 
       - name: Verify unittest discovery
         run: python -m unittest discover -v -p test_repository_ci.py

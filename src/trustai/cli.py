@@ -6758,6 +6758,8 @@ def cmd_external_evidence_manifest(args: argparse.Namespace) -> int:
         roadmap_audit,
         root=args.root,
         require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
     )
     if not result.ok:
         print("external evidence manifest verification failed before export", file=sys.stderr)
@@ -6773,6 +6775,7 @@ def cmd_external_evidence_manifest(args: argparse.Namespace) -> int:
     print(f"manifest id: {manifest['manifest_id']}")
     print(f"status: {summary['status']}")
     print(f"covered requirements: {summary['covered_requirement_count']}/{summary['required_requirement_count']}")
+    print(f"fresh evidence: {result.fresh_evidence_count}/{summary['evidence_count']}")
     for warning in result.warnings:
         print(f"warning: {warning}")
     return 0
@@ -6785,10 +6788,13 @@ def cmd_external_evidence_verify(args: argparse.Namespace) -> int:
         roadmap_audit,
         root=args.root,
         require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
     )
     if result.ok:
         print(f"verified external evidence manifest: {args.manifest}")
         print(f"covered requirements: {result.covered_count}/{result.required_count}")
+        print(f"fresh evidence: {result.fresh_evidence_count}/{result.fresh_evidence_count + result.stale_evidence_count + result.missing_freshness_count}")
         for warning in result.warnings:
             print(f"warning: {warning}")
         return 0
@@ -6805,12 +6811,14 @@ def cmd_roadmap_evidence_verify(args: argparse.Namespace) -> int:
         key=args.key,
         require_external=args.require_external or args.require_complete,
         require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
     )
     if result.ok:
         print(f"verified roadmap evidence chain: {args.state}")
         print(f"roadmap audit entries: {result.audit_entry_count}")
         print(f"external evidence entries: {result.external_evidence_entry_count}")
         print(f"complete external evidence entries: {result.complete_external_evidence_entry_count}")
+        print(f"fresh external evidence entries: {result.fresh_external_evidence_entry_count}")
         print(f"tree root: {chain.tree()['root']}")
         for warning in result.warnings:
             print(f"warning: {warning}")
@@ -6830,6 +6838,7 @@ def cmd_roadmap_evidence_report(args: argparse.Namespace) -> int:
         key=args.key,
         require_external=args.require_external or args.require_complete,
         require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
     )
     result = verify_roadmap_evidence_report(
         report,
@@ -6837,6 +6846,7 @@ def cmd_roadmap_evidence_report(args: argparse.Namespace) -> int:
         key=args.key,
         require_external=args.require_external or args.require_complete,
         require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
     )
     if not result.ok:
         print("roadmap evidence report verification failed before export", file=sys.stderr)
@@ -6852,6 +6862,7 @@ def cmd_roadmap_evidence_report(args: argparse.Namespace) -> int:
     print(f"report id: {report['report_id']}")
     print(f"roadmap audit entries: {summary['roadmap_audit_entry_count']}")
     print(f"external evidence entries: {summary['external_evidence_entry_count']}")
+    print(f"fresh external evidence entries: {summary.get('fresh_external_evidence_entry_count', 0)}")
     print(f"tree root: {report['chain']['tree']['root']}")
     for warning in result.warnings:
         print(f"warning: {warning}")
@@ -6867,6 +6878,7 @@ def cmd_roadmap_evidence_report_verify(args: argparse.Namespace) -> int:
         key=args.key,
         require_external=args.require_external or args.require_complete,
         require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
     )
     if result.ok:
         print(f"verified roadmap evidence report: {args.report}")
@@ -6954,6 +6966,7 @@ def cmd_roadmap_evidence_bundle(args: argparse.Namespace) -> int:
             key=args.key,
             require_external=args.require_external or args.require_complete,
             require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
             report=report,
             root=args.root,
             source_artifacts=source_artifacts,
@@ -6966,6 +6979,7 @@ def cmd_roadmap_evidence_bundle(args: argparse.Namespace) -> int:
         key=args.key,
         require_external=args.require_external or args.require_complete,
         require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
         require_source_artifacts=args.require_source_artifacts,
     )
     if not result.ok:
@@ -6996,6 +7010,7 @@ def cmd_roadmap_evidence_bundle_verify(args: argparse.Namespace) -> int:
         key=args.key,
         require_external=args.require_external or args.require_complete,
         require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
         require_source_artifacts=args.require_source_artifacts,
     )
     if result.ok:
@@ -7024,6 +7039,7 @@ def cmd_roadmap_evidence_bundle_extract(args: argparse.Namespace) -> int:
             key=args.key,
             require_external=args.require_external or args.require_complete,
             require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
             require_source_artifacts=args.require_source_artifacts,
             overwrite=args.overwrite,
         )
@@ -7047,6 +7063,8 @@ def cmd_external_evidence_append(args: argparse.Namespace) -> int:
             roadmap_audit,
             root=args.root,
             require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
             key=args.key,
         )
     except ValueError as exc:
@@ -13212,9 +13230,11 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence = subparsers.add_parser("external-evidence-manifest", help="write a production external-evidence manifest over a roadmap audit")
     external_evidence.add_argument("roadmap_audit")
     external_evidence.add_argument("--root", default=".")
-    external_evidence.add_argument("--evidence", action="append", default=[], help="requirement_id,authority_kind,path,description")
+    external_evidence.add_argument("--evidence", action="append", default=[], help="requirement_id,authority_kind,path,description[;issuer=...;subject=...;source_uri=...;issued_at=...;expires_at=...]")
     external_evidence.add_argument("--manifest-ref", default="production-external-evidence")
     external_evidence.add_argument("--require-complete", action="store_true")
+    external_evidence.add_argument("--require-fresh", action="store_true", help="fail unless every evidence item has an unexpired issued_at/expires_at window")
+    external_evidence.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to manifest generated_at")
     external_evidence.add_argument("--out", default="artifacts/external-evidence-manifest.json")
     external_evidence.add_argument("--markdown", default="artifacts/external-evidence-manifest.md")
     external_evidence.set_defaults(func=cmd_external_evidence_manifest)
@@ -13224,6 +13244,8 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_verify.add_argument("roadmap_audit")
     external_evidence_verify.add_argument("--root", default=".")
     external_evidence_verify.add_argument("--require-complete", action="store_true")
+    external_evidence_verify.add_argument("--require-fresh", action="store_true", help="fail unless every evidence item has an unexpired issued_at/expires_at window")
+    external_evidence_verify.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to manifest generated_at")
     external_evidence_verify.set_defaults(func=cmd_external_evidence_verify)
 
     external_evidence_append = subparsers.add_parser("external-evidence-append", help="append a verified external-evidence manifest to an evidence chain")
@@ -13231,6 +13253,8 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_append.add_argument("roadmap_audit")
     external_evidence_append.add_argument("--root", default=".")
     external_evidence_append.add_argument("--require-complete", action="store_true")
+    external_evidence_append.add_argument("--require-fresh", action="store_true", help="fail unless every evidence item has an unexpired issued_at/expires_at window")
+    external_evidence_append.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to manifest generated_at")
     external_evidence_append.add_argument("--out", default="artifacts/external-evidence-entry.json")
     external_evidence_append.add_argument("--key")
     _add_state_args(external_evidence_append)
@@ -13240,11 +13264,13 @@ def build_parser() -> argparse.ArgumentParser:
     _add_state_args(roadmap_evidence_verify)
     roadmap_evidence_verify.add_argument("--require-external", action="store_true")
     roadmap_evidence_verify.add_argument("--require-complete", action="store_true")
+    roadmap_evidence_verify.add_argument("--require-fresh", action="store_true", help="fail unless external evidence entries were appended with fresh evidence required")
     roadmap_evidence_verify.set_defaults(func=cmd_roadmap_evidence_verify)
     roadmap_evidence_report = subparsers.add_parser("roadmap-evidence-report", help="write an offline roadmap evidence report from an evidence chain")
     _add_state_args(roadmap_evidence_report)
     roadmap_evidence_report.add_argument("--require-external", action="store_true")
     roadmap_evidence_report.add_argument("--require-complete", action="store_true")
+    roadmap_evidence_report.add_argument("--require-fresh", action="store_true", help="fail unless external evidence entries were appended with fresh evidence required")
     roadmap_evidence_report.add_argument("--out", default="artifacts/roadmap-evidence-report.json")
     roadmap_evidence_report.add_argument("--markdown", default="artifacts/roadmap-evidence-report.md")
     roadmap_evidence_report.set_defaults(func=cmd_roadmap_evidence_report)
@@ -13253,11 +13279,13 @@ def build_parser() -> argparse.ArgumentParser:
     _add_state_args(roadmap_evidence_report_verify)
     roadmap_evidence_report_verify.add_argument("--require-external", action="store_true")
     roadmap_evidence_report_verify.add_argument("--require-complete", action="store_true")
+    roadmap_evidence_report_verify.add_argument("--require-fresh", action="store_true", help="fail unless external evidence entries were appended with fresh evidence required")
     roadmap_evidence_report_verify.set_defaults(func=cmd_roadmap_evidence_report_verify)
     roadmap_evidence_bundle = subparsers.add_parser("roadmap-evidence-bundle", help="write a self-contained roadmap evidence bundle")
     _add_state_args(roadmap_evidence_bundle)
     roadmap_evidence_bundle.add_argument("--require-external", action="store_true")
     roadmap_evidence_bundle.add_argument("--require-complete", action="store_true")
+    roadmap_evidence_bundle.add_argument("--require-fresh", action="store_true", help="fail unless external evidence entries were appended with fresh evidence required")
     roadmap_evidence_bundle.add_argument("--report", help="verified roadmap evidence report to embed; generated when omitted")
     roadmap_evidence_bundle.add_argument("--root", default=".")
     roadmap_evidence_bundle.add_argument("--source-artifact", action="append", default=[], help="kind,path,description")
@@ -13271,6 +13299,7 @@ def build_parser() -> argparse.ArgumentParser:
     roadmap_evidence_bundle_verify.add_argument("bundle")
     roadmap_evidence_bundle_verify.add_argument("--require-external", action="store_true")
     roadmap_evidence_bundle_verify.add_argument("--require-complete", action="store_true")
+    roadmap_evidence_bundle_verify.add_argument("--require-fresh", action="store_true", help="fail unless external evidence entries were appended with fresh evidence required")
     roadmap_evidence_bundle_verify.add_argument("--require-source-artifacts", action="store_true")
     roadmap_evidence_bundle_verify.set_defaults(func=cmd_roadmap_evidence_bundle_verify)
 
@@ -13279,6 +13308,7 @@ def build_parser() -> argparse.ArgumentParser:
     roadmap_evidence_bundle_extract.add_argument("--out-dir", default="artifacts/roadmap-evidence-bundle-sources")
     roadmap_evidence_bundle_extract.add_argument("--require-external", action="store_true")
     roadmap_evidence_bundle_extract.add_argument("--require-complete", action="store_true")
+    roadmap_evidence_bundle_extract.add_argument("--require-fresh", action="store_true", help="fail unless external evidence entries were appended with fresh evidence required")
     roadmap_evidence_bundle_extract.add_argument("--require-source-artifacts", action="store_true")
     roadmap_evidence_bundle_extract.add_argument("--overwrite", action="store_true")
     roadmap_evidence_bundle_extract.set_defaults(func=cmd_roadmap_evidence_bundle_extract)

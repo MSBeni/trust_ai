@@ -49,6 +49,9 @@ class ExternalEvidenceVerification:
     warnings: list[str]
     covered_count: int = 0
     required_count: int = 0
+    fresh_evidence_count: int = 0
+    stale_evidence_count: int = 0
+    missing_freshness_count: int = 0
 
 @dataclass
 class RoadmapEvidenceChainVerification:
@@ -58,6 +61,7 @@ class RoadmapEvidenceChainVerification:
     audit_entry_count: int = 0
     external_evidence_entry_count: int = 0
     complete_external_evidence_entry_count: int = 0
+    fresh_external_evidence_entry_count: int = 0
 
 
 @dataclass
@@ -127,10 +131,13 @@ def verify_external_evidence_manifest(
     *,
     root: str | Path,
     require_complete: bool = False,
+    require_fresh: bool = False,
+    now: str | None = None,
 ) -> ExternalEvidenceVerification:
     errors: list[str] = []
     warnings: list[str] = []
     root_path = Path(root)
+    freshness_now = _freshness_reference(manifest, now, errors)
 
     if manifest.get("schema") != EXTERNAL_EVIDENCE_SCHEMA:
         errors.append(f"unsupported external evidence schema: {manifest.get('schema')}")
@@ -163,6 +170,7 @@ def verify_external_evidence_manifest(
         errors.append("evidence must be a list")
         evidence = []
     covered_ids: set[str] = set()
+    freshness_counts = {"fresh": 0, "stale": 0, "missing": 0}
     for item in evidence:
         if not isinstance(item, dict):
             errors.append("external evidence item must be an object")
@@ -172,7 +180,15 @@ def verify_external_evidence_manifest(
             errors.append(f"external evidence requirement_id is not reference-attested: {requirement_id}")
         else:
             covered_ids.add(requirement_id)
-        _verify_evidence_item(root_path, item, errors)
+        freshness_status = _verify_evidence_item(
+            root_path,
+            item,
+            errors,
+            warnings,
+            now=freshness_now,
+            require_fresh=require_fresh,
+        )
+        freshness_counts[freshness_status] += 1
 
     expected_summary = _summary(required_ids, [item for item in evidence if isinstance(item, dict)])
     if manifest.get("summary") != expected_summary:
@@ -190,6 +206,9 @@ def verify_external_evidence_manifest(
         warnings=warnings,
         covered_count=len(covered_ids),
         required_count=len(required_ids),
+        fresh_evidence_count=freshness_counts["fresh"],
+        stale_evidence_count=freshness_counts["stale"],
+        missing_freshness_count=freshness_counts["missing"],
     )
 
 
@@ -200,6 +219,7 @@ def verify_roadmap_evidence_chain(
     key: str | None = None,
     require_external: bool = False,
     require_complete: bool = False,
+    require_fresh: bool = False,
 ) -> RoadmapEvidenceChainVerification:
     errors: list[str] = []
     warnings: list[str] = []
@@ -212,6 +232,7 @@ def verify_roadmap_evidence_chain(
     audit_by_source: dict[tuple[Any, Any], dict[str, Any]] = {}
     external_entries: list[dict[str, Any]] = []
     complete_external_count = 0
+    fresh_external_count = 0
 
     for entry in chain.entries:
         entry_type = entry.get("entry_type")
@@ -257,9 +278,21 @@ def verify_roadmap_evidence_chain(
         else:
             _verify_source_roadmap_audit_inclusion_proof(chain, audit_entry, entry, proof, errors)
 
-        _verify_external_evidence_entry_summary(entry, errors, warnings, require_complete=require_complete)
+        _verify_external_evidence_entry_summary(
+            entry,
+            errors,
+            warnings,
+            require_complete=require_complete,
+            require_fresh=require_fresh,
+        )
         if payload.get("status") == "complete" and payload.get("missing_requirement_count") == 0:
             complete_external_count += 1
+        if (
+            payload.get("require_fresh") is True
+            and payload.get("stale_evidence_count") == 0
+            and payload.get("missing_freshness_count") == 0
+        ):
+            fresh_external_count += 1
 
     return RoadmapEvidenceChainVerification(
         ok=not errors,
@@ -268,6 +301,7 @@ def verify_roadmap_evidence_chain(
         audit_entry_count=len(audit_entries),
         external_evidence_entry_count=len(external_entries),
         complete_external_evidence_entry_count=complete_external_count,
+        fresh_external_evidence_entry_count=fresh_external_count,
     )
 
 
@@ -277,6 +311,7 @@ def build_roadmap_evidence_report(
     key: str | None = None,
     require_external: bool = False,
     require_complete: bool = False,
+    require_fresh: bool = False,
     generated_at: str | None = None,
 ) -> dict[str, Any]:
     result = verify_roadmap_evidence_chain(
@@ -284,6 +319,7 @@ def build_roadmap_evidence_report(
         key=key,
         require_external=require_external or require_complete,
         require_complete=require_complete,
+        require_fresh=require_fresh,
     )
     body = {
         "schema": ROADMAP_EVIDENCE_REPORT_SCHEMA,
@@ -291,6 +327,7 @@ def build_roadmap_evidence_report(
         "verification_options": {
             "require_external": require_external or require_complete,
             "require_complete": require_complete,
+            "require_fresh": require_fresh,
         },
         "chain": _roadmap_evidence_chain_record(chain),
         "summary": _roadmap_evidence_summary(chain, result),
@@ -313,6 +350,7 @@ def verify_roadmap_evidence_report(
     key: str | None = None,
     require_external: bool = False,
     require_complete: bool = False,
+    require_fresh: bool = False,
 ) -> RoadmapEvidenceReportVerification:
     errors: list[str] = []
     warnings: list[str] = []
@@ -325,6 +363,7 @@ def verify_roadmap_evidence_report(
     expected_options = {
         "require_external": require_external or require_complete,
         "require_complete": require_complete,
+        "require_fresh": require_fresh,
     }
     if report.get("verification_options") != expected_options:
         errors.append("verification_options do not match verifier options")
@@ -338,6 +377,7 @@ def verify_roadmap_evidence_report(
         key=key,
         require_external=require_external or require_complete,
         require_complete=require_complete,
+        require_fresh=require_fresh,
     )
     expected_summary = _roadmap_evidence_summary(chain, result)
     if report.get("summary") != expected_summary:
@@ -363,6 +403,7 @@ def build_roadmap_evidence_bundle(
     key: str | None = None,
     require_external: bool = False,
     require_complete: bool = False,
+    require_fresh: bool = False,
     generated_at: str | None = None,
     report: dict[str, Any] | None = None,
     root: str | Path = ".",
@@ -375,6 +416,7 @@ def build_roadmap_evidence_bundle(
             key=key,
             require_external=require_external or require_complete,
             require_complete=require_complete,
+            require_fresh=require_fresh,
             generated_at=timestamp,
         )
     else:
@@ -386,6 +428,7 @@ def build_roadmap_evidence_bundle(
         "verification_options": {
             "require_external": require_external or require_complete,
             "require_complete": require_complete,
+            "require_fresh": require_fresh,
         },
         "chain": _roadmap_evidence_chain_document(chain),
         "report": report,
@@ -406,6 +449,7 @@ def verify_roadmap_evidence_bundle(
     key: str | None = None,
     require_external: bool = False,
     require_complete: bool = False,
+    require_fresh: bool = False,
     require_source_artifacts: bool = False,
 ) -> RoadmapEvidenceBundleVerification:
     errors: list[str] = []
@@ -419,6 +463,7 @@ def verify_roadmap_evidence_bundle(
     expected_options = {
         "require_external": require_external or require_complete,
         "require_complete": require_complete,
+        "require_fresh": require_fresh,
     }
     if bundle.get("verification_options") != expected_options:
         errors.append("verification_options do not match verifier options")
@@ -436,6 +481,7 @@ def verify_roadmap_evidence_bundle(
             key=key,
             require_external=require_external or require_complete,
             require_complete=require_complete,
+            require_fresh=require_fresh,
         )
         if not report_result.ok:
             errors.extend(f"report: {error}" for error in report_result.errors)
@@ -462,6 +508,7 @@ def extract_roadmap_evidence_bundle_sources(
     key: str | None = None,
     require_external: bool = False,
     require_complete: bool = False,
+    require_fresh: bool = False,
     require_source_artifacts: bool = False,
     overwrite: bool = False,
 ) -> list[dict[str, Any]]:
@@ -470,6 +517,7 @@ def extract_roadmap_evidence_bundle_sources(
         key=key,
         require_external=require_external or require_complete,
         require_complete=require_complete,
+        require_fresh=require_fresh,
         require_source_artifacts=require_source_artifacts,
     )
     if not result.ok:
@@ -525,6 +573,8 @@ def append_external_evidence_manifest(
     *,
     root: str | Path,
     require_complete: bool = False,
+    require_fresh: bool = False,
+    now: str | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
     result = verify_external_evidence_manifest(
@@ -532,6 +582,8 @@ def append_external_evidence_manifest(
         roadmap_audit,
         root=root,
         require_complete=require_complete,
+        require_fresh=require_fresh,
+        now=now,
     )
     if not result.ok:
         raise ValueError("invalid external evidence manifest: " + "; ".join(result.errors))
@@ -545,10 +597,18 @@ def append_external_evidence_manifest(
         "source_roadmap_audit_inclusion_proof": source_audit_proof,
         "status": summary.get("status"),
         "require_complete": require_complete,
+        "require_fresh": require_fresh,
+        "freshness_checked_at": now or manifest.get("generated_at"),
         "required_requirement_count": summary.get("required_requirement_count"),
         "covered_requirement_count": summary.get("covered_requirement_count"),
         "missing_requirement_count": summary.get("missing_requirement_count"),
         "evidence_count": summary.get("evidence_count"),
+        "issued_at_count": summary.get("issued_at_count"),
+        "expires_at_count": summary.get("expires_at_count"),
+        "freshness_window_count": summary.get("freshness_window_count"),
+        "fresh_evidence_count": result.fresh_evidence_count,
+        "stale_evidence_count": result.stale_evidence_count,
+        "missing_freshness_count": result.missing_freshness_count,
         "covered_requirement_ids": summary.get("covered_requirement_ids", []),
         "missing_requirement_ids": summary.get("missing_requirement_ids", []),
         "limitations": manifest.get("limitations", []),
@@ -558,13 +618,27 @@ def append_external_evidence_manifest(
 def parse_evidence_arg(value: str) -> dict[str, Any]:
     parts = value.split(",", 3)
     if len(parts) != 4:
-        raise ValueError("evidence must be requirement_id,authority_kind,path,description")
+        raise ValueError("evidence must be requirement_id,authority_kind,path,description[;key=value...]")
     requirement_id, authority_kind, path, description = [part.strip() for part in parts]
+    metadata: dict[str, Any] = {}
+    description_parts = [part.strip() for part in description.split(";")]
+    description = description_parts[0]
+    allowed_metadata = {"issuer", "subject", "source_uri", "issued_at", "expires_at"}
+    for token in description_parts[1:]:
+        if not token:
+            continue
+        if "=" not in token:
+            raise ValueError("evidence metadata must be key=value")
+        key, metadata_value = [part.strip() for part in token.split("=", 1)]
+        if key not in allowed_metadata:
+            raise ValueError(f"unsupported evidence metadata key: {key}")
+        metadata[key] = metadata_value
     return {
         "requirement_id": requirement_id,
         "authority_kind": authority_kind,
         "path": path,
         "description": description,
+        **metadata,
     }
 
 
@@ -645,6 +719,9 @@ Status: {summary.get('status', '')}
 - Required external requirements: {summary.get('required_requirement_count', 0)}
 - Covered requirements: {summary.get('covered_requirement_count', 0)}
 - Evidence items: {summary.get('evidence_count', 0)}
+- Evidence with issued_at: {summary.get('issued_at_count', 0)}
+- Evidence with expires_at: {summary.get('expires_at_count', 0)}
+- Evidence with freshness windows: {summary.get('freshness_window_count', 0)}
 
 ## Evidence
 
@@ -705,6 +782,7 @@ Semantic verification: {"passed" if verification.get("ok") else "failed"}
 - Roadmap audit entries: {summary.get('roadmap_audit_entry_count', 0)}
 - External evidence entries: {summary.get('external_evidence_entry_count', 0)}
 - Complete external evidence entries: {summary.get('complete_external_evidence_entry_count', 0)}
+- Fresh external evidence entries: {summary.get('fresh_external_evidence_entry_count', 0)}
 
 ## Roadmap Audit Entries
 
@@ -758,6 +836,7 @@ Semantic verification: {"passed" if report_verification.get("ok") else "failed"}
 - Roadmap audit entries: {summary.get('roadmap_audit_entry_count', 0)}
 - External evidence entries: {summary.get('external_evidence_entry_count', 0)}
 - Complete external evidence entries: {summary.get('complete_external_evidence_entry_count', 0)}
+- Fresh external evidence entries: {summary.get('fresh_external_evidence_entry_count', 0)}
 - Embedded source artifacts: {summary.get('source_artifact_count', 0)}
 
 ## Limitations
@@ -975,6 +1054,7 @@ def _roadmap_evidence_bundle_summary(chain: EvidenceChain, report: dict[str, Any
         "roadmap_audit_entry_count": report_summary.get("roadmap_audit_entry_count"),
         "external_evidence_entry_count": report_summary.get("external_evidence_entry_count"),
         "complete_external_evidence_entry_count": report_summary.get("complete_external_evidence_entry_count"),
+        "fresh_external_evidence_entry_count": report_summary.get("fresh_external_evidence_entry_count"),
         "source_artifact_count": len(source_artifacts or []),
         "semantic_ok": report_summary.get("semantic_ok"),
     }
@@ -990,8 +1070,10 @@ def _roadmap_evidence_summary(
         "roadmap_audit_entry_count": result.audit_entry_count,
         "external_evidence_entry_count": result.external_evidence_entry_count,
         "complete_external_evidence_entry_count": result.complete_external_evidence_entry_count,
+        "fresh_external_evidence_entry_count": result.fresh_external_evidence_entry_count,
         "has_external_evidence": result.external_evidence_entry_count > 0,
         "has_complete_external_evidence": result.complete_external_evidence_entry_count > 0,
+        "has_fresh_external_evidence": result.fresh_external_evidence_entry_count > 0,
     }
 
 
@@ -1003,6 +1085,7 @@ def _roadmap_evidence_verification_record(result: RoadmapEvidenceChainVerificati
         "audit_entry_count": result.audit_entry_count,
         "external_evidence_entry_count": result.external_evidence_entry_count,
         "complete_external_evidence_entry_count": result.complete_external_evidence_entry_count,
+        "fresh_external_evidence_entry_count": result.fresh_external_evidence_entry_count,
     }
 
 
@@ -1061,10 +1144,18 @@ def _external_evidence_entry_records(chain: EvidenceChain) -> list[dict[str, Any
                 "source_roadmap_audit_inclusion_proof": proof_record,
                 "status": payload.get("status"),
                 "require_complete": payload.get("require_complete"),
+                "require_fresh": payload.get("require_fresh"),
+                "freshness_checked_at": payload.get("freshness_checked_at"),
                 "required_requirement_count": payload.get("required_requirement_count"),
                 "covered_requirement_count": payload.get("covered_requirement_count"),
                 "missing_requirement_count": payload.get("missing_requirement_count"),
                 "evidence_count": payload.get("evidence_count"),
+                "issued_at_count": payload.get("issued_at_count"),
+                "expires_at_count": payload.get("expires_at_count"),
+                "freshness_window_count": payload.get("freshness_window_count"),
+                "fresh_evidence_count": payload.get("fresh_evidence_count"),
+                "stale_evidence_count": payload.get("stale_evidence_count"),
+                "missing_freshness_count": payload.get("missing_freshness_count"),
                 "covered_requirement_ids": payload.get("covered_requirement_ids", []),
                 "missing_requirement_ids": payload.get("missing_requirement_ids", []),
             }
@@ -1115,6 +1206,7 @@ def _verify_external_evidence_entry_summary(
     warnings: list[str],
     *,
     require_complete: bool,
+    require_fresh: bool,
 ) -> None:
     payload = entry.get("payload", {})
     required = payload.get("required_requirement_count")
@@ -1131,6 +1223,19 @@ def _verify_external_evidence_entry_summary(
             errors.append(message)
         else:
             warnings.append(message)
+    stale = payload.get("stale_evidence_count")
+    missing_freshness = payload.get("missing_freshness_count")
+    if require_fresh:
+        if payload.get("require_fresh") is not True:
+            errors.append(f"external evidence entry {entry.get('index')} was not appended with freshness required")
+        if stale != 0:
+            errors.append(f"external evidence entry {entry.get('index')} has stale evidence")
+        if missing_freshness != 0:
+            errors.append(f"external evidence entry {entry.get('index')} has evidence without freshness metadata")
+    elif stale:
+        warnings.append(f"external evidence entry {entry.get('index')} has stale evidence")
+    elif missing_freshness:
+        warnings.append(f"external evidence entry {entry.get('index')} has evidence without freshness metadata")
 
 def _source_roadmap_audit_proof(chain: EvidenceChain, source_roadmap_audit: Any) -> dict[str, Any] | None:
     if not isinstance(source_roadmap_audit, dict):
@@ -1186,7 +1291,45 @@ def _build_evidence_item(root: Path, item: dict[str, Any], required_ids: list[st
     return {**body, "evidence_id": content_hash(body)}
 
 
-def _verify_evidence_item(root: Path, item: dict[str, Any], errors: list[str]) -> None:
+def _freshness_reference(manifest: dict[str, Any], now: str | None, errors: list[str]):
+    reference = now or manifest.get("generated_at")
+    if not reference:
+        return None
+    try:
+        return parse_rfc3339(str(reference))
+    except ValueError as exc:
+        label = "now" if now else "generated_at"
+        errors.append(f"external evidence freshness {label} invalid: {exc}")
+        return None
+
+
+def _parse_optional_timestamp(item: dict[str, Any], field: str, errors: list[str]):
+    value = item.get(field)
+    if not value:
+        return None
+    try:
+        return parse_rfc3339(str(value))
+    except ValueError as exc:
+        errors.append(f"external evidence {field} invalid: {exc}")
+        return None
+
+
+def _freshness_problem(message: str, errors: list[str], warnings: list[str], *, require_fresh: bool) -> None:
+    if require_fresh:
+        errors.append(message)
+    else:
+        warnings.append(message)
+
+
+def _verify_evidence_item(
+    root: Path,
+    item: dict[str, Any],
+    errors: list[str],
+    warnings: list[str],
+    *,
+    now,
+    require_fresh: bool,
+) -> str:
     if item.get("evidence_id") != content_hash(without_keys(item, "evidence_id")):
         errors.append(f"evidence_id does not match evidence body: {item.get('requirement_id')}")
     authority_kind = item.get("authority_kind")
@@ -1194,14 +1337,40 @@ def _verify_evidence_item(root: Path, item: dict[str, Any], errors: list[str]) -
         errors.append(f"unsupported authority kind: {authority_kind}")
     if not item.get("description"):
         errors.append(f"external evidence description is required: {item.get('requirement_id')}")
-    for timestamp_field in ("issued_at", "expires_at"):
-        value = item.get(timestamp_field)
-        if value:
-            try:
-                parse_rfc3339(str(value))
-            except ValueError as exc:
-                errors.append(f"external evidence {timestamp_field} invalid: {exc}")
+
+    issued_at = _parse_optional_timestamp(item, "issued_at", errors)
+    expires_at = _parse_optional_timestamp(item, "expires_at", errors)
+    freshness_status = "fresh"
+    missing_fields = [field for field in ("issued_at", "expires_at") if not item.get(field)]
+    if missing_fields:
+        freshness_status = "missing"
+        _freshness_problem(
+            f"external evidence freshness metadata missing for {item.get('requirement_id')}: {', '.join(missing_fields)}",
+            errors,
+            warnings,
+            require_fresh=require_fresh,
+        )
+    if issued_at is not None and expires_at is not None and expires_at <= issued_at:
+        freshness_status = "stale"
+        errors.append(f"external evidence expires_at must be after issued_at: {item.get('requirement_id')}")
+    if now is not None and issued_at is not None and issued_at > now:
+        freshness_status = "stale"
+        _freshness_problem(
+            f"external evidence is not yet issued for {item.get('requirement_id')}: {item.get('issued_at')}",
+            errors,
+            warnings,
+            require_fresh=require_fresh,
+        )
+    if now is not None and expires_at is not None and expires_at <= now:
+        freshness_status = "stale"
+        _freshness_problem(
+            f"external evidence expired for {item.get('requirement_id')}: {item.get('expires_at')}",
+            errors,
+            warnings,
+            require_fresh=require_fresh,
+        )
     _verify_file_ref(root, item, errors)
+    return freshness_status
 
 
 def _file_ref(root: Path, path: str | Path) -> dict[str, Any]:
@@ -1259,6 +1428,9 @@ def _summary(required_ids: list[str], evidence: list[dict[str, Any]], *, status:
         "covered_requirement_count": len(covered),
         "missing_requirement_count": len(missing),
         "evidence_count": len(evidence),
+        "issued_at_count": sum(1 for item in evidence if item.get("issued_at")),
+        "expires_at_count": sum(1 for item in evidence if item.get("expires_at")),
+        "freshness_window_count": sum(1 for item in evidence if item.get("issued_at") and item.get("expires_at")),
         "covered_requirement_ids": covered,
         "missing_requirement_ids": missing,
     }

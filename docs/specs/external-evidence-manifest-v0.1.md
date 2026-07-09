@@ -26,7 +26,7 @@ hashed files and verified offline.
 - `required_external_requirements`: every `reference-attested` requirement from
   the roadmap audit.
 - `evidence`: supplied external evidence artifacts.
-- `summary`: coverage totals and missing requirement IDs.
+- `summary`: coverage totals, missing requirement IDs, and evidence freshness-window counts.
 - `limitations`: explicit non-claims about live fetching and issuer quality.
 
 ## Evidence Item
@@ -44,7 +44,9 @@ Each evidence item contains:
 - `description`: short human-readable reason the artifact satisfies the
   requirement.
 - Optional `issuer`, `subject`, `source_uri`, `issued_at`, and `expires_at`
-  fields.
+  fields. `issued_at` and `expires_at` define the freshness window for the
+  authority artifact. With strict freshness verification, both timestamps are
+  required and `expires_at` MUST be later than the verifier's `now` value.
 
 ## Evidence Chain Entry
 
@@ -57,15 +59,21 @@ A verified manifest can be appended to an evidence chain as
   has already been appended to the same evidence chain.
 - Coverage status, required/covered/missing requirement counts, and evidence
   count.
+- Freshness enforcement mode, verification time, issued/expires/fresh-window
+  counts, and fresh/stale/missing-freshness evidence counts.
 - Covered and missing requirement IDs.
-- Whether complete production evidence was required at append time.
+- Whether complete production evidence and fresh evidence were required at
+  append time.
 
 The append operation MUST verify the manifest against the supplied roadmap audit
 before writing the chain entry. If the same chain already contains a matching
 `trustai.roadmap_audit.attested` entry for the manifest source audit, append
 SHOULD include that entry inclusion proof in the external-evidence payload. If
 `require_complete` is set and any reference-attested requirement is uncovered,
-append MUST fail.
+append MUST fail. If `require_fresh` is set, append MUST fail unless every
+supplied evidence item has valid `issued_at` and `expires_at` timestamps and is
+unexpired at the supplied `now` value, or at manifest `generated_at` when `now`
+is omitted.
 
 ## Semantic Chain Verification
 
@@ -79,6 +87,9 @@ roadmap evidence relationships:
    tree root that existed before the external-evidence entry was appended.
 4. Coverage counts are internally consistent.
 5. With `--require-complete`, every external-evidence entry must be complete.
+6. With `--require-fresh`, every external-evidence entry must have been appended
+   with freshness required and must record zero stale or missing-freshness
+   evidence items.
 
 
 ## Roadmap Evidence Report
@@ -88,8 +99,9 @@ portable JSON and Markdown summary of the linked roadmap audit and external
 evidence entries already committed to an evidence chain. The report records:
 
 - `report_id`: canonical hash of the report body without `report_id`.
-- `verification_options`: whether external evidence or complete external
-  coverage was required when the report was generated.
+- `verification_options`: whether external evidence, complete external
+  coverage, or fresh external evidence was required when the report was
+  generated.
 - `chain`: tenant ID, entry count, and current Merkle tree root.
 - `summary`: semantic verification status and audit/external-evidence entry
   counts.
@@ -98,8 +110,8 @@ evidence entries already committed to an evidence chain. The report records:
 - `roadmap_audit_entries`: chained audit entry IDs, audit IDs/hashes, completion
   position, and local/reference/missing counts.
 - `external_evidence_entries`: chained manifest IDs/hashes, source audit binding,
-  source audit inclusion proof summary, coverage status, covered IDs, and missing
-  IDs.
+  source audit inclusion proof summary, coverage status, freshness counts,
+  covered IDs, and missing IDs.
 - `limitations`: explicit non-claims about live authority fetching and issuer
   quality.
 
@@ -124,7 +136,18 @@ self-contained artifact for third-party review. It embeds:
 `roadmap-evidence-bundle-verify` requires no separate chain state path. It
 recomputes `bundle_id`, reconstructs the embedded evidence chain, verifies that
 the embedded tree matches the entries, verifies the report against that embedded
-chain with the same strictness options, decodes and rehashes embedded source artifacts, confirms embedded roadmap-audit and external-evidence-manifest JSON artifacts are committed to the bundled chain by content hash, warns when embedded external-evidence-file artifacts are not referenced by an embedded manifest, warns when an embedded manifest references evidence files that are not embedded, and rejects stale or tampered bundle summaries. With `--require-source-artifacts`, every bundled roadmap-audit entry, external-evidence manifest entry, and manifest-referenced evidence file MUST be embedded or verification fails. `roadmap-evidence-bundle-extract` runs the same verification first, then materializes embedded source artifacts under `--out-dir` using their repository-relative paths; it refuses to overwrite existing files unless `--overwrite` is set.
+chain with the same strictness options, including `--require-fresh`, decodes and
+rehashes embedded source artifacts, confirms embedded roadmap-audit and
+external-evidence-manifest JSON artifacts are committed to the bundled chain by
+content hash, warns when embedded external-evidence-file artifacts are not
+referenced by an embedded manifest, warns when an embedded manifest references
+evidence files that are not embedded, and rejects stale or tampered bundle
+summaries. With `--require-source-artifacts`, every bundled roadmap-audit entry,
+external-evidence manifest entry, and manifest-referenced evidence file MUST be
+embedded or verification fails. `roadmap-evidence-bundle-extract` runs the same
+verification first, then materializes embedded source artifacts under `--out-dir`
+using their repository-relative paths; it refuses to overwrite existing files
+unless `--overwrite` is set.
 
 ## Verification Rules
 
@@ -138,10 +161,18 @@ A verifier MUST:
 5. Reject evidence for unknown or non-external requirement IDs.
 6. Reject absolute paths or paths containing `..`.
 7. Re-hash every evidence artifact and compare it to the recorded SHA-256.
-8. Recompute coverage summary and missing requirement IDs.
-9. When complete production evidence is required, reject manifests that do not
+8. Recompute coverage summary, missing requirement IDs, and freshness-window
+   counts.
+9. Parse any `issued_at` and `expires_at` values, reject windows where
+   `expires_at <= issued_at`, and warn on missing, future-issued, or expired
+   evidence when strict freshness is not requested.
+10. When complete production evidence is required, reject manifests that do not
    cover every reference-attested requirement.
+11. When fresh production evidence is required, reject manifests where any
+   evidence item lacks a freshness window, has not yet been issued, or has
+   expired at the verifier's `now` value.
 
-The manifest verifies that supplied external evidence has not changed and is
-mapped to the right roadmap gap. It does not independently validate the legal or
-technical authority of the issuer beyond the artifact provided.
+The manifest verifies that supplied external evidence has not changed, is mapped
+to the right roadmap gap, and can optionally be required to be fresh at a named
+verification time. It does not independently validate the legal or technical
+authority of the issuer beyond the artifact provided.

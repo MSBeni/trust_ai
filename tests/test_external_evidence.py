@@ -64,6 +64,137 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertIn("TrustAI External Evidence Manifest", markdown)
         self.assertIn("oss-verifier-and-public-spec", markdown)
 
+    def test_external_evidence_freshness_windows_are_verifiable(self):
+        audit = build_roadmap_audit(ROOT)
+        now = "2026-07-09T00:00:00Z"
+        fresh_manifest = build_external_evidence_manifest(
+            audit,
+            root=ROOT,
+            evidence=[
+                {
+                    "requirement_id": "oss-verifier-and-public-spec",
+                    "authority_kind": "ci-run",
+                    "path": FIXTURE,
+                    "description": "Recorded verifier workflow run export.",
+                    "issuer": "GitHub Actions",
+                    "subject": "trustai go verifier release workflow",
+                    "source_uri": "https://github.com/MSBeni/trust_ai/actions",
+                    "issued_at": "2026-07-08T00:00:00Z",
+                    "expires_at": "2026-12-31T00:00:00Z",
+                }
+            ],
+        )
+        result = verify_external_evidence_manifest(
+            fresh_manifest,
+            audit,
+            root=ROOT,
+            require_fresh=True,
+            now=now,
+        )
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(1, result.fresh_evidence_count)
+        self.assertEqual(0, result.stale_evidence_count)
+        self.assertEqual(0, result.missing_freshness_count)
+        self.assertEqual(1, fresh_manifest["summary"]["freshness_window_count"])
+
+        missing_freshness_manifest = build_external_evidence_manifest(
+            audit,
+            root=ROOT,
+            evidence=[
+                {
+                    "requirement_id": "oss-verifier-and-public-spec",
+                    "authority_kind": "ci-run",
+                    "path": FIXTURE,
+                    "description": "Recorded verifier workflow run export.",
+                }
+            ],
+        )
+        nonstrict_missing = verify_external_evidence_manifest(
+            missing_freshness_manifest,
+            audit,
+            root=ROOT,
+            now=now,
+        )
+        strict_missing = verify_external_evidence_manifest(
+            missing_freshness_manifest,
+            audit,
+            root=ROOT,
+            require_fresh=True,
+            now=now,
+        )
+
+        self.assertTrue(nonstrict_missing.ok, nonstrict_missing.errors)
+        self.assertTrue(any("freshness metadata missing" in warning for warning in nonstrict_missing.warnings))
+        self.assertFalse(strict_missing.ok)
+        self.assertTrue(any("freshness metadata missing" in error for error in strict_missing.errors))
+
+        expired_manifest = build_external_evidence_manifest(
+            audit,
+            root=ROOT,
+            evidence=[
+                {
+                    "requirement_id": "oss-verifier-and-public-spec",
+                    "authority_kind": "ci-run",
+                    "path": FIXTURE,
+                    "description": "Expired workflow export.",
+                    "issued_at": "2026-06-01T00:00:00Z",
+                    "expires_at": "2026-07-01T00:00:00Z",
+                }
+            ],
+        )
+        expired_result = verify_external_evidence_manifest(
+            expired_manifest,
+            audit,
+            root=ROOT,
+            require_fresh=True,
+            now=now,
+        )
+
+        self.assertFalse(expired_result.ok)
+        self.assertEqual(1, expired_result.stale_evidence_count)
+        self.assertTrue(any("expired" in error for error in expired_result.errors))
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="external-evidence-fresh")
+            append_roadmap_audit(chain, audit, root=ROOT)
+            append_external_evidence_manifest(
+                chain,
+                fresh_manifest,
+                audit,
+                root=ROOT,
+                require_fresh=True,
+                now=now,
+            )
+            chain_result = verify_roadmap_evidence_chain(chain, require_external=True, require_fresh=True)
+            report = build_roadmap_evidence_report(
+                chain,
+                require_external=True,
+                require_fresh=True,
+                generated_at=now,
+            )
+            report_result = verify_roadmap_evidence_report(
+                report,
+                chain,
+                require_external=True,
+                require_fresh=True,
+            )
+            bundle = build_roadmap_evidence_bundle(
+                chain,
+                require_external=True,
+                require_fresh=True,
+                report=report,
+                generated_at=now,
+            )
+            bundle_result = verify_roadmap_evidence_bundle(bundle, require_external=True, require_fresh=True)
+
+            self.assertTrue(chain_result.ok, chain_result.errors)
+            self.assertEqual(1, chain_result.fresh_external_evidence_entry_count)
+            self.assertTrue(report_result.ok, report_result.errors)
+            self.assertEqual(1, report["summary"]["fresh_external_evidence_entry_count"])
+            self.assertTrue(bundle_result.ok, bundle_result.errors)
+            self.assertEqual(1, bundle["summary"]["fresh_external_evidence_entry_count"])
+
     def test_external_evidence_manifest_appends_to_chain(self):
         audit = build_roadmap_audit(ROOT)
         manifest = build_external_evidence_manifest(
@@ -107,6 +238,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertEqual(ROADMAP_EVIDENCE_REPORT_SCHEMA, report["schema"])
             self.assertTrue(report_result.ok, report_result.errors)
             self.assertEqual(2, report["summary"]["chain_entry_count"])
+            self.assertEqual(0, report["summary"]["fresh_external_evidence_entry_count"])
             self.assertEqual(1, report["summary"]["roadmap_audit_entry_count"])
             self.assertEqual(1, report["summary"]["external_evidence_entry_count"])
             self.assertIn("TrustAI Roadmap Evidence Report", markdown)
@@ -239,11 +371,31 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     "--root",
                     str(ROOT),
                     "--evidence",
-                    f"oss-verifier-and-public-spec,ci-run,{FIXTURE},Recorded Go verifier workflow export",
+                    f"oss-verifier-and-public-spec,ci-run,{FIXTURE},Recorded Go verifier workflow export;issuer=GitHub Actions;subject=trustai go verifier release workflow;source_uri=https://github.com/MSBeni/trust_ai/actions;issued_at=2026-07-08T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
+                    "--require-fresh",
+                    "--now",
+                    "2026-07-09T00:00:00Z",
                     "--out",
                     str(manifest_path),
                     "--markdown",
                     str(tmp_path / "external-evidence.md"),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-verify",
+                    str(manifest_path),
+                    str(audit_path),
+                    "--root",
+                    str(ROOT),
+                    "--require-fresh",
+                    "--now",
+                    "2026-07-09T00:00:00Z",
                 ],
                 cwd=ROOT,
                 check=True,
@@ -258,6 +410,9 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     str(audit_path),
                     "--root",
                     str(ROOT),
+                    "--require-fresh",
+                    "--now",
+                    "2026-07-09T00:00:00Z",
                     "--state",
                     str(chain_path),
                     "--tenant",
@@ -280,6 +435,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     "--tenant",
                     "external-evidence-cli",
                     "--require-external",
+                    "--require-fresh",
                 ],
                 cwd=ROOT,
                 check=True,
@@ -295,6 +451,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     "--tenant",
                     "external-evidence-cli",
                     "--require-external",
+                    "--require-fresh",
                     "--out",
                     str(report_path),
                     "--markdown",
@@ -315,6 +472,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     "--tenant",
                     "external-evidence-cli",
                     "--require-external",
+                    "--require-fresh",
                 ],
                 cwd=ROOT,
                 check=True,
@@ -330,6 +488,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     "--tenant",
                     "external-evidence-cli",
                     "--require-external",
+                    "--require-fresh",
                     "--report",
                     str(report_path),
                     "--root",
@@ -356,6 +515,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     "roadmap-evidence-bundle-verify",
                     str(bundle_path),
                     "--require-external",
+                    "--require-fresh",
                     "--require-source-artifacts",
                 ],
                 cwd=ROOT,
@@ -371,6 +531,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     "--out-dir",
                     str(bundle_extract_dir),
                     "--require-external",
+                    "--require-fresh",
                     "--require-source-artifacts",
                 ],
                 cwd=ROOT,
@@ -383,10 +544,12 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertTrue(chain.verify_all().ok)
             report = load_roadmap_evidence_report(report_path)
             self.assertEqual(2, report["summary"]["chain_entry_count"])
+            self.assertEqual(1, report["summary"]["fresh_external_evidence_entry_count"])
             self.assertTrue(report_markdown_path.exists())
             bundle = load_roadmap_evidence_bundle(bundle_path)
             self.assertEqual(report["report_id"], bundle["summary"]["report_id"])
             self.assertEqual(3, bundle["summary"]["source_artifact_count"])
+            self.assertEqual(1, bundle["summary"]["fresh_external_evidence_entry_count"])
             self.assertEqual(["roadmap-audit", "external-evidence-manifest", "external-evidence-file"], [artifact["kind"] for artifact in bundle["source_artifacts"]])
             self.assertTrue(bundle_markdown_path.exists())
             self.assertIn("Embedded source artifacts: 3", bundle_markdown_path.read_text(encoding="utf-8"))
@@ -398,6 +561,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 bundle,
                 direct_extract_dir,
                 require_external=True,
+                require_fresh=True,
                 require_source_artifacts=True,
             )
             self.assertEqual(3, len(extracted))
@@ -408,11 +572,12 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     bundle,
                     direct_extract_dir,
                     require_external=True,
+                    require_fresh=True,
                     require_source_artifacts=True,
                 )
             tampered_bundle = copy.deepcopy(bundle)
             tampered_bundle["source_artifacts"][0]["sha256"] = "sha256:" + "0" * 64
-            tampered_result = verify_roadmap_evidence_bundle(tampered_bundle, require_external=True)
+            tampered_result = verify_roadmap_evidence_bundle(tampered_bundle, require_external=True, require_fresh=True)
             self.assertFalse(tampered_result.ok)
             self.assertTrue(any("source artifact" in error for error in tampered_result.errors))
             missing_file_bundle = copy.deepcopy(bundle)
@@ -421,12 +586,13 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             ]
             missing_file_bundle["summary"]["source_artifact_count"] = 2
             missing_file_bundle["bundle_id"] = content_hash(without_keys(missing_file_bundle, "bundle_id"))
-            missing_file_result = verify_roadmap_evidence_bundle(missing_file_bundle, require_external=True)
+            missing_file_result = verify_roadmap_evidence_bundle(missing_file_bundle, require_external=True, require_fresh=True)
             self.assertTrue(missing_file_result.ok, missing_file_result.errors)
             self.assertTrue(any("referenced by embedded manifest is not embedded" in warning for warning in missing_file_result.warnings))
             strict_missing_file_result = verify_roadmap_evidence_bundle(
                 missing_file_bundle,
                 require_external=True,
+                require_fresh=True,
                 require_source_artifacts=True,
             )
             self.assertFalse(strict_missing_file_result.ok)
@@ -440,6 +606,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             strict_missing_manifest_result = verify_roadmap_evidence_bundle(
                 missing_manifest_bundle,
                 require_external=True,
+                require_fresh=True,
                 require_source_artifacts=True,
             )
             self.assertFalse(strict_missing_manifest_result.ok)
@@ -504,12 +671,21 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
 
     def test_parse_evidence_arg(self):
         parsed = parse_evidence_arg(
-            "oss-verifier-and-public-spec,ci-run,examples/aitrade/external-evidence/go-verifier-workflow-run.json,GitHub workflow export"
+            "oss-verifier-and-public-spec,ci-run,examples/aitrade/external-evidence/go-verifier-workflow-run.json,GitHub workflow export;issuer=GitHub Actions;subject=trustai go verifier;source_uri=https://github.com/MSBeni/trust_ai/actions;issued_at=2026-07-08T00:00:00Z;expires_at=2026-12-31T00:00:00Z"
         )
 
         self.assertEqual("oss-verifier-and-public-spec", parsed["requirement_id"])
         self.assertEqual("ci-run", parsed["authority_kind"])
         self.assertEqual(FIXTURE, parsed["path"])
+        self.assertEqual("GitHub workflow export", parsed["description"])
+        self.assertEqual("GitHub Actions", parsed["issuer"])
+        self.assertEqual("trustai go verifier", parsed["subject"])
+        self.assertEqual("2026-07-08T00:00:00Z", parsed["issued_at"])
+        self.assertEqual("2026-12-31T00:00:00Z", parsed["expires_at"])
+        with self.assertRaisesRegex(ValueError, "unsupported evidence metadata"):
+            parse_evidence_arg(
+                "oss-verifier-and-public-spec,ci-run,examples/aitrade/external-evidence/go-verifier-workflow-run.json,GitHub workflow export;unknown=value"
+            )
 
     def test_parse_bundle_source_artifact_arg(self):
         parsed = parse_bundle_source_artifact_arg(
