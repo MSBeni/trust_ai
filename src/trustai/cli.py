@@ -52,6 +52,13 @@ from .framework_runtime_audit import (
     verify_framework_runtime_audit_receipt,
     write_framework_runtime_audit_receipt,
 )
+from .framework_runtime_worker import (
+    append_framework_runtime_worker_receipt,
+    build_framework_runtime_worker_receipt,
+    load_framework_runtime_worker_receipt,
+    verify_framework_runtime_worker_receipt,
+    write_framework_runtime_worker_receipt,
+)
 from .anchor import append_anchor, write_anchor
 from .anchor_provider import (
     ANCHOR_PROVIDER_MODES,
@@ -2294,6 +2301,152 @@ def cmd_framework_runtime_audit_append(args: argparse.Namespace) -> int:
         print(f"framework runtime audit entry: {args.out}")
     print(f"framework runtime audit entry id: {entry['entry_id']}")
     print(f"runtime audit id: {receipt['runtime_audit_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def _load_framework_runtime_worker_sources(args: argparse.Namespace, *, require_all: bool) -> dict[str, object]:
+    sources: dict[str, object] = {}
+    if getattr(args, "runtime_audit", None):
+        sources["runtime_audit"] = load_framework_runtime_audit_receipt(args.runtime_audit)
+    elif require_all:
+        raise ValueError("runtime audit receipt is required")
+    if getattr(args, "audit_export", None):
+        sources["audit_export"] = load_framework_runtime_audit_export(args.audit_export)
+    elif require_all:
+        raise ValueError("audit export is required")
+    if getattr(args, "operation", None):
+        sources["operation"] = load_framework_hook_operation(args.operation)
+    elif require_all:
+        raise ValueError("framework hook operation is required")
+    if getattr(args, "trace", None):
+        sources["trace_payload"] = load_framework_trace_payload(args.trace)
+    elif require_all:
+        raise ValueError("trace payload is required")
+    if getattr(args, "release", None):
+        sources["release"] = load_framework_hook_release(args.release)
+    elif require_all:
+        raise ValueError("framework hook release is required")
+    if getattr(args, "matrix", None):
+        sources["matrix"] = load_framework_adapter_matrix(args.matrix)
+    elif require_all:
+        raise ValueError("framework adapter matrix is required")
+    return sources
+
+
+def cmd_framework_runtime_worker(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_framework_runtime_worker_sources(args, require_all=True)
+        receipt = build_framework_runtime_worker_receipt(
+            sources["runtime_audit"],
+            sources["audit_export"],
+            sources["operation"],
+            sources["trace_payload"],
+            sources["release"],
+            sources["matrix"],
+            root=args.root,
+            mode=args.mode,
+            environment=args.environment,
+            worker_ref=args.worker_ref,
+            run_ref=args.run_ref,
+            operation_kind=args.operation_kind,
+            actor_ref=args.actor_ref,
+            schedule_ref=args.schedule_ref,
+            cadence_seconds=args.cadence_seconds,
+            lease_ref=args.lease_ref,
+            checkpoint_ref=args.checkpoint_ref,
+            checkpoint_hash=args.checkpoint_hash,
+            previous_cursor_ref=args.previous_cursor_ref,
+            next_cursor_ref=args.next_cursor_ref,
+            next_run_at=args.next_run_at,
+            attempt=args.attempt,
+            max_attempts=args.max_attempts,
+            stream_ref=args.stream_ref,
+            stream_topic=args.stream_topic,
+            partition_ref=args.partition_ref,
+            offset_start=args.offset_start,
+            offset_end=args.offset_end,
+            stream_message_ref=args.stream_message_ref,
+            stream_message_hash=args.stream_message_hash,
+            stream_dlq_ref=args.stream_dlq_ref,
+            storage_object_ref=args.storage_object_ref,
+            storage_object_hash=args.storage_object_hash,
+            clickhouse_batch_ref=args.clickhouse_batch_ref,
+            clickhouse_batch_hash=args.clickhouse_batch_hash,
+            clickhouse_rows_written=args.clickhouse_rows_written,
+            postgres_index_ref=args.postgres_index_ref,
+            postgres_index_hash=args.postgres_index_hash,
+            postgres_rows_written=args.postgres_rows_written,
+            control_index_ref=args.control_index_ref,
+            control_index_hash=args.control_index_hash,
+            metrics_ref=args.metrics_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            retention_until=args.retention_until,
+            credential_ref=args.credential_ref,
+            evidence_refs=args.evidence_ref,
+            started_at=args.started_at,
+            completed_at=args.completed_at,
+            error_ref=args.error_ref,
+            key=args.key,
+        )
+        result = verify_framework_runtime_worker_receipt(receipt, **sources, root=args.root, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime worker generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("framework runtime worker generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_framework_runtime_worker_receipt(args.out, receipt)
+    print(f"framework runtime worker receipt: {args.out}")
+    print(f"worker operation id: {receipt['worker_operation_id']}")
+    print(f"runtime audit id: {receipt['source']['runtime_audit_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_framework_runtime_worker_verify(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_framework_runtime_worker_receipt(args.receipt)
+        sources = _load_framework_runtime_worker_sources(args, require_all=False)
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime worker verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_framework_runtime_worker_receipt(receipt, **sources, root=args.root, key=args.key)
+    if result.ok:
+        print(f"verified framework runtime worker receipt: {args.receipt}")
+        print(f"worker operation id: {receipt['worker_operation_id']}")
+        print(f"runtime audit id: {receipt['source']['runtime_audit_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"framework runtime worker verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_framework_runtime_worker_append(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_framework_runtime_worker_receipt(args.receipt)
+        sources = _load_framework_runtime_worker_sources(args, require_all=True)
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime worker append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_framework_runtime_worker_receipt(chain, receipt, **sources, root=args.root, key=args.key)
+    except ValueError as exc:
+        print(f"framework runtime worker append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"framework runtime worker entry: {args.out}")
+    print(f"framework runtime worker entry id: {entry['entry_id']}")
+    print(f"worker operation id: {receipt['worker_operation_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
@@ -12197,6 +12350,99 @@ def build_parser() -> argparse.ArgumentParser:
     framework_runtime_audit_append.add_argument("--key")
     _add_state_args(framework_runtime_audit_append)
     framework_runtime_audit_append.set_defaults(func=cmd_framework_runtime_audit_append)
+
+    framework_runtime_worker = subparsers.add_parser(
+        "framework-runtime-worker", help="write a signed framework runtime worker receipt"
+    )
+    framework_runtime_worker.add_argument("--runtime-audit", required=True)
+    framework_runtime_worker.add_argument("--audit-export", required=True)
+    framework_runtime_worker.add_argument("--operation", required=True)
+    framework_runtime_worker.add_argument("--trace", required=True)
+    framework_runtime_worker.add_argument("--release", required=True)
+    framework_runtime_worker.add_argument("--matrix", required=True)
+    framework_runtime_worker.add_argument("--root", default=".")
+    framework_runtime_worker.add_argument(
+        "--mode", choices=["local-reference", "runtime-worker", "hosted-worker", "production-design"], default="runtime-worker"
+    )
+    framework_runtime_worker.add_argument("--environment", default="local")
+    framework_runtime_worker.add_argument("--worker-ref", required=True)
+    framework_runtime_worker.add_argument("--run-ref", required=True)
+    framework_runtime_worker.add_argument(
+        "--operation-kind",
+        choices=["audit_export_reconcile", "hook_capture_ingest", "stream_storage_flush", "retry_reconcile"],
+        required=True,
+    )
+    framework_runtime_worker.add_argument("--actor-ref", required=True)
+    framework_runtime_worker.add_argument("--schedule-ref", required=True)
+    framework_runtime_worker.add_argument("--cadence-seconds", type=int, required=True)
+    framework_runtime_worker.add_argument("--lease-ref", required=True)
+    framework_runtime_worker.add_argument("--checkpoint-ref", required=True)
+    framework_runtime_worker.add_argument("--checkpoint-hash")
+    framework_runtime_worker.add_argument("--previous-cursor-ref")
+    framework_runtime_worker.add_argument("--next-cursor-ref")
+    framework_runtime_worker.add_argument("--next-run-at")
+    framework_runtime_worker.add_argument("--attempt", type=int, default=1)
+    framework_runtime_worker.add_argument("--max-attempts", type=int, default=3)
+    framework_runtime_worker.add_argument("--stream-ref", required=True)
+    framework_runtime_worker.add_argument("--stream-topic", required=True)
+    framework_runtime_worker.add_argument("--partition-ref")
+    framework_runtime_worker.add_argument("--offset-start", type=int)
+    framework_runtime_worker.add_argument("--offset-end", type=int)
+    framework_runtime_worker.add_argument("--stream-message-ref", required=True)
+    framework_runtime_worker.add_argument("--stream-message-hash", required=True)
+    framework_runtime_worker.add_argument("--stream-dlq-ref")
+    framework_runtime_worker.add_argument("--storage-object-ref", required=True)
+    framework_runtime_worker.add_argument("--storage-object-hash", required=True)
+    framework_runtime_worker.add_argument("--clickhouse-batch-ref", required=True)
+    framework_runtime_worker.add_argument("--clickhouse-batch-hash", required=True)
+    framework_runtime_worker.add_argument("--clickhouse-rows-written", type=int, required=True)
+    framework_runtime_worker.add_argument("--postgres-index-ref", required=True)
+    framework_runtime_worker.add_argument("--postgres-index-hash", required=True)
+    framework_runtime_worker.add_argument("--postgres-rows-written", type=int, required=True)
+    framework_runtime_worker.add_argument("--control-index-ref", required=True)
+    framework_runtime_worker.add_argument("--control-index-hash", required=True)
+    framework_runtime_worker.add_argument("--metrics-ref", required=True)
+    framework_runtime_worker.add_argument("--audit-log-ref", required=True)
+    framework_runtime_worker.add_argument("--audit-log-root", required=True)
+    framework_runtime_worker.add_argument("--retention-until", required=True)
+    framework_runtime_worker.add_argument("--credential-ref", required=True)
+    framework_runtime_worker.add_argument("--evidence-ref", action="append", default=[])
+    framework_runtime_worker.add_argument("--started-at", required=True)
+    framework_runtime_worker.add_argument("--completed-at")
+    framework_runtime_worker.add_argument("--error-ref")
+    framework_runtime_worker.add_argument("--out", default="artifacts/framework-runtime-worker.json")
+    framework_runtime_worker.add_argument("--key")
+    framework_runtime_worker.set_defaults(func=cmd_framework_runtime_worker)
+
+    framework_runtime_worker_verify = subparsers.add_parser(
+        "framework-runtime-worker-verify", help="verify a signed framework runtime worker receipt"
+    )
+    framework_runtime_worker_verify.add_argument("receipt")
+    framework_runtime_worker_verify.add_argument("--runtime-audit")
+    framework_runtime_worker_verify.add_argument("--audit-export")
+    framework_runtime_worker_verify.add_argument("--operation")
+    framework_runtime_worker_verify.add_argument("--trace")
+    framework_runtime_worker_verify.add_argument("--release")
+    framework_runtime_worker_verify.add_argument("--matrix")
+    framework_runtime_worker_verify.add_argument("--root", default=".")
+    framework_runtime_worker_verify.add_argument("--key")
+    framework_runtime_worker_verify.set_defaults(func=cmd_framework_runtime_worker_verify)
+
+    framework_runtime_worker_append = subparsers.add_parser(
+        "framework-runtime-worker-append", help="append a framework runtime worker receipt as chain evidence"
+    )
+    framework_runtime_worker_append.add_argument("receipt")
+    framework_runtime_worker_append.add_argument("--runtime-audit", required=True)
+    framework_runtime_worker_append.add_argument("--audit-export", required=True)
+    framework_runtime_worker_append.add_argument("--operation", required=True)
+    framework_runtime_worker_append.add_argument("--trace", required=True)
+    framework_runtime_worker_append.add_argument("--release", required=True)
+    framework_runtime_worker_append.add_argument("--matrix", required=True)
+    framework_runtime_worker_append.add_argument("--root", default=".")
+    framework_runtime_worker_append.add_argument("--out", default="artifacts/framework-runtime-worker-entry.json")
+    framework_runtime_worker_append.add_argument("--key")
+    _add_state_args(framework_runtime_worker_append)
+    framework_runtime_worker_append.set_defaults(func=cmd_framework_runtime_worker_append)
 
     mcp = subparsers.add_parser("mcp-capture", help="append MCP tool call transcripts to the chain")
     mcp.add_argument("transcript")

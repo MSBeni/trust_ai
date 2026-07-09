@@ -8,8 +8,10 @@ capture event for the same framework, trace, operation ref, runtime instance,
 and collector hook.
 
 This closes the evidence gap between local hook replay and provider-owned
-runtime records. Chain entries contain hashes and summary metadata; offline
-verification replays the hook operation and the supplied audit export.
+runtime records. `framework-runtime-worker` can then bind the verified export to
+scheduler leases, stream messages, storage writes, metrics, and worker audit
+roots. Chain entries contain hashes and summary metadata; offline verification
+replays the hook operation and the supplied audit export.
 
 ## Artifact
 
