@@ -16,6 +16,7 @@ from trustai.external_evidence import (
     append_external_evidence_manifest,
     build_external_evidence_manifest,
     build_roadmap_evidence_bundle,
+    extract_roadmap_evidence_bundle_sources,
     build_roadmap_evidence_report,
     load_roadmap_evidence_report,
     load_roadmap_evidence_bundle,
@@ -188,6 +189,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             report_markdown_path = tmp_path / "roadmap-evidence-report.md"
             bundle_path = tmp_path / "roadmap-evidence-bundle.json"
             bundle_markdown_path = tmp_path / "roadmap-evidence-bundle.md"
+            bundle_extract_dir = tmp_path / "roadmap-evidence-bundle-sources"
             chain_path = tmp_path / "chain.json"
             bundled_fixture_path = tmp_path / FIXTURE
             bundled_fixture_path.parent.mkdir(parents=True)
@@ -359,6 +361,21 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 cwd=ROOT,
                 check=True,
             )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "roadmap-evidence-bundle-extract",
+                    str(bundle_path),
+                    "--out-dir",
+                    str(bundle_extract_dir),
+                    "--require-external",
+                    "--require-source-artifacts",
+                ],
+                cwd=ROOT,
+                check=True,
+            )
             chain = EvidenceChain.load(chain_path, tenant_id="external-evidence-cli")
             self.assertEqual(2, len(chain.entries))
             self.assertEqual(EXTERNAL_EVIDENCE_ENTRY_TYPE, chain.entries[1]["entry_type"])
@@ -373,6 +390,26 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertEqual(["roadmap-audit", "external-evidence-manifest", "external-evidence-file"], [artifact["kind"] for artifact in bundle["source_artifacts"]])
             self.assertTrue(bundle_markdown_path.exists())
             self.assertIn("Embedded source artifacts: 3", bundle_markdown_path.read_text(encoding="utf-8"))
+            self.assertTrue((bundle_extract_dir / audit_path.name).exists())
+            self.assertTrue((bundle_extract_dir / manifest_path.name).exists())
+            self.assertTrue((bundle_extract_dir / FIXTURE).exists())
+            direct_extract_dir = tmp_path / "direct-roadmap-evidence-bundle-sources"
+            extracted = extract_roadmap_evidence_bundle_sources(
+                bundle,
+                direct_extract_dir,
+                require_external=True,
+                require_source_artifacts=True,
+            )
+            self.assertEqual(3, len(extracted))
+            self.assertEqual(["roadmap-audit", "external-evidence-manifest", "external-evidence-file"], [record["kind"] for record in extracted])
+            self.assertEqual((direct_extract_dir / audit_path.name).read_text(encoding="utf-8"), audit_path.read_text(encoding="utf-8"))
+            with self.assertRaisesRegex(ValueError, "already exists"):
+                extract_roadmap_evidence_bundle_sources(
+                    bundle,
+                    direct_extract_dir,
+                    require_external=True,
+                    require_source_artifacts=True,
+                )
             tampered_bundle = copy.deepcopy(bundle)
             tampered_bundle["source_artifacts"][0]["sha256"] = "sha256:" + "0" * 64
             tampered_result = verify_roadmap_evidence_bundle(tampered_bundle, require_external=True)

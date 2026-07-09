@@ -87,6 +87,7 @@ python -m trustai roadmap-evidence-report --state .trustai/roadmap-evidence-demo
 python -m trustai roadmap-evidence-report-verify artifacts/roadmap-evidence-report.json --state .trustai/roadmap-evidence-demo/evidence-chain.json --tenant roadmap-evidence-local --require-external
 python -m trustai roadmap-evidence-bundle --state .trustai/roadmap-evidence-demo/evidence-chain.json --tenant roadmap-evidence-local --require-external --report artifacts/roadmap-evidence-report.json --root . --source-artifact "roadmap-audit,artifacts/roadmap-audit.json,Generated roadmap audit JSON" --source-artifact "external-evidence-manifest,artifacts/external-evidence-manifest.json,Generated external evidence manifest JSON" --include-manifest-evidence --require-source-artifacts --out artifacts/roadmap-evidence-bundle.json --markdown artifacts/roadmap-evidence-bundle.md
 python -m trustai roadmap-evidence-bundle-verify artifacts/roadmap-evidence-bundle.json --require-external --require-source-artifacts
+python -m trustai roadmap-evidence-bundle-extract artifacts/roadmap-evidence-bundle.json --out-dir artifacts/roadmap-evidence-bundle-sources --require-external --require-source-artifacts
 python -m unittest tests.test_go_verifier_source
 python -m trustai verifier-conformance artifacts/aitrade-proof-pack.json --out artifacts/verifier-conformance.json --markdown artifacts/verifier-conformance.md
 python -m trustai verifier-conformance-verify artifacts/verifier-conformance.json

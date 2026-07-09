@@ -5,7 +5,7 @@ import binascii
 import json
 from dataclasses import dataclass
 from hashlib import sha256
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
 
 from .canonical import content_hash, parse_rfc3339, utc_now, without_keys
@@ -453,6 +453,69 @@ def verify_roadmap_evidence_bundle(
             errors.append("bundle summary does not match bundled chain and report")
 
     return RoadmapEvidenceBundleVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
+def extract_roadmap_evidence_bundle_sources(
+    bundle: dict[str, Any],
+    out_dir: str | Path,
+    *,
+    key: str | None = None,
+    require_external: bool = False,
+    require_complete: bool = False,
+    require_source_artifacts: bool = False,
+    overwrite: bool = False,
+) -> list[dict[str, Any]]:
+    result = verify_roadmap_evidence_bundle(
+        bundle,
+        key=key,
+        require_external=require_external or require_complete,
+        require_complete=require_complete,
+        require_source_artifacts=require_source_artifacts,
+    )
+    if not result.ok:
+        raise ValueError("invalid roadmap evidence bundle: " + "; ".join(result.errors))
+
+    source_artifacts = bundle.get("source_artifacts", [])
+    if not isinstance(source_artifacts, list):
+        raise ValueError("bundle source_artifacts must be a list")
+
+    output_root = Path(out_dir)
+    extracted: list[dict[str, Any]] = []
+    for artifact in source_artifacts:
+        if not isinstance(artifact, dict):
+            raise ValueError("bundle source artifact must be an object")
+        path = artifact.get("path")
+        if not isinstance(path, str) or not path:
+            raise ValueError("bundle source artifact path is required")
+        if not _is_safe_relative_path(path):
+            raise ValueError(f"bundle source artifact path must be repository-relative: {path}")
+        try:
+            data = base64.b64decode(str(artifact.get("content_b64") or ""), validate=True)
+        except (binascii.Error, ValueError) as exc:
+            raise ValueError(f"bundle source artifact content_b64 invalid: {path}") from exc
+        actual_sha = "sha256:" + sha256(data).hexdigest()
+        if artifact.get("sha256") != actual_sha:
+            raise ValueError(f"bundle source artifact hash mismatch: {path}")
+
+        target = output_root / Path(path)
+        if target.exists():
+            if target.is_dir():
+                raise ValueError(f"bundle source artifact output path is a directory: {target}")
+            if not overwrite:
+                raise ValueError(f"bundle source artifact output already exists: {target}")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data)
+        extracted.append(
+            {
+                "kind": artifact.get("kind"),
+                "path": path,
+                "sha256": actual_sha,
+                "bytes": len(data),
+                "artifact_id": artifact.get("artifact_id"),
+                "extracted_to": str(target),
+            }
+        )
+    return extracted
 
 
 def append_external_evidence_manifest(
@@ -1172,7 +1235,14 @@ def _verify_file_ref(root: Path, item: dict[str, Any], errors: list[str]) -> Non
 
 def _is_safe_relative_path(path: str) -> bool:
     candidate = Path(path)
-    return not candidate.is_absolute() and ".." not in candidate.parts
+    windows_candidate = PureWindowsPath(path)
+    return (
+        not candidate.is_absolute()
+        and not windows_candidate.is_absolute()
+        and not windows_candidate.drive
+        and ".." not in candidate.parts
+        and ".." not in windows_candidate.parts
+    )
 
 
 def _summary(required_ids: list[str], evidence: list[dict[str, Any]], *, status: str | None = None) -> dict[str, Any]:

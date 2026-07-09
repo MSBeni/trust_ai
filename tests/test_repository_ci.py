@@ -31,6 +31,7 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("--include-manifest-evidence", workflow)
         self.assertIn("--require-source-artifacts", workflow)
         self.assertIn("python -m trustai roadmap-evidence-bundle-verify artifacts/roadmap-evidence-bundle.json", workflow)
+        self.assertIn("python -m trustai roadmap-evidence-bundle-extract artifacts/roadmap-evidence-bundle.json", workflow)
         self.assertIn("tests.test_go_verifier_release_workflow", workflow)
         self.assertIn("tests.test_repository_ci", workflow)
         self.assertIn("tests.test_roadmap_audit", workflow)

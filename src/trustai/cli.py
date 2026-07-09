@@ -599,6 +599,7 @@ from .external_evidence import (
     build_external_evidence_manifest,
     build_roadmap_evidence_bundle,
     build_roadmap_evidence_report,
+    extract_roadmap_evidence_bundle_sources,
     load_external_evidence_manifest,
     load_roadmap_evidence_bundle,
     load_roadmap_evidence_report,
@@ -7014,6 +7015,27 @@ def cmd_roadmap_evidence_bundle_verify(args: argparse.Namespace) -> int:
     return 1
 
 
+def cmd_roadmap_evidence_bundle_extract(args: argparse.Namespace) -> int:
+    bundle = load_roadmap_evidence_bundle(args.bundle)
+    try:
+        extracted = extract_roadmap_evidence_bundle_sources(
+            bundle,
+            args.out_dir,
+            key=args.key,
+            require_external=args.require_external or args.require_complete,
+            require_complete=args.require_complete,
+            require_source_artifacts=args.require_source_artifacts,
+            overwrite=args.overwrite,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"roadmap evidence bundle extraction failed: {exc}", file=sys.stderr)
+        return 1
+    print(f"extracted roadmap evidence bundle sources: {len(extracted)}")
+    for record in extracted:
+        print(f"- {record['path']} -> {record['extracted_to']}")
+    return 0
+
+
 def cmd_external_evidence_append(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
     roadmap_audit = load_roadmap_audit(args.roadmap_audit)
@@ -13244,6 +13266,15 @@ def build_parser() -> argparse.ArgumentParser:
     roadmap_evidence_bundle_verify.add_argument("--require-complete", action="store_true")
     roadmap_evidence_bundle_verify.add_argument("--require-source-artifacts", action="store_true")
     roadmap_evidence_bundle_verify.set_defaults(func=cmd_roadmap_evidence_bundle_verify)
+
+    roadmap_evidence_bundle_extract = subparsers.add_parser("roadmap-evidence-bundle-extract", help="verify and extract embedded source artifacts from a roadmap evidence bundle")
+    roadmap_evidence_bundle_extract.add_argument("bundle")
+    roadmap_evidence_bundle_extract.add_argument("--out-dir", default="artifacts/roadmap-evidence-bundle-sources")
+    roadmap_evidence_bundle_extract.add_argument("--require-external", action="store_true")
+    roadmap_evidence_bundle_extract.add_argument("--require-complete", action="store_true")
+    roadmap_evidence_bundle_extract.add_argument("--require-source-artifacts", action="store_true")
+    roadmap_evidence_bundle_extract.add_argument("--overwrite", action="store_true")
+    roadmap_evidence_bundle_extract.set_defaults(func=cmd_roadmap_evidence_bundle_extract)
 
     standards_export = subparsers.add_parser("standards-export", help="write a standards submission package for public specs")
     standards_export.add_argument("--root", default=".")
