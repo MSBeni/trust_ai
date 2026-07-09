@@ -1,0 +1,8 @@
+{
+  "role": "model_risk",
+  "approver": "model-risk@example.com",
+  "approved_at": "2026-07-03T13:00:00Z",
+  "source": "slack",
+  "external_ref": "slack://trustai-approvals/C07MODEL/1720011600.000100",
+  "reason": "Validation scope and holdout evidence reviewed for BTCUSDT canary promotion."
+}

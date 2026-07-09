@@ -1,0 +1,108 @@
+{
+  "resourceSpans": [
+    {
+      "resource": {
+        "attributes": [
+          {
+            "key": "service.name",
+            "value": {
+              "stringValue": "aitrade-risk-agent"
+            }
+          },
+          {
+            "key": "service.version",
+            "value": {
+              "stringValue": "sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234"
+            }
+          },
+          {
+            "key": "trustai.contract_hash",
+            "value": {
+              "stringValue": "22a3727b124ce6664031037939cf391ce724158d681db3a55e9a0f0c51bcc7a2"
+            }
+          },
+          {
+            "key": "trustai.risk_class",
+            "value": {
+              "stringValue": "trading-prod-write"
+            }
+          }
+        ]
+      },
+      "schemaUrl": "https://opentelemetry.io/schemas/1.27.0",
+      "scopeSpans": [
+        {
+          "scope": {
+            "name": "trustai-python-sdk",
+            "version": "0.1.0"
+          },
+          "spans": [
+            {
+              "traceId": "4f0c98cf84fa44df9b8ad8f354d2f0a1",
+              "spanId": "7b1c4d2e9f001122",
+              "name": "gen_ai.agent.decision",
+              "kind": 1,
+              "startTimeUnixNano": "1783080010000000000",
+              "endTimeUnixNano": "1783080010500000000",
+              "attributes": [
+                {
+                  "key": "gen_ai.request.model",
+                  "value": {
+                    "stringValue": "gpt-5-mini"
+                  }
+                },
+                {
+                  "key": "decision",
+                  "value": {
+                    "stringValue": "allow_shadow_order"
+                  }
+                },
+                {
+                  "key": "symbol",
+                  "value": {
+                    "stringValue": "BTCUSDT"
+                  }
+                }
+              ],
+              "status": {
+                "code": 1
+              }
+            },
+            {
+              "traceId": "4f0c98cf84fa44df9b8ad8f354d2f0a1",
+              "spanId": "8c2d5e3f00112233",
+              "parentSpanId": "7b1c4d2e9f001122",
+              "name": "gen_ai.tool.call",
+              "kind": 1,
+              "startTimeUnixNano": "1783080011000000000",
+              "endTimeUnixNano": "1783080011300000000",
+              "attributes": [
+                {
+                  "key": "tool.name",
+                  "value": {
+                    "stringValue": "place_shadow_order"
+                  }
+                },
+                {
+                  "key": "tool.mode",
+                  "value": {
+                    "stringValue": "shadow"
+                  }
+                },
+                {
+                  "key": "notional_usd",
+                  "value": {
+                    "intValue": "7500"
+                  }
+                }
+              ],
+              "status": {
+                "code": 1
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

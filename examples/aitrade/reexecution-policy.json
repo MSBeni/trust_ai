@@ -1,0 +1,35 @@
+{
+  "schema": "trustai.reexecution-policy/0.1",
+  "id": "aitrade-trading-prod-write-reexecution-policy",
+  "version": "0.1.0",
+  "risk_class": "trading-prod-write",
+  "minimums": {
+    "run_count": 3,
+    "records_per_run": 3,
+    "required_pass_rate": 1.0
+  },
+  "execution": {
+    "allowed_methods": [
+      "n-run-reexecution"
+    ],
+    "allowed_runners": [
+      "trustai-reexecution"
+    ],
+    "seed_policy": "recorded-or-fixed-seed",
+    "require_seed": true,
+    "max_temperature": 0
+  },
+  "pins": {
+    "model": "gpt-5-mini",
+    "prompt_hash": "sha256:3d8f0b5d5a2c8d92c1d2c50e973dd9a40bfbf01d23d2e85a4b4a39b4f0c44c9e",
+    "tool_manifest_hash": "sha256:9a23d4f6f788aa10b2c4d6e8f00112233445566778899aabbccddeeff001122",
+    "runtime": "python3.12"
+  },
+  "sandbox": {
+    "required": true,
+    "runner_image": "ghcr.io/trustai/reexecution-runner:0.1.0",
+    "runner_image_digest": "sha256:4ce59d4b5fae6a720a06270581fe3b23b1c7d03f84b6c771f780f0e89d932c11",
+    "network": "disabled",
+    "read_only_rootfs": true
+  }
+}

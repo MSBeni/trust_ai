@@ -1,0 +1,56 @@
+{
+    "run_id":  "run-20260703-aitrade-shadow",
+    "evaluated_at":  "2026-07-03T12:00:00Z",
+    "dataset":  {
+                    "id":  "prod-shadow-holdout-20260702",
+                    "description":  "Shadow replay of live BTCUSDT risk decisions after freeze",
+                    "records":  [
+                                    {
+                                        "id":  "shadow-001",
+                                        "timestamp":  "2026-07-02T02:15:00Z"
+                                    },
+                                    {
+                                        "id":  "shadow-002",
+                                        "timestamp":  "2026-07-02T08:30:00Z"
+                                    },
+                                    {
+                                        "id":  "shadow-003",
+                                        "timestamp":  "2026-07-03T05:45:00Z"
+                                    }
+                                ]
+                },
+    "metrics":  {
+                    "trade_policy_compliance_rate":  0.995,
+                    "max_position_error_usd":  250,
+                    "p95_decision_latency_ms":  980
+                },
+    "approvals":  [
+                      {
+                          "role":  "model_risk",
+                          "approver":  "model-risk@example.com",
+                          "approved_at":  "2026-07-03T13:00:00Z"
+                      },
+                      {
+                          "role":  "trading_ops",
+                          "approver":  "trading-ops@example.com",
+                          "approved_at":  "2026-07-03T13:02:00Z"
+                      }
+                  ],
+    "environment":  {
+                        "runtime":  "python3.12",
+                        "region":  "local-dev",
+                        "otel_schema":  "opentelemetry.semconv.gen_ai/1.0",
+                        "runner":  "trustai-reexecution",
+                        "seed":  2026070301,
+                        "temperature":  0,
+                        "model":  "gpt-5-mini",
+                        "prompt_hash":  "sha256:3d8f0b5d5a2c8d92c1d2c50e973dd9a40bfbf01d23d2e85a4b4a39b4f0c44c9e",
+                        "tool_manifest_hash":  "sha256:9a23d4f6f788aa10b2c4d6e8f00112233445566778899aabbccddeeff001122",
+                        "sandbox":  {
+                                        "runner_image":  "ghcr.io/trustai/reexecution-runner:0.1.0",
+                                        "runner_image_digest":  "sha256:4ce59d4b5fae6a720a06270581fe3b23b1c7d03f84b6c771f780f0e89d932c11",
+                                        "network":  "disabled",
+                                        "read_only_rootfs":  true
+                                    }
+                    }
+}

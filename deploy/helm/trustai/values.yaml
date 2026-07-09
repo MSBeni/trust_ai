@@ -1,0 +1,18 @@
+image:
+  repository: trustai
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+tenantId: local
+signingKeySecretName: trustai-signing-key
+
+storage:
+  enabled: true
+  size: 1Gi
+  mountPath: /data
+
+demo:
+  enabled: true
+  statePath: /data/evidence-chain.json
+  outputPath: /data/aitrade-proof-pack.json
+  pdfPath: /data/aitrade-proof-pack.pdf

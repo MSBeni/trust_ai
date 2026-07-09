@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "trustai"
+version = "0.1.0"
+description = "Verifiable proof packs for agent behavior"
+requires-python = ">=3.11"
+authors = [{ name = "TrustAI" }]
+readme = "README.md"
+license = { text = "Apache-2.0" }
+dependencies = []
+
+[project.scripts]
+trustai = "trustai.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

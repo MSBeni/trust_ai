@@ -1,0 +1,8 @@
+{
+  "role": "trading_ops",
+  "approver": "trading-ops@example.com",
+  "approved_at": "2026-07-03T13:02:00Z",
+  "source": "slack",
+  "external_ref": "slack://trustai-approvals/C07TRADING/1720011720.000200",
+  "reason": "Blast-radius limits and shadow-mode controls confirmed for promotion."
+}

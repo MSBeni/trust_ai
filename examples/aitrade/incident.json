@@ -1,0 +1,16 @@
+{
+  "id": "incident-20260704-latency-drift",
+  "detected_at": "2026-07-04T01:15:00Z",
+  "severity": "high",
+  "summary": "P95 decision latency exceeded the contract assumption during a post-promotion soak window.",
+  "contract_hash": "22a3727b124ce6664031037939cf391ce724158d681db3a55e9a0f0c51bcc7a2",
+  "agent": {
+    "name": "aitrade-risk-agent",
+    "version": "sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234"
+  },
+  "signals": {
+    "p95_decision_latency_ms": 2300,
+    "threshold_ms": 1500
+  },
+  "recommended_action": "demote-to-shadow"
+}

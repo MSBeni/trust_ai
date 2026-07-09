@@ -1,0 +1,14246 @@
+﻿from __future__ import annotations
+
+import argparse
+import json
+import os
+import shutil
+import sys
+import tempfile
+from pathlib import Path
+
+from .actuarial import (
+    append_actuarial_product,
+    build_actuarial_corpus,
+    build_actuarial_product,
+    load_actuarial_corpus,
+    load_actuarial_product,
+    verify_actuarial_corpus,
+    verify_actuarial_product,
+    write_actuarial_corpus,
+    write_actuarial_product,
+)
+from .adapters import append_framework_events
+from .anchor import append_anchor, write_anchor
+from .anchor_provider import (
+    ANCHOR_PROVIDER_MODES,
+    append_anchor_provider_receipt,
+    build_anchor_provider_receipt,
+    load_anchor_provider_receipt,
+    verify_anchor_provider_receipt,
+    write_anchor_provider_receipt,
+)
+from .approval_callback import (
+    append_approval_callback,
+    build_approval_callback,
+    load_approval_callback,
+    load_approval_request,
+    verify_approval_callback,
+    write_approval_callback,
+)
+from .approvals import append_approval, approval_entries_for_contract, load_approval
+from .auditor import write_auditor_html
+from .auditor_accreditation import (
+    append_auditor_accreditation_receipt,
+    build_auditor_accreditation_receipt,
+    load_auditor_accreditation_receipt,
+    verify_auditor_accreditation_receipt,
+    write_auditor_accreditation_receipt,
+)
+from .auditor_accreditation_countersignature import (
+    append_auditor_accreditation_countersignature_receipt,
+    build_auditor_accreditation_countersignature_receipt,
+    load_auditor_accreditation_countersignature_receipt,
+    verify_auditor_accreditation_countersignature_receipt,
+    write_auditor_accreditation_countersignature_receipt,
+)
+from .auditor_accreditation_signing_ceremony import (
+    append_auditor_accreditation_signing_ceremony_receipt,
+    build_auditor_accreditation_signing_ceremony_receipt,
+    load_auditor_accreditation_signing_ceremony_receipt,
+    verify_auditor_accreditation_signing_ceremony_receipt,
+    write_auditor_accreditation_signing_ceremony_receipt,
+)
+from .auditor_accreditation_signing_audit import (
+    append_auditor_accreditation_signing_audit_receipt,
+    build_auditor_accreditation_signing_audit_receipt,
+    load_auditor_accreditation_signing_audit_receipt,
+    verify_auditor_accreditation_signing_audit_receipt,
+    write_auditor_accreditation_signing_audit_receipt,
+)
+from .auditor_accreditation_kms_enforcement import (
+    append_auditor_accreditation_kms_enforcement_receipt,
+    build_auditor_accreditation_kms_enforcement_receipt,
+    load_auditor_accreditation_kms_enforcement_receipt,
+    verify_auditor_accreditation_kms_enforcement_receipt,
+    write_auditor_accreditation_kms_enforcement_receipt,
+)
+from .auditor_credential_registry import (
+    append_auditor_credential_registry_receipt,
+    build_auditor_credential_registry_receipt,
+    load_auditor_credential_registry_receipt,
+    verify_auditor_credential_registry_receipt,
+    write_auditor_credential_registry_receipt,
+)
+from .auditor_program_governance import (
+    append_auditor_program_governance_receipt,
+    build_auditor_program_governance_receipt,
+    load_auditor_program_governance_receipt,
+    verify_auditor_program_governance_receipt,
+    write_auditor_program_governance_receipt,
+)
+from .auditor_program_sponsorship import (
+    append_auditor_program_sponsorship_receipt,
+    build_auditor_program_sponsorship_receipt,
+    load_auditor_program_sponsorship_receipt,
+    verify_auditor_program_sponsorship_receipt,
+    write_auditor_program_sponsorship_receipt,
+)
+from .canonical import content_hash
+from .chain import EvidenceChain
+from .certification import (
+    build_auditor_certification_kit,
+    load_auditor_certification_kit,
+    verify_auditor_certification_kit,
+    write_auditor_certification_kit,
+    write_auditor_certification_markdown,
+)
+from .underwriting_quote import (
+    append_underwriting_quote,
+    build_underwriting_quote,
+    load_underwriting_quote,
+    verify_underwriting_quote,
+    write_underwriting_quote,
+)
+from .insurer_partner_service import (
+    INSURER_PARTNER_KINDS,
+    INSURER_PARTNER_SERVICE_MODES,
+    append_insurer_partner_service_attestation,
+    build_insurer_partner_service_attestation,
+    load_insurer_partner_service_attestation,
+    verify_insurer_partner_service_attestation,
+    write_insurer_partner_service_attestation,
+)
+from .insurer_partner_worker import (
+    INSURER_PARTNER_WORKER_MODES,
+    INSURER_PARTNER_WORKER_OPERATION_KINDS,
+    append_insurer_partner_worker_receipt,
+    build_insurer_partner_worker_receipt,
+    load_insurer_partner_worker_receipt,
+    verify_insurer_partner_worker_receipt,
+    write_insurer_partner_worker_receipt,
+)
+from .trust_authority import (
+    append_trust_authority_receipt,
+    build_trust_authority_receipt,
+    load_trust_authority_receipt,
+    verify_trust_authority_receipt,
+    write_trust_authority_receipt,
+)
+from .trust_authority_provider import (
+    TRUST_AUTHORITY_PROVIDER_MODES,
+    append_trust_authority_provider_attestation,
+    build_trust_authority_provider_attestation,
+    load_trust_authority_provider_attestation,
+    verify_trust_authority_provider_attestation,
+    write_trust_authority_provider_attestation,
+)
+from .trust_authority_kms_enforcement import (
+    TRUST_AUTHORITY_KMS_ENFORCEMENT_MODES,
+    append_trust_authority_kms_enforcement_receipt,
+    build_trust_authority_kms_enforcement_receipt,
+    load_trust_authority_kms_enforcement_receipt,
+    verify_trust_authority_kms_enforcement_receipt,
+    write_trust_authority_kms_enforcement_receipt,
+)
+from .trust_network import (
+    build_trust_network_manifest,
+    load_trust_network_manifest,
+    verify_trust_network_manifest,
+    write_trust_network_manifest,
+    write_trust_network_markdown,
+)
+from .trust_network_registry import (
+    append_trust_network_registry_receipt,
+    build_trust_network_registry_receipt,
+    load_trust_network_registry_receipt,
+    verify_trust_network_registry_receipt,
+    write_trust_network_registry_receipt,
+)
+from .trust_network_registry_status import (
+    append_trust_network_registry_status_receipt,
+    build_trust_network_registry_status_receipt,
+    load_trust_network_registry_status_receipt,
+    verify_trust_network_registry_status_receipt,
+    write_trust_network_registry_status_receipt,
+)
+from .trust_network_service import (
+    TRUST_NETWORK_SERVICE_KINDS,
+    TRUST_NETWORK_SERVICE_MODES,
+    append_trust_network_service_attestation,
+    build_trust_network_service_attestation,
+    load_trust_network_service_attestation,
+    verify_trust_network_service_attestation,
+    write_trust_network_service_attestation,
+)
+from .trust_network_worker import (
+    TRUST_NETWORK_WORKER_MODES,
+    TRUST_NETWORK_WORKER_OPERATION_KINDS,
+    append_trust_network_worker_receipt,
+    build_trust_network_worker_receipt,
+    load_trust_network_worker_receipt,
+    verify_trust_network_worker_receipt,
+    write_trust_network_worker_receipt,
+)
+from .vendor_identity import (
+    append_vendor_identity_receipt,
+    build_vendor_identity_receipt,
+    load_vendor_identity_receipt,
+    verify_vendor_identity_receipt,
+    write_vendor_identity_receipt,
+)
+from .cicd import build_ci_report, build_promotion_check_payload, build_slack_approval_request, write_ci_report
+from .compliance import build_compliance_export, write_compliance_export
+from .consent import INSURER_SCOPE, append_consent_grant, append_consent_revocation, consent_status, load_consent
+from .contracts import contract_hash, find_contract_registration, load_contract, register_contract
+from .collector_topology import (
+    append_collector_topology,
+    build_collector_topology,
+    load_collector_topology,
+    verify_collector_topology,
+    write_collector_topology,
+    write_collector_topology_markdown,
+)
+from .collector_service import (
+    COLLECTOR_SERVICE_MODES,
+    STREAM_BACKENDS,
+    append_collector_service_attestation,
+    build_collector_service_attestation,
+    load_collector_service_attestation,
+    verify_collector_service_attestation,
+    write_collector_service_attestation,
+)
+from .collector_worker import (
+    COLLECTOR_WORKER_MODES,
+    COLLECTOR_WORKER_OPERATION_KINDS,
+    append_collector_worker_receipt,
+    build_collector_worker_receipt,
+    load_collector_worker_receipt,
+    verify_collector_worker_receipt,
+    write_collector_worker_receipt,
+)
+from .deployment import (
+    append_deployment_manifest,
+    build_deployment_manifest,
+    load_deployment_manifest,
+    verify_deployment_manifest,
+    write_deployment_manifest,
+    write_deployment_markdown,
+)
+from .byoc_operator import (
+    BYOC_OPERATOR_MODES,
+    OBJECT_LOCK_MODES,
+    RETENTION_MODES,
+    append_byoc_operator_attestation,
+    build_byoc_operator_attestation,
+    load_byoc_operator_attestation,
+    verify_byoc_operator_attestation,
+    write_byoc_operator_attestation,
+)
+from .eu_data_plane import (
+    EU_DATA_PLANE_MODES,
+    append_eu_data_plane_attestation,
+    build_eu_data_plane_attestation,
+    load_eu_data_plane_attestation,
+    verify_eu_data_plane_attestation,
+    write_eu_data_plane_attestation,
+)
+from .delivery import (
+    append_provider_delivery,
+    build_provider_delivery,
+    dispatch_provider_payload,
+    load_provider_delivery,
+    load_provider_payload,
+    verify_provider_delivery,
+    write_provider_delivery,
+)
+from .provider_delivery_service import (
+    PROVIDER_DELIVERY_SERVICE_MODES,
+    append_provider_delivery_service_attestation,
+    build_provider_delivery_service_attestation,
+    load_provider_delivery_service_attestation,
+    verify_provider_delivery_service_attestation,
+    write_provider_delivery_service_attestation,
+)
+from .provider_delivery_worker import (
+    PROVIDER_DELIVERY_WORKER_MODES,
+    PROVIDER_DELIVERY_WORKER_OPERATION_KINDS,
+    append_provider_delivery_worker_receipt,
+    build_provider_delivery_worker_receipt,
+    load_provider_delivery_worker_receipt,
+    verify_provider_delivery_worker_receipt,
+    write_provider_delivery_worker_receipt,
+)
+from .provider_audit import (
+    append_provider_audit_correlation,
+    build_provider_audit_correlation,
+    load_provider_audit_correlation,
+    load_provider_audit_log,
+    verify_provider_audit_correlation,
+    write_provider_audit_correlation,
+)
+from .provider_audit_stream import (
+    AUDIT_STREAM_MODES,
+    append_provider_audit_stream_receipt,
+    build_provider_audit_stream_receipt,
+    load_provider_audit_stream_receipt,
+    verify_provider_audit_stream_receipt,
+    write_provider_audit_stream_receipt,
+)
+from .provider_audit_worker import (
+    WORKER_MODES,
+    WORKER_OPERATION_KINDS,
+    append_provider_audit_worker_receipt,
+    build_provider_audit_worker_receipt,
+    load_provider_audit_worker_receipt,
+    verify_provider_audit_worker_receipt,
+    write_provider_audit_worker_receipt,
+)
+from .provider_credential_custody import (
+    CREDENTIAL_KINDS,
+    CUSTODY_MODES,
+    append_provider_credential_custody_receipt,
+    build_provider_credential_custody_receipt,
+    load_provider_credential_custody_receipt,
+    verify_provider_credential_custody_receipt,
+    write_provider_credential_custody_receipt,
+)
+from .provider_callback_store import (
+    append_provider_callback_store_manifest,
+    build_provider_callback_store_manifest,
+    load_provider_callback_source_artifact,
+    load_provider_callback_store_manifest,
+    verify_provider_callback_store_manifest,
+    write_provider_callback_store_manifest,
+)
+from .provider_callback_storage import (
+    append_provider_callback_storage_manifest,
+    build_provider_callback_storage_manifest,
+    load_provider_callback_storage_manifest,
+    verify_provider_callback_storage_manifest,
+    write_provider_callback_storage_manifest,
+)
+from .provider_installation import (
+    append_provider_installation_manifest,
+    build_provider_installation_manifest,
+    load_provider_installation_manifest,
+    verify_provider_installation_manifest,
+    write_provider_installation_manifest,
+)
+from .provider_lifecycle import (
+    append_provider_lifecycle_manifest,
+    build_provider_lifecycle_manifest,
+    load_provider_lifecycle_manifest,
+    verify_provider_lifecycle_manifest,
+    write_provider_lifecycle_manifest,
+)
+from .provider_lifecycle_operation import (
+    OPERATION_KINDS,
+    OPERATION_MODES,
+    append_provider_lifecycle_operation_receipt,
+    build_provider_lifecycle_operation_receipt,
+    load_provider_lifecycle_operation_receipt,
+    verify_provider_lifecycle_operation_receipt,
+    write_provider_lifecycle_operation_receipt,
+)
+from .provider_ingress import (
+    append_provider_ingress_manifest,
+    build_provider_ingress_manifest,
+    load_provider_ingress_manifest,
+    verify_provider_ingress_manifest,
+    write_provider_ingress_manifest,
+)
+from .provider_webhook import (
+    append_provider_webhook_receipt,
+    build_provider_webhook_receipt,
+    load_provider_webhook_receipt,
+    verify_provider_webhook_receipt,
+    write_provider_webhook_receipt,
+)
+from .provider_operations_service import (
+    PROVIDER_OPERATIONS_SERVICE_MODES,
+    append_provider_operations_service_attestation,
+    build_provider_operations_service_attestation,
+    load_provider_operations_service_attestation,
+    verify_provider_operations_service_attestation,
+    write_provider_operations_service_attestation,
+)
+from .eu_ai_act import build_eu_ai_act_document, load_eu_ai_act_document, verify_eu_ai_act_document, write_eu_ai_act_document, write_eu_ai_act_markdown
+from .control_plane import ControlPlane
+from .gate import append_eval_and_gate
+from .identity import load_identity_inventory
+from .identity_provider_attestation import (
+    append_identity_provider_attestation,
+    build_identity_provider_attestation,
+    load_identity_provider_attestation,
+    verify_identity_provider_attestation,
+    write_identity_provider_attestation,
+)
+from .identity_provider_lifecycle_operation import (
+    IDENTITY_PROVIDER_LIFECYCLE_OPERATION_KINDS,
+    IDENTITY_PROVIDER_LIFECYCLE_OPERATION_MODES,
+    IDENTITY_PROVIDER_LIFECYCLE_OUTCOMES,
+    IDENTITY_PROVIDER_LIFECYCLE_TARGET_STATES,
+    append_identity_provider_lifecycle_operation_receipt,
+    build_identity_provider_lifecycle_operation_receipt,
+    load_identity_provider_lifecycle_operation_receipt,
+    verify_identity_provider_lifecycle_operation_receipt,
+    write_identity_provider_lifecycle_operation_receipt,
+)
+from .identity_provider_lifecycle_worker import (
+    IDENTITY_PROVIDER_LIFECYCLE_WORKER_MODES,
+    IDENTITY_PROVIDER_LIFECYCLE_WORKER_OPERATION_KINDS,
+    append_identity_provider_lifecycle_worker_receipt,
+    build_identity_provider_lifecycle_worker_receipt,
+    load_identity_provider_lifecycle_worker_receipt,
+    verify_identity_provider_lifecycle_worker_receipt,
+    write_identity_provider_lifecycle_worker_receipt,
+)
+from .identity_provider_session import (
+    IDENTITY_PROVIDER_SESSION_EVENT_KINDS,
+    IDENTITY_PROVIDER_SESSION_MODES,
+    append_identity_provider_session_receipt,
+    build_identity_provider_session_receipt,
+    load_identity_provider_session_receipt,
+    verify_identity_provider_session_receipt,
+    write_identity_provider_session_receipt,
+)
+from .ingest import append_events, append_otlp_traces, load_events
+from .keyring import load_keyring, local_dev_keyring, rotate_local_keyring, verify_chain_with_keyring, write_keyring
+from .lifecycle import append_demotion, append_incident, append_rollback, load_incident
+from .insurer import build_insurer_telemetry, write_insurer_telemetry
+from .marketplace import (
+    append_marketplace_distribution,
+    build_marketplace_catalog,
+    build_marketplace_distribution,
+    load_marketplace_catalog,
+    load_marketplace_distribution,
+    verify_marketplace_catalog,
+    verify_marketplace_distribution,
+    write_marketplace_catalog,
+    write_marketplace_distribution,
+    write_marketplace_markdown,
+)
+from .marketplace_author import (
+    MARKETPLACE_AUTHOR_KINDS,
+    MARKETPLACE_AUTHOR_MODES,
+    MARKETPLACE_BILLING_MODES,
+    append_marketplace_author_governance,
+    build_marketplace_author_governance,
+    load_marketplace_author_governance,
+    verify_marketplace_author_governance,
+    write_marketplace_author_governance,
+)
+from .marketplace_settlement import (
+    MARKETPLACE_INVOICE_STATUSES,
+    MARKETPLACE_PAYOUT_STATUSES,
+    MARKETPLACE_SETTLEMENT_DECISIONS,
+    MARKETPLACE_SETTLEMENT_MODES,
+    append_marketplace_settlement,
+    build_marketplace_settlement,
+    load_marketplace_settlement,
+    verify_marketplace_settlement,
+    write_marketplace_settlement,
+)
+from .mcp_gateway import append_mcp_transcript, load_mcp_transcript
+from .object_store import WORMStore
+from .policy import append_policy_decision, load_policy_pack
+from .policy_export import export_policy_pack, write_policy_export
+from .policy_engine import (
+    append_policy_engine_receipt,
+    build_policy_engine_receipt,
+    load_policy_engine_receipt,
+    verify_policy_engine_receipt,
+    write_policy_engine_receipt,
+)
+from .policy_backend_enforcement import (
+    POLICY_BACKEND_ENGINES,
+    POLICY_BACKEND_MODES,
+    append_policy_backend_enforcement_receipt,
+    build_policy_backend_enforcement_receipt,
+    load_policy_backend_enforcement_receipt,
+    verify_policy_backend_enforcement_receipt,
+    write_policy_backend_enforcement_receipt,
+)
+from .policy_backend_service import (
+    POLICY_BACKEND_SERVICE_MODES,
+    append_policy_backend_service_attestation,
+    build_policy_backend_service_attestation,
+    load_policy_backend_service_attestation,
+    verify_policy_backend_service_attestation,
+    write_policy_backend_service_attestation,
+)
+from .proofpack import compile_proof_pack
+from .procurement_clause import (
+    append_procurement_clause_receipt,
+    build_procurement_clause_receipt,
+    load_procurement_clause_receipt,
+    verify_procurement_clause_receipt,
+    write_procurement_clause_receipt,
+)
+from .procurement_integration import (
+    append_procurement_integration_receipt,
+    build_procurement_integration_receipt,
+    load_procurement_integration_receipt,
+    verify_procurement_integration_receipt,
+    write_procurement_integration_receipt,
+)
+from .registry import append_delegation, append_inventory, load_delegation, load_inventory
+from .reexecution import (
+    append_reexecution_report,
+    build_reexecution_report,
+    load_eval_results,
+    load_reexecution_report,
+    verify_reexecution_report,
+    write_reexecution_markdown,
+    write_reexecution_report,
+)
+from .reexecution_policy import evaluate_reexecution_policy, load_reexecution_policy, verify_reexecution_policy
+from .reexecution_runner import (
+    append_reexecution_runner_evidence,
+    load_reexecution_runner_evidence,
+    load_reexecution_runner_plan,
+    run_reexecution_plan,
+    runner_results,
+    verify_reexecution_runner_evidence,
+    write_reexecution_runner_evidence,
+)
+from .reexecution_isolation import (
+    REEXECUTION_ISOLATION_MODES,
+    append_reexecution_isolation_attestation,
+    build_reexecution_isolation_attestation,
+    load_reexecution_isolation_attestation,
+    verify_reexecution_isolation_attestation,
+    write_reexecution_isolation_attestation,
+)
+from .reexecution_runner_service import (
+    REEXECUTION_RUNNER_SERVICE_MODES,
+    append_reexecution_runner_service_attestation,
+    build_reexecution_runner_service_attestation,
+    load_reexecution_runner_service_attestation,
+    verify_reexecution_runner_service_attestation,
+    write_reexecution_runner_service_attestation,
+)
+from .reexecution_runner_worker import (
+    REEXECUTION_RUNNER_WORKER_MODES,
+    REEXECUTION_RUNNER_WORKER_OPERATION_KINDS,
+    append_reexecution_runner_worker_receipt,
+    build_reexecution_runner_worker_receipt,
+    load_reexecution_runner_worker_receipt,
+    verify_reexecution_runner_worker_receipt,
+    write_reexecution_runner_worker_receipt,
+)
+from .regulator import build_regulator_disclosure, load_regulator_disclosure, verify_regulator_disclosure, write_regulator_disclosure
+from .regulator_acceptance import (
+    append_regulator_acceptance,
+    build_regulator_acceptance,
+    load_regulator_acceptance,
+    verify_regulator_acceptance,
+    write_regulator_acceptance,
+)
+from .regulator_view import write_regulator_html
+from .review_portal_service import (
+    REVIEW_PORTAL_KINDS,
+    REVIEW_PORTAL_SERVICE_MODES,
+    append_review_portal_service_attestation,
+    build_review_portal_service_attestation,
+    load_review_portal_service_attestation,
+    verify_review_portal_service_attestation,
+    write_review_portal_service_attestation,
+)
+from .runtime import append_runtime_attestation, load_action
+from .server import serve
+from .shadow import (
+    append_shadow_replay,
+    append_soak_report,
+    load_shadow_replay,
+    load_soak_window,
+    shadow_replay_to_eval_results,
+)
+from .tamper_stress import (
+    build_tamper_stress_report,
+    load_tamper_stress_report,
+    verify_tamper_stress_report,
+    write_tamper_stress_report,
+)
+from .supervised_access import (
+    append_supervised_access_receipt,
+    build_supervised_access_receipt,
+    load_supervised_access_receipt,
+    verify_supervised_access_receipt,
+    write_supervised_access_receipt,
+)
+from .standards import (
+    build_standards_submission,
+    load_standards_submission,
+    verify_standards_submission,
+    write_standards_markdown,
+    write_standards_submission,
+)
+from .standards_body_submission import (
+    append_standards_body_submission_receipt,
+    build_standards_body_submission_receipt,
+    load_standards_body_submission_receipt,
+    verify_standards_body_submission_receipt,
+    write_standards_body_submission_receipt,
+)
+from .standards_body_status import (
+    append_standards_body_status_receipt,
+    build_standards_body_status_receipt,
+    load_standards_body_status_receipt,
+    verify_standards_body_status_receipt,
+    write_standards_body_status_receipt,
+)
+from .standards_body_ballot import (
+    append_standards_body_ballot_receipt,
+    build_standards_body_ballot_receipt,
+    load_standards_body_ballot_receipt,
+    verify_standards_body_ballot_receipt,
+    write_standards_body_ballot_receipt,
+)
+from .standards_body_ballot_system import (
+    append_standards_body_ballot_system_receipt,
+    build_standards_body_ballot_system_receipt,
+    load_standards_body_ballot_system_receipt,
+    verify_standards_body_ballot_system_receipt,
+    write_standards_body_ballot_system_receipt,
+)
+from .standards_body_provider_posting import (
+    append_standards_body_provider_posting_receipt,
+    build_standards_body_provider_posting_receipt,
+    load_standards_body_provider_posting_receipt,
+    verify_standards_body_provider_posting_receipt,
+    write_standards_body_provider_posting_receipt,
+)
+from .verifier import load_proof_pack, verify_proof_pack
+from .verifier_conformance import (
+    build_verifier_conformance_report,
+    load_verifier_conformance_report,
+    verify_verifier_conformance_report,
+    write_verifier_conformance_markdown,
+    write_verifier_conformance_report,
+)
+from .go_verifier_build import (
+    GO_VERIFIER_BUILD_MODES,
+    append_go_verifier_build_attestation,
+    build_go_verifier_build_attestation,
+    load_go_verifier_build_attestation,
+    verify_go_verifier_build_attestation,
+    write_go_verifier_build_attestation,
+)
+from .verifier_distribution import (
+    append_verifier_distribution_receipt,
+    build_verifier_distribution_receipt,
+    load_verifier_distribution_receipt,
+    verify_verifier_distribution_receipt,
+    write_verifier_distribution_receipt,
+)
+from .verifier_release import (
+    build_verifier_release_manifest,
+    load_verifier_release_manifest,
+    verify_verifier_release_manifest,
+    write_verifier_release_manifest,
+    write_verifier_release_markdown,
+)
+DEFAULT_STATE = ".trustai/evidence-chain.json"
+
+
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parents[2]
+
+
+def _load_json(path: str | Path) -> dict:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+
+def _write_json(path: str | Path, value: object) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(value, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def _split_csv(value: str | None) -> list[str] | None:
+    if not value:
+        return None
+    return [item.strip() for item in value.split(",") if item.strip()]
+def _parse_header_args(values: list[str] | None) -> dict[str, str]:
+    headers: dict[str, str] = {}
+    for value in values or []:
+        if ":" not in value:
+            raise ValueError("headers must use Name: Value syntax")
+        name, header_value = value.split(":", 1)
+        name = name.strip()
+        if not name:
+            raise ValueError("header name is required")
+        headers[name] = header_value.strip()
+    return headers
+
+
+def _resolve_secret_arg(value: str | None) -> str | None:
+    if not value:
+        return None
+    if value.startswith("env:"):
+        env_name = value[4:]
+        if not env_name:
+            raise ValueError("env secret name is required")
+        secret = os.environ.get(env_name)
+        if not secret:
+            raise ValueError(f"secret environment variable is not set: {env_name}")
+        return secret
+    return value
+
+
+def _read_bytes(path: str | Path) -> bytes:
+    return Path(path).read_bytes()
+
+def _load_chain(args: argparse.Namespace) -> EvidenceChain:
+    return EvidenceChain.load(args.state, tenant_id=getattr(args, "tenant", "local"))
+
+
+def _ensure_registered(chain: EvidenceChain, contract: dict, key: str | None, auto_register: bool) -> int:
+    digest = contract_hash(contract)
+    if find_contract_registration(chain, digest):
+        return 0
+    if auto_register:
+        register_contract(chain, contract, key=key)
+        return 0
+    print("contract is not registered; run `trustai register` first or pass --auto-register", file=sys.stderr)
+    return 2
+
+
+
+def cmd_keyring_init(args: argparse.Namespace) -> int:
+    keyring = local_dev_keyring(tenant_id=args.tenant)
+    write_keyring(args.out, keyring)
+    print(f"keyring: {args.out}")
+    print(f"tenant: {args.tenant}")
+    print(f"keys: {len(keyring['keys'])}")
+    return 0
+
+
+def cmd_keyring_rotate(args: argparse.Namespace) -> int:
+    keyring = rotate_local_keyring(
+        load_keyring(args.keyring),
+        key_id=args.key_id,
+        secret=args.secret,
+        artifact_secret=args.artifact_secret,
+        tsa_secret=args.tsa_secret,
+        retire_existing=not args.keep_current_active,
+        rotated_at=args.rotated_at,
+    )
+    write_keyring(args.out, keyring)
+    print(f"rotated keyring: {args.out}")
+    print(f"new key id: {args.key_id}")
+    print(f"keys: {len(keyring['keys'])}")
+    return 0
+
+
+def cmd_chain_verify(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    if args.keyring:
+        result = verify_chain_with_keyring(chain, load_keyring(args.keyring))
+    else:
+        result = chain.verify_all(key=args.key)
+    if result.ok:
+        print(f"verified evidence chain: {args.state}")
+        print(f"entries: {len(chain.entries)}")
+        print(f"tree root: {chain.tree()['root']}")
+        if args.keyring:
+            print(f"keyring: {args.keyring}")
+        return 0
+    print(f"evidence chain verification failed: {args.state}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+def cmd_init(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    chain.save()
+    print(f"initialized evidence chain: {args.state}")
+    print(f"tenant: {chain.tenant_id}")
+    print(f"tree root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_anchor(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    entry = append_anchor(chain, key=args.key)
+    chain.save()
+    if args.out:
+        write_anchor(args.out, entry)
+        print(f"anchor receipt: {args.out}")
+    print(f"anchored tree root: {entry['payload']['tree']['root']}")
+    print(f"anchor entry id: {entry['entry_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def _load_anchor_provider_sources(args: argparse.Namespace) -> tuple[dict, EvidenceChain | None]:
+    anchor_entry = _load_json(args.anchor_entry)
+    source_chain = None
+    if args.source_state:
+        source_chain = EvidenceChain.load(args.source_state, tenant_id=args.source_tenant)
+    return anchor_entry, source_chain
+
+
+def cmd_anchor_provider_receipt(args: argparse.Namespace) -> int:
+    try:
+        anchor_entry, source_chain = _load_anchor_provider_sources(args)
+        receipt = build_anchor_provider_receipt(
+            anchor_entry,
+            source_chain=source_chain,
+            mode=args.mode,
+            environment=args.environment,
+            provider=args.provider,
+            endpoint=args.endpoint,
+            publication_ref=args.publication_ref,
+            request_hash=args.request_hash,
+            response_status=args.response_status,
+            response_hash=args.response_hash,
+            public_log_ref=args.public_log_ref,
+            public_log_root=args.public_log_root,
+            public_log_size=args.public_log_size,
+            public_log_entry_ref=args.public_log_entry_ref,
+            inclusion_proof_hash=args.inclusion_proof_hash,
+            consistency_proof_hash=args.consistency_proof_hash,
+            blockchain_network=args.blockchain_network,
+            blockchain_tx_ref=args.blockchain_tx_ref,
+            blockchain_block_ref=args.blockchain_block_ref,
+            witness_refs=args.witness_ref or [],
+            actor_ref=args.actor_ref,
+            credential_ref=args.credential_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            retention_until=args.retention_until,
+            evidence_refs=args.evidence_ref or [],
+            published_at=args.published_at,
+            key=args.key,
+        )
+        result = verify_anchor_provider_receipt(receipt, anchor_entry, source_chain=source_chain, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"anchor provider receipt generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("anchor provider receipt generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_anchor_provider_receipt(args.out, receipt)
+    print(f"anchor provider receipt: {args.out}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"provider: {receipt['provider']['provider']}")
+    print(f"public log: {receipt['public_log']['log_ref']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_anchor_provider_verify(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_anchor_provider_receipt(args.receipt)
+        anchor_entry, source_chain = _load_anchor_provider_sources(args)
+    except (OSError, ValueError) as exc:
+        print(f"anchor provider receipt verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_anchor_provider_receipt(receipt, anchor_entry, source_chain=source_chain, key=args.key)
+    if result.ok:
+        print(f"verified anchor provider receipt: {args.receipt}")
+        print(f"receipt id: {receipt['receipt_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"anchor provider receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_anchor_provider_append(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_anchor_provider_receipt(args.receipt)
+        anchor_entry, source_chain = _load_anchor_provider_sources(args)
+    except (OSError, ValueError) as exc:
+        print(f"anchor provider receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_anchor_provider_receipt(chain, receipt, anchor_entry, source_chain=source_chain, key=args.key)
+    except ValueError as exc:
+        print(f"anchor provider receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"anchor provider entry: {args.out}")
+    print(f"anchor provider entry id: {entry['entry_id']}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_seal(args: argparse.Namespace) -> int:
+    source = Path(args.artifact)
+    receipt = WORMStore(args.store).store_bytes(source.read_bytes(), args.artifact_type, args.retention_until)
+    out = Path(args.out) if args.out else Path("artifacts") / f"{source.name}.worm-receipt.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(receipt, indent=2, sort_keys=True), encoding="utf-8")
+    print(f"sealed artifact: {args.artifact}")
+    print(f"receipt: {out}")
+    print(f"content hash: {receipt['content_hash']}")
+    return 0
+
+
+def cmd_worm_legal_hold(args: argparse.Namespace) -> int:
+    receipt = _load_json(args.receipt)
+    store = WORMStore(args.store)
+    hold = store.apply_legal_hold(
+        receipt,
+        case_id=args.case_id,
+        reason=args.reason,
+        applied_by=args.applied_by,
+        applied_at=args.applied_at,
+    )
+    out = Path(args.out) if args.out else Path("artifacts") / f"{Path(args.receipt).stem}.legal-hold.json"
+    _write_json(out, hold)
+    print(f"WORM legal hold: {out}")
+    print(f"legal hold id: {hold['legal_hold_id']}")
+    print(f"receipt id: {hold['worm_receipt_id']}")
+    return 0
+
+
+def cmd_worm_audit(args: argparse.Namespace) -> int:
+    legal_hold = _load_json(args.legal_hold) if args.legal_hold else None
+    audit = WORMStore(args.store).audit_receipt(_load_json(args.receipt), now=args.now, legal_hold=legal_hold)
+    if audit.ok:
+        print(f"verified WORM receipt: {args.receipt}")
+        print(f"content hash: {audit.content_hash}")
+        print(f"retention active: {str(audit.retention_active).lower()}")
+        print(f"legal hold active: {str(audit.legal_hold_active).lower()}")
+        if audit.legal_hold_id:
+            print(f"legal hold id: {audit.legal_hold_id}")
+        for warning in audit.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"WORM receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in audit.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_trust_authority_receipt(args: argparse.Namespace) -> int:
+    source_chain = _load_chain(args)
+    keyring = load_keyring(args.keyring)
+    pack = load_proof_pack(args.pack) if args.pack else None
+    try:
+        receipt = build_trust_authority_receipt(
+            source_chain,
+            keyring,
+            proof_pack=pack,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"trust authority receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_trust_authority_receipt(receipt, chain=source_chain, keyring=keyring, proof_pack=pack, key=args.key)
+    if not result.ok:
+        print("trust authority receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_trust_authority_receipt(args.out, receipt)
+    print(f"trust authority receipt: {args.out}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"source chain root: {receipt['chain']['tree']['root']}")
+    print(f"source entries: {receipt['chain']['entry_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_trust_authority_verify(args: argparse.Namespace) -> int:
+    source_chain = _load_chain(args)
+    keyring = load_keyring(args.keyring)
+    pack = load_proof_pack(args.pack) if args.pack else None
+    result = verify_trust_authority_receipt(
+        load_trust_authority_receipt(args.receipt),
+        chain=source_chain,
+        keyring=keyring,
+        proof_pack=pack,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified trust authority receipt: {args.receipt}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"trust authority receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_trust_authority_append(args: argparse.Namespace) -> int:
+    authority_chain = _load_chain(args)
+    source_chain = EvidenceChain.load(args.source_state, tenant_id=args.source_tenant)
+    keyring = load_keyring(args.keyring)
+    pack = load_proof_pack(args.pack) if args.pack else None
+    receipt = load_trust_authority_receipt(args.receipt)
+    try:
+        entry = append_trust_authority_receipt(
+            authority_chain,
+            receipt,
+            source_chain=source_chain,
+            keyring=keyring,
+            proof_pack=pack,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"trust authority receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    authority_chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"trust authority entry: {args.out}")
+    print(f"trust authority entry id: {entry['entry_id']}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"chain root: {authority_chain.tree()['root']}")
+    return 0
+
+
+def _load_trust_authority_provider_sources(args: argparse.Namespace) -> tuple[dict, EvidenceChain, dict, dict | None]:
+    source_chain = EvidenceChain.load(args.source_state, tenant_id=args.source_tenant)
+    keyring = load_keyring(args.keyring)
+    pack = load_proof_pack(args.pack) if args.pack else None
+    return load_trust_authority_receipt(args.receipt), source_chain, keyring, pack
+
+
+def cmd_trust_authority_provider_attestation(args: argparse.Namespace) -> int:
+    receipt, source_chain, keyring, pack = _load_trust_authority_provider_sources(args)
+    try:
+        attestation = build_trust_authority_provider_attestation(
+            receipt,
+            source_chain,
+            keyring,
+            proof_pack=pack,
+            mode=args.mode,
+            environment=args.environment,
+            kms_provider=args.kms_provider,
+            kms_endpoint=args.kms_endpoint,
+            kms_key_ref=args.kms_key_ref,
+            kms_key_algorithm=args.kms_key_algorithm,
+            kms_request_hash=args.kms_request_hash,
+            kms_response_status=args.kms_response_status,
+            kms_response_hash=args.kms_response_hash,
+            tsa_provider=args.tsa_provider,
+            tsa_endpoint=args.tsa_endpoint,
+            tsa_request_hash=args.tsa_request_hash,
+            tsa_response_status=args.tsa_response_status,
+            tsa_response_hash=args.tsa_response_hash,
+            tsa_certificate_chain_hash=args.tsa_certificate_chain_hash,
+            actor_ref=args.actor_ref,
+            credential_ref=args.credential_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            retention_until=args.retention_until,
+            key_policy_ref=args.key_policy_ref,
+            key_policy_hash=args.key_policy_hash,
+            timestamp_policy_ref=args.timestamp_policy_ref,
+            timestamp_policy_hash=args.timestamp_policy_hash,
+            evidence_refs=args.evidence_ref or [],
+            attested_at=args.attested_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"trust authority provider attestation failed: {exc}", file=sys.stderr)
+        return 2
+    result = verify_trust_authority_provider_attestation(
+        attestation,
+        receipt,
+        source_chain,
+        keyring,
+        proof_pack=pack,
+        key=args.key,
+    )
+    if not result.ok:
+        print("trust authority provider attestation verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_trust_authority_provider_attestation(args.out, attestation)
+    print(f"trust authority provider attestation: {args.out}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"kms provider: {attestation['kms']['provider']}")
+    print(f"tsa provider: {attestation['timestamp_authority']['provider']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_trust_authority_provider_verify(args: argparse.Namespace) -> int:
+    receipt, source_chain, keyring, pack = _load_trust_authority_provider_sources(args)
+    result = verify_trust_authority_provider_attestation(
+        load_trust_authority_provider_attestation(args.attestation),
+        receipt,
+        source_chain,
+        keyring,
+        proof_pack=pack,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified trust authority provider attestation: {args.attestation}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"trust authority provider attestation verification failed: {args.attestation}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_trust_authority_provider_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt, source_chain, keyring, pack = _load_trust_authority_provider_sources(args)
+    attestation = load_trust_authority_provider_attestation(args.attestation)
+    try:
+        entry = append_trust_authority_provider_attestation(
+            chain,
+            attestation,
+            receipt,
+            source_chain,
+            keyring,
+            proof_pack=pack,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"trust authority provider attestation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"trust authority provider entry: {args.out}")
+    print(f"trust authority provider entry id: {entry['entry_id']}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def _load_trust_authority_kms_sources(args: argparse.Namespace) -> tuple[dict, dict, EvidenceChain, dict, dict | None]:
+    provider_attestation = load_trust_authority_provider_attestation(args.provider_attestation)
+    source_chain = EvidenceChain.load(args.source_state, tenant_id=args.source_tenant)
+    keyring = load_keyring(args.keyring)
+    pack = load_proof_pack(args.pack) if args.pack else None
+    return provider_attestation, load_trust_authority_receipt(args.receipt), source_chain, keyring, pack
+
+
+def cmd_trust_authority_kms_enforcement(args: argparse.Namespace) -> int:
+    provider_attestation, receipt, source_chain, keyring, pack = _load_trust_authority_kms_sources(args)
+    response_body = _load_json(args.response_body) if args.response_body else None
+    try:
+        enforcement = build_trust_authority_kms_enforcement_receipt(provider_attestation, receipt, source_chain, keyring, proof_pack=pack, mode=args.mode, enforcement_ref=args.enforcement_ref, provider=args.provider, provider_endpoint=args.provider_endpoint, credential_ref=args.credential_ref, actor_ref=args.actor_ref, key_ref=args.key_ref, key_provider=args.key_provider, key_algorithm=args.key_algorithm, key_status=args.key_status, hsm_attestation_ref=args.hsm_attestation_ref, hsm_attestation_hash=args.hsm_attestation_hash, key_policy_ref=args.key_policy_ref, key_policy_hash=args.key_policy_hash, timestamp_policy_ref=args.timestamp_policy_ref, timestamp_policy_hash=args.timestamp_policy_hash, timestamp_attestation_ref=args.timestamp_attestation_ref, timestamp_attestation_hash=args.timestamp_attestation_hash, allowed_actor_refs=args.allowed_actor_ref or None, key_usage=args.key_usage or None, denied_operation_refs=args.denied_operation_ref or None, quorum_required=args.quorum_required, quorum_approver_refs=args.quorum_approver_ref or None, rotation_ref=args.rotation_ref, revocation_ref=args.revocation_ref, audit_log_ref=args.audit_log_ref, audit_log_root=args.audit_log_root, audit_log_size=args.audit_log_size, audit_log_algorithm=args.audit_log_algorithm, evidence_refs=args.evidence_ref or None, enforced_at=args.enforced_at, response_status=args.response_status, response_body=response_body, key=args.key)
+    except ValueError as exc:
+        print(f"trust authority KMS enforcement receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_trust_authority_kms_enforcement_receipt(enforcement, provider_attestation=provider_attestation, trust_authority_receipt=receipt, source_chain=source_chain, keyring=keyring, proof_pack=pack, key=args.key, now=args.now)
+    if not result.ok:
+        print("trust authority KMS enforcement receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_trust_authority_kms_enforcement_receipt(args.out, enforcement)
+    print(f"trust authority KMS enforcement receipt: {args.out}")
+    print(f"enforcement id: {enforcement['enforcement_id']}")
+    print(f"mode: {enforcement['mode']}")
+    print(f"enforcement ref: {enforcement['enforcement']['enforcement_ref']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_trust_authority_kms_enforcement_verify(args: argparse.Namespace) -> int:
+    provider_attestation, receipt, source_chain, keyring, pack = _load_trust_authority_kms_sources(args)
+    enforcement = load_trust_authority_kms_enforcement_receipt(args.enforcement)
+    result = verify_trust_authority_kms_enforcement_receipt(enforcement, provider_attestation=provider_attestation, trust_authority_receipt=receipt, source_chain=source_chain, keyring=keyring, proof_pack=pack, key=args.key, now=args.now)
+    if result.ok:
+        print(f"verified trust authority KMS enforcement receipt: {args.enforcement}")
+        print(f"enforcement id: {enforcement['enforcement_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"trust authority KMS enforcement receipt verification failed: {args.enforcement}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_trust_authority_kms_enforcement_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    provider_attestation, receipt, source_chain, keyring, pack = _load_trust_authority_kms_sources(args)
+    enforcement = load_trust_authority_kms_enforcement_receipt(args.enforcement)
+    try:
+        entry = append_trust_authority_kms_enforcement_receipt(chain, enforcement, provider_attestation=provider_attestation, trust_authority_receipt=receipt, source_chain=source_chain, keyring=keyring, proof_pack=pack, key=args.key)
+    except ValueError as exc:
+        print(f"trust authority KMS enforcement append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"trust authority KMS enforcement entry: {args.out}")
+    print(f"trust authority KMS enforcement entry id: {entry['entry_id']}")
+    print(f"enforcement id: {enforcement['enforcement_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+def cmd_control_index(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    control = ControlPlane(args.db)
+    try:
+        counts = control.index_chain(chain)
+        if args.pack:
+            pack = load_proof_pack(args.pack)
+            result = verify_proof_pack(pack, key=args.key)
+            if not result.ok:
+                print(f"proof pack verification failed: {args.pack}", file=sys.stderr)
+                for error in result.errors:
+                    print(f"- {error}", file=sys.stderr)
+                return 1
+            control.index_proof_pack(pack, args.pack)
+        print(json.dumps({"indexed": counts, "summary": control.summary()}, indent=2, sort_keys=True))
+        return 0
+    finally:
+        control.close()
+
+
+def cmd_control_summary(args: argparse.Namespace) -> int:
+    control = ControlPlane(args.db)
+    try:
+        summary = control.summary()
+        if args.agents:
+            summary["agents"] = control.agents()
+        if args.proof_packs:
+            summary["proof_packs"] = control.recent_proof_packs()
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        return 0
+    finally:
+        control.close()
+
+def cmd_register(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    contract = load_contract(args.contract)
+    entry = register_contract(chain, contract, key=args.key)
+    chain.save()
+    print(f"registered contract: {contract['id']}")
+    print(f"contract hash: {contract_hash(contract)}")
+    print(f"entry id: {entry['entry_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_approve(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    contract = load_contract(args.contract)
+    registration_status = _ensure_registered(chain, contract, args.key, args.auto_register)
+    if registration_status:
+        return registration_status
+    entry = append_approval(chain, contract, load_approval(args.approval), key=args.key)
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"approval entry: {args.out}")
+    print(f"approval entry id: {entry['entry_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_inventory(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    entries = append_inventory(chain, load_inventory(args.inventory), key=args.key)
+    chain.save()
+    print(f"discovered agents: {len(entries)}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_identity_inventory(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    entries = append_inventory(chain, load_identity_inventory(args.inventory), key=args.key)
+    chain.save()
+    print(f"identity-discovered agents: {len(entries)}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_identity_attestation(args: argparse.Namespace) -> int:
+    payload = _load_json(args.identity_payload)
+    vendor = load_vendor_identity_receipt(args.vendor_identity) if args.vendor_identity else None
+    manifest = load_trust_network_manifest(args.manifest) if args.manifest else None
+    packs = [load_proof_pack(path) for path in args.pack] if args.pack else None
+    try:
+        attestation = build_identity_provider_attestation(
+            payload,
+            vendor_identity_receipt=vendor,
+            proof_packs=packs,
+            trust_network_manifest=manifest,
+            provider=args.provider,
+            identity_id=args.identity_id,
+            agent_name=args.agent_name,
+            subject_ref=args.subject_ref,
+            issuer=args.issuer,
+            tenant_ref=args.tenant_ref,
+            authentication_method=args.authentication_method,
+            issued_at=args.issued_at,
+            expires_at=args.expires_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"identity provider attestation failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_identity_provider_attestation(
+        attestation,
+        identity_payload=payload,
+        vendor_identity_receipt=vendor,
+        proof_packs=packs,
+        trust_network_manifest=manifest,
+        key=args.key,
+    )
+    if not result.ok:
+        print("identity provider attestation verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_identity_provider_attestation(args.out, attestation)
+    print(f"identity provider attestation: {args.out}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"provider: {attestation['authentication']['provider']}")
+    print(f"identity id: {attestation['subject']['identity_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_identity_attestation_verify(args: argparse.Namespace) -> int:
+    attestation = load_identity_provider_attestation(args.attestation)
+    payload = _load_json(args.identity_payload) if args.identity_payload else None
+    vendor = load_vendor_identity_receipt(args.vendor_identity) if args.vendor_identity else None
+    manifest = load_trust_network_manifest(args.manifest) if args.manifest else None
+    packs = [load_proof_pack(path) for path in args.pack] if args.pack else None
+    result = verify_identity_provider_attestation(
+        attestation,
+        identity_payload=payload,
+        vendor_identity_receipt=vendor,
+        proof_packs=packs,
+        trust_network_manifest=manifest,
+        key=args.key,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified identity provider attestation: {args.attestation}")
+        print(f"attestation id: {attestation['attestation_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"identity provider attestation verification failed: {args.attestation}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_identity_attestation_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    attestation = load_identity_provider_attestation(args.attestation)
+    payload = _load_json(args.identity_payload) if args.identity_payload else None
+    vendor = load_vendor_identity_receipt(args.vendor_identity) if args.vendor_identity else None
+    manifest = load_trust_network_manifest(args.manifest) if args.manifest else None
+    packs = [load_proof_pack(path) for path in args.pack] if args.pack else None
+    try:
+        entry = append_identity_provider_attestation(
+            chain,
+            attestation,
+            identity_payload=payload,
+            vendor_identity_receipt=vendor,
+            proof_packs=packs,
+            trust_network_manifest=manifest,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"identity provider attestation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"identity provider attestation entry: {args.out}")
+    print(f"identity provider attestation entry id: {entry['entry_id']}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def _load_identity_session_sources(args: argparse.Namespace) -> dict[str, Any]:
+    return {
+        "identity_attestation": load_identity_provider_attestation(args.identity_attestation),
+        "identity_payload": _load_json(args.identity_payload) if args.identity_payload else None,
+        "vendor_identity": load_vendor_identity_receipt(args.vendor_identity) if args.vendor_identity else None,
+        "manifest": load_trust_network_manifest(args.manifest) if args.manifest else None,
+        "packs": [load_proof_pack(path) for path in args.pack] if args.pack else None,
+    }
+
+
+def cmd_identity_session(args: argparse.Namespace) -> int:
+    sources = _load_identity_session_sources(args)
+    try:
+        receipt = build_identity_provider_session_receipt(
+            sources["identity_attestation"],
+            identity_payload=sources["identity_payload"],
+            vendor_identity_receipt=sources["vendor_identity"],
+            proof_packs=sources["packs"],
+            trust_network_manifest=sources["manifest"],
+            mode=args.mode,
+            environment=args.environment,
+            provider_tenant_ref=args.provider_tenant_ref,
+            session_ref=args.session_ref,
+            event_ref=args.event_ref,
+            event_kind=args.event_kind,
+            provider_event_id=args.provider_event_id,
+            actor_ref=args.actor_ref,
+            authn_method=args.authn_method,
+            assurance_level=args.assurance_level,
+            scope_refs=args.scope_ref,
+            audience_refs=args.audience_ref,
+            decision=args.decision,
+            risk_level=args.risk_level,
+            endpoint_url=args.endpoint_url,
+            credential_ref=args.credential_ref,
+            request_hash=args.request_hash,
+            response_status=args.response_status,
+            response_hash=args.response_hash,
+            session_log_ref=args.session_log_ref,
+            session_log_root=args.session_log_root,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            source_ip_hash=args.source_ip_hash,
+            device_ref=args.device_ref,
+            user_agent_hash=args.user_agent_hash,
+            session_started_at=args.session_started_at,
+            session_expires_at=args.session_expires_at,
+            observed_at=args.observed_at,
+            retention_until=args.retention_until,
+            evidence_refs=args.evidence_ref,
+            recorded_at=args.recorded_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"identity provider session receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_identity_provider_session_receipt(
+        receipt,
+        identity_provider_attestation=sources["identity_attestation"],
+        identity_payload=sources["identity_payload"],
+        vendor_identity_receipt=sources["vendor_identity"],
+        proof_packs=sources["packs"],
+        trust_network_manifest=sources["manifest"],
+        key=args.key,
+    )
+    if not result.ok:
+        print("identity provider session verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_identity_provider_session_receipt(args.out, receipt)
+    print(f"identity provider session receipt: {args.out}")
+    print(f"session id: {receipt['session_id']}")
+    print(f"provider: {receipt['provider']}")
+    print(f"identity id: {receipt['session']['identity_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_identity_session_verify(args: argparse.Namespace) -> int:
+    receipt = load_identity_provider_session_receipt(args.receipt)
+    sources = _load_identity_session_sources(args)
+    result = verify_identity_provider_session_receipt(
+        receipt,
+        identity_provider_attestation=sources["identity_attestation"],
+        identity_payload=sources["identity_payload"],
+        vendor_identity_receipt=sources["vendor_identity"],
+        proof_packs=sources["packs"],
+        trust_network_manifest=sources["manifest"],
+        key=args.key,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified identity provider session receipt: {args.receipt}")
+        print(f"session id: {receipt['session_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"identity provider session verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_identity_session_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_identity_provider_session_receipt(args.receipt)
+    sources = _load_identity_session_sources(args)
+    try:
+        entry = append_identity_provider_session_receipt(
+            chain,
+            receipt,
+            identity_provider_attestation=sources["identity_attestation"],
+            identity_payload=sources["identity_payload"],
+            vendor_identity_receipt=sources["vendor_identity"],
+            proof_packs=sources["packs"],
+            trust_network_manifest=sources["manifest"],
+            key=args.key,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"identity provider session append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"identity provider session entry: {args.out}")
+    print(f"identity provider session entry id: {entry['entry_id']}")
+    print(f"session id: {receipt['session_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def _load_identity_lifecycle_sources(args: argparse.Namespace) -> dict[str, Any]:
+    sources = _load_identity_session_sources(args)
+    sources["identity_session"] = load_identity_provider_session_receipt(args.identity_session) if args.identity_session else None
+    return sources
+
+
+def cmd_identity_lifecycle_operation(args: argparse.Namespace) -> int:
+    sources = _load_identity_lifecycle_sources(args)
+    try:
+        receipt = build_identity_provider_lifecycle_operation_receipt(
+            sources["identity_attestation"],
+            identity_provider_session_receipt=sources["identity_session"],
+            identity_payload=sources["identity_payload"],
+            vendor_identity_receipt=sources["vendor_identity"],
+            proof_packs=sources["packs"],
+            trust_network_manifest=sources["manifest"],
+            mode=args.mode,
+            environment=args.environment,
+            provider_tenant_ref=args.provider_tenant_ref,
+            operation_ref=args.operation_ref,
+            operation_kind=args.operation_kind,
+            provider_operation_id=args.provider_operation_id,
+            actor_ref=args.actor_ref,
+            target_state=args.target_state,
+            outcome=args.outcome,
+            endpoint_url=args.endpoint_url,
+            credential_ref=args.credential_ref,
+            request_hash=args.request_hash,
+            response_status=args.response_status,
+            response_hash=args.response_hash,
+            system_log_ref=args.system_log_ref,
+            system_log_root=args.system_log_root,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            requested_at=args.requested_at,
+            completed_at=args.completed_at,
+            retention_until=args.retention_until,
+            idempotency_key=args.idempotency_key,
+            reason_ref=args.reason_ref,
+            approval_ref=args.approval_ref,
+            change_ticket_ref=args.change_ticket_ref,
+            previous_identity_record_hash=args.previous_identity_record_hash,
+            resulting_identity_record_hash=args.resulting_identity_record_hash,
+            evidence_refs=args.evidence_ref,
+            recorded_at=args.recorded_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"identity provider lifecycle operation receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_identity_provider_lifecycle_operation_receipt(
+        receipt,
+        identity_provider_attestation=sources["identity_attestation"],
+        identity_provider_session_receipt=sources["identity_session"],
+        identity_payload=sources["identity_payload"],
+        vendor_identity_receipt=sources["vendor_identity"],
+        proof_packs=sources["packs"],
+        trust_network_manifest=sources["manifest"],
+        key=args.key,
+    )
+    if not result.ok:
+        print("identity provider lifecycle operation verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_identity_provider_lifecycle_operation_receipt(args.out, receipt)
+    print(f"identity provider lifecycle operation receipt: {args.out}")
+    print(f"operation id: {receipt['operation_id']}")
+    print(f"provider: {receipt['provider']}")
+    print(f"identity id: {receipt['operation']['identity_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_identity_lifecycle_operation_verify(args: argparse.Namespace) -> int:
+    receipt = load_identity_provider_lifecycle_operation_receipt(args.receipt)
+    sources = _load_identity_lifecycle_sources(args)
+    result = verify_identity_provider_lifecycle_operation_receipt(
+        receipt,
+        identity_provider_attestation=sources["identity_attestation"],
+        identity_provider_session_receipt=sources["identity_session"],
+        identity_payload=sources["identity_payload"],
+        vendor_identity_receipt=sources["vendor_identity"],
+        proof_packs=sources["packs"],
+        trust_network_manifest=sources["manifest"],
+        key=args.key,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified identity provider lifecycle operation receipt: {args.receipt}")
+        print(f"operation id: {receipt['operation_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"identity provider lifecycle operation verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_identity_lifecycle_operation_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_identity_provider_lifecycle_operation_receipt(args.receipt)
+    sources = _load_identity_lifecycle_sources(args)
+    try:
+        entry = append_identity_provider_lifecycle_operation_receipt(
+            chain,
+            receipt,
+            identity_provider_attestation=sources["identity_attestation"],
+            identity_provider_session_receipt=sources["identity_session"],
+            identity_payload=sources["identity_payload"],
+            vendor_identity_receipt=sources["vendor_identity"],
+            proof_packs=sources["packs"],
+            trust_network_manifest=sources["manifest"],
+            key=args.key,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"identity provider lifecycle operation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"identity provider lifecycle operation entry: {args.out}")
+    print(f"identity provider lifecycle operation entry id: {entry['entry_id']}")
+    print(f"operation id: {receipt['operation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+
+def _load_identity_lifecycle_worker_sources(args: argparse.Namespace) -> dict[str, Any]:
+    sources = _load_identity_lifecycle_sources(args)
+    sources["lifecycle_operation"] = load_identity_provider_lifecycle_operation_receipt(args.lifecycle_operation)
+    return sources
+
+
+def cmd_identity_lifecycle_worker(args: argparse.Namespace) -> int:
+    sources = _load_identity_lifecycle_worker_sources(args)
+    try:
+        receipt = build_identity_provider_lifecycle_worker_receipt(
+            sources["lifecycle_operation"],
+            identity_provider_attestation=sources["identity_attestation"],
+            identity_provider_session_receipt=sources["identity_session"],
+            identity_payload=sources["identity_payload"],
+            vendor_identity_receipt=sources["vendor_identity"],
+            proof_packs=sources["packs"],
+            trust_network_manifest=sources["manifest"],
+            mode=args.mode,
+            environment=args.environment,
+            worker_ref=args.worker_ref,
+            run_ref=args.run_ref,
+            operation_kind=args.operation_kind,
+            actor_ref=args.actor_ref,
+            schedule_ref=args.schedule_ref,
+            cadence_seconds=args.cadence_seconds,
+            lease_ref=args.lease_ref,
+            checkpoint_ref=args.checkpoint_ref,
+            checkpoint_hash=args.checkpoint_hash,
+            previous_cursor_ref=args.previous_cursor_ref,
+            next_cursor_ref=args.next_cursor_ref,
+            attempt=args.attempt,
+            max_attempts=args.max_attempts,
+            queue_ref=args.queue_ref,
+            queue_message_ref=args.queue_message_ref,
+            destination_ref=args.destination_ref,
+            propagation_log_ref=args.propagation_log_ref,
+            propagation_log_root=args.propagation_log_root,
+            account_state_log_ref=args.account_state_log_ref,
+            account_state_log_root=args.account_state_log_root,
+            session_revocation_log_ref=args.session_revocation_log_ref,
+            session_revocation_log_root=args.session_revocation_log_root,
+            token_revocation_log_ref=args.token_revocation_log_ref,
+            token_revocation_log_root=args.token_revocation_log_root,
+            request_hash=args.request_hash,
+            response_status=args.response_status,
+            response_hash=args.response_hash,
+            metrics_ref=args.metrics_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            credential_ref=args.credential_ref,
+            started_at=args.started_at,
+            completed_at=args.completed_at,
+            next_run_at=args.next_run_at,
+            retention_until=args.retention_until,
+            error_ref=args.error_ref,
+            evidence_refs=args.evidence_ref,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"identity provider lifecycle worker receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_identity_provider_lifecycle_worker_receipt(
+        receipt,
+        lifecycle_operation_receipt=sources["lifecycle_operation"],
+        identity_provider_attestation=sources["identity_attestation"],
+        identity_provider_session_receipt=sources["identity_session"],
+        identity_payload=sources["identity_payload"],
+        vendor_identity_receipt=sources["vendor_identity"],
+        proof_packs=sources["packs"],
+        trust_network_manifest=sources["manifest"],
+        key=args.key,
+    )
+    if not result.ok:
+        print("identity provider lifecycle worker verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_identity_provider_lifecycle_worker_receipt(args.out, receipt)
+    print(f"identity provider lifecycle worker receipt: {args.out}")
+    print(f"worker operation id: {receipt['worker_operation_id']}")
+    print(f"provider: {receipt['provider']}")
+    print(f"source operation id: {receipt['source_operation']['operation_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_identity_lifecycle_worker_verify(args: argparse.Namespace) -> int:
+    receipt = load_identity_provider_lifecycle_worker_receipt(args.receipt)
+    sources = _load_identity_lifecycle_worker_sources(args)
+    result = verify_identity_provider_lifecycle_worker_receipt(
+        receipt,
+        lifecycle_operation_receipt=sources["lifecycle_operation"],
+        identity_provider_attestation=sources["identity_attestation"],
+        identity_provider_session_receipt=sources["identity_session"],
+        identity_payload=sources["identity_payload"],
+        vendor_identity_receipt=sources["vendor_identity"],
+        proof_packs=sources["packs"],
+        trust_network_manifest=sources["manifest"],
+        key=args.key,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified identity provider lifecycle worker receipt: {args.receipt}")
+        print(f"worker operation id: {receipt['worker_operation_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"identity provider lifecycle worker verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_identity_lifecycle_worker_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_identity_provider_lifecycle_worker_receipt(args.receipt)
+    sources = _load_identity_lifecycle_worker_sources(args)
+    try:
+        entry = append_identity_provider_lifecycle_worker_receipt(
+            chain,
+            receipt,
+            lifecycle_operation_receipt=sources["lifecycle_operation"],
+            identity_provider_attestation=sources["identity_attestation"],
+            identity_provider_session_receipt=sources["identity_session"],
+            identity_payload=sources["identity_payload"],
+            vendor_identity_receipt=sources["vendor_identity"],
+            proof_packs=sources["packs"],
+            trust_network_manifest=sources["manifest"],
+            key=args.key,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"identity provider lifecycle worker append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"identity provider lifecycle worker entry: {args.out}")
+    print(f"identity provider lifecycle worker entry id: {entry['entry_id']}")
+    print(f"worker operation id: {receipt['worker_operation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_delegation(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    entry = append_delegation(chain, load_delegation(args.delegation), key=args.key)
+    chain.save()
+    print(f"delegation entry id: {entry['entry_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_ingest(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    events = load_events(args.events)
+    entries = append_events(chain, events, key=args.key)
+    chain.save()
+    print(f"ingested events: {len(entries)}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+
+def cmd_otlp_ingest(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    entries = append_otlp_traces(chain, _load_json(args.traces), key=args.key)
+    chain.save()
+    print(f"ingested OTLP trace events: {len(entries)}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+
+def cmd_framework_ingest(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    entries = append_framework_events(chain, _load_json(args.trace), key=args.key)
+    chain.save()
+    print(f"ingested framework trace events: {len(entries)}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+def cmd_mcp_capture(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    calls = load_mcp_transcript(args.transcript)
+    entries = append_mcp_transcript(chain, calls, key=args.key)
+    chain.save()
+    print(f"captured MCP tool calls: {len(entries)}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_attest(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    contract = load_contract(args.contract)
+    registration_status = _ensure_registered(chain, contract, args.key, args.auto_register)
+    if registration_status:
+        return registration_status
+    entry = append_runtime_attestation(chain, contract, load_action(args.action), key=args.key)
+    chain.save()
+    print(f"runtime attestation outcome: {entry['payload']['outcome']}")
+    print(f"entry id: {entry['entry_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0 if entry["payload"]["passed"] else 1
+
+
+def cmd_shadow_replay(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    contract = load_contract(args.contract)
+    registration_status = _ensure_registered(chain, contract, args.key, args.auto_register)
+    if registration_status:
+        return registration_status
+    replay = load_shadow_replay(args.replay)
+    entry = append_shadow_replay(chain, contract, replay, key=args.key)
+    if args.eval_out:
+        target = Path(args.eval_out)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(
+            json.dumps(shadow_replay_to_eval_results(contract, replay), indent=2, sort_keys=True),
+            encoding="utf-8",
+        )
+    chain.save()
+    print(f"shadow replay outcome: {entry['payload']['outcome']}")
+    print(f"records checked: {entry['payload']['records_checked']}")
+    if args.eval_out:
+        print(f"eval results: {args.eval_out}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0 if entry["payload"]["passed"] else 1
+
+
+def cmd_soak_report(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    contract = load_contract(args.contract)
+    registration_status = _ensure_registered(chain, contract, args.key, args.auto_register)
+    if registration_status:
+        return registration_status
+    entry = append_soak_report(chain, contract, load_soak_window(args.soak), key=args.key)
+    chain.save()
+    print(f"soak report outcome: {entry['payload']['outcome']}")
+    print(f"windows checked: {entry['payload']['window_count']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0 if entry["payload"]["passed"] else 1
+
+
+def cmd_reexecution_runner_run(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    try:
+        plan = load_reexecution_runner_plan(args.plan)
+        if args.contract:
+            contract = load_contract(args.contract)
+            plan["contract"] = {"id": contract["id"], "hash": contract_hash(contract), "agent": contract.get("agent")}
+        evidence = run_reexecution_plan(plan, base_dir=args.base_dir)
+    except ValueError as exc:
+        print(f"re-execution runner failed: {exc}", file=sys.stderr)
+        return 2
+    result = verify_reexecution_runner_evidence(evidence)
+    if not result.ok:
+        print("re-execution runner evidence verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    entry = append_reexecution_runner_evidence(chain, evidence, key=args.key)
+    chain.save()
+    write_reexecution_runner_evidence(args.out, evidence)
+    print(f"re-execution runner evidence: {args.out}")
+    print(f"evidence id: {evidence['evidence_id']}")
+    print(f"entry id: {entry['entry_id']}")
+    print(f"runs: {result.run_count}")
+    print(f"outcome: {evidence['outcome']}")
+    print(f"chain root: {chain.tree()['root']}")
+    for run in evidence["runs"]:
+        print(f"run output: {run['output']['path']}")
+    return 0 if evidence["outcome"] == "passed" else 1
+
+
+def cmd_reexecution_runner_verify(args: argparse.Namespace) -> int:
+    evidence = load_reexecution_runner_evidence(args.evidence)
+    result = verify_reexecution_runner_evidence(evidence)
+    if result.ok:
+        print(f"verified re-execution runner evidence: {args.evidence}")
+        print(f"runs: {result.run_count}")
+        print(f"outcome: {evidence.get('outcome')}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"re-execution runner evidence verification failed: {args.evidence}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def _load_reexecution_isolation_sources(args: argparse.Namespace) -> tuple[dict, dict | None, dict | None]:
+    runner_evidence = load_reexecution_runner_evidence(args.evidence)
+    policy = load_reexecution_policy(args.policy) if getattr(args, "policy", None) else None
+    report = load_reexecution_report(args.report) if getattr(args, "report", None) else None
+    return runner_evidence, policy, report
+
+
+def cmd_reexecution_isolation_attestation(args: argparse.Namespace) -> int:
+    try:
+        runner_evidence, policy, report = _load_reexecution_isolation_sources(args)
+        attestation = build_reexecution_isolation_attestation(
+            runner_evidence,
+            policy=policy,
+            report=report,
+            mode=args.mode,
+            environment=args.environment,
+            isolation_ref=args.isolation_ref,
+            runner_ref=args.runner_ref,
+            runner_provider=args.runner_provider,
+            runner_image=args.runner_image,
+            runner_image_digest=args.runner_image_digest,
+            orchestrator=args.orchestrator,
+            container_runtime=args.container_runtime,
+            kernel=args.kernel,
+            namespace_mode=args.namespace_mode,
+            cgroup_ref=args.cgroup_ref,
+            seccomp_profile_hash=args.seccomp_profile_hash,
+            apparmor_profile_hash=args.apparmor_profile_hash,
+            network_mode=args.network_mode,
+            filesystem_policy_ref=args.filesystem_policy_ref,
+            read_only_rootfs=args.read_only_rootfs,
+            writable_mounts=args.writable_mount or [],
+            denied_mounts=args.denied_mount or [],
+            egress_policy_ref=args.egress_policy_ref,
+            seed_policy=args.seed_policy,
+            temperature=args.temperature,
+            entropy_source_ref=args.entropy_source_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            retention_until=args.retention_until,
+            actor_ref=args.actor_ref,
+            credential_ref=args.credential_ref,
+            evidence_refs=args.evidence_ref or [],
+            attested_at=args.attested_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"re-execution isolation attestation failed: {exc}", file=sys.stderr)
+        return 2
+    result = verify_reexecution_isolation_attestation(attestation, runner_evidence, policy=policy, report=report, key=args.key)
+    if not result.ok:
+        print("re-execution isolation attestation verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_reexecution_isolation_attestation(args.out, attestation)
+    print(f"re-execution isolation attestation: {args.out}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"isolation ref: {attestation['isolation']['isolation_ref']}")
+    print(f"runner evidence id: {attestation['source']['runner_evidence_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_reexecution_isolation_verify(args: argparse.Namespace) -> int:
+    runner_evidence, policy, report = _load_reexecution_isolation_sources(args)
+    result = verify_reexecution_isolation_attestation(
+        load_reexecution_isolation_attestation(args.attestation),
+        runner_evidence,
+        policy=policy,
+        report=report,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified re-execution isolation attestation: {args.attestation}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"re-execution isolation attestation verification failed: {args.attestation}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_reexecution_isolation_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    runner_evidence, policy, report = _load_reexecution_isolation_sources(args)
+    attestation = load_reexecution_isolation_attestation(args.attestation)
+    try:
+        entry = append_reexecution_isolation_attestation(
+            chain,
+            attestation,
+            runner_evidence,
+            policy=policy,
+            report=report,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"re-execution isolation attestation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"re-execution isolation entry: {args.out}")
+    print(f"re-execution isolation entry id: {entry['entry_id']}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def _load_reexecution_runner_service_sources(args: argparse.Namespace) -> tuple[dict, dict, dict | None, dict | None]:
+    isolation_attestation = load_reexecution_isolation_attestation(args.isolation)
+    runner_evidence, policy, report = _load_reexecution_isolation_sources(args)
+    return isolation_attestation, runner_evidence, policy, report
+
+
+def cmd_reexecution_runner_service_attestation(args: argparse.Namespace) -> int:
+    try:
+        isolation_attestation, runner_evidence, policy, report = _load_reexecution_runner_service_sources(args)
+        attestation = build_reexecution_runner_service_attestation(
+            isolation_attestation,
+            runner_evidence=runner_evidence,
+            policy=policy,
+            report=report,
+            mode=args.mode,
+            environment=args.environment,
+            service_ref=args.service_ref,
+            service_version=args.service_version,
+            runner_image=args.runner_image,
+            runner_image_digest=args.runner_image_digest,
+            runner_binary_hash=args.runner_binary_hash,
+            replicas_min=args.replicas_min,
+            replicas_max=args.replicas_max,
+            availability_zones=args.availability_zone or [],
+            scheduler_ref=args.scheduler_ref,
+            schedule_cadence_seconds=args.schedule_cadence_seconds,
+            queue_ref=args.queue_ref,
+            dead_letter_queue_ref=args.dead_letter_queue_ref,
+            lease_store_ref=args.lease_store_ref,
+            checkpoint_store_ref=args.checkpoint_store_ref,
+            max_concurrency=args.max_concurrency,
+            retry_policy_ref=args.retry_policy_ref,
+            isolation_profile_ref=args.isolation_profile_ref,
+            admission_policy_ref=args.admission_policy_ref,
+            tenant_isolation_ref=args.tenant_isolation_ref,
+            network_policy_ref=args.network_policy_ref,
+            egress_policy_ref=args.egress_policy_ref,
+            artifact_store_ref=args.artifact_store_ref,
+            result_store_ref=args.result_store_ref,
+            idempotency_store_ref=args.idempotency_store_ref,
+            secret_store_ref=args.secret_store_ref,
+            kms_key_ref=args.kms_key_ref,
+            metrics_ref=args.metrics_ref,
+            alert_policy_ref=args.alert_policy_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            retention_until=args.retention_until,
+            actor_ref=args.actor_ref,
+            credential_ref=args.credential_ref,
+            evidence_refs=args.evidence_ref or [],
+            attested_at=args.attested_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"re-execution runner service attestation failed: {exc}", file=sys.stderr)
+        return 2
+    result = verify_reexecution_runner_service_attestation(
+        attestation,
+        isolation_attestation,
+        runner_evidence=runner_evidence,
+        policy=policy,
+        report=report,
+        key=args.key,
+    )
+    if not result.ok:
+        print("re-execution runner service attestation verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_reexecution_runner_service_attestation(args.out, attestation)
+    print(f"re-execution runner service attestation: {args.out}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"service ref: {attestation['service']['service_ref']}")
+    print(f"source isolation id: {attestation['source']['isolation_attestation_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_reexecution_runner_service_verify(args: argparse.Namespace) -> int:
+    isolation_attestation, runner_evidence, policy, report = _load_reexecution_runner_service_sources(args)
+    result = verify_reexecution_runner_service_attestation(
+        load_reexecution_runner_service_attestation(args.attestation),
+        isolation_attestation,
+        runner_evidence=runner_evidence,
+        policy=policy,
+        report=report,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified re-execution runner service attestation: {args.attestation}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"re-execution runner service attestation verification failed: {args.attestation}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_reexecution_runner_service_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    isolation_attestation, runner_evidence, policy, report = _load_reexecution_runner_service_sources(args)
+    attestation = load_reexecution_runner_service_attestation(args.attestation)
+    try:
+        entry = append_reexecution_runner_service_attestation(
+            chain,
+            attestation,
+            isolation_attestation,
+            runner_evidence=runner_evidence,
+            policy=policy,
+            report=report,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"re-execution runner service attestation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"re-execution runner service entry: {args.out}")
+    print(f"re-execution runner service entry id: {entry['entry_id']}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def _load_reexecution_runner_worker_sources(args: argparse.Namespace) -> tuple[dict, dict, dict, dict | None, dict | None]:
+    service_attestation = load_reexecution_runner_service_attestation(args.service_attestation)
+    isolation_attestation, runner_evidence, policy, report = _load_reexecution_runner_service_sources(args)
+    return service_attestation, isolation_attestation, runner_evidence, policy, report
+
+
+def cmd_reexecution_runner_worker(args: argparse.Namespace) -> int:
+    service_attestation, isolation_attestation, runner_evidence, policy, report = _load_reexecution_runner_worker_sources(args)
+    try:
+        receipt = build_reexecution_runner_worker_receipt(
+            service_attestation,
+            isolation_attestation=isolation_attestation,
+            runner_evidence=runner_evidence,
+            policy=policy,
+            report=report,
+            mode=args.mode,
+            environment=args.environment,
+            worker_ref=args.worker_ref,
+            run_ref=args.run_ref,
+            operation_kind=args.operation_kind,
+            actor_ref=args.actor_ref,
+            schedule_ref=args.schedule_ref,
+            cadence_seconds=args.cadence_seconds,
+            lease_ref=args.lease_ref,
+            checkpoint_ref=args.checkpoint_ref,
+            checkpoint_hash=args.checkpoint_hash,
+            previous_cursor_ref=args.previous_cursor_ref,
+            next_cursor_ref=args.next_cursor_ref,
+            attempt=args.attempt,
+            max_attempts=args.max_attempts,
+            queue_ref=args.queue_ref,
+            queue_message_ref=args.queue_message_ref,
+            dead_letter_queue_ref=args.dead_letter_queue_ref,
+            job_ref=args.job_ref,
+            job_hash=args.job_hash,
+            artifact_manifest_ref=args.artifact_manifest_ref,
+            artifact_manifest_hash=args.artifact_manifest_hash,
+            result_bundle_ref=args.result_bundle_ref,
+            result_bundle_hash=args.result_bundle_hash,
+            isolation_audit_ref=args.isolation_audit_ref,
+            isolation_audit_root=args.isolation_audit_root,
+            runtime_audit_ref=args.runtime_audit_ref,
+            runtime_audit_root=args.runtime_audit_root,
+            request_hash=args.request_hash,
+            response_status=args.response_status,
+            response_hash=args.response_hash,
+            metrics_ref=args.metrics_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            credential_ref=args.credential_ref,
+            retention_until=args.retention_until,
+            evidence_refs=args.evidence_ref or [],
+            started_at=args.started_at,
+            completed_at=args.completed_at,
+            next_run_at=args.next_run_at,
+            error_ref=args.error_ref,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"re-execution runner worker receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_reexecution_runner_worker_receipt(
+        receipt,
+        service_attestation=service_attestation,
+        isolation_attestation=isolation_attestation,
+        runner_evidence=runner_evidence,
+        policy=policy,
+        report=report,
+        key=args.key,
+    )
+    if not result.ok:
+        print("re-execution runner worker receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_reexecution_runner_worker_receipt(args.out, receipt)
+    print(f"re-execution runner worker receipt: {args.out}")
+    print(f"worker operation id: {receipt['worker_operation_id']}")
+    print(f"operation: {receipt['worker']['operation_kind']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_reexecution_runner_worker_verify(args: argparse.Namespace) -> int:
+    receipt = load_reexecution_runner_worker_receipt(args.receipt)
+    service_attestation, isolation_attestation, runner_evidence, policy, report = _load_reexecution_runner_worker_sources(args)
+    result = verify_reexecution_runner_worker_receipt(
+        receipt,
+        service_attestation=service_attestation,
+        isolation_attestation=isolation_attestation,
+        runner_evidence=runner_evidence,
+        policy=policy,
+        report=report,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified re-execution runner worker receipt: {args.receipt}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"re-execution runner worker receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_reexecution_runner_worker_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_reexecution_runner_worker_receipt(args.receipt)
+    service_attestation, isolation_attestation, runner_evidence, policy, report = _load_reexecution_runner_worker_sources(args)
+    try:
+        entry = append_reexecution_runner_worker_receipt(
+            chain,
+            receipt,
+            service_attestation=service_attestation,
+            isolation_attestation=isolation_attestation,
+            runner_evidence=runner_evidence,
+            policy=policy,
+            report=report,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"re-execution runner worker receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"re-execution runner worker entry: {args.out}")
+    print(f"re-execution runner worker entry id: {entry['entry_id']}")
+    print(f"worker operation id: {receipt['worker_operation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+def cmd_reexecution_report(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    contract = load_contract(args.contract)
+    registration_status = _ensure_registered(chain, contract, args.key, args.auto_register)
+    if registration_status:
+        return registration_status
+    try:
+        policy = load_reexecution_policy(args.policy) if args.policy else None
+        report = build_reexecution_report(
+            contract,
+            [load_eval_results(path) for path in args.runs],
+            method=args.method,
+            seed_policy=args.seed_policy,
+            temperature=args.temperature,
+            required_pass_rate=args.required_pass_rate,
+            policy=policy,
+        )
+    except ValueError as exc:
+        print(f"re-execution report failed: {exc}", file=sys.stderr)
+        return 2
+    result = verify_reexecution_report(report)
+    if not result.ok:
+        print("re-execution report verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    entry = append_reexecution_report(chain, report, key=args.key)
+    chain.save()
+    write_reexecution_report(args.out, report)
+    if args.markdown:
+        write_reexecution_markdown(args.markdown, report)
+        print(f"re-execution markdown: {args.markdown}")
+    print(f"re-execution report: {args.out}")
+    print(f"report id: {report['report_id']}")
+    print(f"entry id: {entry['entry_id']}")
+    print(f"runs: {result.run_count}")
+    print(f"outcome: {report['overall']['outcome']}")
+    print(f"chain root: {chain.tree()['root']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0 if report["overall"]["passed"] else 1
+
+
+def cmd_reexecution_verify(args: argparse.Namespace) -> int:
+    result = verify_reexecution_report(load_reexecution_report(args.report))
+    if result.ok:
+        print(f"verified re-execution report: {args.report}")
+        print(f"runs: {result.run_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"re-execution report verification failed: {args.report}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_reexecution_policy_verify(args: argparse.Namespace) -> int:
+    try:
+        policy = load_reexecution_policy(args.policy)
+    except ValueError as exc:
+        print(f"re-execution policy verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_reexecution_policy(policy)
+    if not result.ok:
+        print(f"re-execution policy verification failed: {args.policy}", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    print(f"verified re-execution policy: {args.policy}")
+    if args.contract:
+        if not args.runs:
+            print("contract-level policy verification requires at least one run", file=sys.stderr)
+            return 2
+        evaluation = evaluate_reexecution_policy(
+            load_contract(args.contract),
+            [load_eval_results(path) for path in args.runs],
+            policy,
+            method=args.method,
+            seed_policy=args.seed_policy,
+            temperature=args.temperature,
+            required_pass_rate=args.required_pass_rate,
+        )
+        print(f"policy id: {evaluation['policy_id']}")
+        print(f"outcome: {'passed' if evaluation['passed'] else 'failed'}")
+        print(f"checks: {len(evaluation['checks'])}")
+        if not evaluation["passed"]:
+            for error in evaluation["errors"]:
+                print(f"- {error}", file=sys.stderr)
+            return 1
+    return 0
+
+
+def cmd_gate(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    contract = load_contract(args.contract)
+    registration_status = _ensure_registered(chain, contract, args.key, args.auto_register)
+    if registration_status:
+        return registration_status
+    results = _load_json(args.results)
+    approval_entries = approval_entries_for_contract(chain.entries, contract_hash(contract))
+    eval_entry, gate_entry, decision = append_eval_and_gate(
+        chain,
+        contract,
+        results,
+        key=args.key,
+        approval_entries=approval_entries,
+    )
+    chain.save()
+    compile_proof_pack(
+        chain,
+        contract,
+        eval_entry,
+        gate_entry,
+        decision,
+        out_path=args.out,
+        pdf_path=args.pdf,
+        key=args.key,
+    )
+    print(f"gate outcome: {decision['outcome']}")
+    print(f"proof pack: {args.out}")
+    if args.pdf:
+        print(f"pdf: {args.pdf}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0 if decision["passed"] else 1
+
+
+def cmd_verify(args: argparse.Namespace) -> int:
+    keyring = load_keyring(args.keyring) if args.keyring else None
+    result = verify_proof_pack(load_proof_pack(args.pack), key=args.key, keyring=keyring)
+    if result.ok:
+        print(f"verified proof pack: {args.pack}")
+        print(f"gate outcome: {result.decision}")
+        if args.keyring:
+            print(f"keyring: {args.keyring}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"proof pack verification failed: {args.pack}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def _verified_pack_or_exit(path: str, key: str | None) -> tuple[dict, object, int]:
+    pack = load_proof_pack(path)
+    result = verify_proof_pack(pack, key=key)
+    if not result.ok:
+        print(f"proof pack verification failed: {path}", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return pack, result, 1
+    return pack, result, 0
+
+
+def cmd_verifier_conformance(args: argparse.Namespace) -> int:
+    pack, _, status = _verified_pack_or_exit(args.pack, args.key)
+    if status:
+        return status
+    report = build_verifier_conformance_report(pack, key=args.key, verifier_command=args.verifier_command)
+    result = verify_verifier_conformance_report(report)
+    if not result.ok:
+        print("verifier conformance failed", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_verifier_conformance_report(args.out, report)
+    if args.markdown:
+        write_verifier_conformance_markdown(args.markdown, report)
+        print(f"verifier conformance markdown: {args.markdown}")
+    print(f"verifier conformance report: {args.out}")
+    print(f"report id: {report['report_id']}")
+    print(f"passed: {result.passed_count}/{result.case_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_verifier_conformance_verify(args: argparse.Namespace) -> int:
+    result = verify_verifier_conformance_report(load_verifier_conformance_report(args.report))
+    if result.ok:
+        print(f"verified verifier conformance report: {args.report}")
+        print(f"passed: {result.passed_count}/{result.case_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"verifier conformance report verification failed: {args.report}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_verifier_release(args: argparse.Namespace) -> int:
+    conformance_report = load_verifier_conformance_report(args.conformance_report)
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    manifest = build_verifier_release_manifest(
+        root=args.root,
+        conformance_report=conformance_report,
+        standards_package=standards_package,
+        version=args.version,
+        verifier_command=args.verifier_command,
+        source_paths=args.source or None,
+        key=args.key,
+    )
+    result = verify_verifier_release_manifest(
+        manifest,
+        root=args.root,
+        conformance_report=conformance_report,
+        standards_package=standards_package,
+        key=args.key,
+    )
+    if not result.ok:
+        print("verifier release manifest generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_verifier_release_manifest(args.out, manifest)
+    if args.markdown:
+        write_verifier_release_markdown(args.markdown, manifest)
+        print(f"verifier release markdown: {args.markdown}")
+    print(f"verifier release manifest: {args.out}")
+    print(f"release id: {manifest['release_id']}")
+    print(f"source files: {len(manifest['source_files'])}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_verifier_release_verify(args: argparse.Namespace) -> int:
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    manifest = load_verifier_release_manifest(args.manifest)
+    result = verify_verifier_release_manifest(
+        manifest,
+        root=args.root,
+        conformance_report=conformance_report,
+        standards_package=standards_package,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified verifier release manifest: {args.manifest}")
+        print(f"release id: {manifest['release_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"verifier release manifest verification failed: {args.manifest}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+def _load_go_verifier_build_sources(args: argparse.Namespace) -> dict[str, object]:
+    return {
+        "verifier_release": load_verifier_release_manifest(args.verifier_release),
+        "conformance_report": load_verifier_conformance_report(args.conformance_report) if getattr(args, "conformance_report", None) else None,
+        "standards_package": load_standards_submission(args.standards_package) if getattr(args, "standards_package", None) else None,
+    }
+
+
+def cmd_go_verifier_build_attestation(args: argparse.Namespace) -> int:
+    sources = _load_go_verifier_build_sources(args)
+    try:
+        attestation = build_go_verifier_build_attestation(
+            sources["verifier_release"],
+            root=args.root,
+            conformance_report=sources["conformance_report"],
+            standards_package=sources["standards_package"],
+            binary_path=args.binary,
+            mode=args.mode,
+            builder_ref=args.builder_ref,
+            toolchain_ref=args.toolchain_ref,
+            toolchain_version=args.toolchain_version,
+            goos=args.goos,
+            goarch=args.goarch,
+            cgo_enabled=args.cgo_enabled,
+            trimpath=not args.no_trimpath,
+            ldflags=args.ldflags,
+            build_command=args.build_command,
+            build_log_ref=args.build_log_ref,
+            build_log_hash=args.build_log_hash,
+            sbom_ref=args.sbom_ref,
+            sbom_hash=args.sbom_hash,
+            provenance_ref=args.provenance_ref,
+            provenance_hash=args.provenance_hash,
+            signature_ref=args.signature_ref,
+            signature_hash=args.signature_hash,
+            build_started_at=args.build_started_at,
+            build_finished_at=args.build_finished_at,
+            attested_at=args.attested_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"Go verifier build attestation failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_go_verifier_build_attestation(
+        attestation,
+        sources["verifier_release"],
+        root=args.root,
+        conformance_report=sources["conformance_report"],
+        standards_package=sources["standards_package"],
+        binary_path=args.binary,
+        key=args.key,
+    )
+    if not result.ok:
+        print("Go verifier build attestation verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_go_verifier_build_attestation(args.out, attestation)
+    print(f"Go verifier build attestation: {args.out}")
+    print(f"build id: {attestation['build_id']}")
+    print(f"mode: {attestation['build']['mode']}")
+    print(f"binary status: {attestation['binary']['status']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_go_verifier_build_verify(args: argparse.Namespace) -> int:
+    attestation = load_go_verifier_build_attestation(args.attestation)
+    sources = _load_go_verifier_build_sources(args)
+    result = verify_go_verifier_build_attestation(
+        attestation,
+        sources["verifier_release"],
+        root=args.root,
+        conformance_report=sources["conformance_report"],
+        standards_package=sources["standards_package"],
+        binary_path=args.binary,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified Go verifier build attestation: {args.attestation}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"Go verifier build attestation verification failed: {args.attestation}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_go_verifier_build_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    attestation = load_go_verifier_build_attestation(args.attestation)
+    sources = _load_go_verifier_build_sources(args)
+    try:
+        entry = append_go_verifier_build_attestation(
+            chain,
+            attestation,
+            sources["verifier_release"],
+            root=args.root,
+            conformance_report=sources["conformance_report"],
+            standards_package=sources["standards_package"],
+            binary_path=args.binary,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"Go verifier build attestation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"Go verifier build entry: {args.out}")
+    print(f"Go verifier build entry id: {entry['entry_id']}")
+    print(f"build id: {attestation['build_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def _load_verifier_distribution_sources(args: argparse.Namespace) -> dict[str, object]:
+    return {
+        "verifier_release": load_verifier_release_manifest(args.verifier_release),
+        "conformance_report": load_verifier_conformance_report(args.conformance_report) if getattr(args, "conformance_report", None) else None,
+        "standards_package": load_standards_submission(args.standards_package) if getattr(args, "standards_package", None) else None,
+    }
+
+
+def cmd_verifier_distribution(args: argparse.Namespace) -> int:
+    sources = _load_verifier_distribution_sources(args)
+    try:
+        receipt = build_verifier_distribution_receipt(
+            sources["verifier_release"],
+            root=args.root,
+            conformance_report=sources["conformance_report"],
+            standards_package=sources["standards_package"],
+            bundle_path=args.bundle,
+            sbom_path=args.sbom,
+            provenance_path=args.provenance,
+            signature_path=args.signature,
+            distribution_ref=args.distribution_ref,
+            channel=args.channel,
+            publisher_ref=args.publisher_ref,
+            release_url=args.release_url,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"verifier distribution failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_verifier_distribution_receipt(
+        receipt,
+        sources["verifier_release"],
+        root=args.root,
+        conformance_report=sources["conformance_report"],
+        standards_package=sources["standards_package"],
+        bundle_path=args.bundle,
+        sbom_path=args.sbom,
+        provenance_path=args.provenance,
+        signature_path=args.signature,
+        key=args.key,
+    )
+    if not result.ok:
+        print("verifier distribution verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_verifier_distribution_receipt(args.out, receipt)
+    print(f"verifier distribution receipt: {args.out}")
+    print(f"distribution id: {receipt['distribution_id']}")
+    print(f"bundle: {args.bundle}")
+    print(f"sbom: {args.sbom}")
+    print(f"provenance: {args.provenance}")
+    print(f"signature: {args.signature}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_verifier_distribution_verify(args: argparse.Namespace) -> int:
+    receipt = load_verifier_distribution_receipt(args.receipt)
+    sources = _load_verifier_distribution_sources(args)
+    result = verify_verifier_distribution_receipt(
+        receipt,
+        sources["verifier_release"],
+        root=args.root,
+        conformance_report=sources["conformance_report"],
+        standards_package=sources["standards_package"],
+        bundle_path=args.bundle,
+        sbom_path=args.sbom,
+        provenance_path=args.provenance,
+        signature_path=args.signature,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified verifier distribution receipt: {args.receipt}")
+        print(f"distribution id: {receipt['distribution_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"verifier distribution verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_verifier_distribution_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_verifier_distribution_receipt(args.receipt)
+    sources = _load_verifier_distribution_sources(args)
+    try:
+        entry = append_verifier_distribution_receipt(
+            chain,
+            receipt,
+            sources["verifier_release"],
+            root=args.root,
+            conformance_report=sources["conformance_report"],
+            standards_package=sources["standards_package"],
+            bundle_path=args.bundle,
+            sbom_path=args.sbom,
+            provenance_path=args.provenance,
+            signature_path=args.signature,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"verifier distribution append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"verifier distribution entry: {args.out}")
+    print(f"verifier distribution entry id: {entry['entry_id']}")
+    print(f"distribution id: {receipt['distribution_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_ci_report(args: argparse.Namespace) -> int:
+    pack, result, status = _verified_pack_or_exit(args.pack, args.key)
+    if status:
+        return status
+    report = build_ci_report(pack, result, provider=args.provider)
+    write_ci_report(args.out, report)
+    print(f"CI report: {args.out}")
+    if args.provider == "gitlab":
+        return 0 if report["status"] == "success" else 1
+    return 0 if report["conclusion"] == "success" else 1
+
+
+def cmd_ci_payload(args: argparse.Namespace) -> int:
+    pack, result, status = _verified_pack_or_exit(args.pack, args.key)
+    if status:
+        return status
+    payload = build_promotion_check_payload(
+        pack,
+        result,
+        provider=args.provider,
+        commit_sha=args.commit_sha,
+        repository=args.repository,
+        branch=args.branch,
+        target_url=args.target_url,
+    )
+    _write_json(args.out, payload)
+    print(f"CI payload: {args.out}")
+    print(f"provider: {args.provider}")
+    if args.provider == "gitlab":
+        return 0 if payload["request"]["body"]["state"] == "success" else 1
+    return 0 if payload["request"]["body"]["conclusion"] == "success" else 1
+
+
+def cmd_slack_approval_request(args: argparse.Namespace) -> int:
+    pack, _, status = _verified_pack_or_exit(args.pack, args.key)
+    if status:
+        return status
+    payload = build_slack_approval_request(
+        pack,
+        channel=args.channel,
+        requested_roles=_split_csv(args.requested_roles),
+        requester=args.requester,
+        callback_url=args.callback_url,
+        expires_at=args.expires_at,
+    )
+    _write_json(args.out, payload)
+    print(f"Slack approval request: {args.out}")
+    print(f"approval request id: {payload['approval_request_id']}")
+    print(f"requested roles: {', '.join(payload['requested_roles'])}")
+    return 0
+
+
+
+def cmd_deployment_manifest(args: argparse.Namespace) -> int:
+    try:
+        manifest = build_deployment_manifest(
+            args.root,
+            name=args.name,
+            mode=args.mode,
+            environment=args.environment,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+    except OSError as exc:
+        print(f"deployment manifest failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_deployment_manifest(manifest, root=args.root, key=args.key)
+    if not result.ok:
+        print("deployment manifest verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_deployment_manifest(args.out, manifest)
+    if args.markdown:
+        write_deployment_markdown(args.markdown, manifest)
+        print(f"deployment markdown: {args.markdown}")
+    print(f"deployment manifest: {args.out}")
+    print(f"manifest id: {manifest['manifest_id']}")
+    print(f"source files: {len(manifest['source_files'])}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_deployment_verify(args: argparse.Namespace) -> int:
+    result = verify_deployment_manifest(load_deployment_manifest(args.manifest), root=args.root, key=args.key)
+    if result.ok:
+        print(f"verified deployment manifest: {args.manifest}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"deployment manifest verification failed: {args.manifest}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_deployment_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    manifest = load_deployment_manifest(args.manifest)
+    try:
+        entry = append_deployment_manifest(chain, manifest, root=args.root, key=args.key)
+    except ValueError as exc:
+        print(f"deployment manifest append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"deployment entry: {args.out}")
+    print(f"deployment entry id: {entry['entry_id']}")
+    print(f"manifest id: {manifest['manifest_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+
+def _load_byoc_operator_sources(args: argparse.Namespace) -> tuple[dict, dict, dict | None]:
+    deployment_manifest = load_deployment_manifest(args.manifest)
+    worm_receipt = _load_json(args.receipt)
+    legal_hold = _load_json(args.legal_hold) if args.legal_hold else None
+    return deployment_manifest, worm_receipt, legal_hold
+
+
+def cmd_byoc_operator_attestation(args: argparse.Namespace) -> int:
+    deployment_manifest, worm_receipt, legal_hold = _load_byoc_operator_sources(args)
+    try:
+        attestation = build_byoc_operator_attestation(
+            deployment_manifest,
+            worm_receipt,
+            legal_hold=legal_hold,
+            root=args.root,
+            store=args.store,
+            mode=args.mode,
+            environment=args.environment,
+            operator_ref=args.operator_ref,
+            operator_version=args.operator_version,
+            operator_image=args.operator_image,
+            operator_image_digest=args.operator_image_digest,
+            namespace=args.namespace,
+            service_account_ref=args.service_account_ref,
+            reconciler_ref=args.reconciler_ref,
+            upgrade_policy_ref=args.upgrade_policy_ref,
+            rollback_policy_ref=args.rollback_policy_ref,
+            tenant_id=args.tenant_id,
+            customer_account_ref=args.customer_account_ref,
+            data_plane_ref=args.data_plane_ref,
+            control_plane_ref=args.control_plane_ref,
+            keyring_ref=args.keyring_ref,
+            object_lock_provider=args.object_lock_provider,
+            object_lock_mode=args.object_lock_mode,
+            object_lock_bucket=args.object_lock_bucket,
+            object_lock_region=args.object_lock_region,
+            retention_mode=args.retention_mode,
+            default_retention_days=args.default_retention_days,
+            object_lock_enabled=args.object_lock_enabled,
+            versioning_enabled=args.versioning_enabled,
+            legal_hold_required=args.legal_hold_required,
+            backup_policy_ref=args.backup_policy_ref,
+            backup_schedule=args.backup_schedule,
+            restore_test_ref=args.restore_test_ref,
+            restore_test_at=args.restore_test_at,
+            rpo_minutes=args.rpo_minutes,
+            rto_minutes=args.rto_minutes,
+            ingress_mode=args.ingress_mode,
+            egress_policy_ref=args.egress_policy_ref,
+            private_endpoint=args.private_endpoint,
+            allowed_egress_refs=args.allowed_egress_ref,
+            airgap_bundle_ref=args.airgap_bundle_ref,
+            airgap_bundle_hash=args.airgap_bundle_hash,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            retention_until=args.retention_until,
+            actor_ref=args.actor_ref,
+            credential_ref=args.credential_ref,
+            evidence_refs=args.evidence_ref,
+            attested_at=args.attested_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"BYOC operator attestation failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_byoc_operator_attestation(
+        attestation,
+        deployment_manifest,
+        worm_receipt,
+        legal_hold=legal_hold,
+        root=args.root,
+        store=args.store,
+        key=args.key,
+    )
+    if not result.ok:
+        print("BYOC operator attestation verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_byoc_operator_attestation(args.out, attestation)
+    print(f"BYOC operator attestation: {args.out}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"operator ref: {attestation['operator']['operator_ref']}")
+    print(f"WORM receipt id: {attestation['object_lock']['worm_receipt']['receipt_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_byoc_operator_verify(args: argparse.Namespace) -> int:
+    deployment_manifest, worm_receipt, legal_hold = _load_byoc_operator_sources(args)
+    result = verify_byoc_operator_attestation(
+        load_byoc_operator_attestation(args.attestation),
+        deployment_manifest,
+        worm_receipt,
+        legal_hold=legal_hold,
+        root=args.root,
+        store=args.store,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified BYOC operator attestation: {args.attestation}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"BYOC operator attestation verification failed: {args.attestation}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_byoc_operator_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    deployment_manifest, worm_receipt, legal_hold = _load_byoc_operator_sources(args)
+    attestation = load_byoc_operator_attestation(args.attestation)
+    try:
+        entry = append_byoc_operator_attestation(
+            chain,
+            attestation,
+            deployment_manifest,
+            worm_receipt,
+            legal_hold=legal_hold,
+            root=args.root,
+            store=args.store,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"BYOC operator attestation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"BYOC operator entry: {args.out}")
+    print(f"BYOC operator entry id: {entry['entry_id']}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def _load_eu_data_plane_sources(args: argparse.Namespace) -> tuple[dict, dict, dict | None]:
+    deployment_manifest = load_deployment_manifest(args.manifest)
+    byoc_operator = load_byoc_operator_attestation(args.byoc_operator)
+    eu_ai_act_document = load_eu_ai_act_document(args.eu_ai_act_document) if args.eu_ai_act_document else None
+    return deployment_manifest, byoc_operator, eu_ai_act_document
+
+
+def cmd_eu_data_plane_attestation(args: argparse.Namespace) -> int:
+    deployment_manifest, byoc_operator, eu_ai_act_document = _load_eu_data_plane_sources(args)
+    try:
+        attestation = build_eu_data_plane_attestation(
+            deployment_manifest,
+            byoc_operator,
+            eu_ai_act_document=eu_ai_act_document,
+            root=args.root,
+            mode=args.mode,
+            environment=args.environment,
+            tenant_id=args.tenant_id,
+            data_plane_ref=args.data_plane_ref,
+            control_plane_ref=args.control_plane_ref,
+            primary_region=args.primary_region,
+            primary_location=args.primary_location,
+            availability_zones=args.availability_zone,
+            replica_regions=args.replica_region,
+            backup_regions=args.backup_region,
+            analytics_region=args.analytics_region,
+            log_region=args.log_region,
+            data_categories=args.data_category,
+            subprocessor_refs=args.subprocessor_ref,
+            residency_policy_ref=args.residency_policy_ref,
+            data_classification_policy_ref=args.data_classification_policy_ref,
+            dpa_ref=args.dpa_ref,
+            transfer_impact_assessment_ref=args.transfer_impact_assessment_ref,
+            scc_ref=args.scc_ref,
+            deletion_policy_ref=args.deletion_policy_ref,
+            data_export_policy_ref=args.data_export_policy_ref,
+            encryption_key_ref=args.encryption_key_ref,
+            kms_key_region=args.kms_key_region,
+            key_access_policy_ref=args.key_access_policy_ref,
+            hsm_ref=args.hsm_ref,
+            customer_managed_keys=args.customer_managed_keys,
+            cross_border_egress_allowed=args.cross_border_egress_allowed,
+            network_policy_ref=args.network_policy_ref,
+            support_access_policy_ref=args.support_access_policy_ref,
+            support_access_jit=args.support_access_jit,
+            breakglass_policy_ref=args.breakglass_policy_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            access_log_ref=args.access_log_ref,
+            access_log_root=args.access_log_root,
+            transfer_log_ref=args.transfer_log_ref,
+            transfer_log_root=args.transfer_log_root,
+            retention_until=args.retention_until,
+            actor_ref=args.actor_ref,
+            credential_ref=args.credential_ref,
+            evidence_refs=args.evidence_ref,
+            attested_at=args.attested_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"EU data-plane attestation failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_eu_data_plane_attestation(
+        attestation,
+        deployment_manifest,
+        byoc_operator,
+        eu_ai_act_document=eu_ai_act_document,
+        root=args.root,
+        key=args.key,
+    )
+    if not result.ok:
+        print("EU data-plane attestation verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_eu_data_plane_attestation(args.out, attestation)
+    print(f"EU data-plane attestation: {args.out}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"primary region: {attestation['regions']['primary_region']}")
+    print(f"BYOC attestation id: {attestation['source']['byoc_attestation_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_eu_data_plane_verify(args: argparse.Namespace) -> int:
+    deployment_manifest, byoc_operator, eu_ai_act_document = _load_eu_data_plane_sources(args)
+    result = verify_eu_data_plane_attestation(
+        load_eu_data_plane_attestation(args.attestation),
+        deployment_manifest,
+        byoc_operator,
+        eu_ai_act_document=eu_ai_act_document,
+        root=args.root,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified EU data-plane attestation: {args.attestation}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"EU data-plane attestation verification failed: {args.attestation}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_eu_data_plane_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    deployment_manifest, byoc_operator, eu_ai_act_document = _load_eu_data_plane_sources(args)
+    attestation = load_eu_data_plane_attestation(args.attestation)
+    try:
+        entry = append_eu_data_plane_attestation(
+            chain,
+            attestation,
+            deployment_manifest,
+            byoc_operator,
+            eu_ai_act_document=eu_ai_act_document,
+            root=args.root,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"EU data-plane attestation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"EU data-plane entry: {args.out}")
+    print(f"EU data-plane entry id: {entry['entry_id']}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def _load_collector_service_sources(args: argparse.Namespace) -> tuple[dict, dict | None, dict | None, dict | None, dict | None]:
+    topology = load_collector_topology(args.topology)
+    byoc_operator = load_byoc_operator_attestation(args.byoc_operator) if args.byoc_operator else None
+    deployment_manifest = load_deployment_manifest(args.deployment_manifest) if args.deployment_manifest else None
+    worm_receipt = _load_json(args.worm_receipt) if args.worm_receipt else None
+    legal_hold = _load_json(args.legal_hold) if args.legal_hold else None
+    return topology, byoc_operator, deployment_manifest, worm_receipt, legal_hold
+
+
+def cmd_collector_service_attestation(args: argparse.Namespace) -> int:
+    topology, byoc_operator, deployment_manifest, worm_receipt, legal_hold = _load_collector_service_sources(args)
+    try:
+        attestation = build_collector_service_attestation(
+            topology,
+            byoc_operator=byoc_operator,
+            deployment_manifest=deployment_manifest,
+            worm_receipt=worm_receipt,
+            legal_hold=legal_hold,
+            root=args.root,
+            store=args.store,
+            mode=args.mode,
+            environment=args.environment,
+            service_ref=args.service_ref,
+            service_version=args.service_version,
+            collector_image=args.collector_image,
+            collector_image_digest=args.collector_image_digest,
+            collector_binary_hash=args.collector_binary_hash,
+            replicas_min=args.replicas_min,
+            replicas_max=args.replicas_max,
+            availability_zones=args.availability_zone,
+            mtls_policy_ref=args.mtls_policy_ref,
+            auth_policy_ref=args.auth_policy_ref,
+            tenant_isolation_ref=args.tenant_isolation_ref,
+            rate_limit_policy_ref=args.rate_limit_policy_ref,
+            replay_cache_ref=args.replay_cache_ref,
+            idempotency_store_ref=args.idempotency_store_ref,
+            ingress_ref=args.ingress_ref,
+            network_policy_ref=args.network_policy_ref,
+            egress_policy_ref=args.egress_policy_ref,
+            stream_backend=args.stream_backend,
+            stream_ref=args.stream_ref,
+            stream_topic=args.stream_topic,
+            stream_retention_hours=args.stream_retention_hours,
+            stream_tls=args.stream_tls,
+            stream_dlq_ref=args.stream_dlq_ref,
+            clickhouse_ref=args.clickhouse_ref,
+            clickhouse_retention_days=args.clickhouse_retention_days,
+            clickhouse_backup_ref=args.clickhouse_backup_ref,
+            postgres_ref=args.postgres_ref,
+            postgres_schema_hash=args.postgres_schema_hash,
+            postgres_backup_ref=args.postgres_backup_ref,
+            mcp_proxy_ref=args.mcp_proxy_ref,
+            mcp_proxy_image_digest=args.mcp_proxy_image_digest,
+            framework_hook_refs=args.framework_hook_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            retention_until=args.retention_until,
+            actor_ref=args.actor_ref,
+            credential_ref=args.credential_ref,
+            evidence_refs=args.evidence_ref,
+            attested_at=args.attested_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"collector service attestation failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_collector_service_attestation(
+        attestation,
+        topology,
+        byoc_operator=byoc_operator,
+        deployment_manifest=deployment_manifest,
+        worm_receipt=worm_receipt,
+        legal_hold=legal_hold,
+        root=args.root,
+        store=args.store,
+        key=args.key,
+    )
+    if not result.ok:
+        print("collector service attestation verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_collector_service_attestation(args.out, attestation)
+    print(f"collector service attestation: {args.out}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"service ref: {attestation['service']['service_ref']}")
+    print(f"topology id: {attestation['source']['topology_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_collector_service_verify(args: argparse.Namespace) -> int:
+    topology, byoc_operator, deployment_manifest, worm_receipt, legal_hold = _load_collector_service_sources(args)
+    result = verify_collector_service_attestation(
+        load_collector_service_attestation(args.attestation),
+        topology,
+        byoc_operator=byoc_operator,
+        deployment_manifest=deployment_manifest,
+        worm_receipt=worm_receipt,
+        legal_hold=legal_hold,
+        root=args.root,
+        store=args.store,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified collector service attestation: {args.attestation}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"collector service attestation verification failed: {args.attestation}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_collector_service_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    topology, byoc_operator, deployment_manifest, worm_receipt, legal_hold = _load_collector_service_sources(args)
+    attestation = load_collector_service_attestation(args.attestation)
+    try:
+        entry = append_collector_service_attestation(
+            chain,
+            attestation,
+            topology,
+            byoc_operator=byoc_operator,
+            deployment_manifest=deployment_manifest,
+            worm_receipt=worm_receipt,
+            legal_hold=legal_hold,
+            root=args.root,
+            store=args.store,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"collector service attestation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"collector service entry: {args.out}")
+    print(f"collector service entry id: {entry['entry_id']}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def _load_collector_worker_sources(args: argparse.Namespace) -> tuple[dict, dict, dict | None, dict | None, dict | None, dict | None]:
+    service_attestation = load_collector_service_attestation(args.service_attestation)
+    topology = load_collector_topology(args.topology)
+    byoc_operator = load_byoc_operator_attestation(args.byoc_operator) if args.byoc_operator else None
+    deployment_manifest = load_deployment_manifest(args.deployment_manifest) if args.deployment_manifest else None
+    worm_receipt = _load_json(args.worm_receipt) if args.worm_receipt else None
+    legal_hold = _load_json(args.legal_hold) if args.legal_hold else None
+    return service_attestation, topology, byoc_operator, deployment_manifest, worm_receipt, legal_hold
+
+
+def cmd_collector_worker(args: argparse.Namespace) -> int:
+    service_attestation, topology, byoc_operator, deployment_manifest, worm_receipt, legal_hold = _load_collector_worker_sources(args)
+    try:
+        receipt = build_collector_worker_receipt(
+            service_attestation,
+            topology,
+            byoc_operator=byoc_operator,
+            deployment_manifest=deployment_manifest,
+            worm_receipt=worm_receipt,
+            legal_hold=legal_hold,
+            root=args.root,
+            store=args.store,
+            mode=args.mode,
+            environment=args.environment,
+            worker_ref=args.worker_ref,
+            run_ref=args.run_ref,
+            operation_kind=args.operation_kind,
+            actor_ref=args.actor_ref,
+            schedule_ref=args.schedule_ref,
+            cadence_seconds=args.cadence_seconds,
+            lease_ref=args.lease_ref,
+            checkpoint_ref=args.checkpoint_ref,
+            checkpoint_hash=args.checkpoint_hash,
+            previous_cursor_ref=args.previous_cursor_ref,
+            next_cursor_ref=args.next_cursor_ref,
+            next_run_at=args.next_run_at,
+            attempt=args.attempt,
+            max_attempts=args.max_attempts,
+            tenant_ref=args.tenant_ref,
+            trace_batch_ref=args.trace_batch_ref,
+            trace_batch_hash=args.trace_batch_hash,
+            source_endpoint_ref=args.source_endpoint_ref,
+            received_span_count=args.received_span_count,
+            accepted_span_count=args.accepted_span_count,
+            rejected_span_count=args.rejected_span_count,
+            idempotency_key_hash=args.idempotency_key_hash,
+            replay_cache_hit=args.replay_cache_hit,
+            otlp_request_hash=args.otlp_request_hash,
+            otlp_response_status=args.otlp_response_status,
+            otlp_response_hash=args.otlp_response_hash,
+            stream_ref=args.stream_ref,
+            stream_topic=args.stream_topic,
+            partition_ref=args.partition_ref,
+            offset_start=args.offset_start,
+            offset_end=args.offset_end,
+            stream_message_ref=args.stream_message_ref,
+            stream_message_hash=args.stream_message_hash,
+            stream_dlq_ref=args.stream_dlq_ref,
+            clickhouse_batch_ref=args.clickhouse_batch_ref,
+            clickhouse_batch_hash=args.clickhouse_batch_hash,
+            clickhouse_rows_written=args.clickhouse_rows_written,
+            postgres_index_ref=args.postgres_index_ref,
+            postgres_index_hash=args.postgres_index_hash,
+            postgres_rows_written=args.postgres_rows_written,
+            control_index_ref=args.control_index_ref,
+            control_index_hash=args.control_index_hash,
+            mcp_transcript_ref=args.mcp_transcript_ref,
+            mcp_transcript_hash=args.mcp_transcript_hash,
+            framework_hook_ref=args.framework_hook_ref,
+            framework_hook_hash=args.framework_hook_hash,
+            metrics_ref=args.metrics_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            retention_until=args.retention_until,
+            credential_ref=args.credential_ref,
+            evidence_refs=args.evidence_ref or [],
+            started_at=args.started_at,
+            completed_at=args.completed_at,
+            error_ref=args.error_ref,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"collector worker receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_collector_worker_receipt(
+        receipt,
+        service_attestation,
+        topology,
+        byoc_operator=byoc_operator,
+        deployment_manifest=deployment_manifest,
+        worm_receipt=worm_receipt,
+        legal_hold=legal_hold,
+        root=args.root,
+        store=args.store,
+        key=args.key,
+    )
+    if not result.ok:
+        print("collector worker receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_collector_worker_receipt(args.out, receipt)
+    print(f"collector worker receipt: {args.out}")
+    print(f"worker operation id: {receipt['worker_operation_id']}")
+    print(f"operation: {receipt['worker']['operation_kind']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_collector_worker_verify(args: argparse.Namespace) -> int:
+    receipt = load_collector_worker_receipt(args.receipt)
+    service_attestation, topology, byoc_operator, deployment_manifest, worm_receipt, legal_hold = _load_collector_worker_sources(args)
+    result = verify_collector_worker_receipt(
+        receipt,
+        service_attestation,
+        topology,
+        byoc_operator=byoc_operator,
+        deployment_manifest=deployment_manifest,
+        worm_receipt=worm_receipt,
+        legal_hold=legal_hold,
+        root=args.root,
+        store=args.store,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified collector worker receipt: {args.receipt}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"collector worker receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_collector_worker_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_collector_worker_receipt(args.receipt)
+    service_attestation, topology, byoc_operator, deployment_manifest, worm_receipt, legal_hold = _load_collector_worker_sources(args)
+    try:
+        entry = append_collector_worker_receipt(
+            chain,
+            receipt,
+            service_attestation,
+            topology,
+            byoc_operator=byoc_operator,
+            deployment_manifest=deployment_manifest,
+            worm_receipt=worm_receipt,
+            legal_hold=legal_hold,
+            root=args.root,
+            store=args.store,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"collector worker receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"collector worker entry: {args.out}")
+    print(f"collector worker entry id: {entry['entry_id']}")
+    print(f"worker operation id: {receipt['worker_operation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+def cmd_collector_topology(args: argparse.Namespace) -> int:
+    try:
+        topology = build_collector_topology(
+            args.root,
+            name=args.name,
+            mode=args.mode,
+            environment=args.environment,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+    except OSError as exc:
+        print(f"collector topology failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_collector_topology(topology, root=args.root, key=args.key)
+    if not result.ok:
+        print("collector topology verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_collector_topology(args.out, topology)
+    if args.markdown:
+        write_collector_topology_markdown(args.markdown, topology)
+        print(f"collector topology markdown: {args.markdown}")
+    print(f"collector topology: {args.out}")
+    print(f"topology id: {topology['topology_id']}")
+    print(f"source files: {len(topology['source_files'])}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_collector_topology_verify(args: argparse.Namespace) -> int:
+    result = verify_collector_topology(load_collector_topology(args.topology), root=args.root, key=args.key)
+    if result.ok:
+        print(f"verified collector topology: {args.topology}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"collector topology verification failed: {args.topology}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_collector_topology_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    topology = load_collector_topology(args.topology)
+    try:
+        entry = append_collector_topology(chain, topology, root=args.root, key=args.key)
+    except ValueError as exc:
+        print(f"collector topology append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"collector topology entry: {args.out}")
+    print(f"collector topology entry id: {entry['entry_id']}")
+    print(f"topology id: {topology['topology_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+def cmd_provider_delivery(args: argparse.Namespace) -> int:
+    payload = load_provider_payload(args.payload)
+    try:
+        if args.send:
+            delivery = dispatch_provider_payload(
+                payload,
+                endpoint_base=args.endpoint_base,
+                credential_ref=args.credential_ref,
+                timeout_seconds=args.timeout_seconds,
+                auth_header=args.auth_header,
+                auth_scheme=args.auth_scheme,
+                delivered_at=args.delivered_at,
+                key=args.key,
+            )
+        else:
+            response_body = _load_json(args.response_json) if args.response_json else None
+            delivery = build_provider_delivery(
+                payload,
+                endpoint_base=args.endpoint_base,
+                credential_ref=args.credential_ref,
+                mode=args.mode,
+                response_status=args.response_status,
+                response_body=response_body,
+                delivered_at=args.delivered_at,
+                key=args.key,
+            )
+    except (OSError, ValueError) as exc:
+        print(f"provider delivery generation failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_provider_delivery(delivery, payload, key=args.key)
+    if not result.ok:
+        print("provider delivery generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_provider_delivery(args.out, delivery)
+    print(f"provider delivery: {args.out}")
+    print(f"delivery id: {delivery['delivery_id']}")
+    print(f"provider: {delivery['provider']}")
+    print(f"mode: {delivery['mode']}")
+    if delivery.get("response"):
+        print(f"response status: {delivery['response'].get('status')}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_provider_delivery_verify(args: argparse.Namespace) -> int:
+    payload = load_provider_payload(args.payload) if args.payload else None
+    delivery = load_provider_delivery(args.delivery)
+    result = verify_provider_delivery(delivery, payload, key=args.key)
+    if result.ok:
+        print(f"verified provider delivery: {args.delivery}")
+        print(f"delivery id: {delivery['delivery_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"provider delivery verification failed: {args.delivery}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_provider_delivery_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    payload = load_provider_payload(args.payload) if args.payload else None
+    delivery = load_provider_delivery(args.delivery)
+    entry = append_provider_delivery(chain, delivery, payload, key=args.key)
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"provider delivery entry: {args.out}")
+    print(f"delivery entry id: {entry['entry_id']}")
+    print(f"delivery id: {delivery['delivery_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def _load_provider_delivery_service_sources(args: argparse.Namespace) -> dict[str, Any]:
+    sources: dict[str, Any] = {"delivery": load_provider_delivery(args.delivery)}
+    if getattr(args, "payload", None):
+        sources["payload"] = load_provider_payload(args.payload)
+    if getattr(args, "provider_operations_service", None):
+        sources["provider_operations_service"] = load_provider_operations_service_attestation(args.provider_operations_service)
+    return sources
+
+
+def cmd_provider_delivery_service_attestation(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_provider_delivery_service_sources(args)
+        attestation = build_provider_delivery_service_attestation(
+            **sources,
+            mode=args.mode,
+            environment=args.environment,
+            service_ref=args.service_ref,
+            service_version=args.service_version,
+            service_image=args.service_image,
+            service_image_digest=args.service_image_digest,
+            service_binary_hash=args.service_binary_hash,
+            replicas_min=args.replicas_min,
+            replicas_max=args.replicas_max,
+            availability_zones=args.availability_zone or [],
+            dispatch_worker_ref=args.dispatch_worker_ref,
+            queue_ref=args.queue_ref,
+            dead_letter_queue_ref=args.dead_letter_queue_ref,
+            idempotency_store_ref=args.idempotency_store_ref,
+            retry_policy_ref=args.retry_policy_ref,
+            outbound_proxy_ref=args.outbound_proxy_ref,
+            provider_endpoint_base=args.provider_endpoint_base,
+            provider_credential_ref=args.provider_credential_ref,
+            mtls_policy_ref=args.mtls_policy_ref,
+            auth_policy_ref=args.auth_policy_ref,
+            network_policy_ref=args.network_policy_ref,
+            egress_policy_ref=args.egress_policy_ref,
+            rate_limit_policy_ref=args.rate_limit_policy_ref,
+            request_signing_policy_ref=args.request_signing_policy_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            metrics_ref=args.metrics_ref,
+            alert_policy_ref=args.alert_policy_ref,
+            retention_until=args.retention_until,
+            actor_ref=args.actor_ref,
+            credential_ref=args.credential_ref,
+            evidence_refs=args.evidence_ref or [],
+            attested_at=args.attested_at,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"provider delivery service attestation generation failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_provider_delivery_service_attestation(attestation, **sources, key=args.key)
+    if not result.ok:
+        print("provider delivery service attestation generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_provider_delivery_service_attestation(args.out, attestation)
+    print(f"provider delivery service attestation: {args.out}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"service ref: {attestation['service']['service_ref']}")
+    print(f"delivery id: {attestation['dispatch']['source_delivery_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_provider_delivery_service_verify(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_provider_delivery_service_sources(args)
+        attestation = load_provider_delivery_service_attestation(args.attestation)
+    except (OSError, ValueError) as exc:
+        print(f"provider delivery service attestation load failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_provider_delivery_service_attestation(attestation, **sources, key=args.key)
+    if result.ok:
+        print(f"verified provider delivery service attestation: {args.attestation}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"provider delivery service attestation verification failed: {args.attestation}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_provider_delivery_service_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    try:
+        sources = _load_provider_delivery_service_sources(args)
+        attestation = load_provider_delivery_service_attestation(args.attestation)
+        entry = append_provider_delivery_service_attestation(chain, attestation, **sources, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"provider delivery service attestation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"provider delivery service entry: {args.out}")
+    print(f"provider delivery service entry id: {entry['entry_id']}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def _load_provider_delivery_worker_sources(args: argparse.Namespace) -> dict[str, Any]:
+    sources: dict[str, Any] = {
+        "service_attestation": load_provider_delivery_service_attestation(args.service_attestation),
+        "delivery": load_provider_delivery(args.delivery),
+    }
+    if getattr(args, "payload", None):
+        sources["payload"] = load_provider_payload(args.payload)
+    if getattr(args, "provider_operations_service", None):
+        sources["provider_operations_service"] = load_provider_operations_service_attestation(args.provider_operations_service)
+    return sources
+
+
+def cmd_provider_delivery_worker(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_provider_delivery_worker_sources(args)
+        receipt = build_provider_delivery_worker_receipt(
+            sources["service_attestation"],
+            sources["delivery"],
+            payload=sources.get("payload"),
+            provider_operations_service=sources.get("provider_operations_service"),
+            mode=args.mode,
+            environment=args.environment,
+            worker_ref=args.worker_ref,
+            run_ref=args.run_ref,
+            operation_kind=args.operation_kind,
+            actor_ref=args.actor_ref,
+            schedule_ref=args.schedule_ref,
+            cadence_seconds=args.cadence_seconds,
+            lease_ref=args.lease_ref,
+            checkpoint_ref=args.checkpoint_ref,
+            checkpoint_hash=args.checkpoint_hash,
+            previous_cursor_ref=args.previous_cursor_ref,
+            next_cursor_ref=args.next_cursor_ref,
+            next_run_at=args.next_run_at,
+            attempt=args.attempt,
+            max_attempts=args.max_attempts,
+            queue_ref=args.queue_ref,
+            queue_message_ref=args.queue_message_ref,
+            dead_letter_queue_ref=args.dead_letter_queue_ref,
+            destination_ref=args.destination_ref,
+            idempotency_record_hash=args.idempotency_record_hash,
+            provider_request_ref=args.provider_request_ref,
+            request_hash=args.request_hash,
+            response_status=args.response_status,
+            response_hash=args.response_hash,
+            rate_limit_bucket_ref=args.rate_limit_bucket_ref,
+            retry_after_seconds=args.retry_after_seconds,
+            delivery_log_ref=args.delivery_log_ref,
+            delivery_log_root=args.delivery_log_root,
+            provider_event_log_ref=args.provider_event_log_ref,
+            provider_event_log_root=args.provider_event_log_root,
+            metrics_ref=args.metrics_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            credential_ref=args.credential_ref,
+            provider_credential_ref=args.provider_credential_ref,
+            retention_until=args.retention_until,
+            evidence_refs=args.evidence_ref or [],
+            started_at=args.started_at,
+            completed_at=args.completed_at,
+            error_ref=args.error_ref,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"provider delivery worker receipt generation failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_provider_delivery_worker_receipt(receipt, **sources, key=args.key)
+    if not result.ok:
+        print("provider delivery worker receipt generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_provider_delivery_worker_receipt(args.out, receipt)
+    print(f"provider delivery worker receipt: {args.out}")
+    print(f"worker operation id: {receipt['worker_operation_id']}")
+    print(f"operation: {receipt['worker']['operation_kind']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_provider_delivery_worker_verify(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_provider_delivery_worker_sources(args)
+        receipt = load_provider_delivery_worker_receipt(args.receipt)
+    except (OSError, ValueError) as exc:
+        print(f"provider delivery worker receipt load failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_provider_delivery_worker_receipt(receipt, **sources, key=args.key)
+    if result.ok:
+        print(f"verified provider delivery worker receipt: {args.receipt}")
+        print(f"worker operation id: {receipt['worker_operation_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"provider delivery worker receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_provider_delivery_worker_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    try:
+        sources = _load_provider_delivery_worker_sources(args)
+        receipt = load_provider_delivery_worker_receipt(args.receipt)
+        entry = append_provider_delivery_worker_receipt(chain, receipt, **sources, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"provider delivery worker receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"provider delivery worker entry: {args.out}")
+    print(f"provider delivery worker entry id: {entry['entry_id']}")
+    print(f"worker operation id: {receipt['worker_operation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_provider_webhook(args: argparse.Namespace) -> int:
+    try:
+        body = _read_bytes(args.body)
+        headers = _parse_header_args(args.header)
+        secret = _resolve_secret_arg(args.secret)
+        receipt = build_provider_webhook_receipt(
+            args.provider,
+            body,
+            headers,
+            secret or "",
+            received_at=args.received_at,
+            key=args.key,
+        )
+        result = verify_provider_webhook_receipt(receipt, body, headers=headers, secret=secret, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"provider webhook receipt generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("provider webhook receipt generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_provider_webhook_receipt(args.out, receipt)
+    print(f"provider webhook receipt: {args.out}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"provider: {receipt['provider']}")
+    print(f"event: {receipt['webhook'].get('event')}")
+    if receipt["webhook"].get("delivery_id"):
+        print(f"delivery id: {receipt['webhook'].get('delivery_id')}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_provider_webhook_verify(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_provider_webhook_receipt(args.receipt)
+        body = _read_bytes(args.body)
+        headers = _parse_header_args(args.header)
+        secret = _resolve_secret_arg(args.secret)
+    except (OSError, ValueError) as exc:
+        print(f"provider webhook verification failed: {exc}", file=sys.stderr)
+        return 1
+    if (headers or secret) and (not headers or not secret):
+        print("provider webhook signature replay requires both --header and --secret", file=sys.stderr)
+        return 1
+    result = verify_provider_webhook_receipt(
+        receipt,
+        body,
+        headers=headers or None,
+        secret=secret,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified provider webhook receipt: {args.receipt}")
+        print(f"receipt id: {receipt['receipt_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"provider webhook verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_provider_webhook_append(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_provider_webhook_receipt(args.receipt)
+        body = _read_bytes(args.body)
+        headers = _parse_header_args(args.header)
+        secret = _resolve_secret_arg(args.secret)
+    except (OSError, ValueError) as exc:
+        print(f"provider webhook append failed: {exc}", file=sys.stderr)
+        return 1
+    if (headers or secret) and (not headers or not secret):
+        print("provider webhook signature replay requires both --header and --secret", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_provider_webhook_receipt(
+            chain,
+            receipt,
+            body,
+            headers=headers or None,
+            secret=secret,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"provider webhook append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"provider webhook entry: {args.out}")
+    print(f"provider webhook entry id: {entry['entry_id']}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_provider_audit_correlation(args: argparse.Namespace) -> int:
+    try:
+        audit_log = load_provider_audit_log(args.audit_log)
+        webhook_receipt = load_provider_webhook_receipt(args.webhook_receipt) if args.webhook_receipt else None
+        delivery_receipt = load_provider_delivery(args.delivery_receipt) if args.delivery_receipt else None
+        correlation = build_provider_audit_correlation(
+            audit_log,
+            webhook_receipt=webhook_receipt,
+            delivery_receipt=delivery_receipt,
+            provider=args.provider,
+            correlated_at=args.correlated_at,
+            audit_log_ref=args.audit_log_ref,
+            key=args.key,
+        )
+        result = verify_provider_audit_correlation(
+            correlation,
+            audit_log=audit_log,
+            webhook_receipt=webhook_receipt,
+            delivery_receipt=delivery_receipt,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"provider audit correlation generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("provider audit correlation generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_provider_audit_correlation(args.out, correlation)
+    print(f"provider audit correlation: {args.out}")
+    print(f"correlation id: {correlation['correlation_id']}")
+    print(f"provider: {correlation['provider']}")
+    print(f"matches: {len(correlation['matches'])}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_provider_audit_verify(args: argparse.Namespace) -> int:
+    try:
+        correlation = load_provider_audit_correlation(args.correlation)
+        audit_log = load_provider_audit_log(args.audit_log) if args.audit_log else None
+        webhook_receipt = load_provider_webhook_receipt(args.webhook_receipt) if args.webhook_receipt else None
+        delivery_receipt = load_provider_delivery(args.delivery_receipt) if args.delivery_receipt else None
+    except (OSError, ValueError) as exc:
+        print(f"provider audit correlation verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_provider_audit_correlation(
+        correlation,
+        audit_log=audit_log,
+        webhook_receipt=webhook_receipt,
+        delivery_receipt=delivery_receipt,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified provider audit correlation: {args.correlation}")
+        print(f"correlation id: {correlation['correlation_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"provider audit correlation verification failed: {args.correlation}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_provider_audit_append(args: argparse.Namespace) -> int:
+    try:
+        correlation = load_provider_audit_correlation(args.correlation)
+        audit_log = load_provider_audit_log(args.audit_log) if args.audit_log else None
+        webhook_receipt = load_provider_webhook_receipt(args.webhook_receipt) if args.webhook_receipt else None
+        delivery_receipt = load_provider_delivery(args.delivery_receipt) if args.delivery_receipt else None
+    except (OSError, ValueError) as exc:
+        print(f"provider audit correlation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_provider_audit_correlation(
+            chain,
+            correlation,
+            audit_log=audit_log,
+            webhook_receipt=webhook_receipt,
+            delivery_receipt=delivery_receipt,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"provider audit correlation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"provider audit correlation entry: {args.out}")
+    print(f"provider audit correlation entry id: {entry['entry_id']}")
+    print(f"correlation id: {correlation['correlation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_provider_audit_stream(args: argparse.Namespace) -> int:
+    try:
+        audit_log = load_provider_audit_log(args.audit_log)
+        provider_installation = load_provider_installation_manifest(args.provider_installation) if args.provider_installation else None
+        lifecycle_manifest = load_provider_lifecycle_manifest(args.lifecycle) if args.lifecycle else None
+        correlation = load_provider_audit_correlation(args.correlation) if args.correlation else None
+        receipt = build_provider_audit_stream_receipt(
+            audit_log,
+            provider=args.provider,
+            stream_ref=args.stream_ref,
+            endpoint_url=args.endpoint_url,
+            credential_ref=args.credential_ref,
+            request_hash=args.request_hash,
+            response_status=args.response_status,
+            response_hash=args.response_hash,
+            actor_ref=args.actor_ref,
+            window_start=args.window_start,
+            window_end=args.window_end,
+            audit_log_ref=args.audit_log_ref,
+            cursor_ref=args.cursor_ref,
+            next_cursor_ref=args.next_cursor_ref,
+            provider_installation=provider_installation,
+            lifecycle_manifest=lifecycle_manifest,
+            correlation=correlation,
+            mode=args.mode,
+            environment=args.environment,
+            recorded_at=args.recorded_at,
+            key=args.key,
+        )
+        result = verify_provider_audit_stream_receipt(
+            receipt,
+            audit_log=audit_log,
+            provider_installation=provider_installation,
+            lifecycle_manifest=lifecycle_manifest,
+            correlation=correlation,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"provider audit stream receipt generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("provider audit stream receipt generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_provider_audit_stream_receipt(args.out, receipt)
+    print(f"provider audit stream receipt: {args.out}")
+    print(f"stream receipt id: {receipt['stream_receipt_id']}")
+    print(f"provider: {receipt['provider']}")
+    print(f"audit events: {receipt['audit_log']['event_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_provider_audit_stream_verify(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_provider_audit_stream_receipt(args.receipt)
+        audit_log = load_provider_audit_log(args.audit_log) if args.audit_log else None
+        provider_installation = load_provider_installation_manifest(args.provider_installation) if args.provider_installation else None
+        lifecycle_manifest = load_provider_lifecycle_manifest(args.lifecycle) if args.lifecycle else None
+        correlation = load_provider_audit_correlation(args.correlation) if args.correlation else None
+    except (OSError, ValueError) as exc:
+        print(f"provider audit stream receipt verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_provider_audit_stream_receipt(
+        receipt,
+        audit_log=audit_log,
+        provider_installation=provider_installation,
+        lifecycle_manifest=lifecycle_manifest,
+        correlation=correlation,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified provider audit stream receipt: {args.receipt}")
+        print(f"stream receipt id: {receipt['stream_receipt_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"provider audit stream receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_provider_audit_stream_append(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_provider_audit_stream_receipt(args.receipt)
+        audit_log = load_provider_audit_log(args.audit_log) if args.audit_log else None
+        provider_installation = load_provider_installation_manifest(args.provider_installation) if args.provider_installation else None
+        lifecycle_manifest = load_provider_lifecycle_manifest(args.lifecycle) if args.lifecycle else None
+        correlation = load_provider_audit_correlation(args.correlation) if args.correlation else None
+    except (OSError, ValueError) as exc:
+        print(f"provider audit stream receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_provider_audit_stream_receipt(
+            chain,
+            receipt,
+            audit_log=audit_log,
+            provider_installation=provider_installation,
+            lifecycle_manifest=lifecycle_manifest,
+            correlation=correlation,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"provider audit stream receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"provider audit stream entry: {args.out}")
+    print(f"provider audit stream entry id: {entry['entry_id']}")
+    print(f"stream receipt id: {receipt['stream_receipt_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+
+def _load_provider_audit_worker_inputs(args: argparse.Namespace) -> tuple[list[dict], list[dict] | None, dict | None, dict | None]:
+    stream_receipts = [load_provider_audit_stream_receipt(path) for path in args.stream_receipt]
+    correlations = [load_provider_audit_correlation(path) for path in args.correlation] if args.correlation else None
+    lifecycle_operation = load_provider_lifecycle_operation_receipt(args.lifecycle_operation) if args.lifecycle_operation else None
+    lifecycle_manifest = load_provider_lifecycle_manifest(args.lifecycle) if args.lifecycle else None
+    return stream_receipts, correlations, lifecycle_operation, lifecycle_manifest
+
+
+def cmd_provider_audit_worker(args: argparse.Namespace) -> int:
+    try:
+        stream_receipts, correlations, lifecycle_operation, lifecycle_manifest = _load_provider_audit_worker_inputs(args)
+        receipt = build_provider_audit_worker_receipt(
+            stream_receipts=stream_receipts,
+            correlations=correlations,
+            lifecycle_operation=lifecycle_operation,
+            lifecycle_manifest=lifecycle_manifest,
+            worker_ref=args.worker_ref,
+            run_ref=args.run_ref,
+            operation_kind=args.operation_kind,
+            actor_ref=args.actor_ref,
+            schedule_ref=args.schedule_ref,
+            cadence_seconds=args.cadence_seconds,
+            lease_ref=args.lease_ref,
+            checkpoint_ref=args.checkpoint_ref,
+            checkpoint_hash=args.checkpoint_hash,
+            credential_ref=args.credential_ref,
+            previous_cursor_ref=args.previous_cursor_ref,
+            next_cursor_ref=args.next_cursor_ref,
+            attempt=args.attempt,
+            max_attempts=args.max_attempts,
+            next_run_at=args.next_run_at,
+            error_ref=args.error_ref,
+            mode=args.mode,
+            environment=args.environment,
+            started_at=args.started_at,
+            completed_at=args.completed_at,
+            key=args.key,
+        )
+        result = verify_provider_audit_worker_receipt(
+            receipt,
+            stream_receipts=stream_receipts,
+            correlations=correlations,
+            lifecycle_operation=lifecycle_operation,
+            lifecycle_manifest=lifecycle_manifest,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"provider audit worker receipt generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("provider audit worker receipt generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_provider_audit_worker_receipt(args.out, receipt)
+    print(f"provider audit worker receipt: {args.out}")
+    print(f"worker operation id: {receipt['worker_operation_id']}")
+    print(f"provider: {receipt['provider']}")
+    print(f"operation: {receipt['worker']['operation_kind']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_provider_audit_worker_verify(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_provider_audit_worker_receipt(args.receipt)
+        stream_receipts, correlations, lifecycle_operation, lifecycle_manifest = _load_provider_audit_worker_inputs(args)
+    except (OSError, ValueError) as exc:
+        print(f"provider audit worker receipt verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_provider_audit_worker_receipt(
+        receipt,
+        stream_receipts=stream_receipts if stream_receipts else None,
+        correlations=correlations,
+        lifecycle_operation=lifecycle_operation,
+        lifecycle_manifest=lifecycle_manifest,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified provider audit worker receipt: {args.receipt}")
+        print(f"worker operation id: {receipt['worker_operation_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"provider audit worker receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_provider_audit_worker_append(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_provider_audit_worker_receipt(args.receipt)
+        stream_receipts, correlations, lifecycle_operation, lifecycle_manifest = _load_provider_audit_worker_inputs(args)
+    except (OSError, ValueError) as exc:
+        print(f"provider audit worker receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_provider_audit_worker_receipt(
+            chain,
+            receipt,
+            stream_receipts=stream_receipts if stream_receipts else None,
+            correlations=correlations,
+            lifecycle_operation=lifecycle_operation,
+            lifecycle_manifest=lifecycle_manifest,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"provider audit worker receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"provider audit worker entry: {args.out}")
+    print(f"provider audit worker entry id: {entry['entry_id']}")
+    print(f"worker operation id: {receipt['worker_operation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def _load_provider_credential_custody_inputs(args: argparse.Namespace) -> tuple[dict | None, dict | None, dict | None, dict | None, dict | None, dict | None]:
+    provider_installation = load_provider_installation_manifest(args.provider_installation) if args.provider_installation else None
+    lifecycle_manifest = load_provider_lifecycle_manifest(args.lifecycle) if args.lifecycle else None
+    lifecycle_operation = load_provider_lifecycle_operation_receipt(args.lifecycle_operation) if args.lifecycle_operation else None
+    audit_worker = load_provider_audit_worker_receipt(args.audit_worker) if args.audit_worker else None
+    provider_ingress = load_provider_ingress_manifest(args.provider_ingress) if args.provider_ingress else None
+    callback_storage = load_provider_callback_storage_manifest(args.callback_storage) if args.callback_storage else None
+    return provider_installation, lifecycle_manifest, lifecycle_operation, audit_worker, provider_ingress, callback_storage
+
+
+def cmd_provider_credential_custody(args: argparse.Namespace) -> int:
+    try:
+        provider_installation, lifecycle_manifest, lifecycle_operation, audit_worker, provider_ingress, callback_storage = _load_provider_credential_custody_inputs(args)
+        receipt = build_provider_credential_custody_receipt(
+            credential_ref=args.credential_ref,
+            credential_kind=args.credential_kind,
+            custody_ref=args.custody_ref,
+            vault_ref=args.vault_ref,
+            kms_provider=args.kms_provider,
+            kms_endpoint=args.kms_endpoint,
+            key_ref=args.key_ref,
+            key_algorithm=args.key_algorithm,
+            policy_ref=args.policy_ref,
+            policy_hash=args.policy_hash,
+            rotation_ref=args.rotation_ref,
+            revocation_ref=args.revocation_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            retention_until=args.retention_until,
+            actor_ref=args.actor_ref,
+            allowed_actor_refs=args.allowed_actor_ref,
+            denied_operation_refs=args.denied_operation_ref,
+            quorum_required=args.quorum_required,
+            quorum_approver_refs=args.quorum_approver_ref,
+            provider_installation=provider_installation,
+            lifecycle_manifest=lifecycle_manifest,
+            lifecycle_operation=lifecycle_operation,
+            audit_worker=audit_worker,
+            attestation_ref=args.attestation_ref,
+            attestation_hash=args.attestation_hash,
+            access_grant_ref=args.access_grant_ref,
+            evidence_refs=args.evidence_ref,
+            response_status=args.response_status,
+            response_hash=args.response_hash,
+            mode=args.mode,
+            environment=args.environment,
+            issued_at=args.issued_at,
+            expires_at=args.expires_at,
+            key=args.key,
+        )
+        result = verify_provider_credential_custody_receipt(
+            receipt,
+            provider_installation=provider_installation,
+            lifecycle_manifest=lifecycle_manifest,
+            lifecycle_operation=lifecycle_operation,
+            audit_worker=audit_worker,
+            provider_ingress_manifest=provider_ingress,
+            callback_storage_manifest=callback_storage,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"provider credential custody receipt generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("provider credential custody receipt generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_provider_credential_custody_receipt(args.out, receipt)
+    print(f"provider credential custody receipt: {args.out}")
+    print(f"custody id: {receipt['custody_id']}")
+    print(f"provider: {receipt['provider']}")
+    print(f"mode: {receipt['mode']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_provider_credential_custody_verify(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_provider_credential_custody_receipt(args.receipt)
+        provider_installation, lifecycle_manifest, lifecycle_operation, audit_worker, provider_ingress, callback_storage = _load_provider_credential_custody_inputs(args)
+    except (OSError, ValueError) as exc:
+        print(f"provider credential custody receipt verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_provider_credential_custody_receipt(
+        receipt,
+        provider_installation=provider_installation,
+        lifecycle_manifest=lifecycle_manifest,
+        lifecycle_operation=lifecycle_operation,
+        audit_worker=audit_worker,
+        provider_ingress_manifest=provider_ingress,
+        callback_storage_manifest=callback_storage,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified provider credential custody receipt: {args.receipt}")
+        print(f"custody id: {receipt['custody_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"provider credential custody receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_provider_credential_custody_append(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_provider_credential_custody_receipt(args.receipt)
+        provider_installation, lifecycle_manifest, lifecycle_operation, audit_worker, provider_ingress, callback_storage = _load_provider_credential_custody_inputs(args)
+    except (OSError, ValueError) as exc:
+        print(f"provider credential custody receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_provider_credential_custody_receipt(
+            chain,
+            receipt,
+            provider_installation=provider_installation,
+            lifecycle_manifest=lifecycle_manifest,
+            lifecycle_operation=lifecycle_operation,
+            audit_worker=audit_worker,
+            provider_ingress_manifest=provider_ingress,
+            callback_storage_manifest=callback_storage,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"provider credential custody receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"provider credential custody entry: {args.out}")
+    print(f"provider credential custody entry id: {entry['entry_id']}")
+    print(f"custody id: {receipt['custody_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def _load_provider_operations_service_sources(args: argparse.Namespace) -> dict[str, Any]:
+    return {
+        "provider_installation": load_provider_installation_manifest(args.provider_installation),
+        "provider_ingress": load_provider_ingress_manifest(args.provider_ingress),
+        "callback_storage": load_provider_callback_storage_manifest(args.callback_storage),
+        "lifecycle": load_provider_lifecycle_manifest(args.lifecycle),
+        "lifecycle_operation": load_provider_lifecycle_operation_receipt(args.lifecycle_operation),
+        "audit_lifecycle_operation": load_provider_lifecycle_operation_receipt(args.audit_lifecycle_operation),
+        "audit_worker": load_provider_audit_worker_receipt(args.audit_worker),
+        "credential_custody": load_provider_credential_custody_receipt(args.credential_custody),
+        "callback_store": load_provider_callback_store_manifest(args.callback_store) if args.callback_store else None,
+        "audit_stream": load_provider_audit_stream_receipt(args.audit_stream) if args.audit_stream else None,
+        "audit_correlation": load_provider_audit_correlation(args.audit_correlation) if args.audit_correlation else None,
+        "callback_store_db_path": args.callback_store_db,
+    }
+
+
+def cmd_provider_operations_service_attestation(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_provider_operations_service_sources(args)
+        attestation = build_provider_operations_service_attestation(
+            **sources,
+            mode=args.mode,
+            environment=args.environment,
+            service_ref=args.service_ref,
+            service_version=args.service_version,
+            service_image=args.service_image,
+            service_image_digest=args.service_image_digest,
+            service_binary_hash=args.service_binary_hash,
+            replicas_min=args.replicas_min,
+            replicas_max=args.replicas_max,
+            availability_zones=args.availability_zone,
+            public_ingress_ref=args.public_ingress_ref,
+            oauth_worker_ref=args.oauth_worker_ref,
+            callback_worker_ref=args.callback_worker_ref,
+            audit_worker_ref=args.audit_worker_ref,
+            storage_ref=args.storage_ref,
+            vault_ref=args.vault_ref,
+            kms_key_ref=args.kms_key_ref,
+            mtls_policy_ref=args.mtls_policy_ref,
+            auth_policy_ref=args.auth_policy_ref,
+            webhook_signature_policy_ref=args.webhook_signature_policy_ref,
+            replay_window_ref=args.replay_window_ref,
+            dedup_store_ref=args.dedup_store_ref,
+            rate_limit_policy_ref=args.rate_limit_policy_ref,
+            network_policy_ref=args.network_policy_ref,
+            egress_policy_ref=args.egress_policy_ref,
+            scheduler_ref=args.scheduler_ref,
+            lease_ref=args.lease_ref,
+            checkpoint_ref=args.checkpoint_ref,
+            external_call_policy_ref=args.external_call_policy_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            retention_until=args.retention_until,
+            actor_ref=args.actor_ref,
+            credential_ref=args.credential_ref,
+            evidence_refs=args.evidence_ref,
+            attested_at=args.attested_at,
+            key=args.key,
+        )
+        result = verify_provider_operations_service_attestation(attestation, **sources, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"provider operations service attestation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("provider operations service attestation verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_provider_operations_service_attestation(args.out, attestation)
+    print(f"provider operations service attestation: {args.out}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"service ref: {attestation['service']['service_ref']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_provider_operations_service_verify(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_provider_operations_service_sources(args)
+        attestation = load_provider_operations_service_attestation(args.attestation)
+    except (OSError, ValueError) as exc:
+        print(f"provider operations service attestation verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_provider_operations_service_attestation(attestation, **sources, key=args.key)
+    if result.ok:
+        print(f"verified provider operations service attestation: {args.attestation}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"provider operations service attestation verification failed: {args.attestation}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_provider_operations_service_append(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_provider_operations_service_sources(args)
+        attestation = load_provider_operations_service_attestation(args.attestation)
+    except (OSError, ValueError) as exc:
+        print(f"provider operations service attestation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_provider_operations_service_attestation(chain, attestation, **sources, key=args.key)
+    except ValueError as exc:
+        print(f"provider operations service attestation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"provider operations service entry: {args.out}")
+    print(f"provider operations service entry id: {entry['entry_id']}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+def _load_provider_callback_artifacts(paths: list[str]) -> list[dict]:
+    return [load_provider_callback_source_artifact(path) for path in paths]
+
+
+def cmd_provider_callback_store(args: argparse.Namespace) -> int:
+    try:
+        artifacts = _load_provider_callback_artifacts(args.artifact)
+        manifest = build_provider_callback_store_manifest(
+            args.db,
+            source_artifacts=artifacts,
+            generated_at=args.generated_at,
+            retention_until=args.retention_until,
+            key=args.key,
+        )
+        result = verify_provider_callback_store_manifest(
+            manifest,
+            db_path=args.db,
+            source_artifacts=artifacts,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"provider callback store generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("provider callback store generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_provider_callback_store_manifest(args.out, manifest)
+    print(f"provider callback store manifest: {args.out}")
+    print(f"store manifest id: {manifest['store_manifest_id']}")
+    print(f"database: {args.db}")
+    print(f"operations: {manifest['summary']['operation_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_provider_callback_store_verify(args: argparse.Namespace) -> int:
+    try:
+        manifest = load_provider_callback_store_manifest(args.manifest)
+        artifacts = _load_provider_callback_artifacts(args.artifact) if args.artifact else None
+    except (OSError, ValueError) as exc:
+        print(f"provider callback store verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_provider_callback_store_manifest(
+        manifest,
+        db_path=args.db,
+        source_artifacts=artifacts,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified provider callback store manifest: {args.manifest}")
+        print(f"store manifest id: {manifest['store_manifest_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"provider callback store verification failed: {args.manifest}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_provider_callback_store_append(args: argparse.Namespace) -> int:
+    try:
+        manifest = load_provider_callback_store_manifest(args.manifest)
+        artifacts = _load_provider_callback_artifacts(args.artifact) if args.artifact else None
+    except (OSError, ValueError) as exc:
+        print(f"provider callback store append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_provider_callback_store_manifest(
+            chain,
+            manifest,
+            db_path=args.db,
+            source_artifacts=artifacts,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"provider callback store append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"provider callback store entry: {args.out}")
+    print(f"provider callback store entry id: {entry['entry_id']}")
+    print(f"store manifest id: {manifest['store_manifest_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def _load_optional_provider_ingress(path: str | None) -> dict | None:
+    return load_provider_ingress_manifest(path) if path else None
+
+
+def cmd_provider_callback_storage(args: argparse.Namespace) -> int:
+    try:
+        callback_store = load_provider_callback_store_manifest(args.callback_store)
+        provider_ingress = _load_optional_provider_ingress(args.provider_ingress)
+        manifest = build_provider_callback_storage_manifest(
+            storage_ref=args.storage_ref,
+            dsn_ref=args.dsn_ref,
+            schema_ref=args.schema_ref,
+            migration_ref=args.migration_ref,
+            migration_hash=args.migration_hash,
+            callback_store_manifest=callback_store,
+            mode=args.mode,
+            environment=args.environment,
+            engine=args.engine,
+            primary_region=args.primary_region,
+            replica_regions=args.replica_region or None,
+            min_replicas=args.min_replicas,
+            backup_policy_ref=args.backup_policy_ref,
+            retention_until=args.retention_until,
+            rpo_seconds=args.rpo_seconds,
+            rto_seconds=args.rto_seconds,
+            encryption_key_ref=args.encryption_key_ref,
+            network_policy_ref=args.network_policy_ref,
+            monitoring_ref=args.monitoring_ref,
+            failover_runbook_ref=args.failover_runbook_ref,
+            provider_ingress_manifest=provider_ingress,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_provider_callback_storage_manifest(
+            manifest,
+            callback_store_manifest=callback_store,
+            callback_store_db_path=args.callback_store_db,
+            provider_ingress_manifest=provider_ingress,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"provider callback storage generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("provider callback storage generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_provider_callback_storage_manifest(args.out, manifest)
+    print(f"provider callback storage manifest: {args.out}")
+    print(f"storage manifest id: {manifest['storage_manifest_id']}")
+    print(f"storage engine: {manifest['storage']['engine']}")
+    print(f"source artifacts: {len(manifest['source_artifacts'])}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_provider_callback_storage_verify(args: argparse.Namespace) -> int:
+    try:
+        manifest = load_provider_callback_storage_manifest(args.manifest)
+        callback_store = load_provider_callback_store_manifest(args.callback_store) if args.callback_store else None
+        provider_ingress = _load_optional_provider_ingress(args.provider_ingress)
+    except (OSError, ValueError) as exc:
+        print(f"provider callback storage verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_provider_callback_storage_manifest(
+        manifest,
+        callback_store_manifest=callback_store,
+        callback_store_db_path=args.callback_store_db,
+        provider_ingress_manifest=provider_ingress,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified provider callback storage manifest: {args.manifest}")
+        print(f"storage manifest id: {manifest['storage_manifest_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"provider callback storage verification failed: {args.manifest}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_provider_callback_storage_append(args: argparse.Namespace) -> int:
+    try:
+        manifest = load_provider_callback_storage_manifest(args.manifest)
+        callback_store = load_provider_callback_store_manifest(args.callback_store) if args.callback_store else None
+        provider_ingress = _load_optional_provider_ingress(args.provider_ingress)
+    except (OSError, ValueError) as exc:
+        print(f"provider callback storage append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_provider_callback_storage_manifest(
+            chain,
+            manifest,
+            callback_store_manifest=callback_store,
+            callback_store_db_path=args.callback_store_db,
+            provider_ingress_manifest=provider_ingress,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"provider callback storage append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"provider callback storage entry: {args.out}")
+    print(f"provider callback storage entry id: {entry['entry_id']}")
+    print(f"storage manifest id: {manifest['storage_manifest_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def _load_optional_provider_callback_storage(path: str | None) -> dict | None:
+    return load_provider_callback_storage_manifest(path) if path else None
+
+
+def cmd_provider_lifecycle(args: argparse.Namespace) -> int:
+    try:
+        installation = load_provider_installation_manifest(args.provider_installation)
+        provider_ingress = _load_optional_provider_ingress(args.provider_ingress)
+        callback_storage = _load_optional_provider_callback_storage(args.callback_storage)
+        manifest = build_provider_lifecycle_manifest(
+            provider_installation=installation,
+            lifecycle_ref=args.lifecycle_ref,
+            oauth_callback_url=args.oauth_callback_url,
+            authorization_ref=args.authorization_ref,
+            token_exchange_ref=args.token_exchange_ref,
+            token_store_ref=args.token_store_ref,
+            refresh_policy_ref=args.refresh_policy_ref,
+            credential_rotation_ref=args.credential_rotation_ref,
+            revocation_endpoint=args.revocation_endpoint,
+            revocation_ref=args.revocation_ref,
+            uninstall_ref=args.uninstall_ref,
+            audit_log_stream_ref=args.audit_log_stream_ref,
+            mode=args.mode,
+            environment=args.environment,
+            provider_ingress_manifest=provider_ingress,
+            callback_storage_manifest=callback_storage,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_provider_lifecycle_manifest(
+            manifest,
+            provider_installation=installation,
+            provider_ingress_manifest=provider_ingress,
+            callback_storage_manifest=callback_storage,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"provider lifecycle generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("provider lifecycle generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_provider_lifecycle_manifest(args.out, manifest)
+    print(f"provider lifecycle manifest: {args.out}")
+    print(f"lifecycle manifest id: {manifest['lifecycle_manifest_id']}")
+    print(f"provider: {manifest['lifecycle']['provider']}")
+    print(f"operations: {len(manifest['operations'])}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_provider_lifecycle_verify(args: argparse.Namespace) -> int:
+    try:
+        manifest = load_provider_lifecycle_manifest(args.manifest)
+        installation = load_provider_installation_manifest(args.provider_installation) if args.provider_installation else None
+        provider_ingress = _load_optional_provider_ingress(args.provider_ingress)
+        callback_storage = _load_optional_provider_callback_storage(args.callback_storage)
+    except (OSError, ValueError) as exc:
+        print(f"provider lifecycle verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_provider_lifecycle_manifest(
+        manifest,
+        provider_installation=installation,
+        provider_ingress_manifest=provider_ingress,
+        callback_storage_manifest=callback_storage,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified provider lifecycle manifest: {args.manifest}")
+        print(f"lifecycle manifest id: {manifest['lifecycle_manifest_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"provider lifecycle verification failed: {args.manifest}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_provider_lifecycle_append(args: argparse.Namespace) -> int:
+    try:
+        manifest = load_provider_lifecycle_manifest(args.manifest)
+        installation = load_provider_installation_manifest(args.provider_installation) if args.provider_installation else None
+        provider_ingress = _load_optional_provider_ingress(args.provider_ingress)
+        callback_storage = _load_optional_provider_callback_storage(args.callback_storage)
+    except (OSError, ValueError) as exc:
+        print(f"provider lifecycle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_provider_lifecycle_manifest(
+            chain,
+            manifest,
+            provider_installation=installation,
+            provider_ingress_manifest=provider_ingress,
+            callback_storage_manifest=callback_storage,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"provider lifecycle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"provider lifecycle entry: {args.out}")
+    print(f"provider lifecycle entry id: {entry['entry_id']}")
+    print(f"lifecycle manifest id: {manifest['lifecycle_manifest_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_provider_lifecycle_operation(args: argparse.Namespace) -> int:
+    try:
+        lifecycle = load_provider_lifecycle_manifest(args.lifecycle)
+        receipt = build_provider_lifecycle_operation_receipt(
+            lifecycle_manifest=lifecycle,
+            operation_kind=args.operation_kind,
+            operation_ref=args.operation_ref,
+            endpoint_url=args.endpoint_url,
+            credential_ref=args.credential_ref,
+            request_hash=args.request_hash,
+            response_status=args.response_status,
+            response_hash=args.response_hash,
+            actor_ref=args.actor_ref,
+            provider_event_ref=args.provider_event_ref,
+            token_ref=args.token_ref,
+            audit_log_ref=args.audit_log_ref,
+            idempotency_key=args.idempotency_key,
+            mode=args.mode,
+            environment=args.environment,
+            recorded_at=args.recorded_at,
+            key=args.key,
+        )
+        result = verify_provider_lifecycle_operation_receipt(receipt, lifecycle_manifest=lifecycle, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"provider lifecycle operation generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("provider lifecycle operation generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_provider_lifecycle_operation_receipt(args.out, receipt)
+    print(f"provider lifecycle operation receipt: {args.out}")
+    print(f"operation receipt id: {receipt['operation_receipt_id']}")
+    print(f"operation: {receipt['operation']['kind']}")
+    print(f"response status: {receipt['operation']['response_status']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_provider_lifecycle_operation_verify(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_provider_lifecycle_operation_receipt(args.receipt)
+        lifecycle = load_provider_lifecycle_manifest(args.lifecycle) if args.lifecycle else None
+    except (OSError, ValueError) as exc:
+        print(f"provider lifecycle operation verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_provider_lifecycle_operation_receipt(receipt, lifecycle_manifest=lifecycle, key=args.key)
+    if result.ok:
+        print(f"verified provider lifecycle operation receipt: {args.receipt}")
+        print(f"operation receipt id: {receipt['operation_receipt_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"provider lifecycle operation verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_provider_lifecycle_operation_append(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_provider_lifecycle_operation_receipt(args.receipt)
+        lifecycle = load_provider_lifecycle_manifest(args.lifecycle) if args.lifecycle else None
+    except (OSError, ValueError) as exc:
+        print(f"provider lifecycle operation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_provider_lifecycle_operation_receipt(chain, receipt, lifecycle_manifest=lifecycle, key=args.key)
+    except ValueError as exc:
+        print(f"provider lifecycle operation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"provider lifecycle operation entry: {args.out}")
+    print(f"provider lifecycle operation entry id: {entry['entry_id']}")
+    print(f"operation receipt id: {receipt['operation_receipt_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+def _load_provider_ingress_installations(paths: list[str]) -> list[dict]:
+    return [load_provider_installation_manifest(path) for path in paths]
+
+
+def _load_optional_provider_callback_store(path: str | None) -> dict | None:
+    return load_provider_callback_store_manifest(path) if path else None
+
+
+def cmd_provider_ingress(args: argparse.Namespace) -> int:
+    try:
+        installations = _load_provider_ingress_installations(args.provider_installation)
+        callback_store = _load_optional_provider_callback_store(args.callback_store)
+        manifest = build_provider_ingress_manifest(
+            ingress_base_url=args.ingress_base_url,
+            ingress_ref=args.ingress_ref,
+            dns_name=args.dns_name,
+            mode=args.mode,
+            environment=args.environment,
+            healthcheck_url=args.healthcheck_url,
+            tls_certificate_ref=args.tls_certificate_ref,
+            tls_certificate_fingerprint=args.tls_certificate_fingerprint,
+            waf_ref=args.waf_ref,
+            network_policy_ref=args.network_policy_ref,
+            rate_limit_policy_ref=args.rate_limit_policy_ref,
+            allowed_source_refs=args.allowed_source_ref or None,
+            replay_window_seconds=args.replay_window_seconds,
+            provider_installations=installations,
+            callback_store_manifest=callback_store,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_provider_ingress_manifest(
+            manifest,
+            provider_installations=installations,
+            callback_store_manifest=callback_store,
+            callback_store_db_path=args.callback_store_db,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"provider ingress generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("provider ingress generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_provider_ingress_manifest(args.out, manifest)
+    print(f"provider ingress manifest: {args.out}")
+    print(f"ingress manifest id: {manifest['ingress_manifest_id']}")
+    print(f"base url: {manifest['ingress']['base_url']}")
+    print(f"endpoints: {len(manifest['endpoints'])}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_provider_ingress_verify(args: argparse.Namespace) -> int:
+    try:
+        manifest = load_provider_ingress_manifest(args.manifest)
+        installations = _load_provider_ingress_installations(args.provider_installation) if args.provider_installation else None
+        callback_store = _load_optional_provider_callback_store(args.callback_store)
+    except (OSError, ValueError) as exc:
+        print(f"provider ingress verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_provider_ingress_manifest(
+        manifest,
+        provider_installations=installations,
+        callback_store_manifest=callback_store,
+        callback_store_db_path=args.callback_store_db,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified provider ingress manifest: {args.manifest}")
+        print(f"ingress manifest id: {manifest['ingress_manifest_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"provider ingress verification failed: {args.manifest}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_provider_ingress_append(args: argparse.Namespace) -> int:
+    try:
+        manifest = load_provider_ingress_manifest(args.manifest)
+        installations = _load_provider_ingress_installations(args.provider_installation) if args.provider_installation else None
+        callback_store = _load_optional_provider_callback_store(args.callback_store)
+    except (OSError, ValueError) as exc:
+        print(f"provider ingress append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_provider_ingress_manifest(
+            chain,
+            manifest,
+            provider_installations=installations,
+            callback_store_manifest=callback_store,
+            callback_store_db_path=args.callback_store_db,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"provider ingress append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"provider ingress entry: {args.out}")
+    print(f"provider ingress entry id: {entry['entry_id']}")
+    print(f"ingress manifest id: {manifest['ingress_manifest_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_provider_installation(args: argparse.Namespace) -> int:
+    try:
+        manifest = build_provider_installation_manifest(
+            provider=args.provider,
+            app_ref=args.app_ref,
+            installation_ref=args.installation_ref,
+            tenant_ref=args.tenant_ref,
+            owner=args.owner,
+            repository=args.repository,
+            mode=args.mode,
+            app_url=args.app_url,
+            webhook_url=args.webhook_url,
+            callback_url=args.callback_url,
+            permissions=args.permission or None,
+            scopes=args.scope or None,
+            events=args.event or None,
+            secret_ref=args.secret_ref,
+            credential_ref=args.credential_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_scopes=args.audit_log_scope or None,
+            installed_at=args.installed_at,
+            expires_at=args.expires_at,
+            evidence_refs=args.evidence_ref or None,
+            key=args.key,
+        )
+        result = verify_provider_installation_manifest(manifest, key=args.key, now=args.now)
+    except ValueError as exc:
+        print(f"provider installation generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("provider installation generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_provider_installation_manifest(args.out, manifest)
+    print(f"provider installation manifest: {args.out}")
+    print(f"manifest id: {manifest['manifest_id']}")
+    print(f"provider: {manifest['provider']}")
+    print(f"mode: {manifest['mode']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_provider_installation_verify(args: argparse.Namespace) -> int:
+    try:
+        manifest = load_provider_installation_manifest(args.manifest)
+    except (OSError, ValueError) as exc:
+        print(f"provider installation verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_provider_installation_manifest(manifest, key=args.key, now=args.now)
+    if result.ok:
+        print(f"verified provider installation manifest: {args.manifest}")
+        print(f"manifest id: {manifest['manifest_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"provider installation verification failed: {args.manifest}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_provider_installation_append(args: argparse.Namespace) -> int:
+    try:
+        manifest = load_provider_installation_manifest(args.manifest)
+    except (OSError, ValueError) as exc:
+        print(f"provider installation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_provider_installation_manifest(chain, manifest, key=args.key)
+    except ValueError as exc:
+        print(f"provider installation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"provider installation entry: {args.out}")
+    print(f"provider installation entry id: {entry['entry_id']}")
+    print(f"manifest id: {manifest['manifest_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_approval_callback_build(args: argparse.Namespace) -> int:
+    callback = build_approval_callback(
+        load_approval_request(args.request),
+        role=args.role,
+        approver=args.approver,
+        approved_at=args.approved_at,
+        reason=args.reason,
+        external_user_id=args.external_user_id,
+        team_id=args.team_id,
+        key=args.key,
+    )
+    write_approval_callback(args.out, callback)
+    print(f"approval callback: {args.out}")
+    print(f"callback id: {callback['callback_id']}")
+    print(f"role: {callback['role']}")
+    print(f"approval request id: {callback['approval_request_id']}")
+    return 0
+
+
+def cmd_approval_callback_verify(args: argparse.Namespace) -> int:
+    request = load_approval_request(args.request)
+    callback = load_approval_callback(args.callback)
+    result = verify_approval_callback(request, callback, key=args.key)
+    if result.ok:
+        print(f"verified approval callback: {args.callback}")
+        print(f"callback id: {callback['callback_id']}")
+        print(f"role: {callback['role']}")
+        return 0
+    print(f"approval callback verification failed: {args.callback}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_approval_callback_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    contract = load_contract(args.contract)
+    registration_status = _ensure_registered(chain, contract, args.key, args.auto_register)
+    if registration_status:
+        return registration_status
+    request = load_approval_request(args.request)
+    callback = load_approval_callback(args.callback)
+    entry = append_approval_callback(chain, contract, request, callback, key=args.key)
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"approval callback entry: {args.out}")
+    print(f"approval entry id: {entry['entry_id']}")
+    print(f"callback id: {callback['callback_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_compliance_export(args: argparse.Namespace) -> int:
+    pack, _, status = _verified_pack_or_exit(args.pack, args.key)
+    if status:
+        return status
+    write_compliance_export(args.out, build_compliance_export(pack))
+    print(f"compliance export: {args.out}")
+    return 0
+
+
+def cmd_insurer_export(args: argparse.Namespace) -> int:
+    pack, _, status = _verified_pack_or_exit(args.pack, args.key)
+    if status:
+        return status
+    consent = None
+    if args.require_consent:
+        chain = _load_chain(args)
+        decision = pack.get("gate_decision", {})
+        consent = consent_status(
+            chain,
+            args.consent_id,
+            INSURER_SCOPE,
+            pack_id=pack.get("pack_id"),
+            contract_id=decision.get("contract_id"),
+            now=args.now,
+        )
+        if not consent["active"]:
+            print("insurer export denied: consent is not active", file=sys.stderr)
+            print(json.dumps(consent, indent=2, sort_keys=True), file=sys.stderr)
+            return 1
+    write_insurer_telemetry(args.out, build_insurer_telemetry(pack, consent_id=args.consent_id, consent=consent))
+    print(f"insurer telemetry: {args.out}")
+    if consent:
+        print(f"consent: {args.consent_id} active")
+    return 0
+
+
+
+def cmd_underwriting_quote(args: argparse.Namespace) -> int:
+    telemetry = _load_json(args.telemetry)
+    try:
+        quote = build_underwriting_quote(
+            telemetry,
+            underwriter=args.underwriter,
+            product=args.product,
+            coverage_limit_usd=args.coverage_limit_usd,
+            base_premium_usd=args.base_premium_usd,
+            term_start=args.term_start,
+            term_end=args.term_end,
+            issued_at=args.issued_at,
+            expires_at=args.expires_at,
+            quote_ref=args.quote_ref,
+            mode=args.mode,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"underwriting quote failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_underwriting_quote(quote, telemetry=telemetry, now=args.now, key=args.key)
+    if not result.ok:
+        print("underwriting quote verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_underwriting_quote(args.out, quote)
+    print(f"underwriting quote: {args.out}")
+    print(f"quote id: {quote['quote_id']}")
+    print(f"quoted premium: {quote['quote']['currency']} {quote['quote']['quoted_premium_usd']}")
+    print(f"discount: {quote['quote']['discount_percent']}%")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_underwriting_quote_verify(args: argparse.Namespace) -> int:
+    quote = load_underwriting_quote(args.quote)
+    telemetry = _load_json(args.telemetry) if args.telemetry else None
+    result = verify_underwriting_quote(quote, telemetry=telemetry, now=args.now, key=args.key)
+    if result.ok:
+        print(f"verified underwriting quote: {args.quote}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"underwriting quote verification failed: {args.quote}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_underwriting_quote_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    quote = load_underwriting_quote(args.quote)
+    try:
+        entry = append_underwriting_quote(chain, quote, key=args.key)
+    except ValueError as exc:
+        print(f"underwriting quote append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"underwriting quote entry: {args.out}")
+    print(f"underwriting quote entry id: {entry['entry_id']}")
+    print(f"quote id: {quote['quote_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def _load_insurer_partner_service_sources(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any] | None, list[dict[str, Any]]]:
+    telemetry = _load_json(args.telemetry)
+    quote = load_underwriting_quote(args.quote)
+    actuarial_product = load_actuarial_product(args.actuarial_product) if args.actuarial_product else None
+    actuarial_corpora = [load_actuarial_corpus(path) for path in args.actuarial_corpus]
+    return telemetry, quote, actuarial_product, actuarial_corpora
+
+
+def cmd_insurer_partner_service_attestation(args: argparse.Namespace) -> int:
+    telemetry, quote, actuarial_product, actuarial_corpora = _load_insurer_partner_service_sources(args)
+    try:
+        attestation = build_insurer_partner_service_attestation(
+            telemetry,
+            quote,
+            actuarial_product=actuarial_product,
+            actuarial_corpora=actuarial_corpora,
+            mode=args.mode,
+            environment=args.environment,
+            service_kind=args.service_kind,
+            service_ref=args.service_ref,
+            service_version=args.service_version,
+            endpoint_url=args.endpoint_url,
+            partner_api_endpoint=args.partner_api_endpoint,
+            service_image=args.service_image,
+            service_image_digest=args.service_image_digest,
+            service_binary_hash=args.service_binary_hash,
+            frontend_bundle_ref=args.frontend_bundle_ref,
+            frontend_bundle_hash=args.frontend_bundle_hash,
+            api_ref=args.api_ref,
+            queue_ref=args.queue_ref,
+            policy_system_ref=args.policy_system_ref,
+            partner_contract_ref=args.partner_contract_ref,
+            auth_provider_ref=args.auth_provider_ref,
+            partner_auth_policy_ref=args.partner_auth_policy_ref,
+            rbac_policy_ref=args.rbac_policy_ref,
+            consent_policy_ref=args.consent_policy_ref,
+            data_minimization_policy_ref=args.data_minimization_policy_ref,
+            pii_redaction_policy_ref=args.pii_redaction_policy_ref,
+            tenant_isolation_ref=args.tenant_isolation_ref,
+            rate_limit_policy_ref=args.rate_limit_policy_ref,
+            request_signing_ref=args.request_signing_ref,
+            network_policy_ref=args.network_policy_ref,
+            egress_policy_ref=args.egress_policy_ref,
+            encryption_key_ref=args.encryption_key_ref,
+            replicas_min=args.replicas_min,
+            replicas_max=args.replicas_max,
+            availability_zones=args.availability_zone,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            access_log_ref=args.access_log_ref,
+            access_log_root=args.access_log_root,
+            delivery_log_ref=args.delivery_log_ref,
+            delivery_log_root=args.delivery_log_root,
+            metrics_ref=args.metrics_ref,
+            alert_policy_ref=args.alert_policy_ref,
+            retention_until=args.retention_until,
+            actor_ref=args.actor_ref,
+            credential_ref=args.credential_ref,
+            partner_credential_ref=args.partner_credential_ref,
+            evidence_refs=args.evidence_ref,
+            now=args.now,
+            attested_at=args.attested_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"insurer partner service attestation failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_insurer_partner_service_attestation(
+        attestation,
+        telemetry,
+        quote,
+        actuarial_product=actuarial_product,
+        actuarial_corpora=actuarial_corpora,
+        now=args.now,
+        key=args.key,
+    )
+    if not result.ok:
+        print("insurer partner service attestation verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_insurer_partner_service_attestation(args.out, attestation)
+    print(f"insurer partner service attestation: {args.out}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"quote id: {attestation['partner']['quote_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_insurer_partner_service_verify(args: argparse.Namespace) -> int:
+    attestation = load_insurer_partner_service_attestation(args.attestation)
+    telemetry, quote, actuarial_product, actuarial_corpora = _load_insurer_partner_service_sources(args)
+    result = verify_insurer_partner_service_attestation(
+        attestation,
+        telemetry,
+        quote,
+        actuarial_product=actuarial_product,
+        actuarial_corpora=actuarial_corpora,
+        now=args.now,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified insurer partner service attestation: {args.attestation}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"insurer partner service attestation verification failed: {args.attestation}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_insurer_partner_service_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    attestation = load_insurer_partner_service_attestation(args.attestation)
+    telemetry, quote, actuarial_product, actuarial_corpora = _load_insurer_partner_service_sources(args)
+    try:
+        entry = append_insurer_partner_service_attestation(
+            chain,
+            attestation,
+            telemetry,
+            quote,
+            actuarial_product=actuarial_product,
+            actuarial_corpora=actuarial_corpora,
+            now=args.now,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"insurer partner service attestation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"insurer partner service entry: {args.out}")
+    print(f"insurer partner service entry id: {entry['entry_id']}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def _load_insurer_partner_worker_sources(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any] | None, list[dict[str, Any]]]:
+    service_attestation = load_insurer_partner_service_attestation(args.service_attestation)
+    telemetry, quote, actuarial_product, actuarial_corpora = _load_insurer_partner_service_sources(args)
+    return service_attestation, telemetry, quote, actuarial_product, actuarial_corpora
+
+
+def cmd_insurer_partner_worker(args: argparse.Namespace) -> int:
+    service_attestation, telemetry, quote, actuarial_product, actuarial_corpora = _load_insurer_partner_worker_sources(args)
+    try:
+        receipt = build_insurer_partner_worker_receipt(
+            service_attestation,
+            telemetry=telemetry,
+            underwriting_quote=quote,
+            actuarial_product=actuarial_product,
+            actuarial_corpora=actuarial_corpora,
+            mode=args.mode,
+            environment=args.environment,
+            worker_ref=args.worker_ref,
+            run_ref=args.run_ref,
+            operation_kind=args.operation_kind,
+            actor_ref=args.actor_ref,
+            schedule_ref=args.schedule_ref,
+            cadence_seconds=args.cadence_seconds,
+            lease_ref=args.lease_ref,
+            checkpoint_ref=args.checkpoint_ref,
+            checkpoint_hash=args.checkpoint_hash,
+            previous_cursor_ref=args.previous_cursor_ref,
+            next_cursor_ref=args.next_cursor_ref,
+            attempt=args.attempt,
+            max_attempts=args.max_attempts,
+            queue_ref=args.queue_ref,
+            queue_message_ref=args.queue_message_ref,
+            destination_ref=args.destination_ref,
+            delivery_log_ref=args.delivery_log_ref,
+            delivery_log_root=args.delivery_log_root,
+            partner_event_log_ref=args.partner_event_log_ref,
+            partner_event_log_root=args.partner_event_log_root,
+            policy_system_ref=args.policy_system_ref,
+            policy_workflow_ref=args.policy_workflow_ref,
+            policy_workflow_hash=args.policy_workflow_hash,
+            policy_binding_ref=args.policy_binding_ref,
+            policy_binding_hash=args.policy_binding_hash,
+            workflow_status=args.workflow_status,
+            request_hash=args.request_hash,
+            response_status=args.response_status,
+            response_hash=args.response_hash,
+            metrics_ref=args.metrics_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            access_log_ref=args.access_log_ref,
+            access_log_root=args.access_log_root,
+            credential_ref=args.credential_ref,
+            partner_credential_ref=args.partner_credential_ref,
+            retention_until=args.retention_until,
+            evidence_refs=args.evidence_ref,
+            started_at=args.started_at,
+            completed_at=args.completed_at,
+            next_run_at=args.next_run_at,
+            error_ref=args.error_ref,
+            now=args.now,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"insurer partner worker receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_insurer_partner_worker_receipt(
+        receipt,
+        service_attestation=service_attestation,
+        telemetry=telemetry,
+        underwriting_quote=quote,
+        actuarial_product=actuarial_product,
+        actuarial_corpora=actuarial_corpora,
+        now=args.now,
+        key=args.key,
+    )
+    if not result.ok:
+        print("insurer partner worker receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_insurer_partner_worker_receipt(args.out, receipt)
+    print(f"insurer partner worker receipt: {args.out}")
+    print(f"worker operation id: {receipt['worker_operation_id']}")
+    print(f"service attestation id: {receipt['service']['attestation_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_insurer_partner_worker_verify(args: argparse.Namespace) -> int:
+    receipt = load_insurer_partner_worker_receipt(args.receipt)
+    service_attestation, telemetry, quote, actuarial_product, actuarial_corpora = _load_insurer_partner_worker_sources(args)
+    result = verify_insurer_partner_worker_receipt(
+        receipt,
+        service_attestation=service_attestation,
+        telemetry=telemetry,
+        underwriting_quote=quote,
+        actuarial_product=actuarial_product,
+        actuarial_corpora=actuarial_corpora,
+        now=args.now,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified insurer partner worker receipt: {args.receipt}")
+        print(f"worker operation id: {receipt['worker_operation_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"insurer partner worker receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_insurer_partner_worker_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_insurer_partner_worker_receipt(args.receipt)
+    service_attestation, telemetry, quote, actuarial_product, actuarial_corpora = _load_insurer_partner_worker_sources(args)
+    try:
+        entry = append_insurer_partner_worker_receipt(
+            chain,
+            receipt,
+            service_attestation=service_attestation,
+            telemetry=telemetry,
+            underwriting_quote=quote,
+            actuarial_product=actuarial_product,
+            actuarial_corpora=actuarial_corpora,
+            now=args.now,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"insurer partner worker receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"insurer partner worker entry: {args.out}")
+    print(f"insurer partner worker entry id: {entry['entry_id']}")
+    print(f"worker operation id: {receipt['worker_operation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_actuarial_export(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    packs = []
+    for pack_path in args.pack:
+        pack, _, status = _verified_pack_or_exit(pack_path, args.key)
+        if status:
+            return status
+        packs.append(pack)
+    try:
+        corpus = build_actuarial_corpus(
+            chain,
+            packs,
+            consent_id=args.consent_id,
+            require_consent=args.require_consent,
+            now=args.now,
+            anonymization_salt=args.anonymization_salt,
+        )
+    except ValueError as exc:
+        print(f"actuarial export denied: {exc}", file=sys.stderr)
+        return 1
+    write_actuarial_corpus(args.out, corpus)
+    print(f"actuarial corpus: {args.out}")
+    print(f"records: {corpus['record_count']}")
+    print(f"corpus id: {corpus['corpus_id']}")
+    return 0
+
+
+
+def cmd_actuarial_verify(args: argparse.Namespace) -> int:
+    corpus = load_actuarial_corpus(args.corpus)
+    result = verify_actuarial_corpus(corpus)
+    if result.ok:
+        print(f"verified actuarial corpus: {args.corpus}")
+        print(f"corpus id: {corpus['corpus_id']}")
+        print(f"records: {corpus['record_count']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"actuarial corpus verification failed: {args.corpus}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_actuarial_product(args: argparse.Namespace) -> int:
+    corpora = [load_actuarial_corpus(path) for path in args.corpus]
+    try:
+        product = build_actuarial_product(
+            corpora,
+            product_name=args.product_name,
+            publisher=args.publisher,
+            audience=args.audience,
+            allowed_use=args.allowed_use,
+            reporting_period_start=args.reporting_period_start,
+            reporting_period_end=args.reporting_period_end,
+            minimum_record_count=args.minimum_record_count,
+            require_all_consent_active=not args.allow_inactive_consent,
+            issued_at=args.issued_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"actuarial product failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_actuarial_product(product, corpora=corpora, key=args.key)
+    if not result.ok:
+        print("actuarial product verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_actuarial_product(args.out, product)
+    print(f"actuarial product: {args.out}")
+    print(f"product id: {product['product_id']}")
+    print(f"source corpora: {len(product['source_corpora'])}")
+    print(f"records: {sum(source['record_count'] for source in product['source_corpora'])}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_actuarial_product_verify(args: argparse.Namespace) -> int:
+    product = load_actuarial_product(args.product)
+    corpora = [load_actuarial_corpus(path) for path in args.corpus] if args.corpus else None
+    result = verify_actuarial_product(product, corpora=corpora, key=args.key)
+    if result.ok:
+        print(f"verified actuarial product: {args.product}")
+        print(f"product id: {product['product_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"actuarial product verification failed: {args.product}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_actuarial_product_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    product = load_actuarial_product(args.product)
+    corpora = [load_actuarial_corpus(path) for path in args.corpus] if args.corpus else None
+    try:
+        entry = append_actuarial_product(chain, product, corpora=corpora, key=args.key)
+    except ValueError as exc:
+        print(f"actuarial product append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"actuarial product entry: {args.out}")
+    print(f"actuarial product entry id: {entry['entry_id']}")
+    print(f"product id: {product['product_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+def cmd_consent_grant(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    entry = append_consent_grant(chain, load_consent(args.consent), key=args.key)
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"consent grant entry: {args.out}")
+    print(f"consent grant entry id: {entry['entry_id']}")
+    print(f"consent id: {entry['payload']['consent_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_consent_revoke(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    entry = append_consent_revocation(
+        chain,
+        args.consent_id,
+        reason=args.reason,
+        key=args.key,
+        revoked_at=args.revoked_at,
+    )
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"consent revocation entry: {args.out}")
+    print(f"consent revocation entry id: {entry['entry_id']}")
+    print(f"consent id: {entry['payload']['consent_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_auditor_view(args: argparse.Namespace) -> int:
+    pack, _, status = _verified_pack_or_exit(args.pack, args.key)
+    if status:
+        return status
+    write_auditor_html(args.out, pack)
+    print(f"auditor view: {args.out}")
+    return 0
+
+
+
+def cmd_policy_check(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    pack, _, status = _verified_pack_or_exit(args.pack, args.key)
+    if status:
+        return status
+    entry = append_policy_decision(
+        chain,
+        load_policy_pack(args.policy),
+        load_action(args.action),
+        proof_pack=pack,
+        key=args.key,
+        now=args.now,
+    )
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"policy decision: {args.out}")
+    print(f"policy outcome: {entry['payload']['outcome']}")
+    print(f"entry id: {entry['entry_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0 if entry["payload"]["passed"] else 1
+
+
+def cmd_policy_export(args: argparse.Namespace) -> int:
+    payload = export_policy_pack(
+        load_policy_pack(args.policy),
+        target=args.target,
+        package=args.package,
+        namespace=args.namespace,
+    )
+    write_policy_export(args.out, payload)
+    print(f"policy export: {args.out}")
+    print(f"policy pack: {payload['policy_pack_id']}@{payload['policy_pack_version']}")
+    print(f"targets: {', '.join(payload['targets'].keys())}")
+    return 0
+
+
+
+def cmd_policy_engine_receipt(args: argparse.Namespace) -> int:
+    pack, _, status = _verified_pack_or_exit(args.pack, args.key)
+    if status:
+        return status
+    policy = load_policy_pack(args.policy)
+    action = load_action(args.action)
+    decision = _load_json(args.decision)
+    policy_export = _load_json(args.export) if args.export else None
+    engine_response = _load_json(args.response_json) if args.response_json else None
+    try:
+        receipt = build_policy_engine_receipt(
+            policy,
+            action,
+            pack,
+            decision,
+            policy_export=policy_export,
+            engine=args.engine,
+            mode=args.mode,
+            engine_response=engine_response,
+            evaluated_at=args.evaluated_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"policy engine receipt failed: {exc}", file=sys.stderr)
+        return 2
+    result = verify_policy_engine_receipt(
+        receipt,
+        policy,
+        action,
+        pack,
+        decision,
+        policy_export=policy_export,
+        engine_response=engine_response,
+        key=args.key,
+    )
+    if not result.ok:
+        print("policy engine receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_policy_engine_receipt(args.out, receipt)
+    print(f"policy engine receipt: {args.out}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"engine: {receipt['engine']['name']} ({receipt['engine']['mode']})")
+    print(f"policy outcome: {receipt['decision']['outcome']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_policy_engine_verify(args: argparse.Namespace) -> int:
+    pack, _, status = _verified_pack_or_exit(args.pack, args.key)
+    if status:
+        return status
+    result = verify_policy_engine_receipt(
+        load_policy_engine_receipt(args.receipt),
+        load_policy_pack(args.policy),
+        load_action(args.action),
+        pack,
+        _load_json(args.decision),
+        policy_export=_load_json(args.export) if args.export else None,
+        engine_response=_load_json(args.response_json) if args.response_json else None,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified policy engine receipt: {args.receipt}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"policy engine receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_policy_engine_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    pack, _, status = _verified_pack_or_exit(args.pack, args.key)
+    if status:
+        return status
+    receipt = load_policy_engine_receipt(args.receipt)
+    try:
+        entry = append_policy_engine_receipt(
+            chain,
+            receipt,
+            load_policy_pack(args.policy),
+            load_action(args.action),
+            pack,
+            _load_json(args.decision),
+            policy_export=_load_json(args.export) if args.export else None,
+            engine_response=_load_json(args.response_json) if args.response_json else None,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"policy engine receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"policy engine entry: {args.out}")
+    print(f"policy engine entry id: {entry['entry_id']}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_policy_backend_enforcement(args: argparse.Namespace) -> int:
+    pack, _, status = _verified_pack_or_exit(args.pack, args.key)
+    if status:
+        return status
+    response_allowed = None if args.response_allowed is None else args.response_allowed == "true"
+    policy = load_policy_pack(args.policy)
+    action = load_action(args.action)
+    decision = _load_json(args.decision)
+    policy_export = _load_json(args.export)
+    policy_engine_receipt = load_policy_engine_receipt(args.policy_engine_receipt) if args.policy_engine_receipt else None
+    try:
+        receipt = build_policy_backend_enforcement_receipt(
+            policy,
+            action,
+            pack,
+            decision,
+            policy_export=policy_export,
+            policy_engine_receipt=policy_engine_receipt,
+            backend_ref=args.backend_ref,
+            engine=args.engine,
+            endpoint_url=args.endpoint_url,
+            credential_ref=args.credential_ref,
+            request_hash=args.request_hash,
+            response_status=args.response_status,
+            response_hash=args.response_hash,
+            actor_ref=args.actor_ref,
+            bundle_ref=args.bundle_ref,
+            bundle_hash=args.bundle_hash,
+            response_outcome=args.response_outcome,
+            response_allowed=response_allowed,
+            latency_ms=args.latency_ms,
+            evidence_refs=args.evidence_ref or [],
+            mode=args.mode,
+            environment=args.environment,
+            enforced_at=args.enforced_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"policy backend enforcement failed: {exc}", file=sys.stderr)
+        return 2
+    result = verify_policy_backend_enforcement_receipt(
+        receipt,
+        policy,
+        action,
+        pack,
+        decision,
+        policy_export=policy_export,
+        policy_engine_receipt=policy_engine_receipt,
+        key=args.key,
+    )
+    if not result.ok:
+        print("policy backend enforcement verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_policy_backend_enforcement_receipt(args.out, receipt)
+    print(f"policy backend enforcement: {args.out}")
+    print(f"enforcement id: {receipt['enforcement_id']}")
+    print(f"backend: {receipt['backend']['engine']} ({receipt['mode']})")
+    print(f"policy outcome: {receipt['decision']['outcome']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_policy_backend_enforcement_verify(args: argparse.Namespace) -> int:
+    pack, _, status = _verified_pack_or_exit(args.pack, args.key)
+    if status:
+        return status
+    result = verify_policy_backend_enforcement_receipt(
+        load_policy_backend_enforcement_receipt(args.receipt),
+        load_policy_pack(args.policy),
+        load_action(args.action),
+        pack,
+        _load_json(args.decision),
+        policy_export=_load_json(args.export),
+        policy_engine_receipt=load_policy_engine_receipt(args.policy_engine_receipt) if args.policy_engine_receipt else None,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified policy backend enforcement: {args.receipt}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"policy backend enforcement verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_policy_backend_enforcement_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    pack, _, status = _verified_pack_or_exit(args.pack, args.key)
+    if status:
+        return status
+    receipt = load_policy_backend_enforcement_receipt(args.receipt)
+    try:
+        entry = append_policy_backend_enforcement_receipt(
+            chain,
+            receipt,
+            load_policy_pack(args.policy),
+            load_action(args.action),
+            pack,
+            _load_json(args.decision),
+            policy_export=_load_json(args.export),
+            policy_engine_receipt=load_policy_engine_receipt(args.policy_engine_receipt) if args.policy_engine_receipt else None,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"policy backend enforcement append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"policy backend enforcement entry: {args.out}")
+    print(f"policy backend enforcement entry id: {entry['entry_id']}")
+    print(f"enforcement id: {receipt['enforcement_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def _load_policy_backend_service_sources(args: argparse.Namespace) -> tuple[dict[str, Any] | None, int]:
+    pack, _, status = _verified_pack_or_exit(args.pack, args.key)
+    if status:
+        return None, status
+    return {
+        "enforcement": load_policy_backend_enforcement_receipt(args.enforcement),
+        "policy": load_policy_pack(args.policy),
+        "action": load_action(args.action),
+        "pack": pack,
+        "decision": _load_json(args.decision),
+        "policy_export": _load_json(args.export),
+        "policy_engine_receipt": load_policy_engine_receipt(args.policy_engine_receipt) if args.policy_engine_receipt else None,
+    }, 0
+
+
+def cmd_policy_backend_service_attestation(args: argparse.Namespace) -> int:
+    sources, status = _load_policy_backend_service_sources(args)
+    if status:
+        return status
+    assert sources is not None
+    try:
+        attestation = build_policy_backend_service_attestation(
+            sources["enforcement"],
+            policy_pack=sources["policy"],
+            action=sources["action"],
+            proof_pack=sources["pack"],
+            decision=sources["decision"],
+            policy_export=sources["policy_export"],
+            policy_engine_receipt=sources["policy_engine_receipt"],
+            mode=args.mode,
+            environment=args.environment,
+            service_ref=args.service_ref,
+            service_version=args.service_version,
+            engine=args.engine,
+            backend_ref=args.backend_ref,
+            endpoint_url=args.endpoint_url,
+            service_image=args.service_image,
+            service_image_digest=args.service_image_digest,
+            service_binary_hash=args.service_binary_hash,
+            bundle_ref=args.bundle_ref,
+            bundle_hash=args.bundle_hash,
+            replicas_min=args.replicas_min,
+            replicas_max=args.replicas_max,
+            availability_zones=args.availability_zone,
+            mtls_policy_ref=args.mtls_policy_ref,
+            auth_policy_ref=args.auth_policy_ref,
+            tenant_isolation_ref=args.tenant_isolation_ref,
+            policy_sync_ref=args.policy_sync_ref,
+            admission_policy_ref=args.admission_policy_ref,
+            rate_limit_policy_ref=args.rate_limit_policy_ref,
+            circuit_breaker_ref=args.circuit_breaker_ref,
+            cache_store_ref=args.cache_store_ref,
+            network_policy_ref=args.network_policy_ref,
+            egress_policy_ref=args.egress_policy_ref,
+            decision_log_ref=args.decision_log_ref,
+            decision_log_root=args.decision_log_root,
+            decision_log_retention_days=args.decision_log_retention_days,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            retention_until=args.retention_until,
+            actor_ref=args.actor_ref,
+            credential_ref=args.credential_ref,
+            evidence_refs=args.evidence_ref,
+            attested_at=args.attested_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"policy backend service attestation failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_policy_backend_service_attestation(
+        attestation,
+        sources["enforcement"],
+        policy_pack=sources["policy"],
+        action=sources["action"],
+        proof_pack=sources["pack"],
+        decision=sources["decision"],
+        policy_export=sources["policy_export"],
+        policy_engine_receipt=sources["policy_engine_receipt"],
+        key=args.key,
+    )
+    if not result.ok:
+        print("policy backend service attestation verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_policy_backend_service_attestation(args.out, attestation)
+    print(f"policy backend service attestation: {args.out}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"service ref: {attestation['service']['service_ref']}")
+    print(f"enforcement id: {attestation['source']['enforcement_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_policy_backend_service_verify(args: argparse.Namespace) -> int:
+    sources, status = _load_policy_backend_service_sources(args)
+    if status:
+        return status
+    assert sources is not None
+    result = verify_policy_backend_service_attestation(
+        load_policy_backend_service_attestation(args.attestation),
+        sources["enforcement"],
+        policy_pack=sources["policy"],
+        action=sources["action"],
+        proof_pack=sources["pack"],
+        decision=sources["decision"],
+        policy_export=sources["policy_export"],
+        policy_engine_receipt=sources["policy_engine_receipt"],
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified policy backend service attestation: {args.attestation}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"policy backend service attestation verification failed: {args.attestation}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_policy_backend_service_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    sources, status = _load_policy_backend_service_sources(args)
+    if status:
+        return status
+    assert sources is not None
+    attestation = load_policy_backend_service_attestation(args.attestation)
+    try:
+        entry = append_policy_backend_service_attestation(
+            chain,
+            attestation,
+            sources["enforcement"],
+            policy_pack=sources["policy"],
+            action=sources["action"],
+            proof_pack=sources["pack"],
+            decision=sources["decision"],
+            policy_export=sources["policy_export"],
+            policy_engine_receipt=sources["policy_engine_receipt"],
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"policy backend service attestation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"policy backend service entry: {args.out}")
+    print(f"policy backend service entry id: {entry['entry_id']}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_incident(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    entry = append_incident(chain, load_incident(args.incident), key=args.key)
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"incident entry: {args.out}")
+    print(f"incident entry id: {entry['entry_id']}")
+    print(f"severity: {entry['payload']['incident'].get('severity')}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_demote(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    contract = load_contract(args.contract)
+    registration_status = _ensure_registered(chain, contract, args.key, args.auto_register)
+    if registration_status:
+        return registration_status
+    entry = append_demotion(
+        chain,
+        contract,
+        reason=args.reason,
+        triggering_entry_id=args.triggering_entry_id,
+        from_environment=args.from_environment,
+        to_environment=args.to_environment,
+        key=args.key,
+    )
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"demotion entry: {args.out}")
+    print(f"demotion entry id: {entry['entry_id']}")
+    print(f"{entry['payload']['from_environment']} -> {entry['payload']['to_environment']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_rollback(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    contract = load_contract(args.contract)
+    registration_status = _ensure_registered(chain, contract, args.key, args.auto_register)
+    if registration_status:
+        return registration_status
+    entry = append_rollback(
+        chain,
+        contract,
+        target_agent_version=args.target_version,
+        reason=args.reason,
+        triggering_entry_id=args.triggering_entry_id,
+        key=args.key,
+    )
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"rollback entry: {args.out}")
+    print(f"rollback entry id: {entry['entry_id']}")
+    print(f"target agent version: {entry['payload']['target_agent_version']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_eu_ai_act_export(args: argparse.Namespace) -> int:
+    pack, _, status = _verified_pack_or_exit(args.pack, args.key)
+    if status:
+        return status
+    disclosure = None
+    if args.disclosure:
+        disclosure = load_regulator_disclosure(args.disclosure)
+        disclosure_result = verify_regulator_disclosure(disclosure, key=args.key)
+        if not disclosure_result.ok:
+            print(f"regulator disclosure verification failed: {args.disclosure}", file=sys.stderr)
+            for error in disclosure_result.errors:
+                print(f"- {error}", file=sys.stderr)
+            return 1
+    document = build_eu_ai_act_document(
+        pack,
+        regulator_disclosure=disclosure,
+        operator=args.operator,
+        high_risk_category=args.high_risk_category,
+        key=args.key,
+    )
+    write_eu_ai_act_document(args.out, document)
+    if args.markdown:
+        write_eu_ai_act_markdown(args.markdown, document)
+        print(f"EU AI Act markdown: {args.markdown}")
+    print(f"EU AI Act documentation: {args.out}")
+    print(f"document id: {document['document_id']}")
+    print(f"sections: {len(document['sections'])}")
+    return 0
+
+
+def cmd_eu_ai_act_verify(args: argparse.Namespace) -> int:
+    document = load_eu_ai_act_document(args.document)
+    pack = load_proof_pack(args.pack) if args.pack else None
+    if pack is not None:
+        pack_result = verify_proof_pack(pack, key=args.key)
+        if not pack_result.ok:
+            print(f"proof pack verification failed: {args.pack}", file=sys.stderr)
+            for error in pack_result.errors:
+                print(f"- {error}", file=sys.stderr)
+            return 1
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    if disclosure is not None:
+        disclosure_result = verify_regulator_disclosure(disclosure, key=args.key)
+        if not disclosure_result.ok:
+            print(f"regulator disclosure verification failed: {args.disclosure}", file=sys.stderr)
+            for error in disclosure_result.errors:
+                print(f"- {error}", file=sys.stderr)
+            return 1
+    result = verify_eu_ai_act_document(document, proof_pack=pack, regulator_disclosure=disclosure, key=args.key)
+    if result.ok:
+        print(f"verified EU AI Act documentation: {args.document}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"EU AI Act documentation verification failed: {args.document}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+def cmd_regulator_export(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    pack, _, status = _verified_pack_or_exit(args.pack, args.key)
+    if status:
+        return status
+    disclosure = build_regulator_disclosure(
+        chain,
+        pack,
+        audience=args.audience,
+        purpose=args.purpose,
+        include_entry_types=_split_csv(args.include_types),
+        include_entry_ids=args.include_entry_id,
+        key=args.key,
+    )
+    write_regulator_disclosure(args.out, disclosure)
+    print(f"regulator disclosure: {args.out}")
+    print(f"disclosure id: {disclosure['disclosure_id']}")
+    print(f"disclosed entries: {disclosure['selection']['disclosed_entry_count']}")
+    print(f"chain root: {disclosure['chain']['tree']['root']}")
+    return 0
+
+
+def cmd_regulator_verify(args: argparse.Namespace) -> int:
+    result = verify_regulator_disclosure(load_regulator_disclosure(args.disclosure), key=args.key)
+    if result.ok:
+        print(f"verified regulator disclosure: {args.disclosure}")
+        print(f"disclosed entries: {result.disclosed_entry_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"regulator disclosure verification failed: {args.disclosure}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_regulator_view(args: argparse.Namespace) -> int:
+    disclosure = load_regulator_disclosure(args.disclosure)
+    result = verify_regulator_disclosure(disclosure, key=args.key)
+    if not result.ok:
+        print(f"regulator disclosure verification failed: {args.disclosure}", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_regulator_html(args.out, disclosure, result)
+    print(f"regulator view: {args.out}")
+    print(f"disclosed entries: {result.disclosed_entry_count}")
+    return 0
+
+
+
+
+def cmd_regulator_acceptance(args: argparse.Namespace) -> int:
+    pack = load_proof_pack(args.pack)
+    disclosure = load_regulator_disclosure(args.disclosure)
+    document = load_eu_ai_act_document(args.document)
+    supervised_access_receipt = load_supervised_access_receipt(args.supervised_access) if args.supervised_access else None
+    observations = args.observation or []
+    conditions = args.condition or []
+    try:
+        acceptance = build_regulator_acceptance(
+            pack,
+            disclosure,
+            document,
+            supervised_access_receipt=supervised_access_receipt,
+            regulator=args.regulator,
+            authority_ref=args.authority_ref,
+            reviewer_ref=args.reviewer_ref,
+            decision=args.decision,
+            examination_ref=args.examination_ref,
+            purpose=args.purpose,
+            accepted_at=args.accepted_at,
+            review_period_start=args.review_period_start,
+            review_period_end=args.review_period_end,
+            observations=observations,
+            conditions=conditions,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"regulator acceptance failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_regulator_acceptance(
+        acceptance,
+        proof_pack=pack,
+        regulator_disclosure=disclosure,
+        eu_ai_act_document=document,
+        supervised_access_receipt=supervised_access_receipt,
+        supervised_view_path=args.supervised_view,
+        key=args.key,
+    )
+    if not result.ok:
+        print("regulator acceptance verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_regulator_acceptance(args.out, acceptance)
+    print(f"regulator acceptance: {args.out}")
+    print(f"acceptance id: {acceptance['acceptance_id']}")
+    print(f"decision: {acceptance['decision']['outcome']}")
+    print(f"regulator: {acceptance['regulator']['name']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_regulator_acceptance_verify(args: argparse.Namespace) -> int:
+    acceptance = load_regulator_acceptance(args.acceptance)
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    document = load_eu_ai_act_document(args.document) if args.document else None
+    supervised_access_receipt = load_supervised_access_receipt(args.supervised_access) if args.supervised_access else None
+    result = verify_regulator_acceptance(
+        acceptance,
+        proof_pack=pack,
+        regulator_disclosure=disclosure,
+        eu_ai_act_document=document,
+        supervised_access_receipt=supervised_access_receipt,
+        supervised_view_path=args.supervised_view,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified regulator acceptance: {args.acceptance}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"regulator acceptance verification failed: {args.acceptance}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_regulator_acceptance_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    acceptance = load_regulator_acceptance(args.acceptance)
+    try:
+        entry = append_regulator_acceptance(chain, acceptance, key=args.key)
+    except ValueError as exc:
+        print(f"regulator acceptance append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"regulator acceptance entry: {args.out}")
+    print(f"regulator acceptance entry id: {entry['entry_id']}")
+    print(f"acceptance id: {acceptance['acceptance_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_supervised_access(args: argparse.Namespace) -> int:
+    pack = load_proof_pack(args.pack)
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    insurer_telemetry = _load_json(args.insurer_telemetry) if args.insurer_telemetry else None
+    auth_context = _load_json(args.auth_context) if args.auth_context else None
+    try:
+        receipt = build_supervised_access_receipt(
+            pack,
+            proof_pack_path=args.pack,
+            disclosure=disclosure,
+            disclosure_path=args.disclosure,
+            view_path=args.view,
+            insurer_telemetry=insurer_telemetry,
+            insurer_telemetry_path=args.insurer_telemetry,
+            subject_ref=args.subject_ref,
+            organization=args.organization,
+            role=args.role,
+            audience_type=args.audience_type,
+            purpose=args.purpose,
+            expires_at=args.expires_at,
+            issued_at=args.issued_at,
+            auth_context=auth_context,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"supervised access receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_supervised_access_receipt(
+        receipt,
+        proof_pack=pack,
+        proof_pack_path=args.pack,
+        disclosure=disclosure,
+        disclosure_path=args.disclosure,
+        view_path=args.view,
+        insurer_telemetry=insurer_telemetry,
+        insurer_telemetry_path=args.insurer_telemetry,
+        now=args.now,
+        key=args.key,
+    )
+    if not result.ok:
+        print("supervised access receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_supervised_access_receipt(args.out, receipt)
+    print(f"supervised access receipt: {args.out}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"session id: {receipt['session_id']}")
+    print(f"audience: {receipt['audience']['type']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_supervised_access_verify(args: argparse.Namespace) -> int:
+    receipt = load_supervised_access_receipt(args.receipt)
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    insurer_telemetry = _load_json(args.insurer_telemetry) if args.insurer_telemetry else None
+    result = verify_supervised_access_receipt(
+        receipt,
+        proof_pack=pack,
+        proof_pack_path=args.pack,
+        disclosure=disclosure,
+        disclosure_path=args.disclosure,
+        view_path=args.view,
+        insurer_telemetry=insurer_telemetry,
+        insurer_telemetry_path=args.insurer_telemetry,
+        now=args.now,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified supervised access receipt: {args.receipt}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"supervised access receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_supervised_access_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_supervised_access_receipt(args.receipt)
+    try:
+        entry = append_supervised_access_receipt(chain, receipt, key=args.key)
+    except ValueError as exc:
+        print(f"supervised access receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"supervised access entry: {args.out}")
+    print(f"supervised access entry id: {entry['entry_id']}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def _load_review_portal_service_sources(args: argparse.Namespace) -> dict[str, Any]:
+    return {
+        "supervised_access_receipt": load_supervised_access_receipt(args.supervised_access),
+        "proof_pack": load_proof_pack(args.pack) if args.pack else None,
+        "proof_pack_path": args.pack,
+        "regulator_disclosure": load_regulator_disclosure(args.disclosure) if args.disclosure else None,
+        "disclosure_path": args.disclosure,
+        "view_path": args.view,
+        "regulator_acceptance": load_regulator_acceptance(args.regulator_acceptance) if args.regulator_acceptance else None,
+        "eu_ai_act_document": load_eu_ai_act_document(args.eu_ai_act_document) if args.eu_ai_act_document else None,
+    }
+
+
+def cmd_review_portal_service_attestation(args: argparse.Namespace) -> int:
+    sources = _load_review_portal_service_sources(args)
+    try:
+        attestation = build_review_portal_service_attestation(
+            sources["supervised_access_receipt"],
+            proof_pack=sources["proof_pack"],
+            proof_pack_path=sources["proof_pack_path"],
+            regulator_disclosure=sources["regulator_disclosure"],
+            disclosure_path=sources["disclosure_path"],
+            view_path=sources["view_path"],
+            regulator_acceptance=sources["regulator_acceptance"],
+            eu_ai_act_document=sources["eu_ai_act_document"],
+            mode=args.mode,
+            environment=args.environment,
+            portal_kind=args.portal_kind,
+            service_ref=args.service_ref,
+            service_version=args.service_version,
+            endpoint_url=args.endpoint_url,
+            service_image=args.service_image,
+            service_image_digest=args.service_image_digest,
+            service_binary_hash=args.service_binary_hash,
+            frontend_bundle_ref=args.frontend_bundle_ref,
+            frontend_bundle_hash=args.frontend_bundle_hash,
+            api_ref=args.api_ref,
+            session_store_ref=args.session_store_ref,
+            auth_provider_ref=args.auth_provider_ref,
+            auth_policy_ref=args.auth_policy_ref,
+            rbac_policy_ref=args.rbac_policy_ref,
+            session_policy_ref=args.session_policy_ref,
+            selective_disclosure_policy_ref=args.selective_disclosure_policy_ref,
+            tenant_isolation_ref=args.tenant_isolation_ref,
+            rate_limit_policy_ref=args.rate_limit_policy_ref,
+            network_policy_ref=args.network_policy_ref,
+            egress_policy_ref=args.egress_policy_ref,
+            content_security_policy_ref=args.content_security_policy_ref,
+            encryption_key_ref=args.encryption_key_ref,
+            replicas_min=args.replicas_min,
+            replicas_max=args.replicas_max,
+            availability_zones=args.availability_zone,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            access_log_ref=args.access_log_ref,
+            access_log_root=args.access_log_root,
+            metrics_ref=args.metrics_ref,
+            alert_policy_ref=args.alert_policy_ref,
+            retention_until=args.retention_until,
+            actor_ref=args.actor_ref,
+            credential_ref=args.credential_ref,
+            evidence_refs=args.evidence_ref,
+            attested_at=args.attested_at,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"review portal service attestation failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_review_portal_service_attestation(attestation, key=args.key, **sources)
+    if not result.ok:
+        print("review portal service attestation verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_review_portal_service_attestation(args.out, attestation)
+    print(f"review portal service attestation: {args.out}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"service: {attestation['service']['service_ref']}")
+    print(f"audience: {attestation['access']['audience_type']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_review_portal_service_verify(args: argparse.Namespace) -> int:
+    attestation = load_review_portal_service_attestation(args.attestation)
+    sources = _load_review_portal_service_sources(args)
+    result = verify_review_portal_service_attestation(attestation, key=args.key, **sources)
+    if result.ok:
+        print(f"verified review portal service attestation: {args.attestation}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"review portal service attestation verification failed: {args.attestation}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_review_portal_service_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    attestation = load_review_portal_service_attestation(args.attestation)
+    sources = _load_review_portal_service_sources(args)
+    try:
+        entry = append_review_portal_service_attestation(chain, attestation, key=args.key, **sources)
+    except ValueError as exc:
+        print(f"review portal service append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"review portal service entry: {args.out}")
+    print(f"review portal service entry id: {entry['entry_id']}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_standards_export(args: argparse.Namespace) -> int:
+    package = build_standards_submission(args.root, target_body=args.target_body, status=args.status)
+    write_standards_submission(args.out, package)
+    if args.markdown:
+        write_standards_markdown(args.markdown, package)
+        print(f"standards markdown: {args.markdown}")
+    print(f"standards package: {args.out}")
+    print(f"package id: {package['package_id']}")
+    print(f"specs: {len(package['specs'])}")
+    return 0
+
+
+def cmd_standards_verify(args: argparse.Namespace) -> int:
+    result = verify_standards_submission(load_standards_submission(args.package), root=args.root)
+    if result.ok:
+        print(f"verified standards package: {args.package}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"standards package verification failed: {args.package}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_standards_body_submit(args: argparse.Namespace) -> int:
+    standards_package = load_standards_submission(args.standards_package)
+    verifier_release = load_verifier_release_manifest(args.verifier_release)
+    conformance_report = load_verifier_conformance_report(args.conformance_report)
+    try:
+        receipt = build_standards_body_submission_receipt(
+            standards_package,
+            verifier_release,
+            conformance_report,
+            root=args.root,
+            standards_body=args.standards_body,
+            program_ref=args.program_ref,
+            target_track=args.target_track,
+            endpoint=args.endpoint,
+            contact_ref=args.contact_ref,
+            submission_ref=args.submission_ref,
+            status=args.status,
+            channel=args.channel,
+            submitter_ref=args.submitter_ref,
+            subject=args.subject,
+            version_label=args.version_label,
+            terms_ref=args.terms_ref,
+            submitted_at=args.submitted_at,
+            acknowledgement_due_at=args.acknowledgement_due_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"standards-body submission receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_standards_body_submission_receipt(
+        receipt,
+        standards_package=standards_package,
+        verifier_release=verifier_release,
+        conformance_report=conformance_report,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if not result.ok:
+        print("standards-body submission receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_standards_body_submission_receipt(args.out, receipt)
+    print(f"standards-body submission receipt: {args.out}")
+    print(f"submission id: {receipt['submission_id']}")
+    print(f"status: {receipt['submission']['status']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_standards_body_verify(args: argparse.Namespace) -> int:
+    receipt = load_standards_body_submission_receipt(args.receipt)
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    result = verify_standards_body_submission_receipt(
+        receipt,
+        standards_package=standards_package,
+        verifier_release=verifier_release,
+        conformance_report=conformance_report,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified standards-body submission receipt: {args.receipt}")
+        print(f"submission id: {receipt['submission_id']}")
+        if result.status:
+            print(f"status: {result.status}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"standards-body submission receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_standards_body_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_standards_body_submission_receipt(args.receipt)
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    try:
+        entry = append_standards_body_submission_receipt(
+            chain,
+            receipt,
+            standards_package=standards_package,
+            verifier_release=verifier_release,
+            conformance_report=conformance_report,
+            root=args.root,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"standards-body submission receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"standards-body submission entry: {args.out}")
+    print(f"standards-body submission entry id: {entry['entry_id']}")
+    print(f"submission id: {receipt['submission_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_standards_body_status(args: argparse.Namespace) -> int:
+    submission = load_standards_body_submission_receipt(args.submission)
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    try:
+        receipt = build_standards_body_status_receipt(
+            submission,
+            standards_package=standards_package,
+            verifier_release=verifier_release,
+            conformance_report=conformance_report,
+            root=args.root,
+            new_status=args.new_status,
+            docket_ref=args.docket_ref,
+            status_ref=args.status_ref,
+            decision_ref=args.decision_ref,
+            ballot_ref=args.ballot_ref,
+            ballot_opened_at=args.ballot_opened_at,
+            ballot_closed_at=args.ballot_closed_at,
+            votes_for=args.votes_for,
+            votes_against=args.votes_against,
+            abstentions=args.abstentions,
+            quorum=args.quorum,
+            comments_ref=args.comments_ref,
+            reason=args.reason,
+            evidence_refs=args.evidence_ref or None,
+            actor_ref=args.actor_ref,
+            actor_role=args.actor_role,
+            decided_at=args.decided_at,
+            effective_at=args.effective_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"standards-body status receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_standards_body_status_receipt(
+        receipt,
+        submission_receipt=submission,
+        standards_package=standards_package,
+        verifier_release=verifier_release,
+        conformance_report=conformance_report,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if not result.ok:
+        print("standards-body status receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_standards_body_status_receipt(args.out, receipt)
+    print(f"standards-body status receipt: {args.out}")
+    print(f"status id: {receipt['status_id']}")
+    print(f"status: {receipt['status_update']['new_status']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_standards_body_status_verify(args: argparse.Namespace) -> int:
+    receipt = load_standards_body_status_receipt(args.receipt)
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    result = verify_standards_body_status_receipt(
+        receipt,
+        submission_receipt=submission,
+        standards_package=standards_package,
+        verifier_release=verifier_release,
+        conformance_report=conformance_report,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified standards-body status receipt: {args.receipt}")
+        print(f"status id: {receipt['status_id']}")
+        if result.previous_status and result.new_status:
+            print(f"status: {result.previous_status} -> {result.new_status}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"standards-body status receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_standards_body_status_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_standards_body_status_receipt(args.receipt)
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    try:
+        entry = append_standards_body_status_receipt(
+            chain,
+            receipt,
+            submission_receipt=submission,
+            standards_package=standards_package,
+            verifier_release=verifier_release,
+            conformance_report=conformance_report,
+            root=args.root,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"standards-body status receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"standards-body status entry: {args.out}")
+    print(f"standards-body status entry id: {entry['entry_id']}")
+    print(f"status id: {receipt['status_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_standards_body_ballot(args: argparse.Namespace) -> int:
+    submission = load_standards_body_submission_receipt(args.submission)
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    try:
+        receipt = build_standards_body_ballot_receipt(
+            submission,
+            status_receipt=status,
+            standards_package=standards_package,
+            verifier_release=verifier_release,
+            conformance_report=conformance_report,
+            root=args.root,
+            ballot_ref=args.ballot_ref,
+            decision_ref=args.decision_ref,
+            actor_ref=args.actor_ref,
+            motion=args.motion,
+            ballot_mode=args.ballot_mode,
+            outcome=args.outcome,
+            eligible_voters=args.eligible_voters,
+            votes_for=args.votes_for,
+            votes_against=args.votes_against,
+            abstentions=args.abstentions,
+            quorum_required=args.quorum_required,
+            approval_threshold_percent=args.approval_threshold_percent,
+            opened_at=args.opened_at,
+            closed_at=args.closed_at,
+            decided_at=args.decided_at,
+            effective_at=args.effective_at,
+            comments_ref=args.comments_ref,
+            minutes_ref=args.minutes_ref,
+            actor_role=args.actor_role,
+            evidence_refs=args.evidence_ref or None,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"standards-body ballot receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_standards_body_ballot_receipt(
+        receipt,
+        submission_receipt=submission,
+        status_receipt=status,
+        standards_package=standards_package,
+        verifier_release=verifier_release,
+        conformance_report=conformance_report,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if not result.ok:
+        print("standards-body ballot receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_standards_body_ballot_receipt(args.out, receipt)
+    print(f"standards-body ballot receipt: {args.out}")
+    print(f"ballot id: {receipt['ballot_id']}")
+    print(f"outcome: {receipt['decision']['outcome']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_standards_body_ballot_verify(args: argparse.Namespace) -> int:
+    receipt = load_standards_body_ballot_receipt(args.receipt)
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    result = verify_standards_body_ballot_receipt(
+        receipt,
+        submission_receipt=submission,
+        status_receipt=status,
+        standards_package=standards_package,
+        verifier_release=verifier_release,
+        conformance_report=conformance_report,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified standards-body ballot receipt: {args.receipt}")
+        print(f"ballot id: {receipt['ballot_id']}")
+        if result.ballot_ref and result.outcome:
+            print(f"ballot: {result.ballot_ref} -> {result.outcome}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"standards-body ballot receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_standards_body_ballot_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_standards_body_ballot_receipt(args.receipt)
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    try:
+        entry = append_standards_body_ballot_receipt(
+            chain,
+            receipt,
+            submission_receipt=submission,
+            status_receipt=status,
+            standards_package=standards_package,
+            verifier_release=verifier_release,
+            conformance_report=conformance_report,
+            root=args.root,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"standards-body ballot receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"standards-body ballot entry: {args.out}")
+    print(f"standards-body ballot entry id: {entry['entry_id']}")
+    print(f"ballot id: {receipt['ballot_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_standards_body_ballot_system(args: argparse.Namespace) -> int:
+    ballot = load_standards_body_ballot_receipt(args.ballot)
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    export_payload = _load_json(args.export_payload) if args.export_payload else None
+    response_body = _load_json(args.response_body) if args.response_body else None
+    try:
+        receipt = build_standards_body_ballot_system_receipt(
+            ballot,
+            submission_receipt=submission,
+            status_receipt=status,
+            standards_package=standards_package,
+            verifier_release=verifier_release,
+            conformance_report=conformance_report,
+            root=args.root,
+            ballot_system=args.ballot_system,
+            endpoint_base=args.endpoint_base,
+            credential_ref=args.credential_ref,
+            mode=args.mode,
+            request_method=args.request_method,
+            request_path=args.request_path,
+            export_ref=args.export_ref,
+            export_url=args.export_url,
+            export_format=args.export_format,
+            export_payload=export_payload,
+            export_generated_at=args.export_generated_at,
+            actor_ref=args.actor_ref,
+            response_status=args.response_status,
+            response_body=response_body,
+            evidence_refs=args.evidence_ref or None,
+            exported_at=args.exported_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"standards-body ballot-system receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_standards_body_ballot_system_receipt(
+        receipt,
+        ballot_receipt=ballot,
+        submission_receipt=submission,
+        status_receipt=status,
+        standards_package=standards_package,
+        verifier_release=verifier_release,
+        conformance_report=conformance_report,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if not result.ok:
+        print("standards-body ballot-system receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_standards_body_ballot_system_receipt(args.out, receipt)
+    print(f"standards-body ballot-system receipt: {args.out}")
+    print(f"integration id: {receipt['integration_id']}")
+    print(f"mode: {receipt['mode']}")
+    print(f"export ref: {receipt['export']['export_ref']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_standards_body_ballot_system_verify(args: argparse.Namespace) -> int:
+    receipt = load_standards_body_ballot_system_receipt(args.receipt)
+    ballot = load_standards_body_ballot_receipt(args.ballot) if args.ballot else None
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    result = verify_standards_body_ballot_system_receipt(
+        receipt,
+        ballot_receipt=ballot,
+        submission_receipt=submission,
+        status_receipt=status,
+        standards_package=standards_package,
+        verifier_release=verifier_release,
+        conformance_report=conformance_report,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified standards-body ballot-system receipt: {args.receipt}")
+        print(f"integration id: {receipt['integration_id']}")
+        if result.export_ref and result.mode:
+            print(f"export: {result.export_ref} ({result.mode})")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"standards-body ballot-system receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_standards_body_ballot_system_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_standards_body_ballot_system_receipt(args.receipt)
+    ballot = load_standards_body_ballot_receipt(args.ballot) if args.ballot else None
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    try:
+        entry = append_standards_body_ballot_system_receipt(
+            chain,
+            receipt,
+            ballot_receipt=ballot,
+            submission_receipt=submission,
+            status_receipt=status,
+            standards_package=standards_package,
+            verifier_release=verifier_release,
+            conformance_report=conformance_report,
+            root=args.root,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"standards-body ballot-system receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"standards-body ballot-system entry: {args.out}")
+    print(f"standards-body ballot-system entry id: {entry['entry_id']}")
+    print(f"integration id: {receipt['integration_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_standards_body_provider_posting(args: argparse.Namespace) -> int:
+    ballot_system = load_standards_body_ballot_system_receipt(args.ballot_system)
+    ballot = load_standards_body_ballot_receipt(args.ballot) if args.ballot else None
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    credential_response_body = _load_json(args.credential_response_body) if args.credential_response_body else None
+    response_body = _load_json(args.response_body) if args.response_body else None
+    try:
+        receipt = build_standards_body_provider_posting_receipt(
+            ballot_system,
+            ballot_receipt=ballot,
+            submission_receipt=submission,
+            status_receipt=status,
+            standards_package=standards_package,
+            verifier_release=verifier_release,
+            conformance_report=conformance_report,
+            root=args.root,
+            provider=args.provider,
+            endpoint_base=args.endpoint_base,
+            credential_ref=args.credential_ref,
+            credential_exchange_url=args.credential_exchange_url,
+            credential_audience=args.credential_audience,
+            credential_scope=args.credential_scope or None,
+            mode=args.mode,
+            request_method=args.request_method,
+            request_path=args.request_path,
+            posting_ref=args.posting_ref,
+            posting_url=args.posting_url,
+            actor_ref=args.actor_ref,
+            credential_response_status=args.credential_response_status,
+            credential_response_body=credential_response_body,
+            response_status=args.response_status,
+            response_body=response_body,
+            evidence_refs=args.evidence_ref or None,
+            posted_at=args.posted_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"standards-body provider posting receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_standards_body_provider_posting_receipt(
+        receipt,
+        ballot_system_receipt=ballot_system,
+        ballot_receipt=ballot,
+        submission_receipt=submission,
+        status_receipt=status,
+        standards_package=standards_package,
+        verifier_release=verifier_release,
+        conformance_report=conformance_report,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if not result.ok:
+        print("standards-body provider posting receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_standards_body_provider_posting_receipt(args.out, receipt)
+    print(f"standards-body provider posting receipt: {args.out}")
+    print(f"posting id: {receipt['posting_id']}")
+    print(f"mode: {receipt['mode']}")
+    print(f"posting ref: {receipt['posting']['posting_ref']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_standards_body_provider_posting_verify(args: argparse.Namespace) -> int:
+    receipt = load_standards_body_provider_posting_receipt(args.receipt)
+    ballot_system = load_standards_body_ballot_system_receipt(args.ballot_system) if args.ballot_system else None
+    ballot = load_standards_body_ballot_receipt(args.ballot) if args.ballot else None
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    result = verify_standards_body_provider_posting_receipt(
+        receipt,
+        ballot_system_receipt=ballot_system,
+        ballot_receipt=ballot,
+        submission_receipt=submission,
+        status_receipt=status,
+        standards_package=standards_package,
+        verifier_release=verifier_release,
+        conformance_report=conformance_report,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified standards-body provider posting receipt: {args.receipt}")
+        print(f"posting id: {receipt['posting_id']}")
+        if result.posting_id and result.mode:
+            print(f"posting: {receipt['posting']['posting_ref']} ({result.mode})")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"standards-body provider posting receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_standards_body_provider_posting_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_standards_body_provider_posting_receipt(args.receipt)
+    ballot_system = load_standards_body_ballot_system_receipt(args.ballot_system) if args.ballot_system else None
+    ballot = load_standards_body_ballot_receipt(args.ballot) if args.ballot else None
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    try:
+        entry = append_standards_body_provider_posting_receipt(
+            chain,
+            receipt,
+            ballot_system_receipt=ballot_system,
+            ballot_receipt=ballot,
+            submission_receipt=submission,
+            status_receipt=status,
+            standards_package=standards_package,
+            verifier_release=verifier_release,
+            conformance_report=conformance_report,
+            root=args.root,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"standards-body provider posting receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"standards-body provider posting entry: {args.out}")
+    print(f"standards-body provider posting entry id: {entry['entry_id']}")
+    print(f"posting id: {receipt['posting_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_auditor_certification_export(args: argparse.Namespace) -> int:
+    pack, _, status = _verified_pack_or_exit(args.pack, args.key)
+    if status:
+        return status
+    disclosure = None
+    if args.disclosure:
+        disclosure = load_regulator_disclosure(args.disclosure)
+        disclosure_result = verify_regulator_disclosure(disclosure, key=args.key)
+        if not disclosure_result.ok:
+            print(f"regulator disclosure verification failed: {args.disclosure}", file=sys.stderr)
+            for error in disclosure_result.errors:
+                print(f"- {error}", file=sys.stderr)
+            return 1
+    standards_package = None
+    if args.standards_package:
+        standards_package = load_standards_submission(args.standards_package)
+        standards_result = verify_standards_submission(standards_package, root=args.root)
+        if not standards_result.ok:
+            print(f"standards package verification failed: {args.standards_package}", file=sys.stderr)
+            for error in standards_result.errors:
+                print(f"- {error}", file=sys.stderr)
+            return 1
+    kit = build_auditor_certification_kit(
+        pack,
+        regulator_disclosure=disclosure,
+        standards_package=standards_package,
+        program_version=args.program_version,
+    )
+    write_auditor_certification_kit(args.out, kit)
+    if args.markdown:
+        write_auditor_certification_markdown(args.markdown, kit)
+        print(f"auditor certification markdown: {args.markdown}")
+    print(f"auditor certification kit: {args.out}")
+    print(f"kit id: {kit['kit_id']}")
+    print(f"training modules: {len(kit['training_modules'])}")
+    print(f"practical exercises: {len(kit['practical_exercises'])}")
+    return 0
+
+
+def cmd_auditor_certification_verify(args: argparse.Namespace) -> int:
+    kit = load_auditor_certification_kit(args.kit)
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    result = verify_auditor_certification_kit(
+        kit,
+        proof_pack=pack,
+        regulator_disclosure=disclosure,
+        standards_package=standards_package,
+        root=args.root,
+        key=args.key,
+    )
+    if result["ok"]:
+        print(f"verified auditor certification kit: {args.kit}")
+        for warning in result["warnings"]:
+            print(f"warning: {warning}")
+        return 0
+    print(f"auditor certification kit verification failed: {args.kit}", file=sys.stderr)
+    for error in result["errors"]:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_auditor_program_governance(args: argparse.Namespace) -> int:
+    kit = load_auditor_certification_kit(args.kit)
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    try:
+        receipt = build_auditor_program_governance_receipt(
+            kit,
+            standards_package=standards_package,
+            proof_pack=pack,
+            regulator_disclosure=disclosure,
+            root=args.root,
+            program_name=args.program_name,
+            program_ref=args.program_ref,
+            accreditation_body=args.accreditation_body,
+            governance_body=args.governance_body,
+            governance_ref=args.governance_ref,
+            governance_mode=args.governance_mode,
+            status=args.status,
+            version=args.version,
+            operator_ref=args.operator_ref,
+            board_members=args.board_member or None,
+            independence_policy_ref=args.independence_policy_ref,
+            proctoring_policy_ref=args.proctoring_policy_ref,
+            revocation_policy_ref=args.revocation_policy_ref,
+            renewal_policy_ref=args.renewal_policy_ref,
+            appeals_policy_ref=args.appeals_policy_ref,
+            registry_ref=args.registry_ref,
+            evidence_refs=args.evidence_ref or None,
+            issued_at=args.issued_at,
+            effective_at=args.effective_at,
+            expires_at=args.expires_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"auditor program governance receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_auditor_program_governance_receipt(
+        receipt,
+        certification_kit=kit,
+        standards_package=standards_package,
+        proof_pack=pack,
+        regulator_disclosure=disclosure,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if not result.ok:
+        print("auditor program governance receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_auditor_program_governance_receipt(args.out, receipt)
+    print(f"auditor program governance receipt: {args.out}")
+    print(f"program id: {receipt['program_id']}")
+    print(f"status: {receipt['program']['status']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_auditor_program_governance_verify(args: argparse.Namespace) -> int:
+    receipt = load_auditor_program_governance_receipt(args.receipt)
+    kit = load_auditor_certification_kit(args.kit) if args.kit else None
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    result = verify_auditor_program_governance_receipt(
+        receipt,
+        certification_kit=kit,
+        standards_package=standards_package,
+        proof_pack=pack,
+        regulator_disclosure=disclosure,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified auditor program governance receipt: {args.receipt}")
+        print(f"program id: {receipt['program_id']}")
+        if result.status:
+            print(f"status: {result.status}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"auditor program governance receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_auditor_program_governance_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_auditor_program_governance_receipt(args.receipt)
+    kit = load_auditor_certification_kit(args.kit) if args.kit else None
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    try:
+        entry = append_auditor_program_governance_receipt(
+            chain,
+            receipt,
+            certification_kit=kit,
+            standards_package=standards_package,
+            proof_pack=pack,
+            regulator_disclosure=disclosure,
+            root=args.root,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"auditor program governance receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"auditor program governance entry: {args.out}")
+    print(f"auditor program governance entry id: {entry['entry_id']}")
+    print(f"program id: {receipt['program_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+def cmd_auditor_program_sponsorship(args: argparse.Namespace) -> int:
+    governance = load_auditor_program_governance_receipt(args.governance)
+    ballot = load_standards_body_ballot_receipt(args.ballot)
+    kit = load_auditor_certification_kit(args.kit) if args.kit else None
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    try:
+        receipt = build_auditor_program_sponsorship_receipt(
+            governance,
+            ballot,
+            certification_kit=kit,
+            standards_package=standards_package,
+            proof_pack=pack,
+            regulator_disclosure=disclosure,
+            submission_receipt=submission,
+            status_receipt=status,
+            verifier_release=verifier_release,
+            conformance_report=conformance_report,
+            root=args.root,
+            sponsor_body=args.sponsor_body,
+            sponsor_ref=args.sponsor_ref,
+            sponsorship_ref=args.sponsorship_ref,
+            sponsorship_mode=args.sponsorship_mode,
+            status=args.status,
+            scope=args.scope or None,
+            terms_ref=args.terms_ref,
+            charter_ref=args.charter_ref,
+            oversight_refs=args.oversight_ref or None,
+            evidence_refs=args.evidence_ref or None,
+            issued_at=args.issued_at,
+            effective_at=args.effective_at,
+            expires_at=args.expires_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"auditor program sponsorship receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_auditor_program_sponsorship_receipt(
+        receipt,
+        governance_receipt=governance,
+        ballot_receipt=ballot,
+        certification_kit=kit,
+        standards_package=standards_package,
+        proof_pack=pack,
+        regulator_disclosure=disclosure,
+        submission_receipt=submission,
+        status_receipt=status,
+        verifier_release=verifier_release,
+        conformance_report=conformance_report,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if not result.ok:
+        print("auditor program sponsorship receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_auditor_program_sponsorship_receipt(args.out, receipt)
+    print(f"auditor program sponsorship receipt: {args.out}")
+    print(f"sponsorship id: {receipt['sponsorship_id']}")
+    print(f"status: {receipt['sponsor']['status']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_auditor_program_sponsorship_verify(args: argparse.Namespace) -> int:
+    receipt = load_auditor_program_sponsorship_receipt(args.receipt)
+    governance = load_auditor_program_governance_receipt(args.governance) if args.governance else None
+    ballot = load_standards_body_ballot_receipt(args.ballot) if args.ballot else None
+    kit = load_auditor_certification_kit(args.kit) if args.kit else None
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    result = verify_auditor_program_sponsorship_receipt(
+        receipt,
+        governance_receipt=governance,
+        ballot_receipt=ballot,
+        certification_kit=kit,
+        standards_package=standards_package,
+        proof_pack=pack,
+        regulator_disclosure=disclosure,
+        submission_receipt=submission,
+        status_receipt=status,
+        verifier_release=verifier_release,
+        conformance_report=conformance_report,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified auditor program sponsorship receipt: {args.receipt}")
+        print(f"sponsorship id: {receipt['sponsorship_id']}")
+        if result.status and result.sponsorship_mode:
+            print(f"sponsorship: {result.sponsorship_mode} / {result.status}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"auditor program sponsorship receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_auditor_program_sponsorship_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_auditor_program_sponsorship_receipt(args.receipt)
+    governance = load_auditor_program_governance_receipt(args.governance) if args.governance else None
+    ballot = load_standards_body_ballot_receipt(args.ballot) if args.ballot else None
+    kit = load_auditor_certification_kit(args.kit) if args.kit else None
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    try:
+        entry = append_auditor_program_sponsorship_receipt(
+            chain,
+            receipt,
+            governance_receipt=governance,
+            ballot_receipt=ballot,
+            certification_kit=kit,
+            standards_package=standards_package,
+            proof_pack=pack,
+            regulator_disclosure=disclosure,
+            submission_receipt=submission,
+            status_receipt=status,
+            verifier_release=verifier_release,
+            conformance_report=conformance_report,
+            root=args.root,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"auditor program sponsorship receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"auditor program sponsorship entry: {args.out}")
+    print(f"auditor program sponsorship entry id: {entry['entry_id']}")
+    print(f"sponsorship id: {receipt['sponsorship_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_auditor_accreditation(args: argparse.Namespace) -> int:
+    kit = load_auditor_certification_kit(args.kit)
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    try:
+        receipt = build_auditor_accreditation_receipt(
+            kit,
+            auditor_name=args.auditor_name,
+            auditor_ref=args.auditor_ref,
+            auditor_organization=args.auditor_organization,
+            auditor_role=args.auditor_role,
+            accreditation_body=args.accreditation_body,
+            program_ref=args.program_ref,
+            credential_id=args.credential_id,
+            status=args.status,
+            score_percent=args.score_percent,
+            scope=args.scope,
+            issued_at=args.issued_at,
+            expires_at=args.expires_at,
+            renewal_due_at=args.renewal_due_at,
+            proctor_ref=args.proctor_ref,
+            evidence_refs=args.evidence_ref,
+            proof_pack=pack,
+            regulator_disclosure=disclosure,
+            standards_package=standards_package,
+            root=args.root,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"auditor accreditation receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_auditor_accreditation_receipt(
+        receipt,
+        certification_kit=kit,
+        proof_pack=pack,
+        regulator_disclosure=disclosure,
+        standards_package=standards_package,
+        root=args.root,
+        key=args.key,
+    )
+    if not result.ok:
+        print("auditor accreditation receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_auditor_accreditation_receipt(args.out, receipt)
+    print(f"auditor accreditation receipt: {args.out}")
+    print(f"accreditation id: {receipt['accreditation_id']}")
+    print(f"credential id: {receipt['credential']['credential_id']}")
+    print(f"status: {receipt['credential']['status']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_auditor_accreditation_verify(args: argparse.Namespace) -> int:
+    receipt = load_auditor_accreditation_receipt(args.receipt)
+    kit = load_auditor_certification_kit(args.kit) if args.kit else None
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    result = verify_auditor_accreditation_receipt(
+        receipt,
+        certification_kit=kit,
+        proof_pack=pack,
+        regulator_disclosure=disclosure,
+        standards_package=standards_package,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified auditor accreditation receipt: {args.receipt}")
+        print(f"accreditation id: {receipt['accreditation_id']}")
+        print(f"status: {result.status}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"auditor accreditation receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_auditor_accreditation_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_auditor_accreditation_receipt(args.receipt)
+    kit = load_auditor_certification_kit(args.kit) if args.kit else None
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    try:
+        entry = append_auditor_accreditation_receipt(
+            chain,
+            receipt,
+            certification_kit=kit,
+            proof_pack=pack,
+            regulator_disclosure=disclosure,
+            standards_package=standards_package,
+            root=args.root,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"auditor accreditation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"auditor accreditation entry: {args.out}")
+    print(f"auditor accreditation entry id: {entry['entry_id']}")
+    print(f"accreditation id: {receipt['accreditation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+def cmd_auditor_accreditation_countersignature(args: argparse.Namespace) -> int:
+    accreditation = load_auditor_accreditation_receipt(args.accreditation)
+    sponsorship = load_auditor_program_sponsorship_receipt(args.sponsorship)
+    kit = load_auditor_certification_kit(args.kit) if args.kit else None
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    governance = load_auditor_program_governance_receipt(args.governance) if args.governance else None
+    ballot = load_standards_body_ballot_receipt(args.ballot) if args.ballot else None
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    response_body = _load_json(args.response_body) if args.response_body else None
+    try:
+        receipt = build_auditor_accreditation_countersignature_receipt(
+            accreditation,
+            sponsorship,
+            certification_kit=kit,
+            proof_pack=pack,
+            regulator_disclosure=disclosure,
+            standards_package=standards_package,
+            governance_receipt=governance,
+            ballot_receipt=ballot,
+            submission_receipt=submission,
+            status_receipt=status,
+            verifier_release=verifier_release,
+            conformance_report=conformance_report,
+            root=args.root,
+            operation=args.operation,
+            mode=args.mode,
+            countersignature_ref=args.countersignature_ref,
+            operation_ref=args.operation_ref,
+            sponsor_actor_ref=args.sponsor_actor_ref,
+            sponsor_actor_role=args.sponsor_actor_role,
+            authority_ref=args.authority_ref,
+            terms_ref=args.terms_ref,
+            evidence_refs=args.evidence_ref or None,
+            signed_at=args.signed_at,
+            effective_at=args.effective_at,
+            expires_at=args.expires_at,
+            response_status=args.response_status,
+            response_body=response_body,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"auditor accreditation countersignature receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_auditor_accreditation_countersignature_receipt(
+        receipt,
+        accreditation_receipt=accreditation,
+        sponsorship_receipt=sponsorship,
+        certification_kit=kit,
+        proof_pack=pack,
+        regulator_disclosure=disclosure,
+        standards_package=standards_package,
+        governance_receipt=governance,
+        ballot_receipt=ballot,
+        submission_receipt=submission,
+        status_receipt=status,
+        verifier_release=verifier_release,
+        conformance_report=conformance_report,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if not result.ok:
+        print("auditor accreditation countersignature receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_auditor_accreditation_countersignature_receipt(args.out, receipt)
+    print(f"auditor accreditation countersignature receipt: {args.out}")
+    print(f"countersignature id: {receipt['countersignature_id']}")
+    print(f"operation: {receipt['operation']['operation']}")
+    print(f"mode: {receipt['countersignature']['mode']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_auditor_accreditation_countersignature_verify(args: argparse.Namespace) -> int:
+    receipt = load_auditor_accreditation_countersignature_receipt(args.receipt)
+    accreditation = load_auditor_accreditation_receipt(args.accreditation) if args.accreditation else None
+    sponsorship = load_auditor_program_sponsorship_receipt(args.sponsorship) if args.sponsorship else None
+    kit = load_auditor_certification_kit(args.kit) if args.kit else None
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    governance = load_auditor_program_governance_receipt(args.governance) if args.governance else None
+    ballot = load_standards_body_ballot_receipt(args.ballot) if args.ballot else None
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    result = verify_auditor_accreditation_countersignature_receipt(
+        receipt,
+        accreditation_receipt=accreditation,
+        sponsorship_receipt=sponsorship,
+        certification_kit=kit,
+        proof_pack=pack,
+        regulator_disclosure=disclosure,
+        standards_package=standards_package,
+        governance_receipt=governance,
+        ballot_receipt=ballot,
+        submission_receipt=submission,
+        status_receipt=status,
+        verifier_release=verifier_release,
+        conformance_report=conformance_report,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified auditor accreditation countersignature receipt: {args.receipt}")
+        print(f"countersignature id: {receipt['countersignature_id']}")
+        if result.operation and result.mode:
+            print(f"countersignature: {result.operation} / {result.mode}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"auditor accreditation countersignature receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_auditor_accreditation_countersignature_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_auditor_accreditation_countersignature_receipt(args.receipt)
+    accreditation = load_auditor_accreditation_receipt(args.accreditation) if args.accreditation else None
+    sponsorship = load_auditor_program_sponsorship_receipt(args.sponsorship) if args.sponsorship else None
+    kit = load_auditor_certification_kit(args.kit) if args.kit else None
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    governance = load_auditor_program_governance_receipt(args.governance) if args.governance else None
+    ballot = load_standards_body_ballot_receipt(args.ballot) if args.ballot else None
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    try:
+        entry = append_auditor_accreditation_countersignature_receipt(
+            chain,
+            receipt,
+            accreditation_receipt=accreditation,
+            sponsorship_receipt=sponsorship,
+            certification_kit=kit,
+            proof_pack=pack,
+            regulator_disclosure=disclosure,
+            standards_package=standards_package,
+            governance_receipt=governance,
+            ballot_receipt=ballot,
+            submission_receipt=submission,
+            status_receipt=status,
+            verifier_release=verifier_release,
+            conformance_report=conformance_report,
+            root=args.root,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"auditor accreditation countersignature append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"auditor accreditation countersignature entry: {args.out}")
+    print(f"auditor accreditation countersignature entry id: {entry['entry_id']}")
+    print(f"countersignature id: {receipt['countersignature_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_auditor_accreditation_signing_ceremony(args: argparse.Namespace) -> int:
+    countersignature = load_auditor_accreditation_countersignature_receipt(args.countersignature)
+    accreditation = load_auditor_accreditation_receipt(args.accreditation) if args.accreditation else None
+    sponsorship = load_auditor_program_sponsorship_receipt(args.sponsorship) if args.sponsorship else None
+    kit = load_auditor_certification_kit(args.kit) if args.kit else None
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    governance = load_auditor_program_governance_receipt(args.governance) if args.governance else None
+    ballot = load_standards_body_ballot_receipt(args.ballot) if args.ballot else None
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    response_body = _load_json(args.response_body) if args.response_body else None
+    try:
+        receipt = build_auditor_accreditation_signing_ceremony_receipt(
+            countersignature,
+            accreditation_receipt=accreditation,
+            sponsorship_receipt=sponsorship,
+            certification_kit=kit,
+            proof_pack=pack,
+            regulator_disclosure=disclosure,
+            standards_package=standards_package,
+            governance_receipt=governance,
+            ballot_receipt=ballot,
+            submission_receipt=submission,
+            status_receipt=status,
+            verifier_release=verifier_release,
+            conformance_report=conformance_report,
+            root=args.root,
+            mode=args.mode,
+            ceremony_ref=args.ceremony_ref,
+            signing_system=args.signing_system,
+            signing_endpoint=args.signing_endpoint,
+            key_provider=args.key_provider,
+            key_ref=args.key_ref,
+            key_algorithm=args.key_algorithm,
+            public_key_ref=args.public_key_ref,
+            credential_ref=args.credential_ref,
+            sponsor_operator_ref=args.sponsor_operator_ref,
+            sponsor_operator_role=args.sponsor_operator_role,
+            approver_refs=args.approver_ref or None,
+            witness_refs=args.witness_ref or None,
+            quorum_required=args.quorum_required,
+            authority_ref=args.authority_ref,
+            policy_ref=args.policy_ref,
+            rotation_ref=args.rotation_ref,
+            revocation_ref=args.revocation_ref,
+            evidence_refs=args.evidence_ref or None,
+            ceremony_at=args.ceremony_at,
+            response_status=args.response_status,
+            response_body=response_body,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"auditor accreditation signing ceremony receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_auditor_accreditation_signing_ceremony_receipt(
+        receipt,
+        countersignature_receipt=countersignature,
+        accreditation_receipt=accreditation,
+        sponsorship_receipt=sponsorship,
+        certification_kit=kit,
+        proof_pack=pack,
+        regulator_disclosure=disclosure,
+        standards_package=standards_package,
+        governance_receipt=governance,
+        ballot_receipt=ballot,
+        submission_receipt=submission,
+        status_receipt=status,
+        verifier_release=verifier_release,
+        conformance_report=conformance_report,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if not result.ok:
+        print("auditor accreditation signing ceremony receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_auditor_accreditation_signing_ceremony_receipt(args.out, receipt)
+    print(f"auditor accreditation signing ceremony receipt: {args.out}")
+    print(f"ceremony id: {receipt['ceremony_id']}")
+    print(f"mode: {receipt['mode']}")
+    print(f"ceremony ref: {receipt['ceremony']['ceremony_ref']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_auditor_accreditation_signing_ceremony_verify(args: argparse.Namespace) -> int:
+    receipt = load_auditor_accreditation_signing_ceremony_receipt(args.receipt)
+    countersignature = load_auditor_accreditation_countersignature_receipt(args.countersignature) if args.countersignature else None
+    accreditation = load_auditor_accreditation_receipt(args.accreditation) if args.accreditation else None
+    sponsorship = load_auditor_program_sponsorship_receipt(args.sponsorship) if args.sponsorship else None
+    kit = load_auditor_certification_kit(args.kit) if args.kit else None
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    governance = load_auditor_program_governance_receipt(args.governance) if args.governance else None
+    ballot = load_standards_body_ballot_receipt(args.ballot) if args.ballot else None
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    result = verify_auditor_accreditation_signing_ceremony_receipt(
+        receipt,
+        countersignature_receipt=countersignature,
+        accreditation_receipt=accreditation,
+        sponsorship_receipt=sponsorship,
+        certification_kit=kit,
+        proof_pack=pack,
+        regulator_disclosure=disclosure,
+        standards_package=standards_package,
+        governance_receipt=governance,
+        ballot_receipt=ballot,
+        submission_receipt=submission,
+        status_receipt=status,
+        verifier_release=verifier_release,
+        conformance_report=conformance_report,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified auditor accreditation signing ceremony receipt: {args.receipt}")
+        print(f"ceremony id: {receipt['ceremony_id']}")
+        if result.ceremony_id and result.mode:
+            print(f"ceremony: {receipt['ceremony']['ceremony_ref']} ({result.mode})")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"auditor accreditation signing ceremony receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_auditor_accreditation_signing_ceremony_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_auditor_accreditation_signing_ceremony_receipt(args.receipt)
+    countersignature = load_auditor_accreditation_countersignature_receipt(args.countersignature) if args.countersignature else None
+    accreditation = load_auditor_accreditation_receipt(args.accreditation) if args.accreditation else None
+    sponsorship = load_auditor_program_sponsorship_receipt(args.sponsorship) if args.sponsorship else None
+    kit = load_auditor_certification_kit(args.kit) if args.kit else None
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    governance = load_auditor_program_governance_receipt(args.governance) if args.governance else None
+    ballot = load_standards_body_ballot_receipt(args.ballot) if args.ballot else None
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    try:
+        entry = append_auditor_accreditation_signing_ceremony_receipt(
+            chain,
+            receipt,
+            countersignature_receipt=countersignature,
+            accreditation_receipt=accreditation,
+            sponsorship_receipt=sponsorship,
+            certification_kit=kit,
+            proof_pack=pack,
+            regulator_disclosure=disclosure,
+            standards_package=standards_package,
+            governance_receipt=governance,
+            ballot_receipt=ballot,
+            submission_receipt=submission,
+            status_receipt=status,
+            verifier_release=verifier_release,
+            conformance_report=conformance_report,
+            root=args.root,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"auditor accreditation signing ceremony append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"auditor accreditation signing ceremony entry: {args.out}")
+    print(f"auditor accreditation signing ceremony entry id: {entry['entry_id']}")
+    print(f"ceremony id: {receipt['ceremony_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_auditor_accreditation_signing_audit(args: argparse.Namespace) -> int:
+    ceremony = load_auditor_accreditation_signing_ceremony_receipt(args.signing_ceremony)
+    countersignature = load_auditor_accreditation_countersignature_receipt(args.countersignature) if args.countersignature else None
+    accreditation = load_auditor_accreditation_receipt(args.accreditation) if args.accreditation else None
+    sponsorship = load_auditor_program_sponsorship_receipt(args.sponsorship) if args.sponsorship else None
+    kit = load_auditor_certification_kit(args.kit) if args.kit else None
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    governance = load_auditor_program_governance_receipt(args.governance) if args.governance else None
+    ballot = load_standards_body_ballot_receipt(args.ballot) if args.ballot else None
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    response_body = _load_json(args.response_body) if args.response_body else None
+    try:
+        receipt = build_auditor_accreditation_signing_audit_receipt(
+            ceremony,
+            countersignature_receipt=countersignature,
+            accreditation_receipt=accreditation,
+            sponsorship_receipt=sponsorship,
+            certification_kit=kit,
+            proof_pack=pack,
+            regulator_disclosure=disclosure,
+            standards_package=standards_package,
+            governance_receipt=governance,
+            ballot_receipt=ballot,
+            submission_receipt=submission,
+            status_receipt=status,
+            verifier_release=verifier_release,
+            conformance_report=conformance_report,
+            root=args.root,
+            mode=args.mode,
+            audit_ref=args.audit_ref,
+            publisher=args.publisher,
+            publication_endpoint=args.publication_endpoint,
+            credential_ref=args.credential_ref,
+            actor_ref=args.actor_ref,
+            key_ref=args.key_ref,
+            public_key_ref=args.public_key_ref,
+            public_key_fingerprint=args.public_key_fingerprint,
+            key_status=args.key_status,
+            publication_ref=args.publication_ref,
+            rotation_ref=args.rotation_ref,
+            revocation_ref=args.revocation_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            audit_log_size=args.audit_log_size,
+            audit_log_algorithm=args.audit_log_algorithm,
+            audit_log_entry_ref=args.audit_log_entry_ref,
+            audit_log_export_ref=args.audit_log_export_ref,
+            retention_until=args.retention_until,
+            witness_refs=args.witness_ref or None,
+            evidence_refs=args.evidence_ref or None,
+            published_at=args.published_at,
+            response_status=args.response_status,
+            response_body=response_body,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"auditor accreditation signing audit receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_auditor_accreditation_signing_audit_receipt(
+        receipt,
+        signing_ceremony_receipt=ceremony,
+        countersignature_receipt=countersignature,
+        accreditation_receipt=accreditation,
+        sponsorship_receipt=sponsorship,
+        certification_kit=kit,
+        proof_pack=pack,
+        regulator_disclosure=disclosure,
+        standards_package=standards_package,
+        governance_receipt=governance,
+        ballot_receipt=ballot,
+        submission_receipt=submission,
+        status_receipt=status,
+        verifier_release=verifier_release,
+        conformance_report=conformance_report,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if not result.ok:
+        print("auditor accreditation signing audit receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_auditor_accreditation_signing_audit_receipt(args.out, receipt)
+    print(f"auditor accreditation signing audit receipt: {args.out}")
+    print(f"audit id: {receipt['audit_id']}")
+    print(f"mode: {receipt['mode']}")
+    print(f"audit ref: {receipt['audit']['audit_ref']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_auditor_accreditation_signing_audit_verify(args: argparse.Namespace) -> int:
+    receipt = load_auditor_accreditation_signing_audit_receipt(args.receipt)
+    ceremony = load_auditor_accreditation_signing_ceremony_receipt(args.signing_ceremony) if args.signing_ceremony else None
+    countersignature = load_auditor_accreditation_countersignature_receipt(args.countersignature) if args.countersignature else None
+    accreditation = load_auditor_accreditation_receipt(args.accreditation) if args.accreditation else None
+    sponsorship = load_auditor_program_sponsorship_receipt(args.sponsorship) if args.sponsorship else None
+    kit = load_auditor_certification_kit(args.kit) if args.kit else None
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    governance = load_auditor_program_governance_receipt(args.governance) if args.governance else None
+    ballot = load_standards_body_ballot_receipt(args.ballot) if args.ballot else None
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    result = verify_auditor_accreditation_signing_audit_receipt(
+        receipt,
+        signing_ceremony_receipt=ceremony,
+        countersignature_receipt=countersignature,
+        accreditation_receipt=accreditation,
+        sponsorship_receipt=sponsorship,
+        certification_kit=kit,
+        proof_pack=pack,
+        regulator_disclosure=disclosure,
+        standards_package=standards_package,
+        governance_receipt=governance,
+        ballot_receipt=ballot,
+        submission_receipt=submission,
+        status_receipt=status,
+        verifier_release=verifier_release,
+        conformance_report=conformance_report,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified auditor accreditation signing audit receipt: {args.receipt}")
+        print(f"audit id: {receipt['audit_id']}")
+        if result.audit_id and result.mode:
+            print(f"audit: {receipt['audit']['audit_ref']} ({result.mode})")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"auditor accreditation signing audit receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_auditor_accreditation_signing_audit_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_auditor_accreditation_signing_audit_receipt(args.receipt)
+    ceremony = load_auditor_accreditation_signing_ceremony_receipt(args.signing_ceremony) if args.signing_ceremony else None
+    countersignature = load_auditor_accreditation_countersignature_receipt(args.countersignature) if args.countersignature else None
+    accreditation = load_auditor_accreditation_receipt(args.accreditation) if args.accreditation else None
+    sponsorship = load_auditor_program_sponsorship_receipt(args.sponsorship) if args.sponsorship else None
+    kit = load_auditor_certification_kit(args.kit) if args.kit else None
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    governance = load_auditor_program_governance_receipt(args.governance) if args.governance else None
+    ballot = load_standards_body_ballot_receipt(args.ballot) if args.ballot else None
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    try:
+        entry = append_auditor_accreditation_signing_audit_receipt(
+            chain,
+            receipt,
+            signing_ceremony_receipt=ceremony,
+            countersignature_receipt=countersignature,
+            accreditation_receipt=accreditation,
+            sponsorship_receipt=sponsorship,
+            certification_kit=kit,
+            proof_pack=pack,
+            regulator_disclosure=disclosure,
+            standards_package=standards_package,
+            governance_receipt=governance,
+            ballot_receipt=ballot,
+            submission_receipt=submission,
+            status_receipt=status,
+            verifier_release=verifier_release,
+            conformance_report=conformance_report,
+            root=args.root,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"auditor accreditation signing audit append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"auditor accreditation signing audit entry: {args.out}")
+    print(f"auditor accreditation signing audit entry id: {entry['entry_id']}")
+    print(f"audit id: {receipt['audit_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_auditor_accreditation_kms_enforcement(args: argparse.Namespace) -> int:
+    signing_audit = load_auditor_accreditation_signing_audit_receipt(args.signing_audit)
+    ceremony = load_auditor_accreditation_signing_ceremony_receipt(args.signing_ceremony) if args.signing_ceremony else None
+    countersignature = load_auditor_accreditation_countersignature_receipt(args.countersignature) if args.countersignature else None
+    accreditation = load_auditor_accreditation_receipt(args.accreditation) if args.accreditation else None
+    sponsorship = load_auditor_program_sponsorship_receipt(args.sponsorship) if args.sponsorship else None
+    kit = load_auditor_certification_kit(args.kit) if args.kit else None
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    governance = load_auditor_program_governance_receipt(args.governance) if args.governance else None
+    ballot = load_standards_body_ballot_receipt(args.ballot) if args.ballot else None
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    response_body = _load_json(args.response_body) if args.response_body else None
+    try:
+        receipt = build_auditor_accreditation_kms_enforcement_receipt(
+            signing_audit,
+            signing_ceremony_receipt=ceremony,
+            countersignature_receipt=countersignature,
+            accreditation_receipt=accreditation,
+            sponsorship_receipt=sponsorship,
+            certification_kit=kit,
+            proof_pack=pack,
+            regulator_disclosure=disclosure,
+            standards_package=standards_package,
+            governance_receipt=governance,
+            ballot_receipt=ballot,
+            submission_receipt=submission,
+            status_receipt=status,
+            verifier_release=verifier_release,
+            conformance_report=conformance_report,
+            root=args.root,
+            mode=args.mode,
+            enforcement_ref=args.enforcement_ref,
+            provider=args.provider,
+            provider_endpoint=args.provider_endpoint,
+            credential_ref=args.credential_ref,
+            actor_ref=args.actor_ref,
+            key_ref=args.key_ref,
+            key_provider=args.key_provider,
+            key_algorithm=args.key_algorithm,
+            key_status=args.key_status,
+            attestation_ref=args.attestation_ref,
+            attestation_hash=args.attestation_hash,
+            key_policy_ref=args.key_policy_ref,
+            key_policy_hash=args.key_policy_hash,
+            allowed_actor_refs=args.allowed_actor_ref or None,
+            key_usage=args.key_usage or None,
+            denied_operation_refs=args.denied_operation_ref or None,
+            quorum_required=args.quorum_required,
+            quorum_approver_refs=args.quorum_approver_ref or None,
+            rotation_ref=args.rotation_ref,
+            revocation_ref=args.revocation_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            audit_log_size=args.audit_log_size,
+            audit_log_algorithm=args.audit_log_algorithm,
+            evidence_refs=args.evidence_ref or None,
+            enforced_at=args.enforced_at,
+            response_status=args.response_status,
+            response_body=response_body,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"auditor accreditation KMS enforcement receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_auditor_accreditation_kms_enforcement_receipt(
+        receipt,
+        signing_audit_receipt=signing_audit,
+        signing_ceremony_receipt=ceremony,
+        countersignature_receipt=countersignature,
+        accreditation_receipt=accreditation,
+        sponsorship_receipt=sponsorship,
+        certification_kit=kit,
+        proof_pack=pack,
+        regulator_disclosure=disclosure,
+        standards_package=standards_package,
+        governance_receipt=governance,
+        ballot_receipt=ballot,
+        submission_receipt=submission,
+        status_receipt=status,
+        verifier_release=verifier_release,
+        conformance_report=conformance_report,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if not result.ok:
+        print("auditor accreditation KMS enforcement receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_auditor_accreditation_kms_enforcement_receipt(args.out, receipt)
+    print(f"auditor accreditation KMS enforcement receipt: {args.out}")
+    print(f"enforcement id: {receipt['enforcement_id']}")
+    print(f"mode: {receipt['mode']}")
+    print(f"enforcement ref: {receipt['enforcement']['enforcement_ref']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_auditor_accreditation_kms_enforcement_verify(args: argparse.Namespace) -> int:
+    receipt = load_auditor_accreditation_kms_enforcement_receipt(args.receipt)
+    signing_audit = load_auditor_accreditation_signing_audit_receipt(args.signing_audit) if args.signing_audit else None
+    ceremony = load_auditor_accreditation_signing_ceremony_receipt(args.signing_ceremony) if args.signing_ceremony else None
+    countersignature = load_auditor_accreditation_countersignature_receipt(args.countersignature) if args.countersignature else None
+    accreditation = load_auditor_accreditation_receipt(args.accreditation) if args.accreditation else None
+    sponsorship = load_auditor_program_sponsorship_receipt(args.sponsorship) if args.sponsorship else None
+    kit = load_auditor_certification_kit(args.kit) if args.kit else None
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    governance = load_auditor_program_governance_receipt(args.governance) if args.governance else None
+    ballot = load_standards_body_ballot_receipt(args.ballot) if args.ballot else None
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    result = verify_auditor_accreditation_kms_enforcement_receipt(
+        receipt,
+        signing_audit_receipt=signing_audit,
+        signing_ceremony_receipt=ceremony,
+        countersignature_receipt=countersignature,
+        accreditation_receipt=accreditation,
+        sponsorship_receipt=sponsorship,
+        certification_kit=kit,
+        proof_pack=pack,
+        regulator_disclosure=disclosure,
+        standards_package=standards_package,
+        governance_receipt=governance,
+        ballot_receipt=ballot,
+        submission_receipt=submission,
+        status_receipt=status,
+        verifier_release=verifier_release,
+        conformance_report=conformance_report,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified auditor accreditation KMS enforcement receipt: {args.receipt}")
+        print(f"enforcement id: {receipt['enforcement_id']}")
+        if result.enforcement_id and result.mode:
+            print(f"enforcement: {receipt['enforcement']['enforcement_ref']} ({result.mode})")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"auditor accreditation KMS enforcement receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_auditor_accreditation_kms_enforcement_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_auditor_accreditation_kms_enforcement_receipt(args.receipt)
+    signing_audit = load_auditor_accreditation_signing_audit_receipt(args.signing_audit) if args.signing_audit else None
+    ceremony = load_auditor_accreditation_signing_ceremony_receipt(args.signing_ceremony) if args.signing_ceremony else None
+    countersignature = load_auditor_accreditation_countersignature_receipt(args.countersignature) if args.countersignature else None
+    accreditation = load_auditor_accreditation_receipt(args.accreditation) if args.accreditation else None
+    sponsorship = load_auditor_program_sponsorship_receipt(args.sponsorship) if args.sponsorship else None
+    kit = load_auditor_certification_kit(args.kit) if args.kit else None
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    governance = load_auditor_program_governance_receipt(args.governance) if args.governance else None
+    ballot = load_standards_body_ballot_receipt(args.ballot) if args.ballot else None
+    submission = load_standards_body_submission_receipt(args.submission) if args.submission else None
+    status = load_standards_body_status_receipt(args.status_receipt) if args.status_receipt else None
+    verifier_release = load_verifier_release_manifest(args.verifier_release) if args.verifier_release else None
+    conformance_report = load_verifier_conformance_report(args.conformance_report) if args.conformance_report else None
+    try:
+        entry = append_auditor_accreditation_kms_enforcement_receipt(
+            chain,
+            receipt,
+            signing_audit_receipt=signing_audit,
+            signing_ceremony_receipt=ceremony,
+            countersignature_receipt=countersignature,
+            accreditation_receipt=accreditation,
+            sponsorship_receipt=sponsorship,
+            certification_kit=kit,
+            proof_pack=pack,
+            regulator_disclosure=disclosure,
+            standards_package=standards_package,
+            governance_receipt=governance,
+            ballot_receipt=ballot,
+            submission_receipt=submission,
+            status_receipt=status,
+            verifier_release=verifier_release,
+            conformance_report=conformance_report,
+            root=args.root,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"auditor accreditation KMS enforcement append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"auditor accreditation KMS enforcement entry: {args.out}")
+    print(f"auditor accreditation KMS enforcement entry id: {entry['entry_id']}")
+    print(f"enforcement id: {receipt['enforcement_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_auditor_credential_registry(args: argparse.Namespace) -> int:
+    accreditation = load_auditor_accreditation_receipt(args.accreditation)
+    kit = load_auditor_certification_kit(args.kit) if args.kit else None
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    try:
+        receipt = build_auditor_credential_registry_receipt(
+            accreditation,
+            certification_kit=kit,
+            proof_pack=pack,
+            regulator_disclosure=disclosure,
+            standards_package=standards_package,
+            root=args.root,
+            registry_name=args.registry_name,
+            registry_endpoint=args.registry_endpoint,
+            namespace=args.namespace,
+            publication_ref=args.publication_ref,
+            status=args.status,
+            visibility=args.visibility,
+            terms_ref=args.terms_ref,
+            revocation_endpoint=args.revocation_endpoint,
+            operator_ref=args.operator_ref,
+            published_at=args.published_at,
+            expires_at=args.expires_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"auditor credential registry receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_auditor_credential_registry_receipt(
+        receipt,
+        accreditation_receipt=accreditation,
+        certification_kit=kit,
+        proof_pack=pack,
+        regulator_disclosure=disclosure,
+        standards_package=standards_package,
+        root=args.root,
+        key=args.key,
+    )
+    if not result.ok:
+        print("auditor credential registry receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_auditor_credential_registry_receipt(args.out, receipt)
+    print(f"auditor credential registry receipt: {args.out}")
+    print(f"registry id: {receipt['registry_id']}")
+    print(f"credential id: {receipt['credential_record']['credential_id']}")
+    print(f"status: {receipt['publication']['status']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_auditor_credential_registry_verify(args: argparse.Namespace) -> int:
+    receipt = load_auditor_credential_registry_receipt(args.receipt)
+    accreditation = load_auditor_accreditation_receipt(args.accreditation) if args.accreditation else None
+    kit = load_auditor_certification_kit(args.kit) if args.kit else None
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    result = verify_auditor_credential_registry_receipt(
+        receipt,
+        accreditation_receipt=accreditation,
+        certification_kit=kit,
+        proof_pack=pack,
+        regulator_disclosure=disclosure,
+        standards_package=standards_package,
+        root=args.root,
+        key=args.key,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified auditor credential registry receipt: {args.receipt}")
+        print(f"registry id: {receipt['registry_id']}")
+        print(f"status: {result.status}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"auditor credential registry receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_auditor_credential_registry_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_auditor_credential_registry_receipt(args.receipt)
+    accreditation = load_auditor_accreditation_receipt(args.accreditation) if args.accreditation else None
+    kit = load_auditor_certification_kit(args.kit) if args.kit else None
+    pack = load_proof_pack(args.pack) if args.pack else None
+    disclosure = load_regulator_disclosure(args.disclosure) if args.disclosure else None
+    standards_package = load_standards_submission(args.standards_package) if args.standards_package else None
+    try:
+        entry = append_auditor_credential_registry_receipt(
+            chain,
+            receipt,
+            accreditation_receipt=accreditation,
+            certification_kit=kit,
+            proof_pack=pack,
+            regulator_disclosure=disclosure,
+            standards_package=standards_package,
+            root=args.root,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"auditor credential registry append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"auditor credential registry entry: {args.out}")
+    print(f"auditor credential registry entry id: {entry['entry_id']}")
+    print(f"registry id: {receipt['registry_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_trust_network_export(args: argparse.Namespace) -> int:
+    if args.vendor and len(args.vendor) != len(args.packs):
+        print("--vendor must be supplied once per proof pack", file=sys.stderr)
+        return 2
+    packs = []
+    for path in args.packs:
+        pack, _, status = _verified_pack_or_exit(path, args.key)
+        if status:
+            return status
+        packs.append(pack)
+    manifest = build_trust_network_manifest(
+        packs,
+        vendor_names=args.vendor,
+        buyer=args.buyer,
+        clause_name=args.clause_name,
+        procurement_clause=args.procurement_clause,
+        required_frameworks=args.required_framework,
+        accepted_risk_classes=args.accepted_risk_class,
+        required_gate_outcome=args.required_gate_outcome,
+    )
+    result = verify_trust_network_manifest(manifest, proof_packs=packs, key=args.key)
+    write_trust_network_manifest(args.out, manifest)
+    if args.markdown:
+        write_trust_network_markdown(args.markdown, manifest)
+        print(f"trust-network markdown: {args.markdown}")
+    if not result.ok:
+        print(f"trust-network manifest failed procurement verification: {args.out}", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    print(f"trust-network manifest: {args.out}")
+    print(f"manifest id: {manifest['manifest_id']}")
+    print(f"accepted vendors: {result.accepted_count}/{result.submission_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_trust_network_verify(args: argparse.Namespace) -> int:
+    manifest = load_trust_network_manifest(args.manifest)
+    packs = [load_proof_pack(path) for path in args.pack] if args.pack else None
+    result = verify_trust_network_manifest(manifest, proof_packs=packs, key=args.key)
+    if result.ok:
+        print(f"verified trust-network manifest: {args.manifest}")
+        print(f"accepted vendors: {result.accepted_count}/{result.submission_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"trust-network manifest verification failed: {args.manifest}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+
+def cmd_vendor_identity(args: argparse.Namespace) -> int:
+    packs = []
+    for path in args.pack:
+        pack, _, status = _verified_pack_or_exit(path, args.key)
+        if status:
+            return status
+        packs.append(pack)
+    manifest = load_trust_network_manifest(args.manifest) if args.manifest else None
+    try:
+        receipt = build_vendor_identity_receipt(
+            packs,
+            vendor=args.vendor,
+            legal_name=args.legal_name,
+            subject_ref=args.subject_ref,
+            domain=args.domain,
+            identity_provider=args.identity_provider,
+            identity_id=args.identity_id,
+            issuer=args.issuer,
+            issued_at=args.issued_at,
+            expires_at=args.expires_at,
+            trust_network_manifest=manifest,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"vendor identity receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_vendor_identity_receipt(receipt, proof_packs=packs, trust_network_manifest=manifest, key=args.key)
+    if not result.ok:
+        print("vendor identity receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_vendor_identity_receipt(args.out, receipt)
+    print(f"vendor identity receipt: {args.out}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"vendor: {receipt['vendor']['name']}")
+    print(f"proof packs: {result.proof_pack_count}")
+    if result.accepted_in_network:
+        print("trust-network accepted: true")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_vendor_identity_verify(args: argparse.Namespace) -> int:
+    receipt = load_vendor_identity_receipt(args.receipt)
+    packs = [load_proof_pack(path) for path in args.pack] if args.pack else None
+    manifest = load_trust_network_manifest(args.manifest) if args.manifest else None
+    result = verify_vendor_identity_receipt(
+        receipt,
+        proof_packs=packs,
+        trust_network_manifest=manifest,
+        key=args.key,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified vendor identity receipt: {args.receipt}")
+        print(f"proof packs: {result.proof_pack_count}")
+        print(f"trust-network accepted: {str(result.accepted_in_network).lower()}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"vendor identity receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_vendor_identity_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_vendor_identity_receipt(args.receipt)
+    packs = [load_proof_pack(path) for path in args.pack] if args.pack else None
+    manifest = load_trust_network_manifest(args.manifest) if args.manifest else None
+    try:
+        entry = append_vendor_identity_receipt(
+            chain,
+            receipt,
+            proof_packs=packs,
+            trust_network_manifest=manifest,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"vendor identity append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"vendor identity entry: {args.out}")
+    print(f"vendor identity entry id: {entry['entry_id']}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_procurement_clause(args: argparse.Namespace) -> int:
+    manifest = load_trust_network_manifest(args.manifest)
+    packs = [load_proof_pack(path) for path in args.pack] if args.pack else None
+    try:
+        receipt = build_procurement_clause_receipt(
+            manifest,
+            buyer=args.buyer,
+            legal_entity=args.legal_entity,
+            contract_ref=args.contract_ref,
+            approver_ref=args.approver_ref,
+            procurement_system=args.procurement_system,
+            effective_at=args.effective_at,
+            expires_at=args.expires_at,
+            issued_at=args.issued_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"procurement clause receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_procurement_clause_receipt(receipt, trust_network_manifest=manifest, proof_packs=packs, key=args.key)
+    if not result.ok:
+        print("procurement clause receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_procurement_clause_receipt(args.out, receipt)
+    print(f"procurement clause receipt: {args.out}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"buyer: {receipt['buyer']['name']}")
+    print(f"contract: {receipt['contract']['contract_ref']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_procurement_clause_verify(args: argparse.Namespace) -> int:
+    receipt = load_procurement_clause_receipt(args.receipt)
+    manifest = load_trust_network_manifest(args.manifest) if args.manifest else None
+    packs = [load_proof_pack(path) for path in args.pack] if args.pack else None
+    result = verify_procurement_clause_receipt(receipt, trust_network_manifest=manifest, proof_packs=packs, key=args.key)
+    if result.ok:
+        print(f"verified procurement clause receipt: {args.receipt}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"procurement clause receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_procurement_clause_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_procurement_clause_receipt(args.receipt)
+    try:
+        entry = append_procurement_clause_receipt(chain, receipt, key=args.key)
+    except ValueError as exc:
+        print(f"procurement clause append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"procurement clause entry: {args.out}")
+    print(f"procurement clause entry id: {entry['entry_id']}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_procurement_integration(args: argparse.Namespace) -> int:
+    procurement = load_procurement_clause_receipt(args.procurement_receipt)
+    vendor = load_vendor_identity_receipt(args.vendor_identity_receipt)
+    manifest = load_trust_network_manifest(args.manifest) if args.manifest else None
+    packs = [load_proof_pack(path) for path in args.pack] if args.pack else None
+    response_body = _load_json(args.response_body) if args.response_body else None
+    try:
+        receipt = build_procurement_integration_receipt(
+            procurement,
+            vendor,
+            trust_network_manifest=manifest,
+            proof_packs=packs,
+            procurement_system=args.procurement_system,
+            endpoint_base=args.endpoint_base,
+            credential_ref=args.credential_ref,
+            mode=args.mode,
+            request_method=args.request_method,
+            request_path=args.request_path,
+            integration_ref=args.integration_ref,
+            delivered_at=args.delivered_at,
+            response_status=args.response_status,
+            response_body=response_body,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"procurement integration receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_procurement_integration_receipt(
+        receipt,
+        procurement_receipt=procurement,
+        vendor_identity_receipt=vendor,
+        trust_network_manifest=manifest,
+        proof_packs=packs,
+        key=args.key,
+    )
+    if not result.ok:
+        print("procurement integration receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_procurement_integration_receipt(args.out, receipt)
+    print(f"procurement integration receipt: {args.out}")
+    print(f"integration id: {receipt['integration_id']}")
+    print(f"system: {receipt['procurement_system']['name']}")
+    print(f"mode: {receipt['mode']}")
+    print(f"target: {receipt['request']['target_url']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_procurement_integration_verify(args: argparse.Namespace) -> int:
+    receipt = load_procurement_integration_receipt(args.integration)
+    procurement = load_procurement_clause_receipt(args.procurement_receipt) if args.procurement_receipt else None
+    vendor = load_vendor_identity_receipt(args.vendor_identity) if args.vendor_identity else None
+    manifest = load_trust_network_manifest(args.manifest) if args.manifest else None
+    packs = [load_proof_pack(path) for path in args.pack] if args.pack else None
+    result = verify_procurement_integration_receipt(
+        receipt,
+        procurement_receipt=procurement,
+        vendor_identity_receipt=vendor,
+        trust_network_manifest=manifest,
+        proof_packs=packs,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified procurement integration receipt: {args.integration}")
+        print(f"integration id: {receipt['integration_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"procurement integration receipt verification failed: {args.integration}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_procurement_integration_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_procurement_integration_receipt(args.integration)
+    procurement = load_procurement_clause_receipt(args.procurement_receipt) if args.procurement_receipt else None
+    vendor = load_vendor_identity_receipt(args.vendor_identity) if args.vendor_identity else None
+    manifest = load_trust_network_manifest(args.manifest) if args.manifest else None
+    packs = [load_proof_pack(path) for path in args.pack] if args.pack else None
+    try:
+        entry = append_procurement_integration_receipt(
+            chain,
+            receipt,
+            procurement_receipt=procurement,
+            vendor_identity_receipt=vendor,
+            trust_network_manifest=manifest,
+            proof_packs=packs,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"procurement integration append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"procurement integration entry: {args.out}")
+    print(f"procurement integration entry id: {entry['entry_id']}")
+    print(f"integration id: {receipt['integration_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_trust_network_registry(args: argparse.Namespace) -> int:
+    manifest = load_trust_network_manifest(args.manifest)
+    vendor = load_vendor_identity_receipt(args.vendor_identity)
+    identity_attestation = load_identity_provider_attestation(args.identity_attestation) if args.identity_attestation else None
+    identity_payload = _load_json(args.identity_payload) if args.identity_payload else None
+    procurement = load_procurement_clause_receipt(args.procurement_receipt) if args.procurement_receipt else None
+    integration = load_procurement_integration_receipt(args.procurement_integration) if args.procurement_integration else None
+    packs = [load_proof_pack(path) for path in args.pack] if args.pack else None
+    try:
+        receipt = build_trust_network_registry_receipt(
+            manifest,
+            vendor,
+            identity_provider_attestation=identity_attestation,
+            identity_payload=identity_payload,
+            procurement_receipt=procurement,
+            procurement_integration_receipt=integration,
+            proof_packs=packs,
+            registry_name=args.registry_name,
+            registry_endpoint=args.registry_endpoint,
+            namespace=args.namespace,
+            registration_ref=args.registration_ref,
+            status=args.status,
+            visibility=args.visibility,
+            terms_ref=args.terms_ref,
+            revocation_endpoint=args.revocation_endpoint,
+            published_at=args.published_at,
+            expires_at=args.expires_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"trust-network registry receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_trust_network_registry_receipt(
+        receipt,
+        trust_network_manifest=manifest,
+        vendor_identity_receipt=vendor,
+        identity_provider_attestation=identity_attestation,
+        identity_payload=identity_payload,
+        procurement_receipt=procurement,
+        procurement_integration_receipt=integration,
+        proof_packs=packs,
+        key=args.key,
+    )
+    if not result.ok:
+        print("trust-network registry receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_trust_network_registry_receipt(args.out, receipt)
+    print(f"trust-network registry receipt: {args.out}")
+    print(f"registration id: {receipt['registration_id']}")
+    print(f"registry: {receipt['registry']['name']}")
+    print(f"status: {receipt['registration']['status']}")
+    print(f"source artifacts: {len(receipt['source_artifacts'])}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_trust_network_registry_verify(args: argparse.Namespace) -> int:
+    receipt = load_trust_network_registry_receipt(args.registry)
+    manifest = load_trust_network_manifest(args.manifest) if args.manifest else None
+    vendor = load_vendor_identity_receipt(args.vendor_identity) if args.vendor_identity else None
+    identity_attestation = load_identity_provider_attestation(args.identity_attestation) if args.identity_attestation else None
+    identity_payload = _load_json(args.identity_payload) if args.identity_payload else None
+    procurement = load_procurement_clause_receipt(args.procurement_receipt) if args.procurement_receipt else None
+    integration = load_procurement_integration_receipt(args.procurement_integration) if args.procurement_integration else None
+    packs = [load_proof_pack(path) for path in args.pack] if args.pack else None
+    result = verify_trust_network_registry_receipt(
+        receipt,
+        trust_network_manifest=manifest,
+        vendor_identity_receipt=vendor,
+        identity_provider_attestation=identity_attestation,
+        identity_payload=identity_payload,
+        procurement_receipt=procurement,
+        procurement_integration_receipt=integration,
+        proof_packs=packs,
+        key=args.key,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified trust-network registry receipt: {args.registry}")
+        print(f"registration id: {receipt['registration_id']}")
+        print(f"status: {result.status}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"trust-network registry receipt verification failed: {args.registry}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_trust_network_registry_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_trust_network_registry_receipt(args.registry)
+    manifest = load_trust_network_manifest(args.manifest) if args.manifest else None
+    vendor = load_vendor_identity_receipt(args.vendor_identity) if args.vendor_identity else None
+    identity_attestation = load_identity_provider_attestation(args.identity_attestation) if args.identity_attestation else None
+    identity_payload = _load_json(args.identity_payload) if args.identity_payload else None
+    procurement = load_procurement_clause_receipt(args.procurement_receipt) if args.procurement_receipt else None
+    integration = load_procurement_integration_receipt(args.procurement_integration) if args.procurement_integration else None
+    packs = [load_proof_pack(path) for path in args.pack] if args.pack else None
+    try:
+        entry = append_trust_network_registry_receipt(
+            chain,
+            receipt,
+            trust_network_manifest=manifest,
+            vendor_identity_receipt=vendor,
+            identity_provider_attestation=identity_attestation,
+            identity_payload=identity_payload,
+            procurement_receipt=procurement,
+            procurement_integration_receipt=integration,
+            proof_packs=packs,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"trust-network registry append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"trust-network registry entry: {args.out}")
+    print(f"trust-network registry entry id: {entry['entry_id']}")
+    print(f"registration id: {receipt['registration_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+def _registry_status_sources(args: argparse.Namespace) -> tuple[dict | None, dict | None, dict | None, dict | None, dict | None, dict | None, list[dict] | None]:
+    manifest = load_trust_network_manifest(args.manifest) if getattr(args, "manifest", None) else None
+    vendor = load_vendor_identity_receipt(args.vendor_identity) if getattr(args, "vendor_identity", None) else None
+    identity_attestation = load_identity_provider_attestation(args.identity_attestation) if getattr(args, "identity_attestation", None) else None
+    identity_payload = _load_json(args.identity_payload) if getattr(args, "identity_payload", None) else None
+    procurement = load_procurement_clause_receipt(args.procurement_receipt) if getattr(args, "procurement_receipt", None) else None
+    integration = load_procurement_integration_receipt(args.procurement_integration) if getattr(args, "procurement_integration", None) else None
+    packs = [load_proof_pack(path) for path in args.pack] if getattr(args, "pack", None) else None
+    return manifest, vendor, identity_attestation, identity_payload, procurement, integration, packs
+
+
+def cmd_trust_network_registry_status(args: argparse.Namespace) -> int:
+    registry = load_trust_network_registry_receipt(args.registry)
+    manifest, vendor, identity_attestation, identity_payload, procurement, integration, packs = _registry_status_sources(args)
+    try:
+        receipt = build_trust_network_registry_status_receipt(
+            registry,
+            new_status=args.status,
+            reason=args.reason,
+            actor_ref=args.actor_ref,
+            actor_role=args.actor_role,
+            reason_code=args.reason_code,
+            decided_at=args.decided_at,
+            effective_at=args.effective_at,
+            dispute_ref=args.dispute_ref,
+            dispute_window_until=args.dispute_window_until,
+            evidence_refs=args.evidence_ref,
+            trust_network_manifest=manifest,
+            vendor_identity_receipt=vendor,
+            identity_provider_attestation=identity_attestation,
+            identity_payload=identity_payload,
+            procurement_receipt=procurement,
+            procurement_integration_receipt=integration,
+            proof_packs=packs,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"trust-network registry status receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_trust_network_registry_status_receipt(
+        receipt,
+        registry_receipt=registry,
+        trust_network_manifest=manifest,
+        vendor_identity_receipt=vendor,
+        identity_provider_attestation=identity_attestation,
+        identity_payload=identity_payload,
+        procurement_receipt=procurement,
+        procurement_integration_receipt=integration,
+        proof_packs=packs,
+        key=args.key,
+    )
+    if not result.ok:
+        print("trust-network registry status receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_trust_network_registry_status_receipt(args.out, receipt)
+    print(f"trust-network registry status receipt: {args.out}")
+    print(f"status id: {receipt['status_id']}")
+    print(f"registration id: {receipt['target_registration']['registration_id']}")
+    print(f"status: {result.previous_status} -> {result.new_status}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_trust_network_registry_status_verify(args: argparse.Namespace) -> int:
+    receipt = load_trust_network_registry_status_receipt(args.status_receipt)
+    registry = load_trust_network_registry_receipt(args.registry) if args.registry else None
+    manifest, vendor, identity_attestation, identity_payload, procurement, integration, packs = _registry_status_sources(args)
+    result = verify_trust_network_registry_status_receipt(
+        receipt,
+        registry_receipt=registry,
+        trust_network_manifest=manifest,
+        vendor_identity_receipt=vendor,
+        identity_provider_attestation=identity_attestation,
+        identity_payload=identity_payload,
+        procurement_receipt=procurement,
+        procurement_integration_receipt=integration,
+        proof_packs=packs,
+        key=args.key,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified trust-network registry status receipt: {args.status_receipt}")
+        print(f"status id: {receipt['status_id']}")
+        print(f"status: {result.previous_status} -> {result.new_status}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"trust-network registry status receipt verification failed: {args.status_receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_trust_network_registry_status_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_trust_network_registry_status_receipt(args.status_receipt)
+    registry = load_trust_network_registry_receipt(args.registry) if args.registry else None
+    manifest, vendor, identity_attestation, identity_payload, procurement, integration, packs = _registry_status_sources(args)
+    try:
+        entry = append_trust_network_registry_status_receipt(
+            chain,
+            receipt,
+            registry_receipt=registry,
+            trust_network_manifest=manifest,
+            vendor_identity_receipt=vendor,
+            identity_provider_attestation=identity_attestation,
+            identity_payload=identity_payload,
+            procurement_receipt=procurement,
+            procurement_integration_receipt=integration,
+            proof_packs=packs,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"trust-network registry status append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"trust-network registry status entry: {args.out}")
+    print(f"trust-network registry status entry id: {entry['entry_id']}")
+    print(f"status id: {receipt['status_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+def cmd_marketplace_export(args: argparse.Namespace) -> int:
+    try:
+        catalog = build_marketplace_catalog(
+            root=args.root,
+            contract_templates=args.contract_template,
+            policy_packs=args.policy_pack,
+            publisher=args.publisher,
+            author=args.author,
+            verticals=args.vertical,
+            regulations=args.regulation,
+            status=args.status,
+        )
+    except ValueError as exc:
+        print(f"marketplace catalog export failed: {exc}", file=sys.stderr)
+        return 2
+    result = verify_marketplace_catalog(catalog, root=args.root)
+    if not result.ok:
+        print("marketplace catalog verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_marketplace_catalog(args.out, catalog)
+    if args.markdown:
+        write_marketplace_markdown(args.markdown, catalog)
+        print(f"marketplace markdown: {args.markdown}")
+    print(f"marketplace catalog: {args.out}")
+    print(f"catalog id: {catalog['catalog_id']}")
+    print(f"assets: {result.asset_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_marketplace_verify(args: argparse.Namespace) -> int:
+    result = verify_marketplace_catalog(load_marketplace_catalog(args.catalog), root=args.root)
+    if result.ok:
+        print(f"verified marketplace catalog: {args.catalog}")
+        print(f"assets: {result.asset_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"marketplace catalog verification failed: {args.catalog}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+
+def cmd_marketplace_distribution(args: argparse.Namespace) -> int:
+    catalog = load_marketplace_catalog(args.catalog)
+    try:
+        distribution = build_marketplace_distribution(
+            catalog,
+            root=args.root,
+            channel=args.channel,
+            target=args.target,
+            mode=args.mode,
+            subscriber=args.subscriber,
+            subscriber_ref=args.subscriber_ref,
+            purpose=args.purpose,
+            selected_asset_ids=args.asset_id or None,
+            distributed_at=args.distributed_at,
+            distribution_ref=args.distribution_ref,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"marketplace distribution failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_marketplace_distribution(distribution, catalog=catalog, root=args.root, key=args.key)
+    if not result.ok:
+        print("marketplace distribution verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_marketplace_distribution(args.out, distribution)
+    print(f"marketplace distribution: {args.out}")
+    print(f"distribution id: {distribution['distribution_id']}")
+    print(f"catalog id: {distribution['catalog']['catalog_id']}")
+    print(f"assets: {len(distribution['assets'])}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_marketplace_distribution_verify(args: argparse.Namespace) -> int:
+    distribution = load_marketplace_distribution(args.distribution)
+    catalog = load_marketplace_catalog(args.catalog) if args.catalog else None
+    result = verify_marketplace_distribution(distribution, catalog=catalog, root=args.root, key=args.key)
+    if result.ok:
+        print(f"verified marketplace distribution: {args.distribution}")
+        print(f"distribution id: {distribution['distribution_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"marketplace distribution verification failed: {args.distribution}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_marketplace_distribution_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    distribution = load_marketplace_distribution(args.distribution)
+    catalog = load_marketplace_catalog(args.catalog) if args.catalog else None
+    try:
+        entry = append_marketplace_distribution(chain, distribution, catalog=catalog, root=args.root, key=args.key)
+    except ValueError as exc:
+        print(f"marketplace distribution append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"marketplace distribution entry: {args.out}")
+    print(f"marketplace distribution entry id: {entry['entry_id']}")
+    print(f"distribution id: {distribution['distribution_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_marketplace_author_governance(args: argparse.Namespace) -> int:
+    catalog = load_marketplace_catalog(args.catalog)
+    distribution = load_marketplace_distribution(args.distribution) if args.distribution else None
+    try:
+        receipt = build_marketplace_author_governance(
+            catalog,
+            distribution=distribution,
+            root=args.root,
+            mode=args.mode,
+            author_name=args.author_name,
+            author_ref=args.author_ref,
+            author_kind=args.author_kind,
+            author_organization=args.author_organization,
+            contact_ref=args.contact_ref,
+            identity_provider=args.identity_provider,
+            identity_subject=args.identity_subject,
+            identity_assurance=args.identity_assurance,
+            onboarding_status=args.onboarding_status,
+            agreement_ref=args.agreement_ref,
+            terms_ref=args.terms_ref,
+            license_ref=args.license_ref,
+            ip_attestation_ref=args.ip_attestation_ref,
+            review_ticket_ref=args.review_ticket_ref,
+            review_policy_ref=args.review_policy_ref,
+            reviewer_ref=args.reviewer_ref,
+            reviewer_role=args.reviewer_role,
+            asset_ids=args.asset_id or None,
+            billing_mode=args.billing_mode,
+            billing_account_ref=args.billing_account_ref,
+            entitlement_policy_ref=args.entitlement_policy_ref,
+            payout_account_ref=args.payout_account_ref,
+            revenue_share_bps=args.revenue_share_bps,
+            tax_form_ref=args.tax_form_ref,
+            revocation_policy_ref=args.revocation_policy_ref,
+            support_contact_ref=args.support_contact_ref,
+            security_contact_ref=args.security_contact_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            retention_until=args.retention_until,
+            evidence_refs=args.evidence_ref or [],
+            issued_at=args.issued_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"marketplace author governance failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_marketplace_author_governance(receipt, catalog=catalog, distribution=distribution, root=args.root, key=args.key)
+    if not result.ok:
+        print("marketplace author governance verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_marketplace_author_governance(args.out, receipt)
+    print(f"marketplace author governance: {args.out}")
+    print(f"governance id: {receipt['governance_id']}")
+    print(f"author: {receipt['author']['subject_ref']}")
+    print(f"assets: {len(receipt['assets'])}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_marketplace_author_verify(args: argparse.Namespace) -> int:
+    receipt = load_marketplace_author_governance(args.receipt)
+    catalog = load_marketplace_catalog(args.catalog) if args.catalog else None
+    distribution = load_marketplace_distribution(args.distribution) if args.distribution else None
+    result = verify_marketplace_author_governance(receipt, catalog=catalog, distribution=distribution, root=args.root, key=args.key)
+    if result.ok:
+        print(f"verified marketplace author governance: {args.receipt}")
+        print(f"governance id: {receipt['governance_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"marketplace author governance verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_marketplace_author_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_marketplace_author_governance(args.receipt)
+    catalog = load_marketplace_catalog(args.catalog) if args.catalog else None
+    distribution = load_marketplace_distribution(args.distribution) if args.distribution else None
+    try:
+        entry = append_marketplace_author_governance(chain, receipt, catalog=catalog, distribution=distribution, root=args.root, key=args.key)
+    except ValueError as exc:
+        print(f"marketplace author governance append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"marketplace author governance entry: {args.out}")
+    print(f"marketplace author governance entry id: {entry['entry_id']}")
+    print(f"governance id: {receipt['governance_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_marketplace_settlement(args: argparse.Namespace) -> int:
+    author_governance = load_marketplace_author_governance(args.author_governance)
+    catalog = load_marketplace_catalog(args.catalog) if args.catalog else None
+    distribution = load_marketplace_distribution(args.distribution) if args.distribution else None
+    try:
+        receipt = build_marketplace_settlement(
+            author_governance,
+            catalog=catalog,
+            distribution=distribution,
+            root=args.root,
+            mode=args.mode,
+            settlement_ref=args.settlement_ref,
+            subscriber_ref=args.subscriber_ref,
+            entitlement_check_ref=args.entitlement_check_ref,
+            entitlement_policy_ref=args.entitlement_policy_ref,
+            entitlement_decision=args.entitlement_decision,
+            entitlement_checked_at=args.entitlement_checked_at,
+            asset_ids=args.asset_id or None,
+            period_start=args.period_start,
+            period_end=args.period_end,
+            invoice_ref=args.invoice_ref,
+            gross_amount_usd=args.gross_amount_usd,
+            currency=args.currency,
+            tax_withholding_bps=args.tax_withholding_bps,
+            invoice_status=args.invoice_status,
+            payout_ref=args.payout_ref,
+            payout_provider_ref=args.payout_provider_ref,
+            payout_account_ref=args.payout_account_ref,
+            payout_status=args.payout_status,
+            payout_executed_at=args.payout_executed_at,
+            payout_trace_ref=args.payout_trace_ref,
+            idempotency_key_ref=args.idempotency_key_ref,
+            tax_profile_ref=args.tax_profile_ref,
+            tax_jurisdiction=args.tax_jurisdiction,
+            tax_form_ref=args.tax_form_ref,
+            tax_document_custody_ref=args.tax_document_custody_ref,
+            tax_document_hash=args.tax_document_hash,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            retention_until=args.retention_until,
+            evidence_refs=args.evidence_ref or [],
+            issued_at=args.issued_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"marketplace settlement failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_marketplace_settlement(
+        receipt,
+        author_governance=author_governance,
+        catalog=catalog,
+        distribution=distribution,
+        root=args.root,
+        key=args.key,
+    )
+    if not result.ok:
+        print("marketplace settlement verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_marketplace_settlement(args.out, receipt)
+    print(f"marketplace settlement: {args.out}")
+    print(f"settlement id: {receipt['settlement_id']}")
+    print(f"invoice: {receipt['invoice']['invoice_ref']}")
+    print(f"payout amount: {receipt['payout']['amount_usd']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_marketplace_settlement_verify(args: argparse.Namespace) -> int:
+    receipt = load_marketplace_settlement(args.receipt)
+    author_governance = load_marketplace_author_governance(args.author_governance) if args.author_governance else None
+    catalog = load_marketplace_catalog(args.catalog) if args.catalog else None
+    distribution = load_marketplace_distribution(args.distribution) if args.distribution else None
+    result = verify_marketplace_settlement(
+        receipt,
+        author_governance=author_governance,
+        catalog=catalog,
+        distribution=distribution,
+        root=args.root,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified marketplace settlement: {args.receipt}")
+        print(f"settlement id: {receipt['settlement_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"marketplace settlement verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_marketplace_settlement_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_marketplace_settlement(args.receipt)
+    author_governance = load_marketplace_author_governance(args.author_governance) if args.author_governance else None
+    catalog = load_marketplace_catalog(args.catalog) if args.catalog else None
+    distribution = load_marketplace_distribution(args.distribution) if args.distribution else None
+    try:
+        entry = append_marketplace_settlement(
+            chain,
+            receipt,
+            author_governance=author_governance,
+            catalog=catalog,
+            distribution=distribution,
+            root=args.root,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"marketplace settlement append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"marketplace settlement entry: {args.out}")
+    print(f"marketplace settlement entry id: {entry['entry_id']}")
+    print(f"settlement id: {receipt['settlement_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def _load_trust_network_service_sources(args: argparse.Namespace) -> dict[str, Any]:
+    registry = load_trust_network_registry_receipt(args.registry)
+    manifest = load_trust_network_manifest(args.manifest) if getattr(args, "manifest", None) else None
+    vendor = load_vendor_identity_receipt(args.vendor_identity) if getattr(args, "vendor_identity", None) else None
+    identity_attestation = load_identity_provider_attestation(args.identity_attestation) if getattr(args, "identity_attestation", None) else None
+    identity_payload = _load_json(args.identity_payload) if getattr(args, "identity_payload", None) else None
+    procurement = load_procurement_clause_receipt(args.procurement_receipt) if getattr(args, "procurement_receipt", None) else None
+    integration = load_procurement_integration_receipt(args.procurement_integration) if getattr(args, "procurement_integration", None) else None
+    packs = [load_proof_pack(path) for path in args.pack] if getattr(args, "pack", None) else None
+    registry_status = load_trust_network_registry_status_receipt(args.registry_status) if getattr(args, "registry_status", None) else None
+    marketplace_catalog = load_marketplace_catalog(args.marketplace_catalog) if getattr(args, "marketplace_catalog", None) else None
+    marketplace_distribution = load_marketplace_distribution(args.marketplace_distribution) if getattr(args, "marketplace_distribution", None) else None
+    return {
+        "registry": registry,
+        "manifest": manifest,
+        "vendor": vendor,
+        "identity_attestation": identity_attestation,
+        "identity_payload": identity_payload,
+        "procurement": procurement,
+        "integration": integration,
+        "packs": packs,
+        "registry_status": registry_status,
+        "marketplace_catalog": marketplace_catalog,
+        "marketplace_distribution": marketplace_distribution,
+    }
+
+
+def cmd_trust_network_service_attestation(args: argparse.Namespace) -> int:
+    sources = _load_trust_network_service_sources(args)
+    try:
+        attestation = build_trust_network_service_attestation(
+            sources["registry"],
+            trust_network_manifest=sources["manifest"],
+            vendor_identity_receipt=sources["vendor"],
+            identity_provider_attestation=sources["identity_attestation"],
+            identity_payload=sources["identity_payload"],
+            procurement_receipt=sources["procurement"],
+            procurement_integration_receipt=sources["integration"],
+            proof_packs=sources["packs"],
+            registry_status_receipt=sources["registry_status"],
+            marketplace_catalog=sources["marketplace_catalog"],
+            marketplace_distribution=sources["marketplace_distribution"],
+            root=args.root,
+            mode=args.mode,
+            environment=args.environment,
+            service_kind=args.service_kind,
+            service_ref=args.service_ref,
+            service_version=args.service_version,
+            registry_endpoint=args.registry_endpoint,
+            marketplace_endpoint=args.marketplace_endpoint,
+            service_image=args.service_image,
+            service_image_digest=args.service_image_digest,
+            service_binary_hash=args.service_binary_hash,
+            frontend_bundle_ref=args.frontend_bundle_ref,
+            frontend_bundle_hash=args.frontend_bundle_hash,
+            api_ref=args.api_ref,
+            registry_store_ref=args.registry_store_ref,
+            search_index_ref=args.search_index_ref,
+            entitlement_store_ref=args.entitlement_store_ref,
+            subscription_queue_ref=args.subscription_queue_ref,
+            auth_provider_ref=args.auth_provider_ref,
+            vendor_auth_policy_ref=args.vendor_auth_policy_ref,
+            buyer_auth_policy_ref=args.buyer_auth_policy_ref,
+            subscriber_auth_policy_ref=args.subscriber_auth_policy_ref,
+            rbac_policy_ref=args.rbac_policy_ref,
+            identity_federation_policy_ref=args.identity_federation_policy_ref,
+            procurement_sync_policy_ref=args.procurement_sync_policy_ref,
+            entitlement_policy_ref=args.entitlement_policy_ref,
+            catalog_review_policy_ref=args.catalog_review_policy_ref,
+            revocation_policy_ref=args.revocation_policy_ref,
+            cache_invalidation_policy_ref=args.cache_invalidation_policy_ref,
+            tenant_isolation_ref=args.tenant_isolation_ref,
+            rate_limit_policy_ref=args.rate_limit_policy_ref,
+            request_signing_ref=args.request_signing_ref,
+            network_policy_ref=args.network_policy_ref,
+            egress_policy_ref=args.egress_policy_ref,
+            encryption_key_ref=args.encryption_key_ref,
+            replicas_min=args.replicas_min,
+            replicas_max=args.replicas_max,
+            availability_zones=args.availability_zone,
+            registry_audit_log_ref=args.registry_audit_log_ref,
+            registry_audit_log_root=args.registry_audit_log_root,
+            marketplace_audit_log_ref=args.marketplace_audit_log_ref,
+            marketplace_audit_log_root=args.marketplace_audit_log_root,
+            access_log_ref=args.access_log_ref,
+            access_log_root=args.access_log_root,
+            publication_log_ref=args.publication_log_ref,
+            publication_log_root=args.publication_log_root,
+            metrics_ref=args.metrics_ref,
+            alert_policy_ref=args.alert_policy_ref,
+            retention_until=args.retention_until,
+            actor_ref=args.actor_ref,
+            credential_ref=args.credential_ref,
+            marketplace_credential_ref=args.marketplace_credential_ref,
+            evidence_refs=args.evidence_ref,
+            now=args.now,
+            attested_at=args.attested_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"trust-network service attestation failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_trust_network_service_attestation(
+        attestation,
+        sources["registry"],
+        trust_network_manifest=sources["manifest"],
+        vendor_identity_receipt=sources["vendor"],
+        identity_provider_attestation=sources["identity_attestation"],
+        identity_payload=sources["identity_payload"],
+        procurement_receipt=sources["procurement"],
+        procurement_integration_receipt=sources["integration"],
+        proof_packs=sources["packs"],
+        registry_status_receipt=sources["registry_status"],
+        marketplace_catalog=sources["marketplace_catalog"],
+        marketplace_distribution=sources["marketplace_distribution"],
+        root=args.root,
+        now=args.now,
+        key=args.key,
+    )
+    if not result.ok:
+        print("trust-network service attestation verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_trust_network_service_attestation(args.out, attestation)
+    print(f"trust-network service attestation: {args.out}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"registration id: {attestation['registry']['registration_id']}")
+    print(f"distribution id: {attestation['marketplace'].get('distribution_id')}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_trust_network_service_verify(args: argparse.Namespace) -> int:
+    attestation = load_trust_network_service_attestation(args.attestation)
+    sources = _load_trust_network_service_sources(args)
+    result = verify_trust_network_service_attestation(
+        attestation,
+        sources["registry"],
+        trust_network_manifest=sources["manifest"],
+        vendor_identity_receipt=sources["vendor"],
+        identity_provider_attestation=sources["identity_attestation"],
+        identity_payload=sources["identity_payload"],
+        procurement_receipt=sources["procurement"],
+        procurement_integration_receipt=sources["integration"],
+        proof_packs=sources["packs"],
+        registry_status_receipt=sources["registry_status"],
+        marketplace_catalog=sources["marketplace_catalog"],
+        marketplace_distribution=sources["marketplace_distribution"],
+        root=args.root,
+        now=args.now,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified trust-network service attestation: {args.attestation}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"trust-network service attestation verification failed: {args.attestation}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_trust_network_service_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    attestation = load_trust_network_service_attestation(args.attestation)
+    sources = _load_trust_network_service_sources(args)
+    try:
+        entry = append_trust_network_service_attestation(
+            chain,
+            attestation,
+            sources["registry"],
+            trust_network_manifest=sources["manifest"],
+            vendor_identity_receipt=sources["vendor"],
+            identity_provider_attestation=sources["identity_attestation"],
+            identity_payload=sources["identity_payload"],
+            procurement_receipt=sources["procurement"],
+            procurement_integration_receipt=sources["integration"],
+            proof_packs=sources["packs"],
+            registry_status_receipt=sources["registry_status"],
+            marketplace_catalog=sources["marketplace_catalog"],
+            marketplace_distribution=sources["marketplace_distribution"],
+            root=args.root,
+            now=args.now,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"trust-network service attestation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"trust-network service entry: {args.out}")
+    print(f"trust-network service entry id: {entry['entry_id']}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def _load_trust_network_worker_sources(args: argparse.Namespace) -> dict[str, Any]:
+    sources = _load_trust_network_service_sources(args)
+    sources["service_attestation"] = load_trust_network_service_attestation(args.service_attestation) if getattr(args, "service_attestation", None) else None
+    sources["marketplace_author_governance"] = load_marketplace_author_governance(args.marketplace_author_governance) if getattr(args, "marketplace_author_governance", None) else None
+    sources["marketplace_settlement"] = load_marketplace_settlement(args.marketplace_settlement) if getattr(args, "marketplace_settlement", None) else None
+    return sources
+
+
+def cmd_trust_network_worker(args: argparse.Namespace) -> int:
+    sources = _load_trust_network_worker_sources(args)
+    try:
+        receipt = build_trust_network_worker_receipt(
+            sources["service_attestation"],
+            registry_receipt=sources["registry"],
+            trust_network_manifest=sources["manifest"],
+            vendor_identity_receipt=sources["vendor"],
+            identity_provider_attestation=sources["identity_attestation"],
+            identity_payload=sources["identity_payload"],
+            procurement_receipt=sources["procurement"],
+            procurement_integration_receipt=sources["integration"],
+            proof_packs=sources["packs"],
+            registry_status_receipt=sources["registry_status"],
+            marketplace_catalog=sources["marketplace_catalog"],
+            marketplace_distribution=sources["marketplace_distribution"],
+            marketplace_author_governance=sources["marketplace_author_governance"],
+            marketplace_settlement=sources["marketplace_settlement"],
+            root=args.root,
+            mode=args.mode,
+            environment=args.environment,
+            worker_ref=args.worker_ref,
+            run_ref=args.run_ref,
+            operation_kind=args.operation_kind,
+            actor_ref=args.actor_ref,
+            schedule_ref=args.schedule_ref,
+            cadence_seconds=args.cadence_seconds,
+            lease_ref=args.lease_ref,
+            checkpoint_ref=args.checkpoint_ref,
+            checkpoint_hash=args.checkpoint_hash,
+            previous_cursor_ref=args.previous_cursor_ref,
+            next_cursor_ref=args.next_cursor_ref,
+            attempt=args.attempt,
+            max_attempts=args.max_attempts,
+            queue_ref=args.queue_ref,
+            queue_message_ref=args.queue_message_ref,
+            destination_ref=args.destination_ref,
+            publication_log_ref=args.publication_log_ref,
+            publication_log_root=args.publication_log_root,
+            cache_invalidation_ref=args.cache_invalidation_ref,
+            external_callback_ref=args.external_callback_ref,
+            provider_invoice_log_ref=args.provider_invoice_log_ref,
+            provider_invoice_log_hash=args.provider_invoice_log_hash,
+            provider_payout_log_ref=args.provider_payout_log_ref,
+            provider_payout_log_hash=args.provider_payout_log_hash,
+            provider_tax_custody_ref=args.provider_tax_custody_ref,
+            provider_tax_document_hash=args.provider_tax_document_hash,
+            request_hash=args.request_hash,
+            response_status=args.response_status,
+            response_hash=args.response_hash,
+            metrics_ref=args.metrics_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            credential_ref=args.credential_ref,
+            evidence_refs=args.evidence_ref,
+            started_at=args.started_at,
+            completed_at=args.completed_at,
+            next_run_at=args.next_run_at,
+            error_ref=args.error_ref,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"trust-network worker receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_trust_network_worker_receipt(
+        receipt,
+        service_attestation=sources["service_attestation"],
+        registry_receipt=sources["registry"],
+        trust_network_manifest=sources["manifest"],
+        vendor_identity_receipt=sources["vendor"],
+        identity_provider_attestation=sources["identity_attestation"],
+        identity_payload=sources["identity_payload"],
+        procurement_receipt=sources["procurement"],
+        procurement_integration_receipt=sources["integration"],
+        proof_packs=sources["packs"],
+        registry_status_receipt=sources["registry_status"],
+        marketplace_catalog=sources["marketplace_catalog"],
+        marketplace_distribution=sources["marketplace_distribution"],
+        marketplace_author_governance=sources["marketplace_author_governance"],
+        marketplace_settlement=sources["marketplace_settlement"],
+        root=args.root,
+        key=args.key,
+    )
+    if not result.ok:
+        print("trust-network worker receipt verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_trust_network_worker_receipt(args.out, receipt)
+    print(f"trust-network worker receipt: {args.out}")
+    print(f"worker operation id: {receipt['worker_operation_id']}")
+    print(f"operation: {receipt['worker']['operation_kind']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_trust_network_worker_verify(args: argparse.Namespace) -> int:
+    receipt = load_trust_network_worker_receipt(args.receipt)
+    sources = _load_trust_network_worker_sources(args)
+    result = verify_trust_network_worker_receipt(
+        receipt,
+        service_attestation=sources["service_attestation"],
+        registry_receipt=sources["registry"],
+        trust_network_manifest=sources["manifest"],
+        vendor_identity_receipt=sources["vendor"],
+        identity_provider_attestation=sources["identity_attestation"],
+        identity_payload=sources["identity_payload"],
+        procurement_receipt=sources["procurement"],
+        procurement_integration_receipt=sources["integration"],
+        proof_packs=sources["packs"],
+        registry_status_receipt=sources["registry_status"],
+        marketplace_catalog=sources["marketplace_catalog"],
+        marketplace_distribution=sources["marketplace_distribution"],
+        marketplace_author_governance=sources["marketplace_author_governance"],
+        marketplace_settlement=sources["marketplace_settlement"],
+        root=args.root,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified trust-network worker receipt: {args.receipt}")
+        print(f"worker operation id: {receipt['worker_operation_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"trust-network worker receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_trust_network_worker_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_trust_network_worker_receipt(args.receipt)
+    sources = _load_trust_network_worker_sources(args)
+    try:
+        entry = append_trust_network_worker_receipt(
+            chain,
+            receipt,
+            service_attestation=sources["service_attestation"],
+            registry_receipt=sources["registry"],
+            trust_network_manifest=sources["manifest"],
+            vendor_identity_receipt=sources["vendor"],
+            identity_provider_attestation=sources["identity_attestation"],
+            identity_payload=sources["identity_payload"],
+            procurement_receipt=sources["procurement"],
+            procurement_integration_receipt=sources["integration"],
+            proof_packs=sources["packs"],
+            registry_status_receipt=sources["registry_status"],
+            marketplace_catalog=sources["marketplace_catalog"],
+            marketplace_distribution=sources["marketplace_distribution"],
+            marketplace_author_governance=sources["marketplace_author_governance"],
+            marketplace_settlement=sources["marketplace_settlement"],
+            root=args.root,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"trust-network worker receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"trust-network worker entry: {args.out}")
+    print(f"trust-network worker entry id: {entry['entry_id']}")
+    print(f"worker operation id: {receipt['worker_operation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_serve(args: argparse.Namespace) -> int:
+    slack_signing_secret = args.slack_signing_secret
+    if slack_signing_secret and slack_signing_secret.startswith("env:"):
+        slack_signing_secret = os.environ.get(slack_signing_secret[4:])
+    try:
+        github_webhook_secret = _resolve_secret_arg(args.github_webhook_secret)
+        gitlab_webhook_secret = _resolve_secret_arg(args.gitlab_webhook_secret)
+        provider_lifecycle_operation_token = _resolve_secret_arg(args.provider_lifecycle_operation_token)
+    except ValueError as exc:
+        print(f"serve configuration failed: {exc}", file=sys.stderr)
+        return 1
+    httpd = serve(
+        args.host,
+        args.port,
+        args.state,
+        args.tenant,
+        key=args.key,
+        control_db_path=args.control_db,
+        approval_request_store_path=args.approval_request_store,
+        provider_webhook_store_path=args.provider_webhook_store,
+        insurer_token=args.insurer_token,
+        slack_signing_secret=slack_signing_secret,
+        slack_replay_window_seconds=args.slack_replay_window_seconds,
+        github_webhook_secret=github_webhook_secret,
+        gitlab_webhook_secret=gitlab_webhook_secret,
+        provider_lifecycle_operation_token=provider_lifecycle_operation_token,
+    )
+    host, port = httpd.server_address
+    print(f"TrustAI API listening on http://{host}:{port}")
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        print("stopping TrustAI API")
+    finally:
+        httpd.server_close()
+    return 0
+
+
+def cmd_demo(args: argparse.Namespace) -> int:
+    root = _repo_root()
+    contract_path = root / "examples" / "aitrade" / "verification-contract.yaml"
+    inventory_path = root / "examples" / "aitrade" / "agent-inventory.json"
+    events_path = root / "examples" / "aitrade" / "otel-events.json"
+    mcp_path = root / "examples" / "aitrade" / "mcp-transcript.json"
+    delegation_path = root / "examples" / "aitrade" / "delegation.json"
+    action_path = root / "examples" / "aitrade" / "runtime-action.json"
+    shadow_path = root / "examples" / "aitrade" / "shadow-replay.json"
+    soak_path = root / "examples" / "aitrade" / "soak-window.json"
+    reexecution_policy_path = Path(args.reexecution_policy)
+    if not reexecution_policy_path.is_absolute():
+        reexecution_policy_path = root / reexecution_policy_path
+    reexecution_runner_plan_path = Path(args.reexecution_runner_plan)
+    if not reexecution_runner_plan_path.is_absolute():
+        reexecution_runner_plan_path = root / reexecution_runner_plan_path
+    state_path = Path(args.state)
+    if args.clean and state_path.parent.exists():
+        shutil.rmtree(state_path.parent)
+    chain = EvidenceChain.load(state_path, tenant_id=args.tenant)
+    contract = load_contract(contract_path)
+    register_contract(chain, contract, key=args.key)
+    append_inventory(chain, load_inventory(inventory_path), key=args.key)
+    append_events(chain, load_events(events_path), key=args.key)
+    append_mcp_transcript(chain, load_mcp_transcript(mcp_path), key=args.key)
+    append_delegation(chain, load_delegation(delegation_path), key=args.key)
+    append_runtime_attestation(chain, contract, load_action(action_path), key=args.key)
+    shadow = load_shadow_replay(shadow_path)
+    append_shadow_replay(chain, contract, shadow, key=args.key)
+    append_soak_report(chain, contract, load_soak_window(soak_path), key=args.key)
+    runner_plan = load_reexecution_runner_plan(reexecution_runner_plan_path)
+    runner_plan["contract"] = {"id": contract["id"], "hash": contract_hash(contract), "agent": contract.get("agent")}
+    runner_evidence = run_reexecution_plan(runner_plan, base_dir=root)
+    append_reexecution_runner_evidence(chain, runner_evidence, key=args.key)
+    write_reexecution_runner_evidence(args.reexecution_runner_out, runner_evidence)
+    reexecution_report = build_reexecution_report(
+        contract,
+        runner_results(runner_evidence),
+        temperature=0.0,
+        policy=load_reexecution_policy(reexecution_policy_path),
+    )
+    append_reexecution_report(chain, reexecution_report, key=args.key)
+    write_reexecution_report(args.reexecution_out, reexecution_report)
+    if args.reexecution_markdown:
+        write_reexecution_markdown(args.reexecution_markdown, reexecution_report)
+    eval_entry, gate_entry, decision = append_eval_and_gate(
+        chain,
+        contract,
+        shadow_replay_to_eval_results(contract, shadow),
+        key=args.key,
+    )
+    chain.save()
+    compile_proof_pack(
+        chain,
+        contract,
+        eval_entry,
+        gate_entry,
+        decision,
+        out_path=args.out,
+        pdf_path=args.pdf,
+        key=args.key,
+    )
+    print(f"demo gate outcome: {decision['outcome']}")
+    print(f"state: {state_path}")
+    print(f"re-execution runner evidence: {args.reexecution_runner_out}")
+    print(f"re-execution report: {args.reexecution_out}")
+    if args.reexecution_markdown:
+        print(f"re-execution markdown: {args.reexecution_markdown}")
+    print(f"proof pack: {args.out}")
+    print(f"pdf: {args.pdf}")
+    return 0
+
+
+def cmd_tamper_test(args: argparse.Namespace) -> int:
+    with tempfile.TemporaryDirectory() as tmp:
+        chain = EvidenceChain.load(Path(tmp) / "chain.json", tenant_id="tamper-test")
+        for index in range(args.entries):
+            chain.append("test.event", {"index": index, "digest": content_hash({"index": index})}, key=args.key)
+        chain.save()
+        assert chain.verify_all(key=args.key).ok
+        chain.entries[-1]["payload"]["digest"] = "tampered"
+        result = chain.verify_all(key=args.key)
+        if result.ok:
+            print("tamper test failed: modified chain still verified", file=sys.stderr)
+            return 1
+        print(f"tamper detected across {args.entries} entries")
+        print(result.errors[0])
+        return 0
+
+
+def cmd_tamper_stress_report(args: argparse.Namespace) -> int:
+    try:
+        report = build_tamper_stress_report(
+            entry_count=args.entries,
+            tenant_id=args.tenant,
+            key=args.key,
+            timestamp=args.timestamp,
+            sample_indexes=args.sample_index,
+            tamper_index=args.tamper_index,
+        )
+    except ValueError as exc:
+        print(f"tamper stress report failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_tamper_stress_report(report, key=args.key, deep=False)
+    if not result.ok:
+        for error in result.errors:
+            print(f"error: {error}", file=sys.stderr)
+        return 1
+    write_tamper_stress_report(args.out, report)
+    print(f"tamper stress report: {args.out}")
+    print(f"report id: {report['report_id']}")
+    print(f"entries: {report['chain']['entry_count']}")
+    print(f"tree root: {report['chain']['tree_root']}")
+    print(f"tamper checks detected: {report['summary']['tamper_checks_detected']}/{report['summary']['tamper_checks_total']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_tamper_stress_verify(args: argparse.Namespace) -> int:
+    report = load_tamper_stress_report(args.report)
+    result = verify_tamper_stress_report(report, key=args.key, deep=args.deep)
+    if not result.ok:
+        print("tamper stress report verification failed", file=sys.stderr)
+        for error in result.errors:
+            print(f"error: {error}", file=sys.stderr)
+        return 1
+    print(f"verified tamper stress report: {args.report}")
+    print(f"report id: {report['report_id']}")
+    print(f"entries: {report['chain']['entry_count']}")
+    print(f"tree root: {report['chain']['tree_root']}")
+    if args.deep:
+        print("deep verification: regenerated chain root matched")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def _add_state_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--state", default=DEFAULT_STATE)
+    parser.add_argument("--tenant", default="local")
+
+
+def _add_auto_register(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--auto-register", action="store_true")
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(prog="trustai", description="TrustAI proof-pack CLI")
+    parser.add_argument("--key", help="verification/signing key; defaults to TRUSTAI_SIGNING_KEY or local dev key")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    keyring_cmd = subparsers.add_parser("keyring-init", help="write a local development keyring manifest")
+    keyring_cmd.add_argument("--out", default=".trustai/keyring.local.json")
+    keyring_cmd.add_argument("--tenant", default="local")
+    keyring_cmd.set_defaults(func=cmd_keyring_init)
+
+    keyring_rotate = subparsers.add_parser("keyring-rotate", help="add a rotated local key id to a keyring manifest")
+    keyring_rotate.add_argument("keyring")
+    keyring_rotate.add_argument("--key-id", required=True)
+    keyring_rotate.add_argument("--secret", required=True)
+    keyring_rotate.add_argument("--artifact-secret")
+    keyring_rotate.add_argument("--tsa-secret")
+    keyring_rotate.add_argument("--rotated-at")
+    keyring_rotate.add_argument("--keep-current-active", action="store_true")
+    keyring_rotate.add_argument("--out", default=".trustai/keyring.rotated.local.json")
+    keyring_rotate.set_defaults(func=cmd_keyring_rotate)
+
+    chain_verify = subparsers.add_parser("chain-verify", help="verify an evidence chain directly")
+    _add_state_args(chain_verify)
+    chain_verify.add_argument("--keyring")
+    chain_verify.set_defaults(func=cmd_chain_verify)
+    init = subparsers.add_parser("init", help="initialize an evidence chain")
+    _add_state_args(init)
+    init.set_defaults(func=cmd_init)
+
+
+
+    deployment_manifest = subparsers.add_parser("deployment-manifest", help="write a signed BYOC/self-hosted deployment manifest")
+    deployment_manifest.add_argument("--root", default=".")
+    deployment_manifest.add_argument("--name", default="trustai-reference-deployment")
+    deployment_manifest.add_argument("--mode", choices=["byoc-reference", "self-hosted-reference", "airgap-reference"], default="byoc-reference")
+    deployment_manifest.add_argument("--environment", default="local")
+    deployment_manifest.add_argument("--generated-at")
+    deployment_manifest.add_argument("--out", default="artifacts/deployment-manifest.json")
+    deployment_manifest.add_argument("--markdown", default="artifacts/deployment-manifest.md")
+    deployment_manifest.add_argument("--key")
+    deployment_manifest.set_defaults(func=cmd_deployment_manifest)
+
+    deployment_verify = subparsers.add_parser("deployment-verify", help="verify a signed deployment manifest against the worktree")
+    deployment_verify.add_argument("manifest")
+    deployment_verify.add_argument("--root", default=".")
+    deployment_verify.add_argument("--key")
+    deployment_verify.set_defaults(func=cmd_deployment_verify)
+
+    deployment_append = subparsers.add_parser("deployment-append", help="append a verified deployment manifest as chain evidence")
+    deployment_append.add_argument("manifest")
+    deployment_append.add_argument("--root", default=".")
+    deployment_append.add_argument("--out", default="artifacts/deployment-entry.json")
+    deployment_append.add_argument("--key")
+    _add_state_args(deployment_append)
+    deployment_append.set_defaults(func=cmd_deployment_append)
+
+
+    byoc_operator = subparsers.add_parser("byoc-operator-attestation", help="write a signed BYOC operator and Object Lock attestation")
+    byoc_operator.add_argument("manifest")
+    byoc_operator.add_argument("receipt")
+    byoc_operator.add_argument("--legal-hold")
+    byoc_operator.add_argument("--root", default=".")
+    byoc_operator.add_argument("--store", default=".trustai/worm")
+    byoc_operator.add_argument("--mode", choices=sorted(BYOC_OPERATOR_MODES), default="byoc-operator-attested")
+    byoc_operator.add_argument("--environment", default="local")
+    byoc_operator.add_argument("--operator-ref", required=True)
+    byoc_operator.add_argument("--operator-version", required=True)
+    byoc_operator.add_argument("--operator-image", required=True)
+    byoc_operator.add_argument("--operator-image-digest", required=True)
+    byoc_operator.add_argument("--namespace", required=True)
+    byoc_operator.add_argument("--service-account-ref", required=True)
+    byoc_operator.add_argument("--reconciler-ref", required=True)
+    byoc_operator.add_argument("--upgrade-policy-ref", required=True)
+    byoc_operator.add_argument("--rollback-policy-ref", required=True)
+    byoc_operator.add_argument("--tenant-id", required=True)
+    byoc_operator.add_argument("--customer-account-ref", required=True)
+    byoc_operator.add_argument("--data-plane-ref", required=True)
+    byoc_operator.add_argument("--control-plane-ref")
+    byoc_operator.add_argument("--keyring-ref", required=True)
+    byoc_operator.add_argument("--object-lock-provider", required=True)
+    byoc_operator.add_argument("--object-lock-mode", choices=sorted(OBJECT_LOCK_MODES), default="s3-object-lock-compliance")
+    byoc_operator.add_argument("--object-lock-bucket", required=True)
+    byoc_operator.add_argument("--object-lock-region", required=True)
+    byoc_operator.add_argument("--retention-mode", choices=sorted(RETENTION_MODES), default="compliance")
+    byoc_operator.add_argument("--default-retention-days", type=int, default=2555)
+    byoc_operator.add_argument("--object-lock-enabled", action=argparse.BooleanOptionalAction, default=True)
+    byoc_operator.add_argument("--versioning-enabled", action=argparse.BooleanOptionalAction, default=True)
+    byoc_operator.add_argument("--legal-hold-required", action=argparse.BooleanOptionalAction, default=True)
+    byoc_operator.add_argument("--backup-policy-ref", required=True)
+    byoc_operator.add_argument("--backup-schedule", required=True)
+    byoc_operator.add_argument("--restore-test-ref", required=True)
+    byoc_operator.add_argument("--restore-test-at", required=True)
+    byoc_operator.add_argument("--rpo-minutes", type=int, required=True)
+    byoc_operator.add_argument("--rto-minutes", type=int, required=True)
+    byoc_operator.add_argument("--ingress-mode", required=True)
+    byoc_operator.add_argument("--egress-policy-ref", required=True)
+    byoc_operator.add_argument("--private-endpoint", action=argparse.BooleanOptionalAction, default=True)
+    byoc_operator.add_argument("--allowed-egress-ref", action="append")
+    byoc_operator.add_argument("--airgap-bundle-ref")
+    byoc_operator.add_argument("--airgap-bundle-hash")
+    byoc_operator.add_argument("--audit-log-ref", required=True)
+    byoc_operator.add_argument("--audit-log-root", required=True)
+    byoc_operator.add_argument("--retention-until", required=True)
+    byoc_operator.add_argument("--actor-ref", required=True)
+    byoc_operator.add_argument("--credential-ref", required=True)
+    byoc_operator.add_argument("--evidence-ref", action="append")
+    byoc_operator.add_argument("--attested-at")
+    byoc_operator.add_argument("--out", default="artifacts/byoc-operator-attestation.json")
+    byoc_operator.add_argument("--key")
+    byoc_operator.set_defaults(func=cmd_byoc_operator_attestation)
+
+    byoc_operator_verify = subparsers.add_parser("byoc-operator-verify", help="verify a BYOC operator attestation offline")
+    byoc_operator_verify.add_argument("attestation")
+    byoc_operator_verify.add_argument("manifest")
+    byoc_operator_verify.add_argument("receipt")
+    byoc_operator_verify.add_argument("--legal-hold")
+    byoc_operator_verify.add_argument("--root", default=".")
+    byoc_operator_verify.add_argument("--store", default=".trustai/worm")
+    byoc_operator_verify.add_argument("--key")
+    byoc_operator_verify.set_defaults(func=cmd_byoc_operator_verify)
+
+    byoc_operator_append = subparsers.add_parser("byoc-operator-append", help="append a verified BYOC operator attestation as chain evidence")
+    byoc_operator_append.add_argument("attestation")
+    byoc_operator_append.add_argument("manifest")
+    byoc_operator_append.add_argument("receipt")
+    byoc_operator_append.add_argument("--legal-hold")
+    byoc_operator_append.add_argument("--root", default=".")
+    byoc_operator_append.add_argument("--store", default=".trustai/worm")
+    byoc_operator_append.add_argument("--out", default="artifacts/byoc-operator-entry.json")
+    byoc_operator_append.add_argument("--key")
+    _add_state_args(byoc_operator_append)
+    byoc_operator_append.set_defaults(func=cmd_byoc_operator_append)
+
+    eu_data_plane = subparsers.add_parser("eu-data-plane-attestation", help="write a signed EU data-plane residency and sovereignty attestation")
+    eu_data_plane.add_argument("manifest")
+    eu_data_plane.add_argument("byoc_operator")
+    eu_data_plane.add_argument("--eu-ai-act-document")
+    eu_data_plane.add_argument("--root", default=".")
+    eu_data_plane.add_argument("--mode", choices=sorted(EU_DATA_PLANE_MODES), default="eu-data-plane-attested")
+    eu_data_plane.add_argument("--environment", default="local")
+    eu_data_plane.add_argument("--tenant-id", required=True)
+    eu_data_plane.add_argument("--data-plane-ref", required=True)
+    eu_data_plane.add_argument("--control-plane-ref")
+    eu_data_plane.add_argument("--primary-region", required=True)
+    eu_data_plane.add_argument("--primary-location", default="Frankfurt, Germany")
+    eu_data_plane.add_argument("--availability-zone", action="append")
+    eu_data_plane.add_argument("--replica-region", action="append")
+    eu_data_plane.add_argument("--backup-region", action="append")
+    eu_data_plane.add_argument("--analytics-region")
+    eu_data_plane.add_argument("--log-region")
+    eu_data_plane.add_argument("--data-category", action="append")
+    eu_data_plane.add_argument("--subprocessor-ref", action="append")
+    eu_data_plane.add_argument("--residency-policy-ref", required=True)
+    eu_data_plane.add_argument("--data-classification-policy-ref", required=True)
+    eu_data_plane.add_argument("--dpa-ref", required=True)
+    eu_data_plane.add_argument("--transfer-impact-assessment-ref", required=True)
+    eu_data_plane.add_argument("--scc-ref")
+    eu_data_plane.add_argument("--deletion-policy-ref", required=True)
+    eu_data_plane.add_argument("--data-export-policy-ref", required=True)
+    eu_data_plane.add_argument("--encryption-key-ref", required=True)
+    eu_data_plane.add_argument("--kms-key-region", required=True)
+    eu_data_plane.add_argument("--key-access-policy-ref", required=True)
+    eu_data_plane.add_argument("--hsm-ref")
+    eu_data_plane.add_argument("--customer-managed-keys", action=argparse.BooleanOptionalAction, default=True)
+    eu_data_plane.add_argument("--cross-border-egress-allowed", action=argparse.BooleanOptionalAction, default=False)
+    eu_data_plane.add_argument("--network-policy-ref", required=True)
+    eu_data_plane.add_argument("--support-access-policy-ref", required=True)
+    eu_data_plane.add_argument("--support-access-jit", action=argparse.BooleanOptionalAction, default=True)
+    eu_data_plane.add_argument("--breakglass-policy-ref", required=True)
+    eu_data_plane.add_argument("--audit-log-ref", required=True)
+    eu_data_plane.add_argument("--audit-log-root", required=True)
+    eu_data_plane.add_argument("--access-log-ref", required=True)
+    eu_data_plane.add_argument("--access-log-root", required=True)
+    eu_data_plane.add_argument("--transfer-log-ref", required=True)
+    eu_data_plane.add_argument("--transfer-log-root", required=True)
+    eu_data_plane.add_argument("--retention-until", required=True)
+    eu_data_plane.add_argument("--actor-ref", required=True)
+    eu_data_plane.add_argument("--credential-ref", required=True)
+    eu_data_plane.add_argument("--evidence-ref", action="append")
+    eu_data_plane.add_argument("--attested-at")
+    eu_data_plane.add_argument("--out", default="artifacts/eu-data-plane-attestation.json")
+    eu_data_plane.add_argument("--key")
+    eu_data_plane.set_defaults(func=cmd_eu_data_plane_attestation)
+
+    eu_data_plane_verify = subparsers.add_parser("eu-data-plane-verify", help="verify an EU data-plane residency and sovereignty attestation offline")
+    eu_data_plane_verify.add_argument("attestation")
+    eu_data_plane_verify.add_argument("manifest")
+    eu_data_plane_verify.add_argument("byoc_operator")
+    eu_data_plane_verify.add_argument("--eu-ai-act-document")
+    eu_data_plane_verify.add_argument("--root", default=".")
+    eu_data_plane_verify.add_argument("--key")
+    eu_data_plane_verify.set_defaults(func=cmd_eu_data_plane_verify)
+
+    eu_data_plane_append = subparsers.add_parser("eu-data-plane-append", help="append a verified EU data-plane attestation as chain evidence")
+    eu_data_plane_append.add_argument("attestation")
+    eu_data_plane_append.add_argument("manifest")
+    eu_data_plane_append.add_argument("byoc_operator")
+    eu_data_plane_append.add_argument("--eu-ai-act-document")
+    eu_data_plane_append.add_argument("--root", default=".")
+    eu_data_plane_append.add_argument("--out", default="artifacts/eu-data-plane-entry.json")
+    eu_data_plane_append.add_argument("--key")
+    _add_state_args(eu_data_plane_append)
+    eu_data_plane_append.set_defaults(func=cmd_eu_data_plane_append)
+    collector_topology = subparsers.add_parser("collector-topology", help="write a signed collector topology manifest")
+    collector_topology.add_argument("--root", default=".")
+    collector_topology.add_argument("--name", default="trustai-local-collector")
+    collector_topology.add_argument("--mode", choices=["local-reference", "byoc-reference", "self-hosted-reference", "production-design"], default="local-reference")
+    collector_topology.add_argument("--environment", default="local")
+    collector_topology.add_argument("--generated-at")
+    collector_topology.add_argument("--out", default="artifacts/collector-topology.json")
+    collector_topology.add_argument("--markdown", default="artifacts/collector-topology.md")
+    collector_topology.add_argument("--key")
+    collector_topology.set_defaults(func=cmd_collector_topology)
+
+    collector_topology_verify = subparsers.add_parser("collector-topology-verify", help="verify a signed collector topology against the worktree")
+    collector_topology_verify.add_argument("topology")
+    collector_topology_verify.add_argument("--root", default=".")
+    collector_topology_verify.add_argument("--key")
+    collector_topology_verify.set_defaults(func=cmd_collector_topology_verify)
+
+    collector_topology_append = subparsers.add_parser("collector-topology-append", help="append a verified collector topology as chain evidence")
+    collector_topology_append.add_argument("topology")
+    collector_topology_append.add_argument("--root", default=".")
+    collector_topology_append.add_argument("--out", default="artifacts/collector-topology-entry.json")
+    collector_topology_append.add_argument("--key")
+    _add_state_args(collector_topology_append)
+    collector_topology_append.set_defaults(func=cmd_collector_topology_append)
+
+    collector_service = subparsers.add_parser("collector-service-attestation", help="write a signed collector service hardening attestation")
+    collector_service.add_argument("topology")
+    collector_service.add_argument("--byoc-operator")
+    collector_service.add_argument("--deployment-manifest")
+    collector_service.add_argument("--worm-receipt")
+    collector_service.add_argument("--legal-hold")
+    collector_service.add_argument("--root", default=".")
+    collector_service.add_argument("--store", default=".trustai/worm")
+    collector_service.add_argument("--mode", choices=sorted(COLLECTOR_SERVICE_MODES), default="byoc-service-attested")
+    collector_service.add_argument("--environment", default="local")
+    collector_service.add_argument("--service-ref", required=True)
+    collector_service.add_argument("--service-version", required=True)
+    collector_service.add_argument("--collector-image", required=True)
+    collector_service.add_argument("--collector-image-digest", required=True)
+    collector_service.add_argument("--collector-binary-hash", required=True)
+    collector_service.add_argument("--replicas-min", type=int, required=True)
+    collector_service.add_argument("--replicas-max", type=int, required=True)
+    collector_service.add_argument("--availability-zone", action="append")
+    collector_service.add_argument("--mtls-policy-ref", required=True)
+    collector_service.add_argument("--auth-policy-ref", required=True)
+    collector_service.add_argument("--tenant-isolation-ref", required=True)
+    collector_service.add_argument("--rate-limit-policy-ref", required=True)
+    collector_service.add_argument("--replay-cache-ref", required=True)
+    collector_service.add_argument("--idempotency-store-ref", required=True)
+    collector_service.add_argument("--ingress-ref", required=True)
+    collector_service.add_argument("--network-policy-ref", required=True)
+    collector_service.add_argument("--egress-policy-ref", required=True)
+    collector_service.add_argument("--stream-backend", choices=sorted(STREAM_BACKENDS), default="redpanda")
+    collector_service.add_argument("--stream-ref", required=True)
+    collector_service.add_argument("--stream-topic", required=True)
+    collector_service.add_argument("--stream-retention-hours", type=int, required=True)
+    collector_service.add_argument("--stream-tls", action=argparse.BooleanOptionalAction, default=True)
+    collector_service.add_argument("--stream-dlq-ref", required=True)
+    collector_service.add_argument("--clickhouse-ref", required=True)
+    collector_service.add_argument("--clickhouse-retention-days", type=int, required=True)
+    collector_service.add_argument("--clickhouse-backup-ref", required=True)
+    collector_service.add_argument("--postgres-ref", required=True)
+    collector_service.add_argument("--postgres-schema-hash", required=True)
+    collector_service.add_argument("--postgres-backup-ref", required=True)
+    collector_service.add_argument("--mcp-proxy-ref", required=True)
+    collector_service.add_argument("--mcp-proxy-image-digest", required=True)
+    collector_service.add_argument("--framework-hook-ref", action="append")
+    collector_service.add_argument("--audit-log-ref", required=True)
+    collector_service.add_argument("--audit-log-root", required=True)
+    collector_service.add_argument("--retention-until", required=True)
+    collector_service.add_argument("--actor-ref", required=True)
+    collector_service.add_argument("--credential-ref", required=True)
+    collector_service.add_argument("--evidence-ref", action="append")
+    collector_service.add_argument("--attested-at")
+    collector_service.add_argument("--out", default="artifacts/collector-service-attestation.json")
+    collector_service.add_argument("--key")
+    collector_service.set_defaults(func=cmd_collector_service_attestation)
+
+    collector_service_verify = subparsers.add_parser("collector-service-verify", help="verify a collector service hardening attestation offline")
+    collector_service_verify.add_argument("attestation")
+    collector_service_verify.add_argument("topology")
+    collector_service_verify.add_argument("--byoc-operator")
+    collector_service_verify.add_argument("--deployment-manifest")
+    collector_service_verify.add_argument("--worm-receipt")
+    collector_service_verify.add_argument("--legal-hold")
+    collector_service_verify.add_argument("--root", default=".")
+    collector_service_verify.add_argument("--store", default=".trustai/worm")
+    collector_service_verify.add_argument("--key")
+    collector_service_verify.set_defaults(func=cmd_collector_service_verify)
+
+    collector_service_append = subparsers.add_parser("collector-service-append", help="append a verified collector service attestation as chain evidence")
+    collector_service_append.add_argument("attestation")
+    collector_service_append.add_argument("topology")
+    collector_service_append.add_argument("--byoc-operator")
+    collector_service_append.add_argument("--deployment-manifest")
+    collector_service_append.add_argument("--worm-receipt")
+    collector_service_append.add_argument("--legal-hold")
+    collector_service_append.add_argument("--root", default=".")
+    collector_service_append.add_argument("--store", default=".trustai/worm")
+    collector_service_append.add_argument("--out", default="artifacts/collector-service-entry.json")
+    collector_service_append.add_argument("--key")
+    _add_state_args(collector_service_append)
+    collector_service_append.set_defaults(func=cmd_collector_service_append)
+
+    def _add_collector_worker_sources(parser: argparse.ArgumentParser, include_receipt: bool = False) -> None:
+        if include_receipt:
+            parser.add_argument("receipt")
+        parser.add_argument("--service-attestation", required=True)
+        parser.add_argument("topology")
+        parser.add_argument("--byoc-operator")
+        parser.add_argument("--deployment-manifest")
+        parser.add_argument("--worm-receipt")
+        parser.add_argument("--legal-hold")
+        parser.add_argument("--root", default=".")
+        parser.add_argument("--store", default=".trustai/worm")
+        parser.add_argument("--key")
+
+    def _add_collector_worker_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--mode", choices=sorted(COLLECTOR_WORKER_MODES), default="hosted-worker")
+        parser.add_argument("--environment", default="local")
+        parser.add_argument("--worker-ref", required=True)
+        parser.add_argument("--run-ref", required=True)
+        parser.add_argument("--operation-kind", choices=sorted(COLLECTOR_WORKER_OPERATION_KINDS), required=True)
+        parser.add_argument("--actor-ref", required=True)
+        parser.add_argument("--schedule-ref", required=True)
+        parser.add_argument("--cadence-seconds", type=int, required=True)
+        parser.add_argument("--lease-ref", required=True)
+        parser.add_argument("--checkpoint-ref", required=True)
+        parser.add_argument("--checkpoint-hash")
+        parser.add_argument("--previous-cursor-ref")
+        parser.add_argument("--next-cursor-ref")
+        parser.add_argument("--next-run-at")
+        parser.add_argument("--attempt", type=int, default=1)
+        parser.add_argument("--max-attempts", type=int, default=3)
+        parser.add_argument("--tenant-ref", required=True)
+        parser.add_argument("--trace-batch-ref", required=True)
+        parser.add_argument("--trace-batch-hash", required=True)
+        parser.add_argument("--source-endpoint-ref", required=True)
+        parser.add_argument("--received-span-count", type=int, required=True)
+        parser.add_argument("--accepted-span-count", type=int, required=True)
+        parser.add_argument("--rejected-span-count", type=int, default=0)
+        parser.add_argument("--idempotency-key-hash", required=True)
+        parser.add_argument("--replay-cache-hit", action="store_true")
+        parser.add_argument("--otlp-request-hash")
+        parser.add_argument("--otlp-response-status", type=int)
+        parser.add_argument("--otlp-response-hash")
+        parser.add_argument("--stream-ref", required=True)
+        parser.add_argument("--stream-topic", required=True)
+        parser.add_argument("--partition-ref")
+        parser.add_argument("--offset-start", type=int)
+        parser.add_argument("--offset-end", type=int)
+        parser.add_argument("--stream-message-ref", required=True)
+        parser.add_argument("--stream-message-hash", required=True)
+        parser.add_argument("--stream-dlq-ref")
+        parser.add_argument("--clickhouse-batch-ref", required=True)
+        parser.add_argument("--clickhouse-batch-hash", required=True)
+        parser.add_argument("--clickhouse-rows-written", type=int, required=True)
+        parser.add_argument("--postgres-index-ref", required=True)
+        parser.add_argument("--postgres-index-hash", required=True)
+        parser.add_argument("--postgres-rows-written", type=int, required=True)
+        parser.add_argument("--control-index-ref", required=True)
+        parser.add_argument("--control-index-hash", required=True)
+        parser.add_argument("--mcp-transcript-ref")
+        parser.add_argument("--mcp-transcript-hash")
+        parser.add_argument("--framework-hook-ref")
+        parser.add_argument("--framework-hook-hash")
+        parser.add_argument("--metrics-ref", required=True)
+        parser.add_argument("--audit-log-ref", required=True)
+        parser.add_argument("--audit-log-root", required=True)
+        parser.add_argument("--retention-until", required=True)
+        parser.add_argument("--credential-ref", required=True)
+        parser.add_argument("--evidence-ref", action="append")
+        parser.add_argument("--started-at", required=True)
+        parser.add_argument("--completed-at")
+        parser.add_argument("--error-ref")
+        parser.add_argument("--out", default="artifacts/collector-worker.json")
+
+    collector_worker = subparsers.add_parser("collector-worker", help="write a signed collector worker operation receipt")
+    _add_collector_worker_sources(collector_worker)
+    _add_collector_worker_fields(collector_worker)
+    collector_worker.set_defaults(func=cmd_collector_worker)
+
+    collector_worker_verify = subparsers.add_parser("collector-worker-verify", help="verify a signed collector worker operation receipt")
+    _add_collector_worker_sources(collector_worker_verify, include_receipt=True)
+    collector_worker_verify.set_defaults(func=cmd_collector_worker_verify)
+
+    collector_worker_append = subparsers.add_parser("collector-worker-append", help="append a verified collector worker operation receipt")
+    _add_collector_worker_sources(collector_worker_append, include_receipt=True)
+    collector_worker_append.add_argument("--out", default="artifacts/collector-worker-entry.json")
+    _add_state_args(collector_worker_append)
+    collector_worker_append.set_defaults(func=cmd_collector_worker_append)
+    trust_authority_receipt = subparsers.add_parser("trust-authority-receipt", help="write a signed receipt for keyring-verified chain and proof-pack trust material")
+    trust_authority_receipt.add_argument("--keyring", required=True)
+    trust_authority_receipt.add_argument("--pack")
+    trust_authority_receipt.add_argument("--generated-at")
+    trust_authority_receipt.add_argument("--out", default="artifacts/trust-authority-receipt.json")
+    trust_authority_receipt.add_argument("--key")
+    _add_state_args(trust_authority_receipt)
+    trust_authority_receipt.set_defaults(func=cmd_trust_authority_receipt)
+
+    trust_authority_verify = subparsers.add_parser("trust-authority-verify", help="verify a signed trust authority receipt")
+    trust_authority_verify.add_argument("receipt")
+    trust_authority_verify.add_argument("--keyring", required=True)
+    trust_authority_verify.add_argument("--pack")
+    trust_authority_verify.add_argument("--key")
+    _add_state_args(trust_authority_verify)
+    trust_authority_verify.set_defaults(func=cmd_trust_authority_verify)
+
+    trust_authority_append = subparsers.add_parser("trust-authority-append", help="append a verified trust authority receipt as chain evidence")
+    trust_authority_append.add_argument("receipt")
+    trust_authority_append.add_argument("--source-state", required=True)
+    trust_authority_append.add_argument("--source-tenant", default="local")
+    trust_authority_append.add_argument("--keyring", required=True)
+    trust_authority_append.add_argument("--pack")
+    trust_authority_append.add_argument("--out", default="artifacts/trust-authority-entry.json")
+    trust_authority_append.add_argument("--key")
+    _add_state_args(trust_authority_append)
+    trust_authority_append.set_defaults(func=cmd_trust_authority_append)
+    trust_authority_provider = subparsers.add_parser("trust-authority-provider-attestation", help="write a signed KMS/TSA provider attestation for a trust authority receipt")
+    trust_authority_provider.add_argument("receipt")
+    trust_authority_provider.add_argument("--source-state", required=True)
+    trust_authority_provider.add_argument("--source-tenant", default="local")
+    trust_authority_provider.add_argument("--keyring", required=True)
+    trust_authority_provider.add_argument("--pack")
+    trust_authority_provider.add_argument("--mode", choices=sorted(TRUST_AUTHORITY_PROVIDER_MODES), default="provider-attested")
+    trust_authority_provider.add_argument("--environment", default="local")
+    trust_authority_provider.add_argument("--kms-provider", required=True)
+    trust_authority_provider.add_argument("--kms-endpoint", required=True)
+    trust_authority_provider.add_argument("--kms-key-ref", required=True)
+    trust_authority_provider.add_argument("--kms-key-algorithm", default="HMAC-SHA256")
+    trust_authority_provider.add_argument("--kms-request-hash", required=True)
+    trust_authority_provider.add_argument("--kms-response-status", type=int, required=True)
+    trust_authority_provider.add_argument("--kms-response-hash", required=True)
+    trust_authority_provider.add_argument("--tsa-provider", required=True)
+    trust_authority_provider.add_argument("--tsa-endpoint", required=True)
+    trust_authority_provider.add_argument("--tsa-request-hash", required=True)
+    trust_authority_provider.add_argument("--tsa-response-status", type=int, required=True)
+    trust_authority_provider.add_argument("--tsa-response-hash", required=True)
+    trust_authority_provider.add_argument("--tsa-certificate-chain-hash", required=True)
+    trust_authority_provider.add_argument("--actor-ref", required=True)
+    trust_authority_provider.add_argument("--credential-ref", required=True)
+    trust_authority_provider.add_argument("--audit-log-ref", required=True)
+    trust_authority_provider.add_argument("--audit-log-root", required=True)
+    trust_authority_provider.add_argument("--retention-until", required=True)
+    trust_authority_provider.add_argument("--key-policy-ref")
+    trust_authority_provider.add_argument("--key-policy-hash")
+    trust_authority_provider.add_argument("--timestamp-policy-ref")
+    trust_authority_provider.add_argument("--timestamp-policy-hash")
+    trust_authority_provider.add_argument("--evidence-ref", action="append")
+    trust_authority_provider.add_argument("--attested-at")
+    trust_authority_provider.add_argument("--out", default="artifacts/trust-authority-provider-attestation.json")
+    trust_authority_provider.add_argument("--key")
+    trust_authority_provider.set_defaults(func=cmd_trust_authority_provider_attestation)
+
+    trust_authority_provider_verify = subparsers.add_parser("trust-authority-provider-verify", help="verify a signed KMS/TSA provider attestation")
+    trust_authority_provider_verify.add_argument("attestation")
+    trust_authority_provider_verify.add_argument("receipt")
+    trust_authority_provider_verify.add_argument("--source-state", required=True)
+    trust_authority_provider_verify.add_argument("--source-tenant", default="local")
+    trust_authority_provider_verify.add_argument("--keyring", required=True)
+    trust_authority_provider_verify.add_argument("--pack")
+    trust_authority_provider_verify.add_argument("--key")
+    trust_authority_provider_verify.set_defaults(func=cmd_trust_authority_provider_verify)
+
+    trust_authority_provider_append = subparsers.add_parser("trust-authority-provider-append", help="append a verified KMS/TSA provider attestation as chain evidence")
+    trust_authority_provider_append.add_argument("attestation")
+    trust_authority_provider_append.add_argument("receipt")
+    trust_authority_provider_append.add_argument("--source-state", required=True)
+    trust_authority_provider_append.add_argument("--source-tenant", default="local")
+    trust_authority_provider_append.add_argument("--keyring", required=True)
+    trust_authority_provider_append.add_argument("--pack")
+    trust_authority_provider_append.add_argument("--out", default="artifacts/trust-authority-provider-entry.json")
+    trust_authority_provider_append.add_argument("--key")
+    _add_state_args(trust_authority_provider_append)
+    trust_authority_provider_append.set_defaults(func=cmd_trust_authority_provider_append)
+    trust_authority_kms = subparsers.add_parser("trust-authority-kms-enforcement", help="write a KMS/HSM enforcement receipt for a trust authority provider attestation")
+    trust_authority_kms.add_argument("provider_attestation")
+    trust_authority_kms.add_argument("receipt")
+    trust_authority_kms.add_argument("--source-state", required=True)
+    trust_authority_kms.add_argument("--source-tenant", default="local")
+    trust_authority_kms.add_argument("--keyring", required=True)
+    trust_authority_kms.add_argument("--pack")
+    trust_authority_kms.add_argument("--mode", choices=sorted(TRUST_AUTHORITY_KMS_ENFORCEMENT_MODES), default="provider-enforced")
+    trust_authority_kms.add_argument("--enforcement-ref")
+    trust_authority_kms.add_argument("--provider", required=True)
+    trust_authority_kms.add_argument("--provider-endpoint", required=True)
+    trust_authority_kms.add_argument("--credential-ref", required=True)
+    trust_authority_kms.add_argument("--actor-ref")
+    trust_authority_kms.add_argument("--key-ref")
+    trust_authority_kms.add_argument("--key-provider")
+    trust_authority_kms.add_argument("--key-algorithm")
+    trust_authority_kms.add_argument("--key-status", default="active")
+    trust_authority_kms.add_argument("--hsm-attestation-ref")
+    trust_authority_kms.add_argument("--hsm-attestation-hash")
+    trust_authority_kms.add_argument("--key-policy-ref")
+    trust_authority_kms.add_argument("--key-policy-hash")
+    trust_authority_kms.add_argument("--timestamp-policy-ref")
+    trust_authority_kms.add_argument("--timestamp-policy-hash")
+    trust_authority_kms.add_argument("--timestamp-attestation-ref")
+    trust_authority_kms.add_argument("--timestamp-attestation-hash")
+    trust_authority_kms.add_argument("--allowed-actor-ref", action="append")
+    trust_authority_kms.add_argument("--key-usage", action="append")
+    trust_authority_kms.add_argument("--denied-operation-ref", action="append")
+    trust_authority_kms.add_argument("--quorum-required", type=int, default=1)
+    trust_authority_kms.add_argument("--quorum-approver-ref", action="append")
+    trust_authority_kms.add_argument("--rotation-ref")
+    trust_authority_kms.add_argument("--revocation-ref")
+    trust_authority_kms.add_argument("--audit-log-ref")
+    trust_authority_kms.add_argument("--audit-log-root")
+    trust_authority_kms.add_argument("--audit-log-size", type=int)
+    trust_authority_kms.add_argument("--audit-log-algorithm")
+    trust_authority_kms.add_argument("--evidence-ref", action="append")
+    trust_authority_kms.add_argument("--enforced-at")
+    trust_authority_kms.add_argument("--response-status", type=int)
+    trust_authority_kms.add_argument("--response-body")
+    trust_authority_kms.add_argument("--now")
+    trust_authority_kms.add_argument("--out", default="artifacts/trust-authority-kms-enforcement.json")
+    trust_authority_kms.add_argument("--key")
+    trust_authority_kms.set_defaults(func=cmd_trust_authority_kms_enforcement)
+
+    trust_authority_kms_verify = subparsers.add_parser("trust-authority-kms-enforcement-verify", help="verify a trust authority KMS/HSM enforcement receipt")
+    trust_authority_kms_verify.add_argument("enforcement")
+    trust_authority_kms_verify.add_argument("provider_attestation")
+    trust_authority_kms_verify.add_argument("receipt")
+    trust_authority_kms_verify.add_argument("--source-state", required=True)
+    trust_authority_kms_verify.add_argument("--source-tenant", default="local")
+    trust_authority_kms_verify.add_argument("--keyring", required=True)
+    trust_authority_kms_verify.add_argument("--pack")
+    trust_authority_kms_verify.add_argument("--now")
+    trust_authority_kms_verify.add_argument("--key")
+    trust_authority_kms_verify.set_defaults(func=cmd_trust_authority_kms_enforcement_verify)
+
+    trust_authority_kms_append = subparsers.add_parser("trust-authority-kms-enforcement-append", help="append a trust authority KMS/HSM enforcement receipt as chain evidence")
+    trust_authority_kms_append.add_argument("enforcement")
+    trust_authority_kms_append.add_argument("provider_attestation")
+    trust_authority_kms_append.add_argument("receipt")
+    trust_authority_kms_append.add_argument("--source-state", required=True)
+    trust_authority_kms_append.add_argument("--source-tenant", default="local")
+    trust_authority_kms_append.add_argument("--keyring", required=True)
+    trust_authority_kms_append.add_argument("--pack")
+    trust_authority_kms_append.add_argument("--out", default="artifacts/trust-authority-kms-enforcement-entry.json")
+    trust_authority_kms_append.add_argument("--key")
+    _add_state_args(trust_authority_kms_append)
+    trust_authority_kms_append.set_defaults(func=cmd_trust_authority_kms_enforcement_append)
+
+    anchor = subparsers.add_parser("anchor", help="publish a signed timestamped chain-root anchor")
+    _add_state_args(anchor)
+    anchor.add_argument("--out", default="artifacts/chain-anchor.json")
+    anchor.set_defaults(func=cmd_anchor)
+
+    anchor_provider_receipt = subparsers.add_parser("anchor-provider-receipt", help="record external/public provider anchoring for a chain anchor")
+    anchor_provider_receipt.add_argument("anchor_entry")
+    anchor_provider_receipt.add_argument("--source-state")
+    anchor_provider_receipt.add_argument("--source-tenant", default="local")
+    anchor_provider_receipt.add_argument("--mode", choices=sorted(ANCHOR_PROVIDER_MODES), default="provider-anchored")
+    anchor_provider_receipt.add_argument("--environment", default="local")
+    anchor_provider_receipt.add_argument("--provider", required=True)
+    anchor_provider_receipt.add_argument("--endpoint", required=True)
+    anchor_provider_receipt.add_argument("--publication-ref", required=True)
+    anchor_provider_receipt.add_argument("--request-hash", required=True)
+    anchor_provider_receipt.add_argument("--response-status", type=int, required=True)
+    anchor_provider_receipt.add_argument("--response-hash", required=True)
+    anchor_provider_receipt.add_argument("--public-log-ref", required=True)
+    anchor_provider_receipt.add_argument("--public-log-root", required=True)
+    anchor_provider_receipt.add_argument("--public-log-size", type=int, required=True)
+    anchor_provider_receipt.add_argument("--public-log-entry-ref", required=True)
+    anchor_provider_receipt.add_argument("--inclusion-proof-hash")
+    anchor_provider_receipt.add_argument("--consistency-proof-hash")
+    anchor_provider_receipt.add_argument("--blockchain-network")
+    anchor_provider_receipt.add_argument("--blockchain-tx-ref")
+    anchor_provider_receipt.add_argument("--blockchain-block-ref")
+    anchor_provider_receipt.add_argument("--witness-ref", action="append")
+    anchor_provider_receipt.add_argument("--actor-ref", required=True)
+    anchor_provider_receipt.add_argument("--credential-ref", required=True)
+    anchor_provider_receipt.add_argument("--audit-log-ref", required=True)
+    anchor_provider_receipt.add_argument("--audit-log-root", required=True)
+    anchor_provider_receipt.add_argument("--retention-until", required=True)
+    anchor_provider_receipt.add_argument("--evidence-ref", action="append")
+    anchor_provider_receipt.add_argument("--published-at")
+    anchor_provider_receipt.add_argument("--out", default="artifacts/chain-anchor-provider.json")
+    anchor_provider_receipt.add_argument("--key")
+    anchor_provider_receipt.set_defaults(func=cmd_anchor_provider_receipt)
+
+    anchor_provider_verify = subparsers.add_parser("anchor-provider-verify", help="verify an external/public anchor provider receipt")
+    anchor_provider_verify.add_argument("receipt")
+    anchor_provider_verify.add_argument("anchor_entry")
+    anchor_provider_verify.add_argument("--source-state")
+    anchor_provider_verify.add_argument("--source-tenant", default="local")
+    anchor_provider_verify.add_argument("--key")
+    anchor_provider_verify.set_defaults(func=cmd_anchor_provider_verify)
+
+    anchor_provider_append = subparsers.add_parser("anchor-provider-append", help="append a verified anchor provider receipt as chain evidence")
+    anchor_provider_append.add_argument("receipt")
+    anchor_provider_append.add_argument("anchor_entry")
+    anchor_provider_append.add_argument("--source-state")
+    anchor_provider_append.add_argument("--source-tenant", default="local")
+    anchor_provider_append.add_argument("--out", default="artifacts/chain-anchor-provider-entry.json")
+    anchor_provider_append.add_argument("--key")
+    _add_state_args(anchor_provider_append)
+    anchor_provider_append.set_defaults(func=cmd_anchor_provider_append)
+
+    seal = subparsers.add_parser("seal", help="store an artifact in the local WORM object store")
+    seal.add_argument("artifact")
+    seal.add_argument("--store", default=".trustai/worm")
+    seal.add_argument("--artifact-type", default="generic")
+    seal.add_argument("--retention-until", default="2033-01-01T00:00:00Z")
+    seal.add_argument("--out")
+    seal.set_defaults(func=cmd_seal)
+
+    worm_legal_hold = subparsers.add_parser("worm-legal-hold", help="write a local WORM legal-hold receipt")
+    worm_legal_hold.add_argument("receipt")
+    worm_legal_hold.add_argument("--store", default=".trustai/worm")
+    worm_legal_hold.add_argument("--case-id", required=True)
+    worm_legal_hold.add_argument("--reason", required=True)
+    worm_legal_hold.add_argument("--applied-by", required=True)
+    worm_legal_hold.add_argument("--applied-at")
+    worm_legal_hold.add_argument("--out")
+    worm_legal_hold.set_defaults(func=cmd_worm_legal_hold)
+
+    worm_audit = subparsers.add_parser("worm-audit", help="verify a local WORM receipt, retention status, and optional legal hold")
+    worm_audit.add_argument("receipt")
+    worm_audit.add_argument("--store", default=".trustai/worm")
+    worm_audit.add_argument("--now")
+    worm_audit.add_argument("--legal-hold")
+    worm_audit.set_defaults(func=cmd_worm_audit)
+    control_index = subparsers.add_parser("control-index", help="index a chain and optional proof pack into the local control-plane database")
+    control_index.add_argument("--db", default=".trustai/control-plane.sqlite")
+    control_index.add_argument("--pack")
+    _add_state_args(control_index)
+    control_index.set_defaults(func=cmd_control_index)
+
+    control_summary = subparsers.add_parser("control-summary", help="print local control-plane registry summary")
+    control_summary.add_argument("--db", default=".trustai/control-plane.sqlite")
+    control_summary.add_argument("--agents", action="store_true")
+    control_summary.add_argument("--proof-packs", action="store_true")
+    control_summary.set_defaults(func=cmd_control_summary)
+    register = subparsers.add_parser("register", help="register a verification contract")
+    register.add_argument("contract")
+    _add_state_args(register)
+    register.set_defaults(func=cmd_register)
+
+    approve = subparsers.add_parser("approve", help="append a human approval evidence event")
+    approve.add_argument("contract")
+    approve.add_argument("approval")
+    approve.add_argument("--out", default="artifacts/approval-entry.json")
+    _add_state_args(approve)
+    _add_auto_register(approve)
+    approve.set_defaults(func=cmd_approve)
+
+    inventory = subparsers.add_parser("inventory", help="append discovered agent inventory to the chain")
+    inventory.add_argument("inventory")
+    _add_state_args(inventory)
+    inventory.set_defaults(func=cmd_inventory)
+
+    identity_inventory = subparsers.add_parser("identity-inventory", help="append Okta/Entra/ServiceNow identity inventory to the chain")
+    identity_inventory.add_argument("inventory")
+    _add_state_args(identity_inventory)
+    identity_inventory.set_defaults(func=cmd_identity_inventory)
+
+    identity_attestation = subparsers.add_parser("identity-attestation", help="write a signed identity-provider attestation receipt")
+    identity_attestation.add_argument("identity_payload")
+    identity_attestation.add_argument("--vendor-identity")
+    identity_attestation.add_argument("--manifest")
+    identity_attestation.add_argument("--pack", action="append", default=[])
+    identity_attestation.add_argument("--provider")
+    identity_attestation.add_argument("--identity-id")
+    identity_attestation.add_argument("--agent-name")
+    identity_attestation.add_argument("--subject-ref")
+    identity_attestation.add_argument("--issuer", default="trustai-local")
+    identity_attestation.add_argument("--tenant-ref")
+    identity_attestation.add_argument("--authentication-method", default="recorded-export")
+    identity_attestation.add_argument("--issued-at")
+    identity_attestation.add_argument("--expires-at")
+    identity_attestation.add_argument("--out", default="artifacts/identity-provider-attestation.json")
+    identity_attestation.add_argument("--key")
+    identity_attestation.set_defaults(func=cmd_identity_attestation)
+
+    identity_attestation_verify = subparsers.add_parser("identity-attestation-verify", help="verify a signed identity-provider attestation receipt")
+    identity_attestation_verify.add_argument("attestation")
+    identity_attestation_verify.add_argument("--identity-payload")
+    identity_attestation_verify.add_argument("--vendor-identity")
+    identity_attestation_verify.add_argument("--manifest")
+    identity_attestation_verify.add_argument("--pack", action="append", default=[])
+    identity_attestation_verify.add_argument("--now")
+    identity_attestation_verify.add_argument("--key")
+    identity_attestation_verify.set_defaults(func=cmd_identity_attestation_verify)
+
+    identity_attestation_append = subparsers.add_parser("identity-attestation-append", help="append a verified identity-provider attestation as chain evidence")
+    identity_attestation_append.add_argument("attestation")
+    identity_attestation_append.add_argument("--identity-payload")
+    identity_attestation_append.add_argument("--vendor-identity")
+    identity_attestation_append.add_argument("--manifest")
+    identity_attestation_append.add_argument("--pack", action="append", default=[])
+    identity_attestation_append.add_argument("--out", default="artifacts/identity-provider-attestation-entry.json")
+    identity_attestation_append.add_argument("--key")
+    _add_state_args(identity_attestation_append)
+    identity_attestation_append.set_defaults(func=cmd_identity_attestation_append)
+
+    def _add_identity_session_sources(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("identity_attestation")
+        parser.add_argument("--identity-payload")
+        parser.add_argument("--vendor-identity")
+        parser.add_argument("--manifest")
+        parser.add_argument("--pack", action="append", default=[])
+        parser.add_argument("--key")
+
+    def _add_identity_session_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--mode", choices=sorted(IDENTITY_PROVIDER_SESSION_MODES), default="recorded-provider-response")
+        parser.add_argument("--environment", default="local")
+        parser.add_argument("--provider-tenant-ref", required=True)
+        parser.add_argument("--session-ref", required=True)
+        parser.add_argument("--event-ref", required=True)
+        parser.add_argument("--event-kind", choices=sorted(IDENTITY_PROVIDER_SESSION_EVENT_KINDS), required=True)
+        parser.add_argument("--provider-event-id", required=True)
+        parser.add_argument("--actor-ref", required=True)
+        parser.add_argument("--authn-method", default="oauth2-client-credentials")
+        parser.add_argument("--assurance-level", default="aal2")
+        parser.add_argument("--scope-ref", action="append", default=[])
+        parser.add_argument("--audience-ref", action="append", default=[])
+        parser.add_argument("--decision", choices=["allowed", "denied", "revoked", "expired"], default="allowed")
+        parser.add_argument("--risk-level", default="low")
+        parser.add_argument("--endpoint-url", required=True)
+        parser.add_argument("--credential-ref", required=True)
+        parser.add_argument("--request-hash", required=True)
+        parser.add_argument("--response-status", type=int, required=True)
+        parser.add_argument("--response-hash", required=True)
+        parser.add_argument("--session-log-ref", required=True)
+        parser.add_argument("--session-log-root", required=True)
+        parser.add_argument("--audit-log-ref", required=True)
+        parser.add_argument("--audit-log-root", required=True)
+        parser.add_argument("--source-ip-hash")
+        parser.add_argument("--device-ref")
+        parser.add_argument("--user-agent-hash")
+        parser.add_argument("--session-started-at", required=True)
+        parser.add_argument("--session-expires-at")
+        parser.add_argument("--observed-at", required=True)
+        parser.add_argument("--retention-until", required=True)
+        parser.add_argument("--evidence-ref", action="append", default=[])
+        parser.add_argument("--recorded-at")
+
+    identity_session = subparsers.add_parser("identity-session", help="write a signed identity-provider session receipt")
+    _add_identity_session_sources(identity_session)
+    _add_identity_session_fields(identity_session)
+    identity_session.add_argument("--out", default="artifacts/identity-provider-session.json")
+    identity_session.set_defaults(func=cmd_identity_session)
+
+    identity_session_verify = subparsers.add_parser("identity-session-verify", help="verify a signed identity-provider session receipt")
+    identity_session_verify.add_argument("receipt")
+    _add_identity_session_sources(identity_session_verify)
+    identity_session_verify.add_argument("--now")
+    identity_session_verify.set_defaults(func=cmd_identity_session_verify)
+
+    identity_session_append = subparsers.add_parser("identity-session-append", help="append a verified identity-provider session receipt as chain evidence")
+    identity_session_append.add_argument("receipt")
+    _add_identity_session_sources(identity_session_append)
+    identity_session_append.add_argument("--now")
+    identity_session_append.add_argument("--out", default="artifacts/identity-provider-session-entry.json")
+    _add_state_args(identity_session_append)
+    identity_session_append.set_defaults(func=cmd_identity_session_append)
+
+    def _add_identity_lifecycle_sources(parser: argparse.ArgumentParser) -> None:
+        _add_identity_session_sources(parser)
+        parser.add_argument("--identity-session")
+
+    def _add_identity_lifecycle_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--mode", choices=sorted(IDENTITY_PROVIDER_LIFECYCLE_OPERATION_MODES), default="recorded-provider-response")
+        parser.add_argument("--environment", default="local")
+        parser.add_argument("--provider-tenant-ref", required=True)
+        parser.add_argument("--operation-ref", required=True)
+        parser.add_argument("--operation-kind", choices=sorted(IDENTITY_PROVIDER_LIFECYCLE_OPERATION_KINDS), required=True)
+        parser.add_argument("--provider-operation-id", required=True)
+        parser.add_argument("--actor-ref", required=True)
+        parser.add_argument("--target-state", choices=sorted(IDENTITY_PROVIDER_LIFECYCLE_TARGET_STATES), required=True)
+        parser.add_argument("--outcome", choices=sorted(IDENTITY_PROVIDER_LIFECYCLE_OUTCOMES), default="succeeded")
+        parser.add_argument("--endpoint-url", required=True)
+        parser.add_argument("--credential-ref", required=True)
+        parser.add_argument("--request-hash", required=True)
+        parser.add_argument("--response-status", type=int, required=True)
+        parser.add_argument("--response-hash", required=True)
+        parser.add_argument("--system-log-ref", required=True)
+        parser.add_argument("--system-log-root", required=True)
+        parser.add_argument("--audit-log-ref", required=True)
+        parser.add_argument("--audit-log-root", required=True)
+        parser.add_argument("--requested-at", required=True)
+        parser.add_argument("--completed-at", required=True)
+        parser.add_argument("--retention-until", required=True)
+        parser.add_argument("--idempotency-key")
+        parser.add_argument("--reason-ref")
+        parser.add_argument("--approval-ref")
+        parser.add_argument("--change-ticket-ref")
+        parser.add_argument("--previous-identity-record-hash")
+        parser.add_argument("--resulting-identity-record-hash")
+        parser.add_argument("--evidence-ref", action="append", default=[])
+        parser.add_argument("--recorded-at")
+
+    identity_lifecycle_operation = subparsers.add_parser("identity-lifecycle-operation", help="write a signed identity-provider lifecycle operation receipt")
+    _add_identity_lifecycle_sources(identity_lifecycle_operation)
+    _add_identity_lifecycle_fields(identity_lifecycle_operation)
+    identity_lifecycle_operation.add_argument("--out", default="artifacts/identity-provider-lifecycle-operation.json")
+    identity_lifecycle_operation.set_defaults(func=cmd_identity_lifecycle_operation)
+
+    identity_lifecycle_operation_verify = subparsers.add_parser("identity-lifecycle-operation-verify", help="verify a signed identity-provider lifecycle operation receipt")
+    identity_lifecycle_operation_verify.add_argument("receipt")
+    _add_identity_lifecycle_sources(identity_lifecycle_operation_verify)
+    identity_lifecycle_operation_verify.add_argument("--now")
+    identity_lifecycle_operation_verify.set_defaults(func=cmd_identity_lifecycle_operation_verify)
+
+    identity_lifecycle_operation_append = subparsers.add_parser("identity-lifecycle-operation-append", help="append a verified identity-provider lifecycle operation receipt as chain evidence")
+    identity_lifecycle_operation_append.add_argument("receipt")
+    _add_identity_lifecycle_sources(identity_lifecycle_operation_append)
+    identity_lifecycle_operation_append.add_argument("--now")
+    identity_lifecycle_operation_append.add_argument("--out", default="artifacts/identity-provider-lifecycle-operation-entry.json")
+    _add_state_args(identity_lifecycle_operation_append)
+    identity_lifecycle_operation_append.set_defaults(func=cmd_identity_lifecycle_operation_append)
+
+    def _add_identity_lifecycle_worker_sources(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("lifecycle_operation")
+        _add_identity_lifecycle_sources(parser)
+
+    def _add_identity_lifecycle_worker_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--mode", choices=sorted(IDENTITY_PROVIDER_LIFECYCLE_WORKER_MODES), default="scheduled-worker")
+        parser.add_argument("--environment", default="local")
+        parser.add_argument("--worker-ref", required=True)
+        parser.add_argument("--run-ref", required=True)
+        parser.add_argument("--operation-kind", choices=sorted(IDENTITY_PROVIDER_LIFECYCLE_WORKER_OPERATION_KINDS), required=True)
+        parser.add_argument("--actor-ref", required=True)
+        parser.add_argument("--schedule-ref", required=True)
+        parser.add_argument("--cadence-seconds", type=int, required=True)
+        parser.add_argument("--lease-ref", required=True)
+        parser.add_argument("--checkpoint-ref", required=True)
+        parser.add_argument("--checkpoint-hash")
+        parser.add_argument("--previous-cursor-ref")
+        parser.add_argument("--next-cursor-ref")
+        parser.add_argument("--attempt", type=int, default=1)
+        parser.add_argument("--max-attempts", type=int, default=3)
+        parser.add_argument("--queue-ref", required=True)
+        parser.add_argument("--queue-message-ref")
+        parser.add_argument("--destination-ref", required=True)
+        parser.add_argument("--propagation-log-ref", required=True)
+        parser.add_argument("--propagation-log-root", required=True)
+        parser.add_argument("--account-state-log-ref")
+        parser.add_argument("--account-state-log-root")
+        parser.add_argument("--session-revocation-log-ref")
+        parser.add_argument("--session-revocation-log-root")
+        parser.add_argument("--token-revocation-log-ref")
+        parser.add_argument("--token-revocation-log-root")
+        parser.add_argument("--request-hash")
+        parser.add_argument("--response-status", type=int)
+        parser.add_argument("--response-hash")
+        parser.add_argument("--metrics-ref", required=True)
+        parser.add_argument("--audit-log-ref", required=True)
+        parser.add_argument("--audit-log-root", required=True)
+        parser.add_argument("--credential-ref", required=True)
+        parser.add_argument("--started-at", required=True)
+        parser.add_argument("--completed-at")
+        parser.add_argument("--next-run-at")
+        parser.add_argument("--retention-until", required=True)
+        parser.add_argument("--error-ref")
+        parser.add_argument("--evidence-ref", action="append", default=[])
+
+    identity_lifecycle_worker = subparsers.add_parser("identity-lifecycle-worker", help="write a signed identity-provider lifecycle worker receipt")
+    _add_identity_lifecycle_worker_sources(identity_lifecycle_worker)
+    _add_identity_lifecycle_worker_fields(identity_lifecycle_worker)
+    identity_lifecycle_worker.add_argument("--out", default="artifacts/identity-provider-lifecycle-worker.json")
+    identity_lifecycle_worker.set_defaults(func=cmd_identity_lifecycle_worker)
+
+    identity_lifecycle_worker_verify = subparsers.add_parser("identity-lifecycle-worker-verify", help="verify a signed identity-provider lifecycle worker receipt")
+    identity_lifecycle_worker_verify.add_argument("receipt")
+    _add_identity_lifecycle_worker_sources(identity_lifecycle_worker_verify)
+    identity_lifecycle_worker_verify.add_argument("--now")
+    identity_lifecycle_worker_verify.set_defaults(func=cmd_identity_lifecycle_worker_verify)
+
+    identity_lifecycle_worker_append = subparsers.add_parser("identity-lifecycle-worker-append", help="append a verified identity-provider lifecycle worker receipt as chain evidence")
+    identity_lifecycle_worker_append.add_argument("receipt")
+    _add_identity_lifecycle_worker_sources(identity_lifecycle_worker_append)
+    identity_lifecycle_worker_append.add_argument("--now")
+    identity_lifecycle_worker_append.add_argument("--out", default="artifacts/identity-provider-lifecycle-worker-entry.json")
+    _add_state_args(identity_lifecycle_worker_append)
+    identity_lifecycle_worker_append.set_defaults(func=cmd_identity_lifecycle_worker_append)
+    delegation = subparsers.add_parser("delegation", help="append multi-agent delegation evidence to the chain")
+    delegation.add_argument("delegation")
+    _add_state_args(delegation)
+    delegation.set_defaults(func=cmd_delegation)
+
+    ingest = subparsers.add_parser("ingest", help="append OTel-style GenAI events to the chain")
+    ingest.add_argument("events")
+    _add_state_args(ingest)
+    ingest.set_defaults(func=cmd_ingest)
+
+    otlp_ingest = subparsers.add_parser("otlp-ingest", help="append OTLP JSON trace payloads to the chain")
+    otlp_ingest.add_argument("traces")
+    _add_state_args(otlp_ingest)
+    otlp_ingest.set_defaults(func=cmd_otlp_ingest)
+
+    framework_ingest = subparsers.add_parser("framework-ingest", help="append framework-native agent traces to the chain")
+    framework_ingest.add_argument("trace")
+    _add_state_args(framework_ingest)
+    framework_ingest.set_defaults(func=cmd_framework_ingest)
+
+    mcp = subparsers.add_parser("mcp-capture", help="append MCP tool call transcripts to the chain")
+    mcp.add_argument("transcript")
+    _add_state_args(mcp)
+    mcp.set_defaults(func=cmd_mcp_capture)
+
+    attest = subparsers.add_parser("attest", help="append a runtime attestation for a high-risk action")
+    attest.add_argument("contract")
+    attest.add_argument("action")
+    _add_state_args(attest)
+    _add_auto_register(attest)
+    attest.set_defaults(func=cmd_attest)
+
+
+    policy_check = subparsers.add_parser("policy-check", help="evaluate runtime policy and proof decay for an action")
+    policy_check.add_argument("policy")
+    policy_check.add_argument("action")
+    policy_check.add_argument("--pack", required=True)
+    policy_check.add_argument("--out", default="artifacts/policy-decision.json")
+    policy_check.add_argument("--now")
+    _add_state_args(policy_check)
+    policy_check.set_defaults(func=cmd_policy_check)
+
+    policy_export = subparsers.add_parser("policy-export", help="export policy pack to OPA/Rego and Cedar-shaped artifacts")
+    policy_export.add_argument("policy")
+    policy_export.add_argument("--target", choices=["all", "opa", "cedar"], default="all")
+    policy_export.add_argument("--package", default="trustai.runtime")
+    policy_export.add_argument("--namespace", default="TrustAI")
+    policy_export.add_argument("--out", default="artifacts/policy-export.json")
+    policy_export.set_defaults(func=cmd_policy_export)
+
+
+    policy_engine_receipt = subparsers.add_parser("policy-engine-receipt", help="write a signed policy engine decision receipt")
+    policy_engine_receipt.add_argument("policy")
+    policy_engine_receipt.add_argument("action")
+    policy_engine_receipt.add_argument("--pack", required=True)
+    policy_engine_receipt.add_argument("--decision", required=True)
+    policy_engine_receipt.add_argument("--export")
+    policy_engine_receipt.add_argument("--engine", choices=["local-json", "opa", "cedar"], default="local-json")
+    policy_engine_receipt.add_argument("--mode", choices=["local-reference", "recorded-response"], default="local-reference")
+    policy_engine_receipt.add_argument("--response-json")
+    policy_engine_receipt.add_argument("--evaluated-at")
+    policy_engine_receipt.add_argument("--out", default="artifacts/policy-engine-receipt.json")
+    policy_engine_receipt.add_argument("--key")
+    policy_engine_receipt.set_defaults(func=cmd_policy_engine_receipt)
+
+    policy_engine_verify = subparsers.add_parser("policy-engine-verify", help="verify a signed policy engine decision receipt")
+    policy_engine_verify.add_argument("receipt")
+    policy_engine_verify.add_argument("policy")
+    policy_engine_verify.add_argument("action")
+    policy_engine_verify.add_argument("--pack", required=True)
+    policy_engine_verify.add_argument("--decision", required=True)
+    policy_engine_verify.add_argument("--export")
+    policy_engine_verify.add_argument("--response-json")
+    policy_engine_verify.add_argument("--key")
+    policy_engine_verify.set_defaults(func=cmd_policy_engine_verify)
+
+    policy_engine_append = subparsers.add_parser("policy-engine-append", help="append a verified policy engine receipt as chain evidence")
+    policy_engine_append.add_argument("receipt")
+    policy_engine_append.add_argument("policy")
+    policy_engine_append.add_argument("action")
+    policy_engine_append.add_argument("--pack", required=True)
+    policy_engine_append.add_argument("--decision", required=True)
+    policy_engine_append.add_argument("--export")
+    policy_engine_append.add_argument("--response-json")
+    policy_engine_append.add_argument("--out", default="artifacts/policy-engine-entry.json")
+    policy_engine_append.add_argument("--key")
+    _add_state_args(policy_engine_append)
+    policy_engine_append.set_defaults(func=cmd_policy_engine_append)
+    policy_backend = subparsers.add_parser("policy-backend-enforcement", help="write a signed hosted OPA/Cedar backend enforcement receipt")
+    policy_backend.add_argument("policy")
+    policy_backend.add_argument("action")
+    policy_backend.add_argument("--pack", required=True)
+    policy_backend.add_argument("--decision", required=True)
+    policy_backend.add_argument("--export", required=True)
+    policy_backend.add_argument("--policy-engine-receipt")
+    policy_backend.add_argument("--backend-ref", required=True)
+    policy_backend.add_argument("--engine", choices=sorted(POLICY_BACKEND_ENGINES), required=True)
+    policy_backend.add_argument("--endpoint-url", required=True)
+    policy_backend.add_argument("--credential-ref", required=True)
+    policy_backend.add_argument("--request-hash", required=True)
+    policy_backend.add_argument("--response-status", type=int, required=True)
+    policy_backend.add_argument("--response-hash", required=True)
+    policy_backend.add_argument("--actor-ref", required=True)
+    policy_backend.add_argument("--bundle-ref")
+    policy_backend.add_argument("--bundle-hash")
+    policy_backend.add_argument("--response-outcome")
+    policy_backend.add_argument("--response-allowed", choices=["true", "false"])
+    policy_backend.add_argument("--latency-ms", type=int)
+    policy_backend.add_argument("--evidence-ref", action="append")
+    policy_backend.add_argument("--mode", choices=sorted(POLICY_BACKEND_MODES), default="recorded-backend-response")
+    policy_backend.add_argument("--environment", default="local")
+    policy_backend.add_argument("--enforced-at")
+    policy_backend.add_argument("--out", default="artifacts/policy-backend-enforcement.json")
+    policy_backend.add_argument("--key")
+    policy_backend.set_defaults(func=cmd_policy_backend_enforcement)
+
+    policy_backend_verify = subparsers.add_parser("policy-backend-enforcement-verify", help="verify a signed hosted OPA/Cedar backend enforcement receipt")
+    policy_backend_verify.add_argument("receipt")
+    policy_backend_verify.add_argument("policy")
+    policy_backend_verify.add_argument("action")
+    policy_backend_verify.add_argument("--pack", required=True)
+    policy_backend_verify.add_argument("--decision", required=True)
+    policy_backend_verify.add_argument("--export", required=True)
+    policy_backend_verify.add_argument("--policy-engine-receipt")
+    policy_backend_verify.add_argument("--key")
+    policy_backend_verify.set_defaults(func=cmd_policy_backend_enforcement_verify)
+
+    policy_backend_append = subparsers.add_parser("policy-backend-enforcement-append", help="append a verified hosted OPA/Cedar backend enforcement receipt")
+    policy_backend_append.add_argument("receipt")
+    policy_backend_append.add_argument("policy")
+    policy_backend_append.add_argument("action")
+    policy_backend_append.add_argument("--pack", required=True)
+    policy_backend_append.add_argument("--decision", required=True)
+    policy_backend_append.add_argument("--export", required=True)
+    policy_backend_append.add_argument("--policy-engine-receipt")
+    policy_backend_append.add_argument("--out", default="artifacts/policy-backend-enforcement-entry.json")
+    policy_backend_append.add_argument("--key")
+    _add_state_args(policy_backend_append)
+    policy_backend_append.set_defaults(func=cmd_policy_backend_enforcement_append)
+    policy_backend_service = subparsers.add_parser("policy-backend-service-attestation", help="write a signed OPA/Cedar policy backend service hardening attestation")
+    policy_backend_service.add_argument("enforcement")
+    policy_backend_service.add_argument("policy")
+    policy_backend_service.add_argument("action")
+    policy_backend_service.add_argument("--pack", required=True)
+    policy_backend_service.add_argument("--decision", required=True)
+    policy_backend_service.add_argument("--export", required=True)
+    policy_backend_service.add_argument("--policy-engine-receipt")
+    policy_backend_service.add_argument("--mode", choices=sorted(POLICY_BACKEND_SERVICE_MODES), default="backend-service-attested")
+    policy_backend_service.add_argument("--environment", default="local")
+    policy_backend_service.add_argument("--service-ref", required=True)
+    policy_backend_service.add_argument("--service-version", required=True)
+    policy_backend_service.add_argument("--engine", choices=sorted(POLICY_BACKEND_ENGINES), required=True)
+    policy_backend_service.add_argument("--backend-ref", required=True)
+    policy_backend_service.add_argument("--endpoint-url", required=True)
+    policy_backend_service.add_argument("--service-image", required=True)
+    policy_backend_service.add_argument("--service-image-digest", required=True)
+    policy_backend_service.add_argument("--service-binary-hash", required=True)
+    policy_backend_service.add_argument("--bundle-ref")
+    policy_backend_service.add_argument("--bundle-hash")
+    policy_backend_service.add_argument("--replicas-min", type=int, required=True)
+    policy_backend_service.add_argument("--replicas-max", type=int, required=True)
+    policy_backend_service.add_argument("--availability-zone", action="append")
+    policy_backend_service.add_argument("--mtls-policy-ref", required=True)
+    policy_backend_service.add_argument("--auth-policy-ref", required=True)
+    policy_backend_service.add_argument("--tenant-isolation-ref", required=True)
+    policy_backend_service.add_argument("--policy-sync-ref", required=True)
+    policy_backend_service.add_argument("--admission-policy-ref", required=True)
+    policy_backend_service.add_argument("--rate-limit-policy-ref", required=True)
+    policy_backend_service.add_argument("--circuit-breaker-ref", required=True)
+    policy_backend_service.add_argument("--cache-store-ref", required=True)
+    policy_backend_service.add_argument("--network-policy-ref", required=True)
+    policy_backend_service.add_argument("--egress-policy-ref", required=True)
+    policy_backend_service.add_argument("--decision-log-ref", required=True)
+    policy_backend_service.add_argument("--decision-log-root", required=True)
+    policy_backend_service.add_argument("--decision-log-retention-days", type=int, required=True)
+    policy_backend_service.add_argument("--audit-log-ref", required=True)
+    policy_backend_service.add_argument("--audit-log-root", required=True)
+    policy_backend_service.add_argument("--retention-until", required=True)
+    policy_backend_service.add_argument("--actor-ref", required=True)
+    policy_backend_service.add_argument("--credential-ref", required=True)
+    policy_backend_service.add_argument("--evidence-ref", action="append")
+    policy_backend_service.add_argument("--attested-at")
+    policy_backend_service.add_argument("--out", default="artifacts/policy-backend-service-attestation.json")
+    policy_backend_service.add_argument("--key")
+    policy_backend_service.set_defaults(func=cmd_policy_backend_service_attestation)
+
+    policy_backend_service_verify = subparsers.add_parser("policy-backend-service-verify", help="verify a signed OPA/Cedar policy backend service hardening attestation")
+    policy_backend_service_verify.add_argument("attestation")
+    policy_backend_service_verify.add_argument("enforcement")
+    policy_backend_service_verify.add_argument("policy")
+    policy_backend_service_verify.add_argument("action")
+    policy_backend_service_verify.add_argument("--pack", required=True)
+    policy_backend_service_verify.add_argument("--decision", required=True)
+    policy_backend_service_verify.add_argument("--export", required=True)
+    policy_backend_service_verify.add_argument("--policy-engine-receipt")
+    policy_backend_service_verify.add_argument("--key")
+    policy_backend_service_verify.set_defaults(func=cmd_policy_backend_service_verify)
+
+    policy_backend_service_append = subparsers.add_parser("policy-backend-service-append", help="append a verified OPA/Cedar policy backend service hardening attestation")
+    policy_backend_service_append.add_argument("attestation")
+    policy_backend_service_append.add_argument("enforcement")
+    policy_backend_service_append.add_argument("policy")
+    policy_backend_service_append.add_argument("action")
+    policy_backend_service_append.add_argument("--pack", required=True)
+    policy_backend_service_append.add_argument("--decision", required=True)
+    policy_backend_service_append.add_argument("--export", required=True)
+    policy_backend_service_append.add_argument("--policy-engine-receipt")
+    policy_backend_service_append.add_argument("--out", default="artifacts/policy-backend-service-entry.json")
+    policy_backend_service_append.add_argument("--key")
+    _add_state_args(policy_backend_service_append)
+    policy_backend_service_append.set_defaults(func=cmd_policy_backend_service_append)
+    incident = subparsers.add_parser("incident", help="append an incident record to the chain")
+    incident.add_argument("incident")
+    incident.add_argument("--out", default="artifacts/incident-entry.json")
+    _add_state_args(incident)
+    incident.set_defaults(func=cmd_incident)
+
+    demote = subparsers.add_parser("demote", help="append a promotion-gate demotion event")
+    demote.add_argument("contract")
+    demote.add_argument("--reason", required=True)
+    demote.add_argument("--triggering-entry-id")
+    demote.add_argument("--from-environment", default="prod")
+    demote.add_argument("--to-environment", default="shadow")
+    demote.add_argument("--out", default="artifacts/demotion-entry.json")
+    _add_state_args(demote)
+    _add_auto_register(demote)
+    demote.set_defaults(func=cmd_demote)
+
+    rollback = subparsers.add_parser("rollback", help="append a rollback event for a governed agent version")
+    rollback.add_argument("contract")
+    rollback.add_argument("--target-version", required=True)
+    rollback.add_argument("--reason", required=True)
+    rollback.add_argument("--triggering-entry-id")
+    rollback.add_argument("--out", default="artifacts/rollback-entry.json")
+    _add_state_args(rollback)
+    _add_auto_register(rollback)
+    rollback.set_defaults(func=cmd_rollback)
+    shadow = subparsers.add_parser("shadow-replay", help="evaluate and evidence shadow replay traffic")
+    shadow.add_argument("contract")
+    shadow.add_argument("replay")
+    shadow.add_argument("--eval-out")
+    _add_state_args(shadow)
+    _add_auto_register(shadow)
+    shadow.set_defaults(func=cmd_shadow_replay)
+
+    soak = subparsers.add_parser("soak-report", help="evaluate and evidence a soak report")
+    soak.add_argument("contract")
+    soak.add_argument("soak")
+    _add_state_args(soak)
+    _add_auto_register(soak)
+    soak.set_defaults(func=cmd_soak_report)
+
+    reexecution_runner = subparsers.add_parser("reexecution-runner-run", help="execute a local re-execution runner plan")
+    reexecution_runner.add_argument("plan")
+    reexecution_runner.add_argument("--contract", help="optional verification contract to bind runner evidence to a proof-pack subject")
+    reexecution_runner.add_argument("--base-dir", default=".")
+    reexecution_runner.add_argument("--out", default="artifacts/reexecution-runner-evidence.json")
+    _add_state_args(reexecution_runner)
+    reexecution_runner.set_defaults(func=cmd_reexecution_runner_run)
+
+    reexecution_runner_verify = subparsers.add_parser("reexecution-runner-verify", help="verify re-execution runner evidence offline")
+    reexecution_runner_verify.add_argument("evidence")
+    reexecution_runner_verify.set_defaults(func=cmd_reexecution_runner_verify)
+
+    reexecution_isolation = subparsers.add_parser("reexecution-isolation-attestation", help="write a signed container isolation attestation for re-execution runner evidence")
+    reexecution_isolation.add_argument("evidence")
+    reexecution_isolation.add_argument("--policy")
+    reexecution_isolation.add_argument("--report")
+    reexecution_isolation.add_argument("--mode", choices=sorted(REEXECUTION_ISOLATION_MODES), default="container-attested")
+    reexecution_isolation.add_argument("--environment", default="local")
+    reexecution_isolation.add_argument("--isolation-ref", required=True)
+    reexecution_isolation.add_argument("--runner-ref", required=True)
+    reexecution_isolation.add_argument("--runner-provider", required=True)
+    reexecution_isolation.add_argument("--runner-image")
+    reexecution_isolation.add_argument("--runner-image-digest")
+    reexecution_isolation.add_argument("--orchestrator", required=True)
+    reexecution_isolation.add_argument("--container-runtime", required=True)
+    reexecution_isolation.add_argument("--kernel", required=True)
+    reexecution_isolation.add_argument("--namespace-mode", required=True)
+    reexecution_isolation.add_argument("--cgroup-ref", required=True)
+    reexecution_isolation.add_argument("--seccomp-profile-hash", required=True)
+    reexecution_isolation.add_argument("--apparmor-profile-hash")
+    reexecution_isolation.add_argument("--network-mode")
+    reexecution_isolation.add_argument("--filesystem-policy-ref", required=True)
+    reexecution_isolation.add_argument("--read-only-rootfs", action=argparse.BooleanOptionalAction, default=None)
+    reexecution_isolation.add_argument("--writable-mount", action="append")
+    reexecution_isolation.add_argument("--denied-mount", action="append")
+    reexecution_isolation.add_argument("--egress-policy-ref", required=True)
+    reexecution_isolation.add_argument("--seed-policy")
+    reexecution_isolation.add_argument("--temperature", type=float)
+    reexecution_isolation.add_argument("--entropy-source-ref", required=True)
+    reexecution_isolation.add_argument("--audit-log-ref", required=True)
+    reexecution_isolation.add_argument("--audit-log-root", required=True)
+    reexecution_isolation.add_argument("--retention-until", required=True)
+    reexecution_isolation.add_argument("--actor-ref", required=True)
+    reexecution_isolation.add_argument("--credential-ref", required=True)
+    reexecution_isolation.add_argument("--evidence-ref", action="append")
+    reexecution_isolation.add_argument("--attested-at")
+    reexecution_isolation.add_argument("--out", default="artifacts/reexecution-isolation-attestation.json")
+    reexecution_isolation.add_argument("--key")
+    reexecution_isolation.set_defaults(func=cmd_reexecution_isolation_attestation)
+
+    reexecution_isolation_verify = subparsers.add_parser("reexecution-isolation-verify", help="verify a re-execution isolation attestation offline")
+    reexecution_isolation_verify.add_argument("attestation")
+    reexecution_isolation_verify.add_argument("evidence")
+    reexecution_isolation_verify.add_argument("--policy")
+    reexecution_isolation_verify.add_argument("--report")
+    reexecution_isolation_verify.add_argument("--key")
+    reexecution_isolation_verify.set_defaults(func=cmd_reexecution_isolation_verify)
+
+    reexecution_isolation_append = subparsers.add_parser("reexecution-isolation-append", help="append a verified re-execution isolation attestation as chain evidence")
+    reexecution_isolation_append.add_argument("attestation")
+    reexecution_isolation_append.add_argument("evidence")
+    reexecution_isolation_append.add_argument("--policy")
+    reexecution_isolation_append.add_argument("--report")
+    reexecution_isolation_append.add_argument("--out", default="artifacts/reexecution-isolation-entry.json")
+    reexecution_isolation_append.add_argument("--key")
+    _add_state_args(reexecution_isolation_append)
+    reexecution_isolation_append.set_defaults(func=cmd_reexecution_isolation_append)
+
+    reexecution_runner_service = subparsers.add_parser("reexecution-runner-service-attestation", help="write a signed hosted runner service attestation for re-execution isolation evidence")
+    reexecution_runner_service.add_argument("isolation")
+    reexecution_runner_service.add_argument("evidence")
+    reexecution_runner_service.add_argument("--policy")
+    reexecution_runner_service.add_argument("--report")
+    reexecution_runner_service.add_argument("--mode", choices=sorted(REEXECUTION_RUNNER_SERVICE_MODES), default="isolated-runner-service")
+    reexecution_runner_service.add_argument("--environment", default="aitrade-prod")
+    reexecution_runner_service.add_argument("--service-ref", required=True)
+    reexecution_runner_service.add_argument("--service-version", required=True)
+    reexecution_runner_service.add_argument("--runner-image")
+    reexecution_runner_service.add_argument("--runner-image-digest")
+    reexecution_runner_service.add_argument("--runner-binary-hash", required=True)
+    reexecution_runner_service.add_argument("--replicas-min", type=int, required=True)
+    reexecution_runner_service.add_argument("--replicas-max", type=int, required=True)
+    reexecution_runner_service.add_argument("--availability-zone", action="append")
+    reexecution_runner_service.add_argument("--scheduler-ref", required=True)
+    reexecution_runner_service.add_argument("--schedule-cadence-seconds", type=int, required=True)
+    reexecution_runner_service.add_argument("--queue-ref", required=True)
+    reexecution_runner_service.add_argument("--dead-letter-queue-ref", required=True)
+    reexecution_runner_service.add_argument("--lease-store-ref", required=True)
+    reexecution_runner_service.add_argument("--checkpoint-store-ref", required=True)
+    reexecution_runner_service.add_argument("--max-concurrency", type=int, required=True)
+    reexecution_runner_service.add_argument("--retry-policy-ref", required=True)
+    reexecution_runner_service.add_argument("--isolation-profile-ref", required=True)
+    reexecution_runner_service.add_argument("--admission-policy-ref", required=True)
+    reexecution_runner_service.add_argument("--tenant-isolation-ref", required=True)
+    reexecution_runner_service.add_argument("--network-policy-ref", required=True)
+    reexecution_runner_service.add_argument("--egress-policy-ref", required=True)
+    reexecution_runner_service.add_argument("--artifact-store-ref", required=True)
+    reexecution_runner_service.add_argument("--result-store-ref", required=True)
+    reexecution_runner_service.add_argument("--idempotency-store-ref", required=True)
+    reexecution_runner_service.add_argument("--secret-store-ref", required=True)
+    reexecution_runner_service.add_argument("--kms-key-ref", required=True)
+    reexecution_runner_service.add_argument("--metrics-ref", required=True)
+    reexecution_runner_service.add_argument("--alert-policy-ref", required=True)
+    reexecution_runner_service.add_argument("--audit-log-ref", required=True)
+    reexecution_runner_service.add_argument("--audit-log-root", required=True)
+    reexecution_runner_service.add_argument("--retention-until", required=True)
+    reexecution_runner_service.add_argument("--actor-ref", required=True)
+    reexecution_runner_service.add_argument("--credential-ref", required=True)
+    reexecution_runner_service.add_argument("--evidence-ref", action="append")
+    reexecution_runner_service.add_argument("--attested-at")
+    reexecution_runner_service.add_argument("--out", default="artifacts/reexecution-runner-service-attestation.json")
+    reexecution_runner_service.add_argument("--key")
+    reexecution_runner_service.set_defaults(func=cmd_reexecution_runner_service_attestation)
+
+    reexecution_runner_service_verify = subparsers.add_parser("reexecution-runner-service-verify", help="verify a re-execution runner service attestation offline")
+    reexecution_runner_service_verify.add_argument("attestation")
+    reexecution_runner_service_verify.add_argument("isolation")
+    reexecution_runner_service_verify.add_argument("evidence")
+    reexecution_runner_service_verify.add_argument("--policy")
+    reexecution_runner_service_verify.add_argument("--report")
+    reexecution_runner_service_verify.add_argument("--key")
+    reexecution_runner_service_verify.set_defaults(func=cmd_reexecution_runner_service_verify)
+
+    reexecution_runner_service_append = subparsers.add_parser("reexecution-runner-service-append", help="append a verified re-execution runner service attestation as chain evidence")
+    reexecution_runner_service_append.add_argument("attestation")
+    reexecution_runner_service_append.add_argument("isolation")
+    reexecution_runner_service_append.add_argument("evidence")
+    reexecution_runner_service_append.add_argument("--policy")
+    reexecution_runner_service_append.add_argument("--report")
+    reexecution_runner_service_append.add_argument("--out", default="artifacts/reexecution-runner-service-entry.json")
+    reexecution_runner_service_append.add_argument("--key")
+    _add_state_args(reexecution_runner_service_append)
+    reexecution_runner_service_append.set_defaults(func=cmd_reexecution_runner_service_append)
+
+    def _add_reexecution_runner_worker_sources(parser: argparse.ArgumentParser, include_receipt: bool = False) -> None:
+        if include_receipt:
+            parser.add_argument("receipt")
+        parser.add_argument("--service-attestation", required=True)
+        parser.add_argument("isolation")
+        parser.add_argument("evidence")
+        parser.add_argument("--policy")
+        parser.add_argument("--report")
+        parser.add_argument("--key")
+
+    def _add_reexecution_runner_worker_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--mode", choices=sorted(REEXECUTION_RUNNER_WORKER_MODES), default="hosted-worker")
+        parser.add_argument("--environment", default="aitrade-prod")
+        parser.add_argument("--worker-ref", required=True)
+        parser.add_argument("--run-ref", required=True)
+        parser.add_argument("--operation-kind", choices=sorted(REEXECUTION_RUNNER_WORKER_OPERATION_KINDS), required=True)
+        parser.add_argument("--actor-ref", required=True)
+        parser.add_argument("--schedule-ref", required=True)
+        parser.add_argument("--cadence-seconds", type=int, required=True)
+        parser.add_argument("--lease-ref", required=True)
+        parser.add_argument("--checkpoint-ref", required=True)
+        parser.add_argument("--checkpoint-hash")
+        parser.add_argument("--previous-cursor-ref")
+        parser.add_argument("--next-cursor-ref")
+        parser.add_argument("--attempt", type=int, default=1)
+        parser.add_argument("--max-attempts", type=int, default=3)
+        parser.add_argument("--queue-ref", required=True)
+        parser.add_argument("--queue-message-ref")
+        parser.add_argument("--dead-letter-queue-ref")
+        parser.add_argument("--job-ref", required=True)
+        parser.add_argument("--job-hash", required=True)
+        parser.add_argument("--artifact-manifest-ref", required=True)
+        parser.add_argument("--artifact-manifest-hash", required=True)
+        parser.add_argument("--result-bundle-ref", required=True)
+        parser.add_argument("--result-bundle-hash", required=True)
+        parser.add_argument("--isolation-audit-ref", required=True)
+        parser.add_argument("--isolation-audit-root", required=True)
+        parser.add_argument("--runtime-audit-ref")
+        parser.add_argument("--runtime-audit-root")
+        parser.add_argument("--request-hash")
+        parser.add_argument("--response-status", type=int)
+        parser.add_argument("--response-hash")
+        parser.add_argument("--metrics-ref", required=True)
+        parser.add_argument("--audit-log-ref", required=True)
+        parser.add_argument("--audit-log-root", required=True)
+        parser.add_argument("--credential-ref", required=True)
+        parser.add_argument("--retention-until", required=True)
+        parser.add_argument("--evidence-ref", action="append")
+        parser.add_argument("--started-at", required=True)
+        parser.add_argument("--completed-at")
+        parser.add_argument("--next-run-at")
+        parser.add_argument("--error-ref")
+        parser.add_argument("--out", default="artifacts/reexecution-runner-worker.json")
+
+    reexecution_runner_worker = subparsers.add_parser("reexecution-runner-worker", help="write a signed re-execution runner worker operation receipt")
+    _add_reexecution_runner_worker_sources(reexecution_runner_worker)
+    _add_reexecution_runner_worker_fields(reexecution_runner_worker)
+    reexecution_runner_worker.set_defaults(func=cmd_reexecution_runner_worker)
+
+    reexecution_runner_worker_verify = subparsers.add_parser("reexecution-runner-worker-verify", help="verify a signed re-execution runner worker operation receipt")
+    _add_reexecution_runner_worker_sources(reexecution_runner_worker_verify, include_receipt=True)
+    reexecution_runner_worker_verify.set_defaults(func=cmd_reexecution_runner_worker_verify)
+
+    reexecution_runner_worker_append = subparsers.add_parser("reexecution-runner-worker-append", help="append a verified re-execution runner worker operation receipt")
+    _add_reexecution_runner_worker_sources(reexecution_runner_worker_append, include_receipt=True)
+    reexecution_runner_worker_append.add_argument("--out", default="artifacts/reexecution-runner-worker-entry.json")
+    _add_state_args(reexecution_runner_worker_append)
+    reexecution_runner_worker_append.set_defaults(func=cmd_reexecution_runner_worker_append)
+    reexecution = subparsers.add_parser("reexecution-report", help="evaluate and evidence repeated eval runs")
+    reexecution.add_argument("contract")
+    reexecution.add_argument("runs", nargs="+")
+    reexecution.add_argument("--out", default="artifacts/reexecution-report.json")
+    reexecution.add_argument("--markdown", default="artifacts/reexecution-report.md")
+    reexecution.add_argument("--method", default="n-run-reexecution")
+    reexecution.add_argument("--seed-policy", default="recorded-or-fixed-seed")
+    reexecution.add_argument("--temperature", type=float)
+    reexecution.add_argument("--required-pass-rate", type=float, default=1.0)
+    reexecution.add_argument("--policy", help="optional re-execution policy manifest with risk-class, pinning, and sandbox rules")
+    _add_state_args(reexecution)
+    _add_auto_register(reexecution)
+    reexecution.set_defaults(func=cmd_reexecution_report)
+
+    reexecution_verify = subparsers.add_parser("reexecution-verify", help="verify a re-execution report offline")
+    reexecution_verify.add_argument("report")
+    reexecution_verify.set_defaults(func=cmd_reexecution_verify)
+
+    reexecution_policy = subparsers.add_parser("reexecution-policy-verify", help="verify a re-execution policy manifest and optional run evidence")
+    reexecution_policy.add_argument("policy")
+    reexecution_policy.add_argument("contract", nargs="?")
+    reexecution_policy.add_argument("runs", nargs="*")
+    reexecution_policy.add_argument("--method", default="n-run-reexecution")
+    reexecution_policy.add_argument("--seed-policy", default="recorded-or-fixed-seed")
+    reexecution_policy.add_argument("--temperature", type=float)
+    reexecution_policy.add_argument("--required-pass-rate", type=float, default=1.0)
+    reexecution_policy.set_defaults(func=cmd_reexecution_policy_verify)
+
+    gate = subparsers.add_parser("gate", help="evaluate results and compile a proof pack")
+    gate.add_argument("contract")
+    gate.add_argument("results")
+    gate.add_argument("--out", default="artifacts/proof-pack.json")
+    gate.add_argument("--pdf", default="artifacts/proof-pack.pdf")
+    _add_state_args(gate)
+    _add_auto_register(gate)
+    gate.set_defaults(func=cmd_gate)
+
+    verify = subparsers.add_parser("verify", help="verify a proof pack offline")
+    verify.add_argument("pack")
+    verify.add_argument("--keyring")
+    verify.set_defaults(func=cmd_verify)
+
+    verifier_conformance = subparsers.add_parser("verifier-conformance", help="write an offline verifier conformance report")
+    verifier_conformance.add_argument("pack")
+    verifier_conformance.add_argument("--out", default="artifacts/verifier-conformance.json")
+    verifier_conformance.add_argument("--markdown", default="artifacts/verifier-conformance.md")
+    verifier_conformance.add_argument("--verifier-command", default="python -m trustai verify")
+    verifier_conformance.set_defaults(func=cmd_verifier_conformance)
+
+    verifier_conformance_verify = subparsers.add_parser("verifier-conformance-verify", help="verify an offline verifier conformance report")
+    verifier_conformance_verify.add_argument("report")
+    verifier_conformance_verify.set_defaults(func=cmd_verifier_conformance_verify)
+
+    verifier_release = subparsers.add_parser("verifier-release", help="write a signed verifier release manifest")
+    verifier_release.add_argument("--conformance-report", default="artifacts/verifier-conformance.json")
+    verifier_release.add_argument("--standards-package", default="artifacts/standards-submission.json")
+    verifier_release.add_argument("--version")
+    verifier_release.add_argument("--verifier-command", default="python -m trustai verify")
+    verifier_release.add_argument("--source", action="append", help="source file to hash into the release manifest; repeatable")
+    verifier_release.add_argument("--root", default=".")
+    verifier_release.add_argument("--out", default="artifacts/verifier-release.json")
+    verifier_release.add_argument("--markdown", default="artifacts/verifier-release.md")
+    verifier_release.add_argument("--key")
+    verifier_release.set_defaults(func=cmd_verifier_release)
+
+    verifier_release_verify = subparsers.add_parser("verifier-release-verify", help="verify a signed verifier release manifest")
+    verifier_release_verify.add_argument("manifest")
+    verifier_release_verify.add_argument("--conformance-report")
+    verifier_release_verify.add_argument("--standards-package")
+    verifier_release_verify.add_argument("--root", default=".")
+    verifier_release_verify.add_argument("--key")
+    verifier_release_verify.set_defaults(func=cmd_verifier_release_verify)
+
+    def _add_go_verifier_build_sources(parser: argparse.ArgumentParser, include_attestation: bool = False) -> None:
+        if include_attestation:
+            parser.add_argument("attestation")
+        parser.add_argument("verifier_release")
+        parser.add_argument("--conformance-report")
+        parser.add_argument("--standards-package")
+        parser.add_argument("--root", default=".")
+        parser.add_argument("--binary")
+        parser.add_argument("--key")
+
+    def _add_go_verifier_build_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--mode", choices=sorted(GO_VERIFIER_BUILD_MODES), default="source-plan")
+        parser.add_argument("--builder-ref", required=True)
+        parser.add_argument("--toolchain-ref", required=True)
+        parser.add_argument("--toolchain-version", required=True)
+        parser.add_argument("--goos", required=True)
+        parser.add_argument("--goarch", required=True)
+        parser.add_argument("--cgo-enabled", action="store_true")
+        parser.add_argument("--no-trimpath", action="store_true")
+        parser.add_argument("--ldflags", default="-s -w")
+        parser.add_argument("--build-command")
+        parser.add_argument("--build-log-ref")
+        parser.add_argument("--build-log-hash")
+        parser.add_argument("--sbom-ref")
+        parser.add_argument("--sbom-hash")
+        parser.add_argument("--provenance-ref")
+        parser.add_argument("--provenance-hash")
+        parser.add_argument("--signature-ref")
+        parser.add_argument("--signature-hash")
+        parser.add_argument("--build-started-at")
+        parser.add_argument("--build-finished-at")
+        parser.add_argument("--attested-at")
+        parser.add_argument("--out", default="artifacts/go-verifier-build-attestation.json")
+
+    go_verifier_build = subparsers.add_parser("go-verifier-build-attestation", help="write a signed Go verifier build/source-plan attestation")
+    _add_go_verifier_build_sources(go_verifier_build)
+    _add_go_verifier_build_fields(go_verifier_build)
+    go_verifier_build.set_defaults(func=cmd_go_verifier_build_attestation)
+
+    go_verifier_build_verify = subparsers.add_parser("go-verifier-build-verify", help="verify a signed Go verifier build attestation")
+    _add_go_verifier_build_sources(go_verifier_build_verify, include_attestation=True)
+    go_verifier_build_verify.set_defaults(func=cmd_go_verifier_build_verify)
+
+    go_verifier_build_append = subparsers.add_parser("go-verifier-build-append", help="append a verified Go verifier build attestation as chain evidence")
+    _add_go_verifier_build_sources(go_verifier_build_append, include_attestation=True)
+    go_verifier_build_append.add_argument("--out", default="artifacts/go-verifier-build-entry.json")
+    _add_state_args(go_verifier_build_append)
+    go_verifier_build_append.set_defaults(func=cmd_go_verifier_build_append)
+
+    def _add_verifier_distribution_sources(parser: argparse.ArgumentParser, include_receipt: bool = False) -> None:
+        if include_receipt:
+            parser.add_argument("receipt")
+        parser.add_argument("verifier_release")
+        parser.add_argument("--conformance-report")
+        parser.add_argument("--standards-package")
+        parser.add_argument("--root", default=".")
+        parser.add_argument("--bundle", default="artifacts/verifier-source-bundle.zip")
+        parser.add_argument("--sbom", default="artifacts/verifier-source-sbom.json")
+        parser.add_argument("--provenance", default="artifacts/verifier-source-provenance.json")
+        parser.add_argument("--signature", default="artifacts/verifier-source-signature.json")
+        parser.add_argument("--key")
+
+    verifier_distribution = subparsers.add_parser("verifier-distribution", help="write a signed verifier source distribution receipt")
+    _add_verifier_distribution_sources(verifier_distribution)
+    verifier_distribution.add_argument("--distribution-ref", required=True)
+    verifier_distribution.add_argument("--channel", default="local-source-bundle")
+    verifier_distribution.add_argument("--publisher-ref", required=True)
+    verifier_distribution.add_argument("--release-url")
+    verifier_distribution.add_argument("--generated-at")
+    verifier_distribution.add_argument("--out", default="artifacts/verifier-distribution.json")
+    verifier_distribution.set_defaults(func=cmd_verifier_distribution)
+
+    verifier_distribution_verify = subparsers.add_parser("verifier-distribution-verify", help="verify a signed verifier source distribution receipt")
+    _add_verifier_distribution_sources(verifier_distribution_verify, include_receipt=True)
+    verifier_distribution_verify.set_defaults(func=cmd_verifier_distribution_verify)
+
+    verifier_distribution_append = subparsers.add_parser("verifier-distribution-append", help="append a verifier source distribution receipt as chain evidence")
+    _add_verifier_distribution_sources(verifier_distribution_append, include_receipt=True)
+    verifier_distribution_append.add_argument("--out", default="artifacts/verifier-distribution-entry.json")
+    _add_state_args(verifier_distribution_append)
+    verifier_distribution_append.set_defaults(func=cmd_verifier_distribution_append)
+    ci = subparsers.add_parser("ci-report", help="write a GitHub/GitLab promotion gate report")
+    ci.add_argument("pack")
+    ci.add_argument("--provider", choices=["github", "gitlab"], default="github")
+    ci.add_argument("--out", default="artifacts/trustai-ci-report.json")
+    ci.set_defaults(func=cmd_ci_report)
+
+    ci_payload = subparsers.add_parser("ci-payload", help="write a GitHub/GitLab API-ready promotion check payload")
+    ci_payload.add_argument("pack")
+    ci_payload.add_argument("--provider", choices=["github", "gitlab"], default="github")
+    ci_payload.add_argument("--commit-sha", required=True)
+    ci_payload.add_argument("--repository")
+    ci_payload.add_argument("--branch")
+    ci_payload.add_argument("--target-url")
+    ci_payload.add_argument("--out", default="artifacts/trustai-ci-payload.json")
+    ci_payload.set_defaults(func=cmd_ci_payload)
+
+    slack_approval = subparsers.add_parser("slack-approval-request", help="write a Slack approval request payload")
+    slack_approval.add_argument("pack")
+    slack_approval.add_argument("--channel", required=True)
+    slack_approval.add_argument("--requested-roles", help="comma-separated approval roles; defaults to missing roles")
+    slack_approval.add_argument("--requester")
+    slack_approval.add_argument("--callback-url")
+    slack_approval.add_argument("--expires-at")
+    slack_approval.add_argument("--out", default="artifacts/slack-approval-request.json")
+    slack_approval.set_defaults(func=cmd_slack_approval_request)
+
+    provider_delivery = subparsers.add_parser("provider-delivery", help="write a signed provider delivery receipt for an API-ready payload")
+    provider_delivery.add_argument("payload")
+    provider_delivery.add_argument("--endpoint-base", required=True)
+    provider_delivery.add_argument("--credential-ref", required=True)
+    provider_delivery.add_argument("--mode", choices=["dry-run", "recorded-response"], default="dry-run")
+    provider_delivery.add_argument("--send", action="store_true", help="POST the payload over HTTP and record the provider response")
+    provider_delivery.add_argument("--timeout-seconds", type=float, default=10.0)
+    provider_delivery.add_argument("--auth-header", default="Authorization")
+    provider_delivery.add_argument("--auth-scheme", default="Bearer")
+    provider_delivery.add_argument("--response-status", type=int)
+    provider_delivery.add_argument("--response-json")
+    provider_delivery.add_argument("--delivered-at")
+    provider_delivery.add_argument("--out", default="artifacts/provider-delivery.json")
+    provider_delivery.add_argument("--key")
+    provider_delivery.set_defaults(func=cmd_provider_delivery)
+
+    provider_delivery_verify = subparsers.add_parser("provider-delivery-verify", help="verify a signed provider delivery receipt")
+    provider_delivery_verify.add_argument("delivery")
+    provider_delivery_verify.add_argument("--payload")
+    provider_delivery_verify.add_argument("--key")
+    provider_delivery_verify.set_defaults(func=cmd_provider_delivery_verify)
+
+    provider_delivery_append = subparsers.add_parser("provider-delivery-append", help="append a provider delivery receipt as chain evidence")
+    provider_delivery_append.add_argument("delivery")
+    provider_delivery_append.add_argument("--payload")
+    provider_delivery_append.add_argument("--out", default="artifacts/provider-delivery-entry.json")
+    _add_state_args(provider_delivery_append)
+    provider_delivery_append.set_defaults(func=cmd_provider_delivery_append)
+    provider_delivery_service = subparsers.add_parser("provider-delivery-service-attestation", help="write a signed provider delivery service hardening attestation")
+    provider_delivery_service.add_argument("delivery")
+    provider_delivery_service.add_argument("--payload")
+    provider_delivery_service.add_argument("--provider-operations-service")
+    provider_delivery_service.add_argument("--mode", choices=sorted(PROVIDER_DELIVERY_SERVICE_MODES), default="provider-delivery-attested")
+    provider_delivery_service.add_argument("--environment", default="local")
+    provider_delivery_service.add_argument("--service-ref", required=True)
+    provider_delivery_service.add_argument("--service-version", required=True)
+    provider_delivery_service.add_argument("--service-image", required=True)
+    provider_delivery_service.add_argument("--service-image-digest", required=True)
+    provider_delivery_service.add_argument("--service-binary-hash", required=True)
+    provider_delivery_service.add_argument("--replicas-min", type=int, required=True)
+    provider_delivery_service.add_argument("--replicas-max", type=int, required=True)
+    provider_delivery_service.add_argument("--availability-zone", action="append")
+    provider_delivery_service.add_argument("--dispatch-worker-ref", required=True)
+    provider_delivery_service.add_argument("--queue-ref", required=True)
+    provider_delivery_service.add_argument("--dead-letter-queue-ref", required=True)
+    provider_delivery_service.add_argument("--idempotency-store-ref", required=True)
+    provider_delivery_service.add_argument("--retry-policy-ref", required=True)
+    provider_delivery_service.add_argument("--outbound-proxy-ref", required=True)
+    provider_delivery_service.add_argument("--provider-endpoint-base", required=True)
+    provider_delivery_service.add_argument("--provider-credential-ref", required=True)
+    provider_delivery_service.add_argument("--mtls-policy-ref", required=True)
+    provider_delivery_service.add_argument("--auth-policy-ref", required=True)
+    provider_delivery_service.add_argument("--network-policy-ref", required=True)
+    provider_delivery_service.add_argument("--egress-policy-ref", required=True)
+    provider_delivery_service.add_argument("--rate-limit-policy-ref", required=True)
+    provider_delivery_service.add_argument("--request-signing-policy-ref", required=True)
+    provider_delivery_service.add_argument("--audit-log-ref", required=True)
+    provider_delivery_service.add_argument("--audit-log-root", required=True)
+    provider_delivery_service.add_argument("--metrics-ref", required=True)
+    provider_delivery_service.add_argument("--alert-policy-ref", required=True)
+    provider_delivery_service.add_argument("--retention-until", required=True)
+    provider_delivery_service.add_argument("--actor-ref", required=True)
+    provider_delivery_service.add_argument("--credential-ref", required=True)
+    provider_delivery_service.add_argument("--evidence-ref", action="append")
+    provider_delivery_service.add_argument("--attested-at")
+    provider_delivery_service.add_argument("--out", default="artifacts/provider-delivery-service-attestation.json")
+    provider_delivery_service.add_argument("--key")
+    provider_delivery_service.set_defaults(func=cmd_provider_delivery_service_attestation)
+
+    provider_delivery_service_verify = subparsers.add_parser("provider-delivery-service-verify", help="verify a signed provider delivery service hardening attestation")
+    provider_delivery_service_verify.add_argument("attestation")
+    provider_delivery_service_verify.add_argument("--delivery", required=True)
+    provider_delivery_service_verify.add_argument("--payload")
+    provider_delivery_service_verify.add_argument("--provider-operations-service")
+    provider_delivery_service_verify.add_argument("--key")
+    provider_delivery_service_verify.set_defaults(func=cmd_provider_delivery_service_verify)
+
+    provider_delivery_service_append = subparsers.add_parser("provider-delivery-service-append", help="append a provider delivery service hardening attestation")
+    provider_delivery_service_append.add_argument("attestation")
+    provider_delivery_service_append.add_argument("--delivery", required=True)
+    provider_delivery_service_append.add_argument("--payload")
+    provider_delivery_service_append.add_argument("--provider-operations-service")
+    provider_delivery_service_append.add_argument("--out", default="artifacts/provider-delivery-service-entry.json")
+    provider_delivery_service_append.add_argument("--key")
+    _add_state_args(provider_delivery_service_append)
+    provider_delivery_service_append.set_defaults(func=cmd_provider_delivery_service_append)
+
+    def _add_provider_delivery_worker_sources(parser: argparse.ArgumentParser, include_receipt: bool = False) -> None:
+        if include_receipt:
+            parser.add_argument("receipt")
+        parser.add_argument("delivery")
+        parser.add_argument("--service-attestation", required=True)
+        parser.add_argument("--payload")
+        parser.add_argument("--provider-operations-service")
+        parser.add_argument("--key")
+
+    def _add_provider_delivery_worker_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--mode", choices=sorted(PROVIDER_DELIVERY_WORKER_MODES), default="dispatch-worker")
+        parser.add_argument("--environment", default="local")
+        parser.add_argument("--worker-ref", required=True)
+        parser.add_argument("--run-ref", required=True)
+        parser.add_argument("--operation-kind", choices=sorted(PROVIDER_DELIVERY_WORKER_OPERATION_KINDS), required=True)
+        parser.add_argument("--actor-ref", required=True)
+        parser.add_argument("--schedule-ref", required=True)
+        parser.add_argument("--cadence-seconds", type=int, required=True)
+        parser.add_argument("--lease-ref", required=True)
+        parser.add_argument("--checkpoint-ref", required=True)
+        parser.add_argument("--checkpoint-hash")
+        parser.add_argument("--previous-cursor-ref")
+        parser.add_argument("--next-cursor-ref")
+        parser.add_argument("--next-run-at")
+        parser.add_argument("--attempt", type=int, default=1)
+        parser.add_argument("--max-attempts", type=int, default=3)
+        parser.add_argument("--queue-ref", required=True)
+        parser.add_argument("--queue-message-ref")
+        parser.add_argument("--dead-letter-queue-ref", required=True)
+        parser.add_argument("--destination-ref", required=True)
+        parser.add_argument("--idempotency-record-hash")
+        parser.add_argument("--provider-request-ref")
+        parser.add_argument("--request-hash")
+        parser.add_argument("--response-status", type=int)
+        parser.add_argument("--response-hash")
+        parser.add_argument("--rate-limit-bucket-ref")
+        parser.add_argument("--retry-after-seconds", type=int)
+        parser.add_argument("--delivery-log-ref", required=True)
+        parser.add_argument("--delivery-log-root", required=True)
+        parser.add_argument("--provider-event-log-ref")
+        parser.add_argument("--provider-event-log-root")
+        parser.add_argument("--metrics-ref", required=True)
+        parser.add_argument("--audit-log-ref", required=True)
+        parser.add_argument("--audit-log-root", required=True)
+        parser.add_argument("--credential-ref", required=True)
+        parser.add_argument("--provider-credential-ref", required=True)
+        parser.add_argument("--retention-until", required=True)
+        parser.add_argument("--evidence-ref", action="append")
+        parser.add_argument("--started-at", required=True)
+        parser.add_argument("--completed-at")
+        parser.add_argument("--error-ref")
+
+    provider_delivery_worker = subparsers.add_parser("provider-delivery-worker", help="write a signed provider delivery worker operation receipt")
+    _add_provider_delivery_worker_sources(provider_delivery_worker)
+    _add_provider_delivery_worker_fields(provider_delivery_worker)
+    provider_delivery_worker.add_argument("--out", default="artifacts/provider-delivery-worker.json")
+    provider_delivery_worker.set_defaults(func=cmd_provider_delivery_worker)
+
+    provider_delivery_worker_verify = subparsers.add_parser("provider-delivery-worker-verify", help="verify a signed provider delivery worker receipt")
+    _add_provider_delivery_worker_sources(provider_delivery_worker_verify, include_receipt=True)
+    provider_delivery_worker_verify.set_defaults(func=cmd_provider_delivery_worker_verify)
+
+    provider_delivery_worker_append = subparsers.add_parser("provider-delivery-worker-append", help="append a provider delivery worker receipt as chain evidence")
+    _add_provider_delivery_worker_sources(provider_delivery_worker_append, include_receipt=True)
+    provider_delivery_worker_append.add_argument("--out", default="artifacts/provider-delivery-worker-entry.json")
+    _add_state_args(provider_delivery_worker_append)
+    provider_delivery_worker_append.set_defaults(func=cmd_provider_delivery_worker_append)
+    provider_webhook = subparsers.add_parser("provider-webhook", help="write a signed GitHub/GitLab webhook receipt")
+    provider_webhook.add_argument("provider", choices=["github", "gitlab"])
+    provider_webhook.add_argument("body")
+    provider_webhook.add_argument("--header", action="append", default=[], help="provider header as Name: Value; repeatable")
+    provider_webhook.add_argument("--secret", required=True, help="provider webhook secret; supports env:VAR")
+    provider_webhook.add_argument("--received-at")
+    provider_webhook.add_argument("--out", default="artifacts/provider-webhook.json")
+    provider_webhook.add_argument("--key")
+    provider_webhook.set_defaults(func=cmd_provider_webhook)
+
+    provider_webhook_verify = subparsers.add_parser("provider-webhook-verify", help="verify a signed provider webhook receipt")
+    provider_webhook_verify.add_argument("receipt")
+    provider_webhook_verify.add_argument("body")
+    provider_webhook_verify.add_argument("--header", action="append", default=[], help="provider header as Name: Value; repeatable")
+    provider_webhook_verify.add_argument("--secret", help="provider webhook secret for signature replay; supports env:VAR")
+    provider_webhook_verify.add_argument("--key")
+    provider_webhook_verify.set_defaults(func=cmd_provider_webhook_verify)
+
+    provider_webhook_append = subparsers.add_parser("provider-webhook-append", help="append a provider webhook receipt as chain evidence")
+    provider_webhook_append.add_argument("receipt")
+    provider_webhook_append.add_argument("body")
+    provider_webhook_append.add_argument("--header", action="append", default=[], help="provider header as Name: Value; repeatable")
+    provider_webhook_append.add_argument("--secret", help="provider webhook secret for signature replay; supports env:VAR")
+    provider_webhook_append.add_argument("--out", default="artifacts/provider-webhook-entry.json")
+    _add_state_args(provider_webhook_append)
+    provider_webhook_append.set_defaults(func=cmd_provider_webhook_append)
+
+    provider_audit = subparsers.add_parser("provider-audit-correlation", help="write a signed provider audit-log correlation receipt")
+    provider_audit.add_argument("audit_log")
+    provider_audit.add_argument("--webhook-receipt")
+    provider_audit.add_argument("--delivery-receipt")
+    provider_audit.add_argument("--provider")
+    provider_audit.add_argument("--audit-log-ref")
+    provider_audit.add_argument("--correlated-at")
+    provider_audit.add_argument("--out", default="artifacts/provider-audit-correlation.json")
+    provider_audit.add_argument("--key")
+    provider_audit.set_defaults(func=cmd_provider_audit_correlation)
+
+    provider_audit_verify = subparsers.add_parser("provider-audit-verify", help="verify a signed provider audit-log correlation receipt")
+    provider_audit_verify.add_argument("correlation")
+    provider_audit_verify.add_argument("--audit-log")
+    provider_audit_verify.add_argument("--webhook-receipt")
+    provider_audit_verify.add_argument("--delivery-receipt")
+    provider_audit_verify.add_argument("--key")
+    provider_audit_verify.set_defaults(func=cmd_provider_audit_verify)
+
+    provider_audit_append = subparsers.add_parser("provider-audit-append", help="append a provider audit-log correlation as chain evidence")
+    provider_audit_append.add_argument("correlation")
+    provider_audit_append.add_argument("--audit-log")
+    provider_audit_append.add_argument("--webhook-receipt")
+    provider_audit_append.add_argument("--delivery-receipt")
+    provider_audit_append.add_argument("--out", default="artifacts/provider-audit-correlation-entry.json")
+    _add_state_args(provider_audit_append)
+    provider_audit_append.set_defaults(func=cmd_provider_audit_append)
+
+    provider_audit_stream = subparsers.add_parser("provider-audit-stream", help="write a signed provider audit-log stream receipt")
+    provider_audit_stream.add_argument("audit_log")
+    provider_audit_stream.add_argument("--provider", required=True)
+    provider_audit_stream.add_argument("--stream-ref", required=True)
+    provider_audit_stream.add_argument("--endpoint-url", required=True)
+    provider_audit_stream.add_argument("--credential-ref", required=True)
+    provider_audit_stream.add_argument("--request-hash", required=True)
+    provider_audit_stream.add_argument("--response-status", type=int, required=True)
+    provider_audit_stream.add_argument("--response-hash", required=True)
+    provider_audit_stream.add_argument("--actor-ref", required=True)
+    provider_audit_stream.add_argument("--window-start", required=True)
+    provider_audit_stream.add_argument("--window-end", required=True)
+    provider_audit_stream.add_argument("--audit-log-ref")
+    provider_audit_stream.add_argument("--cursor-ref")
+    provider_audit_stream.add_argument("--next-cursor-ref")
+    provider_audit_stream.add_argument("--provider-installation")
+    provider_audit_stream.add_argument("--lifecycle")
+    provider_audit_stream.add_argument("--correlation")
+    provider_audit_stream.add_argument("--mode", choices=sorted(AUDIT_STREAM_MODES), default="recorded-provider-stream")
+    provider_audit_stream.add_argument("--environment", default="local")
+    provider_audit_stream.add_argument("--recorded-at")
+    provider_audit_stream.add_argument("--out", default="artifacts/provider-audit-stream.json")
+    provider_audit_stream.add_argument("--key")
+    provider_audit_stream.set_defaults(func=cmd_provider_audit_stream)
+
+    provider_audit_stream_verify = subparsers.add_parser("provider-audit-stream-verify", help="verify a signed provider audit-log stream receipt")
+    provider_audit_stream_verify.add_argument("receipt")
+    provider_audit_stream_verify.add_argument("--audit-log")
+    provider_audit_stream_verify.add_argument("--provider-installation")
+    provider_audit_stream_verify.add_argument("--lifecycle")
+    provider_audit_stream_verify.add_argument("--correlation")
+    provider_audit_stream_verify.add_argument("--key")
+    provider_audit_stream_verify.set_defaults(func=cmd_provider_audit_stream_verify)
+
+    provider_audit_stream_append = subparsers.add_parser("provider-audit-stream-append", help="append a provider audit-log stream receipt as chain evidence")
+    provider_audit_stream_append.add_argument("receipt")
+    provider_audit_stream_append.add_argument("--audit-log")
+    provider_audit_stream_append.add_argument("--provider-installation")
+    provider_audit_stream_append.add_argument("--lifecycle")
+    provider_audit_stream_append.add_argument("--correlation")
+    provider_audit_stream_append.add_argument("--out", default="artifacts/provider-audit-stream-entry.json")
+    provider_audit_stream_append.add_argument("--key")
+    _add_state_args(provider_audit_stream_append)
+    provider_audit_stream_append.set_defaults(func=cmd_provider_audit_stream_append)
+
+
+    provider_audit_worker = subparsers.add_parser("provider-audit-worker", help="write a signed provider audit worker operation receipt")
+    provider_audit_worker.add_argument("--stream-receipt", action="append", default=[], required=True, help="provider audit stream receipt; repeatable")
+    provider_audit_worker.add_argument("--correlation", action="append", default=[], help="provider audit correlation receipt; repeatable")
+    provider_audit_worker.add_argument("--lifecycle-operation", help="provider lifecycle operation receipt to bind")
+    provider_audit_worker.add_argument("--lifecycle", help="provider lifecycle manifest to replay")
+    provider_audit_worker.add_argument("--worker-ref", required=True)
+    provider_audit_worker.add_argument("--run-ref", required=True)
+    provider_audit_worker.add_argument("--operation-kind", choices=sorted(WORKER_OPERATION_KINDS), required=True)
+    provider_audit_worker.add_argument("--actor-ref", required=True)
+    provider_audit_worker.add_argument("--schedule-ref", required=True)
+    provider_audit_worker.add_argument("--cadence-seconds", type=int, required=True)
+    provider_audit_worker.add_argument("--lease-ref", required=True)
+    provider_audit_worker.add_argument("--checkpoint-ref", required=True)
+    provider_audit_worker.add_argument("--checkpoint-hash")
+    provider_audit_worker.add_argument("--credential-ref", required=True)
+    provider_audit_worker.add_argument("--previous-cursor-ref")
+    provider_audit_worker.add_argument("--next-cursor-ref")
+    provider_audit_worker.add_argument("--attempt", type=int, default=1)
+    provider_audit_worker.add_argument("--max-attempts", type=int, default=3)
+    provider_audit_worker.add_argument("--next-run-at")
+    provider_audit_worker.add_argument("--error-ref")
+    provider_audit_worker.add_argument("--mode", choices=sorted(WORKER_MODES), default="scheduled-worker")
+    provider_audit_worker.add_argument("--environment", default="local")
+    provider_audit_worker.add_argument("--started-at", required=True)
+    provider_audit_worker.add_argument("--completed-at")
+    provider_audit_worker.add_argument("--out", default="artifacts/provider-audit-worker.json")
+    provider_audit_worker.add_argument("--key")
+    provider_audit_worker.set_defaults(func=cmd_provider_audit_worker)
+
+    provider_audit_worker_verify = subparsers.add_parser("provider-audit-worker-verify", help="verify a signed provider audit worker operation receipt")
+    provider_audit_worker_verify.add_argument("receipt")
+    provider_audit_worker_verify.add_argument("--stream-receipt", action="append", default=[], help="provider audit stream receipt to replay; repeatable")
+    provider_audit_worker_verify.add_argument("--correlation", action="append", default=[], help="provider audit correlation receipt to replay; repeatable")
+    provider_audit_worker_verify.add_argument("--lifecycle-operation", help="provider lifecycle operation receipt to replay")
+    provider_audit_worker_verify.add_argument("--lifecycle", help="provider lifecycle manifest to replay")
+    provider_audit_worker_verify.add_argument("--key")
+    provider_audit_worker_verify.set_defaults(func=cmd_provider_audit_worker_verify)
+
+    provider_audit_worker_append = subparsers.add_parser("provider-audit-worker-append", help="append a provider audit worker operation receipt as chain evidence")
+    provider_audit_worker_append.add_argument("receipt")
+    provider_audit_worker_append.add_argument("--stream-receipt", action="append", default=[], help="provider audit stream receipt to replay; repeatable")
+    provider_audit_worker_append.add_argument("--correlation", action="append", default=[], help="provider audit correlation receipt to replay; repeatable")
+    provider_audit_worker_append.add_argument("--lifecycle-operation", help="provider lifecycle operation receipt to replay")
+    provider_audit_worker_append.add_argument("--lifecycle", help="provider lifecycle manifest to replay")
+    provider_audit_worker_append.add_argument("--out", default="artifacts/provider-audit-worker-entry.json")
+    provider_audit_worker_append.add_argument("--key")
+    _add_state_args(provider_audit_worker_append)
+    provider_audit_worker_append.set_defaults(func=cmd_provider_audit_worker_append)
+
+    provider_credential_custody = subparsers.add_parser("provider-credential-custody", help="write a signed provider credential custody receipt")
+    provider_credential_custody.add_argument("--provider-installation", help="provider installation manifest to replay")
+    provider_credential_custody.add_argument("--lifecycle", help="provider lifecycle manifest to replay")
+    provider_credential_custody.add_argument("--lifecycle-operation", help="provider lifecycle operation receipt to replay")
+    provider_credential_custody.add_argument("--audit-worker", help="provider audit worker receipt to replay")
+    provider_credential_custody.add_argument("--provider-ingress", help="provider ingress manifest for lifecycle replay")
+    provider_credential_custody.add_argument("--callback-storage", help="provider callback storage manifest for lifecycle replay")
+    provider_credential_custody.add_argument("--credential-ref", required=True)
+    provider_credential_custody.add_argument("--credential-kind", choices=sorted(CREDENTIAL_KINDS), required=True)
+    provider_credential_custody.add_argument("--custody-ref", required=True)
+    provider_credential_custody.add_argument("--vault-ref", required=True)
+    provider_credential_custody.add_argument("--kms-provider", required=True)
+    provider_credential_custody.add_argument("--kms-endpoint", required=True)
+    provider_credential_custody.add_argument("--key-ref", required=True)
+    provider_credential_custody.add_argument("--key-algorithm", required=True)
+    provider_credential_custody.add_argument("--policy-ref", required=True)
+    provider_credential_custody.add_argument("--policy-hash", required=True)
+    provider_credential_custody.add_argument("--rotation-ref", required=True)
+    provider_credential_custody.add_argument("--revocation-ref", required=True)
+    provider_credential_custody.add_argument("--audit-log-ref", required=True)
+    provider_credential_custody.add_argument("--audit-log-root", required=True)
+    provider_credential_custody.add_argument("--retention-until", required=True)
+    provider_credential_custody.add_argument("--actor-ref", required=True)
+    provider_credential_custody.add_argument("--allowed-actor-ref", action="append", default=[], required=True, help="actor allowed by custody policy; repeatable")
+    provider_credential_custody.add_argument("--denied-operation-ref", action="append", default=[], help="operation denied by custody policy; repeatable")
+    provider_credential_custody.add_argument("--quorum-required", type=int, default=1)
+    provider_credential_custody.add_argument("--quorum-approver-ref", action="append", default=[], required=True, help="custody approver reference; repeatable")
+    provider_credential_custody.add_argument("--attestation-ref")
+    provider_credential_custody.add_argument("--attestation-hash")
+    provider_credential_custody.add_argument("--access-grant-ref")
+    provider_credential_custody.add_argument("--evidence-ref", action="append", default=[], help="additional custody evidence reference; repeatable")
+    provider_credential_custody.add_argument("--response-status", type=int)
+    provider_credential_custody.add_argument("--response-hash")
+    provider_credential_custody.add_argument("--mode", choices=sorted(CUSTODY_MODES), default="vault-policy")
+    provider_credential_custody.add_argument("--environment", default="local")
+    provider_credential_custody.add_argument("--issued-at")
+    provider_credential_custody.add_argument("--expires-at")
+    provider_credential_custody.add_argument("--out", default="artifacts/provider-credential-custody.json")
+    provider_credential_custody.add_argument("--key")
+    provider_credential_custody.set_defaults(func=cmd_provider_credential_custody)
+
+    provider_credential_custody_verify = subparsers.add_parser("provider-credential-custody-verify", help="verify a signed provider credential custody receipt")
+    provider_credential_custody_verify.add_argument("receipt")
+    provider_credential_custody_verify.add_argument("--provider-installation", help="provider installation manifest to replay")
+    provider_credential_custody_verify.add_argument("--lifecycle", help="provider lifecycle manifest to replay")
+    provider_credential_custody_verify.add_argument("--lifecycle-operation", help="provider lifecycle operation receipt to replay")
+    provider_credential_custody_verify.add_argument("--audit-worker", help="provider audit worker receipt to replay")
+    provider_credential_custody_verify.add_argument("--provider-ingress", help="provider ingress manifest for lifecycle replay")
+    provider_credential_custody_verify.add_argument("--callback-storage", help="provider callback storage manifest for lifecycle replay")
+    provider_credential_custody_verify.add_argument("--key")
+    provider_credential_custody_verify.set_defaults(func=cmd_provider_credential_custody_verify)
+
+    provider_credential_custody_append = subparsers.add_parser("provider-credential-custody-append", help="append a provider credential custody receipt as chain evidence")
+    provider_credential_custody_append.add_argument("receipt")
+    provider_credential_custody_append.add_argument("--provider-installation", help="provider installation manifest to replay")
+    provider_credential_custody_append.add_argument("--lifecycle", help="provider lifecycle manifest to replay")
+    provider_credential_custody_append.add_argument("--lifecycle-operation", help="provider lifecycle operation receipt to replay")
+    provider_credential_custody_append.add_argument("--audit-worker", help="provider audit worker receipt to replay")
+    provider_credential_custody_append.add_argument("--provider-ingress", help="provider ingress manifest for lifecycle replay")
+    provider_credential_custody_append.add_argument("--callback-storage", help="provider callback storage manifest for lifecycle replay")
+    provider_credential_custody_append.add_argument("--out", default="artifacts/provider-credential-custody-entry.json")
+    provider_credential_custody_append.add_argument("--key")
+    _add_state_args(provider_credential_custody_append)
+    provider_credential_custody_append.set_defaults(func=cmd_provider_credential_custody_append)
+    provider_operations_service = subparsers.add_parser("provider-operations-service-attestation", help="write a signed provider operations service hardening attestation")
+    provider_operations_service.add_argument("--provider-installation", required=True)
+    provider_operations_service.add_argument("--provider-ingress", required=True)
+    provider_operations_service.add_argument("--callback-storage", required=True)
+    provider_operations_service.add_argument("--lifecycle", required=True)
+    provider_operations_service.add_argument("--lifecycle-operation", required=True)
+    provider_operations_service.add_argument("--audit-lifecycle-operation", required=True)
+    provider_operations_service.add_argument("--audit-worker", required=True)
+    provider_operations_service.add_argument("--credential-custody", required=True)
+    provider_operations_service.add_argument("--callback-store")
+    provider_operations_service.add_argument("--callback-store-db")
+    provider_operations_service.add_argument("--audit-stream")
+    provider_operations_service.add_argument("--audit-correlation")
+    provider_operations_service.add_argument("--mode", choices=sorted(PROVIDER_OPERATIONS_SERVICE_MODES), default="provider-operations-attested")
+    provider_operations_service.add_argument("--environment", default="local")
+    provider_operations_service.add_argument("--service-ref", required=True)
+    provider_operations_service.add_argument("--service-version", required=True)
+    provider_operations_service.add_argument("--service-image", required=True)
+    provider_operations_service.add_argument("--service-image-digest", required=True)
+    provider_operations_service.add_argument("--service-binary-hash", required=True)
+    provider_operations_service.add_argument("--replicas-min", type=int, required=True)
+    provider_operations_service.add_argument("--replicas-max", type=int, required=True)
+    provider_operations_service.add_argument("--availability-zone", action="append")
+    provider_operations_service.add_argument("--public-ingress-ref", required=True)
+    provider_operations_service.add_argument("--oauth-worker-ref", required=True)
+    provider_operations_service.add_argument("--callback-worker-ref", required=True)
+    provider_operations_service.add_argument("--audit-worker-ref", required=True)
+    provider_operations_service.add_argument("--storage-ref", required=True)
+    provider_operations_service.add_argument("--vault-ref", required=True)
+    provider_operations_service.add_argument("--kms-key-ref", required=True)
+    provider_operations_service.add_argument("--mtls-policy-ref", required=True)
+    provider_operations_service.add_argument("--auth-policy-ref", required=True)
+    provider_operations_service.add_argument("--webhook-signature-policy-ref", required=True)
+    provider_operations_service.add_argument("--replay-window-ref", required=True)
+    provider_operations_service.add_argument("--dedup-store-ref", required=True)
+    provider_operations_service.add_argument("--rate-limit-policy-ref", required=True)
+    provider_operations_service.add_argument("--network-policy-ref", required=True)
+    provider_operations_service.add_argument("--egress-policy-ref", required=True)
+    provider_operations_service.add_argument("--scheduler-ref", required=True)
+    provider_operations_service.add_argument("--lease-ref", required=True)
+    provider_operations_service.add_argument("--checkpoint-ref", required=True)
+    provider_operations_service.add_argument("--external-call-policy-ref", required=True)
+    provider_operations_service.add_argument("--audit-log-ref", required=True)
+    provider_operations_service.add_argument("--audit-log-root", required=True)
+    provider_operations_service.add_argument("--retention-until", required=True)
+    provider_operations_service.add_argument("--actor-ref", required=True)
+    provider_operations_service.add_argument("--credential-ref", required=True)
+    provider_operations_service.add_argument("--evidence-ref", action="append")
+    provider_operations_service.add_argument("--attested-at")
+    provider_operations_service.add_argument("--out", default="artifacts/provider-operations-service-attestation.json")
+    provider_operations_service.add_argument("--key")
+    provider_operations_service.set_defaults(func=cmd_provider_operations_service_attestation)
+
+    provider_operations_service_verify = subparsers.add_parser("provider-operations-service-verify", help="verify a signed provider operations service hardening attestation")
+    provider_operations_service_verify.add_argument("attestation")
+    provider_operations_service_verify.add_argument("--provider-installation", required=True)
+    provider_operations_service_verify.add_argument("--provider-ingress", required=True)
+    provider_operations_service_verify.add_argument("--callback-storage", required=True)
+    provider_operations_service_verify.add_argument("--lifecycle", required=True)
+    provider_operations_service_verify.add_argument("--lifecycle-operation", required=True)
+    provider_operations_service_verify.add_argument("--audit-lifecycle-operation", required=True)
+    provider_operations_service_verify.add_argument("--audit-worker", required=True)
+    provider_operations_service_verify.add_argument("--credential-custody", required=True)
+    provider_operations_service_verify.add_argument("--callback-store")
+    provider_operations_service_verify.add_argument("--callback-store-db")
+    provider_operations_service_verify.add_argument("--audit-stream")
+    provider_operations_service_verify.add_argument("--audit-correlation")
+    provider_operations_service_verify.add_argument("--key")
+    provider_operations_service_verify.set_defaults(func=cmd_provider_operations_service_verify)
+
+    provider_operations_service_append = subparsers.add_parser("provider-operations-service-append", help="append a provider operations service hardening attestation")
+    provider_operations_service_append.add_argument("attestation")
+    provider_operations_service_append.add_argument("--provider-installation", required=True)
+    provider_operations_service_append.add_argument("--provider-ingress", required=True)
+    provider_operations_service_append.add_argument("--callback-storage", required=True)
+    provider_operations_service_append.add_argument("--lifecycle", required=True)
+    provider_operations_service_append.add_argument("--lifecycle-operation", required=True)
+    provider_operations_service_append.add_argument("--audit-lifecycle-operation", required=True)
+    provider_operations_service_append.add_argument("--audit-worker", required=True)
+    provider_operations_service_append.add_argument("--credential-custody", required=True)
+    provider_operations_service_append.add_argument("--callback-store")
+    provider_operations_service_append.add_argument("--callback-store-db")
+    provider_operations_service_append.add_argument("--audit-stream")
+    provider_operations_service_append.add_argument("--audit-correlation")
+    provider_operations_service_append.add_argument("--out", default="artifacts/provider-operations-service-entry.json")
+    provider_operations_service_append.add_argument("--key")
+    _add_state_args(provider_operations_service_append)
+    provider_operations_service_append.set_defaults(func=cmd_provider_operations_service_append)
+
+    provider_callback_store = subparsers.add_parser("provider-callback-store", help="persist provider callback artifacts into SQLite and write a signed store manifest")
+    provider_callback_store.add_argument("--db", required=True)
+    provider_callback_store.add_argument("--artifact", action="append", default=[], required=True, help="signed provider callback artifact; repeatable")
+    provider_callback_store.add_argument("--generated-at")
+    provider_callback_store.add_argument("--retention-until")
+    provider_callback_store.add_argument("--out", default="artifacts/provider-callback-store.json")
+    provider_callback_store.add_argument("--key")
+    provider_callback_store.set_defaults(func=cmd_provider_callback_store)
+
+    provider_callback_store_verify = subparsers.add_parser("provider-callback-store-verify", help="verify a signed provider callback SQLite store manifest")
+    provider_callback_store_verify.add_argument("manifest")
+    provider_callback_store_verify.add_argument("--db")
+    provider_callback_store_verify.add_argument("--artifact", action="append", default=[], help="source artifact to replay; repeatable")
+    provider_callback_store_verify.add_argument("--key")
+    provider_callback_store_verify.set_defaults(func=cmd_provider_callback_store_verify)
+
+    provider_callback_store_append = subparsers.add_parser("provider-callback-store-append", help="append a provider callback store manifest as chain evidence")
+    provider_callback_store_append.add_argument("manifest")
+    provider_callback_store_append.add_argument("--db")
+    provider_callback_store_append.add_argument("--artifact", action="append", default=[], help="source artifact to replay; repeatable")
+    provider_callback_store_append.add_argument("--out", default="artifacts/provider-callback-store-entry.json")
+    provider_callback_store_append.add_argument("--key")
+    _add_state_args(provider_callback_store_append)
+    provider_callback_store_append.set_defaults(func=cmd_provider_callback_store_append)
+
+    provider_callback_storage = subparsers.add_parser("provider-callback-storage", help="write a signed provider callback Postgres/HA storage manifest")
+    provider_callback_storage.add_argument("--storage-ref", required=True)
+    provider_callback_storage.add_argument("--dsn-ref", required=True)
+    provider_callback_storage.add_argument("--schema-ref", required=True)
+    provider_callback_storage.add_argument("--migration-ref", required=True)
+    provider_callback_storage.add_argument("--migration-hash", required=True)
+    provider_callback_storage.add_argument("--mode", choices=["local-reference", "byoc-reference", "managed-postgres-reference", "recorded-managed-postgres", "production-design"], default="byoc-reference")
+    provider_callback_storage.add_argument("--environment", default="local")
+    provider_callback_storage.add_argument("--engine", choices=["postgres", "managed-postgres"], default="managed-postgres")
+    provider_callback_storage.add_argument("--primary-region", required=True)
+    provider_callback_storage.add_argument("--replica-region", action="append", default=[])
+    provider_callback_storage.add_argument("--min-replicas", type=int, default=2)
+    provider_callback_storage.add_argument("--backup-policy-ref", required=True)
+    provider_callback_storage.add_argument("--retention-until", required=True)
+    provider_callback_storage.add_argument("--rpo-seconds", type=int, default=60)
+    provider_callback_storage.add_argument("--rto-seconds", type=int, default=300)
+    provider_callback_storage.add_argument("--encryption-key-ref", required=True)
+    provider_callback_storage.add_argument("--network-policy-ref", required=True)
+    provider_callback_storage.add_argument("--monitoring-ref", required=True)
+    provider_callback_storage.add_argument("--failover-runbook-ref", required=True)
+    provider_callback_storage.add_argument("--callback-store", required=True)
+    provider_callback_storage.add_argument("--callback-store-db", help="SQLite callback store path used to replay callback-store evidence")
+    provider_callback_storage.add_argument("--provider-ingress", help="provider ingress manifest to bind")
+    provider_callback_storage.add_argument("--generated-at")
+    provider_callback_storage.add_argument("--out", default="artifacts/provider-callback-storage.json")
+    provider_callback_storage.add_argument("--key")
+    provider_callback_storage.set_defaults(func=cmd_provider_callback_storage)
+
+    provider_callback_storage_verify = subparsers.add_parser("provider-callback-storage-verify", help="verify a signed provider callback storage manifest")
+    provider_callback_storage_verify.add_argument("manifest")
+    provider_callback_storage_verify.add_argument("--callback-store", help="provider callback store manifest to replay")
+    provider_callback_storage_verify.add_argument("--callback-store-db", help="SQLite callback store path used to replay callback-store evidence")
+    provider_callback_storage_verify.add_argument("--provider-ingress", help="provider ingress manifest to replay")
+    provider_callback_storage_verify.add_argument("--key")
+    provider_callback_storage_verify.set_defaults(func=cmd_provider_callback_storage_verify)
+
+    provider_callback_storage_append = subparsers.add_parser("provider-callback-storage-append", help="append a provider callback storage manifest as chain evidence")
+    provider_callback_storage_append.add_argument("manifest")
+    provider_callback_storage_append.add_argument("--callback-store", help="provider callback store manifest to replay")
+    provider_callback_storage_append.add_argument("--callback-store-db", help="SQLite callback store path used to replay callback-store evidence")
+    provider_callback_storage_append.add_argument("--provider-ingress", help="provider ingress manifest to replay")
+    provider_callback_storage_append.add_argument("--out", default="artifacts/provider-callback-storage-entry.json")
+    provider_callback_storage_append.add_argument("--key")
+    _add_state_args(provider_callback_storage_append)
+    provider_callback_storage_append.set_defaults(func=cmd_provider_callback_storage_append)
+    provider_ingress = subparsers.add_parser("provider-ingress", help="write a signed provider public ingress manifest")
+    provider_ingress.add_argument("--ingress-base-url", required=True)
+    provider_ingress.add_argument("--ingress-ref", required=True)
+    provider_ingress.add_argument("--dns-name")
+    provider_ingress.add_argument("--mode", choices=["local-reference", "byoc-reference", "recorded-public-ingress", "production-design"], default="byoc-reference")
+    provider_ingress.add_argument("--environment", default="local")
+    provider_ingress.add_argument("--healthcheck-url")
+    provider_ingress.add_argument("--tls-certificate-ref")
+    provider_ingress.add_argument("--tls-certificate-fingerprint")
+    provider_ingress.add_argument("--waf-ref")
+    provider_ingress.add_argument("--network-policy-ref", required=True)
+    provider_ingress.add_argument("--rate-limit-policy-ref", required=True)
+    provider_ingress.add_argument("--allowed-source-ref", action="append", default=[])
+    provider_ingress.add_argument("--replay-window-seconds", type=int, default=300)
+    provider_ingress.add_argument("--provider-installation", action="append", default=[], required=True, help="provider installation manifest; repeatable")
+    provider_ingress.add_argument("--callback-store", help="provider callback store manifest to bind")
+    provider_ingress.add_argument("--callback-store-db", help="SQLite callback store path used to replay callback-store evidence")
+    provider_ingress.add_argument("--generated-at")
+    provider_ingress.add_argument("--out", default="artifacts/provider-ingress.json")
+    provider_ingress.add_argument("--key")
+    provider_ingress.set_defaults(func=cmd_provider_ingress)
+
+    provider_ingress_verify = subparsers.add_parser("provider-ingress-verify", help="verify a signed provider public ingress manifest")
+    provider_ingress_verify.add_argument("manifest")
+    provider_ingress_verify.add_argument("--provider-installation", action="append", default=[], help="provider installation manifest to replay; repeatable")
+    provider_ingress_verify.add_argument("--callback-store", help="provider callback store manifest to replay")
+    provider_ingress_verify.add_argument("--callback-store-db", help="SQLite callback store path used to replay callback-store evidence")
+    provider_ingress_verify.add_argument("--key")
+    provider_ingress_verify.set_defaults(func=cmd_provider_ingress_verify)
+
+    provider_ingress_append = subparsers.add_parser("provider-ingress-append", help="append a provider public ingress manifest as chain evidence")
+    provider_ingress_append.add_argument("manifest")
+    provider_ingress_append.add_argument("--provider-installation", action="append", default=[], help="provider installation manifest to replay; repeatable")
+    provider_ingress_append.add_argument("--callback-store", help="provider callback store manifest to replay")
+    provider_ingress_append.add_argument("--callback-store-db", help="SQLite callback store path used to replay callback-store evidence")
+    provider_ingress_append.add_argument("--out", default="artifacts/provider-ingress-entry.json")
+    provider_ingress_append.add_argument("--key")
+    _add_state_args(provider_ingress_append)
+    provider_ingress_append.set_defaults(func=cmd_provider_ingress_append)
+    provider_lifecycle = subparsers.add_parser("provider-lifecycle", help="write a signed provider OAuth/app lifecycle and revocation manifest")
+    provider_lifecycle.add_argument("--provider-installation", required=True)
+    provider_lifecycle.add_argument("--lifecycle-ref", required=True)
+    provider_lifecycle.add_argument("--oauth-callback-url", required=True)
+    provider_lifecycle.add_argument("--authorization-ref", required=True)
+    provider_lifecycle.add_argument("--token-exchange-ref", required=True)
+    provider_lifecycle.add_argument("--token-store-ref", required=True)
+    provider_lifecycle.add_argument("--refresh-policy-ref", required=True)
+    provider_lifecycle.add_argument("--credential-rotation-ref", required=True)
+    provider_lifecycle.add_argument("--revocation-endpoint", required=True)
+    provider_lifecycle.add_argument("--revocation-ref", required=True)
+    provider_lifecycle.add_argument("--uninstall-ref", required=True)
+    provider_lifecycle.add_argument("--audit-log-stream-ref", required=True)
+    provider_lifecycle.add_argument("--mode", choices=["local-reference", "byoc-reference", "recorded-provider-lifecycle", "production-design"], default="byoc-reference")
+    provider_lifecycle.add_argument("--environment", default="local")
+    provider_lifecycle.add_argument("--provider-ingress")
+    provider_lifecycle.add_argument("--callback-storage")
+    provider_lifecycle.add_argument("--generated-at")
+    provider_lifecycle.add_argument("--out", default="artifacts/provider-lifecycle.json")
+    provider_lifecycle.add_argument("--key")
+    provider_lifecycle.set_defaults(func=cmd_provider_lifecycle)
+
+    provider_lifecycle_verify = subparsers.add_parser("provider-lifecycle-verify", help="verify a signed provider OAuth/app lifecycle manifest")
+    provider_lifecycle_verify.add_argument("manifest")
+    provider_lifecycle_verify.add_argument("--provider-installation", help="provider installation manifest to replay")
+    provider_lifecycle_verify.add_argument("--provider-ingress", help="provider ingress manifest to replay")
+    provider_lifecycle_verify.add_argument("--callback-storage", help="provider callback storage manifest to replay")
+    provider_lifecycle_verify.add_argument("--key")
+    provider_lifecycle_verify.set_defaults(func=cmd_provider_lifecycle_verify)
+
+    provider_lifecycle_append = subparsers.add_parser("provider-lifecycle-append", help="append a provider OAuth/app lifecycle manifest as chain evidence")
+    provider_lifecycle_append.add_argument("manifest")
+    provider_lifecycle_append.add_argument("--provider-installation", help="provider installation manifest to replay")
+    provider_lifecycle_append.add_argument("--provider-ingress", help="provider ingress manifest to replay")
+    provider_lifecycle_append.add_argument("--callback-storage", help="provider callback storage manifest to replay")
+    provider_lifecycle_append.add_argument("--out", default="artifacts/provider-lifecycle-entry.json")
+    provider_lifecycle_append.add_argument("--key")
+    _add_state_args(provider_lifecycle_append)
+    provider_lifecycle_append.set_defaults(func=cmd_provider_lifecycle_append)
+
+    provider_lifecycle_operation = subparsers.add_parser("provider-lifecycle-operation", help="write a signed provider lifecycle operation receipt")
+    provider_lifecycle_operation.add_argument("--lifecycle", required=True, help="provider lifecycle manifest to bind")
+    provider_lifecycle_operation.add_argument("--operation-kind", choices=sorted(OPERATION_KINDS), required=True)
+    provider_lifecycle_operation.add_argument("--operation-ref", required=True)
+    provider_lifecycle_operation.add_argument("--provider-event-ref", required=True)
+    provider_lifecycle_operation.add_argument("--endpoint-url", required=True)
+    provider_lifecycle_operation.add_argument("--credential-ref", required=True)
+    provider_lifecycle_operation.add_argument("--token-ref")
+    provider_lifecycle_operation.add_argument("--audit-log-ref")
+    provider_lifecycle_operation.add_argument("--request-hash", required=True)
+    provider_lifecycle_operation.add_argument("--response-status", type=int, required=True)
+    provider_lifecycle_operation.add_argument("--response-hash", required=True)
+    provider_lifecycle_operation.add_argument("--actor-ref", required=True)
+    provider_lifecycle_operation.add_argument("--idempotency-key")
+    provider_lifecycle_operation.add_argument("--mode", choices=sorted(OPERATION_MODES), default="recorded-provider-response")
+    provider_lifecycle_operation.add_argument("--environment", default="local")
+    provider_lifecycle_operation.add_argument("--recorded-at")
+    provider_lifecycle_operation.add_argument("--out", default="artifacts/provider-lifecycle-operation.json")
+    provider_lifecycle_operation.add_argument("--key")
+    provider_lifecycle_operation.set_defaults(func=cmd_provider_lifecycle_operation)
+
+    provider_lifecycle_operation_verify = subparsers.add_parser("provider-lifecycle-operation-verify", help="verify a signed provider lifecycle operation receipt")
+    provider_lifecycle_operation_verify.add_argument("receipt")
+    provider_lifecycle_operation_verify.add_argument("--lifecycle", help="provider lifecycle manifest to replay")
+    provider_lifecycle_operation_verify.add_argument("--key")
+    provider_lifecycle_operation_verify.set_defaults(func=cmd_provider_lifecycle_operation_verify)
+
+    provider_lifecycle_operation_append = subparsers.add_parser("provider-lifecycle-operation-append", help="append a provider lifecycle operation receipt as chain evidence")
+    provider_lifecycle_operation_append.add_argument("receipt")
+    provider_lifecycle_operation_append.add_argument("--lifecycle", help="provider lifecycle manifest to replay")
+    provider_lifecycle_operation_append.add_argument("--out", default="artifacts/provider-lifecycle-operation-entry.json")
+    provider_lifecycle_operation_append.add_argument("--key")
+    _add_state_args(provider_lifecycle_operation_append)
+    provider_lifecycle_operation_append.set_defaults(func=cmd_provider_lifecycle_operation_append)
+    provider_installation = subparsers.add_parser("provider-installation", help="write a signed provider app installation manifest")
+    provider_installation.add_argument("--provider", choices=["github", "gitlab", "slack"], required=True)
+    provider_installation.add_argument("--app-ref", required=True)
+    provider_installation.add_argument("--installation-ref", required=True)
+    provider_installation.add_argument("--tenant-ref", required=True)
+    provider_installation.add_argument("--owner")
+    provider_installation.add_argument("--repository")
+    provider_installation.add_argument("--mode", choices=["local-reference", "recorded-installation", "oauth-installation", "app-installation"], default="recorded-installation")
+    provider_installation.add_argument("--app-url")
+    provider_installation.add_argument("--webhook-url")
+    provider_installation.add_argument("--callback-url")
+    provider_installation.add_argument("--permission", action="append", default=[])
+    provider_installation.add_argument("--scope", action="append", default=[])
+    provider_installation.add_argument("--event", action="append", default=[])
+    provider_installation.add_argument("--secret-ref")
+    provider_installation.add_argument("--credential-ref")
+    provider_installation.add_argument("--audit-log-ref")
+    provider_installation.add_argument("--audit-log-scope", action="append", default=[])
+    provider_installation.add_argument("--installed-at")
+    provider_installation.add_argument("--expires-at")
+    provider_installation.add_argument("--evidence-ref", action="append", default=[])
+    provider_installation.add_argument("--now")
+    provider_installation.add_argument("--out", default="artifacts/provider-installation.json")
+    provider_installation.add_argument("--key")
+    provider_installation.set_defaults(func=cmd_provider_installation)
+
+    provider_installation_verify = subparsers.add_parser("provider-installation-verify", help="verify a signed provider app installation manifest")
+    provider_installation_verify.add_argument("manifest")
+    provider_installation_verify.add_argument("--now")
+    provider_installation_verify.add_argument("--key")
+    provider_installation_verify.set_defaults(func=cmd_provider_installation_verify)
+
+    provider_installation_append = subparsers.add_parser("provider-installation-append", help="append a provider app installation manifest as chain evidence")
+    provider_installation_append.add_argument("manifest")
+    provider_installation_append.add_argument("--out", default="artifacts/provider-installation-entry.json")
+    provider_installation_append.add_argument("--key")
+    _add_state_args(provider_installation_append)
+    provider_installation_append.set_defaults(func=cmd_provider_installation_append)
+    approval_callback_build = subparsers.add_parser("approval-callback-build", help="write a signed approval callback artifact")
+    approval_callback_build.add_argument("request")
+    approval_callback_build.add_argument("role")
+    approval_callback_build.add_argument("--approver", required=True)
+    approval_callback_build.add_argument("--approved-at", required=True)
+    approval_callback_build.add_argument("--reason")
+    approval_callback_build.add_argument("--external-user-id")
+    approval_callback_build.add_argument("--team-id")
+    approval_callback_build.add_argument("--out", default="artifacts/approval-callback.json")
+    approval_callback_build.add_argument("--key")
+    approval_callback_build.set_defaults(func=cmd_approval_callback_build)
+
+    approval_callback_verify = subparsers.add_parser("approval-callback-verify", help="verify a signed approval callback artifact")
+    approval_callback_verify.add_argument("request")
+    approval_callback_verify.add_argument("callback")
+    approval_callback_verify.add_argument("--key")
+    approval_callback_verify.set_defaults(func=cmd_approval_callback_verify)
+
+    approval_callback_append = subparsers.add_parser("approval-callback-append", help="append a verified approval callback as chain evidence")
+    approval_callback_append.add_argument("contract")
+    approval_callback_append.add_argument("request")
+    approval_callback_append.add_argument("callback")
+    approval_callback_append.add_argument("--out", default="artifacts/approval-callback-entry.json")
+    _add_state_args(approval_callback_append)
+    _add_auto_register(approval_callback_append)
+    approval_callback_append.set_defaults(func=cmd_approval_callback_append)
+
+    compliance = subparsers.add_parser("compliance-export", help="export framework control mappings")
+    compliance.add_argument("pack")
+    compliance.add_argument("--out", default="artifacts/compliance-export.json")
+    compliance.set_defaults(func=cmd_compliance_export)
+
+    insurer = subparsers.add_parser("insurer-export", help="export consented insurer risk telemetry")
+    insurer.add_argument("pack")
+    insurer.add_argument("--out", default="artifacts/insurer-risk-telemetry.json")
+    insurer.add_argument("--consent-id", default="local-demo-consent")
+    insurer.add_argument("--require-consent", action="store_true")
+    insurer.add_argument("--now")
+    _add_state_args(insurer)
+    insurer.set_defaults(func=cmd_insurer_export)
+
+    underwriting_quote = subparsers.add_parser("underwriting-quote", help="write a signed underwriting quote from consented insurer telemetry")
+    underwriting_quote.add_argument("telemetry")
+    underwriting_quote.add_argument("--underwriter", required=True)
+    underwriting_quote.add_argument("--product", default="ai-liability")
+    underwriting_quote.add_argument("--coverage-limit-usd", type=float, default=1000000)
+    underwriting_quote.add_argument("--base-premium-usd", type=float, default=25000)
+    underwriting_quote.add_argument("--term-start", required=True)
+    underwriting_quote.add_argument("--term-end", required=True)
+    underwriting_quote.add_argument("--issued-at")
+    underwriting_quote.add_argument("--expires-at", required=True)
+    underwriting_quote.add_argument("--quote-ref")
+    underwriting_quote.add_argument("--mode", choices=["local-reference", "recorded-response"], default="local-reference")
+    underwriting_quote.add_argument("--now")
+    underwriting_quote.add_argument("--out", default="artifacts/underwriting-quote.json")
+    underwriting_quote.add_argument("--key")
+    underwriting_quote.set_defaults(func=cmd_underwriting_quote)
+
+    underwriting_quote_verify = subparsers.add_parser("underwriting-quote-verify", help="verify a signed underwriting quote")
+    underwriting_quote_verify.add_argument("quote")
+    underwriting_quote_verify.add_argument("--telemetry")
+    underwriting_quote_verify.add_argument("--now")
+    underwriting_quote_verify.add_argument("--key")
+    underwriting_quote_verify.set_defaults(func=cmd_underwriting_quote_verify)
+
+    underwriting_quote_append = subparsers.add_parser("underwriting-quote-append", help="append a verified underwriting quote as chain evidence")
+    underwriting_quote_append.add_argument("quote")
+    underwriting_quote_append.add_argument("--out", default="artifacts/underwriting-quote-entry.json")
+    underwriting_quote_append.add_argument("--key")
+    _add_state_args(underwriting_quote_append)
+    underwriting_quote_append.set_defaults(func=cmd_underwriting_quote_append)
+
+    def _add_insurer_partner_service_sources(parser: argparse.ArgumentParser, include_attestation: bool = False) -> None:
+        if include_attestation:
+            parser.add_argument("attestation")
+        parser.add_argument("telemetry")
+        parser.add_argument("quote")
+        parser.add_argument("--actuarial-product")
+        parser.add_argument("--actuarial-corpus", action="append", default=[])
+        parser.add_argument("--now")
+        parser.add_argument("--key")
+
+    def _add_insurer_partner_service_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--mode", choices=sorted(INSURER_PARTNER_SERVICE_MODES), default="partner-service-attested")
+        parser.add_argument("--environment", default="local")
+        parser.add_argument("--service-kind", choices=sorted(INSURER_PARTNER_KINDS), default="underwriting-integration")
+        parser.add_argument("--service-ref", required=True)
+        parser.add_argument("--service-version", required=True)
+        parser.add_argument("--endpoint-url", required=True)
+        parser.add_argument("--partner-api-endpoint", required=True)
+        parser.add_argument("--service-image", required=True)
+        parser.add_argument("--service-image-digest", required=True)
+        parser.add_argument("--service-binary-hash", required=True)
+        parser.add_argument("--frontend-bundle-ref", required=True)
+        parser.add_argument("--frontend-bundle-hash", required=True)
+        parser.add_argument("--api-ref", required=True)
+        parser.add_argument("--queue-ref", required=True)
+        parser.add_argument("--policy-system-ref", required=True)
+        parser.add_argument("--partner-contract-ref", required=True)
+        parser.add_argument("--auth-provider-ref", required=True)
+        parser.add_argument("--partner-auth-policy-ref", required=True)
+        parser.add_argument("--rbac-policy-ref", required=True)
+        parser.add_argument("--consent-policy-ref", required=True)
+        parser.add_argument("--data-minimization-policy-ref", required=True)
+        parser.add_argument("--pii-redaction-policy-ref", required=True)
+        parser.add_argument("--tenant-isolation-ref", required=True)
+        parser.add_argument("--rate-limit-policy-ref", required=True)
+        parser.add_argument("--request-signing-ref", required=True)
+        parser.add_argument("--network-policy-ref", required=True)
+        parser.add_argument("--egress-policy-ref", required=True)
+        parser.add_argument("--encryption-key-ref", required=True)
+        parser.add_argument("--replicas-min", type=int, required=True)
+        parser.add_argument("--replicas-max", type=int, required=True)
+        parser.add_argument("--availability-zone", action="append", default=[])
+        parser.add_argument("--audit-log-ref", required=True)
+        parser.add_argument("--audit-log-root", required=True)
+        parser.add_argument("--access-log-ref", required=True)
+        parser.add_argument("--access-log-root", required=True)
+        parser.add_argument("--delivery-log-ref", required=True)
+        parser.add_argument("--delivery-log-root", required=True)
+        parser.add_argument("--metrics-ref", required=True)
+        parser.add_argument("--alert-policy-ref", required=True)
+        parser.add_argument("--retention-until", required=True)
+        parser.add_argument("--actor-ref", required=True)
+        parser.add_argument("--credential-ref", required=True)
+        parser.add_argument("--partner-credential-ref", required=True)
+        parser.add_argument("--evidence-ref", action="append", default=[])
+        parser.add_argument("--attested-at")
+        parser.add_argument("--out", default="artifacts/insurer-partner-service-attestation.json")
+
+    insurer_partner_service = subparsers.add_parser("insurer-partner-service-attestation", help="write a signed insurer partner service hardening attestation")
+    _add_insurer_partner_service_sources(insurer_partner_service)
+    _add_insurer_partner_service_fields(insurer_partner_service)
+    insurer_partner_service.set_defaults(func=cmd_insurer_partner_service_attestation)
+
+    insurer_partner_service_verify = subparsers.add_parser("insurer-partner-service-verify", help="verify a signed insurer partner service hardening attestation")
+    _add_insurer_partner_service_sources(insurer_partner_service_verify, include_attestation=True)
+    insurer_partner_service_verify.set_defaults(func=cmd_insurer_partner_service_verify)
+
+    insurer_partner_service_append = subparsers.add_parser("insurer-partner-service-append", help="append a verified insurer partner service hardening attestation as chain evidence")
+    _add_insurer_partner_service_sources(insurer_partner_service_append, include_attestation=True)
+    insurer_partner_service_append.add_argument("--out", default="artifacts/insurer-partner-service-entry.json")
+    _add_state_args(insurer_partner_service_append)
+    insurer_partner_service_append.set_defaults(func=cmd_insurer_partner_service_append)
+
+    def _add_insurer_partner_worker_sources(parser: argparse.ArgumentParser, include_receipt: bool = False) -> None:
+        if include_receipt:
+            parser.add_argument("receipt")
+        parser.add_argument("service_attestation")
+        _add_insurer_partner_service_sources(parser)
+
+    def _add_insurer_partner_worker_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--mode", choices=sorted(INSURER_PARTNER_WORKER_MODES), default="scheduled-worker")
+        parser.add_argument("--environment", default="local")
+        parser.add_argument("--worker-ref", required=True)
+        parser.add_argument("--run-ref", required=True)
+        parser.add_argument("--operation-kind", choices=sorted(INSURER_PARTNER_WORKER_OPERATION_KINDS), required=True)
+        parser.add_argument("--actor-ref", required=True)
+        parser.add_argument("--schedule-ref", required=True)
+        parser.add_argument("--cadence-seconds", type=int, required=True)
+        parser.add_argument("--lease-ref", required=True)
+        parser.add_argument("--checkpoint-ref", required=True)
+        parser.add_argument("--checkpoint-hash")
+        parser.add_argument("--previous-cursor-ref")
+        parser.add_argument("--next-cursor-ref")
+        parser.add_argument("--attempt", type=int, default=1)
+        parser.add_argument("--max-attempts", type=int, default=3)
+        parser.add_argument("--queue-ref", required=True)
+        parser.add_argument("--queue-message-ref")
+        parser.add_argument("--destination-ref", required=True)
+        parser.add_argument("--delivery-log-ref", required=True)
+        parser.add_argument("--delivery-log-root", required=True)
+        parser.add_argument("--partner-event-log-ref")
+        parser.add_argument("--partner-event-log-root")
+        parser.add_argument("--policy-system-ref", required=True)
+        parser.add_argument("--policy-workflow-ref")
+        parser.add_argument("--policy-workflow-hash")
+        parser.add_argument("--policy-binding-ref")
+        parser.add_argument("--policy-binding-hash")
+        parser.add_argument("--workflow-status", default="not_applicable")
+        parser.add_argument("--request-hash")
+        parser.add_argument("--response-status", type=int)
+        parser.add_argument("--response-hash")
+        parser.add_argument("--metrics-ref", required=True)
+        parser.add_argument("--audit-log-ref", required=True)
+        parser.add_argument("--audit-log-root", required=True)
+        parser.add_argument("--access-log-ref", required=True)
+        parser.add_argument("--access-log-root", required=True)
+        parser.add_argument("--credential-ref", required=True)
+        parser.add_argument("--partner-credential-ref", required=True)
+        parser.add_argument("--retention-until", required=True)
+        parser.add_argument("--evidence-ref", action="append", default=[])
+        parser.add_argument("--started-at", required=True)
+        parser.add_argument("--completed-at")
+        parser.add_argument("--next-run-at")
+        parser.add_argument("--error-ref")
+        parser.add_argument("--out", default="artifacts/insurer-partner-worker.json")
+
+    insurer_partner_worker = subparsers.add_parser("insurer-partner-worker", help="write a signed insurer partner worker receipt")
+    _add_insurer_partner_worker_sources(insurer_partner_worker)
+    _add_insurer_partner_worker_fields(insurer_partner_worker)
+    insurer_partner_worker.set_defaults(func=cmd_insurer_partner_worker)
+
+    insurer_partner_worker_verify = subparsers.add_parser("insurer-partner-worker-verify", help="verify a signed insurer partner worker receipt")
+    _add_insurer_partner_worker_sources(insurer_partner_worker_verify, include_receipt=True)
+    insurer_partner_worker_verify.set_defaults(func=cmd_insurer_partner_worker_verify)
+
+    insurer_partner_worker_append = subparsers.add_parser("insurer-partner-worker-append", help="append a verified insurer partner worker receipt as chain evidence")
+    _add_insurer_partner_worker_sources(insurer_partner_worker_append, include_receipt=True)
+    insurer_partner_worker_append.add_argument("--out", default="artifacts/insurer-partner-worker-entry.json")
+    _add_state_args(insurer_partner_worker_append)
+    insurer_partner_worker_append.set_defaults(func=cmd_insurer_partner_worker_append)
+    actuarial = subparsers.add_parser("actuarial-export", help="export anonymized consent-aware actuarial corpus records")
+    actuarial.add_argument("pack", nargs="+")
+    actuarial.add_argument("--out", default="artifacts/actuarial-corpus.json")
+    actuarial.add_argument("--consent-id", default="local-demo-consent")
+    actuarial.add_argument("--require-consent", action="store_true")
+    actuarial.add_argument("--now")
+    actuarial.add_argument("--anonymization-salt", default="trustai-local-actuarial-salt-change-me")
+    _add_state_args(actuarial)
+    actuarial.set_defaults(func=cmd_actuarial_export)
+
+    actuarial_verify = subparsers.add_parser("actuarial-verify", help="verify an anonymized actuarial corpus offline")
+    actuarial_verify.add_argument("corpus")
+    actuarial_verify.set_defaults(func=cmd_actuarial_verify)
+
+    actuarial_product = subparsers.add_parser("actuarial-product", help="write a signed actuarial data product manifest over one or more corpora")
+    actuarial_product.add_argument("corpus", nargs="+")
+    actuarial_product.add_argument("--product-name", default="TrustAI actuarial reliability corpus")
+    actuarial_product.add_argument("--publisher", default="trustai-local")
+    actuarial_product.add_argument("--audience", default="insurer")
+    actuarial_product.add_argument("--allowed-use", action="append")
+    actuarial_product.add_argument("--reporting-period-start")
+    actuarial_product.add_argument("--reporting-period-end")
+    actuarial_product.add_argument("--minimum-record-count", type=int, default=1)
+    actuarial_product.add_argument("--allow-inactive-consent", action="store_true")
+    actuarial_product.add_argument("--issued-at")
+    actuarial_product.add_argument("--out", default="artifacts/actuarial-product.json")
+    actuarial_product.add_argument("--key")
+    actuarial_product.set_defaults(func=cmd_actuarial_product)
+
+    actuarial_product_verify = subparsers.add_parser("actuarial-product-verify", help="verify a signed actuarial data product manifest")
+    actuarial_product_verify.add_argument("product")
+    actuarial_product_verify.add_argument("--corpus", action="append", default=[])
+    actuarial_product_verify.add_argument("--key")
+    actuarial_product_verify.set_defaults(func=cmd_actuarial_product_verify)
+
+    actuarial_product_append = subparsers.add_parser("actuarial-product-append", help="append a verified actuarial data product as chain evidence")
+    actuarial_product_append.add_argument("product")
+    actuarial_product_append.add_argument("--corpus", action="append", default=[])
+    actuarial_product_append.add_argument("--out", default="artifacts/actuarial-product-entry.json")
+    actuarial_product_append.add_argument("--key")
+    _add_state_args(actuarial_product_append)
+    actuarial_product_append.set_defaults(func=cmd_actuarial_product_append)
+
+
+    consent_grant = subparsers.add_parser("consent-grant", help="append an insurer-consent grant to the chain")
+    consent_grant.add_argument("consent")
+    consent_grant.add_argument("--out", default="artifacts/consent-grant-entry.json")
+    _add_state_args(consent_grant)
+    consent_grant.set_defaults(func=cmd_consent_grant)
+
+    consent_revoke = subparsers.add_parser("consent-revoke", help="append an insurer-consent revocation to the chain")
+    consent_revoke.add_argument("consent_id")
+    consent_revoke.add_argument("--reason", required=True)
+    consent_revoke.add_argument("--revoked-at")
+    consent_revoke.add_argument("--out", default="artifacts/consent-revocation-entry.json")
+    _add_state_args(consent_revoke)
+    consent_revoke.set_defaults(func=cmd_consent_revoke)
+    eu_doc = subparsers.add_parser("eu-ai-act-export", help="write EU AI Act technical documentation from proof evidence")
+    eu_doc.add_argument("pack")
+    eu_doc.add_argument("--disclosure")
+    eu_doc.add_argument("--out", default="artifacts/eu-ai-act-technical-documentation.json")
+    eu_doc.add_argument("--markdown", default="artifacts/eu-ai-act-technical-documentation.md")
+    eu_doc.add_argument("--operator", default="local-operator")
+    eu_doc.add_argument("--high-risk-category", default="Annex III high-risk AI system under operator assessment")
+    eu_doc.set_defaults(func=cmd_eu_ai_act_export)
+
+    eu_verify = subparsers.add_parser("eu-ai-act-verify", help="verify EU AI Act technical documentation offline")
+    eu_verify.add_argument("document")
+    eu_verify.add_argument("--pack")
+    eu_verify.add_argument("--disclosure")
+    eu_verify.set_defaults(func=cmd_eu_ai_act_verify)
+    regulator = subparsers.add_parser("regulator-export", help="write a selective-disclosure regulator evidence package")
+    regulator.add_argument("pack")
+    regulator.add_argument("--out", default="artifacts/regulator-disclosure.json")
+    regulator.add_argument("--audience", default="regulator")
+    regulator.add_argument("--purpose", default="EU AI Act Annex III technical documentation")
+    regulator.add_argument("--include-types", help="comma-separated entry types to disclose; defaults to regulator-relevant evidence")
+    regulator.add_argument("--include-entry-id", action="append", help="specific entry id to disclose in addition to selected types")
+    _add_state_args(regulator)
+    regulator.set_defaults(func=cmd_regulator_export)
+
+    regulator_verify = subparsers.add_parser("regulator-verify", help="verify a selective-disclosure regulator package offline")
+    regulator_verify.add_argument("disclosure")
+    regulator_verify.set_defaults(func=cmd_regulator_verify)
+
+    regulator_view = subparsers.add_parser("regulator-view", help="render a static regulator disclosure view")
+    regulator_view.add_argument("disclosure")
+    regulator_view.add_argument("--out", default="artifacts/regulator-view.html")
+    regulator_view.set_defaults(func=cmd_regulator_view)
+
+    regulator_acceptance = subparsers.add_parser("regulator-acceptance", help="write a signed regulator acceptance receipt for disclosed evidence")
+    regulator_acceptance.add_argument("--pack", required=True)
+    regulator_acceptance.add_argument("--disclosure", required=True)
+    regulator_acceptance.add_argument("--document", required=True)
+    regulator_acceptance.add_argument("--supervised-access")
+    regulator_acceptance.add_argument("--supervised-view")
+    regulator_acceptance.add_argument("--regulator", required=True)
+    regulator_acceptance.add_argument("--authority-ref", required=True)
+    regulator_acceptance.add_argument("--reviewer-ref", required=True)
+    regulator_acceptance.add_argument("--decision", choices=["accepted", "accepted_with_observations", "accepted_with_conditions", "needs_remediation", "rejected"], default="accepted")
+    regulator_acceptance.add_argument("--examination-ref", default="local-supervisory-review")
+    regulator_acceptance.add_argument("--purpose", default="EU AI Act supervised review acceptance")
+    regulator_acceptance.add_argument("--accepted-at")
+    regulator_acceptance.add_argument("--review-period-start")
+    regulator_acceptance.add_argument("--review-period-end")
+    regulator_acceptance.add_argument("--observation", action="append")
+    regulator_acceptance.add_argument("--condition", action="append")
+    regulator_acceptance.add_argument("--out", default="artifacts/regulator-acceptance.json")
+    regulator_acceptance.add_argument("--key")
+    regulator_acceptance.set_defaults(func=cmd_regulator_acceptance)
+
+    regulator_acceptance_verify = subparsers.add_parser("regulator-acceptance-verify", help="verify a signed regulator acceptance receipt")
+    regulator_acceptance_verify.add_argument("acceptance")
+    regulator_acceptance_verify.add_argument("--pack")
+    regulator_acceptance_verify.add_argument("--disclosure")
+    regulator_acceptance_verify.add_argument("--document")
+    regulator_acceptance_verify.add_argument("--supervised-access")
+    regulator_acceptance_verify.add_argument("--supervised-view")
+    regulator_acceptance_verify.add_argument("--key")
+    regulator_acceptance_verify.set_defaults(func=cmd_regulator_acceptance_verify)
+
+    regulator_acceptance_append = subparsers.add_parser("regulator-acceptance-append", help="append a verified regulator acceptance receipt as chain evidence")
+    regulator_acceptance_append.add_argument("acceptance")
+    regulator_acceptance_append.add_argument("--out", default="artifacts/regulator-acceptance-entry.json")
+    regulator_acceptance_append.add_argument("--key")
+    _add_state_args(regulator_acceptance_append)
+    regulator_acceptance_append.set_defaults(func=cmd_regulator_acceptance_append)
+    supervised_access = subparsers.add_parser("supervised-access", help="write a signed supervised access receipt for third-party review")
+    supervised_access.add_argument("--pack", required=True)
+    supervised_access.add_argument("--disclosure")
+    supervised_access.add_argument("--view")
+    supervised_access.add_argument("--insurer-telemetry")
+    supervised_access.add_argument("--audience-type", choices=["auditor", "regulator", "insurer", "procurement"], default="regulator")
+    supervised_access.add_argument("--subject-ref", required=True)
+    supervised_access.add_argument("--organization", required=True)
+    supervised_access.add_argument("--role", required=True)
+    supervised_access.add_argument("--purpose", default="supervised proof-pack review")
+    supervised_access.add_argument("--issued-at")
+    supervised_access.add_argument("--expires-at", required=True)
+    supervised_access.add_argument("--auth-context")
+    supervised_access.add_argument("--now")
+    supervised_access.add_argument("--out", default="artifacts/supervised-access-receipt.json")
+    supervised_access.add_argument("--key")
+    supervised_access.set_defaults(func=cmd_supervised_access)
+
+    supervised_access_verify = subparsers.add_parser("supervised-access-verify", help="verify a supervised access receipt offline")
+    supervised_access_verify.add_argument("receipt")
+    supervised_access_verify.add_argument("--pack")
+    supervised_access_verify.add_argument("--disclosure")
+    supervised_access_verify.add_argument("--view")
+    supervised_access_verify.add_argument("--insurer-telemetry")
+    supervised_access_verify.add_argument("--now")
+    supervised_access_verify.add_argument("--key")
+    supervised_access_verify.set_defaults(func=cmd_supervised_access_verify)
+
+    supervised_access_append = subparsers.add_parser("supervised-access-append", help="append a verified supervised access receipt as chain evidence")
+    supervised_access_append.add_argument("receipt")
+    supervised_access_append.add_argument("--out", default="artifacts/supervised-access-entry.json")
+    supervised_access_append.add_argument("--key")
+    _add_state_args(supervised_access_append)
+    supervised_access_append.set_defaults(func=cmd_supervised_access_append)
+
+    review_portal_service = subparsers.add_parser("review-portal-service-attestation", help="write a signed review portal service hardening attestation")
+    review_portal_service.add_argument("supervised_access")
+    review_portal_service.add_argument("--pack")
+    review_portal_service.add_argument("--disclosure")
+    review_portal_service.add_argument("--view")
+    review_portal_service.add_argument("--regulator-acceptance")
+    review_portal_service.add_argument("--eu-ai-act-document")
+    review_portal_service.add_argument("--mode", choices=sorted(REVIEW_PORTAL_SERVICE_MODES), default="portal-service-attested")
+    review_portal_service.add_argument("--environment", default="local")
+    review_portal_service.add_argument("--portal-kind", choices=sorted(REVIEW_PORTAL_KINDS), default="regulator")
+    review_portal_service.add_argument("--service-ref", required=True)
+    review_portal_service.add_argument("--service-version", required=True)
+    review_portal_service.add_argument("--endpoint-url", required=True)
+    review_portal_service.add_argument("--service-image", required=True)
+    review_portal_service.add_argument("--service-image-digest", required=True)
+    review_portal_service.add_argument("--service-binary-hash", required=True)
+    review_portal_service.add_argument("--frontend-bundle-ref", required=True)
+    review_portal_service.add_argument("--frontend-bundle-hash", required=True)
+    review_portal_service.add_argument("--api-ref", required=True)
+    review_portal_service.add_argument("--session-store-ref", required=True)
+    review_portal_service.add_argument("--auth-provider-ref", required=True)
+    review_portal_service.add_argument("--auth-policy-ref", required=True)
+    review_portal_service.add_argument("--rbac-policy-ref", required=True)
+    review_portal_service.add_argument("--session-policy-ref", required=True)
+    review_portal_service.add_argument("--selective-disclosure-policy-ref", required=True)
+    review_portal_service.add_argument("--tenant-isolation-ref", required=True)
+    review_portal_service.add_argument("--rate-limit-policy-ref", required=True)
+    review_portal_service.add_argument("--network-policy-ref", required=True)
+    review_portal_service.add_argument("--egress-policy-ref", required=True)
+    review_portal_service.add_argument("--content-security-policy-ref", required=True)
+    review_portal_service.add_argument("--encryption-key-ref", required=True)
+    review_portal_service.add_argument("--replicas-min", type=int, required=True)
+    review_portal_service.add_argument("--replicas-max", type=int, required=True)
+    review_portal_service.add_argument("--availability-zone", action="append", default=[])
+    review_portal_service.add_argument("--audit-log-ref", required=True)
+    review_portal_service.add_argument("--audit-log-root", required=True)
+    review_portal_service.add_argument("--access-log-ref", required=True)
+    review_portal_service.add_argument("--access-log-root", required=True)
+    review_portal_service.add_argument("--metrics-ref", required=True)
+    review_portal_service.add_argument("--alert-policy-ref", required=True)
+    review_portal_service.add_argument("--retention-until", required=True)
+    review_portal_service.add_argument("--actor-ref", required=True)
+    review_portal_service.add_argument("--credential-ref", required=True)
+    review_portal_service.add_argument("--evidence-ref", action="append", default=[])
+    review_portal_service.add_argument("--attested-at")
+    review_portal_service.add_argument("--out", default="artifacts/review-portal-service-attestation.json")
+    review_portal_service.add_argument("--key")
+    review_portal_service.set_defaults(func=cmd_review_portal_service_attestation)
+
+    review_portal_service_verify = subparsers.add_parser("review-portal-service-verify", help="verify a signed review portal service hardening attestation")
+    review_portal_service_verify.add_argument("attestation")
+    review_portal_service_verify.add_argument("supervised_access")
+    review_portal_service_verify.add_argument("--pack")
+    review_portal_service_verify.add_argument("--disclosure")
+    review_portal_service_verify.add_argument("--view")
+    review_portal_service_verify.add_argument("--regulator-acceptance")
+    review_portal_service_verify.add_argument("--eu-ai-act-document")
+    review_portal_service_verify.add_argument("--key")
+    review_portal_service_verify.set_defaults(func=cmd_review_portal_service_verify)
+
+    review_portal_service_append = subparsers.add_parser("review-portal-service-append", help="append a review portal service hardening attestation")
+    review_portal_service_append.add_argument("attestation")
+    review_portal_service_append.add_argument("supervised_access")
+    review_portal_service_append.add_argument("--pack")
+    review_portal_service_append.add_argument("--disclosure")
+    review_portal_service_append.add_argument("--view")
+    review_portal_service_append.add_argument("--regulator-acceptance")
+    review_portal_service_append.add_argument("--eu-ai-act-document")
+    review_portal_service_append.add_argument("--out", default="artifacts/review-portal-service-entry.json")
+    review_portal_service_append.add_argument("--key")
+    _add_state_args(review_portal_service_append)
+    review_portal_service_append.set_defaults(func=cmd_review_portal_service_append)
+    standards_export = subparsers.add_parser("standards-export", help="write a standards submission package for public specs")
+    standards_export.add_argument("--root", default=".")
+    standards_export.add_argument("--out", default="artifacts/standards-submission.json")
+    standards_export.add_argument("--markdown", default="artifacts/standards-submission.md")
+    standards_export.add_argument("--target-body", default="ETSI/ISO/IEEE or Linux Foundation project")
+    standards_export.add_argument("--status", default="draft")
+    standards_export.set_defaults(func=cmd_standards_export)
+
+    standards_verify = subparsers.add_parser("standards-verify", help="verify a standards submission package against the worktree")
+    standards_verify.add_argument("package")
+    standards_verify.add_argument("--root", default=".")
+    standards_verify.set_defaults(func=cmd_standards_verify)
+
+    standards_body_submit = subparsers.add_parser("standards-body-submit", help="write a signed standards-body submission receipt")
+    standards_body_submit.add_argument("--standards-package", default="artifacts/standards-submission.json")
+    standards_body_submit.add_argument("--verifier-release", default="artifacts/verifier-release.json")
+    standards_body_submit.add_argument("--conformance-report", default="artifacts/verifier-conformance.json")
+    standards_body_submit.add_argument("--root", default=".")
+    standards_body_submit.add_argument("--standards-body")
+    standards_body_submit.add_argument("--program-ref", default="trustai-proof-pack-standards-track")
+    standards_body_submit.add_argument("--target-track", default="draft-specification")
+    standards_body_submit.add_argument("--endpoint")
+    standards_body_submit.add_argument("--contact-ref")
+    standards_body_submit.add_argument("--submission-ref")
+    standards_body_submit.add_argument("--status", choices=["submitted", "acknowledged", "accepted", "rejected", "withdrawn"], default="submitted")
+    standards_body_submit.add_argument("--channel", choices=["repository", "email", "portal", "api", "working-group"], default="repository")
+    standards_body_submit.add_argument("--submitter-ref", default="trustai-local")
+    standards_body_submit.add_argument("--subject", default="TrustAI proof-pack and verifier specification package")
+    standards_body_submit.add_argument("--version-label", default="v0.1")
+    standards_body_submit.add_argument("--terms-ref")
+    standards_body_submit.add_argument("--submitted-at")
+    standards_body_submit.add_argument("--acknowledgement-due-at")
+    standards_body_submit.add_argument("--now")
+    standards_body_submit.add_argument("--out", default="artifacts/standards-body-submission.json")
+    standards_body_submit.add_argument("--key")
+    standards_body_submit.set_defaults(func=cmd_standards_body_submit)
+
+    standards_body_verify = subparsers.add_parser("standards-body-verify", help="verify a signed standards-body submission receipt")
+    standards_body_verify.add_argument("receipt")
+    standards_body_verify.add_argument("--standards-package")
+    standards_body_verify.add_argument("--verifier-release")
+    standards_body_verify.add_argument("--conformance-report")
+    standards_body_verify.add_argument("--root", default=".")
+    standards_body_verify.add_argument("--now")
+    standards_body_verify.add_argument("--key")
+    standards_body_verify.set_defaults(func=cmd_standards_body_verify)
+
+    standards_body_append = subparsers.add_parser("standards-body-append", help="append a standards-body submission receipt as chain evidence")
+    standards_body_append.add_argument("receipt")
+    standards_body_append.add_argument("--standards-package")
+    standards_body_append.add_argument("--verifier-release")
+    standards_body_append.add_argument("--conformance-report")
+    standards_body_append.add_argument("--root", default=".")
+    standards_body_append.add_argument("--out", default="artifacts/standards-body-submission-entry.json")
+    standards_body_append.add_argument("--key")
+    _add_state_args(standards_body_append)
+    standards_body_append.set_defaults(func=cmd_standards_body_append)
+
+    standards_body_status = subparsers.add_parser("standards-body-status", help="write a signed standards-body docket status receipt")
+    standards_body_status.add_argument("submission")
+    standards_body_status.add_argument("--standards-package")
+    standards_body_status.add_argument("--verifier-release")
+    standards_body_status.add_argument("--conformance-report")
+    standards_body_status.add_argument("--root", default=".")
+    standards_body_status.add_argument("--new-status", choices=["acknowledged", "under_review", "ballot_open", "changes_requested", "accepted", "rejected", "withdrawn"], required=True)
+    standards_body_status.add_argument("--docket-ref")
+    standards_body_status.add_argument("--status-ref")
+    standards_body_status.add_argument("--decision-ref")
+    standards_body_status.add_argument("--ballot-ref")
+    standards_body_status.add_argument("--ballot-opened-at")
+    standards_body_status.add_argument("--ballot-closed-at")
+    standards_body_status.add_argument("--votes-for", type=int)
+    standards_body_status.add_argument("--votes-against", type=int)
+    standards_body_status.add_argument("--abstentions", type=int)
+    standards_body_status.add_argument("--quorum", type=int)
+    standards_body_status.add_argument("--comments-ref")
+    standards_body_status.add_argument("--reason")
+    standards_body_status.add_argument("--evidence-ref", action="append", default=[])
+    standards_body_status.add_argument("--actor-ref", required=True)
+    standards_body_status.add_argument("--actor-role", default="standards-body-operator")
+    standards_body_status.add_argument("--decided-at")
+    standards_body_status.add_argument("--effective-at")
+    standards_body_status.add_argument("--now")
+    standards_body_status.add_argument("--out", default="artifacts/standards-body-status.json")
+    standards_body_status.add_argument("--key")
+    standards_body_status.set_defaults(func=cmd_standards_body_status)
+
+    standards_body_status_verify = subparsers.add_parser("standards-body-status-verify", help="verify a signed standards-body docket status receipt")
+    standards_body_status_verify.add_argument("receipt")
+    standards_body_status_verify.add_argument("--submission")
+    standards_body_status_verify.add_argument("--standards-package")
+    standards_body_status_verify.add_argument("--verifier-release")
+    standards_body_status_verify.add_argument("--conformance-report")
+    standards_body_status_verify.add_argument("--root", default=".")
+    standards_body_status_verify.add_argument("--now")
+    standards_body_status_verify.add_argument("--key")
+    standards_body_status_verify.set_defaults(func=cmd_standards_body_status_verify)
+
+    standards_body_status_append = subparsers.add_parser("standards-body-status-append", help="append a standards-body docket status receipt as chain evidence")
+    standards_body_status_append.add_argument("receipt")
+    standards_body_status_append.add_argument("--submission")
+    standards_body_status_append.add_argument("--standards-package")
+    standards_body_status_append.add_argument("--verifier-release")
+    standards_body_status_append.add_argument("--conformance-report")
+    standards_body_status_append.add_argument("--root", default=".")
+    standards_body_status_append.add_argument("--out", default="artifacts/standards-body-status-entry.json")
+    standards_body_status_append.add_argument("--key")
+    _add_state_args(standards_body_status_append)
+    standards_body_status_append.set_defaults(func=cmd_standards_body_status_append)
+
+    standards_body_ballot = subparsers.add_parser("standards-body-ballot", help="write a signed standards-body ballot and decision receipt")
+    standards_body_ballot.add_argument("submission")
+    standards_body_ballot.add_argument("--status-receipt")
+    standards_body_ballot.add_argument("--standards-package")
+    standards_body_ballot.add_argument("--verifier-release")
+    standards_body_ballot.add_argument("--conformance-report")
+    standards_body_ballot.add_argument("--root", default=".")
+    standards_body_ballot.add_argument("--ballot-ref", required=True)
+    standards_body_ballot.add_argument("--decision-ref", required=True)
+    standards_body_ballot.add_argument("--motion", default="Advance TrustAI proof-pack and verifier specification package on the standards track.")
+    standards_body_ballot.add_argument("--ballot-mode", choices=["working-group", "committee", "member-ballot", "public-review"], default="working-group")
+    standards_body_ballot.add_argument("--outcome", choices=["accepted", "rejected", "changes_requested", "deferred"], default="accepted")
+    standards_body_ballot.add_argument("--eligible-voters", type=int, default=1)
+    standards_body_ballot.add_argument("--votes-for", type=int, default=1)
+    standards_body_ballot.add_argument("--votes-against", type=int, default=0)
+    standards_body_ballot.add_argument("--abstentions", type=int, default=0)
+    standards_body_ballot.add_argument("--quorum-required", type=int, default=1)
+    standards_body_ballot.add_argument("--approval-threshold-percent", type=int, default=50)
+    standards_body_ballot.add_argument("--opened-at")
+    standards_body_ballot.add_argument("--closed-at")
+    standards_body_ballot.add_argument("--decided-at")
+    standards_body_ballot.add_argument("--effective-at")
+    standards_body_ballot.add_argument("--comments-ref")
+    standards_body_ballot.add_argument("--minutes-ref")
+    standards_body_ballot.add_argument("--actor-ref", required=True)
+    standards_body_ballot.add_argument("--actor-role", default="standards-body-chair")
+    standards_body_ballot.add_argument("--evidence-ref", action="append", default=[])
+    standards_body_ballot.add_argument("--now")
+    standards_body_ballot.add_argument("--out", default="artifacts/standards-body-ballot.json")
+    standards_body_ballot.add_argument("--key")
+    standards_body_ballot.set_defaults(func=cmd_standards_body_ballot)
+
+    standards_body_ballot_verify = subparsers.add_parser("standards-body-ballot-verify", help="verify a signed standards-body ballot receipt")
+    standards_body_ballot_verify.add_argument("receipt")
+    standards_body_ballot_verify.add_argument("--submission")
+    standards_body_ballot_verify.add_argument("--status-receipt")
+    standards_body_ballot_verify.add_argument("--standards-package")
+    standards_body_ballot_verify.add_argument("--verifier-release")
+    standards_body_ballot_verify.add_argument("--conformance-report")
+    standards_body_ballot_verify.add_argument("--root", default=".")
+    standards_body_ballot_verify.add_argument("--now")
+    standards_body_ballot_verify.add_argument("--key")
+    standards_body_ballot_verify.set_defaults(func=cmd_standards_body_ballot_verify)
+
+    standards_body_ballot_append = subparsers.add_parser("standards-body-ballot-append", help="append a standards-body ballot receipt as chain evidence")
+    standards_body_ballot_append.add_argument("receipt")
+    standards_body_ballot_append.add_argument("--submission")
+    standards_body_ballot_append.add_argument("--status-receipt")
+    standards_body_ballot_append.add_argument("--standards-package")
+    standards_body_ballot_append.add_argument("--verifier-release")
+    standards_body_ballot_append.add_argument("--conformance-report")
+    standards_body_ballot_append.add_argument("--root", default=".")
+    standards_body_ballot_append.add_argument("--out", default="artifacts/standards-body-ballot-entry.json")
+    standards_body_ballot_append.add_argument("--key")
+    _add_state_args(standards_body_ballot_append)
+    standards_body_ballot_append.set_defaults(func=cmd_standards_body_ballot_append)
+    standards_body_ballot_system = subparsers.add_parser("standards-body-ballot-system", help="write a signed standards-body hosted ballot-system export receipt")
+    standards_body_ballot_system.add_argument("ballot")
+    standards_body_ballot_system.add_argument("--submission")
+    standards_body_ballot_system.add_argument("--status-receipt")
+    standards_body_ballot_system.add_argument("--standards-package")
+    standards_body_ballot_system.add_argument("--verifier-release")
+    standards_body_ballot_system.add_argument("--conformance-report")
+    standards_body_ballot_system.add_argument("--root", default=".")
+    standards_body_ballot_system.add_argument("--ballot-system", default="local-ballot-system")
+    standards_body_ballot_system.add_argument("--endpoint-base", default="local-ballot-system")
+    standards_body_ballot_system.add_argument("--credential-ref", default="local-reference")
+    standards_body_ballot_system.add_argument("--mode", choices=["dry-run", "recorded-response", "authenticated-export"], default="dry-run")
+    standards_body_ballot_system.add_argument("--request-method", default="GET")
+    standards_body_ballot_system.add_argument("--request-path")
+    standards_body_ballot_system.add_argument("--export-ref")
+    standards_body_ballot_system.add_argument("--export-url")
+    standards_body_ballot_system.add_argument("--export-format", default="json")
+    standards_body_ballot_system.add_argument("--export-payload")
+    standards_body_ballot_system.add_argument("--export-generated-at")
+    standards_body_ballot_system.add_argument("--actor-ref")
+    standards_body_ballot_system.add_argument("--response-status", type=int)
+    standards_body_ballot_system.add_argument("--response-body")
+    standards_body_ballot_system.add_argument("--evidence-ref", action="append", default=[])
+    standards_body_ballot_system.add_argument("--exported-at")
+    standards_body_ballot_system.add_argument("--now")
+    standards_body_ballot_system.add_argument("--out", default="artifacts/standards-body-ballot-system.json")
+    standards_body_ballot_system.add_argument("--key")
+    standards_body_ballot_system.set_defaults(func=cmd_standards_body_ballot_system)
+
+    standards_body_ballot_system_verify = subparsers.add_parser("standards-body-ballot-system-verify", help="verify a signed standards-body hosted ballot-system receipt")
+    standards_body_ballot_system_verify.add_argument("receipt")
+    standards_body_ballot_system_verify.add_argument("--ballot")
+    standards_body_ballot_system_verify.add_argument("--submission")
+    standards_body_ballot_system_verify.add_argument("--status-receipt")
+    standards_body_ballot_system_verify.add_argument("--standards-package")
+    standards_body_ballot_system_verify.add_argument("--verifier-release")
+    standards_body_ballot_system_verify.add_argument("--conformance-report")
+    standards_body_ballot_system_verify.add_argument("--root", default=".")
+    standards_body_ballot_system_verify.add_argument("--now")
+    standards_body_ballot_system_verify.add_argument("--key")
+    standards_body_ballot_system_verify.set_defaults(func=cmd_standards_body_ballot_system_verify)
+
+    standards_body_ballot_system_append = subparsers.add_parser("standards-body-ballot-system-append", help="append a standards-body hosted ballot-system receipt as chain evidence")
+    standards_body_ballot_system_append.add_argument("receipt")
+    standards_body_ballot_system_append.add_argument("--ballot")
+    standards_body_ballot_system_append.add_argument("--submission")
+    standards_body_ballot_system_append.add_argument("--status-receipt")
+    standards_body_ballot_system_append.add_argument("--standards-package")
+    standards_body_ballot_system_append.add_argument("--verifier-release")
+    standards_body_ballot_system_append.add_argument("--conformance-report")
+    standards_body_ballot_system_append.add_argument("--root", default=".")
+    standards_body_ballot_system_append.add_argument("--out", default="artifacts/standards-body-ballot-system-entry.json")
+    standards_body_ballot_system_append.add_argument("--key")
+    _add_state_args(standards_body_ballot_system_append)
+    standards_body_ballot_system_append.set_defaults(func=cmd_standards_body_ballot_system_append)
+
+    standards_body_provider_posting = subparsers.add_parser("standards-body-provider-posting", help="write a signed standards-body provider posting receipt for a ballot-system export")
+    standards_body_provider_posting.add_argument("ballot_system")
+    standards_body_provider_posting.add_argument("--ballot")
+    standards_body_provider_posting.add_argument("--submission")
+    standards_body_provider_posting.add_argument("--status-receipt")
+    standards_body_provider_posting.add_argument("--standards-package")
+    standards_body_provider_posting.add_argument("--verifier-release")
+    standards_body_provider_posting.add_argument("--conformance-report")
+    standards_body_provider_posting.add_argument("--root", default=".")
+    standards_body_provider_posting.add_argument("--provider", default="local-standards-provider")
+    standards_body_provider_posting.add_argument("--endpoint-base", default="local-standards-provider")
+    standards_body_provider_posting.add_argument("--credential-ref", default="local-reference")
+    standards_body_provider_posting.add_argument("--credential-exchange-url")
+    standards_body_provider_posting.add_argument("--credential-audience")
+    standards_body_provider_posting.add_argument("--credential-scope", action="append", default=[])
+    standards_body_provider_posting.add_argument("--mode", choices=["dry-run", "credential-exchange", "recorded-response", "provider-posted"], default="dry-run")
+    standards_body_provider_posting.add_argument("--request-method", default="POST")
+    standards_body_provider_posting.add_argument("--request-path")
+    standards_body_provider_posting.add_argument("--posting-ref")
+    standards_body_provider_posting.add_argument("--posting-url")
+    standards_body_provider_posting.add_argument("--actor-ref")
+    standards_body_provider_posting.add_argument("--credential-response-status", type=int)
+    standards_body_provider_posting.add_argument("--credential-response-body")
+    standards_body_provider_posting.add_argument("--response-status", type=int)
+    standards_body_provider_posting.add_argument("--response-body")
+    standards_body_provider_posting.add_argument("--evidence-ref", action="append", default=[])
+    standards_body_provider_posting.add_argument("--posted-at")
+    standards_body_provider_posting.add_argument("--now")
+    standards_body_provider_posting.add_argument("--out", default="artifacts/standards-body-provider-posting.json")
+    standards_body_provider_posting.add_argument("--key")
+    standards_body_provider_posting.set_defaults(func=cmd_standards_body_provider_posting)
+
+    standards_body_provider_posting_verify = subparsers.add_parser("standards-body-provider-posting-verify", help="verify a signed standards-body provider posting receipt")
+    standards_body_provider_posting_verify.add_argument("receipt")
+    standards_body_provider_posting_verify.add_argument("--ballot-system")
+    standards_body_provider_posting_verify.add_argument("--ballot")
+    standards_body_provider_posting_verify.add_argument("--submission")
+    standards_body_provider_posting_verify.add_argument("--status-receipt")
+    standards_body_provider_posting_verify.add_argument("--standards-package")
+    standards_body_provider_posting_verify.add_argument("--verifier-release")
+    standards_body_provider_posting_verify.add_argument("--conformance-report")
+    standards_body_provider_posting_verify.add_argument("--root", default=".")
+    standards_body_provider_posting_verify.add_argument("--now")
+    standards_body_provider_posting_verify.add_argument("--key")
+    standards_body_provider_posting_verify.set_defaults(func=cmd_standards_body_provider_posting_verify)
+
+    standards_body_provider_posting_append = subparsers.add_parser("standards-body-provider-posting-append", help="append a standards-body provider posting receipt as chain evidence")
+    standards_body_provider_posting_append.add_argument("receipt")
+    standards_body_provider_posting_append.add_argument("--ballot-system")
+    standards_body_provider_posting_append.add_argument("--ballot")
+    standards_body_provider_posting_append.add_argument("--submission")
+    standards_body_provider_posting_append.add_argument("--status-receipt")
+    standards_body_provider_posting_append.add_argument("--standards-package")
+    standards_body_provider_posting_append.add_argument("--verifier-release")
+    standards_body_provider_posting_append.add_argument("--conformance-report")
+    standards_body_provider_posting_append.add_argument("--root", default=".")
+    standards_body_provider_posting_append.add_argument("--out", default="artifacts/standards-body-provider-posting-entry.json")
+    standards_body_provider_posting_append.add_argument("--key")
+    _add_state_args(standards_body_provider_posting_append)
+    standards_body_provider_posting_append.set_defaults(func=cmd_standards_body_provider_posting_append)
+    auditor = subparsers.add_parser("auditor-view", help="render a static read-only auditor view")
+    auditor.add_argument("pack")
+    auditor.add_argument("--out", default="artifacts/auditor-view.html")
+    auditor.set_defaults(func=cmd_auditor_view)
+
+    auditor_cert_export = subparsers.add_parser("auditor-certification-export", help="write an auditor certification kit")
+    auditor_cert_export.add_argument("pack")
+    auditor_cert_export.add_argument("--disclosure")
+    auditor_cert_export.add_argument("--standards-package")
+    auditor_cert_export.add_argument("--root", default=".")
+    auditor_cert_export.add_argument("--program-version", default="0.1.0")
+    auditor_cert_export.add_argument("--out", default="artifacts/auditor-certification-kit.json")
+    auditor_cert_export.add_argument("--markdown", default="artifacts/auditor-certification-kit.md")
+    auditor_cert_export.set_defaults(func=cmd_auditor_certification_export)
+
+    auditor_cert_verify = subparsers.add_parser("auditor-certification-verify", help="verify an auditor certification kit")
+    auditor_cert_verify.add_argument("kit")
+    auditor_cert_verify.add_argument("--pack")
+    auditor_cert_verify.add_argument("--disclosure")
+    auditor_cert_verify.add_argument("--standards-package")
+    auditor_cert_verify.add_argument("--root", default=".")
+    auditor_cert_verify.set_defaults(func=cmd_auditor_certification_verify)
+
+
+    auditor_program_governance = subparsers.add_parser("auditor-program-governance", help="write a signed auditor accreditation program governance receipt")
+    auditor_program_governance.add_argument("kit")
+    auditor_program_governance.add_argument("--pack")
+    auditor_program_governance.add_argument("--disclosure")
+    auditor_program_governance.add_argument("--standards-package")
+    auditor_program_governance.add_argument("--root", default=".")
+    auditor_program_governance.add_argument("--program-name", default="TrustAI Auditor Program")
+    auditor_program_governance.add_argument("--program-ref", default="TRUSTAI-AUDITOR-0.1")
+    auditor_program_governance.add_argument("--accreditation-body", default="TrustAI Auditor Program")
+    auditor_program_governance.add_argument("--governance-body", default="TrustAI Auditor Governance Board")
+    auditor_program_governance.add_argument("--governance-ref")
+    auditor_program_governance.add_argument("--governance-mode", choices=["local-reference", "independent-board", "standards-body-sponsored", "industry-consortium"], default="local-reference")
+    auditor_program_governance.add_argument("--status", choices=["draft", "active", "suspended", "retired"], default="active")
+    auditor_program_governance.add_argument("--version")
+    auditor_program_governance.add_argument("--operator-ref", default="trustai-local")
+    auditor_program_governance.add_argument("--board-member", action="append", default=[])
+    auditor_program_governance.add_argument("--independence-policy-ref")
+    auditor_program_governance.add_argument("--proctoring-policy-ref")
+    auditor_program_governance.add_argument("--revocation-policy-ref")
+    auditor_program_governance.add_argument("--renewal-policy-ref")
+    auditor_program_governance.add_argument("--appeals-policy-ref")
+    auditor_program_governance.add_argument("--registry-ref")
+    auditor_program_governance.add_argument("--evidence-ref", action="append", default=[])
+    auditor_program_governance.add_argument("--issued-at")
+    auditor_program_governance.add_argument("--effective-at")
+    auditor_program_governance.add_argument("--expires-at")
+    auditor_program_governance.add_argument("--now")
+    auditor_program_governance.add_argument("--out", default="artifacts/auditor-program-governance.json")
+    auditor_program_governance.add_argument("--key")
+    auditor_program_governance.set_defaults(func=cmd_auditor_program_governance)
+
+    auditor_program_governance_verify = subparsers.add_parser("auditor-program-governance-verify", help="verify a signed auditor accreditation program governance receipt")
+    auditor_program_governance_verify.add_argument("receipt")
+    auditor_program_governance_verify.add_argument("--kit")
+    auditor_program_governance_verify.add_argument("--pack")
+    auditor_program_governance_verify.add_argument("--disclosure")
+    auditor_program_governance_verify.add_argument("--standards-package")
+    auditor_program_governance_verify.add_argument("--root", default=".")
+    auditor_program_governance_verify.add_argument("--now")
+    auditor_program_governance_verify.add_argument("--key")
+    auditor_program_governance_verify.set_defaults(func=cmd_auditor_program_governance_verify)
+
+    auditor_program_governance_append = subparsers.add_parser("auditor-program-governance-append", help="append auditor accreditation program governance as chain evidence")
+    auditor_program_governance_append.add_argument("receipt")
+    auditor_program_governance_append.add_argument("--kit")
+    auditor_program_governance_append.add_argument("--pack")
+    auditor_program_governance_append.add_argument("--disclosure")
+    auditor_program_governance_append.add_argument("--standards-package")
+    auditor_program_governance_append.add_argument("--root", default=".")
+    auditor_program_governance_append.add_argument("--out", default="artifacts/auditor-program-governance-entry.json")
+    auditor_program_governance_append.add_argument("--key")
+    _add_state_args(auditor_program_governance_append)
+    auditor_program_governance_append.set_defaults(func=cmd_auditor_program_governance_append)
+    auditor_program_sponsorship = subparsers.add_parser("auditor-program-sponsorship", help="write a signed auditor program sponsorship receipt")
+    auditor_program_sponsorship.add_argument("governance")
+    auditor_program_sponsorship.add_argument("ballot")
+    auditor_program_sponsorship.add_argument("--kit")
+    auditor_program_sponsorship.add_argument("--pack")
+    auditor_program_sponsorship.add_argument("--disclosure")
+    auditor_program_sponsorship.add_argument("--standards-package")
+    auditor_program_sponsorship.add_argument("--submission")
+    auditor_program_sponsorship.add_argument("--status-receipt")
+    auditor_program_sponsorship.add_argument("--verifier-release")
+    auditor_program_sponsorship.add_argument("--conformance-report")
+    auditor_program_sponsorship.add_argument("--root", default=".")
+    auditor_program_sponsorship.add_argument("--sponsor-body")
+    auditor_program_sponsorship.add_argument("--sponsor-ref")
+    auditor_program_sponsorship.add_argument("--sponsorship-ref")
+    auditor_program_sponsorship.add_argument("--sponsorship-mode", choices=["standards-body-sponsored", "industry-consortium", "independent-board", "local-reference"], default="standards-body-sponsored")
+    auditor_program_sponsorship.add_argument("--status", choices=["active", "suspended", "retired"], default="active")
+    auditor_program_sponsorship.add_argument("--scope", action="append", default=[])
+    auditor_program_sponsorship.add_argument("--terms-ref")
+    auditor_program_sponsorship.add_argument("--charter-ref")
+    auditor_program_sponsorship.add_argument("--oversight-ref", action="append", default=[])
+    auditor_program_sponsorship.add_argument("--evidence-ref", action="append", default=[])
+    auditor_program_sponsorship.add_argument("--issued-at")
+    auditor_program_sponsorship.add_argument("--effective-at")
+    auditor_program_sponsorship.add_argument("--expires-at")
+    auditor_program_sponsorship.add_argument("--now")
+    auditor_program_sponsorship.add_argument("--out", default="artifacts/auditor-program-sponsorship.json")
+    auditor_program_sponsorship.add_argument("--key")
+    auditor_program_sponsorship.set_defaults(func=cmd_auditor_program_sponsorship)
+
+    auditor_program_sponsorship_verify = subparsers.add_parser("auditor-program-sponsorship-verify", help="verify a signed auditor program sponsorship receipt")
+    auditor_program_sponsorship_verify.add_argument("receipt")
+    auditor_program_sponsorship_verify.add_argument("--governance")
+    auditor_program_sponsorship_verify.add_argument("--ballot")
+    auditor_program_sponsorship_verify.add_argument("--kit")
+    auditor_program_sponsorship_verify.add_argument("--pack")
+    auditor_program_sponsorship_verify.add_argument("--disclosure")
+    auditor_program_sponsorship_verify.add_argument("--standards-package")
+    auditor_program_sponsorship_verify.add_argument("--submission")
+    auditor_program_sponsorship_verify.add_argument("--status-receipt")
+    auditor_program_sponsorship_verify.add_argument("--verifier-release")
+    auditor_program_sponsorship_verify.add_argument("--conformance-report")
+    auditor_program_sponsorship_verify.add_argument("--root", default=".")
+    auditor_program_sponsorship_verify.add_argument("--now")
+    auditor_program_sponsorship_verify.add_argument("--key")
+    auditor_program_sponsorship_verify.set_defaults(func=cmd_auditor_program_sponsorship_verify)
+
+    auditor_program_sponsorship_append = subparsers.add_parser("auditor-program-sponsorship-append", help="append auditor program sponsorship as chain evidence")
+    auditor_program_sponsorship_append.add_argument("receipt")
+    auditor_program_sponsorship_append.add_argument("--governance")
+    auditor_program_sponsorship_append.add_argument("--ballot")
+    auditor_program_sponsorship_append.add_argument("--kit")
+    auditor_program_sponsorship_append.add_argument("--pack")
+    auditor_program_sponsorship_append.add_argument("--disclosure")
+    auditor_program_sponsorship_append.add_argument("--standards-package")
+    auditor_program_sponsorship_append.add_argument("--submission")
+    auditor_program_sponsorship_append.add_argument("--status-receipt")
+    auditor_program_sponsorship_append.add_argument("--verifier-release")
+    auditor_program_sponsorship_append.add_argument("--conformance-report")
+    auditor_program_sponsorship_append.add_argument("--root", default=".")
+    auditor_program_sponsorship_append.add_argument("--out", default="artifacts/auditor-program-sponsorship-entry.json")
+    auditor_program_sponsorship_append.add_argument("--key")
+    _add_state_args(auditor_program_sponsorship_append)
+    auditor_program_sponsorship_append.set_defaults(func=cmd_auditor_program_sponsorship_append)
+    auditor_accreditation = subparsers.add_parser("auditor-accreditation", help="write a signed auditor accreditation receipt")
+    auditor_accreditation.add_argument("kit")
+    auditor_accreditation.add_argument("--pack")
+    auditor_accreditation.add_argument("--disclosure")
+    auditor_accreditation.add_argument("--standards-package")
+    auditor_accreditation.add_argument("--root", default=".")
+    auditor_accreditation.add_argument("--auditor-name", required=True)
+    auditor_accreditation.add_argument("--auditor-ref", required=True)
+    auditor_accreditation.add_argument("--auditor-organization", required=True)
+    auditor_accreditation.add_argument("--auditor-role", default="external-auditor")
+    auditor_accreditation.add_argument("--accreditation-body", default="trustai-local-accreditation-program")
+    auditor_accreditation.add_argument("--program-ref", default="trustai-auditor-program-v0.1")
+    auditor_accreditation.add_argument("--credential-id")
+    auditor_accreditation.add_argument("--status", choices=["active", "suspended", "revoked"], default="active")
+    auditor_accreditation.add_argument("--score-percent", type=int, default=100)
+    auditor_accreditation.add_argument("--scope")
+    auditor_accreditation.add_argument("--issued-at")
+    auditor_accreditation.add_argument("--expires-at")
+    auditor_accreditation.add_argument("--renewal-due-at")
+    auditor_accreditation.add_argument("--proctor-ref")
+    auditor_accreditation.add_argument("--evidence-ref", action="append", default=[])
+    auditor_accreditation.add_argument("--out", default="artifacts/auditor-accreditation.json")
+    auditor_accreditation.add_argument("--key")
+    auditor_accreditation.set_defaults(func=cmd_auditor_accreditation)
+
+    auditor_accreditation_verify = subparsers.add_parser("auditor-accreditation-verify", help="verify a signed auditor accreditation receipt")
+    auditor_accreditation_verify.add_argument("receipt")
+    auditor_accreditation_verify.add_argument("--kit")
+    auditor_accreditation_verify.add_argument("--pack")
+    auditor_accreditation_verify.add_argument("--disclosure")
+    auditor_accreditation_verify.add_argument("--standards-package")
+    auditor_accreditation_verify.add_argument("--root", default=".")
+    auditor_accreditation_verify.add_argument("--now")
+    auditor_accreditation_verify.add_argument("--key")
+    auditor_accreditation_verify.set_defaults(func=cmd_auditor_accreditation_verify)
+
+    auditor_accreditation_append = subparsers.add_parser("auditor-accreditation-append", help="append an auditor accreditation receipt as chain evidence")
+    auditor_accreditation_append.add_argument("receipt")
+    auditor_accreditation_append.add_argument("--kit")
+    auditor_accreditation_append.add_argument("--pack")
+    auditor_accreditation_append.add_argument("--disclosure")
+    auditor_accreditation_append.add_argument("--standards-package")
+    auditor_accreditation_append.add_argument("--root", default=".")
+    auditor_accreditation_append.add_argument("--out", default="artifacts/auditor-accreditation-entry.json")
+    auditor_accreditation_append.add_argument("--key")
+    _add_state_args(auditor_accreditation_append)
+    auditor_accreditation_append.set_defaults(func=cmd_auditor_accreditation_append)
+    auditor_accreditation_countersignature = subparsers.add_parser("auditor-accreditation-countersignature", help="write a sponsor countersignature receipt for an auditor accreditation operation")
+    auditor_accreditation_countersignature.add_argument("accreditation")
+    auditor_accreditation_countersignature.add_argument("sponsorship")
+    auditor_accreditation_countersignature.add_argument("--kit")
+    auditor_accreditation_countersignature.add_argument("--pack")
+    auditor_accreditation_countersignature.add_argument("--disclosure")
+    auditor_accreditation_countersignature.add_argument("--standards-package")
+    auditor_accreditation_countersignature.add_argument("--governance")
+    auditor_accreditation_countersignature.add_argument("--ballot")
+    auditor_accreditation_countersignature.add_argument("--submission")
+    auditor_accreditation_countersignature.add_argument("--status-receipt")
+    auditor_accreditation_countersignature.add_argument("--verifier-release")
+    auditor_accreditation_countersignature.add_argument("--conformance-report")
+    auditor_accreditation_countersignature.add_argument("--root", default=".")
+    auditor_accreditation_countersignature.add_argument("--operation", choices=["issue", "renew", "suspend", "revoke", "reinstate"], default="issue")
+    auditor_accreditation_countersignature.add_argument("--mode", choices=["local-reference", "sponsor-countersigned", "recorded-response"], default="sponsor-countersigned")
+    auditor_accreditation_countersignature.add_argument("--countersignature-ref")
+    auditor_accreditation_countersignature.add_argument("--operation-ref")
+    auditor_accreditation_countersignature.add_argument("--sponsor-actor-ref")
+    auditor_accreditation_countersignature.add_argument("--sponsor-actor-role", default="sponsor-authorized-representative")
+    auditor_accreditation_countersignature.add_argument("--authority-ref")
+    auditor_accreditation_countersignature.add_argument("--terms-ref")
+    auditor_accreditation_countersignature.add_argument("--evidence-ref", action="append", default=[])
+    auditor_accreditation_countersignature.add_argument("--signed-at")
+    auditor_accreditation_countersignature.add_argument("--effective-at")
+    auditor_accreditation_countersignature.add_argument("--expires-at")
+    auditor_accreditation_countersignature.add_argument("--response-status", type=int)
+    auditor_accreditation_countersignature.add_argument("--response-body")
+    auditor_accreditation_countersignature.add_argument("--now")
+    auditor_accreditation_countersignature.add_argument("--out", default="artifacts/auditor-accreditation-countersignature.json")
+    auditor_accreditation_countersignature.add_argument("--key")
+    auditor_accreditation_countersignature.set_defaults(func=cmd_auditor_accreditation_countersignature)
+
+    auditor_accreditation_countersignature_verify = subparsers.add_parser("auditor-accreditation-countersignature-verify", help="verify a sponsor countersignature receipt for auditor accreditation")
+    auditor_accreditation_countersignature_verify.add_argument("receipt")
+    auditor_accreditation_countersignature_verify.add_argument("--accreditation")
+    auditor_accreditation_countersignature_verify.add_argument("--sponsorship")
+    auditor_accreditation_countersignature_verify.add_argument("--kit")
+    auditor_accreditation_countersignature_verify.add_argument("--pack")
+    auditor_accreditation_countersignature_verify.add_argument("--disclosure")
+    auditor_accreditation_countersignature_verify.add_argument("--standards-package")
+    auditor_accreditation_countersignature_verify.add_argument("--governance")
+    auditor_accreditation_countersignature_verify.add_argument("--ballot")
+    auditor_accreditation_countersignature_verify.add_argument("--submission")
+    auditor_accreditation_countersignature_verify.add_argument("--status-receipt")
+    auditor_accreditation_countersignature_verify.add_argument("--verifier-release")
+    auditor_accreditation_countersignature_verify.add_argument("--conformance-report")
+    auditor_accreditation_countersignature_verify.add_argument("--root", default=".")
+    auditor_accreditation_countersignature_verify.add_argument("--now")
+    auditor_accreditation_countersignature_verify.add_argument("--key")
+    auditor_accreditation_countersignature_verify.set_defaults(func=cmd_auditor_accreditation_countersignature_verify)
+
+    auditor_accreditation_countersignature_append = subparsers.add_parser("auditor-accreditation-countersignature-append", help="append an auditor accreditation countersignature receipt as chain evidence")
+    auditor_accreditation_countersignature_append.add_argument("receipt")
+    auditor_accreditation_countersignature_append.add_argument("--accreditation")
+    auditor_accreditation_countersignature_append.add_argument("--sponsorship")
+    auditor_accreditation_countersignature_append.add_argument("--kit")
+    auditor_accreditation_countersignature_append.add_argument("--pack")
+    auditor_accreditation_countersignature_append.add_argument("--disclosure")
+    auditor_accreditation_countersignature_append.add_argument("--standards-package")
+    auditor_accreditation_countersignature_append.add_argument("--governance")
+    auditor_accreditation_countersignature_append.add_argument("--ballot")
+    auditor_accreditation_countersignature_append.add_argument("--submission")
+    auditor_accreditation_countersignature_append.add_argument("--status-receipt")
+    auditor_accreditation_countersignature_append.add_argument("--verifier-release")
+    auditor_accreditation_countersignature_append.add_argument("--conformance-report")
+    auditor_accreditation_countersignature_append.add_argument("--root", default=".")
+    auditor_accreditation_countersignature_append.add_argument("--out", default="artifacts/auditor-accreditation-countersignature-entry.json")
+    auditor_accreditation_countersignature_append.add_argument("--key")
+    _add_state_args(auditor_accreditation_countersignature_append)
+    auditor_accreditation_countersignature_append.set_defaults(func=cmd_auditor_accreditation_countersignature_append)
+
+    auditor_accreditation_signing_ceremony = subparsers.add_parser("auditor-accreditation-signing-ceremony", help="write a sponsor signing ceremony receipt for an auditor accreditation countersignature")
+    auditor_accreditation_signing_ceremony.add_argument("countersignature")
+    auditor_accreditation_signing_ceremony.add_argument("--accreditation")
+    auditor_accreditation_signing_ceremony.add_argument("--sponsorship")
+    auditor_accreditation_signing_ceremony.add_argument("--kit")
+    auditor_accreditation_signing_ceremony.add_argument("--pack")
+    auditor_accreditation_signing_ceremony.add_argument("--disclosure")
+    auditor_accreditation_signing_ceremony.add_argument("--standards-package")
+    auditor_accreditation_signing_ceremony.add_argument("--governance")
+    auditor_accreditation_signing_ceremony.add_argument("--ballot")
+    auditor_accreditation_signing_ceremony.add_argument("--submission")
+    auditor_accreditation_signing_ceremony.add_argument("--status-receipt")
+    auditor_accreditation_signing_ceremony.add_argument("--verifier-release")
+    auditor_accreditation_signing_ceremony.add_argument("--conformance-report")
+    auditor_accreditation_signing_ceremony.add_argument("--root", default=".")
+    auditor_accreditation_signing_ceremony.add_argument("--mode", choices=["local-reference", "sponsor-controlled", "recorded-response"], default="sponsor-controlled")
+    auditor_accreditation_signing_ceremony.add_argument("--ceremony-ref")
+    auditor_accreditation_signing_ceremony.add_argument("--signing-system", default="local-sponsor-signing-system")
+    auditor_accreditation_signing_ceremony.add_argument("--signing-endpoint", default="local-sponsor-signing-system")
+    auditor_accreditation_signing_ceremony.add_argument("--key-provider", default="local-sponsor-hsm")
+    auditor_accreditation_signing_ceremony.add_argument("--key-ref")
+    auditor_accreditation_signing_ceremony.add_argument("--key-algorithm", default="HMAC-SHA256")
+    auditor_accreditation_signing_ceremony.add_argument("--public-key-ref")
+    auditor_accreditation_signing_ceremony.add_argument("--credential-ref", default="local-reference")
+    auditor_accreditation_signing_ceremony.add_argument("--sponsor-operator-ref")
+    auditor_accreditation_signing_ceremony.add_argument("--sponsor-operator-role", default="sponsor-signing-operator")
+    auditor_accreditation_signing_ceremony.add_argument("--approver-ref", action="append", default=[])
+    auditor_accreditation_signing_ceremony.add_argument("--witness-ref", action="append", default=[])
+    auditor_accreditation_signing_ceremony.add_argument("--quorum-required", type=int, default=1)
+    auditor_accreditation_signing_ceremony.add_argument("--authority-ref")
+    auditor_accreditation_signing_ceremony.add_argument("--policy-ref")
+    auditor_accreditation_signing_ceremony.add_argument("--rotation-ref")
+    auditor_accreditation_signing_ceremony.add_argument("--revocation-ref")
+    auditor_accreditation_signing_ceremony.add_argument("--evidence-ref", action="append", default=[])
+    auditor_accreditation_signing_ceremony.add_argument("--ceremony-at")
+    auditor_accreditation_signing_ceremony.add_argument("--response-status", type=int)
+    auditor_accreditation_signing_ceremony.add_argument("--response-body")
+    auditor_accreditation_signing_ceremony.add_argument("--now")
+    auditor_accreditation_signing_ceremony.add_argument("--out", default="artifacts/auditor-accreditation-signing-ceremony.json")
+    auditor_accreditation_signing_ceremony.add_argument("--key")
+    auditor_accreditation_signing_ceremony.set_defaults(func=cmd_auditor_accreditation_signing_ceremony)
+
+    auditor_accreditation_signing_ceremony_verify = subparsers.add_parser("auditor-accreditation-signing-ceremony-verify", help="verify a sponsor signing ceremony receipt for auditor accreditation")
+    auditor_accreditation_signing_ceremony_verify.add_argument("receipt")
+    auditor_accreditation_signing_ceremony_verify.add_argument("--countersignature")
+    auditor_accreditation_signing_ceremony_verify.add_argument("--accreditation")
+    auditor_accreditation_signing_ceremony_verify.add_argument("--sponsorship")
+    auditor_accreditation_signing_ceremony_verify.add_argument("--kit")
+    auditor_accreditation_signing_ceremony_verify.add_argument("--pack")
+    auditor_accreditation_signing_ceremony_verify.add_argument("--disclosure")
+    auditor_accreditation_signing_ceremony_verify.add_argument("--standards-package")
+    auditor_accreditation_signing_ceremony_verify.add_argument("--governance")
+    auditor_accreditation_signing_ceremony_verify.add_argument("--ballot")
+    auditor_accreditation_signing_ceremony_verify.add_argument("--submission")
+    auditor_accreditation_signing_ceremony_verify.add_argument("--status-receipt")
+    auditor_accreditation_signing_ceremony_verify.add_argument("--verifier-release")
+    auditor_accreditation_signing_ceremony_verify.add_argument("--conformance-report")
+    auditor_accreditation_signing_ceremony_verify.add_argument("--root", default=".")
+    auditor_accreditation_signing_ceremony_verify.add_argument("--now")
+    auditor_accreditation_signing_ceremony_verify.add_argument("--key")
+    auditor_accreditation_signing_ceremony_verify.set_defaults(func=cmd_auditor_accreditation_signing_ceremony_verify)
+
+    auditor_accreditation_signing_ceremony_append = subparsers.add_parser("auditor-accreditation-signing-ceremony-append", help="append an auditor accreditation signing ceremony receipt as chain evidence")
+    auditor_accreditation_signing_ceremony_append.add_argument("receipt")
+    auditor_accreditation_signing_ceremony_append.add_argument("--countersignature")
+    auditor_accreditation_signing_ceremony_append.add_argument("--accreditation")
+    auditor_accreditation_signing_ceremony_append.add_argument("--sponsorship")
+    auditor_accreditation_signing_ceremony_append.add_argument("--kit")
+    auditor_accreditation_signing_ceremony_append.add_argument("--pack")
+    auditor_accreditation_signing_ceremony_append.add_argument("--disclosure")
+    auditor_accreditation_signing_ceremony_append.add_argument("--standards-package")
+    auditor_accreditation_signing_ceremony_append.add_argument("--governance")
+    auditor_accreditation_signing_ceremony_append.add_argument("--ballot")
+    auditor_accreditation_signing_ceremony_append.add_argument("--submission")
+    auditor_accreditation_signing_ceremony_append.add_argument("--status-receipt")
+    auditor_accreditation_signing_ceremony_append.add_argument("--verifier-release")
+    auditor_accreditation_signing_ceremony_append.add_argument("--conformance-report")
+    auditor_accreditation_signing_ceremony_append.add_argument("--root", default=".")
+    auditor_accreditation_signing_ceremony_append.add_argument("--out", default="artifacts/auditor-accreditation-signing-ceremony-entry.json")
+    auditor_accreditation_signing_ceremony_append.add_argument("--key")
+    _add_state_args(auditor_accreditation_signing_ceremony_append)
+    auditor_accreditation_signing_ceremony_append.set_defaults(func=cmd_auditor_accreditation_signing_ceremony_append)
+
+    auditor_accreditation_signing_audit = subparsers.add_parser("auditor-accreditation-signing-audit", help="write a public key publication and signing audit receipt for an auditor accreditation signing ceremony")
+    auditor_accreditation_signing_audit.add_argument("signing_ceremony")
+    auditor_accreditation_signing_audit.add_argument("--countersignature")
+    auditor_accreditation_signing_audit.add_argument("--accreditation")
+    auditor_accreditation_signing_audit.add_argument("--sponsorship")
+    auditor_accreditation_signing_audit.add_argument("--kit")
+    auditor_accreditation_signing_audit.add_argument("--pack")
+    auditor_accreditation_signing_audit.add_argument("--disclosure")
+    auditor_accreditation_signing_audit.add_argument("--standards-package")
+    auditor_accreditation_signing_audit.add_argument("--governance")
+    auditor_accreditation_signing_audit.add_argument("--ballot")
+    auditor_accreditation_signing_audit.add_argument("--submission")
+    auditor_accreditation_signing_audit.add_argument("--status-receipt")
+    auditor_accreditation_signing_audit.add_argument("--verifier-release")
+    auditor_accreditation_signing_audit.add_argument("--conformance-report")
+    auditor_accreditation_signing_audit.add_argument("--root", default=".")
+    auditor_accreditation_signing_audit.add_argument("--mode", choices=["local-reference", "public-key-published", "immutable-audit-log", "provider-anchored"], default="provider-anchored")
+    auditor_accreditation_signing_audit.add_argument("--audit-ref")
+    auditor_accreditation_signing_audit.add_argument("--publisher", default="local-signing-audit-publisher")
+    auditor_accreditation_signing_audit.add_argument("--publication-endpoint", default="local-signing-audit-publisher")
+    auditor_accreditation_signing_audit.add_argument("--credential-ref", default="local-reference")
+    auditor_accreditation_signing_audit.add_argument("--actor-ref")
+    auditor_accreditation_signing_audit.add_argument("--key-ref")
+    auditor_accreditation_signing_audit.add_argument("--public-key-ref")
+    auditor_accreditation_signing_audit.add_argument("--public-key-fingerprint")
+    auditor_accreditation_signing_audit.add_argument("--key-status", choices=["active", "suspended", "revoked", "retired"], default="active")
+    auditor_accreditation_signing_audit.add_argument("--publication-ref")
+    auditor_accreditation_signing_audit.add_argument("--rotation-ref")
+    auditor_accreditation_signing_audit.add_argument("--revocation-ref")
+    auditor_accreditation_signing_audit.add_argument("--audit-log-ref")
+    auditor_accreditation_signing_audit.add_argument("--audit-log-root")
+    auditor_accreditation_signing_audit.add_argument("--audit-log-size", type=int)
+    auditor_accreditation_signing_audit.add_argument("--audit-log-algorithm", default="SHA-256")
+    auditor_accreditation_signing_audit.add_argument("--audit-log-entry-ref")
+    auditor_accreditation_signing_audit.add_argument("--audit-log-export-ref")
+    auditor_accreditation_signing_audit.add_argument("--retention-until")
+    auditor_accreditation_signing_audit.add_argument("--witness-ref", action="append", default=[])
+    auditor_accreditation_signing_audit.add_argument("--evidence-ref", action="append", default=[])
+    auditor_accreditation_signing_audit.add_argument("--published-at")
+    auditor_accreditation_signing_audit.add_argument("--response-status", type=int)
+    auditor_accreditation_signing_audit.add_argument("--response-body")
+    auditor_accreditation_signing_audit.add_argument("--now")
+    auditor_accreditation_signing_audit.add_argument("--out", default="artifacts/auditor-accreditation-signing-audit.json")
+    auditor_accreditation_signing_audit.add_argument("--key")
+    auditor_accreditation_signing_audit.set_defaults(func=cmd_auditor_accreditation_signing_audit)
+
+    auditor_accreditation_signing_audit_verify = subparsers.add_parser("auditor-accreditation-signing-audit-verify", help="verify a public key publication and signing audit receipt for auditor accreditation")
+    auditor_accreditation_signing_audit_verify.add_argument("receipt")
+    auditor_accreditation_signing_audit_verify.add_argument("--signing-ceremony")
+    auditor_accreditation_signing_audit_verify.add_argument("--countersignature")
+    auditor_accreditation_signing_audit_verify.add_argument("--accreditation")
+    auditor_accreditation_signing_audit_verify.add_argument("--sponsorship")
+    auditor_accreditation_signing_audit_verify.add_argument("--kit")
+    auditor_accreditation_signing_audit_verify.add_argument("--pack")
+    auditor_accreditation_signing_audit_verify.add_argument("--disclosure")
+    auditor_accreditation_signing_audit_verify.add_argument("--standards-package")
+    auditor_accreditation_signing_audit_verify.add_argument("--governance")
+    auditor_accreditation_signing_audit_verify.add_argument("--ballot")
+    auditor_accreditation_signing_audit_verify.add_argument("--submission")
+    auditor_accreditation_signing_audit_verify.add_argument("--status-receipt")
+    auditor_accreditation_signing_audit_verify.add_argument("--verifier-release")
+    auditor_accreditation_signing_audit_verify.add_argument("--conformance-report")
+    auditor_accreditation_signing_audit_verify.add_argument("--root", default=".")
+    auditor_accreditation_signing_audit_verify.add_argument("--now")
+    auditor_accreditation_signing_audit_verify.add_argument("--key")
+    auditor_accreditation_signing_audit_verify.set_defaults(func=cmd_auditor_accreditation_signing_audit_verify)
+
+    auditor_accreditation_signing_audit_append = subparsers.add_parser("auditor-accreditation-signing-audit-append", help="append an auditor accreditation signing audit receipt as chain evidence")
+    auditor_accreditation_signing_audit_append.add_argument("receipt")
+    auditor_accreditation_signing_audit_append.add_argument("--signing-ceremony")
+    auditor_accreditation_signing_audit_append.add_argument("--countersignature")
+    auditor_accreditation_signing_audit_append.add_argument("--accreditation")
+    auditor_accreditation_signing_audit_append.add_argument("--sponsorship")
+    auditor_accreditation_signing_audit_append.add_argument("--kit")
+    auditor_accreditation_signing_audit_append.add_argument("--pack")
+    auditor_accreditation_signing_audit_append.add_argument("--disclosure")
+    auditor_accreditation_signing_audit_append.add_argument("--standards-package")
+    auditor_accreditation_signing_audit_append.add_argument("--governance")
+    auditor_accreditation_signing_audit_append.add_argument("--ballot")
+    auditor_accreditation_signing_audit_append.add_argument("--submission")
+    auditor_accreditation_signing_audit_append.add_argument("--status-receipt")
+    auditor_accreditation_signing_audit_append.add_argument("--verifier-release")
+    auditor_accreditation_signing_audit_append.add_argument("--conformance-report")
+    auditor_accreditation_signing_audit_append.add_argument("--root", default=".")
+    auditor_accreditation_signing_audit_append.add_argument("--out", default="artifacts/auditor-accreditation-signing-audit-entry.json")
+    auditor_accreditation_signing_audit_append.add_argument("--key")
+    _add_state_args(auditor_accreditation_signing_audit_append)
+    auditor_accreditation_signing_audit_append.set_defaults(func=cmd_auditor_accreditation_signing_audit_append)
+    auditor_accreditation_kms_enforcement = subparsers.add_parser("auditor-accreditation-kms-enforcement", help="write a sponsor KMS/HSM enforcement receipt for an auditor accreditation signing audit")
+    auditor_accreditation_kms_enforcement.add_argument("signing_audit")
+    auditor_accreditation_kms_enforcement.add_argument("--signing-ceremony")
+    auditor_accreditation_kms_enforcement.add_argument("--countersignature")
+    auditor_accreditation_kms_enforcement.add_argument("--accreditation")
+    auditor_accreditation_kms_enforcement.add_argument("--sponsorship")
+    auditor_accreditation_kms_enforcement.add_argument("--kit")
+    auditor_accreditation_kms_enforcement.add_argument("--pack")
+    auditor_accreditation_kms_enforcement.add_argument("--disclosure")
+    auditor_accreditation_kms_enforcement.add_argument("--standards-package")
+    auditor_accreditation_kms_enforcement.add_argument("--governance")
+    auditor_accreditation_kms_enforcement.add_argument("--ballot")
+    auditor_accreditation_kms_enforcement.add_argument("--submission")
+    auditor_accreditation_kms_enforcement.add_argument("--status-receipt")
+    auditor_accreditation_kms_enforcement.add_argument("--verifier-release")
+    auditor_accreditation_kms_enforcement.add_argument("--conformance-report")
+    auditor_accreditation_kms_enforcement.add_argument("--root", default=".")
+    auditor_accreditation_kms_enforcement.add_argument("--mode", choices=["local-reference", "policy-bound", "hsm-attested", "provider-enforced"], default="provider-enforced")
+    auditor_accreditation_kms_enforcement.add_argument("--enforcement-ref")
+    auditor_accreditation_kms_enforcement.add_argument("--provider", default="local-sponsor-kms")
+    auditor_accreditation_kms_enforcement.add_argument("--provider-endpoint", default="local-sponsor-kms")
+    auditor_accreditation_kms_enforcement.add_argument("--credential-ref", default="local-reference")
+    auditor_accreditation_kms_enforcement.add_argument("--actor-ref")
+    auditor_accreditation_kms_enforcement.add_argument("--key-ref")
+    auditor_accreditation_kms_enforcement.add_argument("--key-provider")
+    auditor_accreditation_kms_enforcement.add_argument("--key-algorithm")
+    auditor_accreditation_kms_enforcement.add_argument("--key-status", choices=["active", "suspended", "revoked", "retired"], default="active")
+    auditor_accreditation_kms_enforcement.add_argument("--attestation-ref")
+    auditor_accreditation_kms_enforcement.add_argument("--attestation-hash")
+    auditor_accreditation_kms_enforcement.add_argument("--key-policy-ref")
+    auditor_accreditation_kms_enforcement.add_argument("--key-policy-hash")
+    auditor_accreditation_kms_enforcement.add_argument("--allowed-actor-ref", action="append", default=[])
+    auditor_accreditation_kms_enforcement.add_argument("--key-usage", action="append", default=[])
+    auditor_accreditation_kms_enforcement.add_argument("--denied-operation-ref", action="append", default=[])
+    auditor_accreditation_kms_enforcement.add_argument("--quorum-required", type=int, default=1)
+    auditor_accreditation_kms_enforcement.add_argument("--quorum-approver-ref", action="append", default=[])
+    auditor_accreditation_kms_enforcement.add_argument("--rotation-ref")
+    auditor_accreditation_kms_enforcement.add_argument("--revocation-ref")
+    auditor_accreditation_kms_enforcement.add_argument("--audit-log-ref")
+    auditor_accreditation_kms_enforcement.add_argument("--audit-log-root")
+    auditor_accreditation_kms_enforcement.add_argument("--audit-log-size", type=int)
+    auditor_accreditation_kms_enforcement.add_argument("--audit-log-algorithm")
+    auditor_accreditation_kms_enforcement.add_argument("--evidence-ref", action="append", default=[])
+    auditor_accreditation_kms_enforcement.add_argument("--enforced-at")
+    auditor_accreditation_kms_enforcement.add_argument("--response-status", type=int)
+    auditor_accreditation_kms_enforcement.add_argument("--response-body")
+    auditor_accreditation_kms_enforcement.add_argument("--now")
+    auditor_accreditation_kms_enforcement.add_argument("--out", default="artifacts/auditor-accreditation-kms-enforcement.json")
+    auditor_accreditation_kms_enforcement.add_argument("--key")
+    auditor_accreditation_kms_enforcement.set_defaults(func=cmd_auditor_accreditation_kms_enforcement)
+
+    auditor_accreditation_kms_enforcement_verify = subparsers.add_parser("auditor-accreditation-kms-enforcement-verify", help="verify a sponsor KMS/HSM enforcement receipt for auditor accreditation")
+    auditor_accreditation_kms_enforcement_verify.add_argument("receipt")
+    auditor_accreditation_kms_enforcement_verify.add_argument("--signing-audit")
+    auditor_accreditation_kms_enforcement_verify.add_argument("--signing-ceremony")
+    auditor_accreditation_kms_enforcement_verify.add_argument("--countersignature")
+    auditor_accreditation_kms_enforcement_verify.add_argument("--accreditation")
+    auditor_accreditation_kms_enforcement_verify.add_argument("--sponsorship")
+    auditor_accreditation_kms_enforcement_verify.add_argument("--kit")
+    auditor_accreditation_kms_enforcement_verify.add_argument("--pack")
+    auditor_accreditation_kms_enforcement_verify.add_argument("--disclosure")
+    auditor_accreditation_kms_enforcement_verify.add_argument("--standards-package")
+    auditor_accreditation_kms_enforcement_verify.add_argument("--governance")
+    auditor_accreditation_kms_enforcement_verify.add_argument("--ballot")
+    auditor_accreditation_kms_enforcement_verify.add_argument("--submission")
+    auditor_accreditation_kms_enforcement_verify.add_argument("--status-receipt")
+    auditor_accreditation_kms_enforcement_verify.add_argument("--verifier-release")
+    auditor_accreditation_kms_enforcement_verify.add_argument("--conformance-report")
+    auditor_accreditation_kms_enforcement_verify.add_argument("--root", default=".")
+    auditor_accreditation_kms_enforcement_verify.add_argument("--now")
+    auditor_accreditation_kms_enforcement_verify.add_argument("--key")
+    auditor_accreditation_kms_enforcement_verify.set_defaults(func=cmd_auditor_accreditation_kms_enforcement_verify)
+
+    auditor_accreditation_kms_enforcement_append = subparsers.add_parser("auditor-accreditation-kms-enforcement-append", help="append an auditor accreditation KMS enforcement receipt as chain evidence")
+    auditor_accreditation_kms_enforcement_append.add_argument("receipt")
+    auditor_accreditation_kms_enforcement_append.add_argument("--signing-audit")
+    auditor_accreditation_kms_enforcement_append.add_argument("--signing-ceremony")
+    auditor_accreditation_kms_enforcement_append.add_argument("--countersignature")
+    auditor_accreditation_kms_enforcement_append.add_argument("--accreditation")
+    auditor_accreditation_kms_enforcement_append.add_argument("--sponsorship")
+    auditor_accreditation_kms_enforcement_append.add_argument("--kit")
+    auditor_accreditation_kms_enforcement_append.add_argument("--pack")
+    auditor_accreditation_kms_enforcement_append.add_argument("--disclosure")
+    auditor_accreditation_kms_enforcement_append.add_argument("--standards-package")
+    auditor_accreditation_kms_enforcement_append.add_argument("--governance")
+    auditor_accreditation_kms_enforcement_append.add_argument("--ballot")
+    auditor_accreditation_kms_enforcement_append.add_argument("--submission")
+    auditor_accreditation_kms_enforcement_append.add_argument("--status-receipt")
+    auditor_accreditation_kms_enforcement_append.add_argument("--verifier-release")
+    auditor_accreditation_kms_enforcement_append.add_argument("--conformance-report")
+    auditor_accreditation_kms_enforcement_append.add_argument("--root", default=".")
+    auditor_accreditation_kms_enforcement_append.add_argument("--out", default="artifacts/auditor-accreditation-kms-enforcement-entry.json")
+    auditor_accreditation_kms_enforcement_append.add_argument("--key")
+    _add_state_args(auditor_accreditation_kms_enforcement_append)
+    auditor_accreditation_kms_enforcement_append.set_defaults(func=cmd_auditor_accreditation_kms_enforcement_append)
+    auditor_credential_registry = subparsers.add_parser("auditor-credential-registry", help="write a signed auditor credential registry receipt")
+    auditor_credential_registry.add_argument("accreditation")
+    auditor_credential_registry.add_argument("--kit")
+    auditor_credential_registry.add_argument("--pack")
+    auditor_credential_registry.add_argument("--disclosure")
+    auditor_credential_registry.add_argument("--standards-package")
+    auditor_credential_registry.add_argument("--root", default=".")
+    auditor_credential_registry.add_argument("--registry-name", default="trustai-local-auditor-credential-registry")
+    auditor_credential_registry.add_argument("--registry-endpoint", default="local-auditor-registry")
+    auditor_credential_registry.add_argument("--namespace", default="trustai-auditors")
+    auditor_credential_registry.add_argument("--publication-ref")
+    auditor_credential_registry.add_argument("--status", choices=["active", "suspended", "revoked"])
+    auditor_credential_registry.add_argument("--visibility", choices=["private", "partner", "public"], default="public")
+    auditor_credential_registry.add_argument("--terms-ref")
+    auditor_credential_registry.add_argument("--revocation-endpoint")
+    auditor_credential_registry.add_argument("--operator-ref")
+    auditor_credential_registry.add_argument("--published-at")
+    auditor_credential_registry.add_argument("--expires-at")
+    auditor_credential_registry.add_argument("--out", default="artifacts/auditor-credential-registry.json")
+    auditor_credential_registry.add_argument("--key")
+    auditor_credential_registry.set_defaults(func=cmd_auditor_credential_registry)
+
+    auditor_credential_registry_verify = subparsers.add_parser("auditor-credential-registry-verify", help="verify a signed auditor credential registry receipt")
+    auditor_credential_registry_verify.add_argument("receipt")
+    auditor_credential_registry_verify.add_argument("--accreditation")
+    auditor_credential_registry_verify.add_argument("--kit")
+    auditor_credential_registry_verify.add_argument("--pack")
+    auditor_credential_registry_verify.add_argument("--disclosure")
+    auditor_credential_registry_verify.add_argument("--standards-package")
+    auditor_credential_registry_verify.add_argument("--root", default=".")
+    auditor_credential_registry_verify.add_argument("--now")
+    auditor_credential_registry_verify.add_argument("--key")
+    auditor_credential_registry_verify.set_defaults(func=cmd_auditor_credential_registry_verify)
+
+    auditor_credential_registry_append = subparsers.add_parser("auditor-credential-registry-append", help="append an auditor credential registry receipt as chain evidence")
+    auditor_credential_registry_append.add_argument("receipt")
+    auditor_credential_registry_append.add_argument("--accreditation")
+    auditor_credential_registry_append.add_argument("--kit")
+    auditor_credential_registry_append.add_argument("--pack")
+    auditor_credential_registry_append.add_argument("--disclosure")
+    auditor_credential_registry_append.add_argument("--standards-package")
+    auditor_credential_registry_append.add_argument("--root", default=".")
+    auditor_credential_registry_append.add_argument("--out", default="artifacts/auditor-credential-registry-entry.json")
+    auditor_credential_registry_append.add_argument("--key")
+    _add_state_args(auditor_credential_registry_append)
+    auditor_credential_registry_append.set_defaults(func=cmd_auditor_credential_registry_append)
+    trust_network_export = subparsers.add_parser("trust-network-export", help="write a cross-org vendor proof-pack manifest")
+    trust_network_export.add_argument("packs", nargs="+")
+    trust_network_export.add_argument("--vendor", action="append", help="vendor name for each proof pack, in pack order")
+    trust_network_export.add_argument("--buyer", default="local-buyer")
+    trust_network_export.add_argument("--clause-name", default="TrustAI proof-pack procurement clause")
+    trust_network_export.add_argument("--procurement-clause")
+    trust_network_export.add_argument("--required-framework", action="append", default=[])
+    trust_network_export.add_argument("--accepted-risk-class", action="append", default=[])
+    trust_network_export.add_argument("--required-gate-outcome", default="passed")
+    trust_network_export.add_argument("--out", default="artifacts/trust-network-manifest.json")
+    trust_network_export.add_argument("--markdown", default="artifacts/trust-network-manifest.md")
+    trust_network_export.add_argument("--key")
+    trust_network_export.set_defaults(func=cmd_trust_network_export)
+
+    trust_network_verify = subparsers.add_parser("trust-network-verify", help="verify a cross-org vendor proof-pack manifest")
+    trust_network_verify.add_argument("manifest")
+    trust_network_verify.add_argument("--pack", action="append", default=[])
+    trust_network_verify.add_argument("--key")
+    trust_network_verify.set_defaults(func=cmd_trust_network_verify)
+
+    vendor_identity = subparsers.add_parser("vendor-identity", help="write a signed vendor identity receipt for proof-pack evidence")
+    vendor_identity.add_argument("--pack", action="append", required=True)
+    vendor_identity.add_argument("--manifest")
+    vendor_identity.add_argument("--vendor", required=True)
+    vendor_identity.add_argument("--legal-name", required=True)
+    vendor_identity.add_argument("--subject-ref", required=True)
+    vendor_identity.add_argument("--domain")
+    vendor_identity.add_argument("--identity-provider")
+    vendor_identity.add_argument("--identity-id")
+    vendor_identity.add_argument("--issuer", default="trustai-local")
+    vendor_identity.add_argument("--issued-at")
+    vendor_identity.add_argument("--expires-at")
+    vendor_identity.add_argument("--out", default="artifacts/vendor-identity-receipt.json")
+    vendor_identity.add_argument("--key")
+    vendor_identity.set_defaults(func=cmd_vendor_identity)
+
+    vendor_identity_verify = subparsers.add_parser("vendor-identity-verify", help="verify a signed vendor identity receipt")
+    vendor_identity_verify.add_argument("receipt")
+    vendor_identity_verify.add_argument("--pack", action="append", default=[])
+    vendor_identity_verify.add_argument("--manifest")
+    vendor_identity_verify.add_argument("--now")
+    vendor_identity_verify.add_argument("--key")
+    vendor_identity_verify.set_defaults(func=cmd_vendor_identity_verify)
+
+    vendor_identity_append = subparsers.add_parser("vendor-identity-append", help="append a verified vendor identity receipt as chain evidence")
+    vendor_identity_append.add_argument("receipt")
+    vendor_identity_append.add_argument("--pack", action="append", default=[])
+    vendor_identity_append.add_argument("--manifest")
+    vendor_identity_append.add_argument("--out", default="artifacts/vendor-identity-entry.json")
+    vendor_identity_append.add_argument("--key")
+    _add_state_args(vendor_identity_append)
+    vendor_identity_append.set_defaults(func=cmd_vendor_identity_append)
+    procurement_clause = subparsers.add_parser("procurement-clause", help="write a signed buyer procurement clause receipt for a trust-network manifest")
+    procurement_clause.add_argument("manifest")
+    procurement_clause.add_argument("--pack", action="append", default=[])
+    procurement_clause.add_argument("--buyer")
+    procurement_clause.add_argument("--legal-entity")
+    procurement_clause.add_argument("--contract-ref", required=True)
+    procurement_clause.add_argument("--approver-ref", required=True)
+    procurement_clause.add_argument("--procurement-system", default="local-reference")
+    procurement_clause.add_argument("--effective-at", required=True)
+    procurement_clause.add_argument("--expires-at")
+    procurement_clause.add_argument("--issued-at")
+    procurement_clause.add_argument("--out", default="artifacts/procurement-clause-receipt.json")
+    procurement_clause.add_argument("--key")
+    procurement_clause.set_defaults(func=cmd_procurement_clause)
+
+    procurement_clause_verify = subparsers.add_parser("procurement-clause-verify", help="verify a signed buyer procurement clause receipt")
+    procurement_clause_verify.add_argument("receipt")
+    procurement_clause_verify.add_argument("--manifest")
+    procurement_clause_verify.add_argument("--pack", action="append", default=[])
+    procurement_clause_verify.add_argument("--key")
+    procurement_clause_verify.set_defaults(func=cmd_procurement_clause_verify)
+
+    procurement_clause_append = subparsers.add_parser("procurement-clause-append", help="append a verified procurement clause receipt as chain evidence")
+    procurement_clause_append.add_argument("receipt")
+    procurement_clause_append.add_argument("--out", default="artifacts/procurement-clause-entry.json")
+    procurement_clause_append.add_argument("--key")
+    _add_state_args(procurement_clause_append)
+    procurement_clause_append.set_defaults(func=cmd_procurement_clause_append)
+    procurement_integration = subparsers.add_parser("procurement-integration", help="write a signed procurement-system integration receipt")
+    procurement_integration.add_argument("procurement_receipt")
+    procurement_integration.add_argument("vendor_identity_receipt")
+    procurement_integration.add_argument("--manifest")
+    procurement_integration.add_argument("--pack", action="append", default=[])
+    procurement_integration.add_argument("--procurement-system", default="local-procurement")
+    procurement_integration.add_argument("--endpoint-base", default="local-procurement")
+    procurement_integration.add_argument("--credential-ref", default="local-reference")
+    procurement_integration.add_argument("--mode", choices=["dry-run", "recorded-response"], default="dry-run")
+    procurement_integration.add_argument("--request-method", default="POST")
+    procurement_integration.add_argument("--request-path", default="/trustai/vendor-proof-pack-acceptances")
+    procurement_integration.add_argument("--integration-ref")
+    procurement_integration.add_argument("--delivered-at")
+    procurement_integration.add_argument("--response-status", type=int)
+    procurement_integration.add_argument("--response-body")
+    procurement_integration.add_argument("--out", default="artifacts/procurement-integration-receipt.json")
+    procurement_integration.add_argument("--key")
+    procurement_integration.set_defaults(func=cmd_procurement_integration)
+
+    procurement_integration_verify = subparsers.add_parser("procurement-integration-verify", help="verify a signed procurement-system integration receipt")
+    procurement_integration_verify.add_argument("integration")
+    procurement_integration_verify.add_argument("--procurement-receipt")
+    procurement_integration_verify.add_argument("--vendor-identity")
+    procurement_integration_verify.add_argument("--manifest")
+    procurement_integration_verify.add_argument("--pack", action="append", default=[])
+    procurement_integration_verify.add_argument("--key")
+    procurement_integration_verify.set_defaults(func=cmd_procurement_integration_verify)
+
+    procurement_integration_append = subparsers.add_parser("procurement-integration-append", help="append a procurement-system integration receipt as chain evidence")
+    procurement_integration_append.add_argument("integration")
+    procurement_integration_append.add_argument("--procurement-receipt")
+    procurement_integration_append.add_argument("--vendor-identity")
+    procurement_integration_append.add_argument("--manifest")
+    procurement_integration_append.add_argument("--pack", action="append", default=[])
+    procurement_integration_append.add_argument("--out", default="artifacts/procurement-integration-entry.json")
+    procurement_integration_append.add_argument("--key")
+    _add_state_args(procurement_integration_append)
+    procurement_integration_append.set_defaults(func=cmd_procurement_integration_append)
+    trust_network_registry = subparsers.add_parser("trust-network-registry", help="write a signed trust-network registry publication receipt")
+    trust_network_registry.add_argument("manifest")
+    trust_network_registry.add_argument("vendor_identity")
+    trust_network_registry.add_argument("--identity-attestation")
+    trust_network_registry.add_argument("--identity-payload")
+    trust_network_registry.add_argument("--procurement-receipt")
+    trust_network_registry.add_argument("--procurement-integration")
+    trust_network_registry.add_argument("--pack", action="append", default=[])
+    trust_network_registry.add_argument("--registry-name", default="local-trust-network-registry")
+    trust_network_registry.add_argument("--registry-endpoint", default="local-registry")
+    trust_network_registry.add_argument("--namespace", default="local")
+    trust_network_registry.add_argument("--registration-ref")
+    trust_network_registry.add_argument("--status", choices=["active", "suspended", "revoked"], default="active")
+    trust_network_registry.add_argument("--visibility", choices=["private", "buyer-vendor", "public"], default="buyer-vendor")
+    trust_network_registry.add_argument("--terms-ref")
+    trust_network_registry.add_argument("--revocation-endpoint")
+    trust_network_registry.add_argument("--published-at")
+    trust_network_registry.add_argument("--expires-at")
+    trust_network_registry.add_argument("--out", default="artifacts/trust-network-registry.json")
+    trust_network_registry.add_argument("--key")
+    trust_network_registry.set_defaults(func=cmd_trust_network_registry)
+
+    trust_network_registry_verify = subparsers.add_parser("trust-network-registry-verify", help="verify a signed trust-network registry publication receipt")
+    trust_network_registry_verify.add_argument("registry")
+    trust_network_registry_verify.add_argument("--manifest")
+    trust_network_registry_verify.add_argument("--vendor-identity")
+    trust_network_registry_verify.add_argument("--identity-attestation")
+    trust_network_registry_verify.add_argument("--identity-payload")
+    trust_network_registry_verify.add_argument("--procurement-receipt")
+    trust_network_registry_verify.add_argument("--procurement-integration")
+    trust_network_registry_verify.add_argument("--pack", action="append", default=[])
+    trust_network_registry_verify.add_argument("--now")
+    trust_network_registry_verify.add_argument("--key")
+    trust_network_registry_verify.set_defaults(func=cmd_trust_network_registry_verify)
+
+    trust_network_registry_append = subparsers.add_parser("trust-network-registry-append", help="append a trust-network registry publication receipt as chain evidence")
+    trust_network_registry_append.add_argument("registry")
+    trust_network_registry_append.add_argument("--manifest")
+    trust_network_registry_append.add_argument("--vendor-identity")
+    trust_network_registry_append.add_argument("--identity-attestation")
+    trust_network_registry_append.add_argument("--identity-payload")
+    trust_network_registry_append.add_argument("--procurement-receipt")
+    trust_network_registry_append.add_argument("--procurement-integration")
+    trust_network_registry_append.add_argument("--pack", action="append", default=[])
+    trust_network_registry_append.add_argument("--out", default="artifacts/trust-network-registry-entry.json")
+    trust_network_registry_append.add_argument("--key")
+    _add_state_args(trust_network_registry_append)
+    trust_network_registry_append.set_defaults(func=cmd_trust_network_registry_append)
+    trust_network_registry_status = subparsers.add_parser("trust-network-registry-status", help="write a signed trust-network registry status-change receipt")
+    trust_network_registry_status.add_argument("registry")
+    trust_network_registry_status.add_argument("--status", choices=["active", "suspended", "revoked"], required=True)
+    trust_network_registry_status.add_argument("--reason", required=True)
+    trust_network_registry_status.add_argument("--reason-code")
+    trust_network_registry_status.add_argument("--actor-ref", required=True)
+    trust_network_registry_status.add_argument("--actor-role", default="registry-operator")
+    trust_network_registry_status.add_argument("--decided-at")
+    trust_network_registry_status.add_argument("--effective-at")
+    trust_network_registry_status.add_argument("--dispute-ref")
+    trust_network_registry_status.add_argument("--dispute-window-until")
+    trust_network_registry_status.add_argument("--evidence-ref", action="append", default=[])
+    trust_network_registry_status.add_argument("--manifest")
+    trust_network_registry_status.add_argument("--vendor-identity")
+    trust_network_registry_status.add_argument("--identity-attestation")
+    trust_network_registry_status.add_argument("--identity-payload")
+    trust_network_registry_status.add_argument("--procurement-receipt")
+    trust_network_registry_status.add_argument("--procurement-integration")
+    trust_network_registry_status.add_argument("--pack", action="append", default=[])
+    trust_network_registry_status.add_argument("--out", default="artifacts/trust-network-registry-status.json")
+    trust_network_registry_status.add_argument("--key")
+    trust_network_registry_status.set_defaults(func=cmd_trust_network_registry_status)
+
+    trust_network_registry_status_verify = subparsers.add_parser("trust-network-registry-status-verify", help="verify a signed trust-network registry status-change receipt")
+    trust_network_registry_status_verify.add_argument("status_receipt")
+    trust_network_registry_status_verify.add_argument("--registry")
+    trust_network_registry_status_verify.add_argument("--manifest")
+    trust_network_registry_status_verify.add_argument("--vendor-identity")
+    trust_network_registry_status_verify.add_argument("--identity-attestation")
+    trust_network_registry_status_verify.add_argument("--identity-payload")
+    trust_network_registry_status_verify.add_argument("--procurement-receipt")
+    trust_network_registry_status_verify.add_argument("--procurement-integration")
+    trust_network_registry_status_verify.add_argument("--pack", action="append", default=[])
+    trust_network_registry_status_verify.add_argument("--now")
+    trust_network_registry_status_verify.add_argument("--key")
+    trust_network_registry_status_verify.set_defaults(func=cmd_trust_network_registry_status_verify)
+
+    trust_network_registry_status_append = subparsers.add_parser("trust-network-registry-status-append", help="append a trust-network registry status-change receipt as chain evidence")
+    trust_network_registry_status_append.add_argument("status_receipt")
+    trust_network_registry_status_append.add_argument("--registry")
+    trust_network_registry_status_append.add_argument("--manifest")
+    trust_network_registry_status_append.add_argument("--vendor-identity")
+    trust_network_registry_status_append.add_argument("--identity-attestation")
+    trust_network_registry_status_append.add_argument("--identity-payload")
+    trust_network_registry_status_append.add_argument("--procurement-receipt")
+    trust_network_registry_status_append.add_argument("--procurement-integration")
+    trust_network_registry_status_append.add_argument("--pack", action="append", default=[])
+    trust_network_registry_status_append.add_argument("--out", default="artifacts/trust-network-registry-status-entry.json")
+    trust_network_registry_status_append.add_argument("--key")
+    _add_state_args(trust_network_registry_status_append)
+    trust_network_registry_status_append.set_defaults(func=cmd_trust_network_registry_status_append)
+    marketplace_export = subparsers.add_parser("marketplace-export", help="write a certified contract-template and policy-pack catalog")
+    marketplace_export.add_argument("--contract-template", action="append", default=[])
+    marketplace_export.add_argument("--policy-pack", action="append", default=[])
+    marketplace_export.add_argument("--root", default=".")
+    marketplace_export.add_argument("--publisher", default="trustai-local")
+    marketplace_export.add_argument("--author", default="trustai-local")
+    marketplace_export.add_argument("--vertical", action="append", default=[])
+    marketplace_export.add_argument("--regulation", action="append", default=[])
+    marketplace_export.add_argument("--status", default="published")
+    marketplace_export.add_argument("--out", default="artifacts/marketplace-catalog.json")
+    marketplace_export.add_argument("--markdown", default="artifacts/marketplace-catalog.md")
+    marketplace_export.set_defaults(func=cmd_marketplace_export)
+
+    marketplace_verify = subparsers.add_parser("marketplace-verify", help="verify a marketplace catalog against the worktree")
+    marketplace_verify.add_argument("catalog")
+    marketplace_verify.add_argument("--root", default=".")
+    marketplace_verify.set_defaults(func=cmd_marketplace_verify)
+
+
+    marketplace_distribution = subparsers.add_parser("marketplace-distribution", help="write a signed marketplace distribution receipt")
+    marketplace_distribution.add_argument("catalog")
+    marketplace_distribution.add_argument("--root", default=".")
+    marketplace_distribution.add_argument("--channel", default="local-marketplace")
+    marketplace_distribution.add_argument("--target", default="local-catalog")
+    marketplace_distribution.add_argument("--mode", choices=["local-reference", "recorded-publication"], default="local-reference")
+    marketplace_distribution.add_argument("--subscriber", default="local-subscriber")
+    marketplace_distribution.add_argument("--subscriber-ref")
+    marketplace_distribution.add_argument("--purpose", default="certified template and policy-pack distribution")
+    marketplace_distribution.add_argument("--asset-id", action="append", default=[])
+    marketplace_distribution.add_argument("--distributed-at")
+    marketplace_distribution.add_argument("--distribution-ref")
+    marketplace_distribution.add_argument("--out", default="artifacts/marketplace-distribution.json")
+    marketplace_distribution.add_argument("--key")
+    marketplace_distribution.set_defaults(func=cmd_marketplace_distribution)
+
+    marketplace_distribution_verify = subparsers.add_parser("marketplace-distribution-verify", help="verify a signed marketplace distribution receipt")
+    marketplace_distribution_verify.add_argument("distribution")
+    marketplace_distribution_verify.add_argument("--catalog")
+    marketplace_distribution_verify.add_argument("--root", default=".")
+    marketplace_distribution_verify.add_argument("--key")
+    marketplace_distribution_verify.set_defaults(func=cmd_marketplace_distribution_verify)
+
+    marketplace_distribution_append = subparsers.add_parser("marketplace-distribution-append", help="append a marketplace distribution receipt as chain evidence")
+    marketplace_distribution_append.add_argument("distribution")
+    marketplace_distribution_append.add_argument("--catalog")
+    marketplace_distribution_append.add_argument("--root", default=".")
+    marketplace_distribution_append.add_argument("--out", default="artifacts/marketplace-distribution-entry.json")
+    marketplace_distribution_append.add_argument("--key")
+    _add_state_args(marketplace_distribution_append)
+    marketplace_distribution_append.set_defaults(func=cmd_marketplace_distribution_append)
+    marketplace_author = subparsers.add_parser("marketplace-author-governance", help="write a signed marketplace author governance receipt")
+    marketplace_author.add_argument("catalog")
+    marketplace_author.add_argument("--distribution")
+    marketplace_author.add_argument("--root", default=".")
+    marketplace_author.add_argument("--mode", choices=sorted(MARKETPLACE_AUTHOR_MODES), default="platform-governed")
+    marketplace_author.add_argument("--author-name", required=True)
+    marketplace_author.add_argument("--author-ref", required=True)
+    marketplace_author.add_argument("--author-kind", choices=sorted(MARKETPLACE_AUTHOR_KINDS), default="third-party")
+    marketplace_author.add_argument("--author-organization")
+    marketplace_author.add_argument("--contact-ref", required=True)
+    marketplace_author.add_argument("--identity-provider", required=True)
+    marketplace_author.add_argument("--identity-subject", required=True)
+    marketplace_author.add_argument("--identity-assurance", required=True)
+    marketplace_author.add_argument("--onboarding-status", default="approved")
+    marketplace_author.add_argument("--agreement-ref", required=True)
+    marketplace_author.add_argument("--terms-ref", required=True)
+    marketplace_author.add_argument("--license-ref", required=True)
+    marketplace_author.add_argument("--ip-attestation-ref", required=True)
+    marketplace_author.add_argument("--review-ticket-ref", required=True)
+    marketplace_author.add_argument("--review-policy-ref", required=True)
+    marketplace_author.add_argument("--reviewer-ref", required=True)
+    marketplace_author.add_argument("--reviewer-role", default="marketplace-reviewer")
+    marketplace_author.add_argument("--asset-id", action="append", default=[])
+    marketplace_author.add_argument("--billing-mode", choices=sorted(MARKETPLACE_BILLING_MODES), default="entitlement-recorded")
+    marketplace_author.add_argument("--billing-account-ref")
+    marketplace_author.add_argument("--entitlement-policy-ref")
+    marketplace_author.add_argument("--payout-account-ref")
+    marketplace_author.add_argument("--revenue-share-bps", type=int, default=0)
+    marketplace_author.add_argument("--tax-form-ref")
+    marketplace_author.add_argument("--revocation-policy-ref", required=True)
+    marketplace_author.add_argument("--support-contact-ref", required=True)
+    marketplace_author.add_argument("--security-contact-ref", required=True)
+    marketplace_author.add_argument("--audit-log-ref", required=True)
+    marketplace_author.add_argument("--audit-log-root", required=True)
+    marketplace_author.add_argument("--retention-until", required=True)
+    marketplace_author.add_argument("--evidence-ref", action="append", default=[])
+    marketplace_author.add_argument("--issued-at")
+    marketplace_author.add_argument("--out", default="artifacts/marketplace-author-governance.json")
+    marketplace_author.add_argument("--key")
+    marketplace_author.set_defaults(func=cmd_marketplace_author_governance)
+
+    marketplace_author_verify = subparsers.add_parser("marketplace-author-verify", help="verify a marketplace author governance receipt")
+    marketplace_author_verify.add_argument("receipt")
+    marketplace_author_verify.add_argument("--catalog")
+    marketplace_author_verify.add_argument("--distribution")
+    marketplace_author_verify.add_argument("--root", default=".")
+    marketplace_author_verify.add_argument("--key")
+    marketplace_author_verify.set_defaults(func=cmd_marketplace_author_verify)
+
+    marketplace_author_append = subparsers.add_parser("marketplace-author-append", help="append a marketplace author governance receipt as chain evidence")
+    marketplace_author_append.add_argument("receipt")
+    marketplace_author_append.add_argument("--catalog")
+    marketplace_author_append.add_argument("--distribution")
+    marketplace_author_append.add_argument("--root", default=".")
+    marketplace_author_append.add_argument("--out", default="artifacts/marketplace-author-governance-entry.json")
+    marketplace_author_append.add_argument("--key")
+    _add_state_args(marketplace_author_append)
+    marketplace_author_append.set_defaults(func=cmd_marketplace_author_append)
+
+    marketplace_settlement = subparsers.add_parser("marketplace-settlement", help="write a signed marketplace billing settlement receipt")
+    marketplace_settlement.add_argument("author_governance")
+    marketplace_settlement.add_argument("--catalog")
+    marketplace_settlement.add_argument("--distribution")
+    marketplace_settlement.add_argument("--root", default=".")
+    marketplace_settlement.add_argument("--mode", choices=sorted(MARKETPLACE_SETTLEMENT_MODES), default="recorded-provider-response")
+    marketplace_settlement.add_argument("--settlement-ref")
+    marketplace_settlement.add_argument("--subscriber-ref", required=True)
+    marketplace_settlement.add_argument("--entitlement-check-ref", required=True)
+    marketplace_settlement.add_argument("--entitlement-policy-ref")
+    marketplace_settlement.add_argument("--entitlement-decision", choices=sorted(MARKETPLACE_SETTLEMENT_DECISIONS), default="allowed")
+    marketplace_settlement.add_argument("--entitlement-checked-at", required=True)
+    marketplace_settlement.add_argument("--asset-id", action="append", default=[])
+    marketplace_settlement.add_argument("--period-start", required=True)
+    marketplace_settlement.add_argument("--period-end", required=True)
+    marketplace_settlement.add_argument("--invoice-ref", required=True)
+    marketplace_settlement.add_argument("--gross-amount-usd", type=float, required=True)
+    marketplace_settlement.add_argument("--currency", default="USD")
+    marketplace_settlement.add_argument("--tax-withholding-bps", type=int, default=0)
+    marketplace_settlement.add_argument("--invoice-status", choices=sorted(MARKETPLACE_INVOICE_STATUSES), default="issued")
+    marketplace_settlement.add_argument("--payout-ref", required=True)
+    marketplace_settlement.add_argument("--payout-provider-ref", required=True)
+    marketplace_settlement.add_argument("--payout-account-ref")
+    marketplace_settlement.add_argument("--payout-status", choices=sorted(MARKETPLACE_PAYOUT_STATUSES), default="paid")
+    marketplace_settlement.add_argument("--payout-executed-at", required=True)
+    marketplace_settlement.add_argument("--payout-trace-ref")
+    marketplace_settlement.add_argument("--idempotency-key-ref")
+    marketplace_settlement.add_argument("--tax-profile-ref", required=True)
+    marketplace_settlement.add_argument("--tax-jurisdiction", default="US")
+    marketplace_settlement.add_argument("--tax-form-ref")
+    marketplace_settlement.add_argument("--tax-document-custody-ref", required=True)
+    marketplace_settlement.add_argument("--tax-document-hash", required=True)
+    marketplace_settlement.add_argument("--audit-log-ref", required=True)
+    marketplace_settlement.add_argument("--audit-log-root", required=True)
+    marketplace_settlement.add_argument("--retention-until", required=True)
+    marketplace_settlement.add_argument("--evidence-ref", action="append", default=[])
+    marketplace_settlement.add_argument("--issued-at")
+    marketplace_settlement.add_argument("--out", default="artifacts/marketplace-settlement.json")
+    marketplace_settlement.add_argument("--key")
+    marketplace_settlement.set_defaults(func=cmd_marketplace_settlement)
+
+    marketplace_settlement_verify = subparsers.add_parser("marketplace-settlement-verify", help="verify a marketplace billing settlement receipt")
+    marketplace_settlement_verify.add_argument("receipt")
+    marketplace_settlement_verify.add_argument("--author-governance")
+    marketplace_settlement_verify.add_argument("--catalog")
+    marketplace_settlement_verify.add_argument("--distribution")
+    marketplace_settlement_verify.add_argument("--root", default=".")
+    marketplace_settlement_verify.add_argument("--key")
+    marketplace_settlement_verify.set_defaults(func=cmd_marketplace_settlement_verify)
+
+    marketplace_settlement_append = subparsers.add_parser("marketplace-settlement-append", help="append a marketplace billing settlement receipt as chain evidence")
+    marketplace_settlement_append.add_argument("receipt")
+    marketplace_settlement_append.add_argument("--author-governance")
+    marketplace_settlement_append.add_argument("--catalog")
+    marketplace_settlement_append.add_argument("--distribution")
+    marketplace_settlement_append.add_argument("--root", default=".")
+    marketplace_settlement_append.add_argument("--out", default="artifacts/marketplace-settlement-entry.json")
+    marketplace_settlement_append.add_argument("--key")
+    _add_state_args(marketplace_settlement_append)
+    marketplace_settlement_append.set_defaults(func=cmd_marketplace_settlement_append)
+
+    def _add_trust_network_service_sources(parser: argparse.ArgumentParser, include_attestation: bool = False) -> None:
+        if include_attestation:
+            parser.add_argument("attestation")
+        parser.add_argument("registry")
+        parser.add_argument("--manifest")
+        parser.add_argument("--vendor-identity")
+        parser.add_argument("--identity-attestation")
+        parser.add_argument("--identity-payload")
+        parser.add_argument("--procurement-receipt")
+        parser.add_argument("--procurement-integration")
+        parser.add_argument("--pack", action="append", default=[])
+        parser.add_argument("--registry-status")
+        parser.add_argument("--marketplace-catalog")
+        parser.add_argument("--marketplace-distribution")
+        parser.add_argument("--root", default=".")
+        parser.add_argument("--now")
+        parser.add_argument("--key")
+
+    def _add_trust_network_service_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--mode", choices=sorted(TRUST_NETWORK_SERVICE_MODES), default="hosted-service-attested")
+        parser.add_argument("--environment", default="local")
+        parser.add_argument("--service-kind", choices=sorted(TRUST_NETWORK_SERVICE_KINDS), default="registry-marketplace")
+        parser.add_argument("--service-ref", required=True)
+        parser.add_argument("--service-version", required=True)
+        parser.add_argument("--registry-endpoint", required=True)
+        parser.add_argument("--marketplace-endpoint", required=True)
+        parser.add_argument("--service-image", required=True)
+        parser.add_argument("--service-image-digest", required=True)
+        parser.add_argument("--service-binary-hash", required=True)
+        parser.add_argument("--frontend-bundle-ref", required=True)
+        parser.add_argument("--frontend-bundle-hash", required=True)
+        parser.add_argument("--api-ref", required=True)
+        parser.add_argument("--registry-store-ref", required=True)
+        parser.add_argument("--search-index-ref", required=True)
+        parser.add_argument("--entitlement-store-ref", required=True)
+        parser.add_argument("--subscription-queue-ref", required=True)
+        parser.add_argument("--auth-provider-ref", required=True)
+        parser.add_argument("--vendor-auth-policy-ref", required=True)
+        parser.add_argument("--buyer-auth-policy-ref", required=True)
+        parser.add_argument("--subscriber-auth-policy-ref", required=True)
+        parser.add_argument("--rbac-policy-ref", required=True)
+        parser.add_argument("--identity-federation-policy-ref", required=True)
+        parser.add_argument("--procurement-sync-policy-ref", required=True)
+        parser.add_argument("--entitlement-policy-ref", required=True)
+        parser.add_argument("--catalog-review-policy-ref", required=True)
+        parser.add_argument("--revocation-policy-ref", required=True)
+        parser.add_argument("--cache-invalidation-policy-ref", required=True)
+        parser.add_argument("--tenant-isolation-ref", required=True)
+        parser.add_argument("--rate-limit-policy-ref", required=True)
+        parser.add_argument("--request-signing-ref", required=True)
+        parser.add_argument("--network-policy-ref", required=True)
+        parser.add_argument("--egress-policy-ref", required=True)
+        parser.add_argument("--encryption-key-ref", required=True)
+        parser.add_argument("--replicas-min", type=int, required=True)
+        parser.add_argument("--replicas-max", type=int, required=True)
+        parser.add_argument("--availability-zone", action="append", default=[])
+        parser.add_argument("--registry-audit-log-ref", required=True)
+        parser.add_argument("--registry-audit-log-root", required=True)
+        parser.add_argument("--marketplace-audit-log-ref", required=True)
+        parser.add_argument("--marketplace-audit-log-root", required=True)
+        parser.add_argument("--access-log-ref", required=True)
+        parser.add_argument("--access-log-root", required=True)
+        parser.add_argument("--publication-log-ref", required=True)
+        parser.add_argument("--publication-log-root", required=True)
+        parser.add_argument("--metrics-ref", required=True)
+        parser.add_argument("--alert-policy-ref", required=True)
+        parser.add_argument("--retention-until", required=True)
+        parser.add_argument("--actor-ref", required=True)
+        parser.add_argument("--credential-ref", required=True)
+        parser.add_argument("--marketplace-credential-ref", required=True)
+        parser.add_argument("--evidence-ref", action="append", default=[])
+        parser.add_argument("--attested-at")
+        parser.add_argument("--out", default="artifacts/trust-network-service-attestation.json")
+
+    trust_network_service = subparsers.add_parser("trust-network-service-attestation", help="write a signed hosted trust-network service hardening attestation")
+    _add_trust_network_service_sources(trust_network_service)
+    _add_trust_network_service_fields(trust_network_service)
+    trust_network_service.set_defaults(func=cmd_trust_network_service_attestation)
+
+    trust_network_service_verify = subparsers.add_parser("trust-network-service-verify", help="verify a signed hosted trust-network service hardening attestation")
+    _add_trust_network_service_sources(trust_network_service_verify, include_attestation=True)
+    trust_network_service_verify.set_defaults(func=cmd_trust_network_service_verify)
+
+    trust_network_service_append = subparsers.add_parser("trust-network-service-append", help="append a verified hosted trust-network service attestation as chain evidence")
+    _add_trust_network_service_sources(trust_network_service_append, include_attestation=True)
+    trust_network_service_append.add_argument("--out", default="artifacts/trust-network-service-entry.json")
+    _add_state_args(trust_network_service_append)
+    trust_network_service_append.set_defaults(func=cmd_trust_network_service_append)
+
+    def _add_trust_network_worker_sources(parser: argparse.ArgumentParser, include_receipt: bool = False) -> None:
+        if include_receipt:
+            parser.add_argument("receipt")
+        parser.add_argument("--service-attestation", required=True)
+        _add_trust_network_service_sources(parser)
+        parser.add_argument("--marketplace-author-governance")
+        parser.add_argument("--marketplace-settlement")
+
+    def _add_trust_network_worker_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--mode", choices=sorted(TRUST_NETWORK_WORKER_MODES), default="scheduled-worker")
+        parser.add_argument("--environment", default="local")
+        parser.add_argument("--worker-ref", required=True)
+        parser.add_argument("--run-ref", required=True)
+        parser.add_argument("--operation-kind", choices=sorted(TRUST_NETWORK_WORKER_OPERATION_KINDS), required=True)
+        parser.add_argument("--actor-ref", required=True)
+        parser.add_argument("--schedule-ref", required=True)
+        parser.add_argument("--cadence-seconds", type=int, required=True)
+        parser.add_argument("--lease-ref", required=True)
+        parser.add_argument("--checkpoint-ref", required=True)
+        parser.add_argument("--checkpoint-hash")
+        parser.add_argument("--previous-cursor-ref")
+        parser.add_argument("--next-cursor-ref")
+        parser.add_argument("--attempt", type=int, default=1)
+        parser.add_argument("--max-attempts", type=int, default=3)
+        parser.add_argument("--queue-ref", required=True)
+        parser.add_argument("--queue-message-ref")
+        parser.add_argument("--destination-ref", required=True)
+        parser.add_argument("--publication-log-ref", required=True)
+        parser.add_argument("--publication-log-root", required=True)
+        parser.add_argument("--cache-invalidation-ref")
+        parser.add_argument("--external-callback-ref")
+        parser.add_argument("--provider-invoice-log-ref")
+        parser.add_argument("--provider-invoice-log-hash")
+        parser.add_argument("--provider-payout-log-ref")
+        parser.add_argument("--provider-payout-log-hash")
+        parser.add_argument("--provider-tax-custody-ref")
+        parser.add_argument("--provider-tax-document-hash")
+        parser.add_argument("--request-hash")
+        parser.add_argument("--response-status", type=int)
+        parser.add_argument("--response-hash")
+        parser.add_argument("--metrics-ref", required=True)
+        parser.add_argument("--audit-log-ref", required=True)
+        parser.add_argument("--audit-log-root", required=True)
+        parser.add_argument("--credential-ref", required=True)
+        parser.add_argument("--evidence-ref", action="append", default=[])
+        parser.add_argument("--started-at", required=True)
+        parser.add_argument("--completed-at")
+        parser.add_argument("--next-run-at")
+        parser.add_argument("--error-ref")
+        parser.add_argument("--out", default="artifacts/trust-network-worker.json")
+
+    trust_network_worker = subparsers.add_parser("trust-network-worker", help="write a signed trust-network worker operation receipt")
+    _add_trust_network_worker_sources(trust_network_worker)
+    _add_trust_network_worker_fields(trust_network_worker)
+    trust_network_worker.set_defaults(func=cmd_trust_network_worker)
+
+    trust_network_worker_verify = subparsers.add_parser("trust-network-worker-verify", help="verify a signed trust-network worker operation receipt")
+    _add_trust_network_worker_sources(trust_network_worker_verify, include_receipt=True)
+    trust_network_worker_verify.set_defaults(func=cmd_trust_network_worker_verify)
+
+    trust_network_worker_append = subparsers.add_parser("trust-network-worker-append", help="append a trust-network worker operation receipt as chain evidence")
+    _add_trust_network_worker_sources(trust_network_worker_append, include_receipt=True)
+    trust_network_worker_append.add_argument("--out", default="artifacts/trust-network-worker-entry.json")
+    _add_state_args(trust_network_worker_append)
+    trust_network_worker_append.set_defaults(func=cmd_trust_network_worker_append)
+
+    serve_cmd = subparsers.add_parser("serve", help="run the local TrustAI ingestion/verification API")
+    serve_cmd.add_argument("--host", default="127.0.0.1")
+    serve_cmd.add_argument("--port", type=int, default=8080)
+    serve_cmd.add_argument("--control-db", default=".trustai/server/control-plane.sqlite")
+    serve_cmd.add_argument("--approval-request-store", default=".trustai/server/approval-requests.json")
+    serve_cmd.add_argument("--provider-webhook-store", default=".trustai/server/provider-webhooks.json")
+    serve_cmd.add_argument("--insurer-token")
+    serve_cmd.add_argument("--slack-signing-secret", help="Slack signing secret for callback verification; supports env:VAR")
+    serve_cmd.add_argument("--slack-replay-window-seconds", type=int, default=300)
+    serve_cmd.add_argument("--github-webhook-secret", help="GitHub webhook secret for /v0/provider-webhooks/github; supports env:VAR")
+    serve_cmd.add_argument("--gitlab-webhook-secret", help="GitLab webhook secret for /v0/provider-webhooks/gitlab; supports env:VAR")
+    serve_cmd.add_argument("--provider-lifecycle-operation-token", help="Bearer token for /v0/provider-lifecycle-operations; supports env:VAR")
+    _add_state_args(serve_cmd)
+    serve_cmd.set_defaults(func=cmd_serve)
+
+    demo = subparsers.add_parser("demo", help="run the bundled aitrade proof-pack flow")
+    demo.add_argument("--state", default=".trustai/demo/evidence-chain.json")
+    demo.add_argument("--tenant", default="aitrade-local")
+    demo.add_argument("--out", default="artifacts/aitrade-proof-pack.json")
+    demo.add_argument("--pdf", default="artifacts/aitrade-proof-pack.pdf")
+    demo.add_argument("--reexecution-out", default="artifacts/reexecution-report.json")
+    demo.add_argument("--reexecution-markdown", default="artifacts/reexecution-report.md")
+    demo.add_argument("--reexecution-policy", default="examples/aitrade/reexecution-policy.json")
+    demo.add_argument("--reexecution-runner-plan", default="examples/aitrade/reexecution-runner-plan.json")
+    demo.add_argument("--reexecution-runner-out", default="artifacts/reexecution-runner-evidence.json")
+    demo.add_argument("--clean", action="store_true", default=True)
+    demo.set_defaults(func=cmd_demo)
+
+    tamper = subparsers.add_parser("tamper-test", help="prove single-entry tamper detection")
+    tamper.add_argument("--entries", type=int, default=1000)
+    tamper.add_argument("--key")
+    tamper.set_defaults(func=cmd_tamper_test)
+
+    tamper_stress = subparsers.add_parser("tamper-stress-report", help="write a signed large-log tamper stress report")
+    tamper_stress.add_argument("--entries", type=int, default=1000000)
+    tamper_stress.add_argument("--tenant", default="tamper-stress-local")
+    tamper_stress.add_argument("--sample-index", type=int, action="append")
+    tamper_stress.add_argument("--tamper-index", type=int)
+    tamper_stress.add_argument("--timestamp", default="2026-07-16T00:00:00Z")
+    tamper_stress.add_argument("--key")
+    tamper_stress.add_argument("--out", default="artifacts/tamper-stress-report.json")
+    tamper_stress.set_defaults(func=cmd_tamper_stress_report)
+
+    tamper_stress_verify = subparsers.add_parser("tamper-stress-verify", help="verify a signed tamper stress report")
+    tamper_stress_verify.add_argument("report")
+    tamper_stress_verify.add_argument("--key")
+    tamper_stress_verify.add_argument("--deep", action="store_true")
+    tamper_stress_verify.set_defaults(func=cmd_tamper_stress_verify)
+
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    return args.func(args)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

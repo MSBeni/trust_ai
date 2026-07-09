@@ -1,0 +1,15 @@
+{
+  "action_id": "shadow-order-20260703-001",
+  "timestamp": "2026-07-03T12:00:12Z",
+  "risk_class": "trading-prod-write",
+  "mode": "shadow",
+  "symbol": "BTCUSDT",
+  "notional_usd": 7500,
+  "daily_order_count": 12,
+  "requires_human_approval": true,
+  "approval": {
+    "role": "trading_ops",
+    "approver": "trading-ops@example.com",
+    "approved_at": "2026-07-03T12:00:09Z"
+  }
+}

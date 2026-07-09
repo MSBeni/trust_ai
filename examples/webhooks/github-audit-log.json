@@ -1,0 +1,16 @@
+{
+  "events": [
+    {
+      "actor": "github-actions",
+      "delivery_id": "delivery-123",
+      "event": "check_suite",
+      "occurred_at": "2026-07-08T02:00:01Z",
+      "payload_sha256": "647e4cf2cef00a3d98232f20cbacabd7e092cf991a4311104fbf0354fe4d1bb3",
+      "provider": "github",
+      "repository": "volelabs/trust_ai"
+    }
+  ],
+  "exported_at": "2026-07-08T02:05:00Z",
+  "provider": "github",
+  "schema": "github.audit-log-export/2026-07"
+}

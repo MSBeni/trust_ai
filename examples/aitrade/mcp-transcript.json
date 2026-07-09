@@ -1,0 +1,27 @@
+{
+  "tool_calls": [
+    {
+      "session_id": "mcp-session-20260703",
+      "request_id": "tool-call-001",
+      "timestamp": "2026-07-03T12:00:11Z",
+      "tool_name": "place_shadow_order",
+      "contract_hash": "22a3727b124ce6664031037939cf391ce724158d681db3a55e9a0f0c51bcc7a2",
+      "agent": {
+        "name": "aitrade-risk-agent",
+        "version": "sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234",
+        "risk_class": "trading-prod-write"
+      },
+      "risk_class": "trading-prod-write",
+      "request": {
+        "symbol": "BTCUSDT",
+        "side": "buy",
+        "notional_usd": 7500,
+        "mode": "shadow"
+      },
+      "response": {
+        "status": "accepted",
+        "order_id": "shadow-order-20260703-001"
+      }
+    }
+  ]
+}

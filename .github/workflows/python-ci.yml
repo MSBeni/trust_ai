@@ -1,0 +1,51 @@
+﻿name: Python CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Demo proof-pack smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install TrustAI package
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+
+      - name: Compile source and tests
+        run: python -m compileall -q src tests
+
+      - name: Generate bundled aitrade proof pack
+        run: python -m trustai demo
+
+      - name: Verify bundled proof pack offline
+        run: python -m trustai verify artifacts/aitrade-proof-pack.json
+
+      - name: Run clean-checkout smoke tests
+        run: >
+          python -m unittest -v
+          tests.test_proofpack_flow
+          tests.test_ingest_runtime
+          tests.test_reexecution
+          tests.test_verifier_release
+          tests.test_verifier_distribution
+          tests.test_go_verifier_source
+          tests.test_go_verifier_build
+          tests.test_go_verifier_release_workflow
+          tests.test_repository_ci
+          tests.test_standards

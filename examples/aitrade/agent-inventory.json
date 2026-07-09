@@ -1,0 +1,23 @@
+{
+  "source": "manual-design-partner-inventory",
+  "observed_at": "2026-07-03T11:55:00Z",
+  "agents": [
+    {
+      "name": "aitrade-risk-agent",
+      "version": "sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234",
+      "owner": "trading-platform",
+      "risk_class": "trading-prod-write",
+      "environment": "shadow",
+      "governed": true,
+      "contract_id": "aitrade-btcusdt-canary"
+    },
+    {
+      "name": "aitrade-news-summarizer",
+      "version": "sha256:111122223333444455556666777788889999aaaabbbbccccddddeeeeffff0000",
+      "owner": "research",
+      "risk_class": "research-read-only",
+      "environment": "dev",
+      "governed": false
+    }
+  ]
+}

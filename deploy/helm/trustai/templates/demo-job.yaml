@@ -1,0 +1,40 @@
+{{- if .Values.demo.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: trustai-demo
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: trustai
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: trustai-config
+          env:
+            - name: TRUSTAI_SIGNING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.signingKeySecretName }}
+                  key: signing-key
+          args:
+            - demo
+            - --tenant
+            - "{{ .Values.tenantId }}"
+            - --state
+            - "{{ .Values.demo.statePath }}"
+            - --out
+            - "{{ .Values.demo.outputPath }}"
+            - --pdf
+            - "{{ .Values.demo.pdfPath }}"
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.storage.mountPath }}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: trustai-data
+{{- end }}

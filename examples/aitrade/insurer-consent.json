@@ -1,0 +1,19 @@
+{
+  "consent_id": "aitrade-underwriting-consent-20260704",
+  "granted_to": {
+    "organization": "Example AI Liability Underwriter",
+    "contact": "underwriting@example-insurer.test"
+  },
+  "scope": "proof-pack-risk-telemetry",
+  "granted_at": "2026-07-04T00:00:00Z",
+  "expires_at": "2026-12-31T23:59:59Z",
+  "contract_ids": [
+    "aitrade-btcusdt-canary"
+  ],
+  "pack_ids": [],
+  "terms": {
+    "purpose": "AI liability underwriting and renewal pricing",
+    "redistribution": "not_allowed",
+    "retention_days": 365
+  }
+}

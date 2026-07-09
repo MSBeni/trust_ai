@@ -1,0 +1,73 @@
+# Framework Adapters v0.1
+
+TrustAI adapters convert framework-native agent traces into the same
+`otel_genai.event.ingested` evidence entries used by file ingest, OTLP ingest,
+the Python SDK, and the TypeScript SDK.
+
+The adapters are dependency-free reference mappers. They do not import or
+orchestrate agent frameworks; they accept JSON traces exported by those
+frameworks and normalize them for evidence capture.
+
+## Supported Local Adapters
+
+- `langgraph`
+- `openai_agents` or `openai`
+- `claude_agent` or `claude`
+- `crewai`
+- `bedrock`
+- `vertex`
+
+## Input Envelope
+
+Each trace must include TrustAI metadata:
+
+```json
+{
+  "framework": "langgraph",
+  "trace_id": "lg-trace-001",
+  "contract_hash": "22a3727b124ce6664031037939cf391ce724158d681db3a55e9a0f0c51bcc7a2",
+  "agent": {
+    "name": "aitrade-risk-agent",
+    "version": "sha256:...",
+    "risk_class": "trading-prod-write"
+  },
+  "nodes": []
+}
+```
+
+A file may also contain `{ "traces": [...] }` to ingest multiple framework
+traces at once.
+
+## Output Events
+
+Adapters emit normalized events with:
+
+- `schema_url`: `trustai.framework-adapter/0.1`
+- `event_name`: usually `gen_ai.tool.call`, `gen_ai.agent.decision`,
+  `gen_ai.agent.message`, `gen_ai.agent.node`, `gen_ai.agent.task`, or
+  `gen_ai.agent.invocation`
+- `attributes.trustai.adapter.framework`
+- `attributes.trustai.adapter.kind`
+- `attributes.trustai.adapter.payload_hash`
+
+Tool calls preserve `tool.name`, `tool.arguments`, `tool.result`, and
+`tool.status` when present. Agent steps preserve hashes of framework input and
+output payloads instead of requiring raw payloads in downstream proof checks.
+
+## CLI
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m trustai framework-ingest examples/aitrade/framework-traces.json --state .trustai/framework-demo/evidence-chain.json --tenant framework-local
+python -m trustai keyring-init --out .trustai/framework-demo/keyring.local.json --tenant framework-local
+python -m trustai chain-verify --state .trustai/framework-demo/evidence-chain.json --tenant framework-local --keyring .trustai/framework-demo/keyring.local.json
+```
+
+The bundled fixture covers LangGraph, OpenAI Agents, Claude Agent, CrewAI,
+Bedrock, and Vertex-style traces.
+
+## Production Notes
+
+The local adapters are intentionally thin. Production integrations should add
+native framework hooks, version-specific compatibility tests, backpressure and
+retry behavior, and deployment guidance for each framework runtime.

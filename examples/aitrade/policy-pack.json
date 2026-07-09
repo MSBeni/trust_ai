@@ -1,0 +1,40 @@
+{
+  "spec_version": "trustai.policy-pack/0.1",
+  "id": "trading-runtime-policy-v0",
+  "version": "0.1.0",
+  "description": "Runtime authority policy for trading agents touching production-like systems.",
+  "risk_class": "trading-prod-write",
+  "proof_decay": {
+    "max_gate_age_hours": 720,
+    "max_soak_age_hours": 168,
+    "max_runtime_attestation_age_hours": 168,
+    "max_shadow_replay_age_hours": 168
+  },
+  "rules": [
+    {
+      "id": "require-trading-ops-approval-for-large-notional",
+      "description": "Large notional trading actions require trading operations approval.",
+      "effect": "require_approval",
+      "approval_role": "trading_ops",
+      "conditions": [
+        {
+          "field": "action.notional_usd",
+          "operator": ">",
+          "value": 5000
+        }
+      ]
+    },
+    {
+      "id": "deny-non-shadow-before-production-promotion",
+      "description": "The reference policy only allows shadow-mode execution in the demo environment.",
+      "effect": "deny",
+      "conditions": [
+        {
+          "field": "action.mode",
+          "operator": "!=",
+          "value": "shadow"
+        }
+      ]
+    }
+  ]
+}

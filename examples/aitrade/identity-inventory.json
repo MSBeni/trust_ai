@@ -1,0 +1,48 @@
+{
+  "source": "identity-provider-demo-export",
+  "observed_at": "2026-07-03T11:57:00Z",
+  "records": [
+    {
+      "provider": "okta",
+      "id": "okta-agent-aitrade-risk",
+      "profile": {
+        "displayName": "aitrade-risk-agent",
+        "agentVersion": "sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234",
+        "owner": "trading-platform",
+        "riskClass": "trading-prod-write",
+        "environment": "prod",
+        "contractId": "aitrade-btcusdt-canary",
+        "trustaiGoverned": true
+      }
+    },
+    {
+      "provider": "entra",
+      "id": "9b7d4c8e-6e10-4f01-a777-000000000111",
+      "appId": "entra-app-aitrade-research",
+      "displayName": "aitrade-news-summarizer",
+      "owners": [
+        {
+          "displayName": "research"
+        }
+      ],
+      "tags": [
+        "version:sha256:111122223333444455556666777788889999aaaabbbbccccddddeeeeffff0000",
+        "risk_class:research-read-only",
+        "environment:dev",
+        "governed:false"
+      ]
+    },
+    {
+      "provider": "servicenow",
+      "sys_id": "sn-agent-claims-001",
+      "name": "aitrade-claims-triage-agent",
+      "version": "sha256:22223333444455556666777788889999aaaabbbbccccddddeeeeffff00001111",
+      "owned_by": {
+        "name": "claims-platform"
+      },
+      "risk_class": "claims-prod-write",
+      "environment": "prod",
+      "governed": false
+    }
+  ]
+}

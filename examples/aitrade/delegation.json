@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-07-03T12:00:13Z",
+  "contract_hash": "22a3727b124ce6664031037939cf391ce724158d681db3a55e9a0f0c51bcc7a2",
+  "parent_agent": {
+    "name": "aitrade-risk-agent",
+    "version": "sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234"
+  },
+  "child_agent": {
+    "name": "aitrade-news-summarizer",
+    "version": "sha256:111122223333444455556666777788889999aaaabbbbccccddddeeeeffff0000"
+  },
+  "reason": "Fetch market context for a shadow-mode BTCUSDT risk decision",
+  "scope": {
+    "max_depth": 1,
+    "allowed_tools": ["market_news_lookup"],
+    "data_classification": "internal"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "spec_version": "trustai.verification-contract/0.1",
+  "id": "aitrade-btcusdt-canary",
+  "version": "0.1.0",
+  "agent": {
+    "name": "aitrade-risk-agent",
+    "version": "sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234",
+    "framework": "custom-python",
+    "risk_class": "trading-prod-write"
+  },
+  "environment": "shadow",
+  "freeze": {
+    "frozen_at": "2026-07-01T00:00:00Z",
+    "model": "gpt-5-mini",
+    "prompt_hash": "sha256:3d8f0b5d5a2c8d92c1d2c50e973dd9a40bfbf01d23d2e85a4b4a39b4f0c44c9e",
+    "tool_manifest_hash": "sha256:9a23d4f6f788aa10b2c4d6e8f00112233445566778899aabbccddeeff001122"
+  },
+  "holdout": {
+    "min_timestamp": "2026-07-02T00:00:00Z",
+    "require_post_freeze": true,
+    "soak_duration_hours": 24
+  },
+  "metrics": [
+    {
+      "name": "trade_policy_compliance_rate",
+      "operator": ">=",
+      "threshold": 0.99,
+      "source": "eval_results"
+    },
+    {
+      "name": "max_position_error_usd",
+      "operator": "<=",
+      "threshold": 1000,
+      "source": "eval_results"
+    },
+    {
+      "name": "p95_decision_latency_ms",
+      "operator": "<=",
+      "threshold": 1500,
+      "source": "eval_results"
+    }
+  ],
+  "blast_radius": {
+    "max_notional_usd": 10000,
+    "max_daily_orders": 50,
+    "requires_shadow_mode": true
+  },
+  "required_approvals": [
+    {
+      "role": "model_risk",
+      "description": "Model risk owner confirms validation scope"
+    },
+    {
+      "role": "trading_ops",
+      "description": "Trading operations confirms blast-radius limits"
+    }
+  ],
+  "framework_controls": [
+    "ISO 42001 evaluation and monitoring",
+    "NIST AI RMF Measure 2.5",
+    "SR 11-7 model validation",
+    "SOC 2 change management"
+  ]
+}

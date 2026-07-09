@@ -1,0 +1,38 @@
+{
+  "events": [
+    {
+      "trace_id": "4f0c98cf84fa44df9b8ad8f354d2f0a1",
+      "span_id": "7b1c4d2e9f001122",
+      "timestamp": "2026-07-03T12:00:10Z",
+      "event_name": "gen_ai.agent.decision",
+      "contract_hash": "22a3727b124ce6664031037939cf391ce724158d681db3a55e9a0f0c51bcc7a2",
+      "agent": {
+        "name": "aitrade-risk-agent",
+        "version": "sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234"
+      },
+      "risk_class": "trading-prod-write",
+      "attributes": {
+        "gen_ai.request.model": "gpt-5-mini",
+        "decision": "allow_shadow_order",
+        "symbol": "BTCUSDT"
+      }
+    },
+    {
+      "trace_id": "4f0c98cf84fa44df9b8ad8f354d2f0a1",
+      "span_id": "8c2d5e3f00112233",
+      "timestamp": "2026-07-03T12:00:11Z",
+      "event_name": "gen_ai.tool.call",
+      "contract_hash": "22a3727b124ce6664031037939cf391ce724158d681db3a55e9a0f0c51bcc7a2",
+      "agent": {
+        "name": "aitrade-risk-agent",
+        "version": "sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234"
+      },
+      "risk_class": "trading-prod-write",
+      "attributes": {
+        "tool.name": "place_shadow_order",
+        "tool.mode": "shadow",
+        "notional_usd": 7500
+      }
+    }
+  ]
+}

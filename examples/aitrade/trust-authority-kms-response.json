@@ -1,0 +1,5 @@
+{
+  "status": "enforced",
+  "key_ref": "kms:example/trustai/evidence-signing",
+  "timestamp_policy": "policy:tsa/trustai-timestamping-v0.1"
+}

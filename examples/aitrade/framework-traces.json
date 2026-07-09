@@ -1,0 +1,187 @@
+{
+  "traces": [
+    {
+      "framework": "langgraph",
+      "trace_id": "lg-trace-001",
+      "contract_hash": "22a3727b124ce6664031037939cf391ce724158d681db3a55e9a0f0c51bcc7a2",
+      "agent": {
+        "name": "aitrade-risk-agent",
+        "version": "sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234",
+        "risk_class": "trading-prod-write"
+      },
+      "nodes": [
+        {
+          "node": "risk_policy",
+          "span_id": "lg-risk-001",
+          "timestamp": "2026-07-03T12:00:10Z",
+          "decision": "allow_shadow_order",
+          "input": {
+            "symbol": "BTCUSDT"
+          },
+          "output": {
+            "decision": "allow_shadow_order"
+          }
+        },
+        {
+          "node": "place_shadow_order",
+          "span_id": "lg-tool-001",
+          "timestamp": "2026-07-03T12:00:11Z",
+          "tool_call": {
+            "name": "place_shadow_order",
+            "arguments": {
+              "symbol": "BTCUSDT",
+              "notional_usd": 7500
+            },
+            "status": "ok"
+          }
+        }
+      ]
+    },
+    {
+      "framework": "openai_agents",
+      "trace_id": "openai-trace-001",
+      "contract_hash": "22a3727b124ce6664031037939cf391ce724158d681db3a55e9a0f0c51bcc7a2",
+      "agent": {
+        "name": "aitrade-risk-agent",
+        "version": "sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234",
+        "risk_class": "trading-prod-write"
+      },
+      "items": [
+        {
+          "type": "message",
+          "id": "msg-001",
+          "timestamp": "2026-07-03T12:00:12Z",
+          "role": "assistant",
+          "content": "Shadow order is within policy."
+        },
+        {
+          "type": "function_call",
+          "id": "call-001",
+          "timestamp": "2026-07-03T12:00:13Z",
+          "name": "place_shadow_order",
+          "arguments": {
+            "symbol": "BTCUSDT",
+            "notional_usd": 7500
+          }
+        }
+      ]
+    },
+    {
+      "framework": "claude_agent",
+      "trace_id": "claude-trace-001",
+      "contract_hash": "22a3727b124ce6664031037939cf391ce724158d681db3a55e9a0f0c51bcc7a2",
+      "agent": {
+        "name": "aitrade-risk-agent",
+        "version": "sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234",
+        "risk_class": "trading-prod-write"
+      },
+      "messages": [
+        {
+          "id": "claude-msg-001",
+          "timestamp": "2026-07-03T12:00:14Z",
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "I will check the order against limits."
+            }
+          ]
+        },
+        {
+          "id": "claude-msg-002",
+          "timestamp": "2026-07-03T12:00:15Z",
+          "role": "assistant",
+          "content": [
+            {
+              "type": "tool_use",
+              "id": "toolu_001",
+              "name": "risk_limit_check",
+              "input": {
+                "notional_usd": 7500
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "framework": "crewai",
+      "trace_id": "crew-trace-001",
+      "contract_hash": "22a3727b124ce6664031037939cf391ce724158d681db3a55e9a0f0c51bcc7a2",
+      "agent": {
+        "name": "aitrade-risk-agent",
+        "version": "sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234",
+        "risk_class": "trading-prod-write"
+      },
+      "tasks": [
+        {
+          "task_id": "crew-task-001",
+          "timestamp": "2026-07-03T12:00:16Z",
+          "task": "Validate shadow order",
+          "tool_calls": [
+            {
+              "name": "risk_limit_check",
+              "arguments": {
+                "notional_usd": 7500
+              },
+              "status": "ok"
+            }
+          ],
+          "output": "allow_shadow_order"
+        }
+      ]
+    },
+    {
+      "framework": "bedrock",
+      "trace_id": "bedrock-trace-001",
+      "contract_hash": "22a3727b124ce6664031037939cf391ce724158d681db3a55e9a0f0c51bcc7a2",
+      "agent": {
+        "name": "aitrade-risk-agent",
+        "version": "sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234",
+        "risk_class": "trading-prod-write"
+      },
+      "invocations": [
+        {
+          "id": "bedrock-tool-001",
+          "type": "tool_use",
+          "timestamp": "2026-07-03T12:00:17Z",
+          "name": "place_shadow_order",
+          "input": {
+            "mode": "shadow"
+          }
+        },
+        {
+          "id": "bedrock-decision-001",
+          "timestamp": "2026-07-03T12:00:18Z",
+          "output": "allow_shadow_order"
+        }
+      ]
+    },
+    {
+      "framework": "vertex",
+      "trace_id": "vertex-trace-001",
+      "contract_hash": "22a3727b124ce6664031037939cf391ce724158d681db3a55e9a0f0c51bcc7a2",
+      "agent": {
+        "name": "aitrade-risk-agent",
+        "version": "sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234",
+        "risk_class": "trading-prod-write"
+      },
+      "function_calls": [
+        {
+          "id": "vertex-call-001",
+          "type": "function_call",
+          "timestamp": "2026-07-03T12:00:19Z",
+          "name": "place_shadow_order",
+          "arguments": {
+            "symbol": "BTCUSDT"
+          }
+        },
+        {
+          "id": "vertex-result-001",
+          "timestamp": "2026-07-03T12:00:20Z",
+          "result": "shadow order accepted"
+        }
+      ]
+    }
+  ]
+}

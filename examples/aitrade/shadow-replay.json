@@ -1,0 +1,53 @@
+{
+  "run_id": "shadow-replay-20260703-btcusdt",
+  "dataset_id": "prod-traffic-holdout-20260702",
+  "description": "Replay live BTCUSDT risk decisions against the frozen candidate agent",
+  "candidate_version": "sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234",
+  "evaluated_at": "2026-07-03T12:30:00Z",
+  "records": [
+    {
+      "id": "traffic-001",
+      "timestamp": "2026-07-02T02:15:00Z",
+      "expected_action": "allow_shadow_order",
+      "candidate_action": "allow_shadow_order",
+      "latency_ms": 720,
+      "position_error_usd": 250,
+      "policy_violation": false
+    },
+    {
+      "id": "traffic-002",
+      "timestamp": "2026-07-02T08:30:00Z",
+      "expected_action": "deny_order",
+      "candidate_action": "deny_order",
+      "latency_ms": 980,
+      "position_error_usd": 0,
+      "policy_violation": false
+    },
+    {
+      "id": "traffic-003",
+      "timestamp": "2026-07-03T05:45:00Z",
+      "expected_action": "allow_shadow_order",
+      "candidate_action": "allow_shadow_order",
+      "latency_ms": 1100,
+      "position_error_usd": 150,
+      "policy_violation": false
+    }
+  ],
+  "approvals": [
+    {
+      "role": "model_risk",
+      "approver": "model-risk@example.com",
+      "approved_at": "2026-07-03T13:00:00Z"
+    },
+    {
+      "role": "trading_ops",
+      "approver": "trading-ops@example.com",
+      "approved_at": "2026-07-03T13:02:00Z"
+    }
+  ],
+  "environment": {
+    "runtime": "python3.12",
+    "runner": "trustai-shadow-replay",
+    "region": "local-dev"
+  }
+}
