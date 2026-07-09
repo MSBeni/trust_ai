@@ -116,6 +116,16 @@ from .framework_runtime_service_authority_provider import (
     verify_framework_runtime_service_authority_provider_receipt,
     write_framework_runtime_service_authority_provider_receipt,
 )
+from .framework_runtime_service_authority_attestation import (
+    FRAMEWORK_RUNTIME_SERVICE_AUTHORITY_ATTESTATION_MODES,
+    append_framework_runtime_service_authority_attestation,
+    build_framework_runtime_service_authority_attestation,
+    load_framework_runtime_service_authority_attestation,
+    load_framework_runtime_service_authority_attestation_evidence,
+    parse_framework_runtime_service_authority_attestation_evidence_arg,
+    verify_framework_runtime_service_authority_attestation,
+    write_framework_runtime_service_authority_attestation,
+)
 from .anchor import append_anchor, write_anchor
 from .anchor_provider import (
     ANCHOR_PROVIDER_MODES,
@@ -3425,6 +3435,186 @@ def cmd_framework_runtime_service_authority_provider_append(args: argparse.Names
         print(f"framework runtime service authority provider entry: {args.out}")
     print(f"framework runtime service authority provider entry id: {entry['entry_id']}")
     print(f"provider receipt id: {receipt['provider_receipt_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def _load_framework_runtime_service_authority_attestation_sources(args: argparse.Namespace, *, require_all: bool) -> dict[str, object]:
+    sources: dict[str, object] = {}
+    if getattr(args, "authority_provider_receipt", None):
+        sources["authority_provider_receipt"] = load_framework_runtime_service_authority_provider_receipt(args.authority_provider_receipt)
+    elif require_all:
+        raise ValueError("framework runtime service authority provider receipt is required")
+    provider_sources = _load_framework_runtime_service_authority_provider_sources(args, require_all=require_all)
+    sources.update(provider_sources)
+    return sources
+
+
+def _framework_runtime_service_authority_attestation_verify_kwargs(sources: dict[str, object]) -> dict[str, object]:
+    return {
+        "authority_provider_receipt": sources.get("authority_provider_receipt"),
+        "authority_provider_export": sources.get("authority_provider_export"),
+        "authority_worker": sources.get("authority_worker"),
+        "authority_dossier": sources.get("authority_dossier"),
+        "service_provider_receipt": sources.get("provider_receipt"),
+        "service_provider_export": sources.get("provider_export"),
+        "service_worker": sources.get("service_worker"),
+        "service_attestation": sources.get("service_attestation"),
+        "storage_receipt": sources.get("storage_receipt"),
+        "storage_export": sources.get("storage_export"),
+        "worker": sources.get("worker"),
+        "runtime_audit": sources.get("runtime_audit"),
+        "audit_export": sources.get("audit_export"),
+        "operation": sources.get("operation"),
+        "trace_payload": sources.get("trace_payload"),
+        "release": sources.get("release"),
+        "matrix": sources.get("matrix"),
+    }
+
+
+def _framework_runtime_service_authority_attestation_evidence_args(args: argparse.Namespace) -> list[dict[str, object]]:
+    evidence: list[dict[str, object]] = []
+    for path in getattr(args, "attestation_evidence_file", []) or []:
+        evidence.extend(load_framework_runtime_service_authority_attestation_evidence(path))
+    for value in getattr(args, "attestation_evidence", []) or []:
+        evidence.append(parse_framework_runtime_service_authority_attestation_evidence_arg(value))
+    return evidence
+
+
+def cmd_framework_runtime_service_authority_attestation(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_framework_runtime_service_authority_attestation_sources(args, require_all=True)
+        attestation = build_framework_runtime_service_authority_attestation(
+            sources["authority_provider_receipt"],
+            authority_provider_export=sources["authority_provider_export"],
+            authority_worker=sources["authority_worker"],
+            authority_dossier=sources["authority_dossier"],
+            service_provider_receipt=sources["provider_receipt"],
+            service_provider_export=sources["provider_export"],
+            service_worker=sources["service_worker"],
+            service_attestation=sources["service_attestation"],
+            storage_receipt=sources["storage_receipt"],
+            storage_export=sources["storage_export"],
+            worker=sources["worker"],
+            runtime_audit=sources["runtime_audit"],
+            audit_export=sources["audit_export"],
+            operation=sources["operation"],
+            trace_payload=sources["trace_payload"],
+            release=sources["release"],
+            matrix=sources["matrix"],
+            root=args.root,
+            mode=args.mode,
+            environment=args.environment,
+            issuer=args.issuer,
+            subject_ref=args.subject_ref,
+            attester_ref=args.attester_ref,
+            statement_ref=args.statement_ref,
+            credential_ref=args.credential_ref,
+            attestation_evidence=_framework_runtime_service_authority_attestation_evidence_args(args),
+            issued_at=args.issued_at,
+            expires_at=args.expires_at,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            key=args.key,
+        )
+        result = verify_framework_runtime_service_authority_attestation(
+            attestation,
+            **_framework_runtime_service_authority_attestation_verify_kwargs(sources),
+            root=args.root,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime service authority attestation generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("framework runtime service authority attestation generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_framework_runtime_service_authority_attestation(args.out, attestation)
+    print(f"framework runtime service authority attestation: {args.out}")
+    print(f"attestation id: {attestation['attestation_id']}")
+    print(f"authority provider receipt id: {attestation['authority_provider_binding']['provider_receipt_id']}")
+    print(f"authority dossier id: {attestation['authority_dossier_binding']['dossier_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_framework_runtime_service_authority_attestation_verify(args: argparse.Namespace) -> int:
+    try:
+        attestation = load_framework_runtime_service_authority_attestation(args.attestation)
+        sources = _load_framework_runtime_service_authority_attestation_sources(args, require_all=False)
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime service authority attestation verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_framework_runtime_service_authority_attestation(
+        attestation,
+        **_framework_runtime_service_authority_attestation_verify_kwargs(sources),
+        root=args.root,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified framework runtime service authority attestation: {args.attestation}")
+        print(f"attestation id: {attestation['attestation_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"framework runtime service authority attestation verification failed: {args.attestation}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_framework_runtime_service_authority_attestation_append(args: argparse.Namespace) -> int:
+    try:
+        attestation = load_framework_runtime_service_authority_attestation(args.attestation)
+        sources = _load_framework_runtime_service_authority_attestation_sources(args, require_all=True)
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime service authority attestation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_framework_runtime_service_authority_attestation(
+            chain,
+            attestation,
+            authority_provider_receipt=sources["authority_provider_receipt"],
+            authority_provider_export=sources["authority_provider_export"],
+            authority_worker=sources["authority_worker"],
+            authority_dossier=sources["authority_dossier"],
+            service_provider_receipt=sources["provider_receipt"],
+            service_provider_export=sources["provider_export"],
+            service_worker=sources["service_worker"],
+            service_attestation=sources["service_attestation"],
+            storage_receipt=sources["storage_receipt"],
+            storage_export=sources["storage_export"],
+            worker=sources["worker"],
+            runtime_audit=sources["runtime_audit"],
+            audit_export=sources["audit_export"],
+            operation=sources["operation"],
+            trace_payload=sources["trace_payload"],
+            release=sources["release"],
+            matrix=sources["matrix"],
+            root=args.root,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"framework runtime service authority attestation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"framework runtime service authority attestation entry: {args.out}")
+    print(f"framework runtime service authority attestation entry id: {entry['entry_id']}")
+    print(f"attestation id: {attestation['attestation_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
@@ -13894,6 +14084,61 @@ def build_parser() -> argparse.ArgumentParser:
     framework_runtime_service_authority_provider_append.add_argument("--key")
     _add_state_args(framework_runtime_service_authority_provider_append)
     framework_runtime_service_authority_provider_append.set_defaults(func=cmd_framework_runtime_service_authority_provider_append)
+    def _add_framework_runtime_service_authority_attestation_source_args(parser: argparse.ArgumentParser, *, required: bool) -> None:
+        parser.add_argument("--authority-provider-receipt", required=required)
+        _add_framework_runtime_service_authority_provider_source_args(parser, required=required)
+
+    framework_runtime_service_authority_attestation = subparsers.add_parser(
+        "framework-runtime-service-authority-attestation", help="write a signed framework runtime service authority attestation"
+    )
+    framework_runtime_service_authority_attestation.add_argument("authority_provider_receipt")
+    _add_framework_runtime_service_authority_provider_source_args(framework_runtime_service_authority_attestation, required=True)
+    framework_runtime_service_authority_attestation.add_argument("--root", default=".")
+    framework_runtime_service_authority_attestation.add_argument(
+        "--mode", choices=sorted(FRAMEWORK_RUNTIME_SERVICE_AUTHORITY_ATTESTATION_MODES), default="provider-attestation"
+    )
+    framework_runtime_service_authority_attestation.add_argument("--environment", default="local")
+    framework_runtime_service_authority_attestation.add_argument("--issuer", required=True)
+    framework_runtime_service_authority_attestation.add_argument("--subject-ref", required=True)
+    framework_runtime_service_authority_attestation.add_argument("--attester-ref", required=True)
+    framework_runtime_service_authority_attestation.add_argument("--statement-ref", required=True)
+    framework_runtime_service_authority_attestation.add_argument("--credential-ref", required=True)
+    framework_runtime_service_authority_attestation.add_argument("--attestation-evidence", action="append", default=[])
+    framework_runtime_service_authority_attestation.add_argument("--attestation-evidence-file", action="append", default=[])
+    framework_runtime_service_authority_attestation.add_argument("--issued-at")
+    framework_runtime_service_authority_attestation.add_argument("--expires-at")
+    framework_runtime_service_authority_attestation.add_argument("--require-complete", action="store_true")
+    framework_runtime_service_authority_attestation.add_argument("--require-fresh", action="store_true")
+    framework_runtime_service_authority_attestation.add_argument("--now")
+    framework_runtime_service_authority_attestation.add_argument("--out", default="artifacts/framework-runtime-service-authority-attestation.json")
+    framework_runtime_service_authority_attestation.add_argument("--key")
+    framework_runtime_service_authority_attestation.set_defaults(func=cmd_framework_runtime_service_authority_attestation)
+
+    framework_runtime_service_authority_attestation_verify = subparsers.add_parser(
+        "framework-runtime-service-authority-attestation-verify", help="verify a signed framework runtime service authority attestation"
+    )
+    framework_runtime_service_authority_attestation_verify.add_argument("attestation")
+    _add_framework_runtime_service_authority_attestation_source_args(framework_runtime_service_authority_attestation_verify, required=False)
+    framework_runtime_service_authority_attestation_verify.add_argument("--root", default=".")
+    framework_runtime_service_authority_attestation_verify.add_argument("--require-complete", action="store_true")
+    framework_runtime_service_authority_attestation_verify.add_argument("--require-fresh", action="store_true")
+    framework_runtime_service_authority_attestation_verify.add_argument("--now")
+    framework_runtime_service_authority_attestation_verify.add_argument("--key")
+    framework_runtime_service_authority_attestation_verify.set_defaults(func=cmd_framework_runtime_service_authority_attestation_verify)
+
+    framework_runtime_service_authority_attestation_append = subparsers.add_parser(
+        "framework-runtime-service-authority-attestation-append", help="append a framework runtime service authority attestation as chain evidence"
+    )
+    framework_runtime_service_authority_attestation_append.add_argument("attestation")
+    _add_framework_runtime_service_authority_attestation_source_args(framework_runtime_service_authority_attestation_append, required=True)
+    framework_runtime_service_authority_attestation_append.add_argument("--root", default=".")
+    framework_runtime_service_authority_attestation_append.add_argument("--out", default="artifacts/framework-runtime-service-authority-attestation-entry.json")
+    framework_runtime_service_authority_attestation_append.add_argument("--require-complete", action="store_true")
+    framework_runtime_service_authority_attestation_append.add_argument("--require-fresh", action="store_true")
+    framework_runtime_service_authority_attestation_append.add_argument("--now")
+    framework_runtime_service_authority_attestation_append.add_argument("--key")
+    _add_state_args(framework_runtime_service_authority_attestation_append)
+    framework_runtime_service_authority_attestation_append.set_defaults(func=cmd_framework_runtime_service_authority_attestation_append)
     mcp = subparsers.add_parser("mcp-capture", help="append MCP tool call transcripts to the chain")
     mcp.add_argument("transcript")
     _add_state_args(mcp)
