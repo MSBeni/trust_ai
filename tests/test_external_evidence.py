@@ -1,9 +1,15 @@
 import copy
+import subprocess
+import sys
+import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.chain import EvidenceChain
 from trustai.external_evidence import (
+    EXTERNAL_EVIDENCE_ENTRY_TYPE,
     EXTERNAL_EVIDENCE_SCHEMA,
+    append_external_evidence_manifest,
     build_external_evidence_manifest,
     parse_evidence_arg,
     render_external_evidence_markdown,
@@ -42,6 +48,119 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual("partial", manifest["summary"]["status"])
         self.assertIn("TrustAI External Evidence Manifest", markdown)
         self.assertIn("oss-verifier-and-public-spec", markdown)
+
+    def test_external_evidence_manifest_appends_to_chain(self):
+        audit = build_roadmap_audit(ROOT)
+        manifest = build_external_evidence_manifest(
+            audit,
+            root=ROOT,
+            evidence=[
+                {
+                    "requirement_id": "oss-verifier-and-public-spec",
+                    "authority_kind": "ci-run",
+                    "path": FIXTURE,
+                    "description": "Recorded verifier workflow run export.",
+                }
+            ],
+        )
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="external-evidence-test")
+            entry = append_external_evidence_manifest(chain, manifest, audit, root=ROOT)
+
+            self.assertEqual(EXTERNAL_EVIDENCE_ENTRY_TYPE, entry["entry_type"])
+            self.assertEqual(manifest["manifest_id"], entry["payload"]["manifest_id"])
+            self.assertEqual("partial", entry["payload"]["status"])
+            self.assertEqual(1, entry["payload"]["covered_requirement_count"])
+            self.assertTrue(chain.verify_all().ok)
+
+    def test_external_evidence_append_requires_complete_when_requested(self):
+        audit = build_roadmap_audit(ROOT)
+        manifest = build_external_evidence_manifest(
+            audit,
+            root=ROOT,
+            evidence=[
+                {
+                    "requirement_id": "oss-verifier-and-public-spec",
+                    "authority_kind": "ci-run",
+                    "path": FIXTURE,
+                    "description": "Recorded verifier workflow run export.",
+                }
+            ],
+        )
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="external-evidence-test")
+            with self.assertRaisesRegex(ValueError, "incomplete"):
+                append_external_evidence_manifest(chain, manifest, audit, root=ROOT, require_complete=True)
+
+    def test_cli_external_evidence_append_round_trip(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_path = Path(tmp_dir)
+            audit_path = tmp_path / "roadmap-audit.json"
+            manifest_path = tmp_path / "external-evidence.json"
+            entry_path = tmp_path / "external-evidence-entry.json"
+            chain_path = tmp_path / "chain.json"
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "roadmap-audit",
+                    "--root",
+                    str(ROOT),
+                    "--out",
+                    str(audit_path),
+                    "--markdown",
+                    str(tmp_path / "roadmap-audit.md"),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-manifest",
+                    str(audit_path),
+                    "--root",
+                    str(ROOT),
+                    "--evidence",
+                    f"oss-verifier-and-public-spec,ci-run,{FIXTURE},Recorded Go verifier workflow export",
+                    "--out",
+                    str(manifest_path),
+                    "--markdown",
+                    str(tmp_path / "external-evidence.md"),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-append",
+                    str(manifest_path),
+                    str(audit_path),
+                    "--root",
+                    str(ROOT),
+                    "--state",
+                    str(chain_path),
+                    "--tenant",
+                    "external-evidence-cli",
+                    "--out",
+                    str(entry_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+
+            chain = EvidenceChain.load(chain_path, tenant_id="external-evidence-cli")
+            self.assertEqual(1, len(chain.entries))
+            self.assertEqual(EXTERNAL_EVIDENCE_ENTRY_TYPE, chain.entries[0]["entry_type"])
+            self.assertTrue(chain.verify_all().ok)
 
     def test_complete_external_evidence_manifest_covers_reference_requirements(self):
         audit = build_roadmap_audit(ROOT)

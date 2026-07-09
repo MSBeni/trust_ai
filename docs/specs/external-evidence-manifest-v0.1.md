@@ -46,6 +46,21 @@ Each evidence item contains:
 - Optional `issuer`, `subject`, `source_uri`, `issued_at`, and `expires_at`
   fields.
 
+## Evidence Chain Entry
+
+A verified manifest can be appended to an evidence chain as
+`trustai.external_evidence_manifest.attested`. The chain entry records:
+
+- `manifest_id` and canonical `manifest_hash`.
+- `manifest_ref` and `source_roadmap_audit`.
+- Coverage status, required/covered/missing requirement counts, and evidence
+  count.
+- Covered and missing requirement IDs.
+- Whether complete production evidence was required at append time.
+
+The append operation MUST verify the manifest against the supplied roadmap audit
+before writing the chain entry. If `require_complete` is set and any
+reference-attested requirement is uncovered, append MUST fail.
 ## Verification Rules
 
 A verifier MUST:

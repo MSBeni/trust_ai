@@ -78,6 +78,8 @@ python -m trustai roadmap-audit --out artifacts/roadmap-audit.json --markdown ar
 python -m trustai roadmap-audit-verify artifacts/roadmap-audit.json
 python -m trustai external-evidence-manifest artifacts/roadmap-audit.json --evidence "oss-verifier-and-public-spec,ci-run,examples/aitrade/external-evidence/go-verifier-workflow-run.json,Recorded Go verifier workflow export" --out artifacts/external-evidence-manifest.json --markdown artifacts/external-evidence-manifest.md
 python -m trustai external-evidence-verify artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json
+python -m trustai external-evidence-append artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --state .trustai/external-evidence-demo/evidence-chain.json --tenant external-evidence-local --out artifacts/external-evidence-entry.json
+python -m trustai chain-verify --state .trustai/external-evidence-demo/evidence-chain.json --tenant external-evidence-local
 python -m unittest tests.test_go_verifier_source
 python -m trustai verifier-conformance artifacts/aitrade-proof-pack.json --out artifacts/verifier-conformance.json --markdown artifacts/verifier-conformance.md
 python -m trustai verifier-conformance-verify artifacts/verifier-conformance.json

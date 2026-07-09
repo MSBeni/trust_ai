@@ -594,6 +594,7 @@ from .roadmap_audit import (
     write_roadmap_audit_markdown,
 )
 from .external_evidence import (
+    append_external_evidence_manifest,
     build_external_evidence_manifest,
     load_external_evidence_manifest,
     parse_evidence_arg,
@@ -6758,6 +6759,32 @@ def cmd_external_evidence_verify(args: argparse.Namespace) -> int:
     return 1
 
 
+
+def cmd_external_evidence_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    roadmap_audit = load_roadmap_audit(args.roadmap_audit)
+    manifest = load_external_evidence_manifest(args.manifest)
+    try:
+        entry = append_external_evidence_manifest(
+            chain,
+            manifest,
+            roadmap_audit,
+            root=args.root,
+            require_complete=args.require_complete,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"external evidence append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"external evidence entry: {args.out}")
+    print(f"external evidence entry id: {entry['entry_id']}")
+    print(f"manifest id: {manifest['manifest_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
 def cmd_standards_export(args: argparse.Namespace) -> int:
     package = build_standards_submission(args.root, target_body=args.target_body, status=args.status)
     write_standards_submission(args.out, package)
@@ -12906,6 +12933,15 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_verify.add_argument("--require-complete", action="store_true")
     external_evidence_verify.set_defaults(func=cmd_external_evidence_verify)
 
+    external_evidence_append = subparsers.add_parser("external-evidence-append", help="append a verified external-evidence manifest to an evidence chain")
+    external_evidence_append.add_argument("manifest")
+    external_evidence_append.add_argument("roadmap_audit")
+    external_evidence_append.add_argument("--root", default=".")
+    external_evidence_append.add_argument("--require-complete", action="store_true")
+    external_evidence_append.add_argument("--out", default="artifacts/external-evidence-entry.json")
+    external_evidence_append.add_argument("--key")
+    _add_state_args(external_evidence_append)
+    external_evidence_append.set_defaults(func=cmd_external_evidence_append)
     standards_export = subparsers.add_parser("standards-export", help="write a standards submission package for public specs")
     standards_export.add_argument("--root", default=".")
     standards_export.add_argument("--out", default="artifacts/standards-submission.json")

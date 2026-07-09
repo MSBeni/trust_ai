@@ -7,9 +7,11 @@ from pathlib import Path
 from typing import Any
 
 from .canonical import content_hash, parse_rfc3339, utc_now, without_keys
+from .chain import EvidenceChain
 from .roadmap_audit import STATUS_REFERENCE_ATTESTED, verify_roadmap_audit
 
 EXTERNAL_EVIDENCE_SCHEMA = "trustai.external-evidence-manifest/0.1"
+EXTERNAL_EVIDENCE_ENTRY_TYPE = "trustai.external_evidence_manifest.attested"
 
 AUTHORITY_KINDS = {
     "ci-run",
@@ -154,6 +156,42 @@ def verify_external_evidence_manifest(
         required_count=len(required_ids),
     )
 
+
+
+def append_external_evidence_manifest(
+    chain: EvidenceChain,
+    manifest: dict[str, Any],
+    roadmap_audit: dict[str, Any],
+    *,
+    root: str | Path,
+    require_complete: bool = False,
+    key: str | None = None,
+) -> dict[str, Any]:
+    result = verify_external_evidence_manifest(
+        manifest,
+        roadmap_audit,
+        root=root,
+        require_complete=require_complete,
+    )
+    if not result.ok:
+        raise ValueError("invalid external evidence manifest: " + "; ".join(result.errors))
+    summary = manifest.get("summary", {})
+    payload = {
+        "manifest_id": manifest["manifest_id"],
+        "manifest_hash": content_hash(manifest),
+        "manifest_ref": manifest.get("manifest_ref"),
+        "source_roadmap_audit": manifest.get("source_roadmap_audit"),
+        "status": summary.get("status"),
+        "require_complete": require_complete,
+        "required_requirement_count": summary.get("required_requirement_count"),
+        "covered_requirement_count": summary.get("covered_requirement_count"),
+        "missing_requirement_count": summary.get("missing_requirement_count"),
+        "evidence_count": summary.get("evidence_count"),
+        "covered_requirement_ids": summary.get("covered_requirement_ids", []),
+        "missing_requirement_ids": summary.get("missing_requirement_ids", []),
+        "limitations": manifest.get("limitations", []),
+    }
+    return chain.append(EXTERNAL_EVIDENCE_ENTRY_TYPE, payload, key=key, timestamp=manifest.get("generated_at"))
 
 def parse_evidence_arg(value: str) -> dict[str, Any]:
     parts = value.split(",", 3)
