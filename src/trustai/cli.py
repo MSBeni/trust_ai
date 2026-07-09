@@ -28,6 +28,14 @@ from .framework_adapter_matrix import (
     verify_framework_adapter_matrix,
     write_framework_adapter_matrix,
 )
+from .framework_hook_release import (
+    append_framework_hook_release,
+    build_framework_hook_release,
+    load_framework_hook_release,
+    load_framework_hook_release_source,
+    verify_framework_hook_release,
+    write_framework_hook_release,
+)
 from .anchor import append_anchor, write_anchor
 from .anchor_provider import (
     ANCHOR_PROVIDER_MODES,
@@ -1975,6 +1983,78 @@ def cmd_framework_adapter_matrix_append(args: argparse.Namespace) -> int:
         print(f"framework adapter matrix entry: {args.out}")
     print(f"framework adapter matrix entry id: {entry['entry_id']}")
     print(f"matrix id: {matrix['matrix_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_framework_hook_release(args: argparse.Namespace) -> int:
+    try:
+        matrix = load_framework_adapter_matrix(args.matrix)
+        release = build_framework_hook_release(
+            load_framework_hook_release_source(args.source),
+            matrix,
+            root=args.root,
+            released_at=args.released_at,
+            key=args.key,
+        )
+        result = verify_framework_hook_release(release, matrix, root=args.root, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"framework hook release generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("framework hook release generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_framework_hook_release(args.out, release)
+    print(f"framework hook release: {args.out}")
+    print(f"release id: {release['release_id']}")
+    print(f"rows: {release['summary']['row_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_framework_hook_release_verify(args: argparse.Namespace) -> int:
+    try:
+        release = load_framework_hook_release(args.release)
+        matrix = load_framework_adapter_matrix(args.matrix) if args.matrix else None
+    except (OSError, ValueError) as exc:
+        print(f"framework hook release verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_framework_hook_release(release, matrix, root=args.root, key=args.key)
+    if result.ok:
+        print(f"verified framework hook release: {args.release}")
+        print(f"release id: {release['release_id']}")
+        print(f"rows: {release['summary']['row_count']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"framework hook release verification failed: {args.release}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_framework_hook_release_append(args: argparse.Namespace) -> int:
+    try:
+        release = load_framework_hook_release(args.release)
+        matrix = load_framework_adapter_matrix(args.matrix) if args.matrix else None
+    except (OSError, ValueError) as exc:
+        print(f"framework hook release append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_framework_hook_release(chain, release, matrix, root=args.root, key=args.key)
+    except ValueError as exc:
+        print(f"framework hook release append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"framework hook release entry: {args.out}")
+    print(f"framework hook release entry id: {entry['entry_id']}")
+    print(f"release id: {release['release_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
@@ -11742,6 +11822,36 @@ def build_parser() -> argparse.ArgumentParser:
     framework_matrix_append.add_argument("--key")
     _add_state_args(framework_matrix_append)
     framework_matrix_append.set_defaults(func=cmd_framework_adapter_matrix_append)
+    framework_hook_release = subparsers.add_parser(
+        "framework-hook-release", help="write a signed framework hook release receipt"
+    )
+    framework_hook_release.add_argument("source")
+    framework_hook_release.add_argument("matrix")
+    framework_hook_release.add_argument("--root", default=".")
+    framework_hook_release.add_argument("--released-at")
+    framework_hook_release.add_argument("--out", default="artifacts/framework-hook-release.json")
+    framework_hook_release.add_argument("--key")
+    framework_hook_release.set_defaults(func=cmd_framework_hook_release)
+
+    framework_hook_release_verify = subparsers.add_parser(
+        "framework-hook-release-verify", help="verify a signed framework hook release receipt"
+    )
+    framework_hook_release_verify.add_argument("release")
+    framework_hook_release_verify.add_argument("--matrix")
+    framework_hook_release_verify.add_argument("--root", default=".")
+    framework_hook_release_verify.add_argument("--key")
+    framework_hook_release_verify.set_defaults(func=cmd_framework_hook_release_verify)
+
+    framework_hook_release_append = subparsers.add_parser(
+        "framework-hook-release-append", help="append a framework hook release receipt as chain evidence"
+    )
+    framework_hook_release_append.add_argument("release")
+    framework_hook_release_append.add_argument("--matrix", required=True)
+    framework_hook_release_append.add_argument("--root", default=".")
+    framework_hook_release_append.add_argument("--out", default="artifacts/framework-hook-release-entry.json")
+    framework_hook_release_append.add_argument("--key")
+    _add_state_args(framework_hook_release_append)
+    framework_hook_release_append.set_defaults(func=cmd_framework_hook_release_append)
 
     mcp = subparsers.add_parser("mcp-capture", help="append MCP tool call transcripts to the chain")
     mcp.add_argument("transcript")

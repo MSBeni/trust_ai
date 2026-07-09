@@ -1,0 +1,127 @@
+{
+  "entries": [
+    {
+      "aliases": ["langgraph"],
+      "collector_hook_ref": "hook:langgraph/0.2",
+      "evidence_refs": ["tests/test_framework_hook_release.py::FrameworkHookReleaseTests::test_framework_hook_release_verifies_and_appends"],
+      "framework": "langgraph",
+      "hook_mode": "native-hook",
+      "hook_package": "trustai-framework-hooks",
+      "hook_version": "0.1.0",
+      "module_ref": "trustai.framework_hooks",
+      "entrypoint_ref": "trustai.framework_hooks:capture_langgraph_trace",
+      "release_refs": ["source:src/trustai/framework_hooks.py"],
+      "runtime_package": "langgraph",
+      "runtime_version": "0.2.x",
+      "source_artifacts": [
+        "src/trustai/framework_hooks.py",
+        "src/trustai/adapters.py",
+        "src/trustai/framework_hook_release.py"
+      ],
+      "status": "reference-release"
+    },
+    {
+      "aliases": ["openai"],
+      "collector_hook_ref": "hook:openai-agents/0.1",
+      "evidence_refs": ["tests/test_framework_hook_release.py::FrameworkHookReleaseTests::test_framework_hook_release_verifies_and_appends"],
+      "framework": "openai_agents",
+      "hook_mode": "native-hook",
+      "hook_package": "trustai-framework-hooks",
+      "hook_version": "0.1.0",
+      "module_ref": "trustai.framework_hooks",
+      "entrypoint_ref": "trustai.framework_hooks:capture_openai_agents_trace",
+      "release_refs": ["source:src/trustai/framework_hooks.py"],
+      "runtime_package": "openai-agents-python",
+      "runtime_version": "0.1.x",
+      "source_artifacts": [
+        "src/trustai/framework_hooks.py",
+        "src/trustai/adapters.py",
+        "src/trustai/framework_hook_release.py"
+      ],
+      "status": "reference-release"
+    },
+    {
+      "aliases": ["claude"],
+      "collector_hook_ref": "hook:claude-agent-sdk/0.1",
+      "evidence_refs": ["tests/test_framework_hook_release.py::FrameworkHookReleaseTests::test_framework_hook_release_verifies_and_appends"],
+      "framework": "claude_agent",
+      "hook_mode": "native-hook",
+      "hook_package": "trustai-framework-hooks",
+      "hook_version": "0.1.0",
+      "module_ref": "trustai.framework_hooks",
+      "entrypoint_ref": "trustai.framework_hooks:capture_claude_agent_trace",
+      "release_refs": ["source:src/trustai/framework_hooks.py"],
+      "runtime_package": "anthropic-agent-sdk",
+      "runtime_version": "0.1.x",
+      "source_artifacts": [
+        "src/trustai/framework_hooks.py",
+        "src/trustai/adapters.py",
+        "src/trustai/framework_hook_release.py"
+      ],
+      "status": "reference-release"
+    },
+    {
+      "aliases": ["crewai"],
+      "collector_hook_ref": "hook:crewai/0.130",
+      "evidence_refs": ["tests/test_framework_hook_release.py::FrameworkHookReleaseTests::test_framework_hook_release_verifies_and_appends"],
+      "framework": "crewai",
+      "hook_mode": "native-hook",
+      "hook_package": "trustai-framework-hooks",
+      "hook_version": "0.1.0",
+      "module_ref": "trustai.framework_hooks",
+      "entrypoint_ref": "trustai.framework_hooks:capture_crewai_trace",
+      "release_refs": ["source:src/trustai/framework_hooks.py"],
+      "runtime_package": "crewai",
+      "runtime_version": "0.130.x",
+      "source_artifacts": [
+        "src/trustai/framework_hooks.py",
+        "src/trustai/adapters.py",
+        "src/trustai/framework_hook_release.py"
+      ],
+      "status": "reference-release"
+    },
+    {
+      "aliases": ["bedrock"],
+      "collector_hook_ref": "hook:bedrock/2026-06",
+      "evidence_refs": ["tests/test_framework_hook_release.py::FrameworkHookReleaseTests::test_framework_hook_release_verifies_and_appends"],
+      "framework": "bedrock",
+      "hook_mode": "managed-runtime-bridge",
+      "hook_package": "trustai-framework-hooks",
+      "hook_version": "0.1.0",
+      "module_ref": "trustai.framework_hooks",
+      "entrypoint_ref": "trustai.framework_hooks:capture_bedrock_trace",
+      "release_refs": ["source:src/trustai/framework_hooks.py"],
+      "runtime_package": "aws-bedrock-agent-runtime",
+      "runtime_version": "2026-06 API",
+      "source_artifacts": [
+        "src/trustai/framework_hooks.py",
+        "src/trustai/adapters.py",
+        "src/trustai/framework_hook_release.py"
+      ],
+      "status": "reference-release"
+    },
+    {
+      "aliases": ["vertex"],
+      "collector_hook_ref": "hook:vertex/2026-06",
+      "evidence_refs": ["tests/test_framework_hook_release.py::FrameworkHookReleaseTests::test_framework_hook_release_verifies_and_appends"],
+      "framework": "vertex",
+      "hook_mode": "managed-runtime-bridge",
+      "hook_package": "trustai-framework-hooks",
+      "hook_version": "0.1.0",
+      "module_ref": "trustai.framework_hooks",
+      "entrypoint_ref": "trustai.framework_hooks:capture_vertex_trace",
+      "release_refs": ["source:src/trustai/framework_hooks.py"],
+      "runtime_package": "google-cloud-aiplatform-agent-runtime",
+      "runtime_version": "2026-06 API",
+      "source_artifacts": [
+        "src/trustai/framework_hooks.py",
+        "src/trustai/adapters.py",
+        "src/trustai/framework_hook_release.py"
+      ],
+      "status": "reference-release"
+    }
+  ],
+  "release_ref": "aitrade-framework-hooks-2026-07",
+  "released_at": "2026-07-09T00:30:00Z",
+  "spec_path": "docs/specs/framework-hook-release-v0.1.md"
+}

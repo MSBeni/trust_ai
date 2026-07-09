@@ -79,7 +79,9 @@ python -m trustai chain-verify --state .trustai/framework-demo/evidence-chain.js
 ```
 
 The bundled fixture covers LangGraph, OpenAI Agents, Claude Agent, CrewAI,
-Bedrock, and Vertex-style traces.
+Bedrock, and Vertex-style traces. `framework-hook-release` binds hook package
+entrypoints for these runtimes back to the signed adapter matrix and replayed
+per-trace event roots.
 
 ## Compatibility Matrix
 
