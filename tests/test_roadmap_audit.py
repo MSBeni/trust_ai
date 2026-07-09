@@ -37,6 +37,12 @@ class RoadmapAuditTests(unittest.TestCase):
         self.assertNotIn(STATUS_MISSING_LOCAL_EVIDENCE, statuses)
         self.assertIn("proof-pack-spec-and-compiler", requirement_ids)
         self.assertIn("trust-network-procurement-and-marketplace", requirement_ids)
+        identity_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "agent-inventory-and-identity")
+        identity_evidence = {item["path"] for item in identity_requirement["evidence"]}
+        self.assertIn("src/trustai/identity_provider_lifecycle_operation.py", identity_evidence)
+        self.assertIn("src/trustai/identity_provider_lifecycle_worker.py", identity_evidence)
+        self.assertIn("docs/specs/identity-provider-lifecycle-worker-v0.1.md", identity_evidence)
+        self.assertIn("tests/test_identity_provider_lifecycle_worker.py", identity_evidence)
         self.assertGreater(audit["summary"][STATUS_REFERENCE_ATTESTED], 0)
         self.assertIn("TrustAI Roadmap Audit", markdown)
         self.assertIn("Deferred External Authority", markdown)
