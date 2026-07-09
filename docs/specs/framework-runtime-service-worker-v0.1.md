@@ -45,6 +45,9 @@ chain entry records hash-bound summaries for the worker operation, service,
 source, scheduler, execution, observability, credential reference, and control
 status summary.
 
+Provider-owned infrastructure exports for these worker runs are specified in
+`framework-runtime-service-provider-v0.1.md`.
+
 ## CLI
 
 ```powershell
