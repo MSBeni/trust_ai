@@ -10,6 +10,7 @@ from .canonical import content_hash, parse_rfc3339, utc_now, without_keys
 from .chain import EvidenceChain
 from .contracts import contract_hash
 from .crypto import sign_value, verify_value
+from .keyring import verify_value_with_keyring
 from .gate import OPS
 
 SHADOW_REPLAY_ENTRY_TYPE = "shadow_replay.completed"
@@ -155,6 +156,7 @@ def verify_temporal_holdout_manifest(
     contract: dict[str, Any] | None = None,
     replay: dict[str, Any] | None = None,
     key: str | None = None,
+    keyring: dict[str, Any] | None = None,
 ) -> TemporalHoldoutVerification:
     errors: list[str] = []
     warnings: list[str] = []
@@ -169,7 +171,14 @@ def verify_temporal_holdout_manifest(
         errors.append("temporal holdout manifest must include at least one signature")
     else:
         signed_value = {"manifest_id": manifest.get("manifest_id"), "temporal_holdout": body}
-        if not any(isinstance(signature, dict) and verify_value(signed_value, signature, key) for signature in signatures):
+        if keyring is not None:
+            verified = any(
+                isinstance(signature, dict) and verify_value_with_keyring(signed_value, signature, keyring)
+                for signature in signatures
+            )
+        else:
+            verified = any(isinstance(signature, dict) and verify_value(signed_value, signature, key) for signature in signatures)
+        if not verified:
             errors.append("temporal holdout signature verification failed")
 
     try:

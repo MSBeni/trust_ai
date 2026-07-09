@@ -46,7 +46,10 @@ An offline verifier must reject the pack when any of these checks fail:
    contract body;
 8. holdout timestamps do not postdate the agent freeze boundary;
 9. recomputing the gate decision from the contract, results, and packed
-   approval evidence entries produces a different decision.
+   approval evidence entries produces a different decision;
+10. any included `shadow_replay.completed` entry contains a temporal holdout
+    manifest that fails signature, record-chain, contract, replay, or summary
+    verification.
 
 When a gate decision relies on `human_approval.granted` entries, those entries
 must be included in `chain.entries` with valid signatures, timestamp tokens,

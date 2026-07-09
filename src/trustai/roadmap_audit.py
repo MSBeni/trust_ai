@@ -48,6 +48,7 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "src/trustai/verifier.py",
             "src/trustai/pdf.py",
             "tests/test_proofpack_flow.py",
+            "tests/test_temporal_holdout.py",
         ],
     },
     {

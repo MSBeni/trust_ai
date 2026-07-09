@@ -1,4 +1,4 @@
-﻿import copy
+import copy
 import json
 import os
 import subprocess
@@ -7,21 +7,29 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash
 from trustai.chain import EvidenceChain
-from trustai.contracts import load_contract
+from trustai.contracts import load_contract, register_contract
+from trustai.gate import append_eval_and_gate
+from trustai.proofpack import compile_proof_pack
+from trustai.verifier import verify_proof_pack
 from trustai.shadow import (
+    SHADOW_REPLAY_ENTRY_TYPE,
     TEMPORAL_HOLDOUT_ENTRY_TYPE,
     TEMPORAL_HOLDOUT_SCHEMA,
     append_shadow_replay,
     append_temporal_holdout_manifest,
+    evaluate_shadow_replay,
     build_temporal_holdout_manifest,
     load_shadow_replay,
+    shadow_replay_to_eval_results,
     verify_temporal_holdout_manifest,
 )
 
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = ROOT / "examples" / "aitrade" / "verification-contract.yaml"
+
 SHADOW = ROOT / "examples" / "aitrade" / "shadow-replay.json"
 
 
@@ -131,6 +139,53 @@ class TemporalHoldoutTests(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("manifest_id" in error or "signature" in error for error in result.errors))
         self.assertTrue(any("node hash mismatch" in error for error in result.errors))
+
+    def test_proof_pack_verifier_replays_embedded_temporal_holdout_manifest(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            chain = EvidenceChain.load(tmp / "chain.json", tenant_id="temporal-holdout-pack-test")
+            contract = self._contract()
+            register_contract(chain, contract)
+            replay = self._replay()
+            manifest = build_temporal_holdout_manifest(
+                contract,
+                replay,
+                generated_at="2026-07-03T12:30:00Z",
+            )
+            tampered_replay = self._replay()
+            tampered_replay["records"][1]["candidate_action"] = "allow_shadow_order"
+            evaluation = evaluate_shadow_replay(contract, tampered_replay)
+            chain.append(
+                SHADOW_REPLAY_ENTRY_TYPE,
+                {
+                    **evaluation,
+                    "replay_hash": content_hash(tampered_replay),
+                    "temporal_holdout_manifest": manifest,
+                    "temporal_holdout": {
+                        "manifest_id": manifest["manifest_id"],
+                        "manifest_hash": content_hash(manifest),
+                        "records_root": manifest["records_root"],
+                        "record_count": manifest["record_count"],
+                        "passed": manifest["passed"],
+                    },
+                    "replay": tampered_replay,
+                },
+                timestamp=evaluation["evaluated_at"],
+            )
+            eval_entry, gate_entry, decision = append_eval_and_gate(
+                chain,
+                contract,
+                shadow_replay_to_eval_results(contract, tampered_replay),
+            )
+            pack = compile_proof_pack(chain, contract, eval_entry, gate_entry, decision, out_path=tmp / "pack.json")
+
+            result = verify_proof_pack(pack)
+
+            self.assertFalse(result.ok)
+            self.assertTrue(
+                any("temporal holdout: temporal holdout replay_hash mismatch" in error for error in result.errors)
+            )
+            self.assertTrue(any("temporal holdout replay record hash mismatch" in error for error in result.errors))
 
     def test_cli_temporal_holdout_round_trip(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

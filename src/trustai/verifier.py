@@ -14,6 +14,7 @@ from .gate import EVAL_ENTRY_TYPE, GATE_ENTRY_TYPE, evaluate_contract
 from .keyring import verify_entry_with_keyring, verify_value_with_keyring
 from .merkle import verify_inclusion
 from .proofpack import PROOF_PACK_SPEC_VERSION
+from .shadow import SHADOW_REPLAY_ENTRY_TYPE, verify_temporal_holdout_manifest
 
 
 @dataclass
@@ -60,6 +61,7 @@ def verify_proof_pack(
     proofs = chain.get("inclusion_proofs", {})
     entry_by_type: dict[str, dict[str, Any]] = {}
     approval_entries: list[dict[str, Any]] = []
+    shadow_entries: list[dict[str, Any]] = []
 
     if not root:
         errors.append("chain tree root missing")
@@ -88,6 +90,8 @@ def verify_proof_pack(
             entry_by_type[entry_type] = entry
             if entry_type == APPROVAL_ENTRY_TYPE:
                 approval_entries.append(entry)
+            if entry_type == SHADOW_REPLAY_ENTRY_TYPE:
+                shadow_entries.append(entry)
 
     contract_entry = entry_by_type.get(CONTRACT_ENTRY_TYPE)
     eval_entry = entry_by_type.get(EVAL_ENTRY_TYPE)
@@ -111,6 +115,13 @@ def verify_proof_pack(
     if contract_entry and eval_entry and gate_entry and contract_digest:
         if not (contract_entry["index"] < eval_entry["index"] < gate_entry["index"]):
             errors.append("chain ordering must be contract registration < eval < gate")
+
+        if proof_pack.get("contract", {}).get("chain_entry_id") != contract_entry.get("entry_id"):
+            errors.append("packed contract chain_entry_id mismatch")
+        if proof_pack.get("eval", {}).get("chain_entry_id") != eval_entry.get("entry_id"):
+            errors.append("packed eval chain_entry_id mismatch")
+        if proof_pack.get("eval", {}).get("results_hash") != eval_entry.get("payload", {}).get("results_hash"):
+            errors.append("packed eval results_hash mismatch")
 
         if contract_entry["payload"].get("contract_hash") != contract_digest:
             errors.append("contract entry hash does not match packed contract")
@@ -138,6 +149,53 @@ def verify_proof_pack(
         else:
             errors.append("eval entry results missing")
 
+    if contract_digest and isinstance(contract_body, dict):
+        for shadow_entry in shadow_entries:
+            payload = shadow_entry.get("payload", {})
+            if not isinstance(payload, dict):
+                errors.append(f"shadow replay entry {shadow_entry.get('index')} payload missing")
+                continue
+            if payload.get("contract_hash") != contract_digest:
+                errors.append(f"shadow replay entry {shadow_entry.get('index')} references a different contract hash")
+            manifest = payload.get("temporal_holdout_manifest")
+            replay = payload.get("replay")
+            summary = payload.get("temporal_holdout")
+            if not isinstance(manifest, dict):
+                errors.append(f"shadow replay entry {shadow_entry.get('index')} missing temporal_holdout_manifest")
+                continue
+            if not isinstance(replay, dict):
+                errors.append(f"shadow replay entry {shadow_entry.get('index')} missing replay payload")
+                continue
+            if not isinstance(summary, dict):
+                errors.append(f"shadow replay entry {shadow_entry.get('index')} missing temporal_holdout summary")
+                summary = {}
+            holdout_result = verify_temporal_holdout_manifest(
+                manifest,
+                contract=contract_body,
+                replay=replay,
+                key=key,
+                keyring=keyring,
+            )
+            errors.extend(
+                f"shadow replay entry {shadow_entry.get('index')} temporal holdout: {error}"
+                for error in holdout_result.errors
+            )
+            warnings.extend(
+                f"shadow replay entry {shadow_entry.get('index')} temporal holdout: {warning}"
+                for warning in holdout_result.warnings
+            )
+            expected_summary = {
+                "manifest_id": manifest.get("manifest_id"),
+                "manifest_hash": content_hash(manifest),
+                "records_root": manifest.get("records_root"),
+                "record_count": manifest.get("record_count"),
+                "passed": manifest.get("passed"),
+            }
+            for field, expected in expected_summary.items():
+                if summary.get(field) != expected:
+                    errors.append(
+                        f"shadow replay entry {shadow_entry.get('index')} temporal_holdout summary mismatch for {field}"
+                    )
     decision = proof_pack.get("gate_decision", {}).get("outcome")
     if decision and decision != "passed":
         warnings.append(f"proof pack is valid but gate outcome is {decision}")
