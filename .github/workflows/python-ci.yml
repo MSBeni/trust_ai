@@ -75,6 +75,9 @@ jobs:
       - name: Extract roadmap evidence bundle sources
         run: python -m trustai roadmap-evidence-bundle-extract artifacts/roadmap-evidence-bundle.json --out-dir artifacts/roadmap-evidence-bundle-sources --require-external --require-source-artifacts
 
+      - name: Verify unittest discovery
+        run: python -m unittest discover -v -p test_repository_ci.py
+
       - name: Run clean-checkout smoke tests
         run: >
           python -m unittest -v

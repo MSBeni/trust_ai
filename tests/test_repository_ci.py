@@ -5,6 +5,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PYTHON_CI = ROOT / ".github" / "workflows" / "python-ci.yml"
 GO_CI = ROOT / ".github" / "workflows" / "go-verifier.yml"
+TESTS_INIT = ROOT / "tests" / "__init__.py"
 
 
 class RepositoryCiTests(unittest.TestCase):
@@ -32,6 +33,7 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("--require-source-artifacts", workflow)
         self.assertIn("python -m trustai roadmap-evidence-bundle-verify artifacts/roadmap-evidence-bundle.json", workflow)
         self.assertIn("python -m trustai roadmap-evidence-bundle-extract artifacts/roadmap-evidence-bundle.json", workflow)
+        self.assertIn("python -m unittest discover -v -p test_repository_ci.py", workflow)
         self.assertIn("tests.test_go_verifier_release_workflow", workflow)
         self.assertIn("tests.test_repository_ci", workflow)
         self.assertIn("tests.test_roadmap_audit", workflow)
@@ -41,6 +43,7 @@ class RepositoryCiTests(unittest.TestCase):
     def test_public_repo_has_python_and_go_ci_workflows(self):
         self.assertTrue(PYTHON_CI.exists())
         self.assertTrue(GO_CI.exists())
+        self.assertTrue(TESTS_INIT.exists())
 
 
 if __name__ == "__main__":

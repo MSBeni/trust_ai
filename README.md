@@ -55,7 +55,8 @@ The repository has two GitHub Actions workflows:
 - `.github/workflows/python-ci.yml` installs the package from a clean checkout,
   compiles `src/` and `tests/`, runs `python -m trustai demo` to generate the
   bundled aitrade proof pack, verifies it offline, generates, verifies, appends, and chain-verifies the
-  roadmap audit, and runs clean-checkout smoke tests for proof packs, ingestion,
+  roadmap audit, checks root unittest discovery for the importable `tests/`
+  package, and runs clean-checkout smoke tests for proof packs, ingestion,
   re-execution, verifier releases, verifier distribution, Go verifier release
   workflow controls, roadmap coverage, external evidence manifests, semantic roadmap evidence chains, roadmap evidence reports, self-contained roadmap evidence bundles, and standards
   metadata.
