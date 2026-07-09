@@ -48,9 +48,10 @@ Any source edit, matrix edit, fixture edit, row edit, event omission, event
 reordering, or summary edit breaks verification.
 
 Rows marked `reference-release` prove only local package metadata and fixture
-compatibility. `native-hook-tested` and `production-certified` require native
-framework runtime tests, collector service evidence, and provider/runtime audit
-logs appropriate to the claimed status.
+compatibility. `framework-hook-operation` records per-trace hook captures from
+runtime instances and replays their emitted event chains. `native-hook-tested` and
+`production-certified` require native framework runtime tests, collector service
+evidence, and provider/runtime audit logs appropriate to the claimed status.
 
 ## CLI
 

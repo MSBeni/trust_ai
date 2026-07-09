@@ -36,6 +36,14 @@ from .framework_hook_release import (
     verify_framework_hook_release,
     write_framework_hook_release,
 )
+from .framework_hook_operation import (
+    append_framework_hook_operation,
+    build_framework_hook_operation,
+    load_framework_hook_operation,
+    load_framework_trace_payload,
+    verify_framework_hook_operation,
+    write_framework_hook_operation,
+)
 from .anchor import append_anchor, write_anchor
 from .anchor_provider import (
     ANCHOR_PROVIDER_MODES,
@@ -2055,6 +2063,104 @@ def cmd_framework_hook_release_append(args: argparse.Namespace) -> int:
         print(f"framework hook release entry: {args.out}")
     print(f"framework hook release entry id: {entry['entry_id']}")
     print(f"release id: {release['release_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_framework_hook_operation(args: argparse.Namespace) -> int:
+    try:
+        operation = build_framework_hook_operation(
+            load_framework_trace_payload(args.trace),
+            load_framework_hook_release(args.release),
+            load_framework_adapter_matrix(args.matrix),
+            framework=args.framework,
+            trace_id=args.trace_id,
+            root=args.root,
+            mode=args.mode,
+            environment=args.environment,
+            operation_ref=args.operation_ref,
+            runtime_instance_ref=args.runtime_instance_ref,
+            runtime_process_ref=args.runtime_process_ref,
+            collector_service_ref=args.collector_service_ref,
+            collector_worker_ref=args.collector_worker_ref,
+            stream_message_ref=args.stream_message_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            actor_ref=args.actor_ref,
+            credential_ref=args.credential_ref,
+            evidence_refs=args.evidence_ref,
+            captured_at=args.captured_at,
+            key=args.key,
+        )
+        result = verify_framework_hook_operation(
+            operation,
+            load_framework_trace_payload(args.trace),
+            load_framework_hook_release(args.release),
+            load_framework_adapter_matrix(args.matrix),
+            root=args.root,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"framework hook operation generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("framework hook operation generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_framework_hook_operation(args.out, operation)
+    print(f"framework hook operation: {args.out}")
+    print(f"operation id: {operation['operation_id']}")
+    print(f"trace id: {operation['trace']['trace_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_framework_hook_operation_verify(args: argparse.Namespace) -> int:
+    try:
+        operation = load_framework_hook_operation(args.operation)
+        trace = load_framework_trace_payload(args.trace) if args.trace else None
+        release = load_framework_hook_release(args.release) if args.release else None
+        matrix = load_framework_adapter_matrix(args.matrix) if args.matrix else None
+    except (OSError, ValueError) as exc:
+        print(f"framework hook operation verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_framework_hook_operation(operation, trace, release, matrix, root=args.root, key=args.key)
+    if result.ok:
+        print(f"verified framework hook operation: {args.operation}")
+        print(f"operation id: {operation['operation_id']}")
+        print(f"trace id: {operation['trace']['trace_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"framework hook operation verification failed: {args.operation}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_framework_hook_operation_append(args: argparse.Namespace) -> int:
+    try:
+        operation = load_framework_hook_operation(args.operation)
+        trace = load_framework_trace_payload(args.trace)
+        release = load_framework_hook_release(args.release)
+        matrix = load_framework_adapter_matrix(args.matrix)
+    except (OSError, ValueError) as exc:
+        print(f"framework hook operation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_framework_hook_operation(chain, operation, trace, release, matrix, root=args.root, key=args.key)
+    except ValueError as exc:
+        print(f"framework hook operation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"framework hook operation entry: {args.out}")
+    print(f"framework hook operation entry id: {entry['entry_id']}")
+    print(f"operation id: {operation['operation_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
@@ -11852,6 +11958,60 @@ def build_parser() -> argparse.ArgumentParser:
     framework_hook_release_append.add_argument("--key")
     _add_state_args(framework_hook_release_append)
     framework_hook_release_append.set_defaults(func=cmd_framework_hook_release_append)
+    framework_hook_operation = subparsers.add_parser(
+        "framework-hook-operation", help="write a signed framework hook operation receipt"
+    )
+    framework_hook_operation.add_argument("trace")
+    framework_hook_operation.add_argument("--release", required=True)
+    framework_hook_operation.add_argument("--matrix", required=True)
+    framework_hook_operation.add_argument("--framework", required=True)
+    framework_hook_operation.add_argument("--trace-id")
+    framework_hook_operation.add_argument("--root", default=".")
+    framework_hook_operation.add_argument(
+        "--mode",
+        choices=["local-reference", "native-runtime", "collector-observed", "production-capture"],
+        default="native-runtime",
+    )
+    framework_hook_operation.add_argument("--environment", default="local")
+    framework_hook_operation.add_argument("--operation-ref", required=True)
+    framework_hook_operation.add_argument("--runtime-instance-ref", required=True)
+    framework_hook_operation.add_argument("--runtime-process-ref")
+    framework_hook_operation.add_argument("--collector-service-ref")
+    framework_hook_operation.add_argument("--collector-worker-ref")
+    framework_hook_operation.add_argument("--stream-message-ref")
+    framework_hook_operation.add_argument("--audit-log-ref", required=True)
+    framework_hook_operation.add_argument("--audit-log-root", required=True)
+    framework_hook_operation.add_argument("--actor-ref", required=True)
+    framework_hook_operation.add_argument("--credential-ref", required=True)
+    framework_hook_operation.add_argument("--evidence-ref", action="append", default=[])
+    framework_hook_operation.add_argument("--captured-at")
+    framework_hook_operation.add_argument("--out", default="artifacts/framework-hook-operation.json")
+    framework_hook_operation.add_argument("--key")
+    framework_hook_operation.set_defaults(func=cmd_framework_hook_operation)
+
+    framework_hook_operation_verify = subparsers.add_parser(
+        "framework-hook-operation-verify", help="verify a signed framework hook operation receipt"
+    )
+    framework_hook_operation_verify.add_argument("operation")
+    framework_hook_operation_verify.add_argument("--trace")
+    framework_hook_operation_verify.add_argument("--release")
+    framework_hook_operation_verify.add_argument("--matrix")
+    framework_hook_operation_verify.add_argument("--root", default=".")
+    framework_hook_operation_verify.add_argument("--key")
+    framework_hook_operation_verify.set_defaults(func=cmd_framework_hook_operation_verify)
+
+    framework_hook_operation_append = subparsers.add_parser(
+        "framework-hook-operation-append", help="append a framework hook operation receipt as chain evidence"
+    )
+    framework_hook_operation_append.add_argument("operation")
+    framework_hook_operation_append.add_argument("--trace", required=True)
+    framework_hook_operation_append.add_argument("--release", required=True)
+    framework_hook_operation_append.add_argument("--matrix", required=True)
+    framework_hook_operation_append.add_argument("--root", default=".")
+    framework_hook_operation_append.add_argument("--out", default="artifacts/framework-hook-operation-entry.json")
+    framework_hook_operation_append.add_argument("--key")
+    _add_state_args(framework_hook_operation_append)
+    framework_hook_operation_append.set_defaults(func=cmd_framework_hook_operation_append)
 
     mcp = subparsers.add_parser("mcp-capture", help="append MCP tool call transcripts to the chain")
     mcp.add_argument("transcript")
