@@ -1,0 +1,134 @@
+{
+  "adapter_package_version": "0.1.0-local",
+  "entries": [
+    {
+      "adapter_version": "0.1.0",
+      "aliases": [
+        "langgraph"
+      ],
+      "evidence_refs": [
+        "tests/test_framework_adapters.py::FrameworkAdapterTests::test_framework_traces_normalize_to_otel_events"
+      ],
+      "framework": "langgraph",
+      "hook_mode": "json-export-reference",
+      "release_channel": "declared-compatible",
+      "required_event_names": [
+        "gen_ai.agent.decision",
+        "gen_ai.tool.call"
+      ],
+      "runtime_package": "langgraph",
+      "runtime_version": "0.2.x",
+      "status": "verified-reference",
+      "tested_at": "2026-07-09T00:00:00Z",
+      "trace_fixture": "examples/aitrade/framework-traces.json"
+    },
+    {
+      "adapter_version": "0.1.0",
+      "aliases": [
+        "openai"
+      ],
+      "evidence_refs": [
+        "tests/test_framework_adapters.py::FrameworkAdapterTests::test_framework_traces_normalize_to_otel_events"
+      ],
+      "framework": "openai_agents",
+      "hook_mode": "json-export-reference",
+      "release_channel": "declared-compatible",
+      "required_event_names": [
+        "gen_ai.agent.message",
+        "gen_ai.tool.call"
+      ],
+      "runtime_package": "openai-agents-python",
+      "runtime_version": "0.1.x",
+      "status": "verified-reference",
+      "tested_at": "2026-07-09T00:00:00Z",
+      "trace_fixture": "examples/aitrade/framework-traces.json"
+    },
+    {
+      "adapter_version": "0.1.0",
+      "aliases": [
+        "claude"
+      ],
+      "evidence_refs": [
+        "tests/test_framework_adapters.py::FrameworkAdapterTests::test_framework_traces_normalize_to_otel_events"
+      ],
+      "framework": "claude_agent",
+      "hook_mode": "json-export-reference",
+      "release_channel": "declared-compatible",
+      "required_event_names": [
+        "gen_ai.agent.message",
+        "gen_ai.tool.call"
+      ],
+      "runtime_package": "anthropic-agent-sdk",
+      "runtime_version": "0.1.x",
+      "status": "verified-reference",
+      "tested_at": "2026-07-09T00:00:00Z",
+      "trace_fixture": "examples/aitrade/framework-traces.json"
+    },
+    {
+      "adapter_version": "0.1.0",
+      "aliases": [
+        "crewai"
+      ],
+      "evidence_refs": [
+        "tests/test_framework_adapters.py::FrameworkAdapterTests::test_framework_traces_normalize_to_otel_events"
+      ],
+      "framework": "crewai",
+      "hook_mode": "json-export-reference",
+      "release_channel": "declared-compatible",
+      "required_event_names": [
+        "gen_ai.agent.decision",
+        "gen_ai.tool.call"
+      ],
+      "runtime_package": "crewai",
+      "runtime_version": "0.130.x",
+      "status": "verified-reference",
+      "tested_at": "2026-07-09T00:00:00Z",
+      "trace_fixture": "examples/aitrade/framework-traces.json"
+    },
+    {
+      "adapter_version": "0.1.0",
+      "aliases": [
+        "bedrock"
+      ],
+      "evidence_refs": [
+        "tests/test_framework_adapters.py::FrameworkAdapterTests::test_framework_traces_normalize_to_otel_events"
+      ],
+      "framework": "bedrock",
+      "hook_mode": "json-export-reference",
+      "release_channel": "declared-compatible",
+      "required_event_names": [
+        "gen_ai.agent.decision",
+        "gen_ai.tool.call"
+      ],
+      "runtime_package": "aws-bedrock-agent-runtime",
+      "runtime_version": "2026-06 API",
+      "status": "verified-reference",
+      "tested_at": "2026-07-09T00:00:00Z",
+      "trace_fixture": "examples/aitrade/framework-traces.json"
+    },
+    {
+      "adapter_version": "0.1.0",
+      "aliases": [
+        "vertex"
+      ],
+      "evidence_refs": [
+        "tests/test_framework_adapters.py::FrameworkAdapterTests::test_framework_traces_normalize_to_otel_events"
+      ],
+      "framework": "vertex",
+      "hook_mode": "json-export-reference",
+      "release_channel": "declared-compatible",
+      "required_event_names": [
+        "gen_ai.agent.decision",
+        "gen_ai.tool.call"
+      ],
+      "runtime_package": "google-cloud-aiplatform-agent-runtime",
+      "runtime_version": "2026-06 API",
+      "status": "verified-reference",
+      "tested_at": "2026-07-09T00:00:00Z",
+      "trace_fixture": "examples/aitrade/framework-traces.json"
+    }
+  ],
+  "issued_at": "2026-07-09T00:00:00Z",
+  "matrix_ref": "aitrade-framework-adapters-2026-07",
+  "spec_path": "docs/specs/framework-adapters-v0.1.md"
+}

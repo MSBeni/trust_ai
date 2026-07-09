@@ -183,9 +183,13 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
         "roadmap_ref": "Phase 1 feature 4",
         "evidence_paths": [
             "docs/specs/framework-adapters-v0.1.md",
+            "docs/specs/framework-adapter-matrix-v0.1.md",
             "src/trustai/adapters.py",
+            "src/trustai/framework_adapter_matrix.py",
             "examples/aitrade/framework-traces.json",
+            "examples/aitrade/framework-adapter-matrix.json",
             "tests/test_framework_adapters.py",
+            "tests/test_framework_adapter_matrix.py",
         ],
         "external_authority": [
             "Native hooks for exact production runtime releases require continuously maintained adapter packages and release matrices.",

@@ -66,6 +66,14 @@ python -m trustai chain-verify --state .trustai/framework-demo/evidence-chain.js
 The bundled fixture covers LangGraph, OpenAI Agents, Claude Agent, CrewAI,
 Bedrock, and Vertex-style traces.
 
+## Compatibility Matrix
+
+`framework-adapter-matrix` turns a declared runtime compatibility matrix into a
+signed receipt. Verification replays the checked-in trace fixture through the
+adapter code and checks each row's event count, event names, fixture SHA-256,
+and normalized event root. This makes runtime-version claims tamper-evident even
+when native production hooks are still deferred.
+
 ## Production Notes
 
 The local adapters are intentionally thin. Production integrations should add

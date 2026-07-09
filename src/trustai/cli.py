@@ -20,6 +20,14 @@ from .actuarial import (
     write_actuarial_product,
 )
 from .adapters import append_framework_events
+from .framework_adapter_matrix import (
+    append_framework_adapter_matrix,
+    build_framework_adapter_matrix,
+    load_framework_adapter_matrix,
+    load_framework_adapter_matrix_source,
+    verify_framework_adapter_matrix,
+    write_framework_adapter_matrix,
+)
 from .anchor import append_anchor, write_anchor
 from .anchor_provider import (
     ANCHOR_PROVIDER_MODES,
@@ -1897,6 +1905,75 @@ def cmd_framework_ingest(args: argparse.Namespace) -> int:
     print(f"ingested framework trace events: {len(entries)}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
+
+def cmd_framework_adapter_matrix(args: argparse.Namespace) -> int:
+    try:
+        matrix = build_framework_adapter_matrix(
+            load_framework_adapter_matrix_source(args.source),
+            root=args.root,
+            issued_at=args.issued_at,
+            key=args.key,
+        )
+        result = verify_framework_adapter_matrix(matrix, root=args.root, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"framework adapter matrix generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("framework adapter matrix generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_framework_adapter_matrix(args.out, matrix)
+    print(f"framework adapter matrix: {args.out}")
+    print(f"matrix id: {matrix['matrix_id']}")
+    print(f"rows: {matrix['summary']['row_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_framework_adapter_matrix_verify(args: argparse.Namespace) -> int:
+    try:
+        matrix = load_framework_adapter_matrix(args.matrix)
+    except (OSError, ValueError) as exc:
+        print(f"framework adapter matrix verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_framework_adapter_matrix(matrix, root=args.root, key=args.key)
+    if result.ok:
+        print(f"verified framework adapter matrix: {args.matrix}")
+        print(f"matrix id: {matrix['matrix_id']}")
+        print(f"rows: {matrix['summary']['row_count']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"framework adapter matrix verification failed: {args.matrix}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_framework_adapter_matrix_append(args: argparse.Namespace) -> int:
+    try:
+        matrix = load_framework_adapter_matrix(args.matrix)
+    except (OSError, ValueError) as exc:
+        print(f"framework adapter matrix append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_framework_adapter_matrix(chain, matrix, root=args.root, key=args.key)
+    except ValueError as exc:
+        print(f"framework adapter matrix append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"framework adapter matrix entry: {args.out}")
+    print(f"framework adapter matrix entry id: {entry['entry_id']}")
+    print(f"matrix id: {matrix['matrix_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
 def cmd_mcp_capture(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
     calls = load_mcp_transcript(args.transcript)
@@ -11545,6 +11622,27 @@ def build_parser() -> argparse.ArgumentParser:
     framework_ingest.add_argument("trace")
     _add_state_args(framework_ingest)
     framework_ingest.set_defaults(func=cmd_framework_ingest)
+    framework_matrix = subparsers.add_parser("framework-adapter-matrix", help="write a signed framework adapter compatibility matrix")
+    framework_matrix.add_argument("source")
+    framework_matrix.add_argument("--root", default=".")
+    framework_matrix.add_argument("--issued-at")
+    framework_matrix.add_argument("--out", default="artifacts/framework-adapter-matrix.json")
+    framework_matrix.add_argument("--key")
+    framework_matrix.set_defaults(func=cmd_framework_adapter_matrix)
+
+    framework_matrix_verify = subparsers.add_parser("framework-adapter-matrix-verify", help="verify a signed framework adapter compatibility matrix")
+    framework_matrix_verify.add_argument("matrix")
+    framework_matrix_verify.add_argument("--root", default=".")
+    framework_matrix_verify.add_argument("--key")
+    framework_matrix_verify.set_defaults(func=cmd_framework_adapter_matrix_verify)
+
+    framework_matrix_append = subparsers.add_parser("framework-adapter-matrix-append", help="append a framework adapter compatibility matrix as chain evidence")
+    framework_matrix_append.add_argument("matrix")
+    framework_matrix_append.add_argument("--root", default=".")
+    framework_matrix_append.add_argument("--out", default="artifacts/framework-adapter-matrix-entry.json")
+    framework_matrix_append.add_argument("--key")
+    _add_state_args(framework_matrix_append)
+    framework_matrix_append.set_defaults(func=cmd_framework_adapter_matrix_append)
 
     mcp = subparsers.add_parser("mcp-capture", help="append MCP tool call transcripts to the chain")
     mcp.add_argument("transcript")

@@ -45,6 +45,10 @@ class RoadmapAuditTests(unittest.TestCase):
         self.assertIn("tests/test_identity_provider_lifecycle_worker.py", identity_evidence)
         mcp_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "mcp-gateway")
         self.assertIn("tests/test_mcp_gateway.py", {item["path"] for item in mcp_requirement["evidence"]})
+        framework_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "framework-adapters")
+        framework_evidence = {item["path"] for item in framework_requirement["evidence"]}
+        self.assertIn("src/trustai/framework_adapter_matrix.py", framework_evidence)
+        self.assertIn("tests/test_framework_adapter_matrix.py", framework_evidence)
         self.assertGreater(audit["summary"][STATUS_REFERENCE_ATTESTED], 0)
         self.assertIn("TrustAI Roadmap Audit", markdown)
         self.assertIn("Deferred External Authority", markdown)
