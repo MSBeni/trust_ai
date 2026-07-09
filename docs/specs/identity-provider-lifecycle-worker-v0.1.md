@@ -1,4 +1,4 @@
-﻿# Identity Provider Lifecycle Worker Receipt v0.1
+# Identity Provider Lifecycle Worker Receipt v0.1
 
 This specification defines a signed receipt for a scheduled or hosted
 identity-provider lifecycle worker run. It complements
@@ -64,8 +64,8 @@ Supported worker operation kinds are `lifecycle_operation_propagation`,
 - redacted credential reference and absence of raw secret-like values;
 - source `identity-provider-lifecycle-operation` verification when supplied,
   including optional replay of identity-provider attestation, identity-provider
-  session, identity payload, vendor identity receipt, trust-network manifest, and
-  proof packs.
+  session, identity payload, retained raw identity export artifact bytes, vendor
+  identity receipt, trust-network manifest, and proof packs.
 
 When source receipts are not supplied, verification can only prove receipt
 integrity and embedded hashes. It emits warnings for missing deep replay. Modes

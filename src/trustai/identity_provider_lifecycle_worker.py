@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 from dataclasses import dataclass
@@ -58,6 +58,7 @@ def build_identity_provider_lifecycle_worker_receipt(
     identity_provider_attestation: dict[str, Any] | None = None,
     identity_provider_session_receipt: dict[str, Any] | None = None,
     identity_payload: dict[str, Any] | None = None,
+    identity_payload_path: str | Path | None = None,
     vendor_identity_receipt: dict[str, Any] | None = None,
     proof_packs: list[dict[str, Any]] | None = None,
     trust_network_manifest: dict[str, Any] | None = None,
@@ -155,6 +156,7 @@ def build_identity_provider_lifecycle_worker_receipt(
         identity_provider_attestation=identity_provider_attestation,
         identity_provider_session_receipt=identity_provider_session_receipt,
         identity_payload=identity_payload,
+        identity_payload_path=identity_payload_path,
         vendor_identity_receipt=vendor_identity_receipt,
         proof_packs=proof_packs,
         trust_network_manifest=trust_network_manifest,
@@ -257,6 +259,7 @@ def verify_identity_provider_lifecycle_worker_receipt(
     identity_provider_attestation: dict[str, Any] | None = None,
     identity_provider_session_receipt: dict[str, Any] | None = None,
     identity_payload: dict[str, Any] | None = None,
+    identity_payload_path: str | Path | None = None,
     vendor_identity_receipt: dict[str, Any] | None = None,
     proof_packs: list[dict[str, Any]] | None = None,
     trust_network_manifest: dict[str, Any] | None = None,
@@ -309,6 +312,7 @@ def verify_identity_provider_lifecycle_worker_receipt(
             identity_provider_attestation=identity_provider_attestation,
             identity_provider_session_receipt=identity_provider_session_receipt,
             identity_payload=identity_payload,
+            identity_payload_path=identity_payload_path,
             vendor_identity_receipt=vendor_identity_receipt,
             proof_packs=proof_packs,
             trust_network_manifest=trust_network_manifest,
@@ -342,6 +346,7 @@ def append_identity_provider_lifecycle_worker_receipt(
     identity_provider_attestation: dict[str, Any] | None = None,
     identity_provider_session_receipt: dict[str, Any] | None = None,
     identity_payload: dict[str, Any] | None = None,
+    identity_payload_path: str | Path | None = None,
     vendor_identity_receipt: dict[str, Any] | None = None,
     proof_packs: list[dict[str, Any]] | None = None,
     trust_network_manifest: dict[str, Any] | None = None,
@@ -354,6 +359,7 @@ def append_identity_provider_lifecycle_worker_receipt(
         identity_provider_attestation=identity_provider_attestation,
         identity_provider_session_receipt=identity_provider_session_receipt,
         identity_payload=identity_payload,
+        identity_payload_path=identity_payload_path,
         vendor_identity_receipt=vendor_identity_receipt,
         proof_packs=proof_packs,
         trust_network_manifest=trust_network_manifest,

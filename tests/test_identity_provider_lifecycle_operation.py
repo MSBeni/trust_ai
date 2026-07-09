@@ -62,9 +62,12 @@ class IdentityProviderLifecycleOperationTests(unittest.TestCase):
             expires_at="2027-07-10T00:00:00Z",
             trust_network_manifest=manifest,
         )
-        payload = json.loads(IDENTITY.read_text(encoding="utf-8"))
+        payload_path = tmp / "identity-payload.json"
+        payload_path.write_text(IDENTITY.read_text(encoding="utf-8"), encoding="utf-8")
+        payload = json.loads(payload_path.read_text(encoding="utf-8"))
         attestation = build_identity_provider_attestation(
             payload,
+            identity_payload_path=payload_path,
             vendor_identity_receipt=vendor,
             proof_packs=[pack],
             trust_network_manifest=manifest,
@@ -79,6 +82,7 @@ class IdentityProviderLifecycleOperationTests(unittest.TestCase):
         session = build_identity_provider_session_receipt(
             attestation,
             identity_payload=payload,
+            identity_payload_path=payload_path,
             vendor_identity_receipt=vendor,
             proof_packs=[pack],
             trust_network_manifest=manifest,
@@ -120,6 +124,7 @@ class IdentityProviderLifecycleOperationTests(unittest.TestCase):
             "manifest": manifest,
             "vendor": vendor,
             "identity_payload": payload,
+            "identity_payload_path": payload_path,
             "attestation": attestation,
             "session": session,
         }
@@ -129,6 +134,7 @@ class IdentityProviderLifecycleOperationTests(unittest.TestCase):
             sources["attestation"],
             identity_provider_session_receipt=sources["session"],
             identity_payload=sources["identity_payload"],
+            identity_payload_path=sources["identity_payload_path"],
             vendor_identity_receipt=sources["vendor"],
             proof_packs=[sources["pack"]],
             trust_network_manifest=sources["manifest"],
@@ -170,6 +176,7 @@ class IdentityProviderLifecycleOperationTests(unittest.TestCase):
                 identity_provider_attestation=sources["attestation"],
                 identity_provider_session_receipt=sources["session"],
                 identity_payload=sources["identity_payload"],
+                identity_payload_path=sources["identity_payload_path"],
                 vendor_identity_receipt=sources["vendor"],
                 proof_packs=[sources["pack"]],
                 trust_network_manifest=sources["manifest"],
@@ -181,6 +188,7 @@ class IdentityProviderLifecycleOperationTests(unittest.TestCase):
                 identity_provider_attestation=sources["attestation"],
                 identity_provider_session_receipt=sources["session"],
                 identity_payload=sources["identity_payload"],
+                identity_payload_path=sources["identity_payload_path"],
                 vendor_identity_receipt=sources["vendor"],
                 proof_packs=[sources["pack"]],
                 trust_network_manifest=sources["manifest"],
@@ -204,6 +212,7 @@ class IdentityProviderLifecycleOperationTests(unittest.TestCase):
                 identity_provider_attestation=sources["attestation"],
                 identity_provider_session_receipt=tampered,
                 identity_payload=sources["identity_payload"],
+                identity_payload_path=sources["identity_payload_path"],
                 vendor_identity_receipt=sources["vendor"],
                 proof_packs=[sources["pack"]],
                 trust_network_manifest=sources["manifest"],
@@ -212,6 +221,34 @@ class IdentityProviderLifecycleOperationTests(unittest.TestCase):
             self.assertFalse(result.ok)
             self.assertTrue(any("source identity provider session invalid" in error for error in result.errors))
             self.assertTrue(any("session binding" in error for error in result.errors))
+
+    def test_identity_provider_lifecycle_operation_replays_identity_payload_artifact_tamper(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            sources = self._sources(tmp)
+            receipt = self._receipt(sources)
+            payload_path = sources["identity_payload_path"]
+            payload_path.write_text(payload_path.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+            replay_payload = json.loads(payload_path.read_text(encoding="utf-8"))
+
+            result = verify_identity_provider_lifecycle_operation_receipt(
+                receipt,
+                identity_provider_attestation=sources["attestation"],
+                identity_provider_session_receipt=sources["session"],
+                identity_payload=replay_payload,
+                identity_payload_path=payload_path,
+                vendor_identity_receipt=sources["vendor"],
+                proof_packs=[sources["pack"]],
+                trust_network_manifest=sources["manifest"],
+            )
+
+            self.assertFalse(result.ok)
+            self.assertTrue(
+                any(
+                    "source identity provider attestation invalid: identity provider source_artifacts do not match supplied identity payload artifact" in error
+                    for error in result.errors
+                )
+            )
 
     def test_cli_identity_provider_lifecycle_operation_round_trip(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -231,7 +268,7 @@ class IdentityProviderLifecycleOperationTests(unittest.TestCase):
             paths["pack"].write_text(json.dumps(sources["pack"], indent=2, sort_keys=True), encoding="utf-8")
             write_trust_network_manifest(paths["manifest"], sources["manifest"])
             write_vendor_identity_receipt(paths["vendor"], sources["vendor"])
-            paths["identity_payload"].write_text(json.dumps(sources["identity_payload"], indent=2, sort_keys=True), encoding="utf-8")
+            paths["identity_payload"].write_text(sources["identity_payload_path"].read_text(encoding="utf-8"), encoding="utf-8")
             write_identity_provider_attestation(paths["attestation"], sources["attestation"])
             write_identity_provider_session_receipt(paths["session"], sources["session"])
 

@@ -56,10 +56,12 @@ Supported operation kinds are `account_create`, `account_update`,
 - HTTP response status, success flag, and outcome consistency;
 - redacted provider credential reference and absence of secret-like raw values;
 - source identity-provider attestation verification when supplied, including
-  optional replay of identity payload, vendor identity receipt, trust-network
+  optional replay of identity payload, retained raw identity export artifact
+  bytes recorded in `source_artifacts`, vendor identity receipt, trust-network
   manifest, and proof packs;
 - source identity-provider session verification when supplied, including
-  session hash replay and provider/identity matching.
+  session hash replay, propagated raw identity export artifact replay, and
+  provider/identity matching.
 
 When source receipts are not supplied, verification can only prove receipt
 integrity and embedded hashes. It emits warnings for missing deep replay. Modes

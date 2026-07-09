@@ -48,7 +48,8 @@ Supported event kinds are `agent_login`, `token_introspection`,
 - HTTP response status and success flag consistency;
 - redacted credential reference and absence of secret-like raw values;
 - source identity-provider attestation verification when supplied, including
-  optional replay of identity payload, vendor identity receipt, trust-network
+  optional replay of identity payload, retained raw identity export artifact
+  bytes recorded in `source_artifacts`, vendor identity receipt, trust-network
   manifest, and proof packs.
 
 When the source attestation is not supplied, verification can only prove receipt
