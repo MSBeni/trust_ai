@@ -62,6 +62,8 @@ class PhaseOneTwoTests(unittest.TestCase):
 
             self.assertEqual(SHADOW_REPLAY_ENTRY_TYPE, shadow_entry["entry_type"])
             self.assertEqual(MCP_TOOL_CALL_ENTRY_TYPE, mcp_entries[0]["entry_type"])
+            self.assertEqual(0, mcp_entries[0]["payload"]["transcript_sequence"])
+            self.assertEqual(mcp_entries[0]["payload"]["transcript_node_hash"], mcp_entries[0]["payload"]["transcript_root"])
             self.assertEqual(SOAK_REPORT_ENTRY_TYPE, soak_entry["entry_type"])
             self.assertTrue(verify_proof_pack(pack).ok)
             entry_types = {entry["entry_type"] for entry in pack["chain"]["entries"]}

@@ -12,6 +12,13 @@ Each tool call records:
 - contract hash;
 - canonical request hash;
 - canonical response hash;
+- transcript sequence number, call count, previous node hash, current node hash,
+  and transcript root hash;
 - full normalized transcript payload.
 
 Captured calls append `mcp.tool_call.evidenced` entries to the evidence chain.
+The transcript node hash is computed from the sequence number, total call count,
+previous transcript node hash, and canonical tool-call hash. The last node hash
+is copied into every entry as `transcript_root`, so reordered, truncated, or
+inserted tool calls change the transcript root even when each individual call is
+otherwise valid.
