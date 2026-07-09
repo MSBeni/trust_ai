@@ -770,6 +770,7 @@ def _verify_bundle_source_artifacts(
         errors.append("bundle source_artifacts must be a list")
         return
     manifest_evidence_refs: set[tuple[str, str]] = set()
+    embedded_external_file_refs: set[tuple[str, str]] = set()
     decoded_artifacts: list[tuple[dict[str, Any], bytes]] = []
     for artifact in source_artifacts:
         if not isinstance(artifact, dict):
@@ -794,6 +795,8 @@ def _verify_bundle_source_artifacts(
         actual_sha = "sha256:" + sha256(data).hexdigest()
         if artifact.get("sha256") != actual_sha:
             errors.append(f"bundle source artifact hash mismatch: {path}")
+        if kind == "external-evidence-file" and isinstance(path, str):
+            embedded_external_file_refs.add((path, actual_sha))
         decoded_artifacts.append((artifact, data))
         if kind == "external-evidence-manifest":
             manifest = _json_source_artifact(artifact, data, errors)
@@ -807,6 +810,8 @@ def _verify_bundle_source_artifacts(
             audit = _json_source_artifact(artifact, data, errors)
             if isinstance(audit, dict) and not _chain_has_roadmap_audit(chain, content_hash(audit)):
                 errors.append(f"roadmap audit artifact is not committed to bundled chain: {path}")
+    for path, _sha in sorted(manifest_evidence_refs - embedded_external_file_refs):
+        warnings.append(f"external evidence file referenced by embedded manifest is not embedded: {path}")
     for artifact, _data in decoded_artifacts:
         if artifact.get("kind") != "external-evidence-file":
             continue

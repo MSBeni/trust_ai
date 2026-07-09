@@ -124,7 +124,7 @@ self-contained artifact for third-party review. It embeds:
 `roadmap-evidence-bundle-verify` requires no separate chain state path. It
 recomputes `bundle_id`, reconstructs the embedded evidence chain, verifies that
 the embedded tree matches the entries, verifies the report against that embedded
-chain with the same strictness options, decodes and rehashes embedded source artifacts, confirms embedded roadmap-audit and external-evidence-manifest JSON artifacts are committed to the bundled chain by content hash, warns when embedded external-evidence-file artifacts are not referenced by an embedded manifest, and rejects stale or tampered bundle summaries.
+chain with the same strictness options, decodes and rehashes embedded source artifacts, confirms embedded roadmap-audit and external-evidence-manifest JSON artifacts are committed to the bundled chain by content hash, warns when embedded external-evidence-file artifacts are not referenced by an embedded manifest, warns when an embedded manifest references evidence files that are not embedded, and rejects stale or tampered bundle summaries.
 
 ## Verification Rules
 

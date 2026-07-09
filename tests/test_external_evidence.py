@@ -1,10 +1,12 @@
 import copy
+import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
 from trustai.external_evidence import (
     EXTERNAL_EVIDENCE_ENTRY_TYPE,
@@ -187,6 +189,9 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             bundle_path = tmp_path / "roadmap-evidence-bundle.json"
             bundle_markdown_path = tmp_path / "roadmap-evidence-bundle.md"
             chain_path = tmp_path / "chain.json"
+            bundled_fixture_path = tmp_path / FIXTURE
+            bundled_fixture_path.parent.mkdir(parents=True)
+            shutil.copyfile(ROOT / FIXTURE, bundled_fixture_path)
             subprocess.run(
                 [
                     sys.executable,
@@ -331,6 +336,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     f"roadmap-audit,{audit_path.name},Generated roadmap audit JSON",
                     "--source-artifact",
                     f"external-evidence-manifest,{manifest_path.name},Generated external evidence manifest JSON",
+                    "--source-artifact",
+                    f"external-evidence-file,{FIXTURE},Recorded Go verifier workflow export",
                     "--out",
                     str(bundle_path),
                     "--markdown",
@@ -361,15 +368,24 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertTrue(report_markdown_path.exists())
             bundle = load_roadmap_evidence_bundle(bundle_path)
             self.assertEqual(report["report_id"], bundle["summary"]["report_id"])
-            self.assertEqual(2, bundle["summary"]["source_artifact_count"])
-            self.assertEqual(["roadmap-audit", "external-evidence-manifest"], [artifact["kind"] for artifact in bundle["source_artifacts"]])
+            self.assertEqual(3, bundle["summary"]["source_artifact_count"])
+            self.assertEqual(["roadmap-audit", "external-evidence-manifest", "external-evidence-file"], [artifact["kind"] for artifact in bundle["source_artifacts"]])
             self.assertTrue(bundle_markdown_path.exists())
-            self.assertIn("Embedded source artifacts: 2", bundle_markdown_path.read_text(encoding="utf-8"))
+            self.assertIn("Embedded source artifacts: 3", bundle_markdown_path.read_text(encoding="utf-8"))
             tampered_bundle = copy.deepcopy(bundle)
             tampered_bundle["source_artifacts"][0]["sha256"] = "sha256:" + "0" * 64
             tampered_result = verify_roadmap_evidence_bundle(tampered_bundle, require_external=True)
             self.assertFalse(tampered_result.ok)
             self.assertTrue(any("source artifact" in error for error in tampered_result.errors))
+            missing_file_bundle = copy.deepcopy(bundle)
+            missing_file_bundle["source_artifacts"] = [
+                artifact for artifact in missing_file_bundle["source_artifacts"] if artifact["kind"] != "external-evidence-file"
+            ]
+            missing_file_bundle["summary"]["source_artifact_count"] = 2
+            missing_file_bundle["bundle_id"] = content_hash(without_keys(missing_file_bundle, "bundle_id"))
+            missing_file_result = verify_roadmap_evidence_bundle(missing_file_bundle, require_external=True)
+            self.assertTrue(missing_file_result.ok, missing_file_result.errors)
+            self.assertTrue(any("referenced by embedded manifest is not embedded" in warning for warning in missing_file_result.warnings))
 
     def test_complete_external_evidence_manifest_covers_reference_requirements(self):
         audit = build_roadmap_audit(ROOT)
