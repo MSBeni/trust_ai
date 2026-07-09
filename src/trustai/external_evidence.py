@@ -55,6 +55,7 @@ class RoadmapEvidenceReportVerification:
     errors: list[str]
     warnings: list[str]
 
+
 def build_external_evidence_manifest(
     roadmap_audit: dict[str, Any],
     *,
@@ -337,6 +338,7 @@ def verify_roadmap_evidence_report(
 
     return RoadmapEvidenceReportVerification(ok=not errors, errors=errors, warnings=warnings)
 
+
 def append_external_evidence_manifest(
     chain: EvidenceChain,
     manifest: dict[str, Any],
@@ -406,6 +408,7 @@ def write_roadmap_evidence_report(path: str | Path, report: dict[str, Any]) -> N
 def load_roadmap_evidence_report(path: str | Path) -> dict[str, Any]:
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
+
 def write_external_evidence_markdown(path: str | Path, manifest: dict[str, Any]) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -416,6 +419,7 @@ def write_roadmap_evidence_markdown(path: str | Path, report: dict[str, Any]) ->
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(render_roadmap_evidence_markdown(report), encoding="utf-8")
+
 
 def render_external_evidence_markdown(manifest: dict[str, Any]) -> str:
     rows = "\n".join(

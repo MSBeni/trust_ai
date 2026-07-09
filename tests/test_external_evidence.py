@@ -272,6 +272,22 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 cwd=ROOT,
                 check=True,
             )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "roadmap-evidence-report-verify",
+                    str(report_path),
+                    "--state",
+                    str(chain_path),
+                    "--tenant",
+                    "external-evidence-cli",
+                    "--require-external",
+                ],
+                cwd=ROOT,
+                check=True,
+            )
             chain = EvidenceChain.load(chain_path, tenant_id="external-evidence-cli")
             self.assertEqual(2, len(chain.entries))
             self.assertEqual(EXTERNAL_EVIDENCE_ENTRY_TYPE, chain.entries[1]["entry_type"])

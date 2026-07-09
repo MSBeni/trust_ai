@@ -106,7 +106,8 @@ evidence entries already committed to an evidence chain. The report records:
 A verifier MUST recompute `report_id`, verify the supplied chain with the same
 options, compare the report's chain tree root and entry summaries to the
 supplied chain, and reject reports whose embedded semantic verification no longer
-matches the chain.
+matches the chain. `roadmap-evidence-report-verify` performs this offline check
+without contacting TrustAI services or live authority systems.
 
 ## Verification Rules
 
