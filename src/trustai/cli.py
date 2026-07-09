@@ -74,6 +74,15 @@ from .framework_runtime_service import (
     verify_framework_runtime_service_attestation,
     write_framework_runtime_service_attestation,
 )
+from .framework_runtime_service_worker import (
+    FRAMEWORK_RUNTIME_SERVICE_WORKER_MODES,
+    FRAMEWORK_RUNTIME_SERVICE_WORKER_OPERATION_KINDS,
+    append_framework_runtime_service_worker_receipt,
+    build_framework_runtime_service_worker_receipt,
+    load_framework_runtime_service_worker_receipt,
+    verify_framework_runtime_service_worker_receipt,
+    write_framework_runtime_service_worker_receipt,
+)
 from .anchor import append_anchor, write_anchor
 from .anchor_provider import (
     ANCHOR_PROVIDER_MODES,
@@ -2707,6 +2716,136 @@ def cmd_framework_runtime_service_append(args: argparse.Namespace) -> int:
         print(f"framework runtime service attestation entry: {args.out}")
     print(f"framework runtime service attestation entry id: {entry['entry_id']}")
     print(f"service attestation id: {attestation['attestation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+def _load_framework_runtime_service_worker_sources(args: argparse.Namespace, *, require_all: bool) -> dict[str, object]:
+    sources: dict[str, object] = {}
+    if getattr(args, "service_attestation", None):
+        sources["service_attestation"] = load_framework_runtime_service_attestation(args.service_attestation)
+    elif require_all:
+        raise ValueError("framework runtime service attestation is required")
+    service_sources = _load_framework_runtime_service_sources(args, require_all=require_all)
+    sources.update(service_sources)
+    return sources
+
+
+def cmd_framework_runtime_service_worker(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_framework_runtime_service_worker_sources(args, require_all=True)
+        receipt = build_framework_runtime_service_worker_receipt(
+            sources["service_attestation"],
+            sources["storage_receipt"],
+            sources["storage_export"],
+            sources["worker"],
+            sources["runtime_audit"],
+            sources["audit_export"],
+            sources["operation"],
+            sources["trace_payload"],
+            sources["release"],
+            sources["matrix"],
+            root=args.root,
+            mode=args.mode,
+            environment=args.environment,
+            worker_ref=args.worker_ref,
+            run_ref=args.run_ref,
+            operation_kind=args.operation_kind,
+            actor_ref=args.actor_ref,
+            schedule_ref=args.schedule_ref,
+            cadence_seconds=args.cadence_seconds,
+            lease_ref=args.lease_ref,
+            checkpoint_ref=args.checkpoint_ref,
+            checkpoint_hash=args.checkpoint_hash,
+            previous_cursor_ref=args.previous_cursor_ref,
+            next_cursor_ref=args.next_cursor_ref,
+            attempt=args.attempt,
+            max_attempts=args.max_attempts,
+            queue_ref=args.queue_ref,
+            queue_message_ref=args.queue_message_ref,
+            queue_message_hash=args.queue_message_hash,
+            dead_letter_queue_ref=args.dead_letter_queue_ref,
+            runtime_worker_ref=args.runtime_worker_ref,
+            stream_message_ref=args.stream_message_ref,
+            stream_message_hash=args.stream_message_hash,
+            storage_object_ref=args.storage_object_ref,
+            storage_object_hash=args.storage_object_hash,
+            clickhouse_batch_ref=args.clickhouse_batch_ref,
+            clickhouse_batch_hash=args.clickhouse_batch_hash,
+            postgres_index_ref=args.postgres_index_ref,
+            postgres_index_hash=args.postgres_index_hash,
+            control_index_ref=args.control_index_ref,
+            control_index_hash=args.control_index_hash,
+            request_hash=args.request_hash,
+            response_status=args.response_status,
+            response_hash=args.response_hash,
+            metrics_ref=args.metrics_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            retention_until=args.retention_until,
+            credential_ref=args.credential_ref,
+            evidence_refs=args.evidence_ref,
+            started_at=args.started_at,
+            completed_at=args.completed_at,
+            next_run_at=args.next_run_at,
+            error_ref=args.error_ref,
+            key=args.key,
+        )
+        result = verify_framework_runtime_service_worker_receipt(receipt, **sources, root=args.root, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime service worker receipt generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("framework runtime service worker receipt generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_framework_runtime_service_worker_receipt(args.out, receipt)
+    print(f"framework runtime service worker receipt: {args.out}")
+    print(f"worker operation id: {receipt['worker_operation_id']}")
+    print(f"service attestation id: {receipt['service']['attestation_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_framework_runtime_service_worker_verify(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_framework_runtime_service_worker_receipt(args.receipt)
+        sources = _load_framework_runtime_service_worker_sources(args, require_all=False)
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime service worker receipt verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_framework_runtime_service_worker_receipt(receipt, **sources, root=args.root, key=args.key)
+    if result.ok:
+        print(f"verified framework runtime service worker receipt: {args.receipt}")
+        print(f"worker operation id: {receipt['worker_operation_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"framework runtime service worker receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_framework_runtime_service_worker_append(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_framework_runtime_service_worker_receipt(args.receipt)
+        sources = _load_framework_runtime_service_worker_sources(args, require_all=True)
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime service worker receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_framework_runtime_service_worker_receipt(chain, receipt, **sources, root=args.root, key=args.key)
+    except ValueError as exc:
+        print(f"framework runtime service worker receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"framework runtime service worker entry: {args.out}")
+    print(f"framework runtime service worker entry id: {entry['entry_id']}")
+    print(f"worker operation id: {receipt['worker_operation_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
 def cmd_mcp_capture(args: argparse.Namespace) -> int:
@@ -12861,6 +13000,84 @@ def build_parser() -> argparse.ArgumentParser:
     framework_runtime_service_append.add_argument("--key")
     _add_state_args(framework_runtime_service_append)
     framework_runtime_service_append.set_defaults(func=cmd_framework_runtime_service_append)
+    def _add_framework_runtime_service_worker_source_args(parser: argparse.ArgumentParser, *, required: bool) -> None:
+        parser.add_argument("--service-attestation", required=required)
+        _add_framework_runtime_service_source_args(parser, required=required)
+
+    def _add_framework_runtime_service_worker_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--root", default=".")
+        parser.add_argument("--mode", choices=sorted(FRAMEWORK_RUNTIME_SERVICE_WORKER_MODES), default="hosted-worker")
+        parser.add_argument("--environment", default="local")
+        parser.add_argument("--worker-ref", required=True)
+        parser.add_argument("--run-ref", required=True)
+        parser.add_argument("--operation-kind", choices=sorted(FRAMEWORK_RUNTIME_SERVICE_WORKER_OPERATION_KINDS), required=True)
+        parser.add_argument("--actor-ref", required=True)
+        parser.add_argument("--schedule-ref", required=True)
+        parser.add_argument("--cadence-seconds", type=int, required=True)
+        parser.add_argument("--lease-ref", required=True)
+        parser.add_argument("--checkpoint-ref", required=True)
+        parser.add_argument("--checkpoint-hash", required=True)
+        parser.add_argument("--previous-cursor-ref")
+        parser.add_argument("--next-cursor-ref")
+        parser.add_argument("--attempt", type=int, default=1)
+        parser.add_argument("--max-attempts", type=int, default=3)
+        parser.add_argument("--queue-ref", required=True)
+        parser.add_argument("--queue-message-ref", required=True)
+        parser.add_argument("--queue-message-hash", required=True)
+        parser.add_argument("--dead-letter-queue-ref")
+        parser.add_argument("--runtime-worker-ref", required=True)
+        parser.add_argument("--stream-message-ref", required=True)
+        parser.add_argument("--stream-message-hash", required=True)
+        parser.add_argument("--storage-object-ref", required=True)
+        parser.add_argument("--storage-object-hash", required=True)
+        parser.add_argument("--clickhouse-batch-ref", required=True)
+        parser.add_argument("--clickhouse-batch-hash", required=True)
+        parser.add_argument("--postgres-index-ref", required=True)
+        parser.add_argument("--postgres-index-hash", required=True)
+        parser.add_argument("--control-index-ref", required=True)
+        parser.add_argument("--control-index-hash", required=True)
+        parser.add_argument("--request-hash")
+        parser.add_argument("--response-status", type=int)
+        parser.add_argument("--response-hash")
+        parser.add_argument("--metrics-ref", required=True)
+        parser.add_argument("--audit-log-ref", required=True)
+        parser.add_argument("--audit-log-root", required=True)
+        parser.add_argument("--retention-until", required=True)
+        parser.add_argument("--credential-ref", required=True)
+        parser.add_argument("--evidence-ref", action="append", default=[])
+        parser.add_argument("--started-at", required=True)
+        parser.add_argument("--completed-at")
+        parser.add_argument("--next-run-at")
+        parser.add_argument("--error-ref")
+        parser.add_argument("--out", default="artifacts/framework-runtime-service-worker.json")
+        parser.add_argument("--key")
+
+    framework_runtime_service_worker = subparsers.add_parser(
+        "framework-runtime-service-worker", help="write a signed framework runtime service worker operation receipt"
+    )
+    _add_framework_runtime_service_worker_source_args(framework_runtime_service_worker, required=True)
+    _add_framework_runtime_service_worker_fields(framework_runtime_service_worker)
+    framework_runtime_service_worker.set_defaults(func=cmd_framework_runtime_service_worker)
+
+    framework_runtime_service_worker_verify = subparsers.add_parser(
+        "framework-runtime-service-worker-verify", help="verify a signed framework runtime service worker operation receipt"
+    )
+    framework_runtime_service_worker_verify.add_argument("receipt")
+    _add_framework_runtime_service_worker_source_args(framework_runtime_service_worker_verify, required=False)
+    framework_runtime_service_worker_verify.add_argument("--root", default=".")
+    framework_runtime_service_worker_verify.add_argument("--key")
+    framework_runtime_service_worker_verify.set_defaults(func=cmd_framework_runtime_service_worker_verify)
+
+    framework_runtime_service_worker_append = subparsers.add_parser(
+        "framework-runtime-service-worker-append", help="append a framework runtime service worker operation receipt as chain evidence"
+    )
+    framework_runtime_service_worker_append.add_argument("receipt")
+    _add_framework_runtime_service_worker_source_args(framework_runtime_service_worker_append, required=True)
+    framework_runtime_service_worker_append.add_argument("--root", default=".")
+    framework_runtime_service_worker_append.add_argument("--out", default="artifacts/framework-runtime-service-worker-entry.json")
+    framework_runtime_service_worker_append.add_argument("--key")
+    _add_state_args(framework_runtime_service_worker_append)
+    framework_runtime_service_worker_append.set_defaults(func=cmd_framework_runtime_service_worker_append)
     mcp = subparsers.add_parser("mcp-capture", help="append MCP tool call transcripts to the chain")
     mcp.add_argument("transcript")
     _add_state_args(mcp)

@@ -48,6 +48,9 @@ records hash-bound summaries for the attestation, source storage receipt,
 service, scheduler, storage backends, security controls, observability controls,
 operator actor, and control status summary.
 
+Individual hosted worker runs that consume this service attestation are
+specified in `framework-runtime-service-worker-v0.1.md`.
+
 ## CLI
 
 ```powershell
