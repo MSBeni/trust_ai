@@ -22,3 +22,9 @@ previous transcript node hash, and canonical tool-call hash. The last node hash
 is copied into every entry as `transcript_root`, so reordered, truncated, or
 inserted tool calls change the transcript root even when each individual call is
 otherwise valid.
+
+Proof packs that include `mcp.tool_call.evidenced` entries must replay the
+transcript chain offline. The verifier rejects packs when request/response hashes,
+tool-call hashes, sequence numbers, call counts, previous-node pointers, node
+hashes, transcript roots, timestamps, or contract hashes do not match the
+embedded normalized tool calls.

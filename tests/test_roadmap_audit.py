@@ -43,6 +43,7 @@ class RoadmapAuditTests(unittest.TestCase):
         proof_pack_evidence = {item["path"] for item in proof_pack_requirement["evidence"]}
         self.assertIn("src/trustai/verifier.py", proof_pack_evidence)
         self.assertIn("tests/test_temporal_holdout.py", proof_pack_evidence)
+        self.assertIn("tests/test_mcp_gateway.py", proof_pack_evidence)
         identity_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "agent-inventory-and-identity")
         identity_evidence = {item["path"] for item in identity_requirement["evidence"]}
         self.assertIn("src/trustai/identity_provider_lifecycle_operation.py", identity_evidence)

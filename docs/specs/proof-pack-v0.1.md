@@ -49,7 +49,10 @@ An offline verifier must reject the pack when any of these checks fail:
    approval evidence entries produces a different decision;
 10. any included `shadow_replay.completed` entry contains a temporal holdout
     manifest that fails signature, record-chain, contract, replay, or summary
-    verification.
+    verification;
+11. any included `mcp.tool_call.evidenced` entries contain request, response,
+    tool-call, sequence, call-count, previous-node, node, root, or contract
+    evidence that cannot be replayed into the declared MCP transcript chain.
 
 When a gate decision relies on `human_approval.granted` entries, those entries
 must be included in `chain.entries` with valid signatures, timestamp tokens,

@@ -13,6 +13,7 @@ from .crypto import verify_value
 from .gate import EVAL_ENTRY_TYPE, GATE_ENTRY_TYPE, evaluate_contract
 from .keyring import verify_entry_with_keyring, verify_value_with_keyring
 from .merkle import verify_inclusion
+from .mcp_gateway import MCP_TOOL_CALL_ENTRY_TYPE, verify_mcp_transcript_entries
 from .proofpack import PROOF_PACK_SPEC_VERSION
 from .shadow import SHADOW_REPLAY_ENTRY_TYPE, verify_temporal_holdout_manifest
 
@@ -62,6 +63,7 @@ def verify_proof_pack(
     entry_by_type: dict[str, dict[str, Any]] = {}
     approval_entries: list[dict[str, Any]] = []
     shadow_entries: list[dict[str, Any]] = []
+    mcp_entries: list[dict[str, Any]] = []
 
     if not root:
         errors.append("chain tree root missing")
@@ -92,6 +94,8 @@ def verify_proof_pack(
                 approval_entries.append(entry)
             if entry_type == SHADOW_REPLAY_ENTRY_TYPE:
                 shadow_entries.append(entry)
+            if entry_type == MCP_TOOL_CALL_ENTRY_TYPE:
+                mcp_entries.append(entry)
 
     contract_entry = entry_by_type.get(CONTRACT_ENTRY_TYPE)
     eval_entry = entry_by_type.get(EVAL_ENTRY_TYPE)
@@ -196,6 +200,10 @@ def verify_proof_pack(
                     errors.append(
                         f"shadow replay entry {shadow_entry.get('index')} temporal_holdout summary mismatch for {field}"
                     )
+    if contract_digest and mcp_entries:
+        mcp_result = verify_mcp_transcript_entries(mcp_entries, contract_hash=contract_digest)
+        errors.extend(mcp_result.errors)
+        warnings.extend(mcp_result.warnings)
     decision = proof_pack.get("gate_decision", {}).get("outcome")
     if decision and decision != "passed":
         warnings.append(f"proof pack is valid but gate outcome is {decision}")
