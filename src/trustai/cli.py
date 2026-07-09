@@ -67,6 +67,13 @@ from .framework_runtime_storage import (
     verify_framework_runtime_storage_receipt,
     write_framework_runtime_storage_receipt,
 )
+from .framework_runtime_service import (
+    append_framework_runtime_service_attestation,
+    build_framework_runtime_service_attestation,
+    load_framework_runtime_service_attestation,
+    verify_framework_runtime_service_attestation,
+    write_framework_runtime_service_attestation,
+)
 from .anchor import append_anchor, write_anchor
 from .anchor_provider import (
     ANCHOR_PROVIDER_MODES,
@@ -2559,6 +2566,149 @@ def cmd_framework_runtime_storage_append(args: argparse.Namespace) -> int:
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
+def _load_framework_runtime_service_sources(args: argparse.Namespace, *, require_all: bool) -> dict[str, object]:
+    sources: dict[str, object] = {}
+    if getattr(args, "storage_receipt", None):
+        sources["storage_receipt"] = load_framework_runtime_storage_receipt(args.storage_receipt)
+    elif require_all:
+        raise ValueError("framework runtime storage receipt is required")
+    storage_sources = _load_framework_runtime_storage_sources(args, require_all=require_all)
+    sources.update(storage_sources)
+    return sources
+
+
+def cmd_framework_runtime_service(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_framework_runtime_service_sources(args, require_all=True)
+        attestation = build_framework_runtime_service_attestation(
+            sources["storage_receipt"],
+            sources["storage_export"],
+            sources["worker"],
+            sources["runtime_audit"],
+            sources["audit_export"],
+            sources["operation"],
+            sources["trace_payload"],
+            sources["release"],
+            sources["matrix"],
+            root=args.root,
+            mode=args.mode,
+            environment=args.environment,
+            service_ref=args.service_ref,
+            service_version=args.service_version,
+            service_image=args.service_image,
+            service_image_digest=args.service_image_digest,
+            service_binary_hash=args.service_binary_hash,
+            replicas_min=args.replicas_min,
+            replicas_max=args.replicas_max,
+            availability_zones=args.availability_zone,
+            runtime_worker_ref=args.runtime_worker_ref,
+            scheduler_ref=args.scheduler_ref,
+            schedule_cadence_seconds=args.schedule_cadence_seconds,
+            queue_ref=args.queue_ref,
+            dead_letter_queue_ref=args.dead_letter_queue_ref,
+            lease_store_ref=args.lease_store_ref,
+            lease_store_hash=args.lease_store_hash,
+            checkpoint_store_ref=args.checkpoint_store_ref,
+            checkpoint_store_hash=args.checkpoint_store_hash,
+            cursor_store_ref=args.cursor_store_ref,
+            idempotency_store_ref=args.idempotency_store_ref,
+            retry_policy_ref=args.retry_policy_ref,
+            max_concurrency=args.max_concurrency,
+            stream_backend=args.stream_backend,
+            stream_ref=args.stream_ref,
+            stream_topic=args.stream_topic,
+            stream_dlq_ref=args.stream_dlq_ref,
+            worm_store_ref=args.worm_store_ref,
+            object_lock_policy_ref=args.object_lock_policy_ref,
+            clickhouse_ref=args.clickhouse_ref,
+            clickhouse_schema_hash=args.clickhouse_schema_hash,
+            clickhouse_backup_ref=args.clickhouse_backup_ref,
+            postgres_ref=args.postgres_ref,
+            postgres_schema_hash=args.postgres_schema_hash,
+            postgres_backup_ref=args.postgres_backup_ref,
+            mtls_policy_ref=args.mtls_policy_ref,
+            auth_policy_ref=args.auth_policy_ref,
+            tenant_isolation_ref=args.tenant_isolation_ref,
+            admission_policy_ref=args.admission_policy_ref,
+            rate_limit_policy_ref=args.rate_limit_policy_ref,
+            network_policy_ref=args.network_policy_ref,
+            egress_policy_ref=args.egress_policy_ref,
+            secret_store_ref=args.secret_store_ref,
+            kms_key_ref=args.kms_key_ref,
+            metrics_ref=args.metrics_ref,
+            alert_policy_ref=args.alert_policy_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            access_log_ref=args.access_log_ref,
+            access_log_root=args.access_log_root,
+            retention_until=args.retention_until,
+            actor_ref=args.actor_ref,
+            credential_ref=args.credential_ref,
+            evidence_refs=args.evidence_ref,
+            attested_at=args.attested_at,
+            key=args.key,
+        )
+        result = verify_framework_runtime_service_attestation(attestation, **sources, root=args.root, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime service attestation generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("framework runtime service attestation generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_framework_runtime_service_attestation(args.out, attestation)
+    print(f"framework runtime service attestation: {args.out}")
+    print(f"service attestation id: {attestation['attestation_id']}")
+    print(f"storage receipt id: {attestation['source']['storage_receipt_id']}")
+    print(f"service ref: {attestation['service']['service_ref']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_framework_runtime_service_verify(args: argparse.Namespace) -> int:
+    try:
+        attestation = load_framework_runtime_service_attestation(args.attestation)
+        sources = _load_framework_runtime_service_sources(args, require_all=False)
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime service attestation verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_framework_runtime_service_attestation(attestation, **sources, root=args.root, key=args.key)
+    if result.ok:
+        print(f"verified framework runtime service attestation: {args.attestation}")
+        print(f"service attestation id: {attestation['attestation_id']}")
+        print(f"service ref: {attestation['service']['service_ref']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"framework runtime service attestation verification failed: {args.attestation}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_framework_runtime_service_append(args: argparse.Namespace) -> int:
+    try:
+        attestation = load_framework_runtime_service_attestation(args.attestation)
+        sources = _load_framework_runtime_service_sources(args, require_all=True)
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime service attestation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_framework_runtime_service_attestation(chain, attestation, **sources, root=args.root, key=args.key)
+    except ValueError as exc:
+        print(f"framework runtime service attestation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"framework runtime service attestation entry: {args.out}")
+    print(f"framework runtime service attestation entry id: {entry['entry_id']}")
+    print(f"service attestation id: {attestation['attestation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
 def cmd_mcp_capture(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
     calls = load_mcp_transcript(args.transcript)
@@ -12615,6 +12765,102 @@ def build_parser() -> argparse.ArgumentParser:
     _add_state_args(framework_runtime_storage_append)
     framework_runtime_storage_append.set_defaults(func=cmd_framework_runtime_storage_append)
 
+    def _add_framework_runtime_service_source_args(parser: argparse.ArgumentParser, *, required: bool) -> None:
+        parser.add_argument("--storage-receipt", required=required)
+        parser.add_argument("--storage-export", required=required)
+        parser.add_argument("--worker", required=required)
+        parser.add_argument("--runtime-audit", required=required)
+        parser.add_argument("--audit-export", required=required)
+        parser.add_argument("--operation", required=required)
+        parser.add_argument("--trace", required=required)
+        parser.add_argument("--release", required=required)
+        parser.add_argument("--matrix", required=required)
+
+    framework_runtime_service = subparsers.add_parser(
+        "framework-runtime-service", help="write a signed framework runtime hosted service attestation"
+    )
+    _add_framework_runtime_service_source_args(framework_runtime_service, required=True)
+    framework_runtime_service.add_argument("--root", default=".")
+    framework_runtime_service.add_argument(
+        "--mode", choices=["local-reference", "hosted-runtime-service", "production-design"], default="hosted-runtime-service"
+    )
+    framework_runtime_service.add_argument("--environment", default="local")
+    framework_runtime_service.add_argument("--service-ref", required=True)
+    framework_runtime_service.add_argument("--service-version", required=True)
+    framework_runtime_service.add_argument("--service-image", required=True)
+    framework_runtime_service.add_argument("--service-image-digest", required=True)
+    framework_runtime_service.add_argument("--service-binary-hash", required=True)
+    framework_runtime_service.add_argument("--replicas-min", type=int, required=True)
+    framework_runtime_service.add_argument("--replicas-max", type=int, required=True)
+    framework_runtime_service.add_argument("--availability-zone", action="append", default=[])
+    framework_runtime_service.add_argument("--runtime-worker-ref", required=True)
+    framework_runtime_service.add_argument("--scheduler-ref", required=True)
+    framework_runtime_service.add_argument("--schedule-cadence-seconds", type=int, required=True)
+    framework_runtime_service.add_argument("--queue-ref", required=True)
+    framework_runtime_service.add_argument("--dead-letter-queue-ref", required=True)
+    framework_runtime_service.add_argument("--lease-store-ref", required=True)
+    framework_runtime_service.add_argument("--lease-store-hash", required=True)
+    framework_runtime_service.add_argument("--checkpoint-store-ref", required=True)
+    framework_runtime_service.add_argument("--checkpoint-store-hash", required=True)
+    framework_runtime_service.add_argument("--cursor-store-ref", required=True)
+    framework_runtime_service.add_argument("--idempotency-store-ref", required=True)
+    framework_runtime_service.add_argument("--retry-policy-ref", required=True)
+    framework_runtime_service.add_argument("--max-concurrency", type=int, required=True)
+    framework_runtime_service.add_argument("--stream-backend", required=True)
+    framework_runtime_service.add_argument("--stream-ref", required=True)
+    framework_runtime_service.add_argument("--stream-topic", required=True)
+    framework_runtime_service.add_argument("--stream-dlq-ref", required=True)
+    framework_runtime_service.add_argument("--worm-store-ref", required=True)
+    framework_runtime_service.add_argument("--object-lock-policy-ref", required=True)
+    framework_runtime_service.add_argument("--clickhouse-ref", required=True)
+    framework_runtime_service.add_argument("--clickhouse-schema-hash", required=True)
+    framework_runtime_service.add_argument("--clickhouse-backup-ref", required=True)
+    framework_runtime_service.add_argument("--postgres-ref", required=True)
+    framework_runtime_service.add_argument("--postgres-schema-hash", required=True)
+    framework_runtime_service.add_argument("--postgres-backup-ref", required=True)
+    framework_runtime_service.add_argument("--mtls-policy-ref", required=True)
+    framework_runtime_service.add_argument("--auth-policy-ref", required=True)
+    framework_runtime_service.add_argument("--tenant-isolation-ref", required=True)
+    framework_runtime_service.add_argument("--admission-policy-ref", required=True)
+    framework_runtime_service.add_argument("--rate-limit-policy-ref", required=True)
+    framework_runtime_service.add_argument("--network-policy-ref", required=True)
+    framework_runtime_service.add_argument("--egress-policy-ref", required=True)
+    framework_runtime_service.add_argument("--secret-store-ref", required=True)
+    framework_runtime_service.add_argument("--kms-key-ref", required=True)
+    framework_runtime_service.add_argument("--metrics-ref", required=True)
+    framework_runtime_service.add_argument("--alert-policy-ref", required=True)
+    framework_runtime_service.add_argument("--audit-log-ref", required=True)
+    framework_runtime_service.add_argument("--audit-log-root", required=True)
+    framework_runtime_service.add_argument("--access-log-ref", required=True)
+    framework_runtime_service.add_argument("--access-log-root", required=True)
+    framework_runtime_service.add_argument("--retention-until", required=True)
+    framework_runtime_service.add_argument("--actor-ref", required=True)
+    framework_runtime_service.add_argument("--credential-ref", required=True)
+    framework_runtime_service.add_argument("--evidence-ref", action="append", default=[])
+    framework_runtime_service.add_argument("--attested-at")
+    framework_runtime_service.add_argument("--out", default="artifacts/framework-runtime-service.json")
+    framework_runtime_service.add_argument("--key")
+    framework_runtime_service.set_defaults(func=cmd_framework_runtime_service)
+
+    framework_runtime_service_verify = subparsers.add_parser(
+        "framework-runtime-service-verify", help="verify a signed framework runtime hosted service attestation"
+    )
+    framework_runtime_service_verify.add_argument("attestation")
+    _add_framework_runtime_service_source_args(framework_runtime_service_verify, required=False)
+    framework_runtime_service_verify.add_argument("--root", default=".")
+    framework_runtime_service_verify.add_argument("--key")
+    framework_runtime_service_verify.set_defaults(func=cmd_framework_runtime_service_verify)
+
+    framework_runtime_service_append = subparsers.add_parser(
+        "framework-runtime-service-append", help="append a framework runtime hosted service attestation as chain evidence"
+    )
+    framework_runtime_service_append.add_argument("attestation")
+    _add_framework_runtime_service_source_args(framework_runtime_service_append, required=True)
+    framework_runtime_service_append.add_argument("--root", default=".")
+    framework_runtime_service_append.add_argument("--out", default="artifacts/framework-runtime-service-entry.json")
+    framework_runtime_service_append.add_argument("--key")
+    _add_state_args(framework_runtime_service_append)
+    framework_runtime_service_append.set_defaults(func=cmd_framework_runtime_service_append)
     mcp = subparsers.add_parser("mcp-capture", help="append MCP tool call transcripts to the chain")
     mcp.add_argument("transcript")
     _add_state_args(mcp)

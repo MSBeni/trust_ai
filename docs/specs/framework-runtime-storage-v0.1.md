@@ -42,6 +42,9 @@ row counts, leases, checkpoints, cursors, or audit roots.
 records only hash-bound summaries while offline reviewers can replay disclosed
 provider export records.
 
+The hosted-service control layer that consumes this receipt is documented in
+`framework-runtime-service-attestation-v0.1.md`.
+
 ## CLI
 
 ```powershell
