@@ -49,10 +49,25 @@ Adapters emit normalized events with:
 - `attributes.trustai.adapter.framework`
 - `attributes.trustai.adapter.kind`
 - `attributes.trustai.adapter.payload_hash`
+- `attributes.trustai.adapter.trace_hash`
+- `attributes.trustai.adapter.trace_root`
+- `attributes.trustai.adapter.event_sequence`
+- `attributes.trustai.adapter.event_count`
+- `attributes.trustai.adapter.previous_event_node_hash`
+- `attributes.trustai.adapter.event_node_hash`
 
 Tool calls preserve `tool.name`, `tool.arguments`, `tool.result`, and
 `tool.status` when present. Agent steps preserve hashes of framework input and
 output payloads instead of requiring raw payloads in downstream proof checks.
+
+Each source trace is bound into a local event chain with schema
+`trustai.framework-adapter-event-chain/0.1`. The first normalized event has no
+previous node hash; every following event commits to the previous event node,
+the source trace hash, event sequence, total event count, span ID, event name,
+and source payload hash. The final event node is copied to
+`trustai.adapter.trace_root`, so verifier and matrix checks can detect omitted,
+reordered, or edited normalized adapter events without storing raw framework
+payloads in the matrix row.
 
 ## CLI
 
@@ -71,8 +86,8 @@ Bedrock, and Vertex-style traces.
 `framework-adapter-matrix` turns a declared runtime compatibility matrix into a
 signed receipt. Verification replays the checked-in trace fixture through the
 adapter code and checks each row's event count, event names, fixture SHA-256,
-and normalized event root. This makes runtime-version claims tamper-evident even
-when native production hooks are still deferred.
+per-trace event chain, and normalized event root. This makes runtime-version
+claims tamper-evident even when native production hooks are still deferred.
 
 ## Production Notes
 

@@ -3,7 +3,13 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from trustai.adapters import append_framework_events, framework_payload_to_events, load_framework_events
+from trustai.adapters import (
+    ADAPTER_EVENT_CHAIN_SCHEMA,
+    append_framework_events,
+    framework_payload_to_events,
+    load_framework_events,
+    verify_framework_event_chains,
+)
 from trustai.chain import EvidenceChain
 from trustai.ingest import INGEST_ENTRY_TYPE
 
@@ -29,6 +35,38 @@ class FrameworkAdapterTests(unittest.TestCase):
         tool_events = [event for event in events if event["event_name"] == "gen_ai.tool.call"]
         self.assertTrue(any(event["attributes"].get("tool.name") == "place_shadow_order" for event in tool_events))
         self.assertTrue(all(event["schema_url"] == "trustai.framework-adapter/0.1" for event in events))
+        self.assertEqual([], verify_framework_event_chains(events))
+        for framework in frameworks:
+            framework_events = [
+                event for event in events if event["attributes"]["trustai.adapter.framework"] == framework
+            ]
+            roots = {event["attributes"]["trustai.adapter.trace_root"] for event in framework_events}
+            self.assertEqual(1, len(roots))
+            self.assertEqual(
+                list(range(len(framework_events))),
+                [event["attributes"]["trustai.adapter.event_sequence"] for event in framework_events],
+            )
+            self.assertTrue(
+                all(
+                    event["attributes"]["trustai.adapter.event_chain_schema"] == ADAPTER_EVENT_CHAIN_SCHEMA
+                    for event in framework_events
+                )
+            )
+            self.assertEqual(
+                framework_events[-1]["attributes"]["trustai.adapter.event_node_hash"],
+                framework_events[-1]["attributes"]["trustai.adapter.trace_root"],
+            )
+
+    def test_framework_event_chain_tamper_is_rejected(self):
+        events = load_framework_events(FRAMEWORK_TRACES)
+        tampered = json.loads(json.dumps(events))
+        tampered[1]["attributes"]["trustai.adapter.event_sequence"] = 99
+        tampered[1]["event_name"] = "gen_ai.agent.tampered"
+
+        errors = verify_framework_event_chains(tampered)
+
+        self.assertTrue(any("event_sequence mismatch" in error for error in errors))
+        self.assertTrue(any("event_node_hash mismatch" in error for error in errors))
 
     def test_framework_events_append_to_verifiable_chain(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

@@ -9,6 +9,7 @@ from .chain import EvidenceChain
 from .ingest import append_events, normalize_event
 
 ADAPTER_SCHEMA_URL = "trustai.framework-adapter/0.1"
+ADAPTER_EVENT_CHAIN_SCHEMA = "trustai.framework-adapter-event-chain/0.1"
 SUPPORTED_FRAMEWORKS = {
     "langgraph",
     "openai_agents",
@@ -57,7 +58,99 @@ def framework_trace_to_events(payload: dict[str, Any]) -> list[dict[str, Any]]:
         raise ValueError(f"unsupported framework adapter: {framework}")
     if not events:
         raise ValueError(f"{framework} trace did not produce events")
-    return events
+    return _bind_trace_events(payload, events)
+
+
+def _bind_trace_events(payload: dict[str, Any], events: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    trace_hash = content_hash(payload)
+    event_nodes: list[dict[str, Any]] = []
+    previous_node_hash: str | None = None
+    for index, event in enumerate(events):
+        attributes = event.get("attributes", {}) if isinstance(event.get("attributes"), dict) else {}
+        node_body = {
+            "schema": ADAPTER_EVENT_CHAIN_SCHEMA,
+            "trace_hash": trace_hash,
+            "sequence": index,
+            "event_count": len(events),
+            "event_name": event.get("event_name"),
+            "span_id": event.get("span_id"),
+            "source_payload_hash": attributes.get("trustai.adapter.payload_hash"),
+            "previous_event_node_hash": previous_node_hash,
+        }
+        node_hash = content_hash(node_body)
+        event_nodes.append({**node_body, "event_node_hash": node_hash})
+        previous_node_hash = node_hash
+
+    trace_root = event_nodes[-1]["event_node_hash"]
+    bound_events: list[dict[str, Any]] = []
+    for event, node in zip(events, event_nodes):
+        attributes = event.get("attributes", {}) if isinstance(event.get("attributes"), dict) else {}
+        bound_events.append(
+            normalize_event(
+                {
+                    **event,
+                    "attributes": {
+                        **attributes,
+                        "trustai.adapter.event_chain_schema": ADAPTER_EVENT_CHAIN_SCHEMA,
+                        "trustai.adapter.trace_hash": trace_hash,
+                        "trustai.adapter.trace_root": trace_root,
+                        "trustai.adapter.event_sequence": node["sequence"],
+                        "trustai.adapter.event_count": node["event_count"],
+                        "trustai.adapter.previous_event_node_hash": node["previous_event_node_hash"],
+                        "trustai.adapter.event_node_hash": node["event_node_hash"],
+                    },
+                }
+            )
+        )
+    return bound_events
+
+
+def verify_framework_event_chains(events: list[dict[str, Any]]) -> list[str]:
+    errors: list[str] = []
+    groups: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    for event in events:
+        attrs = event.get("attributes", {}) if isinstance(event.get("attributes"), dict) else {}
+        trace_root = attrs.get("trustai.adapter.trace_root")
+        trace_id = event.get("trace_id")
+        if not trace_root or not trace_id:
+            errors.append("framework adapter event missing trace_id or trace_root")
+            continue
+        groups.setdefault((str(trace_id), str(trace_root)), []).append(event)
+
+    for (trace_id, trace_root), group in groups.items():
+        ordered = sorted(group, key=lambda item: item.get("attributes", {}).get("trustai.adapter.event_sequence", -1))
+        expected_count = len(ordered)
+        previous_node_hash: str | None = None
+        for index, event in enumerate(ordered):
+            attrs = event.get("attributes", {}) if isinstance(event.get("attributes"), dict) else {}
+            prefix = f"framework adapter trace {trace_id} event {index}"
+            if attrs.get("trustai.adapter.event_chain_schema") != ADAPTER_EVENT_CHAIN_SCHEMA:
+                errors.append(f"{prefix} event_chain_schema mismatch")
+            if attrs.get("trustai.adapter.event_sequence") != index:
+                errors.append(f"{prefix} event_sequence mismatch")
+            if attrs.get("trustai.adapter.event_count") != expected_count:
+                errors.append(f"{prefix} event_count mismatch")
+            if attrs.get("trustai.adapter.previous_event_node_hash") != previous_node_hash:
+                errors.append(f"{prefix} previous_event_node_hash mismatch")
+            node_body = {
+                "schema": ADAPTER_EVENT_CHAIN_SCHEMA,
+                "trace_hash": attrs.get("trustai.adapter.trace_hash"),
+                "sequence": index,
+                "event_count": expected_count,
+                "event_name": event.get("event_name"),
+                "span_id": event.get("span_id"),
+                "source_payload_hash": attrs.get("trustai.adapter.payload_hash"),
+                "previous_event_node_hash": previous_node_hash,
+            }
+            expected_node_hash = content_hash(node_body)
+            if attrs.get("trustai.adapter.event_node_hash") != expected_node_hash:
+                errors.append(f"{prefix} event_node_hash mismatch")
+            previous_node_hash = expected_node_hash
+        if ordered:
+            final_root = ordered[-1].get("attributes", {}).get("trustai.adapter.event_node_hash")
+            if trace_root != final_root:
+                errors.append(f"framework adapter trace {trace_id} trace_root mismatch")
+    return errors
 
 
 def append_framework_events(

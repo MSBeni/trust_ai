@@ -25,6 +25,8 @@ Each row records:
 - tested timestamp;
 - checked-in trace fixture path, SHA-256, event names, event count, and
   normalized event root;
+- replayed per-trace adapter event-chain fields, including source trace hash,
+  event sequence, event count, previous event node hash, and trace root;
 - required event names that must be emitted by replaying the fixture;
 - evidence references and row-level control statuses.
 
@@ -33,8 +35,9 @@ Each row records:
 `framework-adapter-matrix-verify` recalculates the matrix ID, verifies at least
 one signature, validates the source spec and fixture hashes, replays each trace
 fixture through the adapter code, and checks the resulting event names, event
-count, and normalized event root. Any fixture edit, row edit, event omission, or
-matrix summary edit breaks verification.
+count, per-trace event chain, and normalized event root. Any fixture edit, row
+edit, event omission, event reordering, or matrix summary edit breaks
+verification.
 
 Rows marked `verified-reference` prove local fixture compatibility only. Native
 hook or production-certified claims require release, deployment, and runtime

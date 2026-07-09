@@ -6,7 +6,12 @@ from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
-from .adapters import ADAPTER_SCHEMA_URL, SUPPORTED_FRAMEWORKS, load_framework_events
+from .adapters import (
+    ADAPTER_SCHEMA_URL,
+    SUPPORTED_FRAMEWORKS,
+    load_framework_events,
+    verify_framework_event_chains,
+)
 from .canonical import content_hash, parse_rfc3339, utc_now, without_keys
 from .chain import EvidenceChain
 from .crypto import sign_value, verify_value
@@ -287,6 +292,8 @@ def _verify_matrix_entry(root_path: Path, entry: dict[str, Any], errors: list[st
         try:
             matching_events = _events_for_framework(root_path / trace_fixture["path"], framework)
             event_names = sorted({event["event_name"] for event in matching_events})
+            chain_errors = verify_framework_event_chains(matching_events)
+            errors.extend(f"framework adapter {framework} event chain: {error}" for error in chain_errors)
             if trace_fixture.get("event_count") != len(matching_events):
                 errors.append(f"framework adapter {framework} event_count mismatch")
             if trace_fixture.get("event_names") != event_names:
