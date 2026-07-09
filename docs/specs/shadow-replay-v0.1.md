@@ -22,3 +22,8 @@ third-party review before a full proof pack is assembled.
 Soak reports summarize post-promotion windows and append
 `soak_report.completed` evidence. Blocking high/critical incidents or drift
 alarms fail the report.
+
+Proof-pack verification replays soak reports from the embedded source soak
+window. The verifier rejects packs when the source soak hash, window timestamps,
+metric checks, incidents, drift alarms, outcome, entry timestamp, or contract
+hash do not reproduce the signed `soak_report.completed` payload.

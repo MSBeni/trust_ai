@@ -1,9 +1,11 @@
+import copy
 import json
 import tempfile
 import unittest
 from pathlib import Path
 
 from trustai.auditor import render_auditor_html
+from trustai.canonical import content_hash
 from trustai.chain import EvidenceChain
 from trustai.cicd import build_ci_report, build_promotion_check_payload, build_slack_approval_request
 from trustai.compliance import build_compliance_export
@@ -18,6 +20,7 @@ from trustai.shadow import (
     append_shadow_replay,
     append_soak_report,
     evaluate_shadow_replay,
+    evaluate_soak_window,
     load_shadow_replay,
     load_soak_window,
     shadow_replay_to_eval_results,
@@ -120,6 +123,47 @@ class PhaseOneTwoTests(unittest.TestCase):
             self.assertEqual(5, len(compliance_export["mappings"]))
             self.assertEqual("low", insurer_export["risk_tier"])
             self.assertIn("TrustAI Proof Pack Auditor View", auditor_html)
+
+    def test_proof_pack_verifier_replays_embedded_soak_report(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            chain = EvidenceChain.load(tmp / "chain.json", tenant_id="soak-pack-test")
+            contract = load_contract(CONTRACT)
+            register_contract(chain, contract)
+            shadow = load_shadow_replay(SHADOW)
+            append_shadow_replay(chain, contract, shadow)
+            soak = copy.deepcopy(load_soak_window(SOAK))
+            soak["drift_alarms"] = [
+                {
+                    "id": "drift-critical-001",
+                    "severity": "critical",
+                    "description": "Candidate latency distribution drifted outside the contract assumption.",
+                }
+            ]
+            report = evaluate_soak_window(contract, soak)
+            chain.append(
+                SOAK_REPORT_ENTRY_TYPE,
+                {
+                    **report,
+                    "passed": True,
+                    "outcome": "passed",
+                    "soak_hash": content_hash(soak),
+                    "soak": soak,
+                },
+                timestamp=report["evaluated_at"],
+            )
+            eval_entry, gate_entry, decision = append_eval_and_gate(
+                chain,
+                contract,
+                shadow_replay_to_eval_results(contract, shadow),
+            )
+            pack = compile_proof_pack(chain, contract, eval_entry, gate_entry, decision, out_path=tmp / "pack.json")
+
+            result = verify_proof_pack(pack)
+
+            self.assertFalse(result.ok)
+            self.assertTrue(any("soak report entry" in error and "passed mismatch" in error for error in result.errors))
+            self.assertTrue(any("soak report entry" in error and "outcome mismatch" in error for error in result.errors))
 
     def test_shadow_replay_flags_pre_freeze_records(self):
         contract = load_contract(CONTRACT)

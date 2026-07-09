@@ -50,6 +50,7 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "tests/test_proofpack_flow.py",
             "tests/test_temporal_holdout.py",
             "tests/test_mcp_gateway.py",
+            "tests/test_phase1_phase2.py",
         ],
     },
     {

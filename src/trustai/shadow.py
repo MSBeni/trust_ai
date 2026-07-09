@@ -27,6 +27,13 @@ class TemporalHoldoutVerification:
     warnings: list[str]
 
 
+@dataclass
+class SoakReportVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
 def load_shadow_replay(path: str | Path) -> dict[str, Any]:
     value = json.loads(Path(path).read_text(encoding="utf-8"))
     if not isinstance(value, dict):
@@ -528,6 +535,78 @@ def evaluate_soak_window(contract: dict[str, Any], soak: dict[str, Any]) -> dict
         "outcome": "passed" if passed else "failed",
     }
 
+
+def verify_soak_report_payload(payload: dict[str, Any], contract: dict[str, Any]) -> SoakReportVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if not isinstance(payload, dict):
+        return SoakReportVerification(ok=False, errors=["soak report payload missing"], warnings=[])
+
+    soak = payload.get("soak")
+    if not isinstance(soak, dict):
+        errors.append("soak report source soak window missing")
+        soak = {}
+    elif payload.get("soak_hash") != content_hash(soak):
+        errors.append("soak report soak_hash mismatch")
+
+    if not soak.get("evaluated_at"):
+        errors.append("soak report source evaluated_at missing")
+    else:
+        try:
+            parse_rfc3339(str(soak.get("evaluated_at")))
+        except ValueError as exc:
+            errors.append(f"soak report evaluated_at invalid: {exc}")
+
+    windows = soak.get("windows")
+    if not isinstance(windows, list) or not windows:
+        errors.append("soak report requires a non-empty windows list")
+        windows = []
+    for index, window in enumerate(windows):
+        if not isinstance(window, dict):
+            errors.append(f"soak report window {index + 1} must be an object")
+            continue
+        for field in ("started_at", "ended_at"):
+            if not window.get(field):
+                errors.append(f"soak report window {index + 1} missing {field}")
+        try:
+            started = parse_rfc3339(str(window.get("started_at") or ""))
+            ended = parse_rfc3339(str(window.get("ended_at") or ""))
+            if ended <= started:
+                errors.append(f"soak report window {index + 1} ended_at must be after started_at")
+        except ValueError as exc:
+            errors.append(f"soak report window {index + 1} timestamp invalid: {exc}")
+        metrics = window.get("metrics")
+        if not isinstance(metrics, dict):
+            errors.append(f"soak report window {index + 1} metrics missing")
+
+    if errors:
+        return SoakReportVerification(ok=False, errors=errors, warnings=warnings)
+
+    try:
+        expected = evaluate_soak_window(contract, soak)
+    except (KeyError, TypeError, ValueError) as exc:
+        return SoakReportVerification(ok=False, errors=[f"soak report cannot be replayed: {exc}"], warnings=warnings)
+
+    for field in (
+        "report_id",
+        "contract_id",
+        "contract_hash",
+        "evaluated_at",
+        "window_count",
+        "checks",
+        "incidents",
+        "drift_alarms",
+        "passed",
+        "outcome",
+    ):
+        if payload.get(field) != expected.get(field):
+            errors.append(f"soak report {field} mismatch")
+
+    if any(not check.get("passed") for check in expected.get("checks", [])):
+        warnings.append("soak report contains failed metric checks")
+    if expected.get("outcome") != "passed":
+        warnings.append("soak report outcome is failed")
+    return SoakReportVerification(ok=not errors, errors=errors, warnings=warnings)
 
 def append_soak_report(
     chain: EvidenceChain,

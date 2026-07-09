@@ -15,7 +15,12 @@ from .keyring import verify_entry_with_keyring, verify_value_with_keyring
 from .merkle import verify_inclusion
 from .mcp_gateway import MCP_TOOL_CALL_ENTRY_TYPE, verify_mcp_transcript_entries
 from .proofpack import PROOF_PACK_SPEC_VERSION
-from .shadow import SHADOW_REPLAY_ENTRY_TYPE, verify_temporal_holdout_manifest
+from .shadow import (
+    SOAK_REPORT_ENTRY_TYPE,
+    SHADOW_REPLAY_ENTRY_TYPE,
+    verify_soak_report_payload,
+    verify_temporal_holdout_manifest,
+)
 
 
 @dataclass
@@ -64,6 +69,7 @@ def verify_proof_pack(
     approval_entries: list[dict[str, Any]] = []
     shadow_entries: list[dict[str, Any]] = []
     mcp_entries: list[dict[str, Any]] = []
+    soak_entries: list[dict[str, Any]] = []
 
     if not root:
         errors.append("chain tree root missing")
@@ -96,6 +102,8 @@ def verify_proof_pack(
                 shadow_entries.append(entry)
             if entry_type == MCP_TOOL_CALL_ENTRY_TYPE:
                 mcp_entries.append(entry)
+            if entry_type == SOAK_REPORT_ENTRY_TYPE:
+                soak_entries.append(entry)
 
     contract_entry = entry_by_type.get(CONTRACT_ENTRY_TYPE)
     eval_entry = entry_by_type.get(EVAL_ENTRY_TYPE)
@@ -200,6 +208,19 @@ def verify_proof_pack(
                     errors.append(
                         f"shadow replay entry {shadow_entry.get('index')} temporal_holdout summary mismatch for {field}"
                     )
+    if contract_digest and isinstance(contract_body, dict):
+        for soak_entry in soak_entries:
+            payload = soak_entry.get("payload", {})
+            if not isinstance(payload, dict):
+                errors.append(f"soak report entry {soak_entry.get('index')} payload missing")
+                continue
+            if payload.get("contract_hash") != contract_digest:
+                errors.append(f"soak report entry {soak_entry.get('index')} references a different contract hash")
+            if soak_entry.get("timestamp") != payload.get("evaluated_at"):
+                errors.append(f"soak report entry {soak_entry.get('index')} timestamp mismatch")
+            soak_result = verify_soak_report_payload(payload, contract_body)
+            errors.extend(f"soak report entry {soak_entry.get('index')}: {error}" for error in soak_result.errors)
+            warnings.extend(f"soak report entry {soak_entry.get('index')}: {warning}" for warning in soak_result.warnings)
     if contract_digest and mcp_entries:
         mcp_result = verify_mcp_transcript_entries(mcp_entries, contract_hash=contract_digest)
         errors.extend(mcp_result.errors)
