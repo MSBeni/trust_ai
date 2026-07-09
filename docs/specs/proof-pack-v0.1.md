@@ -55,7 +55,9 @@ An offline verifier must reject the pack when any of these checks fail:
     evidence that cannot be replayed into the declared MCP transcript chain;
 12. any included `soak_report.completed` entry contains source soak-window,
     hash, metric-check, incident, drift-alarm, timestamp, outcome, or contract
-    evidence that cannot be replayed against the packed contract body.
+    evidence that cannot be replayed against the packed contract body;
+13. the packed framework control mappings differ from the deterministic mappings
+    for the packed gate decision.
 
 When a gate decision relies on `human_approval.granted` entries, those entries
 must be included in `chain.entries` with valid signatures, timestamp tokens,

@@ -3,8 +3,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
 from trustai.contracts import load_contract, register_contract
+from trustai.crypto import sign_value
 from trustai.gate import append_eval_and_gate
 from trustai.proofpack import compile_proof_pack
 from trustai.verifier import verify_proof_pack
@@ -33,6 +35,12 @@ class ProofPackFlowTests(unittest.TestCase):
             pdf_path=tmp / "pack.pdf",
         )
 
+    def _resign_pack(self, pack: dict) -> None:
+        body = without_keys(pack, "pack_id", "signatures")
+        pack_id = content_hash(body)
+        pack["pack_id"] = pack_id
+        pack["signatures"] = [sign_value({"pack_id": pack_id, "pack": body})]
+
     def test_end_to_end_pack_verifies_and_writes_pdf(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)
@@ -53,6 +61,19 @@ class ProofPackFlowTests(unittest.TestCase):
 
             self.assertFalse(result.ok)
             self.assertIn("pack_id does not match canonical pack body", result.errors)
+
+    def test_framework_mapping_tamper_is_rejected_after_resign(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            pack = self._build_pack(Path(tmp_dir))
+            pack["framework_mappings"][0]["controls"].append("Unregistered premium discount control")
+            self._resign_pack(pack)
+
+            result = verify_proof_pack(pack)
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("pack_id does not match canonical pack body", result.errors)
+            self.assertNotIn("proof pack signature invalid", result.errors)
+            self.assertIn("framework mappings do not match gate decision", result.errors)
 
     def test_chain_payload_tamper_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

@@ -42,6 +42,7 @@ class RoadmapAuditTests(unittest.TestCase):
         )
         proof_pack_evidence = {item["path"] for item in proof_pack_requirement["evidence"]}
         self.assertIn("src/trustai/verifier.py", proof_pack_evidence)
+        self.assertIn("src/trustai/frameworks.py", proof_pack_evidence)
         self.assertIn("tests/test_temporal_holdout.py", proof_pack_evidence)
         self.assertIn("tests/test_mcp_gateway.py", proof_pack_evidence)
         self.assertIn("tests/test_phase1_phase2.py", proof_pack_evidence)

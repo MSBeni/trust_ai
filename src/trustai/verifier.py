@@ -10,6 +10,7 @@ from .canonical import content_hash, without_keys
 from .chain import compute_entry_id, entry_core, verify_entry
 from .contracts import CONTRACT_ENTRY_TYPE, contract_hash
 from .crypto import verify_value
+from .frameworks import default_framework_mappings
 from .gate import EVAL_ENTRY_TYPE, GATE_ENTRY_TYPE, evaluate_contract
 from .keyring import verify_entry_with_keyring, verify_value_with_keyring
 from .merkle import verify_inclusion
@@ -225,6 +226,11 @@ def verify_proof_pack(
         mcp_result = verify_mcp_transcript_entries(mcp_entries, contract_hash=contract_digest)
         errors.extend(mcp_result.errors)
         warnings.extend(mcp_result.warnings)
+    framework_mappings = proof_pack.get("framework_mappings")
+    if not isinstance(framework_mappings, list):
+        errors.append("framework_mappings must be a list")
+    elif framework_mappings != default_framework_mappings(proof_pack.get("gate_decision", {})):
+        errors.append("framework mappings do not match gate decision")
     decision = proof_pack.get("gate_decision", {}).get("outcome")
     if decision and decision != "passed":
         warnings.append(f"proof pack is valid but gate outcome is {decision}")
