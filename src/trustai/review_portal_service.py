@@ -50,6 +50,7 @@ def build_review_portal_service_attestation(
     regulator_disclosure: dict[str, Any] | None = None,
     disclosure_path: str | Path | None = None,
     view_path: str | Path | None = None,
+    frontend_bundle_path: str | Path | None = None,
     regulator_acceptance: dict[str, Any] | None = None,
     eu_ai_act_document: dict[str, Any] | None = None,
     mode: str = "portal-service-attested",
@@ -171,6 +172,12 @@ def build_review_portal_service_attestation(
     )
     if view_path is not None:
         source_artifacts.append(_view_artifact(view_path))
+    frontend_bundle_artifact = None
+    if frontend_bundle_path is not None:
+        frontend_bundle_artifact = _frontend_bundle_artifact(frontend_bundle_path)
+        if _normalize_sha256_ref(frontend_bundle_hash) != frontend_bundle_artifact["hash"]:
+            raise ValueError("frontend_bundle_hash does not match supplied frontend bundle")
+        source_artifacts.append(frontend_bundle_artifact)
 
     audience = supervised_access_receipt.get("audience", {}) if isinstance(supervised_access_receipt, dict) else {}
     reviewer = supervised_access_receipt.get("reviewer", {}) if isinstance(supervised_access_receipt, dict) else {}
@@ -184,6 +191,7 @@ def build_review_portal_service_attestation(
         "service_binary_hash": service_binary_hash,
         "frontend_bundle_ref": frontend_bundle_ref,
         "frontend_bundle_hash": frontend_bundle_hash,
+        "frontend_bundle_artifact_hash": frontend_bundle_artifact["hash"] if frontend_bundle_artifact else None,
         "api_ref": api_ref,
         "replicas_min": replicas_min,
         "replicas_max": replicas_max,
@@ -264,6 +272,7 @@ def verify_review_portal_service_attestation(
     regulator_disclosure: dict[str, Any] | None = None,
     disclosure_path: str | Path | None = None,
     view_path: str | Path | None = None,
+    frontend_bundle_path: str | Path | None = None,
     regulator_acceptance: dict[str, Any] | None = None,
     eu_ai_act_document: dict[str, Any] | None = None,
     key: str | None = None,
@@ -315,6 +324,22 @@ def verify_review_portal_service_attestation(
     )
     if view_path is not None:
         supplied_records.append(_view_artifact(view_path))
+    if frontend_bundle_path is not None:
+        try:
+            frontend_bundle_artifact = _frontend_bundle_artifact(frontend_bundle_path)
+        except OSError as exc:
+            errors.append(f"review portal service frontend bundle source could not be read: {exc}")
+        else:
+            supplied_records.append(frontend_bundle_artifact)
+            service = attestation.get("service")
+            expected_hash = service.get("frontend_bundle_hash") if isinstance(service, dict) else None
+            if _normalize_sha256_ref(str(expected_hash or "")) != frontend_bundle_artifact["hash"]:
+                errors.append("review portal service service.frontend_bundle_hash does not match supplied frontend bundle")
+            artifact_hash = service.get("frontend_bundle_artifact_hash") if isinstance(service, dict) else None
+            if artifact_hash is not None and artifact_hash != frontend_bundle_artifact["hash"]:
+                errors.append("review portal service service.frontend_bundle_artifact_hash does not match supplied frontend bundle")
+    else:
+        warnings.append("frontend bundle source was not supplied; bundle hash was not replayed")
     source_artifacts = attestation.get("source_artifacts", [])
     if not isinstance(source_artifacts, list) or not source_artifacts:
         errors.append("review portal service source_artifacts are required")
@@ -374,6 +399,7 @@ def append_review_portal_service_attestation(
     regulator_disclosure: dict[str, Any] | None = None,
     disclosure_path: str | Path | None = None,
     view_path: str | Path | None = None,
+    frontend_bundle_path: str | Path | None = None,
     regulator_acceptance: dict[str, Any] | None = None,
     eu_ai_act_document: dict[str, Any] | None = None,
     key: str | None = None,
@@ -386,6 +412,7 @@ def append_review_portal_service_attestation(
         regulator_disclosure=regulator_disclosure,
         disclosure_path=disclosure_path,
         view_path=view_path,
+        frontend_bundle_path=frontend_bundle_path,
         regulator_acceptance=regulator_acceptance,
         eu_ai_act_document=eu_ai_act_document,
         key=key,
@@ -423,6 +450,27 @@ def _view_artifact(path: str | Path) -> dict[str, Any]:
         "id": str(path),
         "schema": "text/html",
         "hash": hashlib.sha256(data).hexdigest(),
+        "size_bytes": len(data),
+    }
+
+
+def _frontend_bundle_artifact(path: str | Path) -> dict[str, Any]:
+    source = Path(path)
+    data = source.read_bytes()
+    suffix = source.suffix.lower()
+    if suffix == ".js":
+        schema = "application/javascript"
+    elif suffix == ".css":
+        schema = "text/css"
+    elif suffix in {".html", ".htm"}:
+        schema = "text/html"
+    else:
+        schema = "application/octet-stream"
+    return {
+        "type": "frontend-bundle",
+        "id": str(path),
+        "schema": schema,
+        "hash": _sha256_ref(data),
         "size_bytes": len(data),
     }
 
@@ -611,3 +659,13 @@ def _is_sha256_ref(value: str) -> bool:
     if value.startswith("sha256:"):
         return bool(value[7:])
     return len(value) == 64 and all(character in "0123456789abcdef" for character in value.lower())
+
+
+def _sha256_ref(data: bytes) -> str:
+    return "sha256:" + hashlib.sha256(data).hexdigest()
+
+
+def _normalize_sha256_ref(value: str) -> str:
+    if value.startswith("sha256:"):
+        return value
+    return "sha256:" + value

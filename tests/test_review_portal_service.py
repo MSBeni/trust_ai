@@ -1,4 +1,5 @@
 import copy
+import hashlib
 import json
 import os
 import subprocess
@@ -35,6 +36,9 @@ SOAK = ROOT / "examples" / "aitrade" / "soak-window.json"
 def _write_json(path: Path, value: object) -> None:
     path.write_text(json.dumps(value, indent=2, sort_keys=True), encoding="utf-8")
 
+def _sha256_ref(path: Path) -> str:
+    return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+
 
 class ReviewPortalServiceTests(unittest.TestCase):
     def _fixtures(self, tmp: Path):
@@ -57,6 +61,12 @@ class ReviewPortalServiceTests(unittest.TestCase):
         _write_json(disclosure_path, disclosure)
         view_path = tmp / "regulator-view.html"
         write_regulator_html(view_path, disclosure)
+        frontend_bundle_path = tmp / "review-portal.bundle.js"
+        frontend_bundle_path.write_text(
+            "export const reviewPortal = {kind: 'regulator', disclosure: 'selective'};\\n",
+            encoding="utf-8",
+        )
+        frontend_bundle_hash = _sha256_ref(frontend_bundle_path)
         receipt = build_supervised_access_receipt(
             pack,
             proof_pack_path=pack_path,
@@ -73,9 +83,10 @@ class ReviewPortalServiceTests(unittest.TestCase):
         )
         receipt_path = tmp / "supervised-access.json"
         write_supervised_access_receipt(receipt_path, receipt)
-        return chain, pack, pack_path, disclosure, disclosure_path, view_path, receipt, receipt_path
+        return chain, pack, pack_path, disclosure, disclosure_path, view_path, frontend_bundle_path, frontend_bundle_hash, receipt, receipt_path
 
-    def _attestation(self, receipt, pack, pack_path, disclosure, disclosure_path, view_path, **overrides):
+    def _attestation(self, receipt, pack, pack_path, disclosure, disclosure_path, view_path, frontend_bundle_path, frontend_bundle_hash=None, **overrides):
+        frontend_bundle_hash = frontend_bundle_hash or _sha256_ref(Path(frontend_bundle_path))
         values = {
             "supervised_access_receipt": receipt,
             "proof_pack": pack,
@@ -83,6 +94,7 @@ class ReviewPortalServiceTests(unittest.TestCase):
             "regulator_disclosure": disclosure,
             "disclosure_path": disclosure_path,
             "view_path": view_path,
+            "frontend_bundle_path": frontend_bundle_path,
             "environment": "aitrade-prod",
             "portal_kind": "regulator",
             "service_ref": "review-portal:trustai/regulator-prod",
@@ -92,7 +104,7 @@ class ReviewPortalServiceTests(unittest.TestCase):
             "service_image_digest": "sha256:trustai-review-portal-image",
             "service_binary_hash": "sha256:trustai-review-portal-binary",
             "frontend_bundle_ref": "bundle:review-portal/regulator-ui",
-            "frontend_bundle_hash": "sha256:trustai-review-portal-frontend",
+            "frontend_bundle_hash": frontend_bundle_hash,
             "api_ref": "api:review-portal/v0",
             "session_store_ref": "redis:review-portal/sessions",
             "auth_provider_ref": "oidc:review-portal/idp",
@@ -126,8 +138,8 @@ class ReviewPortalServiceTests(unittest.TestCase):
 
     def test_review_portal_service_verifies_and_appends(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
-            chain, pack, pack_path, disclosure, disclosure_path, view_path, receipt, _ = self._fixtures(Path(tmp_dir))
-            attestation = self._attestation(receipt, pack, pack_path, disclosure, disclosure_path, view_path)
+            chain, pack, pack_path, disclosure, disclosure_path, view_path, frontend_bundle_path, frontend_bundle_hash, receipt, _ = self._fixtures(Path(tmp_dir))
+            attestation = self._attestation(receipt, pack, pack_path, disclosure, disclosure_path, view_path, frontend_bundle_path)
 
             result = verify_review_portal_service_attestation(
                 attestation,
@@ -137,6 +149,7 @@ class ReviewPortalServiceTests(unittest.TestCase):
                 regulator_disclosure=disclosure,
                 disclosure_path=disclosure_path,
                 view_path=view_path,
+                frontend_bundle_path=frontend_bundle_path,
             )
             entry = append_review_portal_service_attestation(
                 chain,
@@ -147,12 +160,16 @@ class ReviewPortalServiceTests(unittest.TestCase):
                 regulator_disclosure=disclosure,
                 disclosure_path=disclosure_path,
                 view_path=view_path,
+                frontend_bundle_path=frontend_bundle_path,
             )
 
             self.assertTrue(result.ok, result.errors)
             self.assertEqual(REVIEW_PORTAL_SERVICE_SCHEMA, attestation["schema"])
             self.assertEqual("portal-service-attested", attestation["mode"])
             self.assertEqual(receipt["receipt_id"], attestation["access"]["supervised_access_receipt_id"])
+            self.assertEqual(frontend_bundle_hash, attestation["service"]["frontend_bundle_hash"])
+            self.assertEqual(frontend_bundle_hash, attestation["service"]["frontend_bundle_artifact_hash"])
+            self.assertIn("frontend-bundle", attestation["source"]["required_types"])
             self.assertEqual("env:REVIEW_PORTAL_TOKEN", attestation["operation_actor"]["credential"]["ref"])
             self.assertEqual(REVIEW_PORTAL_SERVICE_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(attestation["attestation_id"], entry["payload"]["attestation_id"])
@@ -160,8 +177,8 @@ class ReviewPortalServiceTests(unittest.TestCase):
 
     def test_review_portal_service_rejects_source_mismatch(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
-            _, pack, pack_path, disclosure, disclosure_path, view_path, receipt, _ = self._fixtures(Path(tmp_dir))
-            attestation = self._attestation(receipt, pack, pack_path, disclosure, disclosure_path, view_path)
+            _, pack, pack_path, disclosure, disclosure_path, view_path, frontend_bundle_path, frontend_bundle_hash, receipt, _ = self._fixtures(Path(tmp_dir))
+            attestation = self._attestation(receipt, pack, pack_path, disclosure, disclosure_path, view_path, frontend_bundle_path)
             tampered = copy.deepcopy(receipt)
             tampered["reviewer"]["role"] = "changed"
 
@@ -173,28 +190,60 @@ class ReviewPortalServiceTests(unittest.TestCase):
                 regulator_disclosure=disclosure,
                 disclosure_path=disclosure_path,
                 view_path=view_path,
+                frontend_bundle_path=frontend_bundle_path,
             )
 
             self.assertFalse(result.ok)
             self.assertIn("review portal service source_artifacts do not match supplied source artifacts", result.errors)
             self.assertIn("supervised access source: receipt_id does not match canonical receipt body", result.errors)
 
+    def test_review_portal_service_rejects_frontend_bundle_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            _, pack, pack_path, disclosure, disclosure_path, view_path, frontend_bundle_path, _, receipt, _ = self._fixtures(Path(tmp_dir))
+            with self.assertRaisesRegex(ValueError, "frontend_bundle_hash does not match supplied frontend bundle"):
+                self._attestation(
+                    receipt,
+                    pack,
+                    pack_path,
+                    disclosure,
+                    disclosure_path,
+                    view_path,
+                    frontend_bundle_path,
+                    frontend_bundle_hash="sha256:not-the-bundle",
+                )
+            attestation = self._attestation(receipt, pack, pack_path, disclosure, disclosure_path, view_path, frontend_bundle_path)
+            frontend_bundle_path.write_text("export const reviewPortal = {tampered: true};\n", encoding="utf-8")
+
+            result = verify_review_portal_service_attestation(
+                attestation,
+                receipt,
+                proof_pack=pack,
+                proof_pack_path=pack_path,
+                regulator_disclosure=disclosure,
+                disclosure_path=disclosure_path,
+                view_path=view_path,
+                frontend_bundle_path=frontend_bundle_path,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertIn("review portal service service.frontend_bundle_hash does not match supplied frontend bundle", result.errors)
+
     def test_review_portal_service_rejects_insecure_endpoint(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
-            _, pack, pack_path, disclosure, disclosure_path, view_path, receipt, _ = self._fixtures(Path(tmp_dir))
-            attestation = self._attestation(receipt, pack, pack_path, disclosure, disclosure_path, view_path, endpoint_url="http://portal.example/reviews/aitrade")
+            _, pack, pack_path, disclosure, disclosure_path, view_path, frontend_bundle_path, frontend_bundle_hash, receipt, _ = self._fixtures(Path(tmp_dir))
+            attestation = self._attestation(receipt, pack, pack_path, disclosure, disclosure_path, view_path, frontend_bundle_path, endpoint_url="http://portal.example/reviews/aitrade")
 
-            result = verify_review_portal_service_attestation(attestation, receipt, proof_pack=pack, proof_pack_path=pack_path, regulator_disclosure=disclosure, disclosure_path=disclosure_path, view_path=view_path)
+            result = verify_review_portal_service_attestation(attestation, receipt, proof_pack=pack, proof_pack_path=pack_path, regulator_disclosure=disclosure, disclosure_path=disclosure_path, view_path=view_path, frontend_bundle_path=frontend_bundle_path)
 
             self.assertFalse(result.ok)
             self.assertIn("review portal service service.endpoint_url must use HTTPS", result.errors)
 
     def test_review_portal_service_rejects_weak_replicas(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
-            _, pack, pack_path, disclosure, disclosure_path, view_path, receipt, _ = self._fixtures(Path(tmp_dir))
-            attestation = self._attestation(receipt, pack, pack_path, disclosure, disclosure_path, view_path, replicas_min=1, availability_zones=["us-east-1a"])
+            _, pack, pack_path, disclosure, disclosure_path, view_path, frontend_bundle_path, frontend_bundle_hash, receipt, _ = self._fixtures(Path(tmp_dir))
+            attestation = self._attestation(receipt, pack, pack_path, disclosure, disclosure_path, view_path, frontend_bundle_path, replicas_min=1, availability_zones=["us-east-1a"])
 
-            result = verify_review_portal_service_attestation(attestation, receipt, proof_pack=pack, proof_pack_path=pack_path, regulator_disclosure=disclosure, disclosure_path=disclosure_path, view_path=view_path)
+            result = verify_review_portal_service_attestation(attestation, receipt, proof_pack=pack, proof_pack_path=pack_path, regulator_disclosure=disclosure, disclosure_path=disclosure_path, view_path=view_path, frontend_bundle_path=frontend_bundle_path)
 
             self.assertFalse(result.ok)
             self.assertIn("review portal service service.replicas_min must be an integer >= 2", result.errors)
@@ -203,7 +252,7 @@ class ReviewPortalServiceTests(unittest.TestCase):
     def test_cli_review_portal_service_round_trip(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)
-            _, pack, pack_path, disclosure, disclosure_path, view_path, receipt, receipt_path = self._fixtures(tmp)
+            _, pack, pack_path, disclosure, disclosure_path, view_path, frontend_bundle_path, frontend_bundle_hash, receipt, receipt_path = self._fixtures(tmp)
             attestation_path = tmp / "review-portal-service-attestation.json"
             entry_path = tmp / "review-portal-service-entry.json"
             state_path = tmp / "review-portal-service-chain.json"
@@ -220,6 +269,8 @@ class ReviewPortalServiceTests(unittest.TestCase):
                 str(disclosure_path),
                 "--view",
                 str(view_path),
+                "--frontend-bundle",
+                str(frontend_bundle_path),
             ]
             service_args = [
                 "--environment", "aitrade-prod",
@@ -231,7 +282,7 @@ class ReviewPortalServiceTests(unittest.TestCase):
                 "--service-image-digest", "sha256:trustai-review-portal-image",
                 "--service-binary-hash", "sha256:trustai-review-portal-binary",
                 "--frontend-bundle-ref", "bundle:review-portal/regulator-ui",
-                "--frontend-bundle-hash", "sha256:trustai-review-portal-frontend",
+                "--frontend-bundle-hash", frontend_bundle_hash,
                 "--api-ref", "api:review-portal/v0",
                 "--session-store-ref", "redis:review-portal/sessions",
                 "--auth-provider-ref", "oidc:review-portal/idp",

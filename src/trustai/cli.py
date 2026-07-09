@@ -6569,6 +6569,7 @@ def _load_review_portal_service_sources(args: argparse.Namespace) -> dict[str, A
         "regulator_disclosure": load_regulator_disclosure(args.disclosure) if args.disclosure else None,
         "disclosure_path": args.disclosure,
         "view_path": args.view,
+        "frontend_bundle_path": args.frontend_bundle,
         "regulator_acceptance": load_regulator_acceptance(args.regulator_acceptance) if args.regulator_acceptance else None,
         "eu_ai_act_document": load_eu_ai_act_document(args.eu_ai_act_document) if args.eu_ai_act_document else None,
     }
@@ -6584,6 +6585,7 @@ def cmd_review_portal_service_attestation(args: argparse.Namespace) -> int:
             regulator_disclosure=sources["regulator_disclosure"],
             disclosure_path=sources["disclosure_path"],
             view_path=sources["view_path"],
+            frontend_bundle_path=sources["frontend_bundle_path"],
             regulator_acceptance=sources["regulator_acceptance"],
             eu_ai_act_document=sources["eu_ai_act_document"],
             mode=args.mode,
@@ -13135,6 +13137,7 @@ def build_parser() -> argparse.ArgumentParser:
     review_portal_service.add_argument("--pack")
     review_portal_service.add_argument("--disclosure")
     review_portal_service.add_argument("--view")
+    review_portal_service.add_argument("--frontend-bundle")
     review_portal_service.add_argument("--regulator-acceptance")
     review_portal_service.add_argument("--eu-ai-act-document")
     review_portal_service.add_argument("--mode", choices=sorted(REVIEW_PORTAL_SERVICE_MODES), default="portal-service-attested")
@@ -13185,6 +13188,7 @@ def build_parser() -> argparse.ArgumentParser:
     review_portal_service_verify.add_argument("--pack")
     review_portal_service_verify.add_argument("--disclosure")
     review_portal_service_verify.add_argument("--view")
+    review_portal_service_verify.add_argument("--frontend-bundle")
     review_portal_service_verify.add_argument("--regulator-acceptance")
     review_portal_service_verify.add_argument("--eu-ai-act-document")
     review_portal_service_verify.add_argument("--key")
@@ -13196,6 +13200,7 @@ def build_parser() -> argparse.ArgumentParser:
     review_portal_service_append.add_argument("--pack")
     review_portal_service_append.add_argument("--disclosure")
     review_portal_service_append.add_argument("--view")
+    review_portal_service_append.add_argument("--frontend-bundle")
     review_portal_service_append.add_argument("--regulator-acceptance")
     review_portal_service_append.add_argument("--eu-ai-act-document")
     review_portal_service_append.add_argument("--out", default="artifacts/review-portal-service-entry.json")
