@@ -7,8 +7,10 @@ from pathlib import Path
 from typing import Any
 
 from .canonical import content_hash, utc_now, without_keys
+from .chain import EvidenceChain
 
 ROADMAP_AUDIT_SCHEMA = "trustai.roadmap-audit/0.1"
+ROADMAP_AUDIT_ENTRY_TYPE = "trustai.roadmap_audit.attested"
 
 STATUS_IMPLEMENTED_LOCAL = "implemented-local"
 STATUS_REFERENCE_ATTESTED = "reference-attested"
@@ -515,6 +517,38 @@ def verify_roadmap_audit(
         deferred_external_count=deferred_external_count,
     )
 
+
+def append_roadmap_audit(
+    chain: EvidenceChain,
+    audit: dict[str, Any],
+    *,
+    root: str | Path,
+    roadmap_path: str | Path | None = None,
+    coverage_path: str | Path | None = None,
+    key: str | None = None,
+) -> dict[str, Any]:
+    result = verify_roadmap_audit(
+        audit,
+        root=root,
+        roadmap_path=roadmap_path,
+        coverage_path=coverage_path,
+    )
+    if not result.ok:
+        raise ValueError("invalid roadmap audit: " + "; ".join(result.errors))
+    summary = audit.get("summary", {})
+    payload = {
+        "audit_id": audit["audit_id"],
+        "audit_hash": content_hash(audit),
+        "source": audit.get("source"),
+        "completion_position": audit.get("completion_position"),
+        "requirement_count": summary.get("requirement_count"),
+        "implemented_local_count": summary.get(STATUS_IMPLEMENTED_LOCAL),
+        "reference_attested_count": summary.get(STATUS_REFERENCE_ATTESTED),
+        "missing_local_evidence_count": summary.get(STATUS_MISSING_LOCAL_EVIDENCE),
+        "deferred_external_count": result.deferred_external_count,
+        "limitations": audit.get("limitations", []),
+    }
+    return chain.append(ROADMAP_AUDIT_ENTRY_TYPE, payload, key=key, timestamp=audit.get("generated_at"))
 
 def write_roadmap_audit(path: str | Path, audit: dict[str, Any]) -> None:
     target = Path(path)

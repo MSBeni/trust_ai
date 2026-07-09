@@ -8,7 +8,7 @@ from typing import Any
 
 from .canonical import content_hash, parse_rfc3339, utc_now, without_keys
 from .chain import EvidenceChain
-from .roadmap_audit import STATUS_REFERENCE_ATTESTED, verify_roadmap_audit
+from .roadmap_audit import ROADMAP_AUDIT_ENTRY_TYPE, STATUS_REFERENCE_ATTESTED, verify_roadmap_audit
 
 EXTERNAL_EVIDENCE_SCHEMA = "trustai.external-evidence-manifest/0.1"
 EXTERNAL_EVIDENCE_ENTRY_TYPE = "trustai.external_evidence_manifest.attested"
@@ -176,11 +176,13 @@ def append_external_evidence_manifest(
     if not result.ok:
         raise ValueError("invalid external evidence manifest: " + "; ".join(result.errors))
     summary = manifest.get("summary", {})
+    source_audit_proof = _source_roadmap_audit_proof(chain, manifest.get("source_roadmap_audit"))
     payload = {
         "manifest_id": manifest["manifest_id"],
         "manifest_hash": content_hash(manifest),
         "manifest_ref": manifest.get("manifest_ref"),
         "source_roadmap_audit": manifest.get("source_roadmap_audit"),
+        "source_roadmap_audit_inclusion_proof": source_audit_proof,
         "status": summary.get("status"),
         "require_complete": require_complete,
         "required_requirement_count": summary.get("required_requirement_count"),
@@ -258,6 +260,22 @@ Status: {summary.get('status', '')}
 {missing_lines or "- None"}
 """
 
+
+
+def _source_roadmap_audit_proof(chain: EvidenceChain, source_roadmap_audit: Any) -> dict[str, Any] | None:
+    if not isinstance(source_roadmap_audit, dict):
+        return None
+    audit_id = source_roadmap_audit.get("audit_id")
+    audit_hash = source_roadmap_audit.get("audit_hash")
+    for entry in chain.entries:
+        payload = entry.get("payload", {})
+        if (
+            entry.get("entry_type") == ROADMAP_AUDIT_ENTRY_TYPE
+            and payload.get("audit_id") == audit_id
+            and payload.get("audit_hash") == audit_hash
+        ):
+            return chain.proof_for(entry)
+    return None
 
 def _reference_attested_requirements(roadmap_audit: dict[str, Any]) -> list[dict[str, Any]]:
     requirements = roadmap_audit.get("requirements", [])

@@ -54,7 +54,7 @@ The repository has two GitHub Actions workflows:
 
 - `.github/workflows/python-ci.yml` installs the package from a clean checkout,
   compiles `src/` and `tests/`, runs `python -m trustai demo` to generate the
-  bundled aitrade proof pack, verifies it offline, generates and verifies the
+  bundled aitrade proof pack, verifies it offline, generates, verifies, appends, and chain-verifies the
   roadmap audit, and runs clean-checkout smoke tests for proof packs, ingestion,
   re-execution, verifier releases, verifier distribution, Go verifier release
   workflow controls, roadmap coverage, external evidence manifests, and standards
@@ -76,10 +76,12 @@ python -m trustai demo
 python -m trustai verify artifacts/aitrade-proof-pack.json
 python -m trustai roadmap-audit --out artifacts/roadmap-audit.json --markdown artifacts/roadmap-audit.md
 python -m trustai roadmap-audit-verify artifacts/roadmap-audit.json
+python -m trustai roadmap-audit-append artifacts/roadmap-audit.json --state .trustai/roadmap-evidence-demo/evidence-chain.json --tenant roadmap-evidence-local --out artifacts/roadmap-audit-entry.json
+python -m trustai chain-verify --state .trustai/roadmap-evidence-demo/evidence-chain.json --tenant roadmap-evidence-local
 python -m trustai external-evidence-manifest artifacts/roadmap-audit.json --evidence "oss-verifier-and-public-spec,ci-run,examples/aitrade/external-evidence/go-verifier-workflow-run.json,Recorded Go verifier workflow export" --out artifacts/external-evidence-manifest.json --markdown artifacts/external-evidence-manifest.md
 python -m trustai external-evidence-verify artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json
-python -m trustai external-evidence-append artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --state .trustai/external-evidence-demo/evidence-chain.json --tenant external-evidence-local --out artifacts/external-evidence-entry.json
-python -m trustai chain-verify --state .trustai/external-evidence-demo/evidence-chain.json --tenant external-evidence-local
+python -m trustai external-evidence-append artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --state .trustai/roadmap-evidence-demo/evidence-chain.json --tenant roadmap-evidence-local --out artifacts/external-evidence-entry.json
+python -m trustai chain-verify --state .trustai/roadmap-evidence-demo/evidence-chain.json --tenant roadmap-evidence-local
 python -m unittest tests.test_go_verifier_source
 python -m trustai verifier-conformance artifacts/aitrade-proof-pack.json --out artifacts/verifier-conformance.json --markdown artifacts/verifier-conformance.md
 python -m trustai verifier-conformance-verify artifacts/verifier-conformance.json

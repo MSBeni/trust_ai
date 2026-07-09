@@ -587,6 +587,7 @@ from .standards import (
     write_standards_submission,
 )
 from .roadmap_audit import (
+    append_roadmap_audit,
     build_roadmap_audit,
     load_roadmap_audit,
     verify_roadmap_audit,
@@ -6697,6 +6698,31 @@ def cmd_roadmap_audit_verify(args: argparse.Namespace) -> int:
     for error in result.errors:
         print(f"- {error}", file=sys.stderr)
     return 1
+
+
+def cmd_roadmap_audit_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    audit = load_roadmap_audit(args.audit)
+    try:
+        entry = append_roadmap_audit(
+            chain,
+            audit,
+            root=args.root,
+            roadmap_path=args.roadmap,
+            coverage_path=args.coverage,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"roadmap audit append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"roadmap audit entry: {args.out}")
+    print(f"roadmap audit entry id: {entry['entry_id']}")
+    print(f"audit id: {audit['audit_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
 
 
 def cmd_external_evidence_manifest(args: argparse.Namespace) -> int:
@@ -12915,6 +12941,16 @@ def build_parser() -> argparse.ArgumentParser:
     roadmap_audit_verify.add_argument("--roadmap", default="ROADMAP.md")
     roadmap_audit_verify.add_argument("--coverage", default="docs/architecture/roadmap-coverage.md")
     roadmap_audit_verify.set_defaults(func=cmd_roadmap_audit_verify)
+
+    roadmap_audit_append = subparsers.add_parser("roadmap-audit-append", help="append a verified roadmap audit to an evidence chain")
+    roadmap_audit_append.add_argument("audit")
+    roadmap_audit_append.add_argument("--root", default=".")
+    roadmap_audit_append.add_argument("--roadmap", default="ROADMAP.md")
+    roadmap_audit_append.add_argument("--coverage", default="docs/architecture/roadmap-coverage.md")
+    roadmap_audit_append.add_argument("--out", default="artifacts/roadmap-audit-entry.json")
+    roadmap_audit_append.add_argument("--key")
+    _add_state_args(roadmap_audit_append)
+    roadmap_audit_append.set_defaults(func=cmd_roadmap_audit_append)
 
     external_evidence = subparsers.add_parser("external-evidence-manifest", help="write a production external-evidence manifest over a roadmap audit")
     external_evidence.add_argument("roadmap_audit")

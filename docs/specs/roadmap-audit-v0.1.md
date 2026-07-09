@@ -33,6 +33,22 @@ roadmap items still require live external authority.
   standards-body, or customer evidence.
 - `missing-local-evidence`: at least one referenced local evidence file is absent.
 
+## Evidence Chain Entry
+
+A verified audit can be appended to an evidence chain as
+`trustai.roadmap_audit.attested`. The chain entry records:
+
+- `audit_id` and canonical `audit_hash`.
+- Source roadmap and coverage-document hashes.
+- Completion position and requirement counts by status.
+- Deferred external-authority count.
+- Audit limitations, so the entry preserves the distinction between local
+  repository evidence and live production authority.
+
+The append operation MUST verify the audit against the supplied repository root
+before writing the chain entry. Invalid audits, missing local evidence, source
+hash mismatches, or inconsistent summaries MUST fail before append.
+
 ## Verification Rules
 
 A verifier MUST:

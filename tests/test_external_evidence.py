@@ -15,7 +15,7 @@ from trustai.external_evidence import (
     render_external_evidence_markdown,
     verify_external_evidence_manifest,
 )
-from trustai.roadmap_audit import STATUS_REFERENCE_ATTESTED, build_roadmap_audit
+from trustai.roadmap_audit import STATUS_REFERENCE_ATTESTED, append_roadmap_audit, build_roadmap_audit
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -66,12 +66,14 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="external-evidence-test")
+            audit_entry = append_roadmap_audit(chain, audit, root=ROOT)
             entry = append_external_evidence_manifest(chain, manifest, audit, root=ROOT)
 
             self.assertEqual(EXTERNAL_EVIDENCE_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(manifest["manifest_id"], entry["payload"]["manifest_id"])
             self.assertEqual("partial", entry["payload"]["status"])
             self.assertEqual(1, entry["payload"]["covered_requirement_count"])
+            self.assertEqual(audit_entry["entry_id"], entry["payload"]["source_roadmap_audit_inclusion_proof"]["entry_id"])
             self.assertTrue(chain.verify_all().ok)
 
     def test_external_evidence_append_requires_complete_when_requested(self):
@@ -122,6 +124,25 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     sys.executable,
                     "-m",
                     "trustai",
+                    "roadmap-audit-append",
+                    str(audit_path),
+                    "--root",
+                    str(ROOT),
+                    "--state",
+                    str(chain_path),
+                    "--tenant",
+                    "external-evidence-cli",
+                    "--out",
+                    str(tmp_path / "roadmap-audit-entry.json"),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
                     "external-evidence-manifest",
                     str(audit_path),
                     "--root",
@@ -158,8 +179,9 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             )
 
             chain = EvidenceChain.load(chain_path, tenant_id="external-evidence-cli")
-            self.assertEqual(1, len(chain.entries))
-            self.assertEqual(EXTERNAL_EVIDENCE_ENTRY_TYPE, chain.entries[0]["entry_type"])
+            self.assertEqual(2, len(chain.entries))
+            self.assertEqual(EXTERNAL_EVIDENCE_ENTRY_TYPE, chain.entries[1]["entry_type"])
+            self.assertEqual(chain.entries[0]["entry_id"], chain.entries[1]["payload"]["source_roadmap_audit_inclusion_proof"]["entry_id"])
             self.assertTrue(chain.verify_all().ok)
 
     def test_complete_external_evidence_manifest_covers_reference_requirements(self):

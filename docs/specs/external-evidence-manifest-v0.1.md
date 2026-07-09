@@ -53,14 +53,20 @@ A verified manifest can be appended to an evidence chain as
 
 - `manifest_id` and canonical `manifest_hash`.
 - `manifest_ref` and `source_roadmap_audit`.
+- `source_roadmap_audit_inclusion_proof` when the referenced roadmap audit
+  has already been appended to the same evidence chain.
 - Coverage status, required/covered/missing requirement counts, and evidence
   count.
 - Covered and missing requirement IDs.
 - Whether complete production evidence was required at append time.
 
 The append operation MUST verify the manifest against the supplied roadmap audit
-before writing the chain entry. If `require_complete` is set and any
-reference-attested requirement is uncovered, append MUST fail.
+before writing the chain entry. If the same chain already contains a matching
+`trustai.roadmap_audit.attested` entry for the manifest source audit, append
+SHOULD include that entry inclusion proof in the external-evidence payload. If
+`require_complete` is set and any reference-attested requirement is uncovered,
+append MUST fail.
+
 ## Verification Rules
 
 A verifier MUST:
