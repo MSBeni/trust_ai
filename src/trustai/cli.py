@@ -44,6 +44,14 @@ from .framework_hook_operation import (
     verify_framework_hook_operation,
     write_framework_hook_operation,
 )
+from .framework_runtime_audit import (
+    append_framework_runtime_audit_receipt,
+    build_framework_runtime_audit_receipt,
+    load_framework_runtime_audit_export,
+    load_framework_runtime_audit_receipt,
+    verify_framework_runtime_audit_receipt,
+    write_framework_runtime_audit_receipt,
+)
 from .anchor import append_anchor, write_anchor
 from .anchor_provider import (
     ANCHOR_PROVIDER_MODES,
@@ -2164,6 +2172,130 @@ def cmd_framework_hook_operation_append(args: argparse.Namespace) -> int:
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
+
+def cmd_framework_runtime_audit(args: argparse.Namespace) -> int:
+    try:
+        audit_export = load_framework_runtime_audit_export(args.audit_export)
+        operation = load_framework_hook_operation(args.operation)
+        trace = load_framework_trace_payload(args.trace)
+        release = load_framework_hook_release(args.release)
+        matrix = load_framework_adapter_matrix(args.matrix)
+        receipt = build_framework_runtime_audit_receipt(
+            audit_export,
+            operation,
+            trace,
+            release,
+            matrix,
+            root=args.root,
+            mode=args.mode,
+            environment=args.environment,
+            provider=args.provider,
+            endpoint_url=args.endpoint_url,
+            credential_ref=args.credential_ref,
+            request_hash=args.request_hash,
+            response_status=args.response_status,
+            response_hash=args.response_hash,
+            actor_ref=args.actor_ref,
+            exported_at=args.exported_at,
+            key=args.key,
+        )
+        result = verify_framework_runtime_audit_receipt(
+            receipt,
+            audit_export=audit_export,
+            operation=operation,
+            trace_payload=trace,
+            release=release,
+            matrix=matrix,
+            root=args.root,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime audit generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("framework runtime audit generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_framework_runtime_audit_receipt(args.out, receipt)
+    print(f"framework runtime audit receipt: {args.out}")
+    print(f"runtime audit id: {receipt['runtime_audit_id']}")
+    print(f"operation id: {receipt['operation_binding']['operation_id']}")
+    print(f"matched event id: {receipt['matched_event'].get('event_id')}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_framework_runtime_audit_verify(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_framework_runtime_audit_receipt(args.receipt)
+        audit_export = load_framework_runtime_audit_export(args.audit_export) if args.audit_export else None
+        operation = load_framework_hook_operation(args.operation) if args.operation else None
+        trace = load_framework_trace_payload(args.trace) if args.trace else None
+        release = load_framework_hook_release(args.release) if args.release else None
+        matrix = load_framework_adapter_matrix(args.matrix) if args.matrix else None
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime audit verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_framework_runtime_audit_receipt(
+        receipt,
+        audit_export=audit_export,
+        operation=operation,
+        trace_payload=trace,
+        release=release,
+        matrix=matrix,
+        root=args.root,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified framework runtime audit receipt: {args.receipt}")
+        print(f"runtime audit id: {receipt['runtime_audit_id']}")
+        print(f"operation id: {receipt['operation_binding']['operation_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"framework runtime audit verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_framework_runtime_audit_append(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_framework_runtime_audit_receipt(args.receipt)
+        audit_export = load_framework_runtime_audit_export(args.audit_export)
+        operation = load_framework_hook_operation(args.operation)
+        trace = load_framework_trace_payload(args.trace)
+        release = load_framework_hook_release(args.release)
+        matrix = load_framework_adapter_matrix(args.matrix)
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime audit append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_framework_runtime_audit_receipt(
+            chain,
+            receipt,
+            audit_export=audit_export,
+            operation=operation,
+            trace_payload=trace,
+            release=release,
+            matrix=matrix,
+            root=args.root,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"framework runtime audit append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"framework runtime audit entry: {args.out}")
+    print(f"framework runtime audit entry id: {entry['entry_id']}")
+    print(f"runtime audit id: {receipt['runtime_audit_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
 
 def cmd_mcp_capture(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
@@ -12012,6 +12144,59 @@ def build_parser() -> argparse.ArgumentParser:
     framework_hook_operation_append.add_argument("--key")
     _add_state_args(framework_hook_operation_append)
     framework_hook_operation_append.set_defaults(func=cmd_framework_hook_operation_append)
+
+    framework_runtime_audit = subparsers.add_parser(
+        "framework-runtime-audit", help="write a signed framework runtime audit export receipt"
+    )
+    framework_runtime_audit.add_argument("audit_export")
+    framework_runtime_audit.add_argument("--operation", required=True)
+    framework_runtime_audit.add_argument("--trace", required=True)
+    framework_runtime_audit.add_argument("--release", required=True)
+    framework_runtime_audit.add_argument("--matrix", required=True)
+    framework_runtime_audit.add_argument("--root", default=".")
+    framework_runtime_audit.add_argument(
+        "--mode", choices=["local-export", "provider-export", "production-export"], default="provider-export"
+    )
+    framework_runtime_audit.add_argument("--environment", default="local")
+    framework_runtime_audit.add_argument("--provider", required=True)
+    framework_runtime_audit.add_argument("--endpoint-url", required=True)
+    framework_runtime_audit.add_argument("--credential-ref", required=True)
+    framework_runtime_audit.add_argument("--request-hash", required=True)
+    framework_runtime_audit.add_argument("--response-status", type=int, required=True)
+    framework_runtime_audit.add_argument("--response-hash", required=True)
+    framework_runtime_audit.add_argument("--actor-ref", required=True)
+    framework_runtime_audit.add_argument("--exported-at")
+    framework_runtime_audit.add_argument("--out", default="artifacts/framework-runtime-audit.json")
+    framework_runtime_audit.add_argument("--key")
+    framework_runtime_audit.set_defaults(func=cmd_framework_runtime_audit)
+
+    framework_runtime_audit_verify = subparsers.add_parser(
+        "framework-runtime-audit-verify", help="verify a signed framework runtime audit export receipt"
+    )
+    framework_runtime_audit_verify.add_argument("receipt")
+    framework_runtime_audit_verify.add_argument("--audit-export")
+    framework_runtime_audit_verify.add_argument("--operation")
+    framework_runtime_audit_verify.add_argument("--trace")
+    framework_runtime_audit_verify.add_argument("--release")
+    framework_runtime_audit_verify.add_argument("--matrix")
+    framework_runtime_audit_verify.add_argument("--root", default=".")
+    framework_runtime_audit_verify.add_argument("--key")
+    framework_runtime_audit_verify.set_defaults(func=cmd_framework_runtime_audit_verify)
+
+    framework_runtime_audit_append = subparsers.add_parser(
+        "framework-runtime-audit-append", help="append a framework runtime audit export receipt as chain evidence"
+    )
+    framework_runtime_audit_append.add_argument("receipt")
+    framework_runtime_audit_append.add_argument("--audit-export", required=True)
+    framework_runtime_audit_append.add_argument("--operation", required=True)
+    framework_runtime_audit_append.add_argument("--trace", required=True)
+    framework_runtime_audit_append.add_argument("--release", required=True)
+    framework_runtime_audit_append.add_argument("--matrix", required=True)
+    framework_runtime_audit_append.add_argument("--root", default=".")
+    framework_runtime_audit_append.add_argument("--out", default="artifacts/framework-runtime-audit-entry.json")
+    framework_runtime_audit_append.add_argument("--key")
+    _add_state_args(framework_runtime_audit_append)
+    framework_runtime_audit_append.set_defaults(func=cmd_framework_runtime_audit_append)
 
     mcp = subparsers.add_parser("mcp-capture", help="append MCP tool call transcripts to the chain")
     mcp.add_argument("transcript")

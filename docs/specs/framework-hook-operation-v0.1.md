@@ -8,7 +8,8 @@ references, and audit-log evidence.
 This is the runtime companion to `framework-hook-release`: a release says which
 hook entrypoint and source artifacts were shipped; an operation receipt says the
 entrypoint captured a specific runtime trace and produced replayable normalized
-events.
+events. `framework-runtime-audit` can then bind that operation to a
+provider/runtime-owned audit export for the same hook capture.
 
 ## Artifact
 

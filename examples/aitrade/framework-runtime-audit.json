@@ -1,0 +1,39 @@
+{
+  "schema": "langgraph-runtime.audit-export/2026-07",
+  "provider": "langgraph-runtime",
+  "environment": "aitrade-prod",
+  "export_ref": "runtime-audit-export:aitrade/langgraph/lg-trace-001",
+  "runtime_instance_ref": "runtime:aitrade/langgraph/prod-worker-1",
+  "runtime_process_ref": "pid:4242",
+  "audit_log_ref": "audit-log:framework-runtime/aitrade",
+  "audit_log_root": "sha256:framework-runtime-audit-root",
+  "window_start": "2026-07-09T00:39:00Z",
+  "window_end": "2026-07-09T00:43:00Z",
+  "cursor_ref": "cursor:framework-runtime-audit/before-lg-trace-001",
+  "next_cursor_ref": "cursor:framework-runtime-audit/after-lg-trace-001",
+  "events": [
+    {
+      "actor_ref": "oidc:trustai.example/framework-hook-runtime",
+      "collector_hook_ref": "hook:langgraph/0.2",
+      "event_id": "runtime-audit:langgraph:lg-trace-001:hook-capture",
+      "event_kind": "framework_hook_capture",
+      "framework": "langgraph",
+      "operation_audit_log_ref": "audit-log:framework-hooks/aitrade",
+      "operation_ref": "framework-hook-operation:aitrade/langgraph/lg-trace-001",
+      "provider_event_ref": "langgraph-audit:event/lg-trace-001/hook-capture",
+      "runtime_instance_ref": "runtime:aitrade/langgraph/prod-worker-1",
+      "runtime_process_ref": "pid:4242",
+      "status": "captured",
+      "timestamp": "2026-07-09T00:40:05Z",
+      "trace_id": "lg-trace-001"
+    },
+    {
+      "event_id": "runtime-audit:langgraph:heartbeat",
+      "event_kind": "runtime_heartbeat",
+      "framework": "langgraph",
+      "runtime_instance_ref": "runtime:aitrade/langgraph/prod-worker-1",
+      "status": "ok",
+      "timestamp": "2026-07-09T00:41:00Z"
+    }
+  ]
+}
