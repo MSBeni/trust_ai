@@ -38,6 +38,7 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("tests.test_repository_ci", workflow)
         self.assertIn("tests.test_roadmap_audit", workflow)
         self.assertIn("tests.test_external_evidence", workflow)
+        self.assertIn("tests.test_tamper_stress", workflow)
         self.assertIn("tests.test_standards", workflow)
 
     def test_public_repo_has_python_and_go_ci_workflows(self):

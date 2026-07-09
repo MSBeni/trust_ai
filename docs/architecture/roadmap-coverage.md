@@ -9,7 +9,7 @@ against the uploaded roadmap.
 |---|---|
 | Verification Contract DSL + registry | `src/trustai/contracts.py`, `docs/specs/verification-contract-v0.1.md` |
 | Merkle evidence chain + signing | `src/trustai/chain.py`, `src/trustai/merkle.py`, provider-tagged HMAC signatures |
-| Large-log tamper stress reports | `src/trustai/tamper_stress.py`, `tamper-stress-report`, `tamper-stress-verify`, sampled inclusion proofs, single-byte payload/signature/timestamp/entry-id tamper vectors, `tests/test_tamper_stress.py`, `docs/specs/tamper-stress-report-v0.1.md` |
+| Large-log tamper stress reports | `src/trustai/tamper_stress.py`, `tamper-stress-report`, `tamper-stress-verify`, sampled inclusion proofs, single-byte payload/signature/timestamp/entry-id tamper vectors, explicit Phase 0 1,000,000-entry target metadata plus strict `--require-roadmap-target` verification, `tests/test_tamper_stress.py`, `docs/specs/tamper-stress-report-v0.1.md` |
 | Local TSA timestamp tokens | `src/trustai/timestamping.py`, entry-level timestamp verification |
 | Provider-aware local keyring verification and rotation | `src/trustai/keyring.py`, `keyring-init`, `keyring-rotate`, `chain-verify`, `verify --keyring` |
 | Trust authority receipts for KMS/TSA verification | `src/trustai/trust_authority.py`, `trust-authority-receipt`, `trust-authority-verify`, `trust-authority-append`, `docs/specs/trust-authority-receipt-v0.1.md` |
@@ -455,7 +455,7 @@ python -m trustai trust-network-worker-append artifacts/trust-network-worker.jso
 python -m trustai chain-verify --state .trustai/trust-network-worker-demo/evidence-chain.json --tenant trust-network-worker-local
 python -m trustai tamper-test --entries 1000
 python -m trustai tamper-stress-report --entries 1000000 --sample-index 0 --sample-index 500000 --sample-index 999999 --tamper-index 500000 --out artifacts/tamper-stress-report.json
-python -m trustai tamper-stress-verify artifacts/tamper-stress-report.json --deep
+python -m trustai tamper-stress-verify artifacts/tamper-stress-report.json --deep --require-roadmap-target
 ```
 
 The full manual workflow is documented in `README.md`.

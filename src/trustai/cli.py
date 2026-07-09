@@ -10504,6 +10504,7 @@ def cmd_tamper_stress_report(args: argparse.Namespace) -> int:
     print(f"entries: {report['chain']['entry_count']}")
     print(f"tree root: {report['chain']['tree_root']}")
     print(f"tamper checks detected: {report['summary']['tamper_checks_detected']}/{report['summary']['tamper_checks_total']}")
+    print(f"roadmap Phase 0 target: {'met' if report['summary'].get('roadmap_phase0_target_met') else 'not met'}")
     for warning in result.warnings:
         print(f"warning: {warning}")
     return 0
@@ -10511,7 +10512,12 @@ def cmd_tamper_stress_report(args: argparse.Namespace) -> int:
 
 def cmd_tamper_stress_verify(args: argparse.Namespace) -> int:
     report = load_tamper_stress_report(args.report)
-    result = verify_tamper_stress_report(report, key=args.key, deep=args.deep)
+    result = verify_tamper_stress_report(
+        report,
+        key=args.key,
+        deep=args.deep,
+        require_roadmap_target=args.require_roadmap_target,
+    )
     if not result.ok:
         print("tamper stress report verification failed", file=sys.stderr)
         for error in result.errors:
@@ -10521,6 +10527,7 @@ def cmd_tamper_stress_verify(args: argparse.Namespace) -> int:
     print(f"report id: {report['report_id']}")
     print(f"entries: {report['chain']['entry_count']}")
     print(f"tree root: {report['chain']['tree_root']}")
+    print(f"roadmap Phase 0 target: {'met' if report.get('summary', {}).get('roadmap_phase0_target_met') else 'not met'}")
     if args.deep:
         print("deep verification: regenerated chain root matched")
     for warning in result.warnings:
@@ -14719,6 +14726,7 @@ def build_parser() -> argparse.ArgumentParser:
     tamper_stress_verify.add_argument("report")
     tamper_stress_verify.add_argument("--key")
     tamper_stress_verify.add_argument("--deep", action="store_true")
+    tamper_stress_verify.add_argument("--require-roadmap-target", action="store_true", help="fail unless the report meets the Phase 0 1,000,000-entry tamper target")
     tamper_stress_verify.set_defaults(func=cmd_tamper_stress_verify)
 
     return parser

@@ -426,7 +426,7 @@ python -m trustai chain-verify --state .trustai/trust-network-worker-demo/eviden
 python -m trustai auditor-view artifacts/aitrade-proof-pack.json --out artifacts/auditor-view.html
 python -m trustai tamper-test --entries 1000
 python -m trustai tamper-stress-report --entries 1000000 --sample-index 0 --sample-index 500000 --sample-index 999999 --tamper-index 500000 --out artifacts/tamper-stress-report.json
-python -m trustai tamper-stress-verify artifacts/tamper-stress-report.json --deep
+python -m trustai tamper-stress-verify artifacts/tamper-stress-report.json --deep --require-roadmap-target
 ```
 
 ## Generated Artifacts

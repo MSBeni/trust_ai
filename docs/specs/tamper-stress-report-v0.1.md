@@ -19,7 +19,7 @@ Required top-level fields:
 - `samples`: sampled entries with Merkle inclusion proofs.
 - `tamper_checks`: representative single-byte tamper vectors and detected
   verification errors.
-- `summary`: aggregate generation and tamper-detection status.
+- `summary`: aggregate generation, tamper-detection status, and explicit roadmap-target status.
 - `limitations`: scope notes for local signer/TSA substitutions and deep
   verification.
 - `signatures`: detached signature over `report_id` and the report body.
@@ -39,6 +39,18 @@ Required top-level fields:
 
 Report generation must produce TrustAI-compatible entry ids, payload hashes,
 previous-entry pointers, HMAC signatures, timestamp tokens, and Merkle leaves.
+
+## Summary
+
+`summary` records:
+
+- `sample_count`: number of sampled entries embedded in the report.
+- `tamper_checks_total` and `tamper_checks_detected`.
+- `all_generated_entries_verified`: every generated entry verified during report generation.
+- `all_tamper_checks_detected`: every representative mutation was rejected.
+- `roadmap_phase0_target_entries`: the Phase 0 target, currently `1000000`.
+- `roadmap_phase0_target_met`: true only when the generated chain has at least
+  `roadmap_phase0_target_entries` entries and both generation and tamper checks passed.
 
 ## Samples
 
@@ -74,6 +86,10 @@ Default verification checks:
    proofs.
 3. Mutated entries fail verification.
 4. Summary counts match the tamper checks.
+5. Roadmap Phase 0 target fields match the generated entry count and detection status.
+
+With `--require-roadmap-target`, verification fails unless
+`summary.roadmap_phase0_target_met=true`.
 
 Deep verification additionally regenerates every entry, recomputes the full
 Merkle root, and compares it with `chain.tree_root`. Deep verification is the
@@ -85,7 +101,7 @@ Reference commands:
 
 ```powershell
 python -m trustai tamper-stress-report --entries 1000000 --sample-index 0 --sample-index 500000 --sample-index 999999 --tamper-index 500000 --out artifacts/tamper-stress-report.json
-python -m trustai tamper-stress-verify artifacts/tamper-stress-report.json --deep
+python -m trustai tamper-stress-verify artifacts/tamper-stress-report.json --deep --require-roadmap-target
 ```
 
 For fast local smoke tests, callers may use a smaller `--entries` value while

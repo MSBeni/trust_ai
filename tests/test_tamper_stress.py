@@ -9,6 +9,7 @@ from pathlib import Path
 
 from trustai.tamper_stress import (
     TAMPER_STRESS_REPORT_SCHEMA,
+    ROADMAP_TAMPER_STRESS_ENTRY_TARGET,
     build_tamper_stress_report,
     load_tamper_stress_report,
     verify_tamper_stress_report,
@@ -25,9 +26,28 @@ class TamperStressReportTests(unittest.TestCase):
         self.assertTrue(result.ok, result.errors)
         self.assertEqual(TAMPER_STRESS_REPORT_SCHEMA, report["schema"])
         self.assertEqual(64, report["chain"]["entry_count"])
+        self.assertEqual(3, report["summary"]["sample_count"])
         self.assertEqual(4, report["summary"]["tamper_checks_detected"])
+        self.assertEqual(ROADMAP_TAMPER_STRESS_ENTRY_TARGET, report["summary"]["roadmap_phase0_target_entries"])
+        self.assertFalse(report["summary"]["roadmap_phase0_target_met"])
         self.assertTrue(report["summary"]["all_generated_entries_verified"])
         self.assertTrue(report["summary"]["all_tamper_checks_detected"])
+
+    def test_tamper_stress_report_roadmap_target_can_be_required(self):
+        report = build_tamper_stress_report(entry_count=16)
+
+        result = verify_tamper_stress_report(report, require_roadmap_target=True)
+
+        self.assertFalse(result.ok)
+        self.assertTrue(any("Phase 0 tamper target" in error for error in result.errors))
+
+        tampered = copy.deepcopy(report)
+        tampered["summary"]["roadmap_phase0_target_met"] = True
+        tampered_result = verify_tamper_stress_report(tampered)
+
+        self.assertFalse(tampered_result.ok)
+        self.assertTrue(any("report_id" in error for error in tampered_result.errors))
+        self.assertTrue(any("roadmap Phase 0 target status" in error for error in tampered_result.errors))
 
     def test_tamper_stress_report_detects_summary_tamper(self):
         report = build_tamper_stress_report(entry_count=16)
@@ -67,6 +87,7 @@ class TamperStressReportTests(unittest.TestCase):
                 capture_output=True,
             )
             self.assertEqual(create.returncode, 0, create.stderr)
+            self.assertIn("roadmap Phase 0 target: not met", create.stdout)
             verify = subprocess.run(
                 [sys.executable, "-m", "trustai", "tamper-stress-verify", str(report_path), "--deep"],
                 check=False,
@@ -75,6 +96,15 @@ class TamperStressReportTests(unittest.TestCase):
             )
             self.assertEqual(verify.returncode, 0, verify.stderr)
             self.assertIn("deep verification: regenerated chain root matched", verify.stdout)
+            self.assertIn("roadmap Phase 0 target: not met", verify.stdout)
+            strict_verify = subprocess.run(
+                [sys.executable, "-m", "trustai", "tamper-stress-verify", str(report_path), "--require-roadmap-target"],
+                check=False,
+                text=True,
+                capture_output=True,
+            )
+            self.assertEqual(strict_verify.returncode, 1)
+            self.assertIn("Phase 0 tamper target", strict_verify.stderr)
             report = load_tamper_stress_report(report_path)
             self.assertEqual(32, report["chain"]["entry_count"])
 

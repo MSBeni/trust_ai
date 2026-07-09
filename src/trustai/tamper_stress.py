@@ -14,6 +14,7 @@ from .timestamping import issue_timestamp_token
 
 TAMPER_STRESS_REPORT_SCHEMA = "trustai.tamper-stress-report/0.1"
 DEFAULT_TAMPER_STRESS_TIMESTAMP = "2026-07-16T00:00:00Z"
+ROADMAP_TAMPER_STRESS_ENTRY_TARGET = 1_000_000
 
 
 @dataclass
@@ -72,6 +73,14 @@ def build_tamper_stress_report(
     target_entry = generated["sample_entries"][tamper_index]
     tamper_checks = _tamper_checks(target_entry, root, inclusion_proof(generated["entry_ids"], tamper_index), key)
 
+    all_generated_entries_verified = generated["verified_count"] == entry_count and not generated["generation_errors"]
+    all_tamper_checks_detected = all(check.get("detected") for check in tamper_checks)
+    roadmap_target_met = (
+        entry_count >= ROADMAP_TAMPER_STRESS_ENTRY_TARGET
+        and all_generated_entries_verified
+        and all_tamper_checks_detected
+    )
+
     body = {
         "generated_at": timestamp,
         "tenant_id": tenant_id,
@@ -87,10 +96,13 @@ def build_tamper_stress_report(
         "samples": sample_records,
         "tamper_checks": tamper_checks,
         "summary": {
+            "sample_count": len(sample_records),
             "tamper_checks_total": len(tamper_checks),
             "tamper_checks_detected": sum(1 for check in tamper_checks if check.get("detected")),
-            "all_generated_entries_verified": generated["verified_count"] == entry_count and not generated["generation_errors"],
-            "all_tamper_checks_detected": all(check.get("detected") for check in tamper_checks),
+            "all_generated_entries_verified": all_generated_entries_verified,
+            "all_tamper_checks_detected": all_tamper_checks_detected,
+            "roadmap_phase0_target_entries": ROADMAP_TAMPER_STRESS_ENTRY_TARGET,
+            "roadmap_phase0_target_met": roadmap_target_met,
         },
         "limitations": [
             "The report records a generated TrustAI-compatible hash-chained Merkle log and representative single-byte tamper vectors.",
@@ -107,7 +119,12 @@ def build_tamper_stress_report(
     }
 
 
-def verify_tamper_stress_report(report: dict[str, Any], key: str | None = None, deep: bool = False) -> TamperStressVerification:
+def verify_tamper_stress_report(
+    report: dict[str, Any],
+    key: str | None = None,
+    deep: bool = False,
+    require_roadmap_target: bool = False,
+) -> TamperStressVerification:
     errors: list[str] = []
     warnings: list[str] = []
 
@@ -178,6 +195,8 @@ def verify_tamper_stress_report(report: dict[str, Any], key: str | None = None, 
                 errors.append("entry-id tamper should fail inclusion proof")
 
     summary = report.get("summary", {})
+    if summary.get("sample_count") != len(samples):
+        errors.append("summary sample count mismatch")
     if summary.get("tamper_checks_total") != len(tamper_checks):
         errors.append("summary tamper check count mismatch")
     detected_count = sum(1 for check in tamper_checks if isinstance(check, dict) and check.get("detected"))
@@ -187,6 +206,18 @@ def verify_tamper_stress_report(report: dict[str, Any], key: str | None = None, 
         errors.append("summary does not mark all tamper checks detected")
     if summary.get("all_generated_entries_verified") is not True:
         errors.append("summary does not mark all generated entries verified")
+    if summary.get("roadmap_phase0_target_entries") != ROADMAP_TAMPER_STRESS_ENTRY_TARGET:
+        errors.append("summary roadmap Phase 0 target entry count mismatch")
+    expected_roadmap_target_met = (
+        isinstance(entry_count, int)
+        and entry_count >= ROADMAP_TAMPER_STRESS_ENTRY_TARGET
+        and summary.get("all_generated_entries_verified") is True
+        and summary.get("all_tamper_checks_detected") is True
+    )
+    if summary.get("roadmap_phase0_target_met") != expected_roadmap_target_met:
+        errors.append("summary roadmap Phase 0 target status mismatch")
+    if require_roadmap_target and summary.get("roadmap_phase0_target_met") is not True:
+        errors.append(f"roadmap Phase 0 tamper target not met: requires at least {ROADMAP_TAMPER_STRESS_ENTRY_TARGET} generated entries")
 
     if deep and isinstance(entry_count, int) and entry_count > 0:
         expected_samples = [sample.get("index") for sample in samples if isinstance(sample, dict) and isinstance(sample.get("index"), int)]

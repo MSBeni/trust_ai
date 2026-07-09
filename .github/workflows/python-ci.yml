@@ -92,4 +92,5 @@ jobs:
           tests.test_repository_ci
           tests.test_roadmap_audit
           tests.test_external_evidence
+          tests.test_tamper_stress
           tests.test_standards
