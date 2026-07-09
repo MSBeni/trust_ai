@@ -99,6 +99,15 @@ from .framework_runtime_service_authority import (
     verify_framework_runtime_service_authority_dossier,
     write_framework_runtime_service_authority_dossier,
 )
+from .framework_runtime_service_authority_worker import (
+    FRAMEWORK_RUNTIME_SERVICE_AUTHORITY_WORKER_MODES,
+    FRAMEWORK_RUNTIME_SERVICE_AUTHORITY_WORKER_OPERATION_KINDS,
+    append_framework_runtime_service_authority_worker_receipt,
+    build_framework_runtime_service_authority_worker_receipt,
+    load_framework_runtime_service_authority_worker_receipt,
+    verify_framework_runtime_service_authority_worker_receipt,
+    write_framework_runtime_service_authority_worker_receipt,
+)
 from .anchor import append_anchor, write_anchor
 from .anchor_provider import (
     ANCHOR_PROVIDER_MODES,
@@ -3088,6 +3097,164 @@ def cmd_framework_runtime_service_authority_append(args: argparse.Namespace) -> 
         print(f"framework runtime service authority entry: {args.out}")
     print(f"framework runtime service authority entry id: {entry['entry_id']}")
     print(f"dossier id: {dossier['dossier_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def _load_framework_runtime_service_authority_worker_sources(args: argparse.Namespace, *, require_all: bool) -> dict[str, object]:
+    sources: dict[str, object] = {}
+    dossier_path = getattr(args, "authority_dossier", None) or getattr(args, "dossier", None)
+    if dossier_path:
+        sources["authority_dossier"] = load_framework_runtime_service_authority_dossier(dossier_path)
+    elif require_all:
+        raise ValueError("framework runtime service authority dossier is required")
+    authority_sources = _load_framework_runtime_service_authority_sources(args, require_all=require_all)
+    sources.update(authority_sources)
+    return sources
+
+
+def cmd_framework_runtime_service_authority_worker(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_framework_runtime_service_authority_worker_sources(args, require_all=True)
+        authority_dossier = sources.pop("authority_dossier")
+        provider_receipt = sources.pop("provider_receipt")
+        receipt = build_framework_runtime_service_authority_worker_receipt(
+            authority_dossier,
+            provider_receipt=provider_receipt,
+            **sources,
+            root=args.root,
+            mode=args.mode,
+            environment=args.environment,
+            worker_ref=args.worker_ref,
+            run_ref=args.run_ref,
+            operation_kind=args.operation_kind,
+            actor_ref=args.actor_ref,
+            schedule_ref=args.schedule_ref,
+            cadence_seconds=args.cadence_seconds,
+            lease_ref=args.lease_ref,
+            checkpoint_ref=args.checkpoint_ref,
+            checkpoint_hash=args.checkpoint_hash,
+            previous_cursor_ref=args.previous_cursor_ref,
+            next_cursor_ref=args.next_cursor_ref,
+            attempt=args.attempt,
+            max_attempts=args.max_attempts,
+            queue_ref=args.queue_ref,
+            queue_message_ref=args.queue_message_ref,
+            queue_message_hash=args.queue_message_hash,
+            dead_letter_queue_ref=args.dead_letter_queue_ref,
+            authority_request_ref=args.authority_request_ref,
+            dossier_storage_ref=args.dossier_storage_ref,
+            dossier_storage_hash=args.dossier_storage_hash,
+            report_storage_ref=args.report_storage_ref,
+            report_storage_hash=args.report_storage_hash,
+            request_hash=args.request_hash,
+            response_status=args.response_status,
+            response_hash=args.response_hash,
+            metrics_ref=args.metrics_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            retention_until=args.retention_until,
+            credential_ref=args.credential_ref,
+            evidence_refs=args.evidence_ref,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            started_at=args.started_at,
+            completed_at=args.completed_at,
+            next_run_at=args.next_run_at,
+            error_ref=args.error_ref,
+            key=args.key,
+        )
+        result = verify_framework_runtime_service_authority_worker_receipt(
+            receipt,
+            authority_dossier=authority_dossier,
+            provider_receipt=provider_receipt,
+            **sources,
+            root=args.root,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime service authority worker receipt generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("framework runtime service authority worker receipt generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_framework_runtime_service_authority_worker_receipt(args.out, receipt)
+    print(f"framework runtime service authority worker receipt: {args.out}")
+    print(f"worker operation id: {receipt['worker_operation_id']}")
+    print(f"authority dossier id: {receipt['authority']['dossier_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_framework_runtime_service_authority_worker_verify(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_framework_runtime_service_authority_worker_receipt(args.receipt)
+        sources = _load_framework_runtime_service_authority_worker_sources(args, require_all=False)
+        authority_dossier = sources.pop("authority_dossier", None)
+        provider_receipt = sources.pop("provider_receipt", None)
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime service authority worker receipt verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_framework_runtime_service_authority_worker_receipt(
+        receipt,
+        authority_dossier=authority_dossier,
+        provider_receipt=provider_receipt,
+        **sources,
+        root=args.root,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified framework runtime service authority worker receipt: {args.receipt}")
+        print(f"worker operation id: {receipt['worker_operation_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"framework runtime service authority worker receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_framework_runtime_service_authority_worker_append(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_framework_runtime_service_authority_worker_receipt(args.receipt)
+        sources = _load_framework_runtime_service_authority_worker_sources(args, require_all=True)
+        authority_dossier = sources.pop("authority_dossier")
+        provider_receipt = sources.pop("provider_receipt")
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime service authority worker receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_framework_runtime_service_authority_worker_receipt(
+            chain,
+            receipt,
+            authority_dossier=authority_dossier,
+            provider_receipt=provider_receipt,
+            **sources,
+            root=args.root,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"framework runtime service authority worker receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"framework runtime service authority worker entry: {args.out}")
+    print(f"framework runtime service authority worker entry id: {entry['entry_id']}")
+    print(f"worker operation id: {receipt['worker_operation_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
@@ -13424,6 +13591,89 @@ def build_parser() -> argparse.ArgumentParser:
     framework_runtime_service_authority_append.add_argument("--key")
     _add_state_args(framework_runtime_service_authority_append)
     framework_runtime_service_authority_append.set_defaults(func=cmd_framework_runtime_service_authority_append)
+
+    def _add_framework_runtime_service_authority_worker_source_args(parser: argparse.ArgumentParser, *, required: bool) -> None:
+        parser.add_argument("--authority-dossier", required=required)
+        _add_framework_runtime_service_authority_source_args(parser, required=required)
+
+    def _add_framework_runtime_service_authority_worker_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--root", default=".")
+        parser.add_argument("--mode", choices=sorted(FRAMEWORK_RUNTIME_SERVICE_AUTHORITY_WORKER_MODES), default="scheduled-worker")
+        parser.add_argument("--environment", default="local")
+        parser.add_argument("--worker-ref", required=True)
+        parser.add_argument("--run-ref", required=True)
+        parser.add_argument("--operation-kind", choices=sorted(FRAMEWORK_RUNTIME_SERVICE_AUTHORITY_WORKER_OPERATION_KINDS), required=True)
+        parser.add_argument("--actor-ref", required=True)
+        parser.add_argument("--schedule-ref", required=True)
+        parser.add_argument("--cadence-seconds", type=int, required=True)
+        parser.add_argument("--lease-ref", required=True)
+        parser.add_argument("--checkpoint-ref", required=True)
+        parser.add_argument("--checkpoint-hash", required=True)
+        parser.add_argument("--previous-cursor-ref")
+        parser.add_argument("--next-cursor-ref")
+        parser.add_argument("--attempt", type=int, default=1)
+        parser.add_argument("--max-attempts", type=int, default=3)
+        parser.add_argument("--queue-ref", required=True)
+        parser.add_argument("--queue-message-ref", required=True)
+        parser.add_argument("--queue-message-hash", required=True)
+        parser.add_argument("--dead-letter-queue-ref")
+        parser.add_argument("--authority-request-ref", required=True)
+        parser.add_argument("--dossier-storage-ref", required=True)
+        parser.add_argument("--dossier-storage-hash", required=True)
+        parser.add_argument("--report-storage-ref")
+        parser.add_argument("--report-storage-hash")
+        parser.add_argument("--request-hash")
+        parser.add_argument("--response-status", type=int)
+        parser.add_argument("--response-hash")
+        parser.add_argument("--metrics-ref", required=True)
+        parser.add_argument("--audit-log-ref", required=True)
+        parser.add_argument("--audit-log-root", required=True)
+        parser.add_argument("--retention-until", required=True)
+        parser.add_argument("--credential-ref", required=True)
+        parser.add_argument("--evidence-ref", action="append", default=[])
+        parser.add_argument("--require-complete", action="store_true")
+        parser.add_argument("--require-fresh", action="store_true")
+        parser.add_argument("--started-at", required=True)
+        parser.add_argument("--completed-at")
+        parser.add_argument("--next-run-at")
+        parser.add_argument("--error-ref")
+        parser.add_argument("--now")
+        parser.add_argument("--out", default="artifacts/framework-runtime-service-authority-worker.json")
+        parser.add_argument("--key")
+
+    framework_runtime_service_authority_worker = subparsers.add_parser(
+        "framework-runtime-service-authority-worker", help="write a signed framework runtime service authority worker receipt"
+    )
+    framework_runtime_service_authority_worker.add_argument("dossier")
+    _add_framework_runtime_service_authority_source_args(framework_runtime_service_authority_worker, required=True)
+    _add_framework_runtime_service_authority_worker_fields(framework_runtime_service_authority_worker)
+    framework_runtime_service_authority_worker.set_defaults(func=cmd_framework_runtime_service_authority_worker)
+
+    framework_runtime_service_authority_worker_verify = subparsers.add_parser(
+        "framework-runtime-service-authority-worker-verify", help="verify a signed framework runtime service authority worker receipt"
+    )
+    framework_runtime_service_authority_worker_verify.add_argument("receipt")
+    _add_framework_runtime_service_authority_worker_source_args(framework_runtime_service_authority_worker_verify, required=False)
+    framework_runtime_service_authority_worker_verify.add_argument("--root", default=".")
+    framework_runtime_service_authority_worker_verify.add_argument("--require-complete", action="store_true")
+    framework_runtime_service_authority_worker_verify.add_argument("--require-fresh", action="store_true")
+    framework_runtime_service_authority_worker_verify.add_argument("--now")
+    framework_runtime_service_authority_worker_verify.add_argument("--key")
+    framework_runtime_service_authority_worker_verify.set_defaults(func=cmd_framework_runtime_service_authority_worker_verify)
+
+    framework_runtime_service_authority_worker_append = subparsers.add_parser(
+        "framework-runtime-service-authority-worker-append", help="append a framework runtime service authority worker receipt as chain evidence"
+    )
+    framework_runtime_service_authority_worker_append.add_argument("receipt")
+    _add_framework_runtime_service_authority_worker_source_args(framework_runtime_service_authority_worker_append, required=True)
+    framework_runtime_service_authority_worker_append.add_argument("--root", default=".")
+    framework_runtime_service_authority_worker_append.add_argument("--require-complete", action="store_true")
+    framework_runtime_service_authority_worker_append.add_argument("--require-fresh", action="store_true")
+    framework_runtime_service_authority_worker_append.add_argument("--now")
+    framework_runtime_service_authority_worker_append.add_argument("--out", default="artifacts/framework-runtime-service-authority-worker-entry.json")
+    framework_runtime_service_authority_worker_append.add_argument("--key")
+    _add_state_args(framework_runtime_service_authority_worker_append)
+    framework_runtime_service_authority_worker_append.set_defaults(func=cmd_framework_runtime_service_authority_worker_append)
     mcp = subparsers.add_parser("mcp-capture", help="append MCP tool call transcripts to the chain")
     mcp.add_argument("transcript")
     _add_state_args(mcp)
