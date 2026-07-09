@@ -197,6 +197,7 @@ def verify_go_verifier_build_attestation(
     _verify_build(attestation.get("build"), errors, warnings)
     _verify_binary(attestation.get("binary"), attestation.get("build", {}).get("mode"), errors, warnings)
     _verify_provenance(attestation.get("provenance"), attestation.get("build", {}).get("mode"), errors, warnings)
+    _verify_sidecar_hashes(attestation, Path(root), errors, warnings)
 
     if verifier_release is None:
         warnings.append("verifier release source was not supplied; release/source bindings were not replayed")
@@ -407,6 +408,54 @@ def _controls(build: dict[str, Any], binary: dict[str, Any], provenance: dict[st
         {"id": "go-verifier-supply-chain-provenance", "status": "attested" if provenance.get("provenance_hash") and provenance.get("signature_hash") else "planned-production", "description": "SBOM/provenance/signature references are bound for production verifier distribution."},
     ]
 
+
+def _verify_sidecar_hashes(attestation: dict[str, Any], root: Path, errors: list[str], warnings: list[str]) -> None:
+    build = attestation.get("build")
+    provenance = attestation.get("provenance")
+    if isinstance(build, dict):
+        _verify_local_hash_ref(
+            "Go verifier build build.build_log_hash",
+            build.get("build_log_ref"),
+            build.get("build_log_hash"),
+            root,
+            errors,
+            warnings,
+        )
+    if isinstance(provenance, dict):
+        for label, ref_field, hash_field in (
+            ("Go verifier build provenance.sbom_hash", "sbom_ref", "sbom_hash"),
+            ("Go verifier build provenance.provenance_hash", "provenance_ref", "provenance_hash"),
+            ("Go verifier build provenance.signature_hash", "signature_ref", "signature_hash"),
+        ):
+            _verify_local_hash_ref(label, provenance.get(ref_field), provenance.get(hash_field), root, errors, warnings)
+
+
+def _verify_local_hash_ref(label: str, ref: Any, expected_hash: Any, root: Path, errors: list[str], warnings: list[str]) -> None:
+    if not ref or not expected_hash or not isinstance(ref, str) or not isinstance(expected_hash, str):
+        return
+    source_path = _local_ref_path(root, ref)
+    if source_path is None:
+        return
+    try:
+        data = source_path.read_bytes()
+    except OSError as exc:
+        errors.append(f"{label} local source could not be read: {exc}")
+        return
+    expected = expected_hash[7:] if expected_hash.startswith("sha256:") else expected_hash
+    actual = hashlib.sha256(data).hexdigest()
+    if actual != expected:
+        errors.append(f"{label} does not match local source {ref}")
+
+
+def _local_ref_path(root: Path, ref: str) -> Path | None:
+    if "://" in ref:
+        return None
+    if ":" in ref and not (len(ref) > 1 and ref[1] == ":"):
+        return None
+    path = Path(ref)
+    if path.is_absolute():
+        return path
+    return root / path
 
 def _status_summary(items: list[Any]) -> dict[str, int]:
     summary: dict[str, int] = {}

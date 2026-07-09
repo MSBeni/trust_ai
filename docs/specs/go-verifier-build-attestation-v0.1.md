@@ -37,11 +37,9 @@ Required top-level fields:
 
 `source` must include:
 
-- `verifier_release_id` and `verifier_release_hash`.
-- `verifier_release_version`.
-- `verifier_release_source_hash` and `verifier_release_source_files_hash`.
+- `release_id`, `release_hash`, and `release_version`.
 - `go_source_count` and `go_source_hash`.
-- `go_sources`, with each Go verifier source path and content hash.
+- top-level `go_sources`, with each Go verifier source path, SHA-256 hash, and size.
 - `conformance_report_id`.
 - `standards_package_id`.
 
@@ -61,9 +59,9 @@ longer match.
 - `trimpath`: must be `true` for reproducible source-path handling.
 - `ldflags`: expected to include static release stripping flags such as
   `-s -w`.
-- `command`: the build command used or planned.
-- `started_at`, `finished_at`, `build_log_ref`, and `build_log_hash` when a
-  recorded or binary build is claimed.
+- `build_command`: the build command used or planned.
+- `build_started_at`, `build_finished_at`, `build_log_ref`, and
+  `build_log_hash` when a recorded or binary build is claimed.
 
 `source-plan` attestations may omit build log and binary hashes, but verifiers
 must emit warnings that no binary has been produced.
@@ -77,9 +75,10 @@ must emit warnings that no binary has been produced.
 - `binary.sha256`.
 - `binary.size_bytes`.
 - `build.build_log_ref` and `build.build_log_hash`.
-- at least one provenance hash from SBOM, provenance, or signature metadata.
+- `provenance.sbom_hash`, `provenance.provenance_hash`, and
+  `provenance.signature_hash`.
 
-The verifier must reject a `binary-attested` attestation without those fields.
+The verifier must reject a `binary-attested` attestation without those fields or when the supplied binary bytes do not replay to the recorded hash and size. When build-log, SBOM, provenance, or signature refs resolve to local paths, their bytes must also replay to the recorded hashes.
 `recorded-build` mode requires build-log metadata but may omit the binary hash
 while the release process is still staging the artifact.
 
@@ -100,7 +99,22 @@ An implementation verifies:
 Reference commands:
 
 ```powershell
+# Source-plan fallback when no local Go toolchain or binary artifact is available.
 python -m trustai go-verifier-build-attestation artifacts/verifier-release.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --mode source-plan --builder-ref builder:trustai/go-verifier/local --toolchain-ref go:download-required --toolchain-version not-installed-local-reference --goos linux --goarch amd64 --build-started-at 2026-07-16T00:00:00Z --build-finished-at 2026-07-16T00:01:00Z --attested-at 2026-07-16T00:02:00Z --out artifacts/go-verifier-build-attestation.json
 python -m trustai go-verifier-build-verify artifacts/go-verifier-build-attestation.json artifacts/verifier-release.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root .
 python -m trustai go-verifier-build-append artifacts/go-verifier-build-attestation.json artifacts/verifier-release.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --state .trustai/go-verifier-build-demo/evidence-chain.json --tenant go-verifier-build-local --out artifacts/go-verifier-build-entry.json
+
+# Binary-attested release evidence after CI or a local Go toolchain emits the binary and sidecars.
+$goVerifierBinary = "artifacts/trustai-verify-linux-amd64"
+$goVerifierBuildLog = "artifacts/trustai-verify-linux-amd64.build.log"
+$goVerifierSbom = "artifacts/trustai-verify-linux-amd64.sbom.json"
+$goVerifierProvenance = "artifacts/trustai-verify-linux-amd64.provenance.json"
+$goVerifierSignature = "artifacts/trustai-verify-linux-amd64.sig"
+$goVerifierBuildLogHash = "sha256:$((Get-FileHash $goVerifierBuildLog -Algorithm SHA256).Hash.ToLower())"
+$goVerifierSbomHash = "sha256:$((Get-FileHash $goVerifierSbom -Algorithm SHA256).Hash.ToLower())"
+$goVerifierProvenanceHash = "sha256:$((Get-FileHash $goVerifierProvenance -Algorithm SHA256).Hash.ToLower())"
+$goVerifierSignatureHash = "sha256:$((Get-FileHash $goVerifierSignature -Algorithm SHA256).Hash.ToLower())"
+python -m trustai go-verifier-build-attestation artifacts/verifier-release.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --binary $goVerifierBinary --mode binary-attested --builder-ref builder:github-actions/go-verifier --toolchain-ref go:github-actions/setup-go --toolchain-version 1.23.0 --goos linux --goarch amd64 --build-command 'CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o dist/trustai-verify-linux-amd64 ./verifier/go/trustai-verify' --build-log-ref $goVerifierBuildLog --build-log-hash $goVerifierBuildLogHash --sbom-ref $goVerifierSbom --sbom-hash $goVerifierSbomHash --provenance-ref $goVerifierProvenance --provenance-hash $goVerifierProvenanceHash --signature-ref $goVerifierSignature --signature-hash $goVerifierSignatureHash --build-started-at 2026-07-16T00:00:00Z --build-finished-at 2026-07-16T00:01:00Z --attested-at 2026-07-16T00:02:00Z --out artifacts/go-verifier-build-attestation.json
+python -m trustai go-verifier-build-verify artifacts/go-verifier-build-attestation.json artifacts/verifier-release.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --binary $goVerifierBinary
+python -m trustai go-verifier-build-append artifacts/go-verifier-build-attestation.json artifacts/verifier-release.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --binary $goVerifierBinary --state .trustai/go-verifier-build-demo/evidence-chain.json --tenant go-verifier-build-local --out artifacts/go-verifier-build-entry.json
 ```

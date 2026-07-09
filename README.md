@@ -28,7 +28,7 @@ workflow from the roadmap without requiring network access or external services:
     holdout timing.
 14. Generate verifier conformance reports and large-log tamper stress reports proving valid packs pass, tampered packs fail, and roadmap-scale evidence chains detect mutation without account or network access.
 15. Package the Python and Go verifier source, conformance report, and standards package into
-    a signed release manifest, issue Go verifier build/source-plan attestations, and issue standards-body submission/status/ballot/ballot-system receipts for standards-track docket evidence.
+    a signed release manifest, issue Go verifier build/binary attestations, and issue standards-body submission/status/ballot/ballot-system receipts for standards-track docket evidence.
 
 ## Repository Layout
 
@@ -467,6 +467,7 @@ The dependency-free Go verifier source lives in `verifier/go/trustai-verify/` an
 ```powershell
 python -m unittest tests.test_go_verifier_source
 python -m unittest tests.test_go_verifier_release_workflow
+python -m unittest tests.test_go_verifier_build
 ```
 
 The source-plan build attestation records the release source binding, conformance report, standards package, static-build controls, and chain evidence without claiming that a binary exists:
@@ -474,6 +475,23 @@ The source-plan build attestation records the release source binding, conformanc
 ```powershell
 python -m trustai go-verifier-build-attestation artifacts/verifier-release.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --mode source-plan --builder-ref builder:trustai/go-verifier/local --toolchain-ref go:download-required --toolchain-version not-installed-local-reference --goos linux --goarch amd64 --build-started-at 2026-07-16T00:00:00Z --build-finished-at 2026-07-16T00:01:00Z --attested-at 2026-07-16T00:02:00Z --out artifacts/go-verifier-build-attestation.json
 python -m trustai go-verifier-build-verify artifacts/go-verifier-build-attestation.json artifacts/verifier-release.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root .
+```
+
+When CI or a local Go toolchain has produced the verifier binary plus build log, SBOM, provenance, and signature sidecars, use `binary-attested` mode to replay the released bytes:
+
+```powershell
+$goVerifierBinary = "artifacts/trustai-verify-linux-amd64"
+$goVerifierBuildLog = "artifacts/trustai-verify-linux-amd64.build.log"
+$goVerifierSbom = "artifacts/trustai-verify-linux-amd64.sbom.json"
+$goVerifierProvenance = "artifacts/trustai-verify-linux-amd64.provenance.json"
+$goVerifierSignature = "artifacts/trustai-verify-linux-amd64.sig"
+$goVerifierBuildLogHash = "sha256:$((Get-FileHash $goVerifierBuildLog -Algorithm SHA256).Hash.ToLower())"
+$goVerifierSbomHash = "sha256:$((Get-FileHash $goVerifierSbom -Algorithm SHA256).Hash.ToLower())"
+$goVerifierProvenanceHash = "sha256:$((Get-FileHash $goVerifierProvenance -Algorithm SHA256).Hash.ToLower())"
+$goVerifierSignatureHash = "sha256:$((Get-FileHash $goVerifierSignature -Algorithm SHA256).Hash.ToLower())"
+python -m trustai go-verifier-build-attestation artifacts/verifier-release.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --binary $goVerifierBinary --mode binary-attested --builder-ref builder:github-actions/go-verifier --toolchain-ref go:github-actions/setup-go --toolchain-version 1.23.0 --goos linux --goarch amd64 --build-command 'CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o dist/trustai-verify-linux-amd64 ./verifier/go/trustai-verify' --build-log-ref $goVerifierBuildLog --build-log-hash $goVerifierBuildLogHash --sbom-ref $goVerifierSbom --sbom-hash $goVerifierSbomHash --provenance-ref $goVerifierProvenance --provenance-hash $goVerifierProvenanceHash --signature-ref $goVerifierSignature --signature-hash $goVerifierSignatureHash --build-started-at 2026-07-16T00:00:00Z --build-finished-at 2026-07-16T00:01:00Z --attested-at 2026-07-16T00:02:00Z --out artifacts/go-verifier-build-attestation.json
+python -m trustai go-verifier-build-verify artifacts/go-verifier-build-attestation.json artifacts/verifier-release.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --binary $goVerifierBinary
+python -m trustai go-verifier-build-append artifacts/go-verifier-build-attestation.json artifacts/verifier-release.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --binary $goVerifierBinary --state .trustai/go-verifier-build-demo/evidence-chain.json --tenant go-verifier-build-local --out artifacts/go-verifier-build-entry.json
 ```
 
 This workspace does not have `go` on `PATH`, so the compiled static binary remains a build-environment deliverable. The repository now includes `.github/workflows/go-verifier.yml` to run Go tests, cross-build static verifier artifacts, upload SHA-256 checksums, SBOM JSON, provenance JSON, and request hosted build provenance attestations. With Go installed locally, build it with:
