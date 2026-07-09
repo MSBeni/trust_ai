@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
@@ -69,6 +70,11 @@ def build_trust_authority_provider_attestation(
     key_policy_hash: str | None = None,
     timestamp_policy_ref: str | None = None,
     timestamp_policy_hash: str | None = None,
+    kms_request_path: str | Path | None = None,
+    kms_response_path: str | Path | None = None,
+    tsa_request_path: str | Path | None = None,
+    tsa_response_path: str | Path | None = None,
+    tsa_certificate_chain_path: str | Path | None = None,
     evidence_refs: list[str] | None = None,
     attested_at: str | None = None,
     key: str | None = None,
@@ -148,6 +154,14 @@ def build_trust_authority_provider_attestation(
         keyring=keyring,
         proof_pack=proof_pack,
     )
+    provider_artifacts = _provider_artifacts(
+        kms_request_path=kms_request_path,
+        kms_response_path=kms_response_path,
+        tsa_request_path=tsa_request_path,
+        tsa_response_path=tsa_response_path,
+        tsa_certificate_chain_path=tsa_certificate_chain_path,
+    )
+    _validate_provider_artifacts(kms, tsa, provider_artifacts)
     body: dict[str, Any] = {
         "schema": TRUST_AUTHORITY_PROVIDER_SCHEMA,
         "mode": mode,
@@ -159,6 +173,7 @@ def build_trust_authority_provider_attestation(
         "operation": operation,
         "audit_log": audit,
         "source_artifacts": source_artifacts,
+        "provider_artifacts": provider_artifacts,
         "controls": _controls(
             mode=mode,
             kms_endpoint=kms_endpoint,
@@ -173,11 +188,13 @@ def build_trust_authority_provider_attestation(
             key_policy_hash=key_policy_hash,
             timestamp_policy_hash=timestamp_policy_hash,
             audit_log_root=audit_log_root,
+            provider_artifact_count=len(provider_artifacts),
             credential_ref=credential_ref,
         ),
         "limitations": [
             "This attestation binds a verified TrustAI trust-authority receipt to recorded KMS/HSM and RFC 3161 TSA provider evidence.",
             "It records provider endpoints, request hashes, response hashes, certificate-chain hashes, audit-log roots, and redacted credential references.",
+            "When provider artifact paths are supplied, it also binds retained KMS/TSA request, response, and certificate-chain bytes by hash and size.",
             "It does not contain raw provider credentials, private keys, timestamp response bytes, or signing response bodies.",
             "Production deployments should preserve provider-native request/response bodies in WORM storage when retention policy requires replay beyond hashes.",
         ],
@@ -197,6 +214,11 @@ def verify_trust_authority_provider_attestation(
     keyring: dict[str, Any] | None = None,
     *,
     proof_pack: dict[str, Any] | None = None,
+    kms_request_path: str | Path | None = None,
+    kms_response_path: str | Path | None = None,
+    tsa_request_path: str | Path | None = None,
+    tsa_response_path: str | Path | None = None,
+    tsa_certificate_chain_path: str | Path | None = None,
     key: str | None = None,
 ) -> TrustAuthorityProviderVerification:
     errors: list[str] = []
@@ -287,6 +309,11 @@ def verify_trust_authority_provider_attestation(
     if not isinstance(source_artifacts, list) or not source_artifacts:
         errors.append("trust authority provider source_artifacts must contain at least one source")
         source_artifacts = []
+    provider_artifacts = attestation.get("provider_artifacts", [])
+    if not isinstance(provider_artifacts, list):
+        errors.append("trust authority provider provider_artifacts must be a list")
+        provider_artifacts = []
+    _verify_provider_artifact_records(provider_artifacts, kms, tsa, errors)
     supplied_sources = _source_artifacts(
         trust_authority_receipt=trust_authority_receipt,
         source_chain=source_chain,
@@ -314,6 +341,24 @@ def verify_trust_authority_provider_attestation(
     else:
         warnings.append("trust authority provider source artifacts were not supplied; source hashes were not replayed")
 
+    try:
+        supplied_provider_artifacts = _provider_artifacts(
+            kms_request_path=kms_request_path,
+            kms_response_path=kms_response_path,
+            tsa_request_path=tsa_request_path,
+            tsa_response_path=tsa_response_path,
+            tsa_certificate_chain_path=tsa_certificate_chain_path,
+        )
+    except OSError as exc:
+        errors.append(f"trust authority provider artifact source could not be read: {exc}")
+        supplied_provider_artifacts = []
+    if supplied_provider_artifacts:
+        if provider_artifacts != supplied_provider_artifacts:
+            errors.append("trust authority provider provider_artifacts do not match supplied provider artifacts")
+        _verify_provider_artifact_records(supplied_provider_artifacts, kms, tsa, errors)
+    elif not provider_artifacts:
+        warnings.append("trust authority provider KMS/TSA artifact paths were not supplied; provider request/response hashes were not replayed")
+
     controls = attestation.get("controls", [])
     if not isinstance(controls, list) or not controls:
         errors.append("trust authority provider controls are required")
@@ -330,6 +375,11 @@ def append_trust_authority_provider_attestation(
     keyring: dict[str, Any] | None = None,
     *,
     proof_pack: dict[str, Any] | None = None,
+    kms_request_path: str | Path | None = None,
+    kms_response_path: str | Path | None = None,
+    tsa_request_path: str | Path | None = None,
+    tsa_response_path: str | Path | None = None,
+    tsa_certificate_chain_path: str | Path | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
     result = verify_trust_authority_provider_attestation(
@@ -338,6 +388,11 @@ def append_trust_authority_provider_attestation(
         source_chain,
         keyring,
         proof_pack=proof_pack,
+        kms_request_path=kms_request_path,
+        kms_response_path=kms_response_path,
+        tsa_request_path=tsa_request_path,
+        tsa_response_path=tsa_response_path,
+        tsa_certificate_chain_path=tsa_certificate_chain_path,
         key=key,
     )
     if not result.ok:
@@ -354,6 +409,7 @@ def append_trust_authority_provider_attestation(
         "operation": attestation.get("operation"),
         "audit_log": attestation.get("audit_log"),
         "source_artifacts": attestation.get("source_artifacts"),
+        "provider_artifacts": attestation.get("provider_artifacts", []),
         "control_summary": _status_summary(attestation.get("controls", [])),
     }
     return chain.append(TRUST_AUTHORITY_PROVIDER_ENTRY_TYPE, payload, key=key, timestamp=attestation.get("attested_at"))
@@ -417,6 +473,99 @@ def _source_artifacts(
     return records
 
 
+def _provider_artifacts(
+    *,
+    kms_request_path: str | Path | None = None,
+    kms_response_path: str | Path | None = None,
+    tsa_request_path: str | Path | None = None,
+    tsa_response_path: str | Path | None = None,
+    tsa_certificate_chain_path: str | Path | None = None,
+) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for artifact_type, path in (
+        ("kms_request", kms_request_path),
+        ("kms_response", kms_response_path),
+        ("tsa_request", tsa_request_path),
+        ("tsa_response", tsa_response_path),
+        ("tsa_certificate_chain", tsa_certificate_chain_path),
+    ):
+        if path is None:
+            continue
+        source = Path(path)
+        data = source.read_bytes()
+        records.append(
+            {
+                "artifact_type": artifact_type,
+                "path": str(path).replace("\\", "/"),
+                "hash": _sha256_ref(data),
+                "size_bytes": len(data),
+                "media_type": _artifact_media_type(source),
+            }
+        )
+    return records
+
+
+def _validate_provider_artifacts(kms: dict[str, Any], tsa: dict[str, Any], records: list[dict[str, Any]]) -> None:
+    errors: list[str] = []
+    _verify_provider_artifact_records(records, kms, tsa, errors)
+    if errors:
+        raise ValueError("invalid trust authority provider artifacts: " + "; ".join(errors))
+
+
+def _verify_provider_artifact_records(records: list[Any], kms: dict[str, Any], tsa: dict[str, Any], errors: list[str]) -> None:
+    expected_hashes = {
+        "kms_request": kms.get("request_hash"),
+        "kms_response": kms.get("response_hash"),
+        "tsa_request": tsa.get("request_hash"),
+        "tsa_response": tsa.get("response_hash"),
+        "tsa_certificate_chain": tsa.get("certificate_chain_hash"),
+    }
+    seen: set[str] = set()
+    for record in records:
+        if not isinstance(record, dict):
+            errors.append("trust authority provider provider_artifacts entries must be objects")
+            continue
+        artifact_type = str(record.get("artifact_type") or "")
+        if artifact_type not in expected_hashes:
+            errors.append(f"trust authority provider provider_artifacts artifact_type unsupported: {artifact_type}")
+            continue
+        if artifact_type in seen:
+            errors.append(f"trust authority provider provider_artifacts duplicate artifact_type: {artifact_type}")
+        seen.add(artifact_type)
+        for field in ("path", "hash", "size_bytes"):
+            if record.get(field) in (None, ""):
+                errors.append(f"trust authority provider provider_artifacts {artifact_type}.{field} is required")
+        if not isinstance(record.get("size_bytes"), int) or record.get("size_bytes") < 0:
+            errors.append(f"trust authority provider provider_artifacts {artifact_type}.size_bytes must be a non-negative integer")
+        artifact_hash = str(record.get("hash") or "")
+        if not _is_hash_ref(artifact_hash):
+            errors.append(f"trust authority provider provider_artifacts {artifact_type}.hash must be a sha256 reference")
+        expected_hash = str(expected_hashes.get(artifact_type) or "")
+        if expected_hash and _normalize_hash_ref(expected_hash) != _normalize_hash_ref(artifact_hash):
+            errors.append(f"trust authority provider {artifact_type} artifact hash does not match recorded provider hash")
+
+
+def _artifact_media_type(path: Path) -> str:
+    suffix = path.suffix.lower()
+    if suffix == ".json":
+        return "application/json"
+    if suffix in {".pem", ".crt", ".cer"}:
+        return "application/pem-certificate-chain"
+    if suffix in {".tsr", ".der"}:
+        return "application/octet-stream"
+    return "application/octet-stream"
+
+
+def _sha256_ref(data: bytes) -> str:
+    return "sha256:" + hashlib.sha256(data).hexdigest()
+
+
+def _normalize_hash_ref(value: str) -> str:
+    if value.startswith("sha256:"):
+        return value
+    return "sha256:" + value
+
+
 def _chain_document(chain: EvidenceChain) -> dict[str, Any]:
     return {
         "spec_version": CHAIN_SPEC_VERSION,
@@ -460,6 +609,7 @@ def _controls(
     key_policy_hash: str | None,
     timestamp_policy_hash: str | None,
     audit_log_root: str,
+    provider_artifact_count: int,
     credential_ref: str,
 ) -> list[dict[str, Any]]:
     return [
@@ -496,6 +646,11 @@ def _controls(
             "id": "immutable-provider-audit-log",
             "status": "implemented" if _is_hash_ref(audit_log_root) else "planned-production",
             "description": "Provider audit-log root and retention deadline are recorded.",
+        },
+        {
+            "id": "provider-artifact-replay",
+            "status": "implemented" if provider_artifact_count >= 5 else "local-reference" if provider_artifact_count else "planned-production",
+            "description": "KMS/TSA request, response, and certificate-chain artifacts are replay-bound when supplied.",
         },
         {
             "id": "redacted-provider-credential",

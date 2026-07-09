@@ -1005,6 +1005,7 @@ def cmd_trust_authority_verify(args: argparse.Namespace) -> int:
         chain=source_chain,
         keyring=keyring,
         proof_pack=pack,
+
         key=args.key,
     )
     if result.ok:
@@ -1031,6 +1032,7 @@ def cmd_trust_authority_append(args: argparse.Namespace) -> int:
             source_chain=source_chain,
             keyring=keyring,
             proof_pack=pack,
+
             key=args.key,
         )
     except ValueError as exc:
@@ -1085,6 +1087,11 @@ def cmd_trust_authority_provider_attestation(args: argparse.Namespace) -> int:
             key_policy_hash=args.key_policy_hash,
             timestamp_policy_ref=args.timestamp_policy_ref,
             timestamp_policy_hash=args.timestamp_policy_hash,
+            kms_request_path=args.kms_request,
+            kms_response_path=args.kms_response,
+            tsa_request_path=args.tsa_request,
+            tsa_response_path=args.tsa_response,
+            tsa_certificate_chain_path=args.tsa_certificate_chain,
             evidence_refs=args.evidence_ref or [],
             attested_at=args.attested_at,
             key=args.key,
@@ -1098,6 +1105,11 @@ def cmd_trust_authority_provider_attestation(args: argparse.Namespace) -> int:
         source_chain,
         keyring,
         proof_pack=pack,
+        kms_request_path=args.kms_request,
+        kms_response_path=args.kms_response,
+        tsa_request_path=args.tsa_request,
+        tsa_response_path=args.tsa_response,
+        tsa_certificate_chain_path=args.tsa_certificate_chain,
         key=args.key,
     )
     if not result.ok:
@@ -1123,6 +1135,11 @@ def cmd_trust_authority_provider_verify(args: argparse.Namespace) -> int:
         source_chain,
         keyring,
         proof_pack=pack,
+        kms_request_path=args.kms_request,
+        kms_response_path=args.kms_response,
+        tsa_request_path=args.tsa_request,
+        tsa_response_path=args.tsa_response,
+        tsa_certificate_chain_path=args.tsa_certificate_chain,
         key=args.key,
     )
     if result.ok:
@@ -1148,6 +1165,11 @@ def cmd_trust_authority_provider_append(args: argparse.Namespace) -> int:
             source_chain,
             keyring,
             proof_pack=pack,
+            kms_request_path=args.kms_request,
+            kms_response_path=args.kms_response,
+            tsa_request_path=args.tsa_request,
+            tsa_response_path=args.tsa_response,
+            tsa_certificate_chain_path=args.tsa_certificate_chain,
             key=args.key,
         )
     except ValueError as exc:
@@ -11041,6 +11063,11 @@ def build_parser() -> argparse.ArgumentParser:
     trust_authority_provider.add_argument("--key-policy-hash")
     trust_authority_provider.add_argument("--timestamp-policy-ref")
     trust_authority_provider.add_argument("--timestamp-policy-hash")
+    trust_authority_provider.add_argument("--kms-request")
+    trust_authority_provider.add_argument("--kms-response")
+    trust_authority_provider.add_argument("--tsa-request")
+    trust_authority_provider.add_argument("--tsa-response")
+    trust_authority_provider.add_argument("--tsa-certificate-chain")
     trust_authority_provider.add_argument("--evidence-ref", action="append")
     trust_authority_provider.add_argument("--attested-at")
     trust_authority_provider.add_argument("--out", default="artifacts/trust-authority-provider-attestation.json")
@@ -11054,6 +11081,11 @@ def build_parser() -> argparse.ArgumentParser:
     trust_authority_provider_verify.add_argument("--source-tenant", default="local")
     trust_authority_provider_verify.add_argument("--keyring", required=True)
     trust_authority_provider_verify.add_argument("--pack")
+    trust_authority_provider_verify.add_argument("--kms-request")
+    trust_authority_provider_verify.add_argument("--kms-response")
+    trust_authority_provider_verify.add_argument("--tsa-request")
+    trust_authority_provider_verify.add_argument("--tsa-response")
+    trust_authority_provider_verify.add_argument("--tsa-certificate-chain")
     trust_authority_provider_verify.add_argument("--key")
     trust_authority_provider_verify.set_defaults(func=cmd_trust_authority_provider_verify)
 
@@ -11064,6 +11096,11 @@ def build_parser() -> argparse.ArgumentParser:
     trust_authority_provider_append.add_argument("--source-tenant", default="local")
     trust_authority_provider_append.add_argument("--keyring", required=True)
     trust_authority_provider_append.add_argument("--pack")
+    trust_authority_provider_append.add_argument("--kms-request")
+    trust_authority_provider_append.add_argument("--kms-response")
+    trust_authority_provider_append.add_argument("--tsa-request")
+    trust_authority_provider_append.add_argument("--tsa-response")
+    trust_authority_provider_append.add_argument("--tsa-certificate-chain")
     trust_authority_provider_append.add_argument("--out", default="artifacts/trust-authority-provider-entry.json")
     trust_authority_provider_append.add_argument("--key")
     _add_state_args(trust_authority_provider_append)

@@ -1,4 +1,5 @@
 import copy
+import hashlib
 import json
 import os
 import subprocess
@@ -28,6 +29,10 @@ CONTRACT = ROOT / "examples" / "aitrade" / "verification-contract.yaml"
 RESULTS = ROOT / "examples" / "aitrade" / "eval-results.json"
 
 
+def _sha256_ref(path: Path) -> str:
+    return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+
+
 class TrustAuthorityProviderTests(unittest.TestCase):
     def _sources(self, tmp: Path):
         source_chain = EvidenceChain.load(tmp / "source-chain.json", tenant_id="test")
@@ -47,6 +52,30 @@ class TrustAuthorityProviderTests(unittest.TestCase):
         keyring = local_dev_keyring(tenant_id="test")
         trust_authority = build_trust_authority_receipt(source_chain, keyring, proof_pack=pack, generated_at="2026-07-04T03:00:00Z")
         return source_chain, keyring, pack, trust_authority
+
+    def _provider_artifacts(self, tmp: Path) -> dict[str, Path | str]:
+        kms_request = tmp / "kms-sign-request.json"
+        kms_response = tmp / "kms-sign-response.json"
+        tsa_request = tmp / "tsa-request.tsq"
+        tsa_response = tmp / "tsa-response.tsr"
+        tsa_certificate_chain = tmp / "tsa-certificate-chain.pem"
+        kms_request.write_text(json.dumps({"operation": "sign", "key": "kms:example/trustai/evidence-signing", "digest": "trust-authority-receipt"}, sort_keys=True), encoding="utf-8")
+        kms_response.write_text(json.dumps({"status": "signed", "signature_ref": "kms-signature:trust-authority/2026-07-04"}, sort_keys=True), encoding="utf-8")
+        tsa_request.write_bytes(b"trustai-rfc3161-request\n")
+        tsa_response.write_bytes(b"trustai-rfc3161-response\n")
+        tsa_certificate_chain.write_text("-----BEGIN CERTIFICATE-----\nTRUSTAI-TSA\n-----END CERTIFICATE-----\n", encoding="utf-8")
+        return {
+            "kms_request_path": kms_request,
+            "kms_response_path": kms_response,
+            "tsa_request_path": tsa_request,
+            "tsa_response_path": tsa_response,
+            "tsa_certificate_chain_path": tsa_certificate_chain,
+            "kms_request_hash": _sha256_ref(kms_request),
+            "kms_response_hash": _sha256_ref(kms_response),
+            "tsa_request_hash": _sha256_ref(tsa_request),
+            "tsa_response_hash": _sha256_ref(tsa_response),
+            "tsa_certificate_chain_hash": _sha256_ref(tsa_certificate_chain),
+        }
 
     def _attestation(self, source_chain, keyring, pack, trust_authority, **overrides):
         values = {
@@ -86,8 +115,10 @@ class TrustAuthorityProviderTests(unittest.TestCase):
 
     def test_trust_authority_provider_attestation_verifies_and_appends(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
-            source_chain, keyring, pack, trust_authority = self._sources(Path(tmp_dir))
-            attestation = self._attestation(source_chain, keyring, pack, trust_authority)
+            tmp = Path(tmp_dir)
+            source_chain, keyring, pack, trust_authority = self._sources(tmp)
+            provider_artifacts = self._provider_artifacts(tmp)
+            attestation = self._attestation(source_chain, keyring, pack, trust_authority, **provider_artifacts)
 
             result = verify_trust_authority_provider_attestation(
                 attestation,
@@ -95,8 +126,13 @@ class TrustAuthorityProviderTests(unittest.TestCase):
                 source_chain,
                 keyring,
                 proof_pack=pack,
+                kms_request_path=provider_artifacts["kms_request_path"],
+                kms_response_path=provider_artifacts["kms_response_path"],
+                tsa_request_path=provider_artifacts["tsa_request_path"],
+                tsa_response_path=provider_artifacts["tsa_response_path"],
+                tsa_certificate_chain_path=provider_artifacts["tsa_certificate_chain_path"],
             )
-            chain = EvidenceChain.load(Path(tmp_dir) / "provider-chain.json", tenant_id="trust-authority-provider-test")
+            chain = EvidenceChain.load(tmp / "provider-chain.json", tenant_id="trust-authority-provider-test")
             entry = append_trust_authority_provider_attestation(
                 chain,
                 attestation,
@@ -104,6 +140,11 @@ class TrustAuthorityProviderTests(unittest.TestCase):
                 source_chain,
                 keyring,
                 proof_pack=pack,
+                kms_request_path=provider_artifacts["kms_request_path"],
+                kms_response_path=provider_artifacts["kms_response_path"],
+                tsa_request_path=provider_artifacts["tsa_request_path"],
+                tsa_response_path=provider_artifacts["tsa_response_path"],
+                tsa_certificate_chain_path=provider_artifacts["tsa_certificate_chain_path"],
             )
 
             self.assertTrue(result.ok, result.errors)
@@ -111,9 +152,46 @@ class TrustAuthorityProviderTests(unittest.TestCase):
             self.assertEqual("provider-attested", attestation["mode"])
             self.assertEqual("https://kms.example/sign", attestation["kms"]["endpoint"])
             self.assertEqual("env:TRUST_AUTHORITY_PROVIDER_TOKEN", attestation["operation"]["credential"]["ref"])
+            self.assertEqual(5, len(attestation["provider_artifacts"]))
+            self.assertIn("provider-artifact-replay", {control["id"] for control in attestation["controls"]})
             self.assertEqual(TRUST_AUTHORITY_PROVIDER_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(attestation["attestation_id"], entry["payload"]["attestation_id"])
             self.assertTrue(chain.verify_all().ok)
+
+    def test_trust_authority_provider_rejects_artifact_hash_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            source_chain, keyring, pack, trust_authority = self._sources(tmp)
+            provider_artifacts = self._provider_artifacts(tmp)
+            provider_artifacts["kms_request_hash"] = "sha256:not-the-request"
+
+            with self.assertRaisesRegex(ValueError, "kms_request artifact hash does not match recorded provider hash"):
+                self._attestation(source_chain, keyring, pack, trust_authority, **provider_artifacts)
+
+    def test_trust_authority_provider_detects_artifact_tamper(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            source_chain, keyring, pack, trust_authority = self._sources(tmp)
+            provider_artifacts = self._provider_artifacts(tmp)
+            attestation = self._attestation(source_chain, keyring, pack, trust_authority, **provider_artifacts)
+            Path(provider_artifacts["tsa_response_path"]).write_bytes(b"tampered-tsa-response\n")
+
+            result = verify_trust_authority_provider_attestation(
+                attestation,
+                trust_authority,
+                source_chain,
+                keyring,
+                proof_pack=pack,
+                kms_request_path=provider_artifacts["kms_request_path"],
+                kms_response_path=provider_artifacts["kms_response_path"],
+                tsa_request_path=provider_artifacts["tsa_request_path"],
+                tsa_response_path=provider_artifacts["tsa_response_path"],
+                tsa_certificate_chain_path=provider_artifacts["tsa_certificate_chain_path"],
+            )
+
+            self.assertFalse(result.ok)
+            self.assertIn("trust authority provider provider_artifacts do not match supplied provider artifacts", result.errors)
+            self.assertIn("trust authority provider tsa_response artifact hash does not match recorded provider hash", result.errors)
 
     def test_trust_authority_provider_attestation_rejects_non_https_tsa_endpoint(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -167,6 +245,7 @@ class TrustAuthorityProviderTests(unittest.TestCase):
             write_keyring(keyring_path, keyring)
             write_trust_authority_receipt(trust_authority_path, trust_authority)
             pack_path.write_text(json.dumps(pack, indent=2, sort_keys=True), encoding="utf-8")
+            provider_artifacts = self._provider_artifacts(tmp)
 
             env = {**os.environ, "PYTHONPATH": str(ROOT / "src")}
             source_args = [
@@ -180,6 +259,18 @@ class TrustAuthorityProviderTests(unittest.TestCase):
                 "--pack",
                 str(pack_path),
             ]
+            replay_args = [
+                "--kms-request",
+                str(provider_artifacts["kms_request_path"]),
+                "--kms-response",
+                str(provider_artifacts["kms_response_path"]),
+                "--tsa-request",
+                str(provider_artifacts["tsa_request_path"]),
+                "--tsa-response",
+                str(provider_artifacts["tsa_response_path"]),
+                "--tsa-certificate-chain",
+                str(provider_artifacts["tsa_certificate_chain_path"]),
+            ]
             provider_args = [
                 "--kms-provider",
                 "Example Cloud KMS",
@@ -188,23 +279,23 @@ class TrustAuthorityProviderTests(unittest.TestCase):
                 "--kms-key-ref",
                 "kms:example/trustai/evidence-signing",
                 "--kms-request-hash",
-                "sha256:kms-sign-request",
+                provider_artifacts["kms_request_hash"],
                 "--kms-response-status",
                 "200",
                 "--kms-response-hash",
-                "sha256:kms-sign-response",
+                provider_artifacts["kms_response_hash"],
                 "--tsa-provider",
                 "Example RFC3161 TSA",
                 "--tsa-endpoint",
                 "https://tsa.example/timestamp",
                 "--tsa-request-hash",
-                "sha256:tsa-request",
+                provider_artifacts["tsa_request_hash"],
                 "--tsa-response-status",
                 "200",
                 "--tsa-response-hash",
-                "sha256:tsa-response",
+                provider_artifacts["tsa_response_hash"],
                 "--tsa-certificate-chain-hash",
-                "sha256:tsa-certificate-chain",
+                provider_artifacts["tsa_certificate_chain_hash"],
                 "--actor-ref",
                 "oidc:trustai.example/trust-authority-worker",
                 "--credential-ref",
@@ -239,6 +330,7 @@ class TrustAuthorityProviderTests(unittest.TestCase):
                     "trust-authority-provider-attestation",
                     *source_args,
                     *provider_args,
+                    *replay_args,
                     "--out",
                     str(attestation_path),
                 ],
@@ -254,6 +346,7 @@ class TrustAuthorityProviderTests(unittest.TestCase):
                     "trust-authority-provider-verify",
                     str(attestation_path),
                     *source_args,
+                    *replay_args,
                 ],
                 cwd=ROOT,
                 env=env,
@@ -267,6 +360,7 @@ class TrustAuthorityProviderTests(unittest.TestCase):
                     "trust-authority-provider-append",
                     str(attestation_path),
                     *source_args,
+                    *replay_args,
                     "--state",
                     str(provider_state),
                     "--tenant",
