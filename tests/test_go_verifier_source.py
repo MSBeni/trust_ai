@@ -1,10 +1,16 @@
+import json
 import re
 import shutil
 import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
-from trustai.verifier import load_proof_pack, verify_proof_pack
+from trustai.chain import EvidenceChain
+from trustai.contracts import load_contract, register_contract
+from trustai.gate import append_eval_and_gate
+from trustai.proofpack import compile_proof_pack
+from trustai.verifier import verify_proof_pack
 from trustai.verifier_release import build_verifier_release_manifest
 
 
@@ -13,9 +19,19 @@ GO_VERIFIER_DIR = ROOT / "verifier" / "go" / "trustai-verify"
 MAIN_GO = GO_VERIFIER_DIR / "main.go"
 README = GO_VERIFIER_DIR / "README.md"
 GO_MOD = GO_VERIFIER_DIR / "go.mod"
+CONTRACT = ROOT / "examples" / "aitrade" / "verification-contract.yaml"
+RESULTS = ROOT / "examples" / "aitrade" / "eval-results.json"
 
 
 class GoVerifierSourceTests(unittest.TestCase):
+    def _fresh_reference_pack(self, tmp: Path) -> dict:
+        chain = EvidenceChain.load(tmp / "chain.json", tenant_id="go-verifier-source-test")
+        contract = load_contract(CONTRACT)
+        register_contract(chain, contract)
+        results = json.loads(RESULTS.read_text(encoding="utf-8"))
+        eval_entry, gate_entry, decision = append_eval_and_gate(chain, contract, results)
+        return compile_proof_pack(chain, contract, eval_entry, gate_entry, decision, out_path=tmp / "pack.json")
+
     def test_go_verifier_source_is_present_and_dependency_free(self):
         source = MAIN_GO.read_text(encoding="utf-8")
         go_mod = GO_MOD.read_text(encoding="utf-8")
@@ -54,12 +70,21 @@ class GoVerifierSourceTests(unittest.TestCase):
             "evaluateContract",
             "evaluateHoldout",
             "evaluateApprovals",
+            "defaultFrameworkMappings",
             "pack_id does not match canonical pack body",
             "proof pack signature invalid",
             "chain ordering must be contract registration < eval < gate",
+            "packed contract chain_entry_id mismatch",
+            "packed eval chain_entry_id mismatch",
+            "packed eval results_hash mismatch",
             "eval results hash mismatch",
             "gate decision mismatch for",
+            "gate decision agent mismatch",
             "packed gate decision mismatch for",
+            "packed subject agent mismatch",
+            "packed subject environment mismatch",
+            "framework_mappings must be a list",
+            "framework mappings do not match gate decision",
         ]
         for marker in required_markers:
             self.assertIn(marker, source)
@@ -70,9 +95,11 @@ class GoVerifierSourceTests(unittest.TestCase):
         self.assertIn("artifacts/trustai-verify-go.exe artifacts/aitrade-proof-pack.json", readme)
         self.assertIn("does not include `go` on PATH", readme)
 
-    def test_python_reference_pack_still_verifies(self):
-        pack = load_proof_pack(ROOT / "artifacts" / "aitrade-proof-pack.json")
-        result = verify_proof_pack(pack)
+    def test_fresh_python_reference_pack_still_verifies(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            pack = self._fresh_reference_pack(Path(tmp_dir))
+            result = verify_proof_pack(pack)
+
         self.assertTrue(result.ok, result.errors)
 
     def test_release_manifest_binds_go_verifier_source(self):

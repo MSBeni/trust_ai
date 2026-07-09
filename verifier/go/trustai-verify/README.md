@@ -7,8 +7,10 @@ offline verifier. It mirrors the local Python verifier checks for proof packs:
 - local HMAC proof-pack, chain-entry, and timestamp-token signature checks;
 - Merkle inclusion proof checks;
 - contract, eval, and promotion-gate chain ordering;
-- contract hash and eval results hash binding;
-- recomputed gate decision checks, including temporal holdout and approvals.
+- contract hash, proof-pack wrapper, and eval results hash binding;
+- recomputed gate decision checks, including temporal holdout and approvals;
+- proof-pack subject agent/environment binding;
+- deterministic compliance framework mapping checks.
 
 Run source tests when a Go toolchain is available:
 

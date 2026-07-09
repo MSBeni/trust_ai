@@ -33,6 +33,12 @@ An implementation conforming to this source target verifies:
    and metric thresholds.
 10. Required human approval roles and approval chain entries.
 11. Recomputed promotion gate decision and packed gate decision consistency.
+12. Proof-pack contract and eval wrapper `chain_entry_id` / `results_hash`
+    bindings to the included chain entries.
+13. Proof-pack subject binding to the registered contract agent and evaluated
+    environment, plus eval/gate agent binding to the same contract agent.
+14. Deterministic compliance framework mappings derived from the packed gate
+    decision.
 
 ## Build and Test
 

@@ -178,11 +178,21 @@ func verifyProofPack(pack map[string]any, key, tsaKey string) result {
 		if !(numberInt(contractEntry["index"]) < numberInt(evalEntry["index"]) && numberInt(evalEntry["index"]) < numberInt(gateEntry["index"])) {
 			errors = append(errors, "chain ordering must be contract registration < eval < gate")
 		}
+		evalWrapper := getMap(pack, "eval")
+		evalPayload := getMap(evalEntry, "payload")
+		gatePayload := getMap(gateEntry, "payload")
+		if getString(contractWrapper, "chain_entry_id") != getString(contractEntry, "entry_id") {
+			errors = append(errors, "packed contract chain_entry_id mismatch")
+		}
+		if getString(evalWrapper, "chain_entry_id") != getString(evalEntry, "entry_id") {
+			errors = append(errors, "packed eval chain_entry_id mismatch")
+		}
+		if getString(evalWrapper, "results_hash") != getString(evalPayload, "results_hash") {
+			errors = append(errors, "packed eval results_hash mismatch")
+		}
 		if getString(getMap(contractEntry, "payload"), "contract_hash") != contractDigest {
 			errors = append(errors, "contract entry hash does not match packed contract")
 		}
-		evalPayload := getMap(evalEntry, "payload")
-		gatePayload := getMap(gateEntry, "payload")
 		if getString(evalPayload, "contract_hash") != contractDigest {
 			errors = append(errors, "eval entry references a different contract hash")
 		}
@@ -203,6 +213,27 @@ func verifyProofPack(pack map[string]any, key, tsaKey string) result {
 					errors = append(errors, "gate decision mismatch for "+k)
 				}
 			}
+			subject := getMap(pack, "subject")
+			if subject == nil {
+				errors = append(errors, "subject must be an object")
+				subject = map[string]any{}
+			}
+			if !canonicalEqual(subject["agent"], contractBody["agent"]) {
+				errors = append(errors, "packed subject agent mismatch")
+			}
+			if !canonicalEqual(stored["agent"], contractBody["agent"]) {
+				errors = append(errors, "gate decision agent mismatch")
+			}
+			if !canonicalEqual(evalPayload["agent"], contractBody["agent"]) {
+				errors = append(errors, "eval entry agent mismatch")
+			}
+			expectedEnvironment := results["environment"]
+			if expectedEnvironment == nil {
+				expectedEnvironment = map[string]any{}
+			}
+			if !canonicalEqual(subject["environment"], expectedEnvironment) {
+				errors = append(errors, "packed subject environment mismatch")
+			}
 			packedDecision := getMap(pack, "gate_decision")
 			for _, k := range []string{"outcome", "passed", "checks", "holdout", "approvals", "results_hash", "contract_entry_id", "eval_entry_id"} {
 				if !canonicalEqual(packedDecision[k], stored[k]) {
@@ -213,6 +244,13 @@ func verifyProofPack(pack map[string]any, key, tsaKey string) result {
 				errors = append(errors, "packed gate decision gate_entry_id mismatch")
 			}
 		}
+	}
+
+	frameworkMappings, frameworkMappingsOK := pack["framework_mappings"].([]any)
+	if !frameworkMappingsOK {
+		errors = append(errors, "framework_mappings must be a list")
+	} else if !canonicalEqual(frameworkMappings, defaultFrameworkMappings(getMap(pack, "gate_decision"))) {
+		errors = append(errors, "framework mappings do not match gate decision")
 	}
 
 	decision := getString(getMap(pack, "gate_decision"), "outcome")
@@ -406,6 +444,45 @@ func evaluateApprovals(contract, results map[string]any, entries []map[string]an
 		}
 	}
 	return map[string]any{"passed": len(errors) == 0, "required": required, "actual": actual, "errors": errors}
+}
+
+func defaultFrameworkMappings(decision map[string]any) []any {
+	var contractID any
+	var gateEntryID any
+	if decision != nil {
+		contractID = decision["contract_id"]
+		gateEntryID = decision["gate_entry_id"]
+	}
+	evidence := func() map[string]any {
+		return map[string]any{"contract_id": contractID, "gate_entry_id": gateEntryID}
+	}
+	return []any{
+		map[string]any{
+			"framework": "ISO 42001",
+			"controls":  []any{"AI system impact assessment", "Evaluation and monitoring", "Human oversight"},
+			"evidence":  evidence(),
+		},
+		map[string]any{
+			"framework": "NIST AI RMF",
+			"controls":  []any{"Measure 2.5", "Manage 1.3", "Govern 6.1"},
+			"evidence":  evidence(),
+		},
+		map[string]any{
+			"framework": "EU AI Act Annex III",
+			"controls":  []any{"Technical documentation", "Logging", "Human oversight"},
+			"evidence":  evidence(),
+		},
+		map[string]any{
+			"framework": "SR 11-7",
+			"controls":  []any{"Model validation", "Ongoing monitoring", "Change control"},
+			"evidence":  evidence(),
+		},
+		map[string]any{
+			"framework": "SOC 2",
+			"controls":  []any{"Change management", "Logical access", "Monitoring"},
+			"evidence":  evidence(),
+		},
+	}
 }
 
 func entryCore(entry map[string]any) map[string]any {

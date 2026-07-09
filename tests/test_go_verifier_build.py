@@ -9,6 +9,17 @@ import unittest
 from pathlib import Path
 
 from trustai.chain import EvidenceChain
+from trustai.contracts import load_contract, register_contract
+from trustai.gate import append_eval_and_gate
+from trustai.proofpack import compile_proof_pack
+from trustai.runtime import append_runtime_attestation, load_action
+from trustai.shadow import (
+    append_shadow_replay,
+    append_soak_report,
+    load_shadow_replay,
+    load_soak_window,
+    shadow_replay_to_eval_results,
+)
 from trustai.go_verifier_build import (
     GO_VERIFIER_BUILD_ENTRY_TYPE,
     GO_VERIFIER_BUILD_SCHEMA,
@@ -18,13 +29,15 @@ from trustai.go_verifier_build import (
     write_go_verifier_build_attestation,
 )
 from trustai.standards import build_standards_submission, write_standards_markdown, write_standards_submission
-from trustai.verifier import load_proof_pack
 from trustai.verifier_conformance import build_verifier_conformance_report, write_verifier_conformance_report
 from trustai.verifier_release import build_verifier_release_manifest, write_verifier_release_manifest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PACK = ROOT / "artifacts" / "aitrade-proof-pack.json"
+CONTRACT = ROOT / "examples" / "aitrade" / "verification-contract.yaml"
+ACTION = ROOT / "examples" / "aitrade" / "runtime-action.json"
+SHADOW = ROOT / "examples" / "aitrade" / "shadow-replay.json"
+SOAK = ROOT / "examples" / "aitrade" / "soak-window.json"
 
 
 def _sha256_ref(path: Path) -> str:
@@ -32,9 +45,25 @@ def _sha256_ref(path: Path) -> str:
 
 
 class GoVerifierBuildTests(unittest.TestCase):
+    def _proof_pack(self, tmp: Path):
+        chain = EvidenceChain.load(tmp / "chain.json", tenant_id="go-verifier-build-test")
+        contract = load_contract(CONTRACT)
+        register_contract(chain, contract)
+        append_runtime_attestation(chain, contract, load_action(ACTION))
+        shadow = load_shadow_replay(SHADOW)
+        append_shadow_replay(chain, contract, shadow)
+        append_soak_report(chain, contract, load_soak_window(SOAK))
+        eval_entry, gate_entry, decision = append_eval_and_gate(
+            chain,
+            contract,
+            shadow_replay_to_eval_results(contract, shadow),
+        )
+        return compile_proof_pack(chain, contract, eval_entry, gate_entry, decision, out_path=tmp / "pack.json")
+
     def _inputs(self):
-        pack = load_proof_pack(PACK)
-        conformance = build_verifier_conformance_report(pack)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            pack = self._proof_pack(Path(tmp_dir))
+            conformance = build_verifier_conformance_report(pack)
         standards = build_standards_submission(ROOT)
         release = build_verifier_release_manifest(
             ROOT,
