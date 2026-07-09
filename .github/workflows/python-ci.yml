@@ -60,6 +60,9 @@ jobs:
       - name: Verify roadmap evidence chain semantics
         run: python -m trustai roadmap-evidence-verify --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --require-external
 
+      - name: Generate roadmap evidence report
+        run: python -m trustai roadmap-evidence-report --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --require-external --out artifacts/roadmap-evidence-report.json --markdown artifacts/roadmap-evidence-report.md
+
       - name: Run clean-checkout smoke tests
         run: >
           python -m unittest -v

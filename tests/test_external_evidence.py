@@ -9,12 +9,17 @@ from trustai.chain import EvidenceChain
 from trustai.external_evidence import (
     EXTERNAL_EVIDENCE_ENTRY_TYPE,
     EXTERNAL_EVIDENCE_SCHEMA,
+    ROADMAP_EVIDENCE_REPORT_SCHEMA,
     append_external_evidence_manifest,
     build_external_evidence_manifest,
+    build_roadmap_evidence_report,
+    load_roadmap_evidence_report,
     parse_evidence_arg,
     render_external_evidence_markdown,
+    render_roadmap_evidence_markdown,
     verify_external_evidence_manifest,
     verify_roadmap_evidence_chain,
+    verify_roadmap_evidence_report,
 )
 from trustai.roadmap_audit import STATUS_REFERENCE_ATTESTED, append_roadmap_audit, build_roadmap_audit
 
@@ -86,6 +91,23 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             tampered_result = verify_roadmap_evidence_chain(tampered, require_external=True)
             self.assertFalse(tampered_result.ok)
             self.assertTrue(any("tree_root mismatch" in error for error in tampered_result.errors))
+            report = build_roadmap_evidence_report(chain, require_external=True, generated_at="2026-07-09T00:00:00Z")
+            report_result = verify_roadmap_evidence_report(report, chain, require_external=True)
+            markdown = render_roadmap_evidence_markdown(report)
+
+            self.assertEqual(ROADMAP_EVIDENCE_REPORT_SCHEMA, report["schema"])
+            self.assertTrue(report_result.ok, report_result.errors)
+            self.assertEqual(2, report["summary"]["chain_entry_count"])
+            self.assertEqual(1, report["summary"]["roadmap_audit_entry_count"])
+            self.assertEqual(1, report["summary"]["external_evidence_entry_count"])
+            self.assertIn("TrustAI Roadmap Evidence Report", markdown)
+            self.assertIn(report["chain"]["tree"]["root"], markdown)
+
+            stale_report = build_roadmap_evidence_report(chain, require_external=True, generated_at="2026-07-09T00:00:00Z")
+            chain.append("trustai.test.unrelated", {"note": "new evidence"})
+            stale_result = verify_roadmap_evidence_report(stale_report, chain, require_external=True)
+            self.assertFalse(stale_result.ok)
+            self.assertTrue(any("chain summary" in error for error in stale_result.errors))
 
     def test_roadmap_evidence_chain_rejects_unlinked_external_entry(self):
         audit = build_roadmap_audit(ROOT)
@@ -138,6 +160,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             audit_path = tmp_path / "roadmap-audit.json"
             manifest_path = tmp_path / "external-evidence.json"
             entry_path = tmp_path / "external-evidence-entry.json"
+            report_path = tmp_path / "roadmap-evidence-report.json"
+            report_markdown_path = tmp_path / "roadmap-evidence-report.md"
             chain_path = tmp_path / "chain.json"
             subprocess.run(
                 [
@@ -229,11 +253,33 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 cwd=ROOT,
                 check=True,
             )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "roadmap-evidence-report",
+                    "--state",
+                    str(chain_path),
+                    "--tenant",
+                    "external-evidence-cli",
+                    "--require-external",
+                    "--out",
+                    str(report_path),
+                    "--markdown",
+                    str(report_markdown_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
             chain = EvidenceChain.load(chain_path, tenant_id="external-evidence-cli")
             self.assertEqual(2, len(chain.entries))
             self.assertEqual(EXTERNAL_EVIDENCE_ENTRY_TYPE, chain.entries[1]["entry_type"])
             self.assertEqual(chain.entries[0]["entry_id"], chain.entries[1]["payload"]["source_roadmap_audit_inclusion_proof"]["entry_id"])
             self.assertTrue(chain.verify_all().ok)
+            report = load_roadmap_evidence_report(report_path)
+            self.assertEqual(2, report["summary"]["chain_entry_count"])
+            self.assertTrue(report_markdown_path.exists())
 
     def test_complete_external_evidence_manifest_covers_reference_requirements(self):
         audit = build_roadmap_audit(ROOT)

@@ -24,6 +24,7 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("python -m trustai external-evidence-manifest artifacts/roadmap-audit.json", workflow)
         self.assertIn("python -m trustai external-evidence-append artifacts/external-evidence-manifest.json", workflow)
         self.assertIn("python -m trustai roadmap-evidence-verify --state .trustai/roadmap-audit-ci/evidence-chain.json", workflow)
+        self.assertIn("python -m trustai roadmap-evidence-report --state .trustai/roadmap-audit-ci/evidence-chain.json", workflow)
         self.assertIn("tests.test_go_verifier_release_workflow", workflow)
         self.assertIn("tests.test_repository_ci", workflow)
         self.assertIn("tests.test_roadmap_audit", workflow)

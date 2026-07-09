@@ -597,12 +597,16 @@ from .roadmap_audit import (
 from .external_evidence import (
     append_external_evidence_manifest,
     build_external_evidence_manifest,
+    build_roadmap_evidence_report,
     load_external_evidence_manifest,
     parse_evidence_arg,
     verify_external_evidence_manifest,
     verify_roadmap_evidence_chain,
+    verify_roadmap_evidence_report,
     write_external_evidence_manifest,
     write_external_evidence_markdown,
+    write_roadmap_evidence_report,
+    write_roadmap_evidence_markdown,
 )
 from .standards_body_submission import (
     append_standards_body_submission_receipt,
@@ -6810,6 +6814,40 @@ def cmd_roadmap_evidence_verify(args: argparse.Namespace) -> int:
         print(f"warning: {warning}")
     return 1
 
+def cmd_roadmap_evidence_report(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    report = build_roadmap_evidence_report(
+        chain,
+        key=args.key,
+        require_external=args.require_external or args.require_complete,
+        require_complete=args.require_complete,
+    )
+    result = verify_roadmap_evidence_report(
+        report,
+        chain,
+        key=args.key,
+        require_external=args.require_external or args.require_complete,
+        require_complete=args.require_complete,
+    )
+    if not result.ok:
+        print("roadmap evidence report verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_roadmap_evidence_report(args.out, report)
+    if args.markdown:
+        write_roadmap_evidence_markdown(args.markdown, report)
+        print(f"roadmap evidence markdown: {args.markdown}")
+    summary = report["summary"]
+    print(f"roadmap evidence report: {args.out}")
+    print(f"report id: {report['report_id']}")
+    print(f"roadmap audit entries: {summary['roadmap_audit_entry_count']}")
+    print(f"external evidence entries: {summary['external_evidence_entry_count']}")
+    print(f"tree root: {report['chain']['tree']['root']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
 def cmd_external_evidence_append(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
     roadmap_audit = load_roadmap_audit(args.roadmap_audit)
@@ -13008,6 +13046,13 @@ def build_parser() -> argparse.ArgumentParser:
     roadmap_evidence_verify.add_argument("--require-external", action="store_true")
     roadmap_evidence_verify.add_argument("--require-complete", action="store_true")
     roadmap_evidence_verify.set_defaults(func=cmd_roadmap_evidence_verify)
+    roadmap_evidence_report = subparsers.add_parser("roadmap-evidence-report", help="write an offline roadmap evidence report from an evidence chain")
+    _add_state_args(roadmap_evidence_report)
+    roadmap_evidence_report.add_argument("--require-external", action="store_true")
+    roadmap_evidence_report.add_argument("--require-complete", action="store_true")
+    roadmap_evidence_report.add_argument("--out", default="artifacts/roadmap-evidence-report.json")
+    roadmap_evidence_report.add_argument("--markdown", default="artifacts/roadmap-evidence-report.md")
+    roadmap_evidence_report.set_defaults(func=cmd_roadmap_evidence_report)
 
     standards_export = subparsers.add_parser("standards-export", help="write a standards submission package for public specs")
     standards_export.add_argument("--root", default=".")

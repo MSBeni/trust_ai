@@ -13,6 +13,7 @@ from .roadmap_audit import ROADMAP_AUDIT_ENTRY_TYPE, STATUS_REFERENCE_ATTESTED, 
 
 EXTERNAL_EVIDENCE_SCHEMA = "trustai.external-evidence-manifest/0.1"
 EXTERNAL_EVIDENCE_ENTRY_TYPE = "trustai.external_evidence_manifest.attested"
+ROADMAP_EVIDENCE_REPORT_SCHEMA = "trustai.roadmap-evidence-report/0.1"
 
 AUTHORITY_KINDS = {
     "ci-run",
@@ -46,6 +47,13 @@ class RoadmapEvidenceChainVerification:
     audit_entry_count: int = 0
     external_evidence_entry_count: int = 0
     complete_external_evidence_entry_count: int = 0
+
+
+@dataclass
+class RoadmapEvidenceReportVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
 
 def build_external_evidence_manifest(
     roadmap_audit: dict[str, Any],
@@ -243,6 +251,92 @@ def verify_roadmap_evidence_chain(
         complete_external_evidence_entry_count=complete_external_count,
     )
 
+
+def build_roadmap_evidence_report(
+    chain: EvidenceChain,
+    *,
+    key: str | None = None,
+    require_external: bool = False,
+    require_complete: bool = False,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    result = verify_roadmap_evidence_chain(
+        chain,
+        key=key,
+        require_external=require_external or require_complete,
+        require_complete=require_complete,
+    )
+    body = {
+        "schema": ROADMAP_EVIDENCE_REPORT_SCHEMA,
+        "generated_at": generated_at or utc_now(),
+        "verification_options": {
+            "require_external": require_external or require_complete,
+            "require_complete": require_complete,
+        },
+        "chain": _roadmap_evidence_chain_record(chain),
+        "summary": _roadmap_evidence_summary(chain, result),
+        "verification": _roadmap_evidence_verification_record(result),
+        "roadmap_audit_entries": _roadmap_audit_entry_records(chain),
+        "external_evidence_entries": _external_evidence_entry_records(chain),
+        "limitations": [
+            "This report verifies evidence-chain integrity and roadmap evidence relationships only.",
+            "It does not fetch live provider APIs, KMS/HSM systems, TSAs, cloud object-lock stores, regulators, insurers, or standards bodies.",
+            "External evidence quality depends on the issuer and artifacts supplied to the chain.",
+        ],
+    }
+    return {**body, "report_id": content_hash(body)}
+
+
+def verify_roadmap_evidence_report(
+    report: dict[str, Any],
+    chain: EvidenceChain,
+    *,
+    key: str | None = None,
+    require_external: bool = False,
+    require_complete: bool = False,
+) -> RoadmapEvidenceReportVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    if report.get("schema") != ROADMAP_EVIDENCE_REPORT_SCHEMA:
+        errors.append(f"unsupported roadmap evidence report schema: {report.get('schema')}")
+    if report.get("report_id") != content_hash(without_keys(report, "report_id")):
+        errors.append("report_id does not match canonical report body")
+
+    expected_options = {
+        "require_external": require_external or require_complete,
+        "require_complete": require_complete,
+    }
+    if report.get("verification_options") != expected_options:
+        errors.append("verification_options do not match verifier options")
+
+    expected_chain = _roadmap_evidence_chain_record(chain)
+    if report.get("chain") != expected_chain:
+        errors.append("chain summary does not match supplied evidence chain")
+
+    result = verify_roadmap_evidence_chain(
+        chain,
+        key=key,
+        require_external=require_external or require_complete,
+        require_complete=require_complete,
+    )
+    expected_summary = _roadmap_evidence_summary(chain, result)
+    if report.get("summary") != expected_summary:
+        errors.append("report summary does not match supplied evidence chain")
+    expected_verification = _roadmap_evidence_verification_record(result)
+    if report.get("verification") != expected_verification:
+        errors.append("report verification block does not match supplied evidence chain")
+    if report.get("roadmap_audit_entries") != _roadmap_audit_entry_records(chain):
+        errors.append("roadmap audit entries do not match supplied evidence chain")
+    if report.get("external_evidence_entries") != _external_evidence_entry_records(chain):
+        errors.append("external evidence entries do not match supplied evidence chain")
+
+    warnings.extend(result.warnings)
+    if not result.ok:
+        errors.extend(f"roadmap evidence chain: {error}" for error in result.errors)
+
+    return RoadmapEvidenceReportVerification(ok=not errors, errors=errors, warnings=warnings)
+
 def append_external_evidence_manifest(
     chain: EvidenceChain,
     manifest: dict[str, Any],
@@ -303,11 +397,25 @@ def load_external_evidence_manifest(path: str | Path) -> dict[str, Any]:
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
+def write_roadmap_evidence_report(path: str | Path, report: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_roadmap_evidence_report(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
 def write_external_evidence_markdown(path: str | Path, manifest: dict[str, Any]) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(render_external_evidence_markdown(manifest), encoding="utf-8")
 
+
+def write_roadmap_evidence_markdown(path: str | Path, report: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_roadmap_evidence_markdown(report), encoding="utf-8")
 
 def render_external_evidence_markdown(manifest: dict[str, Any]) -> str:
     rows = "\n".join(
@@ -345,6 +453,179 @@ Status: {summary.get('status', '')}
 {missing_lines or "- None"}
 """
 
+
+def render_roadmap_evidence_markdown(report: dict[str, Any]) -> str:
+    summary = report.get("summary", {})
+    chain = report.get("chain", {})
+    verification = report.get("verification", {})
+    audit_rows = "\n".join(
+        "| {index} | `{entry_id}` | `{audit_id}` | {implemented}/{reference}/{missing} |".format(
+            index=entry.get("index", ""),
+            entry_id=entry.get("entry_id", ""),
+            audit_id=entry.get("audit_id", ""),
+            implemented=entry.get("implemented_local_count", 0),
+            reference=entry.get("reference_attested_count", 0),
+            missing=entry.get("missing_local_evidence_count", 0),
+        )
+        for entry in report.get("roadmap_audit_entries", [])
+    )
+    external_rows = "\n".join(
+        "| {index} | `{entry_id}` | `{manifest_id}` | {status} | {covered}/{required} | {missing} |".format(
+            index=entry.get("index", ""),
+            entry_id=entry.get("entry_id", ""),
+            manifest_id=entry.get("manifest_id", ""),
+            status=entry.get("status", ""),
+            covered=entry.get("covered_requirement_count", 0),
+            required=entry.get("required_requirement_count", 0),
+            missing=entry.get("missing_requirement_count", 0),
+        )
+        for entry in report.get("external_evidence_entries", [])
+    )
+    errors = "\n".join(f"- {error}" for error in verification.get("errors", []))
+    warnings = "\n".join(f"- {warning}" for warning in verification.get("warnings", []))
+    limitations = "\n".join(f"- {limitation}" for limitation in report.get("limitations", []))
+    return f"""# TrustAI Roadmap Evidence Report
+
+Report ID: `{report.get('report_id', '')}`
+
+Semantic verification: {"passed" if verification.get("ok") else "failed"}
+
+## Chain
+
+- Tenant: `{chain.get('tenant_id', '')}`
+- Entries: {chain.get('entry_count', 0)}
+- Tree root: `{chain.get('tree', {}).get('root', '')}`
+
+## Summary
+
+- Roadmap audit entries: {summary.get('roadmap_audit_entry_count', 0)}
+- External evidence entries: {summary.get('external_evidence_entry_count', 0)}
+- Complete external evidence entries: {summary.get('complete_external_evidence_entry_count', 0)}
+
+## Roadmap Audit Entries
+
+| Index | Entry ID | Audit ID | Implemented / Reference / Missing |
+|---|---|---|---|
+{audit_rows or "| - | - | - | - |"}
+
+## External Evidence Entries
+
+| Index | Entry ID | Manifest ID | Status | Covered / Required | Missing |
+|---|---|---|---|---|---|
+{external_rows or "| - | - | - | - | - | - |"}
+
+## Errors
+
+{errors or "- None"}
+
+## Warnings
+
+{warnings or "- None"}
+
+## Limitations
+
+{limitations or "- None"}
+"""
+
+
+def _roadmap_evidence_chain_record(chain: EvidenceChain) -> dict[str, Any]:
+    return {
+        "tenant_id": chain.tenant_id,
+        "entry_count": len(chain.entries),
+        "tree": chain.tree(),
+    }
+
+
+def _roadmap_evidence_summary(
+    chain: EvidenceChain,
+    result: RoadmapEvidenceChainVerification,
+) -> dict[str, Any]:
+    return {
+        "semantic_ok": result.ok,
+        "chain_entry_count": len(chain.entries),
+        "roadmap_audit_entry_count": result.audit_entry_count,
+        "external_evidence_entry_count": result.external_evidence_entry_count,
+        "complete_external_evidence_entry_count": result.complete_external_evidence_entry_count,
+        "has_external_evidence": result.external_evidence_entry_count > 0,
+        "has_complete_external_evidence": result.complete_external_evidence_entry_count > 0,
+    }
+
+
+def _roadmap_evidence_verification_record(result: RoadmapEvidenceChainVerification) -> dict[str, Any]:
+    return {
+        "ok": result.ok,
+        "errors": result.errors,
+        "warnings": result.warnings,
+        "audit_entry_count": result.audit_entry_count,
+        "external_evidence_entry_count": result.external_evidence_entry_count,
+        "complete_external_evidence_entry_count": result.complete_external_evidence_entry_count,
+    }
+
+
+def _roadmap_audit_entry_records(chain: EvidenceChain) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for entry in chain.entries:
+        if entry.get("entry_type") != ROADMAP_AUDIT_ENTRY_TYPE:
+            continue
+        payload = entry.get("payload", {})
+        if not isinstance(payload, dict):
+            payload = {}
+        records.append(
+            {
+                "index": entry.get("index"),
+                "entry_id": entry.get("entry_id"),
+                "timestamp": entry.get("timestamp"),
+                "audit_id": payload.get("audit_id"),
+                "audit_hash": payload.get("audit_hash"),
+                "completion_position": payload.get("completion_position"),
+                "requirement_count": payload.get("requirement_count"),
+                "implemented_local_count": payload.get("implemented_local_count"),
+                "reference_attested_count": payload.get("reference_attested_count"),
+                "missing_local_evidence_count": payload.get("missing_local_evidence_count"),
+                "deferred_external_count": payload.get("deferred_external_count"),
+            }
+        )
+    return records
+
+
+def _external_evidence_entry_records(chain: EvidenceChain) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for entry in chain.entries:
+        if entry.get("entry_type") != EXTERNAL_EVIDENCE_ENTRY_TYPE:
+            continue
+        payload = entry.get("payload", {})
+        if not isinstance(payload, dict):
+            payload = {}
+        proof = payload.get("source_roadmap_audit_inclusion_proof")
+        proof_record = None
+        if isinstance(proof, dict):
+            proof_record = {
+                "entry_id": proof.get("entry_id"),
+                "index": proof.get("index"),
+                "tree_size": proof.get("tree_size"),
+                "tree_root": proof.get("tree_root"),
+            }
+        records.append(
+            {
+                "index": entry.get("index"),
+                "entry_id": entry.get("entry_id"),
+                "timestamp": entry.get("timestamp"),
+                "manifest_id": payload.get("manifest_id"),
+                "manifest_hash": payload.get("manifest_hash"),
+                "manifest_ref": payload.get("manifest_ref"),
+                "source_roadmap_audit": payload.get("source_roadmap_audit"),
+                "source_roadmap_audit_inclusion_proof": proof_record,
+                "status": payload.get("status"),
+                "require_complete": payload.get("require_complete"),
+                "required_requirement_count": payload.get("required_requirement_count"),
+                "covered_requirement_count": payload.get("covered_requirement_count"),
+                "missing_requirement_count": payload.get("missing_requirement_count"),
+                "evidence_count": payload.get("evidence_count"),
+                "covered_requirement_ids": payload.get("covered_requirement_ids", []),
+                "missing_requirement_ids": payload.get("missing_requirement_ids", []),
+            }
+        )
+    return records
 
 
 def _verify_source_roadmap_audit_inclusion_proof(

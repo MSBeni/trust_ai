@@ -80,6 +80,34 @@ roadmap evidence relationships:
 4. Coverage counts are internally consistent.
 5. With `--require-complete`, every external-evidence entry must be complete.
 
+
+## Roadmap Evidence Report
+
+`roadmap-evidence-report` emits `trustai.roadmap-evidence-report/0.1`, a
+portable JSON and Markdown summary of the linked roadmap audit and external
+evidence entries already committed to an evidence chain. The report records:
+
+- `report_id`: canonical hash of the report body without `report_id`.
+- `verification_options`: whether external evidence or complete external
+  coverage was required when the report was generated.
+- `chain`: tenant ID, entry count, and current Merkle tree root.
+- `summary`: semantic verification status and audit/external-evidence entry
+  counts.
+- `verification`: the exact `roadmap-evidence-verify` result, including errors
+  and warnings.
+- `roadmap_audit_entries`: chained audit entry IDs, audit IDs/hashes, completion
+  position, and local/reference/missing counts.
+- `external_evidence_entries`: chained manifest IDs/hashes, source audit binding,
+  source audit inclusion proof summary, coverage status, covered IDs, and missing
+  IDs.
+- `limitations`: explicit non-claims about live authority fetching and issuer
+  quality.
+
+A verifier MUST recompute `report_id`, verify the supplied chain with the same
+options, compare the report's chain tree root and entry summaries to the
+supplied chain, and reject reports whose embedded semantic verification no longer
+matches the chain.
+
 ## Verification Rules
 
 A verifier MUST:
