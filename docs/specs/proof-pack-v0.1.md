@@ -57,7 +57,10 @@ An offline verifier must reject the pack when any of these checks fail:
     hash, metric-check, incident, drift-alarm, timestamp, outcome, or contract
     evidence that cannot be replayed against the packed contract body;
 13. the packed framework control mappings differ from the deterministic mappings
-    for the packed gate decision.
+    for the packed gate decision;
+14. the packed subject agent or environment differs from the registered
+    contract agent, gate decision agent, eval entry agent, or eval results
+    environment.
 
 When a gate decision relies on `human_approval.granted` entries, those entries
 must be included in `chain.entries` with valid signatures, timestamp tokens,

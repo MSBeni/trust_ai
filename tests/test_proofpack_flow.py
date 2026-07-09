@@ -62,6 +62,27 @@ class ProofPackFlowTests(unittest.TestCase):
             self.assertFalse(result.ok)
             self.assertIn("pack_id does not match canonical pack body", result.errors)
 
+    def test_subject_tamper_is_rejected_after_resign(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            pack = self._build_pack(Path(tmp_dir))
+            pack["subject"]["agent"] = {
+                **pack["subject"]["agent"],
+                "version": "sha256:unregistered-agent-version",
+            }
+            pack["subject"]["environment"] = {
+                **pack["subject"]["environment"],
+                "model": "gpt-5-pro-unregistered",
+            }
+            self._resign_pack(pack)
+
+            result = verify_proof_pack(pack)
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("pack_id does not match canonical pack body", result.errors)
+            self.assertNotIn("proof pack signature invalid", result.errors)
+            self.assertIn("packed subject agent mismatch", result.errors)
+            self.assertIn("packed subject environment mismatch", result.errors)
+
     def test_framework_mapping_tamper_is_rejected_after_resign(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             pack = self._build_pack(Path(tmp_dir))

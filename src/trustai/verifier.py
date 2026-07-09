@@ -153,6 +153,19 @@ def verify_proof_pack(
             for key_name in comparable_keys:
                 if stored.get(key_name) != recomputed.get(key_name):
                     errors.append(f"gate decision mismatch for {key_name}")
+            subject = proof_pack.get("subject", {})
+            if not isinstance(subject, dict):
+                errors.append("subject must be an object")
+                subject = {}
+            if subject.get("agent") != contract_body.get("agent"):
+                errors.append("packed subject agent mismatch")
+            if stored.get("agent") != contract_body.get("agent"):
+                errors.append("gate decision agent mismatch")
+            if eval_entry.get("payload", {}).get("agent") != contract_body.get("agent"):
+                errors.append("eval entry agent mismatch")
+            expected_environment = results.get("environment", {})
+            if subject.get("environment") != expected_environment:
+                errors.append("packed subject environment mismatch")
             packed_decision = proof_pack.get("gate_decision", {})
             for key_name in comparable_keys + ("contract_entry_id", "eval_entry_id"):
                 if packed_decision.get(key_name) != stored.get(key_name):
