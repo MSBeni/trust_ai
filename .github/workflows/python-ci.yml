@@ -67,7 +67,7 @@ jobs:
         run: python -m trustai roadmap-evidence-report-verify artifacts/roadmap-evidence-report.json --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --require-external
 
       - name: Generate roadmap evidence bundle
-        run: python -m trustai roadmap-evidence-bundle --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --require-external --report artifacts/roadmap-evidence-report.json --root . --source-artifact "roadmap-audit,artifacts/roadmap-audit.json,Generated roadmap audit JSON" --source-artifact "external-evidence-manifest,artifacts/external-evidence-manifest.json,Generated external evidence manifest JSON" --source-artifact "external-evidence-file,examples/aitrade/external-evidence/go-verifier-workflow-run.json,Recorded Go verifier workflow export" --out artifacts/roadmap-evidence-bundle.json --markdown artifacts/roadmap-evidence-bundle.md
+        run: python -m trustai roadmap-evidence-bundle --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --require-external --report artifacts/roadmap-evidence-report.json --root . --source-artifact "roadmap-audit,artifacts/roadmap-audit.json,Generated roadmap audit JSON" --source-artifact "external-evidence-manifest,artifacts/external-evidence-manifest.json,Generated external evidence manifest JSON" --include-manifest-evidence --out artifacts/roadmap-evidence-bundle.json --markdown artifacts/roadmap-evidence-bundle.md
 
       - name: Verify roadmap evidence bundle
         run: python -m trustai roadmap-evidence-bundle-verify artifacts/roadmap-evidence-bundle.json --require-external
