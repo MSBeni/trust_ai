@@ -67,10 +67,10 @@ jobs:
         run: python -m trustai roadmap-evidence-report-verify artifacts/roadmap-evidence-report.json --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --require-external
 
       - name: Generate roadmap evidence bundle
-        run: python -m trustai roadmap-evidence-bundle --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --require-external --report artifacts/roadmap-evidence-report.json --root . --source-artifact "roadmap-audit,artifacts/roadmap-audit.json,Generated roadmap audit JSON" --source-artifact "external-evidence-manifest,artifacts/external-evidence-manifest.json,Generated external evidence manifest JSON" --include-manifest-evidence --out artifacts/roadmap-evidence-bundle.json --markdown artifacts/roadmap-evidence-bundle.md
+        run: python -m trustai roadmap-evidence-bundle --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --require-external --report artifacts/roadmap-evidence-report.json --root . --source-artifact "roadmap-audit,artifacts/roadmap-audit.json,Generated roadmap audit JSON" --source-artifact "external-evidence-manifest,artifacts/external-evidence-manifest.json,Generated external evidence manifest JSON" --include-manifest-evidence --require-source-artifacts --out artifacts/roadmap-evidence-bundle.json --markdown artifacts/roadmap-evidence-bundle.md
 
       - name: Verify roadmap evidence bundle
-        run: python -m trustai roadmap-evidence-bundle-verify artifacts/roadmap-evidence-bundle.json --require-external
+        run: python -m trustai roadmap-evidence-bundle-verify artifacts/roadmap-evidence-bundle.json --require-external --require-source-artifacts
 
       - name: Run clean-checkout smoke tests
         run: >

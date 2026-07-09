@@ -337,6 +337,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     "--source-artifact",
                     f"external-evidence-manifest,{manifest_path.name},Generated external evidence manifest JSON",
                     "--include-manifest-evidence",
+                    "--require-source-artifacts",
                     "--out",
                     str(bundle_path),
                     "--markdown",
@@ -353,6 +354,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     "roadmap-evidence-bundle-verify",
                     str(bundle_path),
                     "--require-external",
+                    "--require-source-artifacts",
                 ],
                 cwd=ROOT,
                 check=True,
@@ -385,6 +387,26 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             missing_file_result = verify_roadmap_evidence_bundle(missing_file_bundle, require_external=True)
             self.assertTrue(missing_file_result.ok, missing_file_result.errors)
             self.assertTrue(any("referenced by embedded manifest is not embedded" in warning for warning in missing_file_result.warnings))
+            strict_missing_file_result = verify_roadmap_evidence_bundle(
+                missing_file_bundle,
+                require_external=True,
+                require_source_artifacts=True,
+            )
+            self.assertFalse(strict_missing_file_result.ok)
+            self.assertTrue(any("referenced by embedded manifest is not embedded" in error for error in strict_missing_file_result.errors))
+            missing_manifest_bundle = copy.deepcopy(bundle)
+            missing_manifest_bundle["source_artifacts"] = [
+                artifact for artifact in missing_manifest_bundle["source_artifacts"] if artifact["kind"] != "external-evidence-manifest"
+            ]
+            missing_manifest_bundle["summary"]["source_artifact_count"] = 2
+            missing_manifest_bundle["bundle_id"] = content_hash(without_keys(missing_manifest_bundle, "bundle_id"))
+            strict_missing_manifest_result = verify_roadmap_evidence_bundle(
+                missing_manifest_bundle,
+                require_external=True,
+                require_source_artifacts=True,
+            )
+            self.assertFalse(strict_missing_manifest_result.ok)
+            self.assertTrue(any("missing an embedded manifest source artifact" in error for error in strict_missing_manifest_result.errors))
 
     def test_complete_external_evidence_manifest_covers_reference_requirements(self):
         audit = build_roadmap_audit(ROOT)
