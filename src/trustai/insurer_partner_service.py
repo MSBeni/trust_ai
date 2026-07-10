@@ -326,6 +326,7 @@ def verify_insurer_partner_service_attestation(
     _check_no_secret_values(attestation, errors)
 
     corpora = actuarial_corpora or []
+    source_artifacts = attestation.get("source_artifacts", [])
     supplied_records = _source_artifacts(
         telemetry=telemetry,
         underwriting_quote=underwriting_quote,
@@ -338,6 +339,11 @@ def verify_insurer_partner_service_attestation(
         except OSError as exc:
             errors.append(f"insurer partner service frontend bundle source could not be read: {exc}")
         else:
+            frontend_bundle_artifact = _normalize_frontend_bundle_artifact(
+                source_artifacts,
+                frontend_bundle_artifact,
+                errors,
+            )
             supplied_records.append(frontend_bundle_artifact)
             service = attestation.get("service")
             expected_hash = service.get("frontend_bundle_hash") if isinstance(service, dict) else None
@@ -348,7 +354,6 @@ def verify_insurer_partner_service_attestation(
                 errors.append("insurer partner service service.frontend_bundle_artifact_hash does not match supplied frontend bundle")
     else:
         warnings.append("frontend bundle source was not supplied; bundle hash was not replayed")
-    source_artifacts = attestation.get("source_artifacts", [])
     if not isinstance(source_artifacts, list) or not source_artifacts:
         errors.append("insurer partner service source_artifacts are required")
     elif supplied_records:
@@ -465,6 +470,28 @@ def _frontend_bundle_artifact(path: str | Path) -> dict[str, Any]:
         "hash": _sha256_ref(data),
         "size_bytes": len(data),
     }
+
+
+def _normalize_frontend_bundle_artifact(
+    source_artifacts: Any,
+    supplied: dict[str, Any],
+    errors: list[str],
+) -> dict[str, Any]:
+    if not isinstance(source_artifacts, list):
+        return supplied
+    signed = next(
+        (record for record in source_artifacts if isinstance(record, dict) and record.get("type") == "frontend-bundle"),
+        None,
+    )
+    if signed is None:
+        return supplied
+    for field in ("schema", "hash", "size_bytes"):
+        if signed.get(field) != supplied.get(field):
+            errors.append(f"insurer partner service frontend bundle source artifact {field} does not match supplied frontend bundle")
+    if signed.get("hash") == supplied.get("hash") and signed.get("schema") == supplied.get("schema") and signed.get("size_bytes") == supplied.get("size_bytes"):
+        return {**supplied, "id": signed.get("id")}
+    return supplied
+
 
 def _source_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
     return {

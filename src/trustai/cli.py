@@ -271,6 +271,16 @@ from .insurer_partner_worker import (
     verify_insurer_partner_worker_receipt,
     write_insurer_partner_worker_receipt,
 )
+from .insurer_partner_worker_bundle import (
+    INSURER_PARTNER_WORKER_BUNDLE_MODES,
+    append_insurer_partner_worker_bundle,
+    build_insurer_partner_worker_bundle,
+    extract_insurer_partner_worker_bundle_sources,
+    load_insurer_partner_worker_bundle,
+    verify_insurer_partner_worker_bundle,
+    write_insurer_partner_worker_bundle,
+    write_insurer_partner_worker_bundle_markdown,
+)
 from .trust_authority import (
     append_trust_authority_receipt,
     build_trust_authority_receipt,
@@ -8383,6 +8393,140 @@ def cmd_insurer_partner_worker_append(args: argparse.Namespace) -> int:
         print(f"insurer partner worker entry: {args.out}")
     print(f"insurer partner worker entry id: {entry['entry_id']}")
     print(f"worker operation id: {receipt['worker_operation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def _insurer_partner_worker_bundle_artifact_paths(args: argparse.Namespace) -> dict[str, Any]:
+    paths: dict[str, Any] = {
+        "worker_receipt": args.receipt,
+        "service_attestation": args.service_attestation,
+        "telemetry": args.telemetry,
+        "underwriting_quote": args.quote,
+    }
+    if getattr(args, "actuarial_product", None):
+        paths["actuarial_product"] = args.actuarial_product
+    if getattr(args, "actuarial_corpus", None):
+        paths["actuarial_corpora"] = args.actuarial_corpus
+    if getattr(args, "frontend_bundle", None):
+        paths["frontend_bundle"] = args.frontend_bundle
+    return paths
+
+
+def cmd_insurer_partner_worker_bundle(args: argparse.Namespace) -> int:
+    try:
+        service_attestation, telemetry, quote, actuarial_product, actuarial_corpora, frontend_bundle_path = _load_insurer_partner_worker_sources(args)
+        receipt = load_insurer_partner_worker_receipt(args.receipt)
+        bundle = build_insurer_partner_worker_bundle(
+            receipt,
+            service_attestation,
+            telemetry,
+            quote,
+            actuarial_product=actuarial_product,
+            actuarial_corpora=actuarial_corpora,
+            frontend_bundle_path=frontend_bundle_path,
+            artifact_paths=_insurer_partner_worker_bundle_artifact_paths(args),
+            mode=args.mode,
+            environment=args.environment,
+            reviewer_ref=args.reviewer_ref,
+            bundle_ref=args.bundle_ref,
+            generated_at=args.generated_at,
+            now=args.now,
+            key=args.key,
+        )
+        result = verify_insurer_partner_worker_bundle(bundle, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"insurer partner worker bundle generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("insurer partner worker bundle generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_insurer_partner_worker_bundle(args.out, bundle)
+    if args.markdown:
+        write_insurer_partner_worker_bundle_markdown(args.markdown, bundle)
+        print(f"insurer partner worker bundle markdown: {args.markdown}")
+    print(f"insurer partner worker bundle: {args.out}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"worker operation id: {bundle['source']['worker_operation_id']}")
+    print(f"source artifact count: {bundle['summary']['source_artifact_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_insurer_partner_worker_bundle_verify(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_insurer_partner_worker_bundle(args.bundle)
+    except (OSError, ValueError) as exc:
+        print(f"insurer partner worker bundle verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_insurer_partner_worker_bundle(bundle, key=args.key)
+    if result.ok:
+        print(f"verified insurer partner worker bundle: {args.bundle}")
+        print(f"bundle id: {bundle['bundle_id']}")
+        print(f"worker operation id: {bundle['source']['worker_operation_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"insurer partner worker bundle verification failed: {args.bundle}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_insurer_partner_worker_bundle_render(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_insurer_partner_worker_bundle(args.bundle)
+    except (OSError, ValueError) as exc:
+        print(f"insurer partner worker bundle render failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_insurer_partner_worker_bundle(bundle, key=args.key)
+    if not result.ok:
+        print(f"insurer partner worker bundle render failed verification: {args.bundle}", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_insurer_partner_worker_bundle_markdown(args.out, bundle)
+    print(f"insurer partner worker bundle markdown: {args.out}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_insurer_partner_worker_bundle_extract(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_insurer_partner_worker_bundle(args.bundle)
+        extracted = extract_insurer_partner_worker_bundle_sources(bundle, args.out_dir, key=args.key, overwrite=args.overwrite)
+    except (OSError, ValueError) as exc:
+        print(f"insurer partner worker bundle extract failed: {exc}", file=sys.stderr)
+        return 1
+    print(f"extracted insurer partner worker bundle sources: {len(extracted)}")
+    for record in extracted:
+        print(f"- {record['name']} -> {record['extracted_to']}")
+    return 0
+
+
+def cmd_insurer_partner_worker_bundle_append(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_insurer_partner_worker_bundle(args.bundle)
+    except (OSError, ValueError) as exc:
+        print(f"insurer partner worker bundle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_insurer_partner_worker_bundle(chain, bundle, key=args.key)
+    except ValueError as exc:
+        print(f"insurer partner worker bundle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"insurer partner worker bundle entry: {args.out}")
+    print(f"insurer partner worker bundle entry id: {entry['entry_id']}")
+    print(f"bundle id: {bundle['bundle_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
@@ -16886,6 +17030,43 @@ def build_parser() -> argparse.ArgumentParser:
     insurer_partner_worker_append.add_argument("--out", default="artifacts/insurer-partner-worker-entry.json")
     _add_state_args(insurer_partner_worker_append)
     insurer_partner_worker_append.set_defaults(func=cmd_insurer_partner_worker_append)
+
+    insurer_partner_worker_bundle = subparsers.add_parser("insurer-partner-worker-bundle", help="write a self-contained insurer partner worker review bundle")
+    _add_insurer_partner_worker_sources(insurer_partner_worker_bundle, include_receipt=True)
+    insurer_partner_worker_bundle.add_argument("--mode", choices=sorted(INSURER_PARTNER_WORKER_BUNDLE_MODES), default="offline-review")
+    insurer_partner_worker_bundle.add_argument("--environment")
+    insurer_partner_worker_bundle.add_argument("--reviewer-ref", required=True)
+    insurer_partner_worker_bundle.add_argument("--bundle-ref")
+    insurer_partner_worker_bundle.add_argument("--generated-at")
+    insurer_partner_worker_bundle.add_argument("--out", default="artifacts/insurer-partner-worker-bundle.json")
+    insurer_partner_worker_bundle.add_argument("--markdown")
+    insurer_partner_worker_bundle.set_defaults(func=cmd_insurer_partner_worker_bundle)
+
+    insurer_partner_worker_bundle_verify = subparsers.add_parser("insurer-partner-worker-bundle-verify", help="verify an insurer partner worker review bundle")
+    insurer_partner_worker_bundle_verify.add_argument("bundle")
+    insurer_partner_worker_bundle_verify.add_argument("--key")
+    insurer_partner_worker_bundle_verify.set_defaults(func=cmd_insurer_partner_worker_bundle_verify)
+
+    insurer_partner_worker_bundle_render = subparsers.add_parser("insurer-partner-worker-bundle-render", help="render an insurer partner worker review bundle as Markdown")
+    insurer_partner_worker_bundle_render.add_argument("bundle")
+    insurer_partner_worker_bundle_render.add_argument("--out", default="artifacts/insurer-partner-worker-bundle.md")
+    insurer_partner_worker_bundle_render.add_argument("--key")
+    insurer_partner_worker_bundle_render.set_defaults(func=cmd_insurer_partner_worker_bundle_render)
+
+    insurer_partner_worker_bundle_extract = subparsers.add_parser("insurer-partner-worker-bundle-extract", help="extract embedded insurer partner worker bundle sources")
+    insurer_partner_worker_bundle_extract.add_argument("bundle")
+    insurer_partner_worker_bundle_extract.add_argument("--out-dir", default="artifacts/insurer-partner-worker-bundle-sources")
+    insurer_partner_worker_bundle_extract.add_argument("--overwrite", action="store_true")
+    insurer_partner_worker_bundle_extract.add_argument("--key")
+    insurer_partner_worker_bundle_extract.set_defaults(func=cmd_insurer_partner_worker_bundle_extract)
+
+    insurer_partner_worker_bundle_append = subparsers.add_parser("insurer-partner-worker-bundle-append", help="append a verified insurer partner worker review bundle as chain evidence")
+    insurer_partner_worker_bundle_append.add_argument("bundle")
+    insurer_partner_worker_bundle_append.add_argument("--out", default="artifacts/insurer-partner-worker-bundle-entry.json")
+    insurer_partner_worker_bundle_append.add_argument("--key")
+    _add_state_args(insurer_partner_worker_bundle_append)
+    insurer_partner_worker_bundle_append.set_defaults(func=cmd_insurer_partner_worker_bundle_append)
+
     actuarial = subparsers.add_parser("actuarial-export", help="export anonymized consent-aware actuarial corpus records")
     actuarial.add_argument("pack", nargs="+")
     actuarial.add_argument("--out", default="artifacts/actuarial-corpus.json")
