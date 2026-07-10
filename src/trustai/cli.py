@@ -444,6 +444,15 @@ from .provider_delivery_worker import (
     verify_provider_delivery_worker_receipt,
     write_provider_delivery_worker_receipt,
 )
+from .provider_delivery_authority import (
+    PROVIDER_DELIVERY_AUTHORITY_MODES,
+    append_provider_delivery_authority_dossier,
+    build_provider_delivery_authority_dossier,
+    load_provider_delivery_authority_dossier,
+    parse_provider_delivery_authority_evidence_arg,
+    verify_provider_delivery_authority_dossier,
+    write_provider_delivery_authority_dossier,
+)
 from .provider_delivery_worker_bundle import (
     PROVIDER_DELIVERY_WORKER_BUNDLE_MODES,
     append_provider_delivery_worker_bundle,
@@ -7133,6 +7142,139 @@ def cmd_provider_delivery_worker_append(args: argparse.Namespace) -> int:
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
+
+
+def _load_provider_delivery_authority_sources(args: argparse.Namespace) -> dict[str, Any]:
+    workers = [load_provider_delivery_worker_receipt(path) for path in (getattr(args, "worker", None) or [])]
+    if not workers:
+        raise ValueError("at least one --worker receipt is required")
+    sources: dict[str, Any] = {
+        "service_attestation": load_provider_delivery_service_attestation(args.service_attestation),
+        "worker_receipts": workers,
+    }
+    if getattr(args, "delivery", None):
+        sources["delivery"] = load_provider_delivery(args.delivery)
+    if getattr(args, "payload", None):
+        sources["payload"] = load_provider_payload(args.payload)
+    if getattr(args, "provider_operations_service", None):
+        sources["provider_operations_service"] = load_provider_operations_service_attestation(args.provider_operations_service)
+    if getattr(args, "provider_response", None):
+        sources["provider_response"] = load_provider_response_artifact(args.provider_response)
+    if getattr(args, "provider_audit_correlation", None):
+        sources["provider_audit_correlation"] = load_provider_audit_correlation(args.provider_audit_correlation)
+    if getattr(args, "provider_audit_log", None):
+        sources["provider_audit_log"] = load_provider_audit_log(args.provider_audit_log)
+    return sources
+
+
+def cmd_provider_delivery_authority(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_provider_delivery_authority_sources(args)
+        evidence = [parse_provider_delivery_authority_evidence_arg(item) for item in (args.authority_evidence or [])]
+        dossier = build_provider_delivery_authority_dossier(
+            sources["service_attestation"],
+            worker_receipts=sources["worker_receipts"],
+            delivery=sources.get("delivery"),
+            payload=sources.get("payload"),
+            provider_operations_service=sources.get("provider_operations_service"),
+            provider_response=sources.get("provider_response"),
+            provider_audit_correlation=sources.get("provider_audit_correlation"),
+            provider_audit_log=sources.get("provider_audit_log"),
+            mode=args.mode,
+            environment=args.environment,
+            dossier_ref=args.dossier_ref,
+            authority_ref=args.authority_ref,
+            producer_ref=args.producer_ref,
+            authority_evidence=evidence,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"provider delivery authority dossier generation failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_provider_delivery_authority_dossier(
+        dossier,
+        **sources,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if not result.ok:
+        print("provider delivery authority dossier generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_provider_delivery_authority_dossier(args.out, dossier)
+    print(f"provider delivery authority dossier: {args.out}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"service attestation id: {dossier['service_attestation_binding']['attestation_id']}")
+    print(f"worker receipts: {len(dossier['worker_receipt_bindings'])}")
+    print(f"authority coverage: {result.covered_count}/{result.required_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_provider_delivery_authority_verify(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_provider_delivery_authority_sources(args)
+        dossier = load_provider_delivery_authority_dossier(args.dossier)
+    except (OSError, ValueError) as exc:
+        print(f"provider delivery authority dossier load failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_provider_delivery_authority_dossier(
+        dossier,
+        **sources,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified provider delivery authority dossier: {args.dossier}")
+        print(f"authority coverage: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"provider delivery authority dossier verification failed: {args.dossier}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_provider_delivery_authority_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    try:
+        sources = _load_provider_delivery_authority_sources(args)
+        dossier = load_provider_delivery_authority_dossier(args.dossier)
+        entry = append_provider_delivery_authority_dossier(
+            chain,
+            dossier,
+            service_attestation=sources["service_attestation"],
+            worker_receipts=sources["worker_receipts"],
+            delivery=sources.get("delivery"),
+            payload=sources.get("payload"),
+            provider_operations_service=sources.get("provider_operations_service"),
+            provider_response=sources.get("provider_response"),
+            provider_audit_correlation=sources.get("provider_audit_correlation"),
+            provider_audit_log=sources.get("provider_audit_log"),
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"provider delivery authority dossier append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"provider delivery authority dossier entry: {args.out}")
+    print(f"provider delivery authority dossier entry id: {entry['entry_id']}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
 
 def _provider_delivery_worker_bundle_artifact_paths(args: argparse.Namespace) -> dict[str, str]:
     paths = {
@@ -18280,6 +18422,51 @@ def build_parser() -> argparse.ArgumentParser:
     provider_delivery_worker_bundle_append.add_argument("--key")
     _add_state_args(provider_delivery_worker_bundle_append)
     provider_delivery_worker_bundle_append.set_defaults(func=cmd_provider_delivery_worker_bundle_append)
+    def _add_provider_delivery_authority_sources(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("service_attestation")
+        parser.add_argument("--worker", action="append", required=True, help="provider delivery worker receipt; repeatable")
+        parser.add_argument("--delivery")
+        parser.add_argument("--payload")
+        parser.add_argument("--provider-operations-service")
+        parser.add_argument("--provider-response")
+        parser.add_argument("--provider-audit-correlation")
+        parser.add_argument("--provider-audit-log")
+
+    provider_delivery_authority = subparsers.add_parser("provider-delivery-authority", help="write a signed provider delivery production authority dossier")
+    _add_provider_delivery_authority_sources(provider_delivery_authority)
+    provider_delivery_authority.add_argument("--mode", choices=sorted(PROVIDER_DELIVERY_AUTHORITY_MODES), default="provider-dossier")
+    provider_delivery_authority.add_argument("--environment")
+    provider_delivery_authority.add_argument("--dossier-ref", required=True)
+    provider_delivery_authority.add_argument("--authority-ref", required=True)
+    provider_delivery_authority.add_argument("--producer-ref", required=True)
+    provider_delivery_authority.add_argument("--authority-evidence", action="append", help="requirement_id,authority_kind,evidence_ref,evidence_hash,description[;key=value...]")
+    provider_delivery_authority.add_argument("--generated-at")
+    provider_delivery_authority.add_argument("--require-complete", action="store_true")
+    provider_delivery_authority.add_argument("--require-fresh", action="store_true")
+    provider_delivery_authority.add_argument("--now")
+    provider_delivery_authority.add_argument("--out", default="artifacts/provider-delivery-authority.json")
+    provider_delivery_authority.add_argument("--key")
+    provider_delivery_authority.set_defaults(func=cmd_provider_delivery_authority)
+
+    provider_delivery_authority_verify = subparsers.add_parser("provider-delivery-authority-verify", help="verify a signed provider delivery production authority dossier")
+    provider_delivery_authority_verify.add_argument("dossier")
+    _add_provider_delivery_authority_sources(provider_delivery_authority_verify)
+    provider_delivery_authority_verify.add_argument("--require-complete", action="store_true")
+    provider_delivery_authority_verify.add_argument("--require-fresh", action="store_true")
+    provider_delivery_authority_verify.add_argument("--now")
+    provider_delivery_authority_verify.add_argument("--key")
+    provider_delivery_authority_verify.set_defaults(func=cmd_provider_delivery_authority_verify)
+
+    provider_delivery_authority_append = subparsers.add_parser("provider-delivery-authority-append", help="append a verified provider delivery production authority dossier as chain evidence")
+    provider_delivery_authority_append.add_argument("dossier")
+    _add_provider_delivery_authority_sources(provider_delivery_authority_append)
+    provider_delivery_authority_append.add_argument("--require-complete", action="store_true")
+    provider_delivery_authority_append.add_argument("--require-fresh", action="store_true")
+    provider_delivery_authority_append.add_argument("--now")
+    provider_delivery_authority_append.add_argument("--out", default="artifacts/provider-delivery-authority-entry.json")
+    provider_delivery_authority_append.add_argument("--key")
+    _add_state_args(provider_delivery_authority_append)
+    provider_delivery_authority_append.set_defaults(func=cmd_provider_delivery_authority_append)
     provider_webhook = subparsers.add_parser("provider-webhook", help="write a signed GitHub/GitLab webhook receipt")
     provider_webhook.add_argument("provider", choices=["github", "gitlab"])
     provider_webhook.add_argument("body")

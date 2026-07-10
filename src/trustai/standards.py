@@ -43,6 +43,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/provider-delivery-v0.1.md",
     "docs/specs/provider-delivery-service-attestation-v0.1.md",
     "docs/specs/provider-delivery-worker-v0.1.md",
+    "docs/specs/provider-delivery-production-authority-v0.1.md",
     "docs/specs/provider-webhook-v0.1.md",
     "docs/specs/provider-audit-correlation-v0.1.md",
     "docs/specs/provider-audit-stream-v0.1.md",
@@ -388,6 +389,16 @@ CONFORMANCE_TARGETS = (
             "python -m trustai provider-delivery-worker artifacts/github-check-run-delivery.json --service-attestation artifacts/provider-delivery-service-attestation.json --payload artifacts/github-check-run-payload.json --provider-operations-service artifacts/provider-operations-service-attestation.json --mode dispatch-worker --environment aitrade-prod --worker-ref worker:provider-delivery/github --run-ref worker-run:provider-delivery/github/2026-07-08T05:15:00Z --operation-kind provider_payload_dispatch --actor-ref oidc:trustai.example/provider-delivery-worker --schedule-ref schedule:provider-delivery/github/continuous --cadence-seconds 30 --lease-ref lease:provider-delivery/github/2026-07-08T05:15:00Z --checkpoint-ref checkpoint:provider-delivery/github --checkpoint-hash sha256:provider-delivery-worker-checkpoint --queue-ref queue:provider-delivery/github --queue-message-ref queue-message:provider-delivery/github/check-run --dead-letter-queue-ref queue:provider-delivery/github-dlq --destination-ref https://api.github.com/repos/volelabs/trust_ai/check-runs --idempotency-record-hash sha256:provider-delivery-worker-idempotency --provider-request-ref provider-request:github/check-run/2026-07-08T05:15:00Z --request-hash sha256:provider-delivery-worker-request --delivery-log-ref delivery-log:provider-delivery/github --delivery-log-root sha256:provider-delivery-worker-delivery-root --provider-event-log-ref github:check-run-events/aitrade --provider-event-log-root sha256:provider-delivery-worker-provider-event-root --metrics-ref metrics:provider-delivery/workers --audit-log-ref audit-log:provider-delivery/workers --audit-log-root sha256:provider-delivery-worker-audit-root --credential-ref env:PROVIDER_DELIVERY_WORKER_TOKEN --provider-credential-ref env:GITHUB_TOKEN --retention-until 2033-07-08T00:00:00Z --started-at 2026-07-08T05:15:00Z --completed-at 2026-07-08T05:15:01Z",
             "python -m trustai provider-delivery-worker-verify artifacts/provider-delivery-worker.json artifacts/github-check-run-delivery.json --service-attestation artifacts/provider-delivery-service-attestation.json --payload artifacts/github-check-run-payload.json --provider-operations-service artifacts/provider-operations-service-attestation.json",
             "python -m unittest tests.test_provider_delivery_worker",
+        ],
+    },
+    {
+        "id": "provider-delivery-production-authority-dossiers",
+        "description": "Provider delivery production authority dossiers bind delivery service attestations and worker receipts to external provider posting authority evidence, freshness windows, missing coverage, and production-claim limits.",
+        "reference": "src/trustai/provider_delivery_authority.py",
+        "commands": [
+            "python -m trustai provider-delivery-authority artifacts/provider-delivery-service-attestation.json --worker artifacts/provider-delivery-worker.json --environment aitrade-prod --dossier-ref dossier:provider-delivery-authority/github-prod --authority-ref authority:provider-delivery/github-prod --producer-ref oidc:trustai.example/provider-delivery-authority-worker --authority-evidence \"hosted-dispatch-worker-fleet,hosted-service,service:provider-delivery/github-prod,sha256:provider-delivery-hosted-fleet-authority,Hosted provider delivery dispatch worker fleet export;issuer=TrustAI Cloud;subject=aitrade-prod provider delivery dispatch fleet;source_uri=https://ops.example/trustai/provider-delivery/github-prod;issued_at=2026-07-08T05:40:00Z;expires_at=2026-07-15T05:40:00Z\" --generated-at 2026-07-08T05:45:00Z --out artifacts/provider-delivery-authority.json",
+            "python -m trustai provider-delivery-authority-verify artifacts/provider-delivery-authority.json artifacts/provider-delivery-service-attestation.json --worker artifacts/provider-delivery-worker.json",
+            "python -m unittest tests.test_provider_delivery_authority",
         ],
     },
     {
