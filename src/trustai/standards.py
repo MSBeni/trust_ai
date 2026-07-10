@@ -105,6 +105,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/marketplace-settlement-v0.1.md",
     "docs/specs/trust-network-service-attestation-v0.1.md",
     "docs/specs/trust-network-worker-v0.1.md",
+    "docs/specs/trust-network-production-authority-v0.1.md",
     "docs/specs/verifier-conformance-v0.1.md",
     "docs/specs/verifier-release-v0.1.md",
     "docs/specs/verifier-distribution-v0.1.md",
@@ -970,7 +971,18 @@ CONFORMANCE_TARGETS = (
             "python -m trustai trust-network-worker-verify artifacts/trust-network-worker.json --service-attestation artifacts/trust-network-service-attestation.json artifacts/trust-network-registry.json --registry-status artifacts/trust-network-registry-status.json --marketplace-catalog artifacts/marketplace-catalog.json --marketplace-distribution artifacts/marketplace-distribution.json --marketplace-author-governance artifacts/marketplace-author-governance.json --marketplace-settlement artifacts/marketplace-settlement.json --root .",
             "python -m unittest tests.test_trust_network_worker",
         ],
-    },)
+    },
+    {
+        "id": "trust-network-production-authority-dossiers",
+        "description": "Trust-network production authority dossiers bind hosted trust-network service attestations and worker receipts to external hosted registry, marketplace, identity-provider, lifecycle-worker, settlement, revocation, callback, and observability authority evidence, freshness windows, missing coverage, and production-claim limits.",
+        "reference": "src/trustai/trust_network_authority.py",
+        "commands": [
+            "python -m trustai trust-network-authority artifacts/trust-network-registry.json --service-attestation artifacts/trust-network-service-attestation.json --worker artifacts/trust-network-worker.json --manifest artifacts/trust-network-manifest.json --vendor-identity artifacts/vendor-identity-receipt.json --identity-attestation artifacts/identity-provider-attestation.json --identity-payload examples/aitrade/identity-inventory.json --procurement-receipt artifacts/procurement-clause-receipt.json --procurement-integration artifacts/procurement-integration-receipt.json --pack artifacts/aitrade-proof-pack.json --registry-status artifacts/trust-network-registry-status.json --marketplace-catalog artifacts/marketplace-catalog.json --marketplace-distribution artifacts/marketplace-distribution.json --frontend-bundle artifacts/trust-network.bundle.js --marketplace-author-governance artifacts/marketplace-author-governance.json --marketplace-settlement artifacts/marketplace-settlement.json --root . --source-now 2026-07-15T00:00:00Z --mode network-dossier --environment aitrade-prod --dossier-ref dossier:trust-network-authority/registry-marketplace-prod --authority-ref authority:trust-network/registry-marketplace-prod --producer-ref oidc:trustai.example/trust-network-authority-worker --authority-evidence 'hosted-registry-marketplace-worker-fleet,hosted-service,trust-network:hosted/workers,sha256:trust-network-hosted-worker-fleet,Hosted trust-network worker fleet export;issuer=TrustAI Hosted Ops;subject=aitrade-prod trust-network;source_uri=https://trust-network.example/audit/workers;issued_at=2026-07-14T06:10:00Z;expires_at=2026-07-21T06:10:00Z' --generated-at 2026-07-14T06:15:00Z --now 2026-07-15T00:00:00Z",
+            "python -m trustai trust-network-authority-verify artifacts/trust-network-authority.json artifacts/trust-network-registry.json --service-attestation artifacts/trust-network-service-attestation.json --worker artifacts/trust-network-worker.json --manifest artifacts/trust-network-manifest.json --vendor-identity artifacts/vendor-identity-receipt.json --identity-attestation artifacts/identity-provider-attestation.json --identity-payload examples/aitrade/identity-inventory.json --procurement-receipt artifacts/procurement-clause-receipt.json --procurement-integration artifacts/procurement-integration-receipt.json --pack artifacts/aitrade-proof-pack.json --registry-status artifacts/trust-network-registry-status.json --marketplace-catalog artifacts/marketplace-catalog.json --marketplace-distribution artifacts/marketplace-distribution.json --frontend-bundle artifacts/trust-network.bundle.js --marketplace-author-governance artifacts/marketplace-author-governance.json --marketplace-settlement artifacts/marketplace-settlement.json --root . --source-now 2026-07-15T00:00:00Z --now 2026-07-15T00:00:00Z",
+            "python -m unittest tests.test_trust_network_authority",
+        ],
+    },
+)
 
 
 @dataclass
@@ -1040,6 +1052,7 @@ def build_standards_submission(
             "Publish marketplace author governance receipt format for third-party author onboarding, review, entitlement, billing, payout, and revocation evidence.",
             "Publish marketplace settlement receipt format for entitlement checks, invoice, revenue-share, payout, and tax-custody evidence.",
             "Publish trust-network service attestation format for hosted registry and marketplace evidence.",
+            "Publish trust-network production authority dossier format for hosted registry, marketplace, identity-provider, settlement, revocation, callback, and observability authority evidence.",
             "Publish verifier conformance report format and tamper-vector requirements.",
             "Publish distributional re-execution report, local runner evidence, and risk-class policy formats for nondeterministic agents.",
             "Keep producer and verifier roles separable.",

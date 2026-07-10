@@ -353,6 +353,15 @@ from .trust_network_worker import (
     verify_trust_network_worker_receipt,
     write_trust_network_worker_receipt,
 )
+from .trust_network_authority import (
+    TRUST_NETWORK_AUTHORITY_MODES,
+    append_trust_network_authority_dossier,
+    build_trust_network_authority_dossier,
+    load_trust_network_authority_dossier,
+    parse_trust_network_authority_evidence_arg,
+    verify_trust_network_authority_dossier,
+    write_trust_network_authority_dossier,
+)
 from .trust_network_worker_bundle import (
     TRUST_NETWORK_WORKER_BUNDLE_MODES,
     append_trust_network_worker_bundle,
@@ -15160,6 +15169,138 @@ def cmd_trust_network_worker_append(args: argparse.Namespace) -> int:
     return 0
 
 
+def _load_trust_network_authority_sources(args: argparse.Namespace) -> dict[str, Any]:
+    sources = _load_trust_network_worker_sources(args)
+    if sources.get("service_attestation") is None:
+        raise ValueError("--service-attestation is required")
+    workers = [load_trust_network_worker_receipt(path) for path in (getattr(args, "worker", None) or [])]
+    if not workers:
+        raise ValueError("at least one --worker receipt is required")
+    sources["worker_receipts"] = workers
+    return sources
+
+
+def _trust_network_authority_source_kwargs(sources: dict[str, Any], args: argparse.Namespace) -> dict[str, Any]:
+    return {
+        "registry_receipt": sources["registry"],
+        "trust_network_manifest": sources["manifest"],
+        "vendor_identity_receipt": sources["vendor"],
+        "identity_provider_attestation": sources["identity_attestation"],
+        "identity_payload": sources["identity_payload"],
+        "procurement_receipt": sources["procurement"],
+        "procurement_integration_receipt": sources["integration"],
+        "proof_packs": sources["packs"],
+        "registry_status_receipt": sources["registry_status"],
+        "marketplace_catalog": sources["marketplace_catalog"],
+        "marketplace_distribution": sources["marketplace_distribution"],
+        "frontend_bundle_path": sources["frontend_bundle_path"],
+        "marketplace_author_governance": sources["marketplace_author_governance"],
+        "marketplace_settlement": sources["marketplace_settlement"],
+        "root": args.root,
+        "source_now": getattr(args, "source_now", None),
+        "key": args.key,
+    }
+
+
+def cmd_trust_network_authority(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_trust_network_authority_sources(args)
+        evidence = [parse_trust_network_authority_evidence_arg(value) for value in args.authority_evidence]
+        dossier = build_trust_network_authority_dossier(
+            sources["service_attestation"],
+            worker_receipts=sources["worker_receipts"],
+            **_trust_network_authority_source_kwargs(sources, args),
+            mode=args.mode,
+            environment=args.environment,
+            dossier_ref=args.dossier_ref,
+            authority_ref=args.authority_ref,
+            producer_ref=args.producer_ref,
+            authority_evidence=evidence,
+            generated_at=args.generated_at,
+        )
+        result = verify_trust_network_authority_dossier(
+            dossier,
+            service_attestation=sources["service_attestation"],
+            worker_receipts=sources["worker_receipts"],
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+            **_trust_network_authority_source_kwargs(sources, args),
+        )
+    except ValueError as exc:
+        print(f"trust-network authority dossier failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("trust-network authority dossier verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_trust_network_authority_dossier(args.out, dossier)
+    print(f"trust-network authority dossier: {args.out}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"service attestation id: {dossier['service_attestation_binding']['attestation_id']}")
+    print(f"worker receipts: {len(dossier['worker_receipt_bindings'])}")
+    print(f"covered requirements: {result.covered_count}/{result.required_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_trust_network_authority_verify(args: argparse.Namespace) -> int:
+    try:
+        dossier = load_trust_network_authority_dossier(args.dossier)
+        sources = _load_trust_network_authority_sources(args)
+    except ValueError as exc:
+        print(f"trust-network authority dossier verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_trust_network_authority_dossier(
+        dossier,
+        service_attestation=sources["service_attestation"],
+        worker_receipts=sources["worker_receipts"],
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+        **_trust_network_authority_source_kwargs(sources, args),
+    )
+    if result.ok:
+        print(f"verified trust-network authority dossier: {args.dossier}")
+        print(f"covered requirements: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"trust-network authority dossier verification failed: {args.dossier}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_trust_network_authority_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    try:
+        dossier = load_trust_network_authority_dossier(args.dossier)
+        sources = _load_trust_network_authority_sources(args)
+        entry = append_trust_network_authority_dossier(
+            chain,
+            dossier,
+            service_attestation=sources["service_attestation"],
+            worker_receipts=sources["worker_receipts"],
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+            **_trust_network_authority_source_kwargs(sources, args),
+        )
+    except ValueError as exc:
+        print(f"trust-network authority dossier append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"trust-network authority entry: {args.out}")
+    print(f"trust-network authority entry id: {entry['entry_id']}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
 def _trust_network_worker_bundle_artifact_paths(args: argparse.Namespace) -> dict[str, Any]:
     return {
         "worker_receipt": args.receipt,
@@ -21420,6 +21561,44 @@ def build_parser() -> argparse.ArgumentParser:
     _add_state_args(trust_network_worker_append)
     trust_network_worker_append.set_defaults(func=cmd_trust_network_worker_append)
 
+
+    def _add_trust_network_authority_sources(parser: argparse.ArgumentParser, include_dossier: bool = False) -> None:
+        if include_dossier:
+            parser.add_argument("dossier")
+        _add_trust_network_worker_sources(parser)
+        parser.add_argument("--worker", action="append", required=True)
+        parser.add_argument("--source-now", help="RFC3339 verification time for replaying trust-network source freshness checks")
+
+    def _add_trust_network_authority_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--mode", choices=sorted(TRUST_NETWORK_AUTHORITY_MODES), default="network-dossier")
+        parser.add_argument("--environment")
+        parser.add_argument("--dossier-ref", required=True)
+        parser.add_argument("--authority-ref", required=True)
+        parser.add_argument("--producer-ref", required=True)
+        parser.add_argument("--authority-evidence", action="append", default=[])
+        parser.add_argument("--generated-at")
+        parser.add_argument("--require-complete", action="store_true")
+        parser.add_argument("--require-fresh", action="store_true")
+        parser.add_argument("--out", default="artifacts/trust-network-authority.json")
+
+    trust_network_authority = subparsers.add_parser("trust-network-authority", help="write a signed trust-network production authority dossier")
+    _add_trust_network_authority_sources(trust_network_authority)
+    _add_trust_network_authority_fields(trust_network_authority)
+    trust_network_authority.set_defaults(func=cmd_trust_network_authority)
+
+    trust_network_authority_verify = subparsers.add_parser("trust-network-authority-verify", help="verify a signed trust-network production authority dossier")
+    _add_trust_network_authority_sources(trust_network_authority_verify, include_dossier=True)
+    trust_network_authority_verify.add_argument("--require-complete", action="store_true")
+    trust_network_authority_verify.add_argument("--require-fresh", action="store_true")
+    trust_network_authority_verify.set_defaults(func=cmd_trust_network_authority_verify)
+
+    trust_network_authority_append = subparsers.add_parser("trust-network-authority-append", help="append a verified trust-network production authority dossier")
+    _add_trust_network_authority_sources(trust_network_authority_append, include_dossier=True)
+    trust_network_authority_append.add_argument("--require-complete", action="store_true")
+    trust_network_authority_append.add_argument("--require-fresh", action="store_true")
+    trust_network_authority_append.add_argument("--out", default="artifacts/trust-network-authority-entry.json")
+    _add_state_args(trust_network_authority_append)
+    trust_network_authority_append.set_defaults(func=cmd_trust_network_authority_append)
     trust_network_worker_bundle = subparsers.add_parser("trust-network-worker-bundle", help="write a self-contained trust-network worker review bundle")
     _add_trust_network_worker_sources(trust_network_worker_bundle, include_receipt=True)
     trust_network_worker_bundle.add_argument("--mode", choices=sorted(TRUST_NETWORK_WORKER_BUNDLE_MODES), default="offline-review")
