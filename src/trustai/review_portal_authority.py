@@ -121,6 +121,7 @@ def build_review_portal_authority_dossier(
 
     evidence_items = [_build_authority_evidence_item(item) for item in (authority_evidence or [])]
     summary = _summary(evidence_items)
+    binding = _service_attestation_binding(service_attestation)
     body: dict[str, Any] = {
         "schema": REVIEW_PORTAL_AUTHORITY_SCHEMA,
         "mode": mode,
@@ -129,11 +130,11 @@ def build_review_portal_authority_dossier(
         "dossier_ref": dossier_ref,
         "authority_ref": authority_ref,
         "producer_ref": producer_ref,
-        "service_attestation_binding": _service_attestation_binding(service_attestation),
+        "service_attestation_binding": binding,
         "required_production_authority": PRODUCTION_AUTHORITY_REQUIREMENTS,
         "authority_evidence": evidence_items,
         "summary": summary,
-        "controls": _controls(mode, service_attestation, evidence_items, summary),
+        "controls": _controls(mode, binding, evidence_items, summary),
         "limitations": [
             "This dossier binds a verified review portal service attestation to an explicit hosted UI production-authority evidence checklist.",
             "It records authority references, hashes, freshness windows, and missing live-evidence categories for auditor/regulator portal operation.",
@@ -233,8 +234,13 @@ def verify_review_portal_authority_dossier(
         errors.append("review portal authority dossier is incomplete")
     if mode == "production-dossier" and missing:
         errors.append("production-dossier mode requires every review portal authority requirement to be covered")
+    if mode == "production-dossier" and (freshness_counts["stale"] or freshness_counts["missing"]):
+        errors.append("production-dossier mode requires every review portal authority evidence item to be fresh")
+    binding_for_controls = dossier.get("service_attestation_binding") if isinstance(dossier.get("service_attestation_binding"), dict) else {}
     if not isinstance(dossier.get("controls"), list) or not dossier.get("controls"):
         errors.append("review portal authority controls are required")
+    elif dossier.get("controls") != _controls(str(mode), binding_for_controls, [item for item in evidence if isinstance(item, dict)], expected_summary):
+        errors.append("review portal authority controls do not match dossier body")
     _check_no_secret_values(dossier, errors)
     return ReviewPortalAuthorityVerification(
         ok=not errors,
@@ -496,7 +502,7 @@ def _summary(evidence: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _controls(mode: str, service_attestation: dict[str, Any], evidence: list[dict[str, Any]], summary: dict[str, Any]) -> list[dict[str, Any]]:
+def _controls(mode: str, binding: dict[str, Any], evidence: list[dict[str, Any]], summary: dict[str, Any]) -> list[dict[str, Any]]:
     return [
         {
             "name": "service_attestation_replayed",
@@ -505,7 +511,7 @@ def _controls(mode: str, service_attestation: dict[str, Any], evidence: list[dic
         },
         {
             "name": "service_attestation_bound",
-            "status": "passed" if service_attestation.get("attestation_id") else "failed",
+            "status": "passed" if binding.get("attestation_id") else "failed",
             "detail": "The dossier binds the service attestation ID, service hash, frontend bundle, supervised access session, security, log, and credential refs.",
         },
         {

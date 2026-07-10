@@ -103,6 +103,15 @@ class ReviewPortalAuthorityTests(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("service_attestation_binding does not match" in error for error in result.errors), result.errors)
 
+    def test_review_portal_authority_detects_control_tamper(self):
+        sources, attestation, dossier = self._dossier()
+        tampered = copy.deepcopy(dossier)
+        tampered["controls"][0]["status"] = "deferred"
+
+        result = verify_review_portal_authority_dossier(tampered, service_attestation=attestation, **sources)
+
+        self.assertFalse(result.ok)
+        self.assertTrue(any("controls do not match" in error for error in result.errors), result.errors)
     def test_review_portal_authority_requires_freshness_when_strict(self):
         evidence = [dict(self._authority_evidence()[0])]
         evidence[0].pop("issued_at")

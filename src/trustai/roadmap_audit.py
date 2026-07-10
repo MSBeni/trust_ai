@@ -232,13 +232,16 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "src/trustai/regulator_view.py",
             "src/trustai/supervised_access.py",
             "src/trustai/review_portal_service.py",
+            "src/trustai/review_portal_authority.py",
             "docs/specs/supervised-access-v0.1.md",
             "docs/specs/review-portal-service-attestation-v0.1.md",
+            "docs/specs/review-portal-production-authority-v0.1.md",
             "tests/test_supervised_access.py",
             "tests/test_review_portal_service.py",
+            "tests/test_review_portal_authority.py",
         ],
         "external_authority": [
-            "Hosted reviewer identity sessions, immutable access logs, and production portal workers remain deployment evidence.",
+            "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence.",
         ],
     },
     {
