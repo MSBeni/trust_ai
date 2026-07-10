@@ -224,6 +224,8 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "src/trustai/provider_approval_authority.py",
             "src/trustai/provider_delivery_service.py",
             "src/trustai/provider_webhook.py",
+            "docs/specs/provider-webhook-v0.1.md",
+            "examples/webhooks/github-check-suite.json",
             "docs/specs/approval-callback-v0.1.md",
             "docs/specs/provider-approval-production-authority-v0.1.md",
             "docs/specs/provider-delivery-v0.1.md",
@@ -231,9 +233,10 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "tests/test_approval_callback.py",
             "tests/test_provider_approval_authority.py",
             "tests/test_provider_delivery.py",
+            "tests/test_provider_webhook.py",
         ],
         "external_authority": [
-            "Provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence.",
+            "Provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence.",
         ],
     },
     {

@@ -9451,9 +9451,10 @@ def cmd_provider_webhook(args: argparse.Namespace) -> int:
             headers,
             secret or "",
             received_at=args.received_at,
+            body_artifact_path=args.body,
             key=args.key,
         )
-        result = verify_provider_webhook_receipt(receipt, body, headers=headers, secret=secret, key=args.key)
+        result = verify_provider_webhook_receipt(receipt, body, headers=headers, secret=secret, body_artifact_path=args.body, key=args.key)
     except (OSError, ValueError) as exc:
         print(f"provider webhook receipt generation failed: {exc}", file=sys.stderr)
         return 1
@@ -9491,6 +9492,7 @@ def cmd_provider_webhook_verify(args: argparse.Namespace) -> int:
         body,
         headers=headers or None,
         secret=secret,
+        body_artifact_path=args.body,
         key=args.key,
     )
     if result.ok:
@@ -9525,6 +9527,7 @@ def cmd_provider_webhook_append(args: argparse.Namespace) -> int:
             body,
             headers=headers or None,
             secret=secret,
+            body_artifact_path=args.body,
             key=args.key,
         )
     except ValueError as exc:

@@ -573,11 +573,11 @@ CONFORMANCE_TARGETS = (
     },
     {
         "id": "provider-webhook-receipts",
-        "description": "Provider webhook receipts verify GitHub/GitLab callback signatures or tokens, bind raw payload hashes, redact provider secrets, deduplicate provider retries, and append first-seen inbound provider events as chain evidence.",
+        "description": "Provider webhook receipts verify GitHub/GitLab callback signatures or tokens, bind raw payload hashes and retained payload artifact byte replay, redact provider secrets, deduplicate provider retries, and append first-seen inbound provider events as chain evidence.",
         "reference": "src/trustai/provider_webhook.py",
         "commands": [
             "python -m trustai provider-webhook github examples/webhooks/github-check-suite.json --secret env:GITHUB_WEBHOOK_SECRET --header X-Hub-Signature-256:sha256=... --header X-GitHub-Delivery:delivery-123 --header X-GitHub-Event:check_suite",
-            "python -m trustai provider-webhook-verify artifacts/provider-webhook.json examples/webhooks/github-check-suite.json",
+            "python -m trustai provider-webhook-verify artifacts/provider-webhook.json examples/webhooks/github-check-suite.json --secret env:GITHUB_WEBHOOK_SECRET --header X-Hub-Signature-256:sha256=... --header X-GitHub-Delivery:delivery-123 --header X-GitHub-Event:check_suite",
             "python -m unittest tests.test_provider_webhook",
         ],
     },

@@ -25,6 +25,10 @@ from trustai.server import serve
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _sha256_ref(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
 def _github_signature(secret: str, body: bytes) -> str:
     return "sha256=" + hmac.new(secret.encode("utf-8"), body, hashlib.sha256).hexdigest()
 
@@ -68,6 +72,54 @@ class ProviderWebhookTests(unittest.TestCase):
             self.assertEqual(PROVIDER_WEBHOOK_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(receipt["receipt_id"], entry["payload"]["receipt_id"])
             self.assertTrue(chain.verify_all().ok)
+
+    def test_github_webhook_replays_payload_artifact_bytes(self):
+        raw_body = b'{"action":"completed","check_suite":{"id":42}}'
+        secret = "github-webhook-secret"
+        headers = _github_headers(secret, raw_body)
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            body_path = Path(tmp_dir) / "github-webhook.json"
+            body_path.write_bytes(raw_body)
+            receipt = build_provider_webhook_receipt(
+                "github",
+                raw_body,
+                headers,
+                secret,
+                received_at="2026-07-08T00:00:00Z",
+                body_artifact_path=body_path,
+            )
+            result = verify_provider_webhook_receipt(receipt, raw_body, headers=headers, secret=secret, body_artifact_path=body_path)
+            artifact_sha = _sha256_ref(body_path)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(artifact_sha, receipt["payload_artifact"]["sha256"])
+        self.assertEqual(len(raw_body), receipt["payload_artifact"]["size_bytes"])
+
+    def test_github_webhook_detects_payload_artifact_byte_tamper(self):
+        raw_body = b'{"action":"completed","check_suite":{"id":42}}'
+        equivalent_body = b'{\n  "action": "completed",\n  "check_suite": {\n    "id": 42\n  }\n}'
+        secret = "github-webhook-secret"
+        headers = _github_headers(secret, raw_body)
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            body_path = Path(tmp_dir) / "github-webhook.json"
+            body_path.write_bytes(raw_body)
+            receipt = build_provider_webhook_receipt(
+                "github",
+                raw_body,
+                headers,
+                secret,
+                received_at="2026-07-08T00:00:00Z",
+                body_artifact_path=body_path,
+            )
+            body_path.write_bytes(equivalent_body)
+            result = verify_provider_webhook_receipt(receipt, raw_body, headers=headers, secret=secret, body_artifact_path=body_path)
+
+        self.assertFalse(result.ok)
+        errors = "\n".join(result.errors)
+        self.assertIn("payload_artifact", errors)
+        self.assertIn("bytes", errors)
 
     def test_github_webhook_bad_signature_is_rejected(self):
         raw_body = b'{"action":"completed"}'
@@ -254,12 +306,45 @@ class ProviderWebhookTests(unittest.TestCase):
                 capture_output=True,
                 text=True,
             )
+            entry_path = tmp / "provider-webhook-entry.json"
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "provider-webhook-append",
+                    str(receipt_path),
+                    str(body_path),
+                    "--secret",
+                    secret,
+                    *common_headers,
+                    "--state",
+                    str(tmp / "chain.json"),
+                    "--tenant",
+                    "provider-webhook-cli-test",
+                    "--out",
+                    str(entry_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
             receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
-
-        result = verify_provider_webhook_receipt(receipt, raw_body, headers=headers, secret=secret)
+            entry = json.loads(entry_path.read_text(encoding="utf-8"))
+            result = verify_provider_webhook_receipt(
+                receipt,
+                raw_body,
+                headers=headers,
+                secret=secret,
+                body_artifact_path=body_path,
+            )
 
         self.assertTrue(result.ok, result.errors)
         self.assertEqual("github", receipt["provider"])
+        self.assertEqual(hashlib.sha256(raw_body).hexdigest(), receipt["payload_artifact"]["sha256"])
+        self.assertEqual(receipt["payload_artifact"]["sha256"], entry["payload"]["payload_artifact"]["sha256"])
 
 
 if __name__ == "__main__":

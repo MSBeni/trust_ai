@@ -129,7 +129,11 @@ class RoadmapAuditTests(unittest.TestCase):
         cicd_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "cicd-provider-approvals")
         cicd_evidence = {item["path"] for item in cicd_requirement["evidence"]}
         self.assertIn("docs/specs/promotion-status-receipt-v0.1.md", cicd_evidence)
+        self.assertIn("docs/specs/provider-webhook-v0.1.md", cicd_evidence)
+        self.assertIn("examples/webhooks/github-check-suite.json", cicd_evidence)
         self.assertIn("tests/test_provider_delivery.py", cicd_evidence)
+        self.assertIn("tests/test_provider_webhook.py", cicd_evidence)
+        self.assertIn("retained payload artifact byte replay", " ".join(cicd_requirement["external_authority_required"]))
         self.assertGreater(audit["summary"][STATUS_REFERENCE_ATTESTED], 0)
         self.assertIn("TrustAI Roadmap Audit", markdown)
         self.assertIn("Deferred External Authority", markdown)

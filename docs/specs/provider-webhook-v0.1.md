@@ -3,7 +3,8 @@
 Provider webhook receipts bind inbound GitHub/GitLab provider callbacks to
 TrustAI evidence. They cover the CI/CD half of promotion gates: after TrustAI
 posts a provider check/status, later provider webhooks can be verified, hashed,
-signed, and appended without storing raw provider secrets.
+signed, retained-body replay-bound, and appended without storing raw provider
+secrets.
 
 This v0.1 artifact supports:
 
@@ -12,6 +13,8 @@ This v0.1 artifact supports:
 - GitLab `X-Gitlab-Token` shared-token validation.
 - GitLab `X-Gitlab-Event` plus optional webhook UUID/event UUID binding.
 - Redacted request-header hashing and raw payload SHA-256 binding.
+- Optional retained payload artifact binding with path, byte SHA-256, byte
+  length, and artifact id.
 - Local retry deduplication keyed by provider, event, delivery id, and payload hash.
 
 ## Schema
@@ -25,6 +28,8 @@ Top-level fields:
 - `provider`: `github` or `gitlab`.
 - `received_at`: RFC3339 timestamp when the webhook was accepted by TrustAI.
 - `payload`: raw payload `sha256`, byte length, and optional content type.
+- `payload_artifact`: optional retained body artifact summary with normalized
+  path, byte SHA-256, byte length, and artifact id.
 - `request_headers`: observed header names and canonical hash of redacted
   headers. Authorization, token, signature, key, secret, and cookie headers are
   redacted before hashing.
@@ -46,13 +51,17 @@ header without exposing the secret material.
 - receipt id canonical hash;
 - detached TrustAI signature;
 - payload SHA-256 and size against the supplied raw body;
+- retained payload artifact bytes when `payload_artifact` is present and a body
+  artifact path is supplied;
 - required event and verification metadata;
 - optional provider signature replay when raw headers and secret are supplied;
 - redacted header hash against the supplied raw headers when replaying.
 
 Verification with only a receipt and body proves the TrustAI-signed receipt
-still matches the payload. Verification with body, headers, and secret also
-replays the original GitHub/GitLab provider authentication.
+still matches the payload. Verification with a retained body path also rejects
+byte-level artifact substitution, even when parsed JSON content is equivalent.
+Verification with body, headers, and secret also replays the original GitHub/GitLab
+provider authentication.
 
 `trustai provider-webhook-append` appends a `provider_webhook.recorded` chain
 entry containing the receipt id, provider, event, delivery id, payload hash,

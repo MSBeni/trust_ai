@@ -74,6 +74,7 @@ def build_provider_webhook_receipt(
     secret: str,
     *,
     received_at: str | None = None,
+    body_artifact_path: str | Path | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
     provider = _normalize_provider(provider)
@@ -107,6 +108,8 @@ def build_provider_webhook_receipt(
             "value_hash": metadata["value_hash"],
         },
     }
+    if body_artifact_path is not None:
+        body_record["payload_artifact"] = _provider_webhook_payload_artifact(body_artifact_path, body_bytes)
     receipt_id = content_hash(body_record)
     return {
         **body_record,
@@ -121,6 +124,7 @@ def verify_provider_webhook_receipt(
     *,
     headers: Mapping[str, Any] | None = None,
     secret: str | None = None,
+    body_artifact_path: str | Path | None = None,
     key: str | None = None,
 ) -> ProviderWebhookVerification:
     errors: list[str] = []
@@ -175,14 +179,38 @@ def verify_provider_webhook_receipt(
         errors.append("provider webhook verification method, header, and value_hash are required")
 
     body_bytes: bytes | None = None
-    if body is None:
+    if body is None and body_artifact_path is not None:
+        try:
+            body_bytes = Path(body_artifact_path).read_bytes()
+        except OSError as exc:
+            errors.append(f"provider webhook payload artifact could not be loaded: {exc}")
+    elif body is None:
         warnings.append("provider webhook payload body not supplied; payload hash was not replayed")
     else:
         body_bytes = _body_bytes(body)
+    if body_bytes is not None:
         if payload.get("sha256") != sha256_hex(body_bytes):
             errors.append("provider webhook payload sha256 does not match supplied body")
         if payload.get("size_bytes") != len(body_bytes):
             errors.append("provider webhook payload size_bytes does not match supplied body")
+
+    payload_artifact = receipt.get("payload_artifact")
+    if payload_artifact is not None:
+        if not isinstance(payload_artifact, dict):
+            errors.append("provider webhook payload_artifact must be an object")
+        elif body_artifact_path is None:
+            if body is not None:
+                errors.append("provider webhook payload_artifact requires body_artifact_path for byte replay")
+            else:
+                warnings.append("provider webhook payload artifact was not replayed")
+        elif body_bytes is not None:
+            try:
+                expected_artifact = _provider_webhook_payload_artifact(body_artifact_path, body_bytes)
+            except ValueError as exc:
+                errors.append(f"provider webhook payload_artifact invalid: {exc}")
+            else:
+                if payload_artifact != expected_artifact:
+                    errors.append("provider webhook payload_artifact does not match supplied body artifact bytes")
 
     if headers is None and secret is None:
         warnings.append("provider webhook provider signature was not replayed")
@@ -217,9 +245,10 @@ def append_provider_webhook_receipt(
     *,
     headers: Mapping[str, Any] | None = None,
     secret: str | None = None,
+    body_artifact_path: str | Path | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
-    result = verify_provider_webhook_receipt(receipt, body, headers=headers, secret=secret, key=key)
+    result = verify_provider_webhook_receipt(receipt, body, headers=headers, secret=secret, body_artifact_path=body_artifact_path, key=key)
     if not result.ok:
         raise ValueError("invalid provider webhook receipt: " + "; ".join(result.errors))
     payload = {
@@ -229,6 +258,7 @@ def append_provider_webhook_receipt(
         "received_at": receipt.get("received_at"),
         "webhook": receipt.get("webhook"),
         "payload": receipt.get("payload"),
+        "payload_artifact": receipt.get("payload_artifact"),
         "request_headers": receipt.get("request_headers"),
         "verification": receipt.get("verification"),
     }
@@ -246,6 +276,22 @@ def write_provider_webhook_receipt(path: str | Path, receipt: dict[str, Any]) ->
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(receipt, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def _provider_webhook_payload_artifact(path: str | Path, body: bytes | str) -> dict[str, Any]:
+    target = Path(path)
+    if not target.is_file():
+        raise ValueError(f"provider webhook payload artifact file missing: {path}")
+    data = target.read_bytes()
+    body_bytes = _body_bytes(body)
+    if data != body_bytes:
+        raise ValueError("provider webhook payload artifact bytes do not match supplied body")
+    artifact_body = {
+        "path": str(path).replace("\\", "/"),
+        "sha256": sha256_hex(data),
+        "size_bytes": len(data),
+    }
+    return {**artifact_body, "artifact_id": content_hash(artifact_body)}
 
 
 def _validate_github_webhook(body: bytes, headers: Mapping[str, str], secret: str) -> dict[str, Any]:
