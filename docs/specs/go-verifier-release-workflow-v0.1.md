@@ -1,4 +1,4 @@
-﻿# Go Verifier Release Workflow v0.1
+# Go Verifier Release Workflow v0.1
 
 ## Purpose
 
@@ -45,7 +45,7 @@ A released verifier binary is considered eligible for binary-attested release
 metadata only when the binary hash in the release manifest or build attestation
 matches the workflow artifact checksum.
 
-The signed verifier release manifest SHOULD bind:
+The signed verifier release manifest and `trustai.go-verifier-release-run/0.1` receipt SHOULD bind:
 
 - workflow file path and content hash;
 - workflow run URL or run identifier;
@@ -73,5 +73,5 @@ SHOULD also inspect the GitHub Actions run metadata and artifact digests.
 
 This workflow specification proves that the repository contains a repeatable
 build path. It does not prove that a specific binary has been built unless a
-workflow run, artifact digest, and release/build attestation are also supplied.
+workflow run, artifact digest, release/build attestation, and signed `trustai.go-verifier-release-run/0.1` receipt are also supplied.
 

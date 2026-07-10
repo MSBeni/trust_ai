@@ -855,6 +855,15 @@ from .go_verifier_build import (
     verify_go_verifier_build_attestation,
     write_go_verifier_build_attestation,
 )
+from .go_verifier_release_run import (
+    append_go_verifier_release_run_receipt,
+    build_go_verifier_release_run_receipt,
+    load_go_verifier_release_run_receipt,
+    parse_release_run_artifact_arg,
+    parse_release_run_check_arg,
+    verify_go_verifier_release_run_receipt,
+    write_go_verifier_release_run_receipt,
+)
 from .verifier_distribution import (
     append_verifier_distribution_receipt,
     build_verifier_distribution_receipt,
@@ -5415,6 +5424,143 @@ def cmd_go_verifier_build_append(args: argparse.Namespace) -> int:
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
+
+def _load_go_verifier_release_run_sources(args: argparse.Namespace) -> dict[str, object]:
+    return {
+        "verifier_release": load_verifier_release_manifest(args.verifier_release),
+        "build_attestation": load_go_verifier_build_attestation(args.build_attestation),
+        "conformance_report": load_verifier_conformance_report(args.conformance_report) if getattr(args, "conformance_report", None) else None,
+        "standards_package": load_standards_submission(args.standards_package) if getattr(args, "standards_package", None) else None,
+    }
+
+
+def _parse_release_run_cli_artifacts(values: list[str]) -> list[dict[str, str]]:
+    artifacts: list[dict[str, str]] = []
+    for value in values:
+        artifacts.append(parse_release_run_artifact_arg(value))
+    return artifacts
+
+
+def _parse_release_run_cli_checks(values: list[str]) -> list[dict[str, str]]:
+    checks: list[dict[str, str]] = []
+    for value in values:
+        checks.append(parse_release_run_check_arg(value))
+    return checks
+
+
+def cmd_go_verifier_release_run(args: argparse.Namespace) -> int:
+    sources = _load_go_verifier_release_run_sources(args)
+    try:
+        receipt = build_go_verifier_release_run_receipt(
+            sources["verifier_release"],
+            sources["build_attestation"],
+            root=args.root,
+            conformance_report=sources["conformance_report"],
+            standards_package=sources["standards_package"],
+            binary_path=args.binary,
+            workflow_path=args.workflow_path,
+            provider=args.provider,
+            workflow_ref=args.workflow_ref,
+            workflow_run_id=args.workflow_run_id,
+            workflow_run_url=args.workflow_run_url,
+            run_attempt=args.run_attempt,
+            commit_sha=args.commit_sha,
+            branch_ref=args.branch_ref,
+            trigger_ref=args.trigger_ref,
+            runner_ref=args.runner_ref,
+            status=args.status,
+            conclusion=args.conclusion,
+            started_at=args.started_at,
+            completed_at=args.completed_at,
+            artifacts=_parse_release_run_cli_artifacts(args.artifact),
+            checks=_parse_release_run_cli_checks(args.check),
+            hosted_provenance_ref=args.hosted_provenance_ref,
+            hosted_provenance_hash=args.hosted_provenance_hash,
+            oidc_issuer=args.oidc_issuer,
+            oidc_subject=args.oidc_subject,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"Go verifier release-run receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_go_verifier_release_run_receipt(
+        receipt,
+        sources["verifier_release"],
+        sources["build_attestation"],
+        root=args.root,
+        conformance_report=sources["conformance_report"],
+        standards_package=sources["standards_package"],
+        binary_path=args.binary,
+        key=args.key,
+    )
+    if not result.ok:
+        print("Go verifier release-run verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_go_verifier_release_run_receipt(args.out, receipt)
+    print(f"Go verifier release-run receipt: {args.out}")
+    print(f"run id: {receipt['run_id']}")
+    print(f"workflow run id: {receipt['workflow_run']['workflow_run_id']}")
+    print(f"artifacts: {len(receipt['artifacts'])}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_go_verifier_release_run_verify(args: argparse.Namespace) -> int:
+    receipt = load_go_verifier_release_run_receipt(args.receipt)
+    sources = _load_go_verifier_release_run_sources(args)
+    result = verify_go_verifier_release_run_receipt(
+        receipt,
+        sources["verifier_release"],
+        sources["build_attestation"],
+        root=args.root,
+        conformance_report=sources["conformance_report"],
+        standards_package=sources["standards_package"],
+        binary_path=args.binary,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified Go verifier release-run receipt: {args.receipt}")
+        print(f"run id: {receipt['run_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"Go verifier release-run verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_go_verifier_release_run_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_go_verifier_release_run_receipt(args.receipt)
+    sources = _load_go_verifier_release_run_sources(args)
+    try:
+        entry = append_go_verifier_release_run_receipt(
+            chain,
+            receipt,
+            sources["verifier_release"],
+            sources["build_attestation"],
+            root=args.root,
+            conformance_report=sources["conformance_report"],
+            standards_package=sources["standards_package"],
+            binary_path=args.binary,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"Go verifier release-run append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"Go verifier release-run entry: {args.out}")
+    print(f"Go verifier release-run entry id: {entry['entry_id']}")
+    print(f"run id: {receipt['run_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
 
 def _load_verifier_distribution_sources(args: argparse.Namespace) -> dict[str, object]:
     return {
@@ -16306,6 +16452,55 @@ def build_parser() -> argparse.ArgumentParser:
     _add_state_args(go_verifier_build_append)
     go_verifier_build_append.set_defaults(func=cmd_go_verifier_build_append)
 
+    def _add_go_verifier_release_run_sources(parser: argparse.ArgumentParser, include_receipt: bool = False) -> None:
+        if include_receipt:
+            parser.add_argument("receipt")
+        parser.add_argument("verifier_release")
+        parser.add_argument("build_attestation")
+        parser.add_argument("--conformance-report")
+        parser.add_argument("--standards-package")
+        parser.add_argument("--root", default=".")
+        parser.add_argument("--binary")
+        parser.add_argument("--key")
+
+    def _add_go_verifier_release_run_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--workflow-path", default=".github/workflows/go-verifier.yml")
+        parser.add_argument("--provider", default="github-actions")
+        parser.add_argument("--workflow-ref", default=".github/workflows/go-verifier.yml")
+        parser.add_argument("--workflow-run-id", required=True)
+        parser.add_argument("--workflow-run-url")
+        parser.add_argument("--run-attempt", type=int, default=1)
+        parser.add_argument("--commit-sha", required=True)
+        parser.add_argument("--branch-ref", default="refs/heads/main")
+        parser.add_argument("--trigger-ref", default="workflow_dispatch")
+        parser.add_argument("--runner-ref", default="github-hosted:ubuntu-latest")
+        parser.add_argument("--status", default="completed")
+        parser.add_argument("--conclusion", default="success")
+        parser.add_argument("--started-at")
+        parser.add_argument("--completed-at")
+        parser.add_argument("--artifact", action="append", default=[], help="repeatable name,path[,kind] artifact record")
+        parser.add_argument("--check", action="append", default=[], help="repeatable name,status,conclusion[,log_ref] check record")
+        parser.add_argument("--hosted-provenance-ref")
+        parser.add_argument("--hosted-provenance-hash")
+        parser.add_argument("--oidc-issuer")
+        parser.add_argument("--oidc-subject")
+        parser.add_argument("--generated-at")
+        parser.add_argument("--out", default="artifacts/go-verifier-release-run.json")
+
+    go_verifier_release_run = subparsers.add_parser("go-verifier-release-run", help="write a signed Go verifier release workflow-run receipt")
+    _add_go_verifier_release_run_sources(go_verifier_release_run)
+    _add_go_verifier_release_run_fields(go_verifier_release_run)
+    go_verifier_release_run.set_defaults(func=cmd_go_verifier_release_run)
+
+    go_verifier_release_run_verify = subparsers.add_parser("go-verifier-release-run-verify", help="verify a signed Go verifier release workflow-run receipt")
+    _add_go_verifier_release_run_sources(go_verifier_release_run_verify, include_receipt=True)
+    go_verifier_release_run_verify.set_defaults(func=cmd_go_verifier_release_run_verify)
+
+    go_verifier_release_run_append = subparsers.add_parser("go-verifier-release-run-append", help="append a Go verifier release workflow-run receipt as chain evidence")
+    _add_go_verifier_release_run_sources(go_verifier_release_run_append, include_receipt=True)
+    go_verifier_release_run_append.add_argument("--out", default="artifacts/go-verifier-release-run-entry.json")
+    _add_state_args(go_verifier_release_run_append)
+    go_verifier_release_run_append.set_defaults(func=cmd_go_verifier_release_run_append)
     def _add_verifier_distribution_sources(parser: argparse.ArgumentParser, include_receipt: bool = False) -> None:
         if include_receipt:
             parser.add_argument("receipt")
