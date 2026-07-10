@@ -20,6 +20,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/production-trust-v0.1.md",
     "docs/specs/roadmap-audit-v0.1.md",
     "docs/specs/design-partner-pilot-v0.1.md",
+    "docs/specs/own-compliance-dossier-v0.1.md",
     "docs/specs/external-evidence-manifest-v0.1.md",
     "docs/specs/anchor-provider-receipt-v0.1.md",
     "docs/specs/otel-ingest-v0.1.md",
@@ -147,6 +148,17 @@ CONFORMANCE_TARGETS = (
             "python -m trustai design-partner-dossier-verify artifacts/design-partner-dossier.json --root .",
             "python -m trustai design-partner-dossier-append artifacts/design-partner-dossier.json --root . --state .trustai/design-partner-demo/evidence-chain.json --tenant design-partner-local --out artifacts/design-partner-dossier-entry.json",
             "python -m unittest tests.test_design_partner",
+        ],
+    },
+    {
+        "id": "trustai-own-compliance-dossiers",
+        "description": "TrustAI own compliance dossiers bind SOC 2 Type II and ISO/IEC 42001 readiness/external-certification claims to proof-pack, compliance mapper, standards, roadmap audit, trust authority, WORM retention source artifacts, and no-sensitive-data limits.",
+        "reference": "src/trustai/own_compliance.py",
+        "commands": [
+            "python -m trustai own-compliance-dossier --root . --dossier-ref dossier:trustai/own-compliance-readiness --producer-ref oidc:trustai.example/compliance-ops --scope-ref scope:trustai/company --out artifacts/own-compliance-dossier.json",
+            "python -m trustai own-compliance-dossier-verify artifacts/own-compliance-dossier.json --root .",
+            "python -m trustai own-compliance-dossier-append artifacts/own-compliance-dossier.json --root . --state .trustai/own-compliance-demo/evidence-chain.json --tenant own-compliance-local --out artifacts/own-compliance-dossier-entry.json",
+            "python -m unittest tests.test_own_compliance",
         ],
     },
     {
@@ -1152,6 +1164,7 @@ def build_standards_submission(
             "Publish anchor provider receipt format for external/public chain-root anchoring evidence.",
             "Publish deployment manifest format for BYOC/self-hosted scaffold verification.",
             "Publish design-partner pilot dossier format for Phase 1 partner count, signed value, external scrutiny, and readiness/external-evidence separation.",
+            "Publish TrustAI own compliance dossier format for SOC 2 Type II and ISO/IEC 42001 readiness/external-certification separation.",
             "Publish collector topology manifest format for ingestion/MCP/control-plane verification.",
             "Publish MCP gateway production authority dossier format for proxy fleet, session auth, replay, immutable audit, scheduler, policy, network, KMS, and observability authority evidence."
             "Publish signed verifier release manifest and conformance-bound release verification commands.",

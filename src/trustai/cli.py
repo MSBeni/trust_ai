@@ -268,6 +268,15 @@ from .design_partner import (
     verify_design_partner_dossier,
     write_design_partner_dossier,
 )
+from .own_compliance import (
+    OWN_COMPLIANCE_MODES,
+    append_own_compliance_dossier,
+    build_own_compliance_dossier,
+    load_own_compliance_dossier,
+    parse_own_compliance_evidence,
+    verify_own_compliance_dossier,
+    write_own_compliance_dossier,
+)
 from .onboarding import (
     GATEWAY_MODES,
     SDK_SCOPES,
@@ -1352,6 +1361,80 @@ def cmd_design_partner_dossier_append(args: argparse.Namespace) -> int:
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
+
+def cmd_own_compliance_dossier(args: argparse.Namespace) -> int:
+    try:
+        evidence = [parse_own_compliance_evidence(value) for value in args.certification_evidence]
+        dossier = build_own_compliance_dossier(
+            args.root,
+            dossier_ref=args.dossier_ref,
+            producer_ref=args.producer_ref,
+            scope_ref=args.scope_ref,
+            evidence=evidence,
+            mode=args.mode,
+            environment=args.environment,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_own_compliance_dossier(dossier, root=args.root, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"own compliance dossier generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("own compliance dossier generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_own_compliance_dossier(args.out, dossier)
+    print(f"own compliance dossier: {args.out}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"mode: {dossier['mode']}")
+    print(f"required certification evidence: {dossier['metrics']['required_certification_evidence_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_own_compliance_dossier_verify(args: argparse.Namespace) -> int:
+    try:
+        dossier = load_own_compliance_dossier(args.dossier)
+        result = verify_own_compliance_dossier(dossier, root=args.root, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"own compliance dossier verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        print(f"verified own compliance dossier: {args.dossier}")
+        print(f"dossier id: {dossier['dossier_id']}")
+        print(f"mode: {dossier['mode']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"own compliance dossier verification failed: {args.dossier}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_own_compliance_dossier_append(args: argparse.Namespace) -> int:
+    try:
+        dossier = load_own_compliance_dossier(args.dossier)
+    except (OSError, ValueError) as exc:
+        print(f"own compliance dossier append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_own_compliance_dossier(chain, dossier, root=args.root, key=args.key)
+    except ValueError as exc:
+        print(f"own compliance dossier append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"own compliance dossier entry: {args.out}")
+    print(f"own compliance dossier entry id: {entry['entry_id']}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
 def cmd_vertical_pack(args: argparse.Namespace) -> int:
     try:
         pack = build_vertical_pack(
@@ -17002,6 +17085,32 @@ def build_parser() -> argparse.ArgumentParser:
     design_partner_append.add_argument("--key")
     _add_state_args(design_partner_append)
     design_partner_append.set_defaults(func=cmd_design_partner_dossier_append)
+    own_compliance = subparsers.add_parser("own-compliance-dossier", help="write a signed TrustAI own SOC 2/ISO 42001 compliance dossier")
+    own_compliance.add_argument("--root", default=".")
+    own_compliance.add_argument("--dossier-ref", required=True)
+    own_compliance.add_argument("--producer-ref", required=True)
+    own_compliance.add_argument("--scope-ref", required=True)
+    own_compliance.add_argument("--certification-evidence", action="append", default=[], help="kind,evidence_ref,evidence_hash,issuer,issued_at[,expires_at]; repeatable")
+    own_compliance.add_argument("--mode", choices=sorted(OWN_COMPLIANCE_MODES), default="readiness")
+    own_compliance.add_argument("--environment", default="local")
+    own_compliance.add_argument("--generated-at")
+    own_compliance.add_argument("--out", default="artifacts/own-compliance-dossier.json")
+    own_compliance.add_argument("--key")
+    own_compliance.set_defaults(func=cmd_own_compliance_dossier)
+
+    own_compliance_verify = subparsers.add_parser("own-compliance-dossier-verify", help="verify a signed TrustAI own compliance dossier")
+    own_compliance_verify.add_argument("dossier")
+    own_compliance_verify.add_argument("--root", default=".")
+    own_compliance_verify.add_argument("--key")
+    own_compliance_verify.set_defaults(func=cmd_own_compliance_dossier_verify)
+
+    own_compliance_append = subparsers.add_parser("own-compliance-dossier-append", help="append a verified TrustAI own compliance dossier as chain evidence")
+    own_compliance_append.add_argument("dossier")
+    own_compliance_append.add_argument("--root", default=".")
+    own_compliance_append.add_argument("--out", default="artifacts/own-compliance-dossier-entry.json")
+    own_compliance_append.add_argument("--key")
+    _add_state_args(own_compliance_append)
+    own_compliance_append.set_defaults(func=cmd_own_compliance_dossier_append)
     vertical_pack = subparsers.add_parser("vertical-pack", help="write a signed vertical pack receipt")
     vertical_pack.add_argument("--root", default=".")
     vertical_pack.add_argument("--pack-ref", required=True)

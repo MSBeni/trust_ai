@@ -28,6 +28,8 @@ class StandardsSubmissionTests(unittest.TestCase):
         self.assertIn("proof-pack-v0.1.md", markdown)
         self.assertIn("design-partner-pilot-v0.1.md", markdown)
         self.assertIn("design-partner-pilot-dossiers", markdown)
+        self.assertIn("own-compliance-dossier-v0.1.md", markdown)
+        self.assertIn("trustai-own-compliance-dossiers", markdown)
 
     def test_standards_submission_detects_spec_hash_tamper(self):
         package = build_standards_submission(ROOT)
