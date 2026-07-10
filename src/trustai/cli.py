@@ -1173,6 +1173,7 @@ from .verifier_release_authority import (
     append_verifier_release_authority_dossier,
     build_verifier_release_authority_dossier,
     load_verifier_release_authority_dossier,
+    parse_verifier_release_authority_artifact_arg,
     parse_verifier_release_authority_evidence_arg,
     verify_verifier_release_authority_dossier,
     write_verifier_release_authority_dossier,
@@ -7457,6 +7458,7 @@ def cmd_verifier_release_authority(args: argparse.Namespace) -> int:
     try:
         sources = _load_verifier_release_authority_sources(args)
         evidence = [parse_verifier_release_authority_evidence_arg(value) for value in args.authority_evidence]
+        artifacts = [parse_verifier_release_authority_artifact_arg(value) for value in (args.authority_artifact or [])]
         dossier = build_verifier_release_authority_dossier(
             sources["public_release_receipt"],
             **_verifier_release_authority_source_kwargs(sources, args),
@@ -7466,6 +7468,7 @@ def cmd_verifier_release_authority(args: argparse.Namespace) -> int:
             authority_ref=args.authority_ref,
             producer_ref=args.producer_ref,
             authority_evidence=evidence,
+            authority_artifacts=artifacts,
             generated_at=args.generated_at,
         )
         result = verify_verifier_release_authority_dossier(
@@ -7474,6 +7477,7 @@ def cmd_verifier_release_authority(args: argparse.Namespace) -> int:
             require_complete=args.require_complete,
             require_fresh=args.require_fresh,
             now=args.now,
+            authority_artifacts=artifacts or None,
             **_verifier_release_authority_source_kwargs(sources, args),
         )
     except (OSError, ValueError) as exc:
@@ -7498,6 +7502,7 @@ def cmd_verifier_release_authority_verify(args: argparse.Namespace) -> int:
     try:
         dossier = load_verifier_release_authority_dossier(args.dossier)
         sources = _load_verifier_release_authority_sources(args)
+        artifacts = [parse_verifier_release_authority_artifact_arg(value) for value in (args.authority_artifact or [])]
     except (OSError, ValueError) as exc:
         print(f"verifier release authority dossier verification failed: {exc}", file=sys.stderr)
         return 1
@@ -7507,6 +7512,7 @@ def cmd_verifier_release_authority_verify(args: argparse.Namespace) -> int:
         require_complete=args.require_complete,
         require_fresh=args.require_fresh,
         now=args.now,
+        authority_artifacts=artifacts or None,
         **_verifier_release_authority_source_kwargs(sources, args),
     )
     if result.ok:
@@ -7526,6 +7532,7 @@ def cmd_verifier_release_authority_append(args: argparse.Namespace) -> int:
     try:
         dossier = load_verifier_release_authority_dossier(args.dossier)
         sources = _load_verifier_release_authority_sources(args)
+        artifacts = [parse_verifier_release_authority_artifact_arg(value) for value in (args.authority_artifact or [])]
         entry = append_verifier_release_authority_dossier(
             chain,
             dossier,
@@ -7533,6 +7540,7 @@ def cmd_verifier_release_authority_append(args: argparse.Namespace) -> int:
             require_complete=args.require_complete,
             require_fresh=args.require_fresh,
             now=args.now,
+            authority_artifacts=artifacts or None,
             **_verifier_release_authority_source_kwargs(sources, args),
         )
     except (OSError, ValueError) as exc:
@@ -21682,6 +21690,7 @@ def build_parser() -> argparse.ArgumentParser:
         parser.add_argument("--authority-ref", required=True)
         parser.add_argument("--producer-ref", required=True)
         parser.add_argument("--authority-evidence", action="append", default=[])
+        parser.add_argument("--authority-artifact", action="append", default=[], help="repeatable requirement_id,path[,evidence_ref] retained evidence file to hash-replay")
         parser.add_argument("--generated-at")
         parser.add_argument("--require-complete", action="store_true")
         parser.add_argument("--require-fresh", action="store_true")
@@ -21695,6 +21704,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     verifier_release_authority_verify = subparsers.add_parser("verifier-release-authority-verify", help="verify a signed verifier public release production authority dossier")
     _add_verifier_release_authority_sources(verifier_release_authority_verify, include_dossier=True)
+    verifier_release_authority_verify.add_argument("--authority-artifact", action="append", default=[], help="repeatable requirement_id,path[,evidence_ref] retained evidence file to hash-replay")
     verifier_release_authority_verify.add_argument("--require-complete", action="store_true")
     verifier_release_authority_verify.add_argument("--require-fresh", action="store_true")
     verifier_release_authority_verify.add_argument("--now")
@@ -21702,6 +21712,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     verifier_release_authority_append = subparsers.add_parser("verifier-release-authority-append", help="append a verified verifier public release authority dossier")
     _add_verifier_release_authority_sources(verifier_release_authority_append, include_dossier=True)
+    verifier_release_authority_append.add_argument("--authority-artifact", action="append", default=[], help="repeatable requirement_id,path[,evidence_ref] retained evidence file to hash-replay")
     verifier_release_authority_append.add_argument("--require-complete", action="store_true")
     verifier_release_authority_append.add_argument("--require-fresh", action="store_true")
     verifier_release_authority_append.add_argument("--now")

@@ -10,7 +10,7 @@ Evidence entry type: `verifier.public_release_authority_recorded`
 
 Verifier public release authority dossiers bind a signed verifier public release receipt to external release-authority evidence. The dossier is intended for a third-party reviewer who needs to confirm that a public verifier release is connected to provider workflow, release API, artifact manifest, SBOM/provenance/signature, transparency-log, audit-log, source publication, credential custody, and replay evidence without trusting a hosted TrustAI account.
 
-The dossier does not call provider APIs by itself. It hashes and signs retained provider-owned exports, customer-retained release evidence, and hosted-service receipts so they can be replayed offline.
+The dossier does not call provider APIs by itself. It hashes and signs retained provider-owned exports, customer-retained release evidence, hosted-service receipts, and repo-relative retained authority artifacts so they can be replayed offline. A retained artifact hash must match the matching `authority_evidence.evidence_hash`.
 
 ## Modes
 
@@ -42,10 +42,12 @@ A verifier public release authority dossier contains:
 - `mode`: one of the supported modes above.
 - `environment`, `dossier_ref`, `authority_ref`, and `producer_ref`.
 - `public_release_binding`: hash-bound summary of the verified public release receipt and its source receipts.
-- `requirements`: the fixed production authority checklist.
+- `required_production_authority`: the fixed production authority checklist.
 - `authority_evidence`: retained evidence refs, hashes, kinds, issuers, subjects, source URIs, and freshness windows.
+- `authority_artifacts`: repo-relative retained evidence artifacts, their sizes, SHA-256 refs, and matching evidence IDs.
 - `summary`: coverage counts, freshness counts, missing requirements, and stale or undated evidence refs.
-- `controls`: pass/defer/fail controls for source replay, checklist coverage, evidence hash shape, freshness, and production claim gating.
+- `artifact_summary`: retained artifact counts, covered requirement IDs, and aggregate artifact hash root.
+- `controls`: pass/defer/fail controls for source replay, retained artifact replay, checklist coverage, evidence hash shape, freshness, and production claim gating.
 - `limitations`: explicit statement of what is not proven locally.
 - `signature`: local reference signature over the canonical dossier body.
 
@@ -58,27 +60,31 @@ Verification MUST:
 3. Recompute and compare `public_release_binding` exactly.
 4. Require the production authority checklist to match this specification.
 5. Require every authority evidence item to declare a known `requirement_id`, accepted `authority_kind`, non-empty `evidence_ref`, `evidence_hash`, and description.
-6. Treat `issued_at` and `expires_at` as freshness metadata when supplied.
-7. Reject `--require-complete` when any checklist requirement lacks evidence.
-8. Reject `--require-fresh` when any evidence item is stale or missing a freshness window.
-9. Reject `production-dossier` unless every requirement is covered and every evidence item is fresh.
-10. Reject raw secret material; credentials must be represented by redacted refs such as `env:RELEASE_TOKEN` or KMS/HSM refs.
+6. Replay every retained `authority_artifacts` path from the supplied root, reject absolute or parent-traversal paths, and require the file SHA-256 to match the matching authority evidence hash.
+7. Recompute and compare `artifact_summary` exactly.
+8. When `--authority-artifact` is supplied during verification or append, require the supplied retained paths to match the dossier's stored artifact metadata.
+9. Treat `issued_at` and `expires_at` as freshness metadata when supplied.
+10. Reject `--require-complete` when any checklist requirement lacks evidence.
+11. Reject `--require-fresh` when any evidence item is stale or missing a freshness window.
+12. Reject `production-dossier` unless every requirement is covered and every evidence item is fresh.
+13. Reject raw secret material; credentials must be represented by redacted refs such as `env:RELEASE_TOKEN` or KMS/HSM refs.
 
 ## CLI Examples
 
 Create a provider dossier with one retained provider workflow export:
 
 ```powershell
-python -m trustai verifier-release-authority artifacts/verifier-public-release.json artifacts/verifier-release.json artifacts/verifier-distribution.json artifacts/go-verifier-build-attestation.json artifacts/go-verifier-release-run.json artifacts/go-verifier-release-run-bundle.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --distribution-bundle artifacts/verifier-source-bundle.zip --distribution-sbom artifacts/verifier-source-sbom.json --distribution-provenance artifacts/verifier-source-provenance.json --distribution-signature artifacts/verifier-source-signature.json --binary dist/trustai-verify-linux-amd64 --environment release-prod --dossier-ref dossier:verifier-release-authority/v0.1.0 --authority-ref authority:verifier-release/github/v0.1.0 --producer-ref oidc:trustai.example/verifier-release-authority-worker --authority-evidence "completed-provider-workflow-run,ci-run,github-actions-run:1234567890,sha256:verifier-release-provider-workflow-run,Provider workflow run export;issuer=GitHub Actions;subject=trustai verifier release v0.1.0;source_uri=https://github.com/MSBeni/trust_ai/actions/runs/1234567890;issued_at=2026-07-16T00:10:00Z;expires_at=2026-07-23T00:10:00Z" --generated-at 2026-07-16T00:12:00Z --out artifacts/verifier-release-authority.json
+$verifierWorkflowAuthorityHash = "sha256:$((Get-FileHash examples/aitrade/external-evidence/go-verifier-workflow-run.json -Algorithm SHA256).Hash.ToLower())"
+python -m trustai verifier-release-authority artifacts/verifier-public-release.json artifacts/verifier-release.json artifacts/verifier-distribution.json artifacts/go-verifier-build-attestation.json artifacts/go-verifier-release-run.json artifacts/go-verifier-release-run-bundle.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --distribution-bundle artifacts/verifier-source-bundle.zip --distribution-sbom artifacts/verifier-source-sbom.json --distribution-provenance artifacts/verifier-source-provenance.json --distribution-signature artifacts/verifier-source-signature.json --binary dist/trustai-verify-linux-amd64 --environment release-prod --dossier-ref dossier:verifier-release-authority/v0.1.0 --authority-ref authority:verifier-release/github/v0.1.0 --producer-ref oidc:trustai.example/verifier-release-authority-worker --authority-evidence "completed-provider-workflow-run,ci-run,github-actions-run:1234567890,$verifierWorkflowAuthorityHash,Provider workflow run export;issuer=GitHub Actions;subject=trustai verifier release v0.1.0;source_uri=https://github.com/MSBeni/trust_ai/actions/runs/1234567890;issued_at=2026-07-16T00:10:00Z;expires_at=2026-07-23T00:10:00Z" --authority-artifact "completed-provider-workflow-run,examples/aitrade/external-evidence/go-verifier-workflow-run.json" --generated-at 2026-07-16T00:12:00Z --out artifacts/verifier-release-authority.json
 ```
 
 Verify and append the dossier:
 
 ```powershell
-python -m trustai verifier-release-authority-verify artifacts/verifier-release-authority.json artifacts/verifier-public-release.json artifacts/verifier-release.json artifacts/verifier-distribution.json artifacts/go-verifier-build-attestation.json artifacts/go-verifier-release-run.json artifacts/go-verifier-release-run-bundle.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --distribution-bundle artifacts/verifier-source-bundle.zip --distribution-sbom artifacts/verifier-source-sbom.json --distribution-provenance artifacts/verifier-source-provenance.json --distribution-signature artifacts/verifier-source-signature.json --binary dist/trustai-verify-linux-amd64
-python -m trustai verifier-release-authority-append artifacts/verifier-release-authority.json artifacts/verifier-public-release.json artifacts/verifier-release.json artifacts/verifier-distribution.json artifacts/go-verifier-build-attestation.json artifacts/go-verifier-release-run.json artifacts/go-verifier-release-run-bundle.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --distribution-bundle artifacts/verifier-source-bundle.zip --distribution-sbom artifacts/verifier-source-sbom.json --distribution-provenance artifacts/verifier-source-provenance.json --distribution-signature artifacts/verifier-source-signature.json --binary dist/trustai-verify-linux-amd64 --state .trustai/verifier-release-authority-demo/evidence-chain.json --tenant verifier-release-authority-local --out artifacts/verifier-release-authority-entry.json
+python -m trustai verifier-release-authority-verify artifacts/verifier-release-authority.json artifacts/verifier-public-release.json artifacts/verifier-release.json artifacts/verifier-distribution.json artifacts/go-verifier-build-attestation.json artifacts/go-verifier-release-run.json artifacts/go-verifier-release-run-bundle.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --distribution-bundle artifacts/verifier-source-bundle.zip --distribution-sbom artifacts/verifier-source-sbom.json --distribution-provenance artifacts/verifier-source-provenance.json --distribution-signature artifacts/verifier-source-signature.json --binary dist/trustai-verify-linux-amd64 --authority-artifact "completed-provider-workflow-run,examples/aitrade/external-evidence/go-verifier-workflow-run.json"
+python -m trustai verifier-release-authority-append artifacts/verifier-release-authority.json artifacts/verifier-public-release.json artifacts/verifier-release.json artifacts/verifier-distribution.json artifacts/go-verifier-build-attestation.json artifacts/go-verifier-release-run.json artifacts/go-verifier-release-run-bundle.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --distribution-bundle artifacts/verifier-source-bundle.zip --distribution-sbom artifacts/verifier-source-sbom.json --distribution-provenance artifacts/verifier-source-provenance.json --distribution-signature artifacts/verifier-source-signature.json --binary dist/trustai-verify-linux-amd64 --authority-artifact "completed-provider-workflow-run,examples/aitrade/external-evidence/go-verifier-workflow-run.json" --state .trustai/verifier-release-authority-demo/evidence-chain.json --tenant verifier-release-authority-local --out artifacts/verifier-release-authority-entry.json
 ```
 
 ## Limitations
 
-This reference format records and verifies supplied evidence. A production claim still requires retained fresh provider-owned workflow exports, release API exports, artifact manifests, transparency-log exports, immutable audit exports, and actual released static binary hashes/signatures from a completed provider workflow or equivalent external build authority.
+This reference format records and verifies supplied evidence, including retained provider workflow export replay when `authority_artifacts` are supplied. A production claim still requires retained fresh provider-owned release API exports, artifact manifests, transparency-log exports, immutable audit exports, and actual released static binary hashes/signatures from a completed provider workflow or equivalent external build authority.

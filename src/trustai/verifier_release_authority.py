@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
+from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
@@ -41,6 +42,7 @@ class VerifierReleaseAuthorityVerification:
     fresh_evidence_count: int = 0
     stale_evidence_count: int = 0
     missing_freshness_count: int = 0
+    replayed_artifact_count: int = 0
 
 
 def load_verifier_release_authority_dossier(path: str | Path) -> dict[str, Any]:
@@ -75,6 +77,16 @@ def parse_verifier_release_authority_evidence_arg(value: str) -> dict[str, Any]:
     return {"requirement_id": requirement_id, "authority_kind": authority_kind, "evidence_ref": evidence_ref, "evidence_hash": evidence_hash, "description": description_parts[0], **metadata}
 
 
+def parse_verifier_release_authority_artifact_arg(value: str) -> dict[str, Any]:
+    parts = [part.strip() for part in value.split(",", 2)]
+    if len(parts) not in {2, 3}:
+        raise ValueError("authority artifact must be requirement_id,path[,evidence_ref]")
+    artifact = {"requirement_id": parts[0], "path": parts[1]}
+    if len(parts) == 3 and parts[2]:
+        artifact["evidence_ref"] = parts[2]
+    return artifact
+
+
 def build_verifier_release_authority_dossier(
     public_release_receipt: dict[str, Any],
     *,
@@ -97,6 +109,7 @@ def build_verifier_release_authority_dossier(
     authority_ref: str,
     producer_ref: str,
     authority_evidence: list[dict[str, Any]] | None = None,
+    authority_artifacts: list[dict[str, Any]] | None = None,
     generated_at: str | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
@@ -131,7 +144,9 @@ def build_verifier_release_authority_dossier(
         raise ValueError("invalid verifier public release source: " + "; ".join(source_result.errors))
 
     evidence_items = [_build_authority_evidence_item(item) for item in (authority_evidence or [])]
+    artifact_items = [_build_authority_artifact(Path(root), item, evidence_items) for item in (authority_artifacts or [])]
     summary = _summary(evidence_items)
+    artifact_summary = _artifact_summary(artifact_items)
     body: dict[str, Any] = {
         "schema": VERIFIER_RELEASE_AUTHORITY_SCHEMA,
         "mode": mode,
@@ -143,8 +158,10 @@ def build_verifier_release_authority_dossier(
         "public_release_binding": _public_release_binding(public_release_receipt),
         "required_production_authority": PRODUCTION_AUTHORITY_REQUIREMENTS,
         "authority_evidence": evidence_items,
+        "authority_artifacts": artifact_items,
         "summary": summary,
-        "controls": _controls(mode, public_release_receipt, evidence_items, summary),
+        "artifact_summary": artifact_summary,
+        "controls": _controls(mode, public_release_receipt, evidence_items, summary, artifact_summary),
         "limitations": [
             "This dossier binds a verified verifier public release receipt to an explicit production-authority evidence checklist.",
             "It records authority references, hashes, freshness windows, and missing live-evidence categories for provider workflow, release API, artifact, transparency-log, audit-log, and credential-custody evidence.",
@@ -175,6 +192,7 @@ def verify_verifier_release_authority_dossier(
     require_complete: bool = False,
     require_fresh: bool = False,
     now: str | None = None,
+    authority_artifacts: list[dict[str, Any]] | None = None,
 ) -> VerifierReleaseAuthorityVerification:
     errors: list[str] = []
     warnings: list[str] = []
@@ -242,9 +260,26 @@ def verify_verifier_release_authority_dossier(
             continue
         freshness_counts[_verify_authority_evidence_item(item, errors, warnings, now=freshness_now, require_fresh=require_fresh)] += 1
 
-    expected_summary = _summary([item for item in evidence if isinstance(item, dict)])
+    evidence_dicts = [item for item in evidence if isinstance(item, dict)]
+    expected_summary = _summary(evidence_dicts)
     if dossier.get("summary") != expected_summary:
         errors.append("verifier release authority summary does not match authority evidence")
+    artifact_items = dossier.get("authority_artifacts", [])
+    if not isinstance(artifact_items, list):
+        errors.append("verifier release authority authority_artifacts must be a list")
+        artifact_items = []
+    replayed_artifact_count = _verify_authority_artifacts(Path(root), artifact_items, evidence_dicts, errors, warnings)
+    expected_artifact_summary = _artifact_summary([item for item in artifact_items if isinstance(item, dict)])
+    if dossier.get("artifact_summary") != expected_artifact_summary:
+        errors.append("verifier release authority artifact_summary does not match authority artifacts")
+    if authority_artifacts is not None:
+        try:
+            expected_artifacts = [_build_authority_artifact(Path(root), item, evidence_dicts) for item in authority_artifacts]
+        except ValueError as exc:
+            errors.append(f"invalid supplied verifier release authority artifact: {exc}")
+            expected_artifacts = []
+        if artifact_items != expected_artifacts:
+            errors.append("verifier release authority authority_artifacts do not match supplied artifact paths")
     missing = expected_summary["missing_requirement_ids"]
     if missing:
         warnings.append("verifier release authority evidence missing for: " + ", ".join(missing))
@@ -266,6 +301,7 @@ def verify_verifier_release_authority_dossier(
         fresh_evidence_count=freshness_counts["fresh"],
         stale_evidence_count=freshness_counts["stale"],
         missing_freshness_count=freshness_counts["missing"],
+        replayed_artifact_count=replayed_artifact_count,
     )
 
 
@@ -302,10 +338,16 @@ def append_verifier_release_authority_dossier(
         "producer_ref": dossier.get("producer_ref"),
         "public_release_binding": dossier.get("public_release_binding"),
         "summary": dossier.get("summary"),
+        "artifact_summary": dossier.get("artifact_summary"),
         "control_summary": _status_summary(dossier.get("controls", [])),
         "authority_evidence": [
             {"requirement_id": item.get("requirement_id"), "authority_kind": item.get("authority_kind"), "evidence_ref": item.get("evidence_ref"), "evidence_hash": item.get("evidence_hash"), "evidence_id": item.get("evidence_id"), "issued_at": item.get("issued_at"), "expires_at": item.get("expires_at")}
             for item in dossier.get("authority_evidence", [])
+            if isinstance(item, dict)
+        ],
+        "authority_artifacts": [
+            {"requirement_id": item.get("requirement_id"), "evidence_ref": item.get("evidence_ref"), "evidence_id": item.get("evidence_id"), "path": item.get("path"), "sha256": item.get("sha256"), "artifact_id": item.get("artifact_id")}
+            for item in dossier.get("authority_artifacts", [])
             if isinstance(item, dict)
         ],
     }
@@ -459,6 +501,74 @@ def _verify_authority_evidence_item(item: dict[str, Any], errors: list[str], war
     return freshness_status
 
 
+def _build_authority_artifact(root: Path, item: dict[str, Any], evidence_items: list[dict[str, Any]]) -> dict[str, Any]:
+    if not isinstance(item, dict):
+        raise ValueError("authority artifact must be an object")
+    requirement_id = str(item.get("requirement_id") or "")
+    relative_path = str(item.get("path") or "").replace("\\", "/")
+    evidence_ref = str(item.get("evidence_ref") or "")
+    if requirement_id not in PRODUCTION_AUTHORITY_REQUIREMENT_IDS:
+        raise ValueError(f"unsupported verifier release authority artifact requirement: {requirement_id}")
+    _require_text(relative_path, "authority_artifact.path")
+    path_obj = Path(relative_path)
+    if path_obj.is_absolute() or ".." in path_obj.parts:
+        raise ValueError("authority artifact path must be repository-relative")
+    matching = [evidence for evidence in evidence_items if evidence.get("requirement_id") == requirement_id]
+    if evidence_ref:
+        matching = [evidence for evidence in matching if evidence.get("evidence_ref") == evidence_ref]
+    if not matching:
+        raise ValueError(f"authority artifact has no matching evidence item: {requirement_id}")
+    if len(matching) > 1:
+        raise ValueError(f"authority artifact evidence_ref is required when multiple evidence items cover {requirement_id}")
+    evidence = matching[0]
+    target = root / relative_path
+    if not target.is_file():
+        raise ValueError(f"authority artifact file missing: {relative_path}")
+    data = target.read_bytes()
+    sha = "sha256:" + sha256(data).hexdigest()
+    if sha != evidence.get("evidence_hash"):
+        raise ValueError(f"authority artifact hash does not match authority evidence: {requirement_id}")
+    body = {
+        "requirement_id": requirement_id,
+        "evidence_ref": evidence.get("evidence_ref"),
+        "evidence_id": evidence.get("evidence_id"),
+        "path": relative_path,
+        "sha256": sha,
+        "size_bytes": len(data),
+    }
+    return {**body, "artifact_id": content_hash(body)}
+
+
+def _verify_authority_artifacts(root: Path, artifacts: list[Any], evidence_items: list[dict[str, Any]], errors: list[str], warnings: list[str]) -> int:
+    replayed = 0
+    for index, item in enumerate(artifacts):
+        if not isinstance(item, dict):
+            errors.append(f"verifier release authority artifact {index + 1} must be an object")
+            continue
+        try:
+            expected = _build_authority_artifact(root, item, evidence_items)
+        except ValueError as exc:
+            errors.append(f"invalid verifier release authority artifact {index + 1}: {exc}")
+            continue
+        if item != expected:
+            errors.append(f"verifier release authority artifact {index + 1} does not match replayed file metadata")
+            continue
+        replayed += 1
+    if not artifacts:
+        warnings.append("verifier release authority dossier has no replayable authority evidence artifacts")
+    return replayed
+
+
+def _artifact_summary(artifacts: list[dict[str, Any]]) -> dict[str, Any]:
+    requirement_ids = sorted({str(item.get("requirement_id")) for item in artifacts if item.get("requirement_id")})
+    return {
+        "artifact_count": len(artifacts),
+        "requirement_count": len(requirement_ids),
+        "requirement_ids": requirement_ids,
+        "artifact_hash_root": content_hash([item.get("sha256") for item in artifacts]),
+    }
+
+
 def _verify_required_authority(value: Any, errors: list[str]) -> None:
     if value != PRODUCTION_AUTHORITY_REQUIREMENTS:
         errors.append("verifier release authority required_production_authority does not match v0.1 requirements")
@@ -481,16 +591,18 @@ def _summary(evidence: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _controls(mode: str, receipt: dict[str, Any], evidence: list[dict[str, Any]], summary: dict[str, Any]) -> list[dict[str, Any]]:
+def _controls(mode: str, receipt: dict[str, Any], evidence: list[dict[str, Any]], summary: dict[str, Any], artifact_summary: dict[str, Any]) -> list[dict[str, Any]]:
     provider = receipt.get("provider_evidence", {}) if isinstance(receipt.get("provider_evidence"), dict) else {}
     provider_exports = all(provider.get(field) for field in ("workflow_run_export_hash", "release_api_export_hash", "artifact_manifest_hash"))
     audit_bound = bool(provider.get("audit_log_ref") and provider.get("audit_log_root") and provider.get("audit_log_size"))
     transparency_bound = bool(provider.get("transparency_log_ref") and provider.get("transparency_log_root"))
+    artifact_count = int(artifact_summary.get("artifact_count", 0) or 0)
     return [
         {"name": "public_release_receipt_replayed", "status": "passed" if receipt.get("release_publication_id") else "failed", "detail": "The authority dossier binds a signed verifier public release receipt."},
         {"name": "release_source_graph_bound", "status": "passed" if receipt.get("source") else "failed", "detail": "Verifier release, source distribution, Go build, release-run, release-run bundle, conformance, and standards sources are hash-bound."},
         {"name": "provider_release_exports_bound", "status": "passed" if provider_exports and audit_bound and transparency_bound else "deferred", "detail": "Provider workflow, release API, artifact manifest, audit-log, and transparency-log evidence references are present when available."},
         {"name": "authority_evidence_manifested", "status": "passed" if evidence else "deferred", "detail": "External release authority evidence references are hash-bound when supplied."},
+        {"name": "authority_artifacts_replayed", "status": "passed" if artifact_count else "deferred", "detail": f"replayed={artifact_count} retained release authority artifacts hash-match supplied source files."},
         {"name": "freshness_windows_tracked", "status": "passed" if evidence and summary["freshness_window_count"] == len(evidence) else "deferred", "detail": "Issued/expires freshness windows are tracked for every supplied authority item when available."},
         {"name": "complete_release_authority", "status": "passed" if summary["missing_requirement_count"] == 0 else "deferred", "detail": "Every verifier release production authority requirement must be covered before this can claim live public release authority."},
         {"name": "production_claim_limited", "status": "passed" if mode != "production-dossier" or summary["missing_requirement_count"] == 0 else "failed", "detail": "Non-production dossier modes explicitly avoid claiming live release-provider, artifact, transparency-log, audit-log, and credential-custody authority."},

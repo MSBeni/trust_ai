@@ -56,6 +56,10 @@ class StandardsSubmissionTests(unittest.TestCase):
         self.assertIn("retained authority artifact replay", byoc_target["description"])
         self.assertTrue(any("--authority-artifact" in command for command in byoc_target["commands"]))
         self.assertTrue(any("byoc-network-policy-authority-export.json" in command for command in byoc_target["commands"]))
+        verifier_release_authority_target = next(target for target in package["conformance_targets"] if target["id"] == "verifier-public-release-authority-dossiers")
+        self.assertIn("retained provider workflow export replay", verifier_release_authority_target["description"])
+        self.assertTrue(any("--authority-artifact" in command for command in verifier_release_authority_target["commands"]))
+        self.assertTrue(any("go-verifier-workflow-run.json" in command for command in verifier_release_authority_target["commands"]))
 
     def test_standards_submission_detects_spec_hash_tamper(self):
         package = build_standards_submission(ROOT)
