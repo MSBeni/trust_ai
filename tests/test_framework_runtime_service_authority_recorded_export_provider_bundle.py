@@ -21,6 +21,8 @@ from trustai.framework_runtime_service_authority_recorded_export_provider_bundle
     FRAMEWORK_RUNTIME_SERVICE_AUTHORITY_RECORDED_EXPORT_PROVIDER_BUNDLE_SCHEMA,
     append_framework_runtime_service_authority_recorded_export_provider_bundle,
     build_framework_runtime_service_authority_recorded_export_provider_bundle,
+    extract_framework_runtime_service_authority_recorded_export_provider_bundle_sources,
+    render_framework_runtime_service_authority_recorded_export_provider_bundle_markdown,
     verify_framework_runtime_service_authority_recorded_export_provider_bundle,
 )
 from trustai.framework_runtime_service_authority_recorded_export_worker import (
@@ -120,6 +122,29 @@ class FrameworkRuntimeServiceAuthorityRecordedExportProviderBundleTests(unittest
         self.assertEqual(bundle["bundle_id"], entry["payload"]["bundle_id"])
         self.assertEqual({"passed": 3}, entry["payload"]["control_summary"])
 
+    def test_framework_runtime_service_authority_recorded_export_provider_bundle_renders_and_extracts_sources(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            bundle, _, _, _, _, paths = self._bundle(tmp)
+            markdown = render_framework_runtime_service_authority_recorded_export_provider_bundle_markdown(bundle)
+            extract_dir = tmp / "bundle-sources"
+            extracted = extract_framework_runtime_service_authority_recorded_export_provider_bundle_sources(bundle, extract_dir)
+
+            self.assertIn("TrustAI Framework Runtime Service Authority Recorded Export Provider Bundle", markdown)
+            self.assertIn("Embedded source artifacts: 18", markdown)
+            self.assertEqual(len(RECORDED_EXPORT_ARTIFACTS), len(extracted))
+            authority_extract = extract_dir / "authority_attestation.json"
+            self.assertTrue(authority_extract.exists())
+            self.assertEqual(json.loads(authority_extract.read_text(encoding="utf-8")), bundle["sources"]["authority_attestation"])
+            self.assertEqual(Path(paths["authority_attestation"]).read_bytes(), authority_extract.read_bytes())
+            with self.assertRaisesRegex(ValueError, "already exists"):
+                extract_framework_runtime_service_authority_recorded_export_provider_bundle_sources(bundle, extract_dir)
+            overwritten = extract_framework_runtime_service_authority_recorded_export_provider_bundle_sources(
+                bundle,
+                extract_dir,
+                overwrite=True,
+            )
+            self.assertEqual(len(RECORDED_EXPORT_ARTIFACTS), len(overwritten))
     def test_framework_runtime_service_authority_recorded_export_provider_bundle_detects_source_tamper(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)
@@ -172,6 +197,9 @@ class FrameworkRuntimeServiceAuthorityRecordedExportProviderBundleTests(unittest
             recorded_export_path = tmp / "framework-runtime-service-authority-recorded-export.json"
             bundle_path = tmp / "framework-runtime-service-authority-recorded-export-provider-bundle.json"
             entry_path = tmp / "framework-runtime-service-authority-recorded-export-provider-bundle-entry.json"
+            markdown_path = tmp / "framework-runtime-service-authority-recorded-export-provider-bundle.md"
+            render_path = tmp / "framework-runtime-service-authority-recorded-export-provider-bundle-rendered.md"
+            extract_dir = tmp / "framework-runtime-service-authority-recorded-export-provider-bundle-sources"
             state_path = tmp / "evidence-chain.json"
             write_framework_runtime_service_authority_recorded_export_provider_receipt(receipt_path, receipt)
             _write_json(provider_export_path, provider_export)
@@ -204,6 +232,8 @@ class FrameworkRuntimeServiceAuthorityRecordedExportProviderBundleTests(unittest
                     "2026-07-09T01:16:00Z",
                     "--out",
                     str(bundle_path),
+                    "--markdown",
+                    str(markdown_path),
                 ],
                 cwd=ROOT,
                 env=env,
@@ -213,6 +243,34 @@ class FrameworkRuntimeServiceAuthorityRecordedExportProviderBundleTests(unittest
             )
             subprocess.run(
                 base + ["framework-runtime-service-authority-recorded-export-provider-bundle-verify", str(bundle_path)],
+                cwd=ROOT,
+                env=env,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            subprocess.run(
+                base
+                + [
+                    "framework-runtime-service-authority-recorded-export-provider-bundle-render",
+                    str(bundle_path),
+                    "--out",
+                    str(render_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            subprocess.run(
+                base
+                + [
+                    "framework-runtime-service-authority-recorded-export-provider-bundle-extract",
+                    str(bundle_path),
+                    "--out-dir",
+                    str(extract_dir),
+                ],
                 cwd=ROOT,
                 env=env,
                 check=True,
@@ -239,10 +297,18 @@ class FrameworkRuntimeServiceAuthorityRecordedExportProviderBundleTests(unittest
             )
             bundle = json.loads(bundle_path.read_text(encoding="utf-8"))
             entry = json.loads(entry_path.read_text(encoding="utf-8"))
+            markdown_exists = markdown_path.exists()
+            render_exists = render_path.exists()
+            rendered_markdown = render_path.read_text(encoding="utf-8")
+            extracted_authority_exists = (extract_dir / "authority_attestation.json").exists()
 
         self.assertEqual(FRAMEWORK_RUNTIME_SERVICE_AUTHORITY_RECORDED_EXPORT_PROVIDER_BUNDLE_SCHEMA, bundle["schema"])
         self.assertEqual(FRAMEWORK_RUNTIME_SERVICE_AUTHORITY_RECORDED_EXPORT_PROVIDER_BUNDLE_ENTRY_TYPE, entry["entry_type"])
         self.assertEqual(bundle["bundle_id"], entry["payload"]["bundle_id"])
+        self.assertTrue(markdown_exists)
+        self.assertTrue(render_exists)
+        self.assertIn("Embedded source artifacts: 18", rendered_markdown)
+        self.assertTrue(extracted_authority_exists)
 
 
 if __name__ == "__main__":

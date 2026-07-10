@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import binascii
 import hashlib
 import json
 from dataclasses import dataclass
@@ -321,6 +322,154 @@ def verify_framework_runtime_service_authority_recorded_export_provider_bundle(
     return FrameworkRuntimeServiceAuthorityRecordedExportProviderBundleVerification(ok=not errors, errors=errors, warnings=warnings)
 
 
+def write_framework_runtime_service_authority_recorded_export_provider_bundle_markdown(
+    path: str | Path, bundle: dict[str, Any]
+) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_framework_runtime_service_authority_recorded_export_provider_bundle_markdown(bundle), encoding="utf-8")
+
+
+def render_framework_runtime_service_authority_recorded_export_provider_bundle_markdown(bundle: dict[str, Any]) -> str:
+    source = bundle.get("source", {}) if isinstance(bundle.get("source"), dict) else {}
+    summary = bundle.get("summary", {}) if isinstance(bundle.get("summary"), dict) else {}
+    options = bundle.get("verification_options", {}) if isinstance(bundle.get("verification_options"), dict) else {}
+    controls = bundle.get("controls", []) if isinstance(bundle.get("controls"), list) else []
+    artifacts = bundle.get("source_artifacts", []) if isinstance(bundle.get("source_artifacts"), list) else []
+    control_rows = "\n".join(
+        "| {name} | {status} | {detail} |".format(
+            name=_markdown_cell(control.get("name", "")),
+            status=_markdown_cell(control.get("status", "")),
+            detail=_markdown_cell(control.get("detail", "")),
+        )
+        for control in controls
+        if isinstance(control, dict)
+    )
+    artifact_rows = "\n".join(
+        "| {name} | {artifact_type} | {size} | `{sha}` | `{content_hash}` |".format(
+            name=_markdown_cell(artifact.get("name", "")),
+            artifact_type=_markdown_cell(artifact.get("artifact_type", "")),
+            size=artifact.get("size_bytes", 0),
+            sha=artifact.get("sha256", ""),
+            content_hash=artifact.get("content_hash", ""),
+        )
+        for artifact in artifacts
+        if isinstance(artifact, dict)
+    )
+    limitations = "\n".join(f"- {limitation}" for limitation in bundle.get("limitations", []))
+    source_hashes = summary.get("source_object_hashes", {}) if isinstance(summary.get("source_object_hashes"), dict) else {}
+    source_hash_lines = "\n".join(f"- {name}: `{value}`" for name, value in sorted(source_hashes.items()))
+    return f"""# TrustAI Framework Runtime Service Authority Recorded Export Provider Bundle
+
+Bundle ID: `{bundle.get('bundle_id', '')}`
+
+Bundle ref: `{bundle.get('bundle_ref', '')}`
+
+Mode: `{bundle.get('mode', '')}`
+
+Environment: `{bundle.get('environment', '')}`
+
+Generated at: `{bundle.get('generated_at', '')}`
+
+Reviewer: `{bundle.get('reviewer_ref', '')}`
+
+## Source
+
+- Provider receipt ID: `{source.get('provider_receipt_id', '')}`
+- Provider: `{source.get('provider', '')}`
+- Provider export ref: `{source.get('provider_export_ref', '')}`
+- Provider export hash: `{source.get('provider_export_hash', '')}`
+- Recorded-export worker operation ID: `{source.get('recorded_export_worker_operation_id', '')}`
+- Recorded-export ID: `{source.get('recorded_export_id', '')}`
+- Run ref: `{source.get('run_ref', '')}`
+- Storage record root: `{source.get('storage_record_root', '')}`
+- Audit record root: `{source.get('audit_record_root', '')}`
+
+## Verification Options
+
+- Require complete: {options.get('require_complete', False)}
+- Require fresh: {options.get('require_fresh', False)}
+
+## Embedded Source Summary
+
+- Embedded source artifacts: {summary.get('source_artifact_count', 0)}
+- Source artifact sha256 root: `{summary.get('source_artifact_sha256_root', '')}`
+- Source artifact content root: `{summary.get('source_artifact_content_root', '')}`
+
+{source_hash_lines or '- No source hashes recorded.'}
+
+## Controls
+
+| Control | Status | Detail |
+|---|---|---|
+{control_rows or '| None | unknown | No controls recorded. |'}
+
+## Source Artifacts
+
+| Name | Type | Bytes | SHA-256 | Content Hash |
+|---|---|---:|---|---|
+{artifact_rows or '| None | none | 0 | `` | `` |'}
+
+## Limitations
+
+{limitations or '- None'}
+"""
+
+
+def extract_framework_runtime_service_authority_recorded_export_provider_bundle_sources(
+    bundle: dict[str, Any],
+    out_dir: str | Path,
+    *,
+    key: str | None = None,
+    overwrite: bool = False,
+) -> list[dict[str, Any]]:
+    result = verify_framework_runtime_service_authority_recorded_export_provider_bundle(bundle, key=key)
+    if not result.ok:
+        raise ValueError(
+            "invalid framework runtime service authority recorded export provider bundle: " + "; ".join(result.errors)
+        )
+    source_artifacts = bundle.get("source_artifacts", [])
+    if not isinstance(source_artifacts, list):
+        raise ValueError("framework runtime service authority recorded export provider bundle source_artifacts must be a list")
+    output_root = Path(out_dir)
+    extracted: list[dict[str, Any]] = []
+    for artifact in source_artifacts:
+        if not isinstance(artifact, dict):
+            raise ValueError("framework runtime service authority recorded export provider bundle source artifact must be an object")
+        name = artifact.get("name")
+        if not isinstance(name, str) or not name:
+            raise ValueError("framework runtime service authority recorded export provider bundle source artifact name is required")
+        try:
+            data = base64.b64decode(str(artifact.get("content_b64") or ""), validate=True)
+        except (binascii.Error, ValueError, TypeError) as exc:
+            raise ValueError(
+                f"framework runtime service authority recorded export provider bundle source artifact content_b64 invalid: {name}"
+            ) from exc
+        actual_sha = _sha256_ref(data)
+        if artifact.get("sha256") != actual_sha:
+            raise ValueError(
+                f"framework runtime service authority recorded export provider bundle source artifact sha256 mismatch: {name}"
+            )
+        target = output_root / _artifact_extract_filename(name)
+        if target.exists():
+            if target.is_dir():
+                raise ValueError(f"framework runtime service authority recorded export provider bundle output path is a directory: {target}")
+            if not overwrite:
+                raise ValueError(f"framework runtime service authority recorded export provider bundle output already exists: {target}")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data)
+        extracted.append(
+            {
+                "name": name,
+                "artifact_type": artifact.get("artifact_type"),
+                "path": artifact.get("path"),
+                "sha256": actual_sha,
+                "bytes": len(data),
+                "artifact_id": artifact.get("artifact_id"),
+                "extracted_to": str(target),
+            }
+        )
+    return extracted
 def append_framework_runtime_service_authority_recorded_export_provider_bundle(
     chain: EvidenceChain,
     bundle: dict[str, Any],
@@ -580,6 +729,15 @@ def _bundle_source_name(source_key: str) -> str:
     return source_key
 
 
+def _artifact_extract_filename(name: str) -> str:
+    safe = "".join(character if character.isalnum() or character in ("-", "_") else "-" for character in name).strip("-")
+    if not safe:
+        raise ValueError("framework runtime service authority recorded export provider bundle source artifact name is not safe")
+    return f"{safe}.json"
+
+
+def _markdown_cell(value: Any) -> str:
+    return str(value).replace("|", "\\|").replace("\n", " ")
 def _clone(value: Any) -> Any:
     return json.loads(json.dumps(value, sort_keys=True))
 
