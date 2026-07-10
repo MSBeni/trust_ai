@@ -479,6 +479,38 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
         ],
     },
     {
+        "id": "roadmap-phase-scoreboard",
+        "phase": "P1-P4",
+        "priority": "P0",
+        "title": "Roadmap phase exit-criteria business scoreboard",
+        "roadmap_ref": "Definition of done per phase; Unicorn logic; GTM pricing and market adoption milestones",
+        "evidence_paths": [
+            "docs/specs/roadmap-phase-scoreboard-v0.1.md",
+            "src/trustai/phase_scoreboard.py",
+            "docs/specs/design-partner-pilot-v0.1.md",
+            "docs/specs/own-compliance-dossier-v0.1.md",
+            "docs/specs/underwriting-quote-v0.1.md",
+            "docs/specs/regulator-acceptance-v0.1.md",
+            "docs/specs/standards-body-submission-v0.1.md",
+            "docs/specs/procurement-clause-v0.1.md",
+            "docs/specs/actuarial-product-v0.1.md",
+            "docs/specs/state-of-agent-reliability-report-v0.1.md",
+            "src/trustai/design_partner.py",
+            "src/trustai/own_compliance.py",
+            "src/trustai/underwriting_quote.py",
+            "src/trustai/regulator_acceptance.py",
+            "src/trustai/standards_body_submission.py",
+            "src/trustai/procurement_clause.py",
+            "src/trustai/actuarial.py",
+            "src/trustai/reliability_report.py",
+            "src/trustai/roadmap_audit.py",
+            "tests/test_phase_scoreboard.py",
+        ],
+        "external_authority": [
+            "Roadmap phase scoreboards cover local/reference schemas for P1-P4 business milestones and can bind external evidence references and hashes; actual paying customers, signed contracts, ARR, Series A financing, live insurer integrations, SOC 2/ISO certificates, named regulator acceptance, standards-body progress, third-party procurement clauses, data-product revenue, and generic market usage remain external business evidence.",
+        ],
+    },
+    {
         "id": "runtime-policy-and-attestation",
         "phase": "P2",
         "priority": "P1",
@@ -635,7 +667,7 @@ def build_roadmap_audit(
         "limitations": [
             "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
             "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",
-            "Business milestones such as paying design partners, ARR, external regulator acceptance, and insurer discounts are out of scope for local repository verification.",
+            "Business milestones such as paying design partners, ARR, external regulator acceptance, and insurer discounts require external evidence; local phase scoreboards only verify references, hashes, and control logic.",
         ],
     }
     return {**body, "audit_id": content_hash(body)}

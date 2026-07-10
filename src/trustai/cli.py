@@ -286,6 +286,15 @@ from .own_compliance import (
     verify_own_compliance_dossier,
     write_own_compliance_dossier,
 )
+from .phase_scoreboard import (
+    PHASE_SCOREBOARD_MODES,
+    append_phase_scoreboard,
+    build_phase_scoreboard,
+    load_phase_scoreboard,
+    parse_phase_milestone,
+    verify_phase_scoreboard,
+    write_phase_scoreboard,
+)
 from .onboarding import (
     GATEWAY_MODES,
     SDK_SCOPES,
@@ -1444,6 +1453,82 @@ def cmd_own_compliance_dossier_append(args: argparse.Namespace) -> int:
     print(f"dossier id: {dossier['dossier_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
+
+
+def cmd_phase_scoreboard(args: argparse.Namespace) -> int:
+    try:
+        milestones = [parse_phase_milestone(value) for value in args.milestone]
+        scoreboard = build_phase_scoreboard(
+            args.root,
+            scoreboard_ref=args.scoreboard_ref,
+            producer_ref=args.producer_ref,
+            milestones=milestones,
+            mode=args.mode,
+            environment=args.environment,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_phase_scoreboard(scoreboard, root=args.root, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"roadmap phase scoreboard generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("roadmap phase scoreboard generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_phase_scoreboard(args.out, scoreboard)
+    print(f"roadmap phase scoreboard: {args.out}")
+    print(f"scoreboard id: {scoreboard['scoreboard_id']}")
+    print(f"mode: {scoreboard['mode']}")
+    print(f"milestones: {scoreboard['metrics']['milestone_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_phase_scoreboard_verify(args: argparse.Namespace) -> int:
+    try:
+        scoreboard = load_phase_scoreboard(args.scoreboard)
+        result = verify_phase_scoreboard(scoreboard, root=args.root, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"roadmap phase scoreboard verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        print(f"verified roadmap phase scoreboard: {args.scoreboard}")
+        print(f"scoreboard id: {scoreboard['scoreboard_id']}")
+        print(f"mode: {scoreboard['mode']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"roadmap phase scoreboard verification failed: {args.scoreboard}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_phase_scoreboard_append(args: argparse.Namespace) -> int:
+    try:
+        scoreboard = load_phase_scoreboard(args.scoreboard)
+    except (OSError, ValueError) as exc:
+        print(f"roadmap phase scoreboard append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_phase_scoreboard(chain, scoreboard, root=args.root, key=args.key)
+    except ValueError as exc:
+        print(f"roadmap phase scoreboard append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"roadmap phase scoreboard entry: {args.out}")
+    print(f"roadmap phase scoreboard entry id: {entry['entry_id']}")
+    print(f"scoreboard id: {scoreboard['scoreboard_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
 def cmd_vertical_pack(args: argparse.Namespace) -> int:
     try:
         pack = build_vertical_pack(
@@ -17202,6 +17287,33 @@ def build_parser() -> argparse.ArgumentParser:
     own_compliance_append.add_argument("--key")
     _add_state_args(own_compliance_append)
     own_compliance_append.set_defaults(func=cmd_own_compliance_dossier_append)
+
+    phase_scoreboard = subparsers.add_parser("phase-scoreboard", help="write a signed roadmap phase scoreboard")
+    phase_scoreboard.add_argument("--root", default=".")
+    phase_scoreboard.add_argument("--scoreboard-ref", required=True)
+    phase_scoreboard.add_argument("--producer-ref", required=True)
+    phase_scoreboard.add_argument("--milestone", action="append", default=[], help="phase,kind,metric_value,evidence_ref,evidence_hash,issuer,issued_at[,expires_at]; repeatable")
+    phase_scoreboard.add_argument("--mode", choices=sorted(PHASE_SCOREBOARD_MODES), default="readiness")
+    phase_scoreboard.add_argument("--environment", default="local")
+    phase_scoreboard.add_argument("--generated-at")
+    phase_scoreboard.add_argument("--out", default="artifacts/phase-scoreboard.json")
+    phase_scoreboard.add_argument("--key")
+    phase_scoreboard.set_defaults(func=cmd_phase_scoreboard)
+
+    phase_scoreboard_verify = subparsers.add_parser("phase-scoreboard-verify", help="verify a signed roadmap phase scoreboard")
+    phase_scoreboard_verify.add_argument("scoreboard")
+    phase_scoreboard_verify.add_argument("--root", default=".")
+    phase_scoreboard_verify.add_argument("--key")
+    phase_scoreboard_verify.set_defaults(func=cmd_phase_scoreboard_verify)
+
+    phase_scoreboard_append = subparsers.add_parser("phase-scoreboard-append", help="append a verified roadmap phase scoreboard as chain evidence")
+    phase_scoreboard_append.add_argument("scoreboard")
+    phase_scoreboard_append.add_argument("--root", default=".")
+    phase_scoreboard_append.add_argument("--out", default="artifacts/phase-scoreboard-entry.json")
+    phase_scoreboard_append.add_argument("--key")
+    _add_state_args(phase_scoreboard_append)
+    phase_scoreboard_append.set_defaults(func=cmd_phase_scoreboard_append)
+
     vertical_pack = subparsers.add_parser("vertical-pack", help="write a signed vertical pack receipt")
     vertical_pack.add_argument("--root", default=".")
     vertical_pack.add_argument("--pack-ref", required=True)
