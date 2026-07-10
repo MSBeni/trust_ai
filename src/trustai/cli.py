@@ -881,6 +881,15 @@ from .verifier_distribution import (
     verify_verifier_distribution_receipt,
     write_verifier_distribution_receipt,
 )
+from .verifier_public_release import (
+    VERIFIER_PUBLIC_RELEASE_MODES,
+    append_verifier_public_release_receipt,
+    build_verifier_public_release_receipt,
+    load_verifier_public_release_receipt,
+    parse_public_release_artifact_arg,
+    verify_verifier_public_release_receipt,
+    write_verifier_public_release_receipt,
+)
 from .verifier_release import (
     build_verifier_release_manifest,
     load_verifier_release_manifest,
@@ -5840,6 +5849,160 @@ def cmd_verifier_distribution_append(args: argparse.Namespace) -> int:
         print(f"verifier distribution entry: {args.out}")
     print(f"verifier distribution entry id: {entry['entry_id']}")
     print(f"distribution id: {receipt['distribution_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def _load_verifier_public_release_sources(args: argparse.Namespace) -> dict[str, object]:
+    return {
+        "verifier_release": load_verifier_release_manifest(args.verifier_release),
+        "distribution_receipt": load_verifier_distribution_receipt(args.distribution_receipt),
+        "build_attestation": load_go_verifier_build_attestation(args.build_attestation),
+        "release_run": load_go_verifier_release_run_receipt(args.release_run),
+        "release_run_bundle": load_go_verifier_release_run_bundle(args.release_run_bundle),
+        "conformance_report": load_verifier_conformance_report(args.conformance_report) if getattr(args, "conformance_report", None) else None,
+        "standards_package": load_standards_submission(args.standards_package) if getattr(args, "standards_package", None) else None,
+    }
+
+
+def _parse_public_release_cli_artifacts(values: list[str]) -> list[dict[str, str]]:
+    artifacts: list[dict[str, str]] = []
+    for value in values:
+        artifacts.append(parse_public_release_artifact_arg(value))
+    return artifacts
+
+
+def _verifier_public_release_kwargs(args: argparse.Namespace) -> dict[str, object]:
+    return {
+        "root": args.root,
+        "distribution_bundle_path": args.distribution_bundle,
+        "distribution_sbom_path": args.distribution_sbom,
+        "distribution_provenance_path": args.distribution_provenance,
+        "distribution_signature_path": args.distribution_signature,
+        "binary_path": args.binary,
+    }
+
+
+def cmd_verifier_public_release(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_verifier_public_release_sources(args)
+        if sources["conformance_report"] is None or sources["standards_package"] is None:
+            raise ValueError("verifier public release requires --conformance-report and --standards-package")
+        receipt = build_verifier_public_release_receipt(
+            sources["verifier_release"],
+            sources["distribution_receipt"],
+            sources["build_attestation"],
+            sources["release_run"],
+            sources["release_run_bundle"],
+            **_verifier_public_release_kwargs(args),
+            conformance_report=sources["conformance_report"],
+            standards_package=sources["standards_package"],
+            public_artifacts=_parse_public_release_cli_artifacts(args.artifact),
+            mode=args.mode,
+            provider=args.provider,
+            release_ref=args.release_ref,
+            release_url=args.release_url,
+            tag=args.tag,
+            publisher_ref=args.publisher_ref,
+            workflow_run_export_ref=args.workflow_run_export_ref,
+            workflow_run_export_hash=args.workflow_run_export_hash,
+            release_api_export_ref=args.release_api_export_ref,
+            release_api_export_hash=args.release_api_export_hash,
+            artifact_manifest_ref=args.artifact_manifest_ref,
+            artifact_manifest_hash=args.artifact_manifest_hash,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            audit_log_size=args.audit_log_size,
+            transparency_log_ref=args.transparency_log_ref,
+            transparency_log_root=args.transparency_log_root,
+            retention_until=args.retention_until,
+            published_at=args.published_at,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"verifier public release failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_verifier_public_release_receipt(
+        receipt,
+        sources["verifier_release"],
+        sources["distribution_receipt"],
+        sources["build_attestation"],
+        sources["release_run"],
+        sources["release_run_bundle"],
+        **_verifier_public_release_kwargs(args),
+        conformance_report=sources["conformance_report"],
+        standards_package=sources["standards_package"],
+        key=args.key,
+    )
+    if not result.ok:
+        print("verifier public release verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_verifier_public_release_receipt(args.out, receipt)
+    print(f"verifier public release receipt: {args.out}")
+    print(f"release publication id: {receipt['release_publication_id']}")
+    print(f"release url: {receipt['public_release']['release_url']}")
+    print(f"artifacts: {len(receipt['artifacts'])}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_verifier_public_release_verify(args: argparse.Namespace) -> int:
+    receipt = load_verifier_public_release_receipt(args.receipt)
+    sources = _load_verifier_public_release_sources(args)
+    result = verify_verifier_public_release_receipt(
+        receipt,
+        sources["verifier_release"],
+        sources["distribution_receipt"],
+        sources["build_attestation"],
+        sources["release_run"],
+        sources["release_run_bundle"],
+        **_verifier_public_release_kwargs(args),
+        conformance_report=sources["conformance_report"],
+        standards_package=sources["standards_package"],
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified verifier public release receipt: {args.receipt}")
+        print(f"release publication id: {receipt['release_publication_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"verifier public release verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_verifier_public_release_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_verifier_public_release_receipt(args.receipt)
+    sources = _load_verifier_public_release_sources(args)
+    try:
+        entry = append_verifier_public_release_receipt(
+            chain,
+            receipt,
+            sources["verifier_release"],
+            sources["distribution_receipt"],
+            sources["build_attestation"],
+            sources["release_run"],
+            sources["release_run_bundle"],
+            **_verifier_public_release_kwargs(args),
+            conformance_report=sources["conformance_report"],
+            standards_package=sources["standards_package"],
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"verifier public release append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"verifier public release entry: {args.out}")
+    print(f"verifier public release entry id: {entry['entry_id']}")
+    print(f"release publication id: {receipt['release_publication_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
@@ -16741,6 +16904,63 @@ def build_parser() -> argparse.ArgumentParser:
     verifier_distribution_append.add_argument("--out", default="artifacts/verifier-distribution-entry.json")
     _add_state_args(verifier_distribution_append)
     verifier_distribution_append.set_defaults(func=cmd_verifier_distribution_append)
+
+    def _add_verifier_public_release_sources(parser: argparse.ArgumentParser, include_receipt: bool = False) -> None:
+        if include_receipt:
+            parser.add_argument("receipt")
+        parser.add_argument("verifier_release")
+        parser.add_argument("distribution_receipt")
+        parser.add_argument("build_attestation")
+        parser.add_argument("release_run")
+        parser.add_argument("release_run_bundle")
+        parser.add_argument("--conformance-report")
+        parser.add_argument("--standards-package")
+        parser.add_argument("--root", default=".")
+        parser.add_argument("--distribution-bundle", default="artifacts/verifier-source-bundle.zip")
+        parser.add_argument("--distribution-sbom", default="artifacts/verifier-source-sbom.json")
+        parser.add_argument("--distribution-provenance", default="artifacts/verifier-source-provenance.json")
+        parser.add_argument("--distribution-signature", default="artifacts/verifier-source-signature.json")
+        parser.add_argument("--binary")
+        parser.add_argument("--key")
+
+    def _add_verifier_public_release_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--mode", choices=sorted(VERIFIER_PUBLIC_RELEASE_MODES), default="public-release")
+        parser.add_argument("--provider", default="github")
+        parser.add_argument("--release-ref", required=True)
+        parser.add_argument("--release-url", required=True)
+        parser.add_argument("--tag", required=True)
+        parser.add_argument("--publisher-ref", required=True)
+        parser.add_argument("--artifact", action="append", default=[], help="repeatable name,path,kind[,url] public release artifact")
+        parser.add_argument("--workflow-run-export-ref")
+        parser.add_argument("--workflow-run-export-hash")
+        parser.add_argument("--release-api-export-ref")
+        parser.add_argument("--release-api-export-hash")
+        parser.add_argument("--artifact-manifest-ref")
+        parser.add_argument("--artifact-manifest-hash")
+        parser.add_argument("--audit-log-ref")
+        parser.add_argument("--audit-log-root")
+        parser.add_argument("--audit-log-size", type=int)
+        parser.add_argument("--transparency-log-ref")
+        parser.add_argument("--transparency-log-root")
+        parser.add_argument("--retention-until")
+        parser.add_argument("--published-at")
+        parser.add_argument("--generated-at")
+        parser.add_argument("--out", default="artifacts/verifier-public-release.json")
+
+    verifier_public_release = subparsers.add_parser("verifier-public-release", help="write a signed verifier public release publication receipt")
+    _add_verifier_public_release_sources(verifier_public_release)
+    _add_verifier_public_release_fields(verifier_public_release)
+    verifier_public_release.set_defaults(func=cmd_verifier_public_release)
+
+    verifier_public_release_verify = subparsers.add_parser("verifier-public-release-verify", help="verify a verifier public release publication receipt")
+    _add_verifier_public_release_sources(verifier_public_release_verify, include_receipt=True)
+    verifier_public_release_verify.set_defaults(func=cmd_verifier_public_release_verify)
+
+    verifier_public_release_append = subparsers.add_parser("verifier-public-release-append", help="append a verifier public release publication receipt as chain evidence")
+    _add_verifier_public_release_sources(verifier_public_release_append, include_receipt=True)
+    verifier_public_release_append.add_argument("--out", default="artifacts/verifier-public-release-entry.json")
+    _add_state_args(verifier_public_release_append)
+    verifier_public_release_append.set_defaults(func=cmd_verifier_public_release_append)
     ci = subparsers.add_parser("ci-report", help="write a GitHub/GitLab promotion gate report")
     ci.add_argument("pack")
     ci.add_argument("--provider", choices=["github", "gitlab"], default="github")

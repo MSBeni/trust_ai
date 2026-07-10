@@ -5,7 +5,7 @@ runtime policy/proof decay, policy engine decision receipts, policy backend enfo
 Python/TypeScript SDK capture, framework adapter capture, MCP tool-call
 evidence, shadow replay, local runner-orchestrated and policy-bound distributional re-execution reports, re-execution isolation attestations, soak reports,
 portable proof packs, supervised access receipts, review portal service hardening attestations, regulator acceptance receipts, underwriting quote receipts, insurer partner service hardening attestations, insurer partner worker receipts, actuarial data product manifests, standards packages, standards-body submission receipts, standards-body status receipts, standards-body ballot receipts, standards-body ballot-system receipts, auditor certification kits, auditor program governance receipts, auditor program sponsorship receipts, auditor accreditation receipts, auditor accreditation countersignature receipts, auditor accreditation signing ceremony receipts, auditor accreditation signing audit receipts, auditor accreditation KMS enforcement receipts, auditor credential registry receipts, vendor trust-network manifests, vendor identity receipts, identity-provider attestation receipts with raw export replay, identity-provider session receipts, identity-provider lifecycle operation receipts, identity-provider lifecycle worker receipts, procurement clause receipts, procurement integration receipts, trust-network registry publication receipts, trust-network registry status-change receipts, marketplace catalogs, marketplace distribution receipts, marketplace author governance receipts, marketplace settlement receipts, trust-network service hardening attestations, trust-network worker operation receipts, signed delegation graph evidence, and
-verifier conformance reports, dependency-free Go verifier source, Go verifier build attestations, signed verifier release workflow-run receipts, Go verifier release-run review bundles, and signed verifier release manifests for autonomous agents that touch money or
+verifier conformance reports, dependency-free Go verifier source, Go verifier build attestations, signed verifier release workflow-run receipts, Go verifier release-run review bundles, verifier public release receipts, and signed verifier release manifests for autonomous agents that touch money or
 production.
 
 The codebase is intentionally self-contained. It implements the core proof
@@ -26,9 +26,9 @@ workflow from the roadmap without requiring network access or external services:
 13. Verify the chain or pack offline and issue trust-authority receipts, KMS/TSA provider attestations, and trust authority KMS/HSM enforcement receipts, including provider/key-id signatures,
     timestamps, hashes, Merkle inclusion, contract-before-results ordering, and
     holdout timing.
-14. Generate verifier conformance reports and large-log tamper stress reports proving valid packs pass, proof-pack/delegation-graph/release-run/release-run-bundle tampering fails, and roadmap-scale evidence chains detect mutation without account or network access.
+14. Generate verifier conformance reports and large-log tamper stress reports proving valid packs pass, proof-pack/delegation-graph/release-run/release-run-bundle/public-release tampering fails, and roadmap-scale evidence chains detect mutation without account or network access.
 15. Package the Python and Go verifier source, conformance report, and standards package into
-    a signed release manifest, issue Go verifier build/binary attestations, release workflow-run receipts, and release-run review bundles, and issue standards-body submission/status/ballot/ballot-system receipts for standards-track docket evidence.
+    a signed release manifest, issue Go verifier build/binary attestations, release workflow-run receipts, release-run review bundles, and verifier public release receipts, and issue standards-body submission/status/ballot/ballot-system receipts for standards-track docket evidence.
 
 ## Repository Layout
 
