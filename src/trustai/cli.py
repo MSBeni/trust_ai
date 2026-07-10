@@ -5078,7 +5078,21 @@ def cmd_verifier_conformance(args: argparse.Namespace) -> int:
     pack, _, status = _verified_pack_or_exit(args.pack, args.key)
     if status:
         return status
-    report = build_verifier_conformance_report(pack, key=args.key, verifier_command=args.verifier_command)
+    try:
+        provider_bundle = (
+            load_framework_runtime_service_authority_recorded_export_provider_bundle(args.provider_bundle)
+            if args.provider_bundle
+            else None
+        )
+    except (OSError, ValueError) as exc:
+        print(f"verifier conformance failed to load provider bundle: {exc}", file=sys.stderr)
+        return 1
+    report = build_verifier_conformance_report(
+        pack,
+        key=args.key,
+        verifier_command=args.verifier_command,
+        provider_bundle=provider_bundle,
+    )
     result = verify_verifier_conformance_report(report)
     if not result.ok:
         print("verifier conformance failed", file=sys.stderr)
@@ -15647,6 +15661,7 @@ def build_parser() -> argparse.ArgumentParser:
     verifier_conformance.add_argument("pack")
     verifier_conformance.add_argument("--out", default="artifacts/verifier-conformance.json")
     verifier_conformance.add_argument("--markdown", default="artifacts/verifier-conformance.md")
+    verifier_conformance.add_argument("--provider-bundle", help="optional recorded-export provider bundle to include in conformance vectors")
     verifier_conformance.add_argument("--verifier-command", default="python -m trustai verify")
     verifier_conformance.set_defaults(func=cmd_verifier_conformance)
 

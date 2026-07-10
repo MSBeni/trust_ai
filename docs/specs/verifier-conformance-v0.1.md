@@ -2,8 +2,11 @@
 
 The verifier conformance report is a portable artifact proving that an offline
 TrustAI verifier accepts a valid proof pack and rejects representative tamper
-vectors. It supports the roadmap requirement that proof packs are verifiable by
-third parties without a TrustAI account.
+vectors. When supplied with a recorded-export provider review bundle, the same
+report also proves that the offline bundle verifier accepts the self-contained
+review bundle and rejects representative bundle tamper vectors. It supports the
+roadmap requirement that proof packs and review evidence are verifiable by third
+parties without a TrustAI account.
 
 This v0.1 report exercises the local Python verifier implementation. The
 roadmap still calls for an independently distributed Go verifier binary; Go
@@ -20,6 +23,8 @@ Required top-level fields:
 - `generated_at`: creation timestamp.
 - `verifier`: verifier command and mode.
 - `source_proof_pack`: source pack id, hash, spec version, and chain summary.
+- `source_provider_bundle`: optional recorded-export provider bundle id, hash,
+  schema, source receipt ids, and embedded source artifact summary.
 - `test_cases`: verifier conformance vectors.
 - `summary`: pass/fail counts.
 - `limitations`: explicit production and implementation boundaries.
@@ -34,8 +39,19 @@ The local report includes these cases:
 - `inclusion-proof-tamper`: a changed Merkle inclusion proof must fail.
 - `packed-contract-body-tamper`: a changed packed contract body must fail.
 
+When `--provider-bundle` is supplied, the report also includes:
+
+- `valid-provider-bundle`: a valid recorded-export provider bundle must verify
+  successfully.
+- `provider-bundle-signature-tamper`: a changed bundle signature must fail.
+- `provider-bundle-source-tamper`: a changed embedded provider export source
+  object must fail.
+- `provider-bundle-artifact-byte-tamper`: changed embedded raw source artifact
+  bytes must fail.
+
 Each case records the expected verifier outcome, actual verifier outcome,
-errors, warnings, and mutated pack content hash.
+errors, warnings, target artifact type, and the mutated proof-pack or bundle
+content hash.
 
 ## Verification
 
@@ -47,17 +63,25 @@ errors, warnings, and mutated pack content hash.
 - expected versus actual verifier outcomes;
 - test-case pass flags;
 - summary consistency;
+- optional provider-bundle source binding and bundle tamper-vector outcomes;
 - offline/accountless verifier mode warning.
 
 ## CLI
 
 ```bash
 python -m trustai verifier-conformance artifacts/aitrade-proof-pack.json --out artifacts/verifier-conformance.json --markdown artifacts/verifier-conformance.md
+python -m trustai verifier-conformance artifacts/aitrade-proof-pack.json --provider-bundle artifacts/framework-runtime-service-authority-recorded-export-provider-bundle.json --out artifacts/verifier-conformance.json --markdown artifacts/verifier-conformance.md
 python -m trustai verifier-conformance-verify artifacts/verifier-conformance.json
 ```
 
 ## Production Boundary
 
+This v0.1 conformance report is still a local reference artifact. Provider
+bundle vectors prove deterministic offline replay of the supplied bundle; they
+do not prove live access to a provider account, fresh external-authority
+evidence, or independently shipped verifier binaries. Those requirements remain
+bound through the provider receipts, authority dossiers, verifier release
+manifest, and distribution receipts.
 
 ## Release Binding
 
