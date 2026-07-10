@@ -127,6 +127,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/reexecution-isolation-attestation-v0.1.md",
     "docs/specs/reexecution-runner-service-attestation-v0.1.md",
     "docs/specs/reexecution-runner-worker-v0.1.md",
+    "docs/specs/reexecution-runner-production-authority-v0.1.md",
 )
 
 CONFORMANCE_TARGETS = (
@@ -759,6 +760,16 @@ CONFORMANCE_TARGETS = (
             "python -m trustai reexecution-runner-worker --service-attestation artifacts/reexecution-runner-service-attestation.json artifacts/reexecution-isolation-attestation.json artifacts/reexecution-runner-evidence.json --policy examples/aitrade/reexecution-policy.json --report artifacts/reexecution-report.json --mode hosted-worker --worker-ref worker:reexecution/runner --run-ref worker-run:reexecution/aitrade/2026-07-04T04:08:00Z --operation-kind reexecution_run --actor-ref oidc:trustai.example/reexecution-runner-worker --schedule-ref schedule:reexecution/runner/1m --cadence-seconds 60 --lease-ref lease:reexecution/runner/2026-07-04T04:08:00Z --checkpoint-ref checkpoint:reexecution/runner/aitrade --checkpoint-hash sha256:reexecution-runner-worker-checkpoint --queue-ref queue:reexecution/runs --job-ref job:reexecution/aitrade/2026-07-04T04:08:00Z --job-hash sha256:reexecution-runner-worker-job --artifact-manifest-ref s3:trustai-reexecution-artifacts/aitrade/2026-07-04/manifest.json --artifact-manifest-hash sha256:reexecution-runner-worker-artifacts --result-bundle-ref s3:trustai-reexecution-results/aitrade/2026-07-04/results.json --result-bundle-hash sha256:reexecution-runner-worker-results --isolation-audit-ref audit-log:reexecution/isolation/runner-worker --isolation-audit-root sha256:reexecution-runner-worker-isolation-audit-root --metrics-ref metrics:reexecution/runner-worker --audit-log-ref audit-log:reexecution/runner-worker --audit-log-root sha256:reexecution-runner-worker-audit-root --credential-ref env:REEXECUTION_RUNNER_WORKER_TOKEN --retention-until 2033-07-04T00:00:00Z --started-at 2026-07-04T04:08:00Z --completed-at 2026-07-04T04:09:00Z",
             "python -m trustai reexecution-runner-worker-verify artifacts/reexecution-runner-worker.json --service-attestation artifacts/reexecution-runner-service-attestation.json artifacts/reexecution-isolation-attestation.json artifacts/reexecution-runner-evidence.json --policy examples/aitrade/reexecution-policy.json --report artifacts/reexecution-report.json",
             "python -m unittest tests.test_reexecution_runner_worker",
+        ],
+    },
+    {
+        "id": "reexecution-runner-production-authority-dossiers",
+        "description": "Re-execution runner production authority dossiers bind verified runner service and worker evidence to production fleet, scheduler, queue, lease, container, kernel, audit, custody, KMS, freshness, and observability authority evidence.",
+        "reference": "src/trustai/reexecution_runner_authority.py",
+        "commands": [
+            "python -m trustai reexecution-runner-authority artifacts/reexecution-runner-service-attestation.json --worker-receipt artifacts/reexecution-runner-worker.json artifacts/reexecution-isolation-attestation.json artifacts/reexecution-runner-evidence.json --policy examples/aitrade/reexecution-policy.json --report artifacts/reexecution-report.json --environment aitrade-prod --dossier-ref dossier:reexecution-runner-authority/aitrade-prod --authority-ref authority:reexecution-runner/prod --producer-ref oidc:trustai.example/reexecution-runner-authority-worker --authority-evidence 'production-runner-fleet,hosted-service,runner-fleet:trustai/reexecution-prod,sha256:reexecution-runner-prod-fleet,Hosted re-execution runner fleet export for production replay jobs;issuer=TrustAI Hosted Ops;subject=aitrade-prod re-execution runner fleet;source_uri=https://runner.example/audit/fleet/aitrade-prod;issued_at=2026-07-04T04:09:00Z;expires_at=2026-07-11T04:09:00Z' --generated-at 2026-07-04T04:10:00Z",
+            "python -m trustai reexecution-runner-authority-verify artifacts/reexecution-runner-authority.json artifacts/reexecution-runner-service-attestation.json --worker-receipt artifacts/reexecution-runner-worker.json artifacts/reexecution-isolation-attestation.json artifacts/reexecution-runner-evidence.json --policy examples/aitrade/reexecution-policy.json --report artifacts/reexecution-report.json",
+            "python -m unittest tests.test_reexecution_runner_authority",
         ],
     },
     {

@@ -824,6 +824,15 @@ from .reexecution_runner_worker import (
     verify_reexecution_runner_worker_receipt,
     write_reexecution_runner_worker_receipt,
 )
+from .reexecution_runner_authority import (
+    REEXECUTION_RUNNER_AUTHORITY_MODES,
+    append_reexecution_runner_authority_dossier,
+    build_reexecution_runner_authority_dossier,
+    load_reexecution_runner_authority_dossier,
+    parse_reexecution_runner_authority_evidence_arg,
+    verify_reexecution_runner_authority_dossier,
+    write_reexecution_runner_authority_dossier,
+)
 from .regulator import build_regulator_disclosure, load_regulator_disclosure, verify_regulator_disclosure, write_regulator_disclosure
 from .regulator_acceptance import (
     append_regulator_acceptance,
@@ -5382,6 +5391,125 @@ def cmd_reexecution_runner_worker_append(args: argparse.Namespace) -> int:
     print(f"worker operation id: {receipt['worker_operation_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
+
+
+def _load_reexecution_runner_authority_sources(args: argparse.Namespace) -> tuple[dict, list[dict], dict, dict, dict | None, dict | None]:
+    service_attestation = load_reexecution_runner_service_attestation(args.service_attestation)
+    worker_receipts = [load_reexecution_runner_worker_receipt(path) for path in (getattr(args, "worker_receipt", None) or [])]
+    isolation_attestation, runner_evidence, policy, report = _load_reexecution_runner_service_sources(args)
+    return service_attestation, worker_receipts, isolation_attestation, runner_evidence, policy, report
+
+
+def cmd_reexecution_runner_authority(args: argparse.Namespace) -> int:
+    service_attestation, worker_receipts, isolation_attestation, runner_evidence, policy, report = _load_reexecution_runner_authority_sources(args)
+    try:
+        evidence = [parse_reexecution_runner_authority_evidence_arg(value) for value in args.authority_evidence]
+        dossier = build_reexecution_runner_authority_dossier(
+            service_attestation,
+            worker_receipts=worker_receipts,
+            isolation_attestation=isolation_attestation,
+            runner_evidence=runner_evidence,
+            policy=policy,
+            report=report,
+            mode=args.mode,
+            environment=args.environment,
+            dossier_ref=args.dossier_ref,
+            authority_ref=args.authority_ref,
+            producer_ref=args.producer_ref,
+            authority_evidence=evidence,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"re-execution runner authority dossier failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_reexecution_runner_authority_dossier(
+        dossier,
+        service_attestation=service_attestation,
+        worker_receipts=worker_receipts,
+        isolation_attestation=isolation_attestation,
+        runner_evidence=runner_evidence,
+        policy=policy,
+        report=report,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if not result.ok:
+        print("re-execution runner authority verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_reexecution_runner_authority_dossier(args.out, dossier)
+    print(f"re-execution runner authority dossier: {args.out}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"covered requirements: {result.covered_count}/{result.required_count}")
+    print(f"worker receipts: {dossier['source_binding']['worker_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_reexecution_runner_authority_verify(args: argparse.Namespace) -> int:
+    dossier = load_reexecution_runner_authority_dossier(args.dossier)
+    service_attestation, worker_receipts, isolation_attestation, runner_evidence, policy, report = _load_reexecution_runner_authority_sources(args)
+    result = verify_reexecution_runner_authority_dossier(
+        dossier,
+        service_attestation=service_attestation,
+        worker_receipts=worker_receipts,
+        isolation_attestation=isolation_attestation,
+        runner_evidence=runner_evidence,
+        policy=policy,
+        report=report,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified re-execution runner authority dossier: {args.dossier}")
+        print(f"covered requirements: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"re-execution runner authority dossier verification failed: {args.dossier}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_reexecution_runner_authority_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    dossier = load_reexecution_runner_authority_dossier(args.dossier)
+    service_attestation, worker_receipts, isolation_attestation, runner_evidence, policy, report = _load_reexecution_runner_authority_sources(args)
+    try:
+        entry = append_reexecution_runner_authority_dossier(
+            chain,
+            dossier,
+            service_attestation=service_attestation,
+            worker_receipts=worker_receipts,
+            isolation_attestation=isolation_attestation,
+            runner_evidence=runner_evidence,
+            policy=policy,
+            report=report,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"re-execution runner authority dossier append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"re-execution runner authority entry: {args.out}")
+    print(f"re-execution runner authority entry id: {entry['entry_id']}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
 def cmd_reexecution_report(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
     contract = load_contract(args.contract)
@@ -18746,6 +18874,51 @@ def build_parser() -> argparse.ArgumentParser:
     reexecution_runner_worker_append.add_argument("--out", default="artifacts/reexecution-runner-worker-entry.json")
     _add_state_args(reexecution_runner_worker_append)
     reexecution_runner_worker_append.set_defaults(func=cmd_reexecution_runner_worker_append)
+
+    def _add_reexecution_runner_authority_sources(parser: argparse.ArgumentParser, include_dossier: bool = False) -> None:
+        if include_dossier:
+            parser.add_argument("dossier")
+        parser.add_argument("service_attestation")
+        parser.add_argument("--worker-receipt", action="append")
+        parser.add_argument("isolation")
+        parser.add_argument("evidence")
+        parser.add_argument("--policy")
+        parser.add_argument("--report")
+        parser.add_argument("--key")
+
+    def _add_reexecution_runner_authority_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--mode", choices=sorted(REEXECUTION_RUNNER_AUTHORITY_MODES), default="runner-service-dossier")
+        parser.add_argument("--environment", default="aitrade-prod")
+        parser.add_argument("--dossier-ref", required=True)
+        parser.add_argument("--authority-ref", required=True)
+        parser.add_argument("--producer-ref", required=True)
+        parser.add_argument("--authority-evidence", action="append", default=[])
+        parser.add_argument("--generated-at")
+        parser.add_argument("--require-complete", action="store_true")
+        parser.add_argument("--require-fresh", action="store_true")
+        parser.add_argument("--now")
+        parser.add_argument("--out", default="artifacts/reexecution-runner-authority.json")
+
+    reexecution_runner_authority = subparsers.add_parser("reexecution-runner-authority", help="write a signed re-execution runner production authority dossier")
+    _add_reexecution_runner_authority_sources(reexecution_runner_authority)
+    _add_reexecution_runner_authority_fields(reexecution_runner_authority)
+    reexecution_runner_authority.set_defaults(func=cmd_reexecution_runner_authority)
+
+    reexecution_runner_authority_verify = subparsers.add_parser("reexecution-runner-authority-verify", help="verify a signed re-execution runner production authority dossier")
+    _add_reexecution_runner_authority_sources(reexecution_runner_authority_verify, include_dossier=True)
+    reexecution_runner_authority_verify.add_argument("--require-complete", action="store_true")
+    reexecution_runner_authority_verify.add_argument("--require-fresh", action="store_true")
+    reexecution_runner_authority_verify.add_argument("--now")
+    reexecution_runner_authority_verify.set_defaults(func=cmd_reexecution_runner_authority_verify)
+
+    reexecution_runner_authority_append = subparsers.add_parser("reexecution-runner-authority-append", help="append a verified re-execution runner authority dossier as chain evidence")
+    _add_reexecution_runner_authority_sources(reexecution_runner_authority_append, include_dossier=True)
+    reexecution_runner_authority_append.add_argument("--require-complete", action="store_true")
+    reexecution_runner_authority_append.add_argument("--require-fresh", action="store_true")
+    reexecution_runner_authority_append.add_argument("--now")
+    reexecution_runner_authority_append.add_argument("--out", default="artifacts/reexecution-runner-authority-entry.json")
+    _add_state_args(reexecution_runner_authority_append)
+    reexecution_runner_authority_append.set_defaults(func=cmd_reexecution_runner_authority_append)
     reexecution = subparsers.add_parser("reexecution-report", help="evaluate and evidence repeated eval runs")
     reexecution.add_argument("contract")
     reexecution.add_argument("runs", nargs="+")
