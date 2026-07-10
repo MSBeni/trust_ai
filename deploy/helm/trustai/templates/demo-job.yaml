@@ -21,6 +21,8 @@ spec:
                   name: {{ .Values.signingKeySecretName }}
                   key: signing-key
           args:
+            - --key
+            - "env:TRUSTAI_SIGNING_KEY"
             - demo
             - --tenant
             - "{{ .Values.tenantId }}"

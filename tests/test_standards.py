@@ -46,6 +46,9 @@ class StandardsSubmissionTests(unittest.TestCase):
         self.assertIn("promotion-status-receipts", markdown)
         self.assertIn("soak-demotion-receipt-v0.1.md", markdown)
         self.assertIn("soak-demotion-receipts", markdown)
+        self.assertIn("deployment-manifest-v0.1.md", markdown)
+        self.assertIn("deployment-manifest-attestation", markdown)
+        self.assertIn("BYOC API Deployment", markdown)
 
     def test_standards_submission_detects_spec_hash_tamper(self):
         package = build_standards_submission(ROOT)

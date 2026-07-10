@@ -1,11 +1,12 @@
-# BYOC / Self-Hosted Reference Deployment
+﻿# BYOC / Self-Hosted Reference Deployment
 
 The roadmap calls for BYOC and self-hosted deployment because regulated buyers
 will not send sensitive agent traces to a startup SaaS by default. This
-repository includes a minimal reference deployment:
+repository includes a reference deployment:
 
-- `deploy/docker/Dockerfile` builds the local CLI runtime.
-- `deploy/helm/trustai` runs the bundled aitrade proof-pack flow as a Kubernetes
+- `deploy/docker/Dockerfile` builds the local CLI and API runtime.
+- `deploy/helm/trustai` runs the TrustAI API as a Kubernetes Deployment and
+  ClusterIP Service, plus the bundled aitrade proof-pack flow as an optional
   Job with persistent evidence storage.
 
 ## Build
@@ -27,7 +28,13 @@ Render or install the chart:
 ```powershell
 helm template trustai deploy/helm/trustai
 helm install trustai deploy/helm/trustai
+kubectl port-forward svc/trustai-api 8080:8080
 ```
+
+The API exposes `/health`, local ingest, proof-pack verification, approval
+callback, provider webhook, and consent-gated insurer risk endpoints. The API
+Deployment and optional demo Job both read `TRUSTAI_SIGNING_KEY` from the
+Kubernetes Secret and pass it through `--key env:TRUSTAI_SIGNING_KEY`.
 
 ## Deployment Manifest
 
@@ -58,6 +65,7 @@ python -m trustai byoc-authority-append artifacts/byoc-authority.json artifacts/
 
 See `docs/specs/byoc-production-authority-v0.1.md` for the schema.
 
-This is a reference deployment for the proof-pack engine. A production BYOC
-installation still needs managed KMS/HSM signing, RFC 3161 timestamping,
-network collectors, object-lock storage, and operational hardening.
+This is a reference deployment for the proof-pack engine and local API. A
+production BYOC installation still needs managed KMS/HSM signing, RFC 3161
+timestamping, network collectors, object-lock storage, and operational
+hardening.

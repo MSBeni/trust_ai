@@ -105,6 +105,10 @@ class RoadmapAuditTests(unittest.TestCase):
         self.assertIn("tests/test_temporal_holdout.py", shadow_evidence)
         self.assertIn("examples/aitrade/failed-soak-window.json", shadow_evidence)
         self.assertIn("tests/test_phase1_phase2.py", shadow_evidence)
+        byoc_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "byoc-self-hosted")
+        byoc_evidence = {item["path"] for item in byoc_requirement["evidence"]}
+        self.assertIn("deploy/helm/trustai/templates/deployment.yaml", byoc_evidence)
+        self.assertIn("deploy/helm/trustai/templates/service.yaml", byoc_evidence)
         cicd_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "cicd-provider-approvals")
         cicd_evidence = {item["path"] for item in cicd_requirement["evidence"]}
         self.assertIn("docs/specs/promotion-status-receipt-v0.1.md", cicd_evidence)

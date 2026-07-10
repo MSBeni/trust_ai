@@ -292,11 +292,12 @@ CONFORMANCE_TARGETS = (
     },
     {
         "id": "deployment-manifest-attestation",
-        "description": "Deployment manifests bind Docker/Helm BYOC scaffold files, implemented controls, and planned production controls by hash.",
+        "description": "Deployment manifests bind Docker/Helm BYOC API Deployment, Service, demo Job, implemented controls, and planned production controls by hash.",
         "reference": "src/trustai/deployment.py",
         "commands": [
             "python -m trustai deployment-manifest --root . --environment aitrade-byoc",
             "python -m trustai deployment-verify artifacts/deployment-manifest.json --root .",
+            "python -m unittest tests.test_deployment",
         ],
     },
     {

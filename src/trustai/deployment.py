@@ -18,6 +18,8 @@ DEFAULT_DEPLOYMENT_SOURCE_PATHS = (
     "deploy/helm/trustai/Chart.yaml",
     "deploy/helm/trustai/values.yaml",
     "deploy/helm/trustai/templates/configmap.yaml",
+    "deploy/helm/trustai/templates/deployment.yaml",
+    "deploy/helm/trustai/templates/service.yaml",
     "deploy/helm/trustai/templates/demo-job.yaml",
     "deploy/helm/trustai/templates/pvc.yaml",
     "docs/deployment/byoc.md",
@@ -59,6 +61,7 @@ def build_deployment_manifest(
             "chart": chart,
             "image": values.get("image"),
             "tenant_id_default": values.get("tenantId"),
+            "api": values.get("api"),
         },
         "source_files": source_records,
         "components": _components(),
@@ -137,7 +140,7 @@ def verify_deployment_manifest(
 
     components = manifest.get("components", [])
     component_ids = {component.get("id") for component in components if isinstance(component, dict)}
-    for component_id in {"docker-runtime", "helm-chart", "persistent-evidence-storage", "signing-key-secret"}:
+    for component_id in {"docker-runtime", "helm-chart", "persistent-evidence-storage", "signing-key-secret", "local-ingestion-api", "api-service"}:
         if component_id not in component_ids:
             errors.append(f"deployment component missing: {component_id}")
 
@@ -270,10 +273,19 @@ def _values_summary(path: Path) -> dict[str, Any]:
         "tag": _nested_yaml_field(text, "image", "tag"),
         "pull_policy": _nested_yaml_field(text, "image", "pullPolicy"),
     }
+    api = {
+        "replicas": _nested_yaml_field(text, "api", "replicas"),
+        "port": _nested_yaml_field(text, "api", "port"),
+        "state_path": _nested_yaml_field(text, "api", "statePath"),
+        "control_db_path": _nested_yaml_field(text, "api", "controlDbPath"),
+        "approval_request_store_path": _nested_yaml_field(text, "api", "approvalRequestStorePath"),
+        "provider_webhook_store_path": _nested_yaml_field(text, "api", "providerWebhookStorePath"),
+    }
     return {
         "tenantId": fields.get("tenantId"),
         "signingKeySecretName": fields.get("signingKeySecretName"),
         "image": image,
+        "api": api,
     }
 
 
@@ -320,7 +332,7 @@ def _components() -> list[dict[str, str]]:
             "id": "helm-chart",
             "status": "implemented-reference",
             "evidence": "deploy/helm/trustai",
-            "description": "Renders a Kubernetes reference deployment for the proof-pack flow.",
+            "description": "Renders a Kubernetes API service plus optional proof-pack demo job.",
         },
         {
             "id": "persistent-evidence-storage",
@@ -331,14 +343,20 @@ def _components() -> list[dict[str, str]]:
         {
             "id": "signing-key-secret",
             "status": "operator-supplied",
-            "evidence": "deploy/helm/trustai/templates/demo-job.yaml",
-            "description": "Reads the local signing key from a Kubernetes Secret.",
+            "evidence": "deploy/helm/trustai/templates/deployment.yaml",
+            "description": "Reads the local signing key from a Kubernetes Secret for the API and demo job.",
         },
         {
             "id": "local-ingestion-api",
             "status": "implemented-reference",
-            "evidence": "src/trustai/server.py",
-            "description": "Provides local ingestion and verification endpoints.",
+            "evidence": "deploy/helm/trustai/templates/deployment.yaml",
+            "description": "Runs the local ingestion, verification, approval, webhook, and insurer API server.",
+        },
+        {
+            "id": "api-service",
+            "status": "implemented-reference",
+            "evidence": "deploy/helm/trustai/templates/service.yaml",
+            "description": "Exposes the TrustAI API inside the customer Kubernetes cluster.",
         },
         {
             "id": "worm-store",
@@ -365,12 +383,22 @@ def _controls() -> list[dict[str, str]]:
         {
             "id": "secret-backed-signing-key",
             "status": "implemented-reference",
-            "description": "Helm job reads TRUSTAI_SIGNING_KEY from a Kubernetes Secret.",
+            "description": "Helm API deployment and demo job read TRUSTAI_SIGNING_KEY from a Kubernetes Secret.",
         },
         {
             "id": "persistent-artifact-storage",
             "status": "implemented-reference",
-            "description": "Helm chart provisions a PVC for evidence-chain and proof-pack outputs.",
+            "description": "Helm chart provisions a PVC for evidence-chain, control-plane, webhook, approval, and proof-pack outputs.",
+        },
+        {
+            "id": "self-hosted-api-service",
+            "status": "implemented-reference",
+            "description": "Helm chart runs the TrustAI API as a Deployment and exposes it with a ClusterIP Service.",
+        },
+        {
+            "id": "api-health-probes",
+            "status": "implemented-reference",
+            "description": "Readiness and liveness probes call the TrustAI /health endpoint before routing traffic.",
         },
         {
             "id": "managed-kms-hsm",

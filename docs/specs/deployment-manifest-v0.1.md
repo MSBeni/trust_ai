@@ -1,10 +1,10 @@
-# Deployment Manifest v0.1
+﻿# Deployment Manifest v0.1
 
 TrustAI is designed for BYOC and self-hosted deployment because regulated
 customers may not send agent traces, proof packs, or incident evidence to a
 startup SaaS. The deployment manifest is a signed, offline-verifiable record of
-the local Docker/Helm reference scaffold and the production controls it does and
-does not claim.
+the local Docker/Helm reference scaffold, including the self-hosted API
+Deployment and Service, and the production controls it does and does not claim.
 
 This v0.1 manifest does not claim a production operator, managed SaaS control
 plane, cloud Object Lock, Kafka/ClickHouse/Postgres services, or live KMS/TSA
@@ -22,11 +22,11 @@ Required top-level fields:
   `{manifest_id, manifest}`.
 - `generated_at`: RFC3339 creation timestamp.
 - `deployment`: deployment name, mode, environment, chart metadata, image
-  reference, default tenant id, and artifact type.
+  reference, default tenant id, API settings, and artifact type.
 - `source_files`: hashed Docker, Helm, deployment documentation, and README
   source files.
-- `components`: local runtime, Helm chart, storage, signing secret, API, WORM,
-  and trust-authority component records.
+- `components`: local runtime, Helm chart, storage, signing secret, API
+  Deployment, API Service, WORM, and trust-authority component records.
 - `controls`: implemented-reference and planned-production control records.
 - `limitations`: explicit non-production claims.
 
@@ -36,6 +36,8 @@ Default source files:
 - `deploy/helm/trustai/Chart.yaml`
 - `deploy/helm/trustai/values.yaml`
 - `deploy/helm/trustai/templates/configmap.yaml`
+- `deploy/helm/trustai/templates/deployment.yaml`
+- `deploy/helm/trustai/templates/service.yaml`
 - `deploy/helm/trustai/templates/demo-job.yaml`
 - `deploy/helm/trustai/templates/pvc.yaml`
 - `docs/deployment/byoc.md`
@@ -52,7 +54,7 @@ Default source files:
 - source file `sha256` and size match the current worktree.
 - required deployment sources are present.
 - required components exist: Docker runtime, Helm chart, persistent evidence
-  storage, and signing-key secret.
+  storage, signing-key secret, local ingestion API, and API Service.
 - control records are present and planned-production controls are surfaced as
   warnings rather than silently passing as implemented controls.
 
@@ -83,4 +85,5 @@ A production BYOC or air-gapped operator should add:
 - separate control-plane and data-plane tenancy controls.
 
 The manifest is meant to make those claims verifiable as they are added, not to
-hide them behind deployment prose.
+hide them behind deployment prose. The v0.1 chart now runs both the API server
+and the optional aitrade demo job with the same Secret-backed signing key.

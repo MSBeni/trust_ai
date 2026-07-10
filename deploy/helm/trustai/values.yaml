@@ -16,3 +16,26 @@ demo:
   statePath: /data/evidence-chain.json
   outputPath: /data/aitrade-proof-pack.json
   pdfPath: /data/aitrade-proof-pack.pdf
+api:
+  replicas: 1
+  port: 8080
+  statePath: /data/server/evidence-chain.json
+  controlDbPath: /data/server/control-plane.sqlite
+  approvalRequestStorePath: /data/server/approval-requests.json
+  providerWebhookStorePath: /data/server/provider-webhooks.json
+  service:
+    type: ClusterIP
+    port: 8080
+  readinessProbe:
+    initialDelaySeconds: 3
+    periodSeconds: 10
+  livenessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 20
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

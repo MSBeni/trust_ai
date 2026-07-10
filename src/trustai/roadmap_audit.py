@@ -322,6 +322,8 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "deploy/docker/Dockerfile",
             "deploy/helm/trustai/Chart.yaml",
             "deploy/helm/trustai/values.yaml",
+            "deploy/helm/trustai/templates/deployment.yaml",
+            "deploy/helm/trustai/templates/service.yaml",
             "src/trustai/deployment.py",
             "src/trustai/byoc_operator.py",
             "src/trustai/byoc_authority.py",

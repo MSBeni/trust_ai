@@ -24510,4 +24510,9 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    if hasattr(args, "key"):
+        try:
+            args.key = _resolve_secret_arg(args.key)
+        except ValueError as exc:
+            parser.error(str(exc))
     return args.func(args)

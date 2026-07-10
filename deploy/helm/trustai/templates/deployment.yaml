@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trustai-api
+  labels:
+    app.kubernetes.io/name: trustai
+    app.kubernetes.io/component: api
+spec:
+  replicas: {{ .Values.api.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: trustai
+      app.kubernetes.io/component: api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: trustai
+        app.kubernetes.io/component: api
+    spec:
+      containers:
+        - name: trustai
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: trustai-config
+          env:
+            - name: TRUSTAI_SIGNING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.signingKeySecretName }}
+                  key: signing-key
+          args:
+            - --key
+            - "env:TRUSTAI_SIGNING_KEY"
+            - serve
+            - --host
+            - "0.0.0.0"
+            - --port
+            - "{{ .Values.api.port }}"
+            - --tenant
+            - "{{ .Values.tenantId }}"
+            - --state
+            - "{{ .Values.api.statePath }}"
+            - --control-db
+            - "{{ .Values.api.controlDbPath }}"
+            - --approval-request-store
+            - "{{ .Values.api.approvalRequestStorePath }}"
+            - --provider-webhook-store
+            - "{{ .Values.api.providerWebhookStorePath }}"
+          ports:
+            - name: http
+              containerPort: {{ .Values.api.port }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: {{ .Values.api.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.api.readinessProbe.periodSeconds }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: {{ .Values.api.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.api.livenessProbe.periodSeconds }}
+          resources:
+{{ toYaml .Values.api.resources | indent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.storage.mountPath }}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: trustai-data
