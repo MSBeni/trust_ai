@@ -5,6 +5,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from hashlib import sha256
 from pathlib import Path
 
 from trustai.byoc_authority import (
@@ -23,6 +24,12 @@ from trustai.object_store import WORMStore
 
 
 ROOT = Path(__file__).resolve().parents[1]
+BYOC_NETWORK_POLICY_AUTHORITY_EXPORT = ROOT / "examples" / "aitrade" / "byoc-network-policy-authority-export.json"
+BYOC_NETWORK_POLICY_AUTHORITY_EXPORT_REL = "examples/aitrade/byoc-network-policy-authority-export.json"
+
+
+def _sha256_ref(path: Path) -> str:
+    return "sha256:" + sha256(path.read_bytes()).hexdigest()
 
 
 class BYOCAuthorityTests(unittest.TestCase):
@@ -117,7 +124,7 @@ class BYOCAuthorityTests(unittest.TestCase):
                 "requirement_id": "network-policy-admission-audit-export",
                 "authority_kind": "provider-api",
                 "evidence_ref": "k8s:networkpolicy/trustai/trustai-api",
-                "evidence_hash": "sha256:byoc-network-policy-admission-export",
+                "evidence_hash": _sha256_ref(BYOC_NETWORK_POLICY_AUTHORITY_EXPORT),
                 "description": "Provider Kubernetes export proving the TrustAI API NetworkPolicy was admitted and audit logged.",
                 "issuer": "Example Kubernetes API",
                 "subject": "trustai-api NetworkPolicy",
@@ -127,14 +134,27 @@ class BYOCAuthorityTests(unittest.TestCase):
             },
         ]
 
+    def _authority_artifacts(self) -> list[dict]:
+        return [
+            {
+                "requirement_id": "network-policy-admission-audit-export",
+                "path": BYOC_NETWORK_POLICY_AUTHORITY_EXPORT_REL,
+            }
+        ]
+
     def _dossier(
         self,
         tmp: Path,
         *,
         mode: str = "operator-dossier",
         authority_evidence: list[dict] | None = None,
+        authority_artifacts: list[dict] | None = None,
     ) -> tuple[dict, dict, dict, dict, dict, Path]:
         deployment, attestation, receipt, legal_hold, store_root = self._source_artifacts(tmp)
+        if authority_artifacts is None:
+            artifact_inputs = self._authority_artifacts() if authority_evidence is None else []
+        else:
+            artifact_inputs = authority_artifacts
         dossier = build_byoc_authority_dossier(
             deployment,
             attestation,
@@ -148,6 +168,7 @@ class BYOCAuthorityTests(unittest.TestCase):
             authority_ref="authority:byoc/aitrade-byoc",
             producer_ref="oidc:trustai.example/byoc-authority-worker",
             authority_evidence=authority_evidence if authority_evidence is not None else self._authority_evidence(),
+            authority_artifacts=artifact_inputs,
             generated_at="2026-07-04T03:10:00Z",
         )
         return dossier, deployment, attestation, receipt, legal_hold, store_root
@@ -184,11 +205,14 @@ class BYOCAuthorityTests(unittest.TestCase):
             self.assertTrue(result.ok, result.errors)
             self.assertEqual(BYOC_AUTHORITY_SCHEMA, dossier["schema"])
             self.assertEqual(3, result.covered_count)
+            self.assertEqual(1, result.replayed_artifact_count)
+            self.assertEqual(1, dossier["artifact_summary"]["artifact_count"])
             self.assertEqual(len(PRODUCTION_AUTHORITY_REQUIREMENT_IDS), result.required_count)
             self.assertTrue(any("missing for" in warning for warning in result.warnings))
             self.assertEqual(BYOC_AUTHORITY_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(dossier["dossier_id"], entry["payload"]["dossier_id"])
-            self.assertEqual({"deferred": 2, "passed": 9}, entry["payload"]["control_summary"])
+            self.assertEqual({"deferred": 2, "passed": 10}, entry["payload"]["control_summary"])
+            self.assertEqual(1, entry["payload"]["artifact_summary"]["artifact_count"])
             self.assertTrue(chain.verify_all().ok)
 
     def test_byoc_authority_tracks_network_policy_admission_evidence(self):
@@ -201,6 +225,26 @@ class BYOCAuthorityTests(unittest.TestCase):
             self.assertIn("network-policy-admission-audit-export", requirement_ids)
             self.assertIn("network-policy-admission-audit-export", dossier["summary"]["covered_requirement_ids"])
             self.assertEqual("passed", control_by_id["network-policy-admission-audit-export-covered"]["status"])
+
+    def test_byoc_authority_rejects_artifact_replay_tamper(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            dossier, deployment, attestation, receipt, legal_hold, store_root = self._dossier(tmp)
+            tampered = copy.deepcopy(dossier)
+            tampered["authority_artifacts"][0]["path"] = "examples/aitrade/traffic-completeness-provider-export.json"
+
+            result = verify_byoc_authority_dossier(
+                tampered,
+                deployment_manifest=deployment,
+                byoc_operator=attestation,
+                root=ROOT,
+                store=store_root,
+                worm_receipt=receipt,
+                legal_hold=legal_hold,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertTrue(any("authority artifact" in error and "hash" in error for error in result.errors))
 
     def test_byoc_authority_detects_operator_source_tamper(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -311,7 +355,9 @@ class BYOCAuthorityTests(unittest.TestCase):
                     "--authority-evidence",
                     "live-cloud-account-binding,provider-api,aws:account/123456789012/trustai-byoc,sha256:byoc-live-cloud-account,Provider account export;issuer=ExampleCloud;subject=aitrade BYOC account;source_uri=https://cloud.example/accounts/123456789012/trustai;issued_at=2026-07-04T03:05:00Z;expires_at=2026-12-31T00:00:00Z",
                     "--authority-evidence",
-                    "network-policy-admission-audit-export,provider-api,k8s:networkpolicy/trustai/trustai-api,sha256:byoc-network-policy-admission-export,Provider Kubernetes NetworkPolicy admission export;issuer=Example Kubernetes API;subject=trustai-api NetworkPolicy;source_uri=https://cloud.example/kubernetes/aitrade-prod/networkpolicies/trustai-api;issued_at=2026-07-04T03:07:00Z;expires_at=2026-12-31T00:00:00Z",
+                    "network-policy-admission-audit-export,provider-api,k8s:networkpolicy/trustai/trustai-api," + _sha256_ref(BYOC_NETWORK_POLICY_AUTHORITY_EXPORT) + ",Provider Kubernetes NetworkPolicy admission export;issuer=Example Kubernetes API;subject=trustai-api NetworkPolicy;source_uri=https://cloud.example/kubernetes/aitrade-prod/networkpolicies/trustai-api;issued_at=2026-07-04T03:07:00Z;expires_at=2026-12-31T00:00:00Z",
+                    "--authority-artifact",
+                    f"network-policy-admission-audit-export,{BYOC_NETWORK_POLICY_AUTHORITY_EXPORT_REL}",
                     "--generated-at",
                     "2026-07-04T03:10:00Z",
                     "--require-fresh",
@@ -343,6 +389,8 @@ class BYOCAuthorityTests(unittest.TestCase):
                     str(ROOT),
                     "--store",
                     str(store_root),
+                    "--authority-artifact",
+                    f"network-policy-admission-audit-export,{BYOC_NETWORK_POLICY_AUTHORITY_EXPORT_REL}",
                     "--require-fresh",
                     "--now",
                     "2026-07-04T03:10:00Z",
@@ -368,6 +416,8 @@ class BYOCAuthorityTests(unittest.TestCase):
                     str(ROOT),
                     "--store",
                     str(store_root),
+                    "--authority-artifact",
+                    f"network-policy-admission-audit-export,{BYOC_NETWORK_POLICY_AUTHORITY_EXPORT_REL}",
                     "--require-fresh",
                     "--now",
                     "2026-07-04T03:10:00Z",

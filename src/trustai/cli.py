@@ -548,6 +548,7 @@ from .byoc_authority import (
     append_byoc_authority_dossier,
     build_byoc_authority_dossier,
     load_byoc_authority_dossier,
+    parse_byoc_authority_artifact_arg,
     parse_byoc_authority_evidence_arg,
     verify_byoc_authority_dossier,
     write_byoc_authority_dossier,
@@ -8219,6 +8220,7 @@ def cmd_byoc_authority(args: argparse.Namespace) -> int:
         deployment_manifest = sources.pop("deployment_manifest")
         byoc_operator = sources.pop("byoc_operator")
         evidence = [parse_byoc_authority_evidence_arg(value) for value in (args.authority_evidence or [])]
+        artifacts = [parse_byoc_authority_artifact_arg(value) for value in (args.authority_artifact or [])]
         dossier = build_byoc_authority_dossier(
             deployment_manifest,
             byoc_operator,
@@ -8231,6 +8233,7 @@ def cmd_byoc_authority(args: argparse.Namespace) -> int:
             authority_ref=args.authority_ref,
             producer_ref=args.producer_ref,
             authority_evidence=evidence,
+            authority_artifacts=artifacts,
             generated_at=args.generated_at,
             key=args.key,
         )
@@ -8245,6 +8248,7 @@ def cmd_byoc_authority(args: argparse.Namespace) -> int:
             require_complete=args.require_complete,
             require_fresh=args.require_fresh,
             now=args.now,
+            authority_artifacts=artifacts or None,
         )
     except (OSError, ValueError) as exc:
         print(f"BYOC authority dossier generation failed: {exc}", file=sys.stderr)
@@ -8267,6 +8271,7 @@ def cmd_byoc_authority_verify(args: argparse.Namespace) -> int:
     try:
         dossier = load_byoc_authority_dossier(args.dossier)
         sources = _load_byoc_authority_sources(args, require_all=False)
+        artifacts = [parse_byoc_authority_artifact_arg(value) for value in (args.authority_artifact or [])]
     except (OSError, ValueError) as exc:
         print(f"BYOC authority dossier verification failed: {exc}", file=sys.stderr)
         return 1
@@ -8282,6 +8287,7 @@ def cmd_byoc_authority_verify(args: argparse.Namespace) -> int:
         require_complete=args.require_complete,
         require_fresh=args.require_fresh,
         now=args.now,
+        authority_artifacts=artifacts or None,
     )
     if result.ok:
         print(f"verified BYOC authority dossier: {args.dossier}")
@@ -8302,6 +8308,7 @@ def cmd_byoc_authority_append(args: argparse.Namespace) -> int:
         sources = _load_byoc_authority_sources(args, require_all=True)
         deployment_manifest = sources.pop("deployment_manifest")
         byoc_operator = sources.pop("byoc_operator")
+        artifacts = [parse_byoc_authority_artifact_arg(value) for value in (args.authority_artifact or [])]
     except (OSError, ValueError) as exc:
         print(f"BYOC authority dossier append failed: {exc}", file=sys.stderr)
         return 1
@@ -8319,6 +8326,7 @@ def cmd_byoc_authority_append(args: argparse.Namespace) -> int:
             require_complete=args.require_complete,
             require_fresh=args.require_fresh,
             now=args.now,
+            authority_artifacts=artifacts or None,
         )
     except ValueError as exc:
         print(f"BYOC authority dossier append failed: {exc}", file=sys.stderr)
@@ -18462,6 +18470,7 @@ def build_parser() -> argparse.ArgumentParser:
         parser.add_argument("--authority-ref", required=True)
         parser.add_argument("--producer-ref", required=True)
         parser.add_argument("--authority-evidence", action="append", default=[], help=byoc_authority_evidence_help)
+        parser.add_argument("--authority-artifact", action="append", default=[], help="repeatable requirement_id,path[,evidence_ref] retained evidence file to hash-replay")
         parser.add_argument("--generated-at")
         parser.add_argument("--require-complete", action="store_true")
         parser.add_argument("--require-fresh", action="store_true")
@@ -18483,6 +18492,7 @@ def build_parser() -> argparse.ArgumentParser:
     byoc_authority_verify.add_argument("--legal-hold")
     byoc_authority_verify.add_argument("--root", default=".")
     byoc_authority_verify.add_argument("--store", default=".trustai/worm")
+    byoc_authority_verify.add_argument("--authority-artifact", action="append", default=[], help="repeatable requirement_id,path[,evidence_ref] retained evidence file to hash-replay")
     byoc_authority_verify.add_argument("--require-complete", action="store_true")
     byoc_authority_verify.add_argument("--require-fresh", action="store_true")
     byoc_authority_verify.add_argument("--now")
@@ -18497,6 +18507,7 @@ def build_parser() -> argparse.ArgumentParser:
     byoc_authority_append.add_argument("--legal-hold")
     byoc_authority_append.add_argument("--root", default=".")
     byoc_authority_append.add_argument("--store", default=".trustai/worm")
+    byoc_authority_append.add_argument("--authority-artifact", action="append", default=[], help="repeatable requirement_id,path[,evidence_ref] retained evidence file to hash-replay")
     byoc_authority_append.add_argument("--require-complete", action="store_true")
     byoc_authority_append.add_argument("--require-fresh", action="store_true")
     byoc_authority_append.add_argument("--now")

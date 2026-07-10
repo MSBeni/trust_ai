@@ -1,0 +1,24 @@
+{
+  "schema": "trustai.byoc-network-policy-authority-export/0.1",
+  "export_ref": "provider-export:aitrade/byoc-network-policy/2026-07-04",
+  "issuer": "Example Kubernetes API",
+  "environment": "aitrade-byoc",
+  "cluster_ref": "k8s:cluster/aitrade-prod",
+  "namespace": "trustai",
+  "network_policy_ref": "k8s:networkpolicy/trustai/trustai-api",
+  "admission": {
+    "admitted": true,
+    "resource_version": "rv-20260704-0007",
+    "observed_generation": 7,
+    "pod_selector_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "ingress_policy_hash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "egress_policy_hash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+  },
+  "audit": {
+    "audit_log_ref": "audit-log:kubernetes/aitrade-prod/network-policy-admission",
+    "audit_log_root": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "event_count": 3
+  },
+  "issued_at": "2026-07-04T03:07:00Z",
+  "expires_at": "2026-12-31T00:00:00Z"
+}

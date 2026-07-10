@@ -334,13 +334,14 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "src/trustai/object_store.py",
             "docs/deployment/byoc.md",
             "docs/specs/byoc-production-authority-v0.1.md",
+            "examples/aitrade/byoc-network-policy-authority-export.json",
             "tests/test_deployment.py",
             "tests/test_byoc_operator.py",
             "tests/test_byoc_authority.py",
             "tests/test_worm_legal_hold.py",
         ],
         "external_authority": [
-            "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence.",
+            "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence.",
         ],
     },
     {

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
+from hashlib import sha256
+import json
 from pathlib import Path
 from typing import Any
 
@@ -92,6 +93,7 @@ class BYOCAuthorityVerification:
     fresh_evidence_count: int = 0
     stale_evidence_count: int = 0
     missing_freshness_count: int = 0
+    replayed_artifact_count: int = 0
 
 
 def load_byoc_authority_dossier(path: str | Path) -> dict[str, Any]:
@@ -134,6 +136,16 @@ def parse_byoc_authority_evidence_arg(value: str) -> dict[str, Any]:
     }
 
 
+def parse_byoc_authority_artifact_arg(value: str) -> dict[str, Any]:
+    parts = [part.strip() for part in value.split(",", 2)]
+    if len(parts) not in {2, 3}:
+        raise ValueError("authority artifact must be requirement_id,path[,evidence_ref]")
+    artifact = {"requirement_id": parts[0], "path": parts[1]}
+    if len(parts) == 3 and parts[2]:
+        artifact["evidence_ref"] = parts[2]
+    return artifact
+
+
 def build_byoc_authority_dossier(
     deployment_manifest: dict[str, Any],
     byoc_operator: dict[str, Any],
@@ -148,6 +160,7 @@ def build_byoc_authority_dossier(
     authority_ref: str,
     producer_ref: str,
     authority_evidence: list[dict[str, Any]] | None = None,
+    authority_artifacts: list[dict[str, Any]] | None = None,
     generated_at: str | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
@@ -174,7 +187,9 @@ def build_byoc_authority_dossier(
     timestamp = generated_at or utc_now()
     parse_rfc3339(timestamp)
     evidence_items = [_build_authority_evidence_item(item) for item in (authority_evidence or [])]
+    artifact_items = [_build_authority_artifact(Path(root), item, evidence_items) for item in (authority_artifacts or [])]
     summary = _summary(evidence_items)
+    artifact_summary = _artifact_summary(artifact_items)
     binding = _source_binding(deployment_manifest, byoc_operator)
     body: dict[str, Any] = {
         "schema": BYOC_AUTHORITY_SCHEMA,
@@ -187,8 +202,10 @@ def build_byoc_authority_dossier(
         "source_binding": binding,
         "required_production_authority": PRODUCTION_AUTHORITY_REQUIREMENTS,
         "authority_evidence": evidence_items,
+        "authority_artifacts": artifact_items,
         "summary": summary,
-        "controls": _controls(mode, binding, evidence_items, summary),
+        "artifact_summary": artifact_summary,
+        "controls": _controls(mode, binding, evidence_items, summary, artifact_summary),
         "limitations": [
             "This dossier binds a signed deployment manifest and BYOC operator attestation to production-authority evidence for BYOC/self-hosted claims.",
             "It records cloud-account, Object Lock, legal hold, air-gap, Helm, NetworkPolicy admission/audit, operator, KMS, backup, network, audit-log, and tenant-isolation evidence requirements.",
@@ -213,6 +230,7 @@ def verify_byoc_authority_dossier(
     require_complete: bool = False,
     require_fresh: bool = False,
     now: str | None = None,
+    authority_artifacts: list[dict[str, Any]] | None = None,
 ) -> BYOCAuthorityVerification:
     errors: list[str] = []
     warnings: list[str] = []
@@ -275,6 +293,22 @@ def verify_byoc_authority_dossier(
     expected_summary = _summary(evidence_dicts)
     if dossier.get("summary") != expected_summary:
         errors.append("BYOC authority summary does not match authority evidence")
+    artifact_items = dossier.get("authority_artifacts", [])
+    if not isinstance(artifact_items, list):
+        errors.append("BYOC authority authority_artifacts must be a list")
+        artifact_items = []
+    replayed_artifact_count = _verify_authority_artifacts(Path(root), artifact_items, evidence_dicts, errors, warnings)
+    expected_artifact_summary = _artifact_summary([item for item in artifact_items if isinstance(item, dict)])
+    if dossier.get("artifact_summary") != expected_artifact_summary:
+        errors.append("BYOC authority artifact_summary does not match authority artifacts")
+    if authority_artifacts is not None:
+        try:
+            expected_artifacts = [_build_authority_artifact(Path(root), item, evidence_dicts) for item in authority_artifacts]
+        except ValueError as exc:
+            errors.append(f"invalid supplied BYOC authority artifact: {exc}")
+            expected_artifacts = []
+        if artifact_items != expected_artifacts:
+            errors.append("BYOC authority authority_artifacts do not match supplied artifact paths")
     missing = expected_summary["missing_requirement_ids"]
     if missing:
         warnings.append("BYOC authority evidence missing for: " + ", ".join(missing))
@@ -289,7 +323,7 @@ def verify_byoc_authority_dossier(
         errors.append("production-dossier mode requires deployment, BYOC operator, Object Lock, legal hold, customer account, keyring, backup, network, and audit-log bindings")
     if not isinstance(dossier.get("controls"), list) or not dossier.get("controls"):
         errors.append("BYOC authority controls are required")
-    elif dossier.get("controls") != _controls(str(mode), binding_for_controls, evidence_dicts, expected_summary):
+    elif dossier.get("controls") != _controls(str(mode), binding_for_controls, evidence_dicts, expected_summary, expected_artifact_summary):
         errors.append("BYOC authority controls do not match dossier body")
     _check_no_secret_values(dossier, errors)
 
@@ -302,6 +336,7 @@ def verify_byoc_authority_dossier(
         fresh_evidence_count=freshness_counts["fresh"],
         stale_evidence_count=freshness_counts["stale"],
         missing_freshness_count=freshness_counts["missing"],
+        replayed_artifact_count=replayed_artifact_count,
     )
 
 
@@ -319,6 +354,7 @@ def append_byoc_authority_dossier(
     require_complete: bool = False,
     require_fresh: bool = False,
     now: str | None = None,
+    authority_artifacts: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     result = verify_byoc_authority_dossier(
         dossier,
@@ -332,6 +368,7 @@ def append_byoc_authority_dossier(
         require_complete=require_complete,
         require_fresh=require_fresh,
         now=now,
+        authority_artifacts=authority_artifacts,
     )
     if not result.ok:
         raise ValueError("invalid BYOC authority dossier: " + "; ".join(result.errors))
@@ -346,6 +383,7 @@ def append_byoc_authority_dossier(
         "producer_ref": dossier.get("producer_ref"),
         "source_binding": dossier.get("source_binding"),
         "summary": dossier.get("summary"),
+        "artifact_summary": dossier.get("artifact_summary"),
         "control_summary": _status_summary(dossier.get("controls", [])),
         "authority_evidence": [
             {
@@ -358,6 +396,18 @@ def append_byoc_authority_dossier(
                 "expires_at": item.get("expires_at"),
             }
             for item in dossier.get("authority_evidence", [])
+            if isinstance(item, dict)
+        ],
+        "authority_artifacts": [
+            {
+                "requirement_id": item.get("requirement_id"),
+                "evidence_ref": item.get("evidence_ref"),
+                "evidence_id": item.get("evidence_id"),
+                "path": item.get("path"),
+                "sha256": item.get("sha256"),
+                "artifact_id": item.get("artifact_id"),
+            }
+            for item in dossier.get("authority_artifacts", [])
             if isinstance(item, dict)
         ],
     }
@@ -566,6 +616,74 @@ def _verify_authority_evidence_item(item: dict[str, Any], errors: list[str], war
     return "fresh"
 
 
+def _build_authority_artifact(root: Path, item: dict[str, Any], evidence_items: list[dict[str, Any]]) -> dict[str, Any]:
+    if not isinstance(item, dict):
+        raise ValueError("authority artifact must be an object")
+    requirement_id = str(item.get("requirement_id") or "")
+    relative_path = str(item.get("path") or "").replace("\\", "/")
+    evidence_ref = str(item.get("evidence_ref") or "")
+    if requirement_id not in PRODUCTION_AUTHORITY_REQUIREMENT_IDS:
+        raise ValueError(f"unsupported BYOC authority artifact requirement: {requirement_id}")
+    _require_text(relative_path, "authority_artifact.path")
+    path_obj = Path(relative_path)
+    if path_obj.is_absolute() or ".." in path_obj.parts:
+        raise ValueError("authority artifact path must be repository-relative")
+    matching = [evidence for evidence in evidence_items if evidence.get("requirement_id") == requirement_id]
+    if evidence_ref:
+        matching = [evidence for evidence in matching if evidence.get("evidence_ref") == evidence_ref]
+    if not matching:
+        raise ValueError(f"authority artifact has no matching evidence item: {requirement_id}")
+    if len(matching) > 1:
+        raise ValueError(f"authority artifact evidence_ref is required when multiple evidence items cover {requirement_id}")
+    evidence = matching[0]
+    target = root / relative_path
+    if not target.is_file():
+        raise ValueError(f"authority artifact file missing: {relative_path}")
+    data = target.read_bytes()
+    sha = "sha256:" + sha256(data).hexdigest()
+    if sha != evidence.get("evidence_hash"):
+        raise ValueError(f"authority artifact hash does not match authority evidence: {requirement_id}")
+    body = {
+        "requirement_id": requirement_id,
+        "evidence_ref": evidence.get("evidence_ref"),
+        "evidence_id": evidence.get("evidence_id"),
+        "path": relative_path,
+        "sha256": sha,
+        "size_bytes": len(data),
+    }
+    return {**body, "artifact_id": content_hash(body)}
+
+
+def _verify_authority_artifacts(root: Path, artifacts: list[Any], evidence_items: list[dict[str, Any]], errors: list[str], warnings: list[str]) -> int:
+    replayed = 0
+    for index, item in enumerate(artifacts):
+        if not isinstance(item, dict):
+            errors.append(f"BYOC authority artifact {index + 1} must be an object")
+            continue
+        try:
+            expected = _build_authority_artifact(root, item, evidence_items)
+        except ValueError as exc:
+            errors.append(f"invalid BYOC authority artifact {index + 1}: {exc}")
+            continue
+        if item != expected:
+            errors.append(f"BYOC authority artifact {index + 1} does not match replayed file metadata")
+            continue
+        replayed += 1
+    if not artifacts:
+        warnings.append("BYOC authority dossier has no replayable authority evidence artifacts")
+    return replayed
+
+
+def _artifact_summary(artifacts: list[dict[str, Any]]) -> dict[str, Any]:
+    requirement_ids = sorted({str(item.get("requirement_id")) for item in artifacts if item.get("requirement_id")})
+    return {
+        "artifact_count": len(artifacts),
+        "requirement_count": len(requirement_ids),
+        "requirement_ids": requirement_ids,
+        "artifact_hash_root": content_hash([item.get("sha256") for item in artifacts]),
+    }
+
+
 def _verify_required_authority(value: Any, errors: list[str]) -> None:
     if value != PRODUCTION_AUTHORITY_REQUIREMENTS:
         errors.append("BYOC authority required_production_authority does not match the required checklist")
@@ -584,7 +702,7 @@ def _summary(evidence_items: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _controls(mode: str, binding: dict[str, Any], evidence_items: list[dict[str, Any]], summary: dict[str, Any]) -> list[dict[str, str]]:
+def _controls(mode: str, binding: dict[str, Any], evidence_items: list[dict[str, Any]], summary: dict[str, Any], artifact_summary: dict[str, Any]) -> list[dict[str, str]]:
     freshness = _freshness_summary(evidence_items)
     missing = summary.get("missing_requirement_count", 0)
     deployment = binding.get("deployment_manifest") if isinstance(binding.get("deployment_manifest"), dict) else {}
@@ -598,6 +716,7 @@ def _controls(mode: str, binding: dict[str, Any], evidence_items: list[dict[str,
     legal_hold = object_lock.get("legal_hold") if isinstance(object_lock.get("legal_hold"), dict) else {}
     covered_ids = set(summary.get("covered_requirement_ids", []))
     network_policy_authority_covered = "network-policy-admission-audit-export" in covered_ids
+    artifact_count = int(artifact_summary.get("artifact_count", 0) or 0)
     production_ready = mode == "production-dossier" and _source_binding_complete(binding) and not missing and freshness["missing"] == 0
     return [
         {"id": "deployment-manifest-bound", "status": "passed" if deployment.get("manifest_id") else "failed", "detail": "Dossier binds the signed Docker/Helm deployment manifest, source file hashes, mode, and environment."},
@@ -609,6 +728,7 @@ def _controls(mode: str, binding: dict[str, Any], evidence_items: list[dict[str,
         {"id": "authority-evidence-checklist-covered", "status": "passed" if not missing else "deferred", "detail": f"{summary.get('covered_requirement_count', 0)}/{summary.get('required_requirement_count', 0)} BYOC production authority categories are covered."},
         {"id": "network-policy-admission-audit-export-covered", "status": "passed" if network_policy_authority_covered else "deferred", "detail": "Provider/customer Kubernetes NetworkPolicy admission and audit evidence is tracked separately from local Helm chart validation."},
         {"id": "freshness-windows-tracked", "status": "passed" if evidence_items and freshness["missing"] == 0 else "deferred", "detail": f"windowed={freshness['windowed']} missing_freshness={freshness['missing']}"},
+        {"id": "authority-artifacts-replayed", "status": "passed" if artifact_count else "deferred", "detail": f"replayed={artifact_count} authority evidence artifacts hash-match retained source files."},
         {"id": "production-mode-gated", "status": "passed" if production_ready else "deferred", "detail": "Production BYOC authority is claimed only when deployment, operator, WORM/legal hold, tenancy, backup, network, audit, and every authority category are covered with timestamped evidence windows."},
         {"id": "raw-secret-exclusion", "status": "passed", "detail": "Dossier stores hashes and references instead of raw customer cloud, KMS, Kubernetes, or operator credentials."},
     ]

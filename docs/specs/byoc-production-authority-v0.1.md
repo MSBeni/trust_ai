@@ -10,8 +10,10 @@ evidence needed before TrustAI can claim production BYOC or self-hosted
 readiness for regulated buyers.
 
 The dossier is designed for offline review. It stores hashes, references,
-freshness windows, control summaries, and source bindings. It must not store
-raw customer cloud, Kubernetes, KMS, object-store, or operator credentials.
+freshness windows, control summaries, source bindings, and optional retained
+authority artifacts that can be hash-replayed from local source files. It must
+not store raw customer cloud, Kubernetes, KMS, object-store, or operator
+credentials.
 
 ## Schema
 
@@ -31,6 +33,8 @@ The dossier binds:
 - backup/restore and RPO/RTO evidence references
 - private ingress, egress policy, NetworkPolicy admission/audit evidence requirements, and optional air-gap bundle references
 - immutable operator audit-log root and retention window
+- optional retained authority artifacts, each repository-relative and hash-bound
+  to a matching authority evidence item
 
 ## Modes
 
@@ -68,6 +72,26 @@ Each evidence item records:
 - optional issuer, subject, source URI, issued_at, and expires_at
 - canonical evidence ID
 
+## Authority Artifacts
+
+`authority_artifacts` is optional. Each item records a retained source artifact
+that can be replayed by an offline auditor:
+
+- requirement ID
+- evidence reference and evidence ID copied from the matched evidence item
+- repository-relative path
+- SHA-256 byte hash, prefixed with `sha256:`
+- byte size
+- canonical artifact ID
+
+The retained artifact hash must equal the matched authority evidence hash. A
+path must be repository-relative and must not contain `..` traversal segments.
+When multiple evidence items cover the same requirement, the artifact input must
+include `evidence_ref` to disambiguate the match.
+
+`artifact_summary` records artifact count, requirement count, covered
+requirement IDs, and an artifact hash root over retained artifact hashes.
+
 ## Verification Rules
 
 Verifiers must:
@@ -78,7 +102,13 @@ Verifiers must:
 - replay the BYOC operator attestation when supplied
 - compare source bindings to supplied deployment/operator artifacts
 - recompute the authority evidence summary
-- recompute controls from the dossier body, including the dedicated NetworkPolicy admission/audit evidence control
+- recompute the authority artifact summary
+- replay retained authority artifact files when present and compare their hashes
+  to matching authority evidence hashes
+- reject absolute or parent-traversing retained artifact paths
+- optionally compare caller-supplied `--authority-artifact` inputs to the
+  dossier's retained artifact metadata
+- recompute controls from the dossier body, including the dedicated NetworkPolicy admission/audit evidence and artifact replay controls
 - reject malformed authority evidence and unsupported authority kinds
 - reject raw secret-like values that are not references or hashes
 - reject `production-dossier` mode unless all production authority requirements
@@ -93,4 +123,5 @@ fresh evidence windows.
 
 The chain payload records the dossier ID/hash, mode, environment, producer and
 authority references, source binding summary, authority evidence summary,
-control summary, and authority evidence metadata.
+authority artifact summary, control summary, authority evidence metadata, and
+retained authority artifact metadata.

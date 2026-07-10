@@ -51,6 +51,11 @@ class StandardsSubmissionTests(unittest.TestCase):
         self.assertIn("deployment-image-integrity-v0.1.md", markdown)
         self.assertIn("deployment-manifest-attestation", markdown)
         self.assertIn("BYOC API Deployment", markdown)
+        self.assertIn("byoc-production-authority-dossiers", markdown)
+        byoc_target = next(target for target in package["conformance_targets"] if target["id"] == "byoc-production-authority-dossiers")
+        self.assertIn("retained authority artifact replay", byoc_target["description"])
+        self.assertTrue(any("--authority-artifact" in command for command in byoc_target["commands"]))
+        self.assertTrue(any("byoc-network-policy-authority-export.json" in command for command in byoc_target["commands"]))
 
     def test_standards_submission_detects_spec_hash_tamper(self):
         package = build_standards_submission(ROOT)

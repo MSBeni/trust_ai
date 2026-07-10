@@ -112,9 +112,11 @@ class RoadmapAuditTests(unittest.TestCase):
         self.assertIn("deploy/helm/trustai/templates/networkpolicy.yaml", byoc_evidence)
         byoc_external_authority = " ".join(byoc_requirement["external_authority_required"])
         self.assertIn("NetworkPolicy admission/audit", byoc_external_authority)
+        self.assertIn("retained authority artifact replay", byoc_external_authority)
         self.assertIn("docs/specs/helm-chart-validation-v0.1.md", byoc_evidence)
         self.assertIn("docs/specs/deployment-image-integrity-v0.1.md", byoc_evidence)
         self.assertIn("docs/specs/kubernetes-release-state-v0.1.md", byoc_evidence)
+        self.assertIn("examples/aitrade/byoc-network-policy-authority-export.json", byoc_evidence)
         cicd_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "cicd-provider-approvals")
         cicd_evidence = {item["path"] for item in cicd_requirement["evidence"]}
         self.assertIn("docs/specs/promotion-status-receipt-v0.1.md", cicd_evidence)
