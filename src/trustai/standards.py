@@ -73,6 +73,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/regulator-acceptance-v0.1.md",
     "docs/specs/supervised-access-v0.1.md",
     "docs/specs/review-portal-service-attestation-v0.1.md",
+    "docs/specs/review-portal-production-authority-v0.1.md",
     "docs/specs/eu-ai-act-technical-documentation-v0.1.md",
     "docs/specs/standards-submission-v0.1.md",
     "docs/specs/standards-body-submission-v0.1.md",
@@ -657,6 +658,16 @@ CONFORMANCE_TARGETS = (
             "python -m trustai review-portal-service-attestation artifacts/supervised-access-receipt.json --pack artifacts/aitrade-proof-pack.json --disclosure artifacts/regulator-disclosure.json --view artifacts/regulator-view.html --regulator-acceptance artifacts/regulator-acceptance.json --eu-ai-act-document artifacts/eu-ai-act-technical-documentation.json --environment aitrade-prod --portal-kind regulator --service-ref review-portal:trustai/regulator-prod --service-version 0.1.0 --endpoint-url https://portal.example/reviews/aitrade --service-image ghcr.io/trustai/review-portal:0.1.0 --service-image-digest sha256:trustai-review-portal-image --service-binary-hash sha256:trustai-review-portal-binary --frontend-bundle-ref bundle:review-portal/regulator-ui --frontend-bundle-hash sha256:trustai-review-portal-frontend --api-ref api:review-portal/v0 --session-store-ref redis:review-portal/sessions --auth-provider-ref oidc:review-portal/idp --auth-policy-ref policy:review-portal/auth-v0.1 --rbac-policy-ref policy:review-portal/rbac-v0.1 --session-policy-ref policy:review-portal/session-v0.1 --selective-disclosure-policy-ref policy:review-portal/selective-disclosure-v0.1 --tenant-isolation-ref tenant-isolation:review-portal/aitrade --rate-limit-policy-ref rate-limit:review-portal/regulator --network-policy-ref netpol:review-portal/deny-by-default --egress-policy-ref egress:review-portal/kms-tsa-only --content-security-policy-ref csp:review-portal/regulator-v0.1 --encryption-key-ref kms:review-portal/session-store --replicas-min 3 --replicas-max 9 --availability-zone us-east-1a --availability-zone us-east-1b --availability-zone us-east-1c --audit-log-ref audit-log:review-portal/service --audit-log-root sha256:review-portal-service-audit-root --access-log-ref access-log:review-portal/sessions --access-log-root sha256:review-portal-access-log-root --metrics-ref metrics:review-portal/service --alert-policy-ref alert:review-portal/service --retention-until 2033-07-08T00:00:00Z --actor-ref oidc:trustai.example/review-portal-operator --credential-ref env:REVIEW_PORTAL_TOKEN --evidence-ref evidence:review-portal/service --attested-at 2026-07-08T06:00:00Z --out artifacts/review-portal-service-attestation.json",
             "python -m trustai review-portal-service-verify artifacts/review-portal-service-attestation.json artifacts/supervised-access-receipt.json --pack artifacts/aitrade-proof-pack.json --disclosure artifacts/regulator-disclosure.json --view artifacts/regulator-view.html --regulator-acceptance artifacts/regulator-acceptance.json --eu-ai-act-document artifacts/eu-ai-act-technical-documentation.json",
             "python -m unittest tests.test_review_portal_service",
+        ],
+    },
+    {
+        "id": "review-portal-production-authority-dossiers",
+        "description": "Review portal production authority dossiers bind review portal service attestations to external hosted UI/session/account/access-log authority evidence, freshness windows, missing coverage, and production-claim limits.",
+        "reference": "src/trustai/review_portal_authority.py",
+        "commands": [
+            "python -m trustai review-portal-authority artifacts/review-portal-service-attestation.json --environment aitrade-prod --dossier-ref dossier:review-portal-authority/regulator-prod --authority-ref authority:review-portal/regulator-prod --producer-ref oidc:trustai.example/review-portal-authority-worker --authority-evidence \"hosted-portal-worker-fleet,hosted-service,service:review-portal/regulator-prod,sha256:review-portal-hosted-service-authority,Hosted regulator review portal service export;issuer=TrustAI Cloud;subject=aitrade-prod regulator review portal;source_uri=https://ops.example/trustai/review-portal/regulator-prod;issued_at=2026-07-08T06:10:00Z;expires_at=2026-07-15T06:10:00Z\" --generated-at 2026-07-08T06:15:00Z --out artifacts/review-portal-authority.json",
+            "python -m trustai review-portal-authority-verify artifacts/review-portal-authority.json artifacts/review-portal-service-attestation.json",
+            "python -m unittest tests.test_review_portal_authority",
         ],
     },
     {

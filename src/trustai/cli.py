@@ -806,6 +806,15 @@ from .review_portal_service import (
     verify_review_portal_service_attestation,
     write_review_portal_service_attestation,
 )
+from .review_portal_authority import (
+    REVIEW_PORTAL_AUTHORITY_MODES,
+    append_review_portal_authority_dossier,
+    build_review_portal_authority_dossier,
+    load_review_portal_authority_dossier,
+    parse_review_portal_authority_evidence_arg,
+    verify_review_portal_authority_dossier,
+    write_review_portal_authority_dossier,
+)
 from .runtime import append_runtime_attestation, load_action
 from .server import serve
 from .shadow import (
@@ -11163,6 +11172,148 @@ def cmd_review_portal_service_append(args: argparse.Namespace) -> int:
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
+
+def _load_review_portal_authority_sources(args: argparse.Namespace) -> dict[str, Any]:
+    return {
+        "service_attestation": load_review_portal_service_attestation(args.service_attestation),
+        "supervised_access_receipt": load_supervised_access_receipt(args.supervised_access) if getattr(args, "supervised_access", None) else None,
+        "proof_pack": load_proof_pack(args.pack) if getattr(args, "pack", None) else None,
+        "proof_pack_path": getattr(args, "pack", None),
+        "regulator_disclosure": load_regulator_disclosure(args.disclosure) if getattr(args, "disclosure", None) else None,
+        "disclosure_path": getattr(args, "disclosure", None),
+        "view_path": getattr(args, "view", None),
+        "frontend_bundle_path": getattr(args, "frontend_bundle", None),
+        "regulator_acceptance": load_regulator_acceptance(args.regulator_acceptance) if getattr(args, "regulator_acceptance", None) else None,
+        "eu_ai_act_document": load_eu_ai_act_document(args.eu_ai_act_document) if getattr(args, "eu_ai_act_document", None) else None,
+    }
+
+
+def cmd_review_portal_authority(args: argparse.Namespace) -> int:
+    sources = _load_review_portal_authority_sources(args)
+    try:
+        evidence = [parse_review_portal_authority_evidence_arg(value) for value in args.authority_evidence]
+        dossier = build_review_portal_authority_dossier(
+            sources["service_attestation"],
+            supervised_access_receipt=sources["supervised_access_receipt"],
+            proof_pack=sources["proof_pack"],
+            proof_pack_path=sources["proof_pack_path"],
+            regulator_disclosure=sources["regulator_disclosure"],
+            disclosure_path=sources["disclosure_path"],
+            view_path=sources["view_path"],
+            frontend_bundle_path=sources["frontend_bundle_path"],
+            regulator_acceptance=sources["regulator_acceptance"],
+            eu_ai_act_document=sources["eu_ai_act_document"],
+            mode=args.mode,
+            environment=args.environment,
+            dossier_ref=args.dossier_ref,
+            authority_ref=args.authority_ref,
+            producer_ref=args.producer_ref,
+            authority_evidence=evidence,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"review portal authority dossier failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_review_portal_authority_dossier(
+        dossier,
+        service_attestation=sources["service_attestation"],
+        supervised_access_receipt=sources["supervised_access_receipt"],
+        proof_pack=sources["proof_pack"],
+        proof_pack_path=sources["proof_pack_path"],
+        regulator_disclosure=sources["regulator_disclosure"],
+        disclosure_path=sources["disclosure_path"],
+        view_path=sources["view_path"],
+        frontend_bundle_path=sources["frontend_bundle_path"],
+        regulator_acceptance=sources["regulator_acceptance"],
+        eu_ai_act_document=sources["eu_ai_act_document"],
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if not result.ok:
+        print("review portal authority dossier verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_review_portal_authority_dossier(args.out, dossier)
+    print(f"review portal authority dossier: {args.out}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"covered requirements: {result.covered_count}/{result.required_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_review_portal_authority_verify(args: argparse.Namespace) -> int:
+    dossier = load_review_portal_authority_dossier(args.dossier)
+    sources = _load_review_portal_authority_sources(args)
+    result = verify_review_portal_authority_dossier(
+        dossier,
+        service_attestation=sources["service_attestation"],
+        supervised_access_receipt=sources["supervised_access_receipt"],
+        proof_pack=sources["proof_pack"],
+        proof_pack_path=sources["proof_pack_path"],
+        regulator_disclosure=sources["regulator_disclosure"],
+        disclosure_path=sources["disclosure_path"],
+        view_path=sources["view_path"],
+        frontend_bundle_path=sources["frontend_bundle_path"],
+        regulator_acceptance=sources["regulator_acceptance"],
+        eu_ai_act_document=sources["eu_ai_act_document"],
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified review portal authority dossier: {args.dossier}")
+        print(f"covered requirements: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"review portal authority dossier verification failed: {args.dossier}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_review_portal_authority_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    dossier = load_review_portal_authority_dossier(args.dossier)
+    sources = _load_review_portal_authority_sources(args)
+    try:
+        entry = append_review_portal_authority_dossier(
+            chain,
+            dossier,
+            service_attestation=sources["service_attestation"],
+            supervised_access_receipt=sources["supervised_access_receipt"],
+            proof_pack=sources["proof_pack"],
+            proof_pack_path=sources["proof_pack_path"],
+            regulator_disclosure=sources["regulator_disclosure"],
+            disclosure_path=sources["disclosure_path"],
+            view_path=sources["view_path"],
+            frontend_bundle_path=sources["frontend_bundle_path"],
+            regulator_acceptance=sources["regulator_acceptance"],
+            eu_ai_act_document=sources["eu_ai_act_document"],
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"review portal authority append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"review portal authority entry: {args.out}")
+    print(f"review portal authority entry id: {entry['entry_id']}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
 def cmd_roadmap_audit(args: argparse.Namespace) -> int:
     audit = build_roadmap_audit(args.root, roadmap_path=args.roadmap, coverage_path=args.coverage)
     write_roadmap_audit(args.out, audit)
@@ -19531,6 +19682,53 @@ def build_parser() -> argparse.ArgumentParser:
     review_portal_service_append.add_argument("--key")
     _add_state_args(review_portal_service_append)
     review_portal_service_append.set_defaults(func=cmd_review_portal_service_append)
+
+    def _add_review_portal_authority_sources(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("service_attestation")
+        parser.add_argument("--supervised-access")
+        parser.add_argument("--pack")
+        parser.add_argument("--disclosure")
+        parser.add_argument("--view")
+        parser.add_argument("--frontend-bundle")
+        parser.add_argument("--regulator-acceptance")
+        parser.add_argument("--eu-ai-act-document")
+
+    review_portal_authority = subparsers.add_parser("review-portal-authority", help="write a signed review portal production authority dossier")
+    _add_review_portal_authority_sources(review_portal_authority)
+    review_portal_authority.add_argument("--mode", choices=sorted(REVIEW_PORTAL_AUTHORITY_MODES), default="provider-dossier")
+    review_portal_authority.add_argument("--environment")
+    review_portal_authority.add_argument("--dossier-ref", required=True)
+    review_portal_authority.add_argument("--authority-ref", required=True)
+    review_portal_authority.add_argument("--producer-ref", required=True)
+    review_portal_authority.add_argument("--authority-evidence", action="append", default=[], help="requirement_id,authority_kind,evidence_ref,evidence_hash,description[;issuer=...;subject=...;source_uri=...;issued_at=...;expires_at=...]")
+    review_portal_authority.add_argument("--generated-at")
+    review_portal_authority.add_argument("--require-complete", action="store_true")
+    review_portal_authority.add_argument("--require-fresh", action="store_true")
+    review_portal_authority.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to dossier generated_at")
+    review_portal_authority.add_argument("--out", default="artifacts/review-portal-authority.json")
+    review_portal_authority.add_argument("--key")
+    review_portal_authority.set_defaults(func=cmd_review_portal_authority)
+
+    review_portal_authority_verify = subparsers.add_parser("review-portal-authority-verify", help="verify a signed review portal production authority dossier")
+    review_portal_authority_verify.add_argument("dossier")
+    _add_review_portal_authority_sources(review_portal_authority_verify)
+    review_portal_authority_verify.add_argument("--require-complete", action="store_true")
+    review_portal_authority_verify.add_argument("--require-fresh", action="store_true")
+    review_portal_authority_verify.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to dossier generated_at")
+    review_portal_authority_verify.add_argument("--key")
+    review_portal_authority_verify.set_defaults(func=cmd_review_portal_authority_verify)
+
+    review_portal_authority_append = subparsers.add_parser("review-portal-authority-append", help="append a verified review portal production authority dossier")
+    review_portal_authority_append.add_argument("dossier")
+    _add_review_portal_authority_sources(review_portal_authority_append)
+    review_portal_authority_append.add_argument("--require-complete", action="store_true")
+    review_portal_authority_append.add_argument("--require-fresh", action="store_true")
+    review_portal_authority_append.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to dossier generated_at")
+    review_portal_authority_append.add_argument("--out", default="artifacts/review-portal-authority-entry.json")
+    review_portal_authority_append.add_argument("--key")
+    _add_state_args(review_portal_authority_append)
+    review_portal_authority_append.set_defaults(func=cmd_review_portal_authority_append)
+
     roadmap_audit = subparsers.add_parser("roadmap-audit", help="write a repository roadmap coverage audit")
     roadmap_audit.add_argument("--root", default=".")
     roadmap_audit.add_argument("--roadmap", default="ROADMAP.md")
