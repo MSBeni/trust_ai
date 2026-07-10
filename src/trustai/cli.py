@@ -652,6 +652,16 @@ from .policy_backend_service import (
     verify_policy_backend_service_attestation,
     write_policy_backend_service_attestation,
 )
+from .policy_backend_service_bundle import (
+    POLICY_BACKEND_SERVICE_BUNDLE_MODES,
+    append_policy_backend_service_bundle,
+    build_policy_backend_service_bundle,
+    extract_policy_backend_service_bundle_sources,
+    load_policy_backend_service_bundle,
+    verify_policy_backend_service_bundle,
+    write_policy_backend_service_bundle,
+    write_policy_backend_service_bundle_markdown,
+)
 from .proofpack import compile_proof_pack
 from .procurement_clause import (
     append_procurement_clause_receipt,
@@ -9670,6 +9680,140 @@ def cmd_policy_backend_service_append(args: argparse.Namespace) -> int:
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
+
+def _policy_backend_service_bundle_artifact_paths(args: argparse.Namespace) -> dict[str, str]:
+    paths = {
+        "service_attestation": args.attestation,
+        "enforcement": args.enforcement,
+        "policy_pack": args.policy,
+        "runtime_action": args.action,
+        "proof_pack": args.pack,
+        "policy_decision": args.decision,
+        "policy_export": args.export,
+    }
+    if args.policy_engine_receipt:
+        paths["policy_engine_receipt"] = args.policy_engine_receipt
+    return paths
+
+
+def cmd_policy_backend_service_bundle(args: argparse.Namespace) -> int:
+    sources, status = _load_policy_backend_service_sources(args)
+    if status:
+        return status
+    assert sources is not None
+    try:
+        bundle = build_policy_backend_service_bundle(
+            load_policy_backend_service_attestation(args.attestation),
+            sources["enforcement"],
+            sources["policy"],
+            sources["action"],
+            sources["pack"],
+            sources["decision"],
+            sources["policy_export"],
+            policy_engine_receipt=sources["policy_engine_receipt"],
+            artifact_paths=_policy_backend_service_bundle_artifact_paths(args),
+            mode=args.mode,
+            environment=args.environment,
+            reviewer_ref=args.reviewer_ref,
+            bundle_ref=args.bundle_ref,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_policy_backend_service_bundle(bundle, key=args.key)
+    except ValueError as exc:
+        print(f"policy backend service bundle failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("policy backend service bundle verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_policy_backend_service_bundle(args.out, bundle)
+    if args.markdown:
+        write_policy_backend_service_bundle_markdown(args.markdown, bundle)
+        print(f"policy backend service bundle markdown: {args.markdown}")
+    print(f"policy backend service bundle: {args.out}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"service attestation id: {bundle['source']['service_attestation_id']}")
+    print(f"embedded source artifacts: {bundle['summary']['source_artifact_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_policy_backend_service_bundle_verify(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_policy_backend_service_bundle(args.bundle)
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        print(f"policy backend service bundle load failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_policy_backend_service_bundle(bundle, key=args.key)
+    if result.ok:
+        print(f"verified policy backend service bundle: {args.bundle}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"policy backend service bundle verification failed: {args.bundle}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_policy_backend_service_bundle_render(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_policy_backend_service_bundle(args.bundle)
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        print(f"policy backend service bundle load failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_policy_backend_service_bundle(bundle, key=args.key)
+    if not result.ok:
+        print(f"policy backend service bundle verification failed: {args.bundle}", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_policy_backend_service_bundle_markdown(args.out, bundle)
+    print(f"policy backend service bundle markdown: {args.out}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_policy_backend_service_bundle_extract(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_policy_backend_service_bundle(args.bundle)
+        extracted = extract_policy_backend_service_bundle_sources(
+            bundle,
+            args.out_dir,
+            key=args.key,
+            overwrite=args.overwrite,
+        )
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        print(f"policy backend service bundle extract failed: {exc}", file=sys.stderr)
+        return 1
+    print(f"policy backend service bundle sources: {args.out_dir}")
+    for item in extracted:
+        print(f"- {item['name']}: {item['extracted_to']}")
+    return 0
+
+
+def cmd_policy_backend_service_bundle_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    try:
+        bundle = load_policy_backend_service_bundle(args.bundle)
+        entry = append_policy_backend_service_bundle(chain, bundle, key=args.key)
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        print(f"policy backend service bundle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"policy backend service bundle entry: {args.out}")
+    print(f"policy backend service bundle entry id: {entry['entry_id']}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
 def cmd_incident(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
     entry = append_incident(chain, load_incident(args.incident), key=args.key)
@@ -16386,6 +16530,50 @@ def build_parser() -> argparse.ArgumentParser:
     policy_backend_service_append.add_argument("--key")
     _add_state_args(policy_backend_service_append)
     policy_backend_service_append.set_defaults(func=cmd_policy_backend_service_append)
+
+    policy_backend_service_bundle = subparsers.add_parser("policy-backend-service-bundle", help="write a self-contained policy backend service review bundle")
+    policy_backend_service_bundle.add_argument("attestation")
+    policy_backend_service_bundle.add_argument("enforcement")
+    policy_backend_service_bundle.add_argument("policy")
+    policy_backend_service_bundle.add_argument("action")
+    policy_backend_service_bundle.add_argument("--pack", required=True)
+    policy_backend_service_bundle.add_argument("--decision", required=True)
+    policy_backend_service_bundle.add_argument("--export", required=True)
+    policy_backend_service_bundle.add_argument("--policy-engine-receipt")
+    policy_backend_service_bundle.add_argument("--mode", choices=sorted(POLICY_BACKEND_SERVICE_BUNDLE_MODES), default="offline-review")
+    policy_backend_service_bundle.add_argument("--environment")
+    policy_backend_service_bundle.add_argument("--reviewer-ref", required=True)
+    policy_backend_service_bundle.add_argument("--bundle-ref")
+    policy_backend_service_bundle.add_argument("--generated-at")
+    policy_backend_service_bundle.add_argument("--out", default="artifacts/policy-backend-service-bundle.json")
+    policy_backend_service_bundle.add_argument("--markdown", default="artifacts/policy-backend-service-bundle.md")
+    policy_backend_service_bundle.add_argument("--key")
+    policy_backend_service_bundle.set_defaults(func=cmd_policy_backend_service_bundle)
+
+    policy_backend_service_bundle_verify = subparsers.add_parser("policy-backend-service-bundle-verify", help="verify a self-contained policy backend service review bundle")
+    policy_backend_service_bundle_verify.add_argument("bundle")
+    policy_backend_service_bundle_verify.add_argument("--key")
+    policy_backend_service_bundle_verify.set_defaults(func=cmd_policy_backend_service_bundle_verify)
+
+    policy_backend_service_bundle_render = subparsers.add_parser("policy-backend-service-bundle-render", help="verify and render a policy backend service review bundle as Markdown")
+    policy_backend_service_bundle_render.add_argument("bundle")
+    policy_backend_service_bundle_render.add_argument("--out", default="artifacts/policy-backend-service-bundle.md")
+    policy_backend_service_bundle_render.add_argument("--key")
+    policy_backend_service_bundle_render.set_defaults(func=cmd_policy_backend_service_bundle_render)
+
+    policy_backend_service_bundle_extract = subparsers.add_parser("policy-backend-service-bundle-extract", help="verify and extract embedded policy backend service bundle sources")
+    policy_backend_service_bundle_extract.add_argument("bundle")
+    policy_backend_service_bundle_extract.add_argument("--out-dir", default="artifacts/policy-backend-service-bundle-sources")
+    policy_backend_service_bundle_extract.add_argument("--overwrite", action="store_true")
+    policy_backend_service_bundle_extract.add_argument("--key")
+    policy_backend_service_bundle_extract.set_defaults(func=cmd_policy_backend_service_bundle_extract)
+
+    policy_backend_service_bundle_append = subparsers.add_parser("policy-backend-service-bundle-append", help="append a policy backend service review bundle as chain evidence")
+    policy_backend_service_bundle_append.add_argument("bundle")
+    policy_backend_service_bundle_append.add_argument("--out", default="artifacts/policy-backend-service-bundle-entry.json")
+    policy_backend_service_bundle_append.add_argument("--key")
+    _add_state_args(policy_backend_service_bundle_append)
+    policy_backend_service_bundle_append.set_defaults(func=cmd_policy_backend_service_bundle_append)
     incident = subparsers.add_parser("incident", help="append an incident record to the chain")
     incident.add_argument("incident")
     incident.add_argument("--out", default="artifacts/incident-entry.json")

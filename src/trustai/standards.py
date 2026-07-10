@@ -58,6 +58,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/policy-engine-receipt-v0.1.md",
     "docs/specs/policy-backend-enforcement-v0.1.md",
     "docs/specs/policy-backend-service-attestation-v0.1.md",
+    "docs/specs/policy-backend-service-bundle-v0.1.md",
     "docs/specs/insurer-consent-v0.1.md",
     "docs/specs/underwriting-quote-v0.1.md",
     "docs/specs/insurer-partner-service-attestation-v0.1.md",
@@ -511,6 +512,16 @@ CONFORMANCE_TARGETS = (
             "python -m trustai policy-backend-service-attestation artifacts/policy-backend-enforcement.json examples/aitrade/policy-pack.json examples/aitrade/runtime-action.json --pack artifacts/aitrade-proof-pack.json --decision artifacts/policy-decision.json --export artifacts/policy-export.json --policy-engine-receipt artifacts/policy-engine-receipt.json --environment aitrade-prod --service-ref policy-backend:trustai/opa-prod --service-version 0.1.0 --engine opa --backend-ref opa:trustai-runtime:prod --endpoint-url https://opa.example/v1/data/trustai/runtime/allow --service-image ghcr.io/trustai/policy-backend:0.1.0 --service-image-digest sha256:trustai-policy-backend-image --service-binary-hash sha256:trustai-policy-backend-binary --replicas-min 3 --replicas-max 9 --availability-zone us-east-1a --availability-zone us-east-1b --availability-zone us-east-1c --mtls-policy-ref policy:policy-backend/mtls-required-v0.1 --auth-policy-ref policy:policy-backend/oidc-authz-v0.1 --tenant-isolation-ref tenant-isolation:aitrade/policy-backend --policy-sync-ref policy-sync:trustai/runtime-policy-bundle --admission-policy-ref admission:policy-backend/signed-bundles-only --rate-limit-policy-ref rate-limit:policy-backend/aitrade --circuit-breaker-ref circuit-breaker:policy-backend/opa --cache-store-ref redis:policy-backend/decision-cache --network-policy-ref netpol:policy-backend/deny-by-default --egress-policy-ref egress:policy-backend/kms-tsa-only --decision-log-ref decision-log:policy-backend/opa --decision-log-root sha256:policy-backend-decision-log-root --decision-log-retention-days 2555 --audit-log-ref audit-log:policy-backend/service --audit-log-root sha256:policy-backend-service-audit-root --retention-until 2033-07-04T00:00:00Z --actor-ref oidc:trustai.example/policy-backend-operator --credential-ref env:POLICY_BACKEND_SERVICE_TOKEN --evidence-ref evidence:policy-backend/service --attested-at 2026-07-04T04:02:00Z --out artifacts/policy-backend-service-attestation.json",
             "python -m trustai policy-backend-service-verify artifacts/policy-backend-service-attestation.json artifacts/policy-backend-enforcement.json examples/aitrade/policy-pack.json examples/aitrade/runtime-action.json --pack artifacts/aitrade-proof-pack.json --decision artifacts/policy-decision.json --export artifacts/policy-export.json --policy-engine-receipt artifacts/policy-engine-receipt.json",
             "python -m unittest tests.test_policy_backend_service",
+        ],
+    },
+    {
+        "id": "policy-backend-service-review-bundles",
+        "description": "Policy backend service review bundles package service attestations, enforcement receipts, policy packs, runtime actions, proof packs, policy decisions, exports, and optional policy-engine receipts for offline third-party replay.",
+        "reference": "src/trustai/policy_backend_service_bundle.py",
+        "commands": [
+            "python -m trustai policy-backend-service-bundle artifacts/policy-backend-service-attestation.json artifacts/policy-backend-enforcement.json examples/aitrade/policy-pack.json examples/aitrade/runtime-action.json --pack artifacts/aitrade-proof-pack.json --decision artifacts/policy-decision.json --export artifacts/policy-export.json --policy-engine-receipt artifacts/policy-engine-receipt.json --environment aitrade-prod --reviewer-ref oidc:auditor.example/policy-backend-reviewer --generated-at 2026-07-04T05:00:00Z --out artifacts/policy-backend-service-bundle.json --markdown artifacts/policy-backend-service-bundle.md",
+            "python -m trustai policy-backend-service-bundle-verify artifacts/policy-backend-service-bundle.json",
+            "python -m unittest tests.test_policy_backend_service_bundle",
         ],
     },
     {
