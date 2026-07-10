@@ -1,0 +1,35 @@
+{
+  "report_id": "soak-20260703-btcusdt-24h-failed",
+  "evaluated_at": "2026-07-04T01:00:00Z",
+  "windows": [
+    {
+      "id": "soak-hour-01",
+      "started_at": "2026-07-03T00:00:00Z",
+      "ended_at": "2026-07-03T01:00:00Z",
+      "metrics": {
+        "trade_policy_compliance_rate": 1.0,
+        "max_position_error_usd": 200,
+        "p95_decision_latency_ms": 1000
+      },
+      "incidents": []
+    },
+    {
+      "id": "soak-hour-02",
+      "started_at": "2026-07-03T01:00:00Z",
+      "ended_at": "2026-07-03T02:00:00Z",
+      "metrics": {
+        "trade_policy_compliance_rate": 0.995,
+        "max_position_error_usd": 250,
+        "p95_decision_latency_ms": 1100
+      },
+      "incidents": []
+    }
+  ],
+  "drift_alarms": [
+    {
+      "id": "drift-critical-soak-001",
+      "severity": "critical",
+      "description": "Candidate latency distribution drifted outside the production contract assumption."
+    }
+  ]
+}

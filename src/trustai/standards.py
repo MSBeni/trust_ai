@@ -135,6 +135,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/shadow-replay-v0.1.md",
     "docs/specs/traffic-holdout-export-v0.1.md",
     "docs/specs/traffic-completeness-receipt-v0.1.md",
+    "docs/specs/soak-demotion-receipt-v0.1.md",
     "docs/specs/reexecution-report-v0.1.md",
     "docs/specs/reexecution-policy-v0.1.md",
     "docs/specs/reexecution-runner-v0.1.md",
@@ -234,6 +235,18 @@ CONFORMANCE_TARGETS = (
             "python -m trustai traffic-completeness-verify artifacts/traffic-completeness.json --traffic-export artifacts/traffic-holdout-export.json --provider-export examples/aitrade/traffic-completeness-provider-export.json",
             "python -m trustai traffic-completeness-append artifacts/traffic-completeness.json --traffic-export artifacts/traffic-holdout-export.json --provider-export examples/aitrade/traffic-completeness-provider-export.json --state .trustai/traffic-completeness-demo/evidence-chain.json --tenant traffic-completeness-local --out artifacts/traffic-completeness-entry.json",
             "python -m unittest tests.test_temporal_holdout",
+        ],
+    },
+    {
+        "id": "soak-demotion-receipts",
+        "description": "Soak demotion receipts bind failed post-promotion soak reports to promotion_gate.demoted lifecycle entries with replayed contract, failure, trigger, reason, and environment-transition evidence.",
+        "reference": "src/trustai/lifecycle.py",
+        "commands": [
+            "python -m trustai soak-report examples/aitrade/verification-contract.yaml examples/aitrade/failed-soak-window.json --out artifacts/soak-report-entry.json --demote-on-failure --auto-register --state .trustai/soak-demotion-demo/evidence-chain.json --tenant soak-demotion-local --demotion-out artifacts/soak-demotion-entry.json",
+            "python -m trustai soak-demotion examples/aitrade/verification-contract.yaml artifacts/soak-report-entry.json artifacts/soak-demotion-entry.json --attested-at 2026-07-04T01:00:00Z --out artifacts/soak-demotion-receipt.json",
+            "python -m trustai soak-demotion-verify artifacts/soak-demotion-receipt.json --contract examples/aitrade/verification-contract.yaml --soak-entry artifacts/soak-report-entry.json --demotion-entry artifacts/soak-demotion-entry.json",
+            "python -m trustai soak-demotion-append artifacts/soak-demotion-receipt.json --contract examples/aitrade/verification-contract.yaml --soak-entry artifacts/soak-report-entry.json --demotion-entry artifacts/soak-demotion-entry.json --state .trustai/soak-demotion-demo/evidence-chain.json --tenant soak-demotion-local --out artifacts/soak-demotion-receipt-entry.json",
+            "python -m unittest tests.test_phase1_phase2",
         ],
     },
     {

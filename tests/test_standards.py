@@ -44,6 +44,8 @@ class StandardsSubmissionTests(unittest.TestCase):
         self.assertIn("traffic-completeness", markdown)
         self.assertIn("promotion-status-receipt-v0.1.md", markdown)
         self.assertIn("promotion-status-receipts", markdown)
+        self.assertIn("soak-demotion-receipt-v0.1.md", markdown)
+        self.assertIn("soak-demotion-receipts", markdown)
 
     def test_standards_submission_detects_spec_hash_tamper(self):
         package = build_standards_submission(ROOT)

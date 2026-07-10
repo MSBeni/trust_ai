@@ -745,7 +745,18 @@ from .identity_provider_session import (
 )
 from .ingest import append_events, append_otlp_traces, load_events
 from .keyring import load_keyring, local_dev_keyring, rotate_local_keyring, verify_chain_with_keyring, write_keyring
-from .lifecycle import append_demotion, append_incident, append_rollback, append_soak_failure_demotion, load_incident
+from .lifecycle import (
+    append_demotion,
+    append_incident,
+    append_rollback,
+    append_soak_demotion_receipt,
+    append_soak_failure_demotion,
+    build_soak_demotion_receipt,
+    load_incident,
+    load_soak_demotion_receipt,
+    verify_soak_demotion_receipt,
+    write_soak_demotion_receipt,
+)
 from .insurer import build_insurer_telemetry, write_insurer_telemetry
 from .marketplace import (
     append_marketplace_distribution,
@@ -5909,6 +5920,9 @@ def cmd_soak_report(args: argparse.Namespace) -> int:
             key=args.key,
         )
     chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"soak report entry: {args.out}")
     print(f"soak report outcome: {entry['payload']['outcome']}")
     print(f"windows checked: {entry['payload']['window_count']}")
     if args.demote_on_failure and demotion_entry is None:
@@ -12731,6 +12745,97 @@ def cmd_demote(args: argparse.Namespace) -> int:
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
+
+
+def cmd_soak_demotion(args: argparse.Namespace) -> int:
+    contract = load_contract(args.contract)
+    soak_entry = _load_json(args.soak_entry)
+    demotion_entry = _load_json(args.demotion_entry)
+    try:
+        receipt = build_soak_demotion_receipt(
+            contract,
+            soak_entry,
+            demotion_entry,
+            attested_at=args.attested_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"soak demotion receipt generation failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_soak_demotion_receipt(
+        receipt,
+        contract=contract,
+        soak_entry=soak_entry,
+        demotion_entry=demotion_entry,
+        key=args.key,
+    )
+    if not result.ok:
+        print("soak demotion receipt generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_soak_demotion_receipt(args.out, receipt)
+    print(f"soak demotion receipt: {args.out}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"passed: {receipt['passed']}")
+    if not receipt.get("passed"):
+        for violation in receipt.get("violations", []):
+            print(f"violation: {violation.get('check')}: {violation.get('violation')}", file=sys.stderr)
+        return 1
+    return 0
+
+
+def cmd_soak_demotion_verify(args: argparse.Namespace) -> int:
+    receipt = load_soak_demotion_receipt(args.receipt)
+    contract = load_contract(args.contract) if args.contract else None
+    soak_entry = _load_json(args.soak_entry) if args.soak_entry else None
+    demotion_entry = _load_json(args.demotion_entry) if args.demotion_entry else None
+    result = verify_soak_demotion_receipt(
+        receipt,
+        contract=contract,
+        soak_entry=soak_entry,
+        demotion_entry=demotion_entry,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified soak demotion receipt: {args.receipt}")
+        print(f"receipt id: {receipt['receipt_id']}")
+        print(f"passed: {receipt.get('passed')}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"soak demotion receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_soak_demotion_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_soak_demotion_receipt(args.receipt)
+    contract = load_contract(args.contract)
+    soak_entry = _load_json(args.soak_entry)
+    demotion_entry = _load_json(args.demotion_entry)
+    try:
+        entry = append_soak_demotion_receipt(
+            chain,
+            receipt,
+            contract=contract,
+            soak_entry=soak_entry,
+            demotion_entry=demotion_entry,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"soak demotion receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"soak demotion receipt entry: {args.out}")
+    print(f"soak demotion receipt entry id: {entry['entry_id']}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
 
 def cmd_rollback(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
@@ -20457,6 +20562,32 @@ def build_parser() -> argparse.ArgumentParser:
     _add_auto_register(demote)
     demote.set_defaults(func=cmd_demote)
 
+    soak_demotion = subparsers.add_parser("soak-demotion", help="write a signed receipt binding failed soak evidence to a demotion entry")
+    soak_demotion.add_argument("contract")
+    soak_demotion.add_argument("soak_entry")
+    soak_demotion.add_argument("demotion_entry")
+    soak_demotion.add_argument("--attested-at")
+    soak_demotion.add_argument("--out", default="artifacts/soak-demotion-receipt.json")
+    soak_demotion.add_argument("--key")
+    soak_demotion.set_defaults(func=cmd_soak_demotion)
+
+    soak_demotion_verify = subparsers.add_parser("soak-demotion-verify", help="verify a signed soak demotion receipt")
+    soak_demotion_verify.add_argument("receipt")
+    soak_demotion_verify.add_argument("--contract")
+    soak_demotion_verify.add_argument("--soak-entry")
+    soak_demotion_verify.add_argument("--demotion-entry")
+    soak_demotion_verify.add_argument("--key")
+    soak_demotion_verify.set_defaults(func=cmd_soak_demotion_verify)
+
+    soak_demotion_append = subparsers.add_parser("soak-demotion-append", help="append a soak demotion receipt as chain evidence")
+    soak_demotion_append.add_argument("receipt")
+    soak_demotion_append.add_argument("--contract", required=True)
+    soak_demotion_append.add_argument("--soak-entry", required=True)
+    soak_demotion_append.add_argument("--demotion-entry", required=True)
+    soak_demotion_append.add_argument("--out", default="artifacts/soak-demotion-receipt-entry.json")
+    soak_demotion_append.add_argument("--key")
+    _add_state_args(soak_demotion_append)
+    soak_demotion_append.set_defaults(func=cmd_soak_demotion_append)
     rollback = subparsers.add_parser("rollback", help="append a rollback event for a governed agent version")
     rollback.add_argument("contract")
     rollback.add_argument("--target-version", required=True)
@@ -20562,6 +20693,7 @@ def build_parser() -> argparse.ArgumentParser:
     soak = subparsers.add_parser("soak-report", help="evaluate and evidence a soak report")
     soak.add_argument("contract")
     soak.add_argument("soak")
+    soak.add_argument("--out", default="artifacts/soak-report-entry.json")
     soak.add_argument("--demote-on-failure", action="store_true", help="append a demotion entry when the soak report fails")
     soak.add_argument("--demotion-reason")
     soak.add_argument("--demotion-out", default="artifacts/soak-demotion-entry.json")
