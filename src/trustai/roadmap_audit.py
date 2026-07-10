@@ -51,6 +51,7 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "tests/test_proofpack_flow.py",
             "tests/test_temporal_holdout.py",
             "tests/test_mcp_gateway.py",
+            "tests/test_mcp_gateway_authority.py",
             "tests/test_phase1_phase2.py",
         ],
     },
@@ -135,13 +136,16 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
         "roadmap_ref": "Phase 1 feature 1",
         "evidence_paths": [
             "docs/specs/mcp-gateway-v0.1.md",
+            "docs/specs/mcp-gateway-production-authority-v0.1.md",
             "src/trustai/mcp_gateway.py",
+            "src/trustai/mcp_gateway_authority.py",
             "examples/aitrade/mcp-transcript.json",
             "tests/test_mcp_gateway.py",
+            "tests/test_mcp_gateway_authority.py",
             "tests/test_ingest_runtime.py",
         ],
         "external_authority": [
-            "Continuously operated production MCP proxy workers and immutable production audit exports remain external deployment evidence.",
+            "MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, and observability evidence; actual fresh provider-owned proxy and audit exports remain external deployment evidence.",
         ],
     },
     {

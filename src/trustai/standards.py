@@ -26,6 +26,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/collector-service-attestation-v0.1.md",
     "docs/specs/collector-worker-v0.1.md",
     "docs/specs/mcp-gateway-v0.1.md",
+    "docs/specs/mcp-gateway-production-authority-v0.1.md",
     "docs/specs/keyring-v0.1.md",
     "docs/specs/trust-authority-receipt-v0.1.md",
     "docs/specs/trust-authority-provider-attestation-v0.1.md",
@@ -187,6 +188,15 @@ CONFORMANCE_TARGETS = (
         ],
     },
     {
+        "id": "mcp-gateway-production-authority-dossiers",
+        "description": "MCP gateway production authority dossiers bind normalized MCP transcript hash chains to production proxy fleet, tool registry, session auth, replay, immutable audit, scheduler, policy, network, KMS, freshness, and observability authority evidence.",
+        "reference": "src/trustai/mcp_gateway_authority.py",
+        "commands": [
+            "python -m trustai mcp-gateway-authority examples/aitrade/mcp-transcript.json --mode proxy-dossier --environment aitrade-prod --dossier-ref dossier:mcp-gateway-authority/aitrade-prod --authority-ref authority:mcp-gateway/proxy-prod --producer-ref oidc:trustai.example/mcp-gateway-authority-worker --authority-evidence 'production-mcp-proxy-worker-fleet,hosted-service,mcp-proxy:fleet/aitrade-prod,sha256:mcp-proxy-worker-fleet,Hosted MCP proxy worker fleet export for governed tool-call capture;issuer=TrustAI Hosted Ops;subject=aitrade-prod MCP proxy fleet;source_uri=https://mcp.example/audit/fleet/aitrade-prod;issued_at=2026-07-12T03:10:00Z;expires_at=2026-07-19T03:10:00Z' --generated-at 2026-07-12T03:12:00Z --now 2026-07-15T00:00:00Z",
+            "python -m trustai mcp-gateway-authority-verify artifacts/mcp-gateway-authority.json examples/aitrade/mcp-transcript.json --now 2026-07-15T00:00:00Z",
+            "python -m unittest tests.test_mcp_gateway_authority",
+        ],
+    },    {
         "id": "trust-authority-receipts",
         "description": "Trust authority receipts bind keyring-verified chain and proof-pack evidence to redacted KMS/TSA provider summaries.",
         "reference": "src/trustai/trust_authority.py",
@@ -1047,6 +1057,7 @@ def build_standards_submission(
             "Publish anchor provider receipt format for external/public chain-root anchoring evidence.",
             "Publish deployment manifest format for BYOC/self-hosted scaffold verification.",
             "Publish collector topology manifest format for ingestion/MCP/control-plane verification.",
+            "Publish MCP gateway production authority dossier format for proxy fleet, session auth, replay, immutable audit, scheduler, policy, network, KMS, and observability authority evidence."
             "Publish signed verifier release manifest and conformance-bound release verification commands.",
             "Publish Go verifier build attestation format for source-plan, recorded-build, and binary-attested verifier releases.",
             "Publish Go verifier CI release workflow controls for static binary builds, checksums, SBOM, provenance, and hosted build attestations.",

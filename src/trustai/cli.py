@@ -671,6 +671,15 @@ from .marketplace_settlement import (
     write_marketplace_settlement,
 )
 from .mcp_gateway import append_mcp_transcript, load_mcp_transcript
+from .mcp_gateway_authority import (
+    MCP_GATEWAY_AUTHORITY_MODES,
+    append_mcp_gateway_authority_dossier,
+    build_mcp_gateway_authority_dossier,
+    load_mcp_gateway_authority_dossier,
+    parse_mcp_gateway_authority_evidence_arg,
+    verify_mcp_gateway_authority_dossier,
+    write_mcp_gateway_authority_dossier,
+)
 from .object_store import WORMStore
 from .policy import append_policy_decision, load_policy_pack
 from .policy_export import export_policy_pack, write_policy_export
@@ -4719,6 +4728,96 @@ def cmd_mcp_capture(args: argparse.Namespace) -> int:
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
+
+
+def cmd_mcp_gateway_authority(args: argparse.Namespace) -> int:
+    calls = load_mcp_transcript(args.transcript)
+    try:
+        evidence = [parse_mcp_gateway_authority_evidence_arg(value) for value in args.authority_evidence]
+        dossier = build_mcp_gateway_authority_dossier(
+            calls,
+            mode=args.mode,
+            environment=args.environment,
+            dossier_ref=args.dossier_ref,
+            authority_ref=args.authority_ref,
+            producer_ref=args.producer_ref,
+            authority_evidence=evidence,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"MCP gateway authority dossier failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_mcp_gateway_authority_dossier(
+        dossier,
+        transcript_calls=calls,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if not result.ok:
+        print("MCP gateway authority verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_mcp_gateway_authority_dossier(args.out, dossier)
+    print(f"MCP gateway authority dossier: {args.out}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"covered requirements: {result.covered_count}/{result.required_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_mcp_gateway_authority_verify(args: argparse.Namespace) -> int:
+    dossier = load_mcp_gateway_authority_dossier(args.dossier)
+    calls = load_mcp_transcript(args.transcript)
+    result = verify_mcp_gateway_authority_dossier(
+        dossier,
+        transcript_calls=calls,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified MCP gateway authority dossier: {args.dossier}")
+        print(f"covered requirements: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"MCP gateway authority dossier verification failed: {args.dossier}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_mcp_gateway_authority_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    dossier = load_mcp_gateway_authority_dossier(args.dossier)
+    calls = load_mcp_transcript(args.transcript)
+    try:
+        entry = append_mcp_gateway_authority_dossier(
+            chain,
+            dossier,
+            transcript_calls=calls,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"MCP gateway authority dossier append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"MCP gateway authority entry: {args.out}")
+    print(f"MCP gateway authority entry id: {entry['entry_id']}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
 
 def cmd_attest(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
@@ -17916,6 +18015,42 @@ def build_parser() -> argparse.ArgumentParser:
     mcp.add_argument("transcript")
     _add_state_args(mcp)
     mcp.set_defaults(func=cmd_mcp_capture)
+
+    def _add_mcp_gateway_authority_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--mode", choices=sorted(MCP_GATEWAY_AUTHORITY_MODES), default="proxy-dossier")
+        parser.add_argument("--environment")
+        parser.add_argument("--dossier-ref", required=True)
+        parser.add_argument("--authority-ref", required=True)
+        parser.add_argument("--producer-ref", required=True)
+        parser.add_argument("--authority-evidence", action="append", default=[])
+        parser.add_argument("--generated-at")
+        parser.add_argument("--require-complete", action="store_true")
+        parser.add_argument("--require-fresh", action="store_true")
+        parser.add_argument("--now")
+        parser.add_argument("--out", default="artifacts/mcp-gateway-authority.json")
+
+    mcp_gateway_authority = subparsers.add_parser("mcp-gateway-authority", help="write a signed MCP gateway production authority dossier")
+    mcp_gateway_authority.add_argument("transcript")
+    _add_mcp_gateway_authority_fields(mcp_gateway_authority)
+    mcp_gateway_authority.set_defaults(func=cmd_mcp_gateway_authority)
+
+    mcp_gateway_authority_verify = subparsers.add_parser("mcp-gateway-authority-verify", help="verify a signed MCP gateway production authority dossier")
+    mcp_gateway_authority_verify.add_argument("dossier")
+    mcp_gateway_authority_verify.add_argument("transcript")
+    mcp_gateway_authority_verify.add_argument("--require-complete", action="store_true")
+    mcp_gateway_authority_verify.add_argument("--require-fresh", action="store_true")
+    mcp_gateway_authority_verify.add_argument("--now")
+    mcp_gateway_authority_verify.set_defaults(func=cmd_mcp_gateway_authority_verify)
+
+    mcp_gateway_authority_append = subparsers.add_parser("mcp-gateway-authority-append", help="append a verified MCP gateway authority dossier as chain evidence")
+    mcp_gateway_authority_append.add_argument("dossier")
+    mcp_gateway_authority_append.add_argument("transcript")
+    mcp_gateway_authority_append.add_argument("--require-complete", action="store_true")
+    mcp_gateway_authority_append.add_argument("--require-fresh", action="store_true")
+    mcp_gateway_authority_append.add_argument("--now")
+    mcp_gateway_authority_append.add_argument("--out", default="artifacts/mcp-gateway-authority-entry.json")
+    _add_state_args(mcp_gateway_authority_append)
+    mcp_gateway_authority_append.set_defaults(func=cmd_mcp_gateway_authority_append)
 
     attest = subparsers.add_parser("attest", help="append a runtime attestation for a high-risk action")
     attest.add_argument("contract")
