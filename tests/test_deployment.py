@@ -15,16 +15,21 @@ from trustai.deployment import (
     DEPLOYMENT_MANIFEST_SCHEMA,
     HELM_CHART_VALIDATION_ENTRY_TYPE,
     HELM_CHART_VALIDATION_SCHEMA,
+    KUBERNETES_RELEASE_STATE_ENTRY_TYPE,
+    KUBERNETES_RELEASE_STATE_SCHEMA,
     append_deployment_image_integrity_receipt,
     append_deployment_manifest,
     append_helm_chart_validation_receipt,
+    append_kubernetes_release_state_receipt,
     build_deployment_image_integrity_receipt,
     build_deployment_manifest,
     build_helm_chart_validation_receipt,
+    build_kubernetes_release_state_receipt,
     render_deployment_markdown,
     verify_deployment_image_integrity_receipt,
     verify_deployment_manifest,
     verify_helm_chart_validation_receipt,
+    verify_kubernetes_release_state_receipt,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -399,6 +404,203 @@ class DeploymentManifestTests(unittest.TestCase):
         self.assertTrue(receipt["passed"])
         self.assertEqual(HELM_CHART_VALIDATION_ENTRY_TYPE, entry["entry_type"])
         self.assertTrue(chain.verify_all().ok)
+
+    def test_kubernetes_release_state_receipt_verifies_and_appends(self):
+        manifest = build_deployment_manifest(ROOT, environment="test-byoc")
+        helm_receipt = build_helm_chart_validation_receipt(ROOT, deployment_manifest=manifest, generated_at="2026-07-04T00:30:00Z")
+        receipt = build_kubernetes_release_state_receipt(
+            ROOT,
+            deployment_manifest=manifest,
+            helm_chart_validation=helm_receipt,
+            environment="test-byoc",
+            provider="Example Kubernetes API",
+            cluster_ref="k8s:cluster/aitrade-prod",
+            namespace="trustai",
+            release_name="trustai",
+            release_revision="7",
+            release_status="deployed",
+            export_ref="k8s-export:aitrade-prod/trustai/2026-07-04",
+            export_hash="sha256:" + "a" * 64,
+            service_account_ref="k8s:sa/trustai/trustai-api",
+            deployment_ref="k8s:deployment/trustai/trustai-api",
+            service_ref="k8s:service/trustai/trustai-api",
+            network_policy_ref="k8s:networkpolicy/trustai/trustai-api",
+            secret_ref="k8s:secret/trustai/trustai-signing-key",
+            desired_replicas=2,
+            ready_replicas=2,
+            network_policy_admitted=True,
+            pod_selector_hash="sha256:" + "b" * 64,
+            ingress_policy_hash="sha256:" + "c" * 64,
+            egress_policy_hash="sha256:" + "d" * 64,
+            audit_log_ref="audit-log:kubernetes/aitrade-prod/trustai",
+            audit_log_root="sha256:" + "e" * 64,
+            exported_at="2026-07-04T03:08:00Z",
+            issued_at="2026-07-04T03:08:00Z",
+            expires_at="2026-07-05T03:08:00Z",
+            generated_at="2026-07-04T03:10:00Z",
+        )
+        result = verify_kubernetes_release_state_receipt(
+            receipt,
+            root=ROOT,
+            deployment_manifest=manifest,
+            helm_chart_validation=helm_receipt,
+        )
+        check_ids = {check["id"] for check in receipt["checks"]}
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="kubernetes-release-test")
+            entry = append_kubernetes_release_state_receipt(
+                chain,
+                receipt,
+                root=ROOT,
+                deployment_manifest=manifest,
+                helm_chart_validation=helm_receipt,
+            )
+
+            self.assertTrue(result.ok, result.errors)
+            self.assertEqual(KUBERNETES_RELEASE_STATE_SCHEMA, receipt["schema"])
+            self.assertTrue(receipt["passed"])
+            self.assertEqual({"failed": 0, "passed": 10, "total": 10}, receipt["summary"])
+            self.assertIn("network-policy-admitted", check_ids)
+            self.assertIn("network-policy-rules-hashed", check_ids)
+            self.assertEqual(KUBERNETES_RELEASE_STATE_ENTRY_TYPE, entry["entry_type"])
+            self.assertEqual(receipt["receipt_id"], entry["payload"]["receipt_id"])
+            self.assertTrue(chain.verify_all().ok)
+
+        malformed = json.loads(json.dumps(receipt))
+        malformed["workload"]["ready_replicas"] = "not-an-integer"
+        malformed_result = verify_kubernetes_release_state_receipt(
+            malformed,
+            root=ROOT,
+            deployment_manifest=manifest,
+            helm_chart_validation=helm_receipt,
+        )
+
+        self.assertFalse(malformed_result.ok)
+        self.assertTrue(any("workload replicas invalid" in error for error in malformed_result.errors))
+
+    def test_cli_kubernetes_release_state_round_trip(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            manifest_path = tmp / "deployment-manifest.json"
+            helm_path = tmp / "helm-chart-validation.json"
+            receipt_path = tmp / "kubernetes-release-state.json"
+            entry_path = tmp / "kubernetes-release-state-entry.json"
+            chain_path = tmp / "chain.json"
+            env = {**os.environ, "PYTHONPATH": str(ROOT / "src")}
+            base = [sys.executable, "-m", "trustai"]
+            subprocess.run(
+                base + ["deployment-manifest", "--root", str(ROOT), "--environment", "test-byoc", "--out", str(manifest_path)],
+                cwd=ROOT,
+                env=env,
+                check=True,
+            )
+            subprocess.run(
+                base + ["helm-chart-validation", str(manifest_path), "--root", str(ROOT), "--out", str(helm_path)],
+                cwd=ROOT,
+                env=env,
+                check=True,
+            )
+            subprocess.run(
+                base
+                + [
+                    "kubernetes-release-state",
+                    str(manifest_path),
+                    str(helm_path),
+                    "--root",
+                    str(ROOT),
+                    "--environment",
+                    "test-byoc",
+                    "--provider",
+                    "Example Kubernetes API",
+                    "--cluster-ref",
+                    "k8s:cluster/aitrade-prod",
+                    "--namespace",
+                    "trustai",
+                    "--release-name",
+                    "trustai",
+                    "--release-revision",
+                    "7",
+                    "--release-status",
+                    "deployed",
+                    "--export-ref",
+                    "k8s-export:aitrade-prod/trustai/2026-07-04",
+                    "--export-hash",
+                    "sha256:" + "a" * 64,
+                    "--service-account-ref",
+                    "k8s:sa/trustai/trustai-api",
+                    "--deployment-ref",
+                    "k8s:deployment/trustai/trustai-api",
+                    "--service-ref",
+                    "k8s:service/trustai/trustai-api",
+                    "--network-policy-ref",
+                    "k8s:networkpolicy/trustai/trustai-api",
+                    "--secret-ref",
+                    "k8s:secret/trustai/trustai-signing-key",
+                    "--desired-replicas",
+                    "2",
+                    "--ready-replicas",
+                    "2",
+                    "--pod-selector-hash",
+                    "sha256:" + "b" * 64,
+                    "--ingress-policy-hash",
+                    "sha256:" + "c" * 64,
+                    "--egress-policy-hash",
+                    "sha256:" + "d" * 64,
+                    "--audit-log-ref",
+                    "audit-log:kubernetes/aitrade-prod/trustai",
+                    "--audit-log-root",
+                    "sha256:" + "e" * 64,
+                    "--exported-at",
+                    "2026-07-04T03:08:00Z",
+                    "--issued-at",
+                    "2026-07-04T03:08:00Z",
+                    "--expires-at",
+                    "2026-07-05T03:08:00Z",
+                    "--generated-at",
+                    "2026-07-04T03:10:00Z",
+                    "--out",
+                    str(receipt_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+            )
+            subprocess.run(
+                base + ["kubernetes-release-state-verify", str(receipt_path), str(manifest_path), str(helm_path), "--root", str(ROOT)],
+                cwd=ROOT,
+                env=env,
+                check=True,
+            )
+            subprocess.run(
+                base
+                + [
+                    "kubernetes-release-state-append",
+                    str(receipt_path),
+                    str(manifest_path),
+                    str(helm_path),
+                    "--root",
+                    str(ROOT),
+                    "--state",
+                    str(chain_path),
+                    "--tenant",
+                    "kubernetes-release-cli",
+                    "--out",
+                    str(entry_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+            )
+
+            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+            entry = json.loads(entry_path.read_text(encoding="utf-8"))
+            chain = EvidenceChain.load(chain_path, tenant_id="kubernetes-release-cli")
+
+        self.assertTrue(receipt["passed"])
+        self.assertEqual(KUBERNETES_RELEASE_STATE_ENTRY_TYPE, entry["entry_type"])
+        self.assertTrue(chain.verify_all().ok)
+
 
 if __name__ == "__main__":
     unittest.main()

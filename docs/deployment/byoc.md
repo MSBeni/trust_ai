@@ -39,13 +39,15 @@ Kubernetes Secret and pass it through `--key env:TRUSTAI_SIGNING_KEY`.
 ## Deployment Evidence
 
 The reference scaffold can be bound into signed deployment, Helm chart
-validation, network policy, and image integrity receipts for third-party review:
+validation, network policy, Kubernetes release-state, and image integrity receipts for third-party review:
 
 ```powershell
 python -m trustai deployment-manifest --root . --environment aitrade-byoc --out artifacts/deployment-manifest.json --markdown artifacts/deployment-manifest.md
 python -m trustai deployment-verify artifacts/deployment-manifest.json --root .
 python -m trustai helm-chart-validation artifacts/deployment-manifest.json --root . --out artifacts/helm-chart-validation.json
 python -m trustai helm-chart-validation-verify artifacts/helm-chart-validation.json artifacts/deployment-manifest.json --root .
+python -m trustai kubernetes-release-state artifacts/deployment-manifest.json artifacts/helm-chart-validation.json --root . --environment aitrade-byoc --provider "Example Kubernetes API" --cluster-ref k8s:cluster/aitrade-prod --namespace trustai --release-name trustai --release-revision 7 --release-status deployed --export-ref k8s-export:aitrade-prod/trustai/2026-07-04 --export-hash sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa --service-account-ref k8s:sa/trustai/trustai-api --deployment-ref k8s:deployment/trustai/trustai-api --service-ref k8s:service/trustai/trustai-api --network-policy-ref k8s:networkpolicy/trustai/trustai-api --secret-ref k8s:secret/trustai/trustai-signing-key --desired-replicas 2 --ready-replicas 2 --pod-selector-hash sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb --ingress-policy-hash sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc --egress-policy-hash sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd --audit-log-ref audit-log:kubernetes/aitrade-prod/trustai --audit-log-root sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee --exported-at 2026-07-04T03:08:00Z --issued-at 2026-07-04T03:08:00Z --expires-at 2026-07-05T03:08:00Z --generated-at 2026-07-04T03:10:00Z --out artifacts/kubernetes-release-state.json
+python -m trustai kubernetes-release-state-verify artifacts/kubernetes-release-state.json artifacts/deployment-manifest.json artifacts/helm-chart-validation.json --root .
 '{"sbom":"trustai","version":"0.1.0"}' | Set-Content -NoNewline artifacts/trustai-image.sbom.json
 '{"builder":"trustai-local","source":"git"}' | Set-Content -NoNewline artifacts/trustai-image.provenance.json
 'sigstore-placeholder-signature' | Set-Content -NoNewline artifacts/trustai-image.sig
@@ -55,6 +57,8 @@ python -m trustai deployment-image-integrity-append artifacts/deployment-image-i
 python -m trustai chain-verify --state .trustai/image-integrity-demo/evidence-chain.json --tenant image-integrity-local
 python -m trustai helm-chart-validation-append artifacts/helm-chart-validation.json artifacts/deployment-manifest.json --root . --state .trustai/helm-validation-demo/evidence-chain.json --tenant helm-validation-local --out artifacts/helm-chart-validation-entry.json
 python -m trustai chain-verify --state .trustai/helm-validation-demo/evidence-chain.json --tenant helm-validation-local
+python -m trustai kubernetes-release-state-append artifacts/kubernetes-release-state.json artifacts/deployment-manifest.json artifacts/helm-chart-validation.json --root . --state .trustai/kubernetes-release-demo/evidence-chain.json --tenant kubernetes-release-local --out artifacts/kubernetes-release-state-entry.json
+python -m trustai chain-verify --state .trustai/kubernetes-release-demo/evidence-chain.json --tenant kubernetes-release-local
 ```
 
 `trustai deployment-append` can append the verified manifest as

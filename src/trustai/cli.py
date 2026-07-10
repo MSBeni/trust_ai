@@ -514,19 +514,24 @@ from .deployment import (
     append_deployment_image_integrity_receipt,
     append_deployment_manifest,
     append_helm_chart_validation_receipt,
+    append_kubernetes_release_state_receipt,
     build_deployment_image_integrity_receipt,
     build_deployment_manifest,
     build_helm_chart_validation_receipt,
+    build_kubernetes_release_state_receipt,
     load_deployment_image_integrity_receipt,
     load_deployment_manifest,
     load_helm_chart_validation_receipt,
+    load_kubernetes_release_state_receipt,
     verify_deployment_image_integrity_receipt,
     verify_deployment_manifest,
     verify_helm_chart_validation_receipt,
+    verify_kubernetes_release_state_receipt,
     write_deployment_image_integrity_receipt,
     write_deployment_manifest,
     write_deployment_markdown,
     write_helm_chart_validation_receipt,
+    write_kubernetes_release_state_receipt,
 )
 from .byoc_operator import (
     BYOC_OPERATOR_MODES,
@@ -7935,6 +7940,122 @@ def cmd_deployment_image_integrity_append(args: argparse.Namespace) -> int:
     print(f"receipt id: {receipt['receipt_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
+
+
+def cmd_kubernetes_release_state(args: argparse.Namespace) -> int:
+    try:
+        deployment_manifest = load_deployment_manifest(args.deployment_manifest)
+        helm_chart_validation = load_helm_chart_validation_receipt(args.helm_chart_validation)
+        receipt = build_kubernetes_release_state_receipt(
+            args.root,
+            deployment_manifest=deployment_manifest,
+            helm_chart_validation=helm_chart_validation,
+            environment=args.environment,
+            mode=args.mode,
+            provider=args.provider,
+            cluster_ref=args.cluster_ref,
+            namespace=args.namespace,
+            release_name=args.release_name,
+            release_revision=args.release_revision,
+            release_status=args.release_status,
+            export_ref=args.export_ref,
+            export_hash=args.export_hash,
+            service_account_ref=args.service_account_ref,
+            deployment_ref=args.deployment_ref,
+            service_ref=args.service_ref,
+            network_policy_ref=args.network_policy_ref,
+            secret_ref=args.secret_ref,
+            desired_replicas=args.desired_replicas,
+            ready_replicas=args.ready_replicas,
+            network_policy_admitted=args.network_policy_admitted,
+            pod_selector_hash=args.pod_selector_hash,
+            ingress_policy_hash=args.ingress_policy_hash,
+            egress_policy_hash=args.egress_policy_hash,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            exported_at=args.exported_at,
+            issued_at=args.issued_at,
+            expires_at=args.expires_at,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_kubernetes_release_state_receipt(
+            receipt,
+            root=args.root,
+            deployment_manifest=deployment_manifest,
+            helm_chart_validation=helm_chart_validation,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"Kubernetes release-state receipt failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("Kubernetes release-state receipt failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_kubernetes_release_state_receipt(args.out, receipt)
+    print(f"Kubernetes release-state receipt: {args.out}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"release: {receipt['release']['release_name']} revision {receipt['release']['release_revision']}")
+    print(f"checks passed: {receipt['summary']['passed']}/{receipt['summary']['total']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_kubernetes_release_state_verify(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_kubernetes_release_state_receipt(args.receipt)
+        deployment_manifest = load_deployment_manifest(args.deployment_manifest)
+        helm_chart_validation = load_helm_chart_validation_receipt(args.helm_chart_validation)
+    except OSError as exc:
+        print(f"Kubernetes release-state verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_kubernetes_release_state_receipt(
+        receipt,
+        root=args.root,
+        deployment_manifest=deployment_manifest,
+        helm_chart_validation=helm_chart_validation,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified Kubernetes release-state receipt: {args.receipt}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"Kubernetes release-state verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_kubernetes_release_state_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    try:
+        receipt = load_kubernetes_release_state_receipt(args.receipt)
+        deployment_manifest = load_deployment_manifest(args.deployment_manifest)
+        helm_chart_validation = load_helm_chart_validation_receipt(args.helm_chart_validation)
+        entry = append_kubernetes_release_state_receipt(
+            chain,
+            receipt,
+            root=args.root,
+            deployment_manifest=deployment_manifest,
+            helm_chart_validation=helm_chart_validation,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"Kubernetes release-state append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"Kubernetes release-state entry: {args.out}")
+    print(f"Kubernetes release-state entry id: {entry['entry_id']}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
 
 def _load_byoc_operator_sources(args: argparse.Namespace) -> tuple[dict, dict, dict | None]:
     deployment_manifest = load_deployment_manifest(args.manifest)
@@ -18197,6 +18318,58 @@ def build_parser() -> argparse.ArgumentParser:
     image_integrity_append.add_argument("--key")
     _add_state_args(image_integrity_append)
     image_integrity_append.set_defaults(func=cmd_deployment_image_integrity_append)
+    k8s_release = subparsers.add_parser("kubernetes-release-state", help="write a signed Kubernetes Helm release and NetworkPolicy state receipt")
+    k8s_release.add_argument("deployment_manifest")
+    k8s_release.add_argument("helm_chart_validation")
+    k8s_release.add_argument("--root", default=".")
+    k8s_release.add_argument("--environment", default="local")
+    k8s_release.add_argument("--mode", choices=["local-reference", "recorded-export", "production-export"], default="recorded-export")
+    k8s_release.add_argument("--provider", required=True)
+    k8s_release.add_argument("--cluster-ref", required=True)
+    k8s_release.add_argument("--namespace", required=True)
+    k8s_release.add_argument("--release-name", required=True)
+    k8s_release.add_argument("--release-revision", required=True)
+    k8s_release.add_argument("--release-status", default="deployed")
+    k8s_release.add_argument("--export-ref", required=True)
+    k8s_release.add_argument("--export-hash", required=True)
+    k8s_release.add_argument("--service-account-ref", required=True)
+    k8s_release.add_argument("--deployment-ref", required=True)
+    k8s_release.add_argument("--service-ref", required=True)
+    k8s_release.add_argument("--network-policy-ref", required=True)
+    k8s_release.add_argument("--secret-ref", required=True)
+    k8s_release.add_argument("--desired-replicas", type=int, required=True)
+    k8s_release.add_argument("--ready-replicas", type=int, required=True)
+    k8s_release.add_argument("--network-policy-admitted", action=argparse.BooleanOptionalAction, default=True)
+    k8s_release.add_argument("--pod-selector-hash", required=True)
+    k8s_release.add_argument("--ingress-policy-hash", required=True)
+    k8s_release.add_argument("--egress-policy-hash", required=True)
+    k8s_release.add_argument("--audit-log-ref", required=True)
+    k8s_release.add_argument("--audit-log-root", required=True)
+    k8s_release.add_argument("--exported-at")
+    k8s_release.add_argument("--issued-at")
+    k8s_release.add_argument("--expires-at")
+    k8s_release.add_argument("--generated-at")
+    k8s_release.add_argument("--out", default="artifacts/kubernetes-release-state.json")
+    k8s_release.add_argument("--key")
+    k8s_release.set_defaults(func=cmd_kubernetes_release_state)
+
+    k8s_release_verify = subparsers.add_parser("kubernetes-release-state-verify", help="verify a signed Kubernetes release-state receipt")
+    k8s_release_verify.add_argument("receipt")
+    k8s_release_verify.add_argument("deployment_manifest")
+    k8s_release_verify.add_argument("helm_chart_validation")
+    k8s_release_verify.add_argument("--root", default=".")
+    k8s_release_verify.add_argument("--key")
+    k8s_release_verify.set_defaults(func=cmd_kubernetes_release_state_verify)
+
+    k8s_release_append = subparsers.add_parser("kubernetes-release-state-append", help="append a verified Kubernetes release-state receipt as chain evidence")
+    k8s_release_append.add_argument("receipt")
+    k8s_release_append.add_argument("deployment_manifest")
+    k8s_release_append.add_argument("helm_chart_validation")
+    k8s_release_append.add_argument("--root", default=".")
+    k8s_release_append.add_argument("--out", default="artifacts/kubernetes-release-state-entry.json")
+    k8s_release_append.add_argument("--key")
+    _add_state_args(k8s_release_append)
+    k8s_release_append.set_defaults(func=cmd_kubernetes_release_state_append)
     byoc_operator = subparsers.add_parser("byoc-operator-attestation", help="write a signed BYOC operator and Object Lock attestation")
     byoc_operator.add_argument("manifest")
     byoc_operator.add_argument("receipt")

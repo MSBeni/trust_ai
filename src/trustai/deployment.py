@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .canonical import content_hash, utc_now, without_keys
+from .canonical import content_hash, parse_rfc3339, utc_now, without_keys
 from .chain import EvidenceChain
 from .crypto import sign_value, verify_value
 
@@ -42,6 +42,8 @@ HELM_CHART_VALIDATION_SCHEMA = "trustai.helm-chart-validation/0.1"
 HELM_CHART_VALIDATION_ENTRY_TYPE = "deployment.helm_chart.validated"
 DEPLOYMENT_IMAGE_INTEGRITY_SCHEMA = "trustai.deployment-image-integrity/0.1"
 DEPLOYMENT_IMAGE_INTEGRITY_ENTRY_TYPE = "deployment.image.integrity_attested"
+KUBERNETES_RELEASE_STATE_SCHEMA = "trustai.kubernetes-release-state/0.1"
+KUBERNETES_RELEASE_STATE_ENTRY_TYPE = "deployment.kubernetes_release_state.recorded"
 DEFAULT_IMAGE_INTEGRITY_SOURCE_PATHS = (
     "deploy/docker/Dockerfile",
     "deploy/helm/trustai/values.yaml",
@@ -49,6 +51,16 @@ DEFAULT_IMAGE_INTEGRITY_SOURCE_PATHS = (
     "pyproject.toml",
     "src/trustai/server.py",
     "src/trustai/cli.py",
+)
+DEFAULT_KUBERNETES_RELEASE_SOURCE_PATHS = (
+    "deploy/helm/trustai/Chart.yaml",
+    "deploy/helm/trustai/values.yaml",
+    "deploy/helm/trustai/templates/deployment.yaml",
+    "deploy/helm/trustai/templates/service.yaml",
+    "deploy/helm/trustai/templates/networkpolicy.yaml",
+    "docs/specs/kubernetes-release-state-v0.1.md",
+    "docs/deployment/byoc.md",
+    "src/trustai/deployment.py",
 )
 
 
@@ -67,6 +79,13 @@ class HelmChartValidationVerification:
 
 @dataclass
 class DeploymentImageIntegrityVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class KubernetesReleaseStateVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -523,6 +542,262 @@ def append_deployment_image_integrity_receipt(
     return chain.append(DEPLOYMENT_IMAGE_INTEGRITY_ENTRY_TYPE, payload, key=key, timestamp=receipt.get("generated_at"))
 
 
+
+def build_kubernetes_release_state_receipt(
+    root: str | Path = ".",
+    *,
+    deployment_manifest: dict[str, Any],
+    helm_chart_validation: dict[str, Any],
+    environment: str = "local",
+    mode: str = "recorded-export",
+    provider: str,
+    cluster_ref: str,
+    namespace: str,
+    release_name: str,
+    release_revision: str,
+    release_status: str,
+    export_ref: str,
+    export_hash: str,
+    service_account_ref: str,
+    deployment_ref: str,
+    service_ref: str,
+    network_policy_ref: str,
+    secret_ref: str,
+    desired_replicas: int,
+    ready_replicas: int,
+    network_policy_admitted: bool,
+    pod_selector_hash: str,
+    ingress_policy_hash: str,
+    egress_policy_hash: str,
+    audit_log_ref: str,
+    audit_log_root: str,
+    exported_at: str | None = None,
+    issued_at: str | None = None,
+    expires_at: str | None = None,
+    generated_at: str | None = None,
+    key: str | None = None,
+) -> dict[str, Any]:
+    root_path = Path(root)
+    timestamp = generated_at or utc_now()
+    body = _kubernetes_release_state_body(
+        root_path,
+        deployment_manifest=deployment_manifest,
+        helm_chart_validation=helm_chart_validation,
+        environment=environment,
+        mode=mode,
+        provider=provider,
+        cluster_ref=cluster_ref,
+        namespace=namespace,
+        release_name=release_name,
+        release_revision=release_revision,
+        release_status=release_status,
+        export_ref=export_ref,
+        export_hash=export_hash,
+        service_account_ref=service_account_ref,
+        deployment_ref=deployment_ref,
+        service_ref=service_ref,
+        network_policy_ref=network_policy_ref,
+        secret_ref=secret_ref,
+        desired_replicas=desired_replicas,
+        ready_replicas=ready_replicas,
+        network_policy_admitted=network_policy_admitted,
+        pod_selector_hash=pod_selector_hash,
+        ingress_policy_hash=ingress_policy_hash,
+        egress_policy_hash=egress_policy_hash,
+        audit_log_ref=audit_log_ref,
+        audit_log_root=audit_log_root,
+        exported_at=exported_at or timestamp,
+        issued_at=issued_at,
+        expires_at=expires_at,
+        generated_at=timestamp,
+    )
+    receipt_id = content_hash(body)
+    return {**body, "receipt_id": receipt_id, "signatures": [sign_value({"receipt_id": receipt_id, "receipt": body}, key)]}
+
+
+def verify_kubernetes_release_state_receipt(
+    receipt: dict[str, Any],
+    *,
+    root: str | Path = ".",
+    deployment_manifest: dict[str, Any] | None = None,
+    helm_chart_validation: dict[str, Any] | None = None,
+    key: str | None = None,
+) -> KubernetesReleaseStateVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    root_path = Path(root)
+
+    if receipt.get("schema") != KUBERNETES_RELEASE_STATE_SCHEMA:
+        errors.append(f"unsupported Kubernetes release-state schema: {receipt.get('schema')}")
+    body = without_keys(receipt, "receipt_id", "signatures")
+    expected_receipt_id = content_hash(body)
+    if receipt.get("receipt_id") != expected_receipt_id:
+        errors.append("receipt_id does not match canonical Kubernetes release-state body")
+
+    signatures = receipt.get("signatures", [])
+    if not isinstance(signatures, list) or not signatures:
+        errors.append("Kubernetes release-state receipt must include at least one signature")
+    else:
+        signed_value = {"receipt_id": receipt.get("receipt_id"), "receipt": body}
+        if not any(isinstance(signature, dict) and verify_value(signed_value, signature, key) for signature in signatures):
+            errors.append("Kubernetes release-state signature verification failed")
+
+    for field in ("generated_at", "exported_at"):
+        try:
+            parse_rfc3339(str(body.get(field) or ""))
+        except ValueError as exc:
+            errors.append(f"Kubernetes release-state {field} invalid: {exc}")
+    freshness = body.get("freshness") if isinstance(body.get("freshness"), dict) else {}
+    for field in ("issued_at", "expires_at"):
+        if freshness.get(field):
+            try:
+                parse_rfc3339(str(freshness[field]))
+            except ValueError as exc:
+                errors.append(f"Kubernetes release-state {field} invalid: {exc}")
+
+    source_files = receipt.get("source_files", [])
+    if not isinstance(source_files, list) or not source_files:
+        errors.append("Kubernetes release-state receipt must include source_files")
+        source_files = []
+    source_paths: set[str] = set()
+    for source in source_files:
+        if not isinstance(source, dict):
+            errors.append("source file record must be an object")
+            continue
+        path_value = source.get("path")
+        if not isinstance(path_value, str) or not path_value:
+            errors.append("source file path missing")
+            continue
+        source_paths.add(path_value)
+        source_path = root_path / path_value
+        if not source_path.exists():
+            errors.append(f"source file missing from worktree: {path_value}")
+            continue
+        current = _source_record(root_path, path_value)
+        for field in ("sha256", "size_bytes"):
+            if source.get(field) != current.get(field):
+                errors.append(f"source file {path_value} {field} mismatch")
+    for required in DEFAULT_KUBERNETES_RELEASE_SOURCE_PATHS:
+        if required not in source_paths:
+            errors.append(f"required Kubernetes release-state source missing from receipt: {required}")
+
+    if deployment_manifest is None:
+        warnings.append("deployment manifest was not supplied for Kubernetes release-state replay")
+    if helm_chart_validation is None:
+        warnings.append("Helm chart validation receipt was not supplied for Kubernetes release-state replay")
+    if deployment_manifest is not None and helm_chart_validation is not None:
+        release_body = body.get("release") if isinstance(body.get("release"), dict) else {}
+        workload_body = body.get("workload") if isinstance(body.get("workload"), dict) else {}
+        network_policy_body = body.get("network_policy") if isinstance(body.get("network_policy"), dict) else {}
+        audit_log_body = body.get("audit_log") if isinstance(body.get("audit_log"), dict) else {}
+        for field, section in (
+            ("release", release_body),
+            ("workload", workload_body),
+            ("network_policy", network_policy_body),
+            ("audit_log", audit_log_body),
+        ):
+            if not section:
+                errors.append(f"Kubernetes release-state {field} must be an object")
+        try:
+            desired_replicas = int(workload_body.get("desired_replicas") or 0)
+            ready_replicas = int(workload_body.get("ready_replicas") or 0)
+        except (TypeError, ValueError) as exc:
+            errors.append(f"Kubernetes release-state workload replicas invalid: {exc}")
+        else:
+            expected_body = _kubernetes_release_state_body(
+                root_path,
+                deployment_manifest=deployment_manifest,
+                helm_chart_validation=helm_chart_validation,
+                environment=str(body.get("environment") or ""),
+                mode=str(body.get("mode") or ""),
+                provider=str(release_body.get("provider") or ""),
+                cluster_ref=str(release_body.get("cluster_ref") or ""),
+                namespace=str(release_body.get("namespace") or ""),
+                release_name=str(release_body.get("release_name") or ""),
+                release_revision=str(release_body.get("release_revision") or ""),
+                release_status=str(release_body.get("release_status") or ""),
+                export_ref=str(release_body.get("export_ref") or ""),
+                export_hash=str(release_body.get("export_hash") or ""),
+                service_account_ref=str(workload_body.get("service_account_ref") or ""),
+                deployment_ref=str(workload_body.get("deployment_ref") or ""),
+                service_ref=str(workload_body.get("service_ref") or ""),
+                network_policy_ref=str(workload_body.get("network_policy_ref") or ""),
+                secret_ref=str(workload_body.get("secret_ref") or ""),
+                desired_replicas=desired_replicas,
+                ready_replicas=ready_replicas,
+                network_policy_admitted=bool(network_policy_body.get("admitted")),
+                pod_selector_hash=str(network_policy_body.get("pod_selector_hash") or ""),
+                ingress_policy_hash=str(network_policy_body.get("ingress_policy_hash") or ""),
+                egress_policy_hash=str(network_policy_body.get("egress_policy_hash") or ""),
+                audit_log_ref=str(audit_log_body.get("audit_log_ref") or ""),
+                audit_log_root=str(audit_log_body.get("audit_log_root") or ""),
+                exported_at=str(body.get("exported_at") or ""),
+                issued_at=freshness.get("issued_at"),
+                expires_at=freshness.get("expires_at"),
+                generated_at=str(body.get("generated_at") or ""),
+            )
+            for field in ("release", "workload", "network_policy", "audit_log", "freshness", "deployment_manifest", "helm_chart_validation", "source_files", "checks", "summary", "passed", "limitations"):
+                if body.get(field) != expected_body.get(field):
+                    errors.append(f"Kubernetes release-state {field} does not match replayed sources")
+
+    checks = receipt.get("checks", [])
+    if not isinstance(checks, list) or not checks:
+        errors.append("Kubernetes release-state receipt must include checks")
+    else:
+        failed = [check.get("id") for check in checks if isinstance(check, dict) and not check.get("passed")]
+        if failed:
+            errors.append("Kubernetes release-state checks failed: " + ", ".join(str(item) for item in failed))
+    if receipt.get("passed") is not True:
+        errors.append("Kubernetes release-state receipt is not marked passed")
+
+    return KubernetesReleaseStateVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
+def append_kubernetes_release_state_receipt(
+    chain: EvidenceChain,
+    receipt: dict[str, Any],
+    *,
+    root: str | Path = ".",
+    deployment_manifest: dict[str, Any] | None = None,
+    helm_chart_validation: dict[str, Any] | None = None,
+    key: str | None = None,
+) -> dict[str, Any]:
+    result = verify_kubernetes_release_state_receipt(
+        receipt,
+        root=root,
+        deployment_manifest=deployment_manifest,
+        helm_chart_validation=helm_chart_validation,
+        key=key,
+    )
+    if not result.ok:
+        raise ValueError("invalid Kubernetes release-state receipt: " + "; ".join(result.errors))
+    payload = {
+        "receipt_id": receipt["receipt_id"],
+        "receipt_hash": content_hash(receipt),
+        "mode": receipt.get("mode"),
+        "environment": receipt.get("environment"),
+        "release": receipt.get("release"),
+        "workload": receipt.get("workload"),
+        "network_policy": receipt.get("network_policy"),
+        "deployment_manifest": receipt.get("deployment_manifest"),
+        "helm_chart_validation": receipt.get("helm_chart_validation"),
+        "check_summary": receipt.get("summary"),
+        "passed": receipt.get("passed"),
+    }
+    return chain.append(KUBERNETES_RELEASE_STATE_ENTRY_TYPE, payload, key=key, timestamp=receipt.get("generated_at"))
+
+
+def load_kubernetes_release_state_receipt(path: str | Path) -> dict[str, Any]:
+    value = json.loads(Path(path).read_text(encoding="utf-8-sig"))
+    if not isinstance(value, dict):
+        raise ValueError("Kubernetes release-state receipt must contain an object")
+    return value
+
+
+def write_kubernetes_release_state_receipt(path: str | Path, receipt: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(receipt, indent=2, sort_keys=True), encoding="utf-8")
 def load_deployment_image_integrity_receipt(path: str | Path) -> dict[str, Any]:
     value = json.loads(Path(path).read_text(encoding="utf-8-sig"))
     if not isinstance(value, dict):
@@ -788,6 +1063,234 @@ def _helm_check_summary(checks: list[dict[str, Any]]) -> dict[str, int]:
     failed = len(checks) - passed
     return {"passed": passed, "failed": failed, "total": len(checks)}
 
+
+
+def _kubernetes_release_state_body(
+    root: Path,
+    *,
+    deployment_manifest: dict[str, Any],
+    helm_chart_validation: dict[str, Any],
+    environment: str,
+    mode: str,
+    provider: str,
+    cluster_ref: str,
+    namespace: str,
+    release_name: str,
+    release_revision: str,
+    release_status: str,
+    export_ref: str,
+    export_hash: str,
+    service_account_ref: str,
+    deployment_ref: str,
+    service_ref: str,
+    network_policy_ref: str,
+    secret_ref: str,
+    desired_replicas: int,
+    ready_replicas: int,
+    network_policy_admitted: bool,
+    pod_selector_hash: str,
+    ingress_policy_hash: str,
+    egress_policy_hash: str,
+    audit_log_ref: str,
+    audit_log_root: str,
+    exported_at: str,
+    issued_at: str | None,
+    expires_at: str | None,
+    generated_at: str,
+) -> dict[str, Any]:
+    for value, field in (
+        (environment, "environment"),
+        (mode, "mode"),
+        (provider, "provider"),
+        (cluster_ref, "cluster_ref"),
+        (namespace, "namespace"),
+        (release_name, "release_name"),
+        (release_revision, "release_revision"),
+        (release_status, "release_status"),
+        (export_ref, "export_ref"),
+        (export_hash, "export_hash"),
+        (service_account_ref, "service_account_ref"),
+        (deployment_ref, "deployment_ref"),
+        (service_ref, "service_ref"),
+        (network_policy_ref, "network_policy_ref"),
+        (secret_ref, "secret_ref"),
+        (pod_selector_hash, "pod_selector_hash"),
+        (ingress_policy_hash, "ingress_policy_hash"),
+        (egress_policy_hash, "egress_policy_hash"),
+        (audit_log_ref, "audit_log_ref"),
+        (audit_log_root, "audit_log_root"),
+        (exported_at, "exported_at"),
+        (generated_at, "generated_at"),
+    ):
+        _require_release_text(value, field)
+    parse_rfc3339(generated_at)
+    parse_rfc3339(exported_at)
+    if issued_at:
+        parse_rfc3339(str(issued_at))
+    if expires_at:
+        parse_rfc3339(str(expires_at))
+    release = {
+        "provider": provider,
+        "cluster_ref": cluster_ref,
+        "namespace": namespace,
+        "release_name": release_name,
+        "release_revision": str(release_revision),
+        "release_status": release_status,
+        "export_ref": export_ref,
+        "export_hash": _normalize_sha256_ref(export_hash),
+    }
+    workload = {
+        "service_account_ref": service_account_ref,
+        "deployment_ref": deployment_ref,
+        "service_ref": service_ref,
+        "network_policy_ref": network_policy_ref,
+        "secret_ref": secret_ref,
+        "desired_replicas": int(desired_replicas),
+        "ready_replicas": int(ready_replicas),
+    }
+    network_policy = {
+        "network_policy_ref": network_policy_ref,
+        "admitted": bool(network_policy_admitted),
+        "pod_selector_hash": _normalize_sha256_ref(pod_selector_hash),
+        "ingress_policy_hash": _normalize_sha256_ref(ingress_policy_hash),
+        "egress_policy_hash": _normalize_sha256_ref(egress_policy_hash),
+    }
+    audit_log = {"audit_log_ref": audit_log_ref, "audit_log_root": _normalize_sha256_ref(audit_log_root)}
+    freshness = {"issued_at": issued_at, "expires_at": expires_at}
+    deployment_binding = _deployment_manifest_validation_binding(root, deployment_manifest)
+    helm_binding = _helm_chart_validation_binding(root, helm_chart_validation, deployment_manifest)
+    source_records = [_source_record(root, path) for path in DEFAULT_KUBERNETES_RELEASE_SOURCE_PATHS]
+    checks = _kubernetes_release_state_checks(
+        release=release,
+        workload=workload,
+        network_policy=network_policy,
+        audit_log=audit_log,
+        freshness=freshness,
+        deployment_manifest_binding=deployment_binding,
+        helm_chart_validation_binding=helm_binding,
+    )
+    summary = _helm_check_summary(checks)
+    passed = summary.get("failed", 0) == 0 and summary.get("passed", 0) == len(checks)
+    return {
+        "schema": KUBERNETES_RELEASE_STATE_SCHEMA,
+        "generated_at": generated_at,
+        "exported_at": exported_at,
+        "environment": environment,
+        "mode": mode,
+        "release": release,
+        "workload": workload,
+        "network_policy": network_policy,
+        "audit_log": audit_log,
+        "freshness": freshness,
+        "deployment_manifest": deployment_binding,
+        "helm_chart_validation": helm_binding,
+        "source_files": source_records,
+        "checks": checks,
+        "summary": summary,
+        "passed": passed,
+        "limitations": [
+            "This receipt records a provider/customer Kubernetes release-state export by reference and hash for offline review.",
+            "It does not fetch live Kubernetes state; reviewers must obtain the referenced provider export and compare its hash.",
+            "Production BYOC authority still requires fresh provider-owned audit logs, KMS/Object Lock evidence, and customer account exports.",
+        ],
+    }
+
+
+def _helm_chart_validation_binding(root: Path, receipt: dict[str, Any] | None, deployment_manifest: dict[str, Any]) -> dict[str, Any] | None:
+    if receipt is None:
+        return None
+    result = verify_helm_chart_validation_receipt(receipt, root=root, deployment_manifest=deployment_manifest)
+    return {
+        "receipt_id": receipt.get("receipt_id"),
+        "receipt_hash": content_hash(receipt),
+        "schema": receipt.get("schema"),
+        "verified": result.ok,
+        "passed": receipt.get("passed"),
+        "check_summary": receipt.get("summary"),
+        "errors": result.errors,
+        "warnings": result.warnings,
+    }
+
+
+def _kubernetes_release_state_checks(
+    *,
+    release: dict[str, Any],
+    workload: dict[str, Any],
+    network_policy: dict[str, Any],
+    audit_log: dict[str, Any],
+    freshness: dict[str, Any],
+    deployment_manifest_binding: dict[str, Any] | None,
+    helm_chart_validation_binding: dict[str, Any] | None,
+) -> list[dict[str, Any]]:
+    desired = int(workload.get("desired_replicas") or 0)
+    ready = int(workload.get("ready_replicas") or 0)
+    return [
+        _helm_check(
+            "deployment-manifest-bound",
+            bool(deployment_manifest_binding and deployment_manifest_binding.get("verified")),
+            "The Kubernetes release-state receipt is bound to a verified deployment manifest.",
+            "artifacts/deployment-manifest.json",
+        ),
+        _helm_check(
+            "helm-validation-bound",
+            bool(helm_chart_validation_binding and helm_chart_validation_binding.get("verified") and helm_chart_validation_binding.get("passed") is True),
+            "The Kubernetes release-state receipt is bound to a passing Helm chart validation receipt.",
+            "artifacts/helm-chart-validation.json",
+        ),
+        _helm_check(
+            "release-export-bound",
+            bool(release.get("export_ref") and _is_sha256_ref(str(release.get("export_hash") or ""))),
+            "Provider/customer Helm release and namespace export reference is hash-bound.",
+            "artifacts/kubernetes-release-state.json",
+        ),
+        _helm_check(
+            "release-namespace-state",
+            all(release.get(field) for field in ("provider", "cluster_ref", "namespace", "release_name", "release_revision", "release_status")),
+            "Release provider, cluster, namespace, name, revision, and status are recorded.",
+            "artifacts/kubernetes-release-state.json",
+        ),
+        _helm_check(
+            "workload-refs-bound",
+            all(workload.get(field) for field in ("deployment_ref", "service_ref", "network_policy_ref", "secret_ref", "service_account_ref")),
+            "Deployment, Service, NetworkPolicy, Secret, and ServiceAccount refs are bound.",
+            "artifacts/kubernetes-release-state.json",
+        ),
+        _helm_check(
+            "ready-replicas-match",
+            desired > 0 and ready >= desired,
+            "Ready replica count meets or exceeds desired replica count in the recorded export.",
+            "artifacts/kubernetes-release-state.json",
+        ),
+        _helm_check(
+            "network-policy-admitted",
+            network_policy.get("admitted") is True and bool(network_policy.get("network_policy_ref")),
+            "Recorded provider export says the API NetworkPolicy was admitted.",
+            "artifacts/kubernetes-release-state.json",
+        ),
+        _helm_check(
+            "network-policy-rules-hashed",
+            all(_is_sha256_ref(str(network_policy.get(field) or "")) for field in ("pod_selector_hash", "ingress_policy_hash", "egress_policy_hash")),
+            "NetworkPolicy pod selector, ingress, and egress rule summaries are hash-bound.",
+            "artifacts/kubernetes-release-state.json",
+        ),
+        _helm_check(
+            "audit-log-root-bound",
+            bool(audit_log.get("audit_log_ref") and _is_sha256_ref(str(audit_log.get("audit_log_root") or ""))),
+            "Kubernetes/provider audit-log reference and root hash are bound.",
+            "artifacts/kubernetes-release-state.json",
+        ),
+        _helm_check(
+            "freshness-window-present",
+            bool(freshness.get("issued_at") and freshness.get("expires_at")),
+            "The provider export has an explicit issued/expires freshness window.",
+            "artifacts/kubernetes-release-state.json",
+        ),
+    ]
+
+
+def _require_release_text(value: Any, field: str) -> None:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"Kubernetes release-state {field} is required")
 
 
 def _deployment_image_integrity_body(
