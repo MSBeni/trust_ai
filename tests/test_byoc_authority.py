@@ -113,6 +113,18 @@ class BYOCAuthorityTests(unittest.TestCase):
                 "issued_at": "2026-07-04T03:06:00Z",
                 "expires_at": "2026-12-31T00:00:00Z",
             },
+            {
+                "requirement_id": "network-policy-admission-audit-export",
+                "authority_kind": "provider-api",
+                "evidence_ref": "k8s:networkpolicy/trustai/trustai-api",
+                "evidence_hash": "sha256:byoc-network-policy-admission-export",
+                "description": "Provider Kubernetes export proving the TrustAI API NetworkPolicy was admitted and audit logged.",
+                "issuer": "Example Kubernetes API",
+                "subject": "trustai-api NetworkPolicy",
+                "source_uri": "https://cloud.example/kubernetes/aitrade-prod/networkpolicies/trustai-api",
+                "issued_at": "2026-07-04T03:07:00Z",
+                "expires_at": "2026-12-31T00:00:00Z",
+            },
         ]
 
     def _dossier(
@@ -171,13 +183,24 @@ class BYOCAuthorityTests(unittest.TestCase):
 
             self.assertTrue(result.ok, result.errors)
             self.assertEqual(BYOC_AUTHORITY_SCHEMA, dossier["schema"])
-            self.assertEqual(2, result.covered_count)
+            self.assertEqual(3, result.covered_count)
             self.assertEqual(len(PRODUCTION_AUTHORITY_REQUIREMENT_IDS), result.required_count)
             self.assertTrue(any("missing for" in warning for warning in result.warnings))
             self.assertEqual(BYOC_AUTHORITY_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(dossier["dossier_id"], entry["payload"]["dossier_id"])
-            self.assertEqual({"deferred": 2, "passed": 8}, entry["payload"]["control_summary"])
+            self.assertEqual({"deferred": 2, "passed": 9}, entry["payload"]["control_summary"])
             self.assertTrue(chain.verify_all().ok)
+
+    def test_byoc_authority_tracks_network_policy_admission_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            dossier, *_ = self._dossier(Path(tmp_dir))
+            requirement_ids = [item["id"] for item in dossier["required_production_authority"]]
+            control_by_id = {item["id"]: item for item in dossier["controls"]}
+
+            self.assertIn("network-policy-admission-audit-export", PRODUCTION_AUTHORITY_REQUIREMENT_IDS)
+            self.assertIn("network-policy-admission-audit-export", requirement_ids)
+            self.assertIn("network-policy-admission-audit-export", dossier["summary"]["covered_requirement_ids"])
+            self.assertEqual("passed", control_by_id["network-policy-admission-audit-export-covered"]["status"])
 
     def test_byoc_authority_detects_operator_source_tamper(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -287,6 +310,8 @@ class BYOCAuthorityTests(unittest.TestCase):
                     "oidc:trustai.example/byoc-authority-worker",
                     "--authority-evidence",
                     "live-cloud-account-binding,provider-api,aws:account/123456789012/trustai-byoc,sha256:byoc-live-cloud-account,Provider account export;issuer=ExampleCloud;subject=aitrade BYOC account;source_uri=https://cloud.example/accounts/123456789012/trustai;issued_at=2026-07-04T03:05:00Z;expires_at=2026-12-31T00:00:00Z",
+                    "--authority-evidence",
+                    "network-policy-admission-audit-export,provider-api,k8s:networkpolicy/trustai/trustai-api,sha256:byoc-network-policy-admission-export,Provider Kubernetes NetworkPolicy admission export;issuer=Example Kubernetes API;subject=trustai-api NetworkPolicy;source_uri=https://cloud.example/kubernetes/aitrade-prod/networkpolicies/trustai-api;issued_at=2026-07-04T03:07:00Z;expires_at=2026-12-31T00:00:00Z",
                     "--generated-at",
                     "2026-07-04T03:10:00Z",
                     "--require-fresh",

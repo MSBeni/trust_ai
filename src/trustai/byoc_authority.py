@@ -44,6 +44,11 @@ PRODUCTION_AUTHORITY_REQUIREMENTS = [
         "authority_kinds": ["provider-api", "hosted-service"],
     },
     {
+        "id": "network-policy-admission-audit-export",
+        "title": "Kubernetes NetworkPolicy admission, namespace selector, and egress audit export evidence",
+        "authority_kinds": ["provider-api", "hosted-service", "customer"],
+    },
+    {
         "id": "operator-controller-reconciliation",
         "title": "BYOC operator controller reconciliation, upgrade, and rollback evidence",
         "authority_kinds": ["hosted-service", "provider-api"],
@@ -186,7 +191,7 @@ def build_byoc_authority_dossier(
         "controls": _controls(mode, binding, evidence_items, summary),
         "limitations": [
             "This dossier binds a signed deployment manifest and BYOC operator attestation to production-authority evidence for BYOC/self-hosted claims.",
-            "It records cloud-account, Object Lock, legal hold, air-gap, Helm, operator, KMS, backup, network, audit-log, and tenant-isolation evidence requirements.",
+            "It records cloud-account, Object Lock, legal hold, air-gap, Helm, NetworkPolicy admission/audit, operator, KMS, backup, network, audit-log, and tenant-isolation evidence requirements.",
             "It does not claim production BYOC/self-hosted readiness unless mode is production-dossier and every required authority category has fresh external evidence.",
         ],
     }
@@ -591,6 +596,8 @@ def _controls(mode: str, binding: dict[str, Any], evidence_items: list[dict[str,
     audit_log = binding.get("audit_log") if isinstance(binding.get("audit_log"), dict) else {}
     receipt = object_lock.get("worm_receipt") if isinstance(object_lock.get("worm_receipt"), dict) else {}
     legal_hold = object_lock.get("legal_hold") if isinstance(object_lock.get("legal_hold"), dict) else {}
+    covered_ids = set(summary.get("covered_requirement_ids", []))
+    network_policy_authority_covered = "network-policy-admission-audit-export" in covered_ids
     production_ready = mode == "production-dossier" and _source_binding_complete(binding) and not missing and freshness["missing"] == 0
     return [
         {"id": "deployment-manifest-bound", "status": "passed" if deployment.get("manifest_id") else "failed", "detail": "Dossier binds the signed Docker/Helm deployment manifest, source file hashes, mode, and environment."},
@@ -600,6 +607,7 @@ def _controls(mode: str, binding: dict[str, Any], evidence_items: list[dict[str,
         {"id": "backup-and-network-controls-bound", "status": "passed" if backup.get("restore_test_ref") and network.get("egress_policy_ref") and network.get("private_endpoint") is True else "deferred", "detail": "Backup/restore drill, RPO/RTO, private ingress, egress policy, and optional air-gap bundle references are bound."},
         {"id": "audit-log-retention-bound", "status": "passed" if audit_log.get("root") and audit_log.get("retention_until") else "deferred", "detail": "Immutable operator audit-log root and retention-until timestamp are bound."},
         {"id": "authority-evidence-checklist-covered", "status": "passed" if not missing else "deferred", "detail": f"{summary.get('covered_requirement_count', 0)}/{summary.get('required_requirement_count', 0)} BYOC production authority categories are covered."},
+        {"id": "network-policy-admission-audit-export-covered", "status": "passed" if network_policy_authority_covered else "deferred", "detail": "Provider/customer Kubernetes NetworkPolicy admission and audit evidence is tracked separately from local Helm chart validation."},
         {"id": "freshness-windows-tracked", "status": "passed" if evidence_items and freshness["missing"] == 0 else "deferred", "detail": f"windowed={freshness['windowed']} missing_freshness={freshness['missing']}"},
         {"id": "production-mode-gated", "status": "passed" if production_ready else "deferred", "detail": "Production BYOC authority is claimed only when deployment, operator, WORM/legal hold, tenancy, backup, network, audit, and every authority category are covered with timestamped evidence windows."},
         {"id": "raw-secret-exclusion", "status": "passed", "detail": "Dossier stores hashes and references instead of raw customer cloud, KMS, Kubernetes, or operator credentials."},

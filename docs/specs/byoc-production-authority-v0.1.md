@@ -29,7 +29,7 @@ The dossier binds:
   versioning fields from the operator attestation
 - tenant/customer account, data-plane, control-plane, and keyring references
 - backup/restore and RPO/RTO evidence references
-- private ingress, egress policy, and optional air-gap bundle references
+- private ingress, egress policy, NetworkPolicy admission/audit evidence requirements, and optional air-gap bundle references
 - immutable operator audit-log root and retention window
 
 ## Modes
@@ -50,6 +50,7 @@ The fixed checklist is:
 - `legal-hold-retention-export`
 - `air-gapped-installation-evidence`
 - `helm-release-and-namespace-state`
+- `network-policy-admission-audit-export`
 - `operator-controller-reconciliation`
 - `customer-controlled-kms-key-custody`
 - `backup-restore-dr-evidence`
@@ -77,7 +78,7 @@ Verifiers must:
 - replay the BYOC operator attestation when supplied
 - compare source bindings to supplied deployment/operator artifacts
 - recompute the authority evidence summary
-- recompute controls from the dossier body
+- recompute controls from the dossier body, including the dedicated NetworkPolicy admission/audit evidence control
 - reject malformed authority evidence and unsupported authority kinds
 - reject raw secret-like values that are not references or hashes
 - reject `production-dossier` mode unless all production authority requirements
