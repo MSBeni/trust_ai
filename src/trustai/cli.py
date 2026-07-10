@@ -152,6 +152,14 @@ from .framework_runtime_service_authority_recorded_export_provider import (
     verify_framework_runtime_service_authority_recorded_export_provider_receipt,
     write_framework_runtime_service_authority_recorded_export_provider_receipt,
 )
+from .framework_runtime_service_authority_recorded_export_provider_bundle import (
+    FRAMEWORK_RUNTIME_SERVICE_AUTHORITY_RECORDED_EXPORT_PROVIDER_BUNDLE_MODES,
+    append_framework_runtime_service_authority_recorded_export_provider_bundle,
+    build_framework_runtime_service_authority_recorded_export_provider_bundle,
+    load_framework_runtime_service_authority_recorded_export_provider_bundle,
+    verify_framework_runtime_service_authority_recorded_export_provider_bundle,
+    write_framework_runtime_service_authority_recorded_export_provider_bundle,
+)
 from .anchor import append_anchor, write_anchor
 from .anchor_provider import (
     ANCHOR_PROVIDER_MODES,
@@ -4194,6 +4202,109 @@ def cmd_framework_runtime_service_authority_recorded_export_provider_append(args
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
+def cmd_framework_runtime_service_authority_recorded_export_provider_bundle(args: argparse.Namespace) -> int:
+    try:
+        provider_receipt = load_framework_runtime_service_authority_recorded_export_provider_receipt(args.receipt)
+        provider_export = load_framework_runtime_service_authority_recorded_export_provider_export(args.recorded_export_provider_export)
+        recorded_export_worker = load_framework_runtime_service_authority_recorded_export_worker_receipt(args.recorded_export_worker)
+        recorded_export = load_framework_runtime_service_authority_recorded_export(args.recorded_export)
+        sources = _load_framework_runtime_service_authority_recorded_export_sources(args, require_all=True)
+        artifact_paths = _framework_runtime_service_authority_recorded_export_artifact_paths(args, require_all=True)
+        bundle = build_framework_runtime_service_authority_recorded_export_provider_bundle(
+            provider_receipt,
+            provider_export,
+            recorded_export_worker,
+            recorded_export,
+            authority_attestation=sources["authority_attestation"],
+            authority_provider_receipt=sources["authority_provider_receipt"],
+            authority_provider_export=sources["authority_provider_export"],
+            authority_worker=sources["authority_worker"],
+            authority_dossier=sources["authority_dossier"],
+            service_provider_receipt=sources["provider_receipt"],
+            service_provider_export=sources["provider_export"],
+            service_worker=sources["service_worker"],
+            service_attestation=sources["service_attestation"],
+            storage_receipt=sources["storage_receipt"],
+            storage_export=sources["storage_export"],
+            worker=sources["worker"],
+            runtime_audit=sources["runtime_audit"],
+            audit_export=sources["audit_export"],
+            operation=sources["operation"],
+            trace_payload=sources["trace_payload"],
+            release=sources["release"],
+            matrix=sources["matrix"],
+            artifact_paths=artifact_paths,
+            root=args.root,
+            mode=args.mode,
+            environment=args.environment,
+            reviewer_ref=args.reviewer_ref,
+            bundle_ref=args.bundle_ref,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_framework_runtime_service_authority_recorded_export_provider_bundle(bundle, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime service authority recorded export provider bundle generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("framework runtime service authority recorded export provider bundle generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_framework_runtime_service_authority_recorded_export_provider_bundle(args.out, bundle)
+    print(f"framework runtime service authority recorded export provider bundle: {args.out}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"provider receipt id: {bundle['source']['provider_receipt_id']}")
+    print(f"source artifact count: {bundle['summary']['source_artifact_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_framework_runtime_service_authority_recorded_export_provider_bundle_verify(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_framework_runtime_service_authority_recorded_export_provider_bundle(args.bundle)
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime service authority recorded export provider bundle verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_framework_runtime_service_authority_recorded_export_provider_bundle(bundle, key=args.key)
+    if result.ok:
+        print(f"verified framework runtime service authority recorded export provider bundle: {args.bundle}")
+        print(f"bundle id: {bundle['bundle_id']}")
+        print(f"provider receipt id: {bundle['source']['provider_receipt_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"framework runtime service authority recorded export provider bundle verification failed: {args.bundle}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_framework_runtime_service_authority_recorded_export_provider_bundle_append(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_framework_runtime_service_authority_recorded_export_provider_bundle(args.bundle)
+    except (OSError, ValueError) as exc:
+        print(f"framework runtime service authority recorded export provider bundle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_framework_runtime_service_authority_recorded_export_provider_bundle(
+            chain,
+            bundle,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"framework runtime service authority recorded export provider bundle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"framework runtime service authority recorded export provider bundle entry: {args.out}")
+    print(f"framework runtime service authority recorded export provider bundle entry id: {entry['entry_id']}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
 def cmd_mcp_capture(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
     calls = load_mcp_transcript(args.transcript)
@@ -14906,6 +15017,58 @@ def build_parser() -> argparse.ArgumentParser:
     framework_runtime_service_authority_recorded_export_provider_append.add_argument("--key")
     _add_state_args(framework_runtime_service_authority_recorded_export_provider_append)
     framework_runtime_service_authority_recorded_export_provider_append.set_defaults(func=cmd_framework_runtime_service_authority_recorded_export_provider_append)
+    framework_runtime_service_authority_recorded_export_provider_bundle = subparsers.add_parser(
+        "framework-runtime-service-authority-recorded-export-provider-bundle",
+        help="write a self-contained framework runtime service authority recorded-export provider review bundle",
+    )
+    framework_runtime_service_authority_recorded_export_provider_bundle.add_argument("receipt")
+    framework_runtime_service_authority_recorded_export_provider_bundle.add_argument("recorded_export_provider_export")
+    framework_runtime_service_authority_recorded_export_provider_bundle.add_argument("recorded_export_worker")
+    framework_runtime_service_authority_recorded_export_provider_bundle.add_argument("recorded_export")
+    _add_framework_runtime_service_authority_recorded_export_source_args(
+        framework_runtime_service_authority_recorded_export_provider_bundle, required=True
+    )
+    framework_runtime_service_authority_recorded_export_provider_bundle.add_argument("--root", default=".")
+    framework_runtime_service_authority_recorded_export_provider_bundle.add_argument(
+        "--mode",
+        choices=sorted(FRAMEWORK_RUNTIME_SERVICE_AUTHORITY_RECORDED_EXPORT_PROVIDER_BUNDLE_MODES),
+        default="offline-review",
+    )
+    framework_runtime_service_authority_recorded_export_provider_bundle.add_argument("--environment")
+    framework_runtime_service_authority_recorded_export_provider_bundle.add_argument("--reviewer-ref", required=True)
+    framework_runtime_service_authority_recorded_export_provider_bundle.add_argument("--bundle-ref")
+    framework_runtime_service_authority_recorded_export_provider_bundle.add_argument("--generated-at")
+    framework_runtime_service_authority_recorded_export_provider_bundle.add_argument(
+        "--out", default="artifacts/framework-runtime-service-authority-recorded-export-provider-bundle.json"
+    )
+    framework_runtime_service_authority_recorded_export_provider_bundle.add_argument("--key")
+    framework_runtime_service_authority_recorded_export_provider_bundle.set_defaults(
+        func=cmd_framework_runtime_service_authority_recorded_export_provider_bundle
+    )
+
+    framework_runtime_service_authority_recorded_export_provider_bundle_verify = subparsers.add_parser(
+        "framework-runtime-service-authority-recorded-export-provider-bundle-verify",
+        help="verify a self-contained framework runtime service authority recorded-export provider review bundle",
+    )
+    framework_runtime_service_authority_recorded_export_provider_bundle_verify.add_argument("bundle")
+    framework_runtime_service_authority_recorded_export_provider_bundle_verify.add_argument("--key")
+    framework_runtime_service_authority_recorded_export_provider_bundle_verify.set_defaults(
+        func=cmd_framework_runtime_service_authority_recorded_export_provider_bundle_verify
+    )
+
+    framework_runtime_service_authority_recorded_export_provider_bundle_append = subparsers.add_parser(
+        "framework-runtime-service-authority-recorded-export-provider-bundle-append",
+        help="append a framework runtime service authority recorded-export provider review bundle as chain evidence",
+    )
+    framework_runtime_service_authority_recorded_export_provider_bundle_append.add_argument("bundle")
+    framework_runtime_service_authority_recorded_export_provider_bundle_append.add_argument(
+        "--out", default="artifacts/framework-runtime-service-authority-recorded-export-provider-bundle-entry.json"
+    )
+    framework_runtime_service_authority_recorded_export_provider_bundle_append.add_argument("--key")
+    _add_state_args(framework_runtime_service_authority_recorded_export_provider_bundle_append)
+    framework_runtime_service_authority_recorded_export_provider_bundle_append.set_defaults(
+        func=cmd_framework_runtime_service_authority_recorded_export_provider_bundle_append
+    )
     mcp = subparsers.add_parser("mcp-capture", help="append MCP tool call transcripts to the chain")
     mcp.add_argument("transcript")
     _add_state_args(mcp)
