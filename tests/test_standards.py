@@ -26,6 +26,8 @@ class StandardsSubmissionTests(unittest.TestCase):
         self.assertTrue(set(REQUIRED_SPEC_PATHS).issubset(paths))
         self.assertIn("TrustAI Standards Submission Package", markdown)
         self.assertIn("proof-pack-v0.1.md", markdown)
+        self.assertIn("design-partner-pilot-v0.1.md", markdown)
+        self.assertIn("design-partner-pilot-dossiers", markdown)
 
     def test_standards_submission_detects_spec_hash_tamper(self):
         package = build_standards_submission(ROOT)

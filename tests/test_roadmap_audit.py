@@ -59,6 +59,11 @@ class RoadmapAuditTests(unittest.TestCase):
         self.assertIn("src/trustai/onboarding.py", onboarding_evidence)
         self.assertIn("docs/specs/self-serve-onboarding-v0.1.md", onboarding_evidence)
         self.assertIn("tests/test_self_serve_onboarding.py", onboarding_evidence)
+        design_partner_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "design-partner-pilot-exit-criteria")
+        design_partner_evidence = {item["path"] for item in design_partner_requirement["evidence"]}
+        self.assertIn("src/trustai/design_partner.py", design_partner_evidence)
+        self.assertIn("docs/specs/design-partner-pilot-v0.1.md", design_partner_evidence)
+        self.assertIn("tests/test_design_partner.py", design_partner_evidence)
         vertical_pack_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "vertical-packs")
         vertical_pack_evidence = {item["path"] for item in vertical_pack_requirement["evidence"]}
         self.assertIn("src/trustai/vertical_pack.py", vertical_pack_evidence)

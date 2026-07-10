@@ -19,6 +19,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/tamper-stress-report-v0.1.md",
     "docs/specs/production-trust-v0.1.md",
     "docs/specs/roadmap-audit-v0.1.md",
+    "docs/specs/design-partner-pilot-v0.1.md",
     "docs/specs/external-evidence-manifest-v0.1.md",
     "docs/specs/anchor-provider-receipt-v0.1.md",
     "docs/specs/otel-ingest-v0.1.md",
@@ -137,6 +138,17 @@ REQUIRED_SPEC_PATHS = (
 )
 
 CONFORMANCE_TARGETS = (
+    {
+        "id": "design-partner-pilot-dossiers",
+        "description": "Design-partner pilot dossiers bind Phase 1 exit-criteria readiness and external-evidence claims to partner counts, signed value, external scrutiny events, proof machinery source artifacts, and explicit no-customer-data limits.",
+        "reference": "src/trustai/design_partner.py",
+        "commands": [
+            "python -m trustai design-partner-dossier --root . --dossier-ref dossier:design-partner/phase1-readiness --producer-ref oidc:trustai.example/gtm-ops --partner \"partner:bank-a,finserv,agent:payments-risk,60000,negotiating\" --partner \"partner:insurer-b,insurance,agent:claims-triage,90000,negotiating\" --partner \"partner:fintech-c,fintech,agent:treasury-ops,100000,negotiating\" --scrutiny \"scrutiny:model-risk-a,model-risk,team:model-risk,partner:bank-a,submitted\" --out artifacts/design-partner-dossier.json",
+            "python -m trustai design-partner-dossier-verify artifacts/design-partner-dossier.json --root .",
+            "python -m trustai design-partner-dossier-append artifacts/design-partner-dossier.json --root . --state .trustai/design-partner-demo/evidence-chain.json --tenant design-partner-local --out artifacts/design-partner-dossier-entry.json",
+            "python -m unittest tests.test_design_partner",
+        ],
+    },
     {
         "id": "vertical-pack-receipts",
         "description": "Vertical pack receipts bind contract templates, policy packs, proof-pack sources, compliance/runtime sources, and vertical-specific external-evidence limits for trading/treasury, insurance claims, healthcare RCM, and public sector packs.",
@@ -1139,6 +1151,7 @@ def build_standards_submission(
             "Publish trust authority KMS enforcement receipt format for customer-controlled HSM attestation, key policy, timestamp policy, quorum, and audit-root evidence.",
             "Publish anchor provider receipt format for external/public chain-root anchoring evidence.",
             "Publish deployment manifest format for BYOC/self-hosted scaffold verification.",
+            "Publish design-partner pilot dossier format for Phase 1 partner count, signed value, external scrutiny, and readiness/external-evidence separation.",
             "Publish collector topology manifest format for ingestion/MCP/control-plane verification.",
             "Publish MCP gateway production authority dossier format for proxy fleet, session auth, replay, immutable audit, scheduler, policy, network, KMS, and observability authority evidence."
             "Publish signed verifier release manifest and conformance-bound release verification commands.",

@@ -258,6 +258,16 @@ from .auditor_program_sponsorship import (
 )
 from .canonical import content_hash
 from .chain import EvidenceChain
+from .design_partner import (
+    DOSSIER_MODES,
+    append_design_partner_dossier,
+    build_design_partner_dossier,
+    load_design_partner_dossier,
+    parse_partner,
+    parse_scrutiny,
+    verify_design_partner_dossier,
+    write_design_partner_dossier,
+)
 from .onboarding import (
     GATEWAY_MODES,
     SDK_SCOPES,
@@ -1265,6 +1275,83 @@ def cmd_self_serve_onboarding_append(args: argparse.Namespace) -> int:
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
+
+def cmd_design_partner_dossier(args: argparse.Namespace) -> int:
+    try:
+        partners = [parse_partner(value) for value in args.partner]
+        scrutiny_events = [parse_scrutiny(value) for value in args.scrutiny]
+        dossier = build_design_partner_dossier(
+            args.root,
+            dossier_ref=args.dossier_ref,
+            producer_ref=args.producer_ref,
+            partners=partners,
+            scrutiny_events=scrutiny_events,
+            mode=args.mode,
+            environment=args.environment,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_design_partner_dossier(dossier, root=args.root, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"design-partner pilot dossier generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("design-partner pilot dossier generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_design_partner_dossier(args.out, dossier)
+    print(f"design-partner pilot dossier: {args.out}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"mode: {dossier['mode']}")
+    print(f"partners: {dossier['metrics']['partner_count']}")
+    print(f"signed pilot value usd: {dossier['metrics']['signed_pilot_value_usd']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_design_partner_dossier_verify(args: argparse.Namespace) -> int:
+    try:
+        dossier = load_design_partner_dossier(args.dossier)
+        result = verify_design_partner_dossier(dossier, root=args.root, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"design-partner pilot dossier verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        print(f"verified design-partner pilot dossier: {args.dossier}")
+        print(f"dossier id: {dossier['dossier_id']}")
+        print(f"mode: {dossier['mode']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"design-partner pilot dossier verification failed: {args.dossier}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_design_partner_dossier_append(args: argparse.Namespace) -> int:
+    try:
+        dossier = load_design_partner_dossier(args.dossier)
+    except (OSError, ValueError) as exc:
+        print(f"design-partner pilot dossier append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_design_partner_dossier(chain, dossier, root=args.root, key=args.key)
+    except ValueError as exc:
+        print(f"design-partner pilot dossier append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"design-partner pilot dossier entry: {args.out}")
+    print(f"design-partner pilot dossier entry id: {entry['entry_id']}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
 def cmd_vertical_pack(args: argparse.Namespace) -> int:
     try:
         pack = build_vertical_pack(
@@ -1295,7 +1382,6 @@ def cmd_vertical_pack(args: argparse.Namespace) -> int:
         print(f"warning: {warning}")
     return 0
 
-
 def cmd_vertical_pack_verify(args: argparse.Namespace) -> int:
     try:
         pack = load_vertical_pack(args.pack)
@@ -1314,7 +1400,6 @@ def cmd_vertical_pack_verify(args: argparse.Namespace) -> int:
     for error in result.errors:
         print(f"- {error}", file=sys.stderr)
     return 1
-
 
 def cmd_vertical_pack_append(args: argparse.Namespace) -> int:
     try:
@@ -16891,6 +16976,32 @@ def build_parser() -> argparse.ArgumentParser:
     _add_state_args(self_serve_onboarding_append)
     self_serve_onboarding_append.set_defaults(func=cmd_self_serve_onboarding_append)
 
+    design_partner = subparsers.add_parser("design-partner-dossier", help="write a signed Phase 1 design-partner pilot dossier")
+    design_partner.add_argument("--root", default=".")
+    design_partner.add_argument("--dossier-ref", required=True)
+    design_partner.add_argument("--producer-ref", required=True)
+    design_partner.add_argument("--partner", action="append", default=[], required=True, help="partner_ref,industry,agent_ref,pilot_value_usd,contract_status[,contract_evidence_ref]; repeatable")
+    design_partner.add_argument("--scrutiny", action="append", default=[], help="scrutiny_ref,party_type,party_ref,partner_ref,outcome[,evidence_ref]; repeatable")
+    design_partner.add_argument("--mode", choices=sorted(DOSSIER_MODES), default="readiness")
+    design_partner.add_argument("--environment", default="local")
+    design_partner.add_argument("--generated-at")
+    design_partner.add_argument("--out", default="artifacts/design-partner-dossier.json")
+    design_partner.add_argument("--key")
+    design_partner.set_defaults(func=cmd_design_partner_dossier)
+
+    design_partner_verify = subparsers.add_parser("design-partner-dossier-verify", help="verify a signed Phase 1 design-partner pilot dossier")
+    design_partner_verify.add_argument("dossier")
+    design_partner_verify.add_argument("--root", default=".")
+    design_partner_verify.add_argument("--key")
+    design_partner_verify.set_defaults(func=cmd_design_partner_dossier_verify)
+
+    design_partner_append = subparsers.add_parser("design-partner-dossier-append", help="append a verified design-partner pilot dossier as chain evidence")
+    design_partner_append.add_argument("dossier")
+    design_partner_append.add_argument("--root", default=".")
+    design_partner_append.add_argument("--out", default="artifacts/design-partner-dossier-entry.json")
+    design_partner_append.add_argument("--key")
+    _add_state_args(design_partner_append)
+    design_partner_append.set_defaults(func=cmd_design_partner_dossier_append)
     vertical_pack = subparsers.add_parser("vertical-pack", help="write a signed vertical pack receipt")
     vertical_pack.add_argument("--root", default=".")
     vertical_pack.add_argument("--pack-ref", required=True)
