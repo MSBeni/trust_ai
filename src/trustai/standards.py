@@ -15,6 +15,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/actuarial-product-v0.1.md",
     "docs/specs/state-of-agent-reliability-report-v0.1.md",
     "docs/specs/roadmap-phase-scoreboard-v0.1.md",
+    "docs/specs/product-scope-decision-v0.1.md",
     "docs/specs/agent-registry-v0.1.md",
     "docs/specs/proof-pack-v0.1.md",
     "docs/specs/verification-contract-v0.1.md",
@@ -183,6 +184,17 @@ CONFORMANCE_TARGETS = (
             "python -m trustai phase-scoreboard-verify artifacts/phase-scoreboard.json --root .",
             "python -m trustai phase-scoreboard-append artifacts/phase-scoreboard.json --root . --state .trustai/phase-scoreboard-demo/evidence-chain.json --tenant phase-scoreboard-local --out artifacts/phase-scoreboard-entry.json",
             "python -m unittest tests.test_phase_scoreboard",
+        ],
+    },
+    {
+        "id": "product-scope-decisions",
+        "description": "Product scope decisions bind feature requests to the roadmap discipline test, proof impact categories, explicit anti-focus flags, decline-required controls, and source artifacts for proof-pack, verifier, gate, and roadmap evidence surfaces.",
+        "reference": "src/trustai/product_scope.py",
+        "commands": [
+            "python -m trustai product-scope-decision --root . --decision-ref scope:request/regulator-export --requester-ref product:gtm --reviewer-ref oidc:trustai.example/product --feature-title \"Regulator export evidence\" --feature-summary \"Portable regulator export that strengthens third-party proof review.\" --decision accept --proof-impact proof-strength --proof-impact wider-acceptance --out artifacts/product-scope-decision.json",
+            "python -m trustai product-scope-decision-verify artifacts/product-scope-decision.json --root .",
+            "python -m trustai product-scope-decision-append artifacts/product-scope-decision.json --root . --state .trustai/product-scope-demo/evidence-chain.json --tenant product-scope-local --out artifacts/product-scope-decision-entry.json",
+            "python -m unittest tests.test_product_scope",
         ],
     },
     {
@@ -1191,6 +1203,7 @@ def build_standards_submission(
             "Publish TrustAI own compliance dossier format for SOC 2 Type II and ISO/IEC 42001 readiness/external-certification separation.",
             "Publish State of Agent Reliability report format for anonymized aggregate GTM publication evidence with source-product binding and publication-evidence separation.",
             "Publish roadmap phase scoreboard format for P1-P4 business milestone evidence references with readiness/external-evidence separation.",
+            "Publish product scope decision format for proof-impact discipline checks and anti-focus decline controls.",
             "Publish collector topology manifest format for ingestion/MCP/control-plane verification.",
             "Publish MCP gateway production authority dossier format for proxy fleet, session auth, replay, immutable audit, scheduler, policy, network, KMS, and observability authority evidence."
             "Publish signed verifier release manifest and conformance-bound release verification commands.",

@@ -34,6 +34,8 @@ class StandardsSubmissionTests(unittest.TestCase):
         self.assertIn("state-of-agent-reliability-reports", markdown)
         self.assertIn("roadmap-phase-scoreboard-v0.1.md", markdown)
         self.assertIn("roadmap-phase-scoreboards", markdown)
+        self.assertIn("product-scope-decision-v0.1.md", markdown)
+        self.assertIn("product-scope-decisions", markdown)
 
     def test_standards_submission_detects_spec_hash_tamper(self):
         package = build_standards_submission(ROOT)

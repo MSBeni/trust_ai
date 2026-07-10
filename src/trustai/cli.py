@@ -295,6 +295,16 @@ from .phase_scoreboard import (
     verify_phase_scoreboard,
     write_phase_scoreboard,
 )
+from .product_scope import (
+    ANTI_FOCUS_FLAGS,
+    DECISIONS,
+    PROOF_IMPACTS,
+    append_product_scope_decision,
+    build_product_scope_decision,
+    load_product_scope_decision,
+    verify_product_scope_decision,
+    write_product_scope_decision,
+)
 from .onboarding import (
     GATEWAY_MODES,
     SDK_SCOPES,
@@ -1525,6 +1535,82 @@ def cmd_phase_scoreboard_append(args: argparse.Namespace) -> int:
         print(f"roadmap phase scoreboard entry: {args.out}")
     print(f"roadmap phase scoreboard entry id: {entry['entry_id']}")
     print(f"scoreboard id: {scoreboard['scoreboard_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_product_scope_decision(args: argparse.Namespace) -> int:
+    try:
+        decision = build_product_scope_decision(
+            args.root,
+            decision_ref=args.decision_ref,
+            requester_ref=args.requester_ref,
+            reviewer_ref=args.reviewer_ref,
+            feature_title=args.feature_title,
+            feature_summary=args.feature_summary,
+            decision=args.decision,
+            proof_impacts=args.proof_impact,
+            anti_focus_flags=args.anti_focus,
+            rationale=args.rationale,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_product_scope_decision(decision, root=args.root, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"product scope decision generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("product scope decision generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_product_scope_decision(args.out, decision)
+    print(f"product scope decision: {args.out}")
+    print(f"decision id: {decision['decision_id']}")
+    print(f"decision: {decision['decision']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_product_scope_decision_verify(args: argparse.Namespace) -> int:
+    try:
+        decision = load_product_scope_decision(args.decision_receipt)
+        result = verify_product_scope_decision(decision, root=args.root, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"product scope decision verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        print(f"verified product scope decision: {args.decision_receipt}")
+        print(f"decision id: {decision['decision_id']}")
+        print(f"decision: {decision['decision']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"product scope decision verification failed: {args.decision_receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_product_scope_decision_append(args: argparse.Namespace) -> int:
+    try:
+        decision = load_product_scope_decision(args.decision_receipt)
+    except (OSError, ValueError) as exc:
+        print(f"product scope decision append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_product_scope_decision(chain, decision, root=args.root, key=args.key)
+    except ValueError as exc:
+        print(f"product scope decision append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"product scope decision entry: {args.out}")
+    print(f"product scope decision entry id: {entry['entry_id']}")
+    print(f"decision id: {decision['decision_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
@@ -17313,6 +17399,36 @@ def build_parser() -> argparse.ArgumentParser:
     phase_scoreboard_append.add_argument("--key")
     _add_state_args(phase_scoreboard_append)
     phase_scoreboard_append.set_defaults(func=cmd_phase_scoreboard_append)
+
+    product_scope = subparsers.add_parser("product-scope-decision", help="write a signed product scope discipline decision")
+    product_scope.add_argument("--root", default=".")
+    product_scope.add_argument("--decision-ref", required=True)
+    product_scope.add_argument("--requester-ref", required=True)
+    product_scope.add_argument("--reviewer-ref", required=True)
+    product_scope.add_argument("--feature-title", required=True)
+    product_scope.add_argument("--feature-summary", required=True)
+    product_scope.add_argument("--decision", choices=sorted(DECISIONS), required=True)
+    product_scope.add_argument("--proof-impact", action="append", default=[], choices=sorted(PROOF_IMPACTS))
+    product_scope.add_argument("--anti-focus", action="append", default=[], choices=sorted(ANTI_FOCUS_FLAGS))
+    product_scope.add_argument("--rationale")
+    product_scope.add_argument("--generated-at")
+    product_scope.add_argument("--out", default="artifacts/product-scope-decision.json")
+    product_scope.add_argument("--key")
+    product_scope.set_defaults(func=cmd_product_scope_decision)
+
+    product_scope_verify = subparsers.add_parser("product-scope-decision-verify", help="verify a signed product scope discipline decision")
+    product_scope_verify.add_argument("decision_receipt")
+    product_scope_verify.add_argument("--root", default=".")
+    product_scope_verify.add_argument("--key")
+    product_scope_verify.set_defaults(func=cmd_product_scope_decision_verify)
+
+    product_scope_append = subparsers.add_parser("product-scope-decision-append", help="append a verified product scope decision as chain evidence")
+    product_scope_append.add_argument("decision_receipt")
+    product_scope_append.add_argument("--root", default=".")
+    product_scope_append.add_argument("--out", default="artifacts/product-scope-decision-entry.json")
+    product_scope_append.add_argument("--key")
+    _add_state_args(product_scope_append)
+    product_scope_append.set_defaults(func=cmd_product_scope_decision_append)
 
     vertical_pack = subparsers.add_parser("vertical-pack", help="write a signed vertical pack receipt")
     vertical_pack.add_argument("--root", default=".")

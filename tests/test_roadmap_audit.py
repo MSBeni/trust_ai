@@ -84,6 +84,11 @@ class RoadmapAuditTests(unittest.TestCase):
         self.assertIn("src/trustai/phase_scoreboard.py", phase_scoreboard_evidence)
         self.assertIn("docs/specs/roadmap-phase-scoreboard-v0.1.md", phase_scoreboard_evidence)
         self.assertIn("tests/test_phase_scoreboard.py", phase_scoreboard_evidence)
+        product_scope_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "product-scope-discipline")
+        product_scope_evidence = {item["path"] for item in product_scope_requirement["evidence"]}
+        self.assertIn("src/trustai/product_scope.py", product_scope_evidence)
+        self.assertIn("docs/specs/product-scope-decision-v0.1.md", product_scope_evidence)
+        self.assertIn("tests/test_product_scope.py", product_scope_evidence)
         framework_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "framework-adapters")
         framework_evidence = {item["path"] for item in framework_requirement["evidence"]}
         self.assertIn("src/trustai/framework_adapter_matrix.py", framework_evidence)
