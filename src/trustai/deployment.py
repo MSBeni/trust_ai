@@ -26,10 +26,28 @@ DEFAULT_DEPLOYMENT_SOURCE_PATHS = (
     "docs/specs/production-trust-v0.1.md",
     "README.md",
 )
+DEFAULT_HELM_CHART_SOURCE_PATHS = (
+    "deploy/helm/trustai/Chart.yaml",
+    "deploy/helm/trustai/values.yaml",
+    "deploy/helm/trustai/templates/configmap.yaml",
+    "deploy/helm/trustai/templates/deployment.yaml",
+    "deploy/helm/trustai/templates/service.yaml",
+    "deploy/helm/trustai/templates/demo-job.yaml",
+    "deploy/helm/trustai/templates/pvc.yaml",
+)
+
+HELM_CHART_VALIDATION_SCHEMA = "trustai.helm-chart-validation/0.1"
+HELM_CHART_VALIDATION_ENTRY_TYPE = "deployment.helm_chart.validated"
 
 
 @dataclass
 class DeploymentManifestVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+@dataclass
+class HelmChartValidationVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -179,6 +197,150 @@ def append_deployment_manifest(
     return chain.append(DEPLOYMENT_ENTRY_TYPE, payload, key=key, timestamp=manifest.get("generated_at"))
 
 
+
+def build_helm_chart_validation_receipt(
+    root: str | Path = ".",
+    *,
+    deployment_manifest: dict[str, Any] | None = None,
+    generated_at: str | None = None,
+    key: str | None = None,
+) -> dict[str, Any]:
+    root_path = Path(root)
+    body = _helm_chart_validation_body(
+        root_path,
+        deployment_manifest=deployment_manifest,
+        generated_at=generated_at or utc_now(),
+    )
+    receipt_id = content_hash(body)
+    return {
+        **body,
+        "receipt_id": receipt_id,
+        "signatures": [sign_value({"receipt_id": receipt_id, "receipt": body}, key)],
+    }
+
+
+def verify_helm_chart_validation_receipt(
+    receipt: dict[str, Any],
+    *,
+    root: str | Path = ".",
+    deployment_manifest: dict[str, Any] | None = None,
+    key: str | None = None,
+) -> HelmChartValidationVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    root_path = Path(root)
+
+    if receipt.get("schema") != HELM_CHART_VALIDATION_SCHEMA:
+        errors.append(f"unsupported Helm chart validation schema: {receipt.get('schema')}")
+    body = without_keys(receipt, "receipt_id", "signatures")
+    expected_receipt_id = content_hash(body)
+    if receipt.get("receipt_id") != expected_receipt_id:
+        errors.append("receipt_id does not match canonical Helm chart validation body")
+
+    signatures = receipt.get("signatures", [])
+    if not isinstance(signatures, list) or not signatures:
+        errors.append("Helm chart validation receipt must include at least one signature")
+    else:
+        signed_value = {"receipt_id": receipt.get("receipt_id"), "receipt": body}
+        if not any(isinstance(signature, dict) and verify_value(signed_value, signature, key) for signature in signatures):
+            errors.append("Helm chart validation signature verification failed")
+
+    source_files = receipt.get("source_files", [])
+    if not isinstance(source_files, list) or not source_files:
+        errors.append("Helm chart validation receipt must include source_files")
+        source_files = []
+    source_paths: set[str] = set()
+    for source in source_files:
+        if not isinstance(source, dict):
+            errors.append("source file record must be an object")
+            continue
+        path_value = source.get("path")
+        if not isinstance(path_value, str) or not path_value:
+            errors.append("source file path missing")
+            continue
+        source_paths.add(path_value)
+        source_path = root_path / path_value
+        if not source_path.exists():
+            errors.append(f"source file missing from worktree: {path_value}")
+            continue
+        current = _source_record(root_path, path_value)
+        for field in ("sha256", "size_bytes"):
+            if source.get(field) != current.get(field):
+                errors.append(f"source file {path_value} {field} mismatch")
+    for required in DEFAULT_HELM_CHART_SOURCE_PATHS:
+        if required not in source_paths:
+            errors.append(f"required Helm chart source missing from receipt: {required}")
+
+    if deployment_manifest is None and receipt.get("deployment_manifest"):
+        warnings.append("deployment manifest was not supplied for source replay")
+    if deployment_manifest is not None:
+        expected_body = _helm_chart_validation_body(
+            root_path,
+            deployment_manifest=deployment_manifest,
+            generated_at=body.get("generated_at"),
+        )
+        for field in ("chart", "values", "deployment_manifest", "source_files", "checks", "summary", "passed", "limitations"):
+            if body.get(field) != expected_body.get(field):
+                errors.append(f"Helm chart validation {field} does not match replayed sources")
+    else:
+        expected_body = _helm_chart_validation_body(root_path, deployment_manifest=None, generated_at=body.get("generated_at"))
+        for field in ("chart", "values", "source_files", "checks", "summary", "passed", "limitations"):
+            if body.get(field) != expected_body.get(field):
+                errors.append(f"Helm chart validation {field} does not match replayed sources")
+
+    checks = receipt.get("checks", [])
+    if not isinstance(checks, list) or not checks:
+        errors.append("Helm chart validation receipt must include checks")
+    else:
+        failed = [check.get("id") for check in checks if isinstance(check, dict) and not check.get("passed")]
+        if failed:
+            errors.append("Helm chart validation checks failed: " + ", ".join(str(item) for item in failed))
+    if receipt.get("passed") is not True:
+        errors.append("Helm chart validation receipt is not marked passed")
+
+    return HelmChartValidationVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
+def append_helm_chart_validation_receipt(
+    chain: EvidenceChain,
+    receipt: dict[str, Any],
+    *,
+    root: str | Path = ".",
+    deployment_manifest: dict[str, Any] | None = None,
+    key: str | None = None,
+) -> dict[str, Any]:
+    result = verify_helm_chart_validation_receipt(
+        receipt,
+        root=root,
+        deployment_manifest=deployment_manifest,
+        key=key,
+    )
+    if not result.ok:
+        raise ValueError("invalid Helm chart validation receipt: " + "; ".join(result.errors))
+    payload = {
+        "receipt_id": receipt["receipt_id"],
+        "receipt_hash": content_hash(receipt),
+        "chart": receipt.get("chart"),
+        "deployment_manifest": receipt.get("deployment_manifest"),
+        "source_file_count": len(receipt.get("source_files", [])),
+        "check_summary": receipt.get("summary"),
+        "passed": receipt.get("passed"),
+    }
+    return chain.append(HELM_CHART_VALIDATION_ENTRY_TYPE, payload, key=key, timestamp=receipt.get("generated_at"))
+
+
+def load_helm_chart_validation_receipt(path: str | Path) -> dict[str, Any]:
+    value = json.loads(Path(path).read_text(encoding="utf-8-sig"))
+    if not isinstance(value, dict):
+        raise ValueError("Helm chart validation receipt must contain an object")
+    return value
+
+
+def write_helm_chart_validation_receipt(path: str | Path, receipt: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(receipt, indent=2, sort_keys=True), encoding="utf-8")
+
 def load_deployment_manifest(path: str | Path) -> dict[str, Any]:
     value = json.loads(Path(path).read_text(encoding="utf-8-sig"))
     if not isinstance(value, dict):
@@ -240,6 +402,172 @@ Environment: {deployment.get('environment', '')}
 {limitations}
 """
 
+
+
+def _helm_chart_validation_body(
+    root: Path,
+    *,
+    deployment_manifest: dict[str, Any] | None,
+    generated_at: str | None,
+) -> dict[str, Any]:
+    source_records = [_source_record(root, path) for path in DEFAULT_HELM_CHART_SOURCE_PATHS]
+    chart_path = root / "deploy" / "helm" / "trustai" / "Chart.yaml"
+    values_path = root / "deploy" / "helm" / "trustai" / "values.yaml"
+    chart = _chart_metadata(chart_path)
+    values = _values_summary(values_path)
+    manifest_binding = _deployment_manifest_validation_binding(root, deployment_manifest)
+    checks = _helm_chart_checks(root, values=values, deployment_manifest_binding=manifest_binding)
+    summary = _helm_check_summary(checks)
+    passed = summary.get("failed", 0) == 0 and summary.get("passed", 0) == len(checks)
+    return {
+        "schema": HELM_CHART_VALIDATION_SCHEMA,
+        "generated_at": generated_at,
+        "chart": chart,
+        "values": values,
+        "deployment_manifest": manifest_binding,
+        "source_files": source_records,
+        "checks": checks,
+        "summary": summary,
+        "passed": passed,
+        "limitations": [
+            "This receipt performs deterministic offline chart/source validation without invoking helm template.",
+            "It does not prove Kubernetes admission, cluster scheduling, network reachability, or provider-owned Helm release state.",
+            "Production BYOC deployments should still capture provider-native Helm release, Kubernetes API, secret, network, and audit-log exports.",
+        ],
+    }
+
+
+def _deployment_manifest_validation_binding(root: Path, deployment_manifest: dict[str, Any] | None) -> dict[str, Any] | None:
+    if deployment_manifest is None:
+        return None
+    result = verify_deployment_manifest(deployment_manifest, root=root)
+    return {
+        "manifest_id": deployment_manifest.get("manifest_id"),
+        "manifest_hash": content_hash(deployment_manifest),
+        "verified": result.ok,
+        "errors": result.errors,
+        "warnings": result.warnings,
+        "source_file_count": len(deployment_manifest.get("source_files", [])),
+    }
+
+
+def _helm_chart_checks(
+    root: Path,
+    *,
+    values: dict[str, Any],
+    deployment_manifest_binding: dict[str, Any] | None,
+) -> list[dict[str, Any]]:
+    chart_text = _read_chart_text(root, "Chart.yaml")
+    values_text = _read_chart_text(root, "values.yaml")
+    configmap_text = _read_chart_text(root, "templates/configmap.yaml")
+    deployment_text = _read_chart_text(root, "templates/deployment.yaml")
+    service_text = _read_chart_text(root, "templates/service.yaml")
+    demo_job_text = _read_chart_text(root, "templates/demo-job.yaml")
+    pvc_text = _read_chart_text(root, "templates/pvc.yaml")
+    api_values = values.get("api") if isinstance(values.get("api"), dict) else {}
+    return [
+        _helm_check(
+            "chart-metadata",
+            _contains_all(chart_text, "apiVersion: v2", "name: trustai", "type: application", "version: 0.1.0"),
+            "Chart.yaml declares the TrustAI application chart metadata.",
+            "deploy/helm/trustai/Chart.yaml",
+        ),
+        _helm_check(
+            "api-values",
+            all(api_values.get(field) for field in ("replicas", "port", "state_path", "control_db_path", "approval_request_store_path", "provider_webhook_store_path")),
+            "values.yaml provides API replica, port, state, control DB, approval store, and webhook store paths.",
+            "deploy/helm/trustai/values.yaml",
+        ),
+        _helm_check(
+            "api-probe-values",
+            _contains_all(values_text, "readinessProbe:", "livenessProbe:", "initialDelaySeconds:", "periodSeconds:"),
+            "values.yaml configures readiness and liveness probe timing.",
+            "deploy/helm/trustai/values.yaml",
+        ),
+        _helm_check(
+            "deployment-resource",
+            _contains_all(deployment_text, "apiVersion: apps/v1", "kind: Deployment", "name: trustai-api", "app.kubernetes.io/component: api"),
+            "deployment.yaml declares the TrustAI API Deployment and selectors.",
+            "deploy/helm/trustai/templates/deployment.yaml",
+        ),
+        _helm_check(
+            "deployment-runs-api",
+            _contains_all(deployment_text, "- serve", "- --host", '"0.0.0.0"', "{{ .Values.api.statePath }}", "{{ .Values.api.controlDbPath }}"),
+            "The API Deployment runs `trustai serve` with configured host, state path, and control DB path.",
+            "deploy/helm/trustai/templates/deployment.yaml",
+        ),
+        _helm_check(
+            "deployment-secret-backed-key",
+            _contains_all(deployment_text, "TRUSTAI_SIGNING_KEY", "secretKeyRef:", "{{ .Values.signingKeySecretName }}", "- --key", '"env:TRUSTAI_SIGNING_KEY"'),
+            "The API Deployment reads the signing key from a Kubernetes Secret and passes it by env reference.",
+            "deploy/helm/trustai/templates/deployment.yaml",
+        ),
+        _helm_check(
+            "deployment-health-probes",
+            _contains_all(deployment_text, "readinessProbe:", "livenessProbe:", "path: /health", "port: http"),
+            "The API Deployment gates readiness and liveness through `/health`.",
+            "deploy/helm/trustai/templates/deployment.yaml",
+        ),
+        _helm_check(
+            "deployment-pvc-state",
+            _contains_all(deployment_text, "persistentVolumeClaim:", "claimName: trustai-data", "mountPath: {{ .Values.storage.mountPath }}"),
+            "The API Deployment mounts the chart PVC for evidence, control-plane, approval, and webhook state.",
+            "deploy/helm/trustai/templates/deployment.yaml",
+        ),
+        _helm_check(
+            "service-resource",
+            _contains_all(service_text, "apiVersion: v1", "kind: Service", "name: trustai-api", "targetPort: http", "app.kubernetes.io/component: api"),
+            "service.yaml exposes the API Deployment with the expected selector and named target port.",
+            "deploy/helm/trustai/templates/service.yaml",
+        ),
+        _helm_check(
+            "demo-job-secret-backed-key",
+            _contains_all(demo_job_text, "kind: Job", "- --key", '"env:TRUSTAI_SIGNING_KEY"', "- demo", "{{ .Values.demo.statePath }}"),
+            "The optional demo Job uses the same Secret-backed signing key and configured demo paths.",
+            "deploy/helm/trustai/templates/demo-job.yaml",
+        ),
+        _helm_check(
+            "pvc-resource",
+            _contains_all(pvc_text, "kind: PersistentVolumeClaim", "name: trustai-data", "storage: {{ .Values.storage.size }}"),
+            "pvc.yaml provisions persistent chart state using the configured storage size.",
+            "deploy/helm/trustai/templates/pvc.yaml",
+        ),
+        _helm_check(
+            "configmap-tenant",
+            _contains_all(configmap_text, "kind: ConfigMap", "TRUSTAI_TENANT_ID", "{{ .Values.tenantId }}"),
+            "configmap.yaml binds the default tenant id into the runtime environment.",
+            "deploy/helm/trustai/templates/configmap.yaml",
+        ),
+        _helm_check(
+            "deployment-manifest-bound",
+            bool(deployment_manifest_binding and deployment_manifest_binding.get("verified")),
+            "The Helm validation receipt is bound to a verified deployment manifest.",
+            "artifacts/deployment-manifest.json",
+        ),
+    ]
+
+
+def _read_chart_text(root: Path, relative: str) -> str:
+    return (root / "deploy" / "helm" / "trustai" / relative).read_text(encoding="utf-8-sig")
+
+
+def _contains_all(text: str, *needles: str) -> bool:
+    return all(needle in text for needle in needles)
+
+
+def _helm_check(check_id: str, passed: bool, description: str, evidence: str) -> dict[str, Any]:
+    return {
+        "id": check_id,
+        "passed": bool(passed),
+        "description": description,
+        "evidence": evidence,
+    }
+
+
+def _helm_check_summary(checks: list[dict[str, Any]]) -> dict[str, int]:
+    passed = sum(1 for check in checks if check.get("passed"))
+    failed = len(checks) - passed
+    return {"passed": passed, "failed": failed, "total": len(checks)}
 
 def _source_record(root: Path, path: str) -> dict[str, Any]:
     source_path = root / path

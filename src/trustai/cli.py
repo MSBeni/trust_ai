@@ -512,11 +512,16 @@ from .collector_worker import (
 )
 from .deployment import (
     append_deployment_manifest,
+    append_helm_chart_validation_receipt,
     build_deployment_manifest,
+    build_helm_chart_validation_receipt,
     load_deployment_manifest,
+    load_helm_chart_validation_receipt,
     verify_deployment_manifest,
+    verify_helm_chart_validation_receipt,
     write_deployment_manifest,
     write_deployment_markdown,
+    write_helm_chart_validation_receipt,
 )
 from .byoc_operator import (
     BYOC_OPERATOR_MODES,
@@ -7758,6 +7763,86 @@ def cmd_deployment_append(args: argparse.Namespace) -> int:
 
 
 
+
+def cmd_helm_chart_validation(args: argparse.Namespace) -> int:
+    try:
+        deployment_manifest = load_deployment_manifest(args.deployment_manifest)
+        receipt = build_helm_chart_validation_receipt(
+            args.root,
+            deployment_manifest=deployment_manifest,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_helm_chart_validation_receipt(
+            receipt,
+            root=args.root,
+            deployment_manifest=deployment_manifest,
+            key=args.key,
+        )
+    except OSError as exc:
+        print(f"Helm chart validation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("Helm chart validation failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_helm_chart_validation_receipt(args.out, receipt)
+    print(f"Helm chart validation receipt: {args.out}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"checks passed: {receipt['summary']['passed']}/{receipt['summary']['total']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_helm_chart_validation_verify(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_helm_chart_validation_receipt(args.receipt)
+        deployment_manifest = load_deployment_manifest(args.deployment_manifest)
+    except OSError as exc:
+        print(f"Helm chart validation verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_helm_chart_validation_receipt(
+        receipt,
+        root=args.root,
+        deployment_manifest=deployment_manifest,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified Helm chart validation receipt: {args.receipt}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"Helm chart validation verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_helm_chart_validation_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    try:
+        receipt = load_helm_chart_validation_receipt(args.receipt)
+        deployment_manifest = load_deployment_manifest(args.deployment_manifest)
+        entry = append_helm_chart_validation_receipt(
+            chain,
+            receipt,
+            root=args.root,
+            deployment_manifest=deployment_manifest,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"Helm chart validation append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"Helm chart validation entry: {args.out}")
+    print(f"Helm chart validation entry id: {entry['entry_id']}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
 def _load_byoc_operator_sources(args: argparse.Namespace) -> tuple[dict, dict, dict | None]:
     deployment_manifest = load_deployment_manifest(args.manifest)
     worm_receipt = _load_json(args.receipt)
@@ -17966,6 +18051,29 @@ def build_parser() -> argparse.ArgumentParser:
     _add_state_args(deployment_append)
     deployment_append.set_defaults(func=cmd_deployment_append)
 
+    helm_validation = subparsers.add_parser("helm-chart-validation", help="write a signed offline Helm chart validation receipt")
+    helm_validation.add_argument("deployment_manifest")
+    helm_validation.add_argument("--root", default=".")
+    helm_validation.add_argument("--generated-at")
+    helm_validation.add_argument("--out", default="artifacts/helm-chart-validation.json")
+    helm_validation.add_argument("--key")
+    helm_validation.set_defaults(func=cmd_helm_chart_validation)
+
+    helm_validation_verify = subparsers.add_parser("helm-chart-validation-verify", help="verify a signed Helm chart validation receipt")
+    helm_validation_verify.add_argument("receipt")
+    helm_validation_verify.add_argument("deployment_manifest")
+    helm_validation_verify.add_argument("--root", default=".")
+    helm_validation_verify.add_argument("--key")
+    helm_validation_verify.set_defaults(func=cmd_helm_chart_validation_verify)
+
+    helm_validation_append = subparsers.add_parser("helm-chart-validation-append", help="append a verified Helm chart validation receipt as chain evidence")
+    helm_validation_append.add_argument("receipt")
+    helm_validation_append.add_argument("deployment_manifest")
+    helm_validation_append.add_argument("--root", default=".")
+    helm_validation_append.add_argument("--out", default="artifacts/helm-chart-validation-entry.json")
+    helm_validation_append.add_argument("--key")
+    _add_state_args(helm_validation_append)
+    helm_validation_append.set_defaults(func=cmd_helm_chart_validation_append)
 
     byoc_operator = subparsers.add_parser("byoc-operator-attestation", help="write a signed BYOC operator and Object Lock attestation")
     byoc_operator.add_argument("manifest")

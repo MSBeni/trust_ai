@@ -37,6 +37,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/trust-authority-provider-attestation-v0.1.md",
     "docs/specs/trust-authority-kms-enforcement-v0.1.md",
     "docs/specs/deployment-manifest-v0.1.md",
+    "docs/specs/helm-chart-validation-v0.1.md",
     "docs/specs/byoc-operator-attestation-v0.1.md",
     "docs/specs/byoc-production-authority-v0.1.md",
     "docs/specs/compliance-production-authority-v0.1.md",
@@ -292,11 +293,13 @@ CONFORMANCE_TARGETS = (
     },
     {
         "id": "deployment-manifest-attestation",
-        "description": "Deployment manifests bind Docker/Helm BYOC API Deployment, Service, demo Job, implemented controls, and planned production controls by hash.",
+        "description": "Deployment manifests and Helm chart validation receipts bind Docker/Helm BYOC API Deployment, Service, demo Job, implemented controls, and planned production controls by hash.",
         "reference": "src/trustai/deployment.py",
         "commands": [
             "python -m trustai deployment-manifest --root . --environment aitrade-byoc",
             "python -m trustai deployment-verify artifacts/deployment-manifest.json --root .",
+            "python -m trustai helm-chart-validation artifacts/deployment-manifest.json --root . --out artifacts/helm-chart-validation.json",
+            "python -m trustai helm-chart-validation-verify artifacts/helm-chart-validation.json artifacts/deployment-manifest.json --root .",
             "python -m unittest tests.test_deployment",
         ],
     },

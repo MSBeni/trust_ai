@@ -36,19 +36,25 @@ callback, provider webhook, and consent-gated insurer risk endpoints. The API
 Deployment and optional demo Job both read `TRUSTAI_SIGNING_KEY` from the
 Kubernetes Secret and pass it through `--key env:TRUSTAI_SIGNING_KEY`.
 
-## Deployment Manifest
+## Deployment Evidence
 
-The reference scaffold can be bound into a signed deployment manifest for
-third-party review:
+The reference scaffold can be bound into signed deployment and Helm chart
+validation receipts for third-party review:
 
 ```powershell
 python -m trustai deployment-manifest --root . --environment aitrade-byoc --out artifacts/deployment-manifest.json --markdown artifacts/deployment-manifest.md
 python -m trustai deployment-verify artifacts/deployment-manifest.json --root .
+python -m trustai helm-chart-validation artifacts/deployment-manifest.json --root . --out artifacts/helm-chart-validation.json
+python -m trustai helm-chart-validation-verify artifacts/helm-chart-validation.json artifacts/deployment-manifest.json --root .
+python -m trustai helm-chart-validation-append artifacts/helm-chart-validation.json artifacts/deployment-manifest.json --root . --state .trustai/helm-validation-demo/evidence-chain.json --tenant helm-validation-local --out artifacts/helm-chart-validation-entry.json
+python -m trustai chain-verify --state .trustai/helm-validation-demo/evidence-chain.json --tenant helm-validation-local
 ```
 
-`trustai deployment-append` can then append the verified manifest as
-`deployment.manifest.published` evidence. See
-`docs/specs/deployment-manifest-v0.1.md` for the schema.
+`trustai deployment-append` can append the verified manifest as
+`deployment.manifest.published` evidence, and `trustai helm-chart-validation-append`
+can append `deployment.helm_chart.validated` evidence for the chart checks. See
+`docs/specs/deployment-manifest-v0.1.md` and
+`docs/specs/helm-chart-validation-v0.1.md` for the schemas.
 
 ## Production Authority Dossier
 

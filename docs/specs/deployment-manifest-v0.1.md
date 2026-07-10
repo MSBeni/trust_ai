@@ -68,6 +68,8 @@ control summary, and limitations.
 ```powershell
 python -m trustai deployment-manifest --root . --environment aitrade-byoc --out artifacts/deployment-manifest.json --markdown artifacts/deployment-manifest.md
 python -m trustai deployment-verify artifacts/deployment-manifest.json --root .
+python -m trustai helm-chart-validation artifacts/deployment-manifest.json --root . --out artifacts/helm-chart-validation.json
+python -m trustai helm-chart-validation-verify artifacts/helm-chart-validation.json artifacts/deployment-manifest.json --root .
 python -m trustai deployment-append artifacts/deployment-manifest.json --root . --state .trustai/deployment-demo/evidence-chain.json --tenant deployment-local --out artifacts/deployment-entry.json
 python -m trustai chain-verify --state .trustai/deployment-demo/evidence-chain.json --tenant deployment-local
 ```
@@ -85,5 +87,8 @@ A production BYOC or air-gapped operator should add:
 - separate control-plane and data-plane tenancy controls.
 
 The manifest is meant to make those claims verifiable as they are added, not to
-hide them behind deployment prose. The v0.1 chart now runs both the API server
-and the optional aitrade demo job with the same Secret-backed signing key.
+hide them behind deployment prose. The companion Helm chart validation receipt
+replays chart-source checks for the API Deployment, Service, probes, PVC mount,
+ConfigMap, optional demo Job, and Secret-backed signing key without requiring a
+local Helm binary. The v0.1 chart runs both the API server and the optional
+aitrade demo job with the same Secret-backed signing key.

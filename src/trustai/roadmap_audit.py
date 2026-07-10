@@ -324,6 +324,7 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "deploy/helm/trustai/values.yaml",
             "deploy/helm/trustai/templates/deployment.yaml",
             "deploy/helm/trustai/templates/service.yaml",
+            "docs/specs/helm-chart-validation-v0.1.md",
             "src/trustai/deployment.py",
             "src/trustai/byoc_operator.py",
             "src/trustai/byoc_authority.py",

@@ -47,6 +47,7 @@ class StandardsSubmissionTests(unittest.TestCase):
         self.assertIn("soak-demotion-receipt-v0.1.md", markdown)
         self.assertIn("soak-demotion-receipts", markdown)
         self.assertIn("deployment-manifest-v0.1.md", markdown)
+        self.assertIn("helm-chart-validation-v0.1.md", markdown)
         self.assertIn("deployment-manifest-attestation", markdown)
         self.assertIn("BYOC API Deployment", markdown)
 
