@@ -1,0 +1,67 @@
+# Traffic Completeness Receipt v0.1
+
+A traffic completeness receipt is a signed proof that a traffic holdout export was
+reconciled against collector or provider-owned export evidence before the replay
+window is trusted for promotion. It is the companion artifact to the traffic
+holdout export receipt: the export receipt binds the replay records; the
+completeness receipt binds those records to stream, cursor, and audit evidence
+from the collection path.
+
+## Artifact
+
+The receipt uses schema `trustai.traffic-completeness-receipt/0.1` and records:
+
+- mode: `local-export`, `provider-export`, or `production-export`;
+- authority ref, produced timestamp, and provider exchange evidence;
+- traffic holdout export ID, hash, source ref, cursor bounds, extraction window,
+  record count, and records root;
+- provider export ref, provider/environment/source refs, stream topic, window,
+  cursor bounds, traffic record count/root, stream record root, and audit root;
+- matched replay/export records with provider cursor refs and provider record
+  hashes;
+- extra provider records and missing provider matches;
+- matched audit records that bind the traffic export ID or records root;
+- explicit completeness violations and pass/fail status;
+- privacy metadata confirming raw production traffic payloads and provider
+  credentials are not embedded.
+
+## Verification
+
+`traffic-completeness-verify` recalculates the receipt ID, verifies the signature,
+checks the provider exchange status, recomputes completeness violations from the
+embedded coverage summary, and can replay both source artifacts:
+
+- the signed traffic holdout export receipt; and
+- the provider export JSON containing stream records and audit records.
+
+When source artifacts are supplied, the verifier recomputes the traffic export
+hash, provider export hash, stream record root, audit record root, matched record
+set, missing/extra record counts, matched audit records, controls, violations,
+and pass/fail status. Editing a provider stream record, removing a replay record,
+changing a cursor, or changing the provider audit export changes the receipt
+verification result.
+
+`production-export` is required for production completeness claims. The other
+modes are useful for local and design-partner rehearsal but do not claim live
+provider-owned completeness.
+
+## Chain Entry
+
+Verified receipts append `traffic_holdout.completeness_attested` entries with:
+
+- completeness ID and receipt hash;
+- mode and authority ref;
+- traffic export binding;
+- provider export binding;
+- source completeness summary;
+- provider exchange evidence;
+- violation count, pass/fail status, and privacy metadata.
+
+## CLI
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m trustai traffic-completeness artifacts/traffic-holdout-export.json examples/aitrade/traffic-completeness-provider-export.json --mode production-export --authority-ref authority:traffic-completeness/aitrade-prod --endpoint-url https://provider.example/aitrade/traffic-holdout/export --request-hash sha256:traffic-completeness-request --response-status 200 --response-hash sha256:traffic-completeness-response --actor-ref oidc:trustai.example/traffic-completeness-worker --produced-at 2026-07-03T12:25:00Z --out artifacts/traffic-completeness.json
+python -m trustai traffic-completeness-verify artifacts/traffic-completeness.json --traffic-export artifacts/traffic-holdout-export.json --provider-export examples/aitrade/traffic-completeness-provider-export.json
+python -m trustai traffic-completeness-append artifacts/traffic-completeness.json --traffic-export artifacts/traffic-holdout-export.json --provider-export examples/aitrade/traffic-completeness-provider-export.json --state .trustai/traffic-completeness-demo/evidence-chain.json --tenant traffic-completeness-local --out artifacts/traffic-completeness-entry.json
+```

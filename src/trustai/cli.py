@@ -972,20 +972,27 @@ from .review_portal_authority import (
 from .runtime import append_runtime_attestation, load_action
 from .server import serve
 from .shadow import (
+    TRAFFIC_COMPLETENESS_MODES,
     append_shadow_replay,
     append_soak_report,
     append_temporal_holdout_manifest,
+    append_traffic_completeness_receipt,
     append_traffic_holdout_export,
     build_temporal_holdout_manifest,
+    build_traffic_completeness_receipt,
     build_traffic_holdout_export,
     load_shadow_replay,
     load_soak_window,
     load_temporal_holdout_manifest,
+    load_traffic_completeness_provider_export,
+    load_traffic_completeness_receipt,
     load_traffic_holdout_export,
     shadow_replay_to_eval_results,
     verify_temporal_holdout_manifest,
+    verify_traffic_completeness_receipt,
     verify_traffic_holdout_export,
     write_temporal_holdout_manifest,
+    write_traffic_completeness_receipt,
     write_traffic_holdout_export,
 )
 from .tamper_stress import (
@@ -5712,6 +5719,88 @@ def cmd_traffic_holdout_export_append(args: argparse.Namespace) -> int:
         print(f"traffic holdout export entry: {args.out}")
     print(f"traffic holdout export entry id: {entry['entry_id']}")
     print(f"export id: {receipt['export_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0 if receipt.get("passed") else 1
+
+
+def cmd_traffic_completeness(args: argparse.Namespace) -> int:
+    try:
+        traffic_export = load_traffic_holdout_export(args.traffic_export)
+        provider_export = load_traffic_completeness_provider_export(args.provider_export)
+        receipt = build_traffic_completeness_receipt(
+            traffic_export,
+            provider_export,
+            mode=args.mode,
+            authority_ref=args.authority_ref,
+            endpoint_url=args.endpoint_url,
+            request_hash=args.request_hash,
+            response_status=args.response_status,
+            response_hash=args.response_hash,
+            actor_ref=args.actor_ref,
+            produced_at=args.produced_at,
+            key=args.key,
+        )
+        result = verify_traffic_completeness_receipt(receipt, traffic_export=traffic_export, provider_export=provider_export, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"traffic completeness receipt generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("traffic completeness receipt generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_traffic_completeness_receipt(args.out, receipt)
+    print(f"traffic completeness receipt: {args.out}")
+    print(f"completeness id: {receipt['completeness_id']}")
+    print(f"matched records: {receipt['source_completeness']['matched_record_count']}")
+    print(f"passed: {receipt['passed']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0 if receipt["passed"] else 1
+
+
+def cmd_traffic_completeness_verify(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_traffic_completeness_receipt(args.receipt)
+        traffic_export = load_traffic_holdout_export(args.traffic_export) if args.traffic_export else None
+        provider_export = load_traffic_completeness_provider_export(args.provider_export) if args.provider_export else None
+    except (OSError, ValueError) as exc:
+        print(f"traffic completeness receipt verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_traffic_completeness_receipt(receipt, traffic_export=traffic_export, provider_export=provider_export, key=args.key)
+    if result.ok:
+        print(f"verified traffic completeness receipt: {args.receipt}")
+        print(f"completeness id: {receipt['completeness_id']}")
+        print(f"passed: {receipt['passed']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0 if receipt.get("passed") else 1
+    print(f"traffic completeness receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_traffic_completeness_append(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_traffic_completeness_receipt(args.receipt)
+        traffic_export = load_traffic_holdout_export(args.traffic_export) if args.traffic_export else None
+        provider_export = load_traffic_completeness_provider_export(args.provider_export) if args.provider_export else None
+    except (OSError, ValueError) as exc:
+        print(f"traffic completeness receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_traffic_completeness_receipt(chain, receipt, traffic_export=traffic_export, provider_export=provider_export, key=args.key)
+    except ValueError as exc:
+        print(f"traffic completeness receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"traffic completeness entry: {args.out}")
+    print(f"traffic completeness entry id: {entry['entry_id']}")
+    print(f"completeness id: {receipt['completeness_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0 if receipt.get("passed") else 1
 
@@ -20295,6 +20384,37 @@ def build_parser() -> argparse.ArgumentParser:
     traffic_export_append.add_argument("--key")
     _add_state_args(traffic_export_append)
     traffic_export_append.set_defaults(func=cmd_traffic_holdout_export_append)
+
+    traffic_completeness = subparsers.add_parser("traffic-completeness", help="bind a traffic holdout export to collector/provider completeness evidence")
+    traffic_completeness.add_argument("traffic_export")
+    traffic_completeness.add_argument("provider_export")
+    traffic_completeness.add_argument("--mode", choices=sorted(TRAFFIC_COMPLETENESS_MODES), default="provider-export")
+    traffic_completeness.add_argument("--authority-ref", required=True)
+    traffic_completeness.add_argument("--endpoint-url", required=True)
+    traffic_completeness.add_argument("--request-hash", required=True)
+    traffic_completeness.add_argument("--response-status", type=int, default=200)
+    traffic_completeness.add_argument("--response-hash", required=True)
+    traffic_completeness.add_argument("--actor-ref", required=True)
+    traffic_completeness.add_argument("--produced-at")
+    traffic_completeness.add_argument("--out", default="artifacts/traffic-completeness.json")
+    traffic_completeness.add_argument("--key")
+    traffic_completeness.set_defaults(func=cmd_traffic_completeness)
+
+    traffic_completeness_verify = subparsers.add_parser("traffic-completeness-verify", help="verify a traffic completeness receipt")
+    traffic_completeness_verify.add_argument("receipt")
+    traffic_completeness_verify.add_argument("--traffic-export")
+    traffic_completeness_verify.add_argument("--provider-export")
+    traffic_completeness_verify.add_argument("--key")
+    traffic_completeness_verify.set_defaults(func=cmd_traffic_completeness_verify)
+
+    traffic_completeness_append = subparsers.add_parser("traffic-completeness-append", help="append traffic completeness evidence to the chain")
+    traffic_completeness_append.add_argument("receipt")
+    traffic_completeness_append.add_argument("--traffic-export")
+    traffic_completeness_append.add_argument("--provider-export")
+    traffic_completeness_append.add_argument("--out", default="artifacts/traffic-completeness-entry.json")
+    traffic_completeness_append.add_argument("--key")
+    _add_state_args(traffic_completeness_append)
+    traffic_completeness_append.set_defaults(func=cmd_traffic_completeness_append)
     holdout_manifest = subparsers.add_parser("temporal-holdout-manifest", help="write a signed temporal holdout manifest for shadow replay traffic")
     holdout_manifest.add_argument("contract")
     holdout_manifest.add_argument("replay")

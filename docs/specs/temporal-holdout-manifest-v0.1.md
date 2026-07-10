@@ -33,7 +33,7 @@ contract and replay JSON to catch source tampering.
 The manifest proves the supplied replay records postdate the freeze and holdout
 minimum. A `traffic-holdout-export` receipt can separately bind production
 traffic source refs, extraction windows, replay record hashes, and privacy limits.
-Neither artifact proves upstream production traffic completeness without
+A `traffic-completeness` receipt can replay provider stream/audit exports for the supplied window. Neither artifact proves upstream production traffic completeness without
 collector or provider-owned production export evidence.
 
 ## CLI

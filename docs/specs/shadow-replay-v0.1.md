@@ -21,6 +21,11 @@ receipt before replay. The receipt binds source/exporter refs, extraction window
 record hashes, replay hash, privacy limits, and boundary/window violations
 without embedding raw production traffic payloads.
 
+`traffic-completeness`, `traffic-completeness-verify`, and
+`traffic-completeness-append` bind that export receipt to collector/provider
+stream records, cursor bounds, provider export hashes, and audit records before
+the replay window is treated as complete.
+
 `temporal-holdout-manifest`, `temporal-holdout-verify`, and
 `temporal-holdout-append` expose the replay holdout manifest as a standalone
 artifact for third-party review before a full proof pack is assembled.

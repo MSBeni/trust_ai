@@ -1,0 +1,68 @@
+{
+  "audit_log_ref": "audit-log:collector/traffic-holdout-export",
+  "audit_log_root": "sha256:traffic-holdout-audit-root",
+  "audit_records": [
+    {
+      "actor_ref": "oidc:trustai.example/traffic-completeness-worker",
+      "cursor_end": "redpanda:0:102",
+      "cursor_start": "redpanda:0:100",
+      "event_type": "traffic_holdout_export_completed",
+      "export_ref": "traffic-export:aitrade/prod-traffic-holdout-20260702",
+      "record_count": 3,
+      "records_root": "57a75243ed1defc2fb4830948c2cd3b31badf23112b6b61ec5d1477b6cbdf12e",
+      "timestamp": "2026-07-03T12:23:00Z",
+      "traffic_export_id": "9e4345bf93311d3abac93c5fe1ca5ebef35a027ad328ffd2c1efc162bbc690a5",
+      "window_end": "2026-07-03T23:59:59Z",
+      "window_start": "2026-07-02T00:00:00Z"
+    }
+  ],
+  "collector_ref": "collector:aitrade-prod/redpanda/trustai.otel.events",
+  "cursor_end": "redpanda:0:102",
+  "cursor_start": "redpanda:0:100",
+  "environment": "aitrade-prod",
+  "export_ref": "provider-export:aitrade/prod-traffic-holdout-20260702",
+  "provider": "redpanda-clickhouse-cloudtrail",
+  "schema": "trustai.traffic-completeness-provider-export/0.1",
+  "source_ref": "collector:aitrade-prod/redpanda/trustai.otel.events",
+  "stream_records": [
+    {
+      "cursor_ref": "redpanda:0:100",
+      "export_record_hash": "a1f3dbbba875aab691fcc2c1b611d5d7058bb1a8d29f03f2a2ba302cb4da8328",
+      "offset": 100,
+      "partition": 0,
+      "previous_export_record_hash": null,
+      "record_hash": "a2cd7aff5dabe76aa78775f5e7cb4fbd9b87e2eaad499b928baea172382f6581",
+      "record_id": "traffic-001",
+      "source_ref": "collector:aitrade-prod/redpanda/trustai.otel.events",
+      "timestamp": "2026-07-02T02:15:00Z"
+    },
+    {
+      "cursor_ref": "redpanda:0:101",
+      "export_record_hash": "2c589b80c1f7af95e0f91cd6df7bc18bc09af7bee41ab59d7141a320296c9156",
+      "offset": 101,
+      "partition": 0,
+      "previous_export_record_hash": "a1f3dbbba875aab691fcc2c1b611d5d7058bb1a8d29f03f2a2ba302cb4da8328",
+      "record_hash": "76dc86b81b7dda185fa63a6e2dc094e970e709376dc7af76e5d0094c8421af3b",
+      "record_id": "traffic-002",
+      "source_ref": "collector:aitrade-prod/redpanda/trustai.otel.events",
+      "timestamp": "2026-07-02T08:30:00Z"
+    },
+    {
+      "cursor_ref": "redpanda:0:102",
+      "export_record_hash": "57a75243ed1defc2fb4830948c2cd3b31badf23112b6b61ec5d1477b6cbdf12e",
+      "offset": 102,
+      "partition": 0,
+      "previous_export_record_hash": "2c589b80c1f7af95e0f91cd6df7bc18bc09af7bee41ab59d7141a320296c9156",
+      "record_hash": "a92bd25e31fd415e3c6a35f41ec837ff52a70ce08f0299229c847b2858071f4f",
+      "record_id": "traffic-003",
+      "source_ref": "collector:aitrade-prod/redpanda/trustai.otel.events",
+      "timestamp": "2026-07-03T05:45:00Z"
+    }
+  ],
+  "stream_ref": "redpanda:aitrade-prod/trustai.otel.events",
+  "topic": "trustai.otel.events",
+  "traffic_record_count": 3,
+  "traffic_records_root": "57a75243ed1defc2fb4830948c2cd3b31badf23112b6b61ec5d1477b6cbdf12e",
+  "window_end": "2026-07-03T23:59:59Z",
+  "window_start": "2026-07-02T00:00:00Z"
+}

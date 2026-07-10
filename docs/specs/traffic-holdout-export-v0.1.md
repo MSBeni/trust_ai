@@ -36,7 +36,7 @@ every exported record hash from the replay file. This catches source replay
 tampering after the export receipt was signed.
 
 This receipt narrows the roadmap's production-traffic completeness gap, but it
-still does not claim upstream completeness without provider-owned collector,
+can be paired with a `traffic-completeness` receipt that replays provider stream and audit evidence. By itself, it still does not claim upstream completeness without provider-owned collector,
 stream, storage, or immutable audit-log exports.
 
 ## Chain Entry

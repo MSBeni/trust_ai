@@ -21,6 +21,9 @@ TEMPORAL_HOLDOUT_ENTRY_TYPE = "temporal_holdout.manifest_attested"
 TRAFFIC_HOLDOUT_EXPORT_SCHEMA = "trustai.traffic-holdout-export/0.1"
 TRAFFIC_HOLDOUT_EXPORT_RECORD_SCHEMA = "trustai.traffic-holdout-export-record/0.1"
 TRAFFIC_HOLDOUT_EXPORT_ENTRY_TYPE = "traffic_holdout.export_attested"
+TRAFFIC_COMPLETENESS_SCHEMA = "trustai.traffic-completeness-receipt/0.1"
+TRAFFIC_COMPLETENESS_ENTRY_TYPE = "traffic_holdout.completeness_attested"
+TRAFFIC_COMPLETENESS_MODES = {"local-export", "provider-export", "production-export"}
 
 
 @dataclass
@@ -43,6 +46,12 @@ class TrafficHoldoutExportVerification:
     errors: list[str]
     warnings: list[str]
 
+
+@dataclass
+class TrafficCompletenessVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
 
 def load_shadow_replay(path: str | Path) -> dict[str, Any]:
     value = json.loads(Path(path).read_text(encoding="utf-8"))
@@ -646,6 +655,25 @@ def write_traffic_holdout_export(path: str | Path, receipt: dict[str, Any]) -> N
     target.write_text(json.dumps(receipt, indent=2, sort_keys=True), encoding="utf-8")
 
 
+def load_traffic_completeness_provider_export(path: str | Path) -> dict[str, Any]:
+    value = json.loads(Path(path).read_text(encoding="utf-8-sig"))
+    if not isinstance(value, dict):
+        raise ValueError("traffic completeness provider export must contain an object")
+    return value
+
+
+def load_traffic_completeness_receipt(path: str | Path) -> dict[str, Any]:
+    value = json.loads(Path(path).read_text(encoding="utf-8-sig"))
+    if not isinstance(value, dict):
+        raise ValueError("traffic completeness receipt must contain an object")
+    return value
+
+
+def write_traffic_completeness_receipt(path: str | Path, receipt: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(receipt, indent=2, sort_keys=True), encoding="utf-8")
+
 def build_traffic_holdout_export(
     contract: dict[str, Any],
     replay: dict[str, Any],
@@ -925,6 +953,194 @@ def append_traffic_holdout_export(
     return chain.append(TRAFFIC_HOLDOUT_EXPORT_ENTRY_TYPE, payload, key=key, timestamp=receipt.get("produced_at"))
 
 
+def build_traffic_completeness_receipt(
+    traffic_export: dict[str, Any],
+    provider_export: dict[str, Any],
+    *,
+    mode: str = "provider-export",
+    authority_ref: str,
+    endpoint_url: str,
+    request_hash: str,
+    response_status: int,
+    response_hash: str,
+    actor_ref: str,
+    produced_at: str | None = None,
+    key: str | None = None,
+) -> dict[str, Any]:
+    if mode not in TRAFFIC_COMPLETENESS_MODES:
+        raise ValueError(f"mode must be one of {sorted(TRAFFIC_COMPLETENESS_MODES)}")
+    traffic_result = verify_traffic_holdout_export(traffic_export, key=key)
+    if not traffic_result.ok:
+        raise ValueError("invalid traffic holdout export source: " + "; ".join(traffic_result.errors))
+    for value, field in (
+        (authority_ref, "authority_ref"),
+        (endpoint_url, "endpoint_url"),
+        (request_hash, "request_hash"),
+        (response_hash, "response_hash"),
+        (actor_ref, "actor_ref"),
+    ):
+        _require_text(value, field)
+    if not isinstance(response_status, int):
+        raise ValueError("traffic completeness response_status must be an integer")
+    produced = produced_at or utc_now()
+    parse_rfc3339(str(produced))
+    body = _build_traffic_completeness_body(
+        traffic_export,
+        provider_export,
+        mode=mode,
+        authority_ref=authority_ref,
+        endpoint_url=endpoint_url,
+        request_hash=request_hash,
+        response_status=response_status,
+        response_hash=response_hash,
+        actor_ref=actor_ref,
+        produced_at=str(produced),
+    )
+    completeness_id = content_hash(body)
+    return {
+        **body,
+        "completeness_id": completeness_id,
+        "signatures": [sign_value({"completeness_id": completeness_id, "traffic_completeness": body}, key)],
+    }
+
+
+def verify_traffic_completeness_receipt(
+    receipt: dict[str, Any],
+    *,
+    traffic_export: dict[str, Any] | None = None,
+    provider_export: dict[str, Any] | None = None,
+    key: str | None = None,
+) -> TrafficCompletenessVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if receipt.get("schema") != TRAFFIC_COMPLETENESS_SCHEMA:
+        errors.append(f"unsupported traffic completeness schema: {receipt.get('schema')}")
+    body = without_keys(receipt, "completeness_id", "signatures")
+    if receipt.get("completeness_id") != content_hash(body):
+        errors.append("completeness_id does not match canonical traffic completeness body")
+    signatures = receipt.get("signatures")
+    if not isinstance(signatures, list) or not signatures:
+        errors.append("traffic completeness receipt must include at least one signature")
+    else:
+        signed_value = {"completeness_id": receipt.get("completeness_id"), "traffic_completeness": body}
+        if not any(isinstance(signature, dict) and verify_value(signed_value, signature, key) for signature in signatures):
+            errors.append("traffic completeness signature verification failed")
+
+    if receipt.get("mode") not in TRAFFIC_COMPLETENESS_MODES:
+        errors.append("traffic completeness mode is unsupported")
+    elif receipt.get("mode") != "production-export":
+        warnings.append(f"traffic completeness mode is {receipt.get('mode')}; live provider-owned completeness is not claimed")
+    try:
+        parse_rfc3339(str(receipt.get("produced_at") or ""))
+    except ValueError as exc:
+        errors.append(f"traffic completeness produced_at invalid: {exc}")
+
+    provider_exchange = receipt.get("provider_exchange")
+    if not isinstance(provider_exchange, dict):
+        errors.append("traffic completeness provider_exchange must be an object")
+        provider_exchange = {}
+    else:
+        for field in ("endpoint_url", "request_hash", "response_status", "response_hash", "actor_ref"):
+            if provider_exchange.get(field) in (None, ""):
+                errors.append(f"traffic completeness provider_exchange.{field} is required")
+        if provider_exchange.get("success") is not (isinstance(provider_exchange.get("response_status"), int) and 200 <= provider_exchange.get("response_status") < 300):
+            errors.append("traffic completeness provider_exchange success flag mismatch")
+
+    coverage = receipt.get("source_completeness")
+    if not isinstance(coverage, dict):
+        errors.append("traffic completeness source_completeness must be an object")
+        coverage = {}
+    expected_violations = _traffic_completeness_violations_from_coverage(coverage, provider_exchange)
+    if receipt.get("violations") != expected_violations:
+        errors.append("traffic completeness violations do not match source completeness checks")
+    if receipt.get("passed") is not (not expected_violations):
+        errors.append("traffic completeness passed flag does not match violations")
+    if expected_violations:
+        warnings.append("traffic completeness receipt contains provider coverage violations")
+
+    if receipt.get("privacy", {}).get("raw_payloads_embedded") is not False:
+        errors.append("traffic completeness receipt must not embed raw production traffic payloads")
+
+    if traffic_export is not None:
+        traffic_result = verify_traffic_holdout_export(traffic_export, key=key)
+        if not traffic_result.ok:
+            errors.append("traffic completeness source traffic export failed verification: " + "; ".join(traffic_result.errors))
+        expected_traffic = _traffic_export_summary(traffic_export)
+        if receipt.get("traffic_export") != expected_traffic:
+            errors.append("traffic completeness traffic_export binding mismatch")
+    else:
+        warnings.append("traffic completeness traffic export source was not supplied; source receipt hash was not replayed")
+
+    if provider_export is not None:
+        try:
+            expected_provider = _traffic_provider_export_summary(provider_export)
+        except ValueError as exc:
+            errors.append(f"traffic completeness provider export invalid: {exc}")
+            expected_provider = None
+        if expected_provider is not None and receipt.get("provider_export") != expected_provider:
+            errors.append("traffic completeness provider_export binding mismatch")
+    else:
+        warnings.append("traffic completeness provider export source was not supplied; provider records were not replayed")
+
+    if traffic_export is not None and provider_export is not None:
+        try:
+            expected_body = _build_traffic_completeness_body(
+                traffic_export,
+                provider_export,
+                mode=str(receipt.get("mode") or ""),
+                authority_ref=str(receipt.get("authority_ref") or ""),
+                endpoint_url=str(provider_exchange.get("endpoint_url") or ""),
+                request_hash=str(provider_exchange.get("request_hash") or ""),
+                response_status=int(provider_exchange.get("response_status")),
+                response_hash=str(provider_exchange.get("response_hash") or ""),
+                actor_ref=str(provider_exchange.get("actor_ref") or ""),
+                produced_at=str(receipt.get("produced_at") or ""),
+            )
+        except (TypeError, ValueError) as exc:
+            errors.append(f"traffic completeness source replay failed: {exc}")
+        else:
+            for field in (
+                "traffic_export",
+                "provider_export",
+                "source_completeness",
+                "matched_records",
+                "extra_provider_records",
+                "matched_audit_records",
+                "controls",
+                "violations",
+                "passed",
+            ):
+                if receipt.get(field) != expected_body.get(field):
+                    errors.append(f"traffic completeness {field} mismatch")
+    return TrafficCompletenessVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
+def append_traffic_completeness_receipt(
+    chain: EvidenceChain,
+    receipt: dict[str, Any],
+    *,
+    traffic_export: dict[str, Any] | None = None,
+    provider_export: dict[str, Any] | None = None,
+    key: str | None = None,
+) -> dict[str, Any]:
+    result = verify_traffic_completeness_receipt(receipt, traffic_export=traffic_export, provider_export=provider_export, key=key)
+    if not result.ok:
+        raise ValueError("invalid traffic completeness receipt: " + "; ".join(result.errors))
+    payload = {
+        "completeness_id": receipt["completeness_id"],
+        "completeness_hash": content_hash(receipt),
+        "mode": receipt.get("mode"),
+        "authority_ref": receipt.get("authority_ref"),
+        "traffic_export": receipt.get("traffic_export"),
+        "provider_export": receipt.get("provider_export"),
+        "source_completeness": receipt.get("source_completeness"),
+        "provider_exchange": receipt.get("provider_exchange"),
+        "violation_count": len(receipt.get("violations", [])),
+        "passed": receipt.get("passed"),
+        "privacy": receipt.get("privacy"),
+    }
+    return chain.append(TRAFFIC_COMPLETENESS_ENTRY_TYPE, payload, key=key, timestamp=receipt.get("produced_at"))
+
 def _build_traffic_holdout_export_records(
     replay: dict[str, Any],
     *,
@@ -998,6 +1214,303 @@ def _traffic_holdout_export_record_violations(record: dict[str, Any]) -> list[di
             )
     return violations
 
+
+def _build_traffic_completeness_body(
+    traffic_export: dict[str, Any],
+    provider_export: dict[str, Any],
+    *,
+    mode: str,
+    authority_ref: str,
+    endpoint_url: str,
+    request_hash: str,
+    response_status: int,
+    response_hash: str,
+    actor_ref: str,
+    produced_at: str,
+) -> dict[str, Any]:
+    traffic_summary = _traffic_export_summary(traffic_export)
+    provider_summary = _traffic_provider_export_summary(provider_export)
+    stream_records = _traffic_provider_records(provider_export, "stream_records")
+    audit_records = _traffic_provider_records(provider_export, "audit_records")
+    matched_records, extra_provider_records = _traffic_completeness_record_matches(traffic_export, stream_records)
+    matched_audit_records = _traffic_completeness_audit_matches(traffic_export, audit_records)
+    export_window = traffic_export.get("extraction_window", {}) if isinstance(traffic_export.get("extraction_window"), dict) else {}
+    provider_window_start = provider_summary.get("window_start")
+    provider_window_end = provider_summary.get("window_end")
+    traffic_window_start = export_window.get("started_at")
+    traffic_window_end = export_window.get("ended_at")
+    window_covers = False
+    if provider_window_start and provider_window_end and traffic_window_start and traffic_window_end:
+        window_covers = parse_rfc3339(str(provider_window_start)) <= parse_rfc3339(str(traffic_window_start)) and parse_rfc3339(str(provider_window_end)) >= parse_rfc3339(str(traffic_window_end))
+    cursor_start = traffic_export.get("cursor_start")
+    cursor_end = traffic_export.get("cursor_end")
+    provider_cursor_start = provider_summary.get("cursor_start")
+    provider_cursor_end = provider_summary.get("cursor_end")
+    cursor_bounds_match = True
+    if cursor_start and provider_cursor_start:
+        cursor_bounds_match = cursor_bounds_match and cursor_start == provider_cursor_start
+    if cursor_end and provider_cursor_end:
+        cursor_bounds_match = cursor_bounds_match and cursor_end == provider_cursor_end
+    source_ref_match = provider_summary.get("source_ref") == traffic_export.get("source_ref")
+    traffic_record_count = int(traffic_export.get("record_count") or 0)
+    provider_stream_count = int(provider_summary.get("stream_record_count") or 0)
+    provider_declared_count = provider_summary.get("traffic_record_count")
+    record_count_matches = provider_stream_count == traffic_record_count and (provider_declared_count in (None, traffic_record_count))
+    provider_root = provider_summary.get("traffic_records_root")
+    records_root_matches = provider_root == traffic_export.get("records_root")
+    missing_count = sum(1 for record in matched_records if not record.get("matched"))
+    extra_count = len(extra_provider_records)
+    coverage = {
+        "source_ref_match": source_ref_match,
+        "record_count_matches": record_count_matches,
+        "records_root_matches": records_root_matches,
+        "window_covers_export": window_covers,
+        "cursor_bounds_match": cursor_bounds_match,
+        "audit_records_bound": bool(matched_audit_records),
+        "traffic_record_count": traffic_record_count,
+        "provider_stream_record_count": provider_stream_count,
+        "provider_declared_traffic_record_count": provider_declared_count,
+        "matched_record_count": len(matched_records) - missing_count,
+        "missing_record_count": missing_count,
+        "extra_provider_record_count": extra_count,
+    }
+    provider_exchange = {
+        "endpoint_url": endpoint_url,
+        "request_hash": request_hash,
+        "response_status": response_status,
+        "response_hash": response_hash,
+        "success": 200 <= response_status < 300,
+        "actor_ref": actor_ref,
+    }
+    violations = _traffic_completeness_violations_from_coverage(coverage, provider_exchange)
+    return {
+        "schema": TRAFFIC_COMPLETENESS_SCHEMA,
+        "mode": mode,
+        "produced_at": produced_at,
+        "authority_ref": authority_ref,
+        "traffic_export": traffic_summary,
+        "provider_export": provider_summary,
+        "source_completeness": coverage,
+        "matched_records": matched_records,
+        "extra_provider_records": extra_provider_records,
+        "matched_audit_records": matched_audit_records,
+        "provider_exchange": provider_exchange,
+        "controls": _traffic_completeness_controls(coverage, provider_exchange, mode),
+        "violations": violations,
+        "passed": not violations,
+        "privacy": {
+            "raw_payloads_embedded": False,
+            "record_material": "traffic export hashes, provider stream cursors, provider export hashes, and audit roots only",
+            "sensitive_data_limit": "receipt excludes raw production traffic payloads and provider credentials",
+        },
+        "limitations": [
+            "This receipt binds a signed traffic holdout export to a supplied collector/provider export, stream record roots, cursor bounds, and audit records for the replay window.",
+            "It proves completeness only for the supplied provider export. Production completeness still depends on the provider export being provider-owned, immutable, and independently retained.",
+        ],
+    }
+
+
+def _traffic_export_summary(traffic_export: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "export_id": traffic_export.get("export_id"),
+        "export_hash": content_hash(traffic_export),
+        "export_ref": traffic_export.get("export_ref"),
+        "source_ref": traffic_export.get("source_ref"),
+        "exporter_ref": traffic_export.get("exporter_ref"),
+        "query_ref": traffic_export.get("query_ref"),
+        "cursor_start": traffic_export.get("cursor_start"),
+        "cursor_end": traffic_export.get("cursor_end"),
+        "extraction_window": traffic_export.get("extraction_window"),
+        "contract": traffic_export.get("contract"),
+        "replay": traffic_export.get("replay"),
+        "record_count": traffic_export.get("record_count"),
+        "records_root": traffic_export.get("records_root"),
+        "earliest_record_timestamp": traffic_export.get("earliest_record_timestamp"),
+        "latest_record_timestamp": traffic_export.get("latest_record_timestamp"),
+        "passed": traffic_export.get("passed"),
+    }
+
+
+def _traffic_provider_export_summary(provider_export: dict[str, Any]) -> dict[str, Any]:
+    stream_records = _traffic_provider_records(provider_export, "stream_records")
+    audit_records = _traffic_provider_records(provider_export, "audit_records")
+    window_start = provider_export.get("window_start") or _nested(provider_export, "extraction_window", "started_at")
+    window_end = provider_export.get("window_end") or _nested(provider_export, "extraction_window", "ended_at")
+    if window_start:
+        parse_rfc3339(str(window_start))
+    if window_end:
+        parse_rfc3339(str(window_end))
+    return {
+        "export_ref": provider_export.get("export_ref"),
+        "schema": provider_export.get("schema"),
+        "provider": provider_export.get("provider"),
+        "environment": provider_export.get("environment"),
+        "source_ref": provider_export.get("source_ref") or provider_export.get("collector_ref") or provider_export.get("stream_ref"),
+        "collector_ref": provider_export.get("collector_ref"),
+        "stream_ref": provider_export.get("stream_ref"),
+        "topic": provider_export.get("topic"),
+        "window_start": window_start,
+        "window_end": window_end,
+        "cursor_start": provider_export.get("cursor_start"),
+        "cursor_end": provider_export.get("cursor_end"),
+        "traffic_records_root": provider_export.get("traffic_records_root"),
+        "traffic_record_count": provider_export.get("traffic_record_count"),
+        "audit_log_ref": provider_export.get("audit_log_ref"),
+        "audit_log_root": provider_export.get("audit_log_root"),
+        "hash": content_hash(provider_export),
+        "stream_record_count": len(stream_records),
+        "stream_record_root": content_hash([_traffic_provider_stream_record_summary(record) for record in stream_records]),
+        "audit_record_count": len(audit_records),
+        "audit_record_root": content_hash([_traffic_provider_audit_record_summary(record) for record in audit_records]),
+    }
+
+
+def _traffic_provider_records(provider_export: dict[str, Any], field: str) -> list[dict[str, Any]]:
+    value = provider_export.get(field, [])
+    if not isinstance(value, list):
+        raise ValueError(f"traffic completeness provider export {field} must be a list")
+    records: list[dict[str, Any]] = []
+    for index, record in enumerate(value):
+        if not isinstance(record, dict):
+            raise ValueError(f"traffic completeness provider export {field}[{index}] must be an object")
+        records.append(record)
+    return records
+
+
+def _traffic_provider_stream_record_summary(record: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "record_id": record.get("record_id") or record.get("id"),
+        "timestamp": record.get("timestamp"),
+        "record_hash": record.get("record_hash"),
+        "export_record_hash": record.get("export_record_hash"),
+        "previous_export_record_hash": record.get("previous_export_record_hash"),
+        "cursor_ref": record.get("cursor_ref"),
+        "partition": record.get("partition"),
+        "offset": record.get("offset"),
+        "source_ref": record.get("source_ref"),
+        "provider_record_hash": content_hash(record),
+    }
+
+
+def _traffic_provider_audit_record_summary(record: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "event_type": record.get("event_type") or record.get("type"),
+        "export_ref": record.get("export_ref"),
+        "traffic_export_id": record.get("traffic_export_id"),
+        "records_root": record.get("records_root") or record.get("traffic_records_root"),
+        "record_count": record.get("record_count") or record.get("traffic_record_count"),
+        "window_start": record.get("window_start"),
+        "window_end": record.get("window_end"),
+        "cursor_start": record.get("cursor_start"),
+        "cursor_end": record.get("cursor_end"),
+        "actor_ref": record.get("actor_ref"),
+        "timestamp": record.get("timestamp"),
+        "audit_record_hash": content_hash(record),
+    }
+
+
+def _traffic_completeness_record_matches(
+    traffic_export: dict[str, Any],
+    stream_records: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    by_export_hash = {record.get("export_record_hash"): record for record in stream_records if record.get("export_record_hash")}
+    by_record_key = {_traffic_provider_record_key(record): record for record in stream_records}
+    used_hashes: set[str] = set()
+    matched: list[dict[str, Any]] = []
+    for traffic_record in traffic_export.get("records", []):
+        if not isinstance(traffic_record, dict):
+            continue
+        provider_record = by_export_hash.get(traffic_record.get("export_record_hash")) or by_record_key.get(_traffic_export_record_key(traffic_record))
+        if provider_record is not None:
+            used_hashes.add(content_hash(provider_record))
+        matched.append(
+            {
+                "sequence": traffic_record.get("sequence"),
+                "record_id": traffic_record.get("record_id"),
+                "timestamp": traffic_record.get("timestamp"),
+                "record_hash": traffic_record.get("record_hash"),
+                "export_record_hash": traffic_record.get("export_record_hash"),
+                "provider_record_hash": content_hash(provider_record) if provider_record is not None else None,
+                "cursor_ref": provider_record.get("cursor_ref") if provider_record is not None else None,
+                "partition": provider_record.get("partition") if provider_record is not None else None,
+                "offset": provider_record.get("offset") if provider_record is not None else None,
+                "matched": provider_record is not None,
+            }
+        )
+    extra = []
+    for record in stream_records:
+        if content_hash(record) not in used_hashes:
+            extra.append(_traffic_provider_stream_record_summary(record))
+    return matched, extra
+
+
+def _traffic_completeness_audit_matches(traffic_export: dict[str, Any], audit_records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    matches: list[dict[str, Any]] = []
+    export_ref = traffic_export.get("export_ref")
+    export_id = traffic_export.get("export_id")
+    records_root = traffic_export.get("records_root")
+    record_count = traffic_export.get("record_count")
+    for record in audit_records:
+        summary = _traffic_provider_audit_record_summary(record)
+        ref_match = summary.get("export_ref") == export_ref or summary.get("traffic_export_id") == export_id or summary.get("records_root") == records_root
+        count_match = summary.get("record_count") in (None, record_count)
+        if ref_match and count_match:
+            matches.append(summary)
+    return matches
+
+
+def _traffic_completeness_violations_from_coverage(
+    coverage: dict[str, Any],
+    provider_exchange: dict[str, Any],
+) -> list[dict[str, Any]]:
+    checks = (
+        ("source_ref_match", "provider source ref does not match traffic export source ref"),
+        ("record_count_matches", "provider stream record count does not match traffic export record count"),
+        ("records_root_matches", "provider traffic records root does not match traffic export records root"),
+        ("window_covers_export", "provider export window does not cover traffic export extraction window"),
+        ("cursor_bounds_match", "provider cursor bounds do not match traffic export cursor bounds"),
+        ("audit_records_bound", "provider audit records do not bind the traffic export"),
+    )
+    violations: list[dict[str, Any]] = []
+    for field, message in checks:
+        if coverage.get(field) is not True:
+            violations.append({"check": field, "violation": message})
+    if coverage.get("missing_record_count", 0):
+        violations.append({"check": "missing_provider_records", "violation": "traffic export records are missing from provider stream export", "count": coverage.get("missing_record_count")})
+    if coverage.get("extra_provider_record_count", 0):
+        violations.append({"check": "extra_provider_records", "violation": "provider stream export contains records not included in traffic export", "count": coverage.get("extra_provider_record_count")})
+    if provider_exchange.get("success") is not True:
+        violations.append({"check": "provider_exchange_success", "violation": "provider export API exchange was not successful"})
+    return violations
+
+
+def _traffic_completeness_controls(coverage: dict[str, Any], provider_exchange: dict[str, Any], mode: str) -> list[dict[str, Any]]:
+    return [
+        {"id": "source-ref-bound", "status": "passed" if coverage.get("source_ref_match") else "failed", "description": "Provider source ref matches the traffic holdout export source ref."},
+        {"id": "record-count-bound", "status": "passed" if coverage.get("record_count_matches") else "failed", "description": "Provider stream record count matches the traffic holdout export record count."},
+        {"id": "records-root-bound", "status": "passed" if coverage.get("records_root_matches") else "failed", "description": "Provider traffic records root matches the traffic holdout export records root."},
+        {"id": "all-records-provider-bound", "status": "passed" if not coverage.get("missing_record_count") else "failed", "description": "Every traffic export record appears in the provider stream export."},
+        {"id": "no-extra-provider-records", "status": "passed" if not coverage.get("extra_provider_record_count") else "failed", "description": "The provider stream export does not contain unmatched records for the same window."},
+        {"id": "window-and-cursors-bound", "status": "passed" if coverage.get("window_covers_export") and coverage.get("cursor_bounds_match") else "failed", "description": "Provider window and cursor bounds cover the traffic holdout export."},
+        {"id": "provider-audit-bound", "status": "passed" if coverage.get("audit_records_bound") else "failed", "description": "Provider audit records bind the traffic holdout export root or ID."},
+        {"id": "provider-exchange-success", "status": "passed" if provider_exchange.get("success") else "failed", "description": "Provider export API exchange returned a successful status."},
+        {"id": "production-export-mode", "status": "passed" if mode == "production-export" else "deferred", "description": "Production completeness claims require provider-owned production export mode."},
+    ]
+
+
+def _traffic_export_record_key(record: dict[str, Any]) -> tuple[Any, Any, Any]:
+    return (record.get("record_id"), record.get("timestamp"), record.get("record_hash"))
+
+
+def _traffic_provider_record_key(record: dict[str, Any]) -> tuple[Any, Any, Any]:
+    return (record.get("record_id") or record.get("id"), record.get("timestamp"), record.get("record_hash"))
+
+
+def _nested(value: dict[str, Any], outer: str, inner: str) -> Any:
+    child = value.get(outer)
+    if isinstance(child, dict):
+        return child.get(inner)
+    return None
 
 def _require_text(value: Any, field: str) -> str:
     if not isinstance(value, str) or not value:

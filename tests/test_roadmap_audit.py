@@ -99,6 +99,7 @@ class RoadmapAuditTests(unittest.TestCase):
         shadow_evidence = {item["path"] for item in shadow_requirement["evidence"]}
         self.assertIn("docs/specs/temporal-holdout-manifest-v0.1.md", shadow_evidence)
         self.assertIn("docs/specs/traffic-holdout-export-v0.1.md", shadow_evidence)
+        self.assertIn("docs/specs/traffic-completeness-receipt-v0.1.md", shadow_evidence)
         self.assertIn("tests/test_temporal_holdout.py", shadow_evidence)
         self.assertGreater(audit["summary"][STATUS_REFERENCE_ATTESTED], 0)
         self.assertIn("TrustAI Roadmap Audit", markdown)

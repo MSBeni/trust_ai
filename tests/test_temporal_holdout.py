@@ -17,17 +17,22 @@ from trustai.shadow import (
     SHADOW_REPLAY_ENTRY_TYPE,
     TEMPORAL_HOLDOUT_ENTRY_TYPE,
     TEMPORAL_HOLDOUT_SCHEMA,
+    TRAFFIC_COMPLETENESS_ENTRY_TYPE,
+    TRAFFIC_COMPLETENESS_SCHEMA,
     TRAFFIC_HOLDOUT_EXPORT_ENTRY_TYPE,
     TRAFFIC_HOLDOUT_EXPORT_SCHEMA,
     append_shadow_replay,
     append_temporal_holdout_manifest,
+    append_traffic_completeness_receipt,
     append_traffic_holdout_export,
     build_temporal_holdout_manifest,
+    build_traffic_completeness_receipt,
     build_traffic_holdout_export,
     evaluate_shadow_replay,
     load_shadow_replay,
     shadow_replay_to_eval_results,
     verify_temporal_holdout_manifest,
+    verify_traffic_completeness_receipt,
     verify_traffic_holdout_export,
 )
 
@@ -44,6 +49,72 @@ class TemporalHoldoutTests(unittest.TestCase):
 
     def _replay(self) -> dict:
         return load_shadow_replay(SHADOW)
+
+    def _traffic_export(self) -> dict:
+        return build_traffic_holdout_export(
+            self._contract(),
+            self._replay(),
+            export_ref="traffic-export:aitrade/prod-traffic-holdout-20260702",
+            source_ref="collector:aitrade-prod/redpanda/trustai.otel.events",
+            exporter_ref="oidc:trustai.example/traffic-exporter",
+            window_start="2026-07-02T00:00:00Z",
+            window_end="2026-07-03T23:59:59Z",
+            query_ref="query:shadow-holdout/btcusdt-prod-write",
+            cursor_start="redpanda:0:100",
+            cursor_end="redpanda:0:102",
+            produced_at="2026-07-03T12:20:00Z",
+        )
+
+    def _provider_export(self, traffic_export: dict) -> dict:
+        stream_records = []
+        for offset, record in enumerate(traffic_export["records"], start=100):
+            stream_records.append(
+                {
+                    "record_id": record["record_id"],
+                    "timestamp": record["timestamp"],
+                    "record_hash": record["record_hash"],
+                    "export_record_hash": record["export_record_hash"],
+                    "previous_export_record_hash": record["previous_export_record_hash"],
+                    "cursor_ref": f"redpanda:0:{offset}",
+                    "partition": 0,
+                    "offset": offset,
+                    "source_ref": traffic_export["source_ref"],
+                }
+            )
+        return {
+            "schema": "trustai.traffic-completeness-provider-export/0.1",
+            "export_ref": "provider-export:aitrade/prod-traffic-holdout-20260702",
+            "provider": "redpanda-clickhouse-cloudtrail",
+            "environment": "aitrade-prod",
+            "source_ref": traffic_export["source_ref"],
+            "collector_ref": "collector:aitrade-prod/redpanda/trustai.otel.events",
+            "stream_ref": "redpanda:aitrade-prod/trustai.otel.events",
+            "topic": "trustai.otel.events",
+            "window_start": traffic_export["extraction_window"]["started_at"],
+            "window_end": traffic_export["extraction_window"]["ended_at"],
+            "cursor_start": traffic_export["cursor_start"],
+            "cursor_end": traffic_export["cursor_end"],
+            "traffic_records_root": traffic_export["records_root"],
+            "traffic_record_count": traffic_export["record_count"],
+            "stream_records": stream_records,
+            "audit_log_ref": "audit-log:collector/traffic-holdout-export",
+            "audit_log_root": "sha256:traffic-holdout-audit-root",
+            "audit_records": [
+                {
+                    "event_type": "traffic_holdout_export_completed",
+                    "export_ref": traffic_export["export_ref"],
+                    "traffic_export_id": traffic_export["export_id"],
+                    "records_root": traffic_export["records_root"],
+                    "record_count": traffic_export["record_count"],
+                    "window_start": traffic_export["extraction_window"]["started_at"],
+                    "window_end": traffic_export["extraction_window"]["ended_at"],
+                    "cursor_start": traffic_export["cursor_start"],
+                    "cursor_end": traffic_export["cursor_end"],
+                    "actor_ref": "oidc:trustai.example/traffic-completeness-worker",
+                    "timestamp": "2026-07-03T12:23:00Z",
+                }
+            ],
+        }
 
     def test_traffic_holdout_export_binds_source_window_and_replay_hashes(self):
         receipt = build_traffic_holdout_export(
@@ -213,6 +284,213 @@ class TemporalHoldoutTests(unittest.TestCase):
             entry = json.loads(entry_path.read_text(encoding="utf-8"))
 
         self.assertEqual(receipt["export_id"], entry["payload"]["export_id"])
+
+    def test_traffic_completeness_binds_provider_stream_and_audit_evidence(self):
+        traffic_export = self._traffic_export()
+        provider_export = self._provider_export(traffic_export)
+        receipt = build_traffic_completeness_receipt(
+            traffic_export,
+            provider_export,
+            mode="production-export",
+            authority_ref="authority:traffic-completeness/aitrade-prod",
+            endpoint_url="https://provider.example/aitrade/traffic-holdout/export",
+            request_hash="sha256:traffic-completeness-request",
+            response_status=200,
+            response_hash="sha256:traffic-completeness-response",
+            actor_ref="oidc:trustai.example/traffic-completeness-worker",
+            produced_at="2026-07-03T12:25:00Z",
+        )
+        result = verify_traffic_completeness_receipt(receipt, traffic_export=traffic_export, provider_export=provider_export)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(TRAFFIC_COMPLETENESS_SCHEMA, receipt["schema"])
+        self.assertTrue(receipt["passed"])
+        self.assertEqual(3, receipt["source_completeness"]["matched_record_count"])
+        self.assertEqual(0, receipt["source_completeness"]["missing_record_count"])
+        self.assertEqual(0, receipt["source_completeness"]["extra_provider_record_count"])
+        self.assertTrue(receipt["source_completeness"]["records_root_matches"])
+        self.assertTrue(receipt["source_completeness"]["audit_records_bound"])
+        self.assertFalse(receipt["privacy"]["raw_payloads_embedded"])
+
+    def test_traffic_completeness_appends_to_chain(self):
+        traffic_export = self._traffic_export()
+        provider_export = self._provider_export(traffic_export)
+        receipt = build_traffic_completeness_receipt(
+            traffic_export,
+            provider_export,
+            mode="production-export",
+            authority_ref="authority:traffic-completeness/aitrade-prod",
+            endpoint_url="https://provider.example/aitrade/traffic-holdout/export",
+            request_hash="sha256:traffic-completeness-request",
+            response_status=200,
+            response_hash="sha256:traffic-completeness-response",
+            actor_ref="oidc:trustai.example/traffic-completeness-worker",
+            produced_at="2026-07-03T12:25:00Z",
+        )
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="traffic-completeness-test")
+            entry = append_traffic_completeness_receipt(chain, receipt, traffic_export=traffic_export, provider_export=provider_export)
+
+            self.assertEqual(TRAFFIC_COMPLETENESS_ENTRY_TYPE, entry["entry_type"])
+            self.assertEqual(receipt["completeness_id"], entry["payload"]["completeness_id"])
+            self.assertTrue(entry["payload"]["source_completeness"]["records_root_matches"])
+            self.assertTrue(chain.verify_all().ok)
+
+    def test_traffic_completeness_detects_provider_export_tamper(self):
+        traffic_export = self._traffic_export()
+        provider_export = self._provider_export(traffic_export)
+        receipt = build_traffic_completeness_receipt(
+            traffic_export,
+            provider_export,
+            mode="production-export",
+            authority_ref="authority:traffic-completeness/aitrade-prod",
+            endpoint_url="https://provider.example/aitrade/traffic-holdout/export",
+            request_hash="sha256:traffic-completeness-request",
+            response_status=200,
+            response_hash="sha256:traffic-completeness-response",
+            actor_ref="oidc:trustai.example/traffic-completeness-worker",
+            produced_at="2026-07-03T12:25:00Z",
+        )
+        tampered_provider = copy.deepcopy(provider_export)
+        tampered_provider["stream_records"][0]["record_hash"] = "sha256:tampered"
+
+        result = verify_traffic_completeness_receipt(receipt, traffic_export=traffic_export, provider_export=tampered_provider)
+
+        self.assertFalse(result.ok)
+        self.assertTrue(any("provider_export binding mismatch" in error for error in result.errors))
+        self.assertTrue(any("source_completeness mismatch" in error or "matched_records mismatch" in error for error in result.errors))
+
+    def test_traffic_completeness_records_extra_provider_records(self):
+        traffic_export = self._traffic_export()
+        provider_export = self._provider_export(traffic_export)
+        provider_export["stream_records"].append(
+            {
+                "record_id": "traffic-extra",
+                "timestamp": "2026-07-03T06:00:00Z",
+                "record_hash": "sha256:extra-record",
+                "export_record_hash": "sha256:extra-export-record",
+                "previous_export_record_hash": traffic_export["records"][-1]["export_record_hash"],
+                "cursor_ref": "redpanda:0:103",
+                "partition": 0,
+                "offset": 103,
+                "source_ref": traffic_export["source_ref"],
+            }
+        )
+        receipt = build_traffic_completeness_receipt(
+            traffic_export,
+            provider_export,
+            mode="production-export",
+            authority_ref="authority:traffic-completeness/aitrade-prod",
+            endpoint_url="https://provider.example/aitrade/traffic-holdout/export",
+            request_hash="sha256:traffic-completeness-request",
+            response_status=200,
+            response_hash="sha256:traffic-completeness-response",
+            actor_ref="oidc:trustai.example/traffic-completeness-worker",
+            produced_at="2026-07-03T12:25:00Z",
+        )
+        result = verify_traffic_completeness_receipt(receipt, traffic_export=traffic_export, provider_export=provider_export)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertFalse(receipt["passed"])
+        self.assertEqual(1, receipt["source_completeness"]["extra_provider_record_count"])
+        self.assertTrue(any(item["check"] == "extra_provider_records" for item in receipt["violations"]))
+        self.assertTrue(result.warnings)
+
+    def test_cli_traffic_completeness_round_trip(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            traffic_export = self._traffic_export()
+            provider_export = self._provider_export(traffic_export)
+            traffic_export_path = tmp / "traffic-holdout-export.json"
+            provider_export_path = tmp / "traffic-completeness-provider-export.json"
+            receipt_path = tmp / "traffic-completeness.json"
+            entry_path = tmp / "traffic-completeness-entry.json"
+            state_path = tmp / "evidence-chain.json"
+            traffic_export_path.write_text(json.dumps(traffic_export, indent=2, sort_keys=True), encoding="utf-8")
+            provider_export_path.write_text(json.dumps(provider_export, indent=2, sort_keys=True), encoding="utf-8")
+            env = {**os.environ, "PYTHONPATH": str(ROOT / "src")}
+
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "traffic-completeness",
+                    str(traffic_export_path),
+                    str(provider_export_path),
+                    "--mode",
+                    "production-export",
+                    "--authority-ref",
+                    "authority:traffic-completeness/aitrade-prod",
+                    "--endpoint-url",
+                    "https://provider.example/aitrade/traffic-holdout/export",
+                    "--request-hash",
+                    "sha256:traffic-completeness-request",
+                    "--response-status",
+                    "200",
+                    "--response-hash",
+                    "sha256:traffic-completeness-response",
+                    "--actor-ref",
+                    "oidc:trustai.example/traffic-completeness-worker",
+                    "--produced-at",
+                    "2026-07-03T12:25:00Z",
+                    "--out",
+                    str(receipt_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "traffic-completeness-verify",
+                    str(receipt_path),
+                    "--traffic-export",
+                    str(traffic_export_path),
+                    "--provider-export",
+                    str(provider_export_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "traffic-completeness-append",
+                    str(receipt_path),
+                    "--traffic-export",
+                    str(traffic_export_path),
+                    "--provider-export",
+                    str(provider_export_path),
+                    "--state",
+                    str(state_path),
+                    "--tenant",
+                    "traffic-completeness-cli",
+                    "--out",
+                    str(entry_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+            entry = json.loads(entry_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(receipt["completeness_id"], entry["payload"]["completeness_id"])
+
     def test_temporal_holdout_manifest_hash_chains_records(self):
         manifest = build_temporal_holdout_manifest(
             self._contract(),
