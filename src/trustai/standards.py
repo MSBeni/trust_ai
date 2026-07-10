@@ -69,6 +69,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/underwriting-quote-v0.1.md",
     "docs/specs/insurer-partner-service-attestation-v0.1.md",
     "docs/specs/insurer-partner-worker-v0.1.md",
+    "docs/specs/insurer-partner-production-authority-v0.1.md",
     "docs/specs/regulator-disclosure-v0.1.md",
     "docs/specs/regulator-acceptance-v0.1.md",
     "docs/specs/supervised-access-v0.1.md",
@@ -639,6 +640,16 @@ CONFORMANCE_TARGETS = (
             "python -m trustai insurer-partner-worker artifacts/insurer-partner-service-attestation.json artifacts/insurer-risk-telemetry.json artifacts/underwriting-quote.json --actuarial-product artifacts/actuarial-product.json --actuarial-corpus artifacts/actuarial-corpus.json --mode partner-api-worker --environment aitrade-prod --worker-ref worker:insurer-partner/underwriting --run-ref worker-run:insurer-partner/underwriting/2026-07-08T06:05:00Z --operation-kind underwriting_quote_delivery --actor-ref oidc:trustai.example/insurer-partner-worker --schedule-ref schedule:insurer-partner/underwriting/5m --cadence-seconds 300 --lease-ref lease:insurer-partner/underwriting/2026-07-08T06:05:00Z --checkpoint-ref checkpoint:insurer-partner/underwriting --checkpoint-hash sha256:insurer-partner-worker-checkpoint --previous-cursor-ref underwriter:quotes/cursor/before --next-cursor-ref underwriter:quotes/cursor/after --queue-ref queue:insurer-partner/delivery --queue-message-ref queue-message:insurer-partner/underwriting/aitrade --destination-ref underwriter:example/api/v1/quotes --delivery-log-ref delivery-log:insurer-partner/underwriter --delivery-log-root sha256:insurer-partner-worker-delivery-root --partner-event-log-ref underwriter:event-log/quote-bindings --partner-event-log-root sha256:insurer-partner-worker-partner-event-root --policy-system-ref policy-system:underwriter/bindings --policy-workflow-ref policy-workflow:underwriter/bindings/aitrade --policy-workflow-hash sha256:insurer-partner-worker-policy-workflow --policy-binding-ref policy-binding:underwriter/aitrade --policy-binding-hash sha256:insurer-partner-worker-policy-binding --workflow-status bound --request-hash sha256:insurer-partner-worker-request --response-status 201 --response-hash sha256:insurer-partner-worker-response --metrics-ref metrics:insurer-partner/workers --audit-log-ref audit-log:insurer-partner/workers --audit-log-root sha256:insurer-partner-worker-audit-root --access-log-ref access-log:insurer-partner/workers --access-log-root sha256:insurer-partner-worker-access-root --credential-ref env:INSURER_PARTNER_WORKER_TOKEN --partner-credential-ref env:UNDERWRITER_WORKER_TOKEN --retention-until 2033-07-08T00:00:00Z --evidence-ref evidence:insurer-partner/worker --started-at 2026-07-08T06:05:00Z --completed-at 2026-07-08T06:06:00Z --next-run-at 2026-07-08T06:10:00Z --now 2026-07-09T00:00:00Z --out artifacts/insurer-partner-worker.json",
             "python -m trustai insurer-partner-worker-verify artifacts/insurer-partner-worker.json artifacts/insurer-partner-service-attestation.json artifacts/insurer-risk-telemetry.json artifacts/underwriting-quote.json --actuarial-product artifacts/actuarial-product.json --actuarial-corpus artifacts/actuarial-corpus.json --now 2026-07-09T00:00:00Z",
             "python -m unittest tests.test_insurer_partner_worker",
+        ],
+    },
+    {
+        "id": "insurer-partner-production-authority-dossiers",
+        "description": "Insurer partner production authority dossiers bind insurer partner service attestations and worker receipts to external insurer API/authentication/policy-system/delivery-log authority evidence, freshness windows, missing coverage, and production-claim limits.",
+        "reference": "src/trustai/insurer_partner_authority.py",
+        "commands": [
+            "python -m trustai insurer-partner-authority artifacts/insurer-partner-service-attestation.json --worker artifacts/insurer-partner-worker.json --environment aitrade-prod --dossier-ref dossier:insurer-partner-authority/underwriter-prod --authority-ref authority:insurer-partner/underwriter-prod --producer-ref oidc:trustai.example/insurer-partner-authority-worker --authority-evidence \"credentialed-partner-api-calls,insurer,insurer:underwriter/api/aitrade,sha256:insurer-partner-live-api-authority,Live underwriter API authority export;issuer=Example AI Liability Underwriter;subject=aitrade-prod insurer partner API;source_uri=https://underwriter.example/audit/trustai/aitrade;issued_at=2026-07-08T06:20:00Z;expires_at=2026-07-15T06:20:00Z\" --generated-at 2026-07-08T06:25:00Z --out artifacts/insurer-partner-authority.json",
+            "python -m trustai insurer-partner-authority-verify artifacts/insurer-partner-authority.json artifacts/insurer-partner-service-attestation.json --worker artifacts/insurer-partner-worker.json",
+            "python -m unittest tests.test_insurer_partner_authority",
         ],
     },
     {

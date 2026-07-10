@@ -282,6 +282,15 @@ from .insurer_partner_worker_bundle import (
     write_insurer_partner_worker_bundle,
     write_insurer_partner_worker_bundle_markdown,
 )
+from .insurer_partner_authority import (
+    INSURER_PARTNER_AUTHORITY_MODES,
+    append_insurer_partner_authority_dossier,
+    build_insurer_partner_authority_dossier,
+    load_insurer_partner_authority_dossier,
+    parse_insurer_partner_authority_evidence_arg,
+    verify_insurer_partner_authority_dossier,
+    write_insurer_partner_authority_dossier,
+)
 from .trust_authority import (
     append_trust_authority_receipt,
     build_trust_authority_receipt,
@@ -9437,6 +9446,133 @@ def cmd_insurer_partner_worker_bundle_append(args: argparse.Namespace) -> int:
     print(f"bundle id: {bundle['bundle_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
+
+
+def _load_insurer_partner_authority_sources(args: argparse.Namespace) -> dict[str, Any]:
+    workers = [load_insurer_partner_worker_receipt(path) for path in (getattr(args, "worker", None) or [])]
+    if not workers:
+        raise ValueError("at least one --worker receipt is required")
+    return {
+        "service_attestation": load_insurer_partner_service_attestation(args.service_attestation),
+        "worker_receipts": workers,
+        "telemetry": _load_json(args.telemetry) if getattr(args, "telemetry", None) else None,
+        "underwriting_quote": load_underwriting_quote(args.quote) if getattr(args, "quote", None) else None,
+        "actuarial_product": load_actuarial_product(args.actuarial_product) if getattr(args, "actuarial_product", None) else None,
+        "actuarial_corpora": [load_actuarial_corpus(path) for path in (getattr(args, "actuarial_corpus", None) or [])],
+        "frontend_bundle_path": getattr(args, "frontend_bundle", None),
+        "source_now": getattr(args, "source_now", None),
+    }
+
+
+def cmd_insurer_partner_authority(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_insurer_partner_authority_sources(args)
+        evidence = [parse_insurer_partner_authority_evidence_arg(item) for item in (args.authority_evidence or [])]
+        dossier = build_insurer_partner_authority_dossier(
+            sources["service_attestation"],
+            worker_receipts=sources["worker_receipts"],
+            telemetry=sources.get("telemetry"),
+            underwriting_quote=sources.get("underwriting_quote"),
+            actuarial_product=sources.get("actuarial_product"),
+            actuarial_corpora=sources.get("actuarial_corpora"),
+            frontend_bundle_path=sources.get("frontend_bundle_path"),
+            now=sources.get("source_now"),
+            mode=args.mode,
+            environment=args.environment,
+            dossier_ref=args.dossier_ref,
+            authority_ref=args.authority_ref,
+            producer_ref=args.producer_ref,
+            authority_evidence=evidence,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"insurer partner authority dossier failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_insurer_partner_authority_dossier(
+        dossier,
+        **sources,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if not result.ok:
+        print("insurer partner authority dossier verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_insurer_partner_authority_dossier(args.out, dossier)
+    print(f"insurer partner authority dossier: {args.out}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"service attestation id: {dossier['service_attestation_binding']['attestation_id']}")
+    print(f"worker receipts: {len(dossier['worker_receipt_bindings'])}")
+    print(f"covered requirements: {result.covered_count}/{result.required_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_insurer_partner_authority_verify(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_insurer_partner_authority_sources(args)
+        dossier = load_insurer_partner_authority_dossier(args.dossier)
+    except (OSError, ValueError) as exc:
+        print(f"insurer partner authority dossier load failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_insurer_partner_authority_dossier(
+        dossier,
+        **sources,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified insurer partner authority dossier: {args.dossier}")
+        print(f"covered requirements: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"insurer partner authority dossier verification failed: {args.dossier}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_insurer_partner_authority_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    try:
+        sources = _load_insurer_partner_authority_sources(args)
+        dossier = load_insurer_partner_authority_dossier(args.dossier)
+        entry = append_insurer_partner_authority_dossier(
+            chain,
+            dossier,
+            service_attestation=sources["service_attestation"],
+            worker_receipts=sources["worker_receipts"],
+            telemetry=sources.get("telemetry"),
+            underwriting_quote=sources.get("underwriting_quote"),
+            actuarial_product=sources.get("actuarial_product"),
+            actuarial_corpora=sources.get("actuarial_corpora"),
+            frontend_bundle_path=sources.get("frontend_bundle_path"),
+            source_now=sources.get("source_now"),
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"insurer partner authority append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"insurer partner authority entry: {args.out}")
+    print(f"insurer partner authority entry id: {entry['entry_id']}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
 
 def cmd_actuarial_export(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
@@ -19444,6 +19580,52 @@ def build_parser() -> argparse.ArgumentParser:
     insurer_partner_worker_bundle_append.add_argument("--key")
     _add_state_args(insurer_partner_worker_bundle_append)
     insurer_partner_worker_bundle_append.set_defaults(func=cmd_insurer_partner_worker_bundle_append)
+
+    def _add_insurer_partner_authority_sources(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("service_attestation")
+        parser.add_argument("--worker", action="append", default=[])
+        parser.add_argument("--telemetry")
+        parser.add_argument("--quote")
+        parser.add_argument("--actuarial-product")
+        parser.add_argument("--actuarial-corpus", action="append", default=[])
+        parser.add_argument("--frontend-bundle")
+        parser.add_argument("--source-now", help="RFC3339 verification time for replaying source insurer/quote freshness checks")
+
+    insurer_partner_authority = subparsers.add_parser("insurer-partner-authority", help="write a signed insurer partner production authority dossier")
+    _add_insurer_partner_authority_sources(insurer_partner_authority)
+    insurer_partner_authority.add_argument("--mode", choices=sorted(INSURER_PARTNER_AUTHORITY_MODES), default="partner-dossier")
+    insurer_partner_authority.add_argument("--environment")
+    insurer_partner_authority.add_argument("--dossier-ref", required=True)
+    insurer_partner_authority.add_argument("--authority-ref", required=True)
+    insurer_partner_authority.add_argument("--producer-ref", required=True)
+    insurer_partner_authority.add_argument("--authority-evidence", action="append", default=[], help="requirement_id,authority_kind,evidence_ref,evidence_hash,description[;issuer=...;subject=...;source_uri=...;issued_at=...;expires_at=...]")
+    insurer_partner_authority.add_argument("--generated-at")
+    insurer_partner_authority.add_argument("--require-complete", action="store_true")
+    insurer_partner_authority.add_argument("--require-fresh", action="store_true")
+    insurer_partner_authority.add_argument("--now", help="RFC3339 verification time for authority freshness checks; defaults to dossier generated_at")
+    insurer_partner_authority.add_argument("--out", default="artifacts/insurer-partner-authority.json")
+    insurer_partner_authority.add_argument("--key")
+    insurer_partner_authority.set_defaults(func=cmd_insurer_partner_authority)
+
+    insurer_partner_authority_verify = subparsers.add_parser("insurer-partner-authority-verify", help="verify a signed insurer partner production authority dossier")
+    insurer_partner_authority_verify.add_argument("dossier")
+    _add_insurer_partner_authority_sources(insurer_partner_authority_verify)
+    insurer_partner_authority_verify.add_argument("--require-complete", action="store_true")
+    insurer_partner_authority_verify.add_argument("--require-fresh", action="store_true")
+    insurer_partner_authority_verify.add_argument("--now", help="RFC3339 verification time for authority freshness checks; defaults to dossier generated_at")
+    insurer_partner_authority_verify.add_argument("--key")
+    insurer_partner_authority_verify.set_defaults(func=cmd_insurer_partner_authority_verify)
+
+    insurer_partner_authority_append = subparsers.add_parser("insurer-partner-authority-append", help="append a verified insurer partner production authority dossier")
+    insurer_partner_authority_append.add_argument("dossier")
+    _add_insurer_partner_authority_sources(insurer_partner_authority_append)
+    insurer_partner_authority_append.add_argument("--require-complete", action="store_true")
+    insurer_partner_authority_append.add_argument("--require-fresh", action="store_true")
+    insurer_partner_authority_append.add_argument("--now", help="RFC3339 verification time for authority freshness checks; defaults to dossier generated_at")
+    insurer_partner_authority_append.add_argument("--out", default="artifacts/insurer-partner-authority-entry.json")
+    insurer_partner_authority_append.add_argument("--key")
+    _add_state_args(insurer_partner_authority_append)
+    insurer_partner_authority_append.set_defaults(func=cmd_insurer_partner_authority_append)
 
     actuarial = subparsers.add_parser("actuarial-export", help="export anonymized consent-aware actuarial corpus records")
     actuarial.add_argument("pack", nargs="+")
