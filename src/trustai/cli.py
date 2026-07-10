@@ -975,13 +975,18 @@ from .shadow import (
     append_shadow_replay,
     append_soak_report,
     append_temporal_holdout_manifest,
+    append_traffic_holdout_export,
     build_temporal_holdout_manifest,
+    build_traffic_holdout_export,
     load_shadow_replay,
     load_soak_window,
     load_temporal_holdout_manifest,
+    load_traffic_holdout_export,
     shadow_replay_to_eval_results,
     verify_temporal_holdout_manifest,
+    verify_traffic_holdout_export,
     write_temporal_holdout_manifest,
+    write_traffic_holdout_export,
 )
 from .tamper_stress import (
     build_tamper_stress_report,
@@ -5626,6 +5631,89 @@ def cmd_shadow_replay(args: argparse.Namespace) -> int:
     print(f"chain root: {chain.tree()['root']}")
     return 0 if entry["payload"]["passed"] else 1
 
+
+def cmd_traffic_holdout_export(args: argparse.Namespace) -> int:
+    try:
+        contract = load_contract(args.contract)
+        replay = load_shadow_replay(args.replay)
+        receipt = build_traffic_holdout_export(
+            contract,
+            replay,
+            export_ref=args.export_ref,
+            source_ref=args.source_ref,
+            exporter_ref=args.exporter_ref,
+            window_start=args.window_start,
+            window_end=args.window_end,
+            query_ref=args.query_ref,
+            cursor_start=args.cursor_start,
+            cursor_end=args.cursor_end,
+            produced_at=args.produced_at,
+            key=args.key,
+        )
+        result = verify_traffic_holdout_export(receipt, contract=contract, replay=replay, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"traffic holdout export generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("traffic holdout export generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_traffic_holdout_export(args.out, receipt)
+    print(f"traffic holdout export: {args.out}")
+    print(f"export id: {receipt['export_id']}")
+    print(f"records root: {receipt['records_root']}")
+    print(f"passed: {receipt['passed']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0 if receipt["passed"] else 1
+
+
+def cmd_traffic_holdout_export_verify(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_traffic_holdout_export(args.receipt)
+        contract = load_contract(args.contract) if args.contract else None
+        replay = load_shadow_replay(args.replay) if args.replay else None
+    except (OSError, ValueError) as exc:
+        print(f"traffic holdout export verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_traffic_holdout_export(receipt, contract=contract, replay=replay, key=args.key)
+    if result.ok:
+        print(f"verified traffic holdout export: {args.receipt}")
+        print(f"export id: {receipt['export_id']}")
+        print(f"records root: {receipt['records_root']}")
+        print(f"passed: {receipt['passed']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0 if receipt.get("passed") else 1
+    print(f"traffic holdout export verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_traffic_holdout_export_append(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_traffic_holdout_export(args.receipt)
+        contract = load_contract(args.contract) if args.contract else None
+        replay = load_shadow_replay(args.replay) if args.replay else None
+    except (OSError, ValueError) as exc:
+        print(f"traffic holdout export append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_traffic_holdout_export(chain, receipt, contract=contract, replay=replay, key=args.key)
+    except ValueError as exc:
+        print(f"traffic holdout export append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"traffic holdout export entry: {args.out}")
+    print(f"traffic holdout export entry id: {entry['entry_id']}")
+    print(f"export id: {receipt['export_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0 if receipt.get("passed") else 1
 
 def cmd_temporal_holdout_manifest(args: argparse.Namespace) -> int:
     try:
@@ -20176,6 +20264,37 @@ def build_parser() -> argparse.ArgumentParser:
     _add_state_args(shadow)
     _add_auto_register(shadow)
     shadow.set_defaults(func=cmd_shadow_replay)
+    traffic_export = subparsers.add_parser("traffic-holdout-export", help="write a signed production traffic holdout export receipt")
+    traffic_export.add_argument("contract")
+    traffic_export.add_argument("replay")
+    traffic_export.add_argument("--export-ref", required=True)
+    traffic_export.add_argument("--source-ref", required=True)
+    traffic_export.add_argument("--exporter-ref", required=True)
+    traffic_export.add_argument("--window-start", required=True)
+    traffic_export.add_argument("--window-end", required=True)
+    traffic_export.add_argument("--query-ref")
+    traffic_export.add_argument("--cursor-start")
+    traffic_export.add_argument("--cursor-end")
+    traffic_export.add_argument("--produced-at")
+    traffic_export.add_argument("--out", default="artifacts/traffic-holdout-export.json")
+    traffic_export.add_argument("--key")
+    traffic_export.set_defaults(func=cmd_traffic_holdout_export)
+
+    traffic_export_verify = subparsers.add_parser("traffic-holdout-export-verify", help="verify a signed production traffic holdout export receipt")
+    traffic_export_verify.add_argument("receipt")
+    traffic_export_verify.add_argument("--contract")
+    traffic_export_verify.add_argument("--replay")
+    traffic_export_verify.add_argument("--key")
+    traffic_export_verify.set_defaults(func=cmd_traffic_holdout_export_verify)
+
+    traffic_export_append = subparsers.add_parser("traffic-holdout-export-append", help="append a traffic holdout export receipt as chain evidence")
+    traffic_export_append.add_argument("receipt")
+    traffic_export_append.add_argument("--contract")
+    traffic_export_append.add_argument("--replay")
+    traffic_export_append.add_argument("--out", default="artifacts/traffic-holdout-export-entry.json")
+    traffic_export_append.add_argument("--key")
+    _add_state_args(traffic_export_append)
+    traffic_export_append.set_defaults(func=cmd_traffic_holdout_export_append)
     holdout_manifest = subparsers.add_parser("temporal-holdout-manifest", help="write a signed temporal holdout manifest for shadow replay traffic")
     holdout_manifest.add_argument("contract")
     holdout_manifest.add_argument("replay")

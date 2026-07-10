@@ -18,6 +18,9 @@ SOAK_REPORT_ENTRY_TYPE = "soak_report.completed"
 TEMPORAL_HOLDOUT_SCHEMA = "trustai.temporal-holdout-manifest/0.1"
 TEMPORAL_HOLDOUT_CHAIN_SCHEMA = "trustai.temporal-holdout-record-chain/0.1"
 TEMPORAL_HOLDOUT_ENTRY_TYPE = "temporal_holdout.manifest_attested"
+TRAFFIC_HOLDOUT_EXPORT_SCHEMA = "trustai.traffic-holdout-export/0.1"
+TRAFFIC_HOLDOUT_EXPORT_RECORD_SCHEMA = "trustai.traffic-holdout-export-record/0.1"
+TRAFFIC_HOLDOUT_EXPORT_ENTRY_TYPE = "traffic_holdout.export_attested"
 
 
 @dataclass
@@ -29,6 +32,13 @@ class TemporalHoldoutVerification:
 
 @dataclass
 class SoakReportVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class TrafficHoldoutExportVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -622,6 +632,377 @@ def append_soak_report(
     }
     return chain.append(SOAK_REPORT_ENTRY_TYPE, payload, key=key, timestamp=report["evaluated_at"])
 
+
+def load_traffic_holdout_export(path: str | Path) -> dict[str, Any]:
+    value = json.loads(Path(path).read_text(encoding="utf-8-sig"))
+    if not isinstance(value, dict):
+        raise ValueError("traffic holdout export receipt must contain an object")
+    return value
+
+
+def write_traffic_holdout_export(path: str | Path, receipt: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(receipt, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def build_traffic_holdout_export(
+    contract: dict[str, Any],
+    replay: dict[str, Any],
+    *,
+    export_ref: str,
+    source_ref: str,
+    exporter_ref: str,
+    window_start: str,
+    window_end: str,
+    query_ref: str | None = None,
+    cursor_start: str | None = None,
+    cursor_end: str | None = None,
+    produced_at: str | None = None,
+    key: str | None = None,
+) -> dict[str, Any]:
+    export_ref = _require_text(export_ref, "export_ref")
+    source_ref = _require_text(source_ref, "source_ref")
+    exporter_ref = _require_text(exporter_ref, "exporter_ref")
+    parse_rfc3339(window_start)
+    parse_rfc3339(window_end)
+    if parse_rfc3339(window_end) <= parse_rfc3339(window_start):
+        raise ValueError("traffic holdout export window_end must be after window_start")
+    produced = produced_at or replay.get("evaluated_at") or utc_now()
+    parse_rfc3339(str(produced))
+
+    records = _build_traffic_holdout_export_records(
+        replay,
+        freeze_at=contract["freeze"]["frozen_at"],
+        min_timestamp=contract["holdout"]["min_timestamp"],
+        window_start=window_start,
+        window_end=window_end,
+    )
+    timestamps = [record["timestamp"] for record in records]
+    violations = _traffic_holdout_export_violations(records)
+    body = {
+        "schema": TRAFFIC_HOLDOUT_EXPORT_SCHEMA,
+        "produced_at": str(produced),
+        "export_ref": export_ref,
+        "source_ref": source_ref,
+        "exporter_ref": exporter_ref,
+        "query_ref": query_ref,
+        "cursor_start": cursor_start,
+        "cursor_end": cursor_end,
+        "extraction_window": {
+            "started_at": window_start,
+            "ended_at": window_end,
+        },
+        "contract": {
+            "id": contract["id"],
+            "hash": contract_hash(contract),
+            "freeze_at": contract["freeze"]["frozen_at"],
+            "min_timestamp": contract["holdout"]["min_timestamp"],
+        },
+        "replay": {
+            "run_id": replay.get("run_id"),
+            "dataset_id": replay.get("dataset_id") or "shadow-replay",
+            "candidate_version": replay.get("candidate_version") or contract["agent"]["version"],
+            "hash": content_hash(replay),
+        },
+        "record_count": len(records),
+        "records_root": records[-1]["export_record_hash"],
+        "first_record_timestamp": timestamps[0],
+        "last_record_timestamp": timestamps[-1],
+        "earliest_record_timestamp": min(timestamps),
+        "latest_record_timestamp": max(timestamps),
+        "records": records,
+        "violations": violations,
+        "passed": not violations,
+        "privacy": {
+            "raw_payloads_embedded": False,
+            "record_material": "canonical record hashes only",
+            "sensitive_data_limit": "receipt excludes full production traffic payloads; replay source must be supplied separately for offline replay",
+        },
+        "limitations": [
+            "This receipt binds the supplied production traffic export window, source refs, and replay record hashes to the registered freeze and holdout boundary.",
+            "It does not prove upstream production traffic completeness without provider-owned collector, stream, storage, or immutable audit-log exports.",
+        ],
+    }
+    export_id = content_hash(body)
+    return {
+        **body,
+        "export_id": export_id,
+        "signatures": [sign_value({"export_id": export_id, "traffic_holdout_export": body}, key)],
+    }
+
+
+def verify_traffic_holdout_export(
+    receipt: dict[str, Any],
+    *,
+    contract: dict[str, Any] | None = None,
+    replay: dict[str, Any] | None = None,
+    key: str | None = None,
+) -> TrafficHoldoutExportVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if receipt.get("schema") != TRAFFIC_HOLDOUT_EXPORT_SCHEMA:
+        errors.append(f"unsupported traffic holdout export schema: {receipt.get('schema')}")
+
+    body = without_keys(receipt, "export_id", "signatures")
+    if receipt.get("export_id") != content_hash(body):
+        errors.append("export_id does not match canonical traffic holdout export body")
+    signatures = receipt.get("signatures")
+    if not isinstance(signatures, list) or not signatures:
+        errors.append("traffic holdout export must include at least one signature")
+    else:
+        signed_value = {"export_id": receipt.get("export_id"), "traffic_holdout_export": body}
+        if not any(isinstance(signature, dict) and verify_value(signed_value, signature, key) for signature in signatures):
+            errors.append("traffic holdout export signature verification failed")
+
+    try:
+        parse_rfc3339(str(receipt.get("produced_at") or ""))
+    except ValueError as exc:
+        errors.append(f"traffic holdout export produced_at invalid: {exc}")
+
+    extraction_window = receipt.get("extraction_window")
+    if not isinstance(extraction_window, dict):
+        errors.append("traffic holdout export extraction_window must be an object")
+        extraction_window = {}
+    window_start = str(extraction_window.get("started_at") or "")
+    window_end = str(extraction_window.get("ended_at") or "")
+    try:
+        if parse_rfc3339(window_end) <= parse_rfc3339(window_start):
+            errors.append("traffic holdout export window_end must be after window_start")
+    except ValueError as exc:
+        errors.append(f"traffic holdout export window invalid: {exc}")
+
+    receipt_contract = receipt.get("contract")
+    if not isinstance(receipt_contract, dict):
+        errors.append("traffic holdout export contract must be an object")
+        receipt_contract = {}
+    freeze_at = str(receipt_contract.get("freeze_at") or "")
+    min_timestamp = str(receipt_contract.get("min_timestamp") or "")
+    try:
+        parse_rfc3339(freeze_at)
+        parse_rfc3339(min_timestamp)
+    except ValueError as exc:
+        errors.append(f"traffic holdout export boundary invalid: {exc}")
+
+    records = receipt.get("records")
+    if not isinstance(records, list) or not records:
+        errors.append("traffic holdout export requires records")
+        records = []
+    if receipt.get("record_count") != len(records):
+        errors.append("traffic holdout export record_count does not match records")
+
+    previous_export_record_hash: str | None = None
+    previous_timestamp: str | None = None
+    expected_violations: list[dict[str, Any]] = []
+    for index, record in enumerate(records):
+        if not isinstance(record, dict):
+            errors.append(f"traffic holdout export record {index + 1} must be an object")
+            continue
+        record_body = {
+            "schema": record.get("schema"),
+            "sequence": record.get("sequence"),
+            "record_count": record.get("record_count"),
+            "record_id": record.get("record_id"),
+            "timestamp": record.get("timestamp"),
+            "record_hash": record.get("record_hash"),
+            "previous_export_record_hash": record.get("previous_export_record_hash"),
+        }
+        if record.get("schema") != TRAFFIC_HOLDOUT_EXPORT_RECORD_SCHEMA:
+            errors.append(f"traffic holdout export record {index + 1} has unsupported schema")
+        if record.get("sequence") != index:
+            errors.append(f"traffic holdout export record {index + 1} sequence mismatch")
+        if record.get("record_count") != len(records):
+            errors.append(f"traffic holdout export record {index + 1} record_count mismatch")
+        if record.get("previous_export_record_hash") != previous_export_record_hash:
+            errors.append(f"traffic holdout export record {index + 1} previous hash mismatch")
+        if record.get("export_record_hash") != content_hash(record_body):
+            errors.append(f"traffic holdout export record {index + 1} hash mismatch")
+        try:
+            parsed_timestamp = parse_rfc3339(str(record.get("timestamp") or ""))
+            expected_post_freeze = parsed_timestamp > parse_rfc3339(freeze_at)
+            expected_post_minimum = parsed_timestamp >= parse_rfc3339(min_timestamp)
+            expected_in_window = parse_rfc3339(window_start) <= parsed_timestamp <= parse_rfc3339(window_end)
+            expected_chronological = previous_timestamp is None or parsed_timestamp >= parse_rfc3339(previous_timestamp)
+            if record.get("post_freeze") is not expected_post_freeze:
+                errors.append(f"traffic holdout export record {index + 1} post_freeze mismatch")
+            if record.get("post_holdout_minimum") is not expected_post_minimum:
+                errors.append(f"traffic holdout export record {index + 1} post_holdout_minimum mismatch")
+            if record.get("within_export_window") is not expected_in_window:
+                errors.append(f"traffic holdout export record {index + 1} within_export_window mismatch")
+            if record.get("chronological_after_previous") is not expected_chronological:
+                errors.append(f"traffic holdout export record {index + 1} chronological_after_previous mismatch")
+            expected_violations.extend(_traffic_holdout_export_record_violations(record))
+            previous_timestamp = str(record.get("timestamp"))
+        except ValueError as exc:
+            errors.append(f"traffic holdout export record {index + 1} timestamp invalid: {exc}")
+        previous_export_record_hash = record.get("export_record_hash")
+
+    if records:
+        if receipt.get("records_root") != records[-1].get("export_record_hash"):
+            errors.append("traffic holdout export records_root mismatch")
+        timestamps = [str(record.get("timestamp")) for record in records if isinstance(record, dict) and record.get("timestamp")]
+        if timestamps:
+            if receipt.get("first_record_timestamp") != timestamps[0]:
+                errors.append("traffic holdout export first_record_timestamp mismatch")
+            if receipt.get("last_record_timestamp") != timestamps[-1]:
+                errors.append("traffic holdout export last_record_timestamp mismatch")
+            if receipt.get("earliest_record_timestamp") != min(timestamps):
+                errors.append("traffic holdout export earliest_record_timestamp mismatch")
+            if receipt.get("latest_record_timestamp") != max(timestamps):
+                errors.append("traffic holdout export latest_record_timestamp mismatch")
+
+    if receipt.get("violations") != expected_violations:
+        errors.append("traffic holdout export violations do not match record checks")
+    if receipt.get("passed") is not (not expected_violations):
+        errors.append("traffic holdout export passed flag does not match violations")
+    if expected_violations:
+        warnings.append("traffic holdout export contains boundary or ordering violations")
+
+    if receipt.get("privacy", {}).get("raw_payloads_embedded") is not False:
+        errors.append("traffic holdout export must not embed raw production traffic payloads")
+
+    if contract is not None:
+        if receipt_contract.get("id") != contract.get("id"):
+            errors.append("traffic holdout export contract id mismatch")
+        if receipt_contract.get("hash") != contract_hash(contract):
+            errors.append("traffic holdout export contract hash mismatch")
+        if receipt_contract.get("freeze_at") != contract.get("freeze", {}).get("frozen_at"):
+            errors.append("traffic holdout export contract freeze_at mismatch")
+        if receipt_contract.get("min_timestamp") != contract.get("holdout", {}).get("min_timestamp"):
+            errors.append("traffic holdout export contract min_timestamp mismatch")
+    if replay is not None:
+        replay_ref = receipt.get("replay", {})
+        if not isinstance(replay_ref, dict):
+            errors.append("traffic holdout export replay must be an object")
+            replay_ref = {}
+        if replay_ref.get("hash") != content_hash(replay):
+            errors.append("traffic holdout export replay hash mismatch")
+        replay_records = _shadow_records(replay)
+        if len(replay_records) != len(records):
+            errors.append("traffic holdout export replay record count mismatch")
+        else:
+            for index, (source_record, record) in enumerate(zip(replay_records, records)):
+                if record.get("record_hash") != content_hash(source_record):
+                    errors.append(f"traffic holdout export replay record hash mismatch at sequence {index}")
+                if record.get("record_id") != str(source_record.get("id") or index + 1):
+                    errors.append(f"traffic holdout export replay record id mismatch at sequence {index}")
+                if record.get("timestamp") != str(source_record.get("timestamp") or ""):
+                    errors.append(f"traffic holdout export replay record timestamp mismatch at sequence {index}")
+    return TrafficHoldoutExportVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
+def append_traffic_holdout_export(
+    chain: EvidenceChain,
+    receipt: dict[str, Any],
+    *,
+    contract: dict[str, Any] | None = None,
+    replay: dict[str, Any] | None = None,
+    key: str | None = None,
+) -> dict[str, Any]:
+    result = verify_traffic_holdout_export(receipt, contract=contract, replay=replay, key=key)
+    if not result.ok:
+        raise ValueError("invalid traffic holdout export: " + "; ".join(result.errors))
+    payload = {
+        "export_id": receipt["export_id"],
+        "export_hash": content_hash(receipt),
+        "export_ref": receipt.get("export_ref"),
+        "source_ref": receipt.get("source_ref"),
+        "exporter_ref": receipt.get("exporter_ref"),
+        "query_ref": receipt.get("query_ref"),
+        "cursor_start": receipt.get("cursor_start"),
+        "cursor_end": receipt.get("cursor_end"),
+        "extraction_window": receipt.get("extraction_window"),
+        "contract": receipt.get("contract"),
+        "replay": receipt.get("replay"),
+        "record_count": receipt.get("record_count"),
+        "records_root": receipt.get("records_root"),
+        "earliest_record_timestamp": receipt.get("earliest_record_timestamp"),
+        "latest_record_timestamp": receipt.get("latest_record_timestamp"),
+        "violation_count": len(receipt.get("violations", [])),
+        "passed": receipt.get("passed"),
+        "privacy": receipt.get("privacy"),
+    }
+    return chain.append(TRAFFIC_HOLDOUT_EXPORT_ENTRY_TYPE, payload, key=key, timestamp=receipt.get("produced_at"))
+
+
+def _build_traffic_holdout_export_records(
+    replay: dict[str, Any],
+    *,
+    freeze_at: str,
+    min_timestamp: str,
+    window_start: str,
+    window_end: str,
+) -> list[dict[str, Any]]:
+    records = _shadow_records(replay)
+    export_records: list[dict[str, Any]] = []
+    previous_export_record_hash: str | None = None
+    previous_timestamp: str | None = None
+    for index, record in enumerate(records):
+        if not isinstance(record, dict):
+            raise ValueError(f"traffic holdout export record {index + 1} is not an object")
+        timestamp = str(record.get("timestamp") or "")
+        if not timestamp:
+            raise ValueError(f"traffic holdout export record {index + 1} missing timestamp")
+        parsed_timestamp = parse_rfc3339(timestamp)
+        record_id = str(record.get("id") or index + 1)
+        record_body = {
+            "schema": TRAFFIC_HOLDOUT_EXPORT_RECORD_SCHEMA,
+            "sequence": index,
+            "record_count": len(records),
+            "record_id": record_id,
+            "timestamp": timestamp,
+            "record_hash": content_hash(record),
+            "previous_export_record_hash": previous_export_record_hash,
+        }
+        export_record_hash = content_hash(record_body)
+        export_records.append(
+            {
+                **record_body,
+                "post_freeze": parsed_timestamp > parse_rfc3339(freeze_at),
+                "post_holdout_minimum": parsed_timestamp >= parse_rfc3339(min_timestamp),
+                "within_export_window": parse_rfc3339(window_start) <= parsed_timestamp <= parse_rfc3339(window_end),
+                "chronological_after_previous": previous_timestamp is None
+                or parsed_timestamp >= parse_rfc3339(previous_timestamp),
+                "export_record_hash": export_record_hash,
+            }
+        )
+        previous_export_record_hash = export_record_hash
+        previous_timestamp = timestamp
+    return export_records
+
+
+def _traffic_holdout_export_violations(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    violations: list[dict[str, Any]] = []
+    for record in records:
+        violations.extend(_traffic_holdout_export_record_violations(record))
+    return violations
+
+
+def _traffic_holdout_export_record_violations(record: dict[str, Any]) -> list[dict[str, Any]]:
+    violations: list[dict[str, Any]] = []
+    checks = (
+        ("post_freeze", "record is not post-freeze"),
+        ("post_holdout_minimum", "record is before holdout minimum"),
+        ("within_export_window", "record is outside production traffic export window"),
+        ("chronological_after_previous", "record timestamp is earlier than previous export record"),
+    )
+    for field, message in checks:
+        if record.get(field) is False:
+            violations.append(
+                {
+                    "sequence": record.get("sequence"),
+                    "record_id": record.get("record_id"),
+                    "timestamp": record.get("timestamp"),
+                    "violation": message,
+                }
+            )
+    return violations
+
+
+def _require_text(value: Any, field: str) -> str:
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"{field} must be a non-empty string")
+    return value
 
 def _shadow_records(replay: dict[str, Any]) -> list[Any]:
     records = replay.get("records") or replay.get("traffic") or []

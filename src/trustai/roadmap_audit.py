@@ -186,6 +186,7 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
         "evidence_paths": [
             "docs/specs/shadow-replay-v0.1.md",
             "docs/specs/temporal-holdout-manifest-v0.1.md",
+            "docs/specs/traffic-holdout-export-v0.1.md",
             "docs/specs/reexecution-report-v0.1.md",
             "docs/specs/reexecution-runner-production-authority-v0.1.md",
             "src/trustai/shadow.py",

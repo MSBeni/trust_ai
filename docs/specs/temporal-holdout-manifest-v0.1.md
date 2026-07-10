@@ -1,4 +1,4 @@
-﻿# Temporal Holdout Manifest v0.1
+# Temporal Holdout Manifest v0.1
 
 A temporal holdout manifest is a signed proof that a shadow replay dataset was
 checked against the verification contract's frozen version boundary before being
@@ -31,7 +31,9 @@ violations from the frozen contract timestamps, and optionally replays the sourc
 contract and replay JSON to catch source tampering.
 
 The manifest proves the supplied replay records postdate the freeze and holdout
-minimum. It does not prove the production traffic export is complete without
+minimum. A `traffic-holdout-export` receipt can separately bind production
+traffic source refs, extraction windows, replay record hashes, and privacy limits.
+Neither artifact proves upstream production traffic completeness without
 collector or provider-owned production export evidence.
 
 ## CLI

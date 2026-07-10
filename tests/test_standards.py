@@ -38,6 +38,8 @@ class StandardsSubmissionTests(unittest.TestCase):
         self.assertIn("product-scope-decisions", markdown)
         self.assertIn("mcp-gateway-v0.1.md", markdown)
         self.assertIn("mcp-proxy-capture-receipts", markdown)
+        self.assertIn("traffic-holdout-export-v0.1.md", markdown)
+        self.assertIn("traffic-holdout-export-receipts", markdown)
 
     def test_standards_submission_detects_spec_hash_tamper(self):
         package = build_standards_submission(ROOT)

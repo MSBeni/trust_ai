@@ -132,6 +132,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/typescript-sdk-v0.1.md",
     "docs/specs/self-serve-onboarding-v0.1.md",
     "docs/specs/shadow-replay-v0.1.md",
+    "docs/specs/traffic-holdout-export-v0.1.md",
     "docs/specs/reexecution-report-v0.1.md",
     "docs/specs/reexecution-policy-v0.1.md",
     "docs/specs/reexecution-runner-v0.1.md",
@@ -217,6 +218,17 @@ CONFORMANCE_TARGETS = (
             "python -m trustai self-serve-onboarding-verify artifacts/self-serve-onboarding.json --root .",
             "python -m trustai self-serve-onboarding-append artifacts/self-serve-onboarding.json --root . --state .trustai/self-serve-onboarding/evidence-chain.json --tenant self-serve-onboarding-local --out artifacts/self-serve-onboarding-entry.json",
             "python -m unittest tests.test_self_serve_onboarding",
+        ],
+    },
+    {
+        "id": "traffic-holdout-export-receipts",
+        "description": "Traffic holdout export receipts bind production traffic source refs, extraction windows, replay record hashes, freeze and holdout boundaries, privacy limits, and chain append evidence before shadow replay promotion evidence is trusted.",
+        "reference": "src/trustai/shadow.py",
+        "commands": [
+            "python -m trustai traffic-holdout-export examples/aitrade/verification-contract.yaml examples/aitrade/shadow-replay.json --export-ref traffic-export:aitrade/prod-traffic-holdout-20260702 --source-ref collector:aitrade-prod/redpanda/trustai.otel.events --exporter-ref oidc:trustai.example/traffic-exporter --window-start 2026-07-02T00:00:00Z --window-end 2026-07-03T23:59:59Z --produced-at 2026-07-03T12:20:00Z --out artifacts/traffic-holdout-export.json",
+            "python -m trustai traffic-holdout-export-verify artifacts/traffic-holdout-export.json --contract examples/aitrade/verification-contract.yaml --replay examples/aitrade/shadow-replay.json",
+            "python -m trustai traffic-holdout-export-append artifacts/traffic-holdout-export.json --contract examples/aitrade/verification-contract.yaml --replay examples/aitrade/shadow-replay.json --state .trustai/traffic-holdout-demo/evidence-chain.json --tenant traffic-holdout-local --out artifacts/traffic-holdout-export-entry.json",
+            "python -m unittest tests.test_temporal_holdout",
         ],
     },
     {

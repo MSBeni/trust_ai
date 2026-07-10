@@ -15,9 +15,15 @@ into normal eval results for promotion gates. Shadow replay entries also embed a
 signed temporal holdout manifest whose per-record hash chain binds record order,
 record hashes, freeze boundary, holdout minimum, and the final replay root.
 
+`traffic-holdout-export`, `traffic-holdout-export-verify`, and
+`traffic-holdout-export-append` produce a signed production traffic export
+receipt before replay. The receipt binds source/exporter refs, extraction window,
+record hashes, replay hash, privacy limits, and boundary/window violations
+without embedding raw production traffic payloads.
+
 `temporal-holdout-manifest`, `temporal-holdout-verify`, and
-`temporal-holdout-append` expose that manifest as a standalone artifact for
-third-party review before a full proof pack is assembled.
+`temporal-holdout-append` expose the replay holdout manifest as a standalone
+artifact for third-party review before a full proof pack is assembled.
 
 Soak reports summarize post-promotion windows and append
 `soak_report.completed` evidence. Blocking high/critical incidents or drift
