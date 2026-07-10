@@ -22,11 +22,13 @@ Required top-level fields:
 - `package`: standards package id, target body, status, spec counts, and
   canonical content hash from `trustai.standards-submission/0.1`.
 - `verifier_release`: verifier release id, version, implementation, command,
-  mode, content hash, and source report/package ids from
-  `trustai.verifier-release/0.1`.
+  mode, content hash, source report/package ids, release conformance targets,
+  per-target conformance counts, and optional provider-bundle source binding
+  from `trustai.verifier-release/0.1`.
 - `conformance_report`: verifier conformance report id, command, mode, case
-  counts, passed count, and canonical content hash from
-  `trustai.verifier-conformance/0.1`.
+  counts, passed/failed counts, conformance targets, per-target case/pass
+  counts, source proof-pack summary, optional provider-bundle source binding,
+  and canonical content hash from `trustai.verifier-conformance/0.1`.
 - `submission_payload_hash`: canonical hash over the standards body name,
   submission metadata, package record, verifier release record, and conformance
   report record.
@@ -51,7 +53,8 @@ Required top-level fields:
   detection for receipts still in `submitted` status;
 - standards body name, program reference, submission reference, status, channel,
   submitter reference, and idempotency key;
-- package, verifier release, and conformance report records;
+- package, verifier release, and conformance report records, including verifier
+  conformance target coverage and optional provider-bundle source binding;
 - submission payload hash consistency;
 - exactly three source artifact records;
 - source standards package hash and full standards package verification when
@@ -60,8 +63,9 @@ Required top-level fields:
   supplied;
 - source verifier release manifest hash and full release verification when
   supplied;
-- verifier release references match the submitted standards package and
-  conformance report.
+- verifier release references match the submitted standards package,
+  conformance report, conformance target coverage, and optional provider-bundle
+  source binding.
 
 Without source artifacts, verification can only prove receipt integrity and the
 embedded source hashes. It emits warnings for missing deep-verification inputs.
@@ -71,7 +75,7 @@ embedded source hashes. It emits warnings for missing deep-verification inputs.
 `trustai standards-body-append` verifies the receipt, then appends
 `standards.body.submitted` to an evidence chain. The entry payload records the
 submission id, receipt hash, standards-body metadata, submission metadata,
-package record, verifier release record, conformance report record, source
+package record, verifier release record, conformance report scope record, source
 artifact references, and limitations.
 
 ## Reference Commands

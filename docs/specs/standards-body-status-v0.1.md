@@ -22,7 +22,8 @@ Required top-level fields:
 - `effective_at`: RFC3339 timestamp for the status taking effect.
 - `target_submission`: source submission id, content hash, submission
   reference, current status, standards-body metadata, standards package record,
-  verifier release record, and conformance report record.
+  verifier release record, conformance target coverage, and optional
+  provider-bundle source binding from the source submission.
 - `status_update`: previous status, new status, docket reference, status
   reference, optional decision reference, optional reason, actor, optional
   ballot record, evidence references, and status payload hash.
@@ -56,7 +57,8 @@ either `decision_ref` or `ballot.ballot_ref`.
 - exactly one source standards-body submission artifact;
 - source submission hash and full submission receipt verification when supplied;
 - previous status and target record consistency with the source submission
-  receipt.
+  receipt, including conformance targets and optional provider-bundle source
+  binding.
 
 Without the source standards-body submission receipt, verification can only
 prove receipt integrity and embedded source hash binding. It emits a warning for
@@ -66,8 +68,8 @@ the missing deep-verification input.
 
 `trustai standards-body-status-append` verifies the receipt, then appends
 `standards.body.status.updated` to an evidence chain. The entry payload records
-the status id, receipt hash, target submission, status update summary, source
-submission reference, and limitations.
+the status id, receipt hash, target submission with conformance scope, status
+update summary, source submission reference, and limitations.
 
 ## Reference Commands
 

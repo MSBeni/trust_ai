@@ -10,7 +10,7 @@ from .chain import EvidenceChain
 from .crypto import sign_value, verify_value
 from .standards import verify_standards_submission
 from .verifier_conformance import verify_verifier_conformance_report
-from .verifier_release import verify_verifier_release_manifest
+from .verifier_release import verifier_conformance_release_reference, verify_verifier_release_manifest
 
 STANDARDS_BODY_SUBMISSION_SCHEMA = "trustai.standards-body-submission/0.1"
 STANDARDS_BODY_SUBMISSION_ENTRY_TYPE = "standards.body.submitted"
@@ -268,8 +268,10 @@ def verify_standards_body_submission_receipt(
             errors.append("verifier release standards package does not match submitted standards package")
     if verifier_release is not None and conformance_report is not None:
         release_conformance = verifier_release.get("conformance_report", {})
-        if release_conformance.get("report_id") != conformance_report.get("report_id"):
-            errors.append("verifier release conformance report does not match submitted conformance report")
+        expected_conformance = verifier_conformance_release_reference(conformance_report)
+        for field in ("report_id", "content_hash", "targets", "case_count_by_target", "source_provider_bundle"):
+            if release_conformance.get(field) != expected_conformance.get(field):
+                errors.append(f"verifier release conformance report {field} does not match submitted conformance report")
 
     return StandardsBodySubmissionVerification(ok=not errors, errors=errors, warnings=warnings, status=status)
 
@@ -335,6 +337,7 @@ def _package_record(package: dict[str, Any]) -> dict[str, Any]:
 
 def _release_record(release: dict[str, Any]) -> dict[str, Any]:
     release_info = release.get("release", {})
+    conformance = release.get("conformance_report", {}) if isinstance(release.get("conformance_report"), dict) else {}
     return {
         "release_id": release.get("release_id"),
         "version": release_info.get("version"),
@@ -342,21 +345,29 @@ def _release_record(release: dict[str, Any]) -> dict[str, Any]:
         "verifier_command": release_info.get("verifier_command"),
         "mode": release_info.get("mode"),
         "content_hash": content_hash(release),
-        "conformance_report_id": release.get("conformance_report", {}).get("report_id"),
+        "conformance_report_id": conformance.get("report_id"),
+        "conformance_targets": conformance.get("targets", []),
+        "conformance_case_count_by_target": conformance.get("case_count_by_target", {}),
+        "conformance_source_provider_bundle": conformance.get("source_provider_bundle"),
         "standards_package_id": release.get("standards_package", {}).get("package_id"),
     }
 
 
 def _conformance_record(report: dict[str, Any]) -> dict[str, Any]:
-    summary = report.get("summary", {})
-    verifier = report.get("verifier", {})
+    reference = verifier_conformance_release_reference(report)
     return {
-        "report_id": report.get("report_id"),
-        "verifier_command": verifier.get("command"),
-        "mode": verifier.get("mode"),
-        "case_count": summary.get("case_count"),
-        "passed_count": summary.get("passed_count"),
-        "content_hash": content_hash(report),
+        "report_id": reference.get("report_id"),
+        "verifier_command": reference.get("verifier_command"),
+        "mode": report.get("verifier", {}).get("mode"),
+        "case_count": reference.get("case_count"),
+        "passed_count": reference.get("passed_count"),
+        "failed_count": reference.get("failed_count"),
+        "targets": reference.get("targets", []),
+        "case_count_by_target": reference.get("case_count_by_target", {}),
+        "passed_count_by_target": reference.get("passed_count_by_target", {}),
+        "source_proof_pack": reference.get("source_proof_pack", {}),
+        "source_provider_bundle": reference.get("source_provider_bundle"),
+        "content_hash": reference.get("content_hash"),
     }
 
 
@@ -390,13 +401,17 @@ def _release_artifact(release: dict[str, Any]) -> dict[str, Any]:
 
 
 def _conformance_artifact(report: dict[str, Any]) -> dict[str, Any]:
+    record = _conformance_record(report)
     return {
         "name": "verifier_conformance_report",
         "artifact_type": "trustai.verifier-conformance",
-        "content_hash": content_hash(report),
-        "report_id": report.get("report_id"),
-        "passed_count": report.get("summary", {}).get("passed_count"),
-        "case_count": report.get("summary", {}).get("case_count"),
+        "content_hash": record.get("content_hash"),
+        "report_id": record.get("report_id"),
+        "passed_count": record.get("passed_count"),
+        "case_count": record.get("case_count"),
+        "targets": record.get("targets", []),
+        "case_count_by_target": record.get("case_count_by_target", {}),
+        "source_provider_bundle": record.get("source_provider_bundle"),
     }
 
 
@@ -475,6 +490,8 @@ def _artifact_ref(artifact: dict[str, Any]) -> dict[str, Any]:
         "package_id": artifact.get("package_id"),
         "release_id": artifact.get("release_id"),
         "report_id": artifact.get("report_id"),
+        "targets": artifact.get("targets"),
+        "source_provider_bundle": artifact.get("source_provider_bundle"),
     }
 
 
