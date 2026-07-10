@@ -6,7 +6,7 @@ repository includes a reference deployment:
 
 - `deploy/docker/Dockerfile` builds the local CLI and API runtime.
 - `deploy/helm/trustai` runs the TrustAI API as a Kubernetes Deployment and
-  ClusterIP Service, plus the bundled aitrade proof-pack flow as an optional
+  ClusterIP Service, NetworkPolicy, plus the bundled aitrade proof-pack flow as an optional
   Job with persistent evidence storage.
 
 ## Build
@@ -39,7 +39,7 @@ Kubernetes Secret and pass it through `--key env:TRUSTAI_SIGNING_KEY`.
 ## Deployment Evidence
 
 The reference scaffold can be bound into signed deployment, Helm chart
-validation, and image integrity receipts for third-party review:
+validation, network policy, and image integrity receipts for third-party review:
 
 ```powershell
 python -m trustai deployment-manifest --root . --environment aitrade-byoc --out artifacts/deployment-manifest.json --markdown artifacts/deployment-manifest.md
@@ -59,7 +59,7 @@ python -m trustai chain-verify --state .trustai/helm-validation-demo/evidence-ch
 
 `trustai deployment-append` can append the verified manifest as
 `deployment.manifest.published` evidence, `trustai helm-chart-validation-append`
-can append `deployment.helm_chart.validated` evidence for the chart checks, and
+can append `deployment.helm_chart.validated` evidence for API, Service, PVC, Secret, and NetworkPolicy chart checks, and
 `trustai deployment-image-integrity-append` can append
 `deployment.image.integrity_attested` evidence for image digest, SBOM,
 provenance, and signature bindings. See
@@ -84,5 +84,5 @@ See `docs/specs/byoc-production-authority-v0.1.md` for the schema.
 
 This is a reference deployment for the proof-pack engine and local API. A
 production BYOC installation still needs managed KMS/HSM signing, RFC 3161
-timestamping, registry/admission-controller exports, network collectors,
+timestamping, registry/admission-controller exports, provider network-policy admission/audit exports, network collectors,
 object-lock storage, and operational hardening.

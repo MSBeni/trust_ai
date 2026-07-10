@@ -1,10 +1,10 @@
-﻿# Helm Chart Validation Receipt v0.1
+# Helm Chart Validation Receipt v0.1
 
 The roadmap requires a BYOC/self-hosted Helm deployment path, but offline review
 environments may not have the Helm binary or a Kubernetes cluster. A Helm chart
 validation receipt is a signed, replayable record of deterministic chart-source
 checks that prove the reference chart still exposes the expected TrustAI API,
-optional demo Job, persistent state, and Secret-backed signing key wiring.
+optional demo Job, persistent state, NetworkPolicy ingress/egress controls, and Secret-backed signing key wiring.
 
 This receipt is not a substitute for `helm template`, Kubernetes admission, or
 provider-owned release-state exports. It is local evidence that the chart source
@@ -38,6 +38,7 @@ Default source files:
 - `deploy/helm/trustai/templates/configmap.yaml`
 - `deploy/helm/trustai/templates/deployment.yaml`
 - `deploy/helm/trustai/templates/service.yaml`
+- `deploy/helm/trustai/templates/networkpolicy.yaml`
 - `deploy/helm/trustai/templates/demo-job.yaml`
 - `deploy/helm/trustai/templates/pvc.yaml`
 
@@ -58,6 +59,8 @@ requires these checks to pass:
 - API `Deployment` mounts the PVC for state.
 - API `Service` exposes the API Deployment through the expected selector and
   named port.
+- API `NetworkPolicy` selects the API pods and declares ingress and egress policy types.
+- API `NetworkPolicy` restricts ingress by namespace and constrains egress to DNS and configured CIDRs.
 - optional demo Job uses the same Secret-backed signing key.
 - PVC and tenant ConfigMap templates exist.
 - the receipt is bound to a verified deployment manifest.

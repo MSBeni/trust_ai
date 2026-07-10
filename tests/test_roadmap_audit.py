@@ -109,6 +109,7 @@ class RoadmapAuditTests(unittest.TestCase):
         byoc_evidence = {item["path"] for item in byoc_requirement["evidence"]}
         self.assertIn("deploy/helm/trustai/templates/deployment.yaml", byoc_evidence)
         self.assertIn("deploy/helm/trustai/templates/service.yaml", byoc_evidence)
+        self.assertIn("deploy/helm/trustai/templates/networkpolicy.yaml", byoc_evidence)
         self.assertIn("docs/specs/helm-chart-validation-v0.1.md", byoc_evidence)
         self.assertIn("docs/specs/deployment-image-integrity-v0.1.md", byoc_evidence)
         cicd_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "cicd-provider-approvals")

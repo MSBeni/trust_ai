@@ -4,7 +4,7 @@ TrustAI is designed for BYOC and self-hosted deployment because regulated
 customers may not send agent traces, proof packs, or incident evidence to a
 startup SaaS. The deployment manifest is a signed, offline-verifiable record of
 the local Docker/Helm reference scaffold, including the self-hosted API
-Deployment and Service, and the production controls it does and does not claim.
+Deployment, Service, NetworkPolicy, and the production controls it does and does not claim.
 
 This v0.1 manifest does not claim a production operator, managed SaaS control
 plane, cloud Object Lock, Kafka/ClickHouse/Postgres services, or live KMS/TSA
@@ -26,7 +26,7 @@ Required top-level fields:
 - `source_files`: hashed Docker, Helm, deployment documentation, and README
   source files.
 - `components`: local runtime, Helm chart, storage, signing secret, API
-  Deployment, API Service, WORM, and trust-authority component records.
+  Deployment, API Service, NetworkPolicy, WORM, and trust-authority component records.
 - `controls`: implemented-reference and planned-production control records.
 - `limitations`: explicit non-production claims.
 
@@ -38,6 +38,7 @@ Default source files:
 - `deploy/helm/trustai/templates/configmap.yaml`
 - `deploy/helm/trustai/templates/deployment.yaml`
 - `deploy/helm/trustai/templates/service.yaml`
+- `deploy/helm/trustai/templates/networkpolicy.yaml`
 - `deploy/helm/trustai/templates/demo-job.yaml`
 - `deploy/helm/trustai/templates/pvc.yaml`
 - `docs/deployment/byoc.md`
@@ -54,7 +55,7 @@ Default source files:
 - source file `sha256` and size match the current worktree.
 - required deployment sources are present.
 - required components exist: Docker runtime, Helm chart, persistent evidence
-  storage, signing-key secret, local ingestion API, and API Service.
+  storage, signing-key secret, local ingestion API, API Service, and API NetworkPolicy.
 - control records are present and planned-production controls are surfaced as
   warnings rather than silently passing as implemented controls.
 
@@ -84,7 +85,7 @@ python -m trustai chain-verify --state .trustai/deployment-demo/evidence-chain.j
 A production BYOC or air-gapped operator should add:
 
 - registry/admission-controller enforcement for image signing and SBOM/provenance attestations;
-- network policies and explicit egress controls;
+- provider admission/audit exports for network policies and explicit egress controls;
 - managed KMS/HSM signing and independent RFC 3161 timestamping;
 - cloud Object Lock compliance mode and legal-hold release workflows;
 - Kafka/Redpanda, ClickHouse, and Postgres services where required;
@@ -93,7 +94,7 @@ A production BYOC or air-gapped operator should add:
 
 The manifest is meant to make those claims verifiable as they are added, not to
 hide them behind deployment prose. The companion Helm chart validation receipt
-replays chart-source checks for the API Deployment, Service, probes, PVC mount,
+replays chart-source checks for the API Deployment, Service, NetworkPolicy, probes, PVC mount,
 ConfigMap, optional demo Job, and Secret-backed signing key without requiring a
 local Helm binary. The v0.1 chart runs both the API server and the optional
 aitrade demo job with the same Secret-backed signing key. The deployment image

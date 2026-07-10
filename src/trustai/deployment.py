@@ -20,6 +20,7 @@ DEFAULT_DEPLOYMENT_SOURCE_PATHS = (
     "deploy/helm/trustai/templates/configmap.yaml",
     "deploy/helm/trustai/templates/deployment.yaml",
     "deploy/helm/trustai/templates/service.yaml",
+    "deploy/helm/trustai/templates/networkpolicy.yaml",
     "deploy/helm/trustai/templates/demo-job.yaml",
     "deploy/helm/trustai/templates/pvc.yaml",
     "docs/deployment/byoc.md",
@@ -32,6 +33,7 @@ DEFAULT_HELM_CHART_SOURCE_PATHS = (
     "deploy/helm/trustai/templates/configmap.yaml",
     "deploy/helm/trustai/templates/deployment.yaml",
     "deploy/helm/trustai/templates/service.yaml",
+    "deploy/helm/trustai/templates/networkpolicy.yaml",
     "deploy/helm/trustai/templates/demo-job.yaml",
     "deploy/helm/trustai/templates/pvc.yaml",
 )
@@ -666,6 +668,7 @@ def _helm_chart_checks(
     configmap_text = _read_chart_text(root, "templates/configmap.yaml")
     deployment_text = _read_chart_text(root, "templates/deployment.yaml")
     service_text = _read_chart_text(root, "templates/service.yaml")
+    network_policy_text = _read_chart_text(root, "templates/networkpolicy.yaml")
     demo_job_text = _read_chart_text(root, "templates/demo-job.yaml")
     pvc_text = _read_chart_text(root, "templates/pvc.yaml")
     api_values = values.get("api") if isinstance(values.get("api"), dict) else {}
@@ -723,6 +726,18 @@ def _helm_chart_checks(
             _contains_all(service_text, "apiVersion: v1", "kind: Service", "name: trustai-api", "targetPort: http", "app.kubernetes.io/component: api"),
             "service.yaml exposes the API Deployment with the expected selector and named target port.",
             "deploy/helm/trustai/templates/service.yaml",
+        ),
+        _helm_check(
+            "network-policy-resource",
+            _contains_all(network_policy_text, "apiVersion: networking.k8s.io/v1", "kind: NetworkPolicy", "name: trustai-api", "podSelector:", "policyTypes:", "- Ingress", "- Egress"),
+            "networkpolicy.yaml declares a NetworkPolicy for the TrustAI API pods with ingress and egress policy types.",
+            "deploy/helm/trustai/templates/networkpolicy.yaml",
+        ),
+        _helm_check(
+            "network-policy-ingress-egress",
+            _contains_all(network_policy_text, "namespaceSelector:", "{{ .Values.networkPolicy.ingress.namespace | quote }}", "port: {{ .Values.api.port }}", "kube-system", "port: 53", "ipBlock:", ".Values.networkPolicy.egress.allowedCidrs"),
+            "networkpolicy.yaml restricts API ingress by namespace and constrains egress to DNS and configured CIDRs.",
+            "deploy/helm/trustai/templates/networkpolicy.yaml",
         ),
         _helm_check(
             "demo-job-secret-backed-key",
@@ -1103,6 +1118,12 @@ def _components() -> list[dict[str, str]]:
             "description": "Exposes the TrustAI API inside the customer Kubernetes cluster.",
         },
         {
+            "id": "api-network-policy",
+            "status": "implemented-reference",
+            "evidence": "deploy/helm/trustai/templates/networkpolicy.yaml",
+            "description": "Restricts API pod ingress and egress through a chart-managed NetworkPolicy.",
+        },
+        {
             "id": "worm-store",
             "status": "local-reference",
             "evidence": "src/trustai/object_store.py",
@@ -1148,6 +1169,11 @@ def _controls() -> list[dict[str, str]]:
             "id": "deployment-image-integrity-receipts",
             "status": "implemented-reference",
             "description": "Deployment image integrity receipts bind the chart image reference to an image digest, SBOM, provenance, and signature artifacts.",
+        },
+        {
+            "id": "network-policy-egress-controls",
+            "status": "implemented-reference",
+            "description": "Helm chart provisions a NetworkPolicy with namespace-scoped ingress and constrained DNS/CIDR egress.",
         },
         {
             "id": "managed-kms-hsm",

@@ -294,7 +294,7 @@ CONFORMANCE_TARGETS = (
     },
     {
         "id": "deployment-manifest-attestation",
-        "description": "Deployment manifests, Helm chart validation receipts, and deployment image integrity receipts bind Docker/Helm BYOC API Deployment, Service, demo Job, image digest, SBOM, provenance, signature artifacts, implemented controls, and planned production controls by hash.",
+        "description": "Deployment manifests, Helm chart validation receipts, and deployment image integrity receipts bind Docker/Helm BYOC API Deployment, Service, NetworkPolicy, demo Job, image digest, SBOM, provenance, signature artifacts, implemented controls, and planned production controls by hash.",
         "reference": "src/trustai/deployment.py",
         "commands": [
             "python -m trustai deployment-manifest --root . --environment aitrade-byoc",

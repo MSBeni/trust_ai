@@ -39,3 +39,12 @@ api:
     limits:
       cpu: 500m
       memory: 512Mi
+
+networkPolicy:
+  enabled: true
+  ingress:
+    namespace: default
+  egress:
+    allowDns: true
+    allowedCidrs:
+      - 10.0.0.0/8
