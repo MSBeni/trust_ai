@@ -652,6 +652,15 @@ from .policy_backend_service import (
     verify_policy_backend_service_attestation,
     write_policy_backend_service_attestation,
 )
+from .policy_backend_worker import (
+    POLICY_BACKEND_WORKER_MODES,
+    POLICY_BACKEND_WORKER_OPERATION_KINDS,
+    append_policy_backend_worker_receipt,
+    build_policy_backend_worker_receipt,
+    load_policy_backend_worker_receipt,
+    verify_policy_backend_worker_receipt,
+    write_policy_backend_worker_receipt,
+)
 from .policy_backend_service_bundle import (
     POLICY_BACKEND_SERVICE_BUNDLE_MODES,
     append_policy_backend_service_bundle,
@@ -9681,6 +9690,172 @@ def cmd_policy_backend_service_append(args: argparse.Namespace) -> int:
     return 0
 
 
+def _load_policy_backend_worker_sources(args: argparse.Namespace) -> tuple[dict[str, Any] | None, int]:
+    sources, status = _load_policy_backend_service_sources(args)
+    if status:
+        return None, status
+    assert sources is not None
+    sources["service_attestation"] = load_policy_backend_service_attestation(args.attestation)
+    return sources, 0
+
+
+def cmd_policy_backend_worker(args: argparse.Namespace) -> int:
+    sources, status = _load_policy_backend_worker_sources(args)
+    if status:
+        return status
+    assert sources is not None
+    try:
+        receipt = build_policy_backend_worker_receipt(
+            sources["service_attestation"],
+            sources["enforcement"],
+            sources["policy"],
+            sources["action"],
+            sources["pack"],
+            sources["decision"],
+            sources["policy_export"],
+            policy_engine_receipt=sources["policy_engine_receipt"],
+            mode=args.mode,
+            environment=args.environment,
+            worker_ref=args.worker_ref,
+            run_ref=args.run_ref,
+            operation_kind=args.operation_kind,
+            actor_ref=args.actor_ref,
+            schedule_ref=args.schedule_ref,
+            cadence_seconds=args.cadence_seconds,
+            lease_ref=args.lease_ref,
+            checkpoint_ref=args.checkpoint_ref,
+            checkpoint_hash=args.checkpoint_hash,
+            previous_cursor_ref=args.previous_cursor_ref,
+            next_cursor_ref=args.next_cursor_ref,
+            next_run_at=args.next_run_at,
+            attempt=args.attempt,
+            max_attempts=args.max_attempts,
+            queue_ref=args.queue_ref,
+            queue_message_ref=args.queue_message_ref,
+            queue_message_hash=args.queue_message_hash,
+            dead_letter_queue_ref=args.dead_letter_queue_ref,
+            backend_request_ref=args.backend_request_ref,
+            request_hash=args.request_hash,
+            response_status=args.response_status,
+            response_hash=args.response_hash,
+            decision_log_ref=args.decision_log_ref,
+            decision_log_root=args.decision_log_root,
+            decision_record_hash=args.decision_record_hash,
+            metrics_ref=args.metrics_ref,
+            audit_log_ref=args.audit_log_ref,
+            audit_log_root=args.audit_log_root,
+            retention_until=args.retention_until,
+            credential_ref=args.credential_ref,
+            backend_credential_ref=args.backend_credential_ref,
+            scheduler_export_ref=args.scheduler_export_ref,
+            scheduler_export_hash=args.scheduler_export_hash,
+            queue_export_ref=args.queue_export_ref,
+            queue_export_hash=args.queue_export_hash,
+            lease_export_ref=args.lease_export_ref,
+            lease_export_hash=args.lease_export_hash,
+            decision_log_export_ref=args.decision_log_export_ref,
+            decision_log_export_hash=args.decision_log_export_hash,
+            audit_export_ref=args.audit_export_ref,
+            audit_export_hash=args.audit_export_hash,
+            evidence_refs=args.evidence_ref,
+            started_at=args.started_at,
+            completed_at=args.completed_at,
+            error_ref=args.error_ref,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"policy backend worker failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_policy_backend_worker_receipt(
+        receipt,
+        service_attestation=sources["service_attestation"],
+        enforcement_receipt=sources["enforcement"],
+        policy_pack=sources["policy"],
+        action=sources["action"],
+        proof_pack=sources["pack"],
+        decision=sources["decision"],
+        policy_export=sources["policy_export"],
+        policy_engine_receipt=sources["policy_engine_receipt"],
+        key=args.key,
+    )
+    if not result.ok:
+        print("policy backend worker verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_policy_backend_worker_receipt(args.out, receipt)
+    print(f"policy backend worker: {args.out}")
+    print(f"worker operation id: {receipt['worker_operation_id']}")
+    print(f"service attestation id: {receipt['service']['attestation_id']}")
+    print(f"enforcement id: {receipt['source_enforcement']['enforcement_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_policy_backend_worker_verify(args: argparse.Namespace) -> int:
+    sources, status = _load_policy_backend_worker_sources(args)
+    if status:
+        return status
+    assert sources is not None
+    receipt = load_policy_backend_worker_receipt(args.receipt)
+    result = verify_policy_backend_worker_receipt(
+        receipt,
+        service_attestation=sources["service_attestation"],
+        enforcement_receipt=sources["enforcement"],
+        policy_pack=sources["policy"],
+        action=sources["action"],
+        proof_pack=sources["pack"],
+        decision=sources["decision"],
+        policy_export=sources["policy_export"],
+        policy_engine_receipt=sources["policy_engine_receipt"],
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified policy backend worker: {args.receipt}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"policy backend worker verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_policy_backend_worker_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    sources, status = _load_policy_backend_worker_sources(args)
+    if status:
+        return status
+    assert sources is not None
+    receipt = load_policy_backend_worker_receipt(args.receipt)
+    try:
+        entry = append_policy_backend_worker_receipt(
+            chain,
+            receipt,
+            service_attestation=sources["service_attestation"],
+            enforcement_receipt=sources["enforcement"],
+            policy_pack=sources["policy"],
+            action=sources["action"],
+            proof_pack=sources["pack"],
+            decision=sources["decision"],
+            policy_export=sources["policy_export"],
+            policy_engine_receipt=sources["policy_engine_receipt"],
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"policy backend worker append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"policy backend worker entry: {args.out}")
+    print(f"policy backend worker entry id: {entry['entry_id']}")
+    print(f"worker operation id: {receipt['worker_operation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
 def _policy_backend_service_bundle_artifact_paths(args: argparse.Namespace) -> dict[str, str]:
     paths = {
         "service_attestation": args.attestation,
@@ -16530,6 +16705,84 @@ def build_parser() -> argparse.ArgumentParser:
     policy_backend_service_append.add_argument("--key")
     _add_state_args(policy_backend_service_append)
     policy_backend_service_append.set_defaults(func=cmd_policy_backend_service_append)
+
+    def _add_policy_backend_worker_sources(parser: argparse.ArgumentParser, include_receipt: bool = False) -> None:
+        if include_receipt:
+            parser.add_argument("receipt")
+        parser.add_argument("attestation")
+        parser.add_argument("enforcement")
+        parser.add_argument("policy")
+        parser.add_argument("action")
+        parser.add_argument("--pack", required=True)
+        parser.add_argument("--decision", required=True)
+        parser.add_argument("--export", required=True)
+        parser.add_argument("--policy-engine-receipt")
+        parser.add_argument("--key")
+
+    def _add_policy_backend_worker_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--mode", choices=sorted(POLICY_BACKEND_WORKER_MODES), default="hosted-worker")
+        parser.add_argument("--environment", default="local")
+        parser.add_argument("--worker-ref", required=True)
+        parser.add_argument("--run-ref", required=True)
+        parser.add_argument("--operation-kind", choices=sorted(POLICY_BACKEND_WORKER_OPERATION_KINDS), required=True)
+        parser.add_argument("--actor-ref", required=True)
+        parser.add_argument("--schedule-ref", required=True)
+        parser.add_argument("--cadence-seconds", type=int, required=True)
+        parser.add_argument("--lease-ref", required=True)
+        parser.add_argument("--checkpoint-ref", required=True)
+        parser.add_argument("--checkpoint-hash", required=True)
+        parser.add_argument("--previous-cursor-ref")
+        parser.add_argument("--next-cursor-ref")
+        parser.add_argument("--next-run-at")
+        parser.add_argument("--attempt", type=int, default=1)
+        parser.add_argument("--max-attempts", type=int, default=3)
+        parser.add_argument("--queue-ref", required=True)
+        parser.add_argument("--queue-message-ref", required=True)
+        parser.add_argument("--queue-message-hash", required=True)
+        parser.add_argument("--dead-letter-queue-ref")
+        parser.add_argument("--backend-request-ref")
+        parser.add_argument("--request-hash")
+        parser.add_argument("--response-status", type=int)
+        parser.add_argument("--response-hash")
+        parser.add_argument("--decision-log-ref", required=True)
+        parser.add_argument("--decision-log-root", required=True)
+        parser.add_argument("--decision-record-hash")
+        parser.add_argument("--metrics-ref", required=True)
+        parser.add_argument("--audit-log-ref", required=True)
+        parser.add_argument("--audit-log-root", required=True)
+        parser.add_argument("--retention-until", required=True)
+        parser.add_argument("--credential-ref", required=True)
+        parser.add_argument("--backend-credential-ref", required=True)
+        parser.add_argument("--scheduler-export-ref")
+        parser.add_argument("--scheduler-export-hash")
+        parser.add_argument("--queue-export-ref")
+        parser.add_argument("--queue-export-hash")
+        parser.add_argument("--lease-export-ref")
+        parser.add_argument("--lease-export-hash")
+        parser.add_argument("--decision-log-export-ref")
+        parser.add_argument("--decision-log-export-hash")
+        parser.add_argument("--audit-export-ref")
+        parser.add_argument("--audit-export-hash")
+        parser.add_argument("--evidence-ref", action="append")
+        parser.add_argument("--started-at", required=True)
+        parser.add_argument("--completed-at")
+        parser.add_argument("--error-ref")
+
+    policy_backend_worker = subparsers.add_parser("policy-backend-worker", help="write a signed OPA/Cedar policy backend worker operation receipt")
+    _add_policy_backend_worker_sources(policy_backend_worker)
+    _add_policy_backend_worker_fields(policy_backend_worker)
+    policy_backend_worker.add_argument("--out", default="artifacts/policy-backend-worker.json")
+    policy_backend_worker.set_defaults(func=cmd_policy_backend_worker)
+
+    policy_backend_worker_verify = subparsers.add_parser("policy-backend-worker-verify", help="verify a signed OPA/Cedar policy backend worker receipt")
+    _add_policy_backend_worker_sources(policy_backend_worker_verify, include_receipt=True)
+    policy_backend_worker_verify.set_defaults(func=cmd_policy_backend_worker_verify)
+
+    policy_backend_worker_append = subparsers.add_parser("policy-backend-worker-append", help="append a verified OPA/Cedar policy backend worker receipt")
+    _add_policy_backend_worker_sources(policy_backend_worker_append, include_receipt=True)
+    policy_backend_worker_append.add_argument("--out", default="artifacts/policy-backend-worker-entry.json")
+    _add_state_args(policy_backend_worker_append)
+    policy_backend_worker_append.set_defaults(func=cmd_policy_backend_worker_append)
 
     policy_backend_service_bundle = subparsers.add_parser("policy-backend-service-bundle", help="write a self-contained policy backend service review bundle")
     policy_backend_service_bundle.add_argument("attestation")
