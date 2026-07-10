@@ -1,4 +1,4 @@
-﻿# BYOC / Self-Hosted Reference Deployment
+# BYOC / Self-Hosted Reference Deployment
 
 The roadmap calls for BYOC and self-hosted deployment because regulated buyers
 will not send sensitive agent traces to a startup SaaS by default. This
@@ -38,23 +38,34 @@ Kubernetes Secret and pass it through `--key env:TRUSTAI_SIGNING_KEY`.
 
 ## Deployment Evidence
 
-The reference scaffold can be bound into signed deployment and Helm chart
-validation receipts for third-party review:
+The reference scaffold can be bound into signed deployment, Helm chart
+validation, and image integrity receipts for third-party review:
 
 ```powershell
 python -m trustai deployment-manifest --root . --environment aitrade-byoc --out artifacts/deployment-manifest.json --markdown artifacts/deployment-manifest.md
 python -m trustai deployment-verify artifacts/deployment-manifest.json --root .
 python -m trustai helm-chart-validation artifacts/deployment-manifest.json --root . --out artifacts/helm-chart-validation.json
 python -m trustai helm-chart-validation-verify artifacts/helm-chart-validation.json artifacts/deployment-manifest.json --root .
+'{"sbom":"trustai","version":"0.1.0"}' | Set-Content -NoNewline artifacts/trustai-image.sbom.json
+'{"builder":"trustai-local","source":"git"}' | Set-Content -NoNewline artifacts/trustai-image.provenance.json
+'sigstore-placeholder-signature' | Set-Content -NoNewline artifacts/trustai-image.sig
+python -m trustai deployment-image-integrity artifacts/deployment-manifest.json --root . --image-digest sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa --sbom artifacts/trustai-image.sbom.json --provenance artifacts/trustai-image.provenance.json --signature artifacts/trustai-image.sig --out artifacts/deployment-image-integrity.json
+python -m trustai deployment-image-integrity-verify artifacts/deployment-image-integrity.json artifacts/deployment-manifest.json --root .
+python -m trustai deployment-image-integrity-append artifacts/deployment-image-integrity.json artifacts/deployment-manifest.json --root . --state .trustai/image-integrity-demo/evidence-chain.json --tenant image-integrity-local --out artifacts/deployment-image-integrity-entry.json
+python -m trustai chain-verify --state .trustai/image-integrity-demo/evidence-chain.json --tenant image-integrity-local
 python -m trustai helm-chart-validation-append artifacts/helm-chart-validation.json artifacts/deployment-manifest.json --root . --state .trustai/helm-validation-demo/evidence-chain.json --tenant helm-validation-local --out artifacts/helm-chart-validation-entry.json
 python -m trustai chain-verify --state .trustai/helm-validation-demo/evidence-chain.json --tenant helm-validation-local
 ```
 
 `trustai deployment-append` can append the verified manifest as
-`deployment.manifest.published` evidence, and `trustai helm-chart-validation-append`
-can append `deployment.helm_chart.validated` evidence for the chart checks. See
-`docs/specs/deployment-manifest-v0.1.md` and
-`docs/specs/helm-chart-validation-v0.1.md` for the schemas.
+`deployment.manifest.published` evidence, `trustai helm-chart-validation-append`
+can append `deployment.helm_chart.validated` evidence for the chart checks, and
+`trustai deployment-image-integrity-append` can append
+`deployment.image.integrity_attested` evidence for image digest, SBOM,
+provenance, and signature bindings. See
+`docs/specs/deployment-manifest-v0.1.md`,
+`docs/specs/helm-chart-validation-v0.1.md`, and
+`docs/specs/deployment-image-integrity-v0.1.md` for the schemas.
 
 ## Production Authority Dossier
 
@@ -73,5 +84,5 @@ See `docs/specs/byoc-production-authority-v0.1.md` for the schema.
 
 This is a reference deployment for the proof-pack engine and local API. A
 production BYOC installation still needs managed KMS/HSM signing, RFC 3161
-timestamping, network collectors, object-lock storage, and operational
-hardening.
+timestamping, registry/admission-controller exports, network collectors,
+object-lock storage, and operational hardening.

@@ -511,14 +511,19 @@ from .collector_worker import (
     write_collector_worker_receipt,
 )
 from .deployment import (
+    append_deployment_image_integrity_receipt,
     append_deployment_manifest,
     append_helm_chart_validation_receipt,
+    build_deployment_image_integrity_receipt,
     build_deployment_manifest,
     build_helm_chart_validation_receipt,
+    load_deployment_image_integrity_receipt,
     load_deployment_manifest,
     load_helm_chart_validation_receipt,
+    verify_deployment_image_integrity_receipt,
     verify_deployment_manifest,
     verify_helm_chart_validation_receipt,
+    write_deployment_image_integrity_receipt,
     write_deployment_manifest,
     write_deployment_markdown,
     write_helm_chart_validation_receipt,
@@ -7843,6 +7848,94 @@ def cmd_helm_chart_validation_append(args: argparse.Namespace) -> int:
     print(f"receipt id: {receipt['receipt_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
+
+
+def cmd_deployment_image_integrity(args: argparse.Namespace) -> int:
+    try:
+        deployment_manifest = load_deployment_manifest(args.deployment_manifest)
+        receipt = build_deployment_image_integrity_receipt(
+            args.root,
+            deployment_manifest=deployment_manifest,
+            image_digest=args.image_digest,
+            image_ref=args.image_ref,
+            sbom_path=args.sbom,
+            provenance_path=args.provenance,
+            signature_path=args.signature,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_deployment_image_integrity_receipt(
+            receipt,
+            root=args.root,
+            deployment_manifest=deployment_manifest,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"deployment image integrity failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("deployment image integrity failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_deployment_image_integrity_receipt(args.out, receipt)
+    print(f"deployment image integrity receipt: {args.out}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"image: {receipt['image']['pinned_reference']}")
+    print(f"checks passed: {receipt['summary']['passed']}/{receipt['summary']['total']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_deployment_image_integrity_verify(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_deployment_image_integrity_receipt(args.receipt)
+        deployment_manifest = load_deployment_manifest(args.deployment_manifest)
+    except OSError as exc:
+        print(f"deployment image integrity verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_deployment_image_integrity_receipt(
+        receipt,
+        root=args.root,
+        deployment_manifest=deployment_manifest,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified deployment image integrity receipt: {args.receipt}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"deployment image integrity verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_deployment_image_integrity_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    try:
+        receipt = load_deployment_image_integrity_receipt(args.receipt)
+        deployment_manifest = load_deployment_manifest(args.deployment_manifest)
+        entry = append_deployment_image_integrity_receipt(
+            chain,
+            receipt,
+            root=args.root,
+            deployment_manifest=deployment_manifest,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"deployment image integrity append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"deployment image integrity entry: {args.out}")
+    print(f"deployment image integrity entry id: {entry['entry_id']}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
 def _load_byoc_operator_sources(args: argparse.Namespace) -> tuple[dict, dict, dict | None]:
     deployment_manifest = load_deployment_manifest(args.manifest)
     worm_receipt = _load_json(args.receipt)
@@ -18075,6 +18168,35 @@ def build_parser() -> argparse.ArgumentParser:
     _add_state_args(helm_validation_append)
     helm_validation_append.set_defaults(func=cmd_helm_chart_validation_append)
 
+
+    image_integrity = subparsers.add_parser("deployment-image-integrity", help="write a signed deployment image digest, SBOM, provenance, and signature receipt")
+    image_integrity.add_argument("deployment_manifest")
+    image_integrity.add_argument("--root", default=".")
+    image_integrity.add_argument("--image-digest", required=True)
+    image_integrity.add_argument("--image-ref")
+    image_integrity.add_argument("--sbom", required=True)
+    image_integrity.add_argument("--provenance", required=True)
+    image_integrity.add_argument("--signature", required=True)
+    image_integrity.add_argument("--generated-at")
+    image_integrity.add_argument("--out", default="artifacts/deployment-image-integrity.json")
+    image_integrity.add_argument("--key")
+    image_integrity.set_defaults(func=cmd_deployment_image_integrity)
+
+    image_integrity_verify = subparsers.add_parser("deployment-image-integrity-verify", help="verify a signed deployment image integrity receipt")
+    image_integrity_verify.add_argument("receipt")
+    image_integrity_verify.add_argument("deployment_manifest")
+    image_integrity_verify.add_argument("--root", default=".")
+    image_integrity_verify.add_argument("--key")
+    image_integrity_verify.set_defaults(func=cmd_deployment_image_integrity_verify)
+
+    image_integrity_append = subparsers.add_parser("deployment-image-integrity-append", help="append a verified deployment image integrity receipt as chain evidence")
+    image_integrity_append.add_argument("receipt")
+    image_integrity_append.add_argument("deployment_manifest")
+    image_integrity_append.add_argument("--root", default=".")
+    image_integrity_append.add_argument("--out", default="artifacts/deployment-image-integrity-entry.json")
+    image_integrity_append.add_argument("--key")
+    _add_state_args(image_integrity_append)
+    image_integrity_append.set_defaults(func=cmd_deployment_image_integrity_append)
     byoc_operator = subparsers.add_parser("byoc-operator-attestation", help="write a signed BYOC operator and Object Lock attestation")
     byoc_operator.add_argument("manifest")
     byoc_operator.add_argument("receipt")

@@ -1,4 +1,4 @@
-﻿# Deployment Manifest v0.1
+# Deployment Manifest v0.1
 
 TrustAI is designed for BYOC and self-hosted deployment because regulated
 customers may not send agent traces, proof packs, or incident evidence to a
@@ -70,6 +70,11 @@ python -m trustai deployment-manifest --root . --environment aitrade-byoc --out 
 python -m trustai deployment-verify artifacts/deployment-manifest.json --root .
 python -m trustai helm-chart-validation artifacts/deployment-manifest.json --root . --out artifacts/helm-chart-validation.json
 python -m trustai helm-chart-validation-verify artifacts/helm-chart-validation.json artifacts/deployment-manifest.json --root .
+'{"sbom":"trustai","version":"0.1.0"}' | Set-Content -NoNewline artifacts/trustai-image.sbom.json
+'{"builder":"trustai-local","source":"git"}' | Set-Content -NoNewline artifacts/trustai-image.provenance.json
+'sigstore-placeholder-signature' | Set-Content -NoNewline artifacts/trustai-image.sig
+python -m trustai deployment-image-integrity artifacts/deployment-manifest.json --root . --image-digest sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa --sbom artifacts/trustai-image.sbom.json --provenance artifacts/trustai-image.provenance.json --signature artifacts/trustai-image.sig --out artifacts/deployment-image-integrity.json
+python -m trustai deployment-image-integrity-verify artifacts/deployment-image-integrity.json artifacts/deployment-manifest.json --root .
 python -m trustai deployment-append artifacts/deployment-manifest.json --root . --state .trustai/deployment-demo/evidence-chain.json --tenant deployment-local --out artifacts/deployment-entry.json
 python -m trustai chain-verify --state .trustai/deployment-demo/evidence-chain.json --tenant deployment-local
 ```
@@ -78,7 +83,7 @@ python -m trustai chain-verify --state .trustai/deployment-demo/evidence-chain.j
 
 A production BYOC or air-gapped operator should add:
 
-- image signing and SBOM/provenance attestations;
+- registry/admission-controller enforcement for image signing and SBOM/provenance attestations;
 - network policies and explicit egress controls;
 - managed KMS/HSM signing and independent RFC 3161 timestamping;
 - cloud Object Lock compliance mode and legal-hold release workflows;
@@ -91,4 +96,7 @@ hide them behind deployment prose. The companion Helm chart validation receipt
 replays chart-source checks for the API Deployment, Service, probes, PVC mount,
 ConfigMap, optional demo Job, and Secret-backed signing key without requiring a
 local Helm binary. The v0.1 chart runs both the API server and the optional
-aitrade demo job with the same Secret-backed signing key.
+aitrade demo job with the same Secret-backed signing key. The deployment image
+integrity receipt binds the chart image reference to a sha256 image digest plus
+SBOM, provenance, and signature artifacts, making the image supply-chain claim
+replayable without requiring a registry pull.

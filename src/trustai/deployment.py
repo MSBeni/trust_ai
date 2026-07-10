@@ -38,6 +38,16 @@ DEFAULT_HELM_CHART_SOURCE_PATHS = (
 
 HELM_CHART_VALIDATION_SCHEMA = "trustai.helm-chart-validation/0.1"
 HELM_CHART_VALIDATION_ENTRY_TYPE = "deployment.helm_chart.validated"
+DEPLOYMENT_IMAGE_INTEGRITY_SCHEMA = "trustai.deployment-image-integrity/0.1"
+DEPLOYMENT_IMAGE_INTEGRITY_ENTRY_TYPE = "deployment.image.integrity_attested"
+DEFAULT_IMAGE_INTEGRITY_SOURCE_PATHS = (
+    "deploy/docker/Dockerfile",
+    "deploy/helm/trustai/values.yaml",
+    "deploy/helm/trustai/templates/deployment.yaml",
+    "pyproject.toml",
+    "src/trustai/server.py",
+    "src/trustai/cli.py",
+)
 
 
 @dataclass
@@ -48,6 +58,13 @@ class DeploymentManifestVerification:
 
 @dataclass
 class HelmChartValidationVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class DeploymentImageIntegrityVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -329,6 +346,193 @@ def append_helm_chart_validation_receipt(
     return chain.append(HELM_CHART_VALIDATION_ENTRY_TYPE, payload, key=key, timestamp=receipt.get("generated_at"))
 
 
+
+
+def build_deployment_image_integrity_receipt(
+    root: str | Path = ".",
+    *,
+    deployment_manifest: dict[str, Any],
+    image_digest: str,
+    sbom_path: str | Path,
+    provenance_path: str | Path,
+    signature_path: str | Path,
+    image_ref: str | None = None,
+    generated_at: str | None = None,
+    key: str | None = None,
+) -> dict[str, Any]:
+    root_path = Path(root)
+    body = _deployment_image_integrity_body(
+        root_path,
+        deployment_manifest=deployment_manifest,
+        image_digest=image_digest,
+        image_ref=image_ref,
+        sbom_path=sbom_path,
+        provenance_path=provenance_path,
+        signature_path=signature_path,
+        generated_at=generated_at or utc_now(),
+    )
+    receipt_id = content_hash(body)
+    return {
+        **body,
+        "receipt_id": receipt_id,
+        "signatures": [sign_value({"receipt_id": receipt_id, "receipt": body}, key)],
+    }
+
+
+def verify_deployment_image_integrity_receipt(
+    receipt: dict[str, Any],
+    *,
+    root: str | Path = ".",
+    deployment_manifest: dict[str, Any] | None = None,
+    key: str | None = None,
+) -> DeploymentImageIntegrityVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    root_path = Path(root)
+
+    if receipt.get("schema") != DEPLOYMENT_IMAGE_INTEGRITY_SCHEMA:
+        errors.append(f"unsupported deployment image integrity schema: {receipt.get('schema')}")
+    body = without_keys(receipt, "receipt_id", "signatures")
+    expected_receipt_id = content_hash(body)
+    if receipt.get("receipt_id") != expected_receipt_id:
+        errors.append("receipt_id does not match canonical deployment image integrity body")
+
+    signatures = receipt.get("signatures", [])
+    if not isinstance(signatures, list) or not signatures:
+        errors.append("deployment image integrity receipt must include at least one signature")
+    else:
+        signed_value = {"receipt_id": receipt.get("receipt_id"), "receipt": body}
+        if not any(isinstance(signature, dict) and verify_value(signed_value, signature, key) for signature in signatures):
+            errors.append("deployment image integrity signature verification failed")
+
+    source_files = receipt.get("source_files", [])
+    if not isinstance(source_files, list) or not source_files:
+        errors.append("deployment image integrity receipt must include source_files")
+        source_files = []
+    source_paths: set[str] = set()
+    for source in source_files:
+        if not isinstance(source, dict):
+            errors.append("source file record must be an object")
+            continue
+        path_value = source.get("path")
+        if not isinstance(path_value, str) or not path_value:
+            errors.append("source file path missing")
+            continue
+        source_paths.add(path_value)
+        source_path = root_path / path_value
+        if not source_path.exists():
+            errors.append(f"source file missing from worktree: {path_value}")
+            continue
+        current = _source_record(root_path, path_value)
+        for field in ("sha256", "size_bytes"):
+            if source.get(field) != current.get(field):
+                errors.append(f"source file {path_value} {field} mismatch")
+    for required in DEFAULT_IMAGE_INTEGRITY_SOURCE_PATHS:
+        if required not in source_paths:
+            errors.append(f"required deployment image integrity source missing from receipt: {required}")
+
+    artifacts = receipt.get("artifacts", [])
+    if not isinstance(artifacts, list) or not artifacts:
+        errors.append("deployment image integrity receipt must include artifacts")
+        artifacts = []
+    for artifact in artifacts:
+        if not isinstance(artifact, dict):
+            errors.append("artifact record must be an object")
+            continue
+        path_value = artifact.get("path")
+        kind = artifact.get("kind")
+        if not isinstance(path_value, str) or not path_value:
+            errors.append("artifact path missing")
+            continue
+        if not isinstance(kind, str) or not kind:
+            errors.append("artifact kind missing")
+            continue
+        artifact_path = _resolve_artifact_path(root_path, path_value)
+        if not artifact_path.exists():
+            errors.append(f"artifact missing from worktree: {path_value}")
+            continue
+        current = _artifact_record(root_path, path_value, kind)
+        for field in ("sha256", "size_bytes"):
+            if artifact.get(field) != current.get(field):
+                errors.append(f"artifact {kind} {field} mismatch")
+
+    if deployment_manifest is None:
+        warnings.append("deployment manifest was not supplied for image integrity source replay")
+    else:
+        image = receipt.get("image", {}) if isinstance(receipt.get("image"), dict) else {}
+        artifact_paths = _artifact_paths_by_kind(artifacts)
+        missing_artifact_kinds = [kind for kind in ("sbom", "provenance", "signature") if kind not in artifact_paths]
+        if missing_artifact_kinds:
+            errors.append("deployment image integrity receipt missing artifact kinds: " + ", ".join(missing_artifact_kinds))
+        else:
+            expected_body = _deployment_image_integrity_body(
+                root_path,
+                deployment_manifest=deployment_manifest,
+                image_digest=str(image.get("image_digest") or ""),
+                image_ref=str(image.get("image_ref") or ""),
+                sbom_path=artifact_paths["sbom"],
+                provenance_path=artifact_paths["provenance"],
+                signature_path=artifact_paths["signature"],
+                generated_at=body.get("generated_at"),
+            )
+            for field in ("image", "deployment_manifest", "source_files", "artifacts", "checks", "summary", "passed", "limitations"):
+                if body.get(field) != expected_body.get(field):
+                    errors.append(f"deployment image integrity {field} does not match replayed sources")
+
+    checks = receipt.get("checks", [])
+    if not isinstance(checks, list) or not checks:
+        errors.append("deployment image integrity receipt must include checks")
+    else:
+        failed = [check.get("id") for check in checks if isinstance(check, dict) and not check.get("passed")]
+        if failed:
+            errors.append("deployment image integrity checks failed: " + ", ".join(str(item) for item in failed))
+    if receipt.get("passed") is not True:
+        errors.append("deployment image integrity receipt is not marked passed")
+
+    return DeploymentImageIntegrityVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
+def append_deployment_image_integrity_receipt(
+    chain: EvidenceChain,
+    receipt: dict[str, Any],
+    *,
+    root: str | Path = ".",
+    deployment_manifest: dict[str, Any] | None = None,
+    key: str | None = None,
+) -> dict[str, Any]:
+    result = verify_deployment_image_integrity_receipt(
+        receipt,
+        root=root,
+        deployment_manifest=deployment_manifest,
+        key=key,
+    )
+    if not result.ok:
+        raise ValueError("invalid deployment image integrity receipt: " + "; ".join(result.errors))
+    payload = {
+        "receipt_id": receipt["receipt_id"],
+        "receipt_hash": content_hash(receipt),
+        "image": receipt.get("image"),
+        "deployment_manifest": receipt.get("deployment_manifest"),
+        "artifact_count": len(receipt.get("artifacts", [])),
+        "source_file_count": len(receipt.get("source_files", [])),
+        "check_summary": receipt.get("summary"),
+        "passed": receipt.get("passed"),
+    }
+    return chain.append(DEPLOYMENT_IMAGE_INTEGRITY_ENTRY_TYPE, payload, key=key, timestamp=receipt.get("generated_at"))
+
+
+def load_deployment_image_integrity_receipt(path: str | Path) -> dict[str, Any]:
+    value = json.loads(Path(path).read_text(encoding="utf-8-sig"))
+    if not isinstance(value, dict):
+        raise ValueError("deployment image integrity receipt must contain an object")
+    return value
+
+
+def write_deployment_image_integrity_receipt(path: str | Path, receipt: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(receipt, indent=2, sort_keys=True), encoding="utf-8")
+
 def load_helm_chart_validation_receipt(path: str | Path) -> dict[str, Any]:
     value = json.loads(Path(path).read_text(encoding="utf-8-sig"))
     if not isinstance(value, dict):
@@ -569,6 +773,218 @@ def _helm_check_summary(checks: list[dict[str, Any]]) -> dict[str, int]:
     failed = len(checks) - passed
     return {"passed": passed, "failed": failed, "total": len(checks)}
 
+
+
+def _deployment_image_integrity_body(
+    root: Path,
+    *,
+    deployment_manifest: dict[str, Any],
+    image_digest: str,
+    image_ref: str | None,
+    sbom_path: str | Path,
+    provenance_path: str | Path,
+    signature_path: str | Path,
+    generated_at: str | None,
+) -> dict[str, Any]:
+    source_records = [_source_record(root, path) for path in DEFAULT_IMAGE_INTEGRITY_SOURCE_PATHS]
+    values = _values_summary(root / "deploy" / "helm" / "trustai" / "values.yaml")
+    image = _deployment_image_record(
+        deployment_manifest,
+        chart_values=values.get("image") if isinstance(values.get("image"), dict) else {},
+        image_ref=image_ref,
+        image_digest=image_digest,
+    )
+    manifest_binding = _deployment_manifest_validation_binding(root, deployment_manifest)
+    artifacts = [
+        _artifact_record(root, sbom_path, "sbom"),
+        _artifact_record(root, provenance_path, "provenance"),
+        _artifact_record(root, signature_path, "signature"),
+    ]
+    checks = _deployment_image_integrity_checks(
+        root,
+        image=image,
+        source_records=source_records,
+        artifacts=artifacts,
+        deployment_manifest_binding=manifest_binding,
+    )
+    summary = _helm_check_summary(checks)
+    passed = summary.get("failed", 0) == 0 and summary.get("passed", 0) == len(checks)
+    return {
+        "schema": DEPLOYMENT_IMAGE_INTEGRITY_SCHEMA,
+        "generated_at": generated_at,
+        "image": image,
+        "deployment_manifest": manifest_binding,
+        "source_files": source_records,
+        "artifacts": artifacts,
+        "checks": checks,
+        "summary": summary,
+        "passed": passed,
+        "limitations": [
+            "This receipt verifies source, digest, SBOM, provenance, and signature artifact bindings without building or pulling the image.",
+            "It does not prove registry admission, vulnerability scan results, runtime admission-controller enforcement, or cluster image pull success.",
+            "Production BYOC deployments should pair this receipt with registry, admission-controller, KMS, and Kubernetes audit-log exports.",
+        ],
+    }
+
+
+def _deployment_image_record(
+    deployment_manifest: dict[str, Any],
+    *,
+    chart_values: dict[str, Any],
+    image_ref: str | None,
+    image_digest: str,
+) -> dict[str, Any]:
+    manifest_image = deployment_manifest.get("deployment", {}).get("image", {}) if isinstance(deployment_manifest, dict) else {}
+    if not isinstance(manifest_image, dict):
+        manifest_image = {}
+    repository = str(manifest_image.get("repository") or chart_values.get("repository") or "")
+    tag = str(manifest_image.get("tag") or chart_values.get("tag") or "")
+    pull_policy = str(manifest_image.get("pull_policy") or chart_values.get("pull_policy") or "")
+    manifest_image_ref = _image_ref(repository, tag)
+    chart_image_ref = _image_ref(str(chart_values.get("repository") or ""), str(chart_values.get("tag") or ""))
+    declared_ref = image_ref or manifest_image_ref or chart_image_ref or ""
+    normalized_digest = _normalize_sha256_ref(image_digest)
+    return {
+        "image_ref": declared_ref,
+        "image_digest": normalized_digest,
+        "repository": repository,
+        "tag": tag,
+        "pull_policy": pull_policy,
+        "manifest_image_ref": manifest_image_ref,
+        "chart_image_ref": chart_image_ref,
+        "pinned_reference": f"{declared_ref}@{normalized_digest}" if declared_ref and normalized_digest else None,
+    }
+
+
+def _deployment_image_integrity_checks(
+    root: Path,
+    *,
+    image: dict[str, Any],
+    source_records: list[dict[str, Any]],
+    artifacts: list[dict[str, Any]],
+    deployment_manifest_binding: dict[str, Any] | None,
+) -> list[dict[str, Any]]:
+    source_paths = {source.get("path") for source in source_records if isinstance(source, dict)}
+    artifact_kinds = {artifact.get("kind") for artifact in artifacts if isinstance(artifact, dict) and _is_hex_sha256(str(artifact.get("sha256") or ""))}
+    dockerfile_text = (root / "deploy" / "docker" / "Dockerfile").read_text(encoding="utf-8-sig")
+    deployment_text = _read_chart_text(root, "templates/deployment.yaml")
+    image_ref = str(image.get("image_ref") or "")
+    manifest_image_ref = str(image.get("manifest_image_ref") or "")
+    chart_image_ref = str(image.get("chart_image_ref") or "")
+    tag = str(image.get("tag") or "")
+    return [
+        _helm_check(
+            "deployment-manifest-bound",
+            bool(deployment_manifest_binding and deployment_manifest_binding.get("verified")),
+            "The image integrity receipt is bound to a verified deployment manifest.",
+            "artifacts/deployment-manifest.json",
+        ),
+        _helm_check(
+            "chart-image-reference-bound",
+            bool(image_ref and image_ref == manifest_image_ref and image_ref == chart_image_ref),
+            "The declared image reference matches the deployment manifest and Helm values image reference.",
+            "deploy/helm/trustai/values.yaml",
+        ),
+        _helm_check(
+            "image-digest-present",
+            _is_sha256_ref(str(image.get("image_digest") or "")),
+            "The receipt records a sha256 image digest suitable for registry/admission binding.",
+            "artifacts/deployment-image-integrity.json",
+        ),
+        _helm_check(
+            "image-tag-pinned",
+            bool(tag and tag != "latest" and not image_ref.endswith(":latest")),
+            "The chart image tag is explicit and does not use latest.",
+            "deploy/helm/trustai/values.yaml",
+        ),
+        _helm_check(
+            "dockerfile-source-bound",
+            "deploy/docker/Dockerfile" in source_paths and "pyproject.toml" in source_paths and "src/trustai/cli.py" in source_paths,
+            "The receipt binds the Dockerfile, package metadata, and CLI source used by the runtime image.",
+            "deploy/docker/Dockerfile",
+        ),
+        _helm_check(
+            "dockerfile-entrypoint",
+            _contains_all(dockerfile_text, "COPY src ./src", "ENV PYTHONPATH=/app/src", 'ENTRYPOINT ["python", "-m", "trustai"]'),
+            "The Dockerfile copies the TrustAI source and starts the package entrypoint.",
+            "deploy/docker/Dockerfile",
+        ),
+        _helm_check(
+            "helm-deployment-uses-image-values",
+            _contains_all(deployment_text, "{{ .Values.image.repository }}", "{{ .Values.image.tag }}", "{{ .Values.image.pullPolicy }}"),
+            "The API Deployment consumes the chart image repository, tag, and pull policy values.",
+            "deploy/helm/trustai/templates/deployment.yaml",
+        ),
+        _helm_check(
+            "sbom-artifact-bound",
+            "sbom" in artifact_kinds,
+            "The receipt binds an SBOM artifact by sha256 and size.",
+            "artifacts/trustai-image.sbom.json",
+        ),
+        _helm_check(
+            "provenance-artifact-bound",
+            "provenance" in artifact_kinds,
+            "The receipt binds a build provenance artifact by sha256 and size.",
+            "artifacts/trustai-image.provenance.json",
+        ),
+        _helm_check(
+            "signature-artifact-bound",
+            "signature" in artifact_kinds,
+            "The receipt binds an image signature artifact by sha256 and size.",
+            "artifacts/trustai-image.sig",
+        ),
+    ]
+
+
+def _artifact_record(root: Path, path: str | Path, kind: str) -> dict[str, Any]:
+    artifact_path = _resolve_artifact_path(root, path)
+    data = artifact_path.read_bytes()
+    return {
+        "kind": kind,
+        "path": str(path),
+        "sha256": hashlib.sha256(data).hexdigest(),
+        "size_bytes": len(data),
+    }
+
+
+def _artifact_paths_by_kind(artifacts: list[Any]) -> dict[str, str]:
+    paths: dict[str, str] = {}
+    for artifact in artifacts:
+        if not isinstance(artifact, dict):
+            continue
+        kind = artifact.get("kind")
+        path = artifact.get("path")
+        if isinstance(kind, str) and isinstance(path, str) and kind not in paths:
+            paths[kind] = path
+    return paths
+
+
+def _resolve_artifact_path(root: Path, path: str | Path) -> Path:
+    artifact_path = Path(path)
+    return artifact_path if artifact_path.is_absolute() else root / artifact_path
+
+
+def _image_ref(repository: str, tag: str) -> str | None:
+    if not repository or not tag:
+        return None
+    return f"{repository}:{tag}"
+
+
+def _normalize_sha256_ref(value: str) -> str:
+    stripped = value.strip().lower()
+    if _is_hex_sha256(stripped):
+        return f"sha256:{stripped}"
+    return stripped
+
+
+def _is_sha256_ref(value: str) -> bool:
+    stripped = value.strip().lower()
+    return stripped.startswith("sha256:") and _is_hex_sha256(stripped.split(":", 1)[1])
+
+
+def _is_hex_sha256(value: str) -> bool:
+    return len(value) == 64 and all(char in "0123456789abcdef" for char in value.lower())
+
 def _source_record(root: Path, path: str) -> dict[str, Any]:
     source_path = root / path
     data = source_path.read_bytes()
@@ -727,6 +1143,11 @@ def _controls() -> list[dict[str, str]]:
             "id": "api-health-probes",
             "status": "implemented-reference",
             "description": "Readiness and liveness probes call the TrustAI /health endpoint before routing traffic.",
+        },
+        {
+            "id": "deployment-image-integrity-receipts",
+            "status": "implemented-reference",
+            "description": "Deployment image integrity receipts bind the chart image reference to an image digest, SBOM, provenance, and signature artifacts.",
         },
         {
             "id": "managed-kms-hsm",

@@ -325,6 +325,7 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "deploy/helm/trustai/templates/deployment.yaml",
             "deploy/helm/trustai/templates/service.yaml",
             "docs/specs/helm-chart-validation-v0.1.md",
+            "docs/specs/deployment-image-integrity-v0.1.md",
             "src/trustai/deployment.py",
             "src/trustai/byoc_operator.py",
             "src/trustai/byoc_authority.py",
@@ -337,7 +338,7 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "tests/test_worm_legal_hold.py",
         ],
         "external_authority": [
-            "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence.",
+            "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence.",
         ],
     },
     {
