@@ -59,6 +59,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/policy-backend-enforcement-v0.1.md",
     "docs/specs/policy-backend-service-attestation-v0.1.md",
     "docs/specs/policy-backend-worker-v0.1.md",
+    "docs/specs/policy-backend-provider-export-v0.1.md",
     "docs/specs/policy-backend-service-bundle-v0.1.md",
     "docs/specs/insurer-consent-v0.1.md",
     "docs/specs/underwriting-quote-v0.1.md",
@@ -523,6 +524,16 @@ CONFORMANCE_TARGETS = (
             "python -m trustai policy-backend-worker artifacts/policy-backend-service-attestation.json artifacts/policy-backend-enforcement.json examples/aitrade/policy-pack.json examples/aitrade/runtime-action.json --pack artifacts/aitrade-proof-pack.json --decision artifacts/policy-decision.json --export artifacts/policy-export.json --policy-engine-receipt artifacts/policy-engine-receipt.json --mode hosted-worker --environment aitrade-prod --worker-ref worker:policy-backend/opa-enforcement --run-ref worker-run:policy-backend/opa/2026-07-04T04:05:00Z --operation-kind policy_enforcement --actor-ref oidc:trustai.example/policy-backend-worker --schedule-ref schedule:policy-backend/opa/continuous --cadence-seconds 30 --lease-ref lease:policy-backend/opa/2026-07-04T04:05:00Z --checkpoint-ref checkpoint:policy-backend/opa --checkpoint-hash sha256:policy-backend-worker-checkpoint --queue-ref queue:policy-backend/opa-enforcement --queue-message-ref queue-message:policy-backend/opa/action-123 --queue-message-hash sha256:policy-backend-worker-queue-message --backend-request-ref opa-request:policy-backend/opa/action-123 --decision-log-ref decision-log:policy-backend/opa --decision-log-root sha256:policy-backend-worker-decision-log-root --metrics-ref metrics:policy-backend/workers --audit-log-ref audit-log:policy-backend/service --audit-log-root sha256:policy-backend-worker-audit-root --retention-until 2033-07-04T00:00:00Z --credential-ref env:POLICY_BACKEND_SERVICE_TOKEN --backend-credential-ref env:OPA_BACKEND_TOKEN --started-at 2026-07-04T04:05:00Z --completed-at 2026-07-04T04:05:01Z",
             "python -m trustai policy-backend-worker-verify artifacts/policy-backend-worker.json artifacts/policy-backend-service-attestation.json artifacts/policy-backend-enforcement.json examples/aitrade/policy-pack.json examples/aitrade/runtime-action.json --pack artifacts/aitrade-proof-pack.json --decision artifacts/policy-decision.json --export artifacts/policy-export.json --policy-engine-receipt artifacts/policy-engine-receipt.json",
             "python -m unittest tests.test_policy_backend_worker",
+        ],
+    },
+    {
+        "id": "policy-backend-provider-export-receipts",
+        "description": "Policy backend provider export receipts bind verified OPA/Cedar worker operations to provider-native scheduler, queue, lease, backend, decision-log, and audit export records.",
+        "reference": "src/trustai/policy_backend_provider.py",
+        "commands": [
+            "python -m trustai policy-backend-provider-export artifacts/policy-backend-provider-export-source.json artifacts/policy-backend-worker.json artifacts/policy-backend-service-attestation.json artifacts/policy-backend-enforcement.json examples/aitrade/policy-pack.json examples/aitrade/runtime-action.json --pack artifacts/aitrade-proof-pack.json --decision artifacts/policy-decision.json --export artifacts/policy-export.json --policy-engine-receipt artifacts/policy-engine-receipt.json --mode provider-export --environment aitrade-prod --provider aws-scheduler-sqs-dynamodb-s3-cloudtrail-opa --endpoint-url https://provider.example/aitrade/policy-backend/exports --credential-ref env:POLICY_BACKEND_PROVIDER_EXPORT_TOKEN --request-hash sha256:policy-backend-provider-export-request --response-status 200 --response-hash sha256:policy-backend-provider-export-response --actor-ref oidc:trustai.example/policy-backend-provider-exporter --exported-at 2026-07-04T04:06:00Z",
+            "python -m trustai policy-backend-provider-export-verify artifacts/policy-backend-provider-export.json artifacts/policy-backend-provider-export-source.json artifacts/policy-backend-worker.json artifacts/policy-backend-service-attestation.json artifacts/policy-backend-enforcement.json examples/aitrade/policy-pack.json examples/aitrade/runtime-action.json --pack artifacts/aitrade-proof-pack.json --decision artifacts/policy-decision.json --export artifacts/policy-export.json --policy-engine-receipt artifacts/policy-engine-receipt.json",
+            "python -m unittest tests.test_policy_backend_provider",
         ],
     },
     {

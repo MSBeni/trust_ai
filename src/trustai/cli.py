@@ -661,6 +661,15 @@ from .policy_backend_worker import (
     verify_policy_backend_worker_receipt,
     write_policy_backend_worker_receipt,
 )
+from .policy_backend_provider import (
+    POLICY_BACKEND_PROVIDER_MODES,
+    append_policy_backend_provider_receipt,
+    build_policy_backend_provider_receipt,
+    load_policy_backend_provider_export,
+    load_policy_backend_provider_receipt,
+    verify_policy_backend_provider_receipt,
+    write_policy_backend_provider_receipt,
+)
 from .policy_backend_service_bundle import (
     POLICY_BACKEND_SERVICE_BUNDLE_MODES,
     append_policy_backend_service_bundle,
@@ -9856,6 +9865,143 @@ def cmd_policy_backend_worker_append(args: argparse.Namespace) -> int:
     return 0
 
 
+def _load_policy_backend_provider_sources(args: argparse.Namespace) -> tuple[dict[str, Any] | None, int]:
+    sources, status = _load_policy_backend_worker_sources(args)
+    if status:
+        return None, status
+    assert sources is not None
+    sources["worker_receipt"] = load_policy_backend_worker_receipt(args.worker)
+    sources["provider_export"] = load_policy_backend_provider_export(args.provider_export)
+    return sources, 0
+
+
+def cmd_policy_backend_provider_export(args: argparse.Namespace) -> int:
+    sources, status = _load_policy_backend_provider_sources(args)
+    if status:
+        return status
+    assert sources is not None
+    try:
+        receipt = build_policy_backend_provider_receipt(
+            sources["provider_export"],
+            sources["worker_receipt"],
+            sources["service_attestation"],
+            sources["enforcement"],
+            sources["policy"],
+            sources["action"],
+            sources["pack"],
+            sources["decision"],
+            sources["policy_export"],
+            policy_engine_receipt=sources["policy_engine_receipt"],
+            mode=args.mode,
+            environment=args.environment,
+            provider=args.provider,
+            endpoint_url=args.endpoint_url,
+            credential_ref=args.credential_ref,
+            request_hash=args.request_hash,
+            response_status=args.response_status,
+            response_hash=args.response_hash,
+            actor_ref=args.actor_ref,
+            exported_at=args.exported_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"policy backend provider export failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_policy_backend_provider_receipt(
+        receipt,
+        provider_export=sources["provider_export"],
+        worker_receipt=sources["worker_receipt"],
+        service_attestation=sources["service_attestation"],
+        enforcement_receipt=sources["enforcement"],
+        policy_pack=sources["policy"],
+        action=sources["action"],
+        proof_pack=sources["pack"],
+        decision=sources["decision"],
+        policy_export=sources["policy_export"],
+        policy_engine_receipt=sources["policy_engine_receipt"],
+        key=args.key,
+    )
+    if not result.ok:
+        print("policy backend provider export verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_policy_backend_provider_receipt(args.out, receipt)
+    print(f"policy backend provider export receipt: {args.out}")
+    print(f"provider receipt id: {receipt['provider_receipt_id']}")
+    print(f"worker operation id: {receipt['worker_binding']['worker_operation_id']}")
+    print(f"provider export hash: {receipt['provider_export']['hash']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_policy_backend_provider_export_verify(args: argparse.Namespace) -> int:
+    sources, status = _load_policy_backend_provider_sources(args)
+    if status:
+        return status
+    assert sources is not None
+    receipt = load_policy_backend_provider_receipt(args.receipt)
+    result = verify_policy_backend_provider_receipt(
+        receipt,
+        provider_export=sources["provider_export"],
+        worker_receipt=sources["worker_receipt"],
+        service_attestation=sources["service_attestation"],
+        enforcement_receipt=sources["enforcement"],
+        policy_pack=sources["policy"],
+        action=sources["action"],
+        proof_pack=sources["pack"],
+        decision=sources["decision"],
+        policy_export=sources["policy_export"],
+        policy_engine_receipt=sources["policy_engine_receipt"],
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified policy backend provider export receipt: {args.receipt}")
+        print(f"provider receipt id: {receipt['provider_receipt_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"policy backend provider export receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_policy_backend_provider_export_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    sources, status = _load_policy_backend_provider_sources(args)
+    if status:
+        return status
+    assert sources is not None
+    receipt = load_policy_backend_provider_receipt(args.receipt)
+    try:
+        entry = append_policy_backend_provider_receipt(
+            chain,
+            receipt,
+            provider_export=sources["provider_export"],
+            worker_receipt=sources["worker_receipt"],
+            service_attestation=sources["service_attestation"],
+            enforcement_receipt=sources["enforcement"],
+            policy_pack=sources["policy"],
+            action=sources["action"],
+            proof_pack=sources["pack"],
+            decision=sources["decision"],
+            policy_export=sources["policy_export"],
+            policy_engine_receipt=sources["policy_engine_receipt"],
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"policy backend provider export append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"policy backend provider export entry: {args.out}")
+    print(f"policy backend provider export entry id: {entry['entry_id']}")
+    print(f"provider receipt id: {receipt['provider_receipt_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
 def _policy_backend_service_bundle_artifact_paths(args: argparse.Namespace) -> dict[str, str]:
     paths = {
         "service_attestation": args.attestation,
@@ -16784,6 +16930,48 @@ def build_parser() -> argparse.ArgumentParser:
     _add_state_args(policy_backend_worker_append)
     policy_backend_worker_append.set_defaults(func=cmd_policy_backend_worker_append)
 
+    def _add_policy_backend_provider_sources(parser: argparse.ArgumentParser, include_receipt: bool = False) -> None:
+        if include_receipt:
+            parser.add_argument("receipt")
+        parser.add_argument("provider_export")
+        parser.add_argument("worker")
+        parser.add_argument("attestation")
+        parser.add_argument("enforcement")
+        parser.add_argument("policy")
+        parser.add_argument("action")
+        parser.add_argument("--pack", required=True)
+        parser.add_argument("--decision", required=True)
+        parser.add_argument("--export", required=True)
+        parser.add_argument("--policy-engine-receipt")
+        parser.add_argument("--key")
+
+    def _add_policy_backend_provider_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--mode", choices=sorted(POLICY_BACKEND_PROVIDER_MODES), default="provider-export")
+        parser.add_argument("--environment", default="local")
+        parser.add_argument("--provider", required=True)
+        parser.add_argument("--endpoint-url", required=True)
+        parser.add_argument("--credential-ref", required=True)
+        parser.add_argument("--request-hash", required=True)
+        parser.add_argument("--response-status", type=int, required=True)
+        parser.add_argument("--response-hash", required=True)
+        parser.add_argument("--actor-ref", required=True)
+        parser.add_argument("--exported-at")
+
+    policy_backend_provider = subparsers.add_parser("policy-backend-provider-export", help="write a signed provider export receipt for an OPA/Cedar policy backend worker")
+    _add_policy_backend_provider_sources(policy_backend_provider)
+    _add_policy_backend_provider_fields(policy_backend_provider)
+    policy_backend_provider.add_argument("--out", default="artifacts/policy-backend-provider-export.json")
+    policy_backend_provider.set_defaults(func=cmd_policy_backend_provider_export)
+
+    policy_backend_provider_verify = subparsers.add_parser("policy-backend-provider-export-verify", help="verify a signed provider export receipt for an OPA/Cedar policy backend worker")
+    _add_policy_backend_provider_sources(policy_backend_provider_verify, include_receipt=True)
+    policy_backend_provider_verify.set_defaults(func=cmd_policy_backend_provider_export_verify)
+
+    policy_backend_provider_append = subparsers.add_parser("policy-backend-provider-export-append", help="append a verified OPA/Cedar policy backend provider export receipt")
+    _add_policy_backend_provider_sources(policy_backend_provider_append, include_receipt=True)
+    policy_backend_provider_append.add_argument("--out", default="artifacts/policy-backend-provider-export-entry.json")
+    _add_state_args(policy_backend_provider_append)
+    policy_backend_provider_append.set_defaults(func=cmd_policy_backend_provider_export_append)
     policy_backend_service_bundle = subparsers.add_parser("policy-backend-service-bundle", help="write a self-contained policy backend service review bundle")
     policy_backend_service_bundle.add_argument("attestation")
     policy_backend_service_bundle.add_argument("enforcement")
