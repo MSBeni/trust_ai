@@ -41,6 +41,7 @@ def build_provider_delivery_service_attestation(
     *,
     delivery: dict[str, Any],
     payload: dict[str, Any] | None = None,
+    payload_artifact_path: str | Path | None = None,
     provider_operations_service: dict[str, Any] | None = None,
     mode: str = "provider-delivery-attested",
     environment: str = "local",
@@ -79,7 +80,7 @@ def build_provider_delivery_service_attestation(
 ) -> dict[str, Any]:
     if mode not in PROVIDER_DELIVERY_SERVICE_MODES:
         raise ValueError(f"mode must be one of {sorted(PROVIDER_DELIVERY_SERVICE_MODES)}")
-    source_result = _verify_sources(delivery=delivery, payload=payload, provider_operations_service=provider_operations_service, key=key)
+    source_result = _verify_sources(delivery=delivery, payload=payload, payload_artifact_path=payload_artifact_path, provider_operations_service=provider_operations_service, key=key)
     if not source_result.ok:
         raise ValueError("invalid provider delivery service source evidence: " + "; ".join(source_result.errors))
 
@@ -200,6 +201,7 @@ def verify_provider_delivery_service_attestation(
     *,
     delivery: dict[str, Any] | None = None,
     payload: dict[str, Any] | None = None,
+    payload_artifact_path: str | Path | None = None,
     provider_operations_service: dict[str, Any] | None = None,
     key: str | None = None,
 ) -> ProviderDeliveryServiceVerification:
@@ -251,7 +253,7 @@ def verify_provider_delivery_service_attestation(
             errors.append("provider delivery service source_artifacts do not match supplied source artifacts")
         if attestation.get("source") != _source_summary(supplied_sources):
             errors.append("provider delivery service source summary does not match supplied source artifacts")
-        source_result = _verify_sources(delivery=delivery, payload=payload, provider_operations_service=provider_operations_service, key=key)
+        source_result = _verify_sources(delivery=delivery, payload=payload, payload_artifact_path=payload_artifact_path, provider_operations_service=provider_operations_service, key=key)
         if not source_result.ok:
             errors.extend(f"provider delivery service source invalid: {error}" for error in source_result.errors)
         warnings.extend(f"provider delivery service source: {warning}" for warning in source_result.warnings)
@@ -293,6 +295,7 @@ def _verify_sources(
     *,
     delivery: dict[str, Any] | None,
     payload: dict[str, Any] | None,
+    payload_artifact_path: str | Path | None,
     provider_operations_service: dict[str, Any] | None,
     key: str | None,
 ) -> ProviderDeliveryServiceVerification:
@@ -302,7 +305,7 @@ def _verify_sources(
         errors.append("delivery source is required")
         return ProviderDeliveryServiceVerification(False, errors, warnings)
 
-    delivery_result = verify_provider_delivery(delivery, payload, key=key)
+    delivery_result = verify_provider_delivery(delivery, payload, payload_artifact_path=payload_artifact_path, key=key)
     if not delivery_result.ok:
         errors.extend(f"delivery: {error}" for error in delivery_result.errors)
     warnings.extend(f"delivery: {warning}" for warning in delivery_result.warnings)

@@ -29,6 +29,7 @@ class ProviderDeliveryServiceTests(unittest.TestCase):
         return {
             "delivery": _load("artifacts/github-check-run-delivery.json"),
             "payload": _load("artifacts/github-check-run-payload.json"),
+            "payload_artifact_path": "artifacts/github-check-run-payload.json",
             "provider_operations_service": _load("artifacts/provider-operations-service-attestation.json"),
         }
 
@@ -86,6 +87,22 @@ class ProviderDeliveryServiceTests(unittest.TestCase):
         self.assertEqual("env:GITHUB_TOKEN", attestation["dispatch"]["provider_credential"]["ref"])
         self.assertEqual(PROVIDER_DELIVERY_SERVICE_ENTRY_TYPE, entry["entry_type"])
         self.assertEqual(attestation["attestation_id"], entry["payload"]["attestation_id"])
+
+    def test_provider_delivery_service_replays_delivery_payload_artifact(self):
+        sources = self._sources()
+        attestation = self._attestation()
+
+        result = verify_provider_delivery_service_attestation(attestation, **sources)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertFalse(any("payload artifact was not replayed" in warning for warning in result.warnings))
+
+        tampered_sources = dict(sources)
+        tampered_sources["payload_artifact_path"] = Path(__file__)
+        tampered_result = verify_provider_delivery_service_attestation(attestation, **tampered_sources)
+
+        self.assertFalse(tampered_result.ok)
+        self.assertTrue(any("payload_artifact" in error for error in tampered_result.errors))
 
     def test_provider_delivery_service_rejects_delivery_source_mismatch(self):
         sources = self._sources()

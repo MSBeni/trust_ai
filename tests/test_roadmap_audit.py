@@ -135,6 +135,7 @@ class RoadmapAuditTests(unittest.TestCase):
         self.assertIn("tests/test_provider_webhook.py", cicd_evidence)
         cicd_external_authority = " ".join(cicd_requirement["external_authority_required"])
         self.assertIn("retained provider delivery payload artifact replay", cicd_external_authority)
+        self.assertIn("service source path", cicd_external_authority)
         self.assertIn("retained payload artifact byte replay", cicd_external_authority)
         self.assertGreater(audit["summary"][STATUS_REFERENCE_ATTESTED], 0)
         self.assertIn("TrustAI Roadmap Audit", markdown)

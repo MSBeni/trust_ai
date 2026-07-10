@@ -22,8 +22,9 @@ Slack posting in production. The schema is
 - `operation_actor`: operator identity, redacted operator credential, and
   evidence references.
 - `source_artifacts`: canonical ids, schemas, and hashes for the provider
-  delivery receipt, optional source payload, and optional provider operations
-  service attestation.
+  delivery receipt, optional source payload, retained delivery payload artifact
+  replay through `--payload`, and optional provider operations service
+  attestation.
 - `controls`: derived control statuses for service identity, delivery source
   binding, queue/retry/DLQ, idempotent egress, auth/rate limits, and audit
   retention.
@@ -42,8 +43,10 @@ Slack posting in production. The schema is
    delivery, and redacted provider credential references.
 5. Security, observability, audit retention, and actor credential references.
 6. Source-artifact hashes and source summary match supplied artifacts.
-7. Provider delivery receipt verification, payload replay when supplied, and
-   optional provider operations service attestation verification.
+7. Provider delivery receipt verification, retained payload artifact byte
+   replay through `--payload` when the delivery receipt contains a
+   `payload_artifact`, and optional provider operations service attestation
+   verification.
 8. Secret-like fields are redacted references rather than raw provider API
    tokens, OAuth secrets, or webhook credentials.
 

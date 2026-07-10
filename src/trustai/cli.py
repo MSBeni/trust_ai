@@ -8937,6 +8937,7 @@ def _load_provider_delivery_service_sources(args: argparse.Namespace) -> dict[st
     sources: dict[str, Any] = {"delivery": load_provider_delivery(args.delivery)}
     if getattr(args, "payload", None):
         sources["payload"] = load_provider_payload(args.payload)
+        sources["payload_artifact_path"] = args.payload
     if getattr(args, "provider_operations_service", None):
         sources["provider_operations_service"] = load_provider_operations_service_attestation(args.provider_operations_service)
     return sources
