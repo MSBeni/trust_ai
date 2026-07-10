@@ -13,6 +13,7 @@ STANDARDS_SUBMISSION_SCHEMA = "trustai.standards-submission/0.1"
 REQUIRED_SPEC_PATHS = (
     "docs/specs/actuarial-corpus-v0.1.md",
     "docs/specs/actuarial-product-v0.1.md",
+    "docs/specs/state-of-agent-reliability-report-v0.1.md",
     "docs/specs/agent-registry-v0.1.md",
     "docs/specs/proof-pack-v0.1.md",
     "docs/specs/verification-contract-v0.1.md",
@@ -159,6 +160,17 @@ CONFORMANCE_TARGETS = (
             "python -m trustai own-compliance-dossier-verify artifacts/own-compliance-dossier.json --root .",
             "python -m trustai own-compliance-dossier-append artifacts/own-compliance-dossier.json --root . --state .trustai/own-compliance-demo/evidence-chain.json --tenant own-compliance-local --out artifacts/own-compliance-dossier-entry.json",
             "python -m unittest tests.test_own_compliance",
+        ],
+    },
+    {
+        "id": "state-of-agent-reliability-reports",
+        "description": "State of Agent Reliability reports bind aggregate anonymized cohort metrics, actuarial product source bindings, consent/proof-pack source artifacts, privacy thresholds, publication evidence, and explicit no-direct-identifier limits for the roadmap GTM publication surface.",
+        "reference": "src/trustai/reliability_report.py",
+        "commands": [
+            "python -m trustai reliability-report --root . --report-ref report:trustai/state-of-agent-reliability/2026 --producer-ref oidc:trustai.example/reliability-research --period-start 2026-01-01T00:00:00Z --period-end 2026-12-31T00:00:00Z --cohort \"segment:finserv,3,12,48,42,6,2,125000,actuarial-product:finserv\" --actuarial-product artifacts/actuarial-product.json --out artifacts/state-of-agent-reliability-report.json",
+            "python -m trustai reliability-report-verify artifacts/state-of-agent-reliability-report.json --root . --actuarial-product artifacts/actuarial-product.json",
+            "python -m trustai reliability-report-append artifacts/state-of-agent-reliability-report.json --root . --actuarial-product artifacts/actuarial-product.json --state .trustai/reliability-report-demo/evidence-chain.json --tenant reliability-report-local --out artifacts/state-of-agent-reliability-report-entry.json",
+            "python -m unittest tests.test_reliability_report",
         ],
     },
     {
@@ -1165,6 +1177,7 @@ def build_standards_submission(
             "Publish deployment manifest format for BYOC/self-hosted scaffold verification.",
             "Publish design-partner pilot dossier format for Phase 1 partner count, signed value, external scrutiny, and readiness/external-evidence separation.",
             "Publish TrustAI own compliance dossier format for SOC 2 Type II and ISO/IEC 42001 readiness/external-certification separation.",
+            "Publish State of Agent Reliability report format for anonymized aggregate GTM publication evidence with source-product binding and publication-evidence separation.",
             "Publish collector topology manifest format for ingestion/MCP/control-plane verification.",
             "Publish MCP gateway production authority dossier format for proxy fleet, session auth, replay, immutable audit, scheduler, policy, network, KMS, and observability authority evidence."
             "Publish signed verifier release manifest and conformance-bound release verification commands.",

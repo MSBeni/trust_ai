@@ -20,6 +20,15 @@ from .actuarial import (
     write_actuarial_corpus,
     write_actuarial_product,
 )
+from .reliability_report import (
+    REPORT_MODES,
+    append_reliability_report,
+    build_reliability_report,
+    load_reliability_report,
+    parse_reliability_cohort,
+    verify_reliability_report,
+    write_reliability_report,
+)
 from .adapters import append_framework_events
 from .framework_adapter_matrix import (
     append_framework_adapter_matrix,
@@ -10916,6 +10925,88 @@ def cmd_actuarial_product_append(args: argparse.Namespace) -> int:
     print(f"product id: {product['product_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
+
+
+def cmd_reliability_report(args: argparse.Namespace) -> int:
+    try:
+        cohorts = [parse_reliability_cohort(value) for value in args.cohort]
+        source_products = [load_actuarial_product(path) for path in args.actuarial_product]
+        report = build_reliability_report(
+            args.root,
+            report_ref=args.report_ref,
+            producer_ref=args.producer_ref,
+            period_start=args.period_start,
+            period_end=args.period_end,
+            cohorts=cohorts,
+            source_products=source_products,
+            mode=args.mode,
+            publication_ref=args.publication_ref,
+            publication_hash=args.publication_hash,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_reliability_report(report, root=args.root, source_products=source_products, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"state-of-agent-reliability report generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("state-of-agent-reliability report generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_reliability_report(args.out, report)
+    print(f"state-of-agent-reliability report: {args.out}")
+    print(f"report id: {report['report_id']}")
+    print(f"mode: {report['mode']}")
+    print(f"cohorts: {report['metrics']['cohort_count']}")
+    print(f"source products: {report['metrics']['source_product_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_reliability_report_verify(args: argparse.Namespace) -> int:
+    try:
+        report = load_reliability_report(args.report)
+        source_products = [load_actuarial_product(path) for path in args.actuarial_product] if args.actuarial_product else None
+        result = verify_reliability_report(report, root=args.root, source_products=source_products, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"state-of-agent-reliability report verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        print(f"verified state-of-agent-reliability report: {args.report}")
+        print(f"report id: {report['report_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"state-of-agent-reliability report verification failed: {args.report}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_reliability_report_append(args: argparse.Namespace) -> int:
+    try:
+        report = load_reliability_report(args.report)
+        source_products = [load_actuarial_product(path) for path in args.actuarial_product] if args.actuarial_product else None
+    except (OSError, ValueError) as exc:
+        print(f"state-of-agent-reliability report append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_reliability_report(chain, report, root=args.root, source_products=source_products, key=args.key)
+    except ValueError as exc:
+        print(f"state-of-agent-reliability report append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"state-of-agent-reliability report entry: {args.out}")
+    print(f"state-of-agent-reliability report entry id: {entry['entry_id']}")
+    print(f"report id: {report['report_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
 def cmd_consent_grant(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
     entry = append_consent_grant(chain, load_consent(args.consent), key=args.key)
@@ -21653,6 +21744,37 @@ def build_parser() -> argparse.ArgumentParser:
     actuarial_product_append.set_defaults(func=cmd_actuarial_product_append)
 
 
+    reliability = subparsers.add_parser("reliability-report", help="write a signed State of Agent Reliability aggregate report")
+    reliability.add_argument("--root", default=".")
+    reliability.add_argument("--report-ref", required=True)
+    reliability.add_argument("--producer-ref", required=True)
+    reliability.add_argument("--period-start", required=True)
+    reliability.add_argument("--period-end", required=True)
+    reliability.add_argument("--cohort", action="append", default=[], required=True, help="segment_ref,contributing_org_count,agent_count,proof_pack_count,promotion_pass_count,promotion_fail_count,incident_count,total_action_count[,source_ref]; repeatable")
+    reliability.add_argument("--actuarial-product", action="append", default=[])
+    reliability.add_argument("--mode", choices=sorted(REPORT_MODES), default="draft")
+    reliability.add_argument("--publication-ref")
+    reliability.add_argument("--publication-hash")
+    reliability.add_argument("--generated-at")
+    reliability.add_argument("--out", default="artifacts/state-of-agent-reliability-report.json")
+    reliability.add_argument("--key")
+    reliability.set_defaults(func=cmd_reliability_report)
+
+    reliability_verify = subparsers.add_parser("reliability-report-verify", help="verify a signed State of Agent Reliability report")
+    reliability_verify.add_argument("report")
+    reliability_verify.add_argument("--root", default=".")
+    reliability_verify.add_argument("--actuarial-product", action="append", default=[])
+    reliability_verify.add_argument("--key")
+    reliability_verify.set_defaults(func=cmd_reliability_report_verify)
+
+    reliability_append = subparsers.add_parser("reliability-report-append", help="append a verified State of Agent Reliability report as chain evidence")
+    reliability_append.add_argument("report")
+    reliability_append.add_argument("--root", default=".")
+    reliability_append.add_argument("--actuarial-product", action="append", default=[])
+    reliability_append.add_argument("--out", default="artifacts/state-of-agent-reliability-report-entry.json")
+    reliability_append.add_argument("--key")
+    _add_state_args(reliability_append)
+    reliability_append.set_defaults(func=cmd_reliability_report_append)
     consent_grant = subparsers.add_parser("consent-grant", help="append an insurer-consent grant to the chain")
     consent_grant.add_argument("consent")
     consent_grant.add_argument("--out", default="artifacts/consent-grant-entry.json")

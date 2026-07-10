@@ -74,6 +74,11 @@ class RoadmapAuditTests(unittest.TestCase):
         self.assertIn("src/trustai/own_compliance.py", own_compliance_evidence)
         self.assertIn("docs/specs/own-compliance-dossier-v0.1.md", own_compliance_evidence)
         self.assertIn("tests/test_own_compliance.py", own_compliance_evidence)
+        reliability_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "state-of-agent-reliability-report")
+        reliability_evidence = {item["path"] for item in reliability_requirement["evidence"]}
+        self.assertIn("src/trustai/reliability_report.py", reliability_evidence)
+        self.assertIn("docs/specs/state-of-agent-reliability-report-v0.1.md", reliability_evidence)
+        self.assertIn("tests/test_reliability_report.py", reliability_evidence)
         framework_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "framework-adapters")
         framework_evidence = {item["path"] for item in framework_requirement["evidence"]}
         self.assertIn("src/trustai/framework_adapter_matrix.py", framework_evidence)

@@ -30,6 +30,8 @@ class StandardsSubmissionTests(unittest.TestCase):
         self.assertIn("design-partner-pilot-dossiers", markdown)
         self.assertIn("own-compliance-dossier-v0.1.md", markdown)
         self.assertIn("trustai-own-compliance-dossiers", markdown)
+        self.assertIn("state-of-agent-reliability-report-v0.1.md", markdown)
+        self.assertIn("state-of-agent-reliability-reports", markdown)
 
     def test_standards_submission_detects_spec_hash_tamper(self):
         package = build_standards_submission(ROOT)
