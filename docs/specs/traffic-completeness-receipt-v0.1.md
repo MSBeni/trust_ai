@@ -5,7 +5,7 @@ reconciled against collector or provider-owned export evidence before the replay
 window is trusted for promotion. It is the companion artifact to the traffic
 holdout export receipt: the export receipt binds the replay records; the
 completeness receipt binds those records to stream, cursor, and audit evidence
-from the collection path.
+from the collection path. When generated from a provider export file, it also records a retained source artifact summary with path, byte SHA-256, size, canonical content hash, and artifact ID so whitespace-only or transport-level byte changes are detectable offline.
 
 ## Artifact
 
@@ -17,6 +17,8 @@ The receipt uses schema `trustai.traffic-completeness-receipt/0.1` and records:
   record count, and records root;
 - provider export ref, provider/environment/source refs, stream topic, window,
   cursor bounds, traffic record count/root, stream record root, and audit root;
+- optional `provider_export_artifact` with retained provider export path, byte SHA-256,
+  size, canonical content hash, and artifact ID;
 - matched replay/export records with provider cursor refs and provider record
   hashes;
 - extra provider records and missing provider matches;
@@ -37,9 +39,12 @@ embedded coverage summary, and can replay both source artifacts:
 When source artifacts are supplied, the verifier recomputes the traffic export
 hash, provider export hash, stream record root, audit record root, matched record
 set, missing/extra record counts, matched audit records, controls, violations,
-and pass/fail status. Editing a provider stream record, removing a replay record,
-changing a cursor, or changing the provider audit export changes the receipt
-verification result.
+and pass/fail status. If the receipt contains `provider_export_artifact`, the
+verifier also replays the retained provider export file bytes and rejects byte SHA-256
+mismatches even when the canonical parsed JSON content is unchanged. Editing a
+provider stream record, removing a replay record, changing a cursor, changing only
+provider export formatting bytes, or changing the provider audit export changes the
+receipt verification result.
 
 `production-export` is required for production completeness claims. The other
 modes are useful for local and design-partner rehearsal but do not claim live
@@ -53,6 +58,7 @@ Verified receipts append `traffic_holdout.completeness_attested` entries with:
 - mode and authority ref;
 - traffic export binding;
 - provider export binding;
+- provider export source artifact summary when supplied;
 - source completeness summary;
 - provider exchange evidence;
 - violation count, pass/fail status, and privacy metadata.

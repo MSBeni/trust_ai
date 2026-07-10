@@ -199,6 +199,7 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "src/trustai/reexecution_runner.py",
             "src/trustai/reexecution_runner_authority.py",
             "examples/aitrade/shadow-replay.json",
+            "examples/aitrade/traffic-completeness-provider-export.json",
             "examples/aitrade/failed-soak-window.json",
             "examples/aitrade/reexecution-runner-plan.json",
             "tests/test_temporal_holdout.py",
@@ -208,7 +209,7 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "tests/test_reexecution_runner_authority.py",
         ],
         "external_authority": [
-            "Soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence.",
+            "Traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence.",
         ],
     },
     {

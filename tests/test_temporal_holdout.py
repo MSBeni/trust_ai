@@ -1,4 +1,5 @@
 import copy
+import hashlib
 import json
 import os
 import subprocess
@@ -41,6 +42,10 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = ROOT / "examples" / "aitrade" / "verification-contract.yaml"
 
 SHADOW = ROOT / "examples" / "aitrade" / "shadow-replay.json"
+
+
+def _sha256_ref(path: Path) -> str:
+    return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 class TemporalHoldoutTests(unittest.TestCase):
@@ -312,6 +317,73 @@ class TemporalHoldoutTests(unittest.TestCase):
         self.assertTrue(receipt["source_completeness"]["audit_records_bound"])
         self.assertFalse(receipt["privacy"]["raw_payloads_embedded"])
 
+    def test_traffic_completeness_replays_provider_export_artifact_bytes(self):
+        traffic_export = self._traffic_export()
+        provider_export = self._provider_export(traffic_export)
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            provider_export_path = Path(tmp_dir) / "traffic-completeness-provider-export.json"
+            provider_export_path.write_text(json.dumps(provider_export, indent=2, sort_keys=True), encoding="utf-8")
+            receipt = build_traffic_completeness_receipt(
+                traffic_export,
+                provider_export,
+                mode="production-export",
+                authority_ref="authority:traffic-completeness/aitrade-prod",
+                endpoint_url="https://provider.example/aitrade/traffic-holdout/export",
+                request_hash="sha256:traffic-completeness-request",
+                response_status=200,
+                response_hash="sha256:traffic-completeness-response",
+                actor_ref="oidc:trustai.example/traffic-completeness-worker",
+                produced_at="2026-07-03T12:25:00Z",
+                provider_export_path=provider_export_path,
+            )
+            result = verify_traffic_completeness_receipt(
+                receipt,
+                traffic_export=traffic_export,
+                provider_export=provider_export,
+                provider_export_path=provider_export_path,
+            )
+            artifact_sha = _sha256_ref(provider_export_path)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(artifact_sha, receipt["provider_export_artifact"]["sha256"])
+        self.assertEqual(content_hash(provider_export), receipt["provider_export_artifact"]["content_hash"])
+        controls = {control["id"]: control["status"] for control in receipt["controls"]}
+        self.assertEqual("passed", controls["provider-export-artifact-replayed"])
+
+    def test_traffic_completeness_detects_provider_export_artifact_byte_tamper(self):
+        traffic_export = self._traffic_export()
+        provider_export = self._provider_export(traffic_export)
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            provider_export_path = Path(tmp_dir) / "traffic-completeness-provider-export.json"
+            provider_export_path.write_text(json.dumps(provider_export, indent=2, sort_keys=True), encoding="utf-8")
+            receipt = build_traffic_completeness_receipt(
+                traffic_export,
+                provider_export,
+                mode="production-export",
+                authority_ref="authority:traffic-completeness/aitrade-prod",
+                endpoint_url="https://provider.example/aitrade/traffic-holdout/export",
+                request_hash="sha256:traffic-completeness-request",
+                response_status=200,
+                response_hash="sha256:traffic-completeness-response",
+                actor_ref="oidc:trustai.example/traffic-completeness-worker",
+                produced_at="2026-07-03T12:25:00Z",
+                provider_export_path=provider_export_path,
+            )
+            provider_export_path.write_text(json.dumps(provider_export, indent=4, sort_keys=True), encoding="utf-8")
+            result = verify_traffic_completeness_receipt(
+                receipt,
+                traffic_export=traffic_export,
+                provider_export=provider_export,
+                provider_export_path=provider_export_path,
+            )
+
+        self.assertFalse(result.ok)
+        errors = "\n".join(result.errors)
+        self.assertIn("provider_export_artifact", errors)
+        self.assertIn("bytes", errors)
+
     def test_traffic_completeness_appends_to_chain(self):
         traffic_export = self._traffic_export()
         provider_export = self._provider_export(traffic_export)
@@ -490,6 +562,7 @@ class TemporalHoldoutTests(unittest.TestCase):
             entry = json.loads(entry_path.read_text(encoding="utf-8"))
 
         self.assertEqual(receipt["completeness_id"], entry["payload"]["completeness_id"])
+        self.assertEqual(receipt["provider_export_artifact"]["sha256"], entry["payload"]["provider_export_artifact"]["sha256"])
 
     def test_temporal_holdout_manifest_hash_chains_records(self):
         manifest = build_temporal_holdout_manifest(

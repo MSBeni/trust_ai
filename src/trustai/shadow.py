@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import math
 from dataclasses import dataclass
+from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
@@ -965,6 +966,7 @@ def build_traffic_completeness_receipt(
     response_hash: str,
     actor_ref: str,
     produced_at: str | None = None,
+    provider_export_path: str | Path | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
     if mode not in TRAFFIC_COMPLETENESS_MODES:
@@ -995,6 +997,7 @@ def build_traffic_completeness_receipt(
         response_hash=response_hash,
         actor_ref=actor_ref,
         produced_at=str(produced),
+        provider_export_path=provider_export_path,
     )
     completeness_id = content_hash(body)
     return {
@@ -1009,6 +1012,7 @@ def verify_traffic_completeness_receipt(
     *,
     traffic_export: dict[str, Any] | None = None,
     provider_export: dict[str, Any] | None = None,
+    provider_export_path: str | Path | None = None,
     key: str | None = None,
 ) -> TrafficCompletenessVerification:
     errors: list[str] = []
@@ -1061,6 +1065,12 @@ def verify_traffic_completeness_receipt(
     if receipt.get("privacy", {}).get("raw_payloads_embedded") is not False:
         errors.append("traffic completeness receipt must not embed raw production traffic payloads")
 
+    if provider_export is None and provider_export_path is not None:
+        try:
+            provider_export = load_traffic_completeness_provider_export(provider_export_path)
+        except (OSError, ValueError) as exc:
+            errors.append(f"traffic completeness provider export artifact could not be loaded: {exc}")
+
     if traffic_export is not None:
         traffic_result = verify_traffic_holdout_export(traffic_export, key=key)
         if not traffic_result.ok:
@@ -1079,6 +1089,20 @@ def verify_traffic_completeness_receipt(
             expected_provider = None
         if expected_provider is not None and receipt.get("provider_export") != expected_provider:
             errors.append("traffic completeness provider_export binding mismatch")
+        artifact = receipt.get("provider_export_artifact")
+        if artifact is not None:
+            if not isinstance(artifact, dict):
+                errors.append("traffic completeness provider_export_artifact must be an object")
+            elif provider_export_path is None:
+                errors.append("traffic completeness provider_export_artifact requires provider_export_path for byte replay")
+            else:
+                try:
+                    expected_artifact = _traffic_provider_export_artifact(provider_export_path, provider_export)
+                except ValueError as exc:
+                    errors.append(f"traffic completeness provider export artifact invalid: {exc}")
+                else:
+                    if artifact != expected_artifact:
+                        errors.append("traffic completeness provider_export_artifact does not match supplied provider export bytes")
     else:
         warnings.append("traffic completeness provider export source was not supplied; provider records were not replayed")
 
@@ -1095,6 +1119,7 @@ def verify_traffic_completeness_receipt(
                 response_hash=str(provider_exchange.get("response_hash") or ""),
                 actor_ref=str(provider_exchange.get("actor_ref") or ""),
                 produced_at=str(receipt.get("produced_at") or ""),
+                provider_export_path=provider_export_path if isinstance(receipt.get("provider_export_artifact"), dict) else None,
             )
         except (TypeError, ValueError) as exc:
             errors.append(f"traffic completeness source replay failed: {exc}")
@@ -1121,9 +1146,10 @@ def append_traffic_completeness_receipt(
     *,
     traffic_export: dict[str, Any] | None = None,
     provider_export: dict[str, Any] | None = None,
+    provider_export_path: str | Path | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
-    result = verify_traffic_completeness_receipt(receipt, traffic_export=traffic_export, provider_export=provider_export, key=key)
+    result = verify_traffic_completeness_receipt(receipt, traffic_export=traffic_export, provider_export=provider_export, provider_export_path=provider_export_path, key=key)
     if not result.ok:
         raise ValueError("invalid traffic completeness receipt: " + "; ".join(result.errors))
     payload = {
@@ -1133,6 +1159,7 @@ def append_traffic_completeness_receipt(
         "authority_ref": receipt.get("authority_ref"),
         "traffic_export": receipt.get("traffic_export"),
         "provider_export": receipt.get("provider_export"),
+        "provider_export_artifact": receipt.get("provider_export_artifact"),
         "source_completeness": receipt.get("source_completeness"),
         "provider_exchange": receipt.get("provider_exchange"),
         "violation_count": len(receipt.get("violations", [])),
@@ -1227,9 +1254,11 @@ def _build_traffic_completeness_body(
     response_hash: str,
     actor_ref: str,
     produced_at: str,
+    provider_export_path: str | Path | None = None,
 ) -> dict[str, Any]:
     traffic_summary = _traffic_export_summary(traffic_export)
     provider_summary = _traffic_provider_export_summary(provider_export)
+    provider_artifact = _traffic_provider_export_artifact(provider_export_path, provider_export) if provider_export_path is not None else None
     stream_records = _traffic_provider_records(provider_export, "stream_records")
     audit_records = _traffic_provider_records(provider_export, "audit_records")
     matched_records, extra_provider_records = _traffic_completeness_record_matches(traffic_export, stream_records)
@@ -1283,7 +1312,7 @@ def _build_traffic_completeness_body(
         "actor_ref": actor_ref,
     }
     violations = _traffic_completeness_violations_from_coverage(coverage, provider_exchange)
-    return {
+    body = {
         "schema": TRAFFIC_COMPLETENESS_SCHEMA,
         "mode": mode,
         "produced_at": produced_at,
@@ -1295,7 +1324,7 @@ def _build_traffic_completeness_body(
         "extra_provider_records": extra_provider_records,
         "matched_audit_records": matched_audit_records,
         "provider_exchange": provider_exchange,
-        "controls": _traffic_completeness_controls(coverage, provider_exchange, mode),
+        "controls": _traffic_completeness_controls(coverage, provider_exchange, mode, provider_artifact),
         "violations": violations,
         "passed": not violations,
         "privacy": {
@@ -1308,6 +1337,9 @@ def _build_traffic_completeness_body(
             "It proves completeness only for the supplied provider export. Production completeness still depends on the provider export being provider-owned, immutable, and independently retained.",
         ],
     }
+    if provider_artifact is not None:
+        body["provider_export_artifact"] = provider_artifact
+    return body
 
 
 def _traffic_export_summary(traffic_export: dict[str, Any]) -> dict[str, Any]:
@@ -1364,6 +1396,28 @@ def _traffic_provider_export_summary(provider_export: dict[str, Any]) -> dict[st
         "audit_record_root": content_hash([_traffic_provider_audit_record_summary(record) for record in audit_records]),
     }
 
+
+def _traffic_provider_export_artifact(path: str | Path, provider_export: dict[str, Any]) -> dict[str, Any]:
+    target = Path(path)
+    if not target.is_file():
+        raise ValueError(f"provider export artifact file missing: {path}")
+    data = target.read_bytes()
+    try:
+        parsed = json.loads(data.decode("utf-8-sig"))
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"provider export artifact JSON invalid: {exc}") from exc
+    if not isinstance(parsed, dict):
+        raise ValueError("provider export artifact must contain an object")
+    parsed_hash = content_hash(parsed)
+    if parsed_hash != content_hash(provider_export):
+        raise ValueError("provider export artifact content does not match supplied provider export object")
+    body = {
+        "path": str(path).replace("\\", "/"),
+        "sha256": "sha256:" + sha256(data).hexdigest(),
+        "size_bytes": len(data),
+        "content_hash": parsed_hash,
+    }
+    return {**body, "artifact_id": content_hash(body)}
 
 def _traffic_provider_records(provider_export: dict[str, Any], field: str) -> list[dict[str, Any]]:
     value = provider_export.get(field, [])
@@ -1484,7 +1538,7 @@ def _traffic_completeness_violations_from_coverage(
     return violations
 
 
-def _traffic_completeness_controls(coverage: dict[str, Any], provider_exchange: dict[str, Any], mode: str) -> list[dict[str, Any]]:
+def _traffic_completeness_controls(coverage: dict[str, Any], provider_exchange: dict[str, Any], mode: str, provider_artifact: dict[str, Any] | None = None) -> list[dict[str, Any]]:
     return [
         {"id": "source-ref-bound", "status": "passed" if coverage.get("source_ref_match") else "failed", "description": "Provider source ref matches the traffic holdout export source ref."},
         {"id": "record-count-bound", "status": "passed" if coverage.get("record_count_matches") else "failed", "description": "Provider stream record count matches the traffic holdout export record count."},
@@ -1493,6 +1547,7 @@ def _traffic_completeness_controls(coverage: dict[str, Any], provider_exchange: 
         {"id": "no-extra-provider-records", "status": "passed" if not coverage.get("extra_provider_record_count") else "failed", "description": "The provider stream export does not contain unmatched records for the same window."},
         {"id": "window-and-cursors-bound", "status": "passed" if coverage.get("window_covers_export") and coverage.get("cursor_bounds_match") else "failed", "description": "Provider window and cursor bounds cover the traffic holdout export."},
         {"id": "provider-audit-bound", "status": "passed" if coverage.get("audit_records_bound") else "failed", "description": "Provider audit records bind the traffic holdout export root or ID."},
+        {"id": "provider-export-artifact-replayed", "status": "passed" if provider_artifact else "deferred", "description": "Retained provider export source bytes are SHA-256 replay-bound when supplied."},
         {"id": "provider-exchange-success", "status": "passed" if provider_exchange.get("success") else "failed", "description": "Provider export API exchange returned a successful status."},
         {"id": "production-export-mode", "status": "passed" if mode == "production-export" else "deferred", "description": "Production completeness claims require provider-owned production export mode."},
     ]

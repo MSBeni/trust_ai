@@ -109,6 +109,9 @@ class RoadmapAuditTests(unittest.TestCase):
         self.assertIn("src/trustai/lifecycle.py", shadow_evidence)
         self.assertIn("tests/test_temporal_holdout.py", shadow_evidence)
         self.assertIn("examples/aitrade/failed-soak-window.json", shadow_evidence)
+        self.assertIn("examples/aitrade/traffic-completeness-provider-export.json", shadow_evidence)
+        shadow_external_authority = " ".join(shadow_requirement["external_authority_required"])
+        self.assertIn("retained provider export byte replay", shadow_external_authority)
         self.assertIn("tests/test_phase1_phase2.py", shadow_evidence)
         byoc_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "byoc-self-hosted")
         byoc_evidence = {item["path"] for item in byoc_requirement["evidence"]}

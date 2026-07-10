@@ -5776,9 +5776,10 @@ def cmd_traffic_completeness(args: argparse.Namespace) -> int:
             response_hash=args.response_hash,
             actor_ref=args.actor_ref,
             produced_at=args.produced_at,
+            provider_export_path=args.provider_export,
             key=args.key,
         )
-        result = verify_traffic_completeness_receipt(receipt, traffic_export=traffic_export, provider_export=provider_export, key=args.key)
+        result = verify_traffic_completeness_receipt(receipt, traffic_export=traffic_export, provider_export=provider_export, provider_export_path=args.provider_export, key=args.key)
     except (OSError, ValueError) as exc:
         print(f"traffic completeness receipt generation failed: {exc}", file=sys.stderr)
         return 1
@@ -5805,7 +5806,7 @@ def cmd_traffic_completeness_verify(args: argparse.Namespace) -> int:
     except (OSError, ValueError) as exc:
         print(f"traffic completeness receipt verification failed: {exc}", file=sys.stderr)
         return 1
-    result = verify_traffic_completeness_receipt(receipt, traffic_export=traffic_export, provider_export=provider_export, key=args.key)
+    result = verify_traffic_completeness_receipt(receipt, traffic_export=traffic_export, provider_export=provider_export, provider_export_path=args.provider_export if args.provider_export else None, key=args.key)
     if result.ok:
         print(f"verified traffic completeness receipt: {args.receipt}")
         print(f"completeness id: {receipt['completeness_id']}")
@@ -5829,7 +5830,7 @@ def cmd_traffic_completeness_append(args: argparse.Namespace) -> int:
         return 1
     chain = _load_chain(args)
     try:
-        entry = append_traffic_completeness_receipt(chain, receipt, traffic_export=traffic_export, provider_export=provider_export, key=args.key)
+        entry = append_traffic_completeness_receipt(chain, receipt, traffic_export=traffic_export, provider_export=provider_export, provider_export_path=args.provider_export if args.provider_export else None, key=args.key)
     except ValueError as exc:
         print(f"traffic completeness receipt append failed: {exc}", file=sys.stderr)
         return 1
