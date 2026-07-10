@@ -36,6 +36,8 @@ class StandardsSubmissionTests(unittest.TestCase):
         self.assertIn("roadmap-phase-scoreboards", markdown)
         self.assertIn("product-scope-decision-v0.1.md", markdown)
         self.assertIn("product-scope-decisions", markdown)
+        self.assertIn("mcp-gateway-v0.1.md", markdown)
+        self.assertIn("mcp-proxy-capture-receipts", markdown)
 
     def test_standards_submission_detects_spec_hash_tamper(self):
         package = build_standards_submission(ROOT)

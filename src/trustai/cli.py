@@ -770,7 +770,16 @@ from .marketplace_settlement import (
     verify_marketplace_settlement,
     write_marketplace_settlement,
 )
-from .mcp_gateway import append_mcp_transcript, load_mcp_transcript
+from .mcp_gateway import (
+    append_mcp_proxy_capture,
+    append_mcp_transcript,
+    build_mcp_proxy_capture,
+    load_mcp_proxy_capture,
+    load_mcp_proxy_events,
+    load_mcp_transcript,
+    verify_mcp_proxy_capture,
+    write_mcp_proxy_capture,
+)
 from .mcp_gateway_authority import (
     MCP_GATEWAY_AUTHORITY_MODES,
     append_mcp_gateway_authority_dossier,
@@ -5415,6 +5424,81 @@ def cmd_mcp_capture(args: argparse.Namespace) -> int:
     return 0
 
 
+
+def _mcp_proxy_agent_from_args(args: argparse.Namespace) -> dict[str, str]:
+    agent = {"name": args.agent_name, "version": args.agent_version}
+    if args.risk_class:
+        agent["risk_class"] = args.risk_class
+    return agent
+
+
+def cmd_mcp_proxy_capture(args: argparse.Namespace) -> int:
+    try:
+        events = load_mcp_proxy_events(args.events)
+        capture = build_mcp_proxy_capture(
+            events,
+            agent=_mcp_proxy_agent_from_args(args),
+            contract_hash=args.contract_hash,
+            proxy_ref=args.proxy_ref,
+            upstream_ref=args.upstream_ref,
+            session_id=args.session_id,
+            captured_at=args.captured_at,
+            key=args.key,
+        )
+        result = verify_mcp_proxy_capture(capture, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"MCP proxy capture failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("MCP proxy capture verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_mcp_proxy_capture(args.out, capture)
+    print(f"MCP proxy capture: {args.out}")
+    print(f"capture id: {capture['capture_id']}")
+    print(f"captured tool calls: {capture['tool_call_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_mcp_proxy_capture_verify(args: argparse.Namespace) -> int:
+    try:
+        capture = load_mcp_proxy_capture(args.capture)
+        result = verify_mcp_proxy_capture(capture, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"MCP proxy capture verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        print(f"verified MCP proxy capture: {args.capture}")
+        print(f"capture id: {capture['capture_id']}")
+        print(f"captured tool calls: {capture['tool_call_count']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"MCP proxy capture verification failed: {args.capture}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_mcp_proxy_capture_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    try:
+        capture = load_mcp_proxy_capture(args.capture)
+        entry = append_mcp_proxy_capture(chain, capture, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"MCP proxy capture append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"MCP proxy capture entry: {args.out}")
+    print(f"MCP proxy capture entry id: {entry['entry_id']}")
+    print(f"capture id: {capture['capture_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
 
 def cmd_mcp_gateway_authority(args: argparse.Namespace) -> int:
     calls = load_mcp_transcript(args.transcript)
@@ -19573,6 +19657,32 @@ def build_parser() -> argparse.ArgumentParser:
     mcp.add_argument("transcript")
     _add_state_args(mcp)
     mcp.set_defaults(func=cmd_mcp_capture)
+
+    mcp_proxy = subparsers.add_parser("mcp-proxy-capture", help="write a signed MCP proxy JSON-RPC capture receipt")
+    mcp_proxy.add_argument("events")
+    mcp_proxy.add_argument("--agent-name", required=True)
+    mcp_proxy.add_argument("--agent-version", required=True)
+    mcp_proxy.add_argument("--risk-class")
+    mcp_proxy.add_argument("--contract-hash", required=True)
+    mcp_proxy.add_argument("--proxy-ref", required=True)
+    mcp_proxy.add_argument("--upstream-ref", required=True)
+    mcp_proxy.add_argument("--session-id")
+    mcp_proxy.add_argument("--captured-at")
+    mcp_proxy.add_argument("--out", default="artifacts/mcp-proxy-capture.json")
+    mcp_proxy.add_argument("--key")
+    mcp_proxy.set_defaults(func=cmd_mcp_proxy_capture)
+
+    mcp_proxy_verify = subparsers.add_parser("mcp-proxy-capture-verify", help="verify a signed MCP proxy JSON-RPC capture receipt")
+    mcp_proxy_verify.add_argument("capture")
+    mcp_proxy_verify.add_argument("--key")
+    mcp_proxy_verify.set_defaults(func=cmd_mcp_proxy_capture_verify)
+
+    mcp_proxy_append = subparsers.add_parser("mcp-proxy-capture-append", help="append a verified MCP proxy capture as chain evidence")
+    mcp_proxy_append.add_argument("capture")
+    mcp_proxy_append.add_argument("--out", default="artifacts/mcp-proxy-capture-entry.json")
+    mcp_proxy_append.add_argument("--key")
+    _add_state_args(mcp_proxy_append)
+    mcp_proxy_append.set_defaults(func=cmd_mcp_proxy_capture_append)
 
     def _add_mcp_gateway_authority_fields(parser: argparse.ArgumentParser) -> None:
         parser.add_argument("--mode", choices=sorted(MCP_GATEWAY_AUTHORITY_MODES), default="proxy-dossier")

@@ -1,15 +1,30 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .canonical import content_hash, parse_rfc3339
+from .canonical import content_hash, parse_rfc3339, utc_now, without_keys
 from .chain import EvidenceChain
+from .crypto import sign_value, verify_value
 
 MCP_TOOL_CALL_ENTRY_TYPE = "mcp.tool_call.evidenced"
 MCP_TRANSCRIPT_CHAIN_SCHEMA = "trustai.mcp-transcript-chain/0.1"
+MCP_PROXY_CAPTURE_SCHEMA = "trustai.mcp-proxy-capture/0.1"
+MCP_PROXY_CAPTURE_ENTRY_TYPE = "mcp.proxy_capture.evidenced"
+MCP_PROXY_EVENT_CHAIN_SCHEMA = "trustai.mcp-proxy-event-chain/0.1"
+MCP_PROXY_DIRECTIONS = {"client_to_server", "server_to_client"}
+MCP_SENSITIVE_KEYS = {
+    "api_key",
+    "apikey",
+    "authorization",
+    "credential",
+    "credentials",
+    "password",
+    "secret",
+    "token",
+}
 
 
 def load_mcp_transcript(path: str | Path) -> list[dict[str, Any]]:
@@ -19,6 +34,28 @@ def load_mcp_transcript(path: str | Path) -> list[dict[str, Any]]:
     if not isinstance(value, list):
         raise ValueError("MCP transcript must contain a list or tool_calls list")
     return [normalize_tool_call(call) for call in value]
+
+
+def load_mcp_proxy_events(path: str | Path) -> list[dict[str, Any]]:
+    value = json.loads(Path(path).read_text(encoding="utf-8"))
+    if isinstance(value, dict) and "events" in value:
+        value = value["events"]
+    if not isinstance(value, list):
+        raise ValueError("MCP proxy events must contain a list or events list")
+    return [normalize_mcp_proxy_event(event) for event in value]
+
+
+def load_mcp_proxy_capture(path: str | Path) -> dict[str, Any]:
+    value = json.loads(Path(path).read_text(encoding="utf-8"))
+    if not isinstance(value, dict):
+        raise ValueError("MCP proxy capture must be an object")
+    return value
+
+
+def write_mcp_proxy_capture(path: str | Path, capture: dict[str, Any]) -> None:
+    capture_path = Path(path)
+    capture_path.parent.mkdir(parents=True, exist_ok=True)
+    capture_path.write_text(json.dumps(capture, indent=2, sort_keys=True), encoding="utf-8")
 
 
 def normalize_tool_call(call: dict[str, Any]) -> dict[str, Any]:
@@ -37,6 +74,234 @@ def normalize_tool_call(call: dict[str, Any]) -> dict[str, Any]:
     normalized.setdefault("response", {})
     normalized.setdefault("risk_class", agent.get("risk_class"))
     return normalized
+
+
+def normalize_mcp_proxy_event(event: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(event, dict):
+        raise ValueError("MCP proxy event must be an object")
+    required = ("direction", "timestamp", "session_id", "message")
+    missing = [field for field in required if not event.get(field)]
+    if missing:
+        raise ValueError(f"MCP proxy event missing required fields: {', '.join(missing)}")
+    if event["direction"] not in MCP_PROXY_DIRECTIONS:
+        raise ValueError(f"unsupported MCP proxy event direction: {event['direction']}")
+    parse_rfc3339(event["timestamp"])
+    if not isinstance(event["message"], dict):
+        raise ValueError("MCP proxy event message must be an object")
+    normalized = json.loads(json.dumps(event, sort_keys=True))
+    normalized["message"] = _redact_sensitive(normalized["message"])
+    return normalized
+
+
+def build_mcp_proxy_capture(
+    events: list[dict[str, Any]],
+    *,
+    agent: dict[str, Any],
+    contract_hash: str,
+    proxy_ref: str,
+    upstream_ref: str,
+    session_id: str | None = None,
+    captured_at: str | None = None,
+    key: str | None = None,
+) -> dict[str, Any]:
+    if not isinstance(agent, dict) or not agent.get("name") or not agent.get("version"):
+        raise ValueError("MCP proxy capture agent must include name and version")
+    if not contract_hash:
+        raise ValueError("MCP proxy capture contract_hash is required")
+    if not proxy_ref:
+        raise ValueError("MCP proxy capture proxy_ref is required")
+    if not upstream_ref:
+        raise ValueError("MCP proxy capture upstream_ref is required")
+
+    event_records = build_mcp_proxy_event_chain(events)
+    capture_session_id = session_id or event_records[0]["event"]["session_id"]
+    tool_calls = _tool_calls_from_proxy_records(
+        event_records,
+        session_id=capture_session_id,
+        agent=agent,
+        contract_hash=contract_hash,
+    )
+    transcript_records = build_mcp_transcript_chain(tool_calls)
+    body = {
+        "schema": MCP_PROXY_CAPTURE_SCHEMA,
+        "captured_at": captured_at or utc_now(),
+        "proxy_ref": proxy_ref,
+        "upstream_ref": upstream_ref,
+        "session_id": capture_session_id,
+        "contract_hash": contract_hash,
+        "agent": json.loads(json.dumps(agent, sort_keys=True)),
+        "event_count": len(event_records),
+        "tool_call_count": len(tool_calls),
+        "event_chain_root": event_records[-1]["event_hash"],
+        "transcript_root": transcript_records[-1]["transcript_root"],
+        "events": event_records,
+        "tool_calls": tool_calls,
+    }
+    capture_id = content_hash(body)
+    return {
+        **body,
+        "capture_id": capture_id,
+        "signatures": [sign_value({"capture_id": capture_id, "mcp_proxy_capture": body}, key)],
+    }
+
+
+def build_mcp_proxy_event_chain(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    normalized_events = [normalize_mcp_proxy_event(event) for event in events]
+    if not normalized_events:
+        raise ValueError("MCP proxy capture must contain at least one event")
+
+    records: list[dict[str, Any]] = []
+    previous_event_hash: str | None = None
+    for index, normalized in enumerate(normalized_events):
+        event_body = {
+            "schema": MCP_PROXY_EVENT_CHAIN_SCHEMA,
+            "sequence": index,
+            "direction": normalized["direction"],
+            "timestamp": normalized["timestamp"],
+            "session_id": normalized["session_id"],
+            "message_hash": content_hash(normalized["message"]),
+            "previous_event_hash": previous_event_hash,
+        }
+        event_hash = content_hash(event_body)
+        records.append({**event_body, "event_hash": event_hash, "event": normalized})
+        previous_event_hash = event_hash
+    return records
+
+
+@dataclass
+class McpProxyCaptureVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+def verify_mcp_proxy_capture(capture: dict[str, Any], key: str | None = None) -> McpProxyCaptureVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    if capture.get("schema") != MCP_PROXY_CAPTURE_SCHEMA:
+        errors.append(f"unsupported MCP proxy capture schema: {capture.get('schema')}")
+
+    body = without_keys(capture, "capture_id", "signatures")
+    expected_capture_id = content_hash(body)
+    if capture.get("capture_id") != expected_capture_id:
+        errors.append("capture_id does not match canonical capture body")
+
+    signatures = capture.get("signatures")
+    if not isinstance(signatures, list) or not signatures:
+        errors.append("MCP proxy capture must include at least one signature")
+    else:
+        signed_value = {"capture_id": capture.get("capture_id"), "mcp_proxy_capture": body}
+        if not any(isinstance(signature, dict) and verify_value(signed_value, signature, key) for signature in signatures):
+            errors.append("no MCP proxy capture signature verifies")
+
+    try:
+        parse_rfc3339(capture.get("captured_at", ""))
+    except (TypeError, ValueError) as exc:
+        errors.append(f"captured_at invalid: {exc}")
+
+    events = capture.get("events")
+    if not isinstance(events, list) or not events:
+        errors.append("MCP proxy capture events missing")
+        events = []
+    event_payloads: list[dict[str, Any]] = []
+    for index, record in enumerate(events):
+        if not isinstance(record, dict):
+            errors.append(f"MCP proxy event record {index} must be an object")
+            continue
+        event = record.get("event")
+        if not isinstance(event, dict):
+            errors.append(f"MCP proxy event record {index} missing event")
+            continue
+        event_payloads.append(event)
+
+    expected_records: list[dict[str, Any]] = []
+    if event_payloads:
+        try:
+            expected_records = build_mcp_proxy_event_chain(event_payloads)
+        except (TypeError, ValueError) as exc:
+            errors.append(f"MCP proxy event chain cannot replay: {exc}")
+        else:
+            if capture.get("event_count") != len(expected_records):
+                errors.append("event_count mismatch")
+            if capture.get("event_chain_root") != expected_records[-1]["event_hash"]:
+                errors.append("event_chain_root mismatch")
+            for index, (actual, expected) in enumerate(zip(events, expected_records)):
+                for field in (
+                    "sequence",
+                    "direction",
+                    "timestamp",
+                    "session_id",
+                    "message_hash",
+                    "previous_event_hash",
+                    "event_hash",
+                ):
+                    if actual.get(field) != expected.get(field):
+                        errors.append(f"MCP proxy event record {index} {field} mismatch")
+
+        for index, event in enumerate(event_payloads):
+            errors.extend(f"MCP proxy event record {index} {error}" for error in _redaction_errors(event.get("message")))
+
+    if expected_records:
+        try:
+            expected_tool_calls = _tool_calls_from_proxy_records(
+                expected_records,
+                session_id=_require_text(capture.get("session_id"), "session_id"),
+                agent=capture.get("agent", {}),
+                contract_hash=_require_text(capture.get("contract_hash"), "contract_hash"),
+            )
+        except (TypeError, ValueError) as exc:
+            errors.append(f"MCP proxy tool call derivation failed: {exc}")
+            expected_tool_calls = []
+        actual_tool_calls = capture.get("tool_calls")
+        if not isinstance(actual_tool_calls, list):
+            errors.append("tool_calls must be a list")
+            actual_tool_calls = []
+        try:
+            normalized_actual = [normalize_tool_call(call) for call in actual_tool_calls]
+        except (TypeError, ValueError) as exc:
+            errors.append(f"tool_calls invalid: {exc}")
+            normalized_actual = []
+        if normalized_actual != expected_tool_calls:
+            errors.append("tool_calls do not match replayed MCP proxy events")
+        if capture.get("tool_call_count") != len(expected_tool_calls):
+            errors.append("tool_call_count mismatch")
+        if expected_tool_calls:
+            expected_transcript = build_mcp_transcript_chain(expected_tool_calls)
+            if capture.get("transcript_root") != expected_transcript[-1]["transcript_root"]:
+                errors.append("transcript_root mismatch")
+
+    if errors:
+        return McpProxyCaptureVerification(ok=False, errors=errors, warnings=warnings)
+    if capture.get("tool_call_count", 0) == 0:
+        warnings.append("MCP proxy capture contains no tool calls")
+    return McpProxyCaptureVerification(ok=True, errors=[], warnings=warnings)
+
+
+def append_mcp_proxy_capture(
+    chain: EvidenceChain,
+    capture: dict[str, Any],
+    key: str | None = None,
+) -> dict[str, Any]:
+    result = verify_mcp_proxy_capture(capture, key=key)
+    if not result.ok:
+        raise ValueError("; ".join(result.errors))
+    payload = {
+        "schema": MCP_PROXY_CAPTURE_ENTRY_TYPE,
+        "capture_id": capture["capture_id"],
+        "proxy_ref": capture["proxy_ref"],
+        "upstream_ref": capture["upstream_ref"],
+        "session_id": capture["session_id"],
+        "contract_hash": capture["contract_hash"],
+        "agent": capture["agent"],
+        "event_count": capture["event_count"],
+        "tool_call_count": capture["tool_call_count"],
+        "event_chain_root": capture["event_chain_root"],
+        "transcript_root": capture["transcript_root"],
+        "event_hashes": [event["event_hash"] for event in capture["events"]],
+        "tool_call_hashes": [content_hash(call) for call in capture["tool_calls"]],
+    }
+    return chain.append(MCP_PROXY_CAPTURE_ENTRY_TYPE, payload, key=key, timestamp=capture["captured_at"])
 
 
 def append_mcp_transcript(
@@ -207,3 +472,101 @@ def verify_mcp_transcript_entries(
                     errors.append(f"{prefix} {field} mismatch")
 
     return McpTranscriptVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
+def _tool_calls_from_proxy_records(
+    records: list[dict[str, Any]],
+    *,
+    session_id: str,
+    agent: dict[str, Any],
+    contract_hash: str,
+) -> list[dict[str, Any]]:
+    if not isinstance(agent, dict) or not agent.get("name") or not agent.get("version"):
+        raise ValueError("MCP proxy capture agent must include name and version")
+    requests: dict[str, dict[str, Any]] = {}
+    calls: list[dict[str, Any]] = []
+    for record in records:
+        event = record["event"]
+        message = event["message"]
+        message_id = message.get("id")
+        if message_id is None:
+            continue
+        request_id = str(message_id)
+        if event["direction"] == "client_to_server" and message.get("method") == "tools/call":
+            if request_id in requests:
+                raise ValueError(f"duplicate MCP tools/call request id: {request_id}")
+            params = message.get("params")
+            if not isinstance(params, dict):
+                raise ValueError(f"MCP tools/call request {request_id} params must be an object")
+            tool_name = params.get("name") or params.get("tool_name")
+            if not isinstance(tool_name, str) or not tool_name:
+                raise ValueError(f"MCP tools/call request {request_id} missing tool name")
+            arguments = params.get("arguments", {})
+            if not isinstance(arguments, dict):
+                raise ValueError(f"MCP tools/call request {request_id} arguments must be an object")
+            requests[request_id] = {"record": record, "tool_name": tool_name, "arguments": arguments}
+        elif event["direction"] == "server_to_client" and request_id in requests:
+            request = requests.pop(request_id)
+            response = message.get("result", {})
+            if not isinstance(response, dict):
+                response = {"value": response}
+            call = {
+                "session_id": session_id,
+                "request_id": request_id,
+                "timestamp": request["record"]["timestamp"],
+                "tool_name": request["tool_name"],
+                "contract_hash": contract_hash,
+                "agent": json.loads(json.dumps(agent, sort_keys=True)),
+                "risk_class": agent.get("risk_class"),
+                "request": request["arguments"],
+                "response": response,
+                "proxy_capture": {
+                    "request_event_hash": request["record"]["event_hash"],
+                    "response_event_hash": record["event_hash"],
+                },
+            }
+            calls.append(normalize_tool_call(call))
+    if requests:
+        raise ValueError("unmatched MCP tools/call request ids: " + ", ".join(sorted(requests)))
+    if not calls:
+        raise ValueError("MCP proxy capture must include at least one matched tools/call request/response")
+    return calls
+
+
+def _redact_sensitive(value: Any) -> Any:
+    if isinstance(value, dict):
+        redacted: dict[str, Any] = {}
+        for key, item in value.items():
+            if _is_sensitive_key(str(key)):
+                redacted[key] = "[REDACTED]"
+            else:
+                redacted[key] = _redact_sensitive(item)
+        return redacted
+    if isinstance(value, list):
+        return [_redact_sensitive(item) for item in value]
+    return value
+
+
+def _redaction_errors(value: Any, path: str = "message") -> list[str]:
+    errors: list[str] = []
+    if isinstance(value, dict):
+        for key, item in value.items():
+            child_path = f"{path}.{key}"
+            if _is_sensitive_key(str(key)) and item != "[REDACTED]":
+                errors.append(f"sensitive field {child_path} is not redacted")
+            errors.extend(_redaction_errors(item, child_path))
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            errors.extend(_redaction_errors(item, f"{path}[{index}]"))
+    return errors
+
+
+def _is_sensitive_key(key: str) -> bool:
+    lowered = key.lower().replace("-", "_")
+    return any(part in lowered for part in MCP_SENSITIVE_KEYS)
+
+
+def _require_text(value: Any, field: str) -> str:
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"{field} must be a non-empty string")
+    return value

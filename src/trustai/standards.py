@@ -210,7 +210,7 @@ CONFORMANCE_TARGETS = (
     },
     {
         "id": "self-serve-sdk-gateway-onboarding",
-        "description": "Self-serve onboarding receipts bind Python/TypeScript SDKs, OTel ingest, MCP gateway capture, quickstart commands, examples, and production-claim limits for the SDK/gateway PLG tier.",
+        "description": "Self-serve onboarding receipts bind Python/TypeScript SDKs, OTel ingest, MCP gateway transcript/proxy capture, quickstart commands, examples, and production-claim limits for the SDK/gateway PLG tier.",
         "reference": "src/trustai/onboarding.py",
         "commands": [
             "python -m trustai self-serve-onboarding --root . --onboarding-ref onboarding:self-serve/aitrade --tenant-ref tenant:aitrade-local --agent-ref agent:aitrade-risk --requester-ref mailto:engineer@example.com --out artifacts/self-serve-onboarding.json",
@@ -299,6 +299,16 @@ CONFORMANCE_TARGETS = (
         ],
     },
     {
+        "id": "mcp-proxy-capture-receipts",
+        "description": "MCP proxy capture receipts bind raw MCP JSON-RPC tools/call request/response envelopes to redacted event hash chains, derived normalized tool-call transcripts, signed capture ids, and chain append evidence.",
+        "reference": "src/trustai/mcp_gateway.py",
+        "commands": [
+            "python -m trustai mcp-proxy-capture examples/aitrade/mcp-proxy-events.json --agent-name aitrade-risk-agent --agent-version sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234 --risk-class trading-prod-write --contract-hash 22a3727b124ce6664031037939cf391ce724158d681db3a55e9a0f0c51bcc7a2 --proxy-ref mcp-proxy:trustai/local --upstream-ref mcp-server:aitrade/tools --captured-at 2026-07-03T12:00:12Z --out artifacts/mcp-proxy-capture.json",
+            "python -m trustai mcp-proxy-capture-verify artifacts/mcp-proxy-capture.json",
+            "python -m trustai mcp-proxy-capture-append artifacts/mcp-proxy-capture.json --state .trustai/mcp-proxy-capture-demo/evidence-chain.json --tenant mcp-proxy-capture-local --out artifacts/mcp-proxy-capture-entry.json",
+            "python -m unittest tests.test_mcp_gateway",
+        ],
+    },    {
         "id": "mcp-gateway-production-authority-dossiers",
         "description": "MCP gateway production authority dossiers bind normalized MCP transcript hash chains to production proxy fleet, tool registry, session auth, replay, immutable audit, scheduler, policy, network, KMS, freshness, and observability authority evidence.",
         "reference": "src/trustai/mcp_gateway_authority.py",

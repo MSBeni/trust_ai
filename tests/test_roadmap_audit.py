@@ -53,7 +53,9 @@ class RoadmapAuditTests(unittest.TestCase):
         self.assertIn("docs/specs/identity-provider-lifecycle-worker-v0.1.md", identity_evidence)
         self.assertIn("tests/test_identity_provider_lifecycle_worker.py", identity_evidence)
         mcp_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "mcp-gateway")
-        self.assertIn("tests/test_mcp_gateway.py", {item["path"] for item in mcp_requirement["evidence"]})
+        mcp_evidence = {item["path"] for item in mcp_requirement["evidence"]}
+        self.assertIn("examples/aitrade/mcp-proxy-events.json", mcp_evidence)
+        self.assertIn("tests/test_mcp_gateway.py", mcp_evidence)
         onboarding_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "self-serve-onboarding")
         onboarding_evidence = {item["path"] for item in onboarding_requirement["evidence"]}
         self.assertIn("src/trustai/onboarding.py", onboarding_evidence)

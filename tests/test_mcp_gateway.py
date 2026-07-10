@@ -1,5 +1,8 @@
-import copy
+﻿import copy
 import json
+import os
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -8,10 +11,15 @@ from trustai.chain import EvidenceChain
 from trustai.contracts import load_contract, register_contract
 from trustai.gate import append_eval_and_gate
 from trustai.mcp_gateway import (
+    MCP_PROXY_CAPTURE_ENTRY_TYPE,
     MCP_TOOL_CALL_ENTRY_TYPE,
+    append_mcp_proxy_capture,
     append_mcp_transcript,
+    build_mcp_proxy_capture,
     build_mcp_transcript_chain,
+    load_mcp_proxy_events,
     load_mcp_transcript,
+    verify_mcp_proxy_capture,
 )
 from trustai.proofpack import compile_proof_pack
 from trustai.verifier import verify_proof_pack
@@ -21,6 +29,13 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = ROOT / "examples" / "aitrade" / "verification-contract.yaml"
 RESULTS = ROOT / "examples" / "aitrade" / "eval-results.json"
 MCP = ROOT / "examples" / "aitrade" / "mcp-transcript.json"
+MCP_PROXY = ROOT / "examples" / "aitrade" / "mcp-proxy-events.json"
+CONTRACT_HASH = "22a3727b124ce6664031037939cf391ce724158d681db3a55e9a0f0c51bcc7a2"
+AGENT = {
+    "name": "aitrade-risk-agent",
+    "version": "sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234",
+    "risk_class": "trading-prod-write",
+}
 
 
 class McpGatewayTests(unittest.TestCase):
@@ -60,6 +75,137 @@ class McpGatewayTests(unittest.TestCase):
             self.assertIsNone(payload["previous_transcript_node_hash"])
             self.assertEqual(payload["transcript_node_hash"], payload["transcript_root"])
             self.assertTrue(chain.verify_all().ok)
+
+    def test_mcp_proxy_capture_derives_signed_transcript_and_redacts(self):
+        events = load_mcp_proxy_events(MCP_PROXY)
+        capture = build_mcp_proxy_capture(
+            events,
+            agent=AGENT,
+            contract_hash=CONTRACT_HASH,
+            proxy_ref="mcp-proxy:trustai/local",
+            upstream_ref="mcp-server:aitrade/tools",
+            captured_at="2026-07-03T12:00:12Z",
+        )
+
+        result = verify_mcp_proxy_capture(capture)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(2, capture["event_count"])
+        self.assertEqual(1, capture["tool_call_count"])
+        self.assertEqual("[REDACTED]", capture["events"][0]["event"]["message"]["authorization"])
+        self.assertEqual("place_shadow_order", capture["tool_calls"][0]["tool_name"])
+        self.assertEqual({"status": "accepted", "order_id": "shadow-order-20260703-001"}, capture["tool_calls"][0]["response"])
+        self.assertIn("request_event_hash", capture["tool_calls"][0]["proxy_capture"])
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="mcp-proxy-capture-test")
+            entry = append_mcp_proxy_capture(chain, capture)
+            self.assertEqual(MCP_PROXY_CAPTURE_ENTRY_TYPE, entry["entry_type"])
+            self.assertEqual(capture["capture_id"], entry["payload"]["capture_id"])
+            self.assertTrue(chain.verify_all().ok)
+
+    def test_mcp_proxy_capture_detects_raw_envelope_tamper(self):
+        capture = build_mcp_proxy_capture(
+            load_mcp_proxy_events(MCP_PROXY),
+            agent=AGENT,
+            contract_hash=CONTRACT_HASH,
+            proxy_ref="mcp-proxy:trustai/local",
+            upstream_ref="mcp-server:aitrade/tools",
+            captured_at="2026-07-03T12:00:12Z",
+        )
+        tampered = copy.deepcopy(capture)
+        tampered["events"][0]["event"]["message"]["params"]["arguments"]["notional_usd"] = 999999
+
+        result = verify_mcp_proxy_capture(tampered)
+
+        self.assertFalse(result.ok)
+        self.assertTrue(any("capture_id" in error for error in result.errors))
+        self.assertTrue(any("message_hash mismatch" in error for error in result.errors))
+
+    def test_mcp_proxy_capture_rejects_unmatched_tool_call(self):
+        events = load_mcp_proxy_events(MCP_PROXY)[:1]
+
+        with self.assertRaisesRegex(ValueError, "unmatched MCP tools/call request ids"):
+            build_mcp_proxy_capture(
+                events,
+                agent=AGENT,
+                contract_hash=CONTRACT_HASH,
+                proxy_ref="mcp-proxy:trustai/local",
+                upstream_ref="mcp-server:aitrade/tools",
+            )
+
+    def test_cli_mcp_proxy_capture_round_trip(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            capture_path = tmp / "mcp-proxy-capture.json"
+            entry_path = tmp / "mcp-proxy-capture-entry.json"
+            env = os.environ.copy()
+            env["PYTHONPATH"] = str(ROOT / "src")
+
+            create = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "mcp-proxy-capture",
+                    str(MCP_PROXY),
+                    "--agent-name",
+                    AGENT["name"],
+                    "--agent-version",
+                    AGENT["version"],
+                    "--risk-class",
+                    AGENT["risk_class"],
+                    "--contract-hash",
+                    CONTRACT_HASH,
+                    "--proxy-ref",
+                    "mcp-proxy:trustai/local",
+                    "--upstream-ref",
+                    "mcp-server:aitrade/tools",
+                    "--captured-at",
+                    "2026-07-03T12:00:12Z",
+                    "--out",
+                    str(capture_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(0, create.returncode, create.stderr)
+
+            verify = subprocess.run(
+                [sys.executable, "-m", "trustai", "mcp-proxy-capture-verify", str(capture_path)],
+                cwd=ROOT,
+                env=env,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(0, verify.returncode, verify.stderr)
+
+            append = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "mcp-proxy-capture-append",
+                    str(capture_path),
+                    "--state",
+                    str(tmp / "chain.json"),
+                    "--tenant",
+                    "mcp-proxy-cli-test",
+                    "--out",
+                    str(entry_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(0, append.returncode, append.stderr)
+            self.assertTrue(entry_path.exists())
 
     def test_proof_pack_verifier_replays_embedded_mcp_transcript_chain(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

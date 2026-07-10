@@ -168,6 +168,7 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "src/trustai/mcp_gateway.py",
             "src/trustai/mcp_gateway_authority.py",
             "examples/aitrade/mcp-transcript.json",
+            "examples/aitrade/mcp-proxy-events.json",
             "tests/test_mcp_gateway.py",
             "tests/test_mcp_gateway_authority.py",
             "tests/test_ingest_runtime.py",
