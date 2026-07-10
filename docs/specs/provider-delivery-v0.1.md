@@ -6,8 +6,9 @@ statuses, and Slack approval request posting.
 
 This v0.1 artifact can represent a dry run, a recorded provider response, or
 an HTTP dispatch performed by the reference CLI with an `env:` credential
-reference. It redacts credentials and records only hashes of request/response
-evidence needed for offline verification.
+reference. It redacts credentials, records only hashes of request/response
+evidence needed for offline verification, and can replay the retained source
+payload file bytes that were used to create the delivery receipt.
 
 ## Schema
 
@@ -22,6 +23,9 @@ Top-level fields:
   `slack`.
 - `payload_schema`: source payload schema.
 - `payload_hash`: canonical source payload hash.
+- `payload_artifact`: optional retained source payload file binding containing
+  normalized path, raw byte SHA-256, byte size, canonical content hash, payload
+  hash, and artifact id.
 - `pack_id`, `contract_id`, `contract_hash`: source proof-pack binding when the
   payload carries it.
 - `request`: HTTP method, provider path, request body hash, and optional
@@ -46,15 +50,21 @@ Top-level fields:
 - request method, path, and body hash;
 - payload schema, provider, payload hash, proof-pack ids, contract ids, request
   method/path, and request body hash against the source payload when supplied;
+- retained source payload file byte hash, size, canonical content hash, and
+  payload hash when the receipt contains `payload_artifact` and `--payload` is
+  supplied;
 - recorded response status/body hash when `mode` is `recorded-response`;
 - request header hash and response header hash when `mode` is `http-dispatch`.
 
 `dry-run` receipts verify with a warning because no provider response is
 claimed.
+Receipts that contain `payload_artifact` also verify with a warning when the
+retained source payload file is not supplied, so shallow downstream checks can
+remain compatible while full offline replay is still available.
 
 `trustai provider-delivery-append` appends a `provider_delivery.recorded` chain
 entry containing the delivery id, provider, mode, payload hash, target URL,
-request hash, and optional response summary.
+request hash, optional payload artifact binding, and optional response summary.
 
 ## CLI
 

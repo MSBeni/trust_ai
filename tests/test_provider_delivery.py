@@ -1,4 +1,5 @@
 import copy
+import hashlib
 import http.server
 import json
 import os
@@ -95,6 +96,72 @@ class ProviderDeliveryTests(unittest.TestCase):
             self.assertEqual(PROVIDER_DELIVERY_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(delivery["delivery_id"], entry["payload"]["delivery_id"])
             self.assertTrue(chain.verify_all().ok)
+
+    def test_delivery_replays_retained_payload_artifact_bytes(self):
+        pack = self._pack()
+        payload = build_promotion_check_payload(
+            pack,
+            verify_proof_pack(pack),
+            provider="github",
+            commit_sha="0123456789abcdef0123456789abcdef01234567",
+            repository="volelabs/trust_ai",
+            target_url="https://example.test/proof-pack",
+        )
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            payload_path = Path(tmp_dir) / "payload.json"
+            payload_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+            delivery = build_provider_delivery(
+                payload,
+                endpoint_base="https://api.github.com",
+                credential_ref="env:GITHUB_TOKEN",
+                mode="dry-run",
+                delivered_at="2026-07-04T00:00:00Z",
+                payload_artifact_path=payload_path,
+            )
+
+            artifact = delivery["payload_artifact"]
+            result = verify_provider_delivery(delivery, payload, payload_artifact_path=payload_path)
+
+            self.assertTrue(result.ok, result.errors)
+            self.assertEqual(hashlib.sha256(payload_path.read_bytes()).hexdigest(), artifact["sha256"])
+            self.assertEqual(payload_path.stat().st_size, artifact["size_bytes"])
+            self.assertEqual(content_hash(payload), artifact["content_hash"])
+            self.assertEqual(payload["payload_hash"], artifact["payload_hash"])
+
+            chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="delivery-artifact-test")
+            entry = append_provider_delivery(chain, delivery, payload, payload_artifact_path=payload_path)
+
+            self.assertEqual(artifact, entry["payload"]["payload_artifact"])
+            self.assertTrue(chain.verify_all().ok)
+
+    def test_delivery_detects_retained_payload_artifact_byte_tamper(self):
+        pack = self._pack()
+        payload = build_promotion_check_payload(
+            pack,
+            verify_proof_pack(pack),
+            provider="github",
+            commit_sha="0123456789abcdef0123456789abcdef01234567",
+            repository="volelabs/trust_ai",
+            target_url="https://example.test/proof-pack",
+        )
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            payload_path = Path(tmp_dir) / "payload.json"
+            payload_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+            delivery = build_provider_delivery(
+                payload,
+                endpoint_base="https://api.github.com",
+                credential_ref="env:GITHUB_TOKEN",
+                mode="dry-run",
+                delivered_at="2026-07-04T00:00:00Z",
+                payload_artifact_path=payload_path,
+            )
+            payload_path.write_text(json.dumps(payload, indent=4, sort_keys=True), encoding="utf-8")
+
+            result = verify_provider_delivery(delivery, payload, payload_artifact_path=payload_path)
+
+            self.assertFalse(result.ok)
+            self.assertTrue(any("payload_artifact" in error and "bytes" in error for error in result.errors))
+
 
     def test_promotion_status_receipt_binds_gate_payload_and_delivery(self):
         pack = self._pack()
@@ -420,6 +487,10 @@ class ProviderDeliveryTests(unittest.TestCase):
                     text=True,
                 )
                 delivery = json.loads(delivery_path.read_text(encoding="utf-8"))
+                self.assertIn("payload_artifact", delivery)
+                self.assertEqual(hashlib.sha256(payload_path.read_bytes()).hexdigest(), delivery["payload_artifact"]["sha256"])
+                path_result = verify_provider_delivery(delivery, payload, payload_artifact_path=payload_path)
+                self.assertTrue(path_result.ok, path_result.errors)
         finally:
             server.shutdown()
             thread.join(timeout=5)

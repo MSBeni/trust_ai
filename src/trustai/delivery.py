@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .canonical import canonical_bytes, content_hash, utc_now, without_keys
+from .canonical import canonical_bytes, content_hash, sha256_hex, utc_now, without_keys
 from .chain import EvidenceChain
 from .crypto import sign_value, verify_value
 
@@ -50,6 +50,7 @@ def build_provider_delivery(
     response_headers: dict[str, Any] | None = None,
     request_headers: dict[str, Any] | None = None,
     delivered_at: str | None = None,
+    payload_artifact_path: str | Path | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
     _validate_payload(payload)
@@ -105,6 +106,8 @@ def build_provider_delivery(
         if response_headers is not None:
             response_record["headers_hash"] = content_hash(_redacted_headers(response_headers))
         body["response"] = response_record
+    if payload_artifact_path is not None:
+        body["payload_artifact"] = _payload_artifact(payload_artifact_path, payload)
     delivery_id = content_hash(body)
     return {
         **body,
@@ -117,6 +120,7 @@ def verify_provider_delivery(
     delivery: dict[str, Any],
     payload: dict[str, Any] | None = None,
     *,
+    payload_artifact_path: str | Path | None = None,
     key: str | None = None,
 ) -> ProviderDeliveryVerification:
     errors: list[str] = []
@@ -150,6 +154,12 @@ def verify_provider_delivery(
     request = delivery.get("request", {})
     if not isinstance(request, dict) or not request.get("method") or not request.get("path") or not request.get("body_hash"):
         errors.append("provider delivery request method, path, and body_hash are required")
+
+    if payload is None and payload_artifact_path is not None:
+        try:
+            payload = load_provider_payload(payload_artifact_path)
+        except (OSError, ValueError) as exc:
+            errors.append(f"provider delivery payload artifact could not be loaded: {exc}")
 
     if delivery.get("mode") == "dry-run":
         warnings.append("provider delivery is a dry-run receipt; no provider response is claimed")
@@ -187,6 +197,24 @@ def verify_provider_delivery(
             if request.get("body_hash") != content_hash(payload_request.get("body")):
                 errors.append("delivery request body_hash does not match payload body")
 
+    payload_artifact = delivery.get("payload_artifact")
+    if payload_artifact is not None:
+        if not isinstance(payload_artifact, dict):
+            errors.append("provider delivery payload_artifact must be an object")
+        elif payload_artifact_path is None:
+            if payload is None:
+                warnings.append("provider delivery payload artifact and payload were not replayed")
+            else:
+                warnings.append("provider delivery payload artifact was not replayed")
+        elif payload is not None:
+            try:
+                expected_artifact = _payload_artifact(payload_artifact_path, payload)
+            except (OSError, ValueError) as exc:
+                errors.append(f"provider delivery payload_artifact replay failed: {exc}")
+            else:
+                if payload_artifact != expected_artifact:
+                    errors.append("provider delivery payload_artifact bytes do not match retained payload file")
+
     return ProviderDeliveryVerification(ok=not errors, errors=errors, warnings=warnings)
 
 
@@ -199,6 +227,7 @@ def dispatch_provider_payload(
     auth_header: str = "Authorization",
     auth_scheme: str = "Bearer",
     delivered_at: str | None = None,
+    payload_artifact_path: str | Path | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
     _validate_payload(payload)
@@ -243,6 +272,7 @@ def dispatch_provider_payload(
         response_headers=response_headers,
         request_headers=headers,
         delivered_at=delivered_at,
+        payload_artifact_path=payload_artifact_path,
         key=key,
     )
 
@@ -251,9 +281,11 @@ def append_provider_delivery(
     chain: EvidenceChain,
     delivery: dict[str, Any],
     payload: dict[str, Any] | None = None,
+    *,
+    payload_artifact_path: str | Path | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
-    result = verify_provider_delivery(delivery, payload, key=key)
+    result = verify_provider_delivery(delivery, payload, payload_artifact_path=payload_artifact_path, key=key)
     if not result.ok:
         raise ValueError("invalid provider delivery: " + "; ".join(result.errors))
     entry_payload = {
@@ -268,6 +300,7 @@ def append_provider_delivery(
         "request": delivery.get("request"),
         "target_url": delivery.get("target_url"),
         "response": delivery.get("response"),
+        "payload_artifact": delivery.get("payload_artifact"),
     }
     return chain.append(PROVIDER_DELIVERY_ENTRY_TYPE, entry_payload, key=key, timestamp=delivery.get("delivered_at"))
 
@@ -306,6 +339,29 @@ def _payload_errors(payload: dict[str, Any]) -> list[str]:
 
 def _payload_hash(payload: dict[str, Any]) -> str:
     return content_hash(without_keys(payload, "payload_hash"))
+
+
+def _payload_artifact(path: str | Path, payload: dict[str, Any]) -> dict[str, Any]:
+    target = Path(path)
+    if not target.is_file():
+        raise ValueError(f"provider payload artifact is not a file: {target}")
+    raw = target.read_bytes()
+    try:
+        parsed = json.loads(raw.decode("utf-8-sig"))
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"provider payload artifact is not valid JSON: {exc}") from exc
+    if not isinstance(parsed, dict):
+        raise ValueError("provider payload artifact must contain an object")
+    if content_hash(parsed) != content_hash(payload):
+        raise ValueError("provider payload artifact content does not match supplied payload")
+    artifact_body = {
+        "path": str(target).replace("\\", "/"),
+        "sha256": sha256_hex(raw),
+        "size_bytes": len(raw),
+        "content_hash": content_hash(parsed),
+        "payload_hash": _payload_hash(parsed),
+    }
+    return {**artifact_body, "artifact_id": content_hash(artifact_body)}
 
 def _credential_secret(credential_ref: str) -> str:
     if not credential_ref.startswith("env:"):

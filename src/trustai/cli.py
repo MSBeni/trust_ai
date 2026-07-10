@@ -8866,6 +8866,7 @@ def cmd_provider_delivery(args: argparse.Namespace) -> int:
                 auth_header=args.auth_header,
                 auth_scheme=args.auth_scheme,
                 delivered_at=args.delivered_at,
+                payload_artifact_path=args.payload,
                 key=args.key,
             )
         else:
@@ -8878,12 +8879,13 @@ def cmd_provider_delivery(args: argparse.Namespace) -> int:
                 response_status=args.response_status,
                 response_body=response_body,
                 delivered_at=args.delivered_at,
+                payload_artifact_path=args.payload,
                 key=args.key,
             )
     except (OSError, ValueError) as exc:
         print(f"provider delivery generation failed: {exc}", file=sys.stderr)
         return 1
-    result = verify_provider_delivery(delivery, payload, key=args.key)
+    result = verify_provider_delivery(delivery, payload, payload_artifact_path=args.payload, key=args.key)
     if not result.ok:
         print("provider delivery generation failed verification", file=sys.stderr)
         for error in result.errors:
@@ -8904,7 +8906,7 @@ def cmd_provider_delivery(args: argparse.Namespace) -> int:
 def cmd_provider_delivery_verify(args: argparse.Namespace) -> int:
     payload = load_provider_payload(args.payload) if args.payload else None
     delivery = load_provider_delivery(args.delivery)
-    result = verify_provider_delivery(delivery, payload, key=args.key)
+    result = verify_provider_delivery(delivery, payload, payload_artifact_path=args.payload if args.payload else None, key=args.key)
     if result.ok:
         print(f"verified provider delivery: {args.delivery}")
         print(f"delivery id: {delivery['delivery_id']}")
@@ -8921,7 +8923,7 @@ def cmd_provider_delivery_append(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
     payload = load_provider_payload(args.payload) if args.payload else None
     delivery = load_provider_delivery(args.delivery)
-    entry = append_provider_delivery(chain, delivery, payload, key=args.key)
+    entry = append_provider_delivery(chain, delivery, payload, payload_artifact_path=args.payload if args.payload else None, key=args.key)
     chain.save()
     if args.out:
         _write_json(args.out, entry)

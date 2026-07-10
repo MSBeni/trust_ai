@@ -50,6 +50,8 @@ class StandardsSubmissionTests(unittest.TestCase):
         self.assertTrue(any("traffic-completeness-provider-export.json" in command for command in traffic_target["commands"]))
         self.assertIn("promotion-status-receipt-v0.1.md", markdown)
         self.assertIn("promotion-status-receipts", markdown)
+        provider_delivery_target = next(target for target in package["conformance_targets"] if target["id"] == "provider-delivery-receipts")
+        self.assertIn("retained payload artifact byte replay", provider_delivery_target["description"])
         provider_webhook_target = next(target for target in package["conformance_targets"] if target["id"] == "provider-webhook-receipts")
         self.assertIn("retained payload artifact byte replay", provider_webhook_target["description"])
         self.assertTrue(any("examples/webhooks/github-check-suite.json" in command for command in provider_webhook_target["commands"]))

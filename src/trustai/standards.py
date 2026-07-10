@@ -552,7 +552,7 @@ CONFORMANCE_TARGETS = (
     },
     {
         "id": "provider-delivery-receipts",
-        "description": "Provider delivery receipts verify API-ready payload dispatch intent, optional local HTTP dispatch, redacted credential binding, request hash, and response hash.",
+        "description": "Provider delivery receipts verify API-ready payload dispatch intent, retained payload artifact byte replay, optional local HTTP dispatch, redacted credential binding, request hash, and response hash.",
         "reference": "src/trustai/delivery.py",
         "commands": [
             "python -m trustai provider-delivery artifacts/github-check-run-payload.json --endpoint-base https://api.github.com --credential-ref env:GITHUB_TOKEN",
