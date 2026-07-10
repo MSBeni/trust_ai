@@ -446,6 +446,7 @@ def _source_record(receipt: dict[str, Any]) -> dict[str, Any]:
             "decision_ref": ballot.get("decision_ref"),
             "submission_id": ballot.get("submission_id"),
             "submission_ref": ballot.get("submission_ref"),
+            "conformance_report": ballot.get("conformance_report"),
         },
         "export": {
             "export_ref": export.get("export_ref"),
@@ -510,6 +511,8 @@ def _request_body(source: dict[str, Any], posting_ref: str | None, provider_name
         "ballot_ref": ballot.get("ballot_ref"),
         "decision_ref": ballot.get("decision_ref"),
         "submission_id": ballot.get("submission_id"),
+        "conformance_targets": ballot.get("conformance_report", {}).get("targets", []) if isinstance(ballot.get("conformance_report"), dict) else [],
+        "source_provider_bundle": ballot.get("conformance_report", {}).get("source_provider_bundle") if isinstance(ballot.get("conformance_report"), dict) else None,
     }
 
 

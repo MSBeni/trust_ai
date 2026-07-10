@@ -19,8 +19,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class StandardsBodyProviderPostingTests(unittest.TestCase):
-    def _sources(self):
-        standards, conformance, release, submission, status, ballot = test_standards_body_ballot_system.StandardsBodyBallotSystemTests()._sources()
+    def _sources(self, *, provider_bundle: dict | None = None):
+        standards, conformance, release, submission, status, ballot = test_standards_body_ballot_system.StandardsBodyBallotSystemTests()._sources(provider_bundle=provider_bundle)
         ballot_system = build_standards_body_ballot_system_receipt(
             ballot,
             submission_receipt=submission,
@@ -104,8 +104,44 @@ class StandardsBodyProviderPostingTests(unittest.TestCase):
         self.assertEqual(STANDARDS_BODY_PROVIDER_POSTING_SCHEMA, receipt["schema"])
         self.assertTrue(result.ok, result.errors)
         self.assertEqual("provider-posted", result.mode)
+        self.assertEqual(["proof-pack"], receipt["source"]["ballot"]["conformance_report"]["targets"])
+        self.assertEqual(["proof-pack"], receipt["request"]["body"]["conformance_targets"])
         self.assertEqual(STANDARDS_BODY_PROVIDER_POSTING_ENTRY_TYPE, entry["entry_type"])
         self.assertEqual(receipt["posting_id"], entry["payload"]["posting_id"])
+
+    def test_standards_body_provider_posting_preserves_provider_bundle_conformance_scope(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            provider_bundle = test_standards_body_ballot_system.StandardsBodyBallotSystemTests()._provider_bundle(Path(tmp_dir))
+            standards, conformance, release, submission, status, ballot, ballot_system = self._sources(provider_bundle=provider_bundle)
+            receipt = build_standards_body_provider_posting_receipt(
+                ballot_system,
+                ballot_receipt=ballot,
+                submission_receipt=submission,
+                status_receipt=status,
+                standards_package=standards,
+                verifier_release=release,
+                conformance_report=conformance,
+                root=ROOT,
+                posted_at="2026-07-25T05:00:00Z",
+            )
+            result = verify_standards_body_provider_posting_receipt(
+                receipt,
+                ballot_system_receipt=ballot_system,
+                ballot_receipt=ballot,
+                submission_receipt=submission,
+                status_receipt=status,
+                standards_package=standards,
+                verifier_release=release,
+                conformance_report=conformance,
+                root=ROOT,
+            )
+
+        expected_targets = ["framework-runtime-service-authority-recorded-export-provider-bundle", "proof-pack"]
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(expected_targets, receipt["source"]["ballot"]["conformance_report"]["targets"])
+        self.assertEqual(expected_targets, receipt["request"]["body"]["conformance_targets"])
+        self.assertEqual(provider_bundle["bundle_id"], receipt["source"]["ballot"]["conformance_report"]["source_provider_bundle"]["bundle_id"])
+        self.assertEqual(provider_bundle["bundle_id"], receipt["request"]["body"]["source_provider_bundle"]["bundle_id"])
 
     def test_standards_body_provider_posting_detects_source_hash_tamper(self):
         standards, conformance, release, submission, status, ballot, ballot_system = self._sources()

@@ -19,16 +19,18 @@ from trustai.verifier import load_proof_pack
 from trustai.verifier_conformance import build_verifier_conformance_report
 from trustai.verifier_release import build_verifier_release_manifest
 
+from tests import test_framework_runtime_service_authority_recorded_export_provider_bundle as provider_bundle_fixtures
+
 
 ROOT = Path(__file__).resolve().parents[1]
 PACK = ROOT / "artifacts" / "aitrade-proof-pack.json"
 
 
 class StandardsBodyBallotSystemTests(unittest.TestCase):
-    def _sources(self, *, ballot_outcome: str = "accepted"):
+    def _sources(self, *, ballot_outcome: str = "accepted", provider_bundle: dict | None = None):
         pack = load_proof_pack(PACK)
         standards = build_standards_submission(ROOT)
-        conformance = build_verifier_conformance_report(pack)
+        conformance = build_verifier_conformance_report(pack, provider_bundle=provider_bundle)
         release = build_verifier_release_manifest(
             ROOT,
             conformance_report=conformance,
@@ -92,6 +94,11 @@ class StandardsBodyBallotSystemTests(unittest.TestCase):
         )
         return standards, conformance, release, submission, status, ballot
 
+    def _provider_bundle(self, tmp: Path):
+        helper = provider_bundle_fixtures.FrameworkRuntimeServiceAuthorityRecordedExportProviderBundleTests()
+        bundle, *_ = helper._bundle(tmp)
+        return bundle
+
     def test_standards_body_ballot_system_verifies_and_appends(self):
         standards, conformance, release, submission, status, ballot = self._sources()
         receipt = build_standards_body_ballot_system_receipt(
@@ -145,8 +152,44 @@ class StandardsBodyBallotSystemTests(unittest.TestCase):
         self.assertTrue(result.ok, result.errors)
         self.assertEqual("authenticated-export", result.mode)
         self.assertEqual("LF-TRUSTAI-BALLOT-2026-001:export", result.export_ref)
+        self.assertEqual(["proof-pack"], receipt["ballot"]["conformance_report"]["targets"])
+        self.assertEqual(["proof-pack"], receipt["request"]["body"]["conformance_targets"])
+        self.assertEqual(["proof-pack"], receipt["export"]["payload"]["submission"]["conformance_report"]["targets"])
         self.assertEqual(STANDARDS_BODY_BALLOT_SYSTEM_ENTRY_TYPE, entry["entry_type"])
         self.assertEqual(receipt["integration_id"], entry["payload"]["integration_id"])
+
+    def test_standards_body_ballot_system_preserves_provider_bundle_conformance_scope(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            provider_bundle = self._provider_bundle(Path(tmp_dir))
+            standards, conformance, release, submission, status, ballot = self._sources(provider_bundle=provider_bundle)
+            receipt = build_standards_body_ballot_system_receipt(
+                ballot,
+                submission_receipt=submission,
+                status_receipt=status,
+                standards_package=standards,
+                verifier_release=release,
+                conformance_report=conformance,
+                root=ROOT,
+                exported_at="2026-07-25T04:00:00Z",
+            )
+            result = verify_standards_body_ballot_system_receipt(
+                receipt,
+                ballot_receipt=ballot,
+                submission_receipt=submission,
+                status_receipt=status,
+                standards_package=standards,
+                verifier_release=release,
+                conformance_report=conformance,
+                root=ROOT,
+            )
+
+        expected_targets = ["framework-runtime-service-authority-recorded-export-provider-bundle", "proof-pack"]
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(expected_targets, receipt["ballot"]["conformance_report"]["targets"])
+        self.assertEqual(expected_targets, receipt["request"]["body"]["conformance_targets"])
+        self.assertEqual(expected_targets, receipt["export"]["payload"]["submission"]["conformance_report"]["targets"])
+        self.assertEqual(provider_bundle["bundle_id"], receipt["ballot"]["conformance_report"]["source_provider_bundle"]["bundle_id"])
+        self.assertEqual(provider_bundle["bundle_id"], receipt["request"]["body"]["source_provider_bundle"]["bundle_id"])
 
     def test_standards_body_ballot_system_detects_ballot_hash_tamper(self):
         standards, conformance, release, submission, status, ballot = self._sources()

@@ -22,8 +22,9 @@ Required top-level fields:
 
 - `ballot_id`: canonical hash of the receipt body.
 - `opened_at`, `closed_at`, `decided_at`, `effective_at`: RFC 3339 timestamps.
-- `target_submission`: source standards-body submission identity and package
-  references.
+- `target_submission`: source standards-body submission identity, package
+  references, verifier release conformance targets, per-target counts, and
+  optional provider-bundle source binding.
 - `status_context`: optional docket/status receipt context.
 - `ballot`: ballot reference, mode, motion, voter counts, quorum, approval
   threshold, and computed quorum/approval flags.
@@ -61,7 +62,8 @@ Supported `ballot.mode` values:
    `votes_for / (votes_for + votes_against)`.
 6. Accepted outcomes require quorum and approval threshold.
 7. Rejected outcomes require quorum.
-8. Source submission receipt validity when supplied.
+8. Source submission receipt validity, including conformance target scope, when
+   supplied.
 9. Optional status receipt validity and context binding when supplied.
 10. `ballot_payload_hash` matches the normalized ballot and decision records.
 
@@ -72,7 +74,7 @@ entry of type `standards.body.ballot.certified` with:
 
 - `ballot_id`
 - `ballot_hash`
-- target submission record
+- target submission record with conformance scope
 - optional status context
 - ballot and decision records
 - source artifact references

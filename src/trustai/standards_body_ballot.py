@@ -365,10 +365,15 @@ def _target_record(submission_receipt: dict[str, Any]) -> dict[str, Any]:
         "verifier_release": {
             "release_id": submission_receipt.get("verifier_release", {}).get("release_id"),
             "content_hash": submission_receipt.get("verifier_release", {}).get("content_hash"),
+            "conformance_targets": submission_receipt.get("verifier_release", {}).get("conformance_targets", []),
+            "conformance_source_provider_bundle": submission_receipt.get("verifier_release", {}).get("conformance_source_provider_bundle"),
         },
         "conformance_report": {
             "report_id": submission_receipt.get("conformance_report", {}).get("report_id"),
             "content_hash": submission_receipt.get("conformance_report", {}).get("content_hash"),
+            "targets": submission_receipt.get("conformance_report", {}).get("targets", []),
+            "case_count_by_target": submission_receipt.get("conformance_report", {}).get("case_count_by_target", {}),
+            "source_provider_bundle": submission_receipt.get("conformance_report", {}).get("source_provider_bundle"),
         },
     }
 

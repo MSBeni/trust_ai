@@ -29,8 +29,8 @@ Required top-level fields:
 - `provider`: provider name, endpoint base, attestation mode, and production
   replacement description.
 - `source`: normalized summary of the ballot-system export receipt, including
-  its `integration_id`, canonical hash, export metadata, and accepted ballot
-  metadata.
+  its `integration_id`, canonical hash, export metadata, accepted ballot
+  metadata, conformance targets, and optional provider-bundle source binding.
 - `credential_exchange`: redacted credential reference, optional audience and
   scope, actor reference, and optional response hash.
 - `request`: provider posting method, path, target URL, request body, body hash,
@@ -60,7 +60,8 @@ Required top-level fields:
 - timestamp ordering from source export to provider posting;
 - redacted credential reference;
 - accepted source ballot;
-- request body hash and deterministic request body binding;
+- request body hash, conformance target propagation, and deterministic request
+  body binding;
 - source artifact hash against the supplied ballot-system export receipt;
 - source ballot-system export receipt validity when supplied;
 - credential-exchange response requirements for credentialed modes;
@@ -83,7 +84,7 @@ The entry payload includes:
 - `posting_id`;
 - canonical receipt hash;
 - mode and provider;
-- source integration/export/ballot summary;
+- source integration/export/ballot summary with conformance scope;
 - redacted credential exchange summary;
 - request hash and idempotency key;
 - provider response hash if present;

@@ -26,7 +26,8 @@ Required top-level fields:
 - `ballot_system`: system name, endpoint base, redacted credential reference,
   attestation mode, and production replacement boundary.
 - `ballot`: accepted ballot identity, decision reference, submission reference,
-  and standards-body context.
+  standards-body context, conformance targets, and optional provider-bundle
+  source binding.
 - `request`: method, path, target URL, request body, request body hash, and
   idempotency key.
 - `export`: export reference, format, generated timestamp, content hash,
@@ -49,8 +50,10 @@ Required top-level fields:
 2. Timestamp ordering: `export.generated_at <= exported_at`.
 3. Ballot-system name, endpoint, and redacted credential reference.
 4. Accepted ballot record and source ballot artifact binding.
-5. Request method, path, target URL, body hash, and source ballot consistency.
-6. Export reference, format, payload hash, and source ballot consistency.
+5. Request method, path, target URL, body hash, source ballot consistency, and
+   conformance target propagation.
+6. Export reference, format, payload hash, source ballot consistency, and
+   conformance target propagation.
 7. Response status/body hash for recorded or authenticated modes.
 8. Authenticated mode has a standards-body actor reference and accepted response.
 9. Optional source ballot receipt validity and accepted outcome.
@@ -64,7 +67,7 @@ an entry of type `standards.body.ballot_system.exported` with:
 - `integration_id`
 - `integration_hash`
 - mode and ballot-system metadata
-- accepted ballot record
+- accepted ballot record with conformance scope
 - request hash and target
 - export metadata without inline payload
 - optional provider response hash

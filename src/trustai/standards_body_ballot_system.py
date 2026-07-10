@@ -412,6 +412,7 @@ def _ballot_record(receipt: dict[str, Any]) -> dict[str, Any]:
             "program_ref": body.get("program_ref"),
             "target_track": body.get("target_track"),
         },
+        "conformance_report": target.get("conformance_report"),
     }
 
 
@@ -488,6 +489,7 @@ def _default_export_payload(ballot_receipt: dict[str, Any]) -> dict[str, Any]:
             "submission_id": target.get("submission_id"),
             "submission_ref": target.get("submission_ref"),
             "standards_body": target.get("standards_body"),
+            "conformance_report": target.get("conformance_report"),
         },
     }
 
@@ -499,6 +501,8 @@ def _request_body(ballot_record: dict[str, Any], export_ref: str | None, export_
         "ballot_ref": ballot_record.get("ballot_ref"),
         "decision_ref": ballot_record.get("decision_ref"),
         "submission_id": ballot_record.get("submission_id"),
+        "conformance_targets": ballot_record.get("conformance_report", {}).get("targets", []) if isinstance(ballot_record.get("conformance_report"), dict) else [],
+        "source_provider_bundle": ballot_record.get("conformance_report", {}).get("source_provider_bundle") if isinstance(ballot_record.get("conformance_report"), dict) else None,
         "export_ref": export_ref,
         "export_format": export_format,
     }
