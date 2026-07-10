@@ -864,6 +864,16 @@ from .go_verifier_release_run import (
     verify_go_verifier_release_run_receipt,
     write_go_verifier_release_run_receipt,
 )
+from .go_verifier_release_run_bundle import (
+    GO_VERIFIER_RELEASE_RUN_BUNDLE_MODES,
+    append_go_verifier_release_run_bundle,
+    build_go_verifier_release_run_bundle,
+    extract_go_verifier_release_run_bundle_sources,
+    load_go_verifier_release_run_bundle,
+    verify_go_verifier_release_run_bundle,
+    write_go_verifier_release_run_bundle,
+    write_go_verifier_release_run_bundle_markdown,
+)
 from .verifier_distribution import (
     append_verifier_distribution_receipt,
     build_verifier_distribution_receipt,
@@ -5578,6 +5588,142 @@ def cmd_go_verifier_release_run_append(args: argparse.Namespace) -> int:
         print(f"Go verifier release-run entry: {args.out}")
     print(f"Go verifier release-run entry id: {entry['entry_id']}")
     print(f"run id: {receipt['run_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def _go_verifier_release_run_bundle_artifact_paths(args: argparse.Namespace) -> dict[str, str]:
+    paths = {
+        "release_run": args.receipt,
+        "verifier_release": args.verifier_release,
+        "build_attestation": args.build_attestation,
+    }
+    if getattr(args, "conformance_report", None):
+        paths["conformance_report"] = args.conformance_report
+    if getattr(args, "standards_package", None):
+        paths["standards_package"] = args.standards_package
+    return paths
+
+
+def cmd_go_verifier_release_run_bundle(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_go_verifier_release_run_sources(args)
+        if sources["conformance_report"] is None or sources["standards_package"] is None:
+            raise ValueError("Go verifier release-run bundle requires --conformance-report and --standards-package")
+        receipt = load_go_verifier_release_run_receipt(args.receipt)
+        bundle = build_go_verifier_release_run_bundle(
+            receipt,
+            sources["verifier_release"],
+            sources["build_attestation"],
+            sources["conformance_report"],
+            sources["standards_package"],
+            artifact_paths=_go_verifier_release_run_bundle_artifact_paths(args),
+            root=args.root,
+            binary_path=args.binary,
+            mode=args.mode,
+            environment=args.environment,
+            reviewer_ref=args.reviewer_ref,
+            bundle_ref=args.bundle_ref,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_go_verifier_release_run_bundle(bundle, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"Go verifier release-run bundle generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("Go verifier release-run bundle generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_go_verifier_release_run_bundle(args.out, bundle)
+    if args.markdown:
+        write_go_verifier_release_run_bundle_markdown(args.markdown, bundle)
+        print(f"Go verifier release-run bundle markdown: {args.markdown}")
+    print(f"Go verifier release-run bundle: {args.out}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"run id: {bundle['source']['run_id']}")
+    print(f"raw artifact count: {bundle['summary']['raw_artifact_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_go_verifier_release_run_bundle_verify(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_go_verifier_release_run_bundle(args.bundle)
+    except (OSError, ValueError) as exc:
+        print(f"Go verifier release-run bundle verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_go_verifier_release_run_bundle(bundle, key=args.key)
+    if result.ok:
+        print(f"verified Go verifier release-run bundle: {args.bundle}")
+        print(f"bundle id: {bundle['bundle_id']}")
+        print(f"run id: {bundle['source']['run_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"Go verifier release-run bundle verification failed: {args.bundle}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_go_verifier_release_run_bundle_render(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_go_verifier_release_run_bundle(args.bundle)
+    except (OSError, ValueError) as exc:
+        print(f"Go verifier release-run bundle render failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_go_verifier_release_run_bundle(bundle, key=args.key)
+    if not result.ok:
+        print(f"Go verifier release-run bundle render failed verification: {args.bundle}", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_go_verifier_release_run_bundle_markdown(args.out, bundle)
+    print(f"Go verifier release-run bundle markdown: {args.out}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_go_verifier_release_run_bundle_extract(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_go_verifier_release_run_bundle(args.bundle)
+        extracted = extract_go_verifier_release_run_bundle_sources(
+            bundle,
+            args.out_dir,
+            key=args.key,
+            overwrite=args.overwrite,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"Go verifier release-run bundle extract failed: {exc}", file=sys.stderr)
+        return 1
+    print(f"extracted Go verifier release-run bundle sources: {len(extracted)}")
+    for record in extracted:
+        print(f"- {record['name']} -> {record['extracted_to']}")
+    return 0
+
+
+def cmd_go_verifier_release_run_bundle_append(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_go_verifier_release_run_bundle(args.bundle)
+    except (OSError, ValueError) as exc:
+        print(f"Go verifier release-run bundle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_go_verifier_release_run_bundle(chain, bundle, key=args.key)
+    except ValueError as exc:
+        print(f"Go verifier release-run bundle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"Go verifier release-run bundle entry: {args.out}")
+    print(f"Go verifier release-run bundle entry id: {entry['entry_id']}")
+    print(f"bundle id: {bundle['bundle_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
@@ -16527,6 +16673,42 @@ def build_parser() -> argparse.ArgumentParser:
     go_verifier_release_run_append.add_argument("--out", default="artifacts/go-verifier-release-run-entry.json")
     _add_state_args(go_verifier_release_run_append)
     go_verifier_release_run_append.set_defaults(func=cmd_go_verifier_release_run_append)
+    go_verifier_release_run_bundle = subparsers.add_parser("go-verifier-release-run-bundle", help="write a self-contained Go verifier release-run review bundle")
+    _add_go_verifier_release_run_sources(go_verifier_release_run_bundle, include_receipt=True)
+    go_verifier_release_run_bundle.add_argument("--mode", choices=sorted(GO_VERIFIER_RELEASE_RUN_BUNDLE_MODES), default="offline-review")
+    go_verifier_release_run_bundle.add_argument("--environment")
+    go_verifier_release_run_bundle.add_argument("--reviewer-ref", required=True)
+    go_verifier_release_run_bundle.add_argument("--bundle-ref")
+    go_verifier_release_run_bundle.add_argument("--generated-at")
+    go_verifier_release_run_bundle.add_argument("--out", default="artifacts/go-verifier-release-run-bundle.json")
+    go_verifier_release_run_bundle.add_argument("--markdown", default="artifacts/go-verifier-release-run-bundle.md")
+    go_verifier_release_run_bundle.set_defaults(func=cmd_go_verifier_release_run_bundle)
+
+    go_verifier_release_run_bundle_verify = subparsers.add_parser("go-verifier-release-run-bundle-verify", help="verify a Go verifier release-run review bundle")
+    go_verifier_release_run_bundle_verify.add_argument("bundle")
+    go_verifier_release_run_bundle_verify.add_argument("--key")
+    go_verifier_release_run_bundle_verify.set_defaults(func=cmd_go_verifier_release_run_bundle_verify)
+
+    go_verifier_release_run_bundle_render = subparsers.add_parser("go-verifier-release-run-bundle-render", help="verify and render a Go verifier release-run review bundle as Markdown")
+    go_verifier_release_run_bundle_render.add_argument("bundle")
+    go_verifier_release_run_bundle_render.add_argument("--out", default="artifacts/go-verifier-release-run-bundle.md")
+    go_verifier_release_run_bundle_render.add_argument("--key")
+    go_verifier_release_run_bundle_render.set_defaults(func=cmd_go_verifier_release_run_bundle_render)
+
+    go_verifier_release_run_bundle_extract = subparsers.add_parser("go-verifier-release-run-bundle-extract", help="verify and extract embedded Go verifier release-run bundle sources")
+    go_verifier_release_run_bundle_extract.add_argument("bundle")
+    go_verifier_release_run_bundle_extract.add_argument("--out-dir", default="artifacts/go-verifier-release-run-bundle-sources")
+    go_verifier_release_run_bundle_extract.add_argument("--overwrite", action="store_true")
+    go_verifier_release_run_bundle_extract.add_argument("--key")
+    go_verifier_release_run_bundle_extract.set_defaults(func=cmd_go_verifier_release_run_bundle_extract)
+
+    go_verifier_release_run_bundle_append = subparsers.add_parser("go-verifier-release-run-bundle-append", help="append a Go verifier release-run review bundle as chain evidence")
+    go_verifier_release_run_bundle_append.add_argument("bundle")
+    go_verifier_release_run_bundle_append.add_argument("--out", default="artifacts/go-verifier-release-run-bundle-entry.json")
+    go_verifier_release_run_bundle_append.add_argument("--key")
+    _add_state_args(go_verifier_release_run_bundle_append)
+    go_verifier_release_run_bundle_append.set_defaults(func=cmd_go_verifier_release_run_bundle_append)
+
     def _add_verifier_distribution_sources(parser: argparse.ArgumentParser, include_receipt: bool = False) -> None:
         if include_receipt:
             parser.add_argument("receipt")

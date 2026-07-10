@@ -82,6 +82,15 @@ python -m trustai go-verifier-release-run-verify artifacts/go-verifier-release-r
 python -m trustai go-verifier-release-run-append artifacts/go-verifier-release-run.json artifacts/verifier-release.json artifacts/go-verifier-build-attestation.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --binary $goVerifierBinary --state .trustai/go-verifier-release-run-demo/evidence-chain.json --tenant go-verifier-release-run-local --out artifacts/go-verifier-release-run-entry.json
 ```
 
+## Companion Bundle
+
+Use `docs/specs/go-verifier-release-run-bundle-v0.1.md` when an auditor needs a
+single portable artifact that embeds the signed release-run receipt, verifier
+release manifest, Go build attestation, conformance report, standards package
+object, raw verifier source files, workflow source, build sidecars, hosted
+provenance, and release artifact bytes for offline review without the original
+repository checkout.
+
 ## Limitations
 
 This receipt can replay local workflow, artifact, and provenance bytes when they
