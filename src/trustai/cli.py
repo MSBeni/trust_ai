@@ -6371,6 +6371,10 @@ def _load_provider_delivery_worker_sources(args: argparse.Namespace) -> dict[str
         sources["provider_operations_service"] = load_provider_operations_service_attestation(args.provider_operations_service)
     if getattr(args, "provider_response", None):
         sources["provider_response"] = load_provider_response_artifact(args.provider_response)
+    if getattr(args, "provider_audit_correlation", None):
+        sources["provider_audit_correlation"] = load_provider_audit_correlation(args.provider_audit_correlation)
+    if getattr(args, "provider_audit_log", None):
+        sources["provider_audit_log"] = load_provider_audit_log(args.provider_audit_log)
     return sources
 
 
@@ -6383,6 +6387,8 @@ def cmd_provider_delivery_worker(args: argparse.Namespace) -> int:
             payload=sources.get("payload"),
             provider_operations_service=sources.get("provider_operations_service"),
             provider_response=sources.get("provider_response"),
+            provider_audit_correlation=sources.get("provider_audit_correlation"),
+            provider_audit_log=sources.get("provider_audit_log"),
             mode=args.mode,
             environment=args.environment,
             worker_ref=args.worker_ref,
@@ -15895,6 +15901,8 @@ def build_parser() -> argparse.ArgumentParser:
         parser.add_argument("--payload")
         parser.add_argument("--provider-operations-service")
         parser.add_argument("--provider-response")
+        parser.add_argument("--provider-audit-correlation")
+        parser.add_argument("--provider-audit-log")
         parser.add_argument("--key")
 
     def _add_provider_delivery_worker_fields(parser: argparse.ArgumentParser) -> None:

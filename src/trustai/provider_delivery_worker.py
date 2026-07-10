@@ -9,6 +9,7 @@ from .canonical import content_hash, parse_rfc3339, utc_now, without_keys
 from .chain import EvidenceChain
 from .crypto import sign_value, verify_value
 from .delivery import verify_provider_delivery
+from .provider_audit import verify_provider_audit_correlation
 from .provider_delivery_service import verify_provider_delivery_service_attestation
 
 PROVIDER_DELIVERY_WORKER_SCHEMA = "trustai.provider-delivery-worker/0.1"
@@ -64,6 +65,8 @@ def build_provider_delivery_worker_receipt(
     payload: dict[str, Any] | None = None,
     provider_operations_service: dict[str, Any] | None = None,
     provider_response: dict[str, Any] | None = None,
+    provider_audit_correlation: dict[str, Any] | None = None,
+    provider_audit_log: Any | None = None,
     mode: str = "dispatch-worker",
     environment: str = "local",
     worker_ref: str,
@@ -204,6 +207,12 @@ def build_provider_delivery_worker_receipt(
         expected_status=resolved_response_status,
         expected_body_hash=resolved_response_hash,
     )
+    provider_audit_record = _provider_audit_record(
+        provider_audit_correlation,
+        provider_audit_log=provider_audit_log,
+        delivery=delivery,
+        key=key,
+    )
 
     for field, value in (
         ("checkpoint_hash", checkpoint_hash),
@@ -229,6 +238,8 @@ def build_provider_delivery_worker_receipt(
         payload=payload,
         provider_operations_service=provider_operations_service,
         provider_response=provider_response,
+        provider_audit_correlation=provider_audit_correlation,
+        provider_audit_log=provider_audit_log,
     )
     body: dict[str, Any] = {
         "schema": PROVIDER_DELIVERY_WORKER_SCHEMA,
@@ -287,6 +298,7 @@ def build_provider_delivery_worker_receipt(
             "evidence_refs": sorted(evidence_refs or []),
         },
         "provider_response": provider_response_record,
+        "provider_audit": provider_audit_record,
         "credential": _redacted_ref(credential_ref),
         "provider_credential": _redacted_ref(provider_credential_ref),
         "source_artifacts": source_artifacts,
@@ -301,6 +313,7 @@ def build_provider_delivery_worker_receipt(
             provider_event_log_root=provider_event_log_root,
             audit_log_root=audit_log_root,
             provider_response_record=provider_response_record,
+            provider_audit_record=provider_audit_record,
             response_status=resolved_response_status,
             credential_ref=credential_ref,
             provider_credential_ref=provider_credential_ref,
@@ -310,8 +323,9 @@ def build_provider_delivery_worker_receipt(
             "This receipt records one provider delivery worker operation and replays the signed delivery service source.",
             "It binds scheduler lease/checkpoint state, queue/DLQ metadata, idempotency evidence, provider request/response hashes, delivery and audit roots, and redacted worker/provider credentials.",
             "When supplied, it replay-binds a retained provider response artifact by status, body hash, optional redacted header hash, and artifact hash.",
+            "When supplied, it replay-binds provider audit correlation evidence that matches the delivery receipt to provider-side event export evidence.",
             "It stores provider payload and response hashes, not raw provider API tokens or OAuth material.",
-            "It does not claim continuously operated external provider dispatch unless paired with production scheduler, queue, credential custody, provider response, and immutable provider/audit-log exports.",
+            "It does not claim continuously operated external provider dispatch unless paired with production scheduler, queue, credential custody, provider response, provider audit correlation/audit-log replay, and immutable provider/audit-log exports.",
         ],
     }
     worker_operation_id = content_hash(body)
@@ -330,6 +344,8 @@ def verify_provider_delivery_worker_receipt(
     payload: dict[str, Any] | None = None,
     provider_operations_service: dict[str, Any] | None = None,
     provider_response: dict[str, Any] | None = None,
+    provider_audit_correlation: dict[str, Any] | None = None,
+    provider_audit_log: Any | None = None,
     key: str | None = None,
 ) -> ProviderDeliveryWorkerVerification:
     errors: list[str] = []
@@ -370,6 +386,7 @@ def verify_provider_delivery_worker_receipt(
     _verify_dispatch(receipt.get("dispatch"), errors)
     _verify_observability(receipt.get("observability"), recorded, errors)
     _verify_provider_response_summary(receipt.get("provider_response"), errors)
+    _verify_provider_audit_summary(receipt.get("provider_audit"), errors)
     _verify_redacted_ref(receipt.get("credential"), "provider delivery worker credential", errors)
     _verify_redacted_ref(receipt.get("provider_credential"), "provider delivery worker provider_credential", errors)
     _verify_source_artifacts(receipt.get("source_artifacts"), errors)
@@ -408,6 +425,8 @@ def verify_provider_delivery_worker_receipt(
         ("provider-payload", payload),
         ("provider-operations-service-attestation", provider_operations_service),
         ("provider-response", provider_response),
+        ("provider-audit-correlation", provider_audit_correlation),
+        ("provider-audit-log", provider_audit_log),
     ):
         if source_value is not None:
             _compare_source_hash(receipt, source_type, source_value, errors)
@@ -430,6 +449,25 @@ def verify_provider_delivery_worker_receipt(
                 errors.append("provider delivery worker provider_response does not match supplied provider response artifact")
     elif receipt.get("provider_response"):
         warnings.append("provider response artifact was not supplied; provider response bytes were not replayed")
+
+    if provider_audit_correlation is not None:
+        if delivery is None:
+            warnings.append("provider audit correlation supplied without delivery source; delivery match replay was limited")
+        else:
+            try:
+                expected_provider_audit = _provider_audit_record(
+                    provider_audit_correlation,
+                    provider_audit_log=provider_audit_log,
+                    delivery=delivery,
+                    key=key,
+                )
+            except ValueError as exc:
+                errors.append(f"provider delivery worker provider audit source invalid: {exc}")
+                expected_provider_audit = None
+            if receipt.get("provider_audit") != expected_provider_audit:
+                errors.append("provider delivery worker provider_audit does not match supplied provider audit evidence")
+    elif receipt.get("provider_audit"):
+        warnings.append("provider audit correlation was not supplied; provider event evidence was not replayed")
 
     worker = receipt.get("worker", {}) if isinstance(receipt.get("worker"), dict) else {}
     dispatch = receipt.get("dispatch", {}) if isinstance(receipt.get("dispatch"), dict) else {}
@@ -454,6 +492,8 @@ def append_provider_delivery_worker_receipt(
     payload: dict[str, Any] | None = None,
     provider_operations_service: dict[str, Any] | None = None,
     provider_response: dict[str, Any] | None = None,
+    provider_audit_correlation: dict[str, Any] | None = None,
+    provider_audit_log: Any | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
     result = verify_provider_delivery_worker_receipt(
@@ -463,6 +503,8 @@ def append_provider_delivery_worker_receipt(
         payload=payload,
         provider_operations_service=provider_operations_service,
         provider_response=provider_response,
+        provider_audit_correlation=provider_audit_correlation,
+        provider_audit_log=provider_audit_log,
         key=key,
     )
     if not result.ok:
@@ -481,6 +523,7 @@ def append_provider_delivery_worker_receipt(
         "dispatch": receipt.get("dispatch"),
         "observability": receipt.get("observability"),
         "provider_response": receipt.get("provider_response"),
+        "provider_audit": receipt.get("provider_audit"),
         "credential": receipt.get("credential"),
         "provider_credential": receipt.get("provider_credential"),
         "control_status_summary": _status_summary(receipt.get("controls", [])),
@@ -548,6 +591,8 @@ def _source_artifacts(
     payload: dict[str, Any] | None,
     provider_operations_service: dict[str, Any] | None,
     provider_response: dict[str, Any] | None,
+    provider_audit_correlation: dict[str, Any] | None,
+    provider_audit_log: Any | None,
 ) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
     for source_type, value in (
@@ -556,9 +601,11 @@ def _source_artifacts(
         ("provider-payload", payload),
         ("provider-operations-service-attestation", provider_operations_service),
         ("provider-response", provider_response),
+        ("provider-audit-correlation", provider_audit_correlation),
+        ("provider-audit-log", provider_audit_log),
     ):
-        if isinstance(value, dict):
-            records.append({"type": source_type, "id": _source_id(value), "schema": value.get("schema"), "hash": content_hash(value)})
+        if value is not None:
+            records.append({"type": source_type, "id": _source_id(value), "schema": value.get("schema") if isinstance(value, dict) else None, "hash": content_hash(value)})
     return records
 
 
@@ -572,8 +619,10 @@ def _source_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _source_id(value: dict[str, Any]) -> Any:
-    for key_name in ("attestation_id", "delivery_id", "payload_hash", "pack_id", "id"):
+def _source_id(value: Any) -> Any:
+    if not isinstance(value, dict):
+        return None
+    for key_name in ("attestation_id", "delivery_id", "correlation_id", "payload_hash", "pack_id", "id"):
         if value.get(key_name):
             return value.get(key_name)
     return value.get("schema")
@@ -591,6 +640,7 @@ def _controls(
     provider_event_log_root: str | None,
     audit_log_root: str,
     provider_response_record: dict[str, Any] | None,
+    provider_audit_record: dict[str, Any] | None,
     response_status: int | None,
     credential_ref: str,
     provider_credential_ref: str,
@@ -604,6 +654,7 @@ def _controls(
         {"id": "provider-target-and-request-bound", "status": "worker-recorded" if source_delivery.get("target_url") and source_delivery.get("request_body_hash") else "planned-production", "description": "Provider target URL, request path, request body hash, and payload hash are bound."},
         {"id": "provider-response-bound", "status": "worker-recorded" if response_status is not None else "local-reference", "description": "Provider response status and optional response hash are bound when available."},
         {"id": "provider-response-artifact-replay", "status": "worker-recorded" if provider_response_record else "local-reference", "description": "Retained provider response artifact is replay-bound by status, body hash, optional header hash, and artifact hash when supplied."},
+        {"id": "provider-audit-correlation-replay", "status": "worker-recorded" if provider_audit_record and provider_audit_record.get("audit_log_replayed") is True else "local-reference", "description": "Provider audit correlation is replay-bound to the delivery receipt and audit log when supplied."},
         {"id": "delivery-and-provider-log-roots", "status": "worker-recorded" if delivery_log_root and audit_log_root else "planned-production", "description": "Delivery log and worker audit roots are bound; provider event roots are optional when provider exports exist."},
         {"id": "provider-event-log-binding", "status": "worker-recorded" if provider_event_log_root else "local-reference", "description": "Provider-owned event log root is bound when supplied."},
         {"id": "redacted-provider-delivery-credentials", "status": "worker-recorded" if credential_ref and provider_credential_ref else "planned-production", "description": "TrustAI worker and provider credential material is represented only by redacted references."},
@@ -833,6 +884,102 @@ def _verify_provider_response_summary(value: Any, errors: list[str]) -> None:
             parse_rfc3339(str(value.get("recorded_at")))
         except ValueError as exc:
             errors.append(f"provider delivery worker provider_response.recorded_at invalid: {exc}")
+
+
+def _provider_audit_record(
+    provider_audit_correlation: dict[str, Any] | None,
+    *,
+    provider_audit_log: Any | None,
+    delivery: dict[str, Any],
+    key: str | None,
+) -> dict[str, Any] | None:
+    if provider_audit_correlation is None:
+        if provider_audit_log is not None:
+            raise ValueError("provider_audit_correlation is required when provider_audit_log is supplied")
+        return None
+    if not isinstance(provider_audit_correlation, dict):
+        raise ValueError("provider_audit_correlation must be an object")
+    result = verify_provider_audit_correlation(
+        provider_audit_correlation,
+        audit_log=provider_audit_log,
+        delivery_receipt=delivery,
+        key=key,
+    )
+    if not result.ok:
+        raise ValueError("; ".join(result.errors))
+    delivery_source = _provider_delivery_source(provider_audit_correlation)
+    if delivery_source is None:
+        raise ValueError("provider audit correlation is missing provider_delivery source")
+    if delivery_source.get("source_id") != delivery.get("delivery_id"):
+        raise ValueError("provider audit correlation delivery source_id does not match delivery_id")
+    if delivery_source.get("source_hash") != content_hash(delivery):
+        raise ValueError("provider audit correlation delivery source_hash does not match delivery receipt")
+    matches = _provider_delivery_matches(provider_audit_correlation, delivery.get("delivery_id"))
+    if not matches:
+        raise ValueError("provider audit correlation has no provider_delivery match for delivery receipt")
+    audit_log = provider_audit_correlation.get("audit_log", {}) if isinstance(provider_audit_correlation.get("audit_log"), dict) else {}
+    body = {
+        "correlation_id": provider_audit_correlation.get("correlation_id"),
+        "correlation_hash": content_hash(provider_audit_correlation),
+        "provider": provider_audit_correlation.get("provider"),
+        "audit_log_hash": audit_log.get("hash"),
+        "audit_log_event_count": audit_log.get("event_count"),
+        "audit_log_replayed": provider_audit_log is not None,
+        "source_delivery_id": delivery.get("delivery_id"),
+        "source_delivery_hash": content_hash(delivery),
+        "match_count": len(matches),
+        "match_event_hashes": [match.get("audit_event_hash") for match in matches],
+    }
+    return {key_name: value for key_name, value in body.items() if value is not None}
+
+
+def _verify_provider_audit_summary(value: Any, errors: list[str]) -> None:
+    if value is None:
+        return
+    if not isinstance(value, dict):
+        errors.append("provider delivery worker provider_audit must be an object when present")
+        return
+    for field in ("correlation_id", "correlation_hash", "provider", "audit_log_hash", "source_delivery_id", "source_delivery_hash", "match_count", "match_event_hashes"):
+        if value.get(field) in (None, ""):
+            errors.append(f"provider delivery worker provider_audit.{field} is required")
+    for field in ("correlation_hash", "audit_log_hash", "source_delivery_hash"):
+        if value.get(field) and not _is_sha256_ref(str(value.get(field))):
+            errors.append(f"provider delivery worker provider_audit.{field} must be a sha256 reference")
+    if not isinstance(value.get("audit_log_replayed"), bool):
+        errors.append("provider delivery worker provider_audit.audit_log_replayed must be a boolean")
+    if not isinstance(value.get("match_count"), int) or value.get("match_count") < 1:
+        errors.append("provider delivery worker provider_audit.match_count must be positive")
+    hashes = value.get("match_event_hashes")
+    if not isinstance(hashes, list) or not hashes:
+        errors.append("provider delivery worker provider_audit.match_event_hashes must be a non-empty list")
+    elif not all(isinstance(item, str) and _is_sha256_ref(item) for item in hashes):
+        errors.append("provider delivery worker provider_audit.match_event_hashes must contain sha256 references")
+    event_count = value.get("audit_log_event_count")
+    if event_count is not None and (not isinstance(event_count, int) or event_count < 1):
+        errors.append("provider delivery worker provider_audit.audit_log_event_count must be positive when present")
+
+
+def _provider_delivery_source(correlation: dict[str, Any]) -> dict[str, Any] | None:
+    sources = correlation.get("source_receipts", [])
+    if not isinstance(sources, list):
+        return None
+    for source in sources:
+        if isinstance(source, dict) and source.get("source_type") == "provider_delivery":
+            return source
+    return None
+
+
+def _provider_delivery_matches(correlation: dict[str, Any], delivery_id: Any) -> list[dict[str, Any]]:
+    matches = correlation.get("matches", [])
+    if not isinstance(matches, list):
+        return []
+    return [
+        match
+        for match in matches
+        if isinstance(match, dict)
+        and match.get("source_type") == "provider_delivery"
+        and match.get("source_id") == delivery_id
+    ]
 
 
 def _verify_source_artifacts(value: Any, errors: list[str]) -> None:

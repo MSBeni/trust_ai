@@ -9,6 +9,7 @@ from pathlib import Path
 
 from trustai.chain import EvidenceChain
 from trustai.delivery import build_provider_delivery
+from trustai.provider_audit import build_provider_audit_correlation
 from trustai.provider_delivery_service import build_provider_delivery_service_attestation
 from trustai.provider_delivery_worker import (
     PROVIDER_DELIVERY_WORKER_ENTRY_TYPE,
@@ -98,6 +99,40 @@ class ProviderDeliveryWorkerTests(unittest.TestCase):
             "provider_response": provider_response,
         }
 
+    def _recorded_response_with_provider_audit_sources(self) -> dict:
+        sources = self._recorded_response_sources()
+        delivery = sources["delivery"]
+        request = delivery["request"]
+        audit_log = {
+            "schema": "github.audit-log-export/2026-07",
+            "provider": "github",
+            "exported_at": "2026-07-08T05:16:00Z",
+            "events": [
+                {
+                    "provider": "github",
+                    "delivery_receipt_id": delivery["delivery_id"],
+                    "provider_payload_hash": delivery["payload_hash"],
+                    "request_body_hash": request["body_hash"],
+                    "target_url": delivery["target_url"],
+                    "request_path": request["path"],
+                    "occurred_at": "2026-07-08T05:15:02Z",
+                    "actor": "github-actions",
+                }
+            ],
+        }
+        provider_audit_correlation = build_provider_audit_correlation(
+            audit_log,
+            delivery_receipt=delivery,
+            provider="github",
+            audit_log_ref="github:audit-log:delivery-worker",
+            correlated_at="2026-07-08T05:16:00Z",
+        )
+        return {
+            **sources,
+            "provider_audit_correlation": provider_audit_correlation,
+            "provider_audit_log": audit_log,
+        }
+
     def _receipt(self, **overrides):
         sources = self._sources()
         values = {
@@ -177,6 +212,40 @@ class ProviderDeliveryWorkerTests(unittest.TestCase):
         self.assertEqual("worker-recorded", controls["provider-response-artifact-replay"])
         self.assertEqual(receipt["provider_response"], entry["payload"]["provider_response"])
         self.assertTrue(chain.verify_all().ok)
+
+    def test_provider_delivery_worker_replays_provider_audit_correlation(self):
+        sources = self._recorded_response_with_provider_audit_sources()
+        receipt = self._receipt(**sources)
+        result = verify_provider_delivery_worker_receipt(receipt, **sources)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="provider-delivery-worker-audit-test")
+            entry = append_provider_delivery_worker_receipt(chain, receipt, **sources)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(sources["provider_audit_correlation"]["correlation_id"], receipt["provider_audit"]["correlation_id"])
+        self.assertEqual(sources["delivery"]["delivery_id"], receipt["provider_audit"]["source_delivery_id"])
+        self.assertTrue(receipt["provider_audit"]["audit_log_replayed"])
+        self.assertEqual(1, receipt["provider_audit"]["match_count"])
+        source_types = {artifact["type"] for artifact in receipt["source_artifacts"]}
+        self.assertIn("provider-audit-correlation", source_types)
+        self.assertIn("provider-audit-log", source_types)
+        controls = {control["id"]: control["status"] for control in receipt["controls"]}
+        self.assertEqual("worker-recorded", controls["provider-audit-correlation-replay"])
+        self.assertEqual(receipt["provider_audit"], entry["payload"]["provider_audit"])
+        self.assertTrue(chain.verify_all().ok)
+
+    def test_provider_delivery_worker_rejects_provider_audit_log_tamper(self):
+        sources = self._recorded_response_with_provider_audit_sources()
+        receipt = self._receipt(**sources)
+        tampered_sources = dict(sources)
+        tampered_sources["provider_audit_log"] = copy.deepcopy(sources["provider_audit_log"])
+        tampered_sources["provider_audit_log"]["events"][0]["provider_payload_hash"] = "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+
+        result = verify_provider_delivery_worker_receipt(receipt, **tampered_sources)
+
+        self.assertFalse(result.ok)
+        self.assertIn("provider delivery worker source artifact hash mismatch: provider-audit-log", result.errors)
+        self.assertTrue(any("provider audit" in error or "audit log hash" in error for error in result.errors))
 
     def test_provider_delivery_worker_rejects_provider_response_artifact_tamper(self):
         sources = self._recorded_response_sources()
