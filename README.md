@@ -26,7 +26,7 @@ workflow from the roadmap without requiring network access or external services:
 13. Verify the chain or pack offline and issue trust-authority receipts, KMS/TSA provider attestations, and trust authority KMS/HSM enforcement receipts, including provider/key-id signatures,
     timestamps, hashes, Merkle inclusion, contract-before-results ordering, and
     holdout timing.
-14. Generate verifier conformance reports and large-log tamper stress reports proving valid packs pass, tampered packs fail, and roadmap-scale evidence chains detect mutation without account or network access.
+14. Generate verifier conformance reports and large-log tamper stress reports proving valid packs pass, proof-pack/delegation-graph tampering fails, and roadmap-scale evidence chains detect mutation without account or network access.
 15. Package the Python and Go verifier source, conformance report, and standards package into
     a signed release manifest, issue Go verifier build/binary attestations, and issue standards-body submission/status/ballot/ballot-system receipts for standards-track docket evidence.
 

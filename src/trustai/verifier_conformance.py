@@ -63,6 +63,16 @@ def build_verifier_conformance_report(
             key,
         ),
     ]
+    if _has_delegation_graph_entry(proof_pack):
+        cases.append(
+            _case(
+                "delegation-graph-tamper",
+                "Changing an embedded delegation graph edge is rejected.",
+                _tamper_delegation_graph(proof_pack),
+                False,
+                key,
+            )
+        )
     if provider_bundle is not None:
         cases.extend(_provider_bundle_cases(provider_bundle, key))
     body = {
@@ -78,6 +88,7 @@ def build_verifier_conformance_report(
             "spec_version": proof_pack.get("spec_version"),
             "chain_root": proof_pack.get("chain", {}).get("tree", {}).get("root"),
             "chain_size": proof_pack.get("chain", {}).get("tree", {}).get("size"),
+            "delegation_graph_entry_count": _delegation_graph_entry_count(proof_pack),
         },
         "source_provider_bundle": _provider_bundle_reference(provider_bundle),
         "test_cases": cases,
@@ -186,6 +197,25 @@ Passed: {report.get('summary', {}).get('passed_count')}/{report.get('summary', {
 def load_verifier_conformance_report(path: str | Path) -> dict[str, Any]:
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
+
+
+def _delegation_graph_entries(proof_pack: dict[str, Any]) -> list[dict[str, Any]]:
+    entries = proof_pack.get("chain", {}).get("entries", [])
+    if not isinstance(entries, list):
+        return []
+    return [
+        entry
+        for entry in entries
+        if isinstance(entry, dict) and entry.get("entry_type") == "agent.delegation_graph.exported"
+    ]
+
+
+def _delegation_graph_entry_count(proof_pack: dict[str, Any]) -> int:
+    return len(_delegation_graph_entries(proof_pack))
+
+
+def _has_delegation_graph_entry(proof_pack: dict[str, Any]) -> bool:
+    return bool(_delegation_graph_entries(proof_pack))
 
 def _provider_bundle_reference(provider_bundle: dict[str, Any] | None) -> dict[str, Any] | None:
     if provider_bundle is None:
@@ -325,6 +355,29 @@ def _tampered_pack(proof_pack: dict[str, Any], mutator: Callable[[dict[str, Any]
     mutator(tampered)
     return tampered
 
+
+
+def _tamper_delegation_graph(proof_pack: dict[str, Any]) -> dict[str, Any]:
+    def mutate(pack: dict[str, Any]) -> None:
+        entries = pack.get("chain", {}).get("entries", [])
+        for entry in entries:
+            if not isinstance(entry, dict) or entry.get("entry_type") != "agent.delegation_graph.exported":
+                continue
+            graph = entry.setdefault("payload", {}).setdefault("delegation_graph", {})
+            edges = graph.setdefault("edges", [{}])
+            if not edges:
+                edges.append({})
+            delegation = edges[0].setdefault("delegation", {})
+            delegation["reason"] = "trustai verifier conformance graph tamper"
+            return
+        pack.setdefault("chain", {}).setdefault("entries", []).append(
+            {
+                "entry_type": "agent.delegation_graph.exported",
+                "payload": {"delegation_graph": {"edges": [{"delegation": {"reason": "trustai verifier conformance graph tamper"}}]}},
+            }
+        )
+
+    return _tampered_pack(proof_pack, mutate)
 
 def _tamper_signature(proof_pack: dict[str, Any]) -> dict[str, Any]:
     def mutate(pack: dict[str, Any]) -> None:

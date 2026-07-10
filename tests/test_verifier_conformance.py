@@ -11,6 +11,14 @@ from trustai.chain import EvidenceChain
 from trustai.contracts import load_contract, register_contract
 from trustai.gate import append_eval_and_gate
 from trustai.proofpack import compile_proof_pack
+from trustai.registry import (
+    append_delegation,
+    append_delegation_graph,
+    append_inventory,
+    build_delegation_graph,
+    load_delegation,
+    load_inventory,
+)
 from trustai.runtime import append_runtime_attestation, load_action
 from trustai.shadow import append_shadow_replay, append_soak_report, load_shadow_replay, load_soak_window, shadow_replay_to_eval_results
 from trustai.framework_runtime_service_authority_recorded_export_provider_bundle import (
@@ -31,6 +39,8 @@ CONTRACT = ROOT / "examples" / "aitrade" / "verification-contract.yaml"
 ACTION = ROOT / "examples" / "aitrade" / "runtime-action.json"
 SHADOW = ROOT / "examples" / "aitrade" / "shadow-replay.json"
 SOAK = ROOT / "examples" / "aitrade" / "soak-window.json"
+INVENTORY = ROOT / "examples" / "aitrade" / "agent-inventory.json"
+DELEGATION = ROOT / "examples" / "aitrade" / "delegation.json"
 
 
 class VerifierConformanceTests(unittest.TestCase):
@@ -48,6 +58,26 @@ class VerifierConformanceTests(unittest.TestCase):
             shadow_replay_to_eval_results(contract, shadow),
         )
         return compile_proof_pack(chain, contract, eval_entry, gate_entry, decision, out_path=tmp / "pack.json")
+
+    def _proof_pack_with_delegation_graph(self, tmp: Path):
+        chain = EvidenceChain.load(tmp / "graph-chain.json", tenant_id="conformance-graph-test")
+        contract = load_contract(CONTRACT)
+        register_contract(chain, contract)
+        append_inventory(chain, load_inventory(INVENTORY))
+        delegation = load_delegation(DELEGATION)
+        append_delegation(chain, delegation)
+        graph = build_delegation_graph(chain, contract_hash=delegation["contract_hash"], generated_at="2026-07-03T12:04:00Z")
+        append_delegation_graph(chain, graph, source_chain=chain)
+        append_runtime_attestation(chain, contract, load_action(ACTION))
+        shadow = load_shadow_replay(SHADOW)
+        append_shadow_replay(chain, contract, shadow)
+        append_soak_report(chain, contract, load_soak_window(SOAK))
+        eval_entry, gate_entry, decision = append_eval_and_gate(
+            chain,
+            contract,
+            shadow_replay_to_eval_results(contract, shadow),
+        )
+        return compile_proof_pack(chain, contract, eval_entry, gate_entry, decision, out_path=tmp / "graph-pack.json")
 
     def test_verifier_conformance_report_proves_valid_and_tamper_cases(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -71,6 +101,22 @@ class VerifierConformanceTests(unittest.TestCase):
                 self.assertFalse(cases[case_id]["actual_ok"])
                 self.assertTrue(cases[case_id]["passed"])
             self.assertIn("TrustAI Verifier Conformance Report", markdown)
+
+    def test_verifier_conformance_report_includes_delegation_graph_vector_when_pack_has_graph(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            pack = self._proof_pack_with_delegation_graph(Path(tmp_dir))
+            report = build_verifier_conformance_report(pack)
+
+            result = verify_verifier_conformance_report(report)
+            cases = {case["id"]: case for case in report["test_cases"]}
+
+            self.assertTrue(result.ok, result.errors)
+            self.assertEqual(6, result.case_count)
+            self.assertEqual(1, report["source_proof_pack"]["delegation_graph_entry_count"])
+            self.assertIn("delegation-graph-tamper", cases)
+            self.assertFalse(cases["delegation-graph-tamper"]["actual_ok"])
+            self.assertTrue(cases["delegation-graph-tamper"]["passed"])
+            self.assertTrue(any("delegation graph entry" in error for error in cases["delegation-graph-tamper"]["errors"]))
 
     def _provider_bundle(self, tmp: Path):
         helper = provider_bundle_fixtures.FrameworkRuntimeServiceAuthorityRecordedExportProviderBundleTests()

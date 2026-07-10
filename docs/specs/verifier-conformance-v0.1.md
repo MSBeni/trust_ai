@@ -22,7 +22,7 @@ Required top-level fields:
 - `report_id`: canonical hash of the report body.
 - `generated_at`: creation timestamp.
 - `verifier`: verifier command and mode.
-- `source_proof_pack`: source pack id, hash, spec version, and chain summary.
+- `source_proof_pack`: source pack id, hash, spec version, chain summary, and delegation graph entry count.
 - `source_provider_bundle`: optional recorded-export provider bundle id, hash,
   schema, source receipt ids, and embedded source artifact summary.
 - `test_cases`: verifier conformance vectors.
@@ -38,6 +38,11 @@ The local report includes these cases:
 - `chain-entry-payload-tamper`: a changed evidence entry payload must fail.
 - `inclusion-proof-tamper`: a changed Merkle inclusion proof must fail.
 - `packed-contract-body-tamper`: a changed packed contract body must fail.
+
+When the proof pack contains `agent.delegation_graph.exported` evidence, the
+report also includes:
+
+- `delegation-graph-tamper`: a changed embedded delegation graph edge must fail.
 
 When `--provider-bundle` is supplied, the report also includes:
 
