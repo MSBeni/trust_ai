@@ -343,6 +343,16 @@ from .trust_network_worker import (
     verify_trust_network_worker_receipt,
     write_trust_network_worker_receipt,
 )
+from .trust_network_worker_bundle import (
+    TRUST_NETWORK_WORKER_BUNDLE_MODES,
+    append_trust_network_worker_bundle,
+    build_trust_network_worker_bundle,
+    extract_trust_network_worker_bundle_sources,
+    load_trust_network_worker_bundle,
+    verify_trust_network_worker_bundle,
+    write_trust_network_worker_bundle,
+    write_trust_network_worker_bundle_markdown,
+)
 from .vendor_identity import (
     append_vendor_identity_receipt,
     build_vendor_identity_receipt,
@@ -13299,6 +13309,153 @@ def cmd_trust_network_worker_append(args: argparse.Namespace) -> int:
     return 0
 
 
+def _trust_network_worker_bundle_artifact_paths(args: argparse.Namespace) -> dict[str, Any]:
+    return {
+        "worker_receipt": args.receipt,
+        "service_attestation": args.service_attestation,
+        "registry_receipt": args.registry,
+        "trust_network_manifest": getattr(args, "manifest", None),
+        "vendor_identity_receipt": getattr(args, "vendor_identity", None),
+        "identity_provider_attestation": getattr(args, "identity_attestation", None),
+        "identity_payload": getattr(args, "identity_payload", None),
+        "procurement_receipt": getattr(args, "procurement_receipt", None),
+        "procurement_integration_receipt": getattr(args, "procurement_integration", None),
+        "proof_packs": list(getattr(args, "pack", []) or []),
+        "registry_status_receipt": getattr(args, "registry_status", None),
+        "marketplace_catalog": getattr(args, "marketplace_catalog", None),
+        "marketplace_distribution": getattr(args, "marketplace_distribution", None),
+        "marketplace_author_governance": getattr(args, "marketplace_author_governance", None),
+        "marketplace_settlement": getattr(args, "marketplace_settlement", None),
+    }
+
+
+def cmd_trust_network_worker_bundle(args: argparse.Namespace) -> int:
+    sources = _load_trust_network_worker_sources(args)
+    receipt = load_trust_network_worker_receipt(args.receipt)
+    try:
+        bundle = build_trust_network_worker_bundle(
+            receipt,
+            sources["service_attestation"],
+            sources["registry"],
+            trust_network_manifest=sources["manifest"],
+            vendor_identity_receipt=sources["vendor"],
+            identity_provider_attestation=sources["identity_attestation"],
+            identity_payload=sources["identity_payload"],
+            procurement_receipt=sources["procurement"],
+            procurement_integration_receipt=sources["integration"],
+            proof_packs=sources["packs"],
+            registry_status_receipt=sources["registry_status"],
+            marketplace_catalog=sources["marketplace_catalog"],
+            marketplace_distribution=sources["marketplace_distribution"],
+            frontend_bundle_path=sources["frontend_bundle_path"],
+            marketplace_author_governance=sources["marketplace_author_governance"],
+            marketplace_settlement=sources["marketplace_settlement"],
+            artifact_paths=_trust_network_worker_bundle_artifact_paths(args),
+            root=args.root,
+            mode=args.mode,
+            environment=args.environment,
+            reviewer_ref=args.reviewer_ref,
+            bundle_ref=args.bundle_ref,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_trust_network_worker_bundle(bundle, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"trust-network worker bundle generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("trust-network worker bundle generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_trust_network_worker_bundle(args.out, bundle)
+    if args.markdown:
+        write_trust_network_worker_bundle_markdown(args.markdown, bundle)
+        print(f"trust-network worker bundle markdown: {args.markdown}")
+    print(f"trust-network worker bundle: {args.out}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"worker operation id: {bundle['source']['worker_operation_id']}")
+    print(f"source artifact count: {bundle['summary']['source_artifact_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_trust_network_worker_bundle_verify(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_trust_network_worker_bundle(args.bundle)
+    except (OSError, ValueError) as exc:
+        print(f"trust-network worker bundle verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_trust_network_worker_bundle(bundle, key=args.key)
+    if result.ok:
+        print(f"verified trust-network worker bundle: {args.bundle}")
+        print(f"bundle id: {bundle['bundle_id']}")
+        print(f"worker operation id: {bundle['source']['worker_operation_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"trust-network worker bundle verification failed: {args.bundle}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_trust_network_worker_bundle_render(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_trust_network_worker_bundle(args.bundle)
+    except (OSError, ValueError) as exc:
+        print(f"trust-network worker bundle render failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_trust_network_worker_bundle(bundle, key=args.key)
+    if not result.ok:
+        print(f"trust-network worker bundle render failed verification: {args.bundle}", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_trust_network_worker_bundle_markdown(args.out, bundle)
+    print(f"trust-network worker bundle markdown: {args.out}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_trust_network_worker_bundle_extract(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_trust_network_worker_bundle(args.bundle)
+        extracted = extract_trust_network_worker_bundle_sources(bundle, args.out_dir, key=args.key, overwrite=args.overwrite)
+    except (OSError, ValueError) as exc:
+        print(f"trust-network worker bundle extract failed: {exc}", file=sys.stderr)
+        return 1
+    print(f"extracted trust-network worker bundle sources: {len(extracted)}")
+    for record in extracted:
+        print(f"- {record['name']} -> {record['extracted_to']}")
+    return 0
+
+
+def cmd_trust_network_worker_bundle_append(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_trust_network_worker_bundle(args.bundle)
+    except (OSError, ValueError) as exc:
+        print(f"trust-network worker bundle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_trust_network_worker_bundle(chain, bundle, key=args.key)
+    except ValueError as exc:
+        print(f"trust-network worker bundle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"trust-network worker bundle entry: {args.out}")
+    print(f"trust-network worker bundle entry id: {entry['entry_id']}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
 def cmd_serve(args: argparse.Namespace) -> int:
     slack_signing_secret = args.slack_signing_secret
     if slack_signing_secret and slack_signing_secret.startswith("env:"):
@@ -18812,6 +18969,42 @@ def build_parser() -> argparse.ArgumentParser:
     trust_network_worker_append.add_argument("--out", default="artifacts/trust-network-worker-entry.json")
     _add_state_args(trust_network_worker_append)
     trust_network_worker_append.set_defaults(func=cmd_trust_network_worker_append)
+
+    trust_network_worker_bundle = subparsers.add_parser("trust-network-worker-bundle", help="write a self-contained trust-network worker review bundle")
+    _add_trust_network_worker_sources(trust_network_worker_bundle, include_receipt=True)
+    trust_network_worker_bundle.add_argument("--mode", choices=sorted(TRUST_NETWORK_WORKER_BUNDLE_MODES), default="offline-review")
+    trust_network_worker_bundle.add_argument("--environment")
+    trust_network_worker_bundle.add_argument("--reviewer-ref", required=True)
+    trust_network_worker_bundle.add_argument("--bundle-ref")
+    trust_network_worker_bundle.add_argument("--generated-at")
+    trust_network_worker_bundle.add_argument("--out", default="artifacts/trust-network-worker-bundle.json")
+    trust_network_worker_bundle.add_argument("--markdown")
+    trust_network_worker_bundle.set_defaults(func=cmd_trust_network_worker_bundle)
+
+    trust_network_worker_bundle_verify = subparsers.add_parser("trust-network-worker-bundle-verify", help="verify a trust-network worker review bundle")
+    trust_network_worker_bundle_verify.add_argument("bundle")
+    trust_network_worker_bundle_verify.add_argument("--key")
+    trust_network_worker_bundle_verify.set_defaults(func=cmd_trust_network_worker_bundle_verify)
+
+    trust_network_worker_bundle_render = subparsers.add_parser("trust-network-worker-bundle-render", help="render a trust-network worker review bundle as Markdown")
+    trust_network_worker_bundle_render.add_argument("bundle")
+    trust_network_worker_bundle_render.add_argument("--out", default="artifacts/trust-network-worker-bundle.md")
+    trust_network_worker_bundle_render.add_argument("--key")
+    trust_network_worker_bundle_render.set_defaults(func=cmd_trust_network_worker_bundle_render)
+
+    trust_network_worker_bundle_extract = subparsers.add_parser("trust-network-worker-bundle-extract", help="extract embedded trust-network worker bundle sources")
+    trust_network_worker_bundle_extract.add_argument("bundle")
+    trust_network_worker_bundle_extract.add_argument("--out-dir", default="artifacts/trust-network-worker-bundle-sources")
+    trust_network_worker_bundle_extract.add_argument("--overwrite", action="store_true")
+    trust_network_worker_bundle_extract.add_argument("--key")
+    trust_network_worker_bundle_extract.set_defaults(func=cmd_trust_network_worker_bundle_extract)
+
+    trust_network_worker_bundle_append = subparsers.add_parser("trust-network-worker-bundle-append", help="append a verified trust-network worker review bundle as chain evidence")
+    trust_network_worker_bundle_append.add_argument("bundle")
+    trust_network_worker_bundle_append.add_argument("--out", default="artifacts/trust-network-worker-bundle-entry.json")
+    trust_network_worker_bundle_append.add_argument("--key")
+    _add_state_args(trust_network_worker_bundle_append)
+    trust_network_worker_bundle_append.set_defaults(func=cmd_trust_network_worker_bundle_append)
 
     serve_cmd = subparsers.add_parser("serve", help="run the local TrustAI ingestion/verification API")
     serve_cmd.add_argument("--host", default="127.0.0.1")
