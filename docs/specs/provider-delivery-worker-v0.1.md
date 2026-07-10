@@ -27,14 +27,18 @@ and production-operated GitHub, GitLab, or Slack dispatch workers. The schema is
   retry-after metadata.
 - `observability`: delivery-log root, optional provider event-log root,
   metrics, worker audit-log root, retention, and evidence refs.
+- `provider_response`: optional retained provider response artifact summary,
+  including artifact hash, HTTP status, accepted flag, body hash, optional
+  redacted header hash, recorded timestamp, and provider request id.
 - `credential` and `provider_credential`: redacted worker and provider
   credential refs only.
 - `source_artifacts`: canonical ids, schemas, and hashes for the service
-  attestation, delivery receipt, optional payload, and optional provider
-  operations service attestation.
+  attestation, delivery receipt, optional payload, optional provider response
+  artifact, and optional provider operations service attestation.
 - `controls`: derived status records for source binding, hosted worker mode,
   scheduler/lease/checkpoint continuity, idempotency, request/response binding,
-  log roots, credential redaction, and explicit worker outcome.
+  provider response artifact replay, log roots, credential redaction, and
+  explicit worker outcome.
 - `worker_operation_id` and `signatures`: canonical receipt hash and detached
   signatures.
 
@@ -50,18 +54,22 @@ and production-operated GitHub, GitLab, or Slack dispatch workers. The schema is
 4. Service attestation replay against the supplied delivery, payload, and
    optional provider operations service evidence.
 5. Delivery receipt replay against the supplied payload.
-6. Source-artifact hashes and source summaries match supplied artifacts.
-7. Queue/DLQ, target URL, idempotency, request/response, delivery-log, provider
+6. Optional provider response artifact replay against the delivery response and
+   worker dispatch response: status, body hash, optional redacted header hash,
+   artifact hash, and recorded timestamp.
+7. Source-artifact hashes and source summaries match supplied artifacts.
+8. Queue/DLQ, target URL, idempotency, request/response, delivery-log, provider
    event-log, audit-log, and metric refs are present and hash-shaped where
    required.
-8. Success matches response status and `error_ref`.
-9. Secret-like fields are redacted references rather than raw provider tokens,
-   OAuth secrets, private keys, or webhook credentials.
+9. Success matches response status and `error_ref`.
+10. Secret-like fields are redacted references rather than raw provider tokens,
+    OAuth secrets, private keys, or webhook credentials.
 
 ## CLI
 
 ```powershell
 python -m trustai provider-delivery-worker artifacts/github-check-run-delivery.json --service-attestation artifacts/provider-delivery-service-attestation.json --payload artifacts/github-check-run-payload.json --provider-operations-service artifacts/provider-operations-service-attestation.json --mode dispatch-worker --environment aitrade-prod --worker-ref worker:provider-delivery/github --run-ref worker-run:provider-delivery/github/2026-07-08T05:15:00Z --operation-kind provider_payload_dispatch --actor-ref oidc:trustai.example/provider-delivery-worker --schedule-ref schedule:provider-delivery/github/continuous --cadence-seconds 30 --lease-ref lease:provider-delivery/github/2026-07-08T05:15:00Z --checkpoint-ref checkpoint:provider-delivery/github --checkpoint-hash sha256:provider-delivery-worker-checkpoint --previous-cursor-ref cursor:provider-delivery/github/before --next-cursor-ref cursor:provider-delivery/github/after --next-run-at 2026-07-08T05:15:30Z --queue-ref queue:provider-delivery/github --queue-message-ref queue-message:provider-delivery/github/check-run --dead-letter-queue-ref queue:provider-delivery/github-dlq --destination-ref https://api.github.com/repos/volelabs/trust_ai/check-runs --idempotency-record-hash sha256:provider-delivery-worker-idempotency --provider-request-ref provider-request:github/check-run/2026-07-08T05:15:00Z --request-hash sha256:provider-delivery-worker-request --rate-limit-bucket-ref github:rate-limit/checks --delivery-log-ref delivery-log:provider-delivery/github --delivery-log-root sha256:provider-delivery-worker-delivery-root --provider-event-log-ref github:check-run-events/aitrade --provider-event-log-root sha256:provider-delivery-worker-provider-event-root --metrics-ref metrics:provider-delivery/workers --audit-log-ref audit-log:provider-delivery/workers --audit-log-root sha256:provider-delivery-worker-audit-root --credential-ref env:PROVIDER_DELIVERY_WORKER_TOKEN --provider-credential-ref env:GITHUB_TOKEN --retention-until 2033-07-08T00:00:00Z --evidence-ref evidence:provider-delivery/worker --started-at 2026-07-08T05:15:00Z --completed-at 2026-07-08T05:15:01Z --out artifacts/provider-delivery-worker.json
+# Add --provider-response artifacts/provider-response.json when the delivery receipt is http-dispatch or recorded-response and a retained provider response artifact is available.
 python -m trustai provider-delivery-worker-verify artifacts/provider-delivery-worker.json artifacts/github-check-run-delivery.json --service-attestation artifacts/provider-delivery-service-attestation.json --payload artifacts/github-check-run-payload.json --provider-operations-service artifacts/provider-operations-service-attestation.json
 python -m trustai provider-delivery-worker-append artifacts/provider-delivery-worker.json artifacts/github-check-run-delivery.json --service-attestation artifacts/provider-delivery-service-attestation.json --payload artifacts/github-check-run-payload.json --provider-operations-service artifacts/provider-operations-service-attestation.json --state .trustai/provider-delivery-worker-demo/evidence-chain.json --tenant provider-delivery-worker-local --out artifacts/provider-delivery-worker-entry.json
 ```

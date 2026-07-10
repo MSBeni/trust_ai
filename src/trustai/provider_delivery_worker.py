@@ -50,12 +50,20 @@ def write_provider_delivery_worker_receipt(path: str | Path, receipt: dict[str, 
     target.write_text(json.dumps(receipt, indent=2, sort_keys=True), encoding="utf-8")
 
 
+def load_provider_response_artifact(path: str | Path) -> dict[str, Any]:
+    value = json.loads(Path(path).read_text(encoding="utf-8-sig"))
+    if not isinstance(value, dict):
+        raise ValueError("provider response artifact must contain an object")
+    return value
+
+
 def build_provider_delivery_worker_receipt(
     service_attestation: dict[str, Any],
     delivery: dict[str, Any],
     *,
     payload: dict[str, Any] | None = None,
     provider_operations_service: dict[str, Any] | None = None,
+    provider_response: dict[str, Any] | None = None,
     mode: str = "dispatch-worker",
     environment: str = "local",
     worker_ref: str,
@@ -190,6 +198,12 @@ def build_provider_delivery_worker_receipt(
     resolved_idempotency_hash = idempotency_record_hash or content_hash(
         {"delivery_id": delivery.get("delivery_id"), "idempotency_key": delivery.get("idempotency_key")}
     )
+    provider_response_record = _provider_response_record(
+        provider_response,
+        delivery=delivery,
+        expected_status=resolved_response_status,
+        expected_body_hash=resolved_response_hash,
+    )
 
     for field, value in (
         ("checkpoint_hash", checkpoint_hash),
@@ -214,6 +228,7 @@ def build_provider_delivery_worker_receipt(
         delivery=delivery,
         payload=payload,
         provider_operations_service=provider_operations_service,
+        provider_response=provider_response,
     )
     body: dict[str, Any] = {
         "schema": PROVIDER_DELIVERY_WORKER_SCHEMA,
@@ -271,6 +286,7 @@ def build_provider_delivery_worker_receipt(
             "retention_until": retention_until,
             "evidence_refs": sorted(evidence_refs or []),
         },
+        "provider_response": provider_response_record,
         "credential": _redacted_ref(credential_ref),
         "provider_credential": _redacted_ref(provider_credential_ref),
         "source_artifacts": source_artifacts,
@@ -284,6 +300,7 @@ def build_provider_delivery_worker_receipt(
             delivery_log_root=delivery_log_root,
             provider_event_log_root=provider_event_log_root,
             audit_log_root=audit_log_root,
+            provider_response_record=provider_response_record,
             response_status=resolved_response_status,
             credential_ref=credential_ref,
             provider_credential_ref=provider_credential_ref,
@@ -292,6 +309,7 @@ def build_provider_delivery_worker_receipt(
         "limitations": [
             "This receipt records one provider delivery worker operation and replays the signed delivery service source.",
             "It binds scheduler lease/checkpoint state, queue/DLQ metadata, idempotency evidence, provider request/response hashes, delivery and audit roots, and redacted worker/provider credentials.",
+            "When supplied, it replay-binds a retained provider response artifact by status, body hash, optional redacted header hash, and artifact hash.",
             "It stores provider payload and response hashes, not raw provider API tokens or OAuth material.",
             "It does not claim continuously operated external provider dispatch unless paired with production scheduler, queue, credential custody, provider response, and immutable provider/audit-log exports.",
         ],
@@ -311,6 +329,7 @@ def verify_provider_delivery_worker_receipt(
     delivery: dict[str, Any] | None = None,
     payload: dict[str, Any] | None = None,
     provider_operations_service: dict[str, Any] | None = None,
+    provider_response: dict[str, Any] | None = None,
     key: str | None = None,
 ) -> ProviderDeliveryWorkerVerification:
     errors: list[str] = []
@@ -350,6 +369,7 @@ def verify_provider_delivery_worker_receipt(
     _verify_scheduler(receipt.get("scheduler"), errors)
     _verify_dispatch(receipt.get("dispatch"), errors)
     _verify_observability(receipt.get("observability"), recorded, errors)
+    _verify_provider_response_summary(receipt.get("provider_response"), errors)
     _verify_redacted_ref(receipt.get("credential"), "provider delivery worker credential", errors)
     _verify_redacted_ref(receipt.get("provider_credential"), "provider delivery worker provider_credential", errors)
     _verify_source_artifacts(receipt.get("source_artifacts"), errors)
@@ -387,9 +407,29 @@ def verify_provider_delivery_worker_receipt(
     for source_type, source_value in (
         ("provider-payload", payload),
         ("provider-operations-service-attestation", provider_operations_service),
+        ("provider-response", provider_response),
     ):
         if source_value is not None:
             _compare_source_hash(receipt, source_type, source_value, errors)
+
+    if provider_response is not None:
+        if delivery is None:
+            warnings.append("provider response artifact supplied without delivery source; response hash replay was limited")
+        else:
+            try:
+                expected_provider_response = _provider_response_record(
+                    provider_response,
+                    delivery=delivery,
+                    expected_status=receipt.get("dispatch", {}).get("response_status") if isinstance(receipt.get("dispatch"), dict) else None,
+                    expected_body_hash=receipt.get("dispatch", {}).get("response_hash") if isinstance(receipt.get("dispatch"), dict) else None,
+                )
+            except ValueError as exc:
+                errors.append(f"provider delivery worker provider response source invalid: {exc}")
+                expected_provider_response = None
+            if receipt.get("provider_response") != expected_provider_response:
+                errors.append("provider delivery worker provider_response does not match supplied provider response artifact")
+    elif receipt.get("provider_response"):
+        warnings.append("provider response artifact was not supplied; provider response bytes were not replayed")
 
     worker = receipt.get("worker", {}) if isinstance(receipt.get("worker"), dict) else {}
     dispatch = receipt.get("dispatch", {}) if isinstance(receipt.get("dispatch"), dict) else {}
@@ -413,6 +453,7 @@ def append_provider_delivery_worker_receipt(
     delivery: dict[str, Any] | None = None,
     payload: dict[str, Any] | None = None,
     provider_operations_service: dict[str, Any] | None = None,
+    provider_response: dict[str, Any] | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
     result = verify_provider_delivery_worker_receipt(
@@ -421,6 +462,7 @@ def append_provider_delivery_worker_receipt(
         delivery=delivery,
         payload=payload,
         provider_operations_service=provider_operations_service,
+        provider_response=provider_response,
         key=key,
     )
     if not result.ok:
@@ -438,6 +480,7 @@ def append_provider_delivery_worker_receipt(
         "scheduler": receipt.get("scheduler"),
         "dispatch": receipt.get("dispatch"),
         "observability": receipt.get("observability"),
+        "provider_response": receipt.get("provider_response"),
         "credential": receipt.get("credential"),
         "provider_credential": receipt.get("provider_credential"),
         "control_status_summary": _status_summary(receipt.get("controls", [])),
@@ -504,6 +547,7 @@ def _source_artifacts(
     delivery: dict[str, Any] | None,
     payload: dict[str, Any] | None,
     provider_operations_service: dict[str, Any] | None,
+    provider_response: dict[str, Any] | None,
 ) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
     for source_type, value in (
@@ -511,6 +555,7 @@ def _source_artifacts(
         ("provider-delivery", delivery),
         ("provider-payload", payload),
         ("provider-operations-service-attestation", provider_operations_service),
+        ("provider-response", provider_response),
     ):
         if isinstance(value, dict):
             records.append({"type": source_type, "id": _source_id(value), "schema": value.get("schema"), "hash": content_hash(value)})
@@ -545,6 +590,7 @@ def _controls(
     delivery_log_root: str,
     provider_event_log_root: str | None,
     audit_log_root: str,
+    provider_response_record: dict[str, Any] | None,
     response_status: int | None,
     credential_ref: str,
     provider_credential_ref: str,
@@ -557,6 +603,7 @@ def _controls(
         {"id": "delivery-worker-idempotency", "status": "worker-recorded" if idempotency_record_hash and service.get("idempotency_store_ref") else "planned-production", "description": "Provider delivery idempotency record is bound to the service idempotency store."},
         {"id": "provider-target-and-request-bound", "status": "worker-recorded" if source_delivery.get("target_url") and source_delivery.get("request_body_hash") else "planned-production", "description": "Provider target URL, request path, request body hash, and payload hash are bound."},
         {"id": "provider-response-bound", "status": "worker-recorded" if response_status is not None else "local-reference", "description": "Provider response status and optional response hash are bound when available."},
+        {"id": "provider-response-artifact-replay", "status": "worker-recorded" if provider_response_record else "local-reference", "description": "Retained provider response artifact is replay-bound by status, body hash, optional header hash, and artifact hash when supplied."},
         {"id": "delivery-and-provider-log-roots", "status": "worker-recorded" if delivery_log_root and audit_log_root else "planned-production", "description": "Delivery log and worker audit roots are bound; provider event roots are optional when provider exports exist."},
         {"id": "provider-event-log-binding", "status": "worker-recorded" if provider_event_log_root else "local-reference", "description": "Provider-owned event log root is bound when supplied."},
         {"id": "redacted-provider-delivery-credentials", "status": "worker-recorded" if credential_ref and provider_credential_ref else "planned-production", "description": "TrustAI worker and provider credential material is represented only by redacted references."},
@@ -715,6 +762,79 @@ def _verify_observability(value: Any, recorded_at: Any, errors: list[str]) -> No
         errors.append("provider delivery worker observability.evidence_refs must be a list of strings")
 
 
+def _provider_response_record(
+    provider_response: dict[str, Any] | None,
+    *,
+    delivery: dict[str, Any],
+    expected_status: int | None,
+    expected_body_hash: str | None,
+) -> dict[str, Any] | None:
+    if provider_response is None:
+        return None
+    if not isinstance(provider_response, dict):
+        raise ValueError("provider_response must be an object")
+    if "body" not in provider_response:
+        raise ValueError("provider_response.body is required")
+    status = provider_response.get("status")
+    if not isinstance(status, int) or status < 100 or status > 599:
+        raise ValueError("provider_response.status must be an HTTP status code")
+    if expected_status is not None and status != expected_status:
+        raise ValueError("provider_response.status does not match worker response_status")
+    response = delivery.get("response", {}) if isinstance(delivery.get("response"), dict) else {}
+    if response.get("status") is not None and status != response.get("status"):
+        raise ValueError("provider_response.status does not match delivery response status")
+    body_hash = content_hash(provider_response.get("body"))
+    if expected_body_hash and body_hash != expected_body_hash:
+        raise ValueError("provider_response.body hash does not match worker response_hash")
+    if response.get("body_hash") and body_hash != response.get("body_hash"):
+        raise ValueError("provider_response.body hash does not match delivery response body_hash")
+    headers_hash = None
+    headers = provider_response.get("headers")
+    if headers is not None:
+        if not isinstance(headers, dict):
+            raise ValueError("provider_response.headers must be an object")
+        headers_hash = content_hash(_redacted_headers(headers))
+    if response.get("headers_hash") and headers_hash != response.get("headers_hash"):
+        raise ValueError("provider_response.headers hash does not match delivery response headers_hash")
+    recorded_at = provider_response.get("recorded_at")
+    if recorded_at:
+        parse_rfc3339(str(recorded_at))
+    body = {
+        "artifact_hash": content_hash(provider_response),
+        "status": status,
+        "accepted": 200 <= status < 300,
+        "body_hash": body_hash,
+        "headers_hash": headers_hash,
+        "recorded_at": recorded_at,
+        "provider_request_id": provider_response.get("provider_request_id"),
+    }
+    return {key: value for key, value in body.items() if value is not None}
+
+
+def _verify_provider_response_summary(value: Any, errors: list[str]) -> None:
+    if value is None:
+        return
+    if not isinstance(value, dict):
+        errors.append("provider delivery worker provider_response must be an object when present")
+        return
+    for field in ("artifact_hash", "status", "accepted", "body_hash"):
+        if value.get(field) in (None, ""):
+            errors.append(f"provider delivery worker provider_response.{field} is required")
+    for field in ("artifact_hash", "body_hash", "headers_hash"):
+        if value.get(field) and not _is_sha256_ref(str(value.get(field))):
+            errors.append(f"provider delivery worker provider_response.{field} must be a sha256 reference")
+    status = value.get("status")
+    if not isinstance(status, int) or status < 100 or status > 599:
+        errors.append("provider delivery worker provider_response.status must be an HTTP status code")
+    elif value.get("accepted") is not (200 <= status < 300):
+        errors.append("provider delivery worker provider_response.accepted must match status")
+    if value.get("recorded_at"):
+        try:
+            parse_rfc3339(str(value.get("recorded_at")))
+        except ValueError as exc:
+            errors.append(f"provider delivery worker provider_response.recorded_at invalid: {exc}")
+
+
 def _verify_source_artifacts(value: Any, errors: list[str]) -> None:
     if not isinstance(value, list) or len(value) < 2:
         errors.append("provider delivery worker source_artifacts must include service and delivery artifacts")
@@ -797,6 +917,17 @@ def _require_text(value: Any, field: str) -> None:
 
 def _is_string_list(value: Any) -> bool:
     return isinstance(value, list) and all(isinstance(item, str) and item.strip() for item in value)
+
+
+def _redacted_headers(headers: dict[str, Any]) -> dict[str, str]:
+    redacted: dict[str, str] = {}
+    for name, value in headers.items():
+        normalized = str(name).lower()
+        if any(marker in normalized for marker in ("authorization", "cookie", "secret", "token", "key")):
+            redacted[normalized] = "<redacted>"
+        else:
+            redacted[normalized] = str(value)
+    return dict(sorted(redacted.items()))
 
 
 def _is_sha256_ref(value: str) -> bool:

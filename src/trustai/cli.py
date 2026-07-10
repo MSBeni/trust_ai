@@ -419,6 +419,7 @@ from .provider_delivery_worker import (
     append_provider_delivery_worker_receipt,
     build_provider_delivery_worker_receipt,
     load_provider_delivery_worker_receipt,
+    load_provider_response_artifact,
     verify_provider_delivery_worker_receipt,
     write_provider_delivery_worker_receipt,
 )
@@ -6368,6 +6369,8 @@ def _load_provider_delivery_worker_sources(args: argparse.Namespace) -> dict[str
         sources["payload"] = load_provider_payload(args.payload)
     if getattr(args, "provider_operations_service", None):
         sources["provider_operations_service"] = load_provider_operations_service_attestation(args.provider_operations_service)
+    if getattr(args, "provider_response", None):
+        sources["provider_response"] = load_provider_response_artifact(args.provider_response)
     return sources
 
 
@@ -6379,6 +6382,7 @@ def cmd_provider_delivery_worker(args: argparse.Namespace) -> int:
             sources["delivery"],
             payload=sources.get("payload"),
             provider_operations_service=sources.get("provider_operations_service"),
+            provider_response=sources.get("provider_response"),
             mode=args.mode,
             environment=args.environment,
             worker_ref=args.worker_ref,
@@ -15890,6 +15894,7 @@ def build_parser() -> argparse.ArgumentParser:
         parser.add_argument("--service-attestation", required=True)
         parser.add_argument("--payload")
         parser.add_argument("--provider-operations-service")
+        parser.add_argument("--provider-response")
         parser.add_argument("--key")
 
     def _add_provider_delivery_worker_fields(parser: argparse.ArgumentParser) -> None:

@@ -8,6 +8,8 @@ import unittest
 from pathlib import Path
 
 from trustai.chain import EvidenceChain
+from trustai.delivery import build_provider_delivery
+from trustai.provider_delivery_service import build_provider_delivery_service_attestation
 from trustai.provider_delivery_worker import (
     PROVIDER_DELIVERY_WORKER_ENTRY_TYPE,
     PROVIDER_DELIVERY_WORKER_SCHEMA,
@@ -31,6 +33,69 @@ class ProviderDeliveryWorkerTests(unittest.TestCase):
             "delivery": _load("artifacts/github-check-run-delivery.json"),
             "payload": _load("artifacts/github-check-run-payload.json"),
             "provider_operations_service": _load("artifacts/provider-operations-service-attestation.json"),
+        }
+
+    def _recorded_response_sources(self) -> dict:
+        sources = self._sources()
+        provider_response = {
+            "status": 202,
+            "body": {"ok": True, "id": "local-dispatch-1"},
+            "headers": {"Content-Type": "application/json", "X-Request-Id": "local-dispatch-1"},
+            "recorded_at": "2026-07-08T05:15:01Z",
+            "provider_request_id": "local-dispatch-1",
+        }
+        delivery = build_provider_delivery(
+            sources["payload"],
+            endpoint_base="https://api.github.com",
+            credential_ref="env:GITHUB_TOKEN",
+            mode="recorded-response",
+            response_status=provider_response["status"],
+            response_body=provider_response["body"],
+            response_headers=provider_response["headers"],
+            delivered_at="2026-07-08T05:15:00Z",
+        )
+        service_attestation = build_provider_delivery_service_attestation(
+            delivery=delivery,
+            payload=sources["payload"],
+            provider_operations_service=sources["provider_operations_service"],
+            environment="aitrade-prod",
+            service_ref="provider-delivery:trustai/github-prod",
+            service_version="0.1.0",
+            service_image="ghcr.io/trustai/provider-delivery:0.1.0",
+            service_image_digest="sha256:trustai-provider-delivery-image",
+            service_binary_hash="sha256:trustai-provider-delivery-binary",
+            replicas_min=3,
+            replicas_max=9,
+            availability_zones=["us-east-1a", "us-east-1b", "us-east-1c"],
+            dispatch_worker_ref="worker:provider-delivery/github",
+            queue_ref="queue:provider-delivery/github",
+            dead_letter_queue_ref="queue:provider-delivery/github-dlq",
+            idempotency_store_ref="redis:provider-delivery/idempotency",
+            retry_policy_ref="retry:provider-delivery/exponential-v0.1",
+            outbound_proxy_ref="egress-proxy:provider-delivery",
+            provider_endpoint_base="https://api.github.com",
+            provider_credential_ref="env:GITHUB_TOKEN",
+            mtls_policy_ref="policy:provider-delivery/mtls-required-v0.1",
+            auth_policy_ref="policy:provider-delivery/oidc-authz-v0.1",
+            network_policy_ref="netpol:provider-delivery/deny-by-default",
+            egress_policy_ref="egress:provider-delivery/provider-apis-only",
+            rate_limit_policy_ref="rate-limit:provider-delivery/github",
+            request_signing_policy_ref="policy:provider-delivery/request-signing-v0.1",
+            audit_log_ref="audit-log:provider-delivery/service",
+            audit_log_root="sha256:provider-delivery-service-audit-root",
+            metrics_ref="metrics:provider-delivery/service",
+            alert_policy_ref="alert:provider-delivery/service",
+            retention_until="2033-07-08T00:00:00Z",
+            actor_ref="oidc:trustai.example/provider-delivery-operator",
+            credential_ref="env:PROVIDER_DELIVERY_TOKEN",
+            evidence_refs=["evidence:provider-delivery/service"],
+            attested_at="2026-07-08T05:10:00Z",
+        )
+        return {
+            **sources,
+            "service_attestation": service_attestation,
+            "delivery": delivery,
+            "provider_response": provider_response,
         }
 
     def _receipt(self, **overrides):
@@ -93,6 +158,38 @@ class ProviderDeliveryWorkerTests(unittest.TestCase):
         self.assertEqual("env:GITHUB_TOKEN", receipt["provider_credential"]["ref"])
         self.assertEqual(PROVIDER_DELIVERY_WORKER_ENTRY_TYPE, entry["entry_type"])
         self.assertEqual(receipt["worker_operation_id"], entry["payload"]["worker_operation_id"])
+
+    def test_provider_delivery_worker_replays_provider_response_artifact(self):
+        sources = self._recorded_response_sources()
+        receipt = self._receipt(**sources)
+        result = verify_provider_delivery_worker_receipt(receipt, **sources)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="provider-delivery-worker-response-test")
+            entry = append_provider_delivery_worker_receipt(chain, receipt, **sources)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(sources["delivery"]["response"]["body_hash"], receipt["provider_response"]["body_hash"])
+        self.assertEqual(202, receipt["provider_response"]["status"])
+        self.assertTrue(receipt["provider_response"]["accepted"])
+        self.assertIn("headers_hash", receipt["provider_response"])
+        self.assertIn("provider-response", {artifact["type"] for artifact in receipt["source_artifacts"]})
+        controls = {control["id"]: control["status"] for control in receipt["controls"]}
+        self.assertEqual("worker-recorded", controls["provider-response-artifact-replay"])
+        self.assertEqual(receipt["provider_response"], entry["payload"]["provider_response"])
+        self.assertTrue(chain.verify_all().ok)
+
+    def test_provider_delivery_worker_rejects_provider_response_artifact_tamper(self):
+        sources = self._recorded_response_sources()
+        receipt = self._receipt(**sources)
+        tampered_sources = dict(sources)
+        tampered_sources["provider_response"] = copy.deepcopy(sources["provider_response"])
+        tampered_sources["provider_response"]["body"]["id"] = "different-response"
+
+        result = verify_provider_delivery_worker_receipt(receipt, **tampered_sources)
+
+        self.assertFalse(result.ok)
+        self.assertIn("provider delivery worker source artifact hash mismatch: provider-response", result.errors)
+        self.assertTrue(any("provider_response does not match" in error or "provider response source invalid" in error for error in result.errors))
 
     def test_provider_delivery_worker_rejects_delivery_source_tamper(self):
         sources = self._sources()
