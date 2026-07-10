@@ -667,7 +667,17 @@ from .procurement_integration import (
     verify_procurement_integration_receipt,
     write_procurement_integration_receipt,
 )
-from .registry import append_delegation, append_inventory, load_delegation, load_inventory
+from .registry import (
+    append_delegation,
+    append_delegation_graph,
+    append_inventory,
+    build_delegation_graph,
+    load_delegation,
+    load_delegation_graph,
+    load_inventory,
+    verify_delegation_graph,
+    write_delegation_graph,
+)
 from .reexecution import (
     append_reexecution_report,
     build_reexecution_report,
@@ -2044,6 +2054,80 @@ def cmd_delegation(args: argparse.Namespace) -> int:
     chain.save()
     print(f"delegation entry id: {entry['entry_id']}")
     print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_delegation_graph(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    try:
+        graph = build_delegation_graph(
+            chain,
+            contract_hash=args.contract_hash,
+            root_agent=args.root_agent,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_delegation_graph(graph, source_chain=chain, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"delegation graph generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("delegation graph generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_delegation_graph(args.out, graph)
+    print(f"delegation graph: {args.out}")
+    print(f"delegation graph id: {graph['delegation_graph_id']}")
+    print(f"nodes: {graph['summary']['node_count']}")
+    print(f"edges: {graph['summary']['edge_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_delegation_graph_verify(args: argparse.Namespace) -> int:
+    try:
+        graph = load_delegation_graph(args.graph)
+        source_chain = EvidenceChain.load(args.state, tenant_id=args.tenant) if args.state else None
+    except (OSError, ValueError) as exc:
+        print(f"delegation graph verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_delegation_graph(graph, source_chain=source_chain, key=args.key)
+    if not result.ok:
+        print("delegation graph verification failed", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    print(f"delegation graph verified: {graph['delegation_graph_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_delegation_graph_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    try:
+        graph = load_delegation_graph(args.graph)
+        result = verify_delegation_graph(graph, source_chain=chain, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"delegation graph append failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("delegation graph append failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    entry = append_delegation_graph(chain, graph, source_chain=chain, key=args.key)
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"delegation graph entry: {args.out}")
+    print(f"delegation graph entry id: {entry['entry_id']}")
+    print(f"delegation graph id: {graph['delegation_graph_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
     return 0
 
 
@@ -14549,6 +14633,26 @@ def build_parser() -> argparse.ArgumentParser:
     delegation.add_argument("delegation")
     _add_state_args(delegation)
     delegation.set_defaults(func=cmd_delegation)
+
+    delegation_graph = subparsers.add_parser("delegation-graph", help="write a signed multi-agent delegation evidence graph")
+    delegation_graph.add_argument("--contract-hash")
+    delegation_graph.add_argument("--root-agent")
+    delegation_graph.add_argument("--generated-at")
+    delegation_graph.add_argument("--out", default="artifacts/delegation-graph.json")
+    _add_state_args(delegation_graph)
+    delegation_graph.set_defaults(func=cmd_delegation_graph)
+
+    delegation_graph_verify = subparsers.add_parser("delegation-graph-verify", help="verify a signed multi-agent delegation evidence graph")
+    delegation_graph_verify.add_argument("graph")
+    delegation_graph_verify.add_argument("--state")
+    delegation_graph_verify.add_argument("--tenant", default="local")
+    delegation_graph_verify.set_defaults(func=cmd_delegation_graph_verify)
+
+    delegation_graph_append = subparsers.add_parser("delegation-graph-append", help="append a verified delegation graph receipt to the chain")
+    delegation_graph_append.add_argument("graph")
+    delegation_graph_append.add_argument("--out", default="artifacts/delegation-graph-entry.json")
+    _add_state_args(delegation_graph_append)
+    delegation_graph_append.set_defaults(func=cmd_delegation_graph_append)
 
     ingest = subparsers.add_parser("ingest", help="append OTel-style GenAI events to the chain")
     ingest.add_argument("events")
