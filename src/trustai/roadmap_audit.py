@@ -256,14 +256,17 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "deploy/helm/trustai/values.yaml",
             "src/trustai/deployment.py",
             "src/trustai/byoc_operator.py",
+            "src/trustai/byoc_authority.py",
             "src/trustai/object_store.py",
             "docs/deployment/byoc.md",
+            "docs/specs/byoc-production-authority-v0.1.md",
             "tests/test_deployment.py",
             "tests/test_byoc_operator.py",
+            "tests/test_byoc_authority.py",
             "tests/test_worm_legal_hold.py",
         ],
         "external_authority": [
-            "Cloud Object Lock enforcement, legal holds, air-gapped operations, and immutable provider logs require live cloud accounts.",
+            "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence.",
         ],
     },
     {

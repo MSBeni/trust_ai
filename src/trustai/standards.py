@@ -33,6 +33,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/trust-authority-kms-enforcement-v0.1.md",
     "docs/specs/deployment-manifest-v0.1.md",
     "docs/specs/byoc-operator-attestation-v0.1.md",
+    "docs/specs/byoc-production-authority-v0.1.md",
     "docs/specs/eu-data-plane-attestation-v0.1.md",
     "docs/specs/worm-object-store-v0.1.md",
     "docs/specs/human-approval-v0.1.md",
@@ -268,6 +269,16 @@ CONFORMANCE_TARGETS = (
         ],
     },
     {
+        "id": "byoc-production-authority-dossiers",
+        "description": "BYOC/self-hosted production authority dossiers bind deployment manifests, BYOC operator attestations, Object Lock/legal-hold evidence, customer account/keyring/network/backup/audit bindings, freshness windows, and production-claim limits.",
+        "reference": "src/trustai/byoc_authority.py",
+        "commands": [
+            'python -m trustai byoc-authority artifacts/deployment-manifest.json artifacts/byoc-operator-attestation.json --worm-receipt artifacts/aitrade-proof-pack.worm-receipt.json --legal-hold artifacts/aitrade-proof-pack.legal-hold.json --environment aitrade-byoc --dossier-ref dossier:byoc-authority/aitrade-byoc --authority-ref authority:byoc/aitrade-byoc --producer-ref oidc:trustai.example/byoc-authority-worker --authority-evidence "live-cloud-account-binding,provider-api,aws:account/123456789012/trustai-byoc,sha256:byoc-live-cloud-account,Provider account export;issuer=ExampleCloud;subject=aitrade BYOC account;source_uri=https://cloud.example/accounts/123456789012/trustai;issued_at=2026-07-04T03:05:00Z;expires_at=2026-12-31T00:00:00Z" --generated-at 2026-07-04T03:10:00Z --out artifacts/byoc-authority.json',
+            "python -m trustai byoc-authority-verify artifacts/byoc-authority.json --deployment-manifest artifacts/deployment-manifest.json --byoc-operator artifacts/byoc-operator-attestation.json --worm-receipt artifacts/aitrade-proof-pack.worm-receipt.json --legal-hold artifacts/aitrade-proof-pack.legal-hold.json --require-fresh --now 2026-07-04T03:10:00Z",
+            "python -m trustai byoc-authority-append artifacts/byoc-authority.json artifacts/deployment-manifest.json artifacts/byoc-operator-attestation.json --worm-receipt artifacts/aitrade-proof-pack.worm-receipt.json --legal-hold artifacts/aitrade-proof-pack.legal-hold.json",
+            "python -m unittest tests.test_byoc_authority",
+        ],
+    },    {
         "id": "eu-data-plane-attestations",
         "description": "EU data-plane attestations bind deployment and BYOC operator evidence to Frankfurt/EU region, residency, key-residency, transfer-governance, subprocessor, network, and audit controls.",
         "reference": "src/trustai/eu_data_plane.py",

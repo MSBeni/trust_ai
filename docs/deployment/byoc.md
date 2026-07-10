@@ -43,6 +43,21 @@ python -m trustai deployment-verify artifacts/deployment-manifest.json --root .
 `deployment.manifest.published` evidence. See
 `docs/specs/deployment-manifest-v0.1.md` for the schema.
 
+## Production Authority Dossier
+
+The deployment manifest and BYOC operator attestation can be bound into a
+signed production authority dossier. The dossier records the fixed BYOC
+production checklist, external authority evidence hashes, freshness windows,
+and conservative `production-dossier` guardrails.
+
+```powershell
+python -m trustai byoc-authority artifacts/deployment-manifest.json artifacts/byoc-operator-attestation.json --worm-receipt artifacts/aitrade-proof-pack.worm-receipt.json --legal-hold artifacts/aitrade-proof-pack.legal-hold.json --environment aitrade-byoc --dossier-ref dossier:byoc-authority/aitrade-byoc --authority-ref authority:byoc/aitrade-byoc --producer-ref oidc:trustai.example/byoc-authority-worker --authority-evidence "live-cloud-account-binding,provider-api,aws:account/123456789012/trustai-byoc,sha256:byoc-live-cloud-account,Provider account export;issued_at=2026-07-04T03:05:00Z;expires_at=2026-12-31T00:00:00Z" --out artifacts/byoc-authority.json
+python -m trustai byoc-authority-verify artifacts/byoc-authority.json --deployment-manifest artifacts/deployment-manifest.json --byoc-operator artifacts/byoc-operator-attestation.json --worm-receipt artifacts/aitrade-proof-pack.worm-receipt.json --legal-hold artifacts/aitrade-proof-pack.legal-hold.json --require-fresh --now 2026-07-04T03:10:00Z
+python -m trustai byoc-authority-append artifacts/byoc-authority.json artifacts/deployment-manifest.json artifacts/byoc-operator-attestation.json --worm-receipt artifacts/aitrade-proof-pack.worm-receipt.json --legal-hold artifacts/aitrade-proof-pack.legal-hold.json --state .trustai/byoc-authority-demo/evidence-chain.json --tenant byoc-authority-local
+```
+
+See `docs/specs/byoc-production-authority-v0.1.md` for the schema.
+
 This is a reference deployment for the proof-pack engine. A production BYOC
 installation still needs managed KMS/HSM signing, RFC 3161 timestamping,
 network collectors, object-lock storage, and operational hardening.

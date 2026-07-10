@@ -445,6 +445,15 @@ from .byoc_operator import (
     verify_byoc_operator_attestation,
     write_byoc_operator_attestation,
 )
+from .byoc_authority import (
+    BYOC_AUTHORITY_MODES,
+    append_byoc_authority_dossier,
+    build_byoc_authority_dossier,
+    load_byoc_authority_dossier,
+    parse_byoc_authority_evidence_arg,
+    verify_byoc_authority_dossier,
+    write_byoc_authority_dossier,
+)
 from .eu_data_plane import (
     EU_DATA_PLANE_MODES,
     append_eu_data_plane_attestation,
@@ -6968,6 +6977,143 @@ def cmd_byoc_operator_append(args: argparse.Namespace) -> int:
         print(f"BYOC operator entry: {args.out}")
     print(f"BYOC operator entry id: {entry['entry_id']}")
     print(f"attestation id: {attestation['attestation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def _load_byoc_authority_sources(args: argparse.Namespace, *, require_all: bool) -> dict[str, object]:
+    sources: dict[str, object] = {}
+    if getattr(args, "deployment_manifest", None):
+        sources["deployment_manifest"] = load_deployment_manifest(args.deployment_manifest)
+    elif require_all:
+        raise ValueError("deployment manifest is required")
+    if getattr(args, "byoc_operator", None):
+        sources["byoc_operator"] = load_byoc_operator_attestation(args.byoc_operator)
+    elif require_all:
+        raise ValueError("BYOC operator attestation is required")
+    if getattr(args, "worm_receipt", None):
+        sources["worm_receipt"] = _load_json(args.worm_receipt)
+    if getattr(args, "legal_hold", None):
+        sources["legal_hold"] = _load_json(args.legal_hold)
+    return sources
+
+
+def cmd_byoc_authority(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_byoc_authority_sources(args, require_all=True)
+        deployment_manifest = sources.pop("deployment_manifest")
+        byoc_operator = sources.pop("byoc_operator")
+        evidence = [parse_byoc_authority_evidence_arg(value) for value in (args.authority_evidence or [])]
+        dossier = build_byoc_authority_dossier(
+            deployment_manifest,
+            byoc_operator,
+            **sources,
+            root=args.root,
+            store=args.store,
+            mode=args.mode,
+            environment=args.environment,
+            dossier_ref=args.dossier_ref,
+            authority_ref=args.authority_ref,
+            producer_ref=args.producer_ref,
+            authority_evidence=evidence,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_byoc_authority_dossier(
+            dossier,
+            deployment_manifest=deployment_manifest,
+            byoc_operator=byoc_operator,
+            **sources,
+            root=args.root,
+            store=args.store,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"BYOC authority dossier generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("BYOC authority dossier generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_byoc_authority_dossier(args.out, dossier)
+    print(f"BYOC authority dossier: {args.out}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"covered authority requirements: {result.covered_count}/{result.required_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_byoc_authority_verify(args: argparse.Namespace) -> int:
+    try:
+        dossier = load_byoc_authority_dossier(args.dossier)
+        sources = _load_byoc_authority_sources(args, require_all=False)
+    except (OSError, ValueError) as exc:
+        print(f"BYOC authority dossier verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_byoc_authority_dossier(
+        dossier,
+        deployment_manifest=sources.get("deployment_manifest"),
+        byoc_operator=sources.get("byoc_operator"),
+        worm_receipt=sources.get("worm_receipt"),
+        legal_hold=sources.get("legal_hold"),
+        root=args.root,
+        store=args.store,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified BYOC authority dossier: {args.dossier}")
+        print(f"dossier id: {dossier['dossier_id']}")
+        print(f"covered authority requirements: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"BYOC authority dossier verification failed: {args.dossier}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_byoc_authority_append(args: argparse.Namespace) -> int:
+    try:
+        dossier = load_byoc_authority_dossier(args.dossier)
+        sources = _load_byoc_authority_sources(args, require_all=True)
+        deployment_manifest = sources.pop("deployment_manifest")
+        byoc_operator = sources.pop("byoc_operator")
+    except (OSError, ValueError) as exc:
+        print(f"BYOC authority dossier append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_byoc_authority_dossier(
+            chain,
+            dossier,
+            deployment_manifest=deployment_manifest,
+            byoc_operator=byoc_operator,
+            **sources,
+            root=args.root,
+            store=args.store,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"BYOC authority dossier append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"BYOC authority entry: {args.out}")
+    print(f"BYOC authority entry id: {entry['entry_id']}")
+    print(f"dossier id: {dossier['dossier_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
@@ -16508,6 +16654,65 @@ def build_parser() -> argparse.ArgumentParser:
     byoc_operator_append.add_argument("--key")
     _add_state_args(byoc_operator_append)
     byoc_operator_append.set_defaults(func=cmd_byoc_operator_append)
+
+    byoc_authority_evidence_help = (
+        "repeatable requirement_id,authority_kind,evidence_ref,evidence_hash,"
+        "description[;issuer=...;subject=...;source_uri=...;issued_at=...;expires_at=...]"
+    )
+
+    def _add_byoc_authority_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--worm-receipt")
+        parser.add_argument("--legal-hold")
+        parser.add_argument("--root", default=".")
+        parser.add_argument("--store", default=".trustai/worm")
+        parser.add_argument("--mode", choices=sorted(BYOC_AUTHORITY_MODES), default="operator-dossier")
+        parser.add_argument("--environment", default="local")
+        parser.add_argument("--dossier-ref", required=True)
+        parser.add_argument("--authority-ref", required=True)
+        parser.add_argument("--producer-ref", required=True)
+        parser.add_argument("--authority-evidence", action="append", default=[], help=byoc_authority_evidence_help)
+        parser.add_argument("--generated-at")
+        parser.add_argument("--require-complete", action="store_true")
+        parser.add_argument("--require-fresh", action="store_true")
+        parser.add_argument("--now")
+        parser.add_argument("--out", default="artifacts/byoc-authority.json")
+        parser.add_argument("--key")
+
+    byoc_authority = subparsers.add_parser("byoc-authority", help="write a signed BYOC/self-hosted production-authority dossier")
+    byoc_authority.add_argument("deployment_manifest")
+    byoc_authority.add_argument("byoc_operator")
+    _add_byoc_authority_fields(byoc_authority)
+    byoc_authority.set_defaults(func=cmd_byoc_authority)
+
+    byoc_authority_verify = subparsers.add_parser("byoc-authority-verify", help="verify a signed BYOC/self-hosted production-authority dossier")
+    byoc_authority_verify.add_argument("dossier")
+    byoc_authority_verify.add_argument("--deployment-manifest")
+    byoc_authority_verify.add_argument("--byoc-operator")
+    byoc_authority_verify.add_argument("--worm-receipt")
+    byoc_authority_verify.add_argument("--legal-hold")
+    byoc_authority_verify.add_argument("--root", default=".")
+    byoc_authority_verify.add_argument("--store", default=".trustai/worm")
+    byoc_authority_verify.add_argument("--require-complete", action="store_true")
+    byoc_authority_verify.add_argument("--require-fresh", action="store_true")
+    byoc_authority_verify.add_argument("--now")
+    byoc_authority_verify.add_argument("--key")
+    byoc_authority_verify.set_defaults(func=cmd_byoc_authority_verify)
+
+    byoc_authority_append = subparsers.add_parser("byoc-authority-append", help="append a BYOC/self-hosted production-authority dossier as chain evidence")
+    byoc_authority_append.add_argument("dossier")
+    byoc_authority_append.add_argument("deployment_manifest")
+    byoc_authority_append.add_argument("byoc_operator")
+    byoc_authority_append.add_argument("--worm-receipt")
+    byoc_authority_append.add_argument("--legal-hold")
+    byoc_authority_append.add_argument("--root", default=".")
+    byoc_authority_append.add_argument("--store", default=".trustai/worm")
+    byoc_authority_append.add_argument("--require-complete", action="store_true")
+    byoc_authority_append.add_argument("--require-fresh", action="store_true")
+    byoc_authority_append.add_argument("--now")
+    byoc_authority_append.add_argument("--out", default="artifacts/byoc-authority-entry.json")
+    byoc_authority_append.add_argument("--key")
+    _add_state_args(byoc_authority_append)
+    byoc_authority_append.set_defaults(func=cmd_byoc_authority_append)
 
     eu_data_plane = subparsers.add_parser("eu-data-plane-attestation", help="write a signed EU data-plane residency and sovereignty attestation")
     eu_data_plane.add_argument("manifest")
