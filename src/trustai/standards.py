@@ -60,6 +60,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/policy-backend-service-attestation-v0.1.md",
     "docs/specs/policy-backend-worker-v0.1.md",
     "docs/specs/policy-backend-provider-export-v0.1.md",
+    "docs/specs/policy-backend-provider-export-bundle-v0.1.md",
     "docs/specs/policy-backend-service-bundle-v0.1.md",
     "docs/specs/insurer-consent-v0.1.md",
     "docs/specs/underwriting-quote-v0.1.md",
@@ -534,6 +535,16 @@ CONFORMANCE_TARGETS = (
             "python -m trustai policy-backend-provider-export artifacts/policy-backend-provider-export-source.json artifacts/policy-backend-worker.json artifacts/policy-backend-service-attestation.json artifacts/policy-backend-enforcement.json examples/aitrade/policy-pack.json examples/aitrade/runtime-action.json --pack artifacts/aitrade-proof-pack.json --decision artifacts/policy-decision.json --export artifacts/policy-export.json --policy-engine-receipt artifacts/policy-engine-receipt.json --mode provider-export --environment aitrade-prod --provider aws-scheduler-sqs-dynamodb-s3-cloudtrail-opa --endpoint-url https://provider.example/aitrade/policy-backend/exports --credential-ref env:POLICY_BACKEND_PROVIDER_EXPORT_TOKEN --request-hash sha256:policy-backend-provider-export-request --response-status 200 --response-hash sha256:policy-backend-provider-export-response --actor-ref oidc:trustai.example/policy-backend-provider-exporter --exported-at 2026-07-04T04:06:00Z",
             "python -m trustai policy-backend-provider-export-verify artifacts/policy-backend-provider-export.json artifacts/policy-backend-provider-export-source.json artifacts/policy-backend-worker.json artifacts/policy-backend-service-attestation.json artifacts/policy-backend-enforcement.json examples/aitrade/policy-pack.json examples/aitrade/runtime-action.json --pack artifacts/aitrade-proof-pack.json --decision artifacts/policy-decision.json --export artifacts/policy-export.json --policy-engine-receipt artifacts/policy-engine-receipt.json",
             "python -m unittest tests.test_policy_backend_provider",
+        ],
+    },
+    {
+        "id": "policy-backend-provider-export-review-bundles",
+        "description": "Policy backend provider export review bundles package provider export receipts, provider exports, worker receipts, service attestations, enforcement receipts, policies, proof packs, decisions, and exports for offline third-party replay.",
+        "reference": "src/trustai/policy_backend_provider_bundle.py",
+        "commands": [
+            "python -m trustai policy-backend-provider-export-bundle artifacts/policy-backend-provider-export.json artifacts/policy-backend-provider-export-source.json artifacts/policy-backend-worker.json artifacts/policy-backend-service-attestation.json artifacts/policy-backend-enforcement.json examples/aitrade/policy-pack.json examples/aitrade/runtime-action.json --pack artifacts/aitrade-proof-pack.json --decision artifacts/policy-decision.json --export artifacts/policy-export.json --policy-engine-receipt artifacts/policy-engine-receipt.json --environment aitrade-prod --reviewer-ref oidc:auditor.example/policy-backend-provider-reviewer --generated-at 2026-07-04T05:10:00Z --out artifacts/policy-backend-provider-export-bundle.json --markdown artifacts/policy-backend-provider-export-bundle.md",
+            "python -m trustai policy-backend-provider-export-bundle-verify artifacts/policy-backend-provider-export-bundle.json",
+            "python -m unittest tests.test_policy_backend_provider_bundle",
         ],
     },
     {
