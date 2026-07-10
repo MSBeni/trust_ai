@@ -399,6 +399,15 @@ from .vendor_identity import (
 )
 from .cicd import build_ci_report, build_promotion_check_payload, build_slack_approval_request, write_ci_report
 from .compliance import build_compliance_export, write_compliance_export
+from .compliance_authority import (
+    COMPLIANCE_AUTHORITY_MODES,
+    append_compliance_authority_dossier,
+    build_compliance_authority_dossier,
+    load_compliance_authority_dossier,
+    parse_compliance_authority_evidence_arg,
+    verify_compliance_authority_dossier,
+    write_compliance_authority_dossier,
+)
 from .consent import INSURER_SCOPE, append_consent_grant, append_consent_revocation, consent_status, load_consent
 from .contracts import contract_hash, find_contract_registration, load_contract, register_contract
 from .collector_topology import (
@@ -11830,6 +11839,145 @@ def cmd_eu_ai_act_verify(args: argparse.Namespace) -> int:
     for error in result.errors:
         print(f"- {error}", file=sys.stderr)
     return 1
+def _load_compliance_authority_sources(args: argparse.Namespace, *, require_all: bool) -> dict[str, object]:
+    sources: dict[str, object] = {}
+    if getattr(args, "compliance_export", None):
+        sources["compliance_export"] = _load_json(args.compliance_export)
+    elif require_all:
+        raise ValueError("compliance export is required")
+    if getattr(args, "eu_ai_act_document", None):
+        sources["eu_ai_act_document"] = load_eu_ai_act_document(args.eu_ai_act_document)
+    elif require_all:
+        raise ValueError("EU AI Act document is required")
+    if getattr(args, "pack", None):
+        pack = load_proof_pack(args.pack)
+        pack_result = verify_proof_pack(pack, key=args.key)
+        if not pack_result.ok:
+            raise ValueError("proof pack verification failed: " + "; ".join(pack_result.errors))
+        sources["proof_pack"] = pack
+    if getattr(args, "regulator_disclosure", None):
+        disclosure = load_regulator_disclosure(args.regulator_disclosure)
+        disclosure_result = verify_regulator_disclosure(disclosure, key=args.key)
+        if not disclosure_result.ok:
+            raise ValueError("regulator disclosure verification failed: " + "; ".join(disclosure_result.errors))
+        sources["regulator_disclosure"] = disclosure
+    if getattr(args, "eu_data_plane", None):
+        sources["eu_data_plane"] = load_eu_data_plane_attestation(args.eu_data_plane)
+    return sources
+
+
+def cmd_compliance_authority(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_compliance_authority_sources(args, require_all=True)
+        compliance_export = sources.pop("compliance_export")
+        eu_ai_act_document = sources.pop("eu_ai_act_document")
+        evidence = [parse_compliance_authority_evidence_arg(value) for value in (args.authority_evidence or [])]
+        dossier = build_compliance_authority_dossier(
+            compliance_export,
+            eu_ai_act_document,
+            **sources,
+            mode=args.mode,
+            environment=args.environment,
+            dossier_ref=args.dossier_ref,
+            authority_ref=args.authority_ref,
+            producer_ref=args.producer_ref,
+            authority_evidence=evidence,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_compliance_authority_dossier(
+            dossier,
+            compliance_export=compliance_export,
+            eu_ai_act_document=eu_ai_act_document,
+            **sources,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"compliance authority dossier generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("compliance authority dossier generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_compliance_authority_dossier(args.out, dossier)
+    print(f"compliance authority dossier: {args.out}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"covered authority requirements: {result.covered_count}/{result.required_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_compliance_authority_verify(args: argparse.Namespace) -> int:
+    try:
+        dossier = load_compliance_authority_dossier(args.dossier)
+        sources = _load_compliance_authority_sources(args, require_all=False)
+    except (OSError, ValueError) as exc:
+        print(f"compliance authority dossier verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_compliance_authority_dossier(
+        dossier,
+        compliance_export=sources.get("compliance_export"),
+        eu_ai_act_document=sources.get("eu_ai_act_document"),
+        proof_pack=sources.get("proof_pack"),
+        regulator_disclosure=sources.get("regulator_disclosure"),
+        eu_data_plane=sources.get("eu_data_plane"),
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified compliance authority dossier: {args.dossier}")
+        print(f"dossier id: {dossier['dossier_id']}")
+        print(f"covered authority requirements: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"compliance authority dossier verification failed: {args.dossier}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_compliance_authority_append(args: argparse.Namespace) -> int:
+    try:
+        dossier = load_compliance_authority_dossier(args.dossier)
+        sources = _load_compliance_authority_sources(args, require_all=True)
+        compliance_export = sources.pop("compliance_export")
+        eu_ai_act_document = sources.pop("eu_ai_act_document")
+    except (OSError, ValueError) as exc:
+        print(f"compliance authority dossier append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_compliance_authority_dossier(
+            chain,
+            dossier,
+            compliance_export=compliance_export,
+            eu_ai_act_document=eu_ai_act_document,
+            **sources,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"compliance authority dossier append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"compliance authority entry: {args.out}")
+    print(f"compliance authority entry id: {entry['entry_id']}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
 def cmd_regulator_export(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
     pack, _, status = _verified_pack_or_exit(args.pack, args.key)
@@ -20706,6 +20854,61 @@ def build_parser() -> argparse.ArgumentParser:
     compliance.add_argument("pack")
     compliance.add_argument("--out", default="artifacts/compliance-export.json")
     compliance.set_defaults(func=cmd_compliance_export)
+
+    compliance_authority_evidence_help = (
+        "repeatable requirement_id,authority_kind,evidence_ref,evidence_hash,"
+        "description[;issuer=...;subject=...;source_uri=...;issued_at=...;expires_at=...]"
+    )
+
+    def _add_compliance_authority_optional_sources(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--pack")
+        parser.add_argument("--regulator-disclosure")
+        parser.add_argument("--eu-data-plane")
+
+    def _add_compliance_authority_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--mode", choices=sorted(COMPLIANCE_AUTHORITY_MODES), default="provider-dossier")
+        parser.add_argument("--environment", default="local")
+        parser.add_argument("--dossier-ref", required=True)
+        parser.add_argument("--authority-ref", required=True)
+        parser.add_argument("--producer-ref", required=True)
+        parser.add_argument("--authority-evidence", action="append", default=[], help=compliance_authority_evidence_help)
+        parser.add_argument("--generated-at")
+        parser.add_argument("--require-complete", action="store_true")
+        parser.add_argument("--require-fresh", action="store_true")
+        parser.add_argument("--now")
+        parser.add_argument("--out", default="artifacts/compliance-authority.json")
+        parser.add_argument("--key")
+
+    compliance_authority = subparsers.add_parser("compliance-authority", help="write a signed compliance and EU AI Act production-authority dossier")
+    compliance_authority.add_argument("compliance_export")
+    compliance_authority.add_argument("eu_ai_act_document")
+    _add_compliance_authority_optional_sources(compliance_authority)
+    _add_compliance_authority_fields(compliance_authority)
+    compliance_authority.set_defaults(func=cmd_compliance_authority)
+
+    compliance_authority_verify = subparsers.add_parser("compliance-authority-verify", help="verify a signed compliance and EU AI Act production-authority dossier")
+    compliance_authority_verify.add_argument("dossier")
+    compliance_authority_verify.add_argument("--compliance-export")
+    compliance_authority_verify.add_argument("--eu-ai-act-document")
+    _add_compliance_authority_optional_sources(compliance_authority_verify)
+    compliance_authority_verify.add_argument("--require-complete", action="store_true")
+    compliance_authority_verify.add_argument("--require-fresh", action="store_true")
+    compliance_authority_verify.add_argument("--now")
+    compliance_authority_verify.add_argument("--key")
+    compliance_authority_verify.set_defaults(func=cmd_compliance_authority_verify)
+
+    compliance_authority_append = subparsers.add_parser("compliance-authority-append", help="append a compliance and EU AI Act production-authority dossier as chain evidence")
+    compliance_authority_append.add_argument("dossier")
+    compliance_authority_append.add_argument("compliance_export")
+    compliance_authority_append.add_argument("eu_ai_act_document")
+    _add_compliance_authority_optional_sources(compliance_authority_append)
+    compliance_authority_append.add_argument("--require-complete", action="store_true")
+    compliance_authority_append.add_argument("--require-fresh", action="store_true")
+    compliance_authority_append.add_argument("--now")
+    compliance_authority_append.add_argument("--out", default="artifacts/compliance-authority-entry.json")
+    compliance_authority_append.add_argument("--key")
+    _add_state_args(compliance_authority_append)
+    compliance_authority_append.set_defaults(func=cmd_compliance_authority_append)
 
     insurer = subparsers.add_parser("insurer-export", help="export consented insurer risk telemetry")
     insurer.add_argument("pack")

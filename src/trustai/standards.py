@@ -34,6 +34,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/deployment-manifest-v0.1.md",
     "docs/specs/byoc-operator-attestation-v0.1.md",
     "docs/specs/byoc-production-authority-v0.1.md",
+    "docs/specs/compliance-production-authority-v0.1.md",
     "docs/specs/eu-data-plane-attestation-v0.1.md",
     "docs/specs/worm-object-store-v0.1.md",
     "docs/specs/human-approval-v0.1.md",
@@ -135,6 +136,16 @@ REQUIRED_SPEC_PATHS = (
 
 CONFORMANCE_TARGETS = (
     {
+        "id": "compliance-production-authority-dossiers",
+        "description": "Compliance production authority dossiers bind compliance framework mappings, EU AI Act technical documentation, proof-pack source replay, selective regulator disclosure, optional EU data-plane sovereignty evidence, freshness windows, and strict production-claim gates.",
+        "reference": "src/trustai/compliance_authority.py",
+        "commands": [
+            "python -m trustai compliance-authority artifacts/compliance-export.json artifacts/eu-ai-act-technical-documentation.json --pack artifacts/aitrade-proof-pack.json --regulator-disclosure artifacts/regulator-disclosure.json --environment aitrade-prod --dossier-ref dossier:compliance-authority/aitrade-prod --authority-ref authority:compliance/aitrade-prod --producer-ref oidc:trustai.example/compliance-authority-worker --authority-evidence \"framework-control-mapping-ontology,standards-body,standards:compliance-ontology/2026,sha256:compliance-ontology,Nightly compliance ontology replay;issuer=TrustAI CI;subject=aitrade-prod compliance mapper;source_uri=https://ci.example/trustai/compliance/aitrade-prod;issued_at=2026-07-04T03:00:00Z;expires_at=2026-12-31T00:00:00Z\" --generated-at 2026-07-04T03:05:00Z --out artifacts/compliance-authority.json",
+            "python -m trustai compliance-authority-verify artifacts/compliance-authority.json --compliance-export artifacts/compliance-export.json --eu-ai-act-document artifacts/eu-ai-act-technical-documentation.json --pack artifacts/aitrade-proof-pack.json --regulator-disclosure artifacts/regulator-disclosure.json",
+            "python -m trustai compliance-authority-append artifacts/compliance-authority.json artifacts/compliance-export.json artifacts/eu-ai-act-technical-documentation.json --pack artifacts/aitrade-proof-pack.json --regulator-disclosure artifacts/regulator-disclosure.json",
+            "python -m unittest tests.test_compliance_authority",
+        ],
+    },    {
         "id": "framework-adapter-production-authority-dossiers",
         "description": "Framework adapter production authority dossiers bind adapter matrices, native hook releases, optional runtime service authority, compatibility evidence, freshness windows, and production-claim limits for maintained native framework hooks.",
         "reference": "src/trustai/framework_adapter_authority.py",

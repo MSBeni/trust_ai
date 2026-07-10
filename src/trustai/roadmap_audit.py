@@ -277,15 +277,18 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
         "roadmap_ref": "Phase 2 feature 1; Phase 3 feature 1",
         "evidence_paths": [
             "src/trustai/compliance.py",
+            "src/trustai/compliance_authority.py",
             "src/trustai/eu_ai_act.py",
             "src/trustai/eu_data_plane.py",
+            "docs/specs/compliance-production-authority-v0.1.md",
             "docs/specs/eu-ai-act-technical-documentation-v0.1.md",
             "docs/specs/eu-data-plane-attestation-v0.1.md",
+            "tests/test_compliance_authority.py",
             "tests/test_eu_ai_act.py",
             "tests/test_eu_data_plane.py",
         ],
         "external_authority": [
-            "A continuously operated Frankfurt/EU data plane and provider-native residency exports remain live deployment evidence.",
+            "Compliance production authority dossiers cover the local/reference authority checklist for framework-control ontology, ISO 42001, NIST AI RMF, EU AI Act, SR 11-7, SOC 2, proof-pack source replay, selective regulator disclosure, GRC exports, EU data-plane sovereignty, and conformity-assessment review; actual fresh GRC-platform acceptance, regulator/supervisor acceptance, conformity-assessment review, and continuously operated EU data-plane provider exports remain external deployment evidence.",
         ],
     },
     {
