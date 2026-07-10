@@ -606,6 +606,15 @@ from .identity_provider_lifecycle_operation import (
     verify_identity_provider_lifecycle_operation_receipt,
     write_identity_provider_lifecycle_operation_receipt,
 )
+from .identity_provider_authority import (
+    IDENTITY_PROVIDER_AUTHORITY_MODES,
+    append_identity_provider_authority_dossier,
+    build_identity_provider_authority_dossier,
+    load_identity_provider_authority_dossier,
+    parse_identity_provider_authority_evidence_arg,
+    verify_identity_provider_authority_dossier,
+    write_identity_provider_authority_dossier,
+)
 from .identity_provider_lifecycle_worker import (
     IDENTITY_PROVIDER_LIFECYCLE_WORKER_MODES,
     IDENTITY_PROVIDER_LIFECYCLE_WORKER_OPERATION_KINDS,
@@ -2175,6 +2184,116 @@ def cmd_identity_lifecycle_worker_append(args: argparse.Namespace) -> int:
         print(f"identity provider lifecycle worker entry: {args.out}")
     print(f"identity provider lifecycle worker entry id: {entry['entry_id']}")
     print(f"worker operation id: {receipt['worker_operation_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def _identity_provider_authority_source_kwargs(sources: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "lifecycle_operation_receipt": sources["lifecycle_operation"],
+        "identity_provider_attestation": sources["identity_attestation"],
+        "identity_provider_session_receipt": sources["identity_session"],
+        "identity_payload": sources["identity_payload"],
+        "identity_payload_path": sources["identity_payload_path"],
+        "vendor_identity_receipt": sources["vendor_identity"],
+        "proof_packs": sources["packs"],
+        "trust_network_manifest": sources["manifest"],
+    }
+
+
+def cmd_identity_provider_authority(args: argparse.Namespace) -> int:
+    sources = _load_identity_lifecycle_worker_sources(args)
+    worker = load_identity_provider_lifecycle_worker_receipt(args.worker_receipt)
+    try:
+        evidence = [parse_identity_provider_authority_evidence_arg(value) for value in args.authority_evidence]
+        dossier = build_identity_provider_authority_dossier(
+            worker,
+            **_identity_provider_authority_source_kwargs(sources),
+            mode=args.mode,
+            environment=args.environment,
+            dossier_ref=args.dossier_ref,
+            authority_ref=args.authority_ref,
+            producer_ref=args.producer_ref,
+            authority_evidence=evidence,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"identity provider authority dossier failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_identity_provider_authority_dossier(
+        dossier,
+        worker_receipt=worker,
+        **_identity_provider_authority_source_kwargs(sources),
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if not result.ok:
+        print("identity provider authority verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_identity_provider_authority_dossier(args.out, dossier)
+    print(f"identity provider authority dossier: {args.out}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"worker operation id: {worker['worker_operation_id']}")
+    print(f"covered requirements: {result.covered_count}/{result.required_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_identity_provider_authority_verify(args: argparse.Namespace) -> int:
+    dossier = load_identity_provider_authority_dossier(args.dossier)
+    worker = load_identity_provider_lifecycle_worker_receipt(args.worker_receipt)
+    sources = _load_identity_lifecycle_worker_sources(args)
+    result = verify_identity_provider_authority_dossier(
+        dossier,
+        worker_receipt=worker,
+        **_identity_provider_authority_source_kwargs(sources),
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified identity provider authority dossier: {args.dossier}")
+        print(f"covered requirements: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"identity provider authority dossier verification failed: {args.dossier}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_identity_provider_authority_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    dossier = load_identity_provider_authority_dossier(args.dossier)
+    worker = load_identity_provider_lifecycle_worker_receipt(args.worker_receipt)
+    sources = _load_identity_lifecycle_worker_sources(args)
+    try:
+        entry = append_identity_provider_authority_dossier(
+            chain,
+            dossier,
+            worker_receipt=worker,
+            **_identity_provider_authority_source_kwargs(sources),
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"identity provider authority dossier append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"identity provider authority entry: {args.out}")
+    print(f"identity provider authority entry id: {entry['entry_id']}")
+    print(f"dossier id: {dossier['dossier_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
@@ -16663,6 +16782,46 @@ def build_parser() -> argparse.ArgumentParser:
     identity_lifecycle_worker_append.add_argument("--out", default="artifacts/identity-provider-lifecycle-worker-entry.json")
     _add_state_args(identity_lifecycle_worker_append)
     identity_lifecycle_worker_append.set_defaults(func=cmd_identity_lifecycle_worker_append)
+
+    def _add_identity_provider_authority_sources(parser: argparse.ArgumentParser, include_dossier: bool = False) -> None:
+        if include_dossier:
+            parser.add_argument("dossier")
+        parser.add_argument("worker_receipt")
+        _add_identity_lifecycle_worker_sources(parser)
+
+    def _add_identity_provider_authority_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--mode", choices=sorted(IDENTITY_PROVIDER_AUTHORITY_MODES), default="provider-dossier")
+        parser.add_argument("--environment")
+        parser.add_argument("--dossier-ref", required=True)
+        parser.add_argument("--authority-ref", required=True)
+        parser.add_argument("--producer-ref", required=True)
+        parser.add_argument("--authority-evidence", action="append", default=[])
+        parser.add_argument("--generated-at")
+        parser.add_argument("--require-complete", action="store_true")
+        parser.add_argument("--require-fresh", action="store_true")
+        parser.add_argument("--now")
+        parser.add_argument("--out", default="artifacts/identity-provider-authority.json")
+
+    identity_provider_authority = subparsers.add_parser("identity-provider-authority", help="write a signed identity-provider production authority dossier")
+    _add_identity_provider_authority_sources(identity_provider_authority)
+    _add_identity_provider_authority_fields(identity_provider_authority)
+    identity_provider_authority.set_defaults(func=cmd_identity_provider_authority)
+
+    identity_provider_authority_verify = subparsers.add_parser("identity-provider-authority-verify", help="verify a signed identity-provider production authority dossier")
+    _add_identity_provider_authority_sources(identity_provider_authority_verify, include_dossier=True)
+    identity_provider_authority_verify.add_argument("--require-complete", action="store_true")
+    identity_provider_authority_verify.add_argument("--require-fresh", action="store_true")
+    identity_provider_authority_verify.add_argument("--now")
+    identity_provider_authority_verify.set_defaults(func=cmd_identity_provider_authority_verify)
+
+    identity_provider_authority_append = subparsers.add_parser("identity-provider-authority-append", help="append a verified identity-provider authority dossier as chain evidence")
+    _add_identity_provider_authority_sources(identity_provider_authority_append, include_dossier=True)
+    identity_provider_authority_append.add_argument("--require-complete", action="store_true")
+    identity_provider_authority_append.add_argument("--require-fresh", action="store_true")
+    identity_provider_authority_append.add_argument("--now")
+    identity_provider_authority_append.add_argument("--out", default="artifacts/identity-provider-authority-entry.json")
+    _add_state_args(identity_provider_authority_append)
+    identity_provider_authority_append.set_defaults(func=cmd_identity_provider_authority_append)
     delegation = subparsers.add_parser("delegation", help="append multi-agent delegation evidence to the chain")
     delegation.add_argument("delegation")
     _add_state_args(delegation)

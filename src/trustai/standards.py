@@ -97,6 +97,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/identity-provider-session-v0.1.md",
     "docs/specs/identity-provider-lifecycle-operation-v0.1.md",
     "docs/specs/identity-provider-lifecycle-worker-v0.1.md",
+    "docs/specs/identity-provider-production-authority-v0.1.md",
     "docs/specs/procurement-clause-v0.1.md",
     "docs/specs/procurement-integration-v0.1.md",
     "docs/specs/marketplace-v0.1.md",
@@ -890,6 +891,16 @@ CONFORMANCE_TARGETS = (
         ],
     },
     {
+        "id": "identity-provider-production-authority-dossiers",
+        "description": "Identity provider production authority dossiers bind lifecycle worker receipts to live identity-provider event streams, token/session propagation, lifecycle APIs, provider audit exports, credential custody, scheduler/queue evidence, freshness windows, and production-claim limits.",
+        "reference": "src/trustai/identity_provider_authority.py",
+        "commands": [
+            "python -m trustai identity-provider-authority artifacts/identity-provider-lifecycle-worker.json artifacts/identity-provider-lifecycle-operation.json artifacts/identity-provider-attestation.json --identity-payload examples/aitrade/identity-inventory.json --vendor-identity artifacts/vendor-identity-receipt.json --manifest artifacts/trust-network-manifest.json --pack artifacts/aitrade-proof-pack.json --identity-session artifacts/identity-provider-session.json --mode provider-dossier --environment aitrade-prod --dossier-ref dossier:identity-provider-authority/okta-prod --authority-ref authority:identity-provider/okta-prod --producer-ref oidc:trustai.example/identity-provider-authority-worker --authority-evidence 'live-identity-provider-event-streams,identity-provider,okta:system-log/query/aitrade-agent-events,sha256:identity-provider-live-event-streams,Okta system-log export for governed agent lifecycle events;issuer=Okta;subject=aitrade-prod governed agent identity events;source_uri=https://okta.example/system-log/aitrade-agent-events;issued_at=2026-07-12T02:10:00Z;expires_at=2026-07-19T02:10:00Z' --generated-at 2026-07-12T02:12:00Z --now 2026-07-15T00:00:00Z",
+            "python -m trustai identity-provider-authority-verify artifacts/identity-provider-authority.json artifacts/identity-provider-lifecycle-worker.json artifacts/identity-provider-lifecycle-operation.json artifacts/identity-provider-attestation.json --identity-payload examples/aitrade/identity-inventory.json --vendor-identity artifacts/vendor-identity-receipt.json --manifest artifacts/trust-network-manifest.json --pack artifacts/aitrade-proof-pack.json --identity-session artifacts/identity-provider-session.json --now 2026-07-15T00:00:00Z",
+            "python -m unittest tests.test_identity_provider_authority",
+        ],
+    },
+    {
         "id": "procurement-clause-receipts",
         "description": "Procurement clause receipts bind buyer contract references to verified trust-network manifests and accepted vendor proof packs.",
         "reference": "src/trustai/procurement_clause.py",
@@ -1062,6 +1073,7 @@ def build_standards_submission(
             "Publish marketplace distribution receipt format for chain-backed catalog publication evidence.",
             "Publish marketplace author governance receipt format for third-party author onboarding, review, entitlement, billing, payout, and revocation evidence.",
             "Publish marketplace settlement receipt format for entitlement checks, invoice, revenue-share, payout, and tax-custody evidence.",
+            "Publish identity-provider production authority dossier format for live identity event streams, token/session propagation, lifecycle APIs, provider audit exports, credential custody, scheduler/queue evidence, and freshness-gated production claims.",
             "Publish trust-network service attestation format for hosted registry and marketplace evidence.",
             "Publish trust-network production authority dossier format for hosted registry, marketplace, identity-provider, settlement, revocation, callback, and observability authority evidence.",
             "Publish verifier public release authority dossier format for provider workflow, release API, artifact, transparency-log, audit-log, and credential-custody authority evidence.",
