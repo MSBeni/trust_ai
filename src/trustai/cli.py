@@ -13604,6 +13604,8 @@ def cmd_demo(args: argparse.Namespace) -> int:
     append_events(chain, load_events(events_path), key=args.key)
     append_mcp_transcript(chain, load_mcp_transcript(mcp_path), key=args.key)
     append_delegation(chain, load_delegation(delegation_path), key=args.key)
+    delegation_graph = build_delegation_graph(chain, contract_hash=contract_hash(contract), key=args.key)
+    append_delegation_graph(chain, delegation_graph, source_chain=chain, key=args.key)
     append_runtime_attestation(chain, contract, load_action(action_path), key=args.key)
     shadow = load_shadow_replay(shadow_path)
     append_shadow_replay(chain, contract, shadow, key=args.key)

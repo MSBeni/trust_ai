@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 from pathlib import Path
@@ -10,6 +10,7 @@ from .contracts import contract_hash, find_contract_registration
 from .crypto import sign_value
 from .frameworks import default_framework_mappings
 from .pdf import write_text_pdf
+from .registry import DELEGATION_GRAPH_ENTRY_TYPE
 
 PROOF_PACK_SPEC_VERSION = "trustai.proof-pack/0.1"
 PROOF_PACK_CONTEXT = "https://trustai.dev/spec/proof-pack/v0.1"
@@ -21,10 +22,43 @@ def _payload_contract_hash(entry: dict[str, Any]) -> str | None:
         return None
     if payload.get("contract_hash"):
         return payload.get("contract_hash")
+    filters = payload.get("filters")
+    if isinstance(filters, dict) and filters.get("contract_hash"):
+        return filters.get("contract_hash")
+    summary = payload.get("summary")
+    if isinstance(summary, dict):
+        contract_hashes = summary.get("contract_hashes")
+        if isinstance(contract_hashes, list) and len(contract_hashes) == 1 and contract_hashes[0]:
+            return contract_hashes[0]
+    graph = payload.get("delegation_graph")
+    if isinstance(graph, dict):
+        graph_filters = graph.get("filters")
+        if isinstance(graph_filters, dict) and graph_filters.get("contract_hash"):
+            return graph_filters.get("contract_hash")
     decision = payload.get("decision")
     if isinstance(decision, dict):
         return decision.get("contract_hash")
     return None
+
+
+def _graph_source_entry_ids(entry: dict[str, Any]) -> list[str]:
+    if entry.get("entry_type") != DELEGATION_GRAPH_ENTRY_TYPE:
+        return []
+    graph = entry.get("payload", {}).get("delegation_graph")
+    if not isinstance(graph, dict):
+        return []
+    entry_ids: list[str] = []
+    for node in graph.get("nodes", []):
+        if isinstance(node, dict):
+            source = node.get("source_entry")
+            if isinstance(source, dict) and source.get("entry_id"):
+                entry_ids.append(str(source["entry_id"]))
+    for edge in graph.get("edges", []):
+        if isinstance(edge, dict):
+            source = edge.get("source_entry")
+            if isinstance(source, dict) and source.get("entry_id"):
+                entry_ids.append(str(source["entry_id"]))
+    return entry_ids
 
 
 def _related_entries(chain: EvidenceChain, digest: str, required: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -34,6 +68,18 @@ def _related_entries(chain: EvidenceChain, digest: str, required: list[dict[str,
             selected[entry["entry_id"]] = entry
     for entry in required:
         selected[entry["entry_id"]] = entry
+
+    changed = True
+    while changed:
+        changed = False
+        for entry in list(selected.values()):
+            for entry_id in _graph_source_entry_ids(entry):
+                if entry_id in selected:
+                    continue
+                source_entry = chain.find_entry(entry_id)
+                if source_entry is not None:
+                    selected[entry_id] = source_entry
+                    changed = True
     return sorted(selected.values(), key=lambda item: item["index"])
 
 

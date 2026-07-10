@@ -249,6 +249,7 @@ def append_delegation_graph(
         "source_chain": graph.get("source_chain"),
         "filters": graph.get("filters", {}),
         "summary": graph.get("summary", {}),
+        "delegation_graph": graph,
     }
     return chain.append(DELEGATION_GRAPH_ENTRY_TYPE, payload, key=key, timestamp=graph.get("generated_at"))
 

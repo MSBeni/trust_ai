@@ -16,6 +16,13 @@ from .keyring import verify_entry_with_keyring, verify_value_with_keyring
 from .merkle import verify_inclusion
 from .mcp_gateway import MCP_TOOL_CALL_ENTRY_TYPE, verify_mcp_transcript_entries
 from .proofpack import PROOF_PACK_SPEC_VERSION
+from .registry import (
+    AGENT_INVENTORY_ENTRY_TYPE,
+    DELEGATION_ENTRY_TYPE,
+    DELEGATION_GRAPH_ENTRY_TYPE,
+    DELEGATION_GRAPH_SCHEMA,
+    verify_delegation_graph,
+)
 from .shadow import (
     SOAK_REPORT_ENTRY_TYPE,
     SHADOW_REPLAY_ENTRY_TYPE,
@@ -71,6 +78,7 @@ def verify_proof_pack(
     shadow_entries: list[dict[str, Any]] = []
     mcp_entries: list[dict[str, Any]] = []
     soak_entries: list[dict[str, Any]] = []
+    delegation_graph_entries: list[dict[str, Any]] = []
 
     if not root:
         errors.append("chain tree root missing")
@@ -105,6 +113,8 @@ def verify_proof_pack(
                 mcp_entries.append(entry)
             if entry_type == SOAK_REPORT_ENTRY_TYPE:
                 soak_entries.append(entry)
+            if entry_type == DELEGATION_GRAPH_ENTRY_TYPE:
+                delegation_graph_entries.append(entry)
 
     contract_entry = entry_by_type.get(CONTRACT_ENTRY_TYPE)
     eval_entry = entry_by_type.get(EVAL_ENTRY_TYPE)
@@ -239,6 +249,15 @@ def verify_proof_pack(
         mcp_result = verify_mcp_transcript_entries(mcp_entries, contract_hash=contract_digest)
         errors.extend(mcp_result.errors)
         warnings.extend(mcp_result.warnings)
+    if contract_digest and delegation_graph_entries:
+        _verify_delegation_graph_pack_entries(
+            delegation_graph_entries,
+            entries,
+            contract_hash=contract_digest,
+            key=key,
+            errors=errors,
+            warnings=warnings,
+        )
     framework_mappings = proof_pack.get("framework_mappings")
     if not isinstance(framework_mappings, list):
         errors.append("framework_mappings must be a list")
@@ -249,3 +268,85 @@ def verify_proof_pack(
         warnings.append(f"proof pack is valid but gate outcome is {decision}")
 
     return VerificationResult(ok=not errors, errors=errors, warnings=warnings, decision=decision)
+
+
+def _verify_delegation_graph_pack_entries(
+    graph_entries: list[dict[str, Any]],
+    pack_entries: list[dict[str, Any]],
+    *,
+    contract_hash: str,
+    key: str | None,
+    errors: list[str],
+    warnings: list[str],
+) -> None:
+    entry_by_id = {entry.get("entry_id"): entry for entry in pack_entries if isinstance(entry, dict)}
+    for graph_entry in graph_entries:
+        label = f"delegation graph entry {graph_entry.get('index')}"
+        payload = graph_entry.get("payload", {})
+        if not isinstance(payload, dict):
+            errors.append(f"{label} payload missing")
+            continue
+        if payload.get("schema") != DELEGATION_GRAPH_SCHEMA:
+            errors.append(f"{label} schema mismatch")
+        filters = payload.get("filters", {})
+        if isinstance(filters, dict) and filters.get("contract_hash") not in (None, contract_hash):
+            errors.append(f"{label} references a different contract hash")
+        graph = payload.get("delegation_graph")
+        if not isinstance(graph, dict):
+            errors.append(f"{label} missing embedded delegation graph")
+            continue
+        if payload.get("delegation_graph_id") != graph.get("delegation_graph_id"):
+            errors.append(f"{label} delegation_graph_id mismatch")
+        if payload.get("delegation_graph_hash") != content_hash(graph):
+            errors.append(f"{label} delegation_graph_hash mismatch")
+        if payload.get("summary") != graph.get("summary"):
+            errors.append(f"{label} summary mismatch")
+        if payload.get("filters") != graph.get("filters"):
+            errors.append(f"{label} filters mismatch")
+        if payload.get("source_chain") != graph.get("source_chain"):
+            errors.append(f"{label} source_chain mismatch")
+
+        graph_filters = graph.get("filters", {})
+        if isinstance(graph_filters, dict) and graph_filters.get("contract_hash") not in (None, contract_hash):
+            errors.append(f"{label} embedded graph references a different contract hash")
+        contract_hashes = graph.get("summary", {}).get("contract_hashes", [])
+        if isinstance(contract_hashes, list) and contract_hash not in contract_hashes:
+            errors.append(f"{label} embedded graph summary does not include packed contract hash")
+
+        result = verify_delegation_graph(graph, key=key)
+        errors.extend(f"{label}: {error}" for error in result.errors)
+        warnings.extend(
+            f"{label}: {warning}"
+            for warning in result.warnings
+            if "source chain not supplied" not in warning
+        )
+
+        for edge in graph.get("edges", []):
+            if not isinstance(edge, dict):
+                continue
+            source = edge.get("source_entry", {})
+            source_id = source.get("entry_id") if isinstance(source, dict) else None
+            source_entry = entry_by_id.get(source_id)
+            if source_entry is None:
+                errors.append(f"{label} edge {edge.get('edge_id')} source delegation entry not embedded in proof pack")
+                continue
+            if source_entry.get("entry_type") != DELEGATION_ENTRY_TYPE:
+                errors.append(f"{label} edge {edge.get('edge_id')} source entry is not delegation evidence")
+            if source_entry.get("payload", {}).get("delegation_hash") != edge.get("delegation_hash"):
+                errors.append(f"{label} edge {edge.get('edge_id')} source delegation hash mismatch")
+            if source_entry.get("payload", {}).get("contract_hash") != contract_hash:
+                errors.append(f"{label} edge {edge.get('edge_id')} source delegation contract mismatch")
+
+        for node in graph.get("nodes", []):
+            if not isinstance(node, dict) or not node.get("inventory_observed"):
+                continue
+            source = node.get("source_entry", {})
+            source_id = source.get("entry_id") if isinstance(source, dict) else None
+            source_entry = entry_by_id.get(source_id)
+            if source_entry is None:
+                errors.append(f"{label} node {node.get('agent_ref')} source inventory entry not embedded in proof pack")
+                continue
+            if source_entry.get("entry_type") != AGENT_INVENTORY_ENTRY_TYPE:
+                errors.append(f"{label} node {node.get('agent_ref')} source entry is not inventory evidence")
+            if source_entry.get("payload", {}).get("agent_hash") != node.get("agent_hash"):
+                errors.append(f"{label} node {node.get('agent_ref')} source inventory hash mismatch")

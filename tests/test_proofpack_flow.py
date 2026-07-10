@@ -9,12 +9,24 @@ from trustai.contracts import load_contract, register_contract
 from trustai.crypto import sign_value
 from trustai.gate import append_eval_and_gate
 from trustai.proofpack import compile_proof_pack
+from trustai.registry import (
+    AGENT_INVENTORY_ENTRY_TYPE,
+    DELEGATION_GRAPH_ENTRY_TYPE,
+    append_delegation,
+    append_delegation_graph,
+    append_inventory,
+    build_delegation_graph,
+    load_delegation,
+    load_inventory,
+)
 from trustai.verifier import verify_proof_pack
 
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = ROOT / "examples" / "aitrade" / "verification-contract.yaml"
 RESULTS = ROOT / "examples" / "aitrade" / "eval-results.json"
+INVENTORY = ROOT / "examples" / "aitrade" / "agent-inventory.json"
+DELEGATION = ROOT / "examples" / "aitrade" / "delegation.json"
 
 
 class ProofPackFlowTests(unittest.TestCase):
@@ -35,6 +47,25 @@ class ProofPackFlowTests(unittest.TestCase):
             pdf_path=tmp / "pack.pdf",
         )
 
+    def _build_pack_with_delegation_graph(self, tmp: Path):
+        chain = EvidenceChain.load(tmp / "chain.json", tenant_id="test")
+        contract = load_contract(CONTRACT)
+        register_contract(chain, contract)
+        append_inventory(chain, load_inventory(INVENTORY))
+        delegation = load_delegation(DELEGATION)
+        append_delegation(chain, delegation)
+        graph = build_delegation_graph(
+            chain,
+            contract_hash=delegation["contract_hash"],
+            generated_at="2026-07-03T12:04:00Z",
+        )
+        append_delegation_graph(chain, graph, source_chain=chain)
+        results = json.loads(RESULTS.read_text(encoding="utf-8"))
+        eval_entry, gate_entry, decision = append_eval_and_gate(chain, contract, results)
+        chain.save()
+        pack = compile_proof_pack(chain, contract, eval_entry, gate_entry, decision, out_path=tmp / "pack.json")
+        return pack, graph
+
     def _resign_pack(self, pack: dict) -> None:
         body = without_keys(pack, "pack_id", "signatures")
         pack_id = content_hash(body)
@@ -51,6 +82,31 @@ class ProofPackFlowTests(unittest.TestCase):
             self.assertEqual("passed", result.decision)
             self.assertTrue((tmp / "pack.json").exists())
             self.assertTrue((tmp / "pack.pdf").read_bytes().startswith(b"%PDF"))
+
+    def test_proof_pack_includes_and_verifies_delegation_graph(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            pack, graph = self._build_pack_with_delegation_graph(Path(tmp_dir))
+            result = verify_proof_pack(pack)
+
+            self.assertTrue(result.ok, result.errors)
+            entry_types = [entry["entry_type"] for entry in pack["chain"]["entries"]]
+            self.assertIn(DELEGATION_GRAPH_ENTRY_TYPE, entry_types)
+            self.assertGreaterEqual(entry_types.count(AGENT_INVENTORY_ENTRY_TYPE), 2)
+            graph_entry = next(entry for entry in pack["chain"]["entries"] if entry["entry_type"] == DELEGATION_GRAPH_ENTRY_TYPE)
+            self.assertEqual(graph["delegation_graph_id"], graph_entry["payload"]["delegation_graph_id"])
+            self.assertEqual(graph["delegation_graph_id"], graph_entry["payload"]["delegation_graph"]["delegation_graph_id"])
+            self.assertEqual(1, graph_entry["payload"]["summary"]["edge_count"])
+
+    def test_proof_pack_verifier_replays_embedded_delegation_graph(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            pack, _graph = self._build_pack_with_delegation_graph(Path(tmp_dir))
+            graph_entry = next(entry for entry in pack["chain"]["entries"] if entry["entry_type"] == DELEGATION_GRAPH_ENTRY_TYPE)
+            graph_entry["payload"]["delegation_graph"]["edges"][0]["delegation"]["reason"] = "changed after graph signing"
+
+            result = verify_proof_pack(pack)
+
+            self.assertFalse(result.ok)
+            self.assertTrue(any("delegation graph entry" in error for error in result.errors))
 
     def test_contract_tamper_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

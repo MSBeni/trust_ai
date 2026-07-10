@@ -56,9 +56,13 @@ An offline verifier must reject the pack when any of these checks fail:
 12. any included `soak_report.completed` entry contains source soak-window,
     hash, metric-check, incident, drift-alarm, timestamp, outcome, or contract
     evidence that cannot be replayed against the packed contract body;
-13. the packed framework control mappings differ from the deterministic mappings
+13. any included `agent.delegation_graph.exported` entry omits the embedded
+    signed graph, mismatches the graph hash/id/summary/filter fields, references
+    another contract, fails graph signature/hash/source inclusion checks, or
+    names source inventory/delegation entries that are not embedded in the pack;
+14. the packed framework control mappings differ from the deterministic mappings
     for the packed gate decision;
-14. the packed subject agent or environment differs from the registered
+15. the packed subject agent or environment differs from the registered
     contract agent, gate decision agent, eval entry agent, or eval results
     environment.
 
@@ -66,6 +70,12 @@ When a gate decision relies on `human_approval.granted` entries, those entries
 must be included in `chain.entries` with valid signatures, timestamp tokens,
 payload hashes, and inclusion proofs. Removing them changes the recomputed gate
 approval result and invalidates the pack.
+
+When a contract has `agent.delegation_graph.exported` entries, the compiler
+includes the graph receipt plus the inventory and delegation source entries named
+by that graph. This keeps the proof pack self-contained: an offline verifier can
+replay the graph artifact, verify its source-entry inclusion proofs, and confirm
+that every graph edge is backed by packed delegation evidence.
 
 The MVP includes signatures inside the JSON artifact. Later versions should use
 detached signatures and public-key/KMS-backed verification material.
