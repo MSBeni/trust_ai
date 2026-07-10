@@ -45,6 +45,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/provider-delivery-service-attestation-v0.1.md",
     "docs/specs/provider-delivery-worker-v0.1.md",
     "docs/specs/provider-delivery-production-authority-v0.1.md",
+    "docs/specs/provider-approval-production-authority-v0.1.md",
     "docs/specs/provider-webhook-v0.1.md",
     "docs/specs/provider-audit-correlation-v0.1.md",
     "docs/specs/provider-audit-stream-v0.1.md",
@@ -415,6 +416,16 @@ CONFORMANCE_TARGETS = (
             "python -m trustai provider-delivery-worker artifacts/github-check-run-delivery.json --service-attestation artifacts/provider-delivery-service-attestation.json --payload artifacts/github-check-run-payload.json --provider-operations-service artifacts/provider-operations-service-attestation.json --mode dispatch-worker --environment aitrade-prod --worker-ref worker:provider-delivery/github --run-ref worker-run:provider-delivery/github/2026-07-08T05:15:00Z --operation-kind provider_payload_dispatch --actor-ref oidc:trustai.example/provider-delivery-worker --schedule-ref schedule:provider-delivery/github/continuous --cadence-seconds 30 --lease-ref lease:provider-delivery/github/2026-07-08T05:15:00Z --checkpoint-ref checkpoint:provider-delivery/github --checkpoint-hash sha256:provider-delivery-worker-checkpoint --queue-ref queue:provider-delivery/github --queue-message-ref queue-message:provider-delivery/github/check-run --dead-letter-queue-ref queue:provider-delivery/github-dlq --destination-ref https://api.github.com/repos/volelabs/trust_ai/check-runs --idempotency-record-hash sha256:provider-delivery-worker-idempotency --provider-request-ref provider-request:github/check-run/2026-07-08T05:15:00Z --request-hash sha256:provider-delivery-worker-request --delivery-log-ref delivery-log:provider-delivery/github --delivery-log-root sha256:provider-delivery-worker-delivery-root --provider-event-log-ref github:check-run-events/aitrade --provider-event-log-root sha256:provider-delivery-worker-provider-event-root --metrics-ref metrics:provider-delivery/workers --audit-log-ref audit-log:provider-delivery/workers --audit-log-root sha256:provider-delivery-worker-audit-root --credential-ref env:PROVIDER_DELIVERY_WORKER_TOKEN --provider-credential-ref env:GITHUB_TOKEN --retention-until 2033-07-08T00:00:00Z --started-at 2026-07-08T05:15:00Z --completed-at 2026-07-08T05:15:01Z",
             "python -m trustai provider-delivery-worker-verify artifacts/provider-delivery-worker.json artifacts/github-check-run-delivery.json --service-attestation artifacts/provider-delivery-service-attestation.json --payload artifacts/github-check-run-payload.json --provider-operations-service artifacts/provider-operations-service-attestation.json",
             "python -m unittest tests.test_provider_delivery_worker",
+        ],
+    },
+    {
+        "id": "provider-approval-production-authority-dossiers",
+        "description": "Provider approval production authority dossiers bind Slack approval callbacks, provider webhook receipts, provider delivery authority, and provider operations authority to CI/CD approval production evidence, freshness windows, and production-claim limits.",
+        "reference": "src/trustai/provider_approval_authority.py",
+        "commands": [
+            "python -m trustai provider-approval-authority artifacts/approval-request.json artifacts/approval-callback.json --webhook artifacts/github-provider-webhook.json --delivery-authority artifacts/provider-delivery-authority.json --operations-authority artifacts/provider-operations-authority.json --environment aitrade-prod --dossier-ref dossier:provider-approval-authority/github-prod --authority-ref authority:provider-approval/github-prod --producer-ref oidc:trustai.example/provider-approval-authority-worker --authority-evidence \"hosted-approval-callback-ingress,hosted-service,service:provider-approval/github-prod,sha256:provider-approval-hosted-ingress-authority,Hosted approval callback ingress and worker fleet export;issuer=TrustAI Cloud;subject=aitrade-prod provider approval callback fleet;source_uri=https://ops.example/trustai/provider-approval/github-prod;issued_at=2026-07-08T06:02:00Z;expires_at=2026-07-15T06:02:00Z\" --generated-at 2026-07-08T06:05:00Z --out artifacts/provider-approval-authority.json",
+            "python -m trustai provider-approval-authority-verify artifacts/provider-approval-authority.json artifacts/approval-request.json artifacts/approval-callback.json --webhook artifacts/github-provider-webhook.json --delivery-authority artifacts/provider-delivery-authority.json --operations-authority artifacts/provider-operations-authority.json",
+            "python -m unittest tests.test_provider_approval_authority",
         ],
     },
     {

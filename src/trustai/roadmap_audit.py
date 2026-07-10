@@ -183,15 +183,18 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
         "evidence_paths": [
             "src/trustai/cicd.py",
             "src/trustai/approval_callback.py",
+            "src/trustai/provider_approval_authority.py",
             "src/trustai/provider_delivery_service.py",
             "src/trustai/provider_webhook.py",
             "docs/specs/approval-callback-v0.1.md",
+            "docs/specs/provider-approval-production-authority-v0.1.md",
             "docs/specs/provider-delivery-v0.1.md",
             "tests/test_approval_callback.py",
+            "tests/test_provider_approval_authority.py",
             "tests/test_provider_delivery.py",
         ],
         "external_authority": [
-            "Credentialed live GitHub/GitLab/Slack operations require production credentials, public ingress, and provider-owned response logs.",
+            "Provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence.",
         ],
     },
     {

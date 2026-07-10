@@ -180,6 +180,15 @@ from .approval_callback import (
     verify_approval_callback,
     write_approval_callback,
 )
+from .provider_approval_authority import (
+    PROVIDER_APPROVAL_AUTHORITY_MODES,
+    append_provider_approval_authority_dossier,
+    build_provider_approval_authority_dossier,
+    load_provider_approval_authority_dossier,
+    parse_provider_approval_authority_evidence_arg,
+    verify_provider_approval_authority_dossier,
+    write_provider_approval_authority_dossier,
+)
 from .approvals import append_approval, approval_entries_for_contract, load_approval
 from .auditor import write_auditor_html
 from .auditor_accreditation import (
@@ -9392,6 +9401,123 @@ def cmd_approval_callback_append(args: argparse.Namespace) -> int:
         print(f"approval callback entry: {args.out}")
     print(f"approval entry id: {entry['entry_id']}")
     print(f"callback id: {callback['callback_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+
+def _load_provider_approval_authority_sources(args: argparse.Namespace) -> tuple[dict, dict, list[dict], dict | None, dict | None]:
+    approval_request = load_approval_request(args.approval_request)
+    approval_callback = load_approval_callback(args.approval_callback)
+    webhook_receipts = [load_provider_webhook_receipt(path) for path in (getattr(args, "webhook", None) or [])]
+    provider_delivery_authority = load_provider_delivery_authority_dossier(args.delivery_authority) if getattr(args, "delivery_authority", None) else None
+    provider_operations_authority = load_provider_operations_authority_dossier(args.operations_authority) if getattr(args, "operations_authority", None) else None
+    return approval_request, approval_callback, webhook_receipts, provider_delivery_authority, provider_operations_authority
+
+
+def cmd_provider_approval_authority(args: argparse.Namespace) -> int:
+    approval_request, approval_callback, webhook_receipts, provider_delivery_authority, provider_operations_authority = _load_provider_approval_authority_sources(args)
+    try:
+        evidence = [parse_provider_approval_authority_evidence_arg(value) for value in (args.authority_evidence or [])]
+        dossier = build_provider_approval_authority_dossier(
+            approval_request,
+            approval_callback,
+            webhook_receipts=webhook_receipts,
+            provider_delivery_authority=provider_delivery_authority,
+            provider_operations_authority=provider_operations_authority,
+            mode=args.mode,
+            environment=args.environment,
+            dossier_ref=args.dossier_ref,
+            authority_ref=args.authority_ref,
+            producer_ref=args.producer_ref,
+            authority_evidence=evidence,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"provider approval authority dossier failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_provider_approval_authority_dossier(
+        dossier,
+        approval_request=approval_request,
+        approval_callback=approval_callback,
+        webhook_receipts=webhook_receipts,
+        provider_delivery_authority=provider_delivery_authority,
+        provider_operations_authority=provider_operations_authority,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if not result.ok:
+        print("provider approval authority verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_provider_approval_authority_dossier(args.out, dossier)
+    print(f"provider approval authority dossier: {args.out}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"covered requirements: {result.covered_count}/{result.required_count}")
+    print(f"webhook receipts: {len(webhook_receipts)}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_provider_approval_authority_verify(args: argparse.Namespace) -> int:
+    dossier = load_provider_approval_authority_dossier(args.dossier)
+    approval_request, approval_callback, webhook_receipts, provider_delivery_authority, provider_operations_authority = _load_provider_approval_authority_sources(args)
+    result = verify_provider_approval_authority_dossier(
+        dossier,
+        approval_request=approval_request,
+        approval_callback=approval_callback,
+        webhook_receipts=webhook_receipts,
+        provider_delivery_authority=provider_delivery_authority,
+        provider_operations_authority=provider_operations_authority,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified provider approval authority dossier: {args.dossier}")
+        print(f"covered requirements: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"provider approval authority dossier verification failed: {args.dossier}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_provider_approval_authority_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    dossier = load_provider_approval_authority_dossier(args.dossier)
+    approval_request, approval_callback, webhook_receipts, provider_delivery_authority, provider_operations_authority = _load_provider_approval_authority_sources(args)
+    try:
+        entry = append_provider_approval_authority_dossier(
+            chain,
+            dossier,
+            approval_request=approval_request,
+            approval_callback=approval_callback,
+            webhook_receipts=webhook_receipts,
+            provider_delivery_authority=provider_delivery_authority,
+            provider_operations_authority=provider_operations_authority,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"provider approval authority dossier append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"provider approval authority entry: {args.out}")
+    print(f"provider approval authority entry id: {entry['entry_id']}")
+    print(f"dossier id: {dossier['dossier_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
@@ -20130,6 +20256,50 @@ def build_parser() -> argparse.ArgumentParser:
     _add_auto_register(approval_callback_append)
     approval_callback_append.set_defaults(func=cmd_approval_callback_append)
 
+
+    def _add_provider_approval_authority_sources(parser: argparse.ArgumentParser, include_dossier: bool = False) -> None:
+        if include_dossier:
+            parser.add_argument("dossier")
+        parser.add_argument("approval_request")
+        parser.add_argument("approval_callback")
+        parser.add_argument("--webhook", action="append")
+        parser.add_argument("--delivery-authority")
+        parser.add_argument("--operations-authority")
+        parser.add_argument("--key")
+
+    def _add_provider_approval_authority_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--mode", choices=sorted(PROVIDER_APPROVAL_AUTHORITY_MODES), default="provider-dossier")
+        parser.add_argument("--environment", default="aitrade-prod")
+        parser.add_argument("--dossier-ref", required=True)
+        parser.add_argument("--authority-ref", required=True)
+        parser.add_argument("--producer-ref", required=True)
+        parser.add_argument("--authority-evidence", action="append", help="requirement_id,authority_kind,evidence_ref,evidence_hash,description[;key=value...]")
+        parser.add_argument("--generated-at")
+        parser.add_argument("--require-complete", action="store_true")
+        parser.add_argument("--require-fresh", action="store_true")
+        parser.add_argument("--now")
+        parser.add_argument("--out", default="artifacts/provider-approval-authority.json")
+
+    provider_approval_authority = subparsers.add_parser("provider-approval-authority", help="write a signed CI/CD provider approval production authority dossier")
+    _add_provider_approval_authority_sources(provider_approval_authority)
+    _add_provider_approval_authority_fields(provider_approval_authority)
+    provider_approval_authority.set_defaults(func=cmd_provider_approval_authority)
+
+    provider_approval_authority_verify = subparsers.add_parser("provider-approval-authority-verify", help="verify a signed CI/CD provider approval production authority dossier")
+    _add_provider_approval_authority_sources(provider_approval_authority_verify, include_dossier=True)
+    provider_approval_authority_verify.add_argument("--require-complete", action="store_true")
+    provider_approval_authority_verify.add_argument("--require-fresh", action="store_true")
+    provider_approval_authority_verify.add_argument("--now")
+    provider_approval_authority_verify.set_defaults(func=cmd_provider_approval_authority_verify)
+
+    provider_approval_authority_append = subparsers.add_parser("provider-approval-authority-append", help="append a verified CI/CD provider approval authority dossier as chain evidence")
+    _add_provider_approval_authority_sources(provider_approval_authority_append, include_dossier=True)
+    provider_approval_authority_append.add_argument("--require-complete", action="store_true")
+    provider_approval_authority_append.add_argument("--require-fresh", action="store_true")
+    provider_approval_authority_append.add_argument("--now")
+    provider_approval_authority_append.add_argument("--out", default="artifacts/provider-approval-authority-entry.json")
+    _add_state_args(provider_approval_authority_append)
+    provider_approval_authority_append.set_defaults(func=cmd_provider_approval_authority_append)
     compliance = subparsers.add_parser("compliance-export", help="export framework control mappings")
     compliance.add_argument("pack")
     compliance.add_argument("--out", default="artifacts/compliance-export.json")
