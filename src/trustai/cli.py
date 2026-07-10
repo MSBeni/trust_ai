@@ -5493,9 +5493,10 @@ def cmd_mcp_proxy_capture(args: argparse.Namespace) -> int:
             upstream_ref=args.upstream_ref,
             session_id=args.session_id,
             captured_at=args.captured_at,
+            source_events_path=args.events,
             key=args.key,
         )
-        result = verify_mcp_proxy_capture(capture, key=args.key)
+        result = verify_mcp_proxy_capture(capture, source_events_path=args.events, key=args.key)
     except (OSError, ValueError) as exc:
         print(f"MCP proxy capture failed: {exc}", file=sys.stderr)
         return 1
@@ -5516,7 +5517,7 @@ def cmd_mcp_proxy_capture(args: argparse.Namespace) -> int:
 def cmd_mcp_proxy_capture_verify(args: argparse.Namespace) -> int:
     try:
         capture = load_mcp_proxy_capture(args.capture)
-        result = verify_mcp_proxy_capture(capture, key=args.key)
+        result = verify_mcp_proxy_capture(capture, source_events_path=args.events if args.events else None, key=args.key)
     except (OSError, ValueError) as exc:
         print(f"MCP proxy capture verification failed: {exc}", file=sys.stderr)
         return 1
@@ -5537,7 +5538,7 @@ def cmd_mcp_proxy_capture_append(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
     try:
         capture = load_mcp_proxy_capture(args.capture)
-        entry = append_mcp_proxy_capture(chain, capture, key=args.key)
+        entry = append_mcp_proxy_capture(chain, capture, source_events_path=args.events if args.events else None, key=args.key)
     except (OSError, ValueError) as exc:
         print(f"MCP proxy capture append failed: {exc}", file=sys.stderr)
         return 1
@@ -20499,11 +20500,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     mcp_proxy_verify = subparsers.add_parser("mcp-proxy-capture-verify", help="verify a signed MCP proxy JSON-RPC capture receipt")
     mcp_proxy_verify.add_argument("capture")
+    mcp_proxy_verify.add_argument("--events", help="retained raw MCP proxy events export for byte replay")
     mcp_proxy_verify.add_argument("--key")
     mcp_proxy_verify.set_defaults(func=cmd_mcp_proxy_capture_verify)
 
     mcp_proxy_append = subparsers.add_parser("mcp-proxy-capture-append", help="append a verified MCP proxy capture as chain evidence")
     mcp_proxy_append.add_argument("capture")
+    mcp_proxy_append.add_argument("--events", help="retained raw MCP proxy events export for byte replay")
     mcp_proxy_append.add_argument("--out", default="artifacts/mcp-proxy-capture-entry.json")
     mcp_proxy_append.add_argument("--key")
     _add_state_args(mcp_proxy_append)

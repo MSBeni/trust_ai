@@ -1,7 +1,8 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 from dataclasses import dataclass
+from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
@@ -38,6 +39,10 @@ def load_mcp_transcript(path: str | Path) -> list[dict[str, Any]]:
 
 def load_mcp_proxy_events(path: str | Path) -> list[dict[str, Any]]:
     value = json.loads(Path(path).read_text(encoding="utf-8"))
+    return _mcp_proxy_events_from_value(value)
+
+
+def _mcp_proxy_events_from_value(value: Any) -> list[dict[str, Any]]:
     if isinstance(value, dict) and "events" in value:
         value = value["events"]
     if not isinstance(value, list):
@@ -102,6 +107,7 @@ def build_mcp_proxy_capture(
     upstream_ref: str,
     session_id: str | None = None,
     captured_at: str | None = None,
+    source_events_path: str | Path | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
     if not isinstance(agent, dict) or not agent.get("name") or not agent.get("version"):
@@ -137,6 +143,8 @@ def build_mcp_proxy_capture(
         "events": event_records,
         "tool_calls": tool_calls,
     }
+    if source_events_path is not None:
+        body["proxy_events_artifact"] = _mcp_proxy_events_artifact(source_events_path, [record["event"] for record in event_records])
     capture_id = content_hash(body)
     return {
         **body,
@@ -175,7 +183,12 @@ class McpProxyCaptureVerification:
     warnings: list[str]
 
 
-def verify_mcp_proxy_capture(capture: dict[str, Any], key: str | None = None) -> McpProxyCaptureVerification:
+def verify_mcp_proxy_capture(
+    capture: dict[str, Any],
+    *,
+    source_events_path: str | Path | None = None,
+    key: str | None = None,
+) -> McpProxyCaptureVerification:
     errors: list[str] = []
     warnings: list[str] = []
 
@@ -242,6 +255,21 @@ def verify_mcp_proxy_capture(capture: dict[str, Any], key: str | None = None) ->
         for index, event in enumerate(event_payloads):
             errors.extend(f"MCP proxy event record {index} {error}" for error in _redaction_errors(event.get("message")))
 
+        artifact = capture.get("proxy_events_artifact")
+        if artifact is not None:
+            if not isinstance(artifact, dict):
+                errors.append("MCP proxy capture proxy_events_artifact must be an object")
+            elif source_events_path is None:
+                errors.append("MCP proxy capture proxy_events_artifact requires source_events_path for byte replay")
+            else:
+                try:
+                    expected_artifact = _mcp_proxy_events_artifact(source_events_path, event_payloads)
+                except ValueError as exc:
+                    errors.append(f"MCP proxy capture proxy_events_artifact invalid: {exc}")
+                else:
+                    if artifact != expected_artifact:
+                        errors.append("MCP proxy capture proxy_events_artifact does not match supplied source event bytes")
+
     if expected_records:
         try:
             expected_tool_calls = _tool_calls_from_proxy_records(
@@ -281,9 +309,11 @@ def verify_mcp_proxy_capture(capture: dict[str, Any], key: str | None = None) ->
 def append_mcp_proxy_capture(
     chain: EvidenceChain,
     capture: dict[str, Any],
+    *,
+    source_events_path: str | Path | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
-    result = verify_mcp_proxy_capture(capture, key=key)
+    result = verify_mcp_proxy_capture(capture, source_events_path=source_events_path, key=key)
     if not result.ok:
         raise ValueError("; ".join(result.errors))
     payload = {
@@ -298,6 +328,7 @@ def append_mcp_proxy_capture(
         "tool_call_count": capture["tool_call_count"],
         "event_chain_root": capture["event_chain_root"],
         "transcript_root": capture["transcript_root"],
+        "proxy_events_artifact": capture.get("proxy_events_artifact"),
         "event_hashes": [event["event_hash"] for event in capture["events"]],
         "tool_call_hashes": [content_hash(call) for call in capture["tool_calls"]],
     }
@@ -559,6 +590,32 @@ def _redaction_errors(value: Any, path: str = "message") -> list[str]:
         for index, item in enumerate(value):
             errors.extend(_redaction_errors(item, f"{path}[{index}]"))
     return errors
+
+
+def _mcp_proxy_events_artifact(path: str | Path, normalized_events: list[dict[str, Any]]) -> dict[str, Any]:
+    target = Path(path)
+    if not target.is_file():
+        raise ValueError(f"MCP proxy events artifact file missing: {path}")
+    data = target.read_bytes()
+    try:
+        parsed = json.loads(data.decode("utf-8-sig"))
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"MCP proxy events artifact JSON invalid: {exc}") from exc
+    normalized_from_file = _mcp_proxy_events_from_value(parsed)
+    expected_normalized = [normalize_mcp_proxy_event(event) for event in normalized_events]
+    if normalized_from_file != expected_normalized:
+        raise ValueError("MCP proxy events artifact content does not match supplied redacted proxy events")
+    event_records = build_mcp_proxy_event_chain(normalized_from_file)
+    body = {
+        "path": str(path).replace("\\", "/"),
+        "sha256": "sha256:" + sha256(data).hexdigest(),
+        "size_bytes": len(data),
+        "source_content_hash": content_hash(parsed),
+        "redacted_events_hash": content_hash(normalized_from_file),
+        "event_count": len(normalized_from_file),
+        "event_chain_root": event_records[-1]["event_hash"],
+    }
+    return {**body, "artifact_id": content_hash(body)}
 
 
 def _is_sensitive_key(key: str) -> bool:

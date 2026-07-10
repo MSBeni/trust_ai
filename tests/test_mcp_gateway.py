@@ -1,4 +1,5 @@
-﻿import copy
+import copy
+import hashlib
 import json
 import os
 import subprocess
@@ -36,6 +37,10 @@ AGENT = {
     "version": "sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234",
     "risk_class": "trading-prod-write",
 }
+
+
+def _sha256_ref(path: Path) -> str:
+    return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 class McpGatewayTests(unittest.TestCase):
@@ -85,9 +90,10 @@ class McpGatewayTests(unittest.TestCase):
             proxy_ref="mcp-proxy:trustai/local",
             upstream_ref="mcp-server:aitrade/tools",
             captured_at="2026-07-03T12:00:12Z",
+            source_events_path=MCP_PROXY,
         )
 
-        result = verify_mcp_proxy_capture(capture)
+        result = verify_mcp_proxy_capture(capture, source_events_path=MCP_PROXY)
 
         self.assertTrue(result.ok, result.errors)
         self.assertEqual(2, capture["event_count"])
@@ -96,13 +102,64 @@ class McpGatewayTests(unittest.TestCase):
         self.assertEqual("place_shadow_order", capture["tool_calls"][0]["tool_name"])
         self.assertEqual({"status": "accepted", "order_id": "shadow-order-20260703-001"}, capture["tool_calls"][0]["response"])
         self.assertIn("request_event_hash", capture["tool_calls"][0]["proxy_capture"])
+        self.assertEqual(_sha256_ref(MCP_PROXY), capture["proxy_events_artifact"]["sha256"])
+        self.assertEqual(capture["event_chain_root"], capture["proxy_events_artifact"]["event_chain_root"])
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="mcp-proxy-capture-test")
-            entry = append_mcp_proxy_capture(chain, capture)
+            entry = append_mcp_proxy_capture(chain, capture, source_events_path=MCP_PROXY)
             self.assertEqual(MCP_PROXY_CAPTURE_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(capture["capture_id"], entry["payload"]["capture_id"])
+            self.assertEqual(capture["proxy_events_artifact"]["sha256"], entry["payload"]["proxy_events_artifact"]["sha256"])
             self.assertTrue(chain.verify_all().ok)
+
+    def test_mcp_proxy_capture_replays_source_event_artifact_bytes(self):
+        raw_events_export = json.loads(MCP_PROXY.read_text(encoding="utf-8"))
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            source_events_path = Path(tmp_dir) / "mcp-proxy-events.json"
+            source_events_path.write_text(json.dumps(raw_events_export, indent=2, sort_keys=True), encoding="utf-8")
+            events = load_mcp_proxy_events(source_events_path)
+            capture = build_mcp_proxy_capture(
+                events,
+                agent=AGENT,
+                contract_hash=CONTRACT_HASH,
+                proxy_ref="mcp-proxy:trustai/local",
+                upstream_ref="mcp-server:aitrade/tools",
+                captured_at="2026-07-03T12:00:12Z",
+                source_events_path=source_events_path,
+            )
+            result = verify_mcp_proxy_capture(capture, source_events_path=source_events_path)
+            artifact_sha = _sha256_ref(source_events_path)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(artifact_sha, capture["proxy_events_artifact"]["sha256"])
+        self.assertEqual(capture["event_chain_root"], capture["proxy_events_artifact"]["event_chain_root"])
+        self.assertEqual(2, capture["proxy_events_artifact"]["event_count"])
+
+    def test_mcp_proxy_capture_detects_source_event_artifact_byte_tamper(self):
+        raw_events_export = json.loads(MCP_PROXY.read_text(encoding="utf-8"))
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            source_events_path = Path(tmp_dir) / "mcp-proxy-events.json"
+            source_events_path.write_text(json.dumps(raw_events_export, indent=2, sort_keys=True), encoding="utf-8")
+            events = load_mcp_proxy_events(source_events_path)
+            capture = build_mcp_proxy_capture(
+                events,
+                agent=AGENT,
+                contract_hash=CONTRACT_HASH,
+                proxy_ref="mcp-proxy:trustai/local",
+                upstream_ref="mcp-server:aitrade/tools",
+                captured_at="2026-07-03T12:00:12Z",
+                source_events_path=source_events_path,
+            )
+            source_events_path.write_text(json.dumps(raw_events_export, indent=4, sort_keys=True), encoding="utf-8")
+            result = verify_mcp_proxy_capture(capture, source_events_path=source_events_path)
+
+        self.assertFalse(result.ok)
+        errors = "\n".join(result.errors)
+        self.assertIn("proxy_events_artifact", errors)
+        self.assertIn("bytes", errors)
 
     def test_mcp_proxy_capture_detects_raw_envelope_tamper(self):
         capture = build_mcp_proxy_capture(
@@ -175,7 +232,7 @@ class McpGatewayTests(unittest.TestCase):
             self.assertEqual(0, create.returncode, create.stderr)
 
             verify = subprocess.run(
-                [sys.executable, "-m", "trustai", "mcp-proxy-capture-verify", str(capture_path)],
+                [sys.executable, "-m", "trustai", "mcp-proxy-capture-verify", str(capture_path), "--events", str(MCP_PROXY)],
                 cwd=ROOT,
                 env=env,
                 text=True,
@@ -191,6 +248,8 @@ class McpGatewayTests(unittest.TestCase):
                     "trustai",
                     "mcp-proxy-capture-append",
                     str(capture_path),
+                    "--events",
+                    str(MCP_PROXY),
                     "--state",
                     str(tmp / "chain.json"),
                     "--tenant",
@@ -206,6 +265,9 @@ class McpGatewayTests(unittest.TestCase):
             )
             self.assertEqual(0, append.returncode, append.stderr)
             self.assertTrue(entry_path.exists())
+            receipt = json.loads(capture_path.read_text(encoding="utf-8"))
+            entry = json.loads(entry_path.read_text(encoding="utf-8"))
+            self.assertEqual(receipt["proxy_events_artifact"]["sha256"], entry["payload"]["proxy_events_artifact"]["sha256"])
 
     def test_proof_pack_verifier_replays_embedded_mcp_transcript_chain(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

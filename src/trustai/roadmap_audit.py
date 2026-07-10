@@ -176,7 +176,7 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "tests/test_ingest_runtime.py",
         ],
         "external_authority": [
-            "MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, and observability evidence; actual fresh provider-owned proxy and audit exports remain external deployment evidence.",
+            "MCP proxy capture receipts cover retained raw proxy event export byte replay for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, and observability evidence; actual fresh provider-owned proxy and audit exports remain external deployment evidence.",
         ],
     },
     {

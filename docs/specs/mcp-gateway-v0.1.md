@@ -41,7 +41,13 @@ Each proxy event includes:
 - canonical message hash;
 - event sequence, previous event hash, and event hash.
 
-The event chain root binds the full request/response envelope order. The capture
+When a retained source export path is supplied, the capture also records
+`proxy_events_artifact`: normalized path, byte SHA-256, byte size, canonical raw
+export content hash, redacted event content hash, event count, event chain root,
+and artifact id. Verification replays the retained raw export bytes,
+normalizes/redacts the events, and rejects byte SHA-256 mismatches even when
+parsed JSON content is unchanged. The event chain root binds the full
+request/response envelope order. The capture
 pairs each `tools/call` client request with the matching server response by JSON
 RPC id, derives the normalized tool call, and replays the transcript chain above.
 Sensitive message fields whose keys include token, secret, password, credential,
@@ -52,6 +58,7 @@ A valid proxy capture must verify:
 
 - capture id and signature over the canonical body;
 - event hash chain, message hashes, event order, and chain root;
+- retained source export bytes when `proxy_events_artifact` is present;
 - no retained sensitive field value remains unredacted;
 - every `tools/call` request has a matching response;
 - derived normalized tool calls match the embedded tool calls;
@@ -74,6 +81,6 @@ verified with:
 
 ```powershell
 python -m trustai mcp-proxy-capture examples/aitrade/mcp-proxy-events.json --agent-name aitrade-risk-agent --agent-version sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234 --risk-class trading-prod-write --contract-hash 22a3727b124ce6664031037939cf391ce724158d681db3a55e9a0f0c51bcc7a2 --proxy-ref mcp-proxy:trustai/local --upstream-ref mcp-server:aitrade/tools --captured-at 2026-07-03T12:00:12Z --out artifacts/mcp-proxy-capture.json
-python -m trustai mcp-proxy-capture-verify artifacts/mcp-proxy-capture.json
-python -m trustai mcp-proxy-capture-append artifacts/mcp-proxy-capture.json --state .trustai/mcp-proxy-capture-demo/evidence-chain.json --tenant mcp-proxy-capture-local --out artifacts/mcp-proxy-capture-entry.json
+python -m trustai mcp-proxy-capture-verify artifacts/mcp-proxy-capture.json --events examples/aitrade/mcp-proxy-events.json
+python -m trustai mcp-proxy-capture-append artifacts/mcp-proxy-capture.json --events examples/aitrade/mcp-proxy-events.json --state .trustai/mcp-proxy-capture-demo/evidence-chain.json --tenant mcp-proxy-capture-local --out artifacts/mcp-proxy-capture-entry.json
 ```

@@ -61,6 +61,7 @@ class RoadmapAuditTests(unittest.TestCase):
         mcp_evidence = {item["path"] for item in mcp_requirement["evidence"]}
         self.assertIn("examples/aitrade/mcp-proxy-events.json", mcp_evidence)
         self.assertIn("tests/test_mcp_gateway.py", mcp_evidence)
+        self.assertIn("retained raw proxy event export byte replay", " ".join(mcp_requirement["external_authority_required"]))
         onboarding_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "self-serve-onboarding")
         onboarding_evidence = {item["path"] for item in onboarding_requirement["evidence"]}
         self.assertIn("src/trustai/onboarding.py", onboarding_evidence)
