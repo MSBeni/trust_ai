@@ -220,12 +220,13 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "docs/specs/approval-callback-v0.1.md",
             "docs/specs/provider-approval-production-authority-v0.1.md",
             "docs/specs/provider-delivery-v0.1.md",
+            "docs/specs/promotion-status-receipt-v0.1.md",
             "tests/test_approval_callback.py",
             "tests/test_provider_approval_authority.py",
             "tests/test_provider_delivery.py",
         ],
         "external_authority": [
-            "Provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence.",
+            "Provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence.",
         ],
     },
     {

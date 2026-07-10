@@ -461,7 +461,17 @@ from .vendor_identity import (
     verify_vendor_identity_receipt,
     write_vendor_identity_receipt,
 )
-from .cicd import build_ci_report, build_promotion_check_payload, build_slack_approval_request, write_ci_report
+from .cicd import (
+    append_promotion_status_receipt,
+    build_ci_report,
+    build_promotion_check_payload,
+    build_promotion_status_receipt,
+    build_slack_approval_request,
+    load_promotion_status_receipt,
+    verify_promotion_status_receipt,
+    write_ci_report,
+    write_promotion_status_receipt,
+)
 from .compliance import build_compliance_export, write_compliance_export
 from .compliance_authority import (
     COMPLIANCE_AUTHORITY_MODES,
@@ -7540,6 +7550,116 @@ def cmd_ci_payload(args: argparse.Namespace) -> int:
         return 0 if payload["request"]["body"]["state"] == "success" else 1
     return 0 if payload["request"]["body"]["conclusion"] == "success" else 1
 
+
+def cmd_promotion_status(args: argparse.Namespace) -> int:
+    pack, result, status = _verified_pack_or_exit(args.pack, args.key)
+    if status:
+        return status
+    payload = load_provider_payload(args.payload)
+    delivery = load_provider_delivery(args.delivery) if args.delivery else None
+    try:
+        receipt = build_promotion_status_receipt(
+            pack,
+            result,
+            payload,
+            delivery=delivery,
+            attested_at=args.attested_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"promotion status generation failed: {exc}", file=sys.stderr)
+        return 1
+    replay = verify_promotion_status_receipt(
+        receipt,
+        proof_pack=pack,
+        verification=result,
+        payload=payload,
+        delivery=delivery,
+        key=args.key,
+    )
+    if not replay.ok:
+        print("promotion status generation failed verification", file=sys.stderr)
+        for error in replay.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_promotion_status_receipt(args.out, receipt)
+    print(f"promotion status receipt: {args.out}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"provider: {receipt['provider']}")
+    print(f"passed: {receipt['passed']}")
+    for warning in replay.warnings:
+        print(f"warning: {warning}")
+    if not receipt.get("passed"):
+        for violation in receipt.get("violations", []):
+            print(f"violation: {violation.get('check')}: {violation.get('violation')}", file=sys.stderr)
+        return 1
+    return 0
+
+
+def cmd_promotion_status_verify(args: argparse.Namespace) -> int:
+    receipt = load_promotion_status_receipt(args.receipt)
+    pack = None
+    verification = None
+    if args.pack:
+        pack, verification, status = _verified_pack_or_exit(args.pack, args.key)
+        if status:
+            return status
+    payload = load_provider_payload(args.payload) if args.payload else None
+    delivery = load_provider_delivery(args.delivery) if args.delivery else None
+    result = verify_promotion_status_receipt(
+        receipt,
+        proof_pack=pack,
+        verification=verification,
+        payload=payload,
+        delivery=delivery,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified promotion status receipt: {args.receipt}")
+        print(f"receipt id: {receipt['receipt_id']}")
+        print(f"provider: {receipt.get('provider')}")
+        print(f"passed: {receipt.get('passed')}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"promotion status verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_promotion_status_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    receipt = load_promotion_status_receipt(args.receipt)
+    pack = None
+    verification = None
+    if args.pack:
+        pack, verification, status = _verified_pack_or_exit(args.pack, args.key)
+        if status:
+            return status
+    payload = load_provider_payload(args.payload) if args.payload else None
+    delivery = load_provider_delivery(args.delivery) if args.delivery else None
+    try:
+        entry = append_promotion_status_receipt(
+            chain,
+            receipt,
+            proof_pack=pack,
+            verification=verification,
+            payload=payload,
+            delivery=delivery,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"promotion status append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"promotion status entry: {args.out}")
+    print(f"promotion status entry id: {entry['entry_id']}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
 
 def cmd_slack_approval_request(args: argparse.Namespace) -> int:
     pack, _, status = _verified_pack_or_exit(args.pack, args.key)
@@ -21057,6 +21177,33 @@ def build_parser() -> argparse.ArgumentParser:
     ci_payload.add_argument("--target-url")
     ci_payload.add_argument("--out", default="artifacts/trustai-ci-payload.json")
     ci_payload.set_defaults(func=cmd_ci_payload)
+
+    promotion_status = subparsers.add_parser("promotion-status", help="write a signed receipt binding a proof-pack gate to a provider status payload")
+    promotion_status.add_argument("pack")
+    promotion_status.add_argument("payload")
+    promotion_status.add_argument("--delivery")
+    promotion_status.add_argument("--attested-at")
+    promotion_status.add_argument("--out", default="artifacts/promotion-status.json")
+    promotion_status.add_argument("--key")
+    promotion_status.set_defaults(func=cmd_promotion_status)
+
+    promotion_status_verify = subparsers.add_parser("promotion-status-verify", help="verify a signed promotion status receipt")
+    promotion_status_verify.add_argument("receipt")
+    promotion_status_verify.add_argument("--pack")
+    promotion_status_verify.add_argument("--payload")
+    promotion_status_verify.add_argument("--delivery")
+    promotion_status_verify.add_argument("--key")
+    promotion_status_verify.set_defaults(func=cmd_promotion_status_verify)
+
+    promotion_status_append = subparsers.add_parser("promotion-status-append", help="append a promotion status receipt as chain evidence")
+    promotion_status_append.add_argument("receipt")
+    promotion_status_append.add_argument("--pack")
+    promotion_status_append.add_argument("--payload")
+    promotion_status_append.add_argument("--delivery")
+    promotion_status_append.add_argument("--out", default="artifacts/promotion-status-entry.json")
+    promotion_status_append.add_argument("--key")
+    _add_state_args(promotion_status_append)
+    promotion_status_append.set_defaults(func=cmd_promotion_status_append)
 
     slack_approval = subparsers.add_parser("slack-approval-request", help="write a Slack approval request payload")
     slack_approval.add_argument("pack")

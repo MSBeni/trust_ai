@@ -1,12 +1,26 @@
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from .approvals import APPROVAL_SCHEMA
-from .canonical import content_hash
+from .canonical import content_hash, utc_now, without_keys
+from .chain import EvidenceChain
+from .crypto import sign_value, verify_value
+from .delivery import verify_provider_delivery
 from .verifier import VerificationResult
+
+PROMOTION_STATUS_SCHEMA = "trustai.promotion-status/0.1"
+PROMOTION_STATUS_ENTRY_TYPE = "promotion_status.attested"
+
+
+@dataclass
+class PromotionStatusVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
 
 
 def _decision(proof_pack: dict[str, Any]) -> dict[str, Any]:
@@ -284,6 +298,275 @@ def build_slack_approval_request(
     payload["payload_hash"] = content_hash(payload)
     return payload
 
+
+def load_promotion_status_receipt(path: str | Path) -> dict[str, Any]:
+    value = json.loads(Path(path).read_text(encoding="utf-8-sig"))
+    if not isinstance(value, dict):
+        raise ValueError("promotion status receipt must contain an object")
+    return value
+
+
+def write_promotion_status_receipt(path: str | Path, receipt: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(receipt, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def build_promotion_status_receipt(
+    proof_pack: dict[str, Any],
+    verification: VerificationResult,
+    payload: dict[str, Any],
+    *,
+    delivery: dict[str, Any] | None = None,
+    attested_at: str | None = None,
+    key: str | None = None,
+) -> dict[str, Any]:
+    body = _promotion_status_body(
+        proof_pack,
+        verification,
+        payload,
+        delivery=delivery,
+        attested_at=attested_at or utc_now(),
+    )
+    receipt_id = content_hash(body)
+    return {
+        **body,
+        "receipt_id": receipt_id,
+        "signatures": [sign_value({"receipt_id": receipt_id, "promotion_status": body}, key)],
+    }
+
+
+def verify_promotion_status_receipt(
+    receipt: dict[str, Any],
+    *,
+    proof_pack: dict[str, Any] | None = None,
+    verification: VerificationResult | None = None,
+    payload: dict[str, Any] | None = None,
+    delivery: dict[str, Any] | None = None,
+    key: str | None = None,
+) -> PromotionStatusVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if receipt.get("schema") != PROMOTION_STATUS_SCHEMA:
+        errors.append(f"unsupported promotion status schema: {receipt.get('schema')}")
+    body = without_keys(receipt, "receipt_id", "signatures")
+    if receipt.get("receipt_id") != content_hash(body):
+        errors.append("receipt_id does not match canonical promotion status body")
+    signatures = receipt.get("signatures")
+    if not isinstance(signatures, list) or not signatures:
+        errors.append("promotion status receipt must include at least one signature")
+    else:
+        signed_value = {"receipt_id": receipt.get("receipt_id"), "promotion_status": body}
+        if not any(isinstance(signature, dict) and verify_value(signed_value, signature, key) for signature in signatures):
+            errors.append("promotion status signature verification failed")
+
+    source = receipt.get("source")
+    if not isinstance(source, dict):
+        errors.append("promotion status source must be an object")
+        source = {}
+    expected_violations = _promotion_status_violations(source)
+    if receipt.get("violations") != expected_violations:
+        errors.append("promotion status violations do not match source checks")
+    if receipt.get("passed") is not (not expected_violations):
+        errors.append("promotion status passed flag does not match violations")
+    if expected_violations:
+        warnings.append("promotion status receipt contains provider status violations")
+
+    if proof_pack is not None or payload is not None or delivery is not None:
+        if proof_pack is None or verification is None or payload is None:
+            errors.append("proof_pack, verification, and payload are required to replay promotion status sources")
+        else:
+            try:
+                expected = _promotion_status_body(
+                    proof_pack,
+                    verification,
+                    payload,
+                    delivery=delivery,
+                    attested_at=str(receipt.get("attested_at") or ""),
+                )
+            except ValueError as exc:
+                errors.append(f"promotion status source replay failed: {exc}")
+            else:
+                for field in ("provider", "proof_pack", "gate_decision", "provider_payload", "provider_delivery", "provider_status", "source", "controls", "violations", "passed"):
+                    if receipt.get(field) != expected.get(field):
+                        errors.append(f"promotion status {field} mismatch")
+    else:
+        warnings.append("promotion status source artifacts were not supplied; receipt signature only was verified")
+    return PromotionStatusVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
+def append_promotion_status_receipt(
+    chain: EvidenceChain,
+    receipt: dict[str, Any],
+    *,
+    proof_pack: dict[str, Any] | None = None,
+    verification: VerificationResult | None = None,
+    payload: dict[str, Any] | None = None,
+    delivery: dict[str, Any] | None = None,
+    key: str | None = None,
+) -> dict[str, Any]:
+    result = verify_promotion_status_receipt(
+        receipt,
+        proof_pack=proof_pack,
+        verification=verification,
+        payload=payload,
+        delivery=delivery,
+        key=key,
+    )
+    if not result.ok:
+        raise ValueError("invalid promotion status receipt: " + "; ".join(result.errors))
+    entry_payload = {
+        "receipt_id": receipt["receipt_id"],
+        "receipt_hash": content_hash(receipt),
+        "provider": receipt.get("provider"),
+        "proof_pack": receipt.get("proof_pack"),
+        "gate_decision": receipt.get("gate_decision"),
+        "provider_payload": receipt.get("provider_payload"),
+        "provider_delivery": receipt.get("provider_delivery"),
+        "provider_status": receipt.get("provider_status"),
+        "source": receipt.get("source"),
+        "violation_count": len(receipt.get("violations", [])),
+        "passed": receipt.get("passed"),
+    }
+    return chain.append(PROMOTION_STATUS_ENTRY_TYPE, entry_payload, key=key, timestamp=receipt.get("attested_at"))
+
+
+def _promotion_status_body(
+    proof_pack: dict[str, Any],
+    verification: VerificationResult,
+    payload: dict[str, Any],
+    *,
+    delivery: dict[str, Any] | None,
+    attested_at: str,
+) -> dict[str, Any]:
+    if payload.get("provider") not in {"github", "gitlab"}:
+        raise ValueError("promotion status payload provider must be github or gitlab")
+    if payload.get("payload_hash") != content_hash(without_keys(payload, "payload_hash")):
+        raise ValueError("promotion status payload_hash does not match payload body")
+    decision = _decision(proof_pack)
+    provider_status = _provider_status(payload)
+    expected_success = verification.ok and decision.get("outcome") == "passed"
+    delivery_binding = _promotion_delivery_binding(delivery, payload) if delivery is not None else None
+    source = {
+        "proof_pack_verified": bool(verification.ok),
+        "pack_id_matches": proof_pack.get("pack_id") == payload.get("pack_id"),
+        "contract_id_matches": decision.get("contract_id") == payload.get("contract_id"),
+        "contract_hash_matches": decision.get("contract_hash") == payload.get("contract_hash"),
+        "gate_outcome_matches": decision.get("outcome") == payload.get("summary", {}).get("gate_outcome"),
+        "payload_verified_flag_matches": payload.get("summary", {}).get("verified") is bool(verification.ok),
+        "provider_status_matches_gate": provider_status.get("success") is expected_success,
+        "delivery_verified": True if delivery_binding is None else delivery_binding.get("verification_ok"),
+        "delivery_payload_matches": True if delivery_binding is None else delivery_binding.get("payload_hash_matches"),
+        "delivery_accepted": True if delivery_binding is None else delivery_binding.get("accepted"),
+        "delivery_present": delivery_binding is not None,
+        "verification_error_count": len(verification.errors),
+        "verification_warning_count": len(verification.warnings),
+    }
+    violations = _promotion_status_violations(source)
+    return {
+        "schema": PROMOTION_STATUS_SCHEMA,
+        "attested_at": attested_at,
+        "provider": payload.get("provider"),
+        "proof_pack": {
+            "pack_id": proof_pack.get("pack_id"),
+            "pack_hash": content_hash(proof_pack),
+            "verified": verification.ok,
+            "error_count": len(verification.errors),
+            "warning_count": len(verification.warnings),
+        },
+        "gate_decision": {
+            "contract_id": decision.get("contract_id"),
+            "contract_hash": decision.get("contract_hash"),
+            "agent": decision.get("agent"),
+            "outcome": decision.get("outcome"),
+            "passed": decision.get("passed"),
+            "gate_entry_id": decision.get("gate_entry_id"),
+            "eval_entry_id": decision.get("eval_entry_id"),
+        },
+        "provider_payload": {
+            "schema": payload.get("schema"),
+            "payload_hash": payload.get("payload_hash"),
+            "body_hash": content_hash(payload.get("request", {}).get("body")),
+            "pack_id": payload.get("pack_id"),
+            "contract_id": payload.get("contract_id"),
+            "contract_hash": payload.get("contract_hash"),
+            "request": {
+                "method": payload.get("request", {}).get("method"),
+                "path": payload.get("request", {}).get("path"),
+            },
+        },
+        "provider_delivery": delivery_binding,
+        "provider_status": provider_status,
+        "source": source,
+        "controls": _promotion_status_controls(source),
+        "violations": violations,
+        "passed": not violations,
+        "limitations": [
+            "This receipt proves the provider check/status payload matches the verified TrustAI proof-pack gate decision and, when supplied, the provider delivery receipt.",
+            "It does not prove the external provider displayed or retained the status unless paired with provider-owned webhook/audit-log exports and production authority dossiers.",
+        ],
+    }
+
+
+def _provider_status(payload: dict[str, Any]) -> dict[str, Any]:
+    request_body = payload.get("request", {}).get("body", {})
+    if not isinstance(request_body, dict):
+        request_body = {}
+    if payload.get("provider") == "gitlab":
+        state = request_body.get("state")
+        return {"kind": "gitlab-status", "state": state, "success": state == "success"}
+    conclusion = request_body.get("conclusion")
+    status = request_body.get("status")
+    head_sha = request_body.get("head_sha")
+    return {"kind": "github-check-run", "status": status, "conclusion": conclusion, "head_sha": head_sha, "success": status == "completed" and conclusion == "success"}
+
+
+def _promotion_delivery_binding(delivery: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    result = verify_provider_delivery(delivery, payload)
+    response = delivery.get("response") if isinstance(delivery.get("response"), dict) else {}
+    return {
+        "delivery_id": delivery.get("delivery_id"),
+        "delivery_hash": content_hash(delivery),
+        "mode": delivery.get("mode"),
+        "payload_hash": delivery.get("payload_hash"),
+        "payload_hash_matches": delivery.get("payload_hash") == payload.get("payload_hash"),
+        "target_url": delivery.get("target_url"),
+        "accepted": bool(response.get("accepted")) if response else delivery.get("mode") == "dry-run",
+        "response": response or None,
+        "verification_ok": result.ok,
+        "verification_errors": result.errors,
+        "verification_warnings": result.warnings,
+    }
+
+
+def _promotion_status_violations(source: dict[str, Any]) -> list[dict[str, Any]]:
+    checks = (
+        ("proof_pack_verified", "proof pack did not verify offline"),
+        ("pack_id_matches", "provider payload pack_id does not match proof pack"),
+        ("contract_id_matches", "provider payload contract_id does not match gate decision"),
+        ("contract_hash_matches", "provider payload contract_hash does not match gate decision"),
+        ("gate_outcome_matches", "provider payload gate outcome summary does not match gate decision"),
+        ("payload_verified_flag_matches", "provider payload verified flag does not match offline verification"),
+        ("provider_status_matches_gate", "provider status/check result does not match gate decision"),
+        ("delivery_verified", "provider delivery receipt verification failed"),
+        ("delivery_payload_matches", "provider delivery payload hash does not match status payload"),
+        ("delivery_accepted", "provider delivery receipt does not show accepted dispatch"),
+    )
+    violations: list[dict[str, Any]] = []
+    for field, message in checks:
+        if source.get(field) is not True:
+            violations.append({"check": field, "violation": message})
+    return violations
+
+
+def _promotion_status_controls(source: dict[str, Any]) -> list[dict[str, Any]]:
+    return [
+        {"id": "proof-pack-verified", "status": "passed" if source.get("proof_pack_verified") else "failed", "description": "Proof pack verifies offline before CI/CD status is trusted."},
+        {"id": "provider-payload-bound", "status": "passed" if source.get("pack_id_matches") and source.get("contract_hash_matches") else "failed", "description": "Provider payload is bound to the proof-pack pack ID and contract hash."},
+        {"id": "gate-outcome-bound", "status": "passed" if source.get("gate_outcome_matches") and source.get("provider_status_matches_gate") else "failed", "description": "Provider status/check result matches the TrustAI gate outcome."},
+        {"id": "delivery-bound", "status": "passed" if source.get("delivery_present") and source.get("delivery_verified") and source.get("delivery_payload_matches") else "deferred", "description": "Provider delivery receipt is replay-bound when supplied."},
+        {"id": "delivery-accepted", "status": "passed" if source.get("delivery_accepted") else "deferred", "description": "Provider delivery was accepted or explicitly dry-run for local rehearsal."},
+    ]
 
 def write_ci_report(path: str | Path, report: dict[str, Any]) -> None:
     target = Path(path)

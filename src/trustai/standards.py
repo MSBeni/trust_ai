@@ -50,6 +50,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/framework-adapter-production-authority-v0.1.md",
     "docs/specs/consumption-exports-v0.1.md",
     "docs/specs/provider-delivery-v0.1.md",
+    "docs/specs/promotion-status-receipt-v0.1.md",
     "docs/specs/provider-delivery-service-attestation-v0.1.md",
     "docs/specs/provider-delivery-worker-v0.1.md",
     "docs/specs/provider-delivery-production-authority-v0.1.md",
@@ -324,7 +325,8 @@ CONFORMANCE_TARGETS = (
             "python -m trustai mcp-proxy-capture-append artifacts/mcp-proxy-capture.json --state .trustai/mcp-proxy-capture-demo/evidence-chain.json --tenant mcp-proxy-capture-local --out artifacts/mcp-proxy-capture-entry.json",
             "python -m unittest tests.test_mcp_gateway",
         ],
-    },    {
+    },
+    {
         "id": "mcp-gateway-production-authority-dossiers",
         "description": "MCP gateway production authority dossiers bind normalized MCP transcript hash chains to production proxy fleet, tool registry, session auth, replay, immutable audit, scheduler, policy, network, KMS, freshness, and observability authority evidence.",
         "reference": "src/trustai/mcp_gateway_authority.py",
@@ -532,6 +534,17 @@ CONFORMANCE_TARGETS = (
         "commands": [
             "python -m trustai provider-delivery artifacts/github-check-run-payload.json --endpoint-base https://api.github.com --credential-ref env:GITHUB_TOKEN",
             "python -m trustai provider-delivery-verify artifacts/provider-delivery.json --payload artifacts/github-check-run-payload.json",
+            "python -m unittest tests.test_provider_delivery",
+        ],
+    },
+    {
+        "id": "promotion-status-receipts",
+        "description": "Promotion status receipts bind verified proof-pack gate decisions to GitHub/GitLab status payloads and optional provider delivery receipts before CI/CD promotion status is trusted.",
+        "reference": "src/trustai/cicd.py",
+        "commands": [
+            "python -m trustai promotion-status artifacts/aitrade-proof-pack.json artifacts/github-check-run-payload.json --delivery artifacts/github-check-run-delivery.json --attested-at 2026-07-04T00:01:00Z --out artifacts/promotion-status.json",
+            "python -m trustai promotion-status-verify artifacts/promotion-status.json --pack artifacts/aitrade-proof-pack.json --payload artifacts/github-check-run-payload.json --delivery artifacts/github-check-run-delivery.json",
+            "python -m trustai promotion-status-append artifacts/promotion-status.json --pack artifacts/aitrade-proof-pack.json --payload artifacts/github-check-run-payload.json --delivery artifacts/github-check-run-delivery.json --state .trustai/promotion-status-demo/evidence-chain.json --tenant promotion-status-local --out artifacts/promotion-status-entry.json",
             "python -m unittest tests.test_provider_delivery",
         ],
     },

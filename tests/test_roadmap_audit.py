@@ -101,6 +101,10 @@ class RoadmapAuditTests(unittest.TestCase):
         self.assertIn("docs/specs/traffic-holdout-export-v0.1.md", shadow_evidence)
         self.assertIn("docs/specs/traffic-completeness-receipt-v0.1.md", shadow_evidence)
         self.assertIn("tests/test_temporal_holdout.py", shadow_evidence)
+        cicd_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "cicd-provider-approvals")
+        cicd_evidence = {item["path"] for item in cicd_requirement["evidence"]}
+        self.assertIn("docs/specs/promotion-status-receipt-v0.1.md", cicd_evidence)
+        self.assertIn("tests/test_provider_delivery.py", cicd_evidence)
         self.assertGreater(audit["summary"][STATUS_REFERENCE_ATTESTED], 0)
         self.assertIn("TrustAI Roadmap Audit", markdown)
         self.assertIn("Deferred External Authority", markdown)

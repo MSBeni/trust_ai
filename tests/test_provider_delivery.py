@@ -9,8 +9,17 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
-from trustai.cicd import build_promotion_check_payload, build_slack_approval_request
+from trustai.cicd import (
+    PROMOTION_STATUS_ENTRY_TYPE,
+    PROMOTION_STATUS_SCHEMA,
+    append_promotion_status_receipt,
+    build_promotion_check_payload,
+    build_promotion_status_receipt,
+    build_slack_approval_request,
+    verify_promotion_status_receipt,
+)
 from trustai.delivery import (
     PROVIDER_DELIVERY_ENTRY_TYPE,
     PROVIDER_DELIVERY_SCHEMA,
@@ -86,6 +95,206 @@ class ProviderDeliveryTests(unittest.TestCase):
             self.assertEqual(PROVIDER_DELIVERY_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(delivery["delivery_id"], entry["payload"]["delivery_id"])
             self.assertTrue(chain.verify_all().ok)
+
+    def test_promotion_status_receipt_binds_gate_payload_and_delivery(self):
+        pack = self._pack()
+        verification = verify_proof_pack(pack)
+        payload = build_promotion_check_payload(
+            pack,
+            verification,
+            provider="github",
+            commit_sha="0123456789abcdef0123456789abcdef01234567",
+            repository="volelabs/trust_ai",
+            target_url="https://example.test/proof-pack",
+        )
+        delivery = build_provider_delivery(
+            payload,
+            endpoint_base="https://api.github.com",
+            credential_ref="env:GITHUB_TOKEN",
+            mode="dry-run",
+            delivered_at="2026-07-04T00:00:00Z",
+        )
+        receipt = build_promotion_status_receipt(
+            pack,
+            verification,
+            payload,
+            delivery=delivery,
+            attested_at="2026-07-04T00:01:00Z",
+        )
+
+        result = verify_promotion_status_receipt(
+            receipt,
+            proof_pack=pack,
+            verification=verification,
+            payload=payload,
+            delivery=delivery,
+        )
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(PROMOTION_STATUS_SCHEMA, receipt["schema"])
+        self.assertTrue(receipt["passed"])
+        self.assertEqual("github", receipt["provider"])
+        self.assertTrue(receipt["source"]["provider_status_matches_gate"])
+        self.assertTrue(receipt["source"]["delivery_verified"])
+        self.assertTrue(receipt["source"]["delivery_payload_matches"])
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="promotion-status-test")
+            entry = append_promotion_status_receipt(
+                chain,
+                receipt,
+                proof_pack=pack,
+                verification=verification,
+                payload=payload,
+                delivery=delivery,
+            )
+
+            self.assertEqual(PROMOTION_STATUS_ENTRY_TYPE, entry["entry_type"])
+            self.assertEqual(receipt["receipt_id"], entry["payload"]["receipt_id"])
+            self.assertTrue(chain.verify_all().ok)
+
+
+    def test_promotion_status_receipt_detects_status_payload_tamper(self):
+        pack = self._pack()
+        verification = verify_proof_pack(pack)
+        payload = build_promotion_check_payload(
+            pack,
+            verification,
+            provider="github",
+            commit_sha="0123456789abcdef0123456789abcdef01234567",
+            repository="volelabs/trust_ai",
+            target_url="https://example.test/proof-pack",
+        )
+        delivery = build_provider_delivery(
+            payload,
+            endpoint_base="https://api.github.com",
+            credential_ref="env:GITHUB_TOKEN",
+            mode="dry-run",
+            delivered_at="2026-07-04T00:00:00Z",
+        )
+        receipt = build_promotion_status_receipt(
+            pack,
+            verification,
+            payload,
+            delivery=delivery,
+            attested_at="2026-07-04T00:01:00Z",
+        )
+        tampered_payload = copy.deepcopy(payload)
+        tampered_payload["request"]["body"]["conclusion"] = "failure"
+        tampered_payload["payload_hash"] = content_hash(without_keys(tampered_payload, "payload_hash"))
+
+        result = verify_promotion_status_receipt(
+            receipt,
+            proof_pack=pack,
+            verification=verification,
+            payload=tampered_payload,
+            delivery=delivery,
+        )
+
+        self.assertFalse(result.ok)
+        self.assertTrue(any("promotion status" in error and "mismatch" in error for error in result.errors))
+
+
+    def test_cli_promotion_status_round_trip(self):
+        pack = self._pack()
+        verification = verify_proof_pack(pack)
+        payload = build_promotion_check_payload(
+            pack,
+            verification,
+            provider="github",
+            commit_sha="0123456789abcdef0123456789abcdef01234567",
+            repository="volelabs/trust_ai",
+            target_url="https://example.test/proof-pack",
+        )
+        delivery = build_provider_delivery(
+            payload,
+            endpoint_base="https://api.github.com",
+            credential_ref="env:GITHUB_TOKEN",
+            mode="dry-run",
+            delivered_at="2026-07-04T00:00:00Z",
+        )
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_path = Path(tmp_dir)
+            payload_path = tmp_path / "payload.json"
+            delivery_path = tmp_path / "delivery.json"
+            receipt_path = tmp_path / "promotion-status.json"
+            entry_path = tmp_path / "promotion-status-entry.json"
+            state_path = tmp_path / "chain.json"
+            payload_path.write_text(json.dumps(payload), encoding="utf-8")
+            delivery_path.write_text(json.dumps(delivery), encoding="utf-8")
+            env = {**os.environ, "PYTHONPATH": str(ROOT / "src")}
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "promotion-status",
+                    str(PACK),
+                    str(payload_path),
+                    "--delivery",
+                    str(delivery_path),
+                    "--attested-at",
+                    "2026-07-04T00:01:00Z",
+                    "--out",
+                    str(receipt_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "promotion-status-verify",
+                    str(receipt_path),
+                    "--pack",
+                    str(PACK),
+                    "--payload",
+                    str(payload_path),
+                    "--delivery",
+                    str(delivery_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "promotion-status-append",
+                    str(receipt_path),
+                    "--pack",
+                    str(PACK),
+                    "--payload",
+                    str(payload_path),
+                    "--delivery",
+                    str(delivery_path),
+                    "--state",
+                    str(state_path),
+                    "--tenant",
+                    "promotion-status-cli",
+                    "--out",
+                    str(entry_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+            entry = json.loads(entry_path.read_text(encoding="utf-8"))
+
+            self.assertEqual(receipt["receipt_id"], entry["payload"]["receipt_id"])
+            self.assertEqual(PROMOTION_STATUS_ENTRY_TYPE, entry["entry_type"])
 
     def test_slack_recorded_response_delivery_verifies(self):
         pack = self._pack()
