@@ -423,6 +423,16 @@ from .provider_delivery_worker import (
     verify_provider_delivery_worker_receipt,
     write_provider_delivery_worker_receipt,
 )
+from .provider_delivery_worker_bundle import (
+    PROVIDER_DELIVERY_WORKER_BUNDLE_MODES,
+    append_provider_delivery_worker_bundle,
+    build_provider_delivery_worker_bundle,
+    extract_provider_delivery_worker_bundle_sources,
+    load_provider_delivery_worker_bundle,
+    verify_provider_delivery_worker_bundle,
+    write_provider_delivery_worker_bundle,
+    write_provider_delivery_worker_bundle_markdown,
+)
 from .provider_audit import (
     append_provider_audit_correlation,
     build_provider_audit_correlation,
@@ -6488,6 +6498,147 @@ def cmd_provider_delivery_worker_append(args: argparse.Namespace) -> int:
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
+
+def _provider_delivery_worker_bundle_artifact_paths(args: argparse.Namespace) -> dict[str, str]:
+    paths = {
+        "worker_receipt": args.receipt,
+        "service_attestation": args.service_attestation,
+        "delivery": args.delivery,
+    }
+    if getattr(args, "payload", None):
+        paths["payload"] = args.payload
+    if getattr(args, "provider_operations_service", None):
+        paths["provider_operations_service"] = args.provider_operations_service
+    if getattr(args, "provider_response", None):
+        paths["provider_response"] = args.provider_response
+    if getattr(args, "provider_audit_correlation", None):
+        paths["provider_audit_correlation"] = args.provider_audit_correlation
+    if getattr(args, "provider_audit_log", None):
+        paths["provider_audit_log"] = args.provider_audit_log
+    return paths
+
+
+def cmd_provider_delivery_worker_bundle(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_provider_delivery_worker_sources(args)
+        receipt = load_provider_delivery_worker_receipt(args.receipt)
+        bundle = build_provider_delivery_worker_bundle(
+            receipt,
+            sources["service_attestation"],
+            sources["delivery"],
+            payload=sources.get("payload"),
+            provider_operations_service=sources.get("provider_operations_service"),
+            provider_response=sources.get("provider_response"),
+            provider_audit_correlation=sources.get("provider_audit_correlation"),
+            provider_audit_log=sources.get("provider_audit_log"),
+            artifact_paths=_provider_delivery_worker_bundle_artifact_paths(args),
+            mode=args.mode,
+            environment=args.environment,
+            reviewer_ref=args.reviewer_ref,
+            bundle_ref=args.bundle_ref,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_provider_delivery_worker_bundle(bundle, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"provider delivery worker bundle generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("provider delivery worker bundle generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_provider_delivery_worker_bundle(args.out, bundle)
+    if args.markdown:
+        write_provider_delivery_worker_bundle_markdown(args.markdown, bundle)
+        print(f"provider delivery worker bundle markdown: {args.markdown}")
+    print(f"provider delivery worker bundle: {args.out}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"worker operation id: {bundle['source']['worker_operation_id']}")
+    print(f"source artifact count: {bundle['summary']['source_artifact_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_provider_delivery_worker_bundle_verify(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_provider_delivery_worker_bundle(args.bundle)
+    except (OSError, ValueError) as exc:
+        print(f"provider delivery worker bundle verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_provider_delivery_worker_bundle(bundle, key=args.key)
+    if result.ok:
+        print(f"verified provider delivery worker bundle: {args.bundle}")
+        print(f"bundle id: {bundle['bundle_id']}")
+        print(f"worker operation id: {bundle['source']['worker_operation_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"provider delivery worker bundle verification failed: {args.bundle}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_provider_delivery_worker_bundle_render(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_provider_delivery_worker_bundle(args.bundle)
+    except (OSError, ValueError) as exc:
+        print(f"provider delivery worker bundle render failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_provider_delivery_worker_bundle(bundle, key=args.key)
+    if not result.ok:
+        print(f"provider delivery worker bundle render failed verification: {args.bundle}", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_provider_delivery_worker_bundle_markdown(args.out, bundle)
+    print(f"provider delivery worker bundle markdown: {args.out}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_provider_delivery_worker_bundle_extract(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_provider_delivery_worker_bundle(args.bundle)
+        extracted = extract_provider_delivery_worker_bundle_sources(
+            bundle,
+            args.out_dir,
+            key=args.key,
+            overwrite=args.overwrite,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"provider delivery worker bundle extract failed: {exc}", file=sys.stderr)
+        return 1
+    print(f"extracted provider delivery worker bundle sources: {len(extracted)}")
+    for record in extracted:
+        print(f"- {record['name']} -> {record['extracted_to']}")
+    return 0
+
+
+def cmd_provider_delivery_worker_bundle_append(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_provider_delivery_worker_bundle(args.bundle)
+    except (OSError, ValueError) as exc:
+        print(f"provider delivery worker bundle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_provider_delivery_worker_bundle(chain, bundle, key=args.key)
+    except ValueError as exc:
+        print(f"provider delivery worker bundle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"provider delivery worker bundle entry: {args.out}")
+    print(f"provider delivery worker bundle entry id: {entry['entry_id']}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
 
 def cmd_provider_webhook(args: argparse.Namespace) -> int:
     try:
@@ -15963,6 +16114,41 @@ def build_parser() -> argparse.ArgumentParser:
     provider_delivery_worker_append.add_argument("--out", default="artifacts/provider-delivery-worker-entry.json")
     _add_state_args(provider_delivery_worker_append)
     provider_delivery_worker_append.set_defaults(func=cmd_provider_delivery_worker_append)
+    provider_delivery_worker_bundle = subparsers.add_parser("provider-delivery-worker-bundle", help="write a self-contained provider delivery worker review bundle")
+    _add_provider_delivery_worker_sources(provider_delivery_worker_bundle, include_receipt=True)
+    provider_delivery_worker_bundle.add_argument("--mode", choices=sorted(PROVIDER_DELIVERY_WORKER_BUNDLE_MODES), default="offline-review")
+    provider_delivery_worker_bundle.add_argument("--environment")
+    provider_delivery_worker_bundle.add_argument("--reviewer-ref", required=True)
+    provider_delivery_worker_bundle.add_argument("--bundle-ref")
+    provider_delivery_worker_bundle.add_argument("--generated-at")
+    provider_delivery_worker_bundle.add_argument("--out", default="artifacts/provider-delivery-worker-bundle.json")
+    provider_delivery_worker_bundle.add_argument("--markdown", default="artifacts/provider-delivery-worker-bundle.md")
+    provider_delivery_worker_bundle.set_defaults(func=cmd_provider_delivery_worker_bundle)
+
+    provider_delivery_worker_bundle_verify = subparsers.add_parser("provider-delivery-worker-bundle-verify", help="verify a self-contained provider delivery worker review bundle")
+    provider_delivery_worker_bundle_verify.add_argument("bundle")
+    provider_delivery_worker_bundle_verify.add_argument("--key")
+    provider_delivery_worker_bundle_verify.set_defaults(func=cmd_provider_delivery_worker_bundle_verify)
+
+    provider_delivery_worker_bundle_render = subparsers.add_parser("provider-delivery-worker-bundle-render", help="verify and render a provider delivery worker review bundle as Markdown")
+    provider_delivery_worker_bundle_render.add_argument("bundle")
+    provider_delivery_worker_bundle_render.add_argument("--out", default="artifacts/provider-delivery-worker-bundle.md")
+    provider_delivery_worker_bundle_render.add_argument("--key")
+    provider_delivery_worker_bundle_render.set_defaults(func=cmd_provider_delivery_worker_bundle_render)
+
+    provider_delivery_worker_bundle_extract = subparsers.add_parser("provider-delivery-worker-bundle-extract", help="verify and extract embedded source artifacts from a provider delivery worker review bundle")
+    provider_delivery_worker_bundle_extract.add_argument("bundle")
+    provider_delivery_worker_bundle_extract.add_argument("--out-dir", default="artifacts/provider-delivery-worker-bundle-sources")
+    provider_delivery_worker_bundle_extract.add_argument("--overwrite", action="store_true")
+    provider_delivery_worker_bundle_extract.add_argument("--key")
+    provider_delivery_worker_bundle_extract.set_defaults(func=cmd_provider_delivery_worker_bundle_extract)
+
+    provider_delivery_worker_bundle_append = subparsers.add_parser("provider-delivery-worker-bundle-append", help="append a provider delivery worker review bundle as chain evidence")
+    provider_delivery_worker_bundle_append.add_argument("bundle")
+    provider_delivery_worker_bundle_append.add_argument("--out", default="artifacts/provider-delivery-worker-bundle-entry.json")
+    provider_delivery_worker_bundle_append.add_argument("--key")
+    _add_state_args(provider_delivery_worker_bundle_append)
+    provider_delivery_worker_bundle_append.set_defaults(func=cmd_provider_delivery_worker_bundle_append)
     provider_webhook = subparsers.add_parser("provider-webhook", help="write a signed GitHub/GitLab webhook receipt")
     provider_webhook.add_argument("provider", choices=["github", "gitlab"])
     provider_webhook.add_argument("body")
