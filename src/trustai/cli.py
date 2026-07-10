@@ -258,6 +258,15 @@ from .auditor_program_sponsorship import (
 )
 from .canonical import content_hash
 from .chain import EvidenceChain
+from .onboarding import (
+    GATEWAY_MODES,
+    SDK_SCOPES,
+    append_self_serve_onboarding_receipt,
+    build_self_serve_onboarding_receipt,
+    load_self_serve_onboarding_receipt,
+    verify_self_serve_onboarding_receipt,
+    write_self_serve_onboarding_receipt,
+)
 from .certification import (
     build_auditor_certification_kit,
     load_auditor_certification_kit,
@@ -1173,6 +1182,81 @@ def cmd_chain_verify(args: argparse.Namespace) -> int:
     for error in result.errors:
         print(f"- {error}", file=sys.stderr)
     return 1
+
+
+def cmd_self_serve_onboarding(args: argparse.Namespace) -> int:
+    try:
+        receipt = build_self_serve_onboarding_receipt(
+            args.root,
+            onboarding_ref=args.onboarding_ref,
+            tenant_ref=args.tenant_ref,
+            agent_ref=args.agent_ref,
+            requester_ref=args.requester_ref,
+            environment=args.environment,
+            sdk_scope=args.sdk_scope,
+            gateway_mode=args.gateway_mode,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_self_serve_onboarding_receipt(receipt, root=args.root, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"self-serve onboarding receipt generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("self-serve onboarding receipt generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_self_serve_onboarding_receipt(args.out, receipt)
+    print(f"self-serve onboarding receipt: {args.out}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"source artifacts: {len(receipt['source_artifacts'])}")
+    print(f"quickstart steps: {len(receipt['quickstart_steps'])}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_self_serve_onboarding_verify(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_self_serve_onboarding_receipt(args.receipt)
+        result = verify_self_serve_onboarding_receipt(receipt, root=args.root, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"self-serve onboarding receipt verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        print(f"verified self-serve onboarding receipt: {args.receipt}")
+        print(f"receipt id: {receipt['receipt_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"self-serve onboarding receipt verification failed: {args.receipt}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_self_serve_onboarding_append(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_self_serve_onboarding_receipt(args.receipt)
+    except (OSError, ValueError) as exc:
+        print(f"self-serve onboarding receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_self_serve_onboarding_receipt(chain, receipt, root=args.root, key=args.key)
+    except ValueError as exc:
+        print(f"self-serve onboarding receipt append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"self-serve onboarding entry: {args.out}")
+    print(f"self-serve onboarding entry id: {entry['entry_id']}")
+    print(f"receipt id: {receipt['receipt_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
 def cmd_init(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
     chain.save()
@@ -16699,7 +16783,33 @@ def build_parser() -> argparse.ArgumentParser:
     _add_state_args(init)
     init.set_defaults(func=cmd_init)
 
+    self_serve_onboarding = subparsers.add_parser("self-serve-onboarding", help="write a signed SDK/gateway self-serve onboarding receipt")
+    self_serve_onboarding.add_argument("--root", default=".")
+    self_serve_onboarding.add_argument("--onboarding-ref", required=True)
+    self_serve_onboarding.add_argument("--tenant-ref", required=True)
+    self_serve_onboarding.add_argument("--agent-ref", required=True)
+    self_serve_onboarding.add_argument("--requester-ref", required=True)
+    self_serve_onboarding.add_argument("--environment", default="local")
+    self_serve_onboarding.add_argument("--sdk-scope", choices=sorted(SDK_SCOPES), default="python-typescript")
+    self_serve_onboarding.add_argument("--gateway-mode", choices=sorted(GATEWAY_MODES), default="sdk-gateway")
+    self_serve_onboarding.add_argument("--generated-at")
+    self_serve_onboarding.add_argument("--out", default="artifacts/self-serve-onboarding.json")
+    self_serve_onboarding.add_argument("--key")
+    self_serve_onboarding.set_defaults(func=cmd_self_serve_onboarding)
 
+    self_serve_onboarding_verify = subparsers.add_parser("self-serve-onboarding-verify", help="verify a signed SDK/gateway self-serve onboarding receipt")
+    self_serve_onboarding_verify.add_argument("receipt")
+    self_serve_onboarding_verify.add_argument("--root", default=".")
+    self_serve_onboarding_verify.add_argument("--key")
+    self_serve_onboarding_verify.set_defaults(func=cmd_self_serve_onboarding_verify)
+
+    self_serve_onboarding_append = subparsers.add_parser("self-serve-onboarding-append", help="append a verified self-serve onboarding receipt as chain evidence")
+    self_serve_onboarding_append.add_argument("receipt")
+    self_serve_onboarding_append.add_argument("--root", default=".")
+    self_serve_onboarding_append.add_argument("--out", default="artifacts/self-serve-onboarding-entry.json")
+    self_serve_onboarding_append.add_argument("--key")
+    _add_state_args(self_serve_onboarding_append)
+    self_serve_onboarding_append.set_defaults(func=cmd_self_serve_onboarding_append)
 
     deployment_manifest = subparsers.add_parser("deployment-manifest", help="write a signed BYOC/self-hosted deployment manifest")
     deployment_manifest.add_argument("--root", default=".")

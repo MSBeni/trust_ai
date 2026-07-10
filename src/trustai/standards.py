@@ -124,6 +124,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/go-verifier-release-run-bundle-v0.1.md",
     "docs/specs/python-sdk-v0.1.md",
     "docs/specs/typescript-sdk-v0.1.md",
+    "docs/specs/self-serve-onboarding-v0.1.md",
     "docs/specs/shadow-replay-v0.1.md",
     "docs/specs/reexecution-report-v0.1.md",
     "docs/specs/reexecution-policy-v0.1.md",
@@ -136,6 +137,17 @@ REQUIRED_SPEC_PATHS = (
 
 CONFORMANCE_TARGETS = (
     {
+        "id": "self-serve-sdk-gateway-onboarding",
+        "description": "Self-serve onboarding receipts bind Python/TypeScript SDKs, OTel ingest, MCP gateway capture, quickstart commands, examples, and production-claim limits for the SDK/gateway PLG tier.",
+        "reference": "src/trustai/onboarding.py",
+        "commands": [
+            "python -m trustai self-serve-onboarding --root . --onboarding-ref onboarding:self-serve/aitrade --tenant-ref tenant:aitrade-local --agent-ref agent:aitrade-risk --requester-ref mailto:engineer@example.com --out artifacts/self-serve-onboarding.json",
+            "python -m trustai self-serve-onboarding-verify artifacts/self-serve-onboarding.json --root .",
+            "python -m trustai self-serve-onboarding-append artifacts/self-serve-onboarding.json --root . --state .trustai/self-serve-onboarding/evidence-chain.json --tenant self-serve-onboarding-local --out artifacts/self-serve-onboarding-entry.json",
+            "python -m unittest tests.test_self_serve_onboarding",
+        ],
+    },
+    {
         "id": "compliance-production-authority-dossiers",
         "description": "Compliance production authority dossiers bind compliance framework mappings, EU AI Act technical documentation, proof-pack source replay, selective regulator disclosure, optional EU data-plane sovereignty evidence, freshness windows, and strict production-claim gates.",
         "reference": "src/trustai/compliance_authority.py",
@@ -145,7 +157,8 @@ CONFORMANCE_TARGETS = (
             "python -m trustai compliance-authority-append artifacts/compliance-authority.json artifacts/compliance-export.json artifacts/eu-ai-act-technical-documentation.json --pack artifacts/aitrade-proof-pack.json --regulator-disclosure artifacts/regulator-disclosure.json",
             "python -m unittest tests.test_compliance_authority",
         ],
-    },    {
+    },
+    {
         "id": "framework-adapter-production-authority-dossiers",
         "description": "Framework adapter production authority dossiers bind adapter matrices, native hook releases, optional runtime service authority, compatibility evidence, freshness windows, and production-claim limits for maintained native framework hooks.",
         "reference": "src/trustai/framework_adapter_authority.py",
@@ -155,7 +168,8 @@ CONFORMANCE_TARGETS = (
             "python -m trustai framework-adapter-authority-append artifacts/framework-adapter-authority.json artifacts/framework-adapter-matrix.json artifacts/framework-hook-release.json --runtime-service-authority artifacts/framework-runtime-service-authority.json",
             "python -m unittest tests.test_framework_adapter_authority",
         ],
-    },    {
+    },
+    {
         "id": "proof-pack-offline-verification",
         "description": "Proof packs verify without network access or a TrustAI account.",
         "reference": "src/trustai/verifier.py",
@@ -221,7 +235,8 @@ CONFORMANCE_TARGETS = (
             "python -m trustai mcp-gateway-authority-verify artifacts/mcp-gateway-authority.json examples/aitrade/mcp-transcript.json --now 2026-07-15T00:00:00Z",
             "python -m unittest tests.test_mcp_gateway_authority",
         ],
-    },    {
+    },
+    {
         "id": "trust-authority-receipts",
         "description": "Trust authority receipts bind keyring-verified chain and proof-pack evidence to redacted KMS/TSA provider summaries.",
         "reference": "src/trustai/trust_authority.py",
@@ -289,7 +304,8 @@ CONFORMANCE_TARGETS = (
             "python -m trustai byoc-authority-append artifacts/byoc-authority.json artifacts/deployment-manifest.json artifacts/byoc-operator-attestation.json --worm-receipt artifacts/aitrade-proof-pack.worm-receipt.json --legal-hold artifacts/aitrade-proof-pack.legal-hold.json",
             "python -m unittest tests.test_byoc_authority",
         ],
-    },    {
+    },
+    {
         "id": "eu-data-plane-attestations",
         "description": "EU data-plane attestations bind deployment and BYOC operator evidence to Frankfurt/EU region, residency, key-residency, transfer-governance, subprocessor, network, and audit controls.",
         "reference": "src/trustai/eu_data_plane.py",
