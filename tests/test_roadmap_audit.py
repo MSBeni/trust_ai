@@ -59,6 +59,11 @@ class RoadmapAuditTests(unittest.TestCase):
         self.assertIn("src/trustai/onboarding.py", onboarding_evidence)
         self.assertIn("docs/specs/self-serve-onboarding-v0.1.md", onboarding_evidence)
         self.assertIn("tests/test_self_serve_onboarding.py", onboarding_evidence)
+        vertical_pack_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "vertical-packs")
+        vertical_pack_evidence = {item["path"] for item in vertical_pack_requirement["evidence"]}
+        self.assertIn("src/trustai/vertical_pack.py", vertical_pack_evidence)
+        self.assertIn("docs/specs/vertical-pack-v0.1.md", vertical_pack_evidence)
+        self.assertIn("tests/test_vertical_pack.py", vertical_pack_evidence)
         framework_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "framework-adapters")
         framework_evidence = {item["path"] for item in framework_requirement["evidence"]}
         self.assertIn("src/trustai/framework_adapter_matrix.py", framework_evidence)

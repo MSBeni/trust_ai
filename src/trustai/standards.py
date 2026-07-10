@@ -106,6 +106,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/procurement-clause-v0.1.md",
     "docs/specs/procurement-integration-v0.1.md",
     "docs/specs/marketplace-v0.1.md",
+    "docs/specs/vertical-pack-v0.1.md",
     "docs/specs/marketplace-distribution-v0.1.md",
     "docs/specs/marketplace-author-governance-v0.1.md",
     "docs/specs/marketplace-settlement-v0.1.md",
@@ -136,6 +137,17 @@ REQUIRED_SPEC_PATHS = (
 )
 
 CONFORMANCE_TARGETS = (
+    {
+        "id": "vertical-pack-receipts",
+        "description": "Vertical pack receipts bind contract templates, policy packs, proof-pack sources, compliance/runtime sources, and vertical-specific external-evidence limits for trading/treasury, insurance claims, healthcare RCM, and public sector packs.",
+        "reference": "src/trustai/vertical_pack.py",
+        "commands": [
+            "python -m trustai vertical-pack --root . --pack-ref vertical-pack:healthcare-rcm/local --vertical healthcare-rcm --producer-ref oidc:trustai.example/vertical-pack-author --reviewer-ref oidc:auditor.example/vertical-pack-reviewer --out artifacts/healthcare-vertical-pack.json",
+            "python -m trustai vertical-pack-verify artifacts/healthcare-vertical-pack.json --root .",
+            "python -m trustai vertical-pack-append artifacts/healthcare-vertical-pack.json --root . --state .trustai/vertical-pack-demo/evidence-chain.json --tenant vertical-pack-local --out artifacts/healthcare-vertical-pack-entry.json",
+            "python -m unittest tests.test_vertical_pack",
+        ],
+    },
     {
         "id": "self-serve-sdk-gateway-onboarding",
         "description": "Self-serve onboarding receipts bind Python/TypeScript SDKs, OTel ingest, MCP gateway capture, quickstart commands, examples, and production-claim limits for the SDK/gateway PLG tier.",

@@ -267,6 +267,14 @@ from .onboarding import (
     verify_self_serve_onboarding_receipt,
     write_self_serve_onboarding_receipt,
 )
+from .vertical_pack import (
+    SUPPORTED_VERTICAL_PACKS,
+    append_vertical_pack,
+    build_vertical_pack,
+    load_vertical_pack,
+    verify_vertical_pack,
+    write_vertical_pack,
+)
 from .certification import (
     build_auditor_certification_kit,
     load_auditor_certification_kit,
@@ -1254,6 +1262,78 @@ def cmd_self_serve_onboarding_append(args: argparse.Namespace) -> int:
         print(f"self-serve onboarding entry: {args.out}")
     print(f"self-serve onboarding entry id: {entry['entry_id']}")
     print(f"receipt id: {receipt['receipt_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def cmd_vertical_pack(args: argparse.Namespace) -> int:
+    try:
+        pack = build_vertical_pack(
+            args.root,
+            pack_ref=args.pack_ref,
+            vertical=args.vertical,
+            producer_ref=args.producer_ref,
+            reviewer_ref=args.reviewer_ref,
+            environment=args.environment,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_vertical_pack(pack, root=args.root, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"vertical pack generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("vertical pack generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_vertical_pack(args.out, pack)
+    print(f"vertical pack: {args.out}")
+    print(f"pack id: {pack['pack_id']}")
+    print(f"vertical: {pack['vertical']}")
+    print(f"source artifacts: {len(pack['source_artifacts'])}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_vertical_pack_verify(args: argparse.Namespace) -> int:
+    try:
+        pack = load_vertical_pack(args.pack)
+        result = verify_vertical_pack(pack, root=args.root, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"vertical pack verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        print(f"verified vertical pack: {args.pack}")
+        print(f"pack id: {pack['pack_id']}")
+        print(f"vertical: {pack['vertical']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"vertical pack verification failed: {args.pack}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_vertical_pack_append(args: argparse.Namespace) -> int:
+    try:
+        pack = load_vertical_pack(args.pack)
+    except (OSError, ValueError) as exc:
+        print(f"vertical pack append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_vertical_pack(chain, pack, root=args.root, key=args.key)
+    except ValueError as exc:
+        print(f"vertical pack append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"vertical pack entry: {args.out}")
+    print(f"vertical pack entry id: {entry['entry_id']}")
+    print(f"pack id: {pack['pack_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
@@ -16811,6 +16891,31 @@ def build_parser() -> argparse.ArgumentParser:
     _add_state_args(self_serve_onboarding_append)
     self_serve_onboarding_append.set_defaults(func=cmd_self_serve_onboarding_append)
 
+    vertical_pack = subparsers.add_parser("vertical-pack", help="write a signed vertical pack receipt")
+    vertical_pack.add_argument("--root", default=".")
+    vertical_pack.add_argument("--pack-ref", required=True)
+    vertical_pack.add_argument("--vertical", choices=sorted(SUPPORTED_VERTICAL_PACKS), required=True)
+    vertical_pack.add_argument("--producer-ref", required=True)
+    vertical_pack.add_argument("--reviewer-ref")
+    vertical_pack.add_argument("--environment", default="local")
+    vertical_pack.add_argument("--generated-at")
+    vertical_pack.add_argument("--out", default="artifacts/vertical-pack.json")
+    vertical_pack.add_argument("--key")
+    vertical_pack.set_defaults(func=cmd_vertical_pack)
+
+    vertical_pack_verify = subparsers.add_parser("vertical-pack-verify", help="verify a signed vertical pack receipt")
+    vertical_pack_verify.add_argument("pack")
+    vertical_pack_verify.add_argument("--root", default=".")
+    vertical_pack_verify.add_argument("--key")
+    vertical_pack_verify.set_defaults(func=cmd_vertical_pack_verify)
+
+    vertical_pack_append = subparsers.add_parser("vertical-pack-append", help="append a verified vertical pack receipt as chain evidence")
+    vertical_pack_append.add_argument("pack")
+    vertical_pack_append.add_argument("--root", default=".")
+    vertical_pack_append.add_argument("--out", default="artifacts/vertical-pack-entry.json")
+    vertical_pack_append.add_argument("--key")
+    _add_state_args(vertical_pack_append)
+    vertical_pack_append.set_defaults(func=cmd_vertical_pack_append)
     deployment_manifest = subparsers.add_parser("deployment-manifest", help="write a signed BYOC/self-hosted deployment manifest")
     deployment_manifest.add_argument("--root", default=".")
     deployment_manifest.add_argument("--name", default="trustai-reference-deployment")
