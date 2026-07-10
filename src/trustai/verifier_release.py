@@ -221,6 +221,9 @@ def verifier_conformance_release_reference(conformance_report: dict[str, Any]) -
     source_provider_bundle = conformance_report.get("source_provider_bundle")
     if not isinstance(source_provider_bundle, dict):
         source_provider_bundle = None
+    source_release_run = conformance_report.get("source_release_run")
+    if not isinstance(source_release_run, dict):
+        source_release_run = None
     return {
         "report_id": conformance_report.get("report_id"),
         "content_hash": content_hash(conformance_report),
@@ -233,6 +236,7 @@ def verifier_conformance_release_reference(conformance_report: dict[str, Any]) -
         "passed_count_by_target": {key: passed_count_by_target.get(key, 0) for key in targets},
         "source_proof_pack": conformance_report.get("source_proof_pack", {}),
         "source_provider_bundle": source_provider_bundle,
+        "source_release_run": source_release_run,
     }
 
 

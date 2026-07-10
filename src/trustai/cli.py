@@ -5211,11 +5211,30 @@ def cmd_verifier_conformance(args: argparse.Namespace) -> int:
     except (OSError, ValueError) as exc:
         print(f"verifier conformance failed to load provider bundle: {exc}", file=sys.stderr)
         return 1
+    if args.release_run and (not args.release_run_verifier_release or not args.release_run_build_attestation):
+        print("verifier conformance release-run vectors require --release-run-verifier-release and --release-run-build-attestation", file=sys.stderr)
+        return 1
+    try:
+        release_run = load_go_verifier_release_run_receipt(args.release_run) if args.release_run else None
+        release_run_verifier_release = load_verifier_release_manifest(args.release_run_verifier_release) if args.release_run_verifier_release else None
+        release_run_build_attestation = load_go_verifier_build_attestation(args.release_run_build_attestation) if args.release_run_build_attestation else None
+        release_run_conformance_report = load_verifier_conformance_report(args.release_run_conformance_report) if args.release_run_conformance_report else None
+        release_run_standards_package = load_standards_submission(args.release_run_standards_package) if args.release_run_standards_package else None
+    except (OSError, ValueError) as exc:
+        print(f"verifier conformance failed to load release-run sources: {exc}", file=sys.stderr)
+        return 1
     report = build_verifier_conformance_report(
         pack,
         key=args.key,
         verifier_command=args.verifier_command,
         provider_bundle=provider_bundle,
+        release_run=release_run,
+        release_run_verifier_release=release_run_verifier_release,
+        release_run_build_attestation=release_run_build_attestation,
+        release_run_conformance_report=release_run_conformance_report,
+        release_run_standards_package=release_run_standards_package,
+        release_run_root=args.release_run_root,
+        release_run_binary_path=args.release_run_binary,
     )
     result = verify_verifier_conformance_report(report)
     if not result.ok:
@@ -16376,6 +16395,13 @@ def build_parser() -> argparse.ArgumentParser:
     verifier_conformance.add_argument("--out", default="artifacts/verifier-conformance.json")
     verifier_conformance.add_argument("--markdown", default="artifacts/verifier-conformance.md")
     verifier_conformance.add_argument("--provider-bundle", help="optional recorded-export provider bundle to include in conformance vectors")
+    verifier_conformance.add_argument("--release-run", help="optional Go verifier release workflow-run receipt to include in conformance vectors")
+    verifier_conformance.add_argument("--release-run-verifier-release", help="verifier release manifest source for --release-run")
+    verifier_conformance.add_argument("--release-run-build-attestation", help="Go verifier build attestation source for --release-run")
+    verifier_conformance.add_argument("--release-run-conformance-report", help="conformance report source used by the release manifest for --release-run")
+    verifier_conformance.add_argument("--release-run-standards-package", help="standards package source used by the release manifest for --release-run")
+    verifier_conformance.add_argument("--release-run-root", default=".")
+    verifier_conformance.add_argument("--release-run-binary")
     verifier_conformance.add_argument("--verifier-command", default="python -m trustai verify")
     verifier_conformance.set_defaults(func=cmd_verifier_conformance)
 

@@ -11,6 +11,7 @@ from .canonical import content_hash, utc_now, without_keys
 from .framework_runtime_service_authority_recorded_export_provider_bundle import (
     verify_framework_runtime_service_authority_recorded_export_provider_bundle,
 )
+
 from .verifier import verify_proof_pack
 
 VERIFIER_CONFORMANCE_SCHEMA = "trustai.verifier-conformance/0.1"
@@ -31,6 +32,13 @@ def build_verifier_conformance_report(
     key: str | None = None,
     verifier_command: str = "python -m trustai verify",
     provider_bundle: dict[str, Any] | None = None,
+    release_run: dict[str, Any] | None = None,
+    release_run_verifier_release: dict[str, Any] | None = None,
+    release_run_build_attestation: dict[str, Any] | None = None,
+    release_run_conformance_report: dict[str, Any] | None = None,
+    release_run_standards_package: dict[str, Any] | None = None,
+    release_run_root: str | Path = ".",
+    release_run_binary_path: str | Path | None = None,
 ) -> dict[str, Any]:
     cases = [
         _case("valid-proof-pack", "Valid proof pack is accepted.", proof_pack, True, key),
@@ -75,6 +83,19 @@ def build_verifier_conformance_report(
         )
     if provider_bundle is not None:
         cases.extend(_provider_bundle_cases(provider_bundle, key))
+    if release_run is not None:
+        cases.extend(
+            _release_run_cases(
+                release_run,
+                release_run_verifier_release,
+                release_run_build_attestation,
+                root=release_run_root,
+                conformance_report=release_run_conformance_report,
+                standards_package=release_run_standards_package,
+                binary_path=release_run_binary_path,
+                key=key,
+            )
+        )
     body = {
         "schema": VERIFIER_CONFORMANCE_SCHEMA,
         "generated_at": utc_now(),
@@ -91,6 +112,7 @@ def build_verifier_conformance_report(
             "delegation_graph_entry_count": _delegation_graph_entry_count(proof_pack),
         },
         "source_provider_bundle": _provider_bundle_reference(provider_bundle),
+        "source_release_run": _release_run_reference(release_run),
         "test_cases": cases,
         "summary": {
             "case_count": len(cases),
@@ -173,16 +195,20 @@ def render_verifier_conformance_markdown(report: dict[str, Any]) -> str:
     )
     source = report.get("source_proof_pack", {})
     provider_bundle = report.get("source_provider_bundle", {}) if isinstance(report.get("source_provider_bundle"), dict) else {}
+    release_run = report.get("source_release_run", {}) if isinstance(report.get("source_release_run"), dict) else {}
     provider_line = ""
     if provider_bundle:
         provider_line = f"\nSource provider bundle: `{provider_bundle.get('bundle_id', '')}`"
+    release_run_line = ""
+    if release_run:
+        release_run_line = f"\nSource Go verifier release run: `{release_run.get('run_id', '')}`"
     return f"""# TrustAI Verifier Conformance Report
 
 Report ID: `{report.get('report_id', '')}`
 
 Verifier: `{report.get('verifier', {}).get('command', '')}`
 
-Source proof pack: `{source.get('pack_id', '')}`{provider_line}
+Source proof pack: `{source.get('pack_id', '')}`{provider_line}{release_run_line}
 
 ## Test Cases
 
@@ -267,6 +293,131 @@ def _provider_bundle_cases(provider_bundle: dict[str, Any], key: str | None) -> 
     ]
 
 
+def _release_run_reference(release_run: dict[str, Any] | None) -> dict[str, Any] | None:
+    if release_run is None:
+        return None
+    source = release_run.get("source", {}) if isinstance(release_run.get("source"), dict) else {}
+    workflow_run = release_run.get("workflow_run", {}) if isinstance(release_run.get("workflow_run"), dict) else {}
+    return {
+        "run_id": release_run.get("run_id"),
+        "content_hash": content_hash(release_run),
+        "schema": release_run.get("schema"),
+        "release_id": source.get("release_id"),
+        "build_id": source.get("build_id"),
+        "workflow_run_id": workflow_run.get("workflow_run_id"),
+        "commit_sha": workflow_run.get("commit_sha"),
+        "artifact_count": len(release_run.get("artifacts", [])) if isinstance(release_run.get("artifacts"), list) else None,
+        "check_count": len(release_run.get("checks", [])) if isinstance(release_run.get("checks"), list) else None,
+    }
+
+
+def _release_run_cases(
+    release_run: dict[str, Any],
+    verifier_release: dict[str, Any] | None,
+    build_attestation: dict[str, Any] | None,
+    *,
+    root: str | Path,
+    conformance_report: dict[str, Any] | None,
+    standards_package: dict[str, Any] | None,
+    binary_path: str | Path | None,
+    key: str | None,
+) -> list[dict[str, Any]]:
+    return [
+        _release_run_case(
+            "valid-go-verifier-release-run",
+            "Valid Go verifier release workflow-run receipt is accepted.",
+            release_run,
+            verifier_release,
+            build_attestation,
+            root=root,
+            conformance_report=conformance_report,
+            standards_package=standards_package,
+            binary_path=binary_path,
+            expected_ok=True,
+            key=key,
+        ),
+        _release_run_case(
+            "go-verifier-release-run-signature-tamper",
+            "Changing the Go verifier release-run receipt signature is rejected.",
+            _tamper_release_run_signature(release_run),
+            verifier_release,
+            build_attestation,
+            root=root,
+            conformance_report=conformance_report,
+            standards_package=standards_package,
+            binary_path=binary_path,
+            expected_ok=False,
+            key=key,
+        ),
+        _release_run_case(
+            "go-verifier-release-run-workflow-tamper",
+            "Changing the Go verifier release workflow digest is rejected.",
+            _tamper_release_run_workflow(release_run),
+            verifier_release,
+            build_attestation,
+            root=root,
+            conformance_report=conformance_report,
+            standards_package=standards_package,
+            binary_path=binary_path,
+            expected_ok=False,
+            key=key,
+        ),
+        _release_run_case(
+            "go-verifier-release-run-artifact-tamper",
+            "Changing a Go verifier release artifact digest is rejected.",
+            _tamper_release_run_artifact_digest(release_run),
+            verifier_release,
+            build_attestation,
+            root=root,
+            conformance_report=conformance_report,
+            standards_package=standards_package,
+            binary_path=binary_path,
+            expected_ok=False,
+            key=key,
+        ),
+    ]
+
+
+def _release_run_case(
+    case_id: str,
+    description: str,
+    release_run: dict[str, Any],
+    verifier_release: dict[str, Any] | None,
+    build_attestation: dict[str, Any] | None,
+    *,
+    root: str | Path,
+    conformance_report: dict[str, Any] | None,
+    standards_package: dict[str, Any] | None,
+    binary_path: str | Path | None,
+    expected_ok: bool,
+    key: str | None,
+) -> dict[str, Any]:
+    from .go_verifier_release_run import verify_go_verifier_release_run_receipt
+
+    result = verify_go_verifier_release_run_receipt(
+        release_run,
+        verifier_release,
+        build_attestation,
+        root=root,
+        conformance_report=conformance_report,
+        standards_package=standards_package,
+        binary_path=binary_path,
+        key=key,
+    )
+    actual_ok = result.ok
+    return {
+        "id": case_id,
+        "target": "go-verifier-release-run",
+        "description": description,
+        "expected_ok": expected_ok,
+        "actual_ok": actual_ok,
+        "passed": actual_ok == expected_ok,
+        "decision": "accepted" if actual_ok else "rejected",
+        "errors": result.errors,
+        "warnings": result.warnings,
+        "release_run_content_hash": content_hash(release_run),
+    }
+
 def _case(
     case_id: str,
     description: str,
@@ -349,6 +500,39 @@ def _tamper_provider_bundle_artifact_bytes(bundle: dict[str, Any]) -> dict[str, 
 
     return _tampered_provider_bundle(bundle, mutate)
 
+
+def _tampered_release_run(release_run: dict[str, Any], mutator: Callable[[dict[str, Any]], None]) -> dict[str, Any]:
+    tampered = copy.deepcopy(release_run)
+    mutator(tampered)
+    return tampered
+
+
+def _tamper_release_run_signature(release_run: dict[str, Any]) -> dict[str, Any]:
+    def mutate(value: dict[str, Any]) -> None:
+        signatures = value.setdefault("signatures", [{}])
+        if not signatures:
+            signatures.append({})
+        signatures[0]["value"] = "0" * 64
+
+    return _tampered_release_run(release_run, mutate)
+
+
+def _tamper_release_run_workflow(release_run: dict[str, Any]) -> dict[str, Any]:
+    def mutate(value: dict[str, Any]) -> None:
+        workflow = value.setdefault("workflow", {})
+        workflow["sha256"] = "0" * 64
+
+    return _tampered_release_run(release_run, mutate)
+
+
+def _tamper_release_run_artifact_digest(release_run: dict[str, Any]) -> dict[str, Any]:
+    def mutate(value: dict[str, Any]) -> None:
+        artifacts = value.setdefault("artifacts", [{}])
+        if not artifacts:
+            artifacts.append({})
+        artifacts[0]["sha256"] = "0" * 64
+
+    return _tampered_release_run(release_run, mutate)
 
 def _tampered_pack(proof_pack: dict[str, Any], mutator: Callable[[dict[str, Any]], None]) -> dict[str, Any]:
     tampered = copy.deepcopy(proof_pack)
