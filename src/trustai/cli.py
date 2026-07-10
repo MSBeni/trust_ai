@@ -983,6 +983,15 @@ from .verifier_public_release import (
     verify_verifier_public_release_receipt,
     write_verifier_public_release_receipt,
 )
+from .verifier_release_authority import (
+    VERIFIER_RELEASE_AUTHORITY_MODES,
+    append_verifier_release_authority_dossier,
+    build_verifier_release_authority_dossier,
+    load_verifier_release_authority_dossier,
+    parse_verifier_release_authority_evidence_arg,
+    verify_verifier_release_authority_dossier,
+    write_verifier_release_authority_dossier,
+)
 from .verifier_release import (
     build_verifier_release_manifest,
     load_verifier_release_manifest,
@@ -6096,6 +6105,121 @@ def cmd_verifier_public_release_append(args: argparse.Namespace) -> int:
         print(f"verifier public release entry: {args.out}")
     print(f"verifier public release entry id: {entry['entry_id']}")
     print(f"release publication id: {receipt['release_publication_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def _load_verifier_release_authority_sources(args: argparse.Namespace) -> dict[str, object]:
+    sources = _load_verifier_public_release_sources(args)
+    sources["public_release_receipt"] = load_verifier_public_release_receipt(args.public_release_receipt)
+    return sources
+
+
+def _verifier_release_authority_source_kwargs(sources: dict[str, object], args: argparse.Namespace) -> dict[str, object]:
+    return {
+        "verifier_release": sources["verifier_release"],
+        "distribution_receipt": sources["distribution_receipt"],
+        "build_attestation": sources["build_attestation"],
+        "release_run": sources["release_run"],
+        "release_run_bundle": sources["release_run_bundle"],
+        **_verifier_public_release_kwargs(args),
+        "conformance_report": sources["conformance_report"],
+        "standards_package": sources["standards_package"],
+        "key": args.key,
+    }
+
+
+def cmd_verifier_release_authority(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_verifier_release_authority_sources(args)
+        evidence = [parse_verifier_release_authority_evidence_arg(value) for value in args.authority_evidence]
+        dossier = build_verifier_release_authority_dossier(
+            sources["public_release_receipt"],
+            **_verifier_release_authority_source_kwargs(sources, args),
+            mode=args.mode,
+            environment=args.environment,
+            dossier_ref=args.dossier_ref,
+            authority_ref=args.authority_ref,
+            producer_ref=args.producer_ref,
+            authority_evidence=evidence,
+            generated_at=args.generated_at,
+        )
+        result = verify_verifier_release_authority_dossier(
+            dossier,
+            public_release_receipt=sources["public_release_receipt"],
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+            **_verifier_release_authority_source_kwargs(sources, args),
+        )
+    except (OSError, ValueError) as exc:
+        print(f"verifier release authority dossier failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("verifier release authority dossier verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_verifier_release_authority_dossier(args.out, dossier)
+    print(f"verifier release authority dossier: {args.out}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"release publication id: {dossier['public_release_binding']['release_publication_id']}")
+    print(f"covered requirements: {result.covered_count}/{result.required_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_verifier_release_authority_verify(args: argparse.Namespace) -> int:
+    try:
+        dossier = load_verifier_release_authority_dossier(args.dossier)
+        sources = _load_verifier_release_authority_sources(args)
+    except (OSError, ValueError) as exc:
+        print(f"verifier release authority dossier verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_verifier_release_authority_dossier(
+        dossier,
+        public_release_receipt=sources["public_release_receipt"],
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+        **_verifier_release_authority_source_kwargs(sources, args),
+    )
+    if result.ok:
+        print(f"verified verifier release authority dossier: {args.dossier}")
+        print(f"covered requirements: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"verifier release authority dossier verification failed: {args.dossier}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_verifier_release_authority_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    try:
+        dossier = load_verifier_release_authority_dossier(args.dossier)
+        sources = _load_verifier_release_authority_sources(args)
+        entry = append_verifier_release_authority_dossier(
+            chain,
+            dossier,
+            public_release_receipt=sources["public_release_receipt"],
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+            **_verifier_release_authority_source_kwargs(sources, args),
+        )
+    except (OSError, ValueError) as exc:
+        print(f"verifier release authority dossier append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"verifier release authority entry: {args.out}")
+    print(f"verifier release authority entry id: {entry['entry_id']}")
+    print(f"dossier id: {dossier['dossier_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
@@ -18632,6 +18756,46 @@ def build_parser() -> argparse.ArgumentParser:
     verifier_public_release_append.add_argument("--out", default="artifacts/verifier-public-release-entry.json")
     _add_state_args(verifier_public_release_append)
     verifier_public_release_append.set_defaults(func=cmd_verifier_public_release_append)
+
+    def _add_verifier_release_authority_sources(parser: argparse.ArgumentParser, include_dossier: bool = False) -> None:
+        if include_dossier:
+            parser.add_argument("dossier")
+        parser.add_argument("public_release_receipt")
+        _add_verifier_public_release_sources(parser)
+
+    def _add_verifier_release_authority_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--mode", choices=sorted(VERIFIER_RELEASE_AUTHORITY_MODES), default="provider-dossier")
+        parser.add_argument("--environment")
+        parser.add_argument("--dossier-ref", required=True)
+        parser.add_argument("--authority-ref", required=True)
+        parser.add_argument("--producer-ref", required=True)
+        parser.add_argument("--authority-evidence", action="append", default=[])
+        parser.add_argument("--generated-at")
+        parser.add_argument("--require-complete", action="store_true")
+        parser.add_argument("--require-fresh", action="store_true")
+        parser.add_argument("--now")
+        parser.add_argument("--out", default="artifacts/verifier-release-authority.json")
+
+    verifier_release_authority = subparsers.add_parser("verifier-release-authority", help="write a signed verifier public release production authority dossier")
+    _add_verifier_release_authority_sources(verifier_release_authority)
+    _add_verifier_release_authority_fields(verifier_release_authority)
+    verifier_release_authority.set_defaults(func=cmd_verifier_release_authority)
+
+    verifier_release_authority_verify = subparsers.add_parser("verifier-release-authority-verify", help="verify a signed verifier public release production authority dossier")
+    _add_verifier_release_authority_sources(verifier_release_authority_verify, include_dossier=True)
+    verifier_release_authority_verify.add_argument("--require-complete", action="store_true")
+    verifier_release_authority_verify.add_argument("--require-fresh", action="store_true")
+    verifier_release_authority_verify.add_argument("--now")
+    verifier_release_authority_verify.set_defaults(func=cmd_verifier_release_authority_verify)
+
+    verifier_release_authority_append = subparsers.add_parser("verifier-release-authority-append", help="append a verified verifier public release authority dossier")
+    _add_verifier_release_authority_sources(verifier_release_authority_append, include_dossier=True)
+    verifier_release_authority_append.add_argument("--require-complete", action="store_true")
+    verifier_release_authority_append.add_argument("--require-fresh", action="store_true")
+    verifier_release_authority_append.add_argument("--now")
+    verifier_release_authority_append.add_argument("--out", default="artifacts/verifier-release-authority-entry.json")
+    _add_state_args(verifier_release_authority_append)
+    verifier_release_authority_append.set_defaults(func=cmd_verifier_release_authority_append)
     ci = subparsers.add_parser("ci-report", help="write a GitHub/GitLab promotion gate report")
     ci.add_argument("pack")
     ci.add_argument("--provider", choices=["github", "gitlab"], default="github")

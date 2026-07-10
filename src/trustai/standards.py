@@ -110,6 +110,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/verifier-release-v0.1.md",
     "docs/specs/verifier-distribution-v0.1.md",
     "docs/specs/verifier-public-release-v0.1.md",
+    "docs/specs/verifier-public-release-authority-v0.1.md",
     "docs/specs/go-verifier-v0.1.md",
     "docs/specs/go-verifier-build-attestation-v0.1.md",
     "docs/specs/go-verifier-release-workflow-v0.1.md",
@@ -297,6 +298,16 @@ CONFORMANCE_TARGETS = (
             "python -m trustai verifier-distribution artifacts/verifier-release.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --bundle artifacts/verifier-source-bundle.zip --sbom artifacts/verifier-source-sbom.json --provenance artifacts/verifier-source-provenance.json --signature artifacts/verifier-source-signature.json --distribution-ref release:trustai-verifier/source-v0.1 --channel local-source-bundle --publisher-ref publisher:trustai/local --release-url https://github.com/MSBeni/trust_ai/releases/tag/source-v0.1 --generated-at 2026-07-16T00:03:00Z",
             "python -m trustai verifier-distribution-verify artifacts/verifier-distribution.json artifacts/verifier-release.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --bundle artifacts/verifier-source-bundle.zip --sbom artifacts/verifier-source-sbom.json --provenance artifacts/verifier-source-provenance.json --signature artifacts/verifier-source-signature.json",
             "python -m unittest tests.test_verifier_distribution",
+        ],
+    },
+    {
+        "id": "verifier-public-release-authority-dossiers",
+        "description": "Verifier public release authority dossiers bind signed verifier public release receipts to provider workflow, release API, artifact manifest, SBOM/provenance/signature, transparency-log, audit-log, credential-custody, freshness, and production-claim evidence.",
+        "reference": "src/trustai/verifier_release_authority.py",
+        "commands": [
+            "python -m trustai verifier-release-authority artifacts/verifier-public-release.json artifacts/verifier-release.json artifacts/verifier-distribution.json artifacts/go-verifier-build-attestation.json artifacts/go-verifier-release-run.json artifacts/go-verifier-release-run-bundle.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --distribution-bundle artifacts/verifier-source-bundle.zip --distribution-sbom artifacts/verifier-source-sbom.json --distribution-provenance artifacts/verifier-source-provenance.json --distribution-signature artifacts/verifier-source-signature.json --binary dist/trustai-verify-linux-amd64 --environment release-prod --dossier-ref dossier:verifier-release-authority/v0.1.0 --authority-ref authority:verifier-release/github/v0.1.0 --producer-ref oidc:trustai.example/verifier-release-authority-worker --authority-evidence 'completed-provider-workflow-run,ci-run,github-actions-run:1234567890,sha256:verifier-release-provider-workflow-run,Provider workflow run export;issuer=GitHub Actions;subject=trustai verifier release v0.1.0;source_uri=https://github.com/MSBeni/trust_ai/actions/runs/1234567890;issued_at=2026-07-16T00:10:00Z;expires_at=2026-07-23T00:10:00Z' --generated-at 2026-07-16T00:12:00Z",
+            "python -m trustai verifier-release-authority-verify artifacts/verifier-release-authority.json artifacts/verifier-public-release.json artifacts/verifier-release.json artifacts/verifier-distribution.json artifacts/go-verifier-build-attestation.json artifacts/go-verifier-release-run.json artifacts/go-verifier-release-run-bundle.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --distribution-bundle artifacts/verifier-source-bundle.zip --distribution-sbom artifacts/verifier-source-sbom.json --distribution-provenance artifacts/verifier-source-provenance.json --distribution-signature artifacts/verifier-source-signature.json --binary dist/trustai-verify-linux-amd64",
+            "python -m unittest tests.test_verifier_release_authority",
         ],
     },
     {
@@ -1053,6 +1064,7 @@ def build_standards_submission(
             "Publish marketplace settlement receipt format for entitlement checks, invoice, revenue-share, payout, and tax-custody evidence.",
             "Publish trust-network service attestation format for hosted registry and marketplace evidence.",
             "Publish trust-network production authority dossier format for hosted registry, marketplace, identity-provider, settlement, revocation, callback, and observability authority evidence.",
+            "Publish verifier public release authority dossier format for provider workflow, release API, artifact, transparency-log, audit-log, and credential-custody authority evidence.",
             "Publish verifier conformance report format and tamper-vector requirements.",
             "Publish distributional re-execution report, local runner evidence, and risk-class policy formats for nondeterministic agents.",
             "Keep producer and verifier roles separable.",
