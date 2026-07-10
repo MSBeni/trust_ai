@@ -61,6 +61,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/policy-backend-worker-v0.1.md",
     "docs/specs/policy-backend-provider-export-v0.1.md",
     "docs/specs/policy-backend-provider-export-bundle-v0.1.md",
+    "docs/specs/policy-backend-production-authority-v0.1.md",
     "docs/specs/policy-backend-service-bundle-v0.1.md",
     "docs/specs/insurer-consent-v0.1.md",
     "docs/specs/underwriting-quote-v0.1.md",
@@ -545,6 +546,16 @@ CONFORMANCE_TARGETS = (
             "python -m trustai policy-backend-provider-export-bundle artifacts/policy-backend-provider-export.json artifacts/policy-backend-provider-export-source.json artifacts/policy-backend-worker.json artifacts/policy-backend-service-attestation.json artifacts/policy-backend-enforcement.json examples/aitrade/policy-pack.json examples/aitrade/runtime-action.json --pack artifacts/aitrade-proof-pack.json --decision artifacts/policy-decision.json --export artifacts/policy-export.json --policy-engine-receipt artifacts/policy-engine-receipt.json --environment aitrade-prod --reviewer-ref oidc:auditor.example/policy-backend-provider-reviewer --generated-at 2026-07-04T05:10:00Z --out artifacts/policy-backend-provider-export-bundle.json --markdown artifacts/policy-backend-provider-export-bundle.md",
             "python -m trustai policy-backend-provider-export-bundle-verify artifacts/policy-backend-provider-export-bundle.json",
             "python -m unittest tests.test_policy_backend_provider_bundle",
+        ],
+    },
+    {
+        "id": "policy-backend-production-authority-dossiers",
+        "description": "Policy backend production authority dossiers bind provider export bundles to external OPA/Cedar backend authority evidence, freshness windows, missing requirement coverage, and chain-backed production-claim limits.",
+        "reference": "src/trustai/policy_backend_authority.py",
+        "commands": [
+            "python -m trustai policy-backend-authority artifacts/policy-backend-provider-export-bundle.json --environment aitrade-prod --dossier-ref dossier:policy-backend-authority/lg-trace-001 --authority-ref authority:policy-backend/aitrade-prod --producer-ref oidc:trustai.example/policy-backend-authority-worker --authority-evidence \"opa-cedar-backend-fleet,hosted-service,service:policy-backend-fleet/aitrade-prod,sha256:policy-backend-fleet-authority,Hosted OPA/Cedar backend fleet deployment export;issuer=TrustAI Cloud;subject=aitrade-prod policy backend fleet;source_uri=https://ops.example/trustai/policy-backend/aitrade-prod;issued_at=2026-07-04T00:00:00Z;expires_at=2026-07-11T00:00:00Z\" --generated-at 2026-07-04T05:20:00Z --out artifacts/policy-backend-authority.json",
+            "python -m trustai policy-backend-authority-verify artifacts/policy-backend-authority.json --provider-bundle artifacts/policy-backend-provider-export-bundle.json",
+            "python -m unittest tests.test_policy_backend_authority",
         ],
     },
     {

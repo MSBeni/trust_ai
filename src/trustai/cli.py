@@ -7,6 +7,7 @@ import shutil
 import sys
 import tempfile
 from pathlib import Path
+from typing import Any
 
 from .actuarial import (
     append_actuarial_product,
@@ -679,6 +680,15 @@ from .policy_backend_provider_bundle import (
     verify_policy_backend_provider_bundle,
     write_policy_backend_provider_bundle,
     write_policy_backend_provider_bundle_markdown,
+)
+from .policy_backend_authority import (
+    POLICY_BACKEND_AUTHORITY_MODES,
+    append_policy_backend_authority_dossier,
+    build_policy_backend_authority_dossier,
+    load_policy_backend_authority_dossier,
+    parse_policy_backend_authority_evidence_arg,
+    verify_policy_backend_authority_dossier,
+    write_policy_backend_authority_dossier,
 )
 from .policy_backend_service_bundle import (
     POLICY_BACKEND_SERVICE_BUNDLE_MODES,
@@ -10150,6 +10160,106 @@ def cmd_policy_backend_provider_bundle_append(args: argparse.Namespace) -> int:
     print(f"bundle id: {bundle['bundle_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
+
+
+def _policy_backend_authority_evidence(args: argparse.Namespace) -> list[dict[str, Any]]:
+    return [parse_policy_backend_authority_evidence_arg(value) for value in (args.authority_evidence or [])]
+
+
+def cmd_policy_backend_authority(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_policy_backend_provider_bundle(args.bundle)
+        dossier = build_policy_backend_authority_dossier(
+            bundle,
+            mode=args.mode,
+            environment=args.environment,
+            dossier_ref=args.dossier_ref,
+            authority_ref=args.authority_ref,
+            producer_ref=args.producer_ref,
+            authority_evidence=_policy_backend_authority_evidence(args),
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_policy_backend_authority_dossier(
+            dossier,
+            provider_bundle=bundle,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        print(f"policy backend authority dossier failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("policy backend authority dossier verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_policy_backend_authority_dossier(args.out, dossier)
+    print(f"policy backend authority dossier: {args.out}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"bundle id: {dossier['provider_bundle_binding']['bundle_id']}")
+    print(f"authority coverage: {result.covered_count}/{result.required_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_policy_backend_authority_verify(args: argparse.Namespace) -> int:
+    try:
+        dossier = load_policy_backend_authority_dossier(args.dossier)
+        bundle = load_policy_backend_provider_bundle(args.provider_bundle) if args.provider_bundle else None
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        print(f"policy backend authority dossier load failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_policy_backend_authority_dossier(
+        dossier,
+        provider_bundle=bundle,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified policy backend authority dossier: {args.dossier}")
+        print(f"authority coverage: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"policy backend authority dossier verification failed: {args.dossier}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_policy_backend_authority_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    try:
+        dossier = load_policy_backend_authority_dossier(args.dossier)
+        bundle = load_policy_backend_provider_bundle(args.provider_bundle)
+        entry = append_policy_backend_authority_dossier(
+            chain,
+            dossier,
+            provider_bundle=bundle,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        print(f"policy backend authority dossier append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"policy backend authority dossier entry: {args.out}")
+    print(f"policy backend authority dossier entry id: {entry['entry_id']}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
 def _policy_backend_service_bundle_artifact_paths(args: argparse.Namespace) -> dict[str, str]:
     paths = {
         "service_attestation": args.attestation,
@@ -17156,6 +17266,43 @@ def build_parser() -> argparse.ArgumentParser:
     policy_backend_provider_bundle_append.add_argument("--key")
     _add_state_args(policy_backend_provider_bundle_append)
     policy_backend_provider_bundle_append.set_defaults(func=cmd_policy_backend_provider_bundle_append)
+
+    policy_backend_authority = subparsers.add_parser("policy-backend-authority", help="write a signed policy backend production authority dossier")
+    policy_backend_authority.add_argument("bundle")
+    policy_backend_authority.add_argument("--mode", choices=sorted(POLICY_BACKEND_AUTHORITY_MODES), default="provider-dossier")
+    policy_backend_authority.add_argument("--environment")
+    policy_backend_authority.add_argument("--dossier-ref", required=True)
+    policy_backend_authority.add_argument("--authority-ref", required=True)
+    policy_backend_authority.add_argument("--producer-ref", required=True)
+    policy_backend_authority.add_argument("--authority-evidence", action="append", help="requirement_id,authority_kind,evidence_ref,evidence_hash,description[;key=value...]")
+    policy_backend_authority.add_argument("--generated-at")
+    policy_backend_authority.add_argument("--require-complete", action="store_true")
+    policy_backend_authority.add_argument("--require-fresh", action="store_true")
+    policy_backend_authority.add_argument("--now")
+    policy_backend_authority.add_argument("--out", default="artifacts/policy-backend-authority.json")
+    policy_backend_authority.add_argument("--key")
+    policy_backend_authority.set_defaults(func=cmd_policy_backend_authority)
+
+    policy_backend_authority_verify = subparsers.add_parser("policy-backend-authority-verify", help="verify a signed policy backend production authority dossier")
+    policy_backend_authority_verify.add_argument("dossier")
+    policy_backend_authority_verify.add_argument("--provider-bundle")
+    policy_backend_authority_verify.add_argument("--require-complete", action="store_true")
+    policy_backend_authority_verify.add_argument("--require-fresh", action="store_true")
+    policy_backend_authority_verify.add_argument("--now")
+    policy_backend_authority_verify.add_argument("--key")
+    policy_backend_authority_verify.set_defaults(func=cmd_policy_backend_authority_verify)
+
+    policy_backend_authority_append = subparsers.add_parser("policy-backend-authority-append", help="append a verified policy backend production authority dossier as chain evidence")
+    policy_backend_authority_append.add_argument("dossier")
+    policy_backend_authority_append.add_argument("--provider-bundle", required=True)
+    policy_backend_authority_append.add_argument("--require-complete", action="store_true")
+    policy_backend_authority_append.add_argument("--require-fresh", action="store_true")
+    policy_backend_authority_append.add_argument("--now")
+    policy_backend_authority_append.add_argument("--out", default="artifacts/policy-backend-authority-entry.json")
+    policy_backend_authority_append.add_argument("--key")
+    _add_state_args(policy_backend_authority_append)
+    policy_backend_authority_append.set_defaults(func=cmd_policy_backend_authority_append)
+
     policy_backend_service_bundle = subparsers.add_parser("policy-backend-service-bundle", help="write a self-contained policy backend service review bundle")
     policy_backend_service_bundle.add_argument("attestation")
     policy_backend_service_bundle.add_argument("enforcement")
