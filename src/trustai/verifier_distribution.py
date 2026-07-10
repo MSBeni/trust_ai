@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import hashlib
 import json
@@ -12,7 +12,7 @@ from .chain import EvidenceChain
 from .crypto import sign_value, verify_value
 from .standards import verify_standards_submission
 from .verifier_conformance import verify_verifier_conformance_report
-from .verifier_release import verify_verifier_release_manifest
+from .verifier_release import verifier_conformance_release_reference, verify_verifier_release_manifest
 
 VERIFIER_DISTRIBUTION_SCHEMA = "trustai.verifier-distribution/0.1"
 VERIFIER_DISTRIBUTION_ENTRY_TYPE = "verifier.source_distribution_attested"
@@ -401,6 +401,9 @@ def _build_provenance(
                 "uri": "verifier-conformance",
                 "digest": {"sha256": release_reference.get("conformance_report_hash")},
                 "report_id": release_reference.get("conformance_report_id"),
+                "targets": release_reference.get("conformance_targets", []),
+                "case_count_by_target": release_reference.get("conformance_case_count_by_target", {}),
+                "source_provider_bundle": release_reference.get("conformance_source_provider_bundle"),
             },
         ],
         "subject": [
@@ -427,6 +430,7 @@ def _release_reference(
     standards_package: dict[str, Any] | None,
 ) -> dict[str, Any]:
     conformance_ref = verifier_release.get("conformance_report", {}) if isinstance(verifier_release.get("conformance_report"), dict) else {}
+    conformance_summary = verifier_conformance_release_reference(conformance_report) if isinstance(conformance_report, dict) else conformance_ref
     standards_ref = verifier_release.get("standards_package", {}) if isinstance(verifier_release.get("standards_package"), dict) else {}
     return {
         "release_id": verifier_release.get("release_id"),
@@ -435,8 +439,15 @@ def _release_reference(
         "release_license": verifier_release.get("release", {}).get("license"),
         "source_file_count": len(verifier_release.get("source_files", [])),
         "source_files_hash": content_hash(verifier_release.get("source_files", [])),
-        "conformance_report_id": conformance_report.get("report_id") if isinstance(conformance_report, dict) else conformance_ref.get("report_id"),
-        "conformance_report_hash": content_hash(conformance_report) if isinstance(conformance_report, dict) else conformance_ref.get("content_hash"),
+        "conformance_report_id": conformance_summary.get("report_id"),
+        "conformance_report_hash": conformance_summary.get("content_hash"),
+        "conformance_case_count": conformance_summary.get("case_count"),
+        "conformance_passed_count": conformance_summary.get("passed_count"),
+        "conformance_failed_count": conformance_summary.get("failed_count"),
+        "conformance_targets": conformance_summary.get("targets", []),
+        "conformance_case_count_by_target": conformance_summary.get("case_count_by_target", {}),
+        "conformance_passed_count_by_target": conformance_summary.get("passed_count_by_target", {}),
+        "conformance_source_provider_bundle": conformance_summary.get("source_provider_bundle"),
         "standards_package_id": standards_package.get("package_id") if isinstance(standards_package, dict) else standards_ref.get("package_id"),
         "standards_package_hash": content_hash(standards_package) if isinstance(standards_package, dict) else standards_ref.get("content_hash"),
     }

@@ -25,7 +25,9 @@ Top-level fields:
   available Go offline verifier source target, and planned Go static binary
   target.
 - `conformance_report`: report id, content hash, case counts, verifier command,
-  and source proof-pack summary from `trustai.verifier-conformance/0.1`.
+  conformance targets, per-target case/pass counts, source proof-pack summary,
+  and optional recorded-export provider bundle source summary from
+  `trustai.verifier-conformance/0.1`.
 - `standards_package`: package id, content hash, spec count, and required spec
   list from `trustai.standards-submission/0.1`.
 - `signatures`: one or more signatures over `release_id` and the release body.
@@ -43,7 +45,9 @@ Top-level fields:
 - inclusion of `src/trustai/verifier.py`;
 - inclusion of `verifier/go/trustai-verify/main.go` when the Go source target is present;
 - at least one available release target;
-- referenced conformance report hash and conformance verification when supplied;
+- referenced conformance report hash, target coverage, per-target case/pass
+  counts, optional provider-bundle source binding, and conformance verification
+  when supplied;
 - referenced standards package hash and standards verification when supplied.
 
 When a manifest references a conformance report but the report is not supplied
@@ -55,6 +59,7 @@ release validation.
 ```powershell
 $env:PYTHONPATH = "src"
 python -m trustai verifier-conformance artifacts/aitrade-proof-pack.json --out artifacts/verifier-conformance.json --markdown artifacts/verifier-conformance.md
+python -m trustai verifier-conformance artifacts/aitrade-proof-pack.json --provider-bundle artifacts/framework-runtime-service-authority-recorded-export-provider-bundle.json --out artifacts/verifier-conformance.json --markdown artifacts/verifier-conformance.md
 python -m trustai standards-export --out artifacts/standards-submission.json --markdown artifacts/standards-submission.md
 python -m trustai verifier-release --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --out artifacts/verifier-release.json --markdown artifacts/verifier-release.md
 python -m trustai verifier-release-verify artifacts/verifier-release.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json

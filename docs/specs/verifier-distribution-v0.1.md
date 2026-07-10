@@ -28,8 +28,11 @@ artifact was supplied.
   - `evidence/verifier-conformance.json`
   - `evidence/standards-submission.json`
   - `source/...` entries for every source file in the release manifest
-- `trustai.verifier-source-sbom/0.1` JSON file inventory.
-- `trustai.verifier-source-provenance/0.1` provenance metadata.
+- `trustai.verifier-source-sbom/0.1` JSON file inventory, including release
+  conformance targets and per-target coverage.
+- `trustai.verifier-source-provenance/0.1` provenance metadata, including the
+  conformance material target list, per-target coverage, and optional provider
+  bundle source binding.
 - `trustai.verifier-source-bundle-signature/0.1` detached signature subject.
 - A signed verifier distribution receipt that binds all artifact hashes.
 
@@ -38,7 +41,8 @@ artifact was supplied.
 `trustai verifier-distribution-verify` checks:
 
 - receipt schema, canonical `distribution_id`, and signature;
-- verifier release, conformance report, and standards package bindings;
+- verifier release, conformance report, conformance target coverage, optional
+  provider-bundle source binding, and standards package bindings;
 - source bundle SHA-256, size, file list, and per-entry hashes;
 - SBOM, provenance, and detached signature artifact schemas and hashes;
 - detached signature subject and HMAC signature;
@@ -46,9 +50,10 @@ artifact was supplied.
 
 ## Limitations
 
-This receipt proves source distribution integrity only. Production binary
-release authority still requires a compiled static Go verifier binary, binary
-hash, binary SBOM/provenance, and public release signature.
+This receipt proves source distribution integrity and release conformance-scope
+binding only. Production binary release authority still requires a compiled
+static Go verifier binary, binary hash, binary SBOM/provenance, and public
+release signature.
 
 ## Example
 

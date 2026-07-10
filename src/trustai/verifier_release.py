@@ -91,14 +91,7 @@ def build_verifier_release_manifest(
         ],
     }
     if conformance_report is not None:
-        body["conformance_report"] = {
-            "report_id": conformance_report.get("report_id"),
-            "content_hash": content_hash(conformance_report),
-            "case_count": conformance_report.get("summary", {}).get("case_count"),
-            "passed_count": conformance_report.get("summary", {}).get("passed_count"),
-            "verifier_command": conformance_report.get("verifier", {}).get("command"),
-            "source_proof_pack": conformance_report.get("source_proof_pack", {}),
-        }
+        body["conformance_report"] = verifier_conformance_release_reference(conformance_report)
     if standards_package is not None:
         body["standards_package"] = {
             "package_id": standards_package.get("package_id"),
@@ -180,8 +173,10 @@ def verify_verifier_release_manifest(
         if not isinstance(conformance_ref, dict):
             errors.append("manifest missing conformance_report reference")
         else:
-            if conformance_ref.get("content_hash") != content_hash(conformance_report):
-                errors.append("conformance report source hash mismatch")
+            expected_conformance_ref = verifier_conformance_release_reference(conformance_report)
+            for field, expected in expected_conformance_ref.items():
+                if conformance_ref.get(field) != expected:
+                    errors.append(f"conformance report {field} mismatch")
             result = verify_verifier_conformance_report(conformance_report)
             if not result.ok:
                 errors.extend(f"conformance report invalid: {error}" for error in result.errors)
@@ -208,6 +203,37 @@ def verify_verifier_release_manifest(
         errors.append("verifier release must include at least one available target")
 
     return VerifierReleaseVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
+def verifier_conformance_release_reference(conformance_report: dict[str, Any]) -> dict[str, Any]:
+    summary = conformance_report.get("summary", {}) if isinstance(conformance_report.get("summary"), dict) else {}
+    cases = conformance_report.get("test_cases", []) if isinstance(conformance_report.get("test_cases"), list) else []
+    case_count_by_target: dict[str, int] = {}
+    passed_count_by_target: dict[str, int] = {}
+    for case in cases:
+        if not isinstance(case, dict):
+            continue
+        target = str(case.get("target") or "unspecified")
+        case_count_by_target[target] = case_count_by_target.get(target, 0) + 1
+        if case.get("passed") is True:
+            passed_count_by_target[target] = passed_count_by_target.get(target, 0) + 1
+    targets = sorted(case_count_by_target)
+    source_provider_bundle = conformance_report.get("source_provider_bundle")
+    if not isinstance(source_provider_bundle, dict):
+        source_provider_bundle = None
+    return {
+        "report_id": conformance_report.get("report_id"),
+        "content_hash": content_hash(conformance_report),
+        "case_count": summary.get("case_count"),
+        "passed_count": summary.get("passed_count"),
+        "failed_count": summary.get("failed_count"),
+        "verifier_command": conformance_report.get("verifier", {}).get("command"),
+        "targets": targets,
+        "case_count_by_target": {key: case_count_by_target[key] for key in targets},
+        "passed_count_by_target": {key: passed_count_by_target.get(key, 0) for key in targets},
+        "source_proof_pack": conformance_report.get("source_proof_pack", {}),
+        "source_provider_bundle": source_provider_bundle,
+    }
 
 
 def load_verifier_release_manifest(path: str | Path) -> dict[str, Any]:
@@ -238,6 +264,11 @@ def render_verifier_release_markdown(manifest: dict[str, Any]) -> str:
     )
     conformance = manifest.get("conformance_report", {})
     standards = manifest.get("standards_package", {})
+    conformance_targets = ", ".join(conformance.get("targets", [])) if isinstance(conformance.get("targets"), list) else ""
+    provider_bundle = conformance.get("source_provider_bundle") if isinstance(conformance.get("source_provider_bundle"), dict) else None
+    provider_bundle_line = ""
+    if provider_bundle:
+        provider_bundle_line = f"\nProvider bundle source: `{provider_bundle.get('bundle_id', '')}`"
     return f"""# TrustAI Verifier Release Manifest
 
 Release ID: `{manifest.get('release_id', '')}`
@@ -259,6 +290,8 @@ Mode: {release.get('mode', '')}
 ## Evidence
 
 Conformance report: `{conformance.get('report_id', '')}`
+
+Conformance targets: {conformance_targets or "none"}{provider_bundle_line}
 
 Standards package: `{standards.get('package_id', '')}`
 """
