@@ -206,15 +206,18 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
         "evidence_paths": [
             "docs/specs/framework-adapters-v0.1.md",
             "docs/specs/framework-adapter-matrix-v0.1.md",
+            "docs/specs/framework-adapter-production-authority-v0.1.md",
             "src/trustai/adapters.py",
             "src/trustai/framework_adapter_matrix.py",
+            "src/trustai/framework_adapter_authority.py",
             "examples/aitrade/framework-traces.json",
             "examples/aitrade/framework-adapter-matrix.json",
             "tests/test_framework_adapters.py",
             "tests/test_framework_adapter_matrix.py",
+            "tests/test_framework_adapter_authority.py",
         ],
         "external_authority": [
-            "Native hooks for exact production runtime releases require continuously maintained adapter packages and release matrices.",
+            "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence.",
         ],
     },
     {

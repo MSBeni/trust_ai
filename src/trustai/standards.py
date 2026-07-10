@@ -40,6 +40,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/runtime-policy-v0.1.md",
     "docs/specs/approval-callback-v0.1.md",
     "docs/specs/framework-adapters-v0.1.md",
+    "docs/specs/framework-adapter-production-authority-v0.1.md",
     "docs/specs/consumption-exports-v0.1.md",
     "docs/specs/provider-delivery-v0.1.md",
     "docs/specs/provider-delivery-service-attestation-v0.1.md",
@@ -133,6 +134,16 @@ REQUIRED_SPEC_PATHS = (
 
 CONFORMANCE_TARGETS = (
     {
+        "id": "framework-adapter-production-authority-dossiers",
+        "description": "Framework adapter production authority dossiers bind adapter matrices, native hook releases, optional runtime service authority, compatibility evidence, freshness windows, and production-claim limits for maintained native framework hooks.",
+        "reference": "src/trustai/framework_adapter_authority.py",
+        "commands": [
+            "python -m trustai framework-adapter-authority artifacts/framework-adapter-matrix.json artifacts/framework-hook-release.json --runtime-service-authority artifacts/framework-runtime-service-authority.json --environment aitrade-prod --dossier-ref dossier:framework-adapter-authority/aitrade-prod --authority-ref authority:framework-adapter/aitrade-prod --producer-ref oidc:trustai.example/framework-adapter-authority-worker --authority-evidence \"exact-runtime-release-matrix,ci-run,ci:framework-adapter-matrix/nightly/aitrade-prod,sha256:framework-adapter-matrix-ci-run,Nightly adapter matrix replay export;issuer=TrustAI CI;subject=aitrade-prod framework adapter matrix;source_uri=https://ci.example/trustai/framework-adapter-matrix/aitrade-prod;issued_at=2026-07-09T00:45:00Z;expires_at=2026-12-31T00:00:00Z\" --generated-at 2026-07-09T01:05:00Z --out artifacts/framework-adapter-authority.json",
+            "python -m trustai framework-adapter-authority-verify artifacts/framework-adapter-authority.json --matrix artifacts/framework-adapter-matrix.json --release artifacts/framework-hook-release.json --runtime-service-authority artifacts/framework-runtime-service-authority.json",
+            "python -m trustai framework-adapter-authority-append artifacts/framework-adapter-authority.json artifacts/framework-adapter-matrix.json artifacts/framework-hook-release.json --runtime-service-authority artifacts/framework-runtime-service-authority.json",
+            "python -m unittest tests.test_framework_adapter_authority",
+        ],
+    },    {
         "id": "proof-pack-offline-verification",
         "description": "Proof packs verify without network access or a TrustAI account.",
         "reference": "src/trustai/verifier.py",
