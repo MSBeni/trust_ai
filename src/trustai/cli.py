@@ -548,6 +548,15 @@ from .provider_operations_service import (
     verify_provider_operations_service_attestation,
     write_provider_operations_service_attestation,
 )
+from .provider_operations_authority import (
+    PROVIDER_OPERATIONS_AUTHORITY_MODES,
+    append_provider_operations_authority_dossier,
+    build_provider_operations_authority_dossier,
+    load_provider_operations_authority_dossier,
+    parse_provider_operations_authority_evidence_arg,
+    verify_provider_operations_authority_dossier,
+    write_provider_operations_authority_dossier,
+)
 from .eu_ai_act import build_eu_ai_act_document, load_eu_ai_act_document, verify_eu_ai_act_document, write_eu_ai_act_document, write_eu_ai_act_markdown
 from .control_plane import ControlPlane
 from .gate import append_eval_and_gate
@@ -7863,6 +7872,27 @@ def _load_provider_operations_service_sources(args: argparse.Namespace) -> dict[
     }
 
 
+def _load_provider_operations_authority_sources(args: argparse.Namespace) -> dict[str, Any]:
+    core = [
+        "provider_installation",
+        "provider_ingress",
+        "callback_storage",
+        "lifecycle",
+        "lifecycle_operation",
+        "audit_lifecycle_operation",
+        "audit_worker",
+        "credential_custody",
+    ]
+    optional = ["callback_store", "callback_store_db", "audit_stream", "audit_correlation"]
+    supplied = [name for name in core + optional if getattr(args, name, None)]
+    if not supplied:
+        return {}
+    missing = [name.replace("_", "-") for name in core if not getattr(args, name, None)]
+    if missing:
+        raise ValueError("provider operations authority source args missing: " + ", ".join(missing))
+    return _load_provider_operations_service_sources(args)
+
+
 def cmd_provider_operations_service_attestation(args: argparse.Namespace) -> int:
     try:
         sources = _load_provider_operations_service_sources(args)
@@ -7964,6 +7994,117 @@ def cmd_provider_operations_service_append(args: argparse.Namespace) -> int:
     print(f"attestation id: {attestation['attestation_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
+
+
+def _provider_operations_authority_evidence(args: argparse.Namespace) -> list[dict[str, Any]]:
+    return [parse_provider_operations_authority_evidence_arg(value) for value in (args.authority_evidence or [])]
+
+
+def cmd_provider_operations_authority(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_provider_operations_authority_sources(args)
+        attestation = load_provider_operations_service_attestation(args.attestation)
+        dossier = build_provider_operations_authority_dossier(
+            attestation,
+            **sources,
+            mode=args.mode,
+            environment=args.environment,
+            dossier_ref=args.dossier_ref,
+            authority_ref=args.authority_ref,
+            producer_ref=args.producer_ref,
+            authority_evidence=_provider_operations_authority_evidence(args),
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_provider_operations_authority_dossier(
+            dossier,
+            service_attestation=attestation,
+            **sources,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"provider operations authority dossier failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("provider operations authority dossier verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_provider_operations_authority_dossier(args.out, dossier)
+    print(f"provider operations authority dossier: {args.out}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"attestation id: {dossier['service_attestation_binding']['attestation_id']}")
+    print(f"authority coverage: {result.covered_count}/{result.required_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_provider_operations_authority_verify(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_provider_operations_authority_sources(args)
+        dossier = load_provider_operations_authority_dossier(args.dossier)
+        attestation = load_provider_operations_service_attestation(args.service_attestation)
+    except (OSError, ValueError) as exc:
+        print(f"provider operations authority dossier verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_provider_operations_authority_dossier(
+        dossier,
+        service_attestation=attestation,
+        **sources,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified provider operations authority dossier: {args.dossier}")
+        print(f"authority coverage: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"provider operations authority dossier verification failed: {args.dossier}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_provider_operations_authority_append(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_provider_operations_authority_sources(args)
+        dossier = load_provider_operations_authority_dossier(args.dossier)
+        attestation = load_provider_operations_service_attestation(args.service_attestation)
+    except (OSError, ValueError) as exc:
+        print(f"provider operations authority dossier append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_provider_operations_authority_dossier(
+            chain,
+            dossier,
+            service_attestation=attestation,
+            **sources,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"provider operations authority dossier append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"provider operations authority dossier entry: {args.out}")
+    print(f"provider operations authority dossier entry id: {entry['entry_id']}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
 def _load_provider_callback_artifacts(paths: list[str]) -> list[dict]:
     return [load_provider_callback_source_artifact(path) for path in paths]
 
@@ -18441,6 +18582,59 @@ def build_parser() -> argparse.ArgumentParser:
     provider_operations_service_append.add_argument("--key")
     _add_state_args(provider_operations_service_append)
     provider_operations_service_append.set_defaults(func=cmd_provider_operations_service_append)
+
+    def _add_provider_operations_authority_sources(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--provider-installation")
+        parser.add_argument("--provider-ingress")
+        parser.add_argument("--callback-storage")
+        parser.add_argument("--lifecycle")
+        parser.add_argument("--lifecycle-operation")
+        parser.add_argument("--audit-lifecycle-operation")
+        parser.add_argument("--audit-worker")
+        parser.add_argument("--credential-custody")
+        parser.add_argument("--callback-store")
+        parser.add_argument("--callback-store-db")
+        parser.add_argument("--audit-stream")
+        parser.add_argument("--audit-correlation")
+
+    provider_operations_authority = subparsers.add_parser("provider-operations-authority", help="write a signed provider operations production authority dossier")
+    provider_operations_authority.add_argument("attestation")
+    _add_provider_operations_authority_sources(provider_operations_authority)
+    provider_operations_authority.add_argument("--mode", choices=sorted(PROVIDER_OPERATIONS_AUTHORITY_MODES), default="provider-dossier")
+    provider_operations_authority.add_argument("--environment")
+    provider_operations_authority.add_argument("--dossier-ref", required=True)
+    provider_operations_authority.add_argument("--authority-ref", required=True)
+    provider_operations_authority.add_argument("--producer-ref", required=True)
+    provider_operations_authority.add_argument("--authority-evidence", action="append", help="requirement_id,authority_kind,evidence_ref,evidence_hash,description[;key=value...]")
+    provider_operations_authority.add_argument("--generated-at")
+    provider_operations_authority.add_argument("--require-complete", action="store_true")
+    provider_operations_authority.add_argument("--require-fresh", action="store_true")
+    provider_operations_authority.add_argument("--now")
+    provider_operations_authority.add_argument("--out", default="artifacts/provider-operations-authority.json")
+    provider_operations_authority.add_argument("--key")
+    provider_operations_authority.set_defaults(func=cmd_provider_operations_authority)
+
+    provider_operations_authority_verify = subparsers.add_parser("provider-operations-authority-verify", help="verify a signed provider operations production authority dossier")
+    provider_operations_authority_verify.add_argument("dossier")
+    provider_operations_authority_verify.add_argument("service_attestation")
+    _add_provider_operations_authority_sources(provider_operations_authority_verify)
+    provider_operations_authority_verify.add_argument("--require-complete", action="store_true")
+    provider_operations_authority_verify.add_argument("--require-fresh", action="store_true")
+    provider_operations_authority_verify.add_argument("--now")
+    provider_operations_authority_verify.add_argument("--key")
+    provider_operations_authority_verify.set_defaults(func=cmd_provider_operations_authority_verify)
+
+    provider_operations_authority_append = subparsers.add_parser("provider-operations-authority-append", help="append a verified provider operations production authority dossier as chain evidence")
+    provider_operations_authority_append.add_argument("dossier")
+    provider_operations_authority_append.add_argument("service_attestation")
+    _add_provider_operations_authority_sources(provider_operations_authority_append)
+    provider_operations_authority_append.add_argument("--require-complete", action="store_true")
+    provider_operations_authority_append.add_argument("--require-fresh", action="store_true")
+    provider_operations_authority_append.add_argument("--now")
+    provider_operations_authority_append.add_argument("--out", default="artifacts/provider-operations-authority-entry.json")
+    provider_operations_authority_append.add_argument("--key")
+    _add_state_args(provider_operations_authority_append)
+    provider_operations_authority_append.set_defaults(func=cmd_provider_operations_authority_append)
 
     provider_callback_store = subparsers.add_parser("provider-callback-store", help="persist provider callback artifacts into SQLite and write a signed store manifest")
     provider_callback_store.add_argument("--db", required=True)
