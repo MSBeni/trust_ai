@@ -102,6 +102,7 @@ class McpGatewayTests(unittest.TestCase):
         self.assertEqual("place_shadow_order", capture["tool_calls"][0]["tool_name"])
         self.assertEqual({"status": "accepted", "order_id": "shadow-order-20260703-001"}, capture["tool_calls"][0]["response"])
         self.assertIn("request_event_hash", capture["tool_calls"][0]["proxy_capture"])
+        self.assertEqual("result", capture["tool_calls"][0]["proxy_capture"]["response_kind"])
         self.assertEqual(_sha256_ref(MCP_PROXY), capture["proxy_events_artifact"]["sha256"])
         self.assertEqual(capture["event_chain_root"], capture["proxy_events_artifact"]["event_chain_root"])
 
@@ -178,6 +179,64 @@ class McpGatewayTests(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("capture_id" in error for error in result.errors))
         self.assertTrue(any("message_hash mismatch" in error for error in result.errors))
+
+    def test_mcp_proxy_capture_preserves_jsonrpc_error_response(self):
+        events = load_mcp_proxy_events(MCP_PROXY)
+        events[1]["message"].pop("result")
+        events[1]["message"]["error"] = {
+            "code": -32001,
+            "message": "risk limit service unavailable",
+            "data": {"retryable": True},
+        }
+
+        capture = build_mcp_proxy_capture(
+            events,
+            agent=AGENT,
+            contract_hash=CONTRACT_HASH,
+            proxy_ref="mcp-proxy:trustai/local",
+            upstream_ref="mcp-server:aitrade/tools",
+            captured_at="2026-07-03T12:00:12Z",
+        )
+        result = verify_mcp_proxy_capture(capture)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual("error", capture["tool_calls"][0]["proxy_capture"]["response_kind"])
+        self.assertEqual(
+            {
+                "jsonrpc_error": {
+                    "code": -32001,
+                    "data": {"retryable": True},
+                    "message": "risk limit service unavailable",
+                }
+            },
+            capture["tool_calls"][0]["response"],
+        )
+
+    def test_mcp_proxy_capture_rejects_ambiguous_jsonrpc_response(self):
+        events = load_mcp_proxy_events(MCP_PROXY)
+        events[1]["message"]["error"] = {"code": -32001, "message": "ambiguous response"}
+
+        with self.assertRaisesRegex(ValueError, "exactly one of result or error"):
+            build_mcp_proxy_capture(
+                events,
+                agent=AGENT,
+                contract_hash=CONTRACT_HASH,
+                proxy_ref="mcp-proxy:trustai/local",
+                upstream_ref="mcp-server:aitrade/tools",
+            )
+
+    def test_mcp_proxy_capture_rejects_non_jsonrpc_2_tool_request(self):
+        events = load_mcp_proxy_events(MCP_PROXY)
+        events[0]["message"]["jsonrpc"] = "1.0"
+
+        with self.assertRaisesRegex(ValueError, "JSON-RPC 2.0"):
+            build_mcp_proxy_capture(
+                events,
+                agent=AGENT,
+                contract_hash=CONTRACT_HASH,
+                proxy_ref="mcp-proxy:trustai/local",
+                upstream_ref="mcp-server:aitrade/tools",
+            )
 
     def test_mcp_proxy_capture_rejects_unmatched_tool_call(self):
         events = load_mcp_proxy_events(MCP_PROXY)[:1]

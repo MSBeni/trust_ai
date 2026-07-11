@@ -16,6 +16,7 @@ MCP_PROXY_CAPTURE_SCHEMA = "trustai.mcp-proxy-capture/0.1"
 MCP_PROXY_CAPTURE_ENTRY_TYPE = "mcp.proxy_capture.evidenced"
 MCP_PROXY_EVENT_CHAIN_SCHEMA = "trustai.mcp-proxy-event-chain/0.1"
 MCP_PROXY_DIRECTIONS = {"client_to_server", "server_to_client"}
+JSONRPC_VERSION = "2.0"
 MCP_SENSITIVE_KEYS = {
     "api_key",
     "apikey",
@@ -514,17 +515,17 @@ def _tool_calls_from_proxy_records(
 ) -> list[dict[str, Any]]:
     if not isinstance(agent, dict) or not agent.get("name") or not agent.get("version"):
         raise ValueError("MCP proxy capture agent must include name and version")
-    requests: dict[str, dict[str, Any]] = {}
+    requests: dict[tuple[str, str | int], dict[str, Any]] = {}
     calls: list[dict[str, Any]] = []
     for record in records:
         event = record["event"]
         message = event["message"]
-        message_id = message.get("id")
-        if message_id is None:
-            continue
-        request_id = str(message_id)
         if event["direction"] == "client_to_server" and message.get("method") == "tools/call":
-            if request_id in requests:
+            request_id, request_key = _jsonrpc_request_identity(message, "MCP tools/call request")
+            _require_jsonrpc_2(message, f"MCP tools/call request {request_id}")
+            if "result" in message or "error" in message:
+                raise ValueError(f"MCP tools/call request {request_id} must not contain result or error")
+            if request_key in requests:
                 raise ValueError(f"duplicate MCP tools/call request id: {request_id}")
             params = message.get("params")
             if not isinstance(params, dict):
@@ -535,15 +536,21 @@ def _tool_calls_from_proxy_records(
             arguments = params.get("arguments", {})
             if not isinstance(arguments, dict):
                 raise ValueError(f"MCP tools/call request {request_id} arguments must be an object")
-            requests[request_id] = {"record": record, "tool_name": tool_name, "arguments": arguments}
-        elif event["direction"] == "server_to_client" and request_id in requests:
-            request = requests.pop(request_id)
-            response = message.get("result", {})
-            if not isinstance(response, dict):
-                response = {"value": response}
+            requests[request_key] = {
+                "record": record,
+                "request_id": request_id,
+                "tool_name": tool_name,
+                "arguments": arguments,
+            }
+        elif event["direction"] == "server_to_client" and ("result" in message or "error" in message):
+            request_id, request_key = _jsonrpc_request_identity(message, "MCP tools/call response")
+            if request_key not in requests:
+                continue
+            request = requests.pop(request_key)
+            response_kind, response = _jsonrpc_response_payload(message, request_id)
             call = {
                 "session_id": session_id,
-                "request_id": request_id,
+                "request_id": request["request_id"],
                 "timestamp": request["record"]["timestamp"],
                 "tool_name": request["tool_name"],
                 "contract_hash": contract_hash,
@@ -554,14 +561,57 @@ def _tool_calls_from_proxy_records(
                 "proxy_capture": {
                     "request_event_hash": request["record"]["event_hash"],
                     "response_event_hash": record["event_hash"],
+                    "response_kind": response_kind,
                 },
             }
             calls.append(normalize_tool_call(call))
     if requests:
-        raise ValueError("unmatched MCP tools/call request ids: " + ", ".join(sorted(requests)))
+        request_ids = [request["request_id"] for request in requests.values()]
+        raise ValueError("unmatched MCP tools/call request ids: " + ", ".join(sorted(request_ids)))
     if not calls:
         raise ValueError("MCP proxy capture must include at least one matched tools/call request/response")
     return calls
+
+
+def _require_jsonrpc_2(message: dict[str, Any], context: str) -> None:
+    if message.get("jsonrpc") != JSONRPC_VERSION:
+        raise ValueError(f"{context} must use JSON-RPC 2.0")
+
+
+def _jsonrpc_request_identity(message: dict[str, Any], context: str) -> tuple[str, tuple[str, str | int]]:
+    if "id" not in message or message.get("id") is None:
+        raise ValueError(f"{context} missing JSON-RPC id")
+    message_id = message["id"]
+    if isinstance(message_id, bool):
+        raise ValueError(f"{context} JSON-RPC id must be a non-empty string or integer")
+    if isinstance(message_id, str):
+        if not message_id:
+            raise ValueError(f"{context} JSON-RPC id must be a non-empty string or integer")
+        return message_id, ("string", message_id)
+    if isinstance(message_id, int):
+        return f"number:{message_id}", ("number", message_id)
+    raise ValueError(f"{context} JSON-RPC id must be a non-empty string or integer")
+
+
+def _jsonrpc_response_payload(message: dict[str, Any], request_id: str) -> tuple[str, dict[str, Any]]:
+    _require_jsonrpc_2(message, f"MCP tools/call response {request_id}")
+    if "method" in message or "params" in message:
+        raise ValueError(f"MCP tools/call response {request_id} must not contain method or params")
+    has_result = "result" in message
+    has_error = "error" in message
+    if has_result == has_error:
+        raise ValueError(f"MCP tools/call response {request_id} must contain exactly one of result or error")
+    if has_error:
+        error = message["error"]
+        if not isinstance(error, dict):
+            raise ValueError(f"MCP tools/call response {request_id} error must be an object")
+        if not isinstance(error.get("message"), str) or type(error.get("code")) is not int:
+            raise ValueError(f"MCP tools/call response {request_id} error must include integer code and message")
+        return "error", {"jsonrpc_error": json.loads(json.dumps(error, sort_keys=True))}
+    response = message["result"]
+    if not isinstance(response, dict):
+        response = {"value": response}
+    return "result", response
 
 
 def _redact_sensitive(value: Any) -> Any:

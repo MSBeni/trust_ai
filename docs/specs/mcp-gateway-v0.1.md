@@ -47,12 +47,17 @@ export content hash, redacted event content hash, event count, event chain root,
 and artifact id. Verification replays the retained raw export bytes,
 normalizes/redacts the events, and rejects byte SHA-256 mismatches even when
 parsed JSON content is unchanged. The event chain root binds the full
-request/response envelope order. The capture
-pairs each `tools/call` client request with the matching server response by JSON
-RPC id, derives the normalized tool call, and replays the transcript chain above.
-Sensitive message fields whose keys include token, secret, password, credential,
-api key, or authorization are replaced with `[REDACTED]` before hashing and
-signing.
+request/response envelope order. The capture pairs each `tools/call` client
+request with the matching server response by typed JSON-RPC id. Tool-call
+requests and matched responses must use JSON-RPC 2.0 with a non-empty string id
+or integer id; numeric ids are rendered in normalized transcripts as
+`number:<id>` to avoid string/number collisions. Matched responses must contain
+exactly one of `result` or `error`. Result responses derive the normalized tool
+response; JSON-RPC error responses are preserved under `response.jsonrpc_error`
+and marked with `proxy_capture.response_kind = "error"` rather than being
+converted into an empty success response. Sensitive message fields whose keys
+include token, secret, password, credential, api key, or authorization are
+replaced with `[REDACTED]` before hashing and signing.
 
 A valid proxy capture must verify:
 
@@ -61,6 +66,9 @@ A valid proxy capture must verify:
 - retained source export bytes when `proxy_events_artifact` is present;
 - no retained sensitive field value remains unredacted;
 - every `tools/call` request has a matching response;
+- matched tool-call envelopes use JSON-RPC 2.0, stable string/integer ids, and
+  exactly one response `result` or `error`;
+- JSON-RPC error responses are retained as explicit error evidence;
 - derived normalized tool calls match the embedded tool calls;
 - transcript root matches the derived tool-call transcript.
 
