@@ -290,6 +290,68 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertFalse(stale_result.ok)
             self.assertTrue(any("chain summary" in error for error in stale_result.errors))
 
+    def test_roadmap_evidence_chain_rejects_legacy_complete_entry_without_authority_coverage(self):
+        audit = build_roadmap_audit(ROOT)
+        reference_requirements = {
+            requirement["id"]: requirement
+            for requirement in audit["requirements"]
+            if requirement["status"] == STATUS_REFERENCE_ATTESTED
+        }
+        manifest = build_external_evidence_manifest(
+            audit,
+            root=ROOT,
+            evidence=[
+                {
+                    "requirement_id": requirement_id,
+                    "authority_kind": authority_kind,
+                    "path": FIXTURE,
+                    "description": f"Fixture {authority_kind} evidence for {requirement_id}.",
+                }
+                for requirement_id, requirement in reference_requirements.items()
+                for authority_kind in _allowed_authority_kinds_for_requirement(requirement)
+            ],
+        )
+        summary = manifest["summary"]
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="external-evidence-legacy-complete")
+            audit_entry = append_roadmap_audit(chain, audit, root=ROOT)
+            legacy_payload = {
+                "manifest_id": manifest["manifest_id"],
+                "manifest_hash": content_hash(manifest),
+                "manifest_ref": manifest.get("manifest_ref"),
+                "source_roadmap_audit": manifest.get("source_roadmap_audit"),
+                "source_roadmap_audit_inclusion_proof": chain.proof_for(audit_entry),
+                "status": "complete",
+                "require_complete": True,
+                "require_fresh": False,
+                "freshness_checked_at": manifest.get("generated_at"),
+                "required_requirement_count": summary["required_requirement_count"],
+                "covered_requirement_count": summary["covered_requirement_count"],
+                "missing_requirement_count": 0,
+                "evidence_count": summary["evidence_count"],
+                "issued_at_count": summary["issued_at_count"],
+                "expires_at_count": summary["expires_at_count"],
+                "freshness_window_count": summary["freshness_window_count"],
+                "fresh_evidence_count": 0,
+                "stale_evidence_count": 0,
+                "missing_freshness_count": summary["evidence_count"],
+                "covered_requirement_ids": summary["covered_requirement_ids"],
+                "missing_requirement_ids": [],
+                "limitations": manifest.get("limitations", []),
+            }
+            chain.append(EXTERNAL_EVIDENCE_ENTRY_TYPE, legacy_payload, timestamp=manifest.get("generated_at"))
+
+            self.assertTrue(chain.verify_all().ok)
+            result = verify_roadmap_evidence_chain(chain, require_external=True, require_complete=True)
+
+            self.assertFalse(result.ok)
+            self.assertEqual(0, result.complete_external_evidence_entry_count)
+            self.assertTrue(
+                any("missing authority-kind coverage metadata" in error for error in result.errors),
+                result.errors,
+            )
+
     def test_roadmap_evidence_chain_rejects_unlinked_external_entry(self):
         audit = build_roadmap_audit(ROOT)
         manifest = build_external_evidence_manifest(

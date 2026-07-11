@@ -340,7 +340,11 @@ def verify_roadmap_evidence_chain(
             require_complete=require_complete,
             require_fresh=require_fresh,
         )
-        if payload.get("status") == "complete" and payload.get("missing_requirement_count") == 0:
+        if (
+            payload.get("status") == "complete"
+            and payload.get("missing_requirement_count") == 0
+            and payload.get("missing_authority_kind_count") == 0
+        ):
             complete_external_count += 1
         if (
             payload.get("require_fresh") is True
@@ -1341,11 +1345,14 @@ def _verify_external_evidence_entry_summary(
     missing_authority = payload.get("missing_authority_kind_count")
     covered_authority = payload.get("covered_authority_kind_count")
     required_authority = payload.get("required_authority_kind_count")
-    if all(isinstance(value, int) for value in (required_authority, covered_authority, missing_authority)) and covered_authority + missing_authority != required_authority:
+    has_authority_counts = all(isinstance(value, int) for value in (required_authority, covered_authority, missing_authority))
+    if has_authority_counts and covered_authority + missing_authority != required_authority:
         errors.append(f"external evidence entry {entry.get('index')} authority-kind coverage counts do not add up")
     if status == "complete" and missing != 0:
         errors.append(f"external evidence entry {entry.get('index')} is complete but has missing requirements")
-    if status == "complete" and missing_authority not in (0, None):
+    if status == "complete" and not has_authority_counts:
+        errors.append(f"external evidence entry {entry.get('index')} is complete but missing authority-kind coverage metadata")
+    if status == "complete" and has_authority_counts and missing_authority != 0:
         errors.append(f"external evidence entry {entry.get('index')} is complete but has missing authority kinds")
     if status != "complete":
         message = f"external evidence entry {entry.get('index')} is partial"

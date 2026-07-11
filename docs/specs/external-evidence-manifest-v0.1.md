@@ -101,7 +101,7 @@ roadmap evidence relationships:
 3. The stored `source_roadmap_audit_inclusion_proof` verifies against the prefix
    tree root that existed before the external-evidence entry was appended.
 4. Requirement coverage counts and authority-kind coverage counts are internally consistent.
-5. With `--require-complete`, every external-evidence entry must cover every required requirement and every accepted authority kind.
+5. With `--require-complete`, every external-evidence entry must carry authority-kind coverage metadata and cover every required requirement and every accepted authority kind.
 6. With `--require-fresh`, every external-evidence entry must have been appended
    with freshness required and must record zero stale or missing-freshness
    evidence items.
