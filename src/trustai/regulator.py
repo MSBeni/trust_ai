@@ -7,9 +7,12 @@ from typing import Any
 
 from .canonical import content_hash, utc_now, without_keys
 from .chain import EvidenceChain, verify_entry
+from .contracts import CONTRACT_ENTRY_TYPE
 from .crypto import sign_value, verify_value
+from .gate import EVAL_ENTRY_TYPE, GATE_ENTRY_TYPE
 from .merkle import verify_inclusion
 from .tree_header import verify_packed_tree_header
+from .proofpack import PROOF_PACK_SPEC_VERSION
 
 REGULATOR_DISCLOSURE_SCHEMA = "trustai.regulator-disclosure/0.1"
 
@@ -126,7 +129,10 @@ def verify_regulator_disclosure(disclosure: dict[str, Any], key: str | None = No
         errors.append("regulator disclosure signature invalid")
 
     source = disclosure.get("source_proof_pack", {})
-    if not source.get("pack_id"):
+    if not isinstance(source, dict):
+        errors.append("source proof pack summary must be an object")
+        source = {}
+    elif not source.get("pack_id"):
         warnings.append("source proof pack id missing")
 
     chain = disclosure.get("chain", {})
@@ -175,6 +181,8 @@ def verify_regulator_disclosure(disclosure: dict[str, Any], key: str | None = No
         if root and not verify_inclusion(entry.get("entry_id", ""), audit_path, root):
             errors.append(f"entry {index} inclusion proof invalid")
 
+    _verify_source_proof_pack_summary(source, entries, tree, errors)
+
     selection = disclosure.get("selection", {})
     expected_count = selection.get("disclosed_entry_count")
     if isinstance(expected_count, int) and expected_count != len(entries):
@@ -187,6 +195,92 @@ def verify_regulator_disclosure(disclosure: dict[str, Any], key: str | None = No
         disclosed_entry_count=len(entries),
     )
 
+
+def _verify_source_proof_pack_summary(
+    source: dict[str, Any],
+    entries: list[Any],
+    disclosure_tree: Any,
+    errors: list[str],
+) -> None:
+    if not source:
+        return
+    if source.get("spec_version") != PROOF_PACK_SPEC_VERSION:
+        errors.append("source proof pack spec_version mismatch")
+
+    source_tree = source.get("pack_chain_tree")
+    errors.extend(verify_packed_tree_header(source_tree, [], label="source proof pack chain"))
+    source_tree_size = source_tree.get("size") if isinstance(source_tree, dict) else None
+    disclosure_tree_size = disclosure_tree.get("size") if isinstance(disclosure_tree, dict) else None
+    if type(source_tree_size) is int and type(disclosure_tree_size) is int and source_tree_size > disclosure_tree_size:
+        errors.append("source proof pack tree size exceeds disclosed chain tree size")
+
+    source_hash = source.get("contract_hash")
+    contract_entry = _find_entry_for_contract(entries, CONTRACT_ENTRY_TYPE, source_hash)
+    eval_entry = _find_entry_for_contract(entries, EVAL_ENTRY_TYPE, source_hash)
+    gate_entry = _find_entry_for_contract(entries, GATE_ENTRY_TYPE, source_hash)
+    if contract_entry is None:
+        errors.append("source proof pack contract entry is not disclosed")
+    if eval_entry is None:
+        errors.append("source proof pack eval entry is not disclosed")
+    if gate_entry is None:
+        errors.append("source proof pack gate entry is not disclosed")
+    if contract_entry is None or eval_entry is None or gate_entry is None:
+        return
+
+    if not (contract_entry.get("index") < eval_entry.get("index") < gate_entry.get("index")):
+        errors.append("source proof pack disclosed entries are not ordered contract < eval < gate")
+    if type(source_tree_size) is int and gate_entry.get("index", source_tree_size) >= source_tree_size:
+        errors.append("source proof pack tree size is before disclosed gate entry")
+
+    contract_payload = contract_entry.get("payload", {}) if isinstance(contract_entry.get("payload"), dict) else {}
+    eval_payload = eval_entry.get("payload", {}) if isinstance(eval_entry.get("payload"), dict) else {}
+    gate_payload = gate_entry.get("payload", {}) if isinstance(gate_entry.get("payload"), dict) else {}
+    decision = gate_payload.get("decision", {}) if isinstance(gate_payload.get("decision"), dict) else {}
+
+    if source.get("contract_hash") != contract_payload.get("contract_hash"):
+        errors.append("source proof pack contract_hash does not match disclosed contract entry")
+    if source.get("contract_id") != contract_payload.get("contract_id"):
+        errors.append("source proof pack contract_id does not match disclosed contract entry")
+    if source.get("agent") != contract_payload.get("agent"):
+        errors.append("source proof pack agent does not match disclosed contract entry")
+
+    for label, payload in (("eval", eval_payload), ("gate", gate_payload)):
+        if payload.get("contract_hash") != source.get("contract_hash"):
+            errors.append(f"source proof pack contract_hash does not match disclosed {label} entry")
+        if payload.get("contract_id") != source.get("contract_id"):
+            errors.append(f"source proof pack contract_id does not match disclosed {label} entry")
+        if payload.get("agent") != source.get("agent"):
+            errors.append(f"source proof pack agent does not match disclosed {label} entry")
+
+    if decision.get("contract_hash") != source.get("contract_hash"):
+        errors.append("source proof pack contract_hash does not match disclosed gate decision")
+    if decision.get("contract_id") != source.get("contract_id"):
+        errors.append("source proof pack contract_id does not match disclosed gate decision")
+    if decision.get("agent") != source.get("agent"):
+        errors.append("source proof pack agent does not match disclosed gate decision")
+    if decision.get("outcome") != source.get("gate_outcome"):
+        errors.append("source proof pack gate_outcome does not match disclosed gate decision")
+    expected_pack_decision = {**decision, "gate_entry_id": gate_entry.get("entry_id")}
+    if content_hash(expected_pack_decision) != source.get("gate_decision_hash"):
+        errors.append("source proof pack gate_decision_hash does not match disclosed gate decision")
+    if decision.get("contract_entry_id") != contract_entry.get("entry_id"):
+        errors.append("source proof pack gate decision contract_entry_id does not match disclosed contract entry")
+    if decision.get("eval_entry_id") != eval_entry.get("entry_id"):
+        errors.append("source proof pack gate decision eval_entry_id does not match disclosed eval entry")
+    if decision.get("gate_entry_id") not in (None, gate_entry.get("entry_id")):
+        errors.append("source proof pack gate decision gate_entry_id does not match disclosed gate entry")
+
+
+def _find_entry_for_contract(entries: list[Any], entry_type: str, contract_hash: Any) -> dict[str, Any] | None:
+    for entry in entries:
+        if not isinstance(entry, dict) or entry.get("entry_type") != entry_type:
+            continue
+        payload = entry.get("payload", {})
+        if not isinstance(payload, dict):
+            continue
+        if payload.get("contract_hash") == contract_hash:
+            return entry
+    return None
 
 def load_regulator_disclosure(path: str | Path) -> dict[str, Any]:
     return json.loads(Path(path).read_text(encoding="utf-8"))

@@ -73,6 +73,10 @@ An offline verifier checks:
 - each disclosed chain entry signature and timestamp token.
 - each disclosed entry payload hash.
 - each disclosed entry Merkle inclusion proof against the disclosed tree root.
+- packed disclosure tree-header shape and size consistency.
+- source proof-pack summary consistency with the disclosed contract, eval, and
+  gate entries, including contract hash/id, agent, gate outcome, gate decision
+  hash, and pack-time tree size.
 - selection count consistency.
 
 The verifier does not need access to undisclosed entries. Inclusion proofs reveal

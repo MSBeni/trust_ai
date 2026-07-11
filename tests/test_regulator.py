@@ -3,7 +3,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.contracts import load_contract, register_contract
 from trustai.gate import append_eval_and_gate
 from trustai.lifecycle import append_demotion, append_incident, append_rollback, load_incident
@@ -66,6 +68,12 @@ class RegulatorDisclosureTests(unittest.TestCase):
         )
         return chain, pack
 
+    def _resign_disclosure(self, disclosure: dict) -> None:
+        body = without_keys(disclosure, "disclosure_id", "signatures")
+        disclosure_id = content_hash(body)
+        disclosure["disclosure_id"] = disclosure_id
+        disclosure["signatures"] = [sign_value({"disclosure_id": disclosure_id, "disclosure": body})]
+
     def test_regulator_disclosure_verifies_selected_entries_after_pack_issue(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             chain, pack = self._chain_and_pack(Path(tmp_dir))
@@ -99,6 +107,49 @@ class RegulatorDisclosureTests(unittest.TestCase):
             self.assertFalse(result.ok)
             self.assertIn("disclosure chain tree size is smaller than packed entry count", result.errors)
             self.assertIn("disclosure chain tree size is smaller than packed entry indexes", result.errors)
+
+    def test_regulator_disclosure_rejects_resigned_source_contract_hash_tamper(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            chain, pack = self._chain_and_pack(Path(tmp_dir))
+            disclosure = build_regulator_disclosure(chain, pack)
+            disclosure["source_proof_pack"]["contract_hash"] = "0" * 64
+            self._resign_disclosure(disclosure)
+
+            result = verify_regulator_disclosure(disclosure)
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("disclosure_id does not match canonical disclosure body", result.errors)
+            self.assertNotIn("regulator disclosure signature invalid", result.errors)
+            self.assertIn("source proof pack contract entry is not disclosed", result.errors)
+
+    def test_regulator_disclosure_rejects_resigned_source_gate_outcome_tamper(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            chain, pack = self._chain_and_pack(Path(tmp_dir))
+            disclosure = build_regulator_disclosure(chain, pack)
+            disclosure["source_proof_pack"]["gate_outcome"] = "failed"
+            self._resign_disclosure(disclosure)
+
+            result = verify_regulator_disclosure(disclosure)
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("disclosure_id does not match canonical disclosure body", result.errors)
+            self.assertNotIn("regulator disclosure signature invalid", result.errors)
+            self.assertIn("source proof pack gate_outcome does not match disclosed gate decision", result.errors)
+
+    def test_regulator_disclosure_rejects_impossible_source_pack_tree_size(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            chain, pack = self._chain_and_pack(Path(tmp_dir))
+            disclosure = build_regulator_disclosure(chain, pack)
+            disclosure["source_proof_pack"]["pack_chain_tree"]["size"] = 1
+            self._resign_disclosure(disclosure)
+
+            result = verify_regulator_disclosure(disclosure)
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("disclosure_id does not match canonical disclosure body", result.errors)
+            self.assertNotIn("regulator disclosure signature invalid", result.errors)
+            self.assertIn("source proof pack tree size is before disclosed gate entry", result.errors)
+
     def test_regulator_disclosure_detects_tampered_entry_payload(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             chain, pack = self._chain_and_pack(Path(tmp_dir))
