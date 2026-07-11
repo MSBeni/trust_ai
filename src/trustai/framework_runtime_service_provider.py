@@ -16,6 +16,119 @@ FRAMEWORK_RUNTIME_SERVICE_PROVIDER_ENTRY_TYPE = "framework_runtime.service_provi
 FRAMEWORK_RUNTIME_SERVICE_PROVIDER_MODES = {"local-export", "provider-export", "production-export"}
 REQUIRED_STORAGE_KINDS = {"worm_object", "clickhouse_batch", "postgres_index", "control_index"}
 SECRET_KEY_MARKERS = ("token", "secret", "private_key", "client_secret", "password", "credential")
+SERVICE_WORKER_BINDING_EXPECTED_FIELDS = (
+    "worker_operation_id",
+    "worker_operation_hash",
+    "service_attestation_id",
+    "service_attestation_hash",
+    "service_ref",
+    "runtime_worker_ref",
+    "run_ref",
+    "worker_ref",
+    "operation_kind",
+    "storage_receipt_id",
+    "storage_receipt_hash",
+    "queue_ref",
+    "queue_message_ref",
+    "queue_message_hash",
+    "dead_letter_queue_ref",
+    "schedule_ref",
+    "lease_ref",
+    "checkpoint_ref",
+    "checkpoint_hash",
+    "previous_cursor_ref",
+    "next_cursor_ref",
+    "kms_key_ref",
+    "stream_ref",
+    "stream_topic",
+    "stream_message_ref",
+    "stream_message_hash",
+    "storage_object_ref",
+    "storage_object_hash",
+    "clickhouse_batch_ref",
+    "clickhouse_batch_hash",
+    "postgres_index_ref",
+    "postgres_index_hash",
+    "control_index_ref",
+    "control_index_hash",
+    "request_hash",
+    "response_hash",
+    "metrics_ref",
+    "worker_audit_log_ref",
+    "worker_audit_log_root",
+)
+SERVICE_WORKER_BINDING_REQUIRED_FIELDS = (
+    "worker_operation_id",
+    "worker_operation_hash",
+    "service_attestation_id",
+    "service_attestation_hash",
+    "service_ref",
+    "runtime_worker_ref",
+    "run_ref",
+    "worker_ref",
+    "operation_kind",
+    "storage_receipt_id",
+    "storage_receipt_hash",
+    "queue_ref",
+    "queue_message_ref",
+    "queue_message_hash",
+    "schedule_ref",
+    "lease_ref",
+    "checkpoint_ref",
+    "checkpoint_hash",
+    "kms_key_ref",
+    "stream_ref",
+    "stream_topic",
+    "stream_message_ref",
+    "stream_message_hash",
+    "storage_object_ref",
+    "storage_object_hash",
+    "clickhouse_batch_ref",
+    "clickhouse_batch_hash",
+    "postgres_index_ref",
+    "postgres_index_hash",
+    "control_index_ref",
+    "control_index_hash",
+    "request_hash",
+    "response_hash",
+    "metrics_ref",
+    "worker_audit_log_ref",
+    "worker_audit_log_root",
+)
+PROVIDER_EXPORT_EXPECTED_FIELDS = (
+    "export_ref",
+    "schema",
+    "provider",
+    "environment",
+    "window_start",
+    "window_end",
+    "cursor_ref",
+    "next_cursor_ref",
+    "audit_log_ref",
+    "audit_log_root",
+    "hash",
+    "scheduler_record_count",
+    "scheduler_record_root",
+    "queue_record_count",
+    "queue_record_root",
+    "kms_record_count",
+    "kms_record_root",
+    "stream_record_count",
+    "stream_record_root",
+    "storage_record_count",
+    "storage_record_root",
+    "audit_record_count",
+    "audit_record_root",
+)
+PROVIDER_EXPORT_REQUIRED_FIELDS = PROVIDER_EXPORT_EXPECTED_FIELDS
+PROVIDER_EXPORT_COUNT_FIELDS = (
+    "scheduler_record_count",
+    "queue_record_count",
+    "kms_record_count",
+    "stream_record_count",
+    "storage_record_count",
+    "audit_record_count",
+)
 
 
 @dataclass
@@ -385,8 +498,11 @@ def _verify_service_worker_binding(
     errors: list[str],
     warnings: list[str],
 ) -> None:
-    for field in ("worker_operation_id", "worker_operation_hash", "service_attestation_id", "storage_receipt_id", "run_ref", "queue_message_ref", "stream_message_ref", "storage_object_ref", "clickhouse_batch_ref", "postgres_index_ref", "control_index_ref"):
-        if not binding.get(field):
+    for field in SERVICE_WORKER_BINDING_EXPECTED_FIELDS:
+        if field not in binding:
+            errors.append(f"framework runtime service provider binding.{field} is required")
+    for field in SERVICE_WORKER_BINDING_REQUIRED_FIELDS:
+        if binding.get(field) in (None, "", []):
             errors.append(f"framework runtime service provider binding.{field} is required")
     if service_worker is None:
         warnings.append("framework runtime service provider service worker artifact was not supplied; worker source was not replayed")
@@ -419,9 +535,15 @@ def _verify_provider_export_binding(receipt: dict[str, Any], provider_export: di
     if not isinstance(export, dict):
         errors.append("framework runtime service provider provider_export must be an object")
         return
-    for field in ("hash", "scheduler_record_root", "queue_record_root", "kms_record_root", "stream_record_root", "storage_record_root", "audit_record_root", "audit_log_root"):
-        if not export.get(field):
+    for field in PROVIDER_EXPORT_EXPECTED_FIELDS:
+        if field not in export:
             errors.append(f"framework runtime service provider provider_export.{field} is required")
+    for field in PROVIDER_EXPORT_REQUIRED_FIELDS:
+        if export.get(field) in (None, "", []):
+            errors.append(f"framework runtime service provider provider_export.{field} is required")
+    for field in PROVIDER_EXPORT_COUNT_FIELDS:
+        if not isinstance(export.get(field), int) or export.get(field) <= 0:
+            errors.append(f"framework runtime service provider provider_export.{field} must be positive")
     if provider_export is None:
         warnings.append("framework runtime service provider export artifact was not supplied; provider records were not replayed")
         return

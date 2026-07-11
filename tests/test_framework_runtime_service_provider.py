@@ -7,7 +7,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.framework_adapter_matrix import write_framework_adapter_matrix
 from trustai.framework_hook_operation import write_framework_hook_operation
 from trustai.framework_hook_release import write_framework_hook_release
@@ -186,6 +188,13 @@ class FrameworkRuntimeServiceProviderTests(unittest.TestCase):
             exported_at="2026-07-09T00:45:00Z",
         )
         return receipt, provider_export, service_worker, service, storage_receipt, storage_export, worker, runtime_audit, audit_export, operation, trace, release, matrix
+
+    def _resign_receipt(self, receipt: dict) -> None:
+        body = without_keys(receipt, "provider_receipt_id", "signatures")
+        provider_receipt_id = content_hash(body)
+        receipt["provider_receipt_id"] = provider_receipt_id
+        receipt["signatures"] = [sign_value({"provider_receipt_id": provider_receipt_id, "framework_runtime_service_provider": body})]
+
     def test_framework_runtime_service_provider_verifies_and_appends(self):
         receipt, provider_export, service_worker, service, storage_receipt, storage_export, worker, runtime_audit, audit_export, operation, trace, release, matrix = self._receipt()
         result = verify_framework_runtime_service_provider_receipt(
@@ -287,6 +296,29 @@ class FrameworkRuntimeServiceProviderTests(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("service_worker_binding does not match" in error for error in result.errors))
         self.assertTrue(any("worker source" in error for error in result.errors))
+
+    def test_framework_runtime_service_provider_requires_complete_binding_without_sources(self):
+        receipt, *_ = self._receipt()
+        cases = [
+            (("service_worker_binding",), "worker_ref", "binding.worker_ref is required"),
+            (("service_worker_binding",), "dead_letter_queue_ref", "binding.dead_letter_queue_ref is required"),
+            (("service_worker_binding",), "request_hash", "binding.request_hash is required"),
+            (("provider_export",), "cursor_ref", "provider_export.cursor_ref is required"),
+            (("provider_export",), "scheduler_record_count", "provider_export.scheduler_record_count is required"),
+        ]
+        for parent_path, field, expected_error in cases:
+            with self.subTest(field=field):
+                tampered = copy.deepcopy(receipt)
+                target = tampered
+                for part in parent_path:
+                    target = target[part]
+                target.pop(field)
+                self._resign_receipt(tampered)
+
+                result = verify_framework_runtime_service_provider_receipt(tampered)
+
+                self.assertFalse(result.ok)
+                self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
 
     def test_framework_runtime_service_provider_rejects_raw_credential(self):
         receipt, provider_export, service_worker, service, storage_receipt, storage_export, worker, runtime_audit, audit_export, operation, trace, release, matrix = self._receipt()

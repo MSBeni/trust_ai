@@ -27,7 +27,12 @@ and contains:
 
 `framework-runtime-service-provider-verify` recalculates the provider receipt ID,
 verifies at least one detached signature, validates endpoint/request/response
-hashes, checks credential redaction, and rejects raw secret-like fields.
+hashes, checks credential redaction, and rejects raw secret-like fields. It also
+requires every `service_worker_binding` and `provider_export` key emitted by the
+v0.1 builder. The provider-owned worker, scheduler, queue, KMS, stream, storage,
+audit, cursor, request/response, and record-root fields must be non-empty, and
+provider record counts must be positive. Optional binding values may be null only
+when the original source receipt emitted the key with a null value.
 
 When supplied with the provider export, service worker receipt, service
 attestation, storage receipt, storage export, runtime worker receipt, runtime
@@ -41,7 +46,9 @@ audit roots.
 
 `framework-runtime-service-provider-append` requires all source artifacts. The
 chain entry records only hash-bound summaries while offline reviewers can replay
-disclosed provider records.
+disclosed provider records. Omitted source artifacts during standalone
+verification may produce replay warnings, but they must not permit partial
+service worker or provider export summaries.
 
 ## CLI
 
