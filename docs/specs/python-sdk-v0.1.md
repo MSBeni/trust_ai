@@ -47,11 +47,15 @@ Each SDK event normalizes to the same schema used by file ingest:
 - `attributes`
 
 The current default `schema_url` is `opentelemetry.semconv.gen_ai/1.0`.
+Trace IDs are 32-character OTel hex identifiers, span IDs are 16-character OTel
+hex identifiers, and contract hashes are 64-character lowercase SHA-256 content
+hashes. The SDK accepts uppercase hex input, normalizes it to lowercase, and
+rejects malformed or all-zero identifiers before appending or posting evidence.
 
 ## Trace Helper
 
 ```python
-with client.trace("trace-001") as trace:
+with client.trace("4f0c98cf84fa44df9b8ad8f354d2f0a1") as trace:
     trace.decision("allow_shadow_order", attributes={"symbol": "BTCUSDT"})
     trace.tool_call("place_shadow_order", attributes={"notional_usd": 7500})
 ```

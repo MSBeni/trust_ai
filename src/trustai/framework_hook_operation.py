@@ -92,6 +92,8 @@ def build_framework_hook_operation(
         raise ValueError("framework hook operation event chain failed: " + "; ".join(chain_errors))
 
     emitted_trace_id = str(events[0].get("trace_id") or "")
+    emitted_attrs = events[0].get("attributes", {}) if isinstance(events[0].get("attributes"), dict) else {}
+    source_trace_id = str(emitted_attrs.get("trustai.adapter.source_trace_id") or trace_id or emitted_trace_id)
     release_entry = _release_entry(release, framework_name)
     if release_entry is None:
         raise ValueError(f"framework hook operation has no release row for framework: {framework_name}")
@@ -135,6 +137,7 @@ def build_framework_hook_operation(
         },
         "trace": {
             "trace_id": emitted_trace_id,
+            "source_trace_id": source_trace_id,
             "source_trace_hash": content_hash(selected_trace),
             "event_count": len(events),
             "event_names": event_names,
@@ -312,7 +315,7 @@ def append_framework_hook_operation(
 
 def _verify_trace_binding(operation: dict[str, Any], payload: dict[str, Any], framework: str, errors: list[str]) -> None:
     trace_record = operation.get("trace", {}) if isinstance(operation.get("trace"), dict) else {}
-    selected = _select_trace(payload, framework, trace_record.get("trace_id"))
+    selected = _select_trace(payload, framework, trace_record.get("source_trace_id") or trace_record.get("trace_id"))
     events = framework_trace_to_events(selected)
     chain_errors = verify_framework_event_chains(events)
     errors.extend(f"framework hook operation event chain: {error}" for error in chain_errors)
@@ -329,6 +332,10 @@ def _verify_trace_binding(operation: dict[str, Any], payload: dict[str, Any], fr
     if trace_record.get("event_chain_verified") is not True:
         errors.append("framework hook operation event_chain_verified must be true")
     emitted_trace_id = str(events[0].get("trace_id") or "")
+    emitted_attrs = events[0].get("attributes", {}) if isinstance(events[0].get("attributes"), dict) else {}
+    emitted_source_trace_id = str(emitted_attrs.get("trustai.adapter.source_trace_id") or "")
+    if trace_record.get("source_trace_id") and trace_record.get("source_trace_id") != emitted_source_trace_id:
+        errors.append("framework hook operation source_trace_id mismatch")
     if trace_record.get("trace_id") != emitted_trace_id:
         errors.append("framework hook operation trace_id mismatch")
 

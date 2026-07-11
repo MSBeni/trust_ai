@@ -35,6 +35,11 @@ class FrameworkAdapterTests(unittest.TestCase):
         tool_events = [event for event in events if event["event_name"] == "gen_ai.tool.call"]
         self.assertTrue(any(event["attributes"].get("tool.name") == "place_shadow_order" for event in tool_events))
         self.assertTrue(all(event["schema_url"] == "trustai.framework-adapter/0.1" for event in events))
+        self.assertTrue(all(len(event["trace_id"]) == 32 for event in events))
+        self.assertTrue(all(len(event["span_id"]) == 16 for event in events))
+        langgraph_events = [event for event in events if event["attributes"]["trustai.adapter.framework"] == "langgraph"]
+        self.assertEqual({"lg-trace-001"}, {event["attributes"]["trustai.adapter.source_trace_id"] for event in langgraph_events})
+        self.assertIn("lg-risk-001", {event["attributes"]["trustai.adapter.source_span_id"] for event in langgraph_events})
         self.assertEqual([], verify_framework_event_chains(events))
         for framework in frameworks:
             framework_events = [

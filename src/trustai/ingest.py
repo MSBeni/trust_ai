@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
@@ -10,6 +10,7 @@ from .chain import EvidenceChain
 
 INGEST_ENTRY_TYPE = "otel_genai.event.ingested"
 OTLP_SCHEMA_URL = "opentelemetry.otlp.traces/1.0"
+_HEX_CHARS = set("0123456789abcdefABCDEF")
 
 
 def load_events(path: str | Path) -> list[dict[str, Any]]:
@@ -33,13 +34,36 @@ def normalize_event(event: dict[str, Any]) -> dict[str, Any]:
     if missing:
         raise ValueError(f"event missing required fields: {', '.join(missing)}")
     parse_rfc3339(event["timestamp"])
+    trace_id = _canonical_hex(event["trace_id"], field="trace_id", length=32)
+    span_id = _canonical_hex(event["span_id"], field="span_id", length=16)
+    parent_span_id = event.get("parent_span_id")
+    if parent_span_id not in (None, ""):
+        parent_span_id = _canonical_hex(parent_span_id, field="parent_span_id", length=16)
+    contract_hash = _canonical_hex(event["contract_hash"], field="contract_hash", length=64)
+    if not isinstance(event["event_name"], str) or not event["event_name"].strip():
+        raise ValueError("event.event_name must be a non-empty string")
     agent = event["agent"]
     if not isinstance(agent, dict) or not agent.get("name") or not agent.get("version"):
         raise ValueError("event.agent must include name and version")
     normalized = json.loads(json.dumps(event, sort_keys=True))
+    normalized["trace_id"] = trace_id
+    normalized["span_id"] = span_id
+    if parent_span_id:
+        normalized["parent_span_id"] = parent_span_id
+    normalized["contract_hash"] = contract_hash
     normalized.setdefault("schema_url", "opentelemetry.semconv.gen_ai/1.0")
     normalized.setdefault("attributes", {})
     return normalized
+
+
+def _canonical_hex(value: Any, *, field: str, length: int) -> str:
+    if not isinstance(value, str):
+        raise ValueError(f"event.{field} must be a {length}-character hexadecimal string")
+    if len(value) != length or any(char not in _HEX_CHARS for char in value):
+        raise ValueError(f"event.{field} must be a {length}-character hexadecimal string")
+    if set(value) <= {"0"}:
+        raise ValueError(f"event.{field} must not be all zeros")
+    return value.lower()
 
 
 def _otlp_value(value: Any) -> Any:

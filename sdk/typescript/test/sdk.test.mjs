@@ -15,16 +15,46 @@ const contractHash = "22a3727b124ce6664031037939cf391ce724158d681db3a55e9a0f0c51
 
 test("normalizes TrustAI event shape", () => {
   const event = normalizeEvent({
-    trace_id: "4f0c98cf84fa44df9b8ad8f354d2f0a1",
-    span_id: "7b1c4d2e9f001122",
+    trace_id: "4F0C98CF84FA44DF9B8AD8F354D2F0A1",
+    span_id: "7B1C4D2E9F001122",
     timestamp: "2026-07-03T12:00:10Z",
     event_name: "gen_ai.agent.decision",
-    contract_hash: contractHash,
+    contract_hash: contractHash.toUpperCase(),
     agent,
   });
 
   assert.equal(event.schema_url, "opentelemetry.semconv.gen_ai/1.0");
   assert.deepEqual(event.attributes, {});
+  assert.equal(event.trace_id, "4f0c98cf84fa44df9b8ad8f354d2f0a1");
+  assert.equal(event.span_id, "7b1c4d2e9f001122");
+  assert.equal(event.contract_hash, contractHash);
+});
+
+test("rejects malformed evidence identifiers", () => {
+  assert.throws(
+    () =>
+      normalizeEvent({
+        trace_id: "trace-ts-001",
+        span_id: "7b1c4d2e9f001122",
+        timestamp: "2026-07-03T12:00:10Z",
+        event_name: "gen_ai.agent.decision",
+        contract_hash: contractHash,
+        agent,
+      }),
+    /trace_id/,
+  );
+  assert.throws(
+    () =>
+      normalizeEvent({
+        trace_id: "00000000000000000000000000000000",
+        span_id: "7b1c4d2e9f001122",
+        timestamp: "2026-07-03T12:00:10Z",
+        event_name: "gen_ai.agent.decision",
+        contract_hash: contractHash,
+        agent,
+      }),
+    /trace_id.*all zeros/,
+  );
 });
 
 test("computes canonical content hashes for JSON objects", () => {
@@ -43,7 +73,7 @@ test("posts decision and tool events to TrustAI ingest API", async () => {
   assert.equal(decision.event.event_name, "gen_ai.agent.decision");
   assert.equal(decision.response.entries.length, 1);
 
-  const trace = client.trace("trace-ts-001");
+  const trace = client.trace("4f0c98cf84fa44df9b8ad8f354d2f0a1");
   const tool = await trace.toolCall("place_shadow_order", {
     attributes: { "tool.mode": "shadow", notional_usd: 7500 },
     spanId: "8c2d5e3f00112233",
@@ -56,8 +86,8 @@ test("posts decision and tool events to TrustAI ingest API", async () => {
     "risk_limit_check",
     async (notionalUsd) => notionalUsd < 10000,
     {
-      traceId: "trace-ts-001",
-      spanId: "span-ts-003",
+      traceId: "4f0c98cf84fa44df9b8ad8f354d2f0a1",
+      spanId: "9d3e6f4011223344",
       timestamp: "2026-07-03T12:00:12Z",
     },
   );

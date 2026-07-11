@@ -8,11 +8,11 @@ gateway, and ClickHouse ingestion stack.
 
 ```json
 {
-  "trace_id": "0f4a...",
-  "span_id": "7b1c...",
+  "trace_id": "4f0c98cf84fa44df9b8ad8f354d2f0a1",
+  "span_id": "7b1c4d2e9f001122",
   "timestamp": "2026-07-03T12:00:10Z",
   "event_name": "gen_ai.tool.call",
-  "contract_hash": "sha256...",
+  "contract_hash": "22a3727b124ce6664031037939cf391ce724158d681db3a55e9a0f0c51bcc7a2",
   "agent": {
     "name": "aitrade-risk-agent",
     "version": "sha256:..."
@@ -24,6 +24,13 @@ gateway, and ClickHouse ingestion stack.
   }
 }
 ```
+
+
+The collector accepts OTel hexadecimal IDs case-insensitively but normalizes
+`trace_id`, `span_id`, optional `parent_span_id`, and `contract_hash` to
+lowercase before hashing. It rejects malformed IDs, all-zero trace/span IDs,
+and non-64-hex contract hashes so downstream proof packs cannot be linked to
+ambiguous telemetry references.
 
 The collector writes `otel_genai.event.ingested` entries containing the canonical
 event hash, trace id, span id, contract hash, and original event body.

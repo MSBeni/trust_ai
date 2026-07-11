@@ -2,6 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { performance } from "node:perf_hooks";
 
 export const DEFAULT_SCHEMA_URL = "opentelemetry.semconv.gen_ai/1.0";
+const HEX_PATTERN = /^[0-9a-f]+$/i;
 
 export function newTraceId() {
   return randomBytes(16).toString("hex");
@@ -50,14 +51,41 @@ export function normalizeEvent(event) {
   if (Number.isNaN(Date.parse(event.timestamp))) {
     throw new Error("event timestamp must be RFC3339-compatible");
   }
+  const traceId = canonicalHex(event.trace_id, "trace_id", 32);
+  const spanId = canonicalHex(event.span_id, "span_id", 16);
+  const parentSpanId =
+    event.parent_span_id === undefined || event.parent_span_id === null || event.parent_span_id === ""
+      ? undefined
+      : canonicalHex(event.parent_span_id, "parent_span_id", 16);
+  const contractHash = canonicalHex(event.contract_hash, "contract_hash", 64);
+  if (typeof event.event_name !== "string" || !event.event_name.trim()) {
+    throw new Error("event.event_name must be a non-empty string");
+  }
   if (!event.agent?.name || !event.agent?.version) {
     throw new Error("event.agent must include name and version");
   }
-  return {
+  const normalized = {
     ...JSON.parse(JSON.stringify(event)),
+    trace_id: traceId,
+    span_id: spanId,
+    contract_hash: contractHash,
     schema_url: event.schema_url ?? DEFAULT_SCHEMA_URL,
     attributes: event.attributes ?? {},
   };
+  if (parentSpanId) {
+    normalized.parent_span_id = parentSpanId;
+  }
+  return normalized;
+}
+
+function canonicalHex(value, field, length) {
+  if (typeof value !== "string" || value.length !== length || !HEX_PATTERN.test(value)) {
+    throw new Error(`event.${field} must be a ${length}-character hexadecimal string`);
+  }
+  if (/^0+$/.test(value)) {
+    throw new Error(`event.${field} must not be all zeros`);
+  }
+  return value.toLowerCase();
 }
 
 export class TrustAIClient {

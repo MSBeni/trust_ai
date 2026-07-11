@@ -60,6 +60,13 @@ Tool calls preserve `tool.name`, `tool.arguments`, `tool.result`, and
 `tool.status` when present. Agent steps preserve hashes of framework input and
 output payloads instead of requiring raw payloads in downstream proof checks.
 
+Framework-native trace and span identifiers may be human-readable or provider-specific.
+Adapters derive stable OTel-compatible 32-hex `trace_id` and 16-hex `span_id`
+values for ingestion while retaining the original values in
+`attributes.trustai.adapter.source_trace_id`,
+`attributes.trustai.adapter.source_span_id`, and optional
+`attributes.trustai.adapter.source_parent_span_id`.
+
 Each source trace is bound into a local event chain with schema
 `trustai.framework-adapter-event-chain/0.1`. The first normalized event has no
 previous node hash; every following event commits to the previous event node,

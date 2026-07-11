@@ -41,11 +41,11 @@ class SDKTests(unittest.TestCase):
             contract = load_contract(CONTRACT)
             client = TrustAIClient.from_contract(contract, state_path=state_path, tenant_id="sdk-test")
 
-            with client.trace("trace-001") as trace:
+            with client.trace("4f0c98cf84fa44df9b8ad8f354d2f0a1") as trace:
                 trace.tool_call(
                     "place_shadow_order",
                     attributes={"tool.mode": "shadow", "notional_usd": 7500},
-                    span_id="span-0011223344556677",
+                    span_id="8c2d5e3f00112233",
                     timestamp="2026-07-03T12:00:11Z",
                 )
 
@@ -53,7 +53,7 @@ class SDKTests(unittest.TestCase):
             def check_limit(value: int) -> bool:
                 return value < 10000
 
-            self.assertTrue(check_limit(7500, trustai_trace_id="trace-001", trustai_span_id="span-8899aabbccddeeff"))
+            self.assertTrue(check_limit(7500, trustai_trace_id="4f0c98cf84fa44df9b8ad8f354d2f0a1", trustai_span_id="9d3e6f4011223344"))
             chain = EvidenceChain.load(state_path, tenant_id="sdk-test")
             event_names = [entry["payload"]["event"]["event_name"] for entry in chain.entries]
             tool_names = [entry["payload"]["event"]["attributes"]["tool.name"] for entry in chain.entries]

@@ -44,7 +44,7 @@ await client.recordDecision("allow_shadow_order", {
   attributes: { symbol: "BTCUSDT" }
 });
 
-const trace = client.trace("trace-001");
+const trace = client.trace("4f0c98cf84fa44df9b8ad8f354d2f0a1");
 await trace.toolCall("place_shadow_order", {
   attributes: { "tool.mode": "shadow", notional_usd: 7500 }
 });
@@ -59,6 +59,9 @@ The client records:
 All events normalize to the same fields used by file ingest and the Python SDK:
 `trace_id`, `span_id`, `timestamp`, `event_name`, `schema_url`,
 `contract_hash`, `agent`, `risk_class`, and `attributes`.
+The SDK uses 32-hex trace IDs and 16-hex span IDs, normalizes uppercase hex to
+lowercase, and rejects malformed trace/span IDs, all-zero IDs, and non-64-hex
+contract hashes before posting to the collector.
 
 ## Tool Instrumentation
 

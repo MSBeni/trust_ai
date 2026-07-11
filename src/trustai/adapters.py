@@ -20,6 +20,7 @@ SUPPORTED_FRAMEWORKS = {
     "bedrock",
     "vertex",
 }
+_HEX_CHARS = set("0123456789abcdefABCDEF")
 
 
 def load_framework_events(path: str | Path) -> list[dict[str, Any]]:
@@ -168,6 +169,26 @@ def _framework(payload: dict[str, Any]) -> str:
     return framework
 
 
+def _valid_hex_id(value: Any, length: int) -> bool:
+    return isinstance(value, str) and len(value) == length and any(char != "0" for char in value) and all(
+        char in _HEX_CHARS for char in value
+    )
+
+
+def _otel_trace_id(framework: str, source_trace_id: Any) -> str:
+    raw = str(source_trace_id)
+    if _valid_hex_id(raw, 32):
+        return raw.lower()
+    return content_hash({"framework": framework, "source_trace_id": raw})[:32]
+
+
+def _otel_span_id(framework: str, source_span_id: Any, *, fallback: Any | None = None) -> str:
+    raw = str(source_span_id) if source_span_id not in (None, "") else ""
+    if _valid_hex_id(raw, 16):
+        return raw.lower()
+    seed = raw if raw else fallback
+    return content_hash({"framework": framework, "source_span_id": seed})[:16]
+
 def _metadata(payload: dict[str, Any]) -> dict[str, Any]:
     agent = payload.get("agent")
     if not isinstance(agent, dict):
@@ -241,18 +262,27 @@ def _event(
     attributes: dict[str, Any],
 ) -> dict[str, Any]:
     meta = _metadata(payload)
+    source_trace_id = str(meta["trace_id"])
+    source_span_id = _span_id(framework, item, index)
+    source_parent_span_id = _first(item, "parent_span_id", "parentSpanId", "parent_id")
+    adapter_attributes = {
+        **attributes,
+        "trustai.adapter.source_trace_id": source_trace_id,
+        "trustai.adapter.source_span_id": source_span_id,
+        "trustai.adapter.source_parent_span_id": source_parent_span_id,
+    }
     return normalize_event(
         {
-            "trace_id": str(meta["trace_id"]),
-            "span_id": _span_id(framework, item, index),
-            "parent_span_id": _first(item, "parent_span_id", "parentSpanId", "parent_id"),
+            "trace_id": _otel_trace_id(framework, source_trace_id),
+            "span_id": _otel_span_id(framework, source_span_id, fallback={"index": index, "item": item}),
+            "parent_span_id": _otel_span_id(framework, source_parent_span_id) if source_parent_span_id else None,
             "timestamp": _timestamp(payload, item),
             "event_name": event_name,
             "schema_url": ADAPTER_SCHEMA_URL,
             "contract_hash": meta["contract_hash"],
             "agent": meta["agent"],
             "risk_class": meta.get("risk_class"),
-            "attributes": {key: value for key, value in attributes.items() if value is not None},
+            "attributes": {key: value for key, value in adapter_attributes.items() if value is not None},
         }
     )
 
