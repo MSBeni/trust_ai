@@ -16,6 +16,7 @@ from trustai.provider_delivery_authority import (
     build_provider_delivery_authority_dossier,
     verify_provider_delivery_authority_dossier,
 )
+from trustai.provider_delivery_worker_bundle import build_provider_delivery_worker_bundle
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -26,9 +27,40 @@ def _write_json(path: Path, value: object) -> None:
 
 class ProviderDeliveryAuthorityTests(unittest.TestCase):
     def _sources(self):
-        service = json.loads((ROOT / "artifacts" / "provider-delivery-service-attestation.json").read_text(encoding="utf-8"))
-        worker = json.loads((ROOT / "artifacts" / "provider-delivery-worker.json").read_text(encoding="utf-8"))
-        return {}, service, [worker]
+        payload_artifact_path = "artifacts/github-check-run-payload.json"
+        service_path = ROOT / "artifacts" / "provider-delivery-service-attestation.json"
+        worker_path = ROOT / "artifacts" / "provider-delivery-worker.json"
+        delivery_path = ROOT / "artifacts" / "github-check-run-delivery.json"
+        payload_path = ROOT / payload_artifact_path
+        operations_path = ROOT / "artifacts" / "provider-operations-service-attestation.json"
+        service = json.loads(service_path.read_text(encoding="utf-8"))
+        worker = json.loads(worker_path.read_text(encoding="utf-8"))
+        delivery = json.loads(delivery_path.read_text(encoding="utf-8"))
+        payload = json.loads(payload_path.read_text(encoding="utf-8"))
+        operations = json.loads(operations_path.read_text(encoding="utf-8"))
+        bundle = build_provider_delivery_worker_bundle(
+            worker,
+            service,
+            delivery,
+            payload=payload,
+            provider_operations_service=operations,
+            artifact_paths={
+                "worker_receipt": worker_path,
+                "service_attestation": service_path,
+                "delivery": delivery_path,
+                "payload": payload_path,
+                "provider_operations_service": operations_path,
+            },
+            reviewer_ref="oidc:auditor.example/provider-delivery-reviewer",
+            generated_at="2026-07-08T05:17:00Z",
+        )
+        return {
+            "delivery": delivery,
+            "payload": payload,
+            "payload_artifact_path": payload_artifact_path,
+            "provider_operations_service": operations,
+            "worker_bundles": [bundle],
+        }, service, [worker]
 
     def _authority_evidence(self) -> list[dict]:
         return [
@@ -94,7 +126,9 @@ class ProviderDeliveryAuthorityTests(unittest.TestCase):
         self.assertEqual(dossier["dossier_id"], entry["payload"]["dossier_id"])
         self.assertEqual(service["attestation_id"], entry["payload"]["service_attestation_binding"]["attestation_id"])
         self.assertEqual(workers[0]["worker_operation_id"], entry["payload"]["worker_receipt_bindings"][0]["worker_operation_id"])
-        self.assertEqual({"deferred": 1, "passed": 5}, entry["payload"]["control_summary"])
+        self.assertEqual(sources["worker_bundles"][0]["bundle_id"], entry["payload"]["worker_bundle_bindings"][0]["bundle_id"])
+        self.assertTrue(entry["payload"]["worker_bundle_bindings"][0]["retained_payload_artifact_replayed"])
+        self.assertEqual({"deferred": 1, "passed": 6}, entry["payload"]["control_summary"])
 
     def test_provider_delivery_authority_detects_worker_tamper(self):
         sources, service, workers, dossier = self._dossier()
@@ -105,6 +139,18 @@ class ProviderDeliveryAuthorityTests(unittest.TestCase):
 
         self.assertFalse(result.ok)
         self.assertTrue(any("worker_receipt_bindings do not match" in error for error in result.errors), result.errors)
+
+    def test_provider_delivery_authority_detects_worker_bundle_tamper(self):
+        sources, service, workers, dossier = self._dossier()
+        tampered_sources = dict(sources)
+        tampered_bundle = copy.deepcopy(sources["worker_bundles"][0])
+        tampered_bundle["source"]["worker_operation_id"] = "tampered-worker-operation"
+        tampered_sources["worker_bundles"] = [tampered_bundle]
+
+        result = verify_provider_delivery_authority_dossier(dossier, service_attestation=service, worker_receipts=workers, **tampered_sources)
+
+        self.assertFalse(result.ok)
+        self.assertTrue(any("worker_bundle_bindings" in error or "worker bundle source" in error for error in result.errors), result.errors)
 
     def test_provider_delivery_authority_requires_freshness_when_strict(self):
         evidence = [dict(self._authority_evidence()[0])]
@@ -131,11 +177,16 @@ class ProviderDeliveryAuthorityTests(unittest.TestCase):
             sources, service, workers, _ = self._dossier()
             service_path = tmp / "provider-delivery-service-attestation.json"
             worker_path = tmp / "provider-delivery-worker.json"
+            bundle_path = tmp / "provider-delivery-worker-bundle.json"
             dossier_path = tmp / "provider-delivery-authority.json"
             entry_path = tmp / "provider-delivery-authority-entry.json"
             state_path = tmp / "provider-delivery-authority-chain.json"
             _write_json(service_path, service)
             _write_json(worker_path, workers[0])
+            _write_json(bundle_path, sources["worker_bundles"][0])
+            delivery_path = "artifacts/github-check-run-delivery.json"
+            payload_path = "artifacts/github-check-run-payload.json"
+            operations_path = "artifacts/provider-operations-service-attestation.json"
 
             evidence_arg = (
                 "hosted-dispatch-worker-fleet,hosted-service,service:provider-delivery/github-prod,"
@@ -155,6 +206,14 @@ class ProviderDeliveryAuthorityTests(unittest.TestCase):
                     str(service_path),
                     "--worker",
                     str(worker_path),
+                    "--worker-bundle",
+                    str(bundle_path),
+                    "--delivery",
+                    str(delivery_path),
+                    "--payload",
+                    str(payload_path),
+                    "--provider-operations-service",
+                    str(operations_path),
                     "--environment",
                     "aitrade-prod",
                     "--dossier-ref",
@@ -175,7 +234,24 @@ class ProviderDeliveryAuthorityTests(unittest.TestCase):
                 check=True,
             )
             subprocess.run(
-                [sys.executable, "-m", "trustai", "provider-delivery-authority-verify", str(dossier_path), str(service_path), "--worker", str(worker_path)],
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "provider-delivery-authority-verify",
+                    str(dossier_path),
+                    str(service_path),
+                    "--worker",
+                    str(worker_path),
+                    "--worker-bundle",
+                    str(bundle_path),
+                    "--delivery",
+                    str(delivery_path),
+                    "--payload",
+                    str(payload_path),
+                    "--provider-operations-service",
+                    str(operations_path),
+                ],
                 cwd=ROOT,
                 env=env,
                 check=True,
@@ -190,6 +266,14 @@ class ProviderDeliveryAuthorityTests(unittest.TestCase):
                     str(service_path),
                     "--worker",
                     str(worker_path),
+                    "--worker-bundle",
+                    str(bundle_path),
+                    "--delivery",
+                    str(delivery_path),
+                    "--payload",
+                    str(payload_path),
+                    "--provider-operations-service",
+                    str(operations_path),
                     "--state",
                     str(state_path),
                     "--tenant",

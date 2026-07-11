@@ -9176,14 +9176,18 @@ def _load_provider_delivery_authority_sources(args: argparse.Namespace) -> dict[
     workers = [load_provider_delivery_worker_receipt(path) for path in (getattr(args, "worker", None) or [])]
     if not workers:
         raise ValueError("at least one --worker receipt is required")
+    worker_bundles = [load_provider_delivery_worker_bundle(path) for path in (getattr(args, "worker_bundle", None) or [])]
     sources: dict[str, Any] = {
         "service_attestation": load_provider_delivery_service_attestation(args.service_attestation),
         "worker_receipts": workers,
     }
+    if worker_bundles:
+        sources["worker_bundles"] = worker_bundles
     if getattr(args, "delivery", None):
         sources["delivery"] = load_provider_delivery(args.delivery)
     if getattr(args, "payload", None):
         sources["payload"] = load_provider_payload(args.payload)
+        sources["payload_artifact_path"] = args.payload
     if getattr(args, "provider_operations_service", None):
         sources["provider_operations_service"] = load_provider_operations_service_attestation(args.provider_operations_service)
     if getattr(args, "provider_response", None):
@@ -9202,8 +9206,10 @@ def cmd_provider_delivery_authority(args: argparse.Namespace) -> int:
         dossier = build_provider_delivery_authority_dossier(
             sources["service_attestation"],
             worker_receipts=sources["worker_receipts"],
+            worker_bundles=sources.get("worker_bundles"),
             delivery=sources.get("delivery"),
             payload=sources.get("payload"),
+            payload_artifact_path=sources.get("payload_artifact_path"),
             provider_operations_service=sources.get("provider_operations_service"),
             provider_response=sources.get("provider_response"),
             provider_audit_correlation=sources.get("provider_audit_correlation"),
@@ -9238,6 +9244,7 @@ def cmd_provider_delivery_authority(args: argparse.Namespace) -> int:
     print(f"dossier id: {dossier['dossier_id']}")
     print(f"service attestation id: {dossier['service_attestation_binding']['attestation_id']}")
     print(f"worker receipts: {len(dossier['worker_receipt_bindings'])}")
+    print(f"worker bundles: {len(dossier.get('worker_bundle_bindings', []))}")
     print(f"authority coverage: {result.covered_count}/{result.required_count}")
     for warning in result.warnings:
         print(f"warning: {warning}")
@@ -9281,8 +9288,10 @@ def cmd_provider_delivery_authority_append(args: argparse.Namespace) -> int:
             dossier,
             service_attestation=sources["service_attestation"],
             worker_receipts=sources["worker_receipts"],
+            worker_bundles=sources.get("worker_bundles"),
             delivery=sources.get("delivery"),
             payload=sources.get("payload"),
+            payload_artifact_path=sources.get("payload_artifact_path"),
             provider_operations_service=sources.get("provider_operations_service"),
             provider_response=sources.get("provider_response"),
             provider_audit_correlation=sources.get("provider_audit_correlation"),
@@ -21979,6 +21988,7 @@ def build_parser() -> argparse.ArgumentParser:
     def _add_provider_delivery_authority_sources(parser: argparse.ArgumentParser) -> None:
         parser.add_argument("service_attestation")
         parser.add_argument("--worker", action="append", required=True, help="provider delivery worker receipt; repeatable")
+        parser.add_argument("--worker-bundle", action="append", help="provider delivery worker review bundle; repeatable")
         parser.add_argument("--delivery")
         parser.add_argument("--payload")
         parser.add_argument("--provider-operations-service")

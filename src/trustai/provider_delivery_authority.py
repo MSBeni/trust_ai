@@ -11,6 +11,7 @@ from .crypto import sign_value, verify_value
 from .external_evidence import AUTHORITY_KINDS
 from .provider_delivery_service import verify_provider_delivery_service_attestation
 from .provider_delivery_worker import verify_provider_delivery_worker_receipt
+from .provider_delivery_worker_bundle import verify_provider_delivery_worker_bundle
 
 PROVIDER_DELIVERY_AUTHORITY_SCHEMA = "trustai.provider-delivery-production-authority-dossier/0.1"
 PROVIDER_DELIVERY_AUTHORITY_ENTRY_TYPE = "provider.delivery_authority_recorded"
@@ -81,8 +82,10 @@ def build_provider_delivery_authority_dossier(
     service_attestation: dict[str, Any],
     *,
     worker_receipts: list[dict[str, Any]] | None = None,
+    worker_bundles: list[dict[str, Any]] | None = None,
     delivery: dict[str, Any] | None = None,
     payload: dict[str, Any] | None = None,
+    payload_artifact_path: str | Path | None = None,
     provider_operations_service: dict[str, Any] | None = None,
     provider_response: dict[str, Any] | None = None,
     provider_audit_correlation: dict[str, Any] | None = None,
@@ -106,13 +109,43 @@ def build_provider_delivery_authority_dossier(
     timestamp = generated_at or utc_now()
     parse_rfc3339(timestamp)
 
-    service_result = verify_provider_delivery_service_attestation(service_attestation, delivery=delivery, payload=payload, provider_operations_service=provider_operations_service, key=key)
+    service_result = verify_provider_delivery_service_attestation(
+        service_attestation,
+        delivery=delivery,
+        payload=payload,
+        payload_artifact_path=payload_artifact_path,
+        provider_operations_service=provider_operations_service,
+        key=key,
+    )
     if not service_result.ok:
         raise ValueError("invalid provider delivery service source: " + "; ".join(service_result.errors))
     for receipt in receipts:
-        worker_result = verify_provider_delivery_worker_receipt(receipt, service_attestation=service_attestation, delivery=delivery, payload=payload, provider_operations_service=provider_operations_service, provider_response=provider_response, provider_audit_correlation=provider_audit_correlation, provider_audit_log=provider_audit_log, key=key)
+        worker_result = verify_provider_delivery_worker_receipt(
+            receipt,
+            service_attestation=service_attestation,
+            delivery=delivery,
+            payload=payload,
+            payload_artifact_path=payload_artifact_path,
+            provider_operations_service=provider_operations_service,
+            provider_response=provider_response,
+            provider_audit_correlation=provider_audit_correlation,
+            provider_audit_log=provider_audit_log,
+            key=key,
+        )
         if not worker_result.ok:
             raise ValueError("invalid provider delivery worker source: " + "; ".join(worker_result.errors))
+    bundles = list(worker_bundles or [])
+    for bundle in bundles:
+        bundle_result = verify_provider_delivery_worker_bundle(bundle, key=key)
+        if not bundle_result.ok:
+            raise ValueError("invalid provider delivery worker bundle source: " + "; ".join(bundle_result.errors))
+
+    service_binding = _service_attestation_binding(service_attestation)
+    worker_bindings = [_worker_receipt_binding(receipt) for receipt in receipts]
+    worker_bundle_bindings = [_worker_bundle_binding(bundle) for bundle in bundles]
+    link_errors = _worker_bundle_link_errors(worker_bundle_bindings, service_binding, worker_bindings)
+    if link_errors:
+        raise ValueError("invalid provider delivery worker bundle binding: " + "; ".join(link_errors))
 
     evidence_items = [_build_authority_evidence_item(item) for item in (authority_evidence or [])]
     summary = _summary(evidence_items)
@@ -124,12 +157,13 @@ def build_provider_delivery_authority_dossier(
         "dossier_ref": dossier_ref,
         "authority_ref": authority_ref,
         "producer_ref": producer_ref,
-        "service_attestation_binding": _service_attestation_binding(service_attestation),
-        "worker_receipt_bindings": [_worker_receipt_binding(receipt) for receipt in receipts],
+        "service_attestation_binding": service_binding,
+        "worker_receipt_bindings": worker_bindings,
+        "worker_bundle_bindings": worker_bundle_bindings,
         "required_production_authority": PRODUCTION_AUTHORITY_REQUIREMENTS,
         "authority_evidence": evidence_items,
         "summary": summary,
-        "controls": _controls(mode, service_attestation, receipts, evidence_items, summary),
+        "controls": _controls(mode, service_attestation, receipts, worker_bundle_bindings, evidence_items, summary),
         "limitations": [
             "This dossier binds verified provider delivery service and worker receipts to an explicit production-authority evidence checklist.",
             "It records authority references, hashes, freshness windows, and missing live-evidence categories for credentialed external Slack/GitHub/GitLab posting.",
@@ -145,8 +179,10 @@ def verify_provider_delivery_authority_dossier(
     *,
     service_attestation: dict[str, Any] | None = None,
     worker_receipts: list[dict[str, Any]] | None = None,
+    worker_bundles: list[dict[str, Any]] | None = None,
     delivery: dict[str, Any] | None = None,
     payload: dict[str, Any] | None = None,
+    payload_artifact_path: str | Path | None = None,
     provider_operations_service: dict[str, Any] | None = None,
     provider_response: dict[str, Any] | None = None,
     provider_audit_correlation: dict[str, Any] | None = None,
@@ -189,7 +225,12 @@ def verify_provider_delivery_authority_dossier(
     _verify_service_attestation_binding(
         dossier.get("service_attestation_binding"),
         service_attestation,
-        {"delivery": delivery, "payload": payload, "provider_operations_service": provider_operations_service},
+        {
+            "delivery": delivery,
+            "payload": payload,
+            "payload_artifact_path": payload_artifact_path,
+            "provider_operations_service": provider_operations_service,
+        },
         key,
         errors,
         warnings,
@@ -201,11 +242,21 @@ def verify_provider_delivery_authority_dossier(
         {
             "delivery": delivery,
             "payload": payload,
+            "payload_artifact_path": payload_artifact_path,
             "provider_operations_service": provider_operations_service,
             "provider_response": provider_response,
             "provider_audit_correlation": provider_audit_correlation,
             "provider_audit_log": provider_audit_log,
         },
+        key,
+        errors,
+        warnings,
+    )
+    _verify_worker_bundle_bindings(
+        dossier.get("worker_bundle_bindings"),
+        worker_bundles,
+        dossier.get("service_attestation_binding"),
+        dossier.get("worker_receipt_bindings"),
         key,
         errors,
         warnings,
@@ -283,6 +334,7 @@ def append_provider_delivery_authority_dossier(
         "producer_ref": dossier.get("producer_ref"),
         "service_attestation_binding": dossier.get("service_attestation_binding"),
         "worker_receipt_bindings": dossier.get("worker_receipt_bindings"),
+        "worker_bundle_bindings": dossier.get("worker_bundle_bindings"),
         "summary": dossier.get("summary"),
         "control_summary": _status_summary(dossier.get("controls", [])),
         "authority_evidence": [
@@ -434,6 +486,83 @@ def _verify_service_attestation_binding(binding: Any, service_attestation: dict[
     warnings.extend(f"provider delivery authority service source: {warning}" for warning in result.warnings)
 
 
+def _worker_bundle_binding(bundle: dict[str, Any]) -> dict[str, Any]:
+    source = bundle.get("source", {}) if isinstance(bundle.get("source"), dict) else {}
+    summary = bundle.get("summary", {}) if isinstance(bundle.get("summary"), dict) else {}
+    return {
+        "bundle_id": bundle.get("bundle_id"),
+        "bundle_hash": content_hash(bundle),
+        "bundle_schema": bundle.get("schema"),
+        "bundle_mode": bundle.get("mode"),
+        "environment": bundle.get("environment"),
+        "generated_at": bundle.get("generated_at"),
+        "reviewer_ref": bundle.get("reviewer_ref"),
+        "bundle_ref": bundle.get("bundle_ref"),
+        "worker_operation_id": source.get("worker_operation_id"),
+        "worker_receipt_hash": source.get("worker_receipt_hash"),
+        "service_attestation_id": source.get("service_attestation_id"),
+        "service_attestation_hash": source.get("service_attestation_hash"),
+        "delivery_id": source.get("delivery_id"),
+        "delivery_hash": source.get("delivery_hash"),
+        "source_artifact_count": summary.get("source_artifact_count"),
+        "source_artifact_sha256_root": summary.get("source_artifact_sha256_root"),
+        "source_artifact_content_root": summary.get("source_artifact_content_root"),
+        "retained_payload_artifact_replayed": summary.get("retained_payload_artifact_replayed"),
+        "provider_response_replayed": summary.get("provider_response_replayed"),
+        "provider_audit_replayed": summary.get("provider_audit_replayed"),
+    }
+
+
+def _worker_bundle_link_errors(bundle_bindings: list[dict[str, Any]], service_binding: Any, worker_bindings: Any) -> list[str]:
+    errors: list[str] = []
+    service_hash = service_binding.get("attestation_hash") if isinstance(service_binding, dict) else None
+    service_id = service_binding.get("attestation_id") if isinstance(service_binding, dict) else None
+    worker_ids = {binding.get("worker_operation_id") for binding in worker_bindings if isinstance(binding, dict)} if isinstance(worker_bindings, list) else set()
+    worker_hashes = {binding.get("worker_operation_hash") for binding in worker_bindings if isinstance(binding, dict)} if isinstance(worker_bindings, list) else set()
+    for binding in bundle_bindings:
+        if not isinstance(binding, dict):
+            continue
+        if service_hash and binding.get("service_attestation_hash") != service_hash:
+            errors.append("provider delivery authority worker bundle does not reference supplied service attestation hash")
+        if service_id and binding.get("service_attestation_id") != service_id:
+            errors.append("provider delivery authority worker bundle does not reference supplied service attestation id")
+        if worker_ids and binding.get("worker_operation_id") not in worker_ids:
+            errors.append("provider delivery authority worker bundle does not reference a supplied worker receipt id")
+        if worker_hashes and binding.get("worker_receipt_hash") not in worker_hashes:
+            errors.append("provider delivery authority worker bundle does not reference a supplied worker receipt hash")
+    return errors
+
+
+def _verify_worker_bundle_bindings(bindings: Any, worker_bundles: list[dict[str, Any]] | None, service_binding: Any, worker_bindings: Any, key: str | None, errors: list[str], warnings: list[str]) -> None:
+    if bindings is None:
+        if worker_bundles:
+            errors.append("provider delivery authority worker_bundle_bindings are required when worker bundles are supplied")
+        return
+    if not isinstance(bindings, list):
+        errors.append("provider delivery authority worker_bundle_bindings must be a list")
+        return
+    for binding in bindings:
+        if not isinstance(binding, dict):
+            errors.append("provider delivery authority worker_bundle_binding must be an object")
+            continue
+        for field in ("bundle_id", "bundle_hash", "bundle_schema", "bundle_mode", "environment", "generated_at", "reviewer_ref", "bundle_ref", "worker_operation_id", "worker_receipt_hash", "service_attestation_id", "service_attestation_hash", "delivery_id", "delivery_hash", "source_artifact_count", "source_artifact_sha256_root", "source_artifact_content_root"):
+            if binding.get(field) in (None, "", []):
+                errors.append(f"provider delivery authority worker_bundle_binding.{field} is required")
+    errors.extend(_worker_bundle_link_errors(bindings, service_binding, worker_bindings))
+    if not worker_bundles:
+        if bindings:
+            warnings.append("provider delivery authority worker bundles were not supplied; worker bundle hashes were not replayed")
+        return
+    expected = [_worker_bundle_binding(bundle) for bundle in worker_bundles]
+    if bindings != expected:
+        errors.append("provider delivery authority worker_bundle_bindings do not match supplied worker bundles")
+    for bundle in worker_bundles:
+        result = verify_provider_delivery_worker_bundle(bundle, key=key)
+        if not result.ok:
+            errors.extend(f"provider delivery authority worker bundle source: {error}" for error in result.errors)
+        warnings.extend(f"provider delivery authority worker bundle source: {warning}" for warning in result.warnings)
+
+
 def _verify_worker_receipt_bindings(bindings: Any, worker_receipts: list[dict[str, Any]] | None, service_attestation: dict[str, Any] | None, sources: dict[str, Any], key: str | None, errors: list[str], warnings: list[str]) -> None:
     if not isinstance(bindings, list) or not bindings:
         errors.append("provider delivery authority worker_receipt_bindings must include at least one worker receipt")
@@ -452,7 +581,18 @@ def _verify_worker_receipt_bindings(bindings: Any, worker_receipts: list[dict[st
     if bindings != expected:
         errors.append("provider delivery authority worker_receipt_bindings do not match supplied worker receipts")
     for receipt in worker_receipts:
-        result = verify_provider_delivery_worker_receipt(receipt, service_attestation=service_attestation, delivery=sources.get("delivery"), payload=sources.get("payload"), provider_operations_service=sources.get("provider_operations_service"), provider_response=sources.get("provider_response"), provider_audit_correlation=sources.get("provider_audit_correlation"), provider_audit_log=sources.get("provider_audit_log"), key=key)
+        result = verify_provider_delivery_worker_receipt(
+            receipt,
+            service_attestation=service_attestation,
+            delivery=sources.get("delivery"),
+            payload=sources.get("payload"),
+            payload_artifact_path=sources.get("payload_artifact_path"),
+            provider_operations_service=sources.get("provider_operations_service"),
+            provider_response=sources.get("provider_response"),
+            provider_audit_correlation=sources.get("provider_audit_correlation"),
+            provider_audit_log=sources.get("provider_audit_log"),
+            key=key,
+        )
         if not result.ok:
             errors.extend(f"provider delivery authority worker source: {error}" for error in result.errors)
         warnings.extend(f"provider delivery authority worker source: {warning}" for warning in result.warnings)
@@ -559,10 +699,11 @@ def _summary(evidence: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _controls(mode: str, service_attestation: dict[str, Any], worker_receipts: list[dict[str, Any]], evidence: list[dict[str, Any]], summary: dict[str, Any]) -> list[dict[str, Any]]:
+def _controls(mode: str, service_attestation: dict[str, Any], worker_receipts: list[dict[str, Any]], worker_bundle_bindings: list[dict[str, Any]], evidence: list[dict[str, Any]], summary: dict[str, Any]) -> list[dict[str, Any]]:
     return [
         {"name": "service_attestation_replayed", "status": "passed", "detail": "The dossier builder replayed the provider delivery service attestation and supplied source evidence when available."},
         {"name": "worker_receipts_bound", "status": "passed" if service_attestation.get("attestation_id") and worker_receipts else "failed", "detail": "The dossier binds delivery worker operation IDs, service hashes, scheduler, queue, dispatch, response, log, and credential refs."},
+        {"name": "worker_review_bundles_bound", "status": "passed" if worker_bundle_bindings else "deferred", "detail": "Optional worker review bundles bind offline source-byte replay, retained payload artifact replay, and safe third-party extraction to the authority dossier."},
         {"name": "authority_evidence_manifested", "status": "passed" if evidence else "deferred", "detail": "External provider delivery authority evidence references are hash-bound when supplied."},
         {"name": "freshness_windows_tracked", "status": "passed" if evidence and summary["freshness_window_count"] == len(evidence) else "deferred", "detail": "Issued/expires freshness windows are tracked for every supplied authority item when available."},
         {"name": "complete_live_authority", "status": "passed" if summary["missing_requirement_count"] == 0 else "deferred", "detail": "Every provider delivery production authority requirement must be covered before this can claim live production delivery authority."},
