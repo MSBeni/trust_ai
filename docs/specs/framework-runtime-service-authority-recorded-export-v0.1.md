@@ -33,6 +33,12 @@ recorded export ID, verifies at least one detached signature, validates recorder
 and retention metadata, checks redacted credentials, rejects raw secret-like
 fields, and recalculates artifact roots.
 
+If authority attestation and artifact files are omitted, verification may warn
+that hashes were not replayed, but it still rejects incomplete signed source
+bindings with missing attestation metadata, provider receipt/export hashes,
+authority evidence roots, missing-requirement roots, dossier hashes, or dossier
+coverage-summary fields.
+
 When supplied with the authority attestation and all source artifacts,
 verification first replays
 `framework-runtime-service-authority-attestation-verify`. It then rereads every

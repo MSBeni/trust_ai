@@ -514,24 +514,59 @@ def _verify_source_binding(binding: Any, authority_attestation: dict[str, Any] |
     if not isinstance(binding, dict):
         errors.append("framework runtime service authority recorded export source must be an object")
         return
-    for field in (
-        "attestation_id",
-        "attestation_hash",
-        "mode",
-        "environment",
-        "authority_provider_receipt_id",
-        "authority_provider_export_hash",
-        "dossier_id",
-        "dossier_hash",
-        "authority_ref",
-    ):
-        if not binding.get(field):
-            errors.append(f"framework runtime service authority recorded export source.{field} is required")
+    _verify_source_binding_completeness(binding, errors)
     if authority_attestation is None:
         warnings.append("framework runtime service authority recorded export source attestation was not supplied; source hash was not replayed")
         return
     if binding != _source_binding(authority_attestation):
         errors.append("framework runtime service authority recorded export source binding does not match supplied authority attestation")
+
+
+def _verify_source_binding_completeness(binding: dict[str, Any], errors: list[str]) -> None:
+    for field in (
+        "attestation_id",
+        "attestation_hash",
+        "schema",
+        "mode",
+        "environment",
+        "issuer",
+        "subject_ref",
+        "issued_at",
+        "expires_at",
+        "authority_provider_receipt_id",
+        "authority_provider_receipt_hash",
+        "authority_provider_export_hash",
+        "authority_evidence_root",
+        "missing_requirement_root",
+        "dossier_id",
+        "dossier_hash",
+        "authority_ref",
+    ):
+        _require_binding_field(binding, f"source.{field}", errors)
+    _verify_dossier_summary_binding(binding.get("dossier_summary"), errors)
+
+
+def _verify_dossier_summary_binding(value: Any, errors: list[str]) -> None:
+    if not isinstance(value, dict):
+        errors.append("framework runtime service authority recorded export source.dossier_summary is required")
+        return
+    for field in (
+        "required_requirement_count",
+        "covered_requirement_count",
+        "missing_requirement_count",
+        "covered_requirement_ids",
+        "missing_requirement_ids",
+        "evidence_count",
+        "status",
+    ):
+        _require_binding_field(value, f"source.dossier_summary.{field}", errors)
+
+
+def _require_binding_field(container: dict[str, Any], path: str, errors: list[str]) -> None:
+    field = path.rsplit(".", 1)[-1]
+    value = container.get(field)
+    if value is None or value == "" or value == {}:
+        errors.append(f"framework runtime service authority recorded export {path} is required")
 
 
 def _artifact_records(artifact_paths: dict[str, str | Path], source_objects: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:

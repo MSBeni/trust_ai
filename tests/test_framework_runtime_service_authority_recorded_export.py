@@ -7,7 +7,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.framework_adapter_matrix import write_framework_adapter_matrix
 from trustai.framework_hook_operation import write_framework_hook_operation
 from trustai.framework_hook_release import write_framework_hook_release
@@ -363,6 +365,35 @@ class FrameworkRuntimeServiceAuthorityRecordedExportTests(unittest.TestCase):
             self.assertFalse(result.ok)
             self.assertTrue(any("source binding does not match" in error for error in result.errors))
             self.assertTrue(any("attestation source" in error for error in result.errors))
+
+    def test_framework_runtime_service_authority_recorded_export_requires_complete_source_without_sources(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            receipt = self._recorded_export(tmp)[0]
+            tampered = copy.deepcopy(receipt)
+            tampered["source"]["dossier_summary"].pop("covered_requirement_count")
+            body = without_keys(tampered, "recorded_export_id", "signatures")
+            recorded_export_id = content_hash(body)
+            tampered["recorded_export_id"] = recorded_export_id
+            tampered["signatures"] = [
+                sign_value(
+                    {
+                        "recorded_export_id": recorded_export_id,
+                        "framework_runtime_service_authority_recorded_export": body,
+                    }
+                )
+            ]
+
+            result = verify_framework_runtime_service_authority_recorded_export(
+                tampered,
+                now="2026-07-09T01:12:00Z",
+            )
+
+            self.assertFalse(result.ok)
+            self.assertTrue(
+                any("source.dossier_summary.covered_requirement_count is required" in error for error in result.errors),
+                result.errors,
+            )
 
     def test_framework_runtime_service_authority_recorded_export_rejects_raw_credential(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
