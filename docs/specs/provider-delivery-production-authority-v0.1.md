@@ -64,7 +64,7 @@ A verifier MUST:
 9. Reject `production-dossier` mode unless every production authority requirement is covered.
 10. Reject secret-like fields unless they are redacted references or hash/root references.
 
-If raw delivery, payload, provider response, provider audit correlation, provider operations service, or worker bundle sources are omitted, the verifier MAY still accept the signed service/worker/bundle binding and MUST emit warnings that source hashes were not replayed.
+If raw delivery, payload, provider response, provider audit correlation, provider operations service, or worker bundle sources are omitted, the verifier MAY still accept the signed service/worker/bundle binding and MUST emit warnings that source hashes were not replayed. It MUST still reject incomplete signed bindings with missing service schemas, source-type lists, security or observability references, worker scheduler/dispatch/audit fields, source delivery hashes, worker bundle source-artifact roots, or bundle replay-status fields.
 
 ## CLI
 

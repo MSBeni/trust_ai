@@ -7,7 +7,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.provider_delivery_authority import (
     PRODUCTION_AUTHORITY_REQUIREMENT_IDS,
     PROVIDER_DELIVERY_AUTHORITY_ENTRY_TYPE,
@@ -151,6 +153,23 @@ class ProviderDeliveryAuthorityTests(unittest.TestCase):
 
         self.assertFalse(result.ok)
         self.assertTrue(any("worker_bundle_bindings" in error or "worker bundle source" in error for error in result.errors), result.errors)
+
+    def test_provider_delivery_authority_requires_complete_bindings_without_sources(self):
+        _, _, _, dossier = self._dossier()
+        tampered = copy.deepcopy(dossier)
+        tampered["worker_bundle_bindings"][0].pop("retained_payload_artifact_replayed")
+        body = without_keys(tampered, "dossier_id", "signatures")
+        dossier_id = content_hash(body)
+        tampered["dossier_id"] = dossier_id
+        tampered["signatures"] = [sign_value({"dossier_id": dossier_id, "provider_delivery_authority": body})]
+
+        result = verify_provider_delivery_authority_dossier(tampered)
+
+        self.assertFalse(result.ok)
+        self.assertTrue(
+            any("worker_bundle_binding.retained_payload_artifact_replayed is required" in error for error in result.errors),
+            result.errors,
+        )
 
     def test_provider_delivery_authority_requires_freshness_when_strict(self):
         evidence = [dict(self._authority_evidence()[0])]
