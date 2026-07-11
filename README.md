@@ -637,7 +637,7 @@ python -m trustai go-verifier-build-attestation artifacts/verifier-release.json 
 python -m trustai go-verifier-build-verify artifacts/go-verifier-build-attestation.json artifacts/verifier-release.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root .
 ```
 
-When CI or a local Go toolchain has produced the verifier binary plus build log, SBOM, provenance, and signature sidecars, use `binary-attested` mode to replay the released bytes:
+When CI or a local Go toolchain has produced the verifier binary plus build log, SBOM, and provenance sidecars, first create the structured binary signature artifact, then use `binary-attested` mode to replay the released bytes:
 
 ```powershell
 $goVerifierBinary = "artifacts/trustai-verify-linux-amd64"
@@ -645,6 +645,7 @@ $goVerifierBuildLog = "artifacts/trustai-verify-linux-amd64.build.log"
 $goVerifierSbom = "artifacts/trustai-verify-linux-amd64.sbom.json"
 $goVerifierProvenance = "artifacts/trustai-verify-linux-amd64.provenance.json"
 $goVerifierSignature = "artifacts/trustai-verify-linux-amd64.sig"
+python -m trustai go-verifier-binary-signature artifacts/verifier-release.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --binary $goVerifierBinary --build-log-ref $goVerifierBuildLog --sbom-ref $goVerifierSbom --provenance-ref $goVerifierProvenance --generated-at 2026-07-16T00:01:30Z --out $goVerifierSignature
 $goVerifierBuildLogHash = "sha256:$((Get-FileHash $goVerifierBuildLog -Algorithm SHA256).Hash.ToLower())"
 $goVerifierSbomHash = "sha256:$((Get-FileHash $goVerifierSbom -Algorithm SHA256).Hash.ToLower())"
 $goVerifierProvenanceHash = "sha256:$((Get-FileHash $goVerifierProvenance -Algorithm SHA256).Hash.ToLower())"

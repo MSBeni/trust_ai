@@ -3,7 +3,8 @@
 This specification defines signed attestations for the Go offline verifier build
 path. It binds the verifier release manifest, conformance report, standards
 package, Go source files, static-build controls, optional build logs, optional
-binary hashes, and optional supply-chain provenance into a portable artifact.
+binary hashes, supply-chain provenance, and structured binary signature replay
+into a portable artifact.
 
 The attestation intentionally separates three modes:
 
@@ -12,7 +13,8 @@ The attestation intentionally separates three modes:
 - `recorded-build`: a build was run and a build log reference/hash is included,
   but a final binary hash may still be absent.
 - `binary-attested`: a compiled verifier binary is included by path, hash, and
-  size, with build log and provenance references.
+  size, with build log, SBOM, provenance, and a structured binary signature
+  artifact that verifies against those bindings.
 
 ## Artifact
 
@@ -29,6 +31,7 @@ Required top-level fields:
   controls.
 - `binary`: binary availability status and optional binary hash metadata.
 - `provenance`: optional SBOM, provenance, and signature references and hashes.
+- `binary_signature`: replay status for the structured binary signature artifact.
 - `controls`: verifier build controls and current pass/fail/not-applicable
   status.
 - `signatures`: detached signature over the build body and `build_id`.
@@ -75,12 +78,25 @@ must emit warnings that no binary has been produced.
 - `binary.sha256`.
 - `binary.size_bytes`.
 - `build.build_log_ref` and `build.build_log_hash`.
-- `provenance.sbom_hash`, `provenance.provenance_hash`, and
-  `provenance.signature_hash`.
+- `provenance.sbom_ref` and `provenance.sbom_hash`.
+- `provenance.provenance_ref` and `provenance.provenance_hash`.
+- `provenance.signature_ref` and `provenance.signature_hash`.
+- `binary_signature.verified` equal to `true`.
 
-The verifier must reject a `binary-attested` attestation without those fields or when the supplied binary bytes do not replay to the recorded hash and size. When build-log, SBOM, provenance, or signature refs resolve to local paths, their bytes must also replay to the recorded hashes.
-`recorded-build` mode requires build-log metadata but may omit the binary hash
-while the release process is still staging the artifact.
+The signature sidecar referenced by `provenance.signature_ref` must be a JSON
+artifact with schema `trustai.go-verifier-binary-signature/0.1`. Its signed
+`subject` binds the verifier release/source summary, binary path/hash/size, build
+log hash, SBOM hash, and provenance hash. Verifiers must reject a
+`binary-attested` attestation when the sidecar is missing, unstructured, signed
+with the wrong payload, or its subject no longer matches the replayed release,
+binary, build log, SBOM, and provenance bindings.
+
+The verifier must reject a `binary-attested` attestation without those fields or
+when the supplied binary bytes do not replay to the recorded hash and size. When
+build-log, SBOM, provenance, or signature refs resolve to local paths, their
+bytes must also replay to the recorded hashes. `recorded-build` mode requires
+build-log metadata but may omit the binary hash while the release process is
+still staging the artifact.
 
 ## Verification
 
@@ -91,7 +107,8 @@ An implementation verifies:
 3. Source binding against the supplied verifier release manifest, conformance
    report, standards package, and repository source files.
 4. Static-build controls: `cgo_enabled=false` and `trimpath=true`.
-5. Mode-specific build-log, binary, and provenance requirements.
+5. Mode-specific build-log, binary, provenance, and binary signature
+   requirements.
 6. Chain append payloads include the full attestation and verification summary.
 
 ## CLI
@@ -110,6 +127,7 @@ $goVerifierBuildLog = "artifacts/trustai-verify-linux-amd64.build.log"
 $goVerifierSbom = "artifacts/trustai-verify-linux-amd64.sbom.json"
 $goVerifierProvenance = "artifacts/trustai-verify-linux-amd64.provenance.json"
 $goVerifierSignature = "artifacts/trustai-verify-linux-amd64.sig"
+python -m trustai go-verifier-binary-signature artifacts/verifier-release.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --binary $goVerifierBinary --build-log-ref $goVerifierBuildLog --sbom-ref $goVerifierSbom --provenance-ref $goVerifierProvenance --generated-at 2026-07-16T00:01:30Z --out $goVerifierSignature
 $goVerifierBuildLogHash = "sha256:$((Get-FileHash $goVerifierBuildLog -Algorithm SHA256).Hash.ToLower())"
 $goVerifierSbomHash = "sha256:$((Get-FileHash $goVerifierSbom -Algorithm SHA256).Hash.ToLower())"
 $goVerifierProvenanceHash = "sha256:$((Get-FileHash $goVerifierProvenance -Algorithm SHA256).Hash.ToLower())"

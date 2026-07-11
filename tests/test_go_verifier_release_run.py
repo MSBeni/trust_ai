@@ -10,7 +10,12 @@ from pathlib import Path
 from trustai.chain import EvidenceChain
 from trustai.contracts import load_contract, register_contract
 from trustai.gate import append_eval_and_gate
-from trustai.go_verifier_build import build_go_verifier_build_attestation, write_go_verifier_build_attestation
+from trustai.go_verifier_build import (
+    build_go_verifier_build_attestation,
+    build_go_verifier_binary_signature_artifact,
+    write_go_verifier_build_attestation,
+    write_go_verifier_binary_signature_artifact,
+)
 from trustai.go_verifier_release_run import (
     GO_VERIFIER_RELEASE_RUN_ENTRY_TYPE,
     GO_VERIFIER_RELEASE_RUN_SCHEMA,
@@ -82,7 +87,18 @@ class GoVerifierReleaseRunTests(unittest.TestCase):
         build_log_path.write_text('CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w"\n', encoding="utf-8")
         sbom_path.write_text(json.dumps({"schema": "trustai.go-verifier-ci-sbom/0.1", "artifact": binary_path.name}, sort_keys=True), encoding="utf-8")
         provenance_path.write_text(json.dumps({"schema": "trustai.go-verifier-ci-provenance/0.1", "artifact": binary_path.name}, sort_keys=True), encoding="utf-8")
-        signature_path.write_text("release-run-signature-fixture\n", encoding="utf-8")
+        signature_artifact = build_go_verifier_binary_signature_artifact(
+            release,
+            root=ROOT,
+            conformance_report=conformance,
+            standards_package=standards,
+            binary_path=binary_path,
+            build_log_ref=build_log_path,
+            sbom_ref=sbom_path,
+            provenance_ref=provenance_path,
+            generated_at="2026-07-16T00:01:30Z",
+        )
+        write_go_verifier_binary_signature_artifact(signature_path, signature_artifact)
         attestation = build_go_verifier_build_attestation(
             release,
             root=ROOT,

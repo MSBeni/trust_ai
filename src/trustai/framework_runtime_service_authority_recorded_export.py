@@ -227,6 +227,7 @@ def verify_framework_runtime_service_authority_recorded_export(
     release: dict[str, Any] | None = None,
     matrix: dict[str, Any] | None = None,
     artifact_paths: dict[str, str | Path] | None = None,
+    artifact_records: list[dict[str, Any]] | None = None,
     root: str | Path = ".",
     key: str | None = None,
     require_complete: bool = False,
@@ -301,6 +302,7 @@ def verify_framework_runtime_service_authority_recorded_export(
     _verify_recorded_artifacts(
         receipt.get("recorded_artifacts"),
         artifact_paths,
+        artifact_records,
         _optional_source_objects(
             authority_attestation,
             authority_provider_receipt,
@@ -605,6 +607,7 @@ def _artifact_record(name: str, artifact_type: str, path: str | Path, expected: 
 def _verify_recorded_artifacts(
     value: Any,
     artifact_paths: dict[str, str | Path] | None,
+    artifact_records: list[dict[str, Any]] | None,
     source_objects: dict[str, dict[str, Any]],
     errors: list[str],
     warnings: list[str],
@@ -633,6 +636,15 @@ def _verify_recorded_artifacts(
         errors.append("framework runtime service authority recorded_artifacts artifact_root does not match items")
     if value.get("summary") != _artifact_summary([item for item in items if isinstance(item, dict)]):
         errors.append("framework runtime service authority recorded_artifacts summary does not match items")
+    if artifact_records is not None:
+        if items != artifact_records:
+            errors.append("framework runtime service authority recorded artifacts do not match supplied artifact records")
+            by_name = {item.get("name"): item for item in items if isinstance(item, dict)}
+            for expected in artifact_records:
+                actual = by_name.get(expected.get("name")) if isinstance(expected, dict) else None
+                if actual != expected:
+                    errors.append(f"framework runtime service authority recorded artifact mismatch: {expected.get('name') if isinstance(expected, dict) else 'unknown'}")
+        return
     if artifact_paths is None:
         errors.append("framework runtime service authority recorded export artifact paths are required for verification")
         return

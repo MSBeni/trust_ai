@@ -262,6 +262,7 @@ def verify_framework_runtime_service_authority_recorded_export_provider_bundle(
         sources = {}
     source_objects = _required_source_objects(sources, errors)
     if source_objects:
+        embedded_artifact_records = _embedded_source_artifact_records(bundle.get("source_artifacts"))
         provider_result = verify_framework_runtime_service_authority_recorded_export_provider_receipt(
             source_objects["provider_receipt"],
             provider_export=source_objects["provider_export"],
@@ -286,6 +287,7 @@ def verify_framework_runtime_service_authority_recorded_export_provider_bundle(
             release=source_objects["release"],
             matrix=source_objects["matrix"],
             artifact_paths=None,
+            artifact_records=embedded_artifact_records,
             key=key,
         )
         if not provider_result.ok:
@@ -562,6 +564,17 @@ def _build_source_artifacts(
         }
         artifacts.append({**body, "artifact_id": content_hash(body)})
     return artifacts
+
+
+def _embedded_source_artifact_records(value: Any) -> list[dict[str, Any]] | None:
+    if not isinstance(value, list):
+        return None
+    records: list[dict[str, Any]] = []
+    for artifact in value:
+        if not isinstance(artifact, dict):
+            return None
+        records.append(without_keys(artifact, "artifact_id", "content_b64"))
+    return records
 
 
 def _verify_source_artifacts(

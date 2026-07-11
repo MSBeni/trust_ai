@@ -1131,9 +1131,11 @@ from .go_verifier_build import (
     GO_VERIFIER_BUILD_MODES,
     append_go_verifier_build_attestation,
     build_go_verifier_build_attestation,
+    build_go_verifier_binary_signature_artifact,
     load_go_verifier_build_attestation,
     verify_go_verifier_build_attestation,
     write_go_verifier_build_attestation,
+    write_go_verifier_binary_signature_artifact,
 )
 from .go_verifier_release_run import (
     append_go_verifier_release_run_receipt,
@@ -6782,6 +6784,30 @@ def _load_go_verifier_build_sources(args: argparse.Namespace) -> dict[str, objec
         "conformance_report": load_verifier_conformance_report(args.conformance_report) if getattr(args, "conformance_report", None) else None,
         "standards_package": load_standards_submission(args.standards_package) if getattr(args, "standards_package", None) else None,
     }
+
+
+def cmd_go_verifier_binary_signature(args: argparse.Namespace) -> int:
+    sources = _load_go_verifier_build_sources(args)
+    try:
+        artifact = build_go_verifier_binary_signature_artifact(
+            sources["verifier_release"],
+            root=args.root,
+            conformance_report=sources["conformance_report"],
+            standards_package=sources["standards_package"],
+            binary_path=args.binary,
+            build_log_ref=args.build_log_ref,
+            sbom_ref=args.sbom_ref,
+            provenance_ref=args.provenance_ref,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"Go verifier binary signature failed: {exc}", file=sys.stderr)
+        return 1
+    write_go_verifier_binary_signature_artifact(args.out, artifact)
+    print(f"Go verifier binary signature artifact: {args.out}")
+    print(f"subject hash: {artifact['subject']['binary']['sha256']}")
+    return 0
 
 
 def cmd_go_verifier_build_attestation(args: argparse.Namespace) -> int:
@@ -21574,14 +21600,14 @@ def build_parser() -> argparse.ArgumentParser:
     verifier_release_verify.add_argument("--key")
     verifier_release_verify.set_defaults(func=cmd_verifier_release_verify)
 
-    def _add_go_verifier_build_sources(parser: argparse.ArgumentParser, include_attestation: bool = False) -> None:
+    def _add_go_verifier_build_sources(parser: argparse.ArgumentParser, include_attestation: bool = False, binary_required: bool = False) -> None:
         if include_attestation:
             parser.add_argument("attestation")
         parser.add_argument("verifier_release")
         parser.add_argument("--conformance-report")
         parser.add_argument("--standards-package")
         parser.add_argument("--root", default=".")
-        parser.add_argument("--binary")
+        parser.add_argument("--binary", required=binary_required)
         parser.add_argument("--key")
 
     def _add_go_verifier_build_fields(parser: argparse.ArgumentParser) -> None:
@@ -21608,6 +21634,14 @@ def build_parser() -> argparse.ArgumentParser:
         parser.add_argument("--attested-at")
         parser.add_argument("--out", default="artifacts/go-verifier-build-attestation.json")
 
+    go_verifier_binary_signature = subparsers.add_parser("go-verifier-binary-signature", help="write a signed Go verifier binary subject artifact for binary-attested builds")
+    _add_go_verifier_build_sources(go_verifier_binary_signature, binary_required=True)
+    go_verifier_binary_signature.add_argument("--build-log-ref", required=True)
+    go_verifier_binary_signature.add_argument("--sbom-ref", required=True)
+    go_verifier_binary_signature.add_argument("--provenance-ref", required=True)
+    go_verifier_binary_signature.add_argument("--generated-at")
+    go_verifier_binary_signature.add_argument("--out", default="artifacts/trustai-verify-linux-amd64.sig")
+    go_verifier_binary_signature.set_defaults(func=cmd_go_verifier_binary_signature)
     go_verifier_build = subparsers.add_parser("go-verifier-build-attestation", help="write a signed Go verifier build/source-plan attestation")
     _add_go_verifier_build_sources(go_verifier_build)
     _add_go_verifier_build_fields(go_verifier_build)

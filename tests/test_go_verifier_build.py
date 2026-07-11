@@ -23,10 +23,13 @@ from trustai.shadow import (
 from trustai.go_verifier_build import (
     GO_VERIFIER_BUILD_ENTRY_TYPE,
     GO_VERIFIER_BUILD_SCHEMA,
+    GO_VERIFIER_BINARY_SIGNATURE_SCHEMA,
     append_go_verifier_build_attestation,
     build_go_verifier_build_attestation,
+    build_go_verifier_binary_signature_artifact,
     verify_go_verifier_build_attestation,
     write_go_verifier_build_attestation,
+    write_go_verifier_binary_signature_artifact,
 )
 from trustai.standards import build_standards_submission, write_standards_markdown, write_standards_submission
 from trustai.verifier_conformance import build_verifier_conformance_report, write_verifier_conformance_report
@@ -94,6 +97,21 @@ class GoVerifierBuildTests(unittest.TestCase):
         values.update(overrides)
         return build_go_verifier_build_attestation(**values)
 
+    def _write_binary_signature(self, release, conformance, standards, binary_path, build_log_path, sbom_path, provenance_path, signature_path):
+        artifact = build_go_verifier_binary_signature_artifact(
+            release,
+            root=ROOT,
+            conformance_report=conformance,
+            standards_package=standards,
+            binary_path=binary_path,
+            build_log_ref=build_log_path,
+            sbom_ref=sbom_path,
+            provenance_ref=provenance_path,
+            generated_at="2026-07-16T00:01:30Z",
+        )
+        write_go_verifier_binary_signature_artifact(signature_path, artifact)
+        return artifact
+
     def test_go_verifier_build_attestation_verifies_and_appends_source_plan(self):
         conformance, standards, release = self._inputs()
         attestation = self._attestation(release, conformance, standards)
@@ -138,7 +156,7 @@ class GoVerifierBuildTests(unittest.TestCase):
             build_log_path.write_text("CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags \"-s -w\"\n", encoding="utf-8")
             sbom_path.write_text(json.dumps({"schema": "trustai.go-verifier-ci-sbom/0.1", "artifact": binary_path.name}, sort_keys=True), encoding="utf-8")
             provenance_path.write_text(json.dumps({"schema": "trustai.go-verifier-ci-provenance/0.1", "artifact": binary_path.name}, sort_keys=True), encoding="utf-8")
-            signature_path.write_text("local-release-signature-fixture\n", encoding="utf-8")
+            signature_artifact = self._write_binary_signature(release, conformance, standards, binary_path, build_log_path, sbom_path, provenance_path, signature_path)
 
             attestation = self._attestation(
                 release,
@@ -185,6 +203,8 @@ class GoVerifierBuildTests(unittest.TestCase):
         self.assertEqual(hashlib.sha256(b"trustai verifier static binary fixture\n").hexdigest(), attestation["binary"]["sha256"])
         self.assertEqual("attested", control_status["go-verifier-binary-hash"])
         self.assertEqual("attested", control_status["go-verifier-supply-chain-provenance"])
+        self.assertTrue(attestation["binary_signature"]["verified"])
+        self.assertEqual(GO_VERIFIER_BINARY_SIGNATURE_SCHEMA, signature_artifact["schema"])
         self.assertEqual(GO_VERIFIER_BUILD_ENTRY_TYPE, entry["entry_type"])
         self.assertEqual("available", entry["payload"]["binary"]["status"])
 
@@ -219,7 +239,7 @@ class GoVerifierBuildTests(unittest.TestCase):
             build_log_path.write_text("build ok\n", encoding="utf-8")
             sbom_path.write_text("sbom\n", encoding="utf-8")
             provenance_path.write_text("provenance\n", encoding="utf-8")
-            signature_path.write_text("signature\n", encoding="utf-8")
+            self._write_binary_signature(release, conformance, standards, binary_path, build_log_path, sbom_path, provenance_path, signature_path)
             attestation = self._attestation(
                 release,
                 conformance,
@@ -262,7 +282,7 @@ class GoVerifierBuildTests(unittest.TestCase):
             build_log_path.write_text("build ok\n", encoding="utf-8")
             sbom_path.write_text("sbom before tamper\n", encoding="utf-8")
             provenance_path.write_text("provenance\n", encoding="utf-8")
-            signature_path.write_text("signature\n", encoding="utf-8")
+            self._write_binary_signature(release, conformance, standards, binary_path, build_log_path, sbom_path, provenance_path, signature_path)
             attestation = self._attestation(
                 release,
                 conformance,
@@ -291,6 +311,49 @@ class GoVerifierBuildTests(unittest.TestCase):
 
         self.assertFalse(result.ok)
         self.assertIn("Go verifier build provenance.sbom_hash does not match local source " + str(sbom_path), result.errors)
+
+    def test_go_verifier_build_rejects_unstructured_binary_signature(self):
+        conformance, standards, release = self._inputs()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            binary_path = tmp / "trustai-verify-linux-amd64"
+            build_log_path = tmp / "build.log"
+            sbom_path = tmp / "sbom.json"
+            provenance_path = tmp / "provenance.json"
+            signature_path = tmp / "signature.sig"
+            binary_path.write_bytes(b"trustai verifier binary\n")
+            build_log_path.write_text("build ok\n", encoding="utf-8")
+            sbom_path.write_text("sbom\n", encoding="utf-8")
+            provenance_path.write_text("provenance\n", encoding="utf-8")
+            signature_path.write_text("unstructured signature\n", encoding="utf-8")
+            attestation = self._attestation(
+                release,
+                conformance,
+                standards,
+                binary_path=binary_path,
+                mode="binary-attested",
+                build_log_ref=str(build_log_path),
+                build_log_hash=_sha256_ref(build_log_path),
+                sbom_ref=str(sbom_path),
+                sbom_hash=_sha256_ref(sbom_path),
+                provenance_ref=str(provenance_path),
+                provenance_hash=_sha256_ref(provenance_path),
+                signature_ref=str(signature_path),
+                signature_hash=_sha256_ref(signature_path),
+            )
+
+            result = verify_go_verifier_build_attestation(
+                attestation,
+                release,
+                root=ROOT,
+                conformance_report=conformance,
+                standards_package=standards,
+                binary_path=binary_path,
+            )
+
+        self.assertFalse(result.ok)
+        self.assertFalse(attestation["binary_signature"]["verified"])
+        self.assertTrue(any("Go verifier binary signature" in error for error in result.errors))
 
     def test_go_verifier_build_rejects_cgo_enabled(self):
         conformance, standards, release = self._inputs()
@@ -401,7 +464,6 @@ class GoVerifierBuildTests(unittest.TestCase):
             build_log_path.write_text("CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath\n", encoding="utf-8")
             sbom_path.write_text("sbom fixture\n", encoding="utf-8")
             provenance_path.write_text("provenance fixture\n", encoding="utf-8")
-            signature_path.write_text("signature fixture\n", encoding="utf-8")
 
             env = {**os.environ, "PYTHONPATH": str(ROOT / "src")}
             source_args = [
@@ -411,6 +473,22 @@ class GoVerifierBuildTests(unittest.TestCase):
                 "--root", str(ROOT),
                 "--binary", str(binary_path),
             ]
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "go-verifier-binary-signature",
+                    *source_args,
+                    "--build-log-ref", str(build_log_path),
+                    "--sbom-ref", str(sbom_path),
+                    "--provenance-ref", str(provenance_path),
+                    "--out", str(signature_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+            )
             build_args = [
                 "--mode", "binary-attested",
                 "--builder-ref", "builder:github-actions/go-verifier",
