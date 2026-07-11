@@ -44,7 +44,7 @@ A dossier contains:
 - `worker_receipt_bindings`: content hashes and worker, scheduler, propagation, provider-log, registry, marketplace, observability, and credential references from each worker receipt.
 - `worker_bundle_bindings`: optional worker review bundle IDs/hashes, embedded source artifact roots, marketplace asset and frontend replay status, settlement replay status, and service/worker linkage.
 - `required_production_authority`: the exact requirement list above.
-- `authority_evidence`: authority evidence records supplied by the producer.
+- `authority_evidence`: authority evidence records supplied by the producer, including derived `source_context` bindings to the service, worker, and worker-bundle bindings.
 - `summary`: covered, missing, fresh, stale, and missing-freshness counts.
 - `controls`: passed, deferred, and failed claim controls.
 - `limitations`: non-production and missing-live-authority disclaimers.
@@ -60,8 +60,9 @@ Each `authority_evidence` record must contain:
 - `evidence_ref`: stable external reference such as a provider export id, hosted service audit uri, identity-provider event stream, object-lock root, or customer-owned ledger pointer.
 - `evidence_hash`: hash or immutable root for the external evidence.
 - `description`: human-readable evidence description.
+- `source_context`: derived binding to service attestation id/hash, hosted service refs/endpoints, registry/marketplace refs, security policies, audit roots, worker operation ids/hashes/run refs, scheduler/queue/propagation refs, request/response hashes, provider invoice/payout/tax hashes, worker audit roots, and worker bundle roots recorded in the dossier bindings.
 
-Optional metadata fields are `issuer`, `subject`, `source_uri`, `issued_at`, and `expires_at`. Freshness checks use `issued_at` and `expires_at`. Evidence without both timestamps is accepted for non-strict verification but counted as missing freshness.
+Optional metadata fields are `issuer`, `subject`, `source_uri`, `issued_at`, and `expires_at`. The derived `source_context` is computed by the builder and must not be supplied as a CLI field. Freshness checks use `issued_at` and `expires_at`. Evidence without both timestamps is accepted for non-strict verification but counted as missing freshness.
 
 CLI evidence strings use:
 
@@ -81,11 +82,12 @@ A verifier must:
 6. Compare the dossier service, worker, and worker-bundle binding content hashes to the supplied source documents.
 7. Require every recorded service, worker, and worker-bundle binding field emitted by the v0.1 builder, even when source artifacts are omitted. Omitted sources may produce replay warnings, but they must not permit partial binding summaries.
 8. Require the `required_production_authority` checklist to match this specification exactly.
-9. Reject evidence with unknown requirement ids or disallowed authority kinds.
+9. Reject evidence with unknown requirement ids, disallowed authority kinds, invalid evidence ids, or `source_context` that does not match the service, worker, and worker-bundle bindings.
 10. Reject malformed evidence references, hashes, and timestamp windows.
-11. Count missing, stale, and fresh evidence. With `--require-complete`, every requirement id must be covered. With `--require-fresh`, every covered evidence item must include a valid current freshness window.
-12. Reject `production-dossier` mode unless all requirements are covered with fresh evidence.
-13. Reject raw secrets in the dossier. Secret-bearing fields must be redacted references such as `env:`, `vault:`, `kms:`, or content hashes.
+11. Recompute summary and controls from the signed bindings and authority evidence, then reject mismatches.
+12. Count missing, stale, and fresh evidence. With `--require-complete`, every requirement id must be covered. With `--require-fresh`, every covered evidence item must include a valid current freshness window.
+13. Reject `production-dossier` mode unless all requirements are covered with fresh evidence.
+14. Reject raw secrets in the dossier. Secret-bearing fields must be redacted references such as `env:`, `vault:`, `kms:`, or content hashes.
 
 ## CLI Examples
 

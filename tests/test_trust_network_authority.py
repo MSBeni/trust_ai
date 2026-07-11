@@ -147,6 +147,12 @@ class TrustNetworkAuthorityTests(unittest.TestCase):
         values.update(overrides)
         return build_trust_network_authority_dossier(**values)
 
+    def _resign_dossier(self, dossier: dict) -> None:
+        body = without_keys(dossier, "dossier_id", "signatures")
+        dossier_id = content_hash(body)
+        dossier["dossier_id"] = dossier_id
+        dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "trust_network_authority": body})]
+
     def test_trust_network_authority_verifies_and_appends(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             sources = self._sources(Path(tmp_dir))
@@ -177,6 +183,7 @@ class TrustNetworkAuthorityTests(unittest.TestCase):
             self.assertEqual(entry["payload"]["control_summary"], {"deferred": 1, "passed": 6})
             self.assertEqual(entry["payload"]["service_attestation_binding"]["attestation_id"], sources["service"]["attestation_id"])
             self.assertEqual(entry["payload"]["worker_receipt_bindings"][0]["worker_operation_id"], sources["worker"]["worker_operation_id"])
+            self.assertEqual(entry["payload"]["authority_evidence"][0]["source_context"], dossier["authority_evidence"][0]["source_context"])
             self.assertEqual(entry["payload"]["worker_bundle_bindings"][0]["bundle_id"], sources["worker_bundle"]["bundle_id"])
             self.assertTrue(entry["payload"]["worker_bundle_bindings"][0]["frontend_bundle_replayed"])
 
@@ -238,6 +245,49 @@ class TrustNetworkAuthorityTests(unittest.TestCase):
                     self.assertFalse(result.ok)
                     self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
 
+    def test_trust_network_authority_rejects_resigned_authority_source_context_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            sources = self._sources(Path(tmp_dir))
+            dossier = self._dossier(sources)
+            tampered = copy.deepcopy(dossier)
+            item = tampered["authority_evidence"][0]
+            item["source_context"]["service_ref"] = "trust-network:other/service"
+            item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+            self._resign_dossier(tampered)
+
+            result = verify_trust_network_authority_dossier(
+                tampered,
+                service_attestation=sources["service"],
+                worker_receipts=[sources["worker"]],
+                **self._source_kwargs(sources),
+            )
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("dossier_id does not match canonical trust-network authority body", result.errors)
+            self.assertNotIn("trust-network authority signature verification failed", result.errors)
+            self.assertNotIn("trust-network authority evidence_id does not match evidence body: hosted-registry-marketplace-worker-fleet", result.errors)
+            self.assertIn("trust-network authority source_context does not match source bindings: hosted-registry-marketplace-worker-fleet", result.errors)
+
+    def test_trust_network_authority_rejects_resigned_control_tamper(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            sources = self._sources(Path(tmp_dir))
+            dossier = self._dossier(sources)
+            tampered = copy.deepcopy(dossier)
+            tampered["controls"][0]["status"] = "deferred"
+            self._resign_dossier(tampered)
+
+            result = verify_trust_network_authority_dossier(
+                tampered,
+                service_attestation=sources["service"],
+                worker_receipts=[sources["worker"]],
+                **self._source_kwargs(sources),
+            )
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("dossier_id does not match canonical trust-network authority body", result.errors)
+            self.assertNotIn("trust-network authority signature verification failed", result.errors)
+            self.assertIn("trust-network authority controls do not match dossier body", result.errors)
+
     def test_trust_network_authority_strict_freshness_rejects_missing_window(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             sources = self._sources(Path(tmp_dir))
@@ -267,6 +317,7 @@ class TrustNetworkAuthorityTests(unittest.TestCase):
             )
             self.assertFalse(result.ok)
             self.assertTrue(any("production-dossier mode requires every trust-network authority requirement" in error for error in result.errors))
+
     def test_trust_network_authority_production_mode_requires_fresh_evidence(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             sources = self._sources(Path(tmp_dir))
