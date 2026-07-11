@@ -79,12 +79,13 @@ A verifier must:
 4. Re-verify every bound trust-network worker receipt against the same service and source receipts plus author-governance and settlement receipts when supplied.
 5. Verify each supplied worker review bundle and reject bundles that do not reference the supplied service attestation and worker receipt hashes.
 6. Compare the dossier service, worker, and worker-bundle binding content hashes to the supplied source documents.
-7. Require the `required_production_authority` checklist to match this specification exactly.
-8. Reject evidence with unknown requirement ids or disallowed authority kinds.
-9. Reject malformed evidence references, hashes, and timestamp windows.
-10. Count missing, stale, and fresh evidence. With `--require-complete`, every requirement id must be covered. With `--require-fresh`, every covered evidence item must include a valid current freshness window.
-11. Reject `production-dossier` mode unless all requirements are covered with fresh evidence.
-12. Reject raw secrets in the dossier. Secret-bearing fields must be redacted references such as `env:`, `vault:`, `kms:`, or content hashes.
+7. Require every recorded service, worker, and worker-bundle binding field emitted by the v0.1 builder, even when source artifacts are omitted. Omitted sources may produce replay warnings, but they must not permit partial binding summaries.
+8. Require the `required_production_authority` checklist to match this specification exactly.
+9. Reject evidence with unknown requirement ids or disallowed authority kinds.
+10. Reject malformed evidence references, hashes, and timestamp windows.
+11. Count missing, stale, and fresh evidence. With `--require-complete`, every requirement id must be covered. With `--require-fresh`, every covered evidence item must include a valid current freshness window.
+12. Reject `production-dossier` mode unless all requirements are covered with fresh evidence.
+13. Reject raw secrets in the dossier. Secret-bearing fields must be redacted references such as `env:`, `vault:`, `kms:`, or content hashes.
 
 ## CLI Examples
 

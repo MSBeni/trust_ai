@@ -33,6 +33,170 @@ PRODUCTION_AUTHORITY_REQUIREMENTS = [
 ]
 PRODUCTION_AUTHORITY_REQUIREMENT_IDS = [item["id"] for item in PRODUCTION_AUTHORITY_REQUIREMENTS]
 
+SERVICE_ATTESTATION_BINDING_REQUIRED_FIELDS = (
+    "attestation_id",
+    "attestation_hash",
+    "attestation_schema",
+    "attestation_mode",
+    "environment",
+    "attested_at",
+    "source_count",
+    "source_hash",
+    "source_schemas",
+    "required_source_types",
+    "service_ref",
+    "service_kind",
+    "service_version",
+    "registry_endpoint",
+    "marketplace_endpoint",
+    "service_image_digest",
+    "service_binary_hash",
+    "frontend_bundle_ref",
+    "frontend_bundle_hash",
+    "api_ref",
+    "registry_store_ref",
+    "search_index_ref",
+    "entitlement_store_ref",
+    "subscription_queue_ref",
+    "replicas_min",
+    "replicas_max",
+    "availability_zones",
+    "registration_id",
+    "registration_ref",
+    "registration_status",
+    "effective_status",
+    "vendor_name",
+    "buyer",
+    "identity_provider",
+    "identity_id",
+    "procurement_contract_ref",
+    "catalog_id",
+    "distribution_id",
+    "target",
+    "subscriber",
+    "auth_provider_ref",
+    "identity_federation_policy_ref",
+    "procurement_sync_policy_ref",
+    "entitlement_policy_ref",
+    "revocation_policy_ref",
+    "cache_invalidation_policy_ref",
+    "request_signing_ref",
+    "network_policy_ref",
+    "encryption_key_ref",
+    "registry_audit_log_root",
+    "marketplace_audit_log_root",
+    "access_log_root",
+    "publication_log_root",
+    "metrics_ref",
+    "alert_policy_ref",
+    "retention_until",
+    "actor_ref",
+    "credential_ref",
+    "marketplace_credential_ref",
+    "evidence_refs",
+)
+
+WORKER_RECEIPT_BINDING_REQUIRED_FIELDS = (
+    "worker_operation_id",
+    "worker_operation_hash",
+    "receipt_schema",
+    "receipt_mode",
+    "environment",
+    "recorded_at",
+    "source_count",
+    "source_hash",
+    "source_schemas",
+    "required_source_types",
+    "service_attestation_id",
+    "service_attestation_hash",
+    "service_ref",
+    "service_kind",
+    "service_version",
+    "registry_endpoint",
+    "marketplace_endpoint",
+    "worker_ref",
+    "run_ref",
+    "operation_kind",
+    "actor_ref",
+    "started_at",
+    "completed_at",
+    "schedule_ref",
+    "lease_ref",
+    "checkpoint_ref",
+    "checkpoint_hash",
+    "previous_cursor_ref",
+    "next_cursor_ref",
+    "queue_ref",
+    "queue_message_ref",
+    "destination_ref",
+    "publication_log_ref",
+    "publication_log_root",
+    "cache_invalidation_ref",
+    "external_callback_ref",
+    "request_hash",
+    "response_status",
+    "response_hash",
+    "provider_invoice_log_ref",
+    "provider_invoice_log_hash",
+    "provider_payout_log_ref",
+    "provider_payout_log_hash",
+    "provider_tax_custody_ref",
+    "provider_tax_document_hash",
+    "registration_id",
+    "registration_status",
+    "effective_status",
+    "catalog_id",
+    "distribution_id",
+    "governance_id",
+    "settlement_id",
+    "entitlement_decision",
+    "invoice_ref",
+    "payout_ref",
+    "metrics_ref",
+    "audit_log_ref",
+    "audit_log_root",
+    "credential_ref",
+    "evidence_refs",
+)
+
+WORKER_BUNDLE_BINDING_REQUIRED_FIELDS = (
+    "bundle_id",
+    "bundle_hash",
+    "bundle_schema",
+    "bundle_mode",
+    "environment",
+    "generated_at",
+    "reviewer_ref",
+    "bundle_ref",
+    "worker_operation_id",
+    "worker_receipt_hash",
+    "service_attestation_id",
+    "service_attestation_hash",
+    "service_ref",
+    "registration_id",
+    "registration_hash",
+    "registration_ref",
+    "registration_status",
+    "run_ref",
+    "operation_kind",
+    "destination_ref",
+    "response_status",
+    "publication_log_root",
+    "catalog_id",
+    "catalog_hash",
+    "distribution_id",
+    "distribution_hash",
+    "settlement_id",
+    "settlement_hash",
+    "source_artifact_count",
+    "source_artifact_sha256_root",
+    "source_artifact_content_root",
+    "proof_pack_count",
+    "marketplace_asset_count",
+    "frontend_bundle_replayed",
+    "marketplace_settlement_replayed",
+    "worker_control_summary",
+)
 
 @dataclass
 class TrustNetworkAuthorityVerification:
@@ -583,6 +747,12 @@ def _verify_service_attestation_binding(binding: Any, service_attestation: dict[
     if not isinstance(binding, dict):
         errors.append("trust-network authority service_attestation_binding must be an object")
         return
+    _verify_binding_required_fields(
+        binding,
+        SERVICE_ATTESTATION_BINDING_REQUIRED_FIELDS,
+        "trust-network authority service_attestation_binding",
+        errors,
+    )
     if service_attestation is None:
         warnings.append("trust-network authority service attestation artifact was not supplied; service hash was not replayed")
         return
@@ -670,9 +840,12 @@ def _verify_worker_bundle_bindings(bindings: Any, worker_bundles: list[dict[str,
         if not isinstance(binding, dict):
             errors.append("trust-network authority worker_bundle_binding must be an object")
             continue
-        for field in ("bundle_id", "bundle_hash", "bundle_schema", "bundle_mode", "environment", "generated_at", "reviewer_ref", "bundle_ref", "worker_operation_id", "worker_receipt_hash", "service_attestation_id", "service_attestation_hash", "registration_id", "registration_hash", "source_artifact_count", "source_artifact_sha256_root", "source_artifact_content_root"):
-            if binding.get(field) in (None, "", []):
-                errors.append(f"trust-network authority worker_bundle_binding.{field} is required")
+        _verify_binding_required_fields(
+            binding,
+            WORKER_BUNDLE_BINDING_REQUIRED_FIELDS,
+            "trust-network authority worker_bundle_binding",
+            errors,
+        )
     errors.extend(_worker_bundle_link_errors(bindings, service_binding, worker_bindings))
     if not worker_bundles:
         if bindings:
@@ -691,6 +864,16 @@ def _verify_worker_receipt_bindings(bindings: Any, worker_receipts: list[dict[st
     if not isinstance(bindings, list) or not bindings:
         errors.append("trust-network authority worker_receipt_bindings must be a non-empty list")
         return
+    for binding in bindings:
+        if not isinstance(binding, dict):
+            errors.append("trust-network authority worker receipt binding must be an object")
+            continue
+        _verify_binding_required_fields(
+            binding,
+            WORKER_RECEIPT_BINDING_REQUIRED_FIELDS,
+            "trust-network authority worker_receipt_binding",
+            errors,
+        )
     receipts = list(worker_receipts or [])
     if not receipts:
         warnings.append("trust-network authority worker receipt artifacts were not supplied; worker hashes were not replayed")
@@ -714,6 +897,11 @@ def _verify_worker_receipt_bindings(bindings: Any, worker_receipts: list[dict[st
         if not result.ok:
             errors.extend(f"trust-network authority worker source: {error}" for error in result.errors)
         warnings.extend(f"trust-network authority worker source: {warning}" for warning in result.warnings)
+
+def _verify_binding_required_fields(binding: dict[str, Any], fields: tuple[str, ...], label: str, errors: list[str]) -> None:
+    for field in fields:
+        if binding.get(field) in (None, "", []):
+            errors.append(f"{label}.{field} is required")
 
 def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(item, dict):

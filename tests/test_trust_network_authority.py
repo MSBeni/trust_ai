@@ -7,7 +7,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.trust_network_authority import (
     PRODUCTION_AUTHORITY_REQUIREMENT_IDS,
     PRODUCTION_AUTHORITY_REQUIREMENTS,
@@ -209,6 +211,32 @@ class TrustNetworkAuthorityTests(unittest.TestCase):
             )
             self.assertFalse(result.ok)
             self.assertTrue(any("worker_bundle_bindings" in error or "worker bundle source" in error for error in result.errors), result.errors)
+
+    def test_trust_network_authority_requires_complete_bindings_without_sources(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            sources = self._sources(Path(tmp_dir))
+            dossier = self._dossier(sources)
+            cases = [
+                (["service_attestation_binding"], "frontend_bundle_hash", "service_attestation_binding.frontend_bundle_hash is required"),
+                (["worker_receipt_bindings", 0], "provider_tax_document_hash", "worker_receipt_binding.provider_tax_document_hash is required"),
+                (["worker_bundle_bindings", 0], "frontend_bundle_replayed", "worker_bundle_binding.frontend_bundle_replayed is required"),
+            ]
+            for path, field, expected_error in cases:
+                with self.subTest(field=field):
+                    tampered = copy.deepcopy(dossier)
+                    target = tampered
+                    for part in path:
+                        target = target[part]
+                    target.pop(field)
+                    body = without_keys(tampered, "dossier_id", "signatures")
+                    dossier_id = content_hash(body)
+                    tampered["dossier_id"] = dossier_id
+                    tampered["signatures"] = [sign_value({"dossier_id": dossier_id, "trust_network_authority": body})]
+
+                    result = verify_trust_network_authority_dossier(tampered)
+
+                    self.assertFalse(result.ok)
+                    self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
 
     def test_trust_network_authority_strict_freshness_rejects_missing_window(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
