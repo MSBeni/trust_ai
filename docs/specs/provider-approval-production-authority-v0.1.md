@@ -1,4 +1,4 @@
-﻿# Provider Approval Production Authority Dossier v0.1
+# Provider Approval Production Authority Dossier v0.1
 
 ## Purpose
 
@@ -46,7 +46,7 @@ A verifier MUST reject a dossier when:
 - The approval callback does not verify against the supplied approval request.
 - A supplied provider webhook receipt fails signature, id, or shape verification.
 - A supplied provider delivery or operations authority dossier fails verification.
-- `source_binding` does not match supplied source artifacts.
+- `source_binding` is missing required nested IDs, hashes, replay metadata, webhook verification fields, or authority dossier summary fields, or it does not match supplied source artifacts.
 - `required_production_authority`, `summary`, or `controls` do not match the v0.1 rules.
 - Any authority evidence item has an unknown requirement, invalid authority kind, invalid hash/ref, bad freshness window, or mismatched `evidence_id`.
 - `production-dossier` mode is used without a callback, at least one provider webhook receipt, provider delivery authority, provider operations authority, and complete fresh evidence for every required category.

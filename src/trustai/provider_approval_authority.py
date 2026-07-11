@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 from dataclasses import dataclass
@@ -411,6 +411,7 @@ def _verify_source_binding(
         errors.append("provider approval authority source_binding.approval_callback is required")
     if not isinstance(binding.get("webhook_receipts"), list):
         errors.append("provider approval authority source_binding.webhook_receipts must be a list")
+    _verify_binding_completeness(binding, errors)
     if approval_request is None or approval_callback is None:
         warnings.append("provider approval authority approval source not supplied; approval binding hashes were not replayed")
         return
@@ -437,9 +438,82 @@ def _verify_source_binding(
         errors.append("provider approval authority source_binding does not match supplied source artifacts")
 
 
+def _verify_binding_completeness(binding: dict[str, Any], errors: list[str]) -> None:
+    request = binding.get("approval_request") if isinstance(binding.get("approval_request"), dict) else {}
+    callback = binding.get("approval_callback") if isinstance(binding.get("approval_callback"), dict) else {}
+    for field in (
+        "approval_request_id",
+        "approval_request_hash",
+        "provider",
+        "pack_id",
+        "contract_id",
+        "contract_hash",
+        "channel",
+        "requested_roles",
+        "callback_url_hash",
+        "body_hash",
+    ):
+        if request.get(field) in (None, "", []):
+            errors.append(f"provider approval authority source_binding.approval_request.{field} is required")
+    for field in (
+        "callback_id",
+        "callback_hash",
+        "provider",
+        "approval_request_id",
+        "request_payload_hash",
+        "pack_id",
+        "contract_id",
+        "contract_hash",
+        "role",
+        "action_id",
+        "action_value_hash",
+        "approver_hash",
+        "external_user_id_hash",
+        "team_id",
+        "approved_at",
+    ):
+        if callback.get(field) in (None, "", []):
+            errors.append(f"provider approval authority source_binding.approval_callback.{field} is required")
+    webhooks = binding.get("webhook_receipts")
+    if isinstance(webhooks, list):
+        for index, webhook in enumerate(webhooks):
+            if not isinstance(webhook, dict):
+                errors.append(f"provider approval authority source_binding.webhook_receipts[{index}] must be an object")
+                continue
+            for field in (
+                "receipt_id",
+                "receipt_hash",
+                "provider",
+                "received_at",
+                "event",
+                "delivery_id",
+                "payload_sha256",
+                "payload_size_bytes",
+                "provider_signature_verified",
+                "verification_method",
+                "verification_header",
+                "verification_value_hash",
+            ):
+                if webhook.get(field) in (None, "", []):
+                    errors.append(f"provider approval authority source_binding.webhook_receipts[{index}].{field} is required")
+    for key in ("provider_delivery_authority", "provider_operations_authority"):
+        authority = binding.get(key)
+        if authority is None:
+            continue
+        if not isinstance(authority, dict):
+            errors.append(f"provider approval authority source_binding.{key} must be an object")
+            continue
+        for field in ("source_type", "dossier_id", "dossier_hash", "schema", "mode", "environment", "generated_at", "summary", "authority_ref"):
+            if authority.get(field) in (None, "", []):
+                errors.append(f"provider approval authority source_binding.{key}.{field} is required")
+
+
 def _source_binding_complete(binding: dict[str, Any]) -> bool:
+    errors: list[str] = []
+    _verify_binding_completeness(binding, errors)
     return bool(
-        isinstance(binding.get("approval_request"), dict)
+        not errors
+        and isinstance(binding.get("approval_request"), dict)
         and isinstance(binding.get("approval_callback"), dict)
         and binding.get("webhook_receipts")
         and isinstance(binding.get("provider_delivery_authority"), dict)

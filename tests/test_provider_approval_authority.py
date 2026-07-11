@@ -1,4 +1,4 @@
-﻿import copy
+import copy
 import hashlib
 import hmac
 import json
@@ -10,9 +10,11 @@ import unittest
 from pathlib import Path
 
 from trustai.approval_callback import build_approval_callback
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
 from trustai.cicd import build_slack_approval_request
 from trustai.contracts import load_contract, register_contract
+from trustai.crypto import sign_value
 from trustai.gate import append_eval_and_gate
 from trustai.proofpack import compile_proof_pack
 from trustai.provider_approval_authority import (
@@ -189,6 +191,25 @@ class ProviderApprovalAuthorityTests(unittest.TestCase):
 
             self.assertFalse(result.ok)
             self.assertTrue(any("source_binding does not match" in error or "callback source" in error for error in result.errors), result.errors)
+
+    def test_provider_approval_authority_requires_complete_source_binding_without_sources(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            request, callback = self._approval_sources(tmp)
+            webhook = self._webhook_receipt()
+            delivery_authority, operations_authority = self._authority_sources()
+            dossier = self._dossier(request, callback, webhook, delivery_authority, operations_authority)
+            tampered = copy.deepcopy(dossier)
+            tampered["source_binding"]["approval_callback"].pop("callback_hash")
+            body = without_keys(tampered, "dossier_id", "signatures")
+            dossier_id = content_hash(body)
+            tampered["dossier_id"] = dossier_id
+            tampered["signatures"] = [sign_value({"dossier_id": dossier_id, "provider_approval_authority": body})]
+
+            result = verify_provider_approval_authority_dossier(tampered)
+
+            self.assertFalse(result.ok)
+            self.assertTrue(any("approval_callback.callback_hash is required" in error for error in result.errors), result.errors)
 
     def test_provider_approval_authority_requires_freshness_when_strict(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
