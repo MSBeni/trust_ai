@@ -101,6 +101,9 @@ Verifiers must:
 - replay the deployment manifest when supplied
 - replay the BYOC operator attestation when supplied
 - compare source bindings to supplied deployment/operator artifacts
+- reject incomplete source bindings even when raw source artifacts are omitted,
+  including missing nested deployment, operator, source artifact, Object Lock,
+  WORM receipt, legal hold, tenancy, network, backup, and audit-log fields
 - recompute the authority evidence summary
 - recompute the authority artifact summary
 - replay retained authority artifact files when present and compare their hashes
@@ -112,7 +115,9 @@ Verifiers must:
 - reject malformed authority evidence and unsupported authority kinds
 - reject raw secret-like values that are not references or hashes
 - reject `production-dossier` mode unless all production authority requirements
-  are covered and all evidence items are fresh
+  are covered, all evidence items are fresh, and deployment, BYOC operator,
+  Object Lock, legal hold, customer account, keyring, backup, network, and
+  audit-log bindings are complete
 
 Strict verification may additionally require complete checklist coverage and
 fresh evidence windows.

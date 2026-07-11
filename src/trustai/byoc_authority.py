@@ -497,9 +497,7 @@ def _verify_source_binding(
     if not isinstance(binding, dict):
         errors.append("BYOC authority source_binding is required")
         return
-    for field in ("deployment_manifest", "byoc_operator", "object_lock", "tenancy", "network", "backup", "audit_log"):
-        if not isinstance(binding.get(field), dict):
-            errors.append(f"BYOC authority source_binding.{field} is required")
+    _verify_binding_completeness(binding, errors)
     if deployment_manifest is None:
         warnings.append("BYOC authority deployment manifest source was not supplied; manifest binding hashes were not replayed")
         return
@@ -525,7 +523,98 @@ def _verify_source_binding(
         errors.append("BYOC authority source_binding does not match supplied source artifacts")
 
 
+def _verify_binding_completeness(binding: dict[str, Any], errors: list[str]) -> None:
+    deployment = _binding_section(binding, "deployment_manifest", errors)
+    for field in ("manifest_id", "manifest_hash", "schema", "name", "mode", "environment", "artifact_type"):
+        _require_binding_field(deployment, f"source_binding.deployment_manifest.{field}", errors)
+    _require_positive_binding_count(deployment, "source_binding.deployment_manifest.source_file_count", errors)
+
+    operator = _binding_section(binding, "byoc_operator", errors)
+    for field in ("attestation_id", "attestation_hash", "schema", "mode", "environment", "attested_at", "operator_ref", "version", "image_digest", "namespace"):
+        _require_binding_field(operator, f"source_binding.byoc_operator.{field}", errors)
+    _require_binding_field(operator, "source_binding.byoc_operator.control_summary", errors)
+    _verify_source_artifact_bindings(operator.get("source_artifacts"), "source_binding.byoc_operator.source_artifacts", errors)
+
+    object_lock = _binding_section(binding, "object_lock", errors)
+    for field in ("provider", "mode", "bucket_ref", "region", "object_lock_enabled", "versioning_enabled", "retention_mode", "retention_until", "legal_hold_required"):
+        _require_binding_field(object_lock, f"source_binding.object_lock.{field}", errors)
+    receipt = object_lock.get("worm_receipt")
+    if not isinstance(receipt, dict):
+        errors.append("BYOC authority source_binding.object_lock.worm_receipt is required")
+        receipt = {}
+    for field in ("receipt_id", "receipt_hash", "content_hash", "artifact_type", "object_path", "retention_until"):
+        _require_binding_field(receipt, f"source_binding.object_lock.worm_receipt.{field}", errors)
+    _require_positive_binding_count(receipt, "source_binding.object_lock.worm_receipt.size_bytes", errors)
+    legal_hold = object_lock.get("legal_hold")
+    if not isinstance(legal_hold, dict):
+        errors.append("BYOC authority source_binding.object_lock.legal_hold is required")
+        legal_hold = {}
+    for field in ("legal_hold_id", "legal_hold_hash", "case_id", "status", "applied_at"):
+        _require_binding_field(legal_hold, f"source_binding.object_lock.legal_hold.{field}", errors)
+
+    tenancy = _binding_section(binding, "tenancy", errors)
+    for field in ("tenant_id", "customer_account_ref", "data_plane_ref", "control_plane_ref", "keyring_ref"):
+        _require_binding_field(tenancy, f"source_binding.tenancy.{field}", errors)
+
+    network = _binding_section(binding, "network", errors)
+    for field in ("ingress_mode", "egress_policy_ref", "private_endpoint", "allowed_egress_refs", "airgap_bundle_ref", "airgap_bundle_hash"):
+        _require_binding_field(network, f"source_binding.network.{field}", errors)
+
+    backup = _binding_section(binding, "backup", errors)
+    for field in ("backup_policy_ref", "schedule", "restore_test_ref", "restore_test_at"):
+        _require_binding_field(backup, f"source_binding.backup.{field}", errors)
+    for field in ("rpo_minutes", "rto_minutes"):
+        _require_nonnegative_binding_count(backup, f"source_binding.backup.{field}", errors)
+
+    audit_log = _binding_section(binding, "audit_log", errors)
+    for field in ("audit_log_ref", "root", "retention_until"):
+        _require_binding_field(audit_log, f"source_binding.audit_log.{field}", errors)
+
+
+def _binding_section(binding: dict[str, Any], section: str, errors: list[str]) -> dict[str, Any]:
+    value = binding.get(section)
+    if not isinstance(value, dict):
+        errors.append(f"BYOC authority source_binding.{section} is required")
+        return {}
+    return value
+
+
+def _verify_source_artifact_bindings(value: Any, path: str, errors: list[str]) -> None:
+    if not isinstance(value, list) or not value:
+        errors.append(f"BYOC authority {path} is required")
+        return
+    for index, artifact in enumerate(value):
+        if not isinstance(artifact, dict):
+            errors.append(f"BYOC authority {path}[{index}] must be an object")
+            continue
+        for field in ("type", "id", "schema", "hash"):
+            _require_binding_field(artifact, f"{path}[{index}].{field}", errors)
+
+
+def _require_binding_field(container: dict[str, Any], path: str, errors: list[str]) -> None:
+    field = path.rsplit(".", 1)[-1]
+    value = container.get(field)
+    if value is None or value == "" or value == [] or value == {}:
+        errors.append(f"BYOC authority {path} is required")
+
+
+def _require_positive_binding_count(container: dict[str, Any], path: str, errors: list[str]) -> None:
+    field = path.rsplit(".", 1)[-1]
+    value = container.get(field)
+    if not isinstance(value, int) or value <= 0:
+        errors.append(f"BYOC authority {path} is required")
+
+
+def _require_nonnegative_binding_count(container: dict[str, Any], path: str, errors: list[str]) -> None:
+    field = path.rsplit(".", 1)[-1]
+    value = container.get(field)
+    if not isinstance(value, int) or value < 0:
+        errors.append(f"BYOC authority {path} is required")
+
+
 def _source_binding_complete(binding: dict[str, Any]) -> bool:
+    errors: list[str] = []
+    _verify_binding_completeness(binding, errors)
     deployment = binding.get("deployment_manifest") if isinstance(binding.get("deployment_manifest"), dict) else {}
     operator = binding.get("byoc_operator") if isinstance(binding.get("byoc_operator"), dict) else {}
     object_lock = binding.get("object_lock") if isinstance(binding.get("object_lock"), dict) else {}
@@ -536,7 +625,8 @@ def _source_binding_complete(binding: dict[str, Any]) -> bool:
     receipt = object_lock.get("worm_receipt") if isinstance(object_lock.get("worm_receipt"), dict) else {}
     legal_hold = object_lock.get("legal_hold") if isinstance(object_lock.get("legal_hold"), dict) else {}
     return bool(
-        deployment.get("manifest_id")
+        not errors
+        and deployment.get("manifest_id")
         and operator.get("attestation_id")
         and operator.get("mode") == "byoc-operator-attested"
         and object_lock.get("object_lock_enabled") is True

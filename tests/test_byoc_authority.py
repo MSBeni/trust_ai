@@ -8,6 +8,8 @@ import unittest
 from hashlib import sha256
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
+from trustai.crypto import sign_value
 from trustai.byoc_authority import (
     BYOC_AUTHORITY_ENTRY_TYPE,
     BYOC_AUTHORITY_SCHEMA,
@@ -266,6 +268,22 @@ class BYOCAuthorityTests(unittest.TestCase):
             self.assertFalse(result.ok)
             self.assertTrue(any("source_binding does not match" in error for error in result.errors))
             self.assertTrue(any("operator source" in error for error in result.errors))
+
+    def test_byoc_authority_requires_complete_source_binding_without_sources(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            dossier, *_ = self._dossier(tmp)
+            tampered = copy.deepcopy(dossier)
+            tampered["source_binding"]["object_lock"]["legal_hold"].pop("legal_hold_hash")
+            body = without_keys(tampered, "dossier_id", "signatures")
+            dossier_id = content_hash(body)
+            tampered["dossier_id"] = dossier_id
+            tampered["signatures"] = [sign_value({"dossier_id": dossier_id, "byoc_authority": body})]
+
+            result = verify_byoc_authority_dossier(tampered, root=ROOT)
+
+            self.assertFalse(result.ok)
+            self.assertTrue(any("object_lock.legal_hold.legal_hold_hash is required" in error for error in result.errors), result.errors)
 
     def test_byoc_authority_requires_freshness_when_strict(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
