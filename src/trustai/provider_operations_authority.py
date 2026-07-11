@@ -184,7 +184,9 @@ def build_provider_operations_authority_dossier(
     if not source_result.ok:
         raise ValueError("invalid provider operations service source: " + "; ".join(source_result.errors))
 
-    evidence_items = [_build_authority_evidence_item(item) for item in (authority_evidence or [])]
+    service_binding = _service_attestation_binding(service_attestation)
+    source_context = _authority_evidence_source_context(service_binding)
+    evidence_items = [_build_authority_evidence_item(item, source_context) for item in (authority_evidence or [])]
     summary = _summary(evidence_items)
     body: dict[str, Any] = {
         "schema": PROVIDER_OPERATIONS_AUTHORITY_SCHEMA,
@@ -194,11 +196,11 @@ def build_provider_operations_authority_dossier(
         "dossier_ref": dossier_ref,
         "authority_ref": authority_ref,
         "producer_ref": producer_ref,
-        "service_attestation_binding": _service_attestation_binding(service_attestation),
+        "service_attestation_binding": service_binding,
         "required_production_authority": PRODUCTION_AUTHORITY_REQUIREMENTS,
         "authority_evidence": evidence_items,
         "summary": summary,
-        "controls": _controls(mode, service_attestation, evidence_items, summary),
+        "controls": _controls(mode, service_binding, evidence_items, summary),
         "limitations": [
             "This dossier binds a verified provider operations service attestation to an explicit production-authority evidence checklist.",
             "It records authority references, hashes, freshness windows, and missing live-evidence categories for provider-hosted callbacks and external provider operations.",
@@ -291,6 +293,9 @@ def verify_provider_operations_authority_dossier(
     if not isinstance(evidence, list):
         errors.append("provider operations authority authority_evidence must be a list")
         evidence = []
+    evidence_source_context = _authority_evidence_source_context(
+        dossier.get("service_attestation_binding") if isinstance(dossier.get("service_attestation_binding"), dict) else {}
+    )
     freshness_counts = {"fresh": 0, "stale": 0, "missing": 0}
     for item in evidence:
         if not isinstance(item, dict):
@@ -303,10 +308,12 @@ def verify_provider_operations_authority_dossier(
             warnings,
             now=freshness_now,
             require_fresh=require_fresh,
+            source_context=evidence_source_context,
         )
         freshness_counts[freshness_status] += 1
 
-    expected_summary = _summary([item for item in evidence if isinstance(item, dict)])
+    evidence_dicts = [item for item in evidence if isinstance(item, dict)]
+    expected_summary = _summary(evidence_dicts)
     if dossier.get("summary") != expected_summary:
         errors.append("provider operations authority summary does not match authority evidence")
     missing = expected_summary["missing_requirement_ids"]
@@ -316,8 +323,11 @@ def verify_provider_operations_authority_dossier(
         errors.append("provider operations authority dossier is incomplete")
     if mode == "production-dossier" and missing:
         errors.append("production-dossier mode requires every provider operations authority requirement to be covered")
+    binding_for_controls = dossier.get("service_attestation_binding") if isinstance(dossier.get("service_attestation_binding"), dict) else {}
     if not isinstance(dossier.get("controls"), list) or not dossier.get("controls"):
         errors.append("provider operations authority controls are required")
+    elif dossier.get("controls") != _controls(str(mode), binding_for_controls, evidence_dicts, expected_summary):
+        errors.append("provider operations authority controls do not match dossier body")
     _check_no_secret_values(dossier, errors)
     return ProviderOperationsAuthorityVerification(
         ok=not errors,
@@ -374,6 +384,7 @@ def append_provider_operations_authority_dossier(
                 "evidence_id": item.get("evidence_id"),
                 "issued_at": item.get("issued_at"),
                 "expires_at": item.get("expires_at"),
+                "source_context": item.get("source_context"),
             }
             for item in dossier.get("authority_evidence", [])
             if isinstance(item, dict)
@@ -505,7 +516,7 @@ def _verify_service_attestation_binding(
     warnings.extend(f"provider operations authority service source: {warning}" for warning in result.warnings)
 
 
-def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
+def _build_authority_evidence_item(item: dict[str, Any], source_context: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(item, dict):
         raise ValueError("authority evidence item must be an object")
     requirement_id = str(item.get("requirement_id") or "")
@@ -536,6 +547,7 @@ def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
         "source_uri": item.get("source_uri"),
         "issued_at": item.get("issued_at"),
         "expires_at": item.get("expires_at"),
+        "source_context": source_context,
     }
     return {**body, "evidence_id": content_hash(body)}
 
@@ -547,6 +559,7 @@ def _verify_authority_evidence_item(
     *,
     now: Any,
     require_fresh: bool,
+    source_context: dict[str, Any],
 ) -> str:
     if item.get("evidence_id") != content_hash(without_keys(item, "evidence_id")):
         errors.append(f"provider operations authority evidence_id does not match evidence body: {item.get('requirement_id')}")
@@ -563,6 +576,10 @@ def _verify_authority_evidence_item(
             errors.append(f"provider operations authority {field} is required: {requirement_id}")
     if item.get("evidence_hash") and not str(item.get("evidence_hash")).startswith("sha256:"):
         errors.append(f"provider operations authority evidence_hash must start with sha256: {requirement_id}")
+    if not isinstance(item.get("source_context"), dict):
+        errors.append(f"provider operations authority source_context is required: {requirement_id}")
+    elif item.get("source_context") != source_context:
+        errors.append(f"provider operations authority source_context does not match service attestation binding: {requirement_id}")
 
     issued_at = _parse_optional_timestamp(item, "issued_at", errors)
     expires_at = _parse_optional_timestamp(item, "expires_at", errors)
@@ -598,6 +615,40 @@ def _verify_authority_evidence_item(
     return freshness_status
 
 
+def _authority_evidence_source_context(binding: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "service_attestation_id": binding.get("attestation_id"),
+        "service_attestation_hash": binding.get("attestation_hash"),
+        "environment": binding.get("environment"),
+        "service_ref": binding.get("service_ref"),
+        "provider": binding.get("provider"),
+        "service_source_hash": binding.get("source_hash"),
+        "public_ingress_ref": binding.get("public_ingress_ref"),
+        "oauth_worker_ref": binding.get("oauth_worker_ref"),
+        "callback_worker_ref": binding.get("callback_worker_ref"),
+        "audit_worker_ref": binding.get("audit_worker_ref"),
+        "storage_ref": binding.get("storage_ref"),
+        "vault_ref": binding.get("vault_ref"),
+        "kms_key_ref": binding.get("kms_key_ref"),
+        "scheduler_ref": binding.get("scheduler_ref"),
+        "lease_ref": binding.get("lease_ref"),
+        "checkpoint_ref": binding.get("checkpoint_ref"),
+        "external_call_policy_ref": binding.get("external_call_policy_ref"),
+        "webhook_signature_policy_ref": binding.get("webhook_signature_policy_ref"),
+        "replay_window_ref": binding.get("replay_window_ref"),
+        "dedup_store_ref": binding.get("dedup_store_ref"),
+        "rate_limit_policy_ref": binding.get("rate_limit_policy_ref"),
+        "network_policy_ref": binding.get("network_policy_ref"),
+        "egress_policy_ref": binding.get("egress_policy_ref"),
+        "audit_log_ref": binding.get("audit_log_ref"),
+        "audit_log_root": binding.get("audit_log_root"),
+        "retention_until": binding.get("retention_until"),
+        "actor_ref": binding.get("actor_ref"),
+        "credential_ref": binding.get("credential_ref"),
+        "evidence_refs": binding.get("evidence_refs"),
+    }
+
+
 def _verify_required_authority(value: Any, errors: list[str]) -> None:
     if value != PRODUCTION_AUTHORITY_REQUIREMENTS:
         errors.append("provider operations authority required_production_authority does not match v0.1 requirements")
@@ -626,7 +677,7 @@ def _summary(evidence: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _controls(mode: str, service_attestation: dict[str, Any], evidence: list[dict[str, Any]], summary: dict[str, Any]) -> list[dict[str, Any]]:
+def _controls(mode: str, service_binding: dict[str, Any], evidence: list[dict[str, Any]], summary: dict[str, Any]) -> list[dict[str, Any]]:
     return [
         {
             "name": "service_attestation_replayed",
@@ -635,7 +686,7 @@ def _controls(mode: str, service_attestation: dict[str, Any], evidence: list[dic
         },
         {
             "name": "service_attestation_bound",
-            "status": "passed" if service_attestation.get("attestation_id") else "failed",
+            "status": "passed" if service_binding.get("attestation_id") else "failed",
             "detail": "The dossier binds the service attestation ID, attestation hash, source hash, service controls, and callback operation refs.",
         },
         {

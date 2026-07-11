@@ -28,14 +28,17 @@ external proof of continuously operated provider infrastructure. The schema is
   and immutable callback/audit retention.
 - `authority_evidence`: external evidence references with accepted authority
   kind, evidence ref, `sha256:` evidence hash, issuer, subject, source URI,
-  issued time, expiry time, and deterministic `evidence_id`.
+  issued time, expiry time, derived `source_context`, and deterministic
+  `evidence_id`.
 - `summary`: required, covered, missing, evidence, and freshness-window counts
   plus covered and missing requirement ids.
-- `controls`: service attestation replay, service binding, authority evidence
-  manifesting, freshness-window tracking, complete live authority status, and
-  production claim limiting.
+- `controls`: derived service attestation replay, service binding, authority
+  evidence manifesting, freshness-window tracking, complete live authority
+  status, and production claim limiting.
 - `dossier_id` and `signatures`: canonical dossier hash and detached
   signatures.
+
+Each authority evidence item carries a derived `source_context` tying the external authority row to the service attestation id/hash, environment, service/provider refs, public ingress, worker refs, storage/vault/KMS refs, scheduler/lease/checkpoint refs, webhook/replay/dedup/rate-limit/network/egress controls, audit root, retention, actor, credential ref, and evidence refs recorded in `service_attestation_binding`.
 
 ## Verification
 
@@ -48,8 +51,8 @@ external proof of continuously operated provider infrastructure. The schema is
 4. The required production authority checklist exactly matches v0.1.
 5. Every authority evidence item uses a known requirement id, accepted
    authority kind, non-empty reference and description, and `sha256:` hash.
-6. Evidence ids, summary, controls, freshness metadata, and redacted
-   secret-like fields are deterministic and valid.
+6. Evidence ids, per-evidence `source_context`, summary, controls, freshness
+   metadata, and redacted secret-like fields are deterministic and valid.
 7. `--require-complete` turns missing checklist coverage into a verification
    error.
 8. `--require-fresh` turns missing, not-yet-issued, or expired freshness
@@ -77,12 +80,8 @@ python -m trustai provider-operations-authority-append artifacts/provider-operat
 `trustai provider-operations-authority-append` verifies the dossier and appends
 a `provider.operations_authority_recorded` evidence-chain entry with the
 dossier id/hash, production authority refs, service attestation binding,
-coverage summary, control summary, and authority evidence references.
+coverage summary, control summary, and compact authority evidence references including `source_context`.
 
 ## Limits
 
-This dossier is a signed checklist and binding artifact. It does not fetch live
-Slack/GitHub/GitLab APIs, operate hosted workers, call vault/KMS services, or
-prove managed Postgres/HA storage by itself. It can support a production
-authority claim only when every required authority category is covered by fresh
-external evidence and verified with complete and fresh requirements enabled.
+This dossier is a signed checklist and binding artifact. It proves source-context-bound authority evidence rows, derived control status, coverage accounting, freshness windows, and strict production-claim gates. It does not fetch live Slack/GitHub/GitLab APIs, operate hosted workers, call vault/KMS services, or prove managed Postgres/HA storage by itself. It can support a production authority claim only when every required authority category is covered by fresh external evidence and verified with complete and fresh requirements enabled.

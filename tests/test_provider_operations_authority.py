@@ -27,6 +27,12 @@ def _write_json(path: Path, value: object) -> None:
 
 
 class ProviderOperationsAuthorityTests(unittest.TestCase):
+    def _resign_dossier(self, dossier: dict) -> None:
+        body = without_keys(dossier, "dossier_id", "signatures")
+        dossier_id = content_hash(body)
+        dossier["dossier_id"] = dossier_id
+        dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "provider_operations_authority": body})]
+
     def _service(self):
         attestation = json.loads((ROOT / "artifacts" / "provider-operations-service-attestation.json").read_text(encoding="utf-8"))
         return {}, attestation
@@ -93,6 +99,7 @@ class ProviderOperationsAuthorityTests(unittest.TestCase):
         self.assertEqual(PROVIDER_OPERATIONS_AUTHORITY_ENTRY_TYPE, entry["entry_type"])
         self.assertEqual(dossier["dossier_id"], entry["payload"]["dossier_id"])
         self.assertEqual(attestation["attestation_id"], entry["payload"]["service_attestation_binding"]["attestation_id"])
+        self.assertEqual(dossier["authority_evidence"][0]["source_context"], entry["payload"]["authority_evidence"][0]["source_context"])
         self.assertEqual({"deferred": 1, "passed": 5}, entry["payload"]["control_summary"])
 
     def test_provider_operations_authority_detects_service_tamper(self):
@@ -104,6 +111,35 @@ class ProviderOperationsAuthorityTests(unittest.TestCase):
 
         self.assertFalse(result.ok)
         self.assertTrue(any("service_attestation_binding does not match" in error for error in result.errors), result.errors)
+
+    def test_provider_operations_authority_rejects_resigned_authority_source_context_mismatch(self):
+        sources, attestation, dossier = self._dossier()
+        tampered = copy.deepcopy(dossier)
+        item = tampered["authority_evidence"][0]
+        item["source_context"]["public_ingress_ref"] = "ingress:other"
+        item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+        self._resign_dossier(tampered)
+
+        result = verify_provider_operations_authority_dossier(tampered, service_attestation=attestation, **sources)
+
+        self.assertFalse(result.ok)
+        self.assertNotIn("dossier_id does not match canonical provider operations authority body", result.errors)
+        self.assertNotIn("provider operations authority signature verification failed", result.errors)
+        self.assertNotIn("provider operations authority evidence_id does not match evidence body: hosted-callback-worker-fleet", result.errors)
+        self.assertIn("provider operations authority source_context does not match service attestation binding: hosted-callback-worker-fleet", result.errors)
+
+    def test_provider_operations_authority_rejects_resigned_control_tamper(self):
+        sources, attestation, dossier = self._dossier()
+        tampered = copy.deepcopy(dossier)
+        tampered["controls"][0]["status"] = "deferred"
+        self._resign_dossier(tampered)
+
+        result = verify_provider_operations_authority_dossier(tampered, service_attestation=attestation, **sources)
+
+        self.assertFalse(result.ok)
+        self.assertNotIn("dossier_id does not match canonical provider operations authority body", result.errors)
+        self.assertNotIn("provider operations authority signature verification failed", result.errors)
+        self.assertIn("provider operations authority controls do not match dossier body", result.errors)
 
     def test_provider_operations_authority_requires_complete_binding_without_source(self):
         _, _, dossier = self._dossier()
