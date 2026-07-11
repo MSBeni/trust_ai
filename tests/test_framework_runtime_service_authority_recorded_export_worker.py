@@ -7,8 +7,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from trustai.canonical import content_hash
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.framework_runtime_service_authority_recorded_export import (
     write_framework_runtime_service_authority_recorded_export,
 )
@@ -139,6 +140,19 @@ class FrameworkRuntimeServiceAuthorityRecordedExportWorkerTests(unittest.TestCas
             release,
             matrix,
         )
+
+    def _resign_receipt(self, receipt: dict) -> None:
+        body = without_keys(receipt, "worker_operation_id", "signatures")
+        worker_operation_id = content_hash(body)
+        receipt["worker_operation_id"] = worker_operation_id
+        receipt["signatures"] = [
+            sign_value(
+                {
+                    "worker_operation_id": worker_operation_id,
+                    "framework_runtime_service_authority_recorded_export_worker": body,
+                }
+            )
+        ]
 
     def test_framework_runtime_service_authority_recorded_export_worker_verifies_and_appends(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -353,6 +367,40 @@ class FrameworkRuntimeServiceAuthorityRecordedExportWorkerTests(unittest.TestCas
 
             self.assertFalse(result.ok)
             self.assertTrue(any("recorded_export_storage_hash" in error for error in result.errors))
+
+    def test_framework_runtime_service_authority_recorded_export_worker_requires_complete_summaries_without_sources(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            receipt = self._receipt(Path(tmp_dir))[0]
+        cases = [
+            ("missing_binding_key", "recorded_export.artifact_content_root is required"),
+            ("nonpositive_artifact_count", "recorded_export.artifact_count must be positive"),
+            (
+                "missing_source_artifact",
+                "source_artifacts missing: framework-runtime-service-provider-export",
+            ),
+        ]
+        for case_name, expected_error in cases:
+            with self.subTest(case=case_name):
+                tampered = copy.deepcopy(receipt)
+                if case_name == "missing_binding_key":
+                    tampered["recorded_export"].pop("artifact_content_root")
+                elif case_name == "nonpositive_artifact_count":
+                    tampered["recorded_export"]["artifact_count"] = 0
+                else:
+                    tampered["source_artifacts"] = [
+                        artifact
+                        for artifact in tampered["source_artifacts"]
+                        if artifact.get("kind") != "framework-runtime-service-provider-export"
+                    ]
+                self._resign_receipt(tampered)
+
+                result = verify_framework_runtime_service_authority_recorded_export_worker_receipt(
+                    tampered,
+                    now="2026-07-09T01:14:00Z",
+                )
+
+                self.assertFalse(result.ok)
+                self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
 
     def test_framework_runtime_service_authority_recorded_export_worker_rejects_raw_credential(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

@@ -31,13 +31,19 @@ contains:
 recalculates the worker operation ID, verifies at least one detached signature,
 validates timestamps, scheduler fields, queue/storage hashes, redacted
 credentials, and secret-like fields, and checks that production claims are
-conservative.
+conservative. It requires every recorded-export binding key emitted by the v0.1
+builder, requires a positive recorded artifact count, and requires the
+`source_artifacts` array to contain exactly the expected nested receipt/export
+hash kinds with no missing, duplicate, or unsupported entries.
 
 When supplied with the recorded export and its nested source artifacts,
 verification first replays
 `framework-runtime-service-authority-recorded-export-verify`. It then checks the
 worker's recorded-export binding, stored recorded-export hash, artifact manifest
 hash, artifact roots, and source artifact hashes against the supplied objects.
+Omitted source artifacts during standalone verification may produce replay
+warnings, but they must not permit partial recorded-export bindings or partial
+source artifact hash summaries.
 
 `production-worker` mode requires a `production-recorded-export` source.
 `local-worker`, `scheduled-worker`, and `hosted-worker` remain local/reference
