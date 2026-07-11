@@ -37,15 +37,14 @@ record counts must be complete; provider record counts must be positive.
 Optional cursor and dead-letter values may be null only when the original source
 receipt emitted the key with a null value.
 
-When supplied with the provider export, recorded-export worker receipt,
-recorded-export receipt, nested source artifacts, and retained artifact paths,
-verification first replays
+Offline verification is fail-closed: the provider export, recorded-export worker
+receipt, recorded-export receipt, every nested source artifact, and retained
+artifact paths are required. Verification first replays
 `framework-runtime-service-authority-recorded-export-worker-verify`. It then
 recalculates provider record roots, checks the provider export hash, and rejects
-missing or mismatched scheduler, queue, request, storage, or audit records.
-Omitted source artifacts during standalone verification may produce replay
-warnings, but they must not permit partial recorded-export worker or provider
-export summaries.
+missing or mismatched scheduler, queue, request, storage, or audit records. A
+detached signature over partial replay inputs is not enough to verify the
+provider receipt.
 
 `production-export` mode only indicates the provider exchange was successful and
 the receipt is paired with provider-owned export evidence. It still does not

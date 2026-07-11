@@ -484,6 +484,41 @@ class FrameworkRuntimeServiceAuthorityRecordedExportProviderTests(unittest.TestC
                 self.assertFalse(result.ok)
                 self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
 
+    def test_framework_runtime_service_authority_recorded_export_provider_requires_replay_artifacts_without_sources(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            receipt, provider_export, recorded_export_worker, *_ = self._receipt(tmp)
+
+            missing_all = verify_framework_runtime_service_authority_recorded_export_provider_receipt(receipt)
+            missing_provider_export = verify_framework_runtime_service_authority_recorded_export_provider_receipt(
+                receipt,
+                recorded_export_worker=recorded_export_worker,
+            )
+            missing_worker = verify_framework_runtime_service_authority_recorded_export_provider_receipt(
+                receipt,
+                provider_export=provider_export,
+            )
+
+            self.assertFalse(missing_all.ok)
+            self.assertIn(
+                "framework runtime service authority recorded export provider worker artifact is required for verification",
+                missing_all.errors,
+            )
+            self.assertIn(
+                "framework runtime service authority recorded export provider export artifact is required for verification",
+                missing_all.errors,
+            )
+            self.assertFalse(missing_provider_export.ok)
+            self.assertIn(
+                "framework runtime service authority recorded export provider export artifact is required for verification",
+                missing_provider_export.errors,
+            )
+            self.assertFalse(missing_worker.ok)
+            self.assertIn(
+                "framework runtime service authority recorded export provider worker artifact is required for verification",
+                missing_worker.errors,
+            )
+
     def test_framework_runtime_service_authority_recorded_export_provider_rejects_raw_credential(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)

@@ -656,8 +656,8 @@ def _verify_recorded_export_worker_binding(
         if binding.get(field) in (None, "", []):
             errors.append(f"framework runtime service authority recorded export provider binding.{field} is required")
     if recorded_export_worker is None:
-        warnings.append(
-            "framework runtime service authority recorded export provider worker artifact was not supplied; worker source was not replayed"
+        errors.append(
+            "framework runtime service authority recorded export provider worker artifact is required for verification"
         )
         return
     expected = _recorded_export_worker_binding(recorded_export_worker)
@@ -724,8 +724,8 @@ def _verify_provider_export_binding(
         if not isinstance(export.get(field), int) or export.get(field) <= 0:
             errors.append(f"framework runtime service authority recorded export provider provider_export.{field} must be positive")
     if provider_export is None:
-        warnings.append(
-            "framework runtime service authority recorded export provider export artifact was not supplied; provider records were not replayed"
+        errors.append(
+            "framework runtime service authority recorded export provider export artifact is required for verification"
         )
         return
     if export.get("hash") != content_hash(provider_export):
