@@ -43,6 +43,12 @@ summary and source artifact hashes match the disclosed artifacts, and that the
 service scheduler/stream refs match the worker binding recorded by the storage
 receipt.
 
+Offline verification is fail-closed. A service attestation must carry the
+complete source summary and the exact nine source artifact records, and the
+verifier must reject signed summaries when any replay artifact is missing,
+duplicated, unsupported, or hash-mismatched. A valid detached signature over a
+partial source summary is not enough to prove hosted runtime service evidence.
+
 `framework-runtime-service-append` requires all source artifacts. The chain entry
 records hash-bound summaries for the attestation, source storage receipt,
 service, scheduler, storage backends, security controls, observability controls,

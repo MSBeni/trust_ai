@@ -7,7 +7,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.framework_adapter_matrix import write_framework_adapter_matrix
 from trustai.framework_hook_operation import write_framework_hook_operation
 from trustai.framework_hook_release import write_framework_hook_release
@@ -111,6 +113,14 @@ class FrameworkRuntimeServiceTests(unittest.TestCase):
             **self._kwargs(),
         )
         return attestation, storage_receipt, storage_export, worker, runtime_audit, audit_export, operation, trace, release, matrix
+
+    def _resign_attestation(self, attestation: dict) -> None:
+        body = without_keys(attestation, "attestation_id", "signatures")
+        attestation_id = content_hash(body)
+        attestation["attestation_id"] = attestation_id
+        attestation["signatures"] = [
+            sign_value({"attestation_id": attestation_id, "framework_runtime_service": body})
+        ]
 
     def test_framework_runtime_service_verifies_and_appends(self):
         attestation, storage_receipt, storage_export, worker, runtime_audit, audit_export, operation, trace, release, matrix = self._attestation()
@@ -223,6 +233,41 @@ class FrameworkRuntimeServiceTests(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertIn("framework runtime service credential must be a redacted reference", result.errors)
         self.assertTrue(any("secret-like field" in error for error in result.errors))
+
+    def test_framework_runtime_service_requires_complete_sources_without_replay_artifacts(self):
+        attestation, *_ = self._attestation()
+
+        result = verify_framework_runtime_service_attestation(attestation)
+
+        self.assertFalse(result.ok)
+        self.assertTrue(any("source artifacts are required for verification" in error for error in result.errors), result.errors)
+
+    def test_framework_runtime_service_requires_complete_signed_summaries(self):
+        attestation, *_ = self._attestation()
+        cases = [
+            ("missing_source_key", "source.storage_provider is required"),
+            ("missing_source_artifact", "source_artifacts missing: framework-runtime-storage-export"),
+            ("missing_source_artifacts", "source_artifacts must be a non-empty list"),
+        ]
+        for case_name, expected_error in cases:
+            with self.subTest(case=case_name):
+                tampered = copy.deepcopy(attestation)
+                if case_name == "missing_source_key":
+                    tampered["source"].pop("storage_provider")
+                elif case_name == "missing_source_artifact":
+                    tampered["source_artifacts"] = [
+                        artifact
+                        for artifact in tampered["source_artifacts"]
+                        if artifact.get("type") != "framework-runtime-storage-export"
+                    ]
+                else:
+                    tampered.pop("source_artifacts")
+                self._resign_attestation(tampered)
+
+                result = verify_framework_runtime_service_attestation(tampered)
+
+                self.assertFalse(result.ok)
+                self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
 
     def test_cli_framework_runtime_service_round_trip(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

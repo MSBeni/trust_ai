@@ -14,6 +14,41 @@ FRAMEWORK_RUNTIME_SERVICE_SCHEMA = "trustai.framework-runtime-service-attestatio
 FRAMEWORK_RUNTIME_SERVICE_ENTRY_TYPE = "framework_runtime.service_attested"
 FRAMEWORK_RUNTIME_SERVICE_MODES = {"local-reference", "hosted-runtime-service", "production-design"}
 SECRET_KEY_MARKERS = ("token", "secret", "private_key", "client_secret", "password", "credential")
+SOURCE_SUMMARY_EXPECTED_FIELDS = (
+    "storage_receipt_id",
+    "storage_receipt_hash",
+    "storage_mode",
+    "storage_provider",
+    "provider_export_hash",
+    "provider_export_ref",
+    "stream_record_root",
+    "storage_record_root",
+    "scheduler_record_root",
+    "worker_operation_id",
+    "worker_operation_hash",
+    "runtime_audit_id",
+    "operation_ref",
+    "framework",
+    "trace_id",
+    "runtime_instance_ref",
+    "stream_ref",
+    "stream_topic",
+    "storage_object_hash",
+    "clickhouse_batch_hash",
+    "postgres_index_hash",
+    "control_index_hash",
+)
+SOURCE_ARTIFACT_TYPES = (
+    "framework-runtime-storage",
+    "framework-runtime-storage-export",
+    "framework-runtime-worker",
+    "framework-runtime-audit",
+    "framework-runtime-audit-export",
+    "framework-hook-operation",
+    "framework-trace",
+    "framework-hook-release",
+    "framework-adapter-matrix",
+)
 
 
 @dataclass
@@ -453,20 +488,9 @@ def _source_record(storage_receipt: dict[str, Any]) -> dict[str, Any]:
 
 
 def _source_artifacts(*sources: dict[str, Any]) -> list[dict[str, Any]]:
-    names = (
-        "framework-runtime-storage",
-        "framework-runtime-storage-export",
-        "framework-runtime-worker",
-        "framework-runtime-audit",
-        "framework-runtime-audit-export",
-        "framework-hook-operation",
-        "framework-trace",
-        "framework-hook-release",
-        "framework-adapter-matrix",
-    )
     records: list[dict[str, Any]] = []
-    for name, source in zip(names, sources):
-        records.append({"type": name, "id": _source_id(source), "hash": content_hash(source)})
+    for source_type, source in zip(SOURCE_ARTIFACT_TYPES, sources):
+        records.append({"type": source_type, "id": _source_id(source), "hash": content_hash(source)})
     return records
 
 
@@ -490,11 +514,27 @@ def _verify_source(
     if not isinstance(source, dict):
         errors.append("framework runtime service source must be an object")
         source = {}
-    for field in ("storage_receipt_id", "storage_receipt_hash", "worker_operation_id", "runtime_audit_id", "provider_export_hash", "stream_record_root", "storage_record_root"):
-        if not source.get(field):
+    for field in SOURCE_SUMMARY_EXPECTED_FIELDS:
+        if field not in source:
             errors.append(f"framework runtime service source.{field} is required")
-    if not all(item is not None for item in (storage_receipt, storage_export, worker, runtime_audit, audit_export, operation, trace_payload, release, matrix)):
-        warnings.append("framework runtime service source artifacts were not fully supplied; storage export replay was not performed")
+    for field in SOURCE_SUMMARY_EXPECTED_FIELDS:
+        if source.get(field) in (None, "", [], {}):
+            errors.append(f"framework runtime service source.{field} is required")
+    _verify_source_artifacts(attestation.get("source_artifacts"), errors)
+    supplied_sources = (
+        ("framework-runtime-storage", storage_receipt),
+        ("framework-runtime-storage-export", storage_export),
+        ("framework-runtime-worker", worker),
+        ("framework-runtime-audit", runtime_audit),
+        ("framework-runtime-audit-export", audit_export),
+        ("framework-hook-operation", operation),
+        ("framework-trace", trace_payload),
+        ("framework-hook-release", release),
+        ("framework-adapter-matrix", matrix),
+    )
+    missing_sources = [source_type for source_type, value in supplied_sources if value is None]
+    if missing_sources:
+        errors.append("framework runtime service source artifacts are required for verification: " + ", ".join(missing_sources))
         return
     result = verify_framework_runtime_storage_receipt(
         storage_receipt or {},
@@ -517,6 +557,40 @@ def _verify_source(
     expected_artifacts = _source_artifacts(storage_receipt or {}, storage_export or {}, worker or {}, runtime_audit or {}, audit_export or {}, operation or {}, trace_payload or {}, release or {}, matrix or {})
     if attestation.get("source_artifacts") != expected_artifacts:
         errors.append("framework runtime service source_artifacts do not match supplied source artifacts")
+
+
+def _verify_source_artifacts(value: Any, errors: list[str]) -> None:
+    if not isinstance(value, list) or not value:
+        errors.append("framework runtime service source_artifacts must be a non-empty list")
+        return
+    actual_types: set[str] = set()
+    duplicate_types: set[str] = set()
+    for index, item in enumerate(value):
+        if not isinstance(item, dict):
+            errors.append(f"framework runtime service source_artifacts[{index}] must be an object")
+            continue
+        source_type = item.get("type")
+        if not source_type:
+            errors.append(f"framework runtime service source_artifacts[{index}].type is required")
+        elif not isinstance(source_type, str):
+            errors.append(f"framework runtime service source_artifacts[{index}].type must be a string")
+        else:
+            if source_type in actual_types:
+                duplicate_types.add(source_type)
+            actual_types.add(source_type)
+        if not item.get("hash"):
+            errors.append(f"framework runtime service source_artifacts[{index}].hash is required")
+        elif not _is_hash_ref(str(item.get("hash"))):
+            errors.append(f"framework runtime service source_artifacts[{index}].hash must be a sha256 reference")
+    expected_types = set(SOURCE_ARTIFACT_TYPES)
+    missing = sorted(expected_types - actual_types)
+    extra = sorted(actual_types - expected_types)
+    if missing:
+        errors.append("framework runtime service source_artifacts missing: " + ", ".join(missing))
+    if extra:
+        errors.append("framework runtime service source_artifacts unsupported: " + ", ".join(extra))
+    if duplicate_types:
+        errors.append("framework runtime service source_artifacts duplicate: " + ", ".join(sorted(duplicate_types)))
 
 
 def _verify_service(value: Any, errors: list[str]) -> None:
