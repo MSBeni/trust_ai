@@ -2,7 +2,7 @@
 
 Status: draft reference format.
 
-This specification defines the `trustai.insurer-partner-production-authority-dossier/0.1` artifact. The dossier binds signed insurer partner service attestations and worker receipts to external authority evidence for live insurer, underwriter, and policy-system operation.
+This specification defines the `trustai.insurer-partner-production-authority-dossier/0.1` artifact. The dossier binds signed insurer partner service attestations, worker receipts, and optional worker review bundles to external authority evidence for live insurer, underwriter, and policy-system operation.
 
 The format separates local/reference insurer integration evidence from a production authority claim. A dossier may be partial. A production claim is valid only when every required production authority category is covered by fresh evidence.
 
@@ -18,6 +18,7 @@ A dossier is a JSON object with:
 - `dossier_ref`, `authority_ref`, `producer_ref`: stable references for the dossier, production authority scope, and producer.
 - `service_attestation_binding`: canonical binding to the insurer partner service attestation.
 - `worker_receipt_bindings`: canonical bindings to insurer partner worker receipts.
+- `worker_bundle_bindings`: optional worker review bundle IDs/hashes, embedded source artifact roots, frontend replay status, actuarial replay status, telemetry and underwriting quote hashes, and service/worker linkage.
 - `required_production_authority`: the v0.1 requirement checklist.
 - `authority_evidence`: supplied external authority evidence items.
 - `summary`: derived coverage and freshness summary.
@@ -31,7 +32,9 @@ The service binding records service identity, endpoint, partner API endpoint, im
 
 The worker binding records worker operation ID/hash, service attestation ID/hash, scheduler cadence, leases, checkpoints, queue messages, destination, partner delivery/event log roots, policy workflow and binding hashes, request/response hashes, audit/access roots, retention, and redacted worker credential references.
 
-Verification recomputes every binding from supplied service and worker artifacts. If telemetry, underwriting quote, actuarial product/corpus, or frontend bundle sources are supplied, the verifier also replays the underlying service and worker checks.
+The worker bundle binding records worker review bundle ID/hash, service and worker receipt hashes, telemetry and underwriting quote hashes, embedded source artifact roots, frontend bundle replay status, actuarial product/corpus replay status, and the policy binding/underwriting fields needed for offline insurer or auditor review.
+
+Verification recomputes every binding from supplied service, worker, and worker-bundle artifacts. If telemetry, underwriting quote, actuarial product/corpus, or frontend bundle sources are supplied, the verifier also replays the underlying service and worker checks. If worker bundles are supplied, the verifier also verifies each bundle and rejects bundles that do not reference the supplied service attestation and worker receipt hashes.
 
 ## Production Authority Requirements
 
@@ -58,6 +61,7 @@ A conforming verifier must:
 - Verify schema, canonical `dossier_id`, and at least one signature.
 - Recompute service and worker bindings from supplied source artifacts.
 - Verify service and worker source artifacts, including optional telemetry, underwriting quote, actuarial product/corpus, and frontend bundle replay when supplied.
+- Verify supplied worker review bundles and compare their service, worker, telemetry, source-artifact, frontend replay, and actuarial replay bindings to the dossier.
 - Verify every authority evidence id and hash reference.
 - Recompute the summary from evidence.
 - Warn for missing production authority requirements.
@@ -68,16 +72,16 @@ A conforming verifier must:
 
 ## Chain Entry
 
-Appending a valid dossier writes entry type `insurer.partner_authority_recorded`. The entry payload includes dossier identity, mode, environment, service and worker bindings, coverage summary, control summary, and compact authority evidence references.
+Appending a valid dossier writes entry type `insurer.partner_authority_recorded`. The entry payload includes dossier identity, mode, environment, service, worker, and worker-bundle bindings, coverage summary, control summary, and compact authority evidence references.
 
 ## CLI
 
 Reference commands:
 
 ```powershell
-python -m trustai insurer-partner-authority artifacts/insurer-partner-service-attestation.json --worker artifacts/insurer-partner-worker.json --environment aitrade-prod --dossier-ref dossier:insurer-partner-authority/underwriter-prod --authority-ref authority:insurer-partner/underwriter-prod --producer-ref oidc:trustai.example/insurer-partner-authority-worker --authority-evidence "credentialed-partner-api-calls,insurer,insurer:underwriter/api/aitrade,sha256:insurer-partner-live-api-authority,Live underwriter API authority export;issuer=Example AI Liability Underwriter;subject=aitrade-prod insurer partner API;source_uri=https://underwriter.example/audit/trustai/aitrade;issued_at=2026-07-08T06:20:00Z;expires_at=2026-07-15T06:20:00Z" --generated-at 2026-07-08T06:25:00Z --out artifacts/insurer-partner-authority.json
-python -m trustai insurer-partner-authority-verify artifacts/insurer-partner-authority.json artifacts/insurer-partner-service-attestation.json --worker artifacts/insurer-partner-worker.json
-python -m trustai insurer-partner-authority-append artifacts/insurer-partner-authority.json artifacts/insurer-partner-service-attestation.json --worker artifacts/insurer-partner-worker.json --state .trustai/insurer-partner-authority-demo/evidence-chain.json --tenant insurer-partner-authority-local --out artifacts/insurer-partner-authority-entry.json
+python -m trustai insurer-partner-authority artifacts/insurer-partner-service-attestation.json --worker artifacts/insurer-partner-worker.json --worker-bundle artifacts/insurer-partner-worker-bundle.json --environment aitrade-prod --dossier-ref dossier:insurer-partner-authority/underwriter-prod --authority-ref authority:insurer-partner/underwriter-prod --producer-ref oidc:trustai.example/insurer-partner-authority-worker --authority-evidence "credentialed-partner-api-calls,insurer,insurer:underwriter/api/aitrade,sha256:insurer-partner-live-api-authority,Live underwriter API authority export;issuer=Example AI Liability Underwriter;subject=aitrade-prod insurer partner API;source_uri=https://underwriter.example/audit/trustai/aitrade;issued_at=2026-07-08T06:20:00Z;expires_at=2026-07-15T06:20:00Z" --generated-at 2026-07-08T06:25:00Z --out artifacts/insurer-partner-authority.json
+python -m trustai insurer-partner-authority-verify artifacts/insurer-partner-authority.json artifacts/insurer-partner-service-attestation.json --worker artifacts/insurer-partner-worker.json --worker-bundle artifacts/insurer-partner-worker-bundle.json
+python -m trustai insurer-partner-authority-append artifacts/insurer-partner-authority.json artifacts/insurer-partner-service-attestation.json --worker artifacts/insurer-partner-worker.json --worker-bundle artifacts/insurer-partner-worker-bundle.json --state .trustai/insurer-partner-authority-demo/evidence-chain.json --tenant insurer-partner-authority-local --out artifacts/insurer-partner-authority-entry.json
 ```
 
 ## Limits

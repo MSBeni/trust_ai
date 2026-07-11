@@ -11591,7 +11591,8 @@ def _load_insurer_partner_authority_sources(args: argparse.Namespace) -> dict[st
     workers = [load_insurer_partner_worker_receipt(path) for path in (getattr(args, "worker", None) or [])]
     if not workers:
         raise ValueError("at least one --worker receipt is required")
-    return {
+    worker_bundles = [load_insurer_partner_worker_bundle(path) for path in (getattr(args, "worker_bundle", None) or [])]
+    sources = {
         "service_attestation": load_insurer_partner_service_attestation(args.service_attestation),
         "worker_receipts": workers,
         "telemetry": _load_json(args.telemetry) if getattr(args, "telemetry", None) else None,
@@ -11601,6 +11602,9 @@ def _load_insurer_partner_authority_sources(args: argparse.Namespace) -> dict[st
         "frontend_bundle_path": getattr(args, "frontend_bundle", None),
         "source_now": getattr(args, "source_now", None),
     }
+    if worker_bundles:
+        sources["worker_bundles"] = worker_bundles
+    return sources
 
 
 def cmd_insurer_partner_authority(args: argparse.Namespace) -> int:
@@ -11610,6 +11614,7 @@ def cmd_insurer_partner_authority(args: argparse.Namespace) -> int:
         dossier = build_insurer_partner_authority_dossier(
             sources["service_attestation"],
             worker_receipts=sources["worker_receipts"],
+            worker_bundles=sources.get("worker_bundles"),
             telemetry=sources.get("telemetry"),
             underwriting_quote=sources.get("underwriting_quote"),
             actuarial_product=sources.get("actuarial_product"),
@@ -11646,6 +11651,7 @@ def cmd_insurer_partner_authority(args: argparse.Namespace) -> int:
     print(f"dossier id: {dossier['dossier_id']}")
     print(f"service attestation id: {dossier['service_attestation_binding']['attestation_id']}")
     print(f"worker receipts: {len(dossier['worker_receipt_bindings'])}")
+    print(f"worker bundles: {len(dossier.get('worker_bundle_bindings', []))}")
     print(f"covered requirements: {result.covered_count}/{result.required_count}")
     for warning in result.warnings:
         print(f"warning: {warning}")
@@ -11689,6 +11695,7 @@ def cmd_insurer_partner_authority_append(args: argparse.Namespace) -> int:
             dossier,
             service_attestation=sources["service_attestation"],
             worker_receipts=sources["worker_receipts"],
+            worker_bundles=sources.get("worker_bundles"),
             telemetry=sources.get("telemetry"),
             underwriting_quote=sources.get("underwriting_quote"),
             actuarial_product=sources.get("actuarial_product"),
@@ -22965,6 +22972,7 @@ def build_parser() -> argparse.ArgumentParser:
     def _add_insurer_partner_authority_sources(parser: argparse.ArgumentParser) -> None:
         parser.add_argument("service_attestation")
         parser.add_argument("--worker", action="append", default=[])
+        parser.add_argument("--worker-bundle", action="append", default=[], help="insurer partner worker review bundle; repeatable")
         parser.add_argument("--telemetry")
         parser.add_argument("--quote")
         parser.add_argument("--actuarial-product")
