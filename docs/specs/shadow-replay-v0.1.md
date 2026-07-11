@@ -8,17 +8,19 @@ computes:
 - trade policy compliance rate;
 - maximum position error;
 - p95 decision latency;
-- holdout timestamp violations.
+- holdout timestamp and duplicate replay record-id violations.
 
 The output can be appended as `shadow_replay.completed` evidence and converted
 into normal eval results for promotion gates. Shadow replay entries also embed a
 signed temporal holdout manifest whose per-record hash chain binds record order,
-record hashes, freeze boundary, holdout minimum, and the final replay root.
+record hashes, unique replay record IDs, freeze boundary, holdout minimum, and
+the final replay root.
 
 `traffic-holdout-export`, `traffic-holdout-export-verify`, and
 `traffic-holdout-export-append` produce a signed production traffic export
 receipt before replay. The receipt binds source/exporter refs, extraction window,
-record hashes, replay hash, privacy limits, and boundary/window violations
+record hashes, replay hash, privacy limits, duplicate record-id checks, and
+boundary/window violations
 without embedding raw production traffic payloads.
 
 `traffic-completeness`, `traffic-completeness-verify`, and

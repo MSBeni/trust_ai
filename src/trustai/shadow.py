@@ -114,7 +114,7 @@ def build_temporal_holdout_manifest(
         if not timestamp:
             raise ValueError(f"shadow replay record {index + 1} missing timestamp")
         parsed_timestamp = parse_rfc3339(str(timestamp))
-        record_id = str(record.get("id") or index + 1)
+        record_id = _shadow_record_id(record, index)
         record_hash = content_hash(record)
         node_body = {
             "schema": TEMPORAL_HOLDOUT_CHAIN_SCHEMA,
@@ -234,7 +234,7 @@ def verify_temporal_holdout_manifest(
 
     previous_node_hash: str | None = None
     previous_timestamp: str | None = None
-    expected_violations: list[dict[str, Any]] = []
+    expected_violations = _duplicate_record_id_violations(records, "duplicate replay record id")
     for index, node in enumerate(records):
         if not isinstance(node, dict):
             errors.append(f"temporal holdout record {index + 1} must be an object")
@@ -325,7 +325,7 @@ def verify_temporal_holdout_manifest(
             for index, (record, node) in enumerate(zip(replay_records, records)):
                 if node.get("record_hash") != content_hash(record):
                     errors.append(f"temporal holdout replay record hash mismatch at sequence {index}")
-                if str(record.get("id") or index + 1) != node.get("record_id"):
+                if _shadow_record_id(record, index) != node.get("record_id"):
                     errors.append(f"temporal holdout replay record id mismatch at sequence {index}")
                 if str(record.get("timestamp") or "") != node.get("timestamp"):
                     errors.append(f"temporal holdout replay record timestamp mismatch at sequence {index}")
@@ -373,6 +373,9 @@ def evaluate_shadow_replay(contract: dict[str, Any], replay: dict[str, Any]) -> 
     violations = 0
     latencies: list[float] = []
     position_errors: list[float] = []
+
+    duplicate_record_ids = _duplicate_shadow_record_id_violations(records)
+    holdout_errors.extend(f"duplicate replay record id {item['record_id']} at sequence {item['sequence']}" for item in duplicate_record_ids)
 
     for index, record in enumerate(records):
         if not isinstance(record, dict):
@@ -455,7 +458,7 @@ def shadow_replay_to_eval_results(contract: dict[str, Any], replay: dict[str, An
             "id": replay.get("dataset_id") or "shadow-replay",
             "description": replay.get("description") or "Shadow replay candidate evaluation",
             "records": [
-                {"id": record.get("id", str(index + 1)), "timestamp": record["timestamp"]}
+                {"id": _shadow_record_id(record, index), "timestamp": record["timestamp"]}
                 for index, record in enumerate(records)
                 if isinstance(record, dict) and record.get("timestamp")
             ],
@@ -822,7 +825,7 @@ def verify_traffic_holdout_export(
 
     previous_export_record_hash: str | None = None
     previous_timestamp: str | None = None
-    expected_violations: list[dict[str, Any]] = []
+    expected_violations = _duplicate_record_id_violations(records, "duplicate traffic export record id")
     for index, record in enumerate(records):
         if not isinstance(record, dict):
             errors.append(f"traffic holdout export record {index + 1} must be an object")
@@ -913,7 +916,7 @@ def verify_traffic_holdout_export(
             for index, (source_record, record) in enumerate(zip(replay_records, records)):
                 if record.get("record_hash") != content_hash(source_record):
                     errors.append(f"traffic holdout export replay record hash mismatch at sequence {index}")
-                if record.get("record_id") != str(source_record.get("id") or index + 1):
+                if record.get("record_id") != _shadow_record_id(source_record, index):
                     errors.append(f"traffic holdout export replay record id mismatch at sequence {index}")
                 if record.get("timestamp") != str(source_record.get("timestamp") or ""):
                     errors.append(f"traffic holdout export replay record timestamp mismatch at sequence {index}")
@@ -1187,7 +1190,7 @@ def _build_traffic_holdout_export_records(
         if not timestamp:
             raise ValueError(f"traffic holdout export record {index + 1} missing timestamp")
         parsed_timestamp = parse_rfc3339(timestamp)
-        record_id = str(record.get("id") or index + 1)
+        record_id = _shadow_record_id(record, index)
         record_body = {
             "schema": TRAFFIC_HOLDOUT_EXPORT_RECORD_SCHEMA,
             "sequence": index,
@@ -1215,7 +1218,7 @@ def _build_traffic_holdout_export_records(
 
 
 def _traffic_holdout_export_violations(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    violations: list[dict[str, Any]] = []
+    violations = _duplicate_record_id_violations(records, "duplicate traffic export record id")
     for record in records:
         violations.extend(_traffic_holdout_export_record_violations(record))
     return violations
@@ -1579,12 +1582,45 @@ def _shadow_records(replay: dict[str, Any]) -> list[Any]:
     return records
 
 
+def _shadow_record_id(record: dict[str, Any], index: int) -> str:
+    return str(record.get("id") or index + 1)
+
+
+def _duplicate_shadow_record_id_violations(records: list[Any]) -> list[dict[str, Any]]:
+    normalized: list[dict[str, Any]] = []
+    for index, record in enumerate(records):
+        if isinstance(record, dict):
+            normalized.append({"sequence": index, "record_id": _shadow_record_id(record, index), "timestamp": record.get("timestamp")})
+    return _duplicate_record_id_violations(normalized, "duplicate replay record id")
+
+
+def _duplicate_record_id_violations(records: list[dict[str, Any]], message: str) -> list[dict[str, Any]]:
+    seen: set[str] = set()
+    violations: list[dict[str, Any]] = []
+    for record in records:
+        record_id = record.get("record_id")
+        if not isinstance(record_id, str) or not record_id:
+            continue
+        if record_id in seen:
+            violations.append(
+                {
+                    "sequence": record.get("sequence"),
+                    "record_id": record_id,
+                    "timestamp": record.get("timestamp"),
+                    "violation": message,
+                }
+            )
+        else:
+            seen.add(record_id)
+    return violations
+
+
 def _temporal_holdout_violations(
     record_nodes: list[dict[str, Any]],
     freeze_at: str,
     min_timestamp: str,
 ) -> list[dict[str, Any]]:
-    violations: list[dict[str, Any]] = []
+    violations = _duplicate_record_id_violations(record_nodes, "duplicate replay record id")
     for node in record_nodes:
         parsed_timestamp = parse_rfc3339(node["timestamp"])
         violations.extend(_record_temporal_violations(node, parsed_timestamp, freeze_at, min_timestamp))

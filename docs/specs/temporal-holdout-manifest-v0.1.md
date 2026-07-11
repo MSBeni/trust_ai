@@ -11,8 +11,8 @@ The manifest uses schema `trustai.temporal-holdout-manifest/0.1` and records:
 - contract ID, contract hash, freeze timestamp, and holdout minimum timestamp;
 - replay run ID, dataset ID, candidate version, and replay payload hash;
 - first, last, earliest, and latest replay record timestamps;
-- a hash-chained record list with sequence, record ID, timestamp, record hash,
-  previous node hash, and node hash;
+- a hash-chained record list with sequence, unique record ID, timestamp, record
+  hash, previous node hash, and node hash;
 - a `records_root` equal to the final record node hash;
 - explicit temporal boundary violations and pass/fail status;
 - detached signatures over the canonical manifest body.
@@ -26,8 +26,8 @@ root.
 ## Verification
 
 `temporal-holdout-verify` recalculates the manifest ID, verifies at least one
-signature, checks the internal record hash chain, recomputes boundary flags and
-violations from the frozen contract timestamps, and optionally replays the source
+signature, checks the internal record hash chain, recomputes duplicate record-id and
+boundary violations from the frozen contract timestamps, and optionally replays the source
 contract and replay JSON to catch source tampering.
 
 The manifest proves the supplied replay records postdate the freeze and holdout

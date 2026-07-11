@@ -63,6 +63,11 @@ class RoadmapAuditTests(unittest.TestCase):
         self.assertIn("tests/test_mcp_gateway.py", mcp_evidence)
         self.assertIn("retained raw proxy event export byte replay", " ".join(mcp_requirement["external_authority_required"]))
         self.assertIn("JSON-RPC 2.0 envelope validation", " ".join(mcp_requirement["external_authority_required"]))
+        shadow_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "shadow-replay-temporal-holdout")
+        shadow_evidence = {item["path"] for item in shadow_requirement["evidence"]}
+        self.assertIn("src/trustai/shadow.py", shadow_evidence)
+        self.assertIn("tests/test_temporal_holdout.py", shadow_evidence)
+        self.assertIn("duplicate replay record identity violations", " ".join(shadow_requirement["external_authority_required"]))
         onboarding_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "self-serve-onboarding")
         onboarding_evidence = {item["path"] for item in onboarding_requirement["evidence"]}
         self.assertIn("src/trustai/onboarding.py", onboarding_evidence)

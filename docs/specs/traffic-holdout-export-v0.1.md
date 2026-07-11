@@ -15,8 +15,9 @@ The receipt uses schema `trustai.traffic-holdout-export/0.1` and records:
 - contract ID, contract hash, freeze timestamp, and holdout minimum timestamp;
 - replay run ID, dataset ID, candidate version, and canonical replay hash;
 - first, last, earliest, and latest exported record timestamps;
-- a hash-chained record list with sequence, record ID, timestamp, canonical
-  replay-record hash, previous export record hash, and export record hash;
+- a hash-chained record list with sequence, unique record ID, timestamp,
+  canonical replay-record hash, previous export record hash, and export record
+  hash;
 - explicit boundary/window/order violations and pass/fail status;
 - privacy metadata confirming raw production traffic payloads are not embedded;
 - detached signatures over the canonical receipt body.
@@ -27,8 +28,9 @@ truncating, inserting, or editing replay records changes the final `records_root
 ## Verification
 
 `traffic-holdout-export-verify` recalculates the receipt ID, verifies at least
-one signature, replays the export record hash chain, recomputes freeze/holdout
-and extraction-window checks, enforces the no-raw-payload privacy flag, and can
+one signature, replays the export record hash chain, recomputes duplicate
+record-id, freeze/holdout, and extraction-window checks, enforces the
+no-raw-payload privacy flag, and can
 optionally replay the source verification contract and shadow replay JSON.
 
 When a replay source is supplied, the verifier recomputes the replay hash and

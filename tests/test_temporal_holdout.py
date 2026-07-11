@@ -168,6 +168,26 @@ class TemporalHoldoutTests(unittest.TestCase):
             self.assertEqual(receipt["records_root"], entry["payload"]["records_root"])
             self.assertTrue(chain.verify_all().ok)
 
+    def test_traffic_holdout_export_records_duplicate_replay_ids(self):
+        replay = self._replay()
+        replay["records"][2]["id"] = replay["records"][0]["id"]
+        receipt = build_traffic_holdout_export(
+            self._contract(),
+            replay,
+            export_ref="traffic-export:aitrade/prod-traffic-holdout-20260702",
+            source_ref="collector:aitrade-prod/redpanda/trustai.otel.events",
+            exporter_ref="oidc:trustai.example/traffic-exporter",
+            window_start="2026-07-02T00:00:00Z",
+            window_end="2026-07-03T23:59:59Z",
+            produced_at="2026-07-03T12:20:00Z",
+        )
+        result = verify_traffic_holdout_export(receipt, contract=self._contract(), replay=replay)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertFalse(receipt["passed"])
+        self.assertTrue(any("duplicate traffic export record id" in item["violation"] for item in receipt["violations"]))
+        self.assertTrue(result.warnings)
+
     def test_traffic_holdout_export_detects_source_replay_tamper(self):
         receipt = build_traffic_holdout_export(
             self._contract(),
@@ -632,6 +652,26 @@ class TemporalHoldoutTests(unittest.TestCase):
         self.assertFalse(manifest["passed"])
         self.assertTrue(manifest["violations"])
         self.assertTrue(any("post-freeze" in item["violation"] for item in manifest["violations"]))
+        self.assertTrue(result.warnings)
+
+    def test_temporal_holdout_manifest_records_duplicate_replay_ids(self):
+        replay = self._replay()
+        replay["records"][1]["id"] = replay["records"][0]["id"]
+
+        manifest = build_temporal_holdout_manifest(
+            self._contract(),
+            replay,
+            generated_at="2026-07-03T12:30:00Z",
+        )
+        result = verify_temporal_holdout_manifest(manifest, contract=self._contract(), replay=replay)
+        evaluation = evaluate_shadow_replay(self._contract(), replay)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertFalse(manifest["passed"])
+        self.assertFalse(evaluation["holdout"]["passed"])
+        self.assertFalse(evaluation["passed"])
+        self.assertTrue(any("duplicate replay record id" in item["violation"] for item in manifest["violations"]))
+        self.assertTrue(any("duplicate replay record id" in error for error in evaluation["holdout"]["errors"]))
         self.assertTrue(result.warnings)
 
     def test_temporal_holdout_manifest_rejects_source_replay_tamper(self):
