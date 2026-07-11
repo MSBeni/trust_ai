@@ -67,6 +67,7 @@ Each evidence item records:
 - evidence hash, prefixed with `sha256:`
 - description
 - optional issuer, subject, source URI, issued_at, and expires_at
+- builder-derived `source_context` computed from the signed `source_binding`
 - canonical evidence ID
 
 ## Verification Rules
@@ -86,7 +87,9 @@ Verifiers must:
   control summaries
 - recompute the authority evidence summary
 - recompute controls from the dossier body
-- reject malformed authority evidence and unsupported authority kinds
+- reject malformed authority evidence, unsupported authority kinds, missing
+  source_context, and source_context values that do not match the signed
+  source_binding
 - reject raw secret-like values that are not references or hashes
 - reject `production-dossier` mode unless all production authority requirements
   are covered, all evidence items are fresh, and compliance export, EU AI Act
@@ -102,4 +105,5 @@ fresh evidence windows.
 
 The chain payload records the dossier ID/hash, mode, environment, producer and
 authority references, source binding summary, authority evidence summary,
-control summary, and authority evidence metadata.
+control summary, and authority evidence metadata including derived source
+context.

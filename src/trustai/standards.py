@@ -254,7 +254,7 @@ CONFORMANCE_TARGETS = (
     },
     {
         "id": "compliance-production-authority-dossiers",
-        "description": "Compliance production authority dossiers bind compliance framework mappings, EU AI Act technical documentation, proof-pack source replay, selective regulator disclosure, optional EU data-plane sovereignty evidence, freshness windows, and strict production-claim gates.",
+        "description": "Compliance production authority dossiers bind compliance framework mappings, EU AI Act technical documentation, proof-pack source replay, selective regulator disclosure, optional EU data-plane sovereignty evidence, per-evidence source context, freshness windows, and strict production-claim gates.",
         "reference": "src/trustai/compliance_authority.py",
         "commands": [
             "python -m trustai compliance-authority artifacts/compliance-export.json artifacts/eu-ai-act-technical-documentation.json --pack artifacts/aitrade-proof-pack.json --regulator-disclosure artifacts/regulator-disclosure.json --environment aitrade-prod --dossier-ref dossier:compliance-authority/aitrade-prod --authority-ref authority:compliance/aitrade-prod --producer-ref oidc:trustai.example/compliance-authority-worker --authority-evidence \"framework-control-mapping-ontology,standards-body,standards:compliance-ontology/2026,sha256:compliance-ontology,Nightly compliance ontology replay;issuer=TrustAI CI;subject=aitrade-prod compliance mapper;source_uri=https://ci.example/trustai/compliance/aitrade-prod;issued_at=2026-07-04T03:00:00Z;expires_at=2026-12-31T00:00:00Z\" --generated-at 2026-07-04T03:05:00Z --out artifacts/compliance-authority.json",

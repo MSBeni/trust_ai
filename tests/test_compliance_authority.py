@@ -88,6 +88,12 @@ class ComplianceAuthorityTests(unittest.TestCase):
             "expires_at": "2026-12-31T00:00:00Z",
         }
 
+    def _resign_dossier(self, dossier: dict) -> None:
+        body = without_keys(dossier, "dossier_id", "signatures")
+        dossier_id = content_hash(body)
+        dossier["dossier_id"] = dossier_id
+        dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "compliance_authority": body})]
+
     def test_provider_dossier_binds_compliance_export_eu_document_and_authority_evidence(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             _, pack, disclosure, compliance_export, document = self._sources(Path(tmp_dir))
@@ -125,6 +131,7 @@ class ComplianceAuthorityTests(unittest.TestCase):
             self.assertEqual({"deferred": 3, "passed": 7}, control_summary)
             self.assertEqual(pack["pack_id"], dossier["source_binding"]["compliance_export"]["pack_id"])
             self.assertEqual(document["document_id"], dossier["source_binding"]["eu_ai_act_document"]["document_id"])
+            self.assertEqual(dossier["source_binding"]["compliance_export"]["export_hash"], dossier["authority_evidence"][0]["source_context"]["compliance_export_hash"])
 
     def test_verification_detects_compliance_export_source_tamper(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -180,6 +187,70 @@ class ComplianceAuthorityTests(unittest.TestCase):
 
             self.assertFalse(result.ok)
             self.assertTrue(any("compliance_export.export_hash is required" in error for error in result.errors), result.errors)
+
+    def test_rejects_resigned_authority_source_context_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            _, pack, disclosure, compliance_export, document = self._sources(Path(tmp_dir))
+            dossier = build_compliance_authority_dossier(
+                compliance_export,
+                document,
+                proof_pack=pack,
+                regulator_disclosure=disclosure,
+                mode="provider-dossier",
+                environment="aitrade-prod",
+                dossier_ref="dossier:compliance-authority/aitrade-prod",
+                authority_ref="authority:compliance/aitrade-prod",
+                producer_ref="oidc:trustai.example/compliance-authority-worker",
+                authority_evidence=[self._evidence("framework-control-mapping-ontology", "standards-body")],
+            )
+            tampered = copy.deepcopy(dossier)
+            item = tampered["authority_evidence"][0]
+            item["source_context"]["compliance_export_hash"] = "sha256:tampered-compliance-export"
+            item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+            self._resign_dossier(tampered)
+
+            result = verify_compliance_authority_dossier(
+                tampered,
+                compliance_export=compliance_export,
+                eu_ai_act_document=document,
+                proof_pack=pack,
+                regulator_disclosure=disclosure,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("dossier_id does not match canonical compliance authority body", result.errors)
+            self.assertNotIn("compliance authority signature verification failed", result.errors)
+            self.assertNotIn("compliance authority evidence_id does not match evidence body: framework-control-mapping-ontology", result.errors)
+            self.assertIn("compliance authority source_context does not match source binding: framework-control-mapping-ontology", result.errors)
+
+    def test_append_payload_includes_authority_source_context(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            chain, pack, disclosure, compliance_export, document = self._sources(tmp)
+            dossier = build_compliance_authority_dossier(
+                compliance_export,
+                document,
+                proof_pack=pack,
+                regulator_disclosure=disclosure,
+                mode="provider-dossier",
+                environment="aitrade-prod",
+                dossier_ref="dossier:compliance-authority/aitrade-prod",
+                authority_ref="authority:compliance/aitrade-prod",
+                producer_ref="oidc:trustai.example/compliance-authority-worker",
+                authority_evidence=[self._evidence("framework-control-mapping-ontology", "standards-body")],
+                generated_at="2026-07-04T03:05:00Z",
+            )
+
+            entry = append_compliance_authority_dossier(
+                chain,
+                dossier,
+                compliance_export=compliance_export,
+                eu_ai_act_document=document,
+                proof_pack=pack,
+                regulator_disclosure=disclosure,
+            )
+
+            self.assertEqual(dossier["authority_evidence"][0]["source_context"], entry["payload"]["authority_evidence"][0]["source_context"])
 
     def test_require_fresh_rejects_missing_freshness_windows(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

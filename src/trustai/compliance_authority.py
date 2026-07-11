@@ -121,9 +121,10 @@ def build_compliance_authority_dossier(
 
     timestamp = generated_at or utc_now()
     parse_rfc3339(timestamp)
-    evidence_items = [_build_authority_evidence_item(item) for item in (authority_evidence or [])]
-    summary = _summary(evidence_items)
     binding = _source_binding(compliance_export, eu_ai_act_document, proof_pack, regulator_disclosure, eu_data_plane)
+    source_context = _authority_evidence_source_context(binding)
+    evidence_items = [_build_authority_evidence_item(item, source_context) for item in (authority_evidence or [])]
+    summary = _summary(evidence_items)
     body: dict[str, Any] = {
         "schema": COMPLIANCE_AUTHORITY_SCHEMA,
         "mode": mode,
@@ -208,13 +209,23 @@ def verify_compliance_authority_dossier(
     if not isinstance(evidence, list):
         errors.append("compliance authority authority_evidence must be a list")
         evidence = []
+    evidence_source_context = _authority_evidence_source_context(
+        dossier.get("source_binding") if isinstance(dossier.get("source_binding"), dict) else {}
+    )
     freshness_counts = {"fresh": 0, "stale": 0, "missing": 0}
     for item in evidence:
         if not isinstance(item, dict):
             errors.append("compliance authority evidence item must be an object")
             freshness_counts["missing"] += 1
             continue
-        status = _verify_authority_evidence_item(item, errors, warnings, now=freshness_now, require_fresh=require_fresh)
+        status = _verify_authority_evidence_item(
+            item,
+            errors,
+            warnings,
+            now=freshness_now,
+            require_fresh=require_fresh,
+            source_context=evidence_source_context,
+        )
         freshness_counts[status] += 1
 
     evidence_dicts = [item for item in evidence if isinstance(item, dict)]
@@ -300,6 +311,7 @@ def append_compliance_authority_dossier(
                 "evidence_id": item.get("evidence_id"),
                 "issued_at": item.get("issued_at"),
                 "expires_at": item.get("expires_at"),
+                "source_context": item.get("source_context"),
             }
             for item in dossier.get("authority_evidence", [])
             if isinstance(item, dict)
@@ -560,7 +572,7 @@ def _verify_compliance_export_source(export: dict[str, Any], proof_pack: dict[st
     return errors
 
 
-def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
+def _build_authority_evidence_item(item: dict[str, Any], source_context: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(item, dict):
         raise ValueError("authority evidence item must be an object")
     requirement_id = str(item.get("requirement_id") or "")
@@ -588,18 +600,31 @@ def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
             parse_rfc3339(str(built[field]))
     if built.get("issued_at") and built.get("expires_at") and parse_rfc3339(str(built["issued_at"])) > parse_rfc3339(str(built["expires_at"])):
         raise ValueError("authority evidence issued_at must not be after expires_at")
+    built["source_context"] = source_context
     built["evidence_id"] = content_hash(built)
     return built
 
 
-def _verify_authority_evidence_item(item: dict[str, Any], errors: list[str], warnings: list[str], *, now, require_fresh: bool) -> str:
+def _verify_authority_evidence_item(
+    item: dict[str, Any],
+    errors: list[str],
+    warnings: list[str],
+    *,
+    now,
+    require_fresh: bool,
+    source_context: dict[str, Any],
+) -> str:
     try:
-        expected = _build_authority_evidence_item(item)
+        expected = _build_authority_evidence_item(item, source_context)
     except ValueError as exc:
         errors.append(f"invalid compliance authority evidence: {exc}")
         return "missing"
-    if item != expected:
-        errors.append("compliance authority evidence_id does not match evidence body")
+    if item.get("evidence_id") != content_hash(without_keys(item, "evidence_id")):
+        errors.append(f"compliance authority evidence_id does not match evidence body: {item.get('requirement_id')}")
+    if not isinstance(item.get("source_context"), dict):
+        errors.append(f"compliance authority source_context is required: {item.get('requirement_id')}")
+    elif item.get("source_context") != source_context:
+        errors.append(f"compliance authority source_context does not match source binding: {item.get('requirement_id')}")
     issued_at = item.get("issued_at")
     expires_at = item.get("expires_at")
     if not issued_at or not expires_at:
@@ -619,6 +644,40 @@ def _verify_authority_evidence_item(item: dict[str, Any], errors: list[str], war
             warnings.append(message)
         return "stale"
     return "fresh"
+
+
+def _authority_evidence_source_context(binding: dict[str, Any]) -> dict[str, Any]:
+    export = binding.get("compliance_export") if isinstance(binding.get("compliance_export"), dict) else {}
+    document = binding.get("eu_ai_act_document") if isinstance(binding.get("eu_ai_act_document"), dict) else {}
+    pack = binding.get("proof_pack") if isinstance(binding.get("proof_pack"), dict) else {}
+    disclosure = binding.get("regulator_disclosure") if isinstance(binding.get("regulator_disclosure"), dict) else {}
+    data_plane = binding.get("eu_data_plane") if isinstance(binding.get("eu_data_plane"), dict) else {}
+    residency = data_plane.get("residency") if isinstance(data_plane.get("residency"), dict) else {}
+    return {
+        "source_binding_hash": content_hash(binding),
+        "compliance_export_hash": export.get("export_hash"),
+        "compliance_pack_id": export.get("pack_id"),
+        "frameworks": export.get("frameworks"),
+        "missing_frameworks": export.get("missing_frameworks"),
+        "control_count": export.get("control_count"),
+        "chain_roots": export.get("chain_roots"),
+        "eu_ai_act_document_id": document.get("document_id"),
+        "eu_ai_act_document_hash": document.get("document_hash"),
+        "eu_ai_act_section_count": document.get("section_count"),
+        "source_proof_pack_id": document.get("source_proof_pack_id"),
+        "source_regulator_disclosure_id": document.get("source_regulator_disclosure_id"),
+        "proof_pack_id": pack.get("pack_id"),
+        "proof_pack_hash": pack.get("pack_hash"),
+        "proof_pack_chain_root": pack.get("chain_root"),
+        "regulator_disclosure_id": disclosure.get("disclosure_id"),
+        "regulator_disclosure_hash": disclosure.get("disclosure_hash"),
+        "eu_data_plane_attestation_id": data_plane.get("attestation_id"),
+        "eu_data_plane_attestation_hash": data_plane.get("attestation_hash"),
+        "eu_data_plane_environment": data_plane.get("environment"),
+        "eu_data_plane_regions": data_plane.get("regions"),
+        "eu_data_plane_ref": residency.get("data_plane_ref"),
+        "customer_account_ref": residency.get("customer_account_ref"),
+    }
 
 
 def _verify_required_authority(value: Any, errors: list[str]) -> None:
