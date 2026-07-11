@@ -1074,6 +1074,7 @@ from .external_evidence import (
     load_external_evidence_manifest,
     load_external_evidence_collection_plan,
     load_external_evidence_intake,
+    load_external_evidence_intakes,
     load_roadmap_evidence_bundle,
     load_roadmap_evidence_report,
     parse_evidence_arg,
@@ -14151,7 +14152,7 @@ def cmd_external_evidence_manifest_from_intakes(args: argparse.Namespace) -> int
         roadmap_audit = load_roadmap_audit(args.roadmap_audit)
         source_manifest = load_external_evidence_manifest(args.manifest)
         plan = load_external_evidence_collection_plan(args.plan)
-        intakes = [load_external_evidence_intake(path) for path in args.intake]
+        intakes = load_external_evidence_intakes(args.intake, args.intake_dir)
         manifest = build_external_evidence_manifest_from_intakes(
             plan,
             source_manifest,
@@ -23772,7 +23773,8 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_from_intakes.add_argument("manifest")
     external_evidence_from_intakes.add_argument("roadmap_audit")
     external_evidence_from_intakes.add_argument("--root", default=".")
-    external_evidence_from_intakes.add_argument("--intake", action="append", required=True, help="external-evidence intake receipt JSON; repeat for multiple receipts")
+    external_evidence_from_intakes.add_argument("--intake", action="append", default=[], help="external-evidence intake receipt JSON; repeat for multiple receipts")
+    external_evidence_from_intakes.add_argument("--intake-dir", action="append", default=[], help="directory scanned recursively for trustai.external-evidence-intake/0.1 JSON receipts")
     external_evidence_from_intakes.add_argument("--manifest-ref")
     external_evidence_from_intakes.add_argument("--require-complete", action="store_true")
     external_evidence_from_intakes.add_argument("--require-fresh", action="store_true", help="fail unless every intake and final evidence item has an unexpired issued_at/expires_at window")

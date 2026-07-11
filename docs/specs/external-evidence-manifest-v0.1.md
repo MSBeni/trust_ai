@@ -186,11 +186,13 @@ receipt against the supplied plan and source manifest before rebuilding a new
 manifest.
 
 The rebuilt manifest preserves evidence already present in the source manifest
-and overlays each verified intake by `(requirement_id, authority_kind)`. Duplicate
-intake receipts for the same authority coverage unit are rejected so that a
-manifest cannot silently choose between conflicting collected artifacts. Use the
-rebuilt manifest as the next source manifest before appending to the roadmap
-evidence chain.
+and overlays each verified intake by `(requirement_id, authority_kind)`. Receipts
+may be supplied explicitly or discovered recursively from intake directories;
+directory discovery only consumes JSON objects whose `schema` is
+`trustai.external-evidence-intake/0.1`. Duplicate intake receipts for the same
+authority coverage unit are rejected so that a manifest cannot silently choose
+between conflicting collected artifacts. Use the rebuilt manifest as the next
+source manifest before appending to the roadmap evidence chain.
 
 ## Roadmap Evidence Report
 

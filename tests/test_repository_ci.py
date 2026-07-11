@@ -29,6 +29,7 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("python -m trustai external-evidence-intake artifacts/external-evidence-plan-all.json artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json", workflow)
         self.assertIn("python -m trustai external-evidence-intake-verify artifacts/external-evidence-intake.json artifacts/external-evidence-plan-all.json artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json", workflow)
         self.assertIn("python -m trustai external-evidence-manifest-from-intakes artifacts/external-evidence-plan-all.json artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json", workflow)
+        self.assertIn("--intake-dir artifacts/external-evidence-intakes", workflow)
         self.assertIn("python -m trustai external-evidence-append artifacts/external-evidence-manifest-from-intakes.json", workflow)
         self.assertIn("--require-fresh --now 2026-07-09T00:00:00Z", workflow)
         self.assertIn("python -m trustai roadmap-evidence-verify --state .trustai/roadmap-audit-ci/evidence-chain.json", workflow)

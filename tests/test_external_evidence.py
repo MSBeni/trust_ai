@@ -29,6 +29,7 @@ from trustai.external_evidence import (
     load_external_evidence_manifest,
     load_external_evidence_collection_plan,
     load_external_evidence_intake,
+    load_external_evidence_intakes,
     load_roadmap_evidence_bundle,
     parse_evidence_arg,
     parse_bundle_source_artifact_arg,
@@ -653,7 +654,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             plan_path = tmp_path / "external-evidence-plan.json"
             all_plan_path = tmp_path / "external-evidence-plan-all.json"
             plan_markdown_path = tmp_path / "external-evidence-plan.md"
-            intake_path = tmp_path / "external-evidence-intake.json"
+            intake_dir_path = tmp_path / "external-evidence-intakes"
+            intake_path = intake_dir_path / "oss-verifier-ci-run.json"
             rebuilt_manifest_path = tmp_path / "external-evidence-manifest-from-intakes.json"
             report_path = tmp_path / "roadmap-evidence-report.json"
             report_markdown_path = tmp_path / "roadmap-evidence-report.md"
@@ -663,6 +665,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             chain_path = tmp_path / "chain.json"
             bundled_fixture_path = tmp_path / FIXTURE
             bundled_fixture_path.parent.mkdir(parents=True)
+            intake_dir_path.mkdir(parents=True)
             shutil.copyfile(ROOT / FIXTURE, bundled_fixture_path)
             subprocess.run(
                 [
@@ -857,8 +860,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     str(audit_path),
                     "--root",
                     str(ROOT),
-                    "--intake",
-                    str(intake_path),
+                    "--intake-dir",
+                    str(intake_dir_path),
                     "--require-fresh",
                     "--now",
                     "2026-07-09T00:00:00Z",
@@ -1032,6 +1035,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             plan = load_external_evidence_collection_plan(plan_path)
             intake = load_external_evidence_intake(intake_path)
             rebuilt_manifest = load_external_evidence_manifest(rebuilt_manifest_path)
+            directory_intakes = load_external_evidence_intakes(directories=[intake_dir_path])
+            self.assertEqual(1, len(directory_intakes))
             self.assertEqual(69, plan["summary"]["selected_task_count"])
             self.assertTrue(plan_markdown_path.exists())
             self.assertIn("External Evidence Collection Plan", plan_markdown_path.read_text(encoding="utf-8"))

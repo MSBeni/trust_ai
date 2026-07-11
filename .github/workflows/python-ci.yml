@@ -68,8 +68,11 @@ jobs:
 
       - name: Verify external evidence intake receipt
         run: python -m trustai external-evidence-intake-verify artifacts/external-evidence-intake.json artifacts/external-evidence-plan-all.json artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --require-fresh --now 2026-07-09T00:00:00Z
+      - name: Stage external evidence intake directory
+        run: mkdir -p artifacts/external-evidence-intakes && cp artifacts/external-evidence-intake.json artifacts/external-evidence-intakes/oss-verifier-ci-run.json
+
       - name: Rebuild external evidence manifest from intake receipts
-        run: python -m trustai external-evidence-manifest-from-intakes artifacts/external-evidence-plan-all.json artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --intake artifacts/external-evidence-intake.json --require-fresh --now 2026-07-09T00:00:00Z --out artifacts/external-evidence-manifest-from-intakes.json --markdown artifacts/external-evidence-manifest-from-intakes.md
+        run: python -m trustai external-evidence-manifest-from-intakes artifacts/external-evidence-plan-all.json artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --intake-dir artifacts/external-evidence-intakes --require-fresh --now 2026-07-09T00:00:00Z --out artifacts/external-evidence-manifest-from-intakes.json --markdown artifacts/external-evidence-manifest-from-intakes.md
 
       - name: Verify rebuilt external evidence manifest from intake receipts
         run: python -m trustai external-evidence-verify artifacts/external-evidence-manifest-from-intakes.json artifacts/roadmap-audit.json --require-fresh --now 2026-07-09T00:00:00Z

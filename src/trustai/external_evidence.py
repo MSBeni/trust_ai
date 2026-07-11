@@ -1106,6 +1106,46 @@ def load_external_evidence_intake(path: str | Path) -> dict[str, Any]:
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
+def discover_external_evidence_intake_paths(
+    paths: list[str | Path] | None = None,
+    directories: list[str | Path] | None = None,
+) -> list[Path]:
+    discovered: list[Path] = []
+    seen: set[str] = set()
+
+    def add_path(path: Path) -> None:
+        key = str(path)
+        if key not in seen:
+            seen.add(key)
+            discovered.append(path)
+
+    for value in paths or []:
+        add_path(Path(value))
+
+    for value in directories or []:
+        directory = Path(value)
+        if not directory.exists() or not directory.is_dir():
+            raise ValueError(f"external evidence intake directory is missing: {directory}")
+        for path in sorted(directory.rglob("*.json"), key=lambda item: item.as_posix()):
+            try:
+                candidate = json.loads(path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"external evidence intake directory contains invalid JSON: {path}: {exc}") from exc
+            if isinstance(candidate, dict) and candidate.get("schema") == EXTERNAL_EVIDENCE_INTAKE_SCHEMA:
+                add_path(path)
+
+    return discovered
+
+
+def load_external_evidence_intakes(
+    paths: list[str | Path] | None = None,
+    directories: list[str | Path] | None = None,
+) -> list[dict[str, Any]]:
+    intake_paths = discover_external_evidence_intake_paths(paths, directories)
+    if not intake_paths:
+        raise ValueError("at least one external evidence intake receipt is required")
+    return [load_external_evidence_intake(path) for path in intake_paths]
+
 def write_roadmap_evidence_report(path: str | Path, report: dict[str, Any]) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
