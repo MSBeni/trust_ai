@@ -7,7 +7,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
+from tests import test_review_portal_service as service_fixtures
+
 from trustai.review_portal_authority import (
     PRODUCTION_AUTHORITY_REQUIREMENT_IDS,
     REVIEW_PORTAL_AUTHORITY_ENTRY_TYPE,
@@ -26,7 +30,11 @@ def _write_json(path: Path, value: object) -> None:
 
 class ReviewPortalAuthorityTests(unittest.TestCase):
     def _service(self):
-        attestation = json.loads((ROOT / "artifacts" / "review-portal-service-attestation.json").read_text(encoding="utf-8"))
+        helper = service_fixtures.ReviewPortalServiceTests()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            _, pack, pack_path, disclosure, disclosure_path, view_path, frontend_bundle_path, _, receipt, _ = helper._fixtures(tmp)
+            attestation = helper._attestation(receipt, pack, pack_path, disclosure, disclosure_path, view_path, frontend_bundle_path)
         return {}, attestation
 
     def _authority_evidence(self) -> list[dict]:
@@ -112,6 +120,21 @@ class ReviewPortalAuthorityTests(unittest.TestCase):
 
         self.assertFalse(result.ok)
         self.assertTrue(any("controls do not match" in error for error in result.errors), result.errors)
+
+    def test_review_portal_authority_requires_frontend_bundle_artifact_binding(self):
+        sources, attestation, dossier = self._dossier()
+        tampered = copy.deepcopy(dossier)
+        tampered["service_attestation_binding"].pop("frontend_bundle_artifact_hash")
+        body = without_keys(tampered, "dossier_id", "signatures")
+        dossier_id = content_hash(body)
+        tampered["dossier_id"] = dossier_id
+        tampered["signatures"] = [sign_value({"dossier_id": dossier_id, "review_portal_authority": body})]
+
+        result = verify_review_portal_authority_dossier(tampered, service_attestation=attestation, **sources)
+
+        self.assertFalse(result.ok)
+        self.assertTrue(any("frontend_bundle_artifact_hash is required" in error for error in result.errors), result.errors)
+
     def test_review_portal_authority_requires_freshness_when_strict(self):
         evidence = [dict(self._authority_evidence()[0])]
         evidence[0].pop("issued_at")
