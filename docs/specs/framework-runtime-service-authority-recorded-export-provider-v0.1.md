@@ -29,7 +29,13 @@ and contains:
 `framework-runtime-service-authority-recorded-export-provider-verify`
 recalculates the provider receipt ID, verifies at least one detached signature,
 validates provider endpoint exchange metadata, checks redacted credentials, and
-rejects raw secret-like fields.
+rejects raw secret-like fields. It also requires every
+`recorded_export_worker_binding` and `provider_export` key emitted by the v0.1
+builder. Worker identity, recorded-export, attestation, dossier, scheduler,
+queue, storage, artifact, request/response, audit, provider export roots, and
+record counts must be complete; provider record counts must be positive.
+Optional cursor and dead-letter values may be null only when the original source
+receipt emitted the key with a null value.
 
 When supplied with the provider export, recorded-export worker receipt,
 recorded-export receipt, nested source artifacts, and retained artifact paths,
@@ -37,6 +43,9 @@ verification first replays
 `framework-runtime-service-authority-recorded-export-worker-verify`. It then
 recalculates provider record roots, checks the provider export hash, and rejects
 missing or mismatched scheduler, queue, request, storage, or audit records.
+Omitted source artifacts during standalone verification may produce replay
+warnings, but they must not permit partial recorded-export worker or provider
+export summaries.
 
 `production-export` mode only indicates the provider exchange was successful and
 the receipt is paired with provider-owned export evidence. It still does not

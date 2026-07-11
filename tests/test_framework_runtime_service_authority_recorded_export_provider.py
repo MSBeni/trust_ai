@@ -7,7 +7,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.framework_runtime_service_authority_recorded_export import (
     write_framework_runtime_service_authority_recorded_export,
 )
@@ -221,6 +223,19 @@ class FrameworkRuntimeServiceAuthorityRecordedExportProviderTests(unittest.TestC
             release,
             matrix,
         )
+
+    def _resign_receipt(self, receipt: dict) -> None:
+        body = without_keys(receipt, "provider_receipt_id", "signatures")
+        provider_receipt_id = content_hash(body)
+        receipt["provider_receipt_id"] = provider_receipt_id
+        receipt["signatures"] = [
+            sign_value(
+                {
+                    "provider_receipt_id": provider_receipt_id,
+                    "framework_runtime_service_authority_recorded_export_provider": body,
+                }
+            )
+        ]
 
     def test_framework_runtime_service_authority_recorded_export_provider_verifies_and_appends(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -443,6 +458,31 @@ class FrameworkRuntimeServiceAuthorityRecordedExportProviderTests(unittest.TestC
             self.assertFalse(result.ok)
             self.assertTrue(any("recorded_export_worker_binding does not match" in error for error in result.errors))
             self.assertTrue(any("worker source" in error for error in result.errors))
+
+    def test_framework_runtime_service_authority_recorded_export_provider_requires_complete_bindings_without_sources(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            receipt, *_ = self._receipt(Path(tmp_dir))
+        cases = [
+            (("recorded_export_worker_binding",), "worker_ref", "binding.worker_ref is required"),
+            (("recorded_export_worker_binding",), "previous_cursor_ref", "binding.previous_cursor_ref is required"),
+            (("recorded_export_worker_binding",), "request_hash", "binding.request_hash is required"),
+            (("recorded_export_worker_binding",), "response_status", "binding.response_status is required"),
+            (("provider_export",), "cursor_ref", "provider_export.cursor_ref is required"),
+            (("provider_export",), "request_record_count", "provider_export.request_record_count is required"),
+        ]
+        for parent_path, field, expected_error in cases:
+            with self.subTest(field=field):
+                tampered = copy.deepcopy(receipt)
+                target = tampered
+                for part in parent_path:
+                    target = target[part]
+                target.pop(field)
+                self._resign_receipt(tampered)
+
+                result = verify_framework_runtime_service_authority_recorded_export_provider_receipt(tampered)
+
+                self.assertFalse(result.ok)
+                self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
 
     def test_framework_runtime_service_authority_recorded_export_provider_rejects_raw_credential(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

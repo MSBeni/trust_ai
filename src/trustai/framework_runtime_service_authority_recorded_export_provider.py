@@ -31,6 +31,116 @@ REQUIRED_STORAGE_KINDS = {
     "storage_write_record",
 }
 SECRET_KEY_MARKERS = ("token", "secret", "private_key", "client_secret", "password", "credential")
+RECORDED_EXPORT_WORKER_BINDING_EXPECTED_FIELDS = (
+    "worker_operation_id",
+    "worker_operation_hash",
+    "recorded_export_id",
+    "recorded_export_hash",
+    "attestation_id",
+    "dossier_id",
+    "dossier_hash",
+    "run_ref",
+    "worker_ref",
+    "operation_kind",
+    "actor_ref",
+    "schedule_ref",
+    "lease_ref",
+    "checkpoint_ref",
+    "checkpoint_hash",
+    "previous_cursor_ref",
+    "next_cursor_ref",
+    "queue_ref",
+    "queue_message_ref",
+    "queue_message_hash",
+    "dead_letter_queue_ref",
+    "recorded_export_ref",
+    "recorded_export_storage_ref",
+    "recorded_export_storage_hash",
+    "artifact_archive_ref",
+    "artifact_archive_hash",
+    "artifact_manifest_ref",
+    "artifact_manifest_hash",
+    "storage_write_ref",
+    "storage_write_hash",
+    "request_hash",
+    "response_status",
+    "response_hash",
+    "artifact_root",
+    "artifact_sha256_root",
+    "artifact_content_root",
+    "metrics_ref",
+    "worker_audit_log_ref",
+    "worker_audit_log_root",
+)
+RECORDED_EXPORT_WORKER_BINDING_REQUIRED_FIELDS = (
+    "worker_operation_id",
+    "worker_operation_hash",
+    "recorded_export_id",
+    "recorded_export_hash",
+    "attestation_id",
+    "dossier_id",
+    "dossier_hash",
+    "run_ref",
+    "worker_ref",
+    "operation_kind",
+    "actor_ref",
+    "schedule_ref",
+    "lease_ref",
+    "checkpoint_ref",
+    "checkpoint_hash",
+    "queue_ref",
+    "queue_message_ref",
+    "queue_message_hash",
+    "recorded_export_ref",
+    "recorded_export_storage_ref",
+    "recorded_export_storage_hash",
+    "artifact_archive_ref",
+    "artifact_archive_hash",
+    "artifact_manifest_ref",
+    "artifact_manifest_hash",
+    "storage_write_ref",
+    "storage_write_hash",
+    "request_hash",
+    "response_status",
+    "response_hash",
+    "artifact_root",
+    "artifact_sha256_root",
+    "artifact_content_root",
+    "metrics_ref",
+    "worker_audit_log_ref",
+    "worker_audit_log_root",
+)
+PROVIDER_EXPORT_EXPECTED_FIELDS = (
+    "export_ref",
+    "schema",
+    "provider",
+    "environment",
+    "window_start",
+    "window_end",
+    "cursor_ref",
+    "next_cursor_ref",
+    "audit_log_ref",
+    "audit_log_root",
+    "hash",
+    "scheduler_record_count",
+    "scheduler_record_root",
+    "queue_record_count",
+    "queue_record_root",
+    "request_record_count",
+    "request_record_root",
+    "storage_record_count",
+    "storage_record_root",
+    "audit_record_count",
+    "audit_record_root",
+)
+PROVIDER_EXPORT_REQUIRED_FIELDS = PROVIDER_EXPORT_EXPECTED_FIELDS
+PROVIDER_EXPORT_COUNT_FIELDS = (
+    "scheduler_record_count",
+    "queue_record_count",
+    "request_record_count",
+    "storage_record_count",
+    "audit_record_count",
+)
 
 
 @dataclass
@@ -539,20 +649,11 @@ def _verify_recorded_export_worker_binding(
     errors: list[str],
     warnings: list[str],
 ) -> None:
-    for field in (
-        "worker_operation_id",
-        "worker_operation_hash",
-        "recorded_export_id",
-        "recorded_export_hash",
-        "run_ref",
-        "queue_message_ref",
-        "recorded_export_storage_ref",
-        "recorded_export_storage_hash",
-        "artifact_archive_ref",
-        "artifact_manifest_ref",
-        "storage_write_ref",
-    ):
-        if not binding.get(field):
+    for field in RECORDED_EXPORT_WORKER_BINDING_EXPECTED_FIELDS:
+        if field not in binding:
+            errors.append(f"framework runtime service authority recorded export provider binding.{field} is required")
+    for field in RECORDED_EXPORT_WORKER_BINDING_REQUIRED_FIELDS:
+        if binding.get(field) in (None, "", []):
             errors.append(f"framework runtime service authority recorded export provider binding.{field} is required")
     if recorded_export_worker is None:
         warnings.append(
@@ -613,17 +714,15 @@ def _verify_provider_export_binding(
     if not isinstance(export, dict):
         errors.append("framework runtime service authority recorded export provider provider_export must be an object")
         return
-    for field in (
-        "hash",
-        "scheduler_record_root",
-        "queue_record_root",
-        "request_record_root",
-        "storage_record_root",
-        "audit_record_root",
-        "audit_log_root",
-    ):
-        if not export.get(field):
+    for field in PROVIDER_EXPORT_EXPECTED_FIELDS:
+        if field not in export:
             errors.append(f"framework runtime service authority recorded export provider provider_export.{field} is required")
+    for field in PROVIDER_EXPORT_REQUIRED_FIELDS:
+        if export.get(field) in (None, "", []):
+            errors.append(f"framework runtime service authority recorded export provider provider_export.{field} is required")
+    for field in PROVIDER_EXPORT_COUNT_FIELDS:
+        if not isinstance(export.get(field), int) or export.get(field) <= 0:
+            errors.append(f"framework runtime service authority recorded export provider provider_export.{field} must be positive")
     if provider_export is None:
         warnings.append(
             "framework runtime service authority recorded export provider export artifact was not supplied; provider records were not replayed"
