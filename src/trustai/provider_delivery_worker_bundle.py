@@ -75,12 +75,15 @@ def build_provider_delivery_worker_bundle(
         raise ValueError("provider delivery worker bundle reviewer_ref is required")
     timestamp = generated_at or utc_now()
     parse_rfc3339(timestamp)
+    payload_artifact_path, payload_artifact_bytes = _payload_artifact_replay_from_paths(delivery, payload, artifact_paths)
 
     replay = verify_provider_delivery_worker_receipt(
         receipt,
         service_attestation=service_attestation,
         delivery=delivery,
         payload=payload,
+        payload_artifact_path=payload_artifact_path,
+        payload_artifact_bytes=payload_artifact_bytes,
         provider_operations_service=provider_operations_service,
         provider_response=provider_response,
         provider_audit_correlation=provider_audit_correlation,
@@ -121,6 +124,7 @@ def build_provider_delivery_worker_bundle(
         "limitations": [
             "This bundle is self-contained for offline review of one provider delivery worker receipt and its replay sources.",
             "It embeds parsed source receipts/artifacts and raw JSON source bytes so reviewers can detect source swaps without original local file paths.",
+            "When a delivery receipt records a retained payload artifact, the embedded payload bytes replay the recorded path, byte SHA-256, size, content hash, and payload hash.",
             "It proves replay against supplied provider response and audit-log exports when embedded; it does not claim live provider API retrieval or continuously operated worker fleets.",
         ],
     }
@@ -171,11 +175,18 @@ def verify_provider_delivery_worker_bundle(
         sources = {}
     source_values = _required_source_objects(sources, errors)
     if source_values:
+        payload_artifact_path, payload_artifact_bytes = _payload_artifact_replay_from_artifacts(
+            bundle.get("source_artifacts"),
+            source_values,
+            errors,
+        )
         replay = verify_provider_delivery_worker_receipt(
             source_values["worker_receipt"],
             service_attestation=source_values["service_attestation"],
             delivery=source_values["delivery"],
             payload=source_values.get("payload"),
+            payload_artifact_path=payload_artifact_path,
+            payload_artifact_bytes=payload_artifact_bytes,
             provider_operations_service=source_values.get("provider_operations_service"),
             provider_response=source_values.get("provider_response"),
             provider_audit_correlation=source_values.get("provider_audit_correlation"),
@@ -270,6 +281,7 @@ Reviewer: `{bundle.get('reviewer_ref', '')}`
 - Embedded source artifacts: {summary.get('source_artifact_count', 0)}
 - Provider response replayed: {summary.get('provider_response_replayed', False)}
 - Provider audit replayed: {summary.get('provider_audit_replayed', False)}
+- Retained payload artifact replayed: {summary.get('retained_payload_artifact_replayed', False)}
 - Source artifact sha256 root: `{summary.get('source_artifact_sha256_root', '')}`
 - Source artifact content root: `{summary.get('source_artifact_content_root', '')}`
 
@@ -365,6 +377,57 @@ def append_provider_delivery_worker_bundle(
         "control_summary": _status_summary(bundle.get("controls", [])),
     }
     return chain.append(PROVIDER_DELIVERY_WORKER_BUNDLE_ENTRY_TYPE, payload, key=key, timestamp=bundle.get("generated_at"))
+
+
+def _payload_artifact_replay_from_paths(
+    delivery: dict[str, Any],
+    payload: dict[str, Any] | None,
+    artifact_paths: dict[str, str | Path],
+) -> tuple[str | Path | None, bytes | None]:
+    payload_artifact = delivery.get("payload_artifact")
+    if payload_artifact is None:
+        return None, None
+    if not isinstance(payload_artifact, dict):
+        return None, None
+    if payload is None:
+        raise ValueError("provider delivery worker bundle payload source is required to replay retained delivery payload artifact")
+    payload_path = artifact_paths.get("payload")
+    if payload_path is None:
+        raise ValueError("provider delivery worker bundle payload artifact path is required to replay retained delivery payload artifact")
+    replay_path = payload_artifact.get("path") or payload_path
+    return replay_path, Path(payload_path).read_bytes()
+
+
+def _payload_artifact_replay_from_artifacts(
+    source_artifacts: Any,
+    source_values: dict[str, Any],
+    errors: list[str],
+) -> tuple[str | None, bytes | None]:
+    delivery = source_values.get("delivery")
+    payload_artifact = delivery.get("payload_artifact") if isinstance(delivery, dict) else None
+    if payload_artifact is None:
+        return None, None
+    if not isinstance(payload_artifact, dict):
+        return None, None
+    if "payload" not in source_values:
+        errors.append("provider delivery worker bundle payload source is required to replay retained delivery payload artifact")
+        return None, None
+    if not isinstance(source_artifacts, list):
+        return None, None
+    payload_artifacts = [artifact for artifact in source_artifacts if isinstance(artifact, dict) and artifact.get("name") == "payload"]
+    if not payload_artifacts:
+        errors.append("provider delivery worker bundle source artifact payload is required to replay retained delivery payload artifact")
+        return None, None
+    replay_path = payload_artifact.get("path")
+    if not isinstance(replay_path, str) or not replay_path.strip():
+        errors.append("provider delivery worker bundle delivery payload_artifact.path is required for retained payload artifact replay")
+        return None, None
+    try:
+        data = base64.b64decode(str(payload_artifacts[0].get("content_b64") or ""), validate=True)
+    except (binascii.Error, ValueError, TypeError) as exc:
+        errors.append(f"provider delivery worker bundle source artifact content_b64 invalid: payload: {exc}")
+        return None, None
+    return replay_path, data
 
 
 def _source_objects(**objects: Any) -> dict[str, Any]:
@@ -514,6 +577,9 @@ def _source_summary(receipt: dict[str, Any], service_attestation: dict[str, Any]
 def _bundle_summary(receipt: dict[str, Any], sources: dict[str, Any], source_artifacts: list[dict[str, Any]]) -> dict[str, Any]:
     provider_response = receipt.get("provider_response") if isinstance(receipt.get("provider_response"), dict) else None
     provider_audit = receipt.get("provider_audit") if isinstance(receipt.get("provider_audit"), dict) else None
+    artifact_names = {artifact.get("name") for artifact in source_artifacts if isinstance(artifact, dict)}
+    delivery = sources.get("delivery") if isinstance(sources.get("delivery"), dict) else {}
+    payload_artifact = delivery.get("payload_artifact") if isinstance(delivery, dict) else None
     return {
         "source_artifact_count": len(source_artifacts),
         "source_artifact_sha256_root": content_hash([artifact.get("sha256") for artifact in source_artifacts]),
@@ -521,6 +587,7 @@ def _bundle_summary(receipt: dict[str, Any], sources: dict[str, Any], source_art
         "source_object_hashes": {name: content_hash(value) for name, value in sorted(sources.items())},
         "provider_response_replayed": provider_response is not None and "provider_response" in sources,
         "provider_audit_replayed": provider_audit is not None and "provider_audit_correlation" in sources and "provider_audit_log" in sources,
+        "retained_payload_artifact_replayed": isinstance(payload_artifact, dict) and "payload" in sources and "payload" in artifact_names,
         "worker_control_summary": _status_summary(receipt.get("controls", [])),
     }
 
@@ -529,6 +596,9 @@ def _controls(receipt: dict[str, Any], sources: dict[str, Any], source_artifacts
     artifact_names = {artifact.get("name") for artifact in source_artifacts if isinstance(artifact, dict)}
     provider_response = receipt.get("provider_response") if isinstance(receipt.get("provider_response"), dict) else None
     provider_audit = receipt.get("provider_audit") if isinstance(receipt.get("provider_audit"), dict) else None
+    delivery = sources.get("delivery") if isinstance(sources.get("delivery"), dict) else {}
+    payload_artifact = delivery.get("payload_artifact") if isinstance(delivery, dict) else None
+    retained_payload_replayed = isinstance(payload_artifact, dict) and "payload" in sources and "payload" in artifact_names
     return [
         {
             "name": "worker-receipt-offline-replay",
@@ -539,6 +609,11 @@ def _controls(receipt: dict[str, Any], sources: dict[str, Any], source_artifacts
             "name": "source-artifact-byte-binding",
             "status": "passed" if set(sources) == artifact_names else "failed",
             "detail": "Embedded raw JSON source bytes match the parsed source objects by SHA-256 and canonical content hash.",
+        },
+        {
+            "name": "retained-payload-artifact-replay",
+            "status": "passed" if retained_payload_replayed else "not-applicable",
+            "detail": "Embedded payload bytes replay the retained delivery payload artifact recorded by the signed delivery receipt when present.",
         },
         {
             "name": "provider-response-artifact-replay",

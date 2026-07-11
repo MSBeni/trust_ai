@@ -55,10 +55,12 @@ class ProviderDeliveryWorkerTests(unittest.TestCase):
             response_body=provider_response["body"],
             response_headers=provider_response["headers"],
             delivered_at="2026-07-08T05:15:00Z",
+            payload_artifact_path=sources["payload_artifact_path"],
         )
         service_attestation = build_provider_delivery_service_attestation(
             delivery=delivery,
             payload=sources["payload"],
+            payload_artifact_path=sources["payload_artifact_path"],
             provider_operations_service=sources["provider_operations_service"],
             environment="aitrade-prod",
             service_ref="provider-delivery:trustai/github-prod",

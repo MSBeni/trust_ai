@@ -121,6 +121,7 @@ def verify_provider_delivery(
     payload: dict[str, Any] | None = None,
     *,
     payload_artifact_path: str | Path | None = None,
+    payload_artifact_bytes: bytes | None = None,
     key: str | None = None,
 ) -> ProviderDeliveryVerification:
     errors: list[str] = []
@@ -155,7 +156,12 @@ def verify_provider_delivery(
     if not isinstance(request, dict) or not request.get("method") or not request.get("path") or not request.get("body_hash"):
         errors.append("provider delivery request method, path, and body_hash are required")
 
-    if payload is None and payload_artifact_path is not None:
+    if payload is None and payload_artifact_bytes is not None:
+        try:
+            payload = _payload_from_artifact_bytes(payload_artifact_bytes)
+        except ValueError as exc:
+            errors.append(f"provider delivery payload artifact could not be loaded: {exc}")
+    elif payload is None and payload_artifact_path is not None:
         try:
             payload = load_provider_payload(payload_artifact_path)
         except (OSError, ValueError) as exc:
@@ -201,6 +207,18 @@ def verify_provider_delivery(
     if payload_artifact is not None:
         if not isinstance(payload_artifact, dict):
             errors.append("provider delivery payload_artifact must be an object")
+        elif payload_artifact_bytes is not None:
+            replay_path = payload_artifact_path or payload_artifact.get("path")
+            if not replay_path:
+                errors.append("provider delivery payload_artifact replay path is required")
+            elif payload is not None:
+                try:
+                    expected_artifact = _payload_artifact_from_bytes(replay_path, payload_artifact_bytes, payload)
+                except (OSError, ValueError) as exc:
+                    errors.append(f"provider delivery payload_artifact replay failed: {exc}")
+                else:
+                    if payload_artifact != expected_artifact:
+                        errors.append("provider delivery payload_artifact bytes do not match retained payload file")
         elif payload_artifact_path is None:
             if payload is None:
                 warnings.append("provider delivery payload artifact and payload were not replayed")
@@ -345,23 +363,37 @@ def _payload_artifact(path: str | Path, payload: dict[str, Any]) -> dict[str, An
     target = Path(path)
     if not target.is_file():
         raise ValueError(f"provider payload artifact is not a file: {target}")
-    raw = target.read_bytes()
+    return _payload_artifact_from_bytes(target, target.read_bytes(), payload)
+
+
+def _payload_artifact_from_bytes(path: str | Path, raw: bytes, payload: dict[str, Any]) -> dict[str, Any]:
     try:
         parsed = json.loads(raw.decode("utf-8-sig"))
-    except json.JSONDecodeError as exc:
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise ValueError(f"provider payload artifact is not valid JSON: {exc}") from exc
     if not isinstance(parsed, dict):
         raise ValueError("provider payload artifact must contain an object")
     if content_hash(parsed) != content_hash(payload):
         raise ValueError("provider payload artifact content does not match supplied payload")
     artifact_body = {
-        "path": str(target).replace("\\", "/"),
+        "path": str(path).replace("\\", "/"),
         "sha256": sha256_hex(raw),
         "size_bytes": len(raw),
         "content_hash": content_hash(parsed),
         "payload_hash": _payload_hash(parsed),
     }
     return {**artifact_body, "artifact_id": content_hash(artifact_body)}
+
+
+def _payload_from_artifact_bytes(raw: bytes) -> dict[str, Any]:
+    try:
+        parsed = json.loads(raw.decode("utf-8-sig"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError(f"provider payload artifact is not valid JSON: {exc}") from exc
+    if not isinstance(parsed, dict):
+        raise ValueError("provider payload artifact must contain an object")
+    return parsed
+
 
 def _credential_secret(credential_ref: str) -> str:
     if not credential_ref.startswith("env:"):

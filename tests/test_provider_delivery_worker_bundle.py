@@ -51,7 +51,10 @@ class ProviderDeliveryWorkerBundleTests(unittest.TestCase):
         write_provider_delivery_worker_receipt(paths["worker_receipt"], receipt)
         write_provider_delivery_service_attestation(paths["service_attestation"], sources["service_attestation"])
         write_provider_delivery(paths["delivery"], sources["delivery"])
-        _write_json(paths["payload"], sources["payload"])
+        source_payload_path = Path(sources["payload_artifact_path"])
+        if not source_payload_path.is_absolute():
+            source_payload_path = ROOT / source_payload_path
+        paths["payload"].write_bytes(source_payload_path.read_bytes())
         _write_json(paths["provider_operations_service"], sources["provider_operations_service"])
         _write_json(paths["provider_response"], sources["provider_response"])
         write_provider_audit_correlation(paths["provider_audit_correlation"], sources["provider_audit_correlation"])
@@ -92,9 +95,11 @@ class ProviderDeliveryWorkerBundleTests(unittest.TestCase):
         self.assertEqual(sources["delivery"]["delivery_id"], bundle["source"]["delivery_id"])
         self.assertTrue(bundle["summary"]["provider_response_replayed"])
         self.assertTrue(bundle["summary"]["provider_audit_replayed"])
+        self.assertTrue(bundle["summary"]["retained_payload_artifact_replayed"])
+        self.assertFalse(any("payload artifact was not replayed" in warning for warning in result.warnings))
         self.assertEqual(PROVIDER_DELIVERY_WORKER_BUNDLE_ENTRY_TYPE, entry["entry_type"])
         self.assertEqual(bundle["bundle_id"], entry["payload"]["bundle_id"])
-        self.assertEqual({"passed": 5}, entry["payload"]["control_summary"])
+        self.assertEqual({"passed": 6}, entry["payload"]["control_summary"])
         self.assertTrue(chain.verify_all().ok)
 
     def test_provider_delivery_worker_bundle_renders_and_extracts_sources(self):
@@ -108,6 +113,7 @@ class ProviderDeliveryWorkerBundleTests(unittest.TestCase):
             self.assertIn("TrustAI Provider Delivery Worker Bundle", markdown)
             self.assertIn("Embedded source artifacts: 8", markdown)
             self.assertIn("Provider audit replayed: True", markdown)
+            self.assertIn("Retained payload artifact replayed: True", markdown)
             self.assertEqual(8, len(extracted))
             worker_extract = extract_dir / "worker_receipt.json"
             self.assertTrue(worker_extract.exists())
@@ -141,6 +147,18 @@ class ProviderDeliveryWorkerBundleTests(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("source artifact sha256 mismatch" in error for error in result.errors))
         self.assertTrue(any("source artifact does not match embedded source" in error for error in result.errors))
+
+    def test_provider_delivery_worker_bundle_detects_payload_artifact_tamper(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            bundle, *_ = self._bundle(tmp)
+            tampered = copy.deepcopy(bundle)
+            payload_index = next(index for index, artifact in enumerate(tampered["source_artifacts"]) if artifact["name"] == "payload")
+            tampered["source_artifacts"][payload_index]["content_b64"] = base64.b64encode(b"{}").decode("ascii")
+            result = verify_provider_delivery_worker_bundle(tampered)
+
+        self.assertFalse(result.ok)
+        self.assertTrue(any("payload_artifact" in error for error in result.errors))
 
     def test_provider_delivery_worker_bundle_rejects_raw_secret(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

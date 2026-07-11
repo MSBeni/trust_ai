@@ -3,8 +3,8 @@
 Provider delivery worker bundles are self-contained offline review artifacts for
 one signed provider delivery worker receipt and the source evidence needed to
 replay it. They package the worker receipt with its provider delivery service
-attestation, provider delivery receipt, optional payload, optional provider
-operations service attestation, optional retained provider response artifact,
+attestation, provider delivery receipt, optional retained payload artifact bytes,
+optional provider operations service attestation, optional retained provider response artifact,
 and optional provider audit correlation plus provider audit-log export. The
 schema is `trustai.provider-delivery-worker-bundle/0.1`.
 
@@ -24,11 +24,11 @@ schema is `trustai.provider-delivery-worker-bundle/0.1`.
   SHA-256, canonical content hash, expected content hash, media type, size, and
   artifact ID for each embedded source.
 - `summary`: source artifact count, artifact hash roots, source object hashes,
-  provider response replay status, provider audit replay status, and worker
-  control summary.
+  provider response replay status, provider audit replay status, retained
+  payload artifact replay status, and worker control summary.
 - `controls`: derived bundle controls for offline worker replay, embedded byte
-  binding, optional provider response replay, optional provider audit-log replay,
-  and raw-secret scanning.
+  binding, retained payload artifact replay, optional provider response replay,
+  optional provider audit-log replay, and raw-secret scanning.
 - `bundle_id` and `signatures`: canonical bundle hash and detached signatures.
 
 ## Verification
@@ -39,7 +39,9 @@ schema is `trustai.provider-delivery-worker-bundle/0.1`.
 2. Review mode, reviewer ref, and RFC 3339 generation timestamp.
 3. Embedded source object shape and required source presence.
 4. Full provider delivery worker receipt replay using only embedded source
-   objects, including optional provider response and provider audit-log replay.
+   objects, including retained delivery payload artifact replay from embedded
+   payload bytes when the delivery receipt records `payload_artifact`, plus
+   optional provider response and provider audit-log replay.
 5. Embedded raw JSON source artifact byte hashes, sizes, canonical content
    hashes, artifact IDs, and one-to-one binding to embedded parsed source
    objects.
@@ -48,7 +50,10 @@ schema is `trustai.provider-delivery-worker-bundle/0.1`.
 7. Secret-like source fields are redacted references or hash/root/ref metadata.
 
 Tampering with either parsed source objects or embedded source bytes invalidates
-the bundle. The verifier does not need the original local source paths.
+the bundle. When `payload_artifact` is present, the verifier recomputes its
+recorded path, byte SHA-256, size, content hash, and payload hash from the
+embedded payload bytes. The verifier does not need the original local source
+paths.
 
 ## CLI
 
