@@ -39,15 +39,14 @@ binding key emitted by the v0.1 builder, including provider schema/timestamp,
 service worker/storage refs, all provider record roots, audit-log root, and the
 nested provider exchange fields.
 
-When supplied with the provider receipt and source artifacts, verification first
-replays `framework-runtime-service-provider-verify`, which in turn replays the
-service worker, service attestation, storage export, runtime audit, hook
-operation, hook release, and adapter matrix chain. Omitted provider/source
-artifacts during standalone verification may produce replay warnings, but they
-must not permit partial provider receipt bindings or partial provider exchange
-summaries. `--require-complete` makes missing authority categories fail
-verification. `--require-fresh` makes missing or expired freshness windows fail
-verification.
+Offline verification is fail-closed: the provider receipt and every nested
+provider/source artifact are required. Verification first replays
+`framework-runtime-service-provider-verify`, which in turn replays the service
+worker, service attestation, storage export, runtime audit, hook operation, hook
+release, and adapter matrix chain. A detached signature over partial replay
+inputs is not enough to verify the dossier. `--require-complete` makes missing
+authority categories fail verification. `--require-fresh` makes missing or
+expired freshness windows fail verification.
 
 `framework-runtime-service-authority-append` requires the provider receipt and
 all provider source artifacts. The chain entry records the dossier ID/hash,

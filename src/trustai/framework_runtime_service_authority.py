@@ -494,7 +494,7 @@ def _verify_provider_receipt_binding(
             errors.append(f"framework runtime service authority provider_receipt_binding.{field} is required")
     _verify_provider_exchange_binding(binding.get("provider_exchange"), errors)
     if provider_receipt is None:
-        warnings.append("framework runtime service authority provider receipt was not supplied; provider source was not replayed")
+        errors.append("framework runtime service authority provider receipt is required for verification")
         return
     expected = _provider_receipt_binding(provider_receipt)
     if binding != expected:

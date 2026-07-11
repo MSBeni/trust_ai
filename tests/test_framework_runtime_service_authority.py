@@ -276,6 +276,30 @@ class FrameworkRuntimeServiceAuthorityTests(unittest.TestCase):
                 self.assertFalse(result.ok)
                 self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
 
+    def test_framework_runtime_service_authority_requires_provider_replay_without_sources(self):
+        dossier, provider_receipt, *_ = self._dossier()
+
+        missing_provider_receipt = verify_framework_runtime_service_authority_dossier(
+            dossier,
+            now="2026-07-09T01:00:00Z",
+        )
+        missing_nested_sources = verify_framework_runtime_service_authority_dossier(
+            dossier,
+            provider_receipt=provider_receipt,
+            now="2026-07-09T01:00:00Z",
+        )
+
+        self.assertFalse(missing_provider_receipt.ok)
+        self.assertIn(
+            "framework runtime service authority provider receipt is required for verification",
+            missing_provider_receipt.errors,
+        )
+        self.assertFalse(missing_nested_sources.ok)
+        self.assertTrue(
+            any("provider source:" in error and "artifact is required for verification" in error for error in missing_nested_sources.errors),
+            missing_nested_sources.errors,
+        )
+
     def test_framework_runtime_service_authority_requires_freshness_when_strict(self):
         evidence = [dict(self._authority_evidence()[0])]
         evidence[0].pop("issued_at")
