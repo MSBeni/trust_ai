@@ -12,6 +12,7 @@ from trustai.deployment import (
     DEPLOYMENT_ENTRY_TYPE,
     DEPLOYMENT_IMAGE_INTEGRITY_ENTRY_TYPE,
     DEPLOYMENT_IMAGE_INTEGRITY_SCHEMA,
+    DEPLOYMENT_IMAGE_SIGNATURE_SCHEMA,
     DEPLOYMENT_MANIFEST_SCHEMA,
     HELM_CHART_VALIDATION_ENTRY_TYPE,
     HELM_CHART_VALIDATION_SCHEMA,
@@ -22,10 +23,12 @@ from trustai.deployment import (
     append_helm_chart_validation_receipt,
     append_kubernetes_release_state_receipt,
     build_deployment_image_integrity_receipt,
+    build_deployment_image_signature_artifact,
     build_deployment_manifest,
     build_helm_chart_validation_receipt,
     build_kubernetes_release_state_receipt,
     render_deployment_markdown,
+    write_deployment_image_signature_artifact,
     verify_deployment_image_integrity_receipt,
     verify_deployment_manifest,
     verify_helm_chart_validation_receipt,
@@ -135,7 +138,15 @@ class DeploymentManifestTests(unittest.TestCase):
             signature = tmp / "trustai-image.sig"
             sbom.write_text('{"sbom":"trustai","version":"0.1.0"}', encoding="utf-8")
             provenance.write_text('{"builder":"trustai-local","source":"git"}', encoding="utf-8")
-            signature.write_text("sigstore-placeholder-signature", encoding="utf-8")
+            signature_artifact = build_deployment_image_signature_artifact(
+                ROOT,
+                deployment_manifest=manifest,
+                image_digest=digest,
+                sbom_path=sbom,
+                provenance_path=provenance,
+                generated_at="2026-07-04T00:44:00Z",
+            )
+            write_deployment_image_signature_artifact(signature, signature_artifact)
             receipt = build_deployment_image_integrity_receipt(
                 ROOT,
                 deployment_manifest=manifest,
@@ -155,7 +166,7 @@ class DeploymentManifestTests(unittest.TestCase):
             self.assertTrue(result.ok, result.errors)
             self.assertEqual(DEPLOYMENT_IMAGE_INTEGRITY_SCHEMA, receipt["schema"])
             self.assertTrue(receipt["passed"])
-            self.assertEqual({"failed": 0, "passed": 10, "total": 10}, receipt["summary"])
+            self.assertEqual({"failed": 0, "passed": 11, "total": 11}, receipt["summary"])
             self.assertEqual("trustai:0.1.0", receipt["image"]["image_ref"])
             self.assertEqual(digest, receipt["image"]["image_digest"])
             self.assertEqual(f"trustai:0.1.0@{digest}", receipt["image"]["pinned_reference"])
@@ -164,12 +175,15 @@ class DeploymentManifestTests(unittest.TestCase):
             self.assertIn("sbom-artifact-bound", check_ids)
             self.assertIn("provenance-artifact-bound", check_ids)
             self.assertIn("signature-artifact-bound", check_ids)
+            self.assertIn("signature-artifact-verifies-subject", check_ids)
+            self.assertTrue(receipt["image_signature"]["verified"])
+            self.assertEqual(DEPLOYMENT_IMAGE_SIGNATURE_SCHEMA, signature_artifact["schema"])
             self.assertEqual({"sbom", "provenance", "signature"}, artifact_kinds)
             self.assertIn("deploy/docker/Dockerfile", source_paths)
             self.assertIn("src/trustai/server.py", source_paths)
             self.assertEqual(DEPLOYMENT_IMAGE_INTEGRITY_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(receipt["receipt_id"], entry["payload"]["receipt_id"])
-            self.assertEqual({"failed": 0, "passed": 10, "total": 10}, entry["payload"]["check_summary"])
+            self.assertEqual({"failed": 0, "passed": 11, "total": 11}, entry["payload"]["check_summary"])
             self.assertTrue(chain.verify_all().ok)
 
     def test_deployment_image_integrity_receipt_detects_artifact_tamper(self):
@@ -181,7 +195,14 @@ class DeploymentManifestTests(unittest.TestCase):
             signature = tmp / "trustai-image.sig"
             sbom.write_text('{"sbom":"trustai"}', encoding="utf-8")
             provenance.write_text('{"builder":"trustai-local"}', encoding="utf-8")
-            signature.write_text("sigstore-placeholder-signature", encoding="utf-8")
+            signature_artifact = build_deployment_image_signature_artifact(
+                ROOT,
+                deployment_manifest=manifest,
+                image_digest="b" * 64,
+                sbom_path=sbom,
+                provenance_path=provenance,
+            )
+            write_deployment_image_signature_artifact(signature, signature_artifact)
             receipt = build_deployment_image_integrity_receipt(
                 ROOT,
                 deployment_manifest=manifest,
@@ -198,6 +219,32 @@ class DeploymentManifestTests(unittest.TestCase):
         self.assertTrue(any("artifact signature sha256 mismatch" in error for error in result.errors))
         self.assertTrue(any("deployment image integrity artifacts does not match replayed sources" in error for error in result.errors))
 
+
+    def test_deployment_image_integrity_rejects_placeholder_signature_artifact(self):
+        manifest = build_deployment_manifest(ROOT, environment="test-byoc")
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            sbom = tmp / "trustai-image.sbom.json"
+            provenance = tmp / "trustai-image.provenance.json"
+            signature = tmp / "trustai-image.sig"
+            sbom.write_text('{"sbom":"trustai"}', encoding="utf-8")
+            provenance.write_text('{"builder":"trustai-local"}', encoding="utf-8")
+            signature.write_text("sigstore-placeholder-signature", encoding="utf-8")
+            receipt = build_deployment_image_integrity_receipt(
+                ROOT,
+                deployment_manifest=manifest,
+                image_digest="sha256:" + "d" * 64,
+                sbom_path=sbom,
+                provenance_path=provenance,
+                signature_path=signature,
+            )
+            result = verify_deployment_image_integrity_receipt(receipt, root=ROOT, deployment_manifest=manifest)
+
+        self.assertFalse(result.ok)
+        self.assertFalse(receipt["passed"])
+        self.assertFalse(receipt["image_signature"]["verified"])
+        self.assertTrue(any("signature-artifact-verifies-subject" in error for error in result.errors))
+
     def test_cli_deployment_image_integrity_round_trip(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)
@@ -210,7 +257,6 @@ class DeploymentManifestTests(unittest.TestCase):
             signature = tmp / "trustai-image.sig"
             sbom.write_text('{"sbom":"trustai","version":"0.1.0"}', encoding="utf-8")
             provenance.write_text('{"builder":"trustai-local","source":"git"}', encoding="utf-8")
-            signature.write_text("sigstore-placeholder-signature", encoding="utf-8")
             env = {**os.environ, "PYTHONPATH": str(ROOT / "src")}
             base = [sys.executable, "-m", "trustai"]
             digest = "sha256:" + "c" * 64
@@ -224,6 +270,26 @@ class DeploymentManifestTests(unittest.TestCase):
                     "test-byoc",
                     "--out",
                     str(manifest_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+            )
+            subprocess.run(
+                base
+                + [
+                    "deployment-image-signature",
+                    str(manifest_path),
+                    "--root",
+                    str(ROOT),
+                    "--image-digest",
+                    digest,
+                    "--sbom",
+                    str(sbom),
+                    "--provenance",
+                    str(provenance),
+                    "--out",
+                    str(signature),
                 ],
                 cwd=ROOT,
                 env=env,

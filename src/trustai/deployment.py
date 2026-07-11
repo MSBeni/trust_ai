@@ -42,6 +42,7 @@ HELM_CHART_VALIDATION_SCHEMA = "trustai.helm-chart-validation/0.1"
 HELM_CHART_VALIDATION_ENTRY_TYPE = "deployment.helm_chart.validated"
 DEPLOYMENT_IMAGE_INTEGRITY_SCHEMA = "trustai.deployment-image-integrity/0.1"
 DEPLOYMENT_IMAGE_INTEGRITY_ENTRY_TYPE = "deployment.image.integrity_attested"
+DEPLOYMENT_IMAGE_SIGNATURE_SCHEMA = "trustai.deployment-image-signature/0.1"
 KUBERNETES_RELEASE_STATE_SCHEMA = "trustai.kubernetes-release-state/0.1"
 KUBERNETES_RELEASE_STATE_ENTRY_TYPE = "deployment.kubernetes_release_state.recorded"
 DEFAULT_IMAGE_INTEGRITY_SOURCE_PATHS = (
@@ -391,6 +392,7 @@ def build_deployment_image_integrity_receipt(
         provenance_path=provenance_path,
         signature_path=signature_path,
         generated_at=generated_at or utc_now(),
+        key=key,
     )
     receipt_id = content_hash(body)
     return {
@@ -495,8 +497,9 @@ def verify_deployment_image_integrity_receipt(
                 provenance_path=artifact_paths["provenance"],
                 signature_path=artifact_paths["signature"],
                 generated_at=body.get("generated_at"),
+                key=key,
             )
-            for field in ("image", "deployment_manifest", "source_files", "artifacts", "checks", "summary", "passed", "limitations"):
+            for field in ("image", "deployment_manifest", "source_files", "image_signature", "artifacts", "checks", "summary", "passed", "limitations"):
                 if body.get(field) != expected_body.get(field):
                     errors.append(f"deployment image integrity {field} does not match replayed sources")
 
@@ -534,6 +537,7 @@ def append_deployment_image_integrity_receipt(
         "receipt_hash": content_hash(receipt),
         "image": receipt.get("image"),
         "deployment_manifest": receipt.get("deployment_manifest"),
+        "image_signature": receipt.get("image_signature"),
         "artifact_count": len(receipt.get("artifacts", [])),
         "source_file_count": len(receipt.get("source_files", [])),
         "check_summary": receipt.get("summary"),
@@ -542,6 +546,39 @@ def append_deployment_image_integrity_receipt(
     return chain.append(DEPLOYMENT_IMAGE_INTEGRITY_ENTRY_TYPE, payload, key=key, timestamp=receipt.get("generated_at"))
 
 
+
+
+def build_deployment_image_signature_artifact(
+    root: str | Path = ".",
+    *,
+    deployment_manifest: dict[str, Any],
+    image_digest: str,
+    sbom_path: str | Path,
+    provenance_path: str | Path,
+    image_ref: str | None = None,
+    generated_at: str | None = None,
+    key: str | None = None,
+) -> dict[str, Any]:
+    root_path = Path(root)
+    values = _values_summary(root_path / "deploy" / "helm" / "trustai" / "values.yaml")
+    image = _deployment_image_record(
+        deployment_manifest,
+        chart_values=values.get("image") if isinstance(values.get("image"), dict) else {},
+        image_ref=image_ref,
+        image_digest=image_digest,
+    )
+    manifest_binding = _deployment_manifest_validation_binding(root_path, deployment_manifest)
+    sbom_record = _artifact_record(root_path, sbom_path, "sbom")
+    provenance_record = _artifact_record(root_path, provenance_path, "provenance")
+    timestamp = generated_at or utc_now()
+    subject = _deployment_image_signature_subject(
+        image=image,
+        deployment_manifest_binding=manifest_binding,
+        sbom_record=sbom_record,
+        provenance_record=provenance_record,
+    )
+    payload = {"schema": DEPLOYMENT_IMAGE_SIGNATURE_SCHEMA, "generated_at": timestamp, "subject": subject}
+    return {**payload, "signature": sign_value(payload, key)}
 
 def build_kubernetes_release_state_receipt(
     root: str | Path = ".",
@@ -809,6 +846,13 @@ def write_deployment_image_integrity_receipt(path: str | Path, receipt: dict[str
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(receipt, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def write_deployment_image_signature_artifact(path: str | Path, artifact: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(artifact, indent=2, sort_keys=True), encoding="utf-8")
+
 
 def load_helm_chart_validation_receipt(path: str | Path) -> dict[str, Any]:
     value = json.loads(Path(path).read_text(encoding="utf-8-sig"))
@@ -1303,6 +1347,7 @@ def _deployment_image_integrity_body(
     provenance_path: str | Path,
     signature_path: str | Path,
     generated_at: str | None,
+    key: str | None,
 ) -> dict[str, Any]:
     source_records = [_source_record(root, path) for path in DEFAULT_IMAGE_INTEGRITY_SOURCE_PATHS]
     values = _values_summary(root / "deploy" / "helm" / "trustai" / "values.yaml")
@@ -1313,17 +1358,26 @@ def _deployment_image_integrity_body(
         image_digest=image_digest,
     )
     manifest_binding = _deployment_manifest_validation_binding(root, deployment_manifest)
-    artifacts = [
-        _artifact_record(root, sbom_path, "sbom"),
-        _artifact_record(root, provenance_path, "provenance"),
-        _artifact_record(root, signature_path, "signature"),
-    ]
+    sbom_artifact = _artifact_record(root, sbom_path, "sbom")
+    provenance_artifact = _artifact_record(root, provenance_path, "provenance")
+    signature_artifact = _artifact_record(root, signature_path, "signature")
+    artifacts = [sbom_artifact, provenance_artifact, signature_artifact]
+    signature_verification = _deployment_image_signature_verification(
+        root,
+        signature_path,
+        image=image,
+        deployment_manifest_binding=manifest_binding,
+        sbom_record=sbom_artifact,
+        provenance_record=provenance_artifact,
+        key=key,
+    )
     checks = _deployment_image_integrity_checks(
         root,
         image=image,
         source_records=source_records,
         artifacts=artifacts,
         deployment_manifest_binding=manifest_binding,
+        signature_verification=signature_verification,
     )
     summary = _helm_check_summary(checks)
     passed = summary.get("failed", 0) == 0 and summary.get("passed", 0) == len(checks)
@@ -1333,6 +1387,7 @@ def _deployment_image_integrity_body(
         "image": image,
         "deployment_manifest": manifest_binding,
         "source_files": source_records,
+        "image_signature": signature_verification,
         "artifacts": artifacts,
         "checks": checks,
         "summary": summary,
@@ -1381,6 +1436,7 @@ def _deployment_image_integrity_checks(
     source_records: list[dict[str, Any]],
     artifacts: list[dict[str, Any]],
     deployment_manifest_binding: dict[str, Any] | None,
+    signature_verification: dict[str, Any],
 ) -> list[dict[str, Any]]:
     source_paths = {source.get("path") for source in source_records if isinstance(source, dict)}
     artifact_kinds = {artifact.get("kind") for artifact in artifacts if isinstance(artifact, dict) and _is_hex_sha256(str(artifact.get("sha256") or ""))}
@@ -1451,9 +1507,97 @@ def _deployment_image_integrity_checks(
             "The receipt binds an image signature artifact by sha256 and size.",
             "artifacts/trustai-image.sig",
         ),
+        _helm_check(
+            "signature-artifact-verifies-subject",
+            bool(signature_verification.get("verified")),
+            "The image signature artifact verifies against the image digest, deployment manifest, SBOM, and provenance subject.",
+            "artifacts/trustai-image.sig",
+        ),
     ]
 
 
+
+def _deployment_image_signature_subject(
+    *,
+    image: dict[str, Any],
+    deployment_manifest_binding: dict[str, Any] | None,
+    sbom_record: dict[str, Any],
+    provenance_record: dict[str, Any],
+) -> dict[str, Any]:
+    manifest = deployment_manifest_binding or {}
+    return {
+        "image": {
+            "image_ref": image.get("image_ref"),
+            "image_digest": image.get("image_digest"),
+            "pinned_reference": image.get("pinned_reference"),
+        },
+        "deployment_manifest": {
+            "manifest_id": manifest.get("manifest_id"),
+            "manifest_hash": manifest.get("manifest_hash"),
+        },
+        "artifacts": [
+            _deployment_image_signature_artifact_subject(sbom_record),
+            _deployment_image_signature_artifact_subject(provenance_record),
+        ],
+    }
+
+
+def _deployment_image_signature_artifact_subject(artifact: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "kind": artifact.get("kind"),
+        "sha256": artifact.get("sha256"),
+        "size_bytes": artifact.get("size_bytes"),
+    }
+
+
+def _deployment_image_signature_verification(
+    root: Path,
+    signature_path: str | Path,
+    *,
+    image: dict[str, Any],
+    deployment_manifest_binding: dict[str, Any] | None,
+    sbom_record: dict[str, Any],
+    provenance_record: dict[str, Any],
+    key: str | None,
+) -> dict[str, Any]:
+    expected_subject = _deployment_image_signature_subject(
+        image=image,
+        deployment_manifest_binding=deployment_manifest_binding,
+        sbom_record=sbom_record,
+        provenance_record=provenance_record,
+    )
+    result: dict[str, Any] = {
+        "schema": DEPLOYMENT_IMAGE_SIGNATURE_SCHEMA,
+        "path": str(signature_path),
+        "subject_hash": content_hash(expected_subject),
+        "verified": False,
+        "errors": [],
+    }
+    try:
+        artifact = json.loads(_resolve_artifact_path(root, signature_path).read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError) as exc:
+        result["errors"].append(f"image signature artifact is not valid JSON: {exc}")
+        return result
+    if not isinstance(artifact, dict):
+        result["errors"].append("image signature artifact must contain an object")
+        return result
+    if artifact.get("schema") != DEPLOYMENT_IMAGE_SIGNATURE_SCHEMA:
+        result["errors"].append(f"unsupported image signature schema: {artifact.get('schema')}")
+    if artifact.get("subject") != expected_subject:
+        result["errors"].append("image signature subject does not match replayed image, manifest, SBOM, and provenance bindings")
+    payload = {
+        "schema": artifact.get("schema"),
+        "generated_at": artifact.get("generated_at"),
+        "subject": artifact.get("subject"),
+    }
+    signature = artifact.get("signature")
+    if not isinstance(signature, dict) or not verify_value(payload, signature, key):
+        result["errors"].append("image signature artifact signature verification failed")
+    else:
+        result["signature_key_id"] = signature.get("key_id")
+        result["signature_provider"] = signature.get("provider")
+    result["verified"] = not result["errors"]
+    return result
 def _artifact_record(root: Path, path: str | Path, kind: str) -> dict[str, Any]:
     artifact_path = _resolve_artifact_path(root, path)
     data = artifact_path.read_bytes()

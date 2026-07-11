@@ -516,6 +516,7 @@ from .deployment import (
     append_helm_chart_validation_receipt,
     append_kubernetes_release_state_receipt,
     build_deployment_image_integrity_receipt,
+    build_deployment_image_signature_artifact,
     build_deployment_manifest,
     build_helm_chart_validation_receipt,
     build_kubernetes_release_state_receipt,
@@ -528,6 +529,7 @@ from .deployment import (
     verify_helm_chart_validation_receipt,
     verify_kubernetes_release_state_receipt,
     write_deployment_image_integrity_receipt,
+    write_deployment_image_signature_artifact,
     write_deployment_manifest,
     write_deployment_markdown,
     write_helm_chart_validation_receipt,
@@ -7863,6 +7865,29 @@ def cmd_helm_chart_validation_append(args: argparse.Namespace) -> int:
     print(f"Helm chart validation entry id: {entry['entry_id']}")
     print(f"receipt id: {receipt['receipt_id']}")
     print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+
+def cmd_deployment_image_signature(args: argparse.Namespace) -> int:
+    try:
+        deployment_manifest = load_deployment_manifest(args.deployment_manifest)
+        artifact = build_deployment_image_signature_artifact(
+            args.root,
+            deployment_manifest=deployment_manifest,
+            image_digest=args.image_digest,
+            image_ref=args.image_ref,
+            sbom_path=args.sbom,
+            provenance_path=args.provenance,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"deployment image signature failed: {exc}", file=sys.stderr)
+        return 1
+    write_deployment_image_signature_artifact(args.out, artifact)
+    print(f"deployment image signature artifact: {args.out}")
+    print(f"image digest: {artifact['subject']['image']['image_digest']}")
     return 0
 
 
@@ -18386,6 +18411,17 @@ def build_parser() -> argparse.ArgumentParser:
     helm_validation_append.set_defaults(func=cmd_helm_chart_validation_append)
 
 
+    image_signature = subparsers.add_parser("deployment-image-signature", help="write a signed deployment image subject artifact for image integrity receipts")
+    image_signature.add_argument("deployment_manifest")
+    image_signature.add_argument("--root", default=".")
+    image_signature.add_argument("--image-digest", required=True)
+    image_signature.add_argument("--image-ref")
+    image_signature.add_argument("--sbom", required=True)
+    image_signature.add_argument("--provenance", required=True)
+    image_signature.add_argument("--generated-at")
+    image_signature.add_argument("--out", default="artifacts/trustai-image.sig")
+    image_signature.add_argument("--key")
+    image_signature.set_defaults(func=cmd_deployment_image_signature)
     image_integrity = subparsers.add_parser("deployment-image-integrity", help="write a signed deployment image digest, SBOM, provenance, and signature receipt")
     image_integrity.add_argument("deployment_manifest")
     image_integrity.add_argument("--root", default=".")

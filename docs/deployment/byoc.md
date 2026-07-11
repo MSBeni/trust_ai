@@ -50,7 +50,7 @@ python -m trustai kubernetes-release-state artifacts/deployment-manifest.json ar
 python -m trustai kubernetes-release-state-verify artifacts/kubernetes-release-state.json artifacts/deployment-manifest.json artifacts/helm-chart-validation.json --root .
 '{"sbom":"trustai","version":"0.1.0"}' | Set-Content -NoNewline artifacts/trustai-image.sbom.json
 '{"builder":"trustai-local","source":"git"}' | Set-Content -NoNewline artifacts/trustai-image.provenance.json
-'sigstore-placeholder-signature' | Set-Content -NoNewline artifacts/trustai-image.sig
+python -m trustai deployment-image-signature artifacts/deployment-manifest.json --root . --image-digest sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa --sbom artifacts/trustai-image.sbom.json --provenance artifacts/trustai-image.provenance.json --out artifacts/trustai-image.sig
 python -m trustai deployment-image-integrity artifacts/deployment-manifest.json --root . --image-digest sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa --sbom artifacts/trustai-image.sbom.json --provenance artifacts/trustai-image.provenance.json --signature artifacts/trustai-image.sig --out artifacts/deployment-image-integrity.json
 python -m trustai deployment-image-integrity-verify artifacts/deployment-image-integrity.json artifacts/deployment-manifest.json --root .
 python -m trustai deployment-image-integrity-append artifacts/deployment-image-integrity.json artifacts/deployment-manifest.json --root . --state .trustai/image-integrity-demo/evidence-chain.json --tenant image-integrity-local --out artifacts/deployment-image-integrity-entry.json
