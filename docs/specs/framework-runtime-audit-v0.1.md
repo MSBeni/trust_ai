@@ -4,7 +4,7 @@ A framework runtime audit receipt binds a framework hook operation to an audit
 export from the runtime or provider that hosted the hook. The hook operation
 proves that TrustAI normalized a source trace into adapter events; the runtime
 audit receipt proves that a provider/runtime audit export contains a matching
-capture event for the same framework, trace, operation ref, runtime instance,
+capture event for the same framework, source or derived trace, operation ref, runtime instance,
 and collector hook.
 
 This closes the evidence gap between local hook replay and provider-owned
@@ -19,7 +19,7 @@ A receipt uses schema `trustai.framework-runtime-audit/0.1` and contains:
 
 - mode, environment, export timestamp, provider, and redacted credential ref;
 - framework hook operation ID/hash/ref, runtime package/version/instance,
-  hook release hash, adapter matrix binding, source trace hash, event root, and
+  hook release hash, adapter matrix binding, derived OTel trace ID, source trace ID, source trace hash, event root, and
   per-trace roots;
 - runtime/provider audit export ref, audit log ref/root, window and cursor refs,
   export hash, event count, and event root;

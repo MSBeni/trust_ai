@@ -32,6 +32,16 @@ promotion decision offline.
 }
 ```
 
+
+## Compiler Rules
+
+The compiler must refuse to emit a JSON or PDF pack unless the supplied eval and
+gate entries are exact entries from the supplied evidence chain, are ordered
+after the contract registration, reference the packed contract hash, contract
+ID, and agent, and expose an eval results hash that matches the embedded
+results. The supplied gate decision must match the signed gate entry for all
+verifier-replayed decision fields, and its `gate_entry_id` must bind to the
+supplied gate entry.
 ## Verification Rules
 
 An offline verifier must reject the pack when any of these checks fail:

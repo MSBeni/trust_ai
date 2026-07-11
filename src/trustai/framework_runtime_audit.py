@@ -34,6 +34,7 @@ OPERATION_BINDING_EXPECTED_FIELDS = (
     "matrix_id",
     "matrix_hash",
     "trace_id",
+    "source_trace_id",
     "source_trace_hash",
     "event_count",
     "event_root",
@@ -380,6 +381,7 @@ def _operation_binding(operation: dict[str, Any]) -> dict[str, Any]:
         "matrix_id": release_binding.get("matrix_id"),
         "matrix_hash": release_binding.get("matrix_hash"),
         "trace_id": trace.get("trace_id"),
+        "source_trace_id": trace.get("source_trace_id"),
         "source_trace_hash": trace.get("source_trace_hash"),
         "event_count": trace.get("event_count"),
         "event_root": trace.get("event_root"),
@@ -586,6 +588,11 @@ def _normalize_audit_events(audit_export: dict[str, Any]) -> list[dict[str, Any]
 
 def _matching_events(events: list[dict[str, Any]], binding: dict[str, Any]) -> list[dict[str, Any]]:
     matches: list[dict[str, Any]] = []
+    accepted_trace_ids = {
+        str(value)
+        for value in (binding.get("trace_id"), binding.get("source_trace_id"))
+        if value not in (None, "")
+    }
     for event in events:
         operation_ref = event.get("operation_ref") or event.get("framework_hook_operation_ref")
         operation_id = event.get("operation_id") or event.get("framework_hook_operation_id")
@@ -594,7 +601,8 @@ def _matching_events(events: list[dict[str, Any]], binding: dict[str, Any]) -> l
             continue
         if str(event.get("framework") or "").strip().lower().replace("-", "_") != str(binding.get("framework") or ""):
             continue
-        if str(event.get("trace_id") or event.get("traceId") or "") != str(binding.get("trace_id") or ""):
+        event_trace_id = str(event.get("trace_id") or event.get("traceId") or "")
+        if event_trace_id not in accepted_trace_ids:
             continue
         if str(event.get("runtime_instance_ref") or "") != str(binding.get("runtime_instance_ref") or ""):
             continue
@@ -615,6 +623,14 @@ def _require_audit_event_fields(event: dict[str, Any]) -> None:
 
 
 def _validate_audit_event_against_binding(event: dict[str, Any], binding: dict[str, Any]) -> None:
+    accepted_trace_ids = {
+        str(value)
+        for value in (binding.get("trace_id"), binding.get("source_trace_id"))
+        if value not in (None, "")
+    }
+    event_trace_id = str(event.get("trace_id") or event.get("traceId") or "")
+    if event_trace_id not in accepted_trace_ids:
+        raise ValueError("framework runtime audit matched event trace_id does not match operation binding")
     comparisons = {
         "collector_hook_ref": "collector_hook_ref",
         "hook_release_hash": "hook_release_hash",

@@ -83,6 +83,55 @@ class ProofPackFlowTests(unittest.TestCase):
             self.assertTrue((tmp / "pack.json").exists())
             self.assertTrue((tmp / "pack.pdf").read_bytes().startswith(b"%PDF"))
 
+    def test_compile_rejects_eval_entry_not_in_supplied_chain(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            contract = load_contract(CONTRACT)
+            results = json.loads(RESULTS.read_text(encoding="utf-8"))
+            chain = EvidenceChain.load(tmp / "chain.json", tenant_id="test")
+            register_contract(chain, contract)
+            eval_entry, gate_entry, decision = append_eval_and_gate(chain, contract, results)
+
+            other_chain = EvidenceChain.load(tmp / "other-chain.json", tenant_id="other")
+            register_contract(other_chain, contract)
+            other_eval_entry, _other_gate_entry, _other_decision = append_eval_and_gate(other_chain, contract, results)
+            out_path = tmp / "bad-pack.json"
+
+            with self.assertRaisesRegex(ValueError, "eval_entry is not part of the supplied evidence chain"):
+                compile_proof_pack(chain, contract, other_eval_entry, gate_entry, decision, out_path=out_path)
+            self.assertFalse(out_path.exists())
+
+    def test_compile_rejects_entries_for_different_contract(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            contract = load_contract(CONTRACT)
+            other_contract = json.loads(json.dumps(contract))
+            other_contract["id"] = f"{contract['id']}-other"
+            results = json.loads(RESULTS.read_text(encoding="utf-8"))
+            chain = EvidenceChain.load(tmp / "chain.json", tenant_id="test")
+            register_contract(chain, contract)
+            append_eval_and_gate(chain, contract, results)
+            register_contract(chain, other_contract)
+            other_eval_entry, other_gate_entry, other_decision = append_eval_and_gate(chain, other_contract, results)
+
+            with self.assertRaisesRegex(ValueError, "eval_entry contract_hash does not match contract"):
+                compile_proof_pack(chain, contract, other_eval_entry, other_gate_entry, other_decision)
+
+    def test_compile_rejects_decision_not_bound_to_gate_entry(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            chain = EvidenceChain.load(tmp / "chain.json", tenant_id="test")
+            contract = load_contract(CONTRACT)
+            register_contract(chain, contract)
+            results = json.loads(RESULTS.read_text(encoding="utf-8"))
+            eval_entry, gate_entry, decision = append_eval_and_gate(chain, contract, results)
+            bad_decision = {**decision, "gate_entry_id": "not-the-gate-entry"}
+            out_path = tmp / "bad-pack.json"
+
+            with self.assertRaisesRegex(ValueError, "decision gate_entry_id does not match gate entry"):
+                compile_proof_pack(chain, contract, eval_entry, gate_entry, bad_decision, out_path=out_path)
+            self.assertFalse(out_path.exists())
+
     def test_proof_pack_includes_and_verifies_delegation_graph(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             pack, graph = self._build_pack_with_delegation_graph(Path(tmp_dir))
