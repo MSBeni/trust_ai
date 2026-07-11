@@ -59,6 +59,7 @@ def build_provider_operations_service_attestation(
     audit_stream: dict[str, Any] | None = None,
     audit_correlation: dict[str, Any] | None = None,
     callback_store_db_path: str | Path | None = None,
+    callback_store_source_artifacts: list[dict[str, Any]] | None = None,
     mode: str = "provider-operations-attested",
     environment: str = "local",
     service_ref: str,
@@ -113,6 +114,7 @@ def build_provider_operations_service_attestation(
         audit_stream=audit_stream,
         audit_correlation=audit_correlation,
         callback_store_db_path=callback_store_db_path,
+        callback_store_source_artifacts=callback_store_source_artifacts,
         key=key,
     )
     if not source_result.ok:
@@ -256,6 +258,7 @@ def verify_provider_operations_service_attestation(
     audit_stream: dict[str, Any] | None = None,
     audit_correlation: dict[str, Any] | None = None,
     callback_store_db_path: str | Path | None = None,
+    callback_store_source_artifacts: list[dict[str, Any]] | None = None,
     key: str | None = None,
 ) -> ProviderOperationsServiceVerification:
     errors: list[str] = []
@@ -332,6 +335,7 @@ def verify_provider_operations_service_attestation(
             audit_stream=audit_stream,
             audit_correlation=audit_correlation,
             callback_store_db_path=callback_store_db_path,
+            callback_store_source_artifacts=callback_store_source_artifacts,
             key=key,
         )
         if not source_result.ok:
@@ -385,6 +389,7 @@ def _verify_sources(
     audit_stream: dict[str, Any] | None,
     audit_correlation: dict[str, Any] | None,
     callback_store_db_path: str | Path | None,
+    callback_store_source_artifacts: list[dict[str, Any]] | None,
     key: str | None,
 ) -> ProviderOperationsServiceVerification:
     errors: list[str] = []
@@ -418,7 +423,7 @@ def _verify_sources(
         ("provider installation", verify_provider_installation_manifest(provider_installation, key=key)),
         (
             "callback store",
-            verify_provider_callback_store_manifest(callback_store, db_path=callback_store_db_path, key=key)
+            verify_provider_callback_store_manifest(callback_store, db_path=callback_store_db_path, source_artifacts=callback_store_source_artifacts, key=key)
             if callback_store is not None and callback_store_db_path is not None
             else None,
         ),
@@ -429,6 +434,7 @@ def _verify_sources(
                 provider_installations=[provider_installation],
                 callback_store_manifest=callback_store,
                 callback_store_db_path=callback_store_db_path,
+                callback_store_source_artifacts=callback_store_source_artifacts,
                 key=key,
             ),
         ),
@@ -438,6 +444,7 @@ def _verify_sources(
                 callback_storage,
                 callback_store_manifest=callback_store,
                 callback_store_db_path=callback_store_db_path,
+                callback_store_source_artifacts=callback_store_source_artifacts,
                 provider_ingress_manifest=provider_ingress,
                 key=key,
             ),

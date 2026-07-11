@@ -46,9 +46,9 @@ Supported modes:
 - replay window between 1 and 600 seconds;
 - required network-policy and rate-limit references;
 - provider endpoint signature schemes and source installation IDs/hashes;
-- optional replay of provider installation manifests and callback-store evidence.
+- provider installation replay plus callback-store replay with source artifacts when callback-store evidence is supplied.
 
-Verifier warnings are emitted when source artifacts are not supplied, WAF or DNS
+Verifier warnings are emitted when non-required source artifacts are not supplied, WAF or DNS
 references are missing, or a non-operational mode is used.
 
 ## Chain Entry

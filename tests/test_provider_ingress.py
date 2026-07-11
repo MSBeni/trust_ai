@@ -89,6 +89,7 @@ class ProviderIngressTests(unittest.TestCase):
                 provider_installations=[installation],
                 callback_store_manifest=callback_store,
                 callback_store_db_path=db_path,
+                callback_store_source_artifacts=[installation],
             )
 
             self.assertTrue(result.ok, result.errors)
@@ -107,6 +108,7 @@ class ProviderIngressTests(unittest.TestCase):
                 provider_installations=[installation],
                 callback_store_manifest=callback_store,
                 callback_store_db_path=db_path,
+                callback_store_source_artifacts=[installation],
             )
 
             self.assertEqual(PROVIDER_INGRESS_ENTRY_TYPE, entry["entry_type"])
@@ -165,6 +167,8 @@ class ProviderIngressTests(unittest.TestCase):
                 str(callback_store_path),
                 "--callback-store-db",
                 str(db_path),
+                "--callback-store-artifact",
+                str(installation_path),
             ]
 
             subprocess.run(
@@ -252,6 +256,7 @@ class ProviderIngressTests(unittest.TestCase):
                 provider_installations=[installation],
                 callback_store_manifest=callback_store,
                 callback_store_db_path=db_path,
+                callback_store_source_artifacts=[installation],
             )
             self.assertTrue(result.ok, result.errors)
             self.assertEqual(manifest["ingress_manifest_id"], entry["payload"]["ingress_manifest_id"])

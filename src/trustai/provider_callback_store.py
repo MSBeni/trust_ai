@@ -285,7 +285,8 @@ def verify_provider_callback_store_manifest(
         errors.append("provider callback store source_artifacts must be a list")
         manifest_sources = []
     if source_artifacts is None:
-        warnings.append("provider callback store source artifacts were not supplied; source hashes were not replayed")
+        if manifest_sources:
+            errors.append("provider callback store source artifacts are required for verification")
     elif source_records != manifest_sources:
         errors.append("provider callback store source artifact summaries do not match supplied artifacts")
 

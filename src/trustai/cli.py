@@ -10048,6 +10048,7 @@ def _load_provider_operations_service_sources(args: argparse.Namespace) -> dict[
         "audit_worker": load_provider_audit_worker_receipt(args.audit_worker),
         "credential_custody": load_provider_credential_custody_receipt(args.credential_custody),
         "callback_store": load_provider_callback_store_manifest(args.callback_store) if args.callback_store else None,
+        "callback_store_source_artifacts": _load_provider_callback_artifacts(getattr(args, "callback_store_artifact", []) or []) or None,
         "audit_stream": load_provider_audit_stream_receipt(args.audit_stream) if args.audit_stream else None,
         "audit_correlation": load_provider_audit_correlation(args.audit_correlation) if args.audit_correlation else None,
         "callback_store_db_path": args.callback_store_db,
@@ -10065,7 +10066,7 @@ def _load_provider_operations_authority_sources(args: argparse.Namespace) -> dic
         "audit_worker",
         "credential_custody",
     ]
-    optional = ["callback_store", "callback_store_db", "audit_stream", "audit_correlation"]
+    optional = ["callback_store", "callback_store_db", "callback_store_artifact", "audit_stream", "audit_correlation"]
     supplied = [name for name in core + optional if getattr(args, name, None)]
     if not supplied:
         return {}
@@ -10386,6 +10387,7 @@ def _load_optional_provider_ingress(path: str | None) -> dict | None:
 def cmd_provider_callback_storage(args: argparse.Namespace) -> int:
     try:
         callback_store = load_provider_callback_store_manifest(args.callback_store)
+        callback_store_artifacts = _load_provider_callback_artifacts(args.callback_store_artifact) if args.callback_store_artifact else None
         provider_ingress = _load_optional_provider_ingress(args.provider_ingress)
         manifest = build_provider_callback_storage_manifest(
             storage_ref=args.storage_ref,
@@ -10416,6 +10418,7 @@ def cmd_provider_callback_storage(args: argparse.Namespace) -> int:
             manifest,
             callback_store_manifest=callback_store,
             callback_store_db_path=args.callback_store_db,
+            callback_store_source_artifacts=callback_store_artifacts,
             provider_ingress_manifest=provider_ingress,
             key=args.key,
         )
@@ -10441,6 +10444,7 @@ def cmd_provider_callback_storage_verify(args: argparse.Namespace) -> int:
     try:
         manifest = load_provider_callback_storage_manifest(args.manifest)
         callback_store = load_provider_callback_store_manifest(args.callback_store) if args.callback_store else None
+        callback_store_artifacts = _load_provider_callback_artifacts(args.callback_store_artifact) if args.callback_store_artifact else None
         provider_ingress = _load_optional_provider_ingress(args.provider_ingress)
     except (OSError, ValueError) as exc:
         print(f"provider callback storage verification failed: {exc}", file=sys.stderr)
@@ -10449,6 +10453,7 @@ def cmd_provider_callback_storage_verify(args: argparse.Namespace) -> int:
         manifest,
         callback_store_manifest=callback_store,
         callback_store_db_path=args.callback_store_db,
+        callback_store_source_artifacts=callback_store_artifacts,
         provider_ingress_manifest=provider_ingress,
         key=args.key,
     )
@@ -10468,6 +10473,7 @@ def cmd_provider_callback_storage_append(args: argparse.Namespace) -> int:
     try:
         manifest = load_provider_callback_storage_manifest(args.manifest)
         callback_store = load_provider_callback_store_manifest(args.callback_store) if args.callback_store else None
+        callback_store_artifacts = _load_provider_callback_artifacts(args.callback_store_artifact) if args.callback_store_artifact else None
         provider_ingress = _load_optional_provider_ingress(args.provider_ingress)
     except (OSError, ValueError) as exc:
         print(f"provider callback storage append failed: {exc}", file=sys.stderr)
@@ -10479,6 +10485,7 @@ def cmd_provider_callback_storage_append(args: argparse.Namespace) -> int:
             manifest,
             callback_store_manifest=callback_store,
             callback_store_db_path=args.callback_store_db,
+            callback_store_source_artifacts=callback_store_artifacts,
             provider_ingress_manifest=provider_ingress,
             key=args.key,
         )
@@ -10701,6 +10708,7 @@ def cmd_provider_ingress(args: argparse.Namespace) -> int:
     try:
         installations = _load_provider_ingress_installations(args.provider_installation)
         callback_store = _load_optional_provider_callback_store(args.callback_store)
+        callback_store_artifacts = _load_provider_callback_artifacts(args.callback_store_artifact) if args.callback_store_artifact else None
         manifest = build_provider_ingress_manifest(
             ingress_base_url=args.ingress_base_url,
             ingress_ref=args.ingress_ref,
@@ -10725,6 +10733,7 @@ def cmd_provider_ingress(args: argparse.Namespace) -> int:
             provider_installations=installations,
             callback_store_manifest=callback_store,
             callback_store_db_path=args.callback_store_db,
+            callback_store_source_artifacts=callback_store_artifacts,
             key=args.key,
         )
     except (OSError, ValueError) as exc:
@@ -10750,6 +10759,7 @@ def cmd_provider_ingress_verify(args: argparse.Namespace) -> int:
         manifest = load_provider_ingress_manifest(args.manifest)
         installations = _load_provider_ingress_installations(args.provider_installation) if args.provider_installation else None
         callback_store = _load_optional_provider_callback_store(args.callback_store)
+        callback_store_artifacts = _load_provider_callback_artifacts(args.callback_store_artifact) if args.callback_store_artifact else None
     except (OSError, ValueError) as exc:
         print(f"provider ingress verification failed: {exc}", file=sys.stderr)
         return 1
@@ -10758,6 +10768,7 @@ def cmd_provider_ingress_verify(args: argparse.Namespace) -> int:
         provider_installations=installations,
         callback_store_manifest=callback_store,
         callback_store_db_path=args.callback_store_db,
+        callback_store_source_artifacts=callback_store_artifacts,
         key=args.key,
     )
     if result.ok:
@@ -10777,6 +10788,7 @@ def cmd_provider_ingress_append(args: argparse.Namespace) -> int:
         manifest = load_provider_ingress_manifest(args.manifest)
         installations = _load_provider_ingress_installations(args.provider_installation) if args.provider_installation else None
         callback_store = _load_optional_provider_callback_store(args.callback_store)
+        callback_store_artifacts = _load_provider_callback_artifacts(args.callback_store_artifact) if args.callback_store_artifact else None
     except (OSError, ValueError) as exc:
         print(f"provider ingress append failed: {exc}", file=sys.stderr)
         return 1
@@ -10788,6 +10800,7 @@ def cmd_provider_ingress_append(args: argparse.Namespace) -> int:
             provider_installations=installations,
             callback_store_manifest=callback_store,
             callback_store_db_path=args.callback_store_db,
+            callback_store_source_artifacts=callback_store_artifacts,
             key=args.key,
         )
     except ValueError as exc:
@@ -22279,6 +22292,7 @@ def build_parser() -> argparse.ArgumentParser:
     provider_operations_service.add_argument("--credential-custody", required=True)
     provider_operations_service.add_argument("--callback-store")
     provider_operations_service.add_argument("--callback-store-db")
+    provider_operations_service.add_argument("--callback-store-artifact", action="append", default=[], help="callback-store source artifact to replay; repeatable")
     provider_operations_service.add_argument("--audit-stream")
     provider_operations_service.add_argument("--audit-correlation")
     provider_operations_service.add_argument("--mode", choices=sorted(PROVIDER_OPERATIONS_SERVICE_MODES), default="provider-operations-attested")
@@ -22333,6 +22347,7 @@ def build_parser() -> argparse.ArgumentParser:
     provider_operations_service_verify.add_argument("--credential-custody", required=True)
     provider_operations_service_verify.add_argument("--callback-store")
     provider_operations_service_verify.add_argument("--callback-store-db")
+    provider_operations_service_verify.add_argument("--callback-store-artifact", action="append", default=[], help="callback-store source artifact to replay; repeatable")
     provider_operations_service_verify.add_argument("--audit-stream")
     provider_operations_service_verify.add_argument("--audit-correlation")
     provider_operations_service_verify.add_argument("--key")
@@ -22350,6 +22365,7 @@ def build_parser() -> argparse.ArgumentParser:
     provider_operations_service_append.add_argument("--credential-custody", required=True)
     provider_operations_service_append.add_argument("--callback-store")
     provider_operations_service_append.add_argument("--callback-store-db")
+    provider_operations_service_append.add_argument("--callback-store-artifact", action="append", default=[], help="callback-store source artifact to replay; repeatable")
     provider_operations_service_append.add_argument("--audit-stream")
     provider_operations_service_append.add_argument("--audit-correlation")
     provider_operations_service_append.add_argument("--out", default="artifacts/provider-operations-service-entry.json")
@@ -22368,6 +22384,7 @@ def build_parser() -> argparse.ArgumentParser:
         parser.add_argument("--credential-custody")
         parser.add_argument("--callback-store")
         parser.add_argument("--callback-store-db")
+        parser.add_argument("--callback-store-artifact", action="append", default=[], help="callback-store source artifact to replay; repeatable")
         parser.add_argument("--audit-stream")
         parser.add_argument("--audit-correlation")
 
@@ -22457,6 +22474,7 @@ def build_parser() -> argparse.ArgumentParser:
     provider_callback_storage.add_argument("--failover-runbook-ref", required=True)
     provider_callback_storage.add_argument("--callback-store", required=True)
     provider_callback_storage.add_argument("--callback-store-db", help="SQLite callback store path used to replay callback-store evidence")
+    provider_callback_storage.add_argument("--callback-store-artifact", action="append", default=[], help="callback-store source artifact to replay; repeatable")
     provider_callback_storage.add_argument("--provider-ingress", help="provider ingress manifest to bind")
     provider_callback_storage.add_argument("--generated-at")
     provider_callback_storage.add_argument("--out", default="artifacts/provider-callback-storage.json")
@@ -22467,6 +22485,7 @@ def build_parser() -> argparse.ArgumentParser:
     provider_callback_storage_verify.add_argument("manifest")
     provider_callback_storage_verify.add_argument("--callback-store", help="provider callback store manifest to replay")
     provider_callback_storage_verify.add_argument("--callback-store-db", help="SQLite callback store path used to replay callback-store evidence")
+    provider_callback_storage_verify.add_argument("--callback-store-artifact", action="append", default=[], help="callback-store source artifact to replay; repeatable")
     provider_callback_storage_verify.add_argument("--provider-ingress", help="provider ingress manifest to replay")
     provider_callback_storage_verify.add_argument("--key")
     provider_callback_storage_verify.set_defaults(func=cmd_provider_callback_storage_verify)
@@ -22475,6 +22494,7 @@ def build_parser() -> argparse.ArgumentParser:
     provider_callback_storage_append.add_argument("manifest")
     provider_callback_storage_append.add_argument("--callback-store", help="provider callback store manifest to replay")
     provider_callback_storage_append.add_argument("--callback-store-db", help="SQLite callback store path used to replay callback-store evidence")
+    provider_callback_storage_append.add_argument("--callback-store-artifact", action="append", default=[], help="callback-store source artifact to replay; repeatable")
     provider_callback_storage_append.add_argument("--provider-ingress", help="provider ingress manifest to replay")
     provider_callback_storage_append.add_argument("--out", default="artifacts/provider-callback-storage-entry.json")
     provider_callback_storage_append.add_argument("--key")
@@ -22497,6 +22517,7 @@ def build_parser() -> argparse.ArgumentParser:
     provider_ingress.add_argument("--provider-installation", action="append", default=[], required=True, help="provider installation manifest; repeatable")
     provider_ingress.add_argument("--callback-store", help="provider callback store manifest to bind")
     provider_ingress.add_argument("--callback-store-db", help="SQLite callback store path used to replay callback-store evidence")
+    provider_ingress.add_argument("--callback-store-artifact", action="append", default=[], help="callback-store source artifact to replay; repeatable")
     provider_ingress.add_argument("--generated-at")
     provider_ingress.add_argument("--out", default="artifacts/provider-ingress.json")
     provider_ingress.add_argument("--key")
@@ -22507,6 +22528,7 @@ def build_parser() -> argparse.ArgumentParser:
     provider_ingress_verify.add_argument("--provider-installation", action="append", default=[], help="provider installation manifest to replay; repeatable")
     provider_ingress_verify.add_argument("--callback-store", help="provider callback store manifest to replay")
     provider_ingress_verify.add_argument("--callback-store-db", help="SQLite callback store path used to replay callback-store evidence")
+    provider_ingress_verify.add_argument("--callback-store-artifact", action="append", default=[], help="callback-store source artifact to replay; repeatable")
     provider_ingress_verify.add_argument("--key")
     provider_ingress_verify.set_defaults(func=cmd_provider_ingress_verify)
 
@@ -22515,6 +22537,7 @@ def build_parser() -> argparse.ArgumentParser:
     provider_ingress_append.add_argument("--provider-installation", action="append", default=[], help="provider installation manifest to replay; repeatable")
     provider_ingress_append.add_argument("--callback-store", help="provider callback store manifest to replay")
     provider_ingress_append.add_argument("--callback-store-db", help="SQLite callback store path used to replay callback-store evidence")
+    provider_ingress_append.add_argument("--callback-store-artifact", action="append", default=[], help="callback-store source artifact to replay; repeatable")
     provider_ingress_append.add_argument("--out", default="artifacts/provider-ingress-entry.json")
     provider_ingress_append.add_argument("--key")
     _add_state_args(provider_ingress_append)

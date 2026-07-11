@@ -18,7 +18,7 @@ from trustai.provider_callback_storage import (
 )
 from trustai.provider_callback_store import build_provider_callback_store_manifest, write_provider_callback_store_manifest
 from trustai.provider_ingress import build_provider_ingress_manifest, write_provider_ingress_manifest
-from trustai.provider_installation import build_provider_installation_manifest
+from trustai.provider_installation import build_provider_installation_manifest, write_provider_installation_manifest
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -114,6 +114,7 @@ class ProviderCallbackStorageTests(unittest.TestCase):
                 manifest,
                 callback_store_manifest=callback_store,
                 callback_store_db_path=db_path,
+                callback_store_source_artifacts=[installation],
                 provider_ingress_manifest=ingress,
             )
 
@@ -130,6 +131,7 @@ class ProviderCallbackStorageTests(unittest.TestCase):
                 manifest,
                 callback_store_manifest=callback_store,
                 callback_store_db_path=db_path,
+                callback_store_source_artifacts=[installation],
                 provider_ingress_manifest=ingress,
             )
 
@@ -155,6 +157,7 @@ class ProviderCallbackStorageTests(unittest.TestCase):
                 manifest,
                 callback_store_manifest=callback_store,
                 callback_store_db_path=db_path,
+                callback_store_source_artifacts=[installation],
             )
 
             self.assertFalse(result.ok)
@@ -197,11 +200,13 @@ class ProviderCallbackStorageTests(unittest.TestCase):
                 retention_until="2033-07-08T00:00:00Z",
             )
             ingress = _ingress(installation, callback_store)
+            installation_path = tmp / "provider-installation.json"
             callback_store_path = tmp / "provider-callback-store.json"
             ingress_path = tmp / "provider-ingress.json"
             storage_path = tmp / "provider-callback-storage.json"
             entry_path = tmp / "provider-callback-storage-entry.json"
             state_path = tmp / "evidence-chain.json"
+            write_provider_installation_manifest(installation_path, installation)
             write_provider_callback_store_manifest(callback_store_path, callback_store)
             write_provider_ingress_manifest(ingress_path, ingress)
             env = {**os.environ, "PYTHONPATH": str(ROOT / "src")}
@@ -210,6 +215,8 @@ class ProviderCallbackStorageTests(unittest.TestCase):
                 str(callback_store_path),
                 "--callback-store-db",
                 str(db_path),
+                "--callback-store-artifact",
+                str(installation_path),
                 "--provider-ingress",
                 str(ingress_path),
             ]
@@ -310,6 +317,7 @@ class ProviderCallbackStorageTests(unittest.TestCase):
                 manifest,
                 callback_store_manifest=callback_store,
                 callback_store_db_path=db_path,
+                callback_store_source_artifacts=[installation],
                 provider_ingress_manifest=ingress,
             )
             self.assertTrue(result.ok, result.errors)

@@ -233,6 +233,23 @@ class ProviderCallbackStoreTests(unittest.TestCase):
             self.assertFalse(result.ok)
             self.assertTrue(any("required index missing" in error or "indexes" in error for error in result.errors))
 
+    def test_callback_store_manifest_requires_source_artifact_replay(self):
+        webhook, audit = _webhook_and_audit()
+        artifacts = [_installation(), webhook, audit]
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            db_path = Path(tmp_dir) / "provider-callbacks.sqlite"
+            manifest = build_provider_callback_store_manifest(
+                db_path,
+                source_artifacts=artifacts,
+                generated_at="2026-07-08T04:00:00Z",
+            )
+
+            result = verify_provider_callback_store_manifest(manifest, db_path=db_path)
+
+            self.assertFalse(result.ok)
+            self.assertTrue(any("source artifacts are required" in error for error in result.errors), result.errors)
+
     def test_callback_store_manifest_rejects_source_artifact_mismatch(self):
         webhook, audit = _webhook_and_audit()
         artifacts = [_installation(), webhook, audit]

@@ -151,6 +151,7 @@ def verify_provider_callback_storage_manifest(
     *,
     callback_store_manifest: dict[str, Any] | None = None,
     callback_store_db_path: str | Path | None = None,
+    callback_store_source_artifacts: list[dict[str, Any]] | None = None,
     provider_ingress_manifest: dict[str, Any] | None = None,
     key: str | None = None,
 ) -> ProviderCallbackStorageVerification:
@@ -257,7 +258,7 @@ def verify_provider_callback_storage_manifest(
         store_result = verify_provider_callback_store_manifest(
             callback_store_manifest,
             db_path=callback_store_db_path,
-            source_artifacts=None,
+            source_artifacts=callback_store_source_artifacts,
             key=key,
         )
         if not store_result.ok:
@@ -274,7 +275,15 @@ def verify_provider_callback_storage_manifest(
             errors.append("provider callback storage migration_plan does not match supplied callback-store manifest")
 
     if provider_ingress_manifest is not None:
-        ingress_result = verify_provider_ingress_manifest(provider_ingress_manifest, key=key)
+        ingress_provider_installations = _provider_installations_from_callback_sources(callback_store_source_artifacts)
+        ingress_result = verify_provider_ingress_manifest(
+            provider_ingress_manifest,
+            provider_installations=ingress_provider_installations,
+            callback_store_manifest=callback_store_manifest,
+            callback_store_db_path=callback_store_db_path,
+            callback_store_source_artifacts=callback_store_source_artifacts,
+            key=key,
+        )
         if not ingress_result.ok:
             errors.extend(f"provider callback storage ingress invalid: {error}" for error in ingress_result.errors)
         warnings.extend(f"provider callback storage ingress warning: {warning}" for warning in ingress_result.warnings)
@@ -303,6 +312,7 @@ def append_provider_callback_storage_manifest(
     *,
     callback_store_manifest: dict[str, Any] | None = None,
     callback_store_db_path: str | Path | None = None,
+    callback_store_source_artifacts: list[dict[str, Any]] | None = None,
     provider_ingress_manifest: dict[str, Any] | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
@@ -310,6 +320,7 @@ def append_provider_callback_storage_manifest(
         manifest,
         callback_store_manifest=callback_store_manifest,
         callback_store_db_path=callback_store_db_path,
+        callback_store_source_artifacts=callback_store_source_artifacts,
         provider_ingress_manifest=provider_ingress_manifest,
         key=key,
     )
@@ -349,6 +360,14 @@ def write_provider_callback_storage_manifest(path: str | Path, manifest: dict[st
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def _provider_installations_from_callback_sources(
+    artifacts: list[dict[str, Any]] | None,
+) -> list[dict[str, Any]] | None:
+    if artifacts is None:
+        return None
+    return [artifact for artifact in artifacts if artifact.get("schema") == "trustai.provider-installation/0.1"]
 
 
 def _migration_plan(

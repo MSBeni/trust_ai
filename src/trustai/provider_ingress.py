@@ -130,6 +130,7 @@ def verify_provider_ingress_manifest(
     provider_installations: list[dict[str, Any]] | None = None,
     callback_store_manifest: dict[str, Any] | None = None,
     callback_store_db_path: str | Path | None = None,
+    callback_store_source_artifacts: list[dict[str, Any]] | None = None,
     key: str | None = None,
 ) -> ProviderIngressVerification:
     errors: list[str] = []
@@ -264,7 +265,7 @@ def verify_provider_ingress_manifest(
         store_result = verify_provider_callback_store_manifest(
             callback_store_manifest,
             db_path=callback_store_db_path,
-            source_artifacts=None,
+            source_artifacts=callback_store_source_artifacts,
             key=key,
         )
         if not store_result.ok:
@@ -288,6 +289,7 @@ def append_provider_ingress_manifest(
     provider_installations: list[dict[str, Any]] | None = None,
     callback_store_manifest: dict[str, Any] | None = None,
     callback_store_db_path: str | Path | None = None,
+    callback_store_source_artifacts: list[dict[str, Any]] | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
     result = verify_provider_ingress_manifest(
@@ -295,6 +297,7 @@ def append_provider_ingress_manifest(
         provider_installations=provider_installations,
         callback_store_manifest=callback_store_manifest,
         callback_store_db_path=callback_store_db_path,
+        callback_store_source_artifacts=callback_store_source_artifacts,
         key=key,
     )
     if not result.ok:

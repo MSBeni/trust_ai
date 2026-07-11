@@ -17,7 +17,7 @@ The `trustai.provider-callback-store/0.1` manifest binds:
   status, payload hash, and created/received timestamps for every operation;
 - redacted operation summaries that omit raw provider secrets, webhook
   signatures, provider credentials, and approval identities;
-- optional source artifact summaries for replaying manifest-to-artifact hashes;
+- source artifact summaries for replaying manifest-to-artifact hashes when callback sources are recorded;
 - a retention horizon for callback database evidence.
 
 ## SQLite Schema
@@ -38,12 +38,12 @@ indexes or schema drift before trusting the store summary.
 
 A verifier recomputes the manifest id from the canonical body, verifies at least
 one detached signature, opens the SQLite database, compares schema/index
-metadata, replays the operation summary, and optionally recomputes source
+metadata, replays the operation summary, and recomputes recorded source
 artifact hashes from supplied signed artifacts.
 
 Verification fails if the database summary differs, required indexes are
-missing, source artifacts do not match, retention timestamps are invalid, or a
-redacted summary contains secret-like fields.
+missing, recorded source artifacts are omitted or do not match, retention
+timestamps are invalid, or a redacted summary contains secret-like fields.
 
 ## Evidence Chain Entry
 

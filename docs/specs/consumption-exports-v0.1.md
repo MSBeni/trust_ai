@@ -157,11 +157,11 @@ store manifest as a `provider_callback_store.attested` evidence-chain entry.
 manifest for public GitHub, GitLab, and Slack callback ingress. The manifest
 binds an HTTPS base URL, DNS name, healthcheck URL, TLS certificate reference or
 fingerprint, WAF/network/rate-limit controls, replay window, provider endpoints
-derived from installation manifests, and optional callback-store evidence.
+derived from installation manifests, and callback-store evidence whose recorded source artifacts must be replayed when supplied.
 
 `trustai provider-ingress-verify` checks canonical hashes, signatures, HTTPS URL
 shape, DNS/base-host alignment, TLS attestation, network controls, provider
-signature schemes, and optional source-artifact replay. `trustai
+signature schemes, optional installation replay, and required callback-store source-artifact replay when callback-store evidence is supplied. `trustai
 provider-ingress-append` records the manifest as a `provider_ingress.attested`
 evidence-chain entry.
 
@@ -176,7 +176,7 @@ monitoring controls.
 
 `trustai provider-callback-storage-verify` checks canonical hashes, signatures,
 retention timestamps, redaction, migration-plan replay, HA minimums, backup and
-security controls, and optional source-artifact replay. `trustai
+security controls, and required callback-store source-artifact replay when callback-store evidence is supplied. `trustai
 provider-callback-storage-append` records the manifest as a
 `provider_callback_storage.attested` evidence-chain entry.
 
