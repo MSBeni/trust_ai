@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 from .canonical import content_hash, parse_rfc3339, utc_now, without_keys
 from .chain import EvidenceChain
 from .crypto import sign_value, verify_value
+from .eu_ai_act import verify_eu_ai_act_document
 from .regulator import verify_regulator_disclosure
 from .regulator_acceptance import verify_regulator_acceptance
 from .supervised_access import verify_supervised_access_receipt
@@ -110,6 +111,16 @@ def build_review_portal_service_attestation(
     if not access_result.ok:
         raise ValueError("invalid supervised access receipt: " + "; ".join(access_result.errors))
 
+    if eu_ai_act_document is not None:
+        document_result = verify_eu_ai_act_document(
+            eu_ai_act_document,
+            proof_pack=proof_pack,
+            regulator_disclosure=regulator_disclosure,
+            key=key,
+        )
+        if not document_result.ok:
+            raise ValueError("invalid EU AI Act document: " + "; ".join(document_result.errors))
+
     if regulator_acceptance is not None:
         acceptance_result = verify_regulator_acceptance(
             regulator_acceptance,
@@ -208,6 +219,10 @@ def build_review_portal_service_attestation(
         "artifact_count": len(supervised_access_receipt.get("artifacts", [])),
         "source_view_path": str(view_path) if view_path is not None else None,
     }
+    portal_kind_errors: list[str] = []
+    _verify_portal_kind_matches_access(service, access, portal_kind_errors)
+    if portal_kind_errors:
+        raise ValueError(portal_kind_errors[0])
     security = {
         "auth_provider_ref": auth_provider_ref,
         "auth_policy_ref": auth_policy_ref,
@@ -310,6 +325,7 @@ def verify_review_portal_service_attestation(
     _verify_source(attestation.get("source"), errors)
     _verify_service(attestation.get("service"), errors)
     _verify_access(attestation.get("access"), errors)
+    _verify_portal_kind_matches_access(attestation.get("service"), attestation.get("access"), errors)
     _verify_required_object(attestation.get("security"), "security", errors)
     _verify_observability(attestation.get("observability"), attested, errors)
     _verify_actor(attestation.get("operation_actor"), errors)
@@ -373,6 +389,15 @@ def verify_review_portal_service_attestation(
         disclosure_result = verify_regulator_disclosure(regulator_disclosure, key=key)
         errors.extend(f"regulator disclosure source: {error}" for error in disclosure_result.errors)
         warnings.extend(f"regulator disclosure source: {warning}" for warning in disclosure_result.warnings)
+    if eu_ai_act_document is not None:
+        document_result = verify_eu_ai_act_document(
+            eu_ai_act_document,
+            proof_pack=proof_pack,
+            regulator_disclosure=regulator_disclosure,
+            key=key,
+        )
+        errors.extend(f"EU AI Act document source: {error}" for error in document_result.errors)
+        warnings.extend(f"EU AI Act document source: {warning}" for warning in document_result.warnings)
     if regulator_acceptance is not None:
         acceptance_result = verify_regulator_acceptance(
             regulator_acceptance,
@@ -549,6 +574,16 @@ def _verify_access(value: Any, errors: list[str]) -> None:
             errors.append(f"review portal service access.{field} is required")
     if not isinstance(value.get("artifact_count"), int) or value.get("artifact_count") < 1:
         errors.append("review portal service access.artifact_count must be an integer >= 1")
+
+
+def _verify_portal_kind_matches_access(service: Any, access: Any, errors: list[str]) -> None:
+    if not isinstance(service, dict) or not isinstance(access, dict):
+        return
+    portal_kind = service.get("portal_kind")
+    audience_type = access.get("audience_type")
+    required_audience = {"regulator": "regulator", "auditor": "auditor"}.get(portal_kind)
+    if required_audience and audience_type and audience_type != required_audience:
+        errors.append(f"review portal service service.portal_kind {portal_kind} requires access.audience_type {required_audience}")
 
 
 def _verify_access_matches_source(value: Any, receipt: dict[str, Any], errors: list[str]) -> None:

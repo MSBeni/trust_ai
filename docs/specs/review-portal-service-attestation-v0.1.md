@@ -20,6 +20,8 @@ A review portal service attestation MUST include:
   least two availability zones;
 - access binding fields from the supervised-access receipt: receipt id, session
   id, audience type, reviewer subject, organization, role, and artifact count;
+- portal-kind consistency for regulator and auditor portals: `service.portal_kind`
+  must match the supervised-access audience type;
 - security controls for identity provider, auth policy, RBAC, session policy,
   selective-disclosure policy, tenant isolation, rate limiting, network policy,
   egress policy, content security policy, and encryption key ref;
@@ -32,7 +34,10 @@ HTML view, frontend bundle artifact, EU AI Act technical-documentation export,
 and regulator acceptance receipt. When source artifacts are supplied to
 verification, their canonical hashes MUST match the attestation. When a
 frontend bundle artifact is supplied, its SHA-256 digest MUST equal `service.frontend_bundle_hash`
-and is recorded as `service.frontend_bundle_artifact_hash`.
+and is recorded as `service.frontend_bundle_artifact_hash`. When an EU AI Act
+technical-documentation export is supplied, it MUST pass the EU AI Act document
+verifier against the supplied proof pack and regulator disclosure even when no
+regulator acceptance receipt is supplied.
 
 ## Verification
 
@@ -42,8 +47,8 @@ and is recorded as `service.frontend_bundle_artifact_hash`.
 - supported mode and portal kind;
 - HTTPS endpoint and SHA-256 image, binary, and frontend bundle references;
 - replica floor, replica max, and multi-zone evidence;
-- supervised-access source replay and access-field consistency;
-- optional proof pack, regulator disclosure, frontend bundle artifact, and regulator acceptance replay;
+- supervised-access source replay, access-field consistency, and portal-kind/audience consistency;
+- optional proof pack, regulator disclosure, EU AI Act document, frontend bundle artifact, and regulator acceptance replay;
 - audit/access log roots and retention window;
 - redacted credential references and absence of raw secret-like fields.
 

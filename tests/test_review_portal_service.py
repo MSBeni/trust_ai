@@ -8,7 +8,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
+from trustai.eu_ai_act import build_eu_ai_act_document
 from trustai.contracts import load_contract, register_contract
 from trustai.gate import append_eval_and_gate
 from trustai.proofpack import compile_proof_pack
@@ -40,7 +43,28 @@ def _sha256_ref(path: Path) -> str:
     return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _source_summary(records: list[dict]) -> dict:
+    return {
+        "source_count": len(records),
+        "source_hash": content_hash(records),
+        "schemas": sorted({str(record.get("schema")) for record in records if record.get("schema")}),
+        "required_types": sorted(record["type"] for record in records),
+    }
+
+
 class ReviewPortalServiceTests(unittest.TestCase):
+    def _resign_attestation(self, attestation: dict) -> None:
+        body = without_keys(attestation, "attestation_id", "signatures")
+        attestation_id = content_hash(body)
+        attestation["attestation_id"] = attestation_id
+        attestation["signatures"] = [sign_value({"attestation_id": attestation_id, "review_portal_service": body})]
+
+    def _resign_document(self, document: dict) -> None:
+        body = without_keys(document, "document_id", "signatures")
+        document_id = content_hash(body)
+        document["document_id"] = document_id
+        document["signatures"] = [sign_value({"document_id": document_id, "document": body})]
+
     def _fixtures(self, tmp: Path):
         chain = EvidenceChain.load(tmp / "chain.json", tenant_id="review-portal-service-test")
         contract = load_contract(CONTRACT)
@@ -196,6 +220,78 @@ class ReviewPortalServiceTests(unittest.TestCase):
             self.assertFalse(result.ok)
             self.assertIn("review portal service source_artifacts do not match supplied source artifacts", result.errors)
             self.assertIn("supervised access source: receipt_id does not match canonical receipt body", result.errors)
+
+    def test_review_portal_service_rejects_resigned_portal_kind_audience_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            _, pack, pack_path, disclosure, disclosure_path, view_path, frontend_bundle_path, _, receipt, _ = self._fixtures(Path(tmp_dir))
+            attestation = self._attestation(receipt, pack, pack_path, disclosure, disclosure_path, view_path, frontend_bundle_path)
+            attestation["service"]["portal_kind"] = "auditor"
+            self._resign_attestation(attestation)
+
+            result = verify_review_portal_service_attestation(
+                attestation,
+                receipt,
+                proof_pack=pack,
+                proof_pack_path=pack_path,
+                regulator_disclosure=disclosure,
+                disclosure_path=disclosure_path,
+                view_path=view_path,
+                frontend_bundle_path=frontend_bundle_path,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("attestation_id does not match canonical review portal service attestation body", result.errors)
+            self.assertNotIn("review portal service attestation signature verification failed", result.errors)
+            self.assertIn("review portal service service.portal_kind auditor requires access.audience_type auditor", result.errors)
+
+    def test_review_portal_service_rejects_resigned_eu_ai_act_document_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            _, pack, pack_path, disclosure, disclosure_path, view_path, frontend_bundle_path, _, receipt, _ = self._fixtures(Path(tmp_dir))
+            document = build_eu_ai_act_document(pack, disclosure, operator="aitrade")
+            attestation = self._attestation(
+                receipt,
+                pack,
+                pack_path,
+                disclosure,
+                disclosure_path,
+                view_path,
+                frontend_bundle_path,
+                eu_ai_act_document=document,
+            )
+            tampered_document = copy.deepcopy(document)
+            sections = {section["id"]: section for section in tampered_document["sections"]}
+            sections["system_description"]["content"]["contract_hash"] = "0" * 64
+            self._resign_document(tampered_document)
+
+            for record in attestation["source_artifacts"]:
+                if record["type"] == "eu-ai-act-document":
+                    record["id"] = tampered_document["document_id"]
+                    record["schema"] = tampered_document["schema"]
+                    record["hash"] = content_hash(tampered_document)
+                    break
+            else:
+                self.fail("EU AI Act document source artifact was not recorded")
+            attestation["source"] = _source_summary(attestation["source_artifacts"])
+            self._resign_attestation(attestation)
+
+            result = verify_review_portal_service_attestation(
+                attestation,
+                receipt,
+                proof_pack=pack,
+                proof_pack_path=pack_path,
+                regulator_disclosure=disclosure,
+                disclosure_path=disclosure_path,
+                view_path=view_path,
+                frontend_bundle_path=frontend_bundle_path,
+                eu_ai_act_document=tampered_document,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("review portal service source_artifacts do not match supplied source artifacts", result.errors)
+            self.assertNotIn("review portal service source summary does not match supplied source artifacts", result.errors)
+            self.assertNotIn("attestation_id does not match canonical review portal service attestation body", result.errors)
+            self.assertNotIn("review portal service attestation signature verification failed", result.errors)
+            self.assertIn("EU AI Act document source: system_description contract_hash mismatch", result.errors)
 
     def test_review_portal_service_rejects_frontend_bundle_mismatch(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
