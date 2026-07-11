@@ -29,7 +29,12 @@ A receipt uses schema
 `framework-runtime-service-authority-provider-verify` recalculates the provider
 receipt ID, verifies at least one detached signature, validates
 endpoint/request/response hashes, checks credential redaction, and rejects raw
-secret-like fields.
+secret-like fields. It also requires every `authority_worker_binding` and
+`provider_export` key emitted by the v0.1 builder. Worker identity, dossier,
+scheduler, queue, authority request, storage, request/response, audit, provider
+export roots, and record counts must be complete; provider record counts must be
+positive. Optional cursor, dead-letter, and report-storage values may be null
+only when the original source receipt emitted the key with a null value.
 
 When supplied with the authority provider export, authority worker receipt,
 authority dossier, service provider receipt/export, service worker receipt,
@@ -44,7 +49,9 @@ hashes, stored dossier/report object hashes, metrics refs, or audit roots.
 
 `framework-runtime-service-authority-provider-append` requires all source
 artifacts. The chain entry records only hash-bound summaries while offline
-reviewers can replay disclosed provider records.
+reviewers can replay disclosed provider records. Omitted source artifacts during
+standalone verification may produce replay warnings, but they must not permit
+partial authority worker or provider export summaries.
 
 `local-export` and `provider-export` modes produce verifiable local/reference
 evidence. `production-export` still requires a successful provider exchange and

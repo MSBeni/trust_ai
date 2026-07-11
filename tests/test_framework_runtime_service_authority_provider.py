@@ -7,7 +7,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.framework_adapter_matrix import write_framework_adapter_matrix
 from trustai.framework_hook_operation import write_framework_hook_operation
 from trustai.framework_hook_release import write_framework_hook_release
@@ -196,6 +198,14 @@ class FrameworkRuntimeServiceAuthorityProviderTests(unittest.TestCase):
             matrix,
         )
 
+    def _resign_receipt(self, receipt: dict) -> None:
+        body = without_keys(receipt, "provider_receipt_id", "signatures")
+        provider_receipt_id = content_hash(body)
+        receipt["provider_receipt_id"] = provider_receipt_id
+        receipt["signatures"] = [
+            sign_value({"provider_receipt_id": provider_receipt_id, "framework_runtime_service_authority_provider": body})
+        ]
+
     def test_framework_runtime_service_authority_provider_verifies_and_appends(self):
         (
             receipt,
@@ -367,6 +377,30 @@ class FrameworkRuntimeServiceAuthorityProviderTests(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("authority_worker_binding does not match" in error for error in result.errors))
         self.assertTrue(any("worker source" in error for error in result.errors))
+
+    def test_framework_runtime_service_authority_provider_requires_complete_bindings_without_sources(self):
+        receipt, *_ = self._receipt()
+        cases = [
+            (("authority_worker_binding",), "worker_ref", "binding.worker_ref is required"),
+            (("authority_worker_binding",), "previous_cursor_ref", "binding.previous_cursor_ref is required"),
+            (("authority_worker_binding",), "request_hash", "binding.request_hash is required"),
+            (("authority_worker_binding",), "response_status", "binding.response_status is required"),
+            (("provider_export",), "cursor_ref", "provider_export.cursor_ref is required"),
+            (("provider_export",), "request_record_count", "provider_export.request_record_count is required"),
+        ]
+        for parent_path, field, expected_error in cases:
+            with self.subTest(field=field):
+                tampered = copy.deepcopy(receipt)
+                target = tampered
+                for part in parent_path:
+                    target = target[part]
+                target.pop(field)
+                self._resign_receipt(tampered)
+
+                result = verify_framework_runtime_service_authority_provider_receipt(tampered)
+
+                self.assertFalse(result.ok)
+                self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
 
     def test_framework_runtime_service_authority_provider_rejects_raw_credential(self):
         (
