@@ -65,6 +65,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertIn("TrustAI External Evidence Manifest", markdown)
         self.assertIn("Required External Evidence", markdown)
         self.assertIn("Accepted Authorities", markdown)
+        self.assertIn("Covered Authorities", markdown)
+        self.assertIn("Missing Authorities", markdown)
         self.assertIn("Authority Evidence Needed", markdown)
         self.assertIn("oss-verifier-and-public-spec", markdown)
         self.assertIn("self-serve-onboarding", markdown)
@@ -79,6 +81,12 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             required["allowed_authority_kinds"],
             manifest["evidence"][0]["accepted_authority_kinds"],
         )
+        self.assertEqual(["ci-run"], manifest["summary"]["covered_authority_kinds_by_requirement"]["oss-verifier-and-public-spec"])
+        self.assertNotIn(
+            "ci-run",
+            manifest["summary"]["missing_authority_kinds_by_requirement"].get("oss-verifier-and-public-spec", []),
+        )
+        self.assertGreater(manifest["summary"]["missing_authority_kind_count"], 0)
 
     def test_external_evidence_freshness_windows_are_verifiable(self):
         audit = build_roadmap_audit(ROOT)
@@ -628,6 +636,35 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertFalse(strict_missing_manifest_result.ok)
             self.assertTrue(any("missing an embedded manifest source artifact" in error for error in strict_missing_manifest_result.errors))
 
+    def test_external_evidence_complete_requires_all_authority_kinds(self):
+        audit = build_roadmap_audit(ROOT)
+        reference_requirements = {
+            requirement["id"]: requirement
+            for requirement in audit["requirements"]
+            if requirement["status"] == STATUS_REFERENCE_ATTESTED
+        }
+        manifest = build_external_evidence_manifest(
+            audit,
+            root=ROOT,
+            evidence=[
+                {
+                    "requirement_id": requirement_id,
+                    "authority_kind": _allowed_authority_kinds_for_requirement(requirement)[0],
+                    "path": FIXTURE,
+                    "description": f"Fixture evidence for {requirement_id}.",
+                }
+                for requirement_id, requirement in reference_requirements.items()
+            ],
+        )
+        result = verify_external_evidence_manifest(manifest, audit, root=ROOT, require_complete=True)
+
+        self.assertFalse(result.ok)
+        self.assertEqual("partial", manifest["summary"]["status"])
+        self.assertEqual(0, manifest["summary"]["missing_requirement_count"])
+        self.assertGreater(manifest["summary"]["missing_authority_kind_count"], 0)
+        self.assertTrue(any("authority-kind coverage" in error for error in result.errors), result.errors)
+        self.assertTrue(any("authority kinds missing" in warning for warning in result.warnings), result.warnings)
+
     def test_complete_external_evidence_manifest_covers_reference_requirements(self):
         audit = build_roadmap_audit(ROOT)
         reference_requirements = {
@@ -642,13 +679,12 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             evidence=[
                 {
                     "requirement_id": requirement_id,
-                    "authority_kind": _allowed_authority_kinds_for_requirement(
-                        reference_requirements[requirement_id]
-                    )[0],
+                    "authority_kind": authority_kind,
                     "path": FIXTURE,
-                    "description": f"Fixture evidence for {requirement_id}.",
+                    "description": f"Fixture {authority_kind} evidence for {requirement_id}.",
                 }
                 for requirement_id in requirements
+                for authority_kind in _allowed_authority_kinds_for_requirement(reference_requirements[requirement_id])
             ],
         )
         result = verify_external_evidence_manifest(manifest, audit, root=ROOT, require_complete=True)
@@ -656,14 +692,17 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertTrue(result.ok, result.errors)
         self.assertEqual("complete", manifest["summary"]["status"])
         self.assertEqual(len(requirements), result.covered_count)
+        self.assertEqual(result.required_authority_kind_count, result.covered_authority_kind_count)
+        self.assertEqual(0, result.missing_authority_kind_count)
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="external-evidence-complete")
             append_roadmap_audit(chain, audit, root=ROOT)
-            append_external_evidence_manifest(chain, manifest, audit, root=ROOT, require_complete=True)
+            entry = append_external_evidence_manifest(chain, manifest, audit, root=ROOT, require_complete=True)
             chain_result = verify_roadmap_evidence_chain(chain, require_external=True, require_complete=True)
             self.assertTrue(chain_result.ok, chain_result.errors)
             self.assertEqual(1, chain_result.complete_external_evidence_entry_count)
+            self.assertEqual(0, entry["payload"]["missing_authority_kind_count"])
 
     def test_external_evidence_rejects_wrong_authority_kind_for_requirement(self):
         audit = build_roadmap_audit(ROOT)

@@ -14105,6 +14105,7 @@ def cmd_external_evidence_manifest(args: argparse.Namespace) -> int:
     print(f"manifest id: {manifest['manifest_id']}")
     print(f"status: {summary['status']}")
     print(f"covered requirements: {summary['covered_requirement_count']}/{summary['required_requirement_count']}")
+    print(f"covered authority kinds: {summary['covered_authority_kind_count']}/{summary['required_authority_kind_count']}")
     print(f"fresh evidence: {result.fresh_evidence_count}/{summary['evidence_count']}")
     for warning in result.warnings:
         print(f"warning: {warning}")
@@ -14124,6 +14125,7 @@ def cmd_external_evidence_verify(args: argparse.Namespace) -> int:
     if result.ok:
         print(f"verified external evidence manifest: {args.manifest}")
         print(f"covered requirements: {result.covered_count}/{result.required_count}")
+        print(f"covered authority kinds: {result.covered_authority_kind_count}/{result.required_authority_kind_count}")
         print(f"fresh evidence: {result.fresh_evidence_count}/{result.fresh_evidence_count + result.stale_evidence_count + result.missing_freshness_count}")
         for warning in result.warnings:
             print(f"warning: {warning}")

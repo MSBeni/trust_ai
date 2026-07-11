@@ -66,6 +66,9 @@ class ExternalEvidenceVerification:
     fresh_evidence_count: int = 0
     stale_evidence_count: int = 0
     missing_freshness_count: int = 0
+    covered_authority_kind_count: int = 0
+    required_authority_kind_count: int = 0
+    missing_authority_kind_count: int = 0
 
 @dataclass
 class RoadmapEvidenceChainVerification:
@@ -112,7 +115,7 @@ def build_external_evidence_manifest(
         _build_evidence_item(root_path, item, required_ids, required_authority_kinds)
         for item in (evidence or [])
     ]
-    summary = _summary(required_ids, evidence_items, status=status)
+    summary = _summary(required_ids, evidence_items, required_authority_kinds, status=status)
     body = {
         "schema": EXTERNAL_EVIDENCE_SCHEMA,
         "generated_at": generated_at or utc_now(),
@@ -137,7 +140,7 @@ def build_external_evidence_manifest(
         "summary": summary,
         "limitations": [
             "This manifest verifies supplied external evidence artifacts by hash; it does not fetch live provider state.",
-            "A complete manifest requires at least one evidence item for every reference-attested roadmap requirement.",
+            "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
             "Evidence quality still depends on the authority that issued each supplied artifact.",
         ],
     }
@@ -228,15 +231,26 @@ def verify_external_evidence_manifest(
         )
         freshness_counts[freshness_status] += 1
 
-    expected_summary = _summary(required_ids, [item for item in evidence if isinstance(item, dict)])
+    expected_summary = _summary(required_ids, [item for item in evidence if isinstance(item, dict)], required_authority_kinds)
     if manifest.get("summary") != expected_summary:
         errors.append("summary does not match evidence coverage")
 
     missing = [requirement_id for requirement_id in required_ids if requirement_id not in covered_ids]
+    missing_authority_kinds = expected_summary.get("missing_authority_kinds_by_requirement", {})
     if missing:
         warnings.append("external evidence missing for: " + ", ".join(missing))
+    if missing_authority_kinds:
+        warnings.append(
+            "external evidence authority kinds missing for: "
+            + "; ".join(
+                f"{requirement_id}: {', '.join(kinds)}"
+                for requirement_id, kinds in missing_authority_kinds.items()
+            )
+        )
     if require_complete and missing:
         errors.append("external evidence manifest is incomplete")
+    if require_complete and missing_authority_kinds:
+        errors.append("external evidence authority-kind coverage is incomplete")
 
     return ExternalEvidenceVerification(
         ok=not errors,
@@ -247,6 +261,9 @@ def verify_external_evidence_manifest(
         fresh_evidence_count=freshness_counts["fresh"],
         stale_evidence_count=freshness_counts["stale"],
         missing_freshness_count=freshness_counts["missing"],
+        covered_authority_kind_count=expected_summary.get("covered_authority_kind_count", 0),
+        required_authority_kind_count=expected_summary.get("required_authority_kind_count", 0),
+        missing_authority_kind_count=expected_summary.get("missing_authority_kind_count", 0),
     )
 
 
@@ -640,6 +657,9 @@ def append_external_evidence_manifest(
         "required_requirement_count": summary.get("required_requirement_count"),
         "covered_requirement_count": summary.get("covered_requirement_count"),
         "missing_requirement_count": summary.get("missing_requirement_count"),
+        "required_authority_kind_count": summary.get("required_authority_kind_count"),
+        "covered_authority_kind_count": summary.get("covered_authority_kind_count"),
+        "missing_authority_kind_count": summary.get("missing_authority_kind_count"),
         "evidence_count": summary.get("evidence_count"),
         "issued_at_count": summary.get("issued_at_count"),
         "expires_at_count": summary.get("expires_at_count"),
@@ -649,6 +669,8 @@ def append_external_evidence_manifest(
         "missing_freshness_count": result.missing_freshness_count,
         "covered_requirement_ids": summary.get("covered_requirement_ids", []),
         "missing_requirement_ids": summary.get("missing_requirement_ids", []),
+        "covered_authority_kinds_by_requirement": summary.get("covered_authority_kinds_by_requirement", {}),
+        "missing_authority_kinds_by_requirement": summary.get("missing_authority_kinds_by_requirement", {}),
         "limitations": manifest.get("limitations", []),
     }
     return chain.append(EXTERNAL_EVIDENCE_ENTRY_TYPE, payload, key=key, timestamp=manifest.get("generated_at"))
@@ -760,13 +782,21 @@ def _external_evidence_freshness_cell(item: dict[str, Any]) -> str:
 def render_external_evidence_markdown(manifest: dict[str, Any]) -> str:
     summary = manifest.get("summary", {})
     covered_ids = set(summary.get("covered_requirement_ids", []))
+    covered_authorities = summary.get("covered_authority_kinds_by_requirement", {})
+    missing_authorities = summary.get("missing_authority_kinds_by_requirement", {})
+    if not isinstance(covered_authorities, dict):
+        covered_authorities = {}
+    if not isinstance(missing_authorities, dict):
+        missing_authorities = {}
     requirement_rows = "\n".join(
-        "| `{requirement}` | {phase} | {priority} | {coverage} | {accepted} | {authority} |".format(
+        "| `{requirement}` | {phase} | {priority} | {coverage} | {accepted} | {covered_authorities} | {missing_authorities} | {authority} |".format(
             requirement=_markdown_cell(item.get("id", "")),
             phase=_markdown_cell(item.get("phase", "")),
             priority=_markdown_cell(item.get("priority", "")),
-            coverage="covered" if item.get("id") in covered_ids else "missing",
+            coverage="covered" if item.get("id") in covered_ids and not missing_authorities.get(item.get("id")) else "missing",
             accepted=_markdown_code_list(item.get("allowed_authority_kinds", [])),
+            covered_authorities=_markdown_code_list(covered_authorities.get(item.get("id"), [])),
+            missing_authorities=_markdown_code_list(missing_authorities.get(item.get("id"), [])),
             authority=_markdown_text_list(item.get("external_authority_required", [])),
         )
         for item in manifest.get("required_external_requirements", [])
@@ -794,6 +824,9 @@ Status: {summary.get('status', '')}
 
 - Required external requirements: {summary.get('required_requirement_count', 0)}
 - Covered requirements: {summary.get('covered_requirement_count', 0)}
+- Required authority kinds: {summary.get('required_authority_kind_count', 0)}
+- Covered authority kinds: {summary.get('covered_authority_kind_count', 0)}
+- Missing authority kinds: {summary.get('missing_authority_kind_count', 0)}
 - Evidence items: {summary.get('evidence_count', 0)}
 - Evidence with issued_at: {summary.get('issued_at_count', 0)}
 - Evidence with expires_at: {summary.get('expires_at_count', 0)}
@@ -801,9 +834,9 @@ Status: {summary.get('status', '')}
 
 ## Required External Evidence
 
-| Requirement | Phase | Priority | Coverage | Accepted Authorities | Authority Evidence Needed |
-|---|---|---|---|---|---|
-{requirement_rows or "| - | - | - | - | - | - |"}
+| Requirement | Phase | Priority | Coverage | Accepted Authorities | Covered Authorities | Missing Authorities | Authority Evidence Needed |
+|---|---|---|---|---|---|---|---|
+{requirement_rows or "| - | - | - | - | - | - | - | - |"}
 
 ## Evidence
 
@@ -833,14 +866,17 @@ def render_roadmap_evidence_markdown(report: dict[str, Any]) -> str:
         for entry in report.get("roadmap_audit_entries", [])
     )
     external_rows = "\n".join(
-        "| {index} | `{entry_id}` | `{manifest_id}` | {status} | {covered}/{required} | {missing} |".format(
+        "| {index} | `{entry_id}` | `{manifest_id}` | {status} | {covered}/{required} | {authority_covered}/{authority_required} | {missing} | {missing_authority} |".format(
             index=entry.get("index", ""),
             entry_id=entry.get("entry_id", ""),
             manifest_id=entry.get("manifest_id", ""),
             status=entry.get("status", ""),
             covered=entry.get("covered_requirement_count", 0),
             required=entry.get("required_requirement_count", 0),
+            authority_covered=entry.get("covered_authority_kind_count", 0),
+            authority_required=entry.get("required_authority_kind_count", 0),
             missing=entry.get("missing_requirement_count", 0),
+            missing_authority=entry.get("missing_authority_kind_count", 0),
         )
         for entry in report.get("external_evidence_entries", [])
     )
@@ -874,9 +910,9 @@ Semantic verification: {"passed" if verification.get("ok") else "failed"}
 
 ## External Evidence Entries
 
-| Index | Entry ID | Manifest ID | Status | Covered / Required | Missing |
-|---|---|---|---|---|---|
-{external_rows or "| - | - | - | - | - | - |"}
+| Index | Entry ID | Manifest ID | Status | Requirements Covered / Required | Authority Kinds Covered / Required | Missing Requirements | Missing Authority Kinds |
+|---|---|---|---|---|---|---|---|
+{external_rows or "| - | - | - | - | - | - | - | - |"}
 
 ## Errors
 
@@ -1231,6 +1267,9 @@ def _external_evidence_entry_records(chain: EvidenceChain) -> list[dict[str, Any
                 "required_requirement_count": payload.get("required_requirement_count"),
                 "covered_requirement_count": payload.get("covered_requirement_count"),
                 "missing_requirement_count": payload.get("missing_requirement_count"),
+                "required_authority_kind_count": payload.get("required_authority_kind_count"),
+                "covered_authority_kind_count": payload.get("covered_authority_kind_count"),
+                "missing_authority_kind_count": payload.get("missing_authority_kind_count"),
                 "evidence_count": payload.get("evidence_count"),
                 "issued_at_count": payload.get("issued_at_count"),
                 "expires_at_count": payload.get("expires_at_count"),
@@ -1240,6 +1279,8 @@ def _external_evidence_entry_records(chain: EvidenceChain) -> list[dict[str, Any
                 "missing_freshness_count": payload.get("missing_freshness_count"),
                 "covered_requirement_ids": payload.get("covered_requirement_ids", []),
                 "missing_requirement_ids": payload.get("missing_requirement_ids", []),
+                "covered_authority_kinds_by_requirement": payload.get("covered_authority_kinds_by_requirement", {}),
+                "missing_authority_kinds_by_requirement": payload.get("missing_authority_kinds_by_requirement", {}),
             }
         )
     return records
@@ -1297,8 +1338,15 @@ def _verify_external_evidence_entry_summary(
     status = payload.get("status")
     if all(isinstance(value, int) for value in (required, covered, missing)) and covered + missing != required:
         errors.append(f"external evidence entry {entry.get('index')} coverage counts do not add up")
+    missing_authority = payload.get("missing_authority_kind_count")
+    covered_authority = payload.get("covered_authority_kind_count")
+    required_authority = payload.get("required_authority_kind_count")
+    if all(isinstance(value, int) for value in (required_authority, covered_authority, missing_authority)) and covered_authority + missing_authority != required_authority:
+        errors.append(f"external evidence entry {entry.get('index')} authority-kind coverage counts do not add up")
     if status == "complete" and missing != 0:
         errors.append(f"external evidence entry {entry.get('index')} is complete but has missing requirements")
+    if status == "complete" and missing_authority not in (0, None):
+        errors.append(f"external evidence entry {entry.get('index')} is complete but has missing authority kinds")
     if status != "complete":
         message = f"external evidence entry {entry.get('index')} is partial"
         if require_complete:
@@ -1526,23 +1574,54 @@ def _is_safe_relative_path(path: str) -> bool:
     )
 
 
-def _summary(required_ids: list[str], evidence: list[dict[str, Any]], *, status: str | None = None) -> dict[str, Any]:
+def _summary(
+    required_ids: list[str],
+    evidence: list[dict[str, Any]],
+    required_authority_kinds: dict[str, list[str]],
+    *,
+    status: str | None = None,
+) -> dict[str, Any]:
+    required_set = set(required_ids)
     covered = sorted({
         str(item.get("requirement_id"))
         for item in evidence
-        if item.get("requirement_id") in set(required_ids)
+        if item.get("requirement_id") in required_set
     })
+    covered_authority_kinds_by_requirement: dict[str, list[str]] = {}
+    missing_authority_kinds_by_requirement: dict[str, list[str]] = {}
+    for requirement_id in required_ids:
+        allowed = required_authority_kinds.get(requirement_id, [])
+        observed = {
+            str(item.get("authority_kind"))
+            for item in evidence
+            if item.get("requirement_id") == requirement_id
+            and item.get("authority_kind") in allowed
+        }
+        covered_kinds = [authority_kind for authority_kind in allowed if authority_kind in observed]
+        missing_kinds = [authority_kind for authority_kind in allowed if authority_kind not in observed]
+        if covered_kinds:
+            covered_authority_kinds_by_requirement[requirement_id] = covered_kinds
+        if missing_kinds:
+            missing_authority_kinds_by_requirement[requirement_id] = missing_kinds
     missing = [requirement_id for requirement_id in required_ids if requirement_id not in covered]
-    computed_status = "complete" if not missing else "partial"
+    required_authority_kind_count = sum(len(required_authority_kinds.get(requirement_id, [])) for requirement_id in required_ids)
+    covered_authority_kind_count = sum(len(kinds) for kinds in covered_authority_kinds_by_requirement.values())
+    missing_authority_kind_count = sum(len(kinds) for kinds in missing_authority_kinds_by_requirement.values())
+    computed_status = "complete" if not missing and missing_authority_kind_count == 0 else "partial"
     return {
         "status": status or computed_status,
         "required_requirement_count": len(required_ids),
         "covered_requirement_count": len(covered),
         "missing_requirement_count": len(missing),
+        "required_authority_kind_count": required_authority_kind_count,
+        "covered_authority_kind_count": covered_authority_kind_count,
+        "missing_authority_kind_count": missing_authority_kind_count,
         "evidence_count": len(evidence),
         "issued_at_count": sum(1 for item in evidence if item.get("issued_at")),
         "expires_at_count": sum(1 for item in evidence if item.get("expires_at")),
         "freshness_window_count": sum(1 for item in evidence if item.get("issued_at") and item.get("expires_at")),
         "covered_requirement_ids": covered,
         "missing_requirement_ids": missing,
+        "covered_authority_kinds_by_requirement": covered_authority_kinds_by_requirement,
+        "missing_authority_kinds_by_requirement": missing_authority_kinds_by_requirement,
     }

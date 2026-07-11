@@ -27,7 +27,7 @@ hashed files and verified offline.
   the roadmap audit, including the accepted external authority kinds derived
   from that requirement's external-authority claim.
 - `evidence`: supplied external evidence artifacts.
-- `summary`: coverage totals, missing requirement IDs, and evidence freshness-window counts.
+- `summary`: requirement coverage, authority-kind coverage, missing requirement IDs, missing authority kinds, and evidence freshness-window counts.
 - `limitations`: explicit non-claims about live fetching and issuer quality.
 
 ## Evidence Item
@@ -56,10 +56,11 @@ Each evidence item contains:
 
 The optional Markdown rendering MUST expose the manifest as an external-evidence
 collection checklist. It includes every required `reference-attested`
-requirement, coverage state, accepted authority kinds, and the roadmap audit's
-external authority text, followed by supplied evidence rows with accepted
-authority kinds and freshness windows. This keeps the human review artifact
-aligned with the machine-verifiable authority-kind policy.
+requirement, coverage state, accepted authority kinds, covered authority kinds,
+missing authority kinds, and the roadmap audit's external authority text,
+followed by supplied evidence rows with accepted authority kinds and freshness
+windows. This keeps the human review artifact aligned with the
+machine-verifiable authority-kind policy.
 
 ## Evidence Chain Entry
 
@@ -70,11 +71,11 @@ A verified manifest can be appended to an evidence chain as
 - `manifest_ref` and `source_roadmap_audit`.
 - `source_roadmap_audit_inclusion_proof` when the referenced roadmap audit
   has already been appended to the same evidence chain.
-- Coverage status, required/covered/missing requirement counts, and evidence
-  count.
+- Coverage status, required/covered/missing requirement counts,
+  required/covered/missing authority-kind counts, and evidence count.
 - Freshness enforcement mode, verification time, issued/expires/fresh-window
   counts, and fresh/stale/missing-freshness evidence counts.
-- Covered and missing requirement IDs.
+- Covered and missing requirement IDs, plus covered and missing authority kinds by requirement.
 - Whether complete production evidence and fresh evidence were required at
   append time.
 
@@ -82,8 +83,9 @@ The append operation MUST verify the manifest against the supplied roadmap audit
 before writing the chain entry. If the same chain already contains a matching
 `trustai.roadmap_audit.attested` entry for the manifest source audit, append
 SHOULD include that entry inclusion proof in the external-evidence payload. If
-`require_complete` is set and any reference-attested requirement is uncovered,
-append MUST fail. If `require_fresh` is set, append MUST fail unless every
+`require_complete` is set and any reference-attested requirement is uncovered or
+any accepted authority kind for that requirement is uncovered, append MUST fail.
+If `require_fresh` is set, append MUST fail unless every
 supplied evidence item has valid `issued_at` and `expires_at` timestamps and is
 unexpired at the supplied `now` value, or at manifest `generated_at` when `now`
 is omitted.
@@ -98,8 +100,8 @@ roadmap evidence relationships:
    prior roadmap audit entry by `audit_id` and `audit_hash`.
 3. The stored `source_roadmap_audit_inclusion_proof` verifies against the prefix
    tree root that existed before the external-evidence entry was appended.
-4. Coverage counts are internally consistent.
-5. With `--require-complete`, every external-evidence entry must be complete.
+4. Requirement coverage counts and authority-kind coverage counts are internally consistent.
+5. With `--require-complete`, every external-evidence entry must cover every required requirement and every accepted authority kind.
 6. With `--require-fresh`, every external-evidence entry must have been appended
    with freshness required and must record zero stale or missing-freshness
    evidence items.
@@ -177,13 +179,14 @@ A verifier MUST:
    `accepted_authority_kinds` list does not match that derived policy.
 7. Reject absolute paths or paths containing `..`.
 8. Re-hash every evidence artifact and compare it to the recorded SHA-256.
-9. Recompute coverage summary, missing requirement IDs, and freshness-window
-   counts.
+9. Recompute coverage summary, missing requirement IDs, missing authority kinds,
+   and freshness-window counts.
 10. Parse any `issued_at` and `expires_at` values, reject windows where
    `expires_at <= issued_at`, and warn on missing, future-issued, or expired
    evidence when strict freshness is not requested.
 11. When complete production evidence is required, reject manifests that do not
-   cover every reference-attested requirement.
+   cover every reference-attested requirement and every accepted authority kind
+   for those requirements.
 12. When fresh production evidence is required, reject manifests where any
    evidence item lacks a freshness window, has not yet been issued, or has
    expired at the verifier's `now` value.
