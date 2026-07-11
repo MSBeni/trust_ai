@@ -9,6 +9,7 @@ from .canonical import content_hash, utc_now, without_keys
 from .chain import EvidenceChain, verify_entry
 from .crypto import sign_value, verify_value
 from .merkle import verify_inclusion
+from .tree_header import verify_packed_tree_header
 
 REGULATOR_DISCLOSURE_SCHEMA = "trustai.regulator-disclosure/0.1"
 
@@ -129,11 +130,18 @@ def verify_regulator_disclosure(disclosure: dict[str, Any], key: str | None = No
         warnings.append("source proof pack id missing")
 
     chain = disclosure.get("chain", {})
+    if not isinstance(chain, dict):
+        errors.append("regulator disclosure chain must be an object")
+        chain = {}
     tree = chain.get("tree", {})
-    root = tree.get("root")
-    size = tree.get("size")
+    root = tree.get("root") if isinstance(tree, dict) else None
+    size = tree.get("size") if isinstance(tree, dict) else None
     entries = chain.get("entries", [])
     proofs = chain.get("inclusion_proofs", {})
+    errors.extend(verify_packed_tree_header(tree, entries, label="disclosure chain"))
+    if not isinstance(proofs, dict):
+        errors.append("disclosure chain inclusion_proofs must be an object")
+        proofs = {}
 
     if not root:
         errors.append("disclosure chain tree root missing")

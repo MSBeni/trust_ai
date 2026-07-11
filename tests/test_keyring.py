@@ -72,6 +72,20 @@ class KeyringTests(unittest.TestCase):
 
             self.assertFalse(result.ok)
             self.assertTrue(any("timestamp token invalid" in error for error in result.errors))
+    def test_keyring_rejects_declared_tree_header_tamper(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            self._build_chain_and_pack(tmp)
+            chain_path = tmp / "chain.json"
+            data = json.loads(chain_path.read_text(encoding="utf-8"))
+            data["tree"]["root"] = "0" * 64
+            chain_path.write_text(json.dumps(data, indent=2, sort_keys=True), encoding="utf-8")
+            chain = EvidenceChain.load(chain_path)
+
+            result = verify_chain_with_keyring(chain, local_dev_keyring(tenant_id="test"))
+
+            self.assertFalse(result.ok)
+            self.assertIn("declared chain tree root mismatch", result.errors)
 
     def test_keyring_rejects_wrong_proof_pack_signing_key(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

@@ -14,6 +14,7 @@ from .frameworks import default_framework_mappings
 from .gate import EVAL_ENTRY_TYPE, GATE_ENTRY_TYPE, evaluate_contract
 from .keyring import verify_entry_with_keyring, verify_value_with_keyring
 from .merkle import verify_inclusion
+from .tree_header import verify_packed_tree_header
 from .mcp_gateway import MCP_TOOL_CALL_ENTRY_TYPE, verify_mcp_transcript_entries
 from .proofpack import PROOF_PACK_SPEC_VERSION
 from .registry import (
@@ -69,10 +70,17 @@ def verify_proof_pack(
         errors.append("proof pack signature invalid")
 
     chain = proof_pack.get("chain", {})
+    if not isinstance(chain, dict):
+        errors.append("proof pack chain must be an object")
+        chain = {}
     tree = chain.get("tree", {})
-    root = tree.get("root")
+    root = tree.get("root") if isinstance(tree, dict) else None
     entries = chain.get("entries", [])
     proofs = chain.get("inclusion_proofs", {})
+    errors.extend(verify_packed_tree_header(tree, entries, label="chain"))
+    if not isinstance(proofs, dict):
+        errors.append("chain inclusion_proofs must be an object")
+        proofs = {}
     entry_by_type: dict[str, dict[str, Any]] = {}
     approval_entries: list[dict[str, Any]] = []
     shadow_entries: list[dict[str, Any]] = []

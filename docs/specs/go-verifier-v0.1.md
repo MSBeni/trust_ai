@@ -25,19 +25,22 @@ An implementation conforming to this source target verifies:
 4. RFC3161-shaped local timestamp token signatures and payload binding.
 5. Merkle leaf and node hashing plus inclusion proofs for every packed chain
    entry.
-6. Chain entry `entry_id`, payload hash, and signature validity.
-7. Verification contract hash binding between registration, evaluation, and
+6. Packed chain tree header shape, size/root digest validation, minimum size
+   checks against packed entries and indexes, and exact root recomputation when
+   the pack carries the complete tree.
+7. Chain entry `entry_id`, payload hash, and signature validity.
+8. Verification contract hash binding between registration, evaluation, and
    gate decision entries.
-8. Contract-before-results-before-gate ordering in the evidence chain.
-9. Temporal holdout checks for freeze time, record timestamps, sample count,
+9. Contract-before-results-before-gate ordering in the evidence chain.
+10. Temporal holdout checks for freeze time, record timestamps, sample count,
    and metric thresholds.
-10. Required human approval roles and approval chain entries.
-11. Recomputed promotion gate decision and packed gate decision consistency.
-12. Proof-pack contract and eval wrapper `chain_entry_id` / `results_hash`
+11. Required human approval roles and approval chain entries.
+12. Recomputed promotion gate decision and packed gate decision consistency.
+13. Proof-pack contract and eval wrapper `chain_entry_id` / `results_hash`
     bindings to the included chain entries.
-13. Proof-pack subject binding to the registered contract agent and evaluated
+14. Proof-pack subject binding to the registered contract agent and evaluated
     environment, plus eval/gate agent binding to the same contract agent.
-14. Deterministic compliance framework mappings derived from the packed gate
+15. Deterministic compliance framework mappings derived from the packed gate
     decision.
 
 ## Build and Test

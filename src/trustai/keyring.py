@@ -241,6 +241,7 @@ def verify_chain_with_keyring(chain: EvidenceChain, keyring: dict[str, Any]) -> 
 
     ids = chain.entry_ids()
     root = merkle_root(ids)
+    errors.extend(chain.verify_declared_tree_header())
     for entry in chain.entries:
         proof = inclusion_proof(ids, entry["index"])
         if not verify_inclusion(entry["entry_id"], proof, root):

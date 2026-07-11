@@ -171,18 +171,8 @@ class EvidenceChain:
             "audit_path": inclusion_proof(ids, index),
         }
 
-    def verify_all(self, key: str | None = None) -> ChainVerification:
+    def verify_declared_tree_header(self) -> list[str]:
         errors: list[str] = []
-        expected_previous = None
-        for expected_index, entry in enumerate(self.entries):
-            if entry.get("index") != expected_index:
-                errors.append(f"entry index mismatch at position {expected_index}")
-            if entry.get("previous_entry_id") != expected_previous:
-                errors.append(f"entry {expected_index} previous pointer mismatch")
-            errors.extend(verify_entry(entry, key))
-            expected_previous = entry.get("entry_id")
-
-        ids = self.entry_ids()
         tree = self.tree()
         if self.declared_tree is None:
             if self._declared_tree_required:
@@ -196,7 +186,22 @@ class EvidenceChain:
                 errors.append("declared chain tree size mismatch")
             if not isinstance(declared_root, str) or declared_root != tree["root"]:
                 errors.append("declared chain tree root mismatch")
+        return errors
 
+    def verify_all(self, key: str | None = None) -> ChainVerification:
+        errors: list[str] = []
+        expected_previous = None
+        for expected_index, entry in enumerate(self.entries):
+            if entry.get("index") != expected_index:
+                errors.append(f"entry index mismatch at position {expected_index}")
+            if entry.get("previous_entry_id") != expected_previous:
+                errors.append(f"entry {expected_index} previous pointer mismatch")
+            errors.extend(verify_entry(entry, key))
+            expected_previous = entry.get("entry_id")
+
+        ids = self.entry_ids()
+        tree = self.tree()
+        errors.extend(self.verify_declared_tree_header())
         root = tree["root"]
         for entry in self.entries:
             proof = inclusion_proof(ids, entry["index"])

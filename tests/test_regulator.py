@@ -85,6 +85,20 @@ class RegulatorDisclosureTests(unittest.TestCase):
             self.assertEqual(chain.tree(), disclosure["chain"]["tree"])
             self.assertGreater(disclosure["chain"]["tree"]["size"], pack["chain"]["tree"]["size"])
 
+    def test_regulator_disclosure_rejects_tree_size_tamper(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            chain, pack = self._chain_and_pack(Path(tmp_dir))
+            disclosure = build_regulator_disclosure(chain, pack)
+            tampered = copy.deepcopy(disclosure)
+            tampered["chain"]["tree"]["size"] = 1
+            for proof in tampered["chain"]["inclusion_proofs"].values():
+                proof["tree_size"] = 1
+
+            result = verify_regulator_disclosure(tampered)
+
+            self.assertFalse(result.ok)
+            self.assertIn("disclosure chain tree size is smaller than packed entry count", result.errors)
+            self.assertIn("disclosure chain tree size is smaller than packed entry indexes", result.errors)
     def test_regulator_disclosure_detects_tampered_entry_payload(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             chain, pack = self._chain_and_pack(Path(tmp_dir))

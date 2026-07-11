@@ -201,6 +201,36 @@ class ProofPackFlowTests(unittest.TestCase):
             self.assertNotIn("proof pack signature invalid", result.errors)
             self.assertIn("framework mappings do not match gate decision", result.errors)
 
+    def test_chain_tree_size_tamper_is_rejected_after_resign(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            pack = self._build_pack(Path(tmp_dir))
+            pack["chain"]["tree"]["size"] = 1
+            for proof in pack["chain"]["inclusion_proofs"].values():
+                proof["tree_size"] = 1
+            self._resign_pack(pack)
+
+            result = verify_proof_pack(pack)
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("pack_id does not match canonical pack body", result.errors)
+            self.assertNotIn("proof pack signature invalid", result.errors)
+            self.assertIn("chain tree size is smaller than packed entry count", result.errors)
+            self.assertIn("chain tree size is smaller than packed entry indexes", result.errors)
+
+    def test_complete_chain_tree_root_tamper_is_rejected_after_resign(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            pack = self._build_pack(Path(tmp_dir))
+            pack["chain"]["tree"]["root"] = "0" * 64
+            for proof in pack["chain"]["inclusion_proofs"].values():
+                proof["tree_root"] = "0" * 64
+            self._resign_pack(pack)
+
+            result = verify_proof_pack(pack)
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("pack_id does not match canonical pack body", result.errors)
+            self.assertNotIn("proof pack signature invalid", result.errors)
+            self.assertIn("chain tree root does not match packed entries", result.errors)
     def test_chain_payload_tamper_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             pack = self._build_pack(Path(tmp_dir))

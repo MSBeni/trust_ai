@@ -28,6 +28,7 @@ const (
 
 	leafPrefix = "trustai-merkle-leaf-v1\x00"
 	nodePrefix = "trustai-merkle-node-v1\x00"
+	emptyRoot  = "trustai-empty-merkle-tree-v1"
 )
 
 type result struct {
@@ -100,10 +101,19 @@ func verifyProofPack(pack map[string]any, key, tsaKey string) result {
 	}
 
 	chain := getMap(pack, "chain")
+	if chain == nil {
+		errors = append(errors, "proof pack chain must be an object")
+		chain = map[string]any{}
+	}
 	tree := getMap(chain, "tree")
 	root := getString(tree, "root")
 	entries := getSlice(chain, "entries")
 	proofs := getMap(chain, "inclusion_proofs")
+	errors = append(errors, verifyPackedChainTree(tree, entries, "chain")...)
+	if proofs == nil {
+		errors = append(errors, "chain inclusion_proofs must be an object")
+		proofs = map[string]any{}
+	}
 	entryByType := map[string]map[string]any{}
 	var approvalEntries []map[string]any
 
@@ -499,6 +509,120 @@ func verifyValue(value any, sig map[string]any, key string) bool {
 	return hmac.Equal([]byte(expected), []byte(getString(sig, "value")))
 }
 
+func verifyPackedChainTree(tree map[string]any, entries []any, label string) []string {
+	var errors []string
+	if tree == nil {
+		return []string{label + " tree must be an object"}
+	}
+	size, sizeOK := intValue(tree["size"])
+	root := getString(tree, "root")
+	rootOK := isSHA256Hex(root)
+	if !sizeOK || size < 0 {
+		errors = append(errors, label+" tree size must be a non-negative integer")
+	}
+	if !rootOK {
+		errors = append(errors, label+" tree root must be a SHA-256 hex digest")
+	}
+	if !sizeOK || size < 0 {
+		return errors
+	}
+
+	validEntries := 0
+	indexes := []int64{}
+	seenIndexes := map[int64]bool{}
+	duplicateIndexes := false
+	idsByIndex := map[int64]string{}
+	for _, raw := range entries {
+		entry, ok := raw.(map[string]any)
+		if !ok {
+			continue
+		}
+		validEntries++
+		index, ok := intValue(entry["index"])
+		if !ok {
+			continue
+		}
+		indexes = append(indexes, index)
+		if seenIndexes[index] {
+			duplicateIndexes = true
+		}
+		seenIndexes[index] = true
+		if entryID := getString(entry, "entry_id"); entryID != "" {
+			idsByIndex[index] = entryID
+		}
+	}
+
+	if int64(validEntries) > size {
+		errors = append(errors, label+" tree size is smaller than packed entry count")
+	}
+	if duplicateIndexes {
+		errors = append(errors, label+" entries contain duplicate indexes")
+	}
+	if len(indexes) > 0 {
+		maxIndex := indexes[0]
+		for _, index := range indexes[1:] {
+			if index > maxIndex {
+				maxIndex = index
+			}
+		}
+		if maxIndex >= size {
+			errors = append(errors, label+" tree size is smaller than packed entry indexes")
+		}
+	}
+
+	complete := rootOK && int64(len(indexes)) == size && int64(len(idsByIndex)) == size
+	if complete {
+		entryIDs := make([]string, 0, int(size))
+		for index := int64(0); index < size; index++ {
+			entryID, ok := idsByIndex[index]
+			if !ok {
+				complete = false
+				break
+			}
+			entryIDs = append(entryIDs, entryID)
+		}
+		if complete && root != merkleRoot(entryIDs) {
+			errors = append(errors, label+" tree root does not match packed entries")
+		}
+	}
+	return errors
+}
+
+func isSHA256Hex(value string) bool {
+	if len(value) != 64 {
+		return false
+	}
+	_, err := hex.DecodeString(value)
+	return err == nil
+}
+
+func merkleRoot(entryIDs []string) string {
+	if len(entryIDs) == 0 {
+		sum := sha256.Sum256([]byte(emptyRoot))
+		return hex.EncodeToString(sum[:])
+	}
+	level := make([]string, 0, len(entryIDs))
+	for _, entryID := range entryIDs {
+		level = append(level, leafHash(entryID))
+	}
+	for len(level) > 1 {
+		level = nextLevel(level)
+	}
+	return level[0]
+}
+
+func nextLevel(level []string) []string {
+	next := []string{}
+	for index := 0; index < len(level); index += 2 {
+		if index+1 >= len(level) {
+			next = append(next, level[index])
+		} else {
+			next = append(next, nodeHash(level[index], level[index+1]))
+		}
+	}
+	return next
+}
+
 func verifyInclusion(entryID string, proof []any, expectedRoot string) bool {
 	computed := leafHash(entryID)
 	for _, raw := range proof {
@@ -678,6 +802,22 @@ func getBool(m map[string]any, key string) bool {
 	}
 	v, _ := m[key].(bool)
 	return v
+}
+
+func intValue(v any) (int64, bool) {
+	switch n := v.(type) {
+	case json.Number:
+		i, err := n.Int64()
+		return i, err == nil
+	case float64:
+		i := int64(n)
+		return i, n == float64(i)
+	case int:
+		return int64(n), true
+	case int64:
+		return n, true
+	}
+	return 0, false
 }
 
 func numberInt(v any) int64 {
