@@ -48,10 +48,12 @@ message hashes, lease/checkpoint/cursor evidence, authority request and response
 hashes, stored dossier/report object hashes, metrics refs, or audit roots.
 
 `framework-runtime-service-authority-provider-append` requires all source
-artifacts. The chain entry records only hash-bound summaries while offline
-reviewers can replay disclosed provider records. Omitted source artifacts during
-standalone verification may produce replay warnings, but they must not permit
-partial authority worker or provider export summaries.
+artifacts. Offline verification is also fail-closed: the authority provider
+export, authority worker receipt, authority dossier, service provider
+receipt/export, service worker receipt, and every nested service-worker source
+artifact are required so reviewers can replay provider records and the full
+worker chain. A detached signature over partial replay inputs is not enough to
+verify the receipt.
 
 `local-export` and `provider-export` modes produce verifiable local/reference
 evidence. `production-export` still requires a successful provider exchange and

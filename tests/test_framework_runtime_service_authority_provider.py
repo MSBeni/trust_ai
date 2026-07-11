@@ -402,6 +402,39 @@ class FrameworkRuntimeServiceAuthorityProviderTests(unittest.TestCase):
                 self.assertFalse(result.ok)
                 self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
 
+    def test_framework_runtime_service_authority_provider_requires_replay_artifacts_without_sources(self):
+        receipt, authority_provider_export, authority_worker, *_ = self._receipt()
+
+        missing_all = verify_framework_runtime_service_authority_provider_receipt(receipt)
+        missing_provider_export = verify_framework_runtime_service_authority_provider_receipt(
+            receipt,
+            authority_worker=authority_worker,
+        )
+        missing_authority_worker = verify_framework_runtime_service_authority_provider_receipt(
+            receipt,
+            authority_provider_export=authority_provider_export,
+        )
+
+        self.assertFalse(missing_all.ok)
+        self.assertIn(
+            "framework runtime service authority provider worker artifact is required for verification",
+            missing_all.errors,
+        )
+        self.assertIn(
+            "framework runtime service authority provider export artifact is required for verification",
+            missing_all.errors,
+        )
+        self.assertFalse(missing_provider_export.ok)
+        self.assertIn(
+            "framework runtime service authority provider export artifact is required for verification",
+            missing_provider_export.errors,
+        )
+        self.assertFalse(missing_authority_worker.ok)
+        self.assertIn(
+            "framework runtime service authority provider worker artifact is required for verification",
+            missing_authority_worker.errors,
+        )
+
     def test_framework_runtime_service_authority_provider_rejects_raw_credential(self):
         (
             receipt,
