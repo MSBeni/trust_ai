@@ -267,7 +267,7 @@ def verify_framework_runtime_service_authority_recorded_export(
     _verify_source_binding(receipt.get("source"), authority_attestation, errors, warnings)
 
     if authority_attestation is None:
-        warnings.append("framework runtime service authority attestation source was not supplied; attestation source was not replayed")
+        errors.append("framework runtime service authority recorded export attestation source is required for verification")
     else:
         result = verify_framework_runtime_service_authority_attestation(
             authority_attestation,
@@ -516,7 +516,7 @@ def _verify_source_binding(binding: Any, authority_attestation: dict[str, Any] |
         return
     _verify_source_binding_completeness(binding, errors)
     if authority_attestation is None:
-        warnings.append("framework runtime service authority recorded export source attestation was not supplied; source hash was not replayed")
+        errors.append("framework runtime service authority recorded export source attestation is required for verification")
         return
     if binding != _source_binding(authority_attestation):
         errors.append("framework runtime service authority recorded export source binding does not match supplied authority attestation")
@@ -634,7 +634,7 @@ def _verify_recorded_artifacts(
     if value.get("summary") != _artifact_summary([item for item in items if isinstance(item, dict)]):
         errors.append("framework runtime service authority recorded_artifacts summary does not match items")
     if artifact_paths is None:
-        warnings.append("framework runtime service authority recorded export artifact paths were not supplied; raw files were not replayed")
+        errors.append("framework runtime service authority recorded export artifact paths are required for verification")
         return
     try:
         expected_records = _artifact_records(artifact_paths, source_objects)

@@ -395,6 +395,30 @@ class FrameworkRuntimeServiceAuthorityRecordedExportTests(unittest.TestCase):
                 result.errors,
             )
 
+    def test_framework_runtime_service_authority_recorded_export_requires_replay_artifacts_without_sources(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            receipt = self._recorded_export(tmp)[0]
+
+            missing_all = verify_framework_runtime_service_authority_recorded_export(
+                receipt,
+                now="2026-07-09T01:12:00Z",
+            )
+
+            self.assertFalse(missing_all.ok)
+            self.assertIn(
+                "framework runtime service authority recorded export attestation source is required for verification",
+                missing_all.errors,
+            )
+            self.assertIn(
+                "framework runtime service authority recorded export source attestation is required for verification",
+                missing_all.errors,
+            )
+            self.assertIn(
+                "framework runtime service authority recorded export artifact paths are required for verification",
+                missing_all.errors,
+            )
+
     def test_framework_runtime_service_authority_recorded_export_rejects_raw_credential(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)

@@ -33,18 +33,13 @@ recorded export ID, verifies at least one detached signature, validates recorder
 and retention metadata, checks redacted credentials, rejects raw secret-like
 fields, and recalculates artifact roots.
 
-If authority attestation and artifact files are omitted, verification may warn
-that hashes were not replayed, but it still rejects incomplete signed source
-bindings with missing attestation metadata, provider receipt/export hashes,
-authority evidence roots, missing-requirement roots, dossier hashes, or dossier
-coverage-summary fields.
-
-When supplied with the authority attestation and all source artifacts,
-verification first replays
-`framework-runtime-service-authority-attestation-verify`. It then rereads every
-retained file path, recalculates the file byte hash and size, parses the JSON
-object, recalculates the canonical content hash, and rejects mismatches against
-the receipt or the supplied source object.
+Offline verification is fail-closed: the authority attestation, every nested
+source artifact, and every retained artifact file path are required. Verification
+first replays `framework-runtime-service-authority-attestation-verify`. It then
+rereads every retained file path, recalculates the file byte hash and size,
+parses the JSON object, recalculates the canonical content hash, and rejects
+mismatches against the receipt or the supplied source object. A detached
+signature over partial replay inputs is not enough to verify the recorded export.
 
 `production-recorded-export` mode requires the source authority attestation to be
 `production-attestation`. `local-recorded-export` and
