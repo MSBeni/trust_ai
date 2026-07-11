@@ -45,6 +45,12 @@ def _github_signature(secret: str, body: bytes) -> str:
 
 
 class ProviderApprovalAuthorityTests(unittest.TestCase):
+    def _resign_dossier(self, dossier: dict) -> None:
+        body = without_keys(dossier, "dossier_id", "signatures")
+        dossier_id = content_hash(body)
+        dossier["dossier_id"] = dossier_id
+        dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "provider_approval_authority": body})]
+
     def _approval_sources(self, tmp: Path) -> tuple[dict, dict]:
         chain = EvidenceChain.load(tmp / "approval-chain.json", tenant_id="provider-approval-authority-test")
         contract = load_contract(CONTRACT)
@@ -167,6 +173,7 @@ class ProviderApprovalAuthorityTests(unittest.TestCase):
             self.assertTrue(any("evidence missing for" in warning for warning in result.warnings), result.warnings)
             self.assertEqual(PROVIDER_APPROVAL_AUTHORITY_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(dossier["dossier_id"], entry["payload"]["dossier_id"])
+            self.assertEqual(dossier["authority_evidence"][0]["source_context"], entry["payload"]["authority_evidence"][0]["source_context"])
             self.assertEqual({"deferred": 2, "passed": 5}, entry["payload"]["control_summary"])
             self.assertTrue(chain.verify_all().ok)
 
@@ -191,6 +198,58 @@ class ProviderApprovalAuthorityTests(unittest.TestCase):
 
             self.assertFalse(result.ok)
             self.assertTrue(any("source_binding does not match" in error or "callback source" in error for error in result.errors), result.errors)
+
+    def test_provider_approval_authority_rejects_resigned_authority_source_context_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            request, callback = self._approval_sources(tmp)
+            webhook = self._webhook_receipt()
+            delivery_authority, operations_authority = self._authority_sources()
+            dossier = self._dossier(request, callback, webhook, delivery_authority, operations_authority)
+            tampered = copy.deepcopy(dossier)
+            item = tampered["authority_evidence"][0]
+            item["source_context"]["callback_id"] = "callback:other"
+            item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+            self._resign_dossier(tampered)
+
+            result = verify_provider_approval_authority_dossier(
+                tampered,
+                approval_request=request,
+                approval_callback=callback,
+                webhook_receipts=[webhook],
+                provider_delivery_authority=delivery_authority,
+                provider_operations_authority=operations_authority,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("dossier_id does not match canonical provider approval authority body", result.errors)
+            self.assertNotIn("provider approval authority signature verification failed", result.errors)
+            self.assertIn("provider approval authority source_context does not match source binding: hosted-approval-callback-ingress", result.errors)
+
+    def test_provider_approval_authority_rejects_resigned_control_tamper(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            request, callback = self._approval_sources(tmp)
+            webhook = self._webhook_receipt()
+            delivery_authority, operations_authority = self._authority_sources()
+            dossier = self._dossier(request, callback, webhook, delivery_authority, operations_authority)
+            tampered = copy.deepcopy(dossier)
+            tampered["controls"][0]["status"] = "deferred"
+            self._resign_dossier(tampered)
+
+            result = verify_provider_approval_authority_dossier(
+                tampered,
+                approval_request=request,
+                approval_callback=callback,
+                webhook_receipts=[webhook],
+                provider_delivery_authority=delivery_authority,
+                provider_operations_authority=operations_authority,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("dossier_id does not match canonical provider approval authority body", result.errors)
+            self.assertNotIn("provider approval authority signature verification failed", result.errors)
+            self.assertIn("provider approval authority controls do not match dossier body", result.errors)
 
     def test_provider_approval_authority_requires_complete_source_binding_without_sources(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

@@ -18,7 +18,7 @@ A dossier contains:
 - `dossier_ref`, `authority_ref`, `producer_ref`: stable references for the dossier, authority system, and producer identity.
 - `source_binding`: hashes and selected fields from the approval request, approval callback, provider webhook receipts, provider delivery authority dossier, and provider operations authority dossier.
 - `required_production_authority`: fixed v0.1 checklist.
-- `authority_evidence`: external evidence refs, hashes, issuer/subject metadata, and freshness windows.
+- `authority_evidence`: external evidence refs, hashes, issuer/subject metadata, freshness windows, derived `source_context`, and derived evidence IDs.
 - `summary`: covered and missing production authority categories.
 - `controls`: deterministic control outcomes derived from the body.
 - `signatures`: detached signatures over `{dossier_id, provider_approval_authority}`.
@@ -37,6 +37,8 @@ A dossier contains:
 10. `tenant-network-egress-controls`
 11. `reviewer-identity-and-rbac`
 
+Each authority evidence item carries a derived `source_context` tying the external authority row to the approval request hash, proof-pack/contract IDs, approval callback ID/hash, reviewer role/action/team fields, provider webhook receipt IDs/hashes/delivery IDs/payload hashes, and the provider delivery and provider operations authority dossier IDs/hashes/summaries recorded in `source_binding`.
+
 ## Verification Rules
 
 A verifier MUST reject a dossier when:
@@ -48,7 +50,7 @@ A verifier MUST reject a dossier when:
 - A supplied provider delivery or operations authority dossier fails verification.
 - `source_binding` is missing required nested IDs, hashes, replay metadata, webhook verification fields, or authority dossier summary fields, or it does not match supplied source artifacts.
 - `required_production_authority`, `summary`, or `controls` do not match the v0.1 rules.
-- Any authority evidence item has an unknown requirement, invalid authority kind, invalid hash/ref, bad freshness window, or mismatched `evidence_id`.
+- Any authority evidence item has an unknown requirement, invalid authority kind, invalid hash/ref, bad freshness window, mismatched `evidence_id`, or `source_context` that does not match `source_binding`.
 - `production-dossier` mode is used without a callback, at least one provider webhook receipt, provider delivery authority, provider operations authority, and complete fresh evidence for every required category.
 - Raw secret-like values appear instead of hashes, ids, roots, or redacted references.
 
@@ -64,4 +66,4 @@ python -m trustai provider-approval-authority-append artifacts/provider-approval
 
 ## Production Claim Limit
 
-A signed provider approval authority dossier is not proof that TrustAI operates live credentialed CI/CD integrations. It proves that the local approval callback, webhook, delivery authority, operations authority, and external authority records are hash-bound and offline-verifiable. A live production claim requires `production-dossier` mode plus fresh external records for every checklist category.
+A signed provider approval authority dossier is not proof that TrustAI operates live credentialed CI/CD integrations. It proves that the local approval callback, webhook, delivery authority, operations authority, and external authority records are hash-bound, source-context-bound, and offline-verifiable. A live production claim requires `production-dossier` mode plus fresh external records for every checklist category.

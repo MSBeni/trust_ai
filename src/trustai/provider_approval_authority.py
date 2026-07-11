@@ -126,9 +126,10 @@ def build_provider_approval_authority_dossier(
 
     timestamp = generated_at or utc_now()
     parse_rfc3339(timestamp)
-    evidence_items = [_build_authority_evidence_item(item) for item in (authority_evidence or [])]
-    summary = _summary(evidence_items)
     binding = _source_binding(approval_request, approval_callback, webhooks, provider_delivery_authority, provider_operations_authority)
+    source_context = _authority_evidence_source_context(binding)
+    evidence_items = [_build_authority_evidence_item(item, source_context) for item in (authority_evidence or [])]
+    summary = _summary(evidence_items)
     body: dict[str, Any] = {
         "schema": PROVIDER_APPROVAL_AUTHORITY_SCHEMA,
         "mode": mode,
@@ -212,13 +213,14 @@ def verify_provider_approval_authority_dossier(
     if not isinstance(evidence, list):
         errors.append("provider approval authority authority_evidence must be a list")
         evidence = []
+    evidence_source_context = _authority_evidence_source_context(dossier.get("source_binding") if isinstance(dossier.get("source_binding"), dict) else {})
     freshness_counts = {"fresh": 0, "stale": 0, "missing": 0}
     for item in evidence:
         if not isinstance(item, dict):
             errors.append("provider approval authority evidence item must be an object")
             freshness_counts["missing"] += 1
             continue
-        freshness_counts[_verify_authority_evidence_item(item, errors, warnings, now=freshness_now, require_fresh=require_fresh)] += 1
+        freshness_counts[_verify_authority_evidence_item(item, errors, warnings, now=freshness_now, require_fresh=require_fresh, source_context=evidence_source_context)] += 1
 
     evidence_dicts = [item for item in evidence if isinstance(item, dict)]
     expected_summary = _summary(evidence_dicts)
@@ -295,7 +297,7 @@ def append_provider_approval_authority_dossier(
         "summary": dossier.get("summary"),
         "control_summary": _status_summary(dossier.get("controls", [])),
         "authority_evidence": [
-            {"requirement_id": item.get("requirement_id"), "authority_kind": item.get("authority_kind"), "evidence_ref": item.get("evidence_ref"), "evidence_hash": item.get("evidence_hash"), "evidence_id": item.get("evidence_id"), "issued_at": item.get("issued_at"), "expires_at": item.get("expires_at")}
+            {"requirement_id": item.get("requirement_id"), "authority_kind": item.get("authority_kind"), "evidence_ref": item.get("evidence_ref"), "evidence_hash": item.get("evidence_hash"), "evidence_id": item.get("evidence_id"), "issued_at": item.get("issued_at"), "expires_at": item.get("expires_at"), "source_context": item.get("source_context")}
             for item in dossier.get("authority_evidence", [])
             if isinstance(item, dict)
         ],
@@ -521,7 +523,7 @@ def _source_binding_complete(binding: dict[str, Any]) -> bool:
     )
 
 
-def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
+def _build_authority_evidence_item(item: dict[str, Any], source_context: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(item, dict):
         raise ValueError("authority evidence item must be an object")
     requirement_id = str(item.get("requirement_id") or "")
@@ -544,6 +546,7 @@ def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
         "evidence_ref": evidence_ref,
         "evidence_hash": evidence_hash,
         "description": description,
+        "source_context": source_context,
     }
     for field in ("issuer", "subject", "source_uri", "issued_at", "expires_at"):
         if item.get(field):
@@ -564,14 +567,19 @@ def _verify_authority_evidence_item(
     *,
     now,
     require_fresh: bool,
+    source_context: dict[str, Any],
 ) -> str:
     try:
-        expected = _build_authority_evidence_item(item)
+        expected = _build_authority_evidence_item(item, source_context)
     except ValueError as exc:
         errors.append(f"invalid provider approval authority evidence: {exc}")
         return "missing"
     if item != expected:
         errors.append("provider approval authority evidence_id does not match evidence body")
+    if not isinstance(item.get("source_context"), dict):
+        errors.append(f"provider approval authority source_context is required: {item.get('requirement_id')}")
+    elif item.get("source_context") != source_context:
+        errors.append(f"provider approval authority source_context does not match source binding: {item.get('requirement_id')}")
     issued_at = item.get("issued_at")
     expires_at = item.get("expires_at")
     if not issued_at or not expires_at:
@@ -591,6 +599,48 @@ def _verify_authority_evidence_item(
             warnings.append(message)
         return "stale"
     return "fresh"
+
+
+def _authority_evidence_source_context(binding: dict[str, Any]) -> dict[str, Any]:
+    request = binding.get("approval_request") if isinstance(binding.get("approval_request"), dict) else {}
+    callback = binding.get("approval_callback") if isinstance(binding.get("approval_callback"), dict) else {}
+    webhooks = [item for item in binding.get("webhook_receipts", []) if isinstance(item, dict)] if isinstance(binding.get("webhook_receipts"), list) else []
+    delivery = binding.get("provider_delivery_authority") if isinstance(binding.get("provider_delivery_authority"), dict) else {}
+    operations = binding.get("provider_operations_authority") if isinstance(binding.get("provider_operations_authority"), dict) else {}
+    return {
+        "approval_request_id": request.get("approval_request_id"),
+        "approval_request_hash": request.get("approval_request_hash"),
+        "pack_id": request.get("pack_id"),
+        "contract_id": request.get("contract_id"),
+        "contract_hash": request.get("contract_hash"),
+        "channel": request.get("channel"),
+        "requested_roles": request.get("requested_roles"),
+        "callback_id": callback.get("callback_id"),
+        "callback_hash": callback.get("callback_hash"),
+        "callback_provider": callback.get("provider"),
+        "callback_role": callback.get("role"),
+        "callback_action_id": callback.get("action_id"),
+        "callback_team_id": callback.get("team_id"),
+        "webhook_receipt_ids": _sorted_present(item.get("receipt_id") for item in webhooks),
+        "webhook_receipt_hashes": _sorted_present(item.get("receipt_hash") for item in webhooks),
+        "webhook_delivery_ids": _sorted_present(item.get("delivery_id") for item in webhooks),
+        "webhook_events": _sorted_present(item.get("event") for item in webhooks),
+        "webhook_payload_hashes": _sorted_present(item.get("payload_sha256") for item in webhooks),
+        "provider_delivery_authority_id": delivery.get("dossier_id"),
+        "provider_delivery_authority_hash": delivery.get("dossier_hash"),
+        "provider_delivery_authority_ref": delivery.get("authority_ref"),
+        "provider_delivery_authority_environment": delivery.get("environment"),
+        "provider_delivery_authority_summary": delivery.get("summary"),
+        "provider_operations_authority_id": operations.get("dossier_id"),
+        "provider_operations_authority_hash": operations.get("dossier_hash"),
+        "provider_operations_authority_ref": operations.get("authority_ref"),
+        "provider_operations_authority_environment": operations.get("environment"),
+        "provider_operations_authority_summary": operations.get("summary"),
+    }
+
+
+def _sorted_present(values: Any) -> list[Any]:
+    return sorted(value for value in values if value not in (None, "", []))
 
 
 def _verify_required_authority(value: Any, errors: list[str]) -> None:
