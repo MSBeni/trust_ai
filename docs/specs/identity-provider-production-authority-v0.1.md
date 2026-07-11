@@ -41,7 +41,7 @@ A dossier contains:
 - `mode`, `environment`, `generated_at`, `dossier_ref`, `authority_ref`, and `producer_ref`.
 - `worker_binding`: content hash and core provider, source operation, identity, worker, scheduler, propagation, response, observability, credential, and source-control references from the lifecycle worker receipt.
 - `required_production_authority`: the exact requirement list above.
-- `authority_evidence`: authority evidence records supplied by the producer.
+- `authority_evidence`: authority evidence records supplied by the producer, including derived `source_context` bindings to the lifecycle worker binding.
 - `summary`: covered, missing, fresh, stale, and missing-freshness counts.
 - `controls`: passed, deferred, and failed claim controls.
 - `limitations`: non-production and missing-live-authority disclaimers.
@@ -57,8 +57,9 @@ Each `authority_evidence` record must contain:
 - `evidence_ref`: stable external reference such as a provider export id, system-log cursor, hosted service audit URI, object-lock root, KMS/HSM custody record, or customer-owned ledger pointer.
 - `evidence_hash`: hash or immutable root for the external evidence.
 - `description`: human-readable evidence description.
+- `source_context`: derived binding to the worker operation id/hash, worker mode, environment, provider, source operation, identity record, worker run, scheduler, queue, propagation logs, request/response hashes, observability roots, credential ref, and control summary recorded in `worker_binding`.
 
-Optional metadata fields are `issuer`, `subject`, `source_uri`, `issued_at`, and `expires_at`. Freshness checks use `issued_at` and `expires_at`. Evidence without both timestamps is accepted for non-strict verification but counted as missing freshness.
+Optional metadata fields are `issuer`, `subject`, `source_uri`, `issued_at`, and `expires_at`. The derived `source_context` is computed by the builder and must not be supplied as a CLI field. Freshness checks use `issued_at` and `expires_at`. Evidence without both timestamps is accepted for non-strict verification but counted as missing freshness.
 
 CLI evidence strings use:
 
@@ -76,11 +77,12 @@ A verifier must:
 4. Re-verify the bound identity-provider lifecycle worker receipt against the supplied lifecycle operation, identity-provider attestation, optional identity-provider session receipt, identity payload, vendor identity receipt, trust-network manifest, and proof packs when supplied.
 5. Compare the dossier `worker_binding` content hashes to the supplied source documents. Omitted sources may produce replay warnings, but they must not permit partial worker binding summaries.
 6. Require the `required_production_authority` checklist to match this specification exactly.
-7. Reject evidence with unknown requirement ids or disallowed authority kinds.
+7. Reject evidence with unknown requirement ids, disallowed authority kinds, invalid evidence ids, or `source_context` that does not match `worker_binding`.
 8. Reject malformed evidence references, hashes, and timestamp windows.
-9. Count missing, stale, and fresh evidence. With `--require-complete`, every requirement id must be covered. With `--require-fresh`, every covered evidence item must include a valid current freshness window.
-10. Reject `production-dossier` mode unless all requirements are covered with fresh evidence.
-11. Reject raw secrets in the dossier. Secret-bearing fields must be redacted references such as `env:`, `vault:`, `kms:`, or content hashes.
+9. Recompute summary and controls from the signed worker binding and authority evidence, then reject mismatches.
+10. Count missing, stale, and fresh evidence. With `--require-complete`, every requirement id must be covered. With `--require-fresh`, every covered evidence item must include a valid current freshness window.
+11. Reject `production-dossier` mode unless all requirements are covered with fresh evidence.
+12. Reject raw secrets in the dossier. Secret-bearing fields must be redacted references such as `env:`, `vault:`, `kms:`, or content hashes.
 
 ## CLI Examples
 

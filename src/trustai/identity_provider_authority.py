@@ -214,7 +214,9 @@ def build_identity_provider_authority_dossier(
     source_result = verify_identity_provider_lifecycle_worker_receipt(worker_receipt, key=key, **source_kwargs)
     if not source_result.ok:
         raise ValueError("invalid identity provider lifecycle worker source: " + "; ".join(source_result.errors))
-    evidence_items = [_build_authority_evidence_item(item) for item in (authority_evidence or [])]
+    worker_binding = _worker_binding(worker_receipt)
+    source_context = _authority_evidence_source_context(worker_binding)
+    evidence_items = [_build_authority_evidence_item(item, source_context) for item in (authority_evidence or [])]
     summary = _summary(evidence_items)
     body: dict[str, Any] = {
         "schema": IDENTITY_PROVIDER_AUTHORITY_SCHEMA,
@@ -224,11 +226,11 @@ def build_identity_provider_authority_dossier(
         "dossier_ref": dossier_ref,
         "authority_ref": authority_ref,
         "producer_ref": producer_ref,
-        "worker_binding": _worker_binding(worker_receipt),
+        "worker_binding": worker_binding,
         "required_production_authority": PRODUCTION_AUTHORITY_REQUIREMENTS,
         "authority_evidence": evidence_items,
         "summary": summary,
-        "controls": _controls(mode, worker_receipt, evidence_items, summary),
+        "controls": _controls(mode, worker_binding, evidence_items, summary),
         "limitations": [
             "This dossier binds a verified identity-provider lifecycle worker receipt to an explicit production-authority evidence checklist.",
             "It records authority references, hashes, freshness windows, and missing live-evidence categories for identity-provider event streams and lifecycle propagation.",
@@ -302,13 +304,23 @@ def verify_identity_provider_authority_dossier(
     if not isinstance(evidence, list):
         errors.append("identity provider authority authority_evidence must be a list")
         evidence = []
+    evidence_source_context = _authority_evidence_source_context(
+        dossier.get("worker_binding") if isinstance(dossier.get("worker_binding"), dict) else {}
+    )
     freshness_counts = {"fresh": 0, "stale": 0, "missing": 0}
     for item in evidence:
         if not isinstance(item, dict):
             errors.append("identity provider authority evidence item must be an object")
             freshness_counts["missing"] += 1
             continue
-        freshness_status = _verify_authority_evidence_item(item, errors, warnings, now=freshness_now, require_fresh=require_fresh)
+        freshness_status = _verify_authority_evidence_item(
+            item,
+            errors,
+            warnings,
+            now=freshness_now,
+            require_fresh=require_fresh,
+            source_context=evidence_source_context,
+        )
         freshness_counts[freshness_status] += 1
 
     expected_summary = _summary([item for item in evidence if isinstance(item, dict)])
@@ -323,9 +335,10 @@ def verify_identity_provider_authority_dossier(
         errors.append("production-dossier mode requires every identity provider authority requirement to be covered")
     if mode == "production-dossier" and (freshness_counts["stale"] or freshness_counts["missing"]):
         errors.append("production-dossier mode requires every identity provider authority evidence item to be fresh")
+    worker_binding_for_controls = dossier.get("worker_binding") if isinstance(dossier.get("worker_binding"), dict) else {}
     if not isinstance(dossier.get("controls"), list) or not dossier.get("controls"):
         errors.append("identity provider authority controls are required")
-    elif dossier.get("controls") != _controls(str(mode), worker_receipt or {}, [item for item in evidence if isinstance(item, dict)], expected_summary):
+    elif dossier.get("controls") != _controls(str(mode), worker_binding_for_controls, [item for item in evidence if isinstance(item, dict)], expected_summary):
         errors.append("identity provider authority controls do not match dossier body")
     _check_no_secret_values(dossier, errors)
 
@@ -384,6 +397,7 @@ def append_identity_provider_authority_dossier(
                 "evidence_id": item.get("evidence_id"),
                 "issued_at": item.get("issued_at"),
                 "expires_at": item.get("expires_at"),
+                "source_context": item.get("source_context"),
             }
             for item in dossier.get("authority_evidence", [])
             if isinstance(item, dict)
@@ -467,7 +481,7 @@ def _verify_worker_binding(
     warnings.extend(f"identity provider authority worker source: {warning}" for warning in result.warnings)
 
 
-def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
+def _build_authority_evidence_item(item: dict[str, Any], source_context: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(item, dict):
         raise ValueError("authority evidence item must be an object")
     requirement_id = str(item.get("requirement_id") or "")
@@ -498,11 +512,20 @@ def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
         "source_uri": item.get("source_uri"),
         "issued_at": item.get("issued_at"),
         "expires_at": item.get("expires_at"),
+        "source_context": source_context,
     }
     return {**body, "evidence_id": content_hash(body)}
 
 
-def _verify_authority_evidence_item(item: dict[str, Any], errors: list[str], warnings: list[str], *, now: Any, require_fresh: bool) -> str:
+def _verify_authority_evidence_item(
+    item: dict[str, Any],
+    errors: list[str],
+    warnings: list[str],
+    *,
+    now: Any,
+    require_fresh: bool,
+    source_context: dict[str, Any],
+) -> str:
     if item.get("evidence_id") != content_hash(without_keys(item, "evidence_id")):
         errors.append(f"identity provider authority evidence_id does not match evidence body: {item.get('requirement_id')}")
     requirement_id = item.get("requirement_id")
@@ -518,6 +541,10 @@ def _verify_authority_evidence_item(item: dict[str, Any], errors: list[str], war
             errors.append(f"identity provider authority {field} is required: {requirement_id}")
     if item.get("evidence_hash") and not str(item.get("evidence_hash")).startswith("sha256:"):
         errors.append(f"identity provider authority evidence_hash must start with sha256: {requirement_id}")
+    if not isinstance(item.get("source_context"), dict):
+        errors.append(f"identity provider authority source_context is required: {requirement_id}")
+    elif item.get("source_context") != source_context:
+        errors.append(f"identity provider authority source_context does not match worker binding: {requirement_id}")
 
     issued_at = _parse_optional_timestamp(item, "issued_at", errors)
     expires_at = _parse_optional_timestamp(item, "expires_at", errors)
@@ -553,6 +580,46 @@ def _verify_authority_evidence_item(item: dict[str, Any], errors: list[str], war
     return freshness_status
 
 
+def _authority_evidence_source_context(binding: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "worker_operation_id": binding.get("worker_operation_id"),
+        "worker_receipt_hash": binding.get("worker_receipt_hash"),
+        "worker_schema": binding.get("worker_schema"),
+        "worker_mode": binding.get("worker_mode"),
+        "environment": binding.get("environment"),
+        "provider": binding.get("provider"),
+        "source_operation_id": binding.get("source_operation_id"),
+        "source_operation_hash": binding.get("source_operation_hash"),
+        "identity_id": binding.get("identity_id"),
+        "identity_record_hash": binding.get("identity_record_hash"),
+        "operation_kind": binding.get("operation_kind"),
+        "worker_ref": binding.get("worker_ref"),
+        "run_ref": binding.get("run_ref"),
+        "worker_success": binding.get("worker_success"),
+        "schedule_ref": binding.get("schedule_ref"),
+        "lease_ref": binding.get("lease_ref"),
+        "checkpoint_ref": binding.get("checkpoint_ref"),
+        "checkpoint_hash": binding.get("checkpoint_hash"),
+        "queue_ref": binding.get("queue_ref"),
+        "queue_message_ref": binding.get("queue_message_ref"),
+        "destination_ref": binding.get("destination_ref"),
+        "propagation_log_ref": binding.get("propagation_log_ref"),
+        "propagation_log_root": binding.get("propagation_log_root"),
+        "account_state_log_root": binding.get("account_state_log_root"),
+        "session_revocation_log_root": binding.get("session_revocation_log_root"),
+        "token_revocation_log_root": binding.get("token_revocation_log_root"),
+        "request_hash": binding.get("request_hash"),
+        "response_status": binding.get("response_status"),
+        "response_hash": binding.get("response_hash"),
+        "metrics_ref": binding.get("metrics_ref"),
+        "audit_log_ref": binding.get("audit_log_ref"),
+        "audit_log_root": binding.get("audit_log_root"),
+        "retention_until": binding.get("retention_until"),
+        "credential_ref": binding.get("credential_ref"),
+        "control_summary": binding.get("control_summary"),
+    }
+
+
 def _verify_required_authority(value: Any, errors: list[str]) -> None:
     if value != PRODUCTION_AUTHORITY_REQUIREMENTS:
         errors.append("identity provider authority required_production_authority does not match v0.1 requirements")
@@ -575,10 +642,10 @@ def _summary(evidence: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _controls(mode: str, worker_receipt: dict[str, Any], evidence: list[dict[str, Any]], summary: dict[str, Any]) -> list[dict[str, Any]]:
+def _controls(mode: str, worker_binding: dict[str, Any], evidence: list[dict[str, Any]], summary: dict[str, Any]) -> list[dict[str, Any]]:
     return [
         {"name": "lifecycle_worker_replayed", "status": "passed", "detail": "The dossier builder replayed the identity-provider lifecycle worker receipt and supplied source evidence."},
-        {"name": "lifecycle_worker_bound", "status": "passed" if worker_receipt.get("worker_operation_id") else "failed", "detail": "The dossier binds the worker operation ID, receipt hash, source operation, scheduler, propagation, and audit roots."},
+        {"name": "lifecycle_worker_bound", "status": "passed" if worker_binding.get("worker_operation_id") else "failed", "detail": "The dossier binds the worker operation ID, receipt hash, source operation, scheduler, propagation, and audit roots."},
         {"name": "authority_evidence_manifested", "status": "passed" if evidence else "deferred", "detail": "External identity-provider authority evidence references are hash-bound when supplied."},
         {"name": "freshness_windows_tracked", "status": "passed" if evidence and summary["freshness_window_count"] == len(evidence) else "deferred", "detail": "Issued/expires freshness windows are tracked for every supplied authority item when available."},
         {"name": "complete_live_authority", "status": "passed" if summary["missing_requirement_count"] == 0 else "deferred", "detail": "Every identity-provider production authority requirement must be covered before this can claim live production authority."},

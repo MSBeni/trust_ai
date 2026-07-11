@@ -104,6 +104,12 @@ class IdentityProviderAuthorityTests(unittest.TestCase):
             **kwargs,
         )
 
+    def _resign_dossier(self, dossier: dict) -> None:
+        body = without_keys(dossier, "dossier_id", "signatures")
+        dossier_id = content_hash(body)
+        dossier["dossier_id"] = dossier_id
+        dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "identity_provider_authority": body})]
+
     def test_identity_provider_authority_verifies_and_appends(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             sources = self._sources(Path(tmp_dir))
@@ -133,6 +139,7 @@ class IdentityProviderAuthorityTests(unittest.TestCase):
             self.assertEqual(IDENTITY_PROVIDER_AUTHORITY_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(dossier["dossier_id"], entry["payload"]["dossier_id"])
             self.assertEqual(sources["worker"]["worker_operation_id"], entry["payload"]["worker_binding"]["worker_operation_id"])
+            self.assertEqual(dossier["authority_evidence"][0]["source_context"], entry["payload"]["authority_evidence"][0]["source_context"])
             self.assertEqual({"deferred": 1, "passed": 5}, entry["payload"]["control_summary"])
 
     def test_identity_provider_authority_detects_worker_tamper(self):
@@ -170,6 +177,40 @@ class IdentityProviderAuthorityTests(unittest.TestCase):
 
                     self.assertFalse(result.ok)
                     self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
+
+    def test_identity_provider_authority_rejects_resigned_authority_source_context_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            sources = self._sources(Path(tmp_dir))
+            dossier = self._dossier(sources)
+            tampered = copy.deepcopy(dossier)
+            item = tampered["authority_evidence"][0]
+            item["source_context"]["run_ref"] = "worker-run:identity-provider/lifecycle/tampered"
+            item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+            self._resign_dossier(tampered)
+
+            result = self._verify(tampered, sources)
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("dossier_id does not match canonical identity provider authority body", result.errors)
+            self.assertNotIn("identity provider authority signature verification failed", result.errors)
+            self.assertNotIn("identity provider authority evidence_id does not match evidence body: live-identity-provider-event-streams", result.errors)
+            self.assertIn("identity provider authority source_context does not match worker binding: live-identity-provider-event-streams", result.errors)
+
+    def test_identity_provider_authority_rejects_resigned_control_tamper(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            sources = self._sources(Path(tmp_dir))
+            dossier = self._dossier(sources)
+            tampered = copy.deepcopy(dossier)
+            tampered["controls"][0]["status"] = "deferred"
+            self._resign_dossier(tampered)
+
+            result = self._verify(tampered, sources)
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("dossier_id does not match canonical identity provider authority body", result.errors)
+            self.assertNotIn("identity provider authority signature verification failed", result.errors)
+            self.assertIn("identity provider authority controls do not match dossier body", result.errors)
+
     def test_identity_provider_authority_requires_freshness_when_strict(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             sources = self._sources(Path(tmp_dir))
