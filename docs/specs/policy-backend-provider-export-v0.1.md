@@ -66,8 +66,9 @@ The provider export artifact is a JSON object with these required record arrays:
    raw token, cookie, password, private key, client secret, or authorization
    material.
 
-Warnings are emitted when the provider export artifact or worker source is not
-supplied, or when the receipt is not in `production-export` mode.
+Verification is fail-closed when the provider export artifact or worker source is
+not supplied for replay. Warnings are emitted only when the receipt is not in
+`production-export` mode.
 
 ## Chain Entry
 

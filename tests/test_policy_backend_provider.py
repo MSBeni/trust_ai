@@ -194,6 +194,37 @@ class PolicyBackendProviderTests(unittest.TestCase):
             self.assertEqual(receipt["provider_receipt_id"], entry["payload"]["provider_receipt_id"])
             self.assertTrue(sources["chain"].verify_all().ok)
 
+    def test_policy_backend_provider_requires_replay_artifacts(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            sources = self._sources(Path(tmp_dir))
+            receipt = self._receipt(sources)
+
+            missing_both = verify_policy_backend_provider_receipt(receipt)
+            missing_worker = verify_policy_backend_provider_receipt(
+                receipt,
+                provider_export=sources["provider_export"],
+            )
+            missing_export = verify_policy_backend_provider_receipt(
+                receipt,
+                worker_receipt=sources["worker_receipt"],
+                service_attestation=sources["attestation"],
+                enforcement_receipt=sources["enforcement"],
+                policy_pack=sources["policy"],
+                action=sources["action"],
+                proof_pack=sources["pack"],
+                decision=sources["policy_decision"],
+                policy_export=sources["policy_export"],
+                policy_engine_receipt=sources["engine_receipt"],
+            )
+
+            self.assertFalse(missing_both.ok)
+            self.assertTrue(any("worker artifact is required" in error for error in missing_both.errors), missing_both.errors)
+            self.assertTrue(any("export artifact is required" in error for error in missing_both.errors), missing_both.errors)
+            self.assertFalse(missing_worker.ok)
+            self.assertTrue(any("worker artifact is required" in error for error in missing_worker.errors), missing_worker.errors)
+            self.assertFalse(missing_export.ok)
+            self.assertTrue(any("export artifact is required" in error for error in missing_export.errors), missing_export.errors)
+
     def test_policy_backend_provider_rejects_provider_export_tamper(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             sources = self._sources(Path(tmp_dir))

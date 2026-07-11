@@ -418,7 +418,7 @@ def _verify_worker_binding(
         if binding.get(field) in (None, ""):
             errors.append(f"policy backend provider binding.{field} is required")
     if worker_receipt is None:
-        warnings.append("policy backend provider worker artifact was not supplied; worker source was not replayed")
+        errors.append("policy backend provider worker artifact is required for verification")
         return
     expected = _worker_binding(worker_receipt)
     if binding != expected:
@@ -449,7 +449,7 @@ def _verify_provider_export_binding(receipt: dict[str, Any], provider_export: di
         if not export.get(field):
             errors.append(f"policy backend provider provider_export.{field} is required")
     if provider_export is None:
-        warnings.append("policy backend provider export artifact was not supplied; provider records were not replayed")
+        errors.append("policy backend provider export artifact is required for verification")
         return
     if export.get("hash") != content_hash(provider_export):
         errors.append("policy backend provider export hash does not match supplied provider export")
