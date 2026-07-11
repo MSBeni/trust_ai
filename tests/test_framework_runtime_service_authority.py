@@ -203,6 +203,7 @@ class FrameworkRuntimeServiceAuthorityTests(unittest.TestCase):
             self.assertTrue(any("missing for" in warning for warning in result.warnings))
             self.assertEqual(FRAMEWORK_RUNTIME_SERVICE_AUTHORITY_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(dossier["dossier_id"], entry["payload"]["dossier_id"])
+            self.assertEqual(dossier["authority_evidence"][0]["source_context"], entry["payload"]["authority_evidence"][0]["source_context"])
             self.assertEqual({"deferred": 1, "passed": 5}, entry["payload"]["control_summary"])
             self.assertTrue(chain.verify_all().ok)
 
@@ -299,6 +300,97 @@ class FrameworkRuntimeServiceAuthorityTests(unittest.TestCase):
             any("provider source:" in error and "artifact is required for verification" in error for error in missing_nested_sources.errors),
             missing_nested_sources.errors,
         )
+
+    def test_framework_runtime_service_authority_rejects_resigned_authority_source_context_mismatch(self):
+        (
+            dossier,
+            provider_receipt,
+            provider_export,
+            service_worker,
+            service,
+            storage_receipt,
+            storage_export,
+            worker,
+            runtime_audit,
+            audit_export,
+            operation,
+            trace,
+            release,
+            matrix,
+        ) = self._dossier()
+        tampered = copy.deepcopy(dossier)
+        item = tampered["authority_evidence"][0]
+        item["source_context"]["provider_receipt_hash"] = "sha256:tampered-provider-receipt"
+        item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+        self._resign_dossier(tampered)
+
+        result = verify_framework_runtime_service_authority_dossier(
+            tampered,
+            provider_receipt=provider_receipt,
+            provider_export=provider_export,
+            service_worker=service_worker,
+            service_attestation=service,
+            storage_receipt=storage_receipt,
+            storage_export=storage_export,
+            worker=worker,
+            runtime_audit=runtime_audit,
+            audit_export=audit_export,
+            operation=operation,
+            trace_payload=trace,
+            release=release,
+            matrix=matrix,
+            root=ROOT,
+        )
+
+        self.assertFalse(result.ok)
+        self.assertNotIn("dossier_id does not match canonical framework runtime service authority body", result.errors)
+        self.assertNotIn("framework runtime service authority signature verification failed", result.errors)
+        self.assertNotIn("framework runtime service authority evidence_id does not match evidence body: collector-fleet", result.errors)
+        self.assertIn("framework runtime service authority source_context does not match provider receipt binding: collector-fleet", result.errors)
+
+    def test_framework_runtime_service_authority_rejects_resigned_control_tamper(self):
+        (
+            dossier,
+            provider_receipt,
+            provider_export,
+            service_worker,
+            service,
+            storage_receipt,
+            storage_export,
+            worker,
+            runtime_audit,
+            audit_export,
+            operation,
+            trace,
+            release,
+            matrix,
+        ) = self._dossier()
+        tampered = copy.deepcopy(dossier)
+        tampered["controls"][0]["status"] = "deferred"
+        self._resign_dossier(tampered)
+
+        result = verify_framework_runtime_service_authority_dossier(
+            tampered,
+            provider_receipt=provider_receipt,
+            provider_export=provider_export,
+            service_worker=service_worker,
+            service_attestation=service,
+            storage_receipt=storage_receipt,
+            storage_export=storage_export,
+            worker=worker,
+            runtime_audit=runtime_audit,
+            audit_export=audit_export,
+            operation=operation,
+            trace_payload=trace,
+            release=release,
+            matrix=matrix,
+            root=ROOT,
+        )
+
+        self.assertFalse(result.ok)
+        self.assertNotIn("dossier_id does not match canonical framework runtime service authority body", result.errors)
+        self.assertNotIn("framework runtime service authority signature verification failed", result.errors)
+        self.assertIn("framework runtime service authority controls do not match dossier body", result.errors)
 
     def test_framework_runtime_service_authority_requires_freshness_when_strict(self):
         evidence = [dict(self._authority_evidence()[0])]

@@ -21,8 +21,10 @@ and contains:
   hooks, runtime service fleets, scheduler/queue/lease APIs, KMS/HSM evidence,
   stream/storage/database exports, MCP proxy workers, and immutable audit logs;
 - authority evidence refs with authority kind, evidence hash, issuer/subject,
-  optional source URI, and issued/expires freshness windows;
-- summary, controls, limitations, and detached signatures.
+  optional source URI, issued/expires freshness windows, and builder-derived
+  `source_context` computed from the signed provider receipt binding;
+- summary, controls, limitations, and detached signatures. Controls are
+  recomputed from the signed dossier body during verification.
 
 `local-dossier` and `provider-dossier` modes do not claim live production
 operation. `production-dossier` requires every production authority requirement
@@ -34,8 +36,10 @@ to be covered before verification succeeds.
 verifies at least one detached signature, validates the provider receipt binding,
 checks the fixed v0.1 authority checklist, verifies each authority evidence ID,
 checks accepted authority kinds per requirement, validates `sha256:` evidence
-hash refs, and rejects raw secret-like fields. It requires every provider receipt
-binding key emitted by the v0.1 builder, including provider schema/timestamp,
+hash refs, requires evidence `source_context` to match the signed provider
+receipt binding, recomputes controls, and rejects raw secret-like fields. It
+requires every provider receipt binding key emitted by the v0.1 builder,
+including provider schema/timestamp,
 service worker/storage refs, all provider record roots, audit-log root, and the
 nested provider exchange fields.
 
@@ -51,7 +55,7 @@ expired freshness windows fail verification.
 `framework-runtime-service-authority-append` requires the provider receipt and
 all provider source artifacts. The chain entry records the dossier ID/hash,
 provider binding, authority summary, control summary, and hash-bound authority
-evidence summaries.
+evidence summaries including their derived source context.
 
 ## CLI
 

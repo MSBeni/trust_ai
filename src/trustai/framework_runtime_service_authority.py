@@ -206,7 +206,9 @@ def build_framework_runtime_service_authority_dossier(
     if not provider_result.ok:
         raise ValueError("invalid framework runtime service provider source: " + "; ".join(provider_result.errors))
 
-    evidence_items = [_build_authority_evidence_item(item) for item in (authority_evidence or [])]
+    provider_binding = _provider_receipt_binding(provider_receipt)
+    source_context = _authority_evidence_source_context(provider_binding)
+    evidence_items = [_build_authority_evidence_item(item, source_context) for item in (authority_evidence or [])]
     summary = _summary(evidence_items)
     body: dict[str, Any] = {
         "schema": FRAMEWORK_RUNTIME_SERVICE_AUTHORITY_SCHEMA,
@@ -216,11 +218,11 @@ def build_framework_runtime_service_authority_dossier(
         "dossier_ref": dossier_ref,
         "authority_ref": authority_ref,
         "producer_ref": producer_ref,
-        "provider_receipt_binding": _provider_receipt_binding(provider_receipt),
+        "provider_receipt_binding": provider_binding,
         "required_production_authority": PRODUCTION_AUTHORITY_REQUIREMENTS,
         "authority_evidence": evidence_items,
         "summary": summary,
-        "controls": _controls(mode, provider_receipt, evidence_items, summary),
+        "controls": _controls(mode, provider_binding, evidence_items, summary),
         "limitations": [
             "This dossier binds a verified framework runtime service provider export receipt to an explicit production-authority evidence checklist.",
             "It records authority references, hashes, freshness windows, and missing live-evidence categories; it does not fetch provider APIs itself.",
@@ -313,6 +315,9 @@ def verify_framework_runtime_service_authority_dossier(
     if not isinstance(evidence, list):
         errors.append("framework runtime service authority authority_evidence must be a list")
         evidence = []
+    evidence_source_context = _authority_evidence_source_context(
+        dossier.get("provider_receipt_binding") if isinstance(dossier.get("provider_receipt_binding"), dict) else {}
+    )
     freshness_counts = {"fresh": 0, "stale": 0, "missing": 0}
     for item in evidence:
         if not isinstance(item, dict):
@@ -325,10 +330,12 @@ def verify_framework_runtime_service_authority_dossier(
             warnings,
             now=freshness_now,
             require_fresh=require_fresh,
+            source_context=evidence_source_context,
         )
         freshness_counts[freshness_status] += 1
 
-    expected_summary = _summary([item for item in evidence if isinstance(item, dict)])
+    evidence_dicts = [item for item in evidence if isinstance(item, dict)]
+    expected_summary = _summary(evidence_dicts)
     if dossier.get("summary") != expected_summary:
         errors.append("framework runtime service authority summary does not match authority evidence")
     missing = expected_summary["missing_requirement_ids"]
@@ -338,8 +345,11 @@ def verify_framework_runtime_service_authority_dossier(
         errors.append("framework runtime service authority dossier is incomplete")
     if mode == "production-dossier" and missing:
         errors.append("production-dossier mode requires every production authority requirement to be covered")
+    binding_for_controls = dossier.get("provider_receipt_binding") if isinstance(dossier.get("provider_receipt_binding"), dict) else {}
     if not isinstance(dossier.get("controls"), list) or not dossier.get("controls"):
         errors.append("framework runtime service authority controls are required")
+    elif dossier.get("controls") != _controls(str(mode), binding_for_controls, evidence_dicts, expected_summary):
+        errors.append("framework runtime service authority controls do not match dossier body")
     _check_no_secret_values(dossier, errors)
     return FrameworkRuntimeServiceAuthorityVerification(
         ok=not errors,
@@ -420,6 +430,7 @@ def append_framework_runtime_service_authority_dossier(
                 "evidence_id": item.get("evidence_id"),
                 "issued_at": item.get("issued_at"),
                 "expires_at": item.get("expires_at"),
+                "source_context": item.get("source_context"),
             }
             for item in dossier.get("authority_evidence", [])
             if isinstance(item, dict)
@@ -542,7 +553,7 @@ def _verify_provider_exchange_binding(value: Any, errors: list[str]) -> None:
 
 
 
-def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
+def _build_authority_evidence_item(item: dict[str, Any], source_context: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(item, dict):
         raise ValueError("authority evidence item must be an object")
     requirement_id = str(item.get("requirement_id") or "")
@@ -573,6 +584,7 @@ def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
         "source_uri": item.get("source_uri"),
         "issued_at": item.get("issued_at"),
         "expires_at": item.get("expires_at"),
+        "source_context": source_context,
     }
     return {**body, "evidence_id": content_hash(body)}
 
@@ -584,6 +596,7 @@ def _verify_authority_evidence_item(
     *,
     now: Any,
     require_fresh: bool,
+    source_context: dict[str, Any],
 ) -> str:
     if item.get("evidence_id") != content_hash(without_keys(item, "evidence_id")):
         errors.append(f"framework runtime service authority evidence_id does not match evidence body: {item.get('requirement_id')}")
@@ -600,6 +613,10 @@ def _verify_authority_evidence_item(
             errors.append(f"framework runtime service authority {field} is required: {requirement_id}")
     if item.get("evidence_hash") and not str(item.get("evidence_hash")).startswith("sha256:"):
         errors.append(f"framework runtime service authority evidence_hash must start with sha256: {requirement_id}")
+    if not isinstance(item.get("source_context"), dict):
+        errors.append(f"framework runtime service authority source_context is required: {requirement_id}")
+    elif item.get("source_context") != source_context:
+        errors.append(f"framework runtime service authority source_context does not match provider receipt binding: {requirement_id}")
 
     issued_at = _parse_optional_timestamp(item, "issued_at", errors)
     expires_at = _parse_optional_timestamp(item, "expires_at", errors)
@@ -635,6 +652,39 @@ def _verify_authority_evidence_item(
     return freshness_status
 
 
+def _authority_evidence_source_context(binding: dict[str, Any]) -> dict[str, Any]:
+    exchange = binding.get("provider_exchange") if isinstance(binding.get("provider_exchange"), dict) else {}
+    return {
+        "provider_receipt_id": binding.get("provider_receipt_id"),
+        "provider_receipt_hash": binding.get("provider_receipt_hash"),
+        "provider_schema": binding.get("provider_schema"),
+        "provider_mode": binding.get("provider_mode"),
+        "provider": binding.get("provider"),
+        "environment": binding.get("environment"),
+        "exported_at": binding.get("exported_at"),
+        "service_worker_operation_id": binding.get("service_worker_operation_id"),
+        "service_worker_operation_hash": binding.get("service_worker_operation_hash"),
+        "service_attestation_id": binding.get("service_attestation_id"),
+        "storage_receipt_id": binding.get("storage_receipt_id"),
+        "run_ref": binding.get("run_ref"),
+        "queue_message_ref": binding.get("queue_message_ref"),
+        "stream_message_ref": binding.get("stream_message_ref"),
+        "provider_export_hash": binding.get("provider_export_hash"),
+        "scheduler_record_root": binding.get("scheduler_record_root"),
+        "queue_record_root": binding.get("queue_record_root"),
+        "kms_record_root": binding.get("kms_record_root"),
+        "stream_record_root": binding.get("stream_record_root"),
+        "storage_record_root": binding.get("storage_record_root"),
+        "audit_record_root": binding.get("audit_record_root"),
+        "audit_log_root": binding.get("audit_log_root"),
+        "provider_exchange_hash": content_hash(exchange),
+        "provider_endpoint_url": exchange.get("endpoint_url"),
+        "provider_request_hash": exchange.get("request_hash"),
+        "provider_response_hash": exchange.get("response_hash"),
+        "provider_success": exchange.get("success"),
+    }
+
+
 def _verify_required_authority(value: Any, errors: list[str]) -> None:
     if value != PRODUCTION_AUTHORITY_REQUIREMENTS:
         errors.append("framework runtime service authority required_production_authority does not match v0.1 requirements")
@@ -663,7 +713,7 @@ def _summary(evidence: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _controls(mode: str, provider_receipt: dict[str, Any], evidence: list[dict[str, Any]], summary: dict[str, Any]) -> list[dict[str, Any]]:
+def _controls(mode: str, provider_binding: dict[str, Any], evidence: list[dict[str, Any]], summary: dict[str, Any]) -> list[dict[str, Any]]:
     return [
         {
             "name": "provider_source_replayed",
@@ -672,7 +722,7 @@ def _controls(mode: str, provider_receipt: dict[str, Any], evidence: list[dict[s
         },
         {
             "name": "provider_receipt_bound",
-            "status": "passed" if provider_receipt.get("provider_receipt_id") else "failed",
+            "status": "passed" if provider_binding.get("provider_receipt_id") else "failed",
             "detail": "The dossier binds the provider receipt ID, receipt hash, provider export hash, and record roots.",
         },
         {
