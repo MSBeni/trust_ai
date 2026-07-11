@@ -57,6 +57,8 @@ class StandardsSubmissionTests(unittest.TestCase):
         self.assertTrue(any("examples/webhooks/github-check-suite.json" in command for command in provider_webhook_target["commands"]))
         provider_delivery_service_target = next(target for target in package["conformance_targets"] if target["id"] == "provider-delivery-service-attestations")
         self.assertIn("retained payload artifact replay", provider_delivery_service_target["description"])
+        provider_delivery_worker_target = next(target for target in package["conformance_targets"] if target["id"] == "provider-delivery-worker-receipts")
+        self.assertIn("retained payload artifact replay", provider_delivery_worker_target["description"])
         self.assertIn("soak-demotion-receipt-v0.1.md", markdown)
         self.assertIn("soak-demotion-receipts", markdown)
         self.assertIn("deployment-manifest-v0.1.md", markdown)

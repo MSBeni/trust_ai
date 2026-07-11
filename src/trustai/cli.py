@@ -9047,6 +9047,7 @@ def _load_provider_delivery_worker_sources(args: argparse.Namespace) -> dict[str
     }
     if getattr(args, "payload", None):
         sources["payload"] = load_provider_payload(args.payload)
+        sources["payload_artifact_path"] = args.payload
     if getattr(args, "provider_operations_service", None):
         sources["provider_operations_service"] = load_provider_operations_service_attestation(args.provider_operations_service)
     if getattr(args, "provider_response", None):
@@ -9065,6 +9066,7 @@ def cmd_provider_delivery_worker(args: argparse.Namespace) -> int:
             sources["service_attestation"],
             sources["delivery"],
             payload=sources.get("payload"),
+            payload_artifact_path=sources.get("payload_artifact_path"),
             provider_operations_service=sources.get("provider_operations_service"),
             provider_response=sources.get("provider_response"),
             provider_audit_correlation=sources.get("provider_audit_correlation"),

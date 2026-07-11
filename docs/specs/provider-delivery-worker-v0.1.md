@@ -36,9 +36,10 @@ and production-operated GitHub, GitLab, or Slack dispatch workers. The schema is
 - `credential` and `provider_credential`: redacted worker and provider
   credential refs only.
 - `source_artifacts`: canonical ids, schemas, and hashes for the service
-  attestation, delivery receipt, optional payload, optional provider operations
-  service attestation, optional provider response artifact, optional provider
-  audit correlation receipt, and optional provider audit log export.
+  attestation, delivery receipt, optional payload with retained delivery payload
+  artifact replay through `--payload`, optional provider operations service
+  attestation, optional provider response artifact, optional provider audit
+  correlation receipt, and optional provider audit log export.
 - `controls`: derived status records for source binding, hosted worker mode,
   scheduler/lease/checkpoint continuity, idempotency, request/response binding,
   provider response artifact replay, provider audit correlation replay, log
@@ -55,9 +56,11 @@ and production-operated GitHub, GitLab, or Slack dispatch workers. The schema is
    `recorded_at`.
 3. Worker mode, operation kind, attempts, scheduler cadence, lease/checkpoint,
    and optional cursor timestamps.
-4. Service attestation replay against the supplied delivery, payload, and
-   optional provider operations service evidence.
-5. Delivery receipt replay against the supplied payload.
+4. Service attestation replay against the supplied delivery, payload, retained
+   delivery payload artifact path, and optional provider operations service
+   evidence.
+5. Delivery receipt replay against the supplied payload and retained payload
+   artifact when the delivery receipt contains `payload_artifact`.
 6. Optional provider response artifact replay against the delivery response and
    worker dispatch response: status, body hash, optional redacted header hash,
    artifact hash, and recorded timestamp.

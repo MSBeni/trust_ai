@@ -63,6 +63,7 @@ def build_provider_delivery_worker_receipt(
     delivery: dict[str, Any],
     *,
     payload: dict[str, Any] | None = None,
+    payload_artifact_path: str | Path | None = None,
     provider_operations_service: dict[str, Any] | None = None,
     provider_response: dict[str, Any] | None = None,
     provider_audit_correlation: dict[str, Any] | None = None,
@@ -174,13 +175,14 @@ def build_provider_delivery_worker_receipt(
         service_attestation,
         delivery=delivery,
         payload=payload,
+        payload_artifact_path=payload_artifact_path,
         provider_operations_service=provider_operations_service,
         key=key,
     )
     if not service_result.ok:
         raise ValueError("invalid provider delivery service source: " + "; ".join(service_result.errors))
 
-    delivery_result = verify_provider_delivery(delivery, payload, key=key)
+    delivery_result = verify_provider_delivery(delivery, payload, payload_artifact_path=payload_artifact_path, key=key)
     if not delivery_result.ok:
         raise ValueError("invalid provider delivery source: " + "; ".join(delivery_result.errors))
 
@@ -342,6 +344,7 @@ def verify_provider_delivery_worker_receipt(
     service_attestation: dict[str, Any] | None = None,
     delivery: dict[str, Any] | None = None,
     payload: dict[str, Any] | None = None,
+    payload_artifact_path: str | Path | None = None,
     provider_operations_service: dict[str, Any] | None = None,
     provider_response: dict[str, Any] | None = None,
     provider_audit_correlation: dict[str, Any] | None = None,
@@ -404,6 +407,7 @@ def verify_provider_delivery_worker_receipt(
             service_attestation,
             delivery=delivery,
             payload=payload,
+            payload_artifact_path=payload_artifact_path,
             provider_operations_service=provider_operations_service,
             key=key,
         )
@@ -416,7 +420,7 @@ def verify_provider_delivery_worker_receipt(
         delivery_hash = receipt.get("source_delivery", {}).get("delivery_hash") if isinstance(receipt.get("source_delivery"), dict) else None
         if delivery_hash != content_hash(delivery):
             errors.append("provider delivery worker source_delivery.delivery_hash does not match supplied delivery")
-        delivery_result = verify_provider_delivery(delivery, payload, key=key)
+        delivery_result = verify_provider_delivery(delivery, payload, payload_artifact_path=payload_artifact_path, key=key)
         if not delivery_result.ok:
             errors.extend(f"provider delivery worker delivery source: {error}" for error in delivery_result.errors)
         warnings.extend(f"provider delivery worker delivery source: {warning}" for warning in delivery_result.warnings)
@@ -490,6 +494,7 @@ def append_provider_delivery_worker_receipt(
     service_attestation: dict[str, Any] | None = None,
     delivery: dict[str, Any] | None = None,
     payload: dict[str, Any] | None = None,
+    payload_artifact_path: str | Path | None = None,
     provider_operations_service: dict[str, Any] | None = None,
     provider_response: dict[str, Any] | None = None,
     provider_audit_correlation: dict[str, Any] | None = None,
@@ -501,6 +506,7 @@ def append_provider_delivery_worker_receipt(
         service_attestation=service_attestation,
         delivery=delivery,
         payload=payload,
+        payload_artifact_path=payload_artifact_path,
         provider_operations_service=provider_operations_service,
         provider_response=provider_response,
         provider_audit_correlation=provider_audit_correlation,

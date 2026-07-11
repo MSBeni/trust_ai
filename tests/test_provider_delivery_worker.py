@@ -33,6 +33,7 @@ class ProviderDeliveryWorkerTests(unittest.TestCase):
             "service_attestation": _load("artifacts/provider-delivery-service-attestation.json"),
             "delivery": _load("artifacts/github-check-run-delivery.json"),
             "payload": _load("artifacts/github-check-run-payload.json"),
+            "payload_artifact_path": "artifacts/github-check-run-payload.json",
             "provider_operations_service": _load("artifacts/provider-operations-service-attestation.json"),
         }
 
@@ -193,6 +194,22 @@ class ProviderDeliveryWorkerTests(unittest.TestCase):
         self.assertEqual("env:GITHUB_TOKEN", receipt["provider_credential"]["ref"])
         self.assertEqual(PROVIDER_DELIVERY_WORKER_ENTRY_TYPE, entry["entry_type"])
         self.assertEqual(receipt["worker_operation_id"], entry["payload"]["worker_operation_id"])
+
+    def test_provider_delivery_worker_replays_delivery_payload_artifact(self):
+        sources = self._sources()
+        receipt = self._receipt()
+
+        result = verify_provider_delivery_worker_receipt(receipt, **sources)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertFalse(any("payload artifact was not replayed" in warning for warning in result.warnings))
+
+        tampered_sources = dict(sources)
+        tampered_sources["payload_artifact_path"] = Path(__file__)
+        tampered_result = verify_provider_delivery_worker_receipt(receipt, **tampered_sources)
+
+        self.assertFalse(tampered_result.ok)
+        self.assertTrue(any("payload_artifact" in error for error in tampered_result.errors))
 
     def test_provider_delivery_worker_replays_provider_response_artifact(self):
         sources = self._recorded_response_sources()
