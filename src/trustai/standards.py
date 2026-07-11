@@ -958,7 +958,7 @@ CONFORMANCE_TARGETS = (
     },
     {
         "id": "reexecution-runner-production-authority-dossiers",
-        "description": "Re-execution runner production authority dossiers bind verified runner service and worker evidence to production fleet, scheduler, queue, lease, container, kernel, audit, custody, KMS, freshness, and observability authority evidence.",
+        "description": "Re-execution runner production authority dossiers bind verified runner service and worker evidence to production fleet, scheduler, queue, lease, container, kernel, audit, custody, KMS, per-evidence source context, freshness, and observability authority evidence.",
         "reference": "src/trustai/reexecution_runner_authority.py",
         "commands": [
             "python -m trustai reexecution-runner-authority artifacts/reexecution-runner-service-attestation.json --worker-receipt artifacts/reexecution-runner-worker.json artifacts/reexecution-isolation-attestation.json artifacts/reexecution-runner-evidence.json --policy examples/aitrade/reexecution-policy.json --report artifacts/reexecution-report.json --environment aitrade-prod --dossier-ref dossier:reexecution-runner-authority/aitrade-prod --authority-ref authority:reexecution-runner/prod --producer-ref oidc:trustai.example/reexecution-runner-authority-worker --authority-evidence 'production-runner-fleet,hosted-service,runner-fleet:trustai/reexecution-prod,sha256:reexecution-runner-prod-fleet,Hosted re-execution runner fleet export for production replay jobs;issuer=TrustAI Hosted Ops;subject=aitrade-prod re-execution runner fleet;source_uri=https://runner.example/audit/fleet/aitrade-prod;issued_at=2026-07-04T04:09:00Z;expires_at=2026-07-11T04:09:00Z' --generated-at 2026-07-04T04:10:00Z",

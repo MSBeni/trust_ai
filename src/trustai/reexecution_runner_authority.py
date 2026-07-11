@@ -131,9 +131,10 @@ def build_reexecution_runner_authority_dossier(
 
     timestamp = generated_at or utc_now()
     parse_rfc3339(timestamp)
-    evidence_items = [_build_authority_evidence_item(item) for item in (authority_evidence or [])]
-    summary = _summary(evidence_items)
     binding = _source_binding(service_attestation, workers, isolation_attestation, runner_evidence, policy, report)
+    source_context = _authority_evidence_source_context(binding)
+    evidence_items = [_build_authority_evidence_item(item, source_context) for item in (authority_evidence or [])]
+    summary = _summary(evidence_items)
     body: dict[str, Any] = {
         "schema": REEXECUTION_RUNNER_AUTHORITY_SCHEMA,
         "mode": mode,
@@ -220,13 +221,23 @@ def verify_reexecution_runner_authority_dossier(
     if not isinstance(evidence, list):
         errors.append("re-execution runner authority authority_evidence must be a list")
         evidence = []
+    evidence_source_context = _authority_evidence_source_context(
+        dossier.get("source_binding") if isinstance(dossier.get("source_binding"), dict) else {}
+    )
     freshness_counts = {"fresh": 0, "stale": 0, "missing": 0}
     for item in evidence:
         if not isinstance(item, dict):
             errors.append("re-execution runner authority evidence item must be an object")
             freshness_counts["missing"] += 1
             continue
-        freshness_status = _verify_authority_evidence_item(item, errors, warnings, now=freshness_now, require_fresh=require_fresh)
+        freshness_status = _verify_authority_evidence_item(
+            item,
+            errors,
+            warnings,
+            now=freshness_now,
+            require_fresh=require_fresh,
+            source_context=evidence_source_context,
+        )
         freshness_counts[freshness_status] += 1
 
     evidence_dicts = [item for item in evidence if isinstance(item, dict)]
@@ -314,6 +325,7 @@ def append_reexecution_runner_authority_dossier(
                 "evidence_ref": item.get("evidence_ref"),
                 "evidence_hash": item.get("evidence_hash"),
                 "evidence_id": item.get("evidence_id"),
+                "source_context": item.get("source_context"),
                 "issued_at": item.get("issued_at"),
                 "expires_at": item.get("expires_at"),
             }
@@ -633,7 +645,7 @@ def _source_binding_complete(binding: dict[str, Any]) -> bool:
     return not errors and int(binding.get("worker_count") or 0) > 0
 
 
-def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
+def _build_authority_evidence_item(item: dict[str, Any], source_context: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(item, dict):
         raise ValueError("authority evidence item must be an object")
     requirement_id = str(item.get("requirement_id") or "")
@@ -665,6 +677,7 @@ def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
             parse_rfc3339(str(built[field]))
     if built.get("issued_at") and built.get("expires_at") and parse_rfc3339(str(built["issued_at"])) > parse_rfc3339(str(built["expires_at"])):
         raise ValueError("authority evidence issued_at must not be after expires_at")
+    built["source_context"] = source_context
     built["evidence_id"] = content_hash(built)
     return built
 
@@ -676,14 +689,20 @@ def _verify_authority_evidence_item(
     *,
     now,
     require_fresh: bool,
+    source_context: dict[str, Any],
 ) -> str:
     try:
-        expected = _build_authority_evidence_item(item)
+        expected = _build_authority_evidence_item(item, source_context)
     except ValueError as exc:
         errors.append(f"invalid re-execution runner authority evidence: {exc}")
         return "missing"
+    requirement_id = item.get("requirement_id")
     if item != expected:
-        errors.append("re-execution runner authority evidence_id does not match evidence body")
+        errors.append(f"re-execution runner authority evidence_id does not match evidence body: {requirement_id}")
+    if not isinstance(item.get("source_context"), dict):
+        errors.append(f"re-execution runner authority source_context is required: {requirement_id}")
+    elif item.get("source_context") != source_context:
+        errors.append(f"re-execution runner authority source_context does not match source binding: {requirement_id}")
     issued_at = item.get("issued_at")
     expires_at = item.get("expires_at")
     if not issued_at or not expires_at:
@@ -703,6 +722,52 @@ def _verify_authority_evidence_item(
             warnings.append(message)
         return "stale"
     return "fresh"
+
+
+def _authority_evidence_source_context(binding: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "source_binding_hash": content_hash(binding),
+        "service_attestation_id": binding.get("service_attestation_id"),
+        "service_attestation_hash": binding.get("service_attestation_hash"),
+        "service_mode": binding.get("service_mode"),
+        "environment": binding.get("environment"),
+        "attested_at": binding.get("attested_at"),
+        "service_ref": binding.get("service_ref"),
+        "runner_image_digest": binding.get("runner_image_digest"),
+        "runner_binary_hash": binding.get("runner_binary_hash"),
+        "replicas_min": binding.get("replicas_min"),
+        "replicas_max": binding.get("replicas_max"),
+        "availability_zones": binding.get("availability_zones"),
+        "scheduler_ref": binding.get("scheduler_ref"),
+        "queue_ref": binding.get("queue_ref"),
+        "dead_letter_queue_ref": binding.get("dead_letter_queue_ref"),
+        "lease_store_ref": binding.get("lease_store_ref"),
+        "checkpoint_store_ref": binding.get("checkpoint_store_ref"),
+        "source_isolation_attestation_id": binding.get("source_isolation_attestation_id"),
+        "source_runner_evidence_id": binding.get("source_runner_evidence_id"),
+        "source_policy_hash": binding.get("source_policy_hash"),
+        "source_report_id": binding.get("source_report_id"),
+        "source_network_mode": binding.get("source_network_mode"),
+        "source_read_only_rootfs": binding.get("source_read_only_rootfs"),
+        "isolation_profile_ref": binding.get("isolation_profile_ref"),
+        "admission_policy_ref": binding.get("admission_policy_ref"),
+        "tenant_isolation_ref": binding.get("tenant_isolation_ref"),
+        "network_policy_ref": binding.get("network_policy_ref"),
+        "egress_policy_ref": binding.get("egress_policy_ref"),
+        "artifact_store_ref": binding.get("artifact_store_ref"),
+        "result_store_ref": binding.get("result_store_ref"),
+        "secret_store_ref": binding.get("secret_store_ref"),
+        "kms_key_ref": binding.get("kms_key_ref"),
+        "audit_log_root": binding.get("audit_log_root"),
+        "retention_until": binding.get("retention_until"),
+        "worker_count": binding.get("worker_count"),
+        "worker_operation_ids": binding.get("worker_operation_ids"),
+        "worker_operation_hashes": binding.get("worker_operation_hashes"),
+        "first_worker_started_at": binding.get("first_worker_started_at"),
+        "last_worker_completed_at": binding.get("last_worker_completed_at"),
+        "worker_operation_record_root": content_hash(binding.get("worker_operation_records") or []),
+        "source_artifact_root": content_hash(binding.get("source_artifacts") or []),
+    }
 
 
 def _verify_required_authority(value: Any, errors: list[str]) -> None:

@@ -82,6 +82,12 @@ class ReexecutionRunnerAuthorityTests(unittest.TestCase):
             generated_at="2026-07-04T04:10:00Z",
         )
 
+    def _resign_dossier(self, dossier: dict) -> None:
+        body = without_keys(dossier, "dossier_id", "signatures")
+        dossier_id = content_hash(body)
+        dossier["dossier_id"] = dossier_id
+        dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "reexecution_runner_authority": body})]
+
     def test_reexecution_runner_authority_verifies_and_appends(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             evidence, policy, report, isolation, service, worker = self._sources(Path(tmp_dir))
@@ -119,7 +125,53 @@ class ReexecutionRunnerAuthorityTests(unittest.TestCase):
             self.assertEqual(REEXECUTION_RUNNER_AUTHORITY_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(dossier["dossier_id"], entry["payload"]["dossier_id"])
             self.assertEqual({"deferred": 2, "passed": 4}, entry["payload"]["control_summary"])
+            self.assertEqual(dossier["authority_evidence"][0]["source_context"], entry["payload"]["authority_evidence"][0]["source_context"])
+            self.assertEqual(content_hash(dossier["source_binding"]), dossier["authority_evidence"][0]["source_context"]["source_binding_hash"])
             self.assertTrue(chain.verify_all().ok)
+
+    def test_reexecution_runner_authority_rejects_resigned_source_context_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            evidence, policy, report, isolation, service, worker = self._sources(Path(tmp_dir))
+            dossier = self._dossier(service, worker, isolation, evidence, policy, report)
+            tampered = copy.deepcopy(dossier)
+            item = tampered["authority_evidence"][0]
+            item["source_context"]["worker_count"] = 999
+            item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+            self._resign_dossier(tampered)
+
+            result = verify_reexecution_runner_authority_dossier(
+                tampered,
+                service_attestation=service,
+                worker_receipts=[worker],
+                isolation_attestation=isolation,
+                runner_evidence=evidence,
+                policy=policy,
+                report=report,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertIn("re-execution runner authority source_context does not match source binding: production-runner-fleet", result.errors)
+
+    def test_reexecution_runner_authority_rejects_resigned_control_tamper(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            evidence, policy, report, isolation, service, worker = self._sources(Path(tmp_dir))
+            dossier = self._dossier(service, worker, isolation, evidence, policy, report)
+            tampered = copy.deepcopy(dossier)
+            tampered["controls"][0]["status"] = "failed"
+            self._resign_dossier(tampered)
+
+            result = verify_reexecution_runner_authority_dossier(
+                tampered,
+                service_attestation=service,
+                worker_receipts=[worker],
+                isolation_attestation=isolation,
+                runner_evidence=evidence,
+                policy=policy,
+                report=report,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertIn("re-execution runner authority controls do not match dossier body", result.errors)
 
     def test_reexecution_runner_authority_detects_worker_tamper(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

@@ -18,7 +18,7 @@ A dossier contains:
 - `dossier_ref`, `authority_ref`, `producer_ref`: stable references for the dossier, authority system, and producer identity.
 - `source_binding`: hashes and selected fields from the signed runner service attestation and runner worker receipts.
 - `required_production_authority`: fixed v0.1 production authority checklist.
-- `authority_evidence`: external evidence references, hashes, issuer/subject metadata, and freshness windows.
+- `authority_evidence`: external evidence references, hashes, issuer/subject metadata, freshness windows, derived `source_context`, and evidence IDs.
 - `summary`: covered and missing production authority categories.
 - `controls`: deterministic control outcomes derived from the body.
 - `signatures`: detached signatures over `{dossier_id, reexecution_runner_authority}`.
@@ -42,7 +42,7 @@ Verifiers should replay the supplied source artifacts and require an exact bindi
 9. `credential-custody-and-kms`
 10. `observability-and-alerting`
 
-Each evidence item must reference one accepted authority kind for its category and include a hash of the external record. Freshness windows use RFC 3339 `issued_at` and `expires_at`.
+Each evidence item must reference one accepted authority kind for its category, include a hash of the external record, and carry a builder-derived `source_context` computed from `source_binding`. Freshness windows use RFC 3339 `issued_at` and `expires_at`.
 
 ## Verification Rules
 
@@ -54,7 +54,7 @@ A verifier MUST reject a dossier when:
 - `source_binding` does not match supplied runner service and worker source artifacts.
 - `required_production_authority` differs from the v0.1 checklist.
 - `summary` or `controls` do not match the dossier body.
-- An authority evidence item has an unknown requirement, invalid authority kind, invalid hash/ref, bad freshness window, or mismatched `evidence_id`.
+- An authority evidence item has an unknown requirement, invalid authority kind, invalid hash/ref, bad freshness window, missing `source_context`, a `source_context` that does not match `source_binding`, or mismatched `evidence_id`.
 - `production-dossier` mode is used without complete and fresh evidence for every required authority category.
 - `production-dossier` mode is used without at least one verified runner worker receipt.
 - Raw secret-like values appear instead of redacted references, hashes, ids, or roots.
