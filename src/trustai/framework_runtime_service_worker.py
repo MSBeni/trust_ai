@@ -384,14 +384,27 @@ def verify_framework_runtime_service_worker_receipt(
     _verify_source_artifacts(receipt.get("source_artifacts"), errors)
 
     if service_attestation is None:
-        warnings.append("framework runtime service worker service attestation artifact was not supplied; service source was not replayed")
+        errors.append("framework runtime service worker service attestation artifact is required for verification")
     else:
         _compare_source_hash(receipt, "framework-runtime-service-attestation", service_attestation, errors)
         service_hash = receipt.get("service", {}).get("attestation_hash") if isinstance(receipt.get("service"), dict) else None
         if service_hash != content_hash(service_attestation):
             errors.append("framework runtime service worker service.attestation_hash does not match supplied service attestation")
-        service_sources = (storage_receipt, storage_export, worker, runtime_audit, audit_export, operation, trace_payload, release, matrix)
-        if all(source is not None for source in service_sources):
+        service_sources = (
+            ("framework-runtime-storage", storage_receipt),
+            ("framework-runtime-storage-export", storage_export),
+            ("framework-runtime-worker", worker),
+            ("framework-runtime-audit", runtime_audit),
+            ("framework-runtime-audit-export", audit_export),
+            ("framework-hook-operation", operation),
+            ("framework-trace", trace_payload),
+            ("framework-hook-release", release),
+            ("framework-adapter-matrix", matrix),
+        )
+        missing_sources = [source_type for source_type, value in service_sources if value is None]
+        if missing_sources:
+            errors.append("framework runtime service worker source artifacts are required for verification: " + ", ".join(missing_sources))
+        else:
             result = verify_framework_runtime_service_attestation(
                 service_attestation,
                 storage_receipt=storage_receipt,
@@ -409,8 +422,6 @@ def verify_framework_runtime_service_worker_receipt(
             if not result.ok:
                 errors.extend(f"framework runtime service worker service source: {error}" for error in result.errors)
             warnings.extend(f"framework runtime service worker service source: {warning}" for warning in result.warnings)
-        else:
-            warnings.append("framework runtime service worker source artifacts were not fully supplied; service source replay was not performed")
 
     for source_type, value in (
         ("framework-runtime-storage", storage_receipt),

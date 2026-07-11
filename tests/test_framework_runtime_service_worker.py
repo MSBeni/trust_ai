@@ -231,6 +231,23 @@ class FrameworkRuntimeServiceWorkerTests(unittest.TestCase):
                 self.assertFalse(result.ok)
                 self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
 
+    def test_framework_runtime_service_worker_requires_replay_artifacts_without_sources(self):
+        receipt, service, *_ = self._receipt()
+
+        missing_all = verify_framework_runtime_service_worker_receipt(receipt)
+        missing_nested = verify_framework_runtime_service_worker_receipt(receipt, service_attestation=service)
+
+        self.assertFalse(missing_all.ok)
+        self.assertIn(
+            "framework runtime service worker service attestation artifact is required for verification",
+            missing_all.errors,
+        )
+        self.assertFalse(missing_nested.ok)
+        self.assertTrue(
+            any("source artifacts are required for verification" in error for error in missing_nested.errors),
+            missing_nested.errors,
+        )
+
     def test_framework_runtime_service_worker_rejects_raw_credential(self):
         receipt, service, storage_receipt, storage_export, worker, runtime_audit, audit_export, operation, trace, release, matrix = self._receipt()
         tampered = copy.deepcopy(receipt)

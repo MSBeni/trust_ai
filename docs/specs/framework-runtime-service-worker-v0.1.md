@@ -43,10 +43,10 @@ When supplied with the service attestation, storage receipt, storage export,
 runtime worker receipt, runtime audit receipt, audit export, hook operation,
 source trace, hook release, and adapter matrix, verification first replays
 `framework-runtime-service-verify`. It then checks that the source artifact
-hashes and the storage receipt hash match the disclosed artifacts. Omitted
-source artifacts during standalone verification may produce replay warnings, but
-they must not permit partial service summaries, partial source summaries, or
-partial source artifact hash lists.
+hashes and the storage receipt hash match the disclosed artifacts. Offline
+verification is fail-closed: the service attestation and every nested service
+source artifact are required for replay, and a valid detached signature over
+partial replay inputs is not enough to prove hosted worker evidence.
 
 `framework-runtime-service-worker-append` requires all source artifacts. The
 chain entry records hash-bound summaries for the worker operation, service,
