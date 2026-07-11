@@ -244,6 +244,40 @@ class PolicyBackendWorkerTests(unittest.TestCase):
             self.assertEqual(receipt["worker_operation_id"], entry["payload"]["worker_operation_id"])
             self.assertTrue(sources["chain"].verify_all().ok)
 
+    def test_policy_backend_worker_requires_replay_artifacts(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            sources = self._source_dict(Path(tmp_dir))
+            receipt = self._receipt(sources)
+            complete = {
+                "service_attestation": sources["attestation"],
+                "enforcement_receipt": sources["enforcement"],
+                "policy_pack": sources["policy"],
+                "action": sources["action"],
+                "proof_pack": sources["pack"],
+                "decision": sources["policy_decision"],
+                "policy_export": sources["policy_export"],
+                "policy_engine_receipt": sources["engine_receipt"],
+            }
+            cases = (
+                ("service_attestation", "service attestation artifact is required"),
+                ("enforcement_receipt", "enforcement artifact is required"),
+                ("policy_pack", "policy-pack artifact is required"),
+                ("action", "runtime-action artifact is required"),
+                ("proof_pack", "proof-pack artifact is required"),
+                ("decision", "policy-decision artifact is required"),
+                ("policy_export", "policy-export artifact is required"),
+                ("policy_engine_receipt", "policy-engine-receipt artifact is required"),
+            )
+
+            for argument, expected_error in cases:
+                with self.subTest(argument=argument):
+                    kwargs = dict(complete)
+                    kwargs.pop(argument)
+                    result = verify_policy_backend_worker_receipt(receipt, **kwargs)
+
+                    self.assertFalse(result.ok)
+                    self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
+
     def test_policy_backend_worker_rejects_source_tamper(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             sources = self._source_dict(Path(tmp_dir))

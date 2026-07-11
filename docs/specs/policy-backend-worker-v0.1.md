@@ -68,8 +68,9 @@ and redacted credential evidence. The schema is
 10. Secret-like fields are redacted references rather than raw tokens,
     passwords, client secrets, private keys, cookies, or authorization headers.
 
-Warnings are emitted when source artifacts are omitted, provider exports are
-missing, or the mode does not claim a scheduled/hosted worker operation.
+Verification is fail-closed when required source artifacts are omitted from
+offline replay. Warnings are emitted when the mode does not claim a
+scheduled/hosted worker operation.
 
 ## Chain Entry
 

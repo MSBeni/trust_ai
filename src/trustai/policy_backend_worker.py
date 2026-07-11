@@ -368,7 +368,7 @@ def verify_policy_backend_worker_receipt(
         errors.append("policy backend worker controls are required")
 
     if service_attestation is None:
-        warnings.append("policy backend worker service attestation artifact was not supplied; service source was not replayed")
+        errors.append("policy backend worker service attestation artifact is required for verification")
     else:
         _compare_source_hash(receipt, "policy-backend-service-attestation", service_attestation, errors)
         service_hash = receipt.get("service", {}).get("attestation_hash") if isinstance(receipt.get("service"), dict) else None
@@ -376,22 +376,25 @@ def verify_policy_backend_worker_receipt(
             errors.append("policy backend worker service.attestation_hash does not match supplied service attestation")
 
     if enforcement_receipt is None:
-        warnings.append("policy backend worker enforcement artifact was not supplied; enforcement source was not replayed")
+        errors.append("policy backend worker enforcement artifact is required for verification")
     else:
         _compare_source_hash(receipt, "policy-backend-enforcement", enforcement_receipt, errors)
         enforcement_hash = receipt.get("source_enforcement", {}).get("enforcement_hash") if isinstance(receipt.get("source_enforcement"), dict) else None
         if enforcement_hash != content_hash(enforcement_receipt):
             errors.append("policy backend worker source_enforcement.enforcement_hash does not match supplied enforcement receipt")
 
-    for source_type, source_value in (
-        ("policy-pack", policy_pack),
-        ("runtime-action", action),
-        ("proof-pack", proof_pack),
-        ("policy-decision", decision),
-        ("policy-export", policy_export),
-        ("policy-engine-receipt", policy_engine_receipt),
+    for source_type, source_value, required in (
+        ("policy-pack", policy_pack, True),
+        ("runtime-action", action, True),
+        ("proof-pack", proof_pack, True),
+        ("policy-decision", decision, True),
+        ("policy-export", policy_export, True),
+        ("policy-engine-receipt", policy_engine_receipt, _source_artifact_recorded(receipt, "policy-engine-receipt")),
     ):
-        if source_value is not None:
+        if source_value is None:
+            if required:
+                errors.append(f"policy backend worker {source_type} artifact is required for verification")
+        else:
             _compare_source_hash(receipt, source_type, source_value, errors)
 
     if service_attestation is not None and enforcement_receipt is not None:
@@ -410,8 +413,6 @@ def verify_policy_backend_worker_receipt(
             if not result.ok:
                 errors.extend(f"policy backend worker service source: {error}" for error in result.errors)
             warnings.extend(f"policy backend worker service source: {warning}" for warning in result.warnings)
-        else:
-            warnings.append("policy backend worker source artifacts were not fully supplied; service source replay was not performed")
         _check_supplied_source_matches(receipt, service_attestation, enforcement_receipt, errors)
 
     worker = receipt.get("worker", {}) if isinstance(receipt.get("worker"), dict) else {}
@@ -831,6 +832,10 @@ def _check_supplied_source_matches(receipt: dict[str, Any], service_attestation:
         if execution.get(execution_field) != expected_enforcement.get(enforcement_field):
             errors.append(f"policy backend worker execution.{execution_field} does not match enforcement {enforcement_field}")
 
+
+def _source_artifact_recorded(receipt: dict[str, Any], source_type: str) -> bool:
+    artifacts = receipt.get("source_artifacts", [])
+    return isinstance(artifacts, list) and any(isinstance(item, dict) and item.get("type") == source_type for item in artifacts)
 
 def _compare_source_hash(receipt: dict[str, Any], source_type: str, value: Any, errors: list[str]) -> None:
     artifacts = receipt.get("source_artifacts", [])
