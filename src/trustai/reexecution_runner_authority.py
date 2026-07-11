@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 from dataclasses import dataclass
@@ -245,6 +245,8 @@ def verify_reexecution_runner_authority_dossier(
     binding_for_controls = dossier.get("source_binding") if isinstance(dossier.get("source_binding"), dict) else {}
     if mode == "production-dossier" and int(binding_for_controls.get("worker_count") or 0) < 1:
         errors.append("production-dossier mode requires at least one verified runner worker receipt")
+    if mode == "production-dossier" and not _source_binding_complete(binding_for_controls):
+        errors.append("production-dossier mode requires complete runner service, worker, source artifact, scheduler, isolation, custody, and audit bindings")
     if not isinstance(dossier.get("controls"), list) or not dossier.get("controls"):
         errors.append("re-execution runner authority controls are required")
     elif dossier.get("controls") != _controls(str(mode), binding_for_controls, evidence_dicts, expected_summary):
@@ -460,9 +462,7 @@ def _verify_source_binding(
     if not isinstance(binding, dict):
         errors.append("re-execution runner authority source_binding is required")
         return
-    for field in ("service_attestation_id", "service_attestation_hash", "service_ref", "runner_image_digest", "runner_binary_hash", "audit_log_root"):
-        if not binding.get(field):
-            errors.append(f"re-execution runner authority source_binding.{field} is required")
+    _verify_binding_completeness(binding, errors)
     if service_attestation is None:
         warnings.append("re-execution runner authority service source not supplied; source binding hashes were not replayed")
         return
@@ -494,6 +494,143 @@ def _verify_source_binding(
     expected = _source_binding(service_attestation, workers, isolation_attestation, runner_evidence, policy, report)
     if binding != expected:
         errors.append("re-execution runner authority source_binding does not match supplied source artifacts")
+
+
+def _verify_binding_completeness(binding: dict[str, Any], errors: list[str]) -> None:
+    for field in (
+        "service_attestation_id",
+        "service_attestation_hash",
+        "service_schema",
+        "service_mode",
+        "environment",
+        "attested_at",
+        "service_ref",
+        "runner_image_digest",
+        "runner_binary_hash",
+        "scheduler_ref",
+        "queue_ref",
+        "dead_letter_queue_ref",
+        "lease_store_ref",
+        "checkpoint_store_ref",
+        "source_isolation_attestation_id",
+        "source_runner_evidence_id",
+        "source_policy_hash",
+        "source_report_id",
+        "source_network_mode",
+        "source_read_only_rootfs",
+        "isolation_profile_ref",
+        "admission_policy_ref",
+        "tenant_isolation_ref",
+        "network_policy_ref",
+        "egress_policy_ref",
+        "artifact_store_ref",
+        "result_store_ref",
+        "secret_store_ref",
+        "kms_key_ref",
+        "audit_log_root",
+        "retention_until",
+    ):
+        _require_binding_field(binding, f"source_binding.{field}", errors)
+    _require_positive_binding_count(binding, "source_binding.replicas_min", errors)
+    _require_positive_binding_count(binding, "source_binding.replicas_max", errors)
+    if (
+        isinstance(binding.get("replicas_min"), int)
+        and isinstance(binding.get("replicas_max"), int)
+        and binding["replicas_max"] < binding["replicas_min"]
+    ):
+        errors.append("re-execution runner authority source_binding.replicas_max must be greater than or equal to replicas_min")
+    _require_binding_field(binding, "source_binding.availability_zones", errors)
+    _require_nonnegative_binding_count(binding, "source_binding.worker_count", errors)
+    worker_count = binding.get("worker_count")
+    if isinstance(worker_count, int) and worker_count > 0:
+        _require_binding_field(binding, "source_binding.worker_operation_ids", errors)
+        _require_binding_field(binding, "source_binding.worker_operation_hashes", errors)
+        _require_binding_field(binding, "source_binding.first_worker_started_at", errors)
+        _require_binding_field(binding, "source_binding.last_worker_completed_at", errors)
+
+    source_artifacts = binding.get("source_artifacts")
+    if not isinstance(source_artifacts, list) or not source_artifacts:
+        errors.append("re-execution runner authority source_binding.source_artifacts is required")
+    else:
+        for index, artifact in enumerate(source_artifacts):
+            if not isinstance(artifact, dict):
+                errors.append(f"re-execution runner authority source_binding.source_artifacts[{index}] must be an object")
+                continue
+            for field in ("type", "hash"):
+                _require_binding_field(artifact, f"source_binding.source_artifacts[{index}].{field}", errors)
+
+    records = binding.get("worker_operation_records")
+    if isinstance(worker_count, int) and worker_count > 0:
+        if not isinstance(records, list) or not records:
+            errors.append("re-execution runner authority source_binding.worker_operation_records is required")
+            return
+    elif records is None:
+        records = []
+    elif not isinstance(records, list):
+        errors.append("re-execution runner authority source_binding.worker_operation_records must be a list")
+        return
+    if isinstance(worker_count, int) and len(records) != worker_count:
+        errors.append("re-execution runner authority source_binding.worker_operation_records must match worker_count")
+    for index, record in enumerate(records):
+        if not isinstance(record, dict):
+            errors.append(f"re-execution runner authority source_binding.worker_operation_records[{index}] must be an object")
+            continue
+        for field in (
+            "worker_operation_id",
+            "worker_operation_hash",
+            "mode",
+            "environment",
+            "worker_ref",
+            "run_ref",
+            "operation_kind",
+            "success",
+            "started_at",
+            "completed_at",
+            "schedule_ref",
+            "lease_ref",
+            "checkpoint_ref",
+            "checkpoint_hash",
+            "queue_ref",
+            "queue_message_ref",
+            "job_ref",
+            "job_hash",
+            "artifact_manifest_hash",
+            "result_bundle_hash",
+            "isolation_audit_root",
+            "runtime_audit_root",
+            "request_hash",
+            "response_status",
+            "response_hash",
+            "audit_log_root",
+        ):
+            _require_binding_field(record, f"source_binding.worker_operation_records[{index}].{field}", errors)
+
+
+def _require_binding_field(container: dict[str, Any], path: str, errors: list[str]) -> None:
+    field = path.rsplit(".", 1)[-1]
+    value = container.get(field)
+    if value is None or value == "" or value == [] or value == {}:
+        errors.append(f"re-execution runner authority {path} is required")
+
+
+def _require_positive_binding_count(container: dict[str, Any], path: str, errors: list[str]) -> None:
+    field = path.rsplit(".", 1)[-1]
+    value = container.get(field)
+    if not isinstance(value, int) or value <= 0:
+        errors.append(f"re-execution runner authority {path} is required")
+
+
+def _require_nonnegative_binding_count(container: dict[str, Any], path: str, errors: list[str]) -> None:
+    field = path.rsplit(".", 1)[-1]
+    value = container.get(field)
+    if not isinstance(value, int) or value < 0:
+        errors.append(f"re-execution runner authority {path} is required")
+
+
+def _source_binding_complete(binding: dict[str, Any]) -> bool:
+    errors: list[str] = []
+    _verify_binding_completeness(binding, errors)
+    return not errors and int(binding.get("worker_count") or 0) > 0
 
 
 def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
@@ -591,7 +728,7 @@ def _controls(mode: str, binding: dict[str, Any], evidence_items: list[dict[str,
     missing = summary.get("missing_requirement_count", 0)
     worker_count = int(binding.get("worker_count") or 0)
     service_bound = bool(binding.get("service_attestation_hash") and binding.get("service_ref") and binding.get("runner_image_digest"))
-    production_ready = mode == "production-dossier" and service_bound and worker_count > 0 and not missing and freshness["missing"] == 0
+    production_ready = mode == "production-dossier" and _source_binding_complete(binding) and not missing and freshness["missing"] == 0
     return [
         {
             "id": "runner-service-attestation-bound",

@@ -1,4 +1,4 @@
-﻿# Re-execution Runner Production Authority Dossier v0.1
+# Re-execution Runner Production Authority Dossier v0.1
 
 ## Purpose
 
@@ -27,7 +27,7 @@ A dossier contains:
 
 `source_binding` records the runner service attestation hash, service ref, runner image digest, binary hash, replica/AZ floor, scheduler/queue/DLQ/lease/checkpoint refs, source isolation id, runner evidence id, policy/report hashes, source network/read-only-rootfs controls, isolation/admission/tenant/network/egress controls, artifact/result stores, secret store, KMS key, audit root, retention, and worker receipt hashes.
 
-Verifiers should replay the supplied source artifacts and require an exact binding match. If source artifacts are omitted, verification may warn, but production workflows should always replay them.
+Verifiers should replay the supplied source artifacts and require an exact binding match. If source artifacts are omitted, verification may warn, but it must still reject incomplete source bindings with missing service identifiers, scheduler references, source artifact hashes, isolation/custody/audit refs, worker operation hashes, or worker result hashes. Production workflows should always replay source artifacts.
 
 ## Required Production Authority Categories
 
@@ -50,6 +50,7 @@ A verifier MUST reject a dossier when:
 
 - `dossier_id` does not match the canonical body hash.
 - No signature verifies.
+- `source_binding` is missing required service, scheduler, source artifact, isolation, custody, audit, worker operation, or worker result fields.
 - `source_binding` does not match supplied runner service and worker source artifacts.
 - `required_production_authority` differs from the v0.1 checklist.
 - `summary` or `controls` do not match the dossier body.

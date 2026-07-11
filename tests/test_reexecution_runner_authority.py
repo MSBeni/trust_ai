@@ -1,4 +1,4 @@
-﻿import copy
+import copy
 import json
 import os
 import subprocess
@@ -7,7 +7,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.reexecution import write_reexecution_report
 from trustai.reexecution_isolation import write_reexecution_isolation_attestation
 from trustai.reexecution_runner import write_reexecution_runner_evidence
@@ -138,6 +140,22 @@ class ReexecutionRunnerAuthorityTests(unittest.TestCase):
 
             self.assertFalse(result.ok)
             self.assertTrue(any("source_binding does not match" in error or "worker source" in error for error in result.errors), result.errors)
+
+    def test_reexecution_runner_authority_requires_complete_source_binding_without_sources(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            evidence, policy, report, isolation, service, worker = self._sources(Path(tmp_dir))
+            dossier = self._dossier(service, worker, isolation, evidence, policy, report)
+            tampered = copy.deepcopy(dossier)
+            tampered["source_binding"]["worker_operation_records"][0].pop("response_hash")
+            body = without_keys(tampered, "dossier_id", "signatures")
+            dossier_id = content_hash(body)
+            tampered["dossier_id"] = dossier_id
+            tampered["signatures"] = [sign_value({"dossier_id": dossier_id, "reexecution_runner_authority": body})]
+
+            result = verify_reexecution_runner_authority_dossier(tampered)
+
+            self.assertFalse(result.ok)
+            self.assertTrue(any("worker_operation_records[0].response_hash is required" in error for error in result.errors), result.errors)
 
     def test_reexecution_runner_authority_requires_freshness_when_strict(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
