@@ -235,13 +235,14 @@ def build_policy_backend_authority_dossier(
         if not service_result.ok:
             raise ValueError("invalid policy backend service bundle source: " + "; ".join(service_result.errors))
 
-    evidence_items = [_build_authority_evidence_item(item) for item in (authority_evidence or [])]
-    summary = _summary(evidence_items)
     provider_binding = _provider_bundle_binding(provider_bundle)
     service_bundle_bindings = [_service_bundle_binding(bundle) for bundle in bundles]
     link_errors = _service_bundle_link_errors(service_bundle_bindings, provider_binding)
     if link_errors:
         raise ValueError("policy backend service bundle source linkage failed: " + "; ".join(link_errors))
+    source_context = _authority_evidence_source_context(provider_binding, service_bundle_bindings)
+    evidence_items = [_build_authority_evidence_item(item, source_context) for item in (authority_evidence or [])]
+    summary = _summary(evidence_items)
     body: dict[str, Any] = {
         "schema": POLICY_BACKEND_AUTHORITY_SCHEMA,
         "mode": mode,
@@ -255,7 +256,7 @@ def build_policy_backend_authority_dossier(
         "required_production_authority": PRODUCTION_AUTHORITY_REQUIREMENTS,
         "authority_evidence": evidence_items,
         "summary": summary,
-        "controls": _controls(mode, provider_bundle, service_bundle_bindings, evidence_items, summary),
+        "controls": _controls(mode, provider_binding, service_bundle_bindings, evidence_items, summary),
         "limitations": [
             "This dossier binds a verified policy backend provider export bundle to an explicit production-authority evidence checklist.",
             "Optional service review bundles are independently verified, linked to the same OPA/Cedar backend and enforcement identity, and bind their own decision and audit roots.",
@@ -326,6 +327,10 @@ def verify_policy_backend_authority_dossier(
     if not isinstance(evidence, list):
         errors.append("policy backend authority authority_evidence must be a list")
         evidence = []
+    evidence_source_context = _authority_evidence_source_context(
+        dossier.get("provider_bundle_binding") if isinstance(dossier.get("provider_bundle_binding"), dict) else {},
+        dossier.get("service_bundle_bindings") if isinstance(dossier.get("service_bundle_bindings"), list) else [],
+    )
     freshness_counts = {"fresh": 0, "stale": 0, "missing": 0}
     for item in evidence:
         if not isinstance(item, dict):
@@ -338,10 +343,12 @@ def verify_policy_backend_authority_dossier(
             warnings,
             now=freshness_now,
             require_fresh=require_fresh,
+            source_context=evidence_source_context,
         )
         freshness_counts[freshness_status] += 1
 
-    expected_summary = _summary([item for item in evidence if isinstance(item, dict)])
+    evidence_dicts = [item for item in evidence if isinstance(item, dict)]
+    expected_summary = _summary(evidence_dicts)
     if dossier.get("summary") != expected_summary:
         errors.append("policy backend authority summary does not match authority evidence")
     missing = expected_summary["missing_requirement_ids"]
@@ -351,8 +358,16 @@ def verify_policy_backend_authority_dossier(
         errors.append("policy backend authority dossier is incomplete")
     if mode == "production-dossier" and missing:
         errors.append("production-dossier mode requires every policy backend authority requirement to be covered")
+    provider_binding_for_controls = dossier.get("provider_bundle_binding") if isinstance(dossier.get("provider_bundle_binding"), dict) else {}
+    service_bindings_for_controls = [
+        binding
+        for binding in (dossier.get("service_bundle_bindings") if isinstance(dossier.get("service_bundle_bindings"), list) else [])
+        if isinstance(binding, dict)
+    ]
     if not isinstance(dossier.get("controls"), list) or not dossier.get("controls"):
         errors.append("policy backend authority controls are required")
+    elif dossier.get("controls") != _controls(str(mode), provider_binding_for_controls, service_bindings_for_controls, evidence_dicts, expected_summary):
+        errors.append("policy backend authority controls do not match dossier body")
     _check_no_secret_values(dossier, errors)
     return PolicyBackendAuthorityVerification(
         ok=not errors,
@@ -410,6 +425,7 @@ def append_policy_backend_authority_dossier(
                 "evidence_id": item.get("evidence_id"),
                 "issued_at": item.get("issued_at"),
                 "expires_at": item.get("expires_at"),
+                "source_context": item.get("source_context"),
             }
             for item in dossier.get("authority_evidence", [])
             if isinstance(item, dict)
@@ -581,7 +597,7 @@ def _verify_service_bundle_bindings(
         warnings.extend(f"policy backend authority service bundle source: {warning}" for warning in result.warnings)
 
 
-def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
+def _build_authority_evidence_item(item: dict[str, Any], source_context: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(item, dict):
         raise ValueError("authority evidence item must be an object")
     requirement_id = str(item.get("requirement_id") or "")
@@ -612,6 +628,7 @@ def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
         "source_uri": item.get("source_uri"),
         "issued_at": item.get("issued_at"),
         "expires_at": item.get("expires_at"),
+        "source_context": source_context,
     }
     return {**body, "evidence_id": content_hash(body)}
 
@@ -623,6 +640,7 @@ def _verify_authority_evidence_item(
     *,
     now: Any,
     require_fresh: bool,
+    source_context: dict[str, Any],
 ) -> str:
     if item.get("evidence_id") != content_hash(without_keys(item, "evidence_id")):
         errors.append(f"policy backend authority evidence_id does not match evidence body: {item.get('requirement_id')}")
@@ -639,6 +657,10 @@ def _verify_authority_evidence_item(
             errors.append(f"policy backend authority {field} is required: {requirement_id}")
     if item.get("evidence_hash") and not str(item.get("evidence_hash")).startswith("sha256:"):
         errors.append(f"policy backend authority evidence_hash must start with sha256: {requirement_id}")
+    if not isinstance(item.get("source_context"), dict):
+        errors.append(f"policy backend authority source_context is required: {requirement_id}")
+    elif item.get("source_context") != source_context:
+        errors.append(f"policy backend authority source_context does not match source bindings: {requirement_id}")
 
     issued_at = _parse_optional_timestamp(item, "issued_at", errors)
     expires_at = _parse_optional_timestamp(item, "expires_at", errors)
@@ -674,6 +696,61 @@ def _verify_authority_evidence_item(
     return freshness_status
 
 
+def _authority_evidence_source_context(provider_binding: dict[str, Any], service_bundle_bindings: list[Any]) -> dict[str, Any]:
+    service_bindings = [binding for binding in service_bundle_bindings if isinstance(binding, dict)]
+    service_contexts = [
+        {
+            "bundle_id": binding.get("bundle_id"),
+            "bundle_hash": binding.get("bundle_hash"),
+            "service_attestation_id": binding.get("service_attestation_id"),
+            "service_attestation_hash": binding.get("service_attestation_hash"),
+            "service_ref": binding.get("service_ref"),
+            "service_version": binding.get("service_version"),
+            "enforcement_id": binding.get("enforcement_id"),
+            "enforcement_hash": binding.get("enforcement_hash"),
+            "engine": binding.get("engine"),
+            "backend_ref": binding.get("backend_ref"),
+            "endpoint_url": binding.get("endpoint_url"),
+            "policy_bundle_hash": binding.get("policy_bundle_hash"),
+            "policy_pack_id": binding.get("policy_pack_id"),
+            "policy_pack_version": binding.get("policy_pack_version"),
+            "runtime_action_id": binding.get("runtime_action_id"),
+            "decision_hash": binding.get("decision_hash"),
+            "decision_log_root": binding.get("decision_log_root"),
+            "audit_log_root": binding.get("audit_log_root"),
+            "source_artifact_sha256_root": binding.get("source_artifact_sha256_root"),
+            "policy_engine_receipt_replayed": binding.get("policy_engine_receipt_replayed"),
+        }
+        for binding in service_bindings
+    ]
+    return {
+        "provider_bundle_id": provider_binding.get("bundle_id"),
+        "provider_bundle_hash": provider_binding.get("bundle_hash"),
+        "provider_receipt_id": provider_binding.get("provider_receipt_id"),
+        "provider_receipt_hash": provider_binding.get("provider_receipt_hash"),
+        "provider": provider_binding.get("provider"),
+        "provider_export_ref": provider_binding.get("provider_export_ref"),
+        "provider_export_hash": provider_binding.get("provider_export_hash"),
+        "worker_operation_id": provider_binding.get("worker_operation_id"),
+        "worker_operation_hash": provider_binding.get("worker_operation_hash"),
+        "service_attestation_id": provider_binding.get("service_attestation_id"),
+        "enforcement_id": provider_binding.get("enforcement_id"),
+        "engine": provider_binding.get("engine"),
+        "backend_ref": provider_binding.get("backend_ref"),
+        "endpoint_url": provider_binding.get("endpoint_url"),
+        "decision_hash": provider_binding.get("decision_hash"),
+        "decision_log_root": provider_binding.get("decision_log_root"),
+        "audit_log_root": provider_binding.get("audit_log_root"),
+        "source_artifact_sha256_root": provider_binding.get("source_artifact_sha256_root"),
+        "provider_record_roots": provider_binding.get("provider_record_roots"),
+        "policy_engine_receipt_replayed": provider_binding.get("policy_engine_receipt_replayed"),
+        "service_bundle_count": len(service_contexts),
+        "service_bundle_hashes": sorted({str(binding.get("bundle_hash")) for binding in service_bindings if binding.get("bundle_hash")}),
+        "service_bundles_hash": content_hash(service_contexts),
+        "service_bundles": service_contexts,
+    }
+
+
 def _verify_required_authority(value: Any, errors: list[str]) -> None:
     if value != PRODUCTION_AUTHORITY_REQUIREMENTS:
         errors.append("policy backend authority required_production_authority does not match v0.1 requirements")
@@ -704,7 +781,7 @@ def _summary(evidence: list[dict[str, Any]]) -> dict[str, Any]:
 
 def _controls(
     mode: str,
-    provider_bundle: dict[str, Any],
+    provider_binding: dict[str, Any],
     service_bundle_bindings: list[dict[str, Any]],
     evidence: list[dict[str, Any]],
     summary: dict[str, Any],
@@ -717,7 +794,7 @@ def _controls(
         },
         {
             "name": "provider_bundle_bound",
-            "status": "passed" if provider_bundle.get("bundle_id") else "failed",
+            "status": "passed" if provider_binding.get("bundle_id") else "failed",
             "detail": "The dossier binds the provider bundle ID, bundle hash, provider receipt hash, record roots, and artifact roots.",
         },
         {

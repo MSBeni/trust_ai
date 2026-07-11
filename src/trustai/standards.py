@@ -792,7 +792,7 @@ CONFORMANCE_TARGETS = (
     },
     {
         "id": "policy-backend-production-authority-dossiers",
-        "description": "Policy backend production authority dossiers bind provider export bundles and optional service review bundles to external OPA/Cedar backend authority evidence, freshness windows, missing requirement coverage, and chain-backed production-claim limits.",
+        "description": "Policy backend production authority dossiers bind provider export bundles and optional service review bundles to external OPA/Cedar backend authority evidence, per-evidence source context, freshness windows, missing requirement coverage, derived controls, and chain-backed production-claim limits.",
         "reference": "src/trustai/policy_backend_authority.py",
         "commands": [
             "python -m trustai policy-backend-authority artifacts/policy-backend-provider-export-bundle.json --service-bundle artifacts/policy-backend-service-bundle.json --environment aitrade-prod --dossier-ref dossier:policy-backend-authority/lg-trace-001 --authority-ref authority:policy-backend/aitrade-prod --producer-ref oidc:trustai.example/policy-backend-authority-worker --authority-evidence \"opa-cedar-backend-fleet,hosted-service,service:policy-backend-fleet/aitrade-prod,sha256:policy-backend-fleet-authority,Hosted OPA/Cedar backend fleet deployment export;issuer=TrustAI Cloud;subject=aitrade-prod policy backend fleet;source_uri=https://ops.example/trustai/policy-backend/aitrade-prod;issued_at=2026-07-04T00:00:00Z;expires_at=2026-07-11T00:00:00Z\" --generated-at 2026-07-04T05:20:00Z --out artifacts/policy-backend-authority.json",

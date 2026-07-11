@@ -102,6 +102,12 @@ class PolicyBackendAuthorityTests(unittest.TestCase):
         )
         return sources, bundle, service_bundle, paths, dossier
 
+    def _resign_dossier(self, dossier: dict) -> None:
+        body = without_keys(dossier, "dossier_id", "signatures")
+        dossier_id = content_hash(body)
+        dossier["dossier_id"] = dossier_id
+        dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "policy_backend_authority": body})]
+
     def test_policy_backend_authority_verifies_and_appends(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)
@@ -122,6 +128,7 @@ class PolicyBackendAuthorityTests(unittest.TestCase):
             self.assertEqual(bundle["bundle_id"], entry["payload"]["provider_bundle_binding"]["bundle_id"])
             self.assertEqual(service_bundle["bundle_id"], entry["payload"]["service_bundle_bindings"][0]["bundle_id"])
             self.assertTrue(entry["payload"]["service_bundle_bindings"][0]["policy_engine_receipt_replayed"])
+            self.assertEqual(dossier["authority_evidence"][0]["source_context"], entry["payload"]["authority_evidence"][0]["source_context"])
             self.assertEqual({"deferred": 1, "passed": 6}, entry["payload"]["control_summary"])
             self.assertTrue(chain.verify_all().ok)
             self.assertTrue(sources["chain"].verify_all().ok)
@@ -185,6 +192,39 @@ class PolicyBackendAuthorityTests(unittest.TestCase):
 
                     self.assertFalse(result.ok)
                     self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
+
+    def test_policy_backend_authority_rejects_resigned_authority_source_context_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            _, bundle, service_bundle, _, dossier = self._dossier(tmp)
+            tampered = copy.deepcopy(dossier)
+            item = tampered["authority_evidence"][0]
+            item["source_context"]["provider_bundle_hash"] = "sha256:tampered-provider-bundle"
+            item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+            self._resign_dossier(tampered)
+
+            result = verify_policy_backend_authority_dossier(tampered, provider_bundle=bundle, service_bundles=[service_bundle])
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("dossier_id does not match canonical policy backend authority body", result.errors)
+            self.assertNotIn("policy backend authority signature verification failed", result.errors)
+            self.assertNotIn("policy backend authority evidence_id does not match evidence body: opa-cedar-backend-fleet", result.errors)
+            self.assertIn("policy backend authority source_context does not match source bindings: opa-cedar-backend-fleet", result.errors)
+
+    def test_policy_backend_authority_rejects_resigned_control_tamper(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            _, bundle, service_bundle, _, dossier = self._dossier(tmp)
+            tampered = copy.deepcopy(dossier)
+            tampered["controls"][0]["status"] = "deferred"
+            self._resign_dossier(tampered)
+
+            result = verify_policy_backend_authority_dossier(tampered, provider_bundle=bundle, service_bundles=[service_bundle])
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("dossier_id does not match canonical policy backend authority body", result.errors)
+            self.assertNotIn("policy backend authority signature verification failed", result.errors)
+            self.assertIn("policy backend authority controls do not match dossier body", result.errors)
 
     def test_policy_backend_authority_requires_freshness_when_strict(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

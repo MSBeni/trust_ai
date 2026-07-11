@@ -31,12 +31,16 @@ deferred. The schema is
   export freshness, and WORM/object-lock retention.
 - `authority_evidence`: external evidence references with accepted authority
   kind, evidence ref, `sha256:` evidence hash, issuer, subject, source URI,
-  issued time, expiry time, and deterministic `evidence_id`.
+  issued time, expiry time, builder-derived `source_context`, and
+  deterministic `evidence_id`. The context is computed from the signed
+  `provider_bundle_binding` and `service_bundle_bindings`, not supplied as CLI
+  metadata.
 - `summary`: required, covered, missing, evidence, and freshness-window counts
   plus covered and missing requirement ids.
 - `controls`: provider bundle replay, provider bundle binding, optional service
   review bundle binding, authority evidence manifesting, freshness-window
-  tracking, complete live authority status, and production claim limiting.
+  tracking, complete live authority status, and production claim limiting,
+  recomputed from the signed dossier body during verification.
 - `dossier_id` and `signatures`: canonical dossier hash and detached
   signatures.
 
@@ -58,9 +62,10 @@ deferred. The schema is
    must not permit partial service binding summaries.
 5. The required production authority checklist exactly matches v0.1.
 6. Every authority evidence item uses a known requirement id, accepted
-   authority kind, non-empty reference and description, and `sha256:` hash.
+   authority kind, non-empty reference and description, `sha256:` hash, and
+   `source_context` matching the signed provider/service bundle bindings.
 7. Evidence ids, summary, controls, freshness metadata, and redacted
-   secret-like fields are deterministic and valid.
+   secret-like fields are recomputed from the signed body and valid.
 8. `--require-complete` turns missing checklist coverage into a verification
    error.
 9. `--require-fresh` turns missing, not-yet-issued, or expired freshness
@@ -82,7 +87,7 @@ python -m trustai policy-backend-authority-append artifacts/policy-backend-autho
 `policy_backend.production_authority_recorded` evidence-chain entry with the
 dossier id/hash, production authority refs, provider bundle binding, service
 bundle bindings, coverage summary, control summary, and authority evidence
-references.
+references including their derived source context.
 
 ## Limits
 
