@@ -8,7 +8,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.verifier_public_release import write_verifier_public_release_receipt
 from trustai.verifier_release_authority import (
     PRODUCTION_AUTHORITY_REQUIREMENT_IDS,
@@ -94,6 +96,12 @@ class VerifierReleaseAuthorityTests(unittest.TestCase):
         values.update(overrides)
         return build_verifier_release_authority_dossier(**values)
 
+    def _resign_dossier(self, dossier: dict) -> None:
+        body = without_keys(dossier, "dossier_id", "signatures")
+        dossier_id = content_hash(body)
+        dossier["dossier_id"] = dossier_id
+        dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "verifier_release_authority": body})]
+
     def test_verifier_release_authority_verifies_and_appends(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             sources = self._sources(Path(tmp_dir))
@@ -123,6 +131,8 @@ class VerifierReleaseAuthorityTests(unittest.TestCase):
         self.assertEqual(entry["payload"]["dossier_id"], dossier["dossier_id"])
         self.assertEqual(entry["payload"]["control_summary"], {"deferred": 1, "passed": 7})
         self.assertEqual(entry["payload"]["public_release_binding"]["release_publication_id"], sources["public_release"]["release_publication_id"])
+        self.assertEqual(dossier["authority_evidence"][0]["source_context"], entry["payload"]["authority_evidence"][0]["source_context"])
+        self.assertEqual(content_hash(dossier["public_release_binding"]), dossier["authority_evidence"][0]["source_context"]["source_binding_hash"])
         self.assertEqual(entry["payload"]["artifact_summary"]["artifact_count"], 1)
         self.assertEqual(entry["payload"]["authority_artifacts"][0]["path"], VERIFIER_WORKFLOW_AUTHORITY_EXPORT_REL)
         self.assertTrue(chain.verify_all().ok)
@@ -142,6 +152,40 @@ class VerifierReleaseAuthorityTests(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("public_release_binding" in error for error in result.errors))
         self.assertTrue(any("release_publication_id" in error for error in result.errors))
+
+    def test_verifier_release_authority_rejects_resigned_source_context_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            sources = self._sources(Path(tmp_dir))
+            dossier = self._dossier(sources, authority_evidence=[self._evidence()])
+            tampered = copy.deepcopy(dossier)
+            item = tampered["authority_evidence"][0]
+            item["source_context"]["release_publication_hash"] = "sha256:tampered-public-release"
+            item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+            self._resign_dossier(tampered)
+            result = verify_verifier_release_authority_dossier(
+                tampered,
+                public_release_receipt=sources["public_release"],
+                **self._source_kwargs(sources),
+            )
+
+        self.assertFalse(result.ok)
+        self.assertIn("verifier release authority source_context does not match public release binding: completed-provider-workflow-run", result.errors)
+
+    def test_verifier_release_authority_rejects_resigned_control_tamper(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            sources = self._sources(Path(tmp_dir))
+            dossier = self._dossier(sources)
+            tampered = copy.deepcopy(dossier)
+            tampered["controls"][0]["status"] = "deferred"
+            self._resign_dossier(tampered)
+            result = verify_verifier_release_authority_dossier(
+                tampered,
+                public_release_receipt=sources["public_release"],
+                **self._source_kwargs(sources),
+            )
+
+        self.assertFalse(result.ok)
+        self.assertIn("verifier release authority controls do not match dossier body", result.errors)
 
     def test_verifier_release_authority_detects_authority_artifact_hash_tamper(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

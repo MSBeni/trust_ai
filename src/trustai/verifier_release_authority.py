@@ -143,7 +143,9 @@ def build_verifier_release_authority_dossier(
     if not source_result.ok:
         raise ValueError("invalid verifier public release source: " + "; ".join(source_result.errors))
 
-    evidence_items = [_build_authority_evidence_item(item) for item in (authority_evidence or [])]
+    public_release_binding = _public_release_binding(public_release_receipt)
+    source_context = _authority_evidence_source_context(public_release_binding)
+    evidence_items = [_build_authority_evidence_item(item, source_context) for item in (authority_evidence or [])]
     artifact_items = [_build_authority_artifact(Path(root), item, evidence_items) for item in (authority_artifacts or [])]
     summary = _summary(evidence_items)
     artifact_summary = _artifact_summary(artifact_items)
@@ -155,13 +157,13 @@ def build_verifier_release_authority_dossier(
         "dossier_ref": dossier_ref,
         "authority_ref": authority_ref,
         "producer_ref": producer_ref,
-        "public_release_binding": _public_release_binding(public_release_receipt),
+        "public_release_binding": public_release_binding,
         "required_production_authority": PRODUCTION_AUTHORITY_REQUIREMENTS,
         "authority_evidence": evidence_items,
         "authority_artifacts": artifact_items,
         "summary": summary,
         "artifact_summary": artifact_summary,
-        "controls": _controls(mode, public_release_receipt, evidence_items, summary, artifact_summary),
+        "controls": _controls(mode, _receipt_view_from_public_release_binding(public_release_binding), evidence_items, summary, artifact_summary),
         "limitations": [
             "This dossier binds a verified verifier public release receipt to an explicit production-authority evidence checklist.",
             "It records authority references, hashes, freshness windows, and missing live-evidence categories for provider workflow, release API, artifact, transparency-log, audit-log, and credential-custody evidence.",
@@ -252,13 +254,25 @@ def verify_verifier_release_authority_dossier(
     if not isinstance(evidence, list):
         errors.append("verifier release authority authority_evidence must be a list")
         evidence = []
+    evidence_source_context = _authority_evidence_source_context(
+        dossier.get("public_release_binding") if isinstance(dossier.get("public_release_binding"), dict) else {}
+    )
     freshness_counts = {"fresh": 0, "stale": 0, "missing": 0}
     for item in evidence:
         if not isinstance(item, dict):
             errors.append("verifier release authority evidence item must be an object")
             freshness_counts["missing"] += 1
             continue
-        freshness_counts[_verify_authority_evidence_item(item, errors, warnings, now=freshness_now, require_fresh=require_fresh)] += 1
+        freshness_counts[
+            _verify_authority_evidence_item(
+                item,
+                errors,
+                warnings,
+                now=freshness_now,
+                require_fresh=require_fresh,
+                source_context=evidence_source_context,
+            )
+        ] += 1
 
     evidence_dicts = [item for item in evidence if isinstance(item, dict)]
     expected_summary = _summary(evidence_dicts)
@@ -289,8 +303,12 @@ def verify_verifier_release_authority_dossier(
         errors.append("production-dossier mode requires every verifier release authority requirement to be covered")
     if mode == "production-dossier" and (freshness_counts["stale"] or freshness_counts["missing"]):
         errors.append("production-dossier mode requires every verifier release authority evidence item to be fresh")
+    binding_for_controls = dossier.get("public_release_binding") if isinstance(dossier.get("public_release_binding"), dict) else {}
+    expected_controls = _controls(str(mode), _receipt_view_from_public_release_binding(binding_for_controls), evidence_dicts, expected_summary, expected_artifact_summary)
     if not isinstance(dossier.get("controls"), list) or not dossier.get("controls"):
         errors.append("verifier release authority controls are required")
+    elif dossier.get("controls") != expected_controls:
+        errors.append("verifier release authority controls do not match dossier body")
     _check_no_secret_values(dossier, errors)
     return VerifierReleaseAuthorityVerification(
         ok=not errors,
@@ -341,7 +359,7 @@ def append_verifier_release_authority_dossier(
         "artifact_summary": dossier.get("artifact_summary"),
         "control_summary": _status_summary(dossier.get("controls", [])),
         "authority_evidence": [
-            {"requirement_id": item.get("requirement_id"), "authority_kind": item.get("authority_kind"), "evidence_ref": item.get("evidence_ref"), "evidence_hash": item.get("evidence_hash"), "evidence_id": item.get("evidence_id"), "issued_at": item.get("issued_at"), "expires_at": item.get("expires_at")}
+            {"requirement_id": item.get("requirement_id"), "authority_kind": item.get("authority_kind"), "evidence_ref": item.get("evidence_ref"), "evidence_hash": item.get("evidence_hash"), "evidence_id": item.get("evidence_id"), "source_context": item.get("source_context"), "issued_at": item.get("issued_at"), "expires_at": item.get("expires_at")}
             for item in dossier.get("authority_evidence", [])
             if isinstance(item, dict)
         ],
@@ -430,7 +448,7 @@ def _verify_public_release_binding(
     warnings.extend(f"verifier release authority public release source: {warning}" for warning in result.warnings)
 
 
-def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
+def _build_authority_evidence_item(item: dict[str, Any], source_context: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(item, dict):
         raise ValueError("authority evidence item must be an object")
     requirement_id = str(item.get("requirement_id") or "")
@@ -462,13 +480,26 @@ def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
         "issued_at": item.get("issued_at"),
         "expires_at": item.get("expires_at"),
     }
+    body["source_context"] = source_context
     return {**body, "evidence_id": content_hash(body)}
 
 
-def _verify_authority_evidence_item(item: dict[str, Any], errors: list[str], warnings: list[str], *, now: Any, require_fresh: bool) -> str:
+def _verify_authority_evidence_item(
+    item: dict[str, Any],
+    errors: list[str],
+    warnings: list[str],
+    *,
+    now: Any,
+    require_fresh: bool,
+    source_context: dict[str, Any],
+) -> str:
     if item.get("evidence_id") != content_hash(without_keys(item, "evidence_id")):
         errors.append(f"verifier release authority evidence_id does not match evidence body: {item.get('requirement_id')}")
     requirement_id = item.get("requirement_id")
+    if not isinstance(item.get("source_context"), dict):
+        errors.append(f"verifier release authority source_context is required: {requirement_id}")
+    elif item.get("source_context") != source_context:
+        errors.append(f"verifier release authority source_context does not match public release binding: {requirement_id}")
     authority_kind = item.get("authority_kind")
     if requirement_id not in PRODUCTION_AUTHORITY_REQUIREMENT_IDS:
         errors.append(f"unknown verifier release production authority requirement: {requirement_id}")
@@ -499,6 +530,68 @@ def _verify_authority_evidence_item(item: dict[str, Any], errors: list[str], war
         freshness_status = "stale"
         _freshness_problem(f"verifier release authority evidence expired for {requirement_id}: {item.get('expires_at')}", errors, warnings, require_fresh=require_fresh)
     return freshness_status
+
+
+def _authority_evidence_source_context(binding: dict[str, Any]) -> dict[str, Any]:
+    provider = binding.get("provider_evidence") if isinstance(binding.get("provider_evidence"), dict) else {}
+    return {
+        "source_binding_hash": content_hash(binding),
+        "release_publication_id": binding.get("release_publication_id"),
+        "release_publication_hash": binding.get("release_publication_hash"),
+        "provider": binding.get("provider"),
+        "release_ref": binding.get("release_ref"),
+        "release_url": binding.get("release_url"),
+        "tag": binding.get("tag"),
+        "publisher_ref": binding.get("publisher_ref"),
+        "published_at": binding.get("published_at"),
+        "verifier_release_id": binding.get("release_id"),
+        "verifier_release_hash": binding.get("release_hash"),
+        "distribution_id": binding.get("distribution_id"),
+        "distribution_hash": binding.get("distribution_hash"),
+        "build_id": binding.get("build_id"),
+        "build_hash": binding.get("build_hash"),
+        "build_mode": binding.get("build_mode"),
+        "release_run_id": binding.get("run_id"),
+        "release_run_hash": binding.get("run_hash"),
+        "release_run_bundle_id": binding.get("bundle_id"),
+        "release_run_bundle_hash": binding.get("bundle_hash"),
+        "conformance_report_id": binding.get("conformance_report_id"),
+        "standards_package_id": binding.get("standards_package_id"),
+        "artifact_count": binding.get("artifact_count"),
+        "artifact_root": binding.get("artifact_root"),
+        "artifact_hashes": binding.get("artifact_hashes"),
+        "workflow_run_export_hash": provider.get("workflow_run_export_hash"),
+        "release_api_export_hash": provider.get("release_api_export_hash"),
+        "artifact_manifest_hash": provider.get("artifact_manifest_hash"),
+        "transparency_log_ref": provider.get("transparency_log_ref"),
+        "transparency_log_root": provider.get("transparency_log_root"),
+        "audit_log_ref": provider.get("audit_log_ref"),
+        "audit_log_root": provider.get("audit_log_root"),
+        "control_status_summary": binding.get("control_status_summary"),
+    }
+
+
+def _receipt_view_from_public_release_binding(binding: dict[str, Any]) -> dict[str, Any]:
+    source_fields = {
+        "release_id": binding.get("release_id"),
+        "release_hash": binding.get("release_hash"),
+        "distribution_id": binding.get("distribution_id"),
+        "distribution_hash": binding.get("distribution_hash"),
+        "build_id": binding.get("build_id"),
+        "build_hash": binding.get("build_hash"),
+        "build_mode": binding.get("build_mode"),
+        "run_id": binding.get("run_id"),
+        "run_hash": binding.get("run_hash"),
+        "bundle_id": binding.get("bundle_id"),
+        "bundle_hash": binding.get("bundle_hash"),
+        "conformance_report_id": binding.get("conformance_report_id"),
+        "standards_package_id": binding.get("standards_package_id"),
+    }
+    return {
+        "release_publication_id": binding.get("release_publication_id"),
+        "source": {key: value for key, value in source_fields.items() if value is not None},
+        "provider_evidence": binding.get("provider_evidence") if isinstance(binding.get("provider_evidence"), dict) else {},
+    }
 
 
 def _build_authority_artifact(root: Path, item: dict[str, Any], evidence_items: list[dict[str, Any]]) -> dict[str, Any]:

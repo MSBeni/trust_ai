@@ -43,7 +43,7 @@ A verifier public release authority dossier contains:
 - `environment`, `dossier_ref`, `authority_ref`, and `producer_ref`.
 - `public_release_binding`: hash-bound summary of the verified public release receipt and its source receipts.
 - `required_production_authority`: the fixed production authority checklist.
-- `authority_evidence`: retained evidence refs, hashes, kinds, issuers, subjects, source URIs, and freshness windows.
+- `authority_evidence`: retained evidence refs, hashes, kinds, issuers, subjects, source URIs, freshness windows, derived `source_context`, and evidence IDs.
 - `authority_artifacts`: repo-relative retained evidence artifacts, their sizes, SHA-256 refs, and matching evidence IDs.
 - `summary`: coverage counts, freshness counts, missing requirements, and stale or undated evidence refs.
 - `artifact_summary`: retained artifact counts, covered requirement IDs, and aggregate artifact hash root.
@@ -59,15 +59,16 @@ Verification MUST:
 2. Deep-verify the source verifier public release receipt and its nested release, distribution, build, workflow-run, release-run bundle, conformance, standards, source bundle, SBOM, provenance, signature, and optional binary sources.
 3. Recompute and compare `public_release_binding` exactly.
 4. Require the production authority checklist to match this specification.
-5. Require every authority evidence item to declare a known `requirement_id`, accepted `authority_kind`, non-empty `evidence_ref`, `evidence_hash`, and description.
+5. Require every authority evidence item to declare a known `requirement_id`, accepted `authority_kind`, non-empty `evidence_ref`, `evidence_hash`, description, derived `source_context`, and evidence ID; reject source contexts that do not match `public_release_binding`.
 6. Replay every retained `authority_artifacts` path from the supplied root, reject absolute or parent-traversal paths, and require the file SHA-256 to match the matching authority evidence hash.
 7. Recompute and compare `artifact_summary` exactly.
-8. When `--authority-artifact` is supplied during verification or append, require the supplied retained paths to match the dossier's stored artifact metadata.
-9. Treat `issued_at` and `expires_at` as freshness metadata when supplied.
-10. Reject `--require-complete` when any checklist requirement lacks evidence.
-11. Reject `--require-fresh` when any evidence item is stale or missing a freshness window.
-12. Reject `production-dossier` unless every requirement is covered and every evidence item is fresh.
-13. Reject raw secret material; credentials must be represented by redacted refs such as `env:RELEASE_TOKEN` or KMS/HSM refs.
+8. Recompute controls from the signed dossier body and reject re-signed control tampering.
+9. When `--authority-artifact` is supplied during verification or append, require the supplied retained paths to match the dossier's stored artifact metadata.
+10. Treat `issued_at` and `expires_at` as freshness metadata when supplied.
+11. Reject `--require-complete` when any checklist requirement lacks evidence.
+12. Reject `--require-fresh` when any evidence item is stale or missing a freshness window.
+13. Reject `production-dossier` unless every requirement is covered and every evidence item is fresh.
+14. Reject raw secret material; credentials must be represented by redacted refs such as `env:RELEASE_TOKEN` or KMS/HSM refs.
 
 ## CLI Examples
 
