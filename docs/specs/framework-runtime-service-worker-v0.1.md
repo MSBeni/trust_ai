@@ -33,12 +33,20 @@ contains:
 `framework-runtime-service-worker-verify` recalculates the worker operation ID,
 verifies at least one detached signature, checks required scheduler/execution
 hashes, validates timestamps and retention, and rejects raw secret-like fields.
+It requires every service summary key emitted by the v0.1 builder, a positive
+service concurrency value, complete source summary fields, and exact source
+artifact type coverage for the service attestation, storage receipt/export,
+runtime worker, runtime audit/export, hook operation, trace, release, and
+adapter matrix.
 
 When supplied with the service attestation, storage receipt, storage export,
 runtime worker receipt, runtime audit receipt, audit export, hook operation,
 source trace, hook release, and adapter matrix, verification first replays
 `framework-runtime-service-verify`. It then checks that the source artifact
-hashes and the storage receipt hash match the disclosed artifacts.
+hashes and the storage receipt hash match the disclosed artifacts. Omitted
+source artifacts during standalone verification may produce replay warnings, but
+they must not permit partial service summaries, partial source summaries, or
+partial source artifact hash lists.
 
 `framework-runtime-service-worker-append` requires all source artifacts. The
 chain entry records hash-bound summaries for the worker operation, service,

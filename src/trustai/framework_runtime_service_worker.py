@@ -21,6 +21,55 @@ FRAMEWORK_RUNTIME_SERVICE_WORKER_OPERATION_KINDS = {
     "control_index_reconcile",
 }
 SECRET_KEY_MARKERS = ("token", "secret", "private_key", "client_secret", "password", "credential")
+SERVICE_SUMMARY_EXPECTED_FIELDS = (
+    "attestation_id",
+    "attestation_hash",
+    "mode",
+    "environment",
+    "service_ref",
+    "service_version",
+    "service_image_digest",
+    "service_binary_hash",
+    "runtime_worker_ref",
+    "queue_ref",
+    "dead_letter_queue_ref",
+    "lease_store_ref",
+    "checkpoint_store_ref",
+    "cursor_store_ref",
+    "idempotency_store_ref",
+    "max_concurrency",
+    "stream_ref",
+    "stream_topic",
+    "stream_dlq_ref",
+    "worm_store_ref",
+    "clickhouse_ref",
+    "postgres_ref",
+    "kms_key_ref",
+    "audit_log_root",
+)
+SERVICE_SUMMARY_REQUIRED_FIELDS = SERVICE_SUMMARY_EXPECTED_FIELDS
+SOURCE_SUMMARY_EXPECTED_FIELDS = (
+    "source_count",
+    "source_hash",
+    "schemas",
+    "required_types",
+    "storage_receipt_id",
+    "storage_receipt_hash",
+    "provider_export_hash",
+    "artifacts",
+)
+SOURCE_ARTIFACT_TYPES = (
+    "framework-runtime-service-attestation",
+    "framework-runtime-storage",
+    "framework-runtime-storage-export",
+    "framework-runtime-worker",
+    "framework-runtime-audit",
+    "framework-runtime-audit-export",
+    "framework-hook-operation",
+    "framework-trace",
+    "framework-hook-release",
+    "framework-adapter-matrix",
+)
 
 
 @dataclass
@@ -470,20 +519,8 @@ def _service_record(attestation: dict[str, Any]) -> dict[str, Any]:
 
 
 def _source_artifacts(*sources: dict[str, Any]) -> list[dict[str, Any]]:
-    names = (
-        "framework-runtime-service-attestation",
-        "framework-runtime-storage",
-        "framework-runtime-storage-export",
-        "framework-runtime-worker",
-        "framework-runtime-audit",
-        "framework-runtime-audit-export",
-        "framework-hook-operation",
-        "framework-trace",
-        "framework-hook-release",
-        "framework-adapter-matrix",
-    )
     records: list[dict[str, Any]] = []
-    for source_type, value in zip(names, sources):
+    for source_type, value in zip(SOURCE_ARTIFACT_TYPES, sources):
         records.append({"type": source_type, "id": _source_id(value), "schema": value.get("schema"), "hash": content_hash(value)})
     return records
 
@@ -558,9 +595,14 @@ def _verify_service(value: Any, errors: list[str]) -> None:
     if not isinstance(value, dict):
         errors.append("framework runtime service worker service must be an object")
         return
-    for field in ("attestation_id", "attestation_hash", "service_ref", "runtime_worker_ref", "queue_ref", "lease_store_ref", "checkpoint_store_ref", "stream_ref", "worm_store_ref", "clickhouse_ref", "postgres_ref", "kms_key_ref"):
-        if not value.get(field):
+    for field in SERVICE_SUMMARY_EXPECTED_FIELDS:
+        if field not in value:
             errors.append(f"framework runtime service worker service.{field} is required")
+    for field in SERVICE_SUMMARY_REQUIRED_FIELDS:
+        if value.get(field) in (None, "", [], {}):
+            errors.append(f"framework runtime service worker service.{field} is required")
+    if not isinstance(value.get("max_concurrency"), int) or value.get("max_concurrency") <= 0:
+        errors.append("framework runtime service worker service.max_concurrency must be positive")
     for field in ("attestation_hash", "service_image_digest", "service_binary_hash", "audit_log_root"):
         if value.get(field) and not _is_sha256_ref(str(value.get(field))):
             errors.append(f"framework runtime service worker service.{field} must be a sha256 reference")
@@ -570,13 +612,23 @@ def _verify_source(value: Any, errors: list[str]) -> None:
     if not isinstance(value, dict):
         errors.append("framework runtime service worker source must be an object")
         return
-    if value.get("source_count", 0) < 10:
-        errors.append("framework runtime service worker source.source_count must include service and runtime storage sources")
+    for field in SOURCE_SUMMARY_EXPECTED_FIELDS:
+        if field not in value:
+            errors.append(f"framework runtime service worker source.{field} is required")
+    for field in SOURCE_SUMMARY_EXPECTED_FIELDS:
+        if value.get(field) in (None, "", [], {}):
+            errors.append(f"framework runtime service worker source.{field} is required")
+    if value.get("source_count") != len(SOURCE_ARTIFACT_TYPES):
+        errors.append("framework runtime service worker source.source_count must match expected source artifact count")
     if not _is_sha256_ref(str(value.get("source_hash") or "")):
         errors.append("framework runtime service worker source.source_hash must be a sha256 reference")
     required = value.get("required_types", [])
-    if not isinstance(required, list) or "framework-runtime-service-attestation" not in required:
-        errors.append("framework runtime service worker source must include framework-runtime-service-attestation")
+    if required != sorted(SOURCE_ARTIFACT_TYPES):
+        errors.append("framework runtime service worker source.required_types must match expected source artifact types")
+    artifacts = value.get("artifacts")
+    _verify_source_artifact_records(artifacts, "source.artifacts", errors)
+    if isinstance(artifacts, list) and value.get("source_hash") != content_hash(artifacts):
+        errors.append("framework runtime service worker source.source_hash does not match artifacts")
     if not value.get("storage_receipt_id") or not value.get("storage_receipt_hash"):
         errors.append("framework runtime service worker source must include storage receipt binding")
 
@@ -657,19 +709,42 @@ def _verify_observability(value: Any, recorded: Any, errors: list[str]) -> None:
         errors.append("framework runtime service worker observability.evidence_refs must be a list")
 
 def _verify_source_artifacts(value: Any, errors: list[str]) -> None:
+    _verify_source_artifact_records(value, "source_artifacts", errors)
+
+
+
+def _verify_source_artifact_records(value: Any, label: str, errors: list[str]) -> None:
     if not isinstance(value, list) or not value:
-        errors.append("framework runtime service worker source_artifacts must be a non-empty list")
+        errors.append(f"framework runtime service worker {label} must be a non-empty list")
         return
-    if not any(isinstance(item, dict) and item.get("type") == "framework-runtime-service-attestation" for item in value):
-        errors.append("framework runtime service worker source_artifacts must include framework-runtime-service-attestation")
+    actual_types: set[str] = set()
+    duplicate_types: set[str] = set()
     for index, item in enumerate(value):
         if not isinstance(item, dict):
-            errors.append(f"framework runtime service worker source_artifacts[{index}] must be an object")
+            errors.append(f"framework runtime service worker {label}[{index}] must be an object")
             continue
-        if not item.get("type") or not item.get("hash"):
-            errors.append(f"framework runtime service worker source_artifacts[{index}] type and hash are required")
+        source_type = item.get("type")
+        if not source_type:
+            errors.append(f"framework runtime service worker {label}[{index}].type is required")
+        elif not isinstance(source_type, str):
+            errors.append(f"framework runtime service worker {label}[{index}].type must be a string")
+        else:
+            if source_type in actual_types:
+                duplicate_types.add(source_type)
+            actual_types.add(source_type)
+        if not item.get("hash"):
+            errors.append(f"framework runtime service worker {label}[{index}].hash is required")
         elif not _is_sha256_ref(str(item.get("hash"))):
-            errors.append(f"framework runtime service worker source_artifacts[{index}].hash must be a sha256 reference")
+            errors.append(f"framework runtime service worker {label}[{index}].hash must be a sha256 reference")
+    expected_types = set(SOURCE_ARTIFACT_TYPES)
+    missing = sorted(expected_types - actual_types)
+    extra = sorted(actual_types - expected_types)
+    if missing:
+        errors.append(f"framework runtime service worker {label} missing: " + ", ".join(missing))
+    if extra:
+        errors.append(f"framework runtime service worker {label} unsupported: " + ", ".join(extra))
+    if duplicate_types:
+        errors.append(f"framework runtime service worker {label} duplicate: " + ", ".join(sorted(duplicate_types)))
 
 
 def _compare_source_hash(receipt: dict[str, Any], source_type: str, value: dict[str, Any], errors: list[str]) -> None:
