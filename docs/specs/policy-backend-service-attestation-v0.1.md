@@ -49,8 +49,9 @@ Required top-level fields:
 - supplied policy backend enforcement receipts deep-verify against the policy pack, runtime action, proof pack, policy decision, policy export, and policy engine receipt;
 - service engine, backend ref, endpoint, bundle ref, and bundle hash match the enforcement receipt backend.
 
-Warnings are emitted when source artifacts are omitted or when the mode does not
-claim `backend-service-attested` production operation.
+Verification is fail-closed when required replay artifacts are omitted.
+Warnings are emitted only when the mode does not claim
+`backend-service-attested` production operation.
 
 ## Chain Entry
 

@@ -266,6 +266,20 @@ def verify_policy_backend_service_attestation(
     if not isinstance(source_artifacts, list) or not source_artifacts:
         errors.append("policy backend service source_artifacts must contain at least an enforcement receipt")
 
+    if enforcement_receipt is None:
+        errors.append("policy backend service enforcement artifact is required for verification")
+    for source_type, source_value, required in (
+        ("policy-pack", policy_pack, True),
+        ("runtime-action", action, True),
+        ("proof-pack", proof_pack, True),
+        ("policy-decision", decision, True),
+        ("policy-export", policy_export, True),
+        ("policy-engine-receipt", policy_engine_receipt, _source_artifact_recorded(attestation, "policy-engine-receipt")),
+    ):
+        if source_value is None:
+            if required:
+                errors.append(f"policy backend service {source_type} artifact is required for verification")
+
     supplied_sources = _source_artifacts(enforcement_receipt, policy_export, policy_engine_receipt)
     if supplied_sources:
         if source_artifacts != supplied_sources:
@@ -273,23 +287,22 @@ def verify_policy_backend_service_attestation(
         expected_source = _source_record(enforcement_receipt, policy_engine_receipt)
         if attestation.get("source") != expected_source:
             errors.append("policy backend service source record does not match supplied artifacts")
-    else:
-        warnings.append("policy backend service source artifacts were not supplied; enforcement hash was not replayed")
 
     if enforcement_receipt is not None:
-        enforcement_result = verify_policy_backend_enforcement_receipt(
-            enforcement_receipt,
-            policy_pack,
-            action,
-            proof_pack,
-            decision,
-            policy_export=policy_export,
-            policy_engine_receipt=policy_engine_receipt,
-            key=key,
-        )
-        if not enforcement_result.ok:
-            errors.extend(f"policy backend enforcement invalid: {error}" for error in enforcement_result.errors)
-        warnings.extend(f"policy backend enforcement: {warning}" for warning in enforcement_result.warnings)
+        if all(source is not None for source in (policy_pack, action, proof_pack, decision, policy_export)):
+            enforcement_result = verify_policy_backend_enforcement_receipt(
+                enforcement_receipt,
+                policy_pack,
+                action,
+                proof_pack,
+                decision,
+                policy_export=policy_export,
+                policy_engine_receipt=policy_engine_receipt,
+                key=key,
+            )
+            if not enforcement_result.ok:
+                errors.extend(f"policy backend enforcement invalid: {error}" for error in enforcement_result.errors)
+            warnings.extend(f"policy backend enforcement: {warning}" for warning in enforcement_result.warnings)
         _check_service_matches_enforcement(attestation.get("service"), enforcement_receipt, errors)
 
     _check_no_secret_values(attestation, errors)
@@ -412,6 +425,10 @@ def _source_artifacts(
         )
     return artifacts
 
+
+def _source_artifact_recorded(attestation: dict[str, Any], source_type: str) -> bool:
+    artifacts = attestation.get("source_artifacts", [])
+    return isinstance(artifacts, list) and any(isinstance(item, dict) and item.get("type") == source_type for item in artifacts)
 
 def _verify_source(value: Any, errors: list[str]) -> None:
     if not isinstance(value, dict):

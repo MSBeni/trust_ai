@@ -177,6 +177,38 @@ class PolicyBackendServiceTests(unittest.TestCase):
             self.assertEqual(attestation["attestation_id"], entry["payload"]["attestation_id"])
             self.assertTrue(chain.verify_all().ok)
 
+    def test_policy_backend_service_requires_replay_artifacts(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            _, policy, action, pack, policy_decision, policy_export, engine_receipt, enforcement = self._fixtures(Path(tmp_dir))
+            attestation = self._attestation(enforcement, policy, action, pack, policy_decision, policy_export, engine_receipt)
+            complete = {
+                "enforcement_receipt": enforcement,
+                "policy_pack": policy,
+                "action": action,
+                "proof_pack": pack,
+                "decision": policy_decision,
+                "policy_export": policy_export,
+                "policy_engine_receipt": engine_receipt,
+            }
+            cases = (
+                ("enforcement_receipt", "enforcement artifact is required"),
+                ("policy_pack", "policy-pack artifact is required"),
+                ("action", "runtime-action artifact is required"),
+                ("proof_pack", "proof-pack artifact is required"),
+                ("decision", "policy-decision artifact is required"),
+                ("policy_export", "policy-export artifact is required"),
+                ("policy_engine_receipt", "policy-engine-receipt artifact is required"),
+            )
+
+            for argument, expected_error in cases:
+                with self.subTest(argument=argument):
+                    kwargs = dict(complete)
+                    kwargs.pop(argument)
+                    result = verify_policy_backend_service_attestation(attestation, **kwargs)
+
+                    self.assertFalse(result.ok)
+                    self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
+
     def test_policy_backend_service_rejects_insecure_endpoint(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             _, policy, action, pack, policy_decision, policy_export, engine_receipt, enforcement = self._fixtures(Path(tmp_dir))
