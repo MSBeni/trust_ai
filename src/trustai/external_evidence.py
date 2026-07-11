@@ -17,6 +17,7 @@ EXTERNAL_EVIDENCE_SCHEMA = "trustai.external-evidence-manifest/0.1"
 EXTERNAL_EVIDENCE_ENTRY_TYPE = "trustai.external_evidence_manifest.attested"
 ROADMAP_EVIDENCE_REPORT_SCHEMA = "trustai.roadmap-evidence-report/0.1"
 ROADMAP_EVIDENCE_BUNDLE_SCHEMA = "trustai.roadmap-evidence-bundle/0.1"
+EXTERNAL_EVIDENCE_COLLECTION_PLAN_SCHEMA = "trustai.external-evidence-collection-plan/0.1"
 
 BUNDLE_SOURCE_ARTIFACT_KINDS = {
     "roadmap-audit",
@@ -26,6 +27,21 @@ BUNDLE_SOURCE_ARTIFACT_KINDS = {
 }
 
 
+AUTHORITY_KIND_ORDER = (
+    "ci-run",
+    "kms-hsm",
+    "tsa",
+    "cloud-object-lock",
+    "provider-api",
+    "hosted-service",
+    "identity-provider",
+    "regulator",
+    "insurer",
+    "standards-body",
+    "customer",
+    "other",
+)
+EXTERNAL_EVIDENCE_PLAN_STATUS_FILTERS = {"all", "missing", "covered"}
 AUTHORITY_KINDS = {
     "ci-run",
     "kms-hsm",
@@ -56,6 +72,37 @@ AUTHORITY_KIND_KEYWORDS = {
 }
 
 
+
+AUTHORITY_KIND_OWNER_HINTS = {
+    "ci-run": "release engineering",
+    "kms-hsm": "security/platform KMS owner",
+    "tsa": "security timestamping owner",
+    "cloud-object-lock": "cloud storage owner",
+    "provider-api": "integration/platform owner",
+    "hosted-service": "service owner",
+    "identity-provider": "IAM/identity owner",
+    "regulator": "legal/compliance owner",
+    "insurer": "risk/insurance owner",
+    "standards-body": "standards/governance owner",
+    "customer": "customer success/account owner",
+    "other": "evidence owner",
+}
+
+AUTHORITY_KIND_EVIDENCE_HINTS = {
+    "ci-run": ["completed CI workflow export", "release run URL or provider-native run record", "artifact/check provenance"],
+    "kms-hsm": ["KMS/HSM key policy export", "signing operation receipt", "custody or audit-log root"],
+    "tsa": ["RFC 3161 timestamp response", "TSA certificate chain", "timestamp verification receipt"],
+    "cloud-object-lock": ["Object Lock retention export", "legal-hold report", "bucket/versioning policy evidence"],
+    "provider-api": ["provider API response export", "request/response transcript", "provider-owned audit event"],
+    "hosted-service": ["hosted service health or deployment export", "service audit root", "operational SLO/status evidence"],
+    "identity-provider": ["identity-provider event export", "OIDC/session/lifecycle evidence", "RBAC or account-state report"],
+    "regulator": ["regulator acknowledgement", "supervisor portal receipt", "conformity-assessment record"],
+    "insurer": ["underwriter response", "premium or policy-system quote", "insurer API response export"],
+    "standards-body": ["standards-body submission receipt", "working-group status record", "ballot or docket export"],
+    "customer": ["customer acceptance artifact", "contract/payment/procurement evidence", "deployment or signoff record"],
+    "other": ["issuer-signed authority artifact", "source-system export", "reviewable evidence file"],
+}
+
 @dataclass
 class ExternalEvidenceVerification:
     ok: bool
@@ -70,6 +117,7 @@ class ExternalEvidenceVerification:
     required_authority_kind_count: int = 0
     missing_authority_kind_count: int = 0
 
+
 @dataclass
 class RoadmapEvidenceChainVerification:
     ok: bool
@@ -81,6 +129,7 @@ class RoadmapEvidenceChainVerification:
     fresh_external_evidence_entry_count: int = 0
 
 
+
 @dataclass
 class RoadmapEvidenceReportVerification:
     ok: bool
@@ -88,8 +137,15 @@ class RoadmapEvidenceReportVerification:
     warnings: list[str]
 
 
+
 @dataclass
 class RoadmapEvidenceBundleVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+@dataclass
+class ExternalEvidenceCollectionPlanVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -271,6 +327,87 @@ def verify_external_evidence_manifest(
     )
 
 
+
+def build_external_evidence_collection_plan(
+    manifest: dict[str, Any],
+    roadmap_audit: dict[str, Any],
+    *,
+    root: str | Path,
+    status_filter: str = "missing",
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    if status_filter not in EXTERNAL_EVIDENCE_PLAN_STATUS_FILTERS:
+        raise ValueError(f"unsupported external evidence plan status_filter: {status_filter}")
+    result = verify_external_evidence_manifest(manifest, roadmap_audit, root=root)
+    if not result.ok:
+        raise ValueError("invalid source external evidence manifest: " + "; ".join(result.errors))
+    units = manifest.get("required_authority_evidence_units", [])
+    if not isinstance(units, list):
+        raise ValueError("required_authority_evidence_units must be a list")
+    tasks = [
+        _authority_collection_task(unit)
+        for unit in units
+        if isinstance(unit, dict) and _collection_status_matches(unit, status_filter)
+    ]
+    body = {
+        "schema": EXTERNAL_EVIDENCE_COLLECTION_PLAN_SCHEMA,
+        "generated_at": generated_at or utc_now(),
+        "status_filter": status_filter,
+        "source_manifest": {
+            "manifest_id": manifest.get("manifest_id"),
+            "manifest_hash": content_hash(manifest),
+            "manifest_ref": manifest.get("manifest_ref"),
+            "status": manifest.get("summary", {}).get("status") if isinstance(manifest.get("summary"), dict) else None,
+            "generated_at": manifest.get("generated_at"),
+        },
+        "source_roadmap_audit": manifest.get("source_roadmap_audit"),
+        "summary": _collection_plan_summary(manifest, tasks),
+        "tasks": tasks,
+        "limitations": [
+            "This plan assigns external authority evidence collection work; it does not satisfy any task by itself.",
+            "A task is covered only after a matching evidence artifact is supplied to an external evidence manifest and verified.",
+            "Freshness and issuer authority remain bounded by the supplied evidence artifact and manifest verification options.",
+        ],
+    }
+    return {**body, "plan_id": content_hash(body)}
+
+
+def verify_external_evidence_collection_plan(
+    plan: dict[str, Any],
+    manifest: dict[str, Any],
+    roadmap_audit: dict[str, Any],
+    *,
+    root: str | Path,
+) -> ExternalEvidenceCollectionPlanVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    if plan.get("schema") != EXTERNAL_EVIDENCE_COLLECTION_PLAN_SCHEMA:
+        errors.append(f"unsupported external evidence collection plan schema: {plan.get('schema')}")
+    if plan.get("plan_id") != content_hash(without_keys(plan, "plan_id")):
+        errors.append("plan_id does not match canonical collection plan body")
+
+    manifest_result = verify_external_evidence_manifest(manifest, roadmap_audit, root=root)
+    warnings.extend(manifest_result.warnings)
+    if not manifest_result.ok:
+        errors.extend(f"source manifest: {error}" for error in manifest_result.errors)
+
+    status_filter = str(plan.get("status_filter") or "")
+    if status_filter not in EXTERNAL_EVIDENCE_PLAN_STATUS_FILTERS:
+        errors.append(f"unsupported external evidence plan status_filter: {status_filter}")
+
+    if manifest_result.ok and status_filter in EXTERNAL_EVIDENCE_PLAN_STATUS_FILTERS:
+        expected = build_external_evidence_collection_plan(
+            manifest,
+            roadmap_audit,
+            root=root,
+            status_filter=status_filter,
+            generated_at=str(plan.get("generated_at") or ""),
+        )
+        if without_keys(plan, "plan_id") != without_keys(expected, "plan_id"):
+            errors.append("collection plan body does not match source manifest and status filter")
+
+    return ExternalEvidenceCollectionPlanVerification(ok=not errors, errors=errors, warnings=warnings)
 
 def verify_roadmap_evidence_chain(
     chain: EvidenceChain,
@@ -726,6 +863,15 @@ def write_external_evidence_manifest(path: str | Path, manifest: dict[str, Any])
 def load_external_evidence_manifest(path: str | Path) -> dict[str, Any]:
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
+def write_external_evidence_collection_plan(path: str | Path, plan: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(plan, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_external_evidence_collection_plan(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
 
 def write_roadmap_evidence_report(path: str | Path, report: dict[str, Any]) -> None:
     target = Path(path)
@@ -750,6 +896,11 @@ def write_external_evidence_markdown(path: str | Path, manifest: dict[str, Any])
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(render_external_evidence_markdown(manifest), encoding="utf-8")
+
+def write_external_evidence_collection_plan_markdown(path: str | Path, plan: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_external_evidence_collection_plan_markdown(plan), encoding="utf-8")
 
 
 def write_roadmap_evidence_markdown(path: str | Path, report: dict[str, Any]) -> None:
@@ -874,6 +1025,46 @@ Status: {summary.get('status', '')}
 {missing_lines or "- None"}
 """
 
+
+def render_external_evidence_collection_plan_markdown(plan: dict[str, Any]) -> str:
+    summary = plan.get("summary", {})
+    source = plan.get("source_manifest", {})
+    task_rows = "\n".join(
+        "| `{task_id}` | `{unit_ref}` | `{requirement}` | {authority} | {status} | {owner} | `{artifact}` | `{evidence_arg}` |".format(
+            task_id=_markdown_cell(item.get("task_id", "")),
+            unit_ref=_markdown_cell(item.get("unit_ref", "")),
+            requirement=_markdown_cell(item.get("requirement_id", "")),
+            authority=_markdown_cell(item.get("authority_kind", "")),
+            status=_markdown_cell(item.get("coverage_status", "")),
+            owner=_markdown_cell(item.get("owner_hint", "")),
+            artifact=_markdown_cell(item.get("suggested_artifact_path", "")),
+            evidence_arg=_markdown_cell(item.get("evidence_argument_template", "")),
+        )
+        for item in plan.get("tasks", [])
+    )
+    return f"""# TrustAI External Evidence Collection Plan
+
+Plan ID: `{plan.get('plan_id', '')}`
+
+Source manifest: `{source.get('manifest_id', '')}`
+
+Status filter: {plan.get('status_filter', '')}
+
+## Summary
+
+- Source manifest status: {summary.get('source_manifest_status', '')}
+- Total authority units: {summary.get('total_authority_unit_count', 0)}
+- Selected tasks: {summary.get('selected_task_count', 0)}
+- Selected missing tasks: {summary.get('selected_missing_task_count', 0)}
+- Selected covered tasks: {summary.get('selected_covered_task_count', 0)}
+- Missing authority kinds overall: {summary.get('missing_authority_kind_count', 0)}
+
+## Collection Tasks
+
+| Task ID | Unit Ref | Requirement | Authority | Status | Owner Hint | Suggested Artifact | Evidence Argument Template |
+|---|---|---|---|---|---|---|---|
+{task_rows or "| - | - | - | - | - | - | - | - |"}
+"""
 
 def render_roadmap_evidence_markdown(report: dict[str, Any]) -> str:
     summary = report.get("summary", {})
@@ -1594,6 +1785,79 @@ def _authority_evidence_units(
                 }
             )
     return units
+
+def _collection_status_matches(unit: dict[str, Any], status_filter: str) -> bool:
+    if status_filter == "all":
+        return True
+    return unit.get("coverage_status") == status_filter
+
+
+def _authority_collection_task(unit: dict[str, Any]) -> dict[str, Any]:
+    requirement_id = str(unit.get("requirement_id") or "")
+    authority_kind = str(unit.get("authority_kind") or "other")
+    unit_id = str(unit.get("unit_id") or "")
+    unit_ref = str(unit.get("unit_ref") or f"{requirement_id}:{authority_kind}")
+    suggested_artifact_path = f"external-evidence/{requirement_id}/{authority_kind}.json"
+    description = f"{authority_kind} evidence for {requirement_id}"
+    return {
+        "task_id": content_hash({"task_kind": "external-authority-evidence", "unit_id": unit_id, "unit_ref": unit_ref}),
+        "task_ref": f"external-evidence:{unit_ref}",
+        "unit_id": unit_id,
+        "unit_ref": unit_ref,
+        "requirement_id": requirement_id,
+        "phase": unit.get("phase"),
+        "priority": unit.get("priority"),
+        "title": unit.get("title"),
+        "authority_kind": authority_kind,
+        "coverage_status": unit.get("coverage_status"),
+        "owner_hint": AUTHORITY_KIND_OWNER_HINTS.get(authority_kind, AUTHORITY_KIND_OWNER_HINTS["other"]),
+        "suggested_artifact_path": suggested_artifact_path,
+        "evidence_argument_template": (
+            f"{requirement_id},{authority_kind},{suggested_artifact_path},{description}"
+            ";issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>"
+        ),
+        "suggested_evidence_sources": AUTHORITY_KIND_EVIDENCE_HINTS.get(authority_kind, AUTHORITY_KIND_EVIDENCE_HINTS["other"]),
+        "acceptance_criteria": [
+            "Artifact path must be repository-relative and hashable before manifest verification.",
+            f"Evidence item authority_kind must be {authority_kind} and accepted for {requirement_id}.",
+            "Use issued_at and expires_at metadata when strict freshness verification is required.",
+            "Rebuild and verify the external evidence manifest after adding the artifact.",
+        ],
+        "external_authority_required": unit.get("external_authority_required", []),
+    }
+
+
+def _collection_plan_summary(manifest: dict[str, Any], tasks: list[dict[str, Any]]) -> dict[str, Any]:
+    manifest_summary = manifest.get("summary", {})
+    if not isinstance(manifest_summary, dict):
+        manifest_summary = {}
+    units = manifest.get("required_authority_evidence_units", [])
+    if not isinstance(units, list):
+        units = []
+    return {
+        "source_manifest_status": manifest_summary.get("status"),
+        "total_authority_unit_count": len(units),
+        "selected_task_count": len(tasks),
+        "selected_missing_task_count": sum(1 for task in tasks if task.get("coverage_status") == "missing"),
+        "selected_covered_task_count": sum(1 for task in tasks if task.get("coverage_status") == "covered"),
+        "required_authority_kind_count": manifest_summary.get("required_authority_kind_count", 0),
+        "covered_authority_kind_count": manifest_summary.get("covered_authority_kind_count", 0),
+        "missing_authority_kind_count": manifest_summary.get("missing_authority_kind_count", 0),
+        "task_count_by_authority_kind": _count_tasks_by(tasks, "authority_kind"),
+        "missing_task_count_by_authority_kind": _count_tasks_by(
+            [task for task in tasks if task.get("coverage_status") == "missing"],
+            "authority_kind",
+        ),
+        "task_count_by_phase": _count_tasks_by(tasks, "phase"),
+    }
+
+
+def _count_tasks_by(tasks: list[dict[str, Any]], key: str) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for task in tasks:
+        value = str(task.get(key) or "unknown")
+        counts[value] = counts.get(value, 0) + 1
+    return {value: counts[value] for value in sorted(counts)}
 
 
 def _file_ref(root: Path, path: str | Path) -> dict[str, Any]:

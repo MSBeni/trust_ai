@@ -81,6 +81,33 @@ supplied evidence rows with accepted authority kinds and freshness windows. This
 keeps the human review artifact aligned with the machine-verifiable
 authority-kind policy.
 
+## External Evidence Collection Plan
+
+`external-evidence-plan` emits `trustai.external-evidence-collection-plan/0.1`,
+a deterministic assignment artifact derived from a verified external evidence
+manifest and its source roadmap audit. It turns authority coverage units into
+collection tasks without weakening the manifest: a task is covered only after a
+matching evidence artifact is supplied to a manifest and verified.
+
+Required fields:
+
+- `plan_id`: canonical hash of the plan body without `plan_id`.
+- `status_filter`: `missing`, `covered`, or `all`.
+- `source_manifest`: manifest ID, manifest hash, manifest ref, status, and
+  generation time.
+- `source_roadmap_audit`: the manifest's roadmap-audit binding.
+- `summary`: selected task counts, missing/covered task counts, overall
+  authority-kind coverage counts, and selected task counts by authority and
+  phase.
+- `tasks`: assignment-ready collection tasks with `task_id`, `task_ref`,
+  `unit_id`, `unit_ref`, requirement context, authority kind, coverage status,
+  owner hint, suggested artifact path, evidence argument template, source hints,
+  acceptance criteria, and roadmap external-authority text.
+
+A collection-plan verifier MUST recompute the source manifest verification,
+rebuild the plan using the same `status_filter` and `generated_at`, recompute
+`plan_id`, and reject stale or edited task bodies.
+
 ## Evidence Chain Entry
 
 A verified manifest can be appended to an evidence chain as

@@ -1065,19 +1065,24 @@ from .roadmap_audit import (
 from .external_evidence import (
     append_external_evidence_manifest,
     build_external_evidence_manifest,
+    build_external_evidence_collection_plan,
     build_roadmap_evidence_bundle,
     build_roadmap_evidence_report,
     extract_roadmap_evidence_bundle_sources,
     load_external_evidence_manifest,
+    load_external_evidence_collection_plan,
     load_roadmap_evidence_bundle,
     load_roadmap_evidence_report,
     parse_evidence_arg,
     parse_bundle_source_artifact_arg,
     verify_external_evidence_manifest,
+    verify_external_evidence_collection_plan,
     verify_roadmap_evidence_chain,
     verify_roadmap_evidence_bundle,
     verify_roadmap_evidence_report,
     write_external_evidence_manifest,
+    write_external_evidence_collection_plan,
+    write_external_evidence_collection_plan_markdown,
     write_external_evidence_markdown,
     write_roadmap_evidence_bundle,
     write_roadmap_evidence_bundle_markdown,
@@ -14136,6 +14141,64 @@ def cmd_external_evidence_verify(args: argparse.Namespace) -> int:
     return 1
 
 
+def cmd_external_evidence_plan(args: argparse.Namespace) -> int:
+    try:
+        roadmap_audit = load_roadmap_audit(args.roadmap_audit)
+        manifest = load_external_evidence_manifest(args.manifest)
+        plan = build_external_evidence_collection_plan(
+            manifest,
+            roadmap_audit,
+            root=args.root,
+            status_filter=args.status_filter,
+        )
+        result = verify_external_evidence_collection_plan(plan, manifest, roadmap_audit, root=args.root)
+    except (OSError, ValueError) as exc:
+        print(f"external evidence collection plan failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("external evidence collection plan verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_external_evidence_collection_plan(args.out, plan)
+    if args.markdown:
+        write_external_evidence_collection_plan_markdown(args.markdown, plan)
+        print(f"external evidence collection plan markdown: {args.markdown}")
+    summary = plan["summary"]
+    print(f"external evidence collection plan: {args.out}")
+    print(f"plan id: {plan['plan_id']}")
+    print(f"status filter: {plan['status_filter']}")
+    print(f"selected tasks: {summary['selected_task_count']}")
+    print(f"missing tasks: {summary['selected_missing_task_count']}")
+    print(f"covered tasks: {summary['selected_covered_task_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_external_evidence_plan_verify(args: argparse.Namespace) -> int:
+    try:
+        roadmap_audit = load_roadmap_audit(args.roadmap_audit)
+        manifest = load_external_evidence_manifest(args.manifest)
+        plan = load_external_evidence_collection_plan(args.plan)
+        result = verify_external_evidence_collection_plan(plan, manifest, roadmap_audit, root=args.root)
+    except (OSError, ValueError) as exc:
+        print(f"external evidence collection plan verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        summary = plan.get("summary", {})
+        print(f"verified external evidence collection plan: {args.plan}")
+        print(f"plan id: {plan.get('plan_id')}")
+        print(f"selected tasks: {summary.get('selected_task_count', 0)}")
+        print(f"missing tasks: {summary.get('selected_missing_task_count', 0)}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"external evidence collection plan verification failed: {args.plan}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
 def cmd_roadmap_evidence_verify(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
     result = verify_roadmap_evidence_chain(
@@ -23528,6 +23591,22 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_verify.add_argument("--require-fresh", action="store_true", help="fail unless every evidence item has an unexpired issued_at/expires_at window")
     external_evidence_verify.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to manifest generated_at")
     external_evidence_verify.set_defaults(func=cmd_external_evidence_verify)
+
+    external_evidence_plan = subparsers.add_parser("external-evidence-plan", help="write assignment-ready collection tasks from an external-evidence manifest")
+    external_evidence_plan.add_argument("manifest")
+    external_evidence_plan.add_argument("roadmap_audit")
+    external_evidence_plan.add_argument("--root", default=".")
+    external_evidence_plan.add_argument("--status-filter", choices=["all", "missing", "covered"], default="missing")
+    external_evidence_plan.add_argument("--out", default="artifacts/external-evidence-plan.json")
+    external_evidence_plan.add_argument("--markdown", default="artifacts/external-evidence-plan.md")
+    external_evidence_plan.set_defaults(func=cmd_external_evidence_plan)
+
+    external_evidence_plan_verify = subparsers.add_parser("external-evidence-plan-verify", help="verify an external-evidence collection plan")
+    external_evidence_plan_verify.add_argument("plan")
+    external_evidence_plan_verify.add_argument("manifest")
+    external_evidence_plan_verify.add_argument("roadmap_audit")
+    external_evidence_plan_verify.add_argument("--root", default=".")
+    external_evidence_plan_verify.set_defaults(func=cmd_external_evidence_plan_verify)
 
     external_evidence_append = subparsers.add_parser("external-evidence-append", help="append a verified external-evidence manifest to an evidence chain")
     external_evidence_append.add_argument("manifest")

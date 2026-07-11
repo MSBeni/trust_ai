@@ -54,6 +54,12 @@ jobs:
       - name: Verify external evidence manifest
         run: python -m trustai external-evidence-verify artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --require-fresh --now 2026-07-09T00:00:00Z
 
+      - name: Generate external evidence collection plan
+        run: python -m trustai external-evidence-plan artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --out artifacts/external-evidence-plan.json --markdown artifacts/external-evidence-plan.md
+
+      - name: Verify external evidence collection plan
+        run: python -m trustai external-evidence-plan-verify artifacts/external-evidence-plan.json artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json
+
       - name: Append external evidence manifest to evidence chain
         run: python -m trustai external-evidence-append artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --require-fresh --now 2026-07-09T00:00:00Z --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --out artifacts/external-evidence-entry.json
 

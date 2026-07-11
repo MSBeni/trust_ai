@@ -11,23 +11,28 @@ from trustai.chain import EvidenceChain
 from trustai.external_evidence import (
     EXTERNAL_EVIDENCE_ENTRY_TYPE,
     EXTERNAL_EVIDENCE_SCHEMA,
+    EXTERNAL_EVIDENCE_COLLECTION_PLAN_SCHEMA,
     ROADMAP_EVIDENCE_REPORT_SCHEMA,
     ROADMAP_EVIDENCE_BUNDLE_SCHEMA,
     _allowed_authority_kinds_for_requirement,
     _authority_unit_id,
     append_external_evidence_manifest,
     build_external_evidence_manifest,
+    build_external_evidence_collection_plan,
     build_roadmap_evidence_bundle,
     extract_roadmap_evidence_bundle_sources,
     build_roadmap_evidence_report,
     load_roadmap_evidence_report,
+    load_external_evidence_collection_plan,
     load_roadmap_evidence_bundle,
     parse_evidence_arg,
     parse_bundle_source_artifact_arg,
     render_external_evidence_markdown,
+    render_external_evidence_collection_plan_markdown,
     render_roadmap_evidence_markdown,
     render_roadmap_evidence_bundle_markdown,
     verify_external_evidence_manifest,
+    verify_external_evidence_collection_plan,
     verify_roadmap_evidence_chain,
     verify_roadmap_evidence_bundle,
     verify_roadmap_evidence_report,
@@ -111,6 +116,65 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual("missing", provider_unit["coverage_status"])
         self.assertIn(ci_unit["unit_id"], markdown)
         self.assertIn(ci_unit["unit_ref"], markdown)
+
+    def test_external_evidence_collection_plan_exports_missing_authority_tasks(self):
+        audit = build_roadmap_audit(ROOT)
+        manifest = build_external_evidence_manifest(
+            audit,
+            root=ROOT,
+            evidence=[
+                {
+                    "requirement_id": "oss-verifier-and-public-spec",
+                    "authority_kind": "ci-run",
+                    "path": FIXTURE,
+                    "description": "Recorded verifier workflow run export.",
+                }
+            ],
+        )
+
+        plan = build_external_evidence_collection_plan(
+            manifest,
+            audit,
+            root=ROOT,
+            status_filter="missing",
+            generated_at="2026-07-09T00:00:00Z",
+        )
+        result = verify_external_evidence_collection_plan(plan, manifest, audit, root=ROOT)
+        markdown = render_external_evidence_collection_plan_markdown(plan)
+
+        self.assertEqual(EXTERNAL_EVIDENCE_COLLECTION_PLAN_SCHEMA, plan["schema"])
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(manifest["summary"]["missing_authority_kind_count"], plan["summary"]["selected_task_count"])
+        self.assertEqual(69, plan["summary"]["selected_missing_task_count"])
+        self.assertEqual(0, plan["summary"]["selected_covered_task_count"])
+        self.assertFalse(any(task["coverage_status"] == "covered" for task in plan["tasks"]))
+        provider_task = next(
+            task
+            for task in plan["tasks"]
+            if task["unit_ref"] == "oss-verifier-and-public-spec:provider-api"
+        )
+        self.assertEqual("integration/platform owner", provider_task["owner_hint"])
+        self.assertEqual("external-evidence/oss-verifier-and-public-spec/provider-api.json", provider_task["suggested_artifact_path"])
+        self.assertIn("issuer=<issuer>", provider_task["evidence_argument_template"])
+        self.assertIn("External Evidence Collection Plan", markdown)
+        self.assertIn("oss-verifier-and-public-spec:provider-api", markdown)
+
+        all_plan = build_external_evidence_collection_plan(
+            manifest,
+            audit,
+            root=ROOT,
+            status_filter="all",
+            generated_at="2026-07-09T00:00:00Z",
+        )
+        self.assertEqual(manifest["summary"]["required_authority_kind_count"], all_plan["summary"]["selected_task_count"])
+        self.assertTrue(any(task["unit_ref"] == "oss-verifier-and-public-spec:ci-run" and task["coverage_status"] == "covered" for task in all_plan["tasks"]))
+
+        tampered = copy.deepcopy(plan)
+        tampered["tasks"][0]["owner_hint"] = "wrong owner"
+        tampered["plan_id"] = content_hash(without_keys(tampered, "plan_id"))
+        tampered_result = verify_external_evidence_collection_plan(tampered, manifest, audit, root=ROOT)
+        self.assertFalse(tampered_result.ok)
+        self.assertTrue(any("collection plan body" in error for error in tampered_result.errors), tampered_result.errors)
 
     def test_external_evidence_freshness_windows_are_verifiable(self):
         audit = build_roadmap_audit(ROOT)
@@ -427,6 +491,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             audit_path = tmp_path / "roadmap-audit.json"
             manifest_path = tmp_path / "external-evidence.json"
             entry_path = tmp_path / "external-evidence-entry.json"
+            plan_path = tmp_path / "external-evidence-plan.json"
+            plan_markdown_path = tmp_path / "external-evidence-plan.md"
             report_path = tmp_path / "roadmap-evidence-report.json"
             report_markdown_path = tmp_path / "roadmap-evidence-report.md"
             bundle_path = tmp_path / "roadmap-evidence-bundle.json"
@@ -506,6 +572,39 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     "--require-fresh",
                     "--now",
                     "2026-07-09T00:00:00Z",
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-plan",
+                    str(manifest_path),
+                    str(audit_path),
+                    "--root",
+                    str(ROOT),
+                    "--out",
+                    str(plan_path),
+                    "--markdown",
+                    str(plan_markdown_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-plan-verify",
+                    str(plan_path),
+                    str(manifest_path),
+                    str(audit_path),
+                    "--root",
+                    str(ROOT),
                 ],
                 cwd=ROOT,
                 check=True,
@@ -652,6 +751,10 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertEqual(EXTERNAL_EVIDENCE_ENTRY_TYPE, chain.entries[1]["entry_type"])
             self.assertEqual(chain.entries[0]["entry_id"], chain.entries[1]["payload"]["source_roadmap_audit_inclusion_proof"]["entry_id"])
             self.assertTrue(chain.verify_all().ok)
+            plan = load_external_evidence_collection_plan(plan_path)
+            self.assertEqual(69, plan["summary"]["selected_task_count"])
+            self.assertTrue(plan_markdown_path.exists())
+            self.assertIn("External Evidence Collection Plan", plan_markdown_path.read_text(encoding="utf-8"))
             report = load_roadmap_evidence_report(report_path)
             self.assertEqual(2, report["summary"]["chain_entry_count"])
             self.assertEqual(1, report["summary"]["fresh_external_evidence_entry_count"])
