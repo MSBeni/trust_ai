@@ -30,6 +30,59 @@ PRODUCTION_AUTHORITY_REQUIREMENTS = [
 ]
 PRODUCTION_AUTHORITY_REQUIREMENT_IDS = [item["id"] for item in PRODUCTION_AUTHORITY_REQUIREMENTS]
 
+SERVICE_ATTESTATION_BINDING_REQUIRED_FIELDS = (
+    "attestation_id",
+    "attestation_hash",
+    "attestation_schema",
+    "attestation_mode",
+    "environment",
+    "attested_at",
+    "source_count",
+    "source_hash",
+    "source_schemas",
+    "required_source_types",
+    "service_ref",
+    "portal_kind",
+    "endpoint_url",
+    "service_image_digest",
+    "service_binary_hash",
+    "frontend_bundle_ref",
+    "frontend_bundle_hash",
+    "frontend_bundle_artifact_hash",
+    "api_ref",
+    "replicas_min",
+    "replicas_max",
+    "availability_zones",
+    "supervised_access_receipt_id",
+    "session_id",
+    "audience_type",
+    "audience_purpose",
+    "reviewer_subject_ref",
+    "reviewer_organization",
+    "reviewer_role",
+    "artifact_count",
+    "auth_provider_ref",
+    "auth_policy_ref",
+    "rbac_policy_ref",
+    "session_policy_ref",
+    "selective_disclosure_policy_ref",
+    "tenant_isolation_ref",
+    "rate_limit_policy_ref",
+    "network_policy_ref",
+    "egress_policy_ref",
+    "content_security_policy_ref",
+    "encryption_key_ref",
+    "audit_log_ref",
+    "audit_log_root",
+    "access_log_ref",
+    "access_log_root",
+    "metrics_ref",
+    "alert_policy_ref",
+    "retention_until",
+    "actor_ref",
+    "credential_ref",
+    "evidence_refs",
+)
 
 @dataclass
 class ReviewPortalAuthorityVerification:
@@ -364,9 +417,7 @@ def _verify_service_attestation_binding(binding: Any, service_attestation: dict[
     if not isinstance(binding, dict):
         errors.append("review portal authority service_attestation_binding must be an object")
         return
-    for field in (
-        "attestation_id", "attestation_hash", "attestation_mode", "environment", "attested_at", "source_count", "source_hash", "service_ref", "portal_kind", "endpoint_url", "service_image_digest", "service_binary_hash", "frontend_bundle_ref", "frontend_bundle_hash", "frontend_bundle_artifact_hash", "api_ref", "replicas_min", "replicas_max", "availability_zones", "supervised_access_receipt_id", "session_id", "audience_type", "reviewer_subject_ref", "reviewer_organization", "reviewer_role", "artifact_count", "auth_provider_ref", "auth_policy_ref", "rbac_policy_ref", "session_policy_ref", "selective_disclosure_policy_ref", "tenant_isolation_ref", "rate_limit_policy_ref", "network_policy_ref", "content_security_policy_ref", "encryption_key_ref", "audit_log_root", "access_log_root", "metrics_ref", "alert_policy_ref", "retention_until", "actor_ref", "credential_ref"
-    ):
+    for field in SERVICE_ATTESTATION_BINDING_REQUIRED_FIELDS:
         if binding.get(field) in (None, "", []):
             errors.append(f"review portal authority service_attestation_binding.{field} is required")
     if service_attestation is None:

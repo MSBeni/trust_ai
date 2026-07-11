@@ -28,7 +28,7 @@ A dossier is a JSON object with:
 
 The service binding records the source review portal service attestation id, hash, schema, mode, environment, timestamp, source count/hash, service reference, portal kind, endpoint URL, service image and binary hashes, frontend bundle reference/hash/artifact hash, API reference, replica limits, availability zones, supervised-access receipt/session/reviewer fields, auth/session/RBAC/selective-disclosure/tenant/network/encryption references, audit and access log roots, metrics, alert policy, retention, actor reference, redacted credential reference, and evidence references.
 
-Verification recomputes the binding from the supplied service attestation. If optional raw source artifacts are supplied, the verifier also replays the underlying review portal service attestation checks.
+Verification recomputes the binding from the supplied service attestation. Even when the service attestation or optional raw source artifacts are omitted, the verifier must require every service binding field emitted by the v0.1 builder; omitted sources may produce replay warnings, but they must not permit partial binding summaries. If optional raw source artifacts are supplied, the verifier also replays the underlying review portal service attestation checks.
 
 ## Production Authority Requirements
 
@@ -52,7 +52,8 @@ Each evidence item contains `requirement_id`, `authority_kind`, `evidence_ref`, 
 A conforming verifier must:
 
 - Verify the schema, canonical `dossier_id`, and at least one signature.
-- Recompute the service attestation binding from the supplied review portal service attestation.
+- Require every service attestation binding field emitted by the v0.1 builder, even when source artifacts are omitted.
+- Recompute the service attestation binding from the supplied review portal service attestation when supplied.
 - Verify the source service attestation, including optional proof pack, supervised access, disclosure, view, frontend bundle, regulator acceptance, and EU AI Act documentation when supplied.
 - Verify every authority evidence id and evidence hash reference.
 - Recompute the summary from evidence.

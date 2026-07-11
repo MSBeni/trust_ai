@@ -121,6 +121,27 @@ class ReviewPortalAuthorityTests(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("controls do not match" in error for error in result.errors), result.errors)
 
+    def test_review_portal_authority_requires_complete_binding_without_sources(self):
+        _, _, dossier = self._dossier()
+        cases = [
+            ("attestation_schema", "service_attestation_binding.attestation_schema is required"),
+            ("source_schemas", "service_attestation_binding.source_schemas is required"),
+            ("evidence_refs", "service_attestation_binding.evidence_refs is required"),
+        ]
+        for field, expected_error in cases:
+            with self.subTest(field=field):
+                tampered = copy.deepcopy(dossier)
+                tampered["service_attestation_binding"].pop(field)
+                body = without_keys(tampered, "dossier_id", "signatures")
+                dossier_id = content_hash(body)
+                tampered["dossier_id"] = dossier_id
+                tampered["signatures"] = [sign_value({"dossier_id": dossier_id, "review_portal_authority": body})]
+
+                result = verify_review_portal_authority_dossier(tampered)
+
+                self.assertFalse(result.ok)
+                self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
+
     def test_review_portal_authority_requires_frontend_bundle_artifact_binding(self):
         sources, attestation, dossier = self._dossier()
         tampered = copy.deepcopy(dossier)
