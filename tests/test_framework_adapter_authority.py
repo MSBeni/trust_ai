@@ -112,6 +112,12 @@ class FrameworkAdapterAuthorityTests(unittest.TestCase):
         )
         return dossier, matrix, release, runtime_authority
 
+    def _resign_dossier(self, dossier: dict) -> None:
+        body = without_keys(dossier, "dossier_id", "signatures")
+        dossier_id = content_hash(body)
+        dossier["dossier_id"] = dossier_id
+        dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "framework_adapter_authority": body})]
+
     def test_framework_adapter_authority_verifies_and_appends(self):
         dossier, matrix, release, runtime_authority = self._dossier()
         result = verify_framework_adapter_authority_dossier(
@@ -145,7 +151,45 @@ class FrameworkAdapterAuthorityTests(unittest.TestCase):
             self.assertEqual(FRAMEWORK_ADAPTER_AUTHORITY_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(dossier["dossier_id"], entry["payload"]["dossier_id"])
             self.assertEqual({"deferred": 2, "passed": 6}, entry["payload"]["control_summary"])
+            self.assertEqual(dossier["authority_evidence"][0]["source_context"], entry["payload"]["authority_evidence"][0]["source_context"])
+            self.assertEqual(content_hash(dossier["source_binding"]), dossier["authority_evidence"][0]["source_context"]["source_binding_hash"])
             self.assertTrue(chain.verify_all().ok)
+
+    def test_framework_adapter_authority_rejects_resigned_source_context_mismatch(self):
+        dossier, matrix, release, runtime_authority = self._dossier()
+        tampered = copy.deepcopy(dossier)
+        item = tampered["authority_evidence"][0]
+        item["source_context"]["adapter_matrix_hash"] = "sha256:tampered-adapter-matrix"
+        item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+        self._resign_dossier(tampered)
+
+        result = verify_framework_adapter_authority_dossier(
+            tampered,
+            matrix=matrix,
+            release=release,
+            runtime_service_authority=runtime_authority,
+            root=ROOT,
+        )
+
+        self.assertFalse(result.ok)
+        self.assertIn("framework adapter authority source_context does not match source binding: exact-runtime-release-matrix", result.errors)
+
+    def test_framework_adapter_authority_rejects_resigned_control_tamper(self):
+        dossier, matrix, release, runtime_authority = self._dossier()
+        tampered = copy.deepcopy(dossier)
+        tampered["controls"][0]["status"] = "failed"
+        self._resign_dossier(tampered)
+
+        result = verify_framework_adapter_authority_dossier(
+            tampered,
+            matrix=matrix,
+            release=release,
+            runtime_service_authority=runtime_authority,
+            root=ROOT,
+        )
+
+        self.assertFalse(result.ok)
+        self.assertIn("framework adapter authority controls do not match dossier body", result.errors)
 
     def test_framework_adapter_authority_detects_matrix_tamper(self):
         dossier, matrix, release, runtime_authority = self._dossier()

@@ -16,7 +16,8 @@ The dossier contains:
 - `required_production_authority`: the fixed v0.1 checklist for production
   framework adapter claims.
 - `authority_evidence`: hash-bound external evidence references with optional
-  `issued_at` and `expires_at` freshness windows.
+  `issued_at` and `expires_at` freshness windows, derived `source_context`,
+  and evidence IDs.
 - `controls`: deterministic verification controls for source binding,
   row-parity, authority evidence coverage, freshness, production-mode gating,
   and secret exclusion.
@@ -50,8 +51,9 @@ A verifier must:
 7. Reject incomplete source bindings even when raw source artifacts are
    omitted, including missing nested matrix, hook release, release-matrix,
    runtime-version, and runtime service authority identifiers and hashes.
-8. Validate every authority evidence item against the fixed checklist and
-   accepted authority kinds.
+8. Validate every authority evidence item against the fixed checklist,
+   accepted authority kinds, evidence ID, and builder-derived `source_context`
+   computed from `source_binding`.
 9. Enforce freshness when `require_fresh` is set.
 10. Reject `production-dossier` mode unless all requirements are covered with
     fresh evidence and complete matrix, hook release, runtime-version, and

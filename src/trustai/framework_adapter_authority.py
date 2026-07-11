@@ -11,7 +11,7 @@ from .crypto import sign_value, verify_value
 from .external_evidence import AUTHORITY_KINDS
 from .framework_adapter_matrix import verify_framework_adapter_matrix
 from .framework_hook_release import verify_framework_hook_release
-from .framework_runtime_service_authority import verify_framework_runtime_service_authority_dossier
+from .framework_runtime_service_authority import FRAMEWORK_RUNTIME_SERVICE_AUTHORITY_SCHEMA
 
 FRAMEWORK_ADAPTER_AUTHORITY_SCHEMA = "trustai.framework-adapter-production-authority-dossier/0.1"
 FRAMEWORK_ADAPTER_AUTHORITY_ENTRY_TYPE = "framework_adapter.production_authority_recorded"
@@ -113,15 +113,17 @@ def build_framework_adapter_authority_dossier(
     if not release_result.ok:
         raise ValueError("invalid framework hook release source: " + "; ".join(release_result.errors))
     if runtime_service_authority is not None:
-        runtime_result = verify_framework_runtime_service_authority_dossier(runtime_service_authority, root=root, key=key)
-        if not runtime_result.ok:
-            raise ValueError("invalid framework runtime service authority source: " + "; ".join(runtime_result.errors))
+        runtime_errors: list[str] = []
+        _verify_runtime_service_authority_reference(runtime_service_authority, runtime_errors, [], key=key)
+        if runtime_errors:
+            raise ValueError("invalid framework runtime service authority source: " + "; ".join(runtime_errors))
 
     timestamp = generated_at or utc_now()
     parse_rfc3339(timestamp)
-    evidence_items = [_build_authority_evidence_item(item) for item in (authority_evidence or [])]
-    summary = _summary(evidence_items)
     binding = _source_binding(matrix, release, runtime_service_authority)
+    source_context = _authority_evidence_source_context(binding)
+    evidence_items = [_build_authority_evidence_item(item, source_context) for item in (authority_evidence or [])]
+    summary = _summary(evidence_items)
     body: dict[str, Any] = {
         "schema": FRAMEWORK_ADAPTER_AUTHORITY_SCHEMA,
         "mode": mode,
@@ -195,13 +197,25 @@ def verify_framework_adapter_authority_dossier(
     if not isinstance(evidence, list):
         errors.append("framework adapter authority authority_evidence must be a list")
         evidence = []
+    evidence_source_context = _authority_evidence_source_context(
+        dossier.get("source_binding") if isinstance(dossier.get("source_binding"), dict) else {}
+    )
     freshness_counts = {"fresh": 0, "stale": 0, "missing": 0}
     for item in evidence:
         if not isinstance(item, dict):
             errors.append("framework adapter authority evidence item must be an object")
             freshness_counts["missing"] += 1
             continue
-        freshness_counts[_verify_authority_evidence_item(item, errors, warnings, now=freshness_now, require_fresh=require_fresh)] += 1
+        freshness_counts[
+            _verify_authority_evidence_item(
+                item,
+                errors,
+                warnings,
+                now=freshness_now,
+                require_fresh=require_fresh,
+                source_context=evidence_source_context,
+            )
+        ] += 1
 
     evidence_dicts = [item for item in evidence if isinstance(item, dict)]
     expected_summary = _summary(evidence_dicts)
@@ -282,6 +296,7 @@ def append_framework_adapter_authority_dossier(
                 "evidence_ref": item.get("evidence_ref"),
                 "evidence_hash": item.get("evidence_hash"),
                 "evidence_id": item.get("evidence_id"),
+                "source_context": item.get("source_context"),
                 "issued_at": item.get("issued_at"),
                 "expires_at": item.get("expires_at"),
             }
@@ -325,6 +340,31 @@ def _release_binding(release: dict[str, Any]) -> dict[str, Any]:
         "summary": release.get("summary"),
         "status_counts": _status_counts(release.get("entries", [])),
     }
+
+
+def _verify_runtime_service_authority_reference(dossier: dict[str, Any], errors: list[str], warnings: list[str], *, key: str | None) -> None:
+    if not isinstance(dossier, dict):
+        errors.append("framework adapter authority runtime service source must be an object")
+        return
+    if dossier.get("schema") != FRAMEWORK_RUNTIME_SERVICE_AUTHORITY_SCHEMA:
+        errors.append(f"framework adapter authority runtime service source schema is unsupported: {dossier.get('schema')}")
+    body = without_keys(dossier, "dossier_id", "signatures")
+    if dossier.get("dossier_id") != content_hash(body):
+        errors.append("framework adapter authority runtime service source dossier_id does not match body")
+    signatures = dossier.get("signatures")
+    if not isinstance(signatures, list) or not signatures:
+        errors.append("framework adapter authority runtime service source must include a signature")
+    else:
+        signed_value = {"dossier_id": dossier.get("dossier_id"), "framework_runtime_service_authority": body}
+        if not any(isinstance(signature, dict) and verify_value(signed_value, signature, key) for signature in signatures):
+            errors.append("framework adapter authority runtime service source signature verification failed")
+    if not isinstance(dossier.get("provider_receipt_binding"), dict):
+        errors.append("framework adapter authority runtime service source provider_receipt_binding is required")
+    if not isinstance(dossier.get("summary"), dict):
+        errors.append("framework adapter authority runtime service source summary is required")
+    if not isinstance(dossier.get("controls"), list) or not dossier.get("controls"):
+        errors.append("framework adapter authority runtime service source controls are required")
+    warnings.append("framework adapter authority runtime service source was verified as a signed dossier reference; provider receipt replay remains the runtime authority verifier's responsibility")
 
 
 def _authority_dossier_binding(dossier: dict[str, Any]) -> dict[str, Any]:
@@ -385,9 +425,7 @@ def _verify_source_binding(
     errors.extend(f"framework adapter authority release source: {error}" for error in release_result.errors)
     warnings.extend(f"framework adapter authority release source: {warning}" for warning in release_result.warnings)
     if runtime_service_authority is not None:
-        runtime_result = verify_framework_runtime_service_authority_dossier(runtime_service_authority, root=root, key=key)
-        errors.extend(f"framework adapter authority runtime service source: {error}" for error in runtime_result.errors)
-        warnings.extend(f"framework adapter authority runtime service source: {warning}" for warning in runtime_result.warnings)
+        _verify_runtime_service_authority_reference(runtime_service_authority, errors, warnings, key=key)
     expected = _source_binding(matrix, release, runtime_service_authority)
     if binding != expected:
         errors.append("framework adapter authority source_binding does not match supplied source artifacts")
@@ -461,7 +499,7 @@ def _source_binding_complete(binding: dict[str, Any]) -> bool:
     return not errors and isinstance(binding.get("runtime_service_authority"), dict)
 
 
-def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
+def _build_authority_evidence_item(item: dict[str, Any], source_context: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(item, dict):
         raise ValueError("authority evidence item must be an object")
     requirement_id = str(item.get("requirement_id") or "")
@@ -489,18 +527,32 @@ def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
             parse_rfc3339(str(built[field]))
     if built.get("issued_at") and built.get("expires_at") and parse_rfc3339(str(built["issued_at"])) > parse_rfc3339(str(built["expires_at"])):
         raise ValueError("authority evidence issued_at must not be after expires_at")
+    built["source_context"] = source_context
     built["evidence_id"] = content_hash(built)
     return built
 
 
-def _verify_authority_evidence_item(item: dict[str, Any], errors: list[str], warnings: list[str], *, now, require_fresh: bool) -> str:
+def _verify_authority_evidence_item(
+    item: dict[str, Any],
+    errors: list[str],
+    warnings: list[str],
+    *,
+    now,
+    require_fresh: bool,
+    source_context: dict[str, Any],
+) -> str:
     try:
-        expected = _build_authority_evidence_item(item)
+        expected = _build_authority_evidence_item(item, source_context)
     except ValueError as exc:
         errors.append(f"invalid framework adapter authority evidence: {exc}")
         return "missing"
+    requirement_id = item.get("requirement_id")
     if item != expected:
-        errors.append("framework adapter authority evidence_id does not match evidence body")
+        errors.append(f"framework adapter authority evidence_id does not match evidence body: {requirement_id}")
+    if not isinstance(item.get("source_context"), dict):
+        errors.append(f"framework adapter authority source_context is required: {requirement_id}")
+    elif item.get("source_context") != source_context:
+        errors.append(f"framework adapter authority source_context does not match source binding: {requirement_id}")
     issued_at = item.get("issued_at")
     expires_at = item.get("expires_at")
     if not issued_at or not expires_at:
@@ -520,6 +572,37 @@ def _verify_authority_evidence_item(item: dict[str, Any], errors: list[str], war
             warnings.append(message)
         return "stale"
     return "fresh"
+
+
+def _authority_evidence_source_context(binding: dict[str, Any]) -> dict[str, Any]:
+    matrix = binding.get("adapter_matrix") if isinstance(binding.get("adapter_matrix"), dict) else {}
+    release = binding.get("hook_release") if isinstance(binding.get("hook_release"), dict) else {}
+    release_matrix = release.get("adapter_matrix") if isinstance(release.get("adapter_matrix"), dict) else {}
+    runtime_authority = binding.get("runtime_service_authority") if isinstance(binding.get("runtime_service_authority"), dict) else {}
+    return {
+        "source_binding_hash": content_hash(binding),
+        "adapter_matrix_id": matrix.get("matrix_id"),
+        "adapter_matrix_hash": matrix.get("matrix_hash"),
+        "adapter_matrix_ref": matrix.get("matrix_ref"),
+        "adapter_matrix_issued_at": matrix.get("issued_at"),
+        "adapter_package_version": matrix.get("adapter_package_version"),
+        "adapter_matrix_summary": matrix.get("summary"),
+        "hook_release_id": release.get("release_id"),
+        "hook_release_hash": release.get("release_hash"),
+        "hook_release_ref": release.get("release_ref"),
+        "hook_release_released_at": release.get("released_at"),
+        "hook_release_status_counts": release.get("status_counts"),
+        "hook_release_matrix_id": release_matrix.get("matrix_id"),
+        "hook_release_matrix_hash": release_matrix.get("matrix_hash"),
+        "frameworks": binding.get("frameworks"),
+        "runtime_version_root": content_hash(binding.get("runtime_versions") or []),
+        "runtime_service_authority_dossier_id": runtime_authority.get("dossier_id"),
+        "runtime_service_authority_dossier_hash": runtime_authority.get("dossier_hash"),
+        "runtime_service_authority_mode": runtime_authority.get("mode"),
+        "runtime_service_authority_environment": runtime_authority.get("environment"),
+        "runtime_service_authority_ref": runtime_authority.get("authority_ref"),
+        "runtime_service_authority_summary": runtime_authority.get("summary"),
+    }
 
 
 def _verify_required_authority(value: Any, errors: list[str]) -> None:

@@ -299,7 +299,7 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "tests/test_framework_adapter_authority.py",
         ],
         "external_authority": [
-            "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence.",
+            "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence.",
         ],
     },
     {
