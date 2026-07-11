@@ -68,6 +68,11 @@ class RoadmapAuditTests(unittest.TestCase):
         self.assertIn("src/trustai/shadow.py", shadow_evidence)
         self.assertIn("tests/test_temporal_holdout.py", shadow_evidence)
         self.assertIn("duplicate replay record identity violations", " ".join(shadow_requirement["external_authority_required"]))
+        cicd_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "cicd-provider-approvals")
+        cicd_evidence = {item["path"] for item in cicd_requirement["evidence"]}
+        self.assertIn("src/trustai/cicd.py", cicd_evidence)
+        self.assertIn("tests/test_provider_delivery.py", cicd_evidence)
+        self.assertIn("concrete repository/project commit refs", " ".join(cicd_requirement["external_authority_required"]))
         onboarding_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "self-serve-onboarding")
         onboarding_evidence = {item["path"] for item in onboarding_requirement["evidence"]}
         self.assertIn("src/trustai/onboarding.py", onboarding_evidence)

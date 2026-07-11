@@ -221,6 +221,129 @@ class ProviderDeliveryTests(unittest.TestCase):
             self.assertTrue(chain.verify_all().ok)
 
 
+    def test_gitlab_promotion_status_receipt_binds_project_commit_ref(self):
+        pack = self._pack()
+        verification = verify_proof_pack(pack)
+        payload = build_promotion_check_payload(
+            pack,
+            verification,
+            provider="gitlab",
+            commit_sha="0123456789abcdef0123456789abcdef01234567",
+            repository="123456",
+            branch="main",
+            target_url="https://example.test/proof-pack",
+        )
+        delivery = build_provider_delivery(
+            payload,
+            endpoint_base="https://gitlab.example/api/v4",
+            credential_ref="env:GITLAB_TOKEN",
+            mode="dry-run",
+            delivered_at="2026-07-04T00:00:00Z",
+        )
+        receipt = build_promotion_status_receipt(
+            pack,
+            verification,
+            payload,
+            delivery=delivery,
+            attested_at="2026-07-04T00:01:00Z",
+        )
+        result = verify_promotion_status_receipt(
+            receipt,
+            proof_pack=pack,
+            verification=verification,
+            payload=payload,
+            delivery=delivery,
+        )
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertTrue(receipt["passed"])
+        self.assertTrue(receipt["source"]["provider_status_shape_valid"])
+        self.assertTrue(receipt["source"]["provider_target_ref_bound"])
+        self.assertEqual("123456", receipt["provider_payload"]["target_ref"]["project_ref"])
+        self.assertEqual("0123456789abcdef0123456789abcdef01234567", receipt["provider_payload"]["target_ref"]["commit_sha"])
+    def test_promotion_status_receipt_requires_concrete_provider_target_ref(self):
+        pack = self._pack()
+        verification = verify_proof_pack(pack)
+        payload = build_promotion_check_payload(
+            pack,
+            verification,
+            provider="github",
+            commit_sha="0123456789abcdef0123456789abcdef01234567",
+            target_url="https://example.test/proof-pack",
+        )
+        delivery = build_provider_delivery(
+            payload,
+            endpoint_base="https://api.github.com",
+            credential_ref="env:GITHUB_TOKEN",
+            mode="dry-run",
+            delivered_at="2026-07-04T00:00:00Z",
+        )
+        receipt = build_promotion_status_receipt(
+            pack,
+            verification,
+            payload,
+            delivery=delivery,
+            attested_at="2026-07-04T00:01:00Z",
+        )
+
+        result = verify_promotion_status_receipt(
+            receipt,
+            proof_pack=pack,
+            verification=verification,
+            payload=payload,
+            delivery=delivery,
+        )
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertFalse(receipt["passed"])
+        self.assertFalse(receipt["source"]["provider_target_ref_bound"])
+        self.assertEqual(":owner/:repo", receipt["provider_payload"]["target_ref"]["repository"])
+        self.assertTrue(any(item["check"] == "provider_target_ref_bound" for item in receipt["violations"]))
+        self.assertTrue(result.warnings)
+
+    def test_promotion_status_receipt_requires_valid_provider_commit_sha(self):
+        pack = self._pack()
+        verification = verify_proof_pack(pack)
+        payload = build_promotion_check_payload(
+            pack,
+            verification,
+            provider="github",
+            commit_sha="not-a-sha",
+            repository="volelabs/trust_ai",
+            target_url="https://example.test/proof-pack",
+        )
+        delivery = build_provider_delivery(
+            payload,
+            endpoint_base="https://api.github.com",
+            credential_ref="env:GITHUB_TOKEN",
+            mode="dry-run",
+            delivered_at="2026-07-04T00:00:00Z",
+        )
+        receipt = build_promotion_status_receipt(
+            pack,
+            verification,
+            payload,
+            delivery=delivery,
+            attested_at="2026-07-04T00:01:00Z",
+        )
+
+        result = verify_promotion_status_receipt(
+            receipt,
+            proof_pack=pack,
+            verification=verification,
+            payload=payload,
+            delivery=delivery,
+        )
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertFalse(receipt["passed"])
+        self.assertFalse(receipt["source"]["provider_status_shape_valid"])
+        self.assertFalse(receipt["source"]["provider_target_ref_bound"])
+        self.assertFalse(receipt["provider_payload"]["target_ref"]["commit_sha_bound"])
+        self.assertTrue(any(item["check"] == "provider_status_shape_valid" for item in receipt["violations"]))
+        self.assertTrue(any(item["check"] == "provider_target_ref_bound" for item in receipt["violations"]))
+        self.assertTrue(result.warnings)
+
     def test_promotion_status_receipt_detects_status_payload_tamper(self):
         pack = self._pack()
         verification = verify_proof_pack(pack)

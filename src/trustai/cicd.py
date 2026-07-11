@@ -445,6 +445,7 @@ def _promotion_status_body(
         raise ValueError("promotion status payload_hash does not match payload body")
     decision = _decision(proof_pack)
     provider_status = _provider_status(payload)
+    provider_target = _provider_target_ref(payload)
     expected_success = verification.ok and decision.get("outcome") == "passed"
     delivery_binding = _promotion_delivery_binding(delivery, payload) if delivery is not None else None
     source = {
@@ -454,7 +455,9 @@ def _promotion_status_body(
         "contract_hash_matches": decision.get("contract_hash") == payload.get("contract_hash"),
         "gate_outcome_matches": decision.get("outcome") == payload.get("summary", {}).get("gate_outcome"),
         "payload_verified_flag_matches": payload.get("summary", {}).get("verified") is bool(verification.ok),
+        "provider_status_shape_valid": provider_status.get("shape_valid") is True,
         "provider_status_matches_gate": provider_status.get("success") is expected_success,
+        "provider_target_ref_bound": provider_target.get("bound") is True,
         "delivery_verified": True if delivery_binding is None else delivery_binding.get("verification_ok"),
         "delivery_payload_matches": True if delivery_binding is None else delivery_binding.get("payload_hash_matches"),
         "delivery_accepted": True if delivery_binding is None else delivery_binding.get("accepted"),
@@ -490,6 +493,7 @@ def _promotion_status_body(
             "pack_id": payload.get("pack_id"),
             "contract_id": payload.get("contract_id"),
             "contract_hash": payload.get("contract_hash"),
+            "target_ref": provider_target,
             "request": {
                 "method": payload.get("request", {}).get("method"),
                 "path": payload.get("request", {}).get("path"),
@@ -514,12 +518,81 @@ def _provider_status(payload: dict[str, Any]) -> dict[str, Any]:
         request_body = {}
     if payload.get("provider") == "gitlab":
         state = request_body.get("state")
-        return {"kind": "gitlab-status", "state": state, "success": state == "success"}
+        return {"kind": "gitlab-status", "state": state, "success": state == "success", "shape_valid": state in {"success", "failed"}}
     conclusion = request_body.get("conclusion")
     status = request_body.get("status")
     head_sha = request_body.get("head_sha")
-    return {"kind": "github-check-run", "status": status, "conclusion": conclusion, "head_sha": head_sha, "success": status == "completed" and conclusion == "success"}
+    return {
+        "kind": "github-check-run",
+        "status": status,
+        "conclusion": conclusion,
+        "head_sha": head_sha,
+        "success": status == "completed" and conclusion == "success",
+        "shape_valid": status == "completed" and conclusion in {"success", "failure"} and _is_commit_sha(head_sha),
+    }
 
+
+def _provider_target_ref(payload: dict[str, Any]) -> dict[str, Any]:
+    request = payload.get("request", {})
+    request_body = request.get("body", {}) if isinstance(request, dict) else {}
+    if not isinstance(request_body, dict):
+        request_body = {}
+    path = str(request.get("path") or "") if isinstance(request, dict) else ""
+    method = request.get("method") if isinstance(request, dict) else None
+    method_ok = method == "POST"
+    if payload.get("provider") == "gitlab":
+        project_ref, commit_sha = _gitlab_project_and_commit(path)
+        project_bound = bool(project_ref and project_ref != ":id" and ":" not in project_ref)
+        commit_bound = _is_commit_sha(commit_sha)
+        branch_ref = request_body.get("ref")
+        branch_bound = branch_ref is None or (isinstance(branch_ref, str) and bool(branch_ref))
+        return {
+            "provider": "gitlab",
+            "method": method,
+            "project_ref": project_ref,
+            "commit_sha": commit_sha,
+            "branch_ref": branch_ref,
+            "project_bound": project_bound,
+            "commit_sha_bound": commit_bound,
+            "branch_ref_bound": branch_bound,
+            "bound": method_ok and project_bound and commit_bound and branch_bound,
+        }
+    repository = _github_repository_from_path(path)
+    head_sha = request_body.get("head_sha")
+    repository_bound = bool(repository and ":" not in repository and len([part for part in repository.split("/") if part]) >= 2)
+    commit_bound = _is_commit_sha(head_sha)
+    return {
+        "provider": "github",
+        "method": method,
+        "repository": repository,
+        "commit_sha": head_sha,
+        "repository_bound": repository_bound,
+        "commit_sha_bound": commit_bound,
+        "bound": method_ok and repository_bound and commit_bound,
+    }
+
+
+def _github_repository_from_path(path: str) -> str | None:
+    prefix = "/repos/"
+    suffix = "/check-runs"
+    if not path.startswith(prefix) or not path.endswith(suffix):
+        return None
+    repository = path[len(prefix) : -len(suffix)]
+    return repository or None
+
+
+def _gitlab_project_and_commit(path: str) -> tuple[str | None, str | None]:
+    prefix = "/projects/"
+    separator = "/statuses/"
+    if not path.startswith(prefix) or separator not in path[len(prefix) :]:
+        return None, None
+    rest = path[len(prefix) :]
+    project_ref, commit_sha = rest.rsplit(separator, 1)
+    return project_ref or None, commit_sha or None
+
+
+def _is_commit_sha(value: Any) -> bool:
+    return isinstance(value, str) and len(value) == 40 and all(ch in "0123456789abcdefABCDEF" for ch in value)
 
 def _promotion_delivery_binding(delivery: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
     result = verify_provider_delivery(delivery, payload)
@@ -547,7 +620,9 @@ def _promotion_status_violations(source: dict[str, Any]) -> list[dict[str, Any]]
         ("contract_hash_matches", "provider payload contract_hash does not match gate decision"),
         ("gate_outcome_matches", "provider payload gate outcome summary does not match gate decision"),
         ("payload_verified_flag_matches", "provider payload verified flag does not match offline verification"),
+        ("provider_status_shape_valid", "provider status/check payload has an invalid provider status shape"),
         ("provider_status_matches_gate", "provider status/check result does not match gate decision"),
+        ("provider_target_ref_bound", "provider status/check payload is not bound to a concrete repository/project commit ref"),
         ("delivery_verified", "provider delivery receipt verification failed"),
         ("delivery_payload_matches", "provider delivery payload hash does not match status payload"),
         ("delivery_accepted", "provider delivery receipt does not show accepted dispatch"),
@@ -563,7 +638,8 @@ def _promotion_status_controls(source: dict[str, Any]) -> list[dict[str, Any]]:
     return [
         {"id": "proof-pack-verified", "status": "passed" if source.get("proof_pack_verified") else "failed", "description": "Proof pack verifies offline before CI/CD status is trusted."},
         {"id": "provider-payload-bound", "status": "passed" if source.get("pack_id_matches") and source.get("contract_hash_matches") else "failed", "description": "Provider payload is bound to the proof-pack pack ID and contract hash."},
-        {"id": "gate-outcome-bound", "status": "passed" if source.get("gate_outcome_matches") and source.get("provider_status_matches_gate") else "failed", "description": "Provider status/check result matches the TrustAI gate outcome."},
+        {"id": "gate-outcome-bound", "status": "passed" if source.get("gate_outcome_matches") and source.get("provider_status_matches_gate") and source.get("provider_status_shape_valid") else "failed", "description": "Provider status/check result and provider-native status shape match the TrustAI gate outcome."},
+        {"id": "provider-target-ref-bound", "status": "passed" if source.get("provider_target_ref_bound") else "failed", "description": "Provider status/check payload targets a concrete repository or project commit ref."},
         {"id": "delivery-bound", "status": "passed" if source.get("delivery_present") and source.get("delivery_verified") and source.get("delivery_payload_matches") else "deferred", "description": "Provider delivery receipt is replay-bound when supplied."},
         {"id": "delivery-accepted", "status": "passed" if source.get("delivery_accepted") else "deferred", "description": "Provider delivery was accepted or explicitly dry-run for local rehearsal."},
     ]
