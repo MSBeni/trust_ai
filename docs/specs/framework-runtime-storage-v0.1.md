@@ -38,6 +38,13 @@ stream, storage, and scheduler records, and rejects mismatches in stream message
 hash, offsets, storage object hash, ClickHouse/Postgres/control-index hashes,
 row counts, leases, checkpoints, cursors, or audit roots.
 
+Offline verification is fail-closed. A storage receipt must include complete
+worker binding, provider export, matched stream, matched storage, and matched
+scheduler summaries, and the verifier must reject signed receipts unless every
+upstream worker/audit artifact and the provider storage export are supplied for
+replay. A valid detached signature over partial storage summaries is not enough
+to prove provider stream/storage authority.
+
 `framework-runtime-storage-append` requires all source artifacts. The chain entry
 records only hash-bound summaries while offline reviewers can replay disclosed
 provider export records.

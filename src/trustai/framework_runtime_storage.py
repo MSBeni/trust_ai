@@ -16,6 +16,153 @@ FRAMEWORK_RUNTIME_STORAGE_ENTRY_TYPE = "framework_runtime.storage_exported"
 FRAMEWORK_RUNTIME_STORAGE_MODES = {"local-export", "provider-export", "production-export"}
 REQUIRED_STORAGE_KINDS = {"worm_object", "clickhouse_batch", "postgres_index", "control_index"}
 SECRET_KEY_MARKERS = ("token", "secret", "private_key", "client_secret", "password", "credential")
+WORKER_BINDING_EXPECTED_FIELDS = (
+    "worker_operation_id",
+    "worker_operation_hash",
+    "worker_ref",
+    "run_ref",
+    "operation_kind",
+    "runtime_audit_id",
+    "runtime_audit_hash",
+    "operation_id",
+    "operation_ref",
+    "framework",
+    "trace_id",
+    "runtime_instance_ref",
+    "runtime_process_ref",
+    "runtime_event_ref",
+    "stream_ref",
+    "stream_topic",
+    "partition_ref",
+    "offset_start",
+    "offset_end",
+    "stream_message_ref",
+    "stream_message_hash",
+    "storage_object_ref",
+    "storage_object_hash",
+    "clickhouse_batch_ref",
+    "clickhouse_batch_hash",
+    "clickhouse_rows_written",
+    "postgres_index_ref",
+    "postgres_index_hash",
+    "postgres_rows_written",
+    "control_index_ref",
+    "control_index_hash",
+    "schedule_ref",
+    "lease_ref",
+    "checkpoint_ref",
+    "checkpoint_hash",
+    "previous_cursor_ref",
+    "next_cursor_ref",
+    "worker_audit_log_ref",
+    "worker_audit_log_root",
+    "runtime_audit_log_ref",
+    "runtime_audit_log_root",
+)
+WORKER_BINDING_REQUIRED_FIELDS = (
+    "worker_operation_id",
+    "worker_operation_hash",
+    "worker_ref",
+    "run_ref",
+    "operation_kind",
+    "runtime_audit_id",
+    "runtime_audit_hash",
+    "operation_id",
+    "operation_ref",
+    "framework",
+    "trace_id",
+    "runtime_instance_ref",
+    "runtime_event_ref",
+    "stream_ref",
+    "stream_topic",
+    "stream_message_ref",
+    "stream_message_hash",
+    "storage_object_ref",
+    "storage_object_hash",
+    "clickhouse_batch_ref",
+    "clickhouse_batch_hash",
+    "clickhouse_rows_written",
+    "postgres_index_ref",
+    "postgres_index_hash",
+    "postgres_rows_written",
+    "control_index_ref",
+    "control_index_hash",
+    "schedule_ref",
+    "lease_ref",
+    "checkpoint_ref",
+    "worker_audit_log_ref",
+    "worker_audit_log_root",
+    "runtime_audit_log_ref",
+    "runtime_audit_log_root",
+)
+PROVIDER_EXPORT_EXPECTED_FIELDS = (
+    "export_ref",
+    "schema",
+    "provider",
+    "environment",
+    "window_start",
+    "window_end",
+    "cursor_ref",
+    "next_cursor_ref",
+    "audit_log_ref",
+    "audit_log_root",
+    "hash",
+    "stream_record_count",
+    "stream_record_root",
+    "storage_record_count",
+    "storage_record_root",
+    "scheduler_record_count",
+    "scheduler_record_root",
+)
+PROVIDER_EXPORT_REQUIRED_FIELDS = (
+    "export_ref",
+    "schema",
+    "provider",
+    "environment",
+    "window_start",
+    "window_end",
+    "audit_log_ref",
+    "audit_log_root",
+    "hash",
+    "stream_record_count",
+    "stream_record_root",
+    "storage_record_count",
+    "storage_record_root",
+    "scheduler_record_count",
+    "scheduler_record_root",
+)
+MATCHED_STREAM_RECORD_EXPECTED_FIELDS = (
+    "record_id",
+    "record_hash",
+    "backend",
+    "stream_ref",
+    "stream_topic",
+    "partition_ref",
+    "offset_start",
+    "offset_end",
+    "stream_message_ref",
+    "stream_message_hash",
+    "runtime_event_ref",
+)
+MATCHED_STORAGE_RECORD_EXPECTED_FIELDS = (
+    "record_id",
+    "record_hash",
+    "kind",
+    "ref",
+    "hash",
+    "row_count",
+    "backend",
+)
+MATCHED_SCHEDULER_RECORD_EXPECTED_FIELDS = (
+    "record_id",
+    "record_hash",
+    "schedule_ref",
+    "lease_ref",
+    "checkpoint_ref",
+    "checkpoint_hash",
+    "previous_cursor_ref",
+    "next_cursor_ref",
+)
 
 
 @dataclass
@@ -360,11 +507,30 @@ def _verify_worker_binding(
     errors: list[str],
     warnings: list[str],
 ) -> None:
-    for field in ("worker_operation_id", "worker_operation_hash", "run_ref", "runtime_audit_id", "stream_message_hash", "storage_object_hash", "clickhouse_batch_hash", "postgres_index_hash", "control_index_hash"):
-        if not binding.get(field):
+    for field in WORKER_BINDING_EXPECTED_FIELDS:
+        if field not in binding:
             errors.append(f"framework runtime storage worker_binding.{field} is required")
-    if not all(source is not None for source in (worker, runtime_audit, audit_export, operation, trace_payload, release, matrix)):
-        warnings.append("framework runtime storage worker/runtime-audit/operation/trace/release/matrix replay was not fully supplied")
+    for field in WORKER_BINDING_REQUIRED_FIELDS:
+        if binding.get(field) in (None, "", [], {}):
+            errors.append(f"framework runtime storage worker_binding.{field} is required")
+    for field in ("offset_start", "offset_end", "clickhouse_rows_written", "postgres_rows_written"):
+        if binding.get(field) is not None and (not isinstance(binding.get(field), int) or binding.get(field) < 0):
+            errors.append(f"framework runtime storage worker_binding.{field} must be a non-negative integer")
+    missing_sources = [
+        source_type
+        for source_type, value in (
+            ("framework-runtime-worker", worker),
+            ("framework-runtime-audit", runtime_audit),
+            ("framework-runtime-audit-export", audit_export),
+            ("framework-hook-operation", operation),
+            ("framework-trace", trace_payload),
+            ("framework-hook-release", release),
+            ("framework-adapter-matrix", matrix),
+        )
+        if value is None
+    ]
+    if missing_sources:
+        errors.append("framework runtime storage worker source artifacts are required for verification: " + ", ".join(missing_sources))
         return
     result = verify_framework_runtime_worker_receipt(
         worker or {},
@@ -395,9 +561,15 @@ def _verify_provider_export_binding(
     if not isinstance(record, dict):
         errors.append("framework runtime storage provider_export must be an object")
         record = {}
-    for field in ("window_start", "window_end", "audit_log_ref", "audit_log_root", "hash", "stream_record_root", "storage_record_root"):
-        if not record.get(field):
+    for field in PROVIDER_EXPORT_EXPECTED_FIELDS:
+        if field not in record:
             errors.append(f"framework runtime storage provider_export.{field} is required")
+    for field in PROVIDER_EXPORT_REQUIRED_FIELDS:
+        if record.get(field) in (None, "", [], {}):
+            errors.append(f"framework runtime storage provider_export.{field} is required")
+    for field in ("stream_record_count", "storage_record_count", "scheduler_record_count"):
+        if field in record and (not isinstance(record.get(field), int) or record.get(field) < 1):
+            errors.append(f"framework runtime storage provider_export.{field} must be a positive integer")
     try:
         start = parse_rfc3339(str(record.get("window_start") or ""))
         end = parse_rfc3339(str(record.get("window_end") or ""))
@@ -407,8 +579,11 @@ def _verify_provider_export_binding(
         errors.append(f"framework runtime storage provider_export window timestamp invalid: {exc}")
     if not _is_hash_ref(str(record.get("audit_log_root") or "")):
         errors.append("framework runtime storage provider_export.audit_log_root must be a sha256 reference")
+    _verify_matched_stream_summary(receipt.get("matched_stream_record"), errors)
+    _verify_matched_storage_summaries(receipt.get("matched_storage_records"), errors)
+    _verify_matched_scheduler_summary(receipt.get("matched_scheduler_record"), errors)
     if storage_export is None:
-        warnings.append("framework runtime storage export was not supplied; stream/storage export hashes were not replayed")
+        errors.append("framework runtime storage export is required for verification")
         return
 
     try:
@@ -457,6 +632,81 @@ def _verify_provider_export_binding(
         errors.append("framework runtime storage matched storage records do not match supplied storage export")
     if receipt.get("matched_scheduler_record") != _scheduler_record_summary(matched_scheduler):
         errors.append("framework runtime storage matched scheduler record does not match supplied storage export")
+
+
+def _verify_matched_stream_summary(value: Any, errors: list[str]) -> None:
+    if not isinstance(value, dict):
+        errors.append("framework runtime storage matched_stream_record must be an object")
+        return
+    for field in MATCHED_STREAM_RECORD_EXPECTED_FIELDS:
+        if field not in value:
+            errors.append(f"framework runtime storage matched_stream_record.{field} is required")
+    for field in MATCHED_STREAM_RECORD_EXPECTED_FIELDS:
+        if field in {"partition_ref", "offset_start", "offset_end"}:
+            continue
+        if value.get(field) in (None, "", [], {}):
+            errors.append(f"framework runtime storage matched_stream_record.{field} is required")
+    for field in ("record_hash", "stream_message_hash"):
+        if value.get(field) and not _is_hash_ref(str(value.get(field))):
+            errors.append(f"framework runtime storage matched_stream_record.{field} must be a sha256 reference")
+    for field in ("offset_start", "offset_end"):
+        if value.get(field) is not None and (not isinstance(value.get(field), int) or value.get(field) < 0):
+            errors.append(f"framework runtime storage matched_stream_record.{field} must be a non-negative integer")
+
+
+def _verify_matched_storage_summaries(value: Any, errors: list[str]) -> None:
+    if not isinstance(value, list) or not value:
+        errors.append("framework runtime storage matched_storage_records must be a non-empty list")
+        return
+    actual_kinds: set[str] = set()
+    duplicate_kinds: set[str] = set()
+    for index, item in enumerate(value):
+        if not isinstance(item, dict):
+            errors.append(f"framework runtime storage matched_storage_records[{index}] must be an object")
+            continue
+        for field in MATCHED_STORAGE_RECORD_EXPECTED_FIELDS:
+            if field not in item:
+                errors.append(f"framework runtime storage matched_storage_records[{index}].{field} is required")
+        for field in MATCHED_STORAGE_RECORD_EXPECTED_FIELDS:
+            if field == "row_count":
+                continue
+            if item.get(field) in (None, "", [], {}):
+                errors.append(f"framework runtime storage matched_storage_records[{index}].{field} is required")
+        kind = item.get("kind")
+        if isinstance(kind, str):
+            if kind in actual_kinds:
+                duplicate_kinds.add(kind)
+            actual_kinds.add(kind)
+        for field in ("record_hash", "hash"):
+            if item.get(field) and not _is_hash_ref(str(item.get(field))):
+                errors.append(f"framework runtime storage matched_storage_records[{index}].{field} must be a sha256 reference")
+        if item.get("row_count") is not None and (not isinstance(item.get("row_count"), int) or item.get("row_count") < 0):
+            errors.append(f"framework runtime storage matched_storage_records[{index}].row_count must be a non-negative integer")
+    missing = sorted(REQUIRED_STORAGE_KINDS - actual_kinds)
+    extra = sorted(actual_kinds - REQUIRED_STORAGE_KINDS)
+    if missing:
+        errors.append("framework runtime storage matched_storage_records missing: " + ", ".join(missing))
+    if extra:
+        errors.append("framework runtime storage matched_storage_records unsupported: " + ", ".join(extra))
+    if duplicate_kinds:
+        errors.append("framework runtime storage matched_storage_records duplicate: " + ", ".join(sorted(duplicate_kinds)))
+
+
+def _verify_matched_scheduler_summary(value: Any, errors: list[str]) -> None:
+    if not isinstance(value, dict):
+        errors.append("framework runtime storage matched_scheduler_record must be an object")
+        return
+    for field in MATCHED_SCHEDULER_RECORD_EXPECTED_FIELDS:
+        if field not in value:
+            errors.append(f"framework runtime storage matched_scheduler_record.{field} is required")
+    for field in MATCHED_SCHEDULER_RECORD_EXPECTED_FIELDS:
+        if field in {"checkpoint_hash", "previous_cursor_ref", "next_cursor_ref"}:
+            continue
+        if value.get(field) in (None, "", [], {}):
+            errors.append(f"framework runtime storage matched_scheduler_record.{field} is required")
+    for field in ("record_hash", "checkpoint_hash"):
+        if value.get(field) and not _is_hash_ref(str(value.get(field))):
+            errors.append(f"framework runtime storage matched_scheduler_record.{field} must be a sha256 reference")
 
 
 def _records(storage_export: dict[str, Any], field: str) -> list[dict[str, Any]]:
