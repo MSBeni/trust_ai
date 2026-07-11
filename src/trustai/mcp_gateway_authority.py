@@ -102,6 +102,8 @@ def build_mcp_gateway_authority_dossier(
     timestamp = generated_at or utc_now()
     parse_rfc3339(timestamp)
     records = build_mcp_transcript_chain(transcript_calls)
+    if not records:
+        raise ValueError("MCP gateway authority requires at least one MCP tool call")
     evidence_items = [_build_authority_evidence_item(item) for item in (authority_evidence or [])]
     summary = _summary(evidence_items)
     binding = _transcript_binding(transcript_calls, records)
@@ -314,8 +316,43 @@ def _verify_transcript_binding(
     if not isinstance(binding, dict):
         errors.append("MCP gateway transcript_binding is required")
         return
-    if not binding.get("transcript_hash") or not binding.get("transcript_roots"):
-        errors.append("MCP gateway transcript_binding must include transcript hash and roots")
+    required_fields = (
+        "transcript_schema",
+        "transcript_hash",
+        "source_transcript_hash",
+        "call_count",
+        "session_ids",
+        "tool_names",
+        "contract_hashes",
+        "agent_bindings",
+        "first_timestamp",
+        "last_timestamp",
+        "transcript_roots",
+        "tool_call_records",
+    )
+    for field in required_fields:
+        if binding.get(field) in (None, "", []):
+            errors.append(f"MCP gateway transcript_binding.{field} is required")
+    if binding.get("transcript_schema") != MCP_TRANSCRIPT_CHAIN_SCHEMA:
+        errors.append("MCP gateway transcript_binding.transcript_schema is unsupported")
+    call_count = binding.get("call_count")
+    if not isinstance(call_count, int) or call_count <= 0:
+        errors.append("MCP gateway transcript_binding.call_count must be a positive integer")
+    records = binding.get("tool_call_records")
+    if not isinstance(records, list) or not records:
+        errors.append("MCP gateway transcript_binding.tool_call_records must be a non-empty list")
+    else:
+        if isinstance(call_count, int) and len(records) != call_count:
+            errors.append("MCP gateway transcript_binding.tool_call_records count must match call_count")
+        for index, record in enumerate(records):
+            if not isinstance(record, dict):
+                errors.append(f"MCP gateway transcript_binding.tool_call_records[{index}] must be an object")
+                continue
+            for field in ("sequence", "request_id", "tool_name", "tool_call_hash", "request_hash", "response_hash", "transcript_node_hash", "transcript_root"):
+                if record.get(field) in (None, "", []):
+                    errors.append(f"MCP gateway transcript_binding.tool_call_records[{index}].{field} is required")
+            if index > 0 and record.get("previous_transcript_node_hash") in (None, "", []):
+                errors.append(f"MCP gateway transcript_binding.tool_call_records[{index}].previous_transcript_node_hash is required")
     if transcript_calls is None:
         warnings.append("MCP gateway transcript source not supplied; transcript binding hashes were not replayed")
         return

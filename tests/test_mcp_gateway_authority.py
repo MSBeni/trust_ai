@@ -7,7 +7,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.mcp_gateway import load_mcp_transcript
 from trustai.mcp_gateway_authority import (
     MCP_GATEWAY_AUTHORITY_ENTRY_TYPE,
@@ -86,6 +88,10 @@ class McpGatewayAuthorityTests(unittest.TestCase):
             self.assertEqual(dossier["transcript_binding"]["transcript_hash"], entry["payload"]["transcript_binding"]["transcript_hash"])
             self.assertEqual({"deferred": 2, "passed": 3}, entry["payload"]["control_summary"])
 
+    def test_mcp_gateway_authority_rejects_empty_transcript(self):
+        with self.assertRaisesRegex(ValueError, "at least one tool call"):
+            self._dossier([])
+
     def test_mcp_gateway_authority_detects_transcript_tamper(self):
         calls = self._calls()
         dossier = self._dossier(calls)
@@ -96,6 +102,21 @@ class McpGatewayAuthorityTests(unittest.TestCase):
 
         self.assertFalse(result.ok)
         self.assertTrue(any("transcript_binding does not match" in error for error in result.errors), result.errors)
+
+    def test_mcp_gateway_authority_requires_complete_transcript_binding_without_source(self):
+        calls = self._calls()
+        dossier = self._dossier(calls)
+        tampered = copy.deepcopy(dossier)
+        tampered["transcript_binding"]["tool_call_records"][0].pop("response_hash")
+        body = without_keys(tampered, "dossier_id", "signatures")
+        dossier_id = content_hash(body)
+        tampered["dossier_id"] = dossier_id
+        tampered["signatures"] = [sign_value({"dossier_id": dossier_id, "mcp_gateway_authority": body})]
+
+        result = verify_mcp_gateway_authority_dossier(tampered)
+
+        self.assertFalse(result.ok)
+        self.assertTrue(any("tool_call_records[0].response_hash is required" in error for error in result.errors), result.errors)
 
     def test_mcp_gateway_authority_requires_freshness_when_strict(self):
         calls = self._calls()

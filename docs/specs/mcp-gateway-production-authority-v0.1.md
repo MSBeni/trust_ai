@@ -72,7 +72,7 @@ A verifier must:
 
 1. Verify the schema, canonical `dossier_id`, and at least one valid signature.
 2. Verify `mode`, `environment`, `dossier_ref`, `authority_ref`, `producer_ref`, and RFC3339 timestamps.
-3. Rebuild the MCP transcript hash chain from the supplied transcript and compare it to `transcript_binding`.
+3. Require a complete non-empty `transcript_binding` with schema, transcript hashes, call count, sessions, tools, contract hashes, agent bindings, timestamps, transcript roots, and per-call request/response/node hashes. When the raw transcript is supplied, rebuild the MCP transcript hash chain and compare it to `transcript_binding`.
 4. Require the `required_production_authority` checklist to match this specification exactly.
 5. Reject evidence with unknown requirement ids or disallowed authority kinds.
 6. Reject malformed evidence references, hashes, and timestamp windows.
