@@ -458,8 +458,8 @@ def verify_framework_runtime_service_authority_recorded_export_worker_receipt(
         effective_require_fresh = False
 
     if recorded_export is None:
-        warnings.append(
-            "framework runtime service authority recorded export worker source receipt was not supplied; source was not replayed"
+        errors.append(
+            "framework runtime service authority recorded export worker source receipt is required for verification"
         )
     else:
         if receipt.get("recorded_export") != _recorded_export_binding(recorded_export):
@@ -488,8 +488,8 @@ def verify_framework_runtime_service_authority_recorded_export_worker_receipt(
                         "framework runtime service authority recorded export worker artifact_content_root does not match supplied recorded export"
                     )
         if authority_attestation is None:
-            warnings.append(
-                "framework runtime service authority recorded export worker nested source artifacts were not supplied; recorded export source was not fully replayed"
+            errors.append(
+                "framework runtime service authority recorded export worker nested source artifacts are required for verification"
             )
         else:
             result = verify_framework_runtime_service_authority_recorded_export(

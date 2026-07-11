@@ -402,6 +402,32 @@ class FrameworkRuntimeServiceAuthorityRecordedExportWorkerTests(unittest.TestCas
                 self.assertFalse(result.ok)
                 self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
 
+    def test_framework_runtime_service_authority_recorded_export_worker_requires_replay_artifacts_without_sources(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            receipt, recorded_export, *_ = self._receipt(tmp)
+
+            missing_all = verify_framework_runtime_service_authority_recorded_export_worker_receipt(
+                receipt,
+                now="2026-07-09T01:14:00Z",
+            )
+            missing_nested = verify_framework_runtime_service_authority_recorded_export_worker_receipt(
+                receipt,
+                recorded_export=recorded_export,
+                now="2026-07-09T01:14:00Z",
+            )
+
+            self.assertFalse(missing_all.ok)
+            self.assertIn(
+                "framework runtime service authority recorded export worker source receipt is required for verification",
+                missing_all.errors,
+            )
+            self.assertFalse(missing_nested.ok)
+            self.assertIn(
+                "framework runtime service authority recorded export worker nested source artifacts are required for verification",
+                missing_nested.errors,
+            )
+
     def test_framework_runtime_service_authority_recorded_export_worker_rejects_raw_credential(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)

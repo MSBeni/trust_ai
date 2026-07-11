@@ -36,14 +36,14 @@ builder, requires a positive recorded artifact count, and requires the
 `source_artifacts` array to contain exactly the expected nested receipt/export
 hash kinds with no missing, duplicate, or unsupported entries.
 
-When supplied with the recorded export and its nested source artifacts,
-verification first replays
+Offline verification is fail-closed: the recorded export, authority attestation,
+every nested source artifact, and retained artifact file paths are required.
+Verification first replays
 `framework-runtime-service-authority-recorded-export-verify`. It then checks the
 worker's recorded-export binding, stored recorded-export hash, artifact manifest
-hash, artifact roots, and source artifact hashes against the supplied objects.
-Omitted source artifacts during standalone verification may produce replay
-warnings, but they must not permit partial recorded-export bindings or partial
-source artifact hash summaries.
+hash, artifact roots, and source artifact hashes against the supplied objects. A
+detached signature over partial replay inputs is not enough to verify the worker
+receipt.
 
 `production-worker` mode requires a `production-recorded-export` source.
 `local-worker`, `scheduled-worker`, and `hosted-worker` remain local/reference
