@@ -147,7 +147,8 @@ def build_provider_delivery_authority_dossier(
     if link_errors:
         raise ValueError("invalid provider delivery worker bundle binding: " + "; ".join(link_errors))
 
-    evidence_items = [_build_authority_evidence_item(item) for item in (authority_evidence or [])]
+    source_context = _authority_evidence_source_context(service_binding, worker_bindings, worker_bundle_bindings)
+    evidence_items = [_build_authority_evidence_item(item, source_context) for item in (authority_evidence or [])]
     summary = _summary(evidence_items)
     body: dict[str, Any] = {
         "schema": PROVIDER_DELIVERY_AUTHORITY_SCHEMA,
@@ -163,7 +164,7 @@ def build_provider_delivery_authority_dossier(
         "required_production_authority": PRODUCTION_AUTHORITY_REQUIREMENTS,
         "authority_evidence": evidence_items,
         "summary": summary,
-        "controls": _controls(mode, service_attestation, receipts, worker_bundle_bindings, evidence_items, summary),
+        "controls": _controls(mode, service_binding, worker_bindings, worker_bundle_bindings, evidence_items, summary),
         "limitations": [
             "This dossier binds verified provider delivery service and worker receipts to an explicit production-authority evidence checklist.",
             "It records authority references, hashes, freshness windows, and missing live-evidence categories for credentialed external Slack/GitHub/GitLab posting.",
@@ -266,13 +267,18 @@ def verify_provider_delivery_authority_dossier(
     if not isinstance(evidence, list):
         errors.append("provider delivery authority authority_evidence must be a list")
         evidence = []
+    evidence_source_context = _authority_evidence_source_context(
+        dossier.get("service_attestation_binding") if isinstance(dossier.get("service_attestation_binding"), dict) else {},
+        dossier.get("worker_receipt_bindings") if isinstance(dossier.get("worker_receipt_bindings"), list) else [],
+        dossier.get("worker_bundle_bindings") if isinstance(dossier.get("worker_bundle_bindings"), list) else [],
+    )
     freshness_counts = {"fresh": 0, "stale": 0, "missing": 0}
     for item in evidence:
         if not isinstance(item, dict):
             errors.append("provider delivery authority evidence item must be an object")
             freshness_counts["missing"] += 1
             continue
-        freshness_counts[_verify_authority_evidence_item(item, errors, warnings, now=freshness_now, require_fresh=require_fresh)] += 1
+        freshness_counts[_verify_authority_evidence_item(item, errors, warnings, now=freshness_now, require_fresh=require_fresh, source_context=evidence_source_context)] += 1
 
     expected_summary = _summary([item for item in evidence if isinstance(item, dict)])
     if dossier.get("summary") != expected_summary:
@@ -284,8 +290,13 @@ def verify_provider_delivery_authority_dossier(
         errors.append("provider delivery authority dossier is incomplete")
     if mode == "production-dossier" and missing:
         errors.append("production-dossier mode requires every provider delivery authority requirement to be covered")
+    service_binding_for_controls = dossier.get("service_attestation_binding") if isinstance(dossier.get("service_attestation_binding"), dict) else {}
+    worker_bindings_for_controls = dossier.get("worker_receipt_bindings") if isinstance(dossier.get("worker_receipt_bindings"), list) else []
+    worker_bundle_bindings_for_controls = dossier.get("worker_bundle_bindings") if isinstance(dossier.get("worker_bundle_bindings"), list) else []
     if not isinstance(dossier.get("controls"), list) or not dossier.get("controls"):
         errors.append("provider delivery authority controls are required")
+    elif dossier.get("controls") != _controls(str(mode), service_binding_for_controls, worker_bindings_for_controls, worker_bundle_bindings_for_controls, [item for item in evidence if isinstance(item, dict)], expected_summary):
+        errors.append("provider delivery authority controls do not match dossier body")
     _check_no_secret_values(dossier, errors)
     return ProviderDeliveryAuthorityVerification(
         ok=not errors,
@@ -338,7 +349,7 @@ def append_provider_delivery_authority_dossier(
         "summary": dossier.get("summary"),
         "control_summary": _status_summary(dossier.get("controls", [])),
         "authority_evidence": [
-            {"requirement_id": item.get("requirement_id"), "authority_kind": item.get("authority_kind"), "evidence_ref": item.get("evidence_ref"), "evidence_hash": item.get("evidence_hash"), "evidence_id": item.get("evidence_id"), "issued_at": item.get("issued_at"), "expires_at": item.get("expires_at")}
+            {"requirement_id": item.get("requirement_id"), "authority_kind": item.get("authority_kind"), "evidence_ref": item.get("evidence_ref"), "evidence_hash": item.get("evidence_hash"), "evidence_id": item.get("evidence_id"), "issued_at": item.get("issued_at"), "expires_at": item.get("expires_at"), "source_context": item.get("source_context")}
             for item in dossier.get("authority_evidence", [])
             if isinstance(item, dict)
         ],
@@ -606,7 +617,7 @@ def _verify_worker_receipt_bindings(bindings: Any, worker_receipts: list[dict[st
                 errors.append("provider delivery authority worker binding does not reference supplied service attestation id")
 
 
-def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
+def _build_authority_evidence_item(item: dict[str, Any], source_context: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(item, dict):
         raise ValueError("authority evidence item must be an object")
     requirement_id = str(item.get("requirement_id") or "")
@@ -637,11 +648,12 @@ def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
         "source_uri": item.get("source_uri"),
         "issued_at": item.get("issued_at"),
         "expires_at": item.get("expires_at"),
+        "source_context": source_context,
     }
     return {**body, "evidence_id": content_hash(body)}
 
 
-def _verify_authority_evidence_item(item: dict[str, Any], errors: list[str], warnings: list[str], *, now: Any, require_fresh: bool) -> str:
+def _verify_authority_evidence_item(item: dict[str, Any], errors: list[str], warnings: list[str], *, now: Any, require_fresh: bool, source_context: dict[str, Any]) -> str:
     if item.get("evidence_id") != content_hash(without_keys(item, "evidence_id")):
         errors.append(f"provider delivery authority evidence_id does not match evidence body: {item.get('requirement_id')}")
     requirement_id = item.get("requirement_id")
@@ -657,6 +669,10 @@ def _verify_authority_evidence_item(item: dict[str, Any], errors: list[str], war
             errors.append(f"provider delivery authority {field} is required: {requirement_id}")
     if item.get("evidence_hash") and not str(item.get("evidence_hash")).startswith("sha256:"):
         errors.append(f"provider delivery authority evidence_hash must start with sha256: {requirement_id}")
+    if not isinstance(item.get("source_context"), dict):
+        errors.append(f"provider delivery authority source_context is required: {requirement_id}")
+    elif item.get("source_context") != source_context:
+        errors.append(f"provider delivery authority source_context does not match source bindings: {requirement_id}")
 
     issued_at = _parse_optional_timestamp(item, "issued_at", errors)
     expires_at = _parse_optional_timestamp(item, "expires_at", errors)
@@ -675,6 +691,50 @@ def _verify_authority_evidence_item(item: dict[str, Any], errors: list[str], war
         freshness_status = "stale"
         _freshness_problem(f"provider delivery authority evidence expired for {requirement_id}: {item.get('expires_at')}", errors, warnings, require_fresh=require_fresh)
     return freshness_status
+
+
+def _authority_evidence_source_context(
+    service_binding: dict[str, Any],
+    worker_bindings: list[Any],
+    worker_bundle_bindings: list[Any],
+) -> dict[str, Any]:
+    valid_workers = [binding for binding in worker_bindings if isinstance(binding, dict)]
+    valid_bundles = [binding for binding in worker_bundle_bindings if isinstance(binding, dict)]
+    return {
+        "service_attestation_id": service_binding.get("attestation_id"),
+        "service_attestation_hash": service_binding.get("attestation_hash"),
+        "environment": service_binding.get("environment"),
+        "service_ref": service_binding.get("service_ref"),
+        "provider": service_binding.get("provider"),
+        "provider_endpoint_base": service_binding.get("provider_endpoint_base"),
+        "dispatch_worker_ref": service_binding.get("dispatch_worker_ref"),
+        "queue_ref": service_binding.get("queue_ref"),
+        "provider_credential_ref": service_binding.get("provider_credential_ref"),
+        "source_delivery_id": service_binding.get("source_delivery_id"),
+        "source_delivery_mode": service_binding.get("source_delivery_mode"),
+        "source_target_url": service_binding.get("source_target_url"),
+        "service_source_hash": service_binding.get("source_hash"),
+        "audit_log_root": service_binding.get("audit_log_root"),
+        "worker_operation_ids": _sorted_present(binding.get("worker_operation_id") for binding in valid_workers),
+        "worker_operation_hashes": _sorted_present(binding.get("worker_operation_hash") for binding in valid_workers),
+        "worker_run_refs": _sorted_present(binding.get("run_ref") for binding in valid_workers),
+        "worker_request_hashes": _sorted_present(binding.get("request_hash") for binding in valid_workers),
+        "worker_response_hashes": _sorted_present(binding.get("response_hash") for binding in valid_workers),
+        "worker_source_hashes": _sorted_present(binding.get("source_hash") for binding in valid_workers),
+        "worker_source_delivery_hashes": _sorted_present(binding.get("source_delivery_hash") for binding in valid_workers),
+        "worker_provider_request_refs": _sorted_present(binding.get("provider_request_ref") for binding in valid_workers),
+        "worker_delivery_log_roots": _sorted_present(binding.get("delivery_log_root") for binding in valid_workers),
+        "worker_provider_event_log_roots": _sorted_present(binding.get("provider_event_log_root") for binding in valid_workers),
+        "worker_audit_log_roots": _sorted_present(binding.get("audit_log_root") for binding in valid_workers),
+        "worker_bundle_ids": _sorted_present(binding.get("bundle_id") for binding in valid_bundles),
+        "worker_bundle_hashes": _sorted_present(binding.get("bundle_hash") for binding in valid_bundles),
+        "worker_bundle_delivery_hashes": _sorted_present(binding.get("delivery_hash") for binding in valid_bundles),
+        "worker_bundle_source_roots": _sorted_present(binding.get("source_artifact_sha256_root") for binding in valid_bundles),
+    }
+
+
+def _sorted_present(values: Any) -> list[Any]:
+    return sorted(value for value in values if value not in (None, "", []))
 
 
 def _verify_required_authority(value: Any, errors: list[str]) -> None:
@@ -699,10 +759,10 @@ def _summary(evidence: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _controls(mode: str, service_attestation: dict[str, Any], worker_receipts: list[dict[str, Any]], worker_bundle_bindings: list[dict[str, Any]], evidence: list[dict[str, Any]], summary: dict[str, Any]) -> list[dict[str, Any]]:
+def _controls(mode: str, service_binding: dict[str, Any], worker_bindings: list[Any], worker_bundle_bindings: list[dict[str, Any]], evidence: list[dict[str, Any]], summary: dict[str, Any]) -> list[dict[str, Any]]:
     return [
         {"name": "service_attestation_replayed", "status": "passed", "detail": "The dossier builder replayed the provider delivery service attestation and supplied source evidence when available."},
-        {"name": "worker_receipts_bound", "status": "passed" if service_attestation.get("attestation_id") and worker_receipts else "failed", "detail": "The dossier binds delivery worker operation IDs, service hashes, scheduler, queue, dispatch, response, log, and credential refs."},
+        {"name": "worker_receipts_bound", "status": "passed" if service_binding.get("attestation_id") and worker_bindings else "failed", "detail": "The dossier binds delivery worker operation IDs, service hashes, scheduler, queue, dispatch, response, log, and credential refs."},
         {"name": "worker_review_bundles_bound", "status": "passed" if worker_bundle_bindings else "deferred", "detail": "Optional worker review bundles bind offline source-byte replay, retained payload artifact replay, and safe third-party extraction to the authority dossier."},
         {"name": "authority_evidence_manifested", "status": "passed" if evidence else "deferred", "detail": "External provider delivery authority evidence references are hash-bound when supplied."},
         {"name": "freshness_windows_tracked", "status": "passed" if evidence and summary["freshness_window_count"] == len(evidence) else "deferred", "detail": "Issued/expires freshness windows are tracked for every supplied authority item when available."},

@@ -28,6 +28,12 @@ def _write_json(path: Path, value: object) -> None:
 
 
 class ProviderDeliveryAuthorityTests(unittest.TestCase):
+    def _resign_dossier(self, dossier: dict) -> None:
+        body = without_keys(dossier, "dossier_id", "signatures")
+        dossier_id = content_hash(body)
+        dossier["dossier_id"] = dossier_id
+        dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "provider_delivery_authority": body})]
+
     def _sources(self):
         payload_artifact_path = "artifacts/github-check-run-payload.json"
         service_path = ROOT / "artifacts" / "provider-delivery-service-attestation.json"
@@ -130,6 +136,7 @@ class ProviderDeliveryAuthorityTests(unittest.TestCase):
         self.assertEqual(workers[0]["worker_operation_id"], entry["payload"]["worker_receipt_bindings"][0]["worker_operation_id"])
         self.assertEqual(sources["worker_bundles"][0]["bundle_id"], entry["payload"]["worker_bundle_bindings"][0]["bundle_id"])
         self.assertTrue(entry["payload"]["worker_bundle_bindings"][0]["retained_payload_artifact_replayed"])
+        self.assertEqual(dossier["authority_evidence"][0]["source_context"], entry["payload"]["authority_evidence"][0]["source_context"])
         self.assertEqual({"deferred": 1, "passed": 6}, entry["payload"]["control_summary"])
 
     def test_provider_delivery_authority_detects_worker_tamper(self):
@@ -141,6 +148,35 @@ class ProviderDeliveryAuthorityTests(unittest.TestCase):
 
         self.assertFalse(result.ok)
         self.assertTrue(any("worker_receipt_bindings do not match" in error for error in result.errors), result.errors)
+
+    def test_provider_delivery_authority_rejects_resigned_authority_source_context_mismatch(self):
+        sources, service, workers, dossier = self._dossier()
+        tampered = copy.deepcopy(dossier)
+        item = tampered["authority_evidence"][0]
+        item["source_context"]["provider_endpoint_base"] = "https://api.other-provider.example"
+        item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+        self._resign_dossier(tampered)
+
+        result = verify_provider_delivery_authority_dossier(tampered, service_attestation=service, worker_receipts=workers, **sources)
+
+        self.assertFalse(result.ok)
+        self.assertNotIn("dossier_id does not match canonical provider delivery authority body", result.errors)
+        self.assertNotIn("provider delivery authority signature verification failed", result.errors)
+        self.assertNotIn("provider delivery authority evidence_id does not match evidence body: hosted-dispatch-worker-fleet", result.errors)
+        self.assertIn("provider delivery authority source_context does not match source bindings: hosted-dispatch-worker-fleet", result.errors)
+
+    def test_provider_delivery_authority_rejects_resigned_control_tamper(self):
+        sources, service, workers, dossier = self._dossier()
+        tampered = copy.deepcopy(dossier)
+        tampered["controls"][0]["status"] = "deferred"
+        self._resign_dossier(tampered)
+
+        result = verify_provider_delivery_authority_dossier(tampered, service_attestation=service, worker_receipts=workers, **sources)
+
+        self.assertFalse(result.ok)
+        self.assertNotIn("dossier_id does not match canonical provider delivery authority body", result.errors)
+        self.assertNotIn("provider delivery authority signature verification failed", result.errors)
+        self.assertIn("provider delivery authority controls do not match dossier body", result.errors)
 
     def test_provider_delivery_authority_detects_worker_bundle_tamper(self):
         sources, service, workers, dossier = self._dossier()
