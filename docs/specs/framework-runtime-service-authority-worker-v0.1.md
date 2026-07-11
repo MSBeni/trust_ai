@@ -35,15 +35,15 @@ count with non-negative requirement/freshness counts, and requires the
 `source_artifacts` array to contain exactly the expected nested receipt/export
 hash kinds with no missing, duplicate, or unsupported entries.
 
-When supplied with the authority dossier and provider/source artifacts,
-verification replays `framework-runtime-service-authority-verify`, which then
-replays the provider receipt, service worker, service attestation, storage
-receipt/export, runtime audit, hook operation, hook release, and adapter matrix.
-It also compares every supplied source artifact hash to the receipt's
-`source_artifacts` list and verifies the stored dossier hash, authority evidence
-root, and missing requirement root. Omitted sources during standalone
-verification may produce replay warnings, but they must not permit partial
-authority bindings or partial source artifact hash summaries.
+Offline verification is fail-closed: the authority dossier, provider receipt,
+and every nested provider/source artifact are required. Verification replays
+`framework-runtime-service-authority-verify`, which then replays the provider
+receipt, service worker, service attestation, storage receipt/export, runtime
+audit, hook operation, hook release, and adapter matrix. It also compares every
+supplied source artifact hash to the receipt's `source_artifacts` list and
+verifies the stored dossier hash, authority evidence root, and missing
+requirement root. A detached signature over partial replay inputs is not enough
+to verify the worker receipt.
 
 `--require-complete` and `--require-fresh` can be used to force the underlying
 authority dossier to have complete production authority coverage and fresh

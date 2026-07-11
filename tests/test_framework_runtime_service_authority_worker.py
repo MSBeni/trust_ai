@@ -290,6 +290,30 @@ class FrameworkRuntimeServiceAuthorityWorkerTests(unittest.TestCase):
                 self.assertFalse(result.ok)
                 self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
 
+    def test_framework_runtime_service_authority_worker_requires_replay_artifacts_without_sources(self):
+        receipt, dossier, *_ = self._receipt()
+
+        missing_all = verify_framework_runtime_service_authority_worker_receipt(
+            receipt,
+            now="2026-07-09T01:05:00Z",
+        )
+        missing_provider_receipt = verify_framework_runtime_service_authority_worker_receipt(
+            receipt,
+            authority_dossier=dossier,
+            now="2026-07-09T01:05:00Z",
+        )
+
+        self.assertFalse(missing_all.ok)
+        self.assertIn(
+            "framework runtime service authority worker authority dossier artifact is required for verification",
+            missing_all.errors,
+        )
+        self.assertFalse(missing_provider_receipt.ok)
+        self.assertIn(
+            "framework runtime service authority worker provider receipt artifact is required for verification",
+            missing_provider_receipt.errors,
+        )
+
     def test_framework_runtime_service_authority_worker_rejects_raw_credential(self):
         (
             receipt,

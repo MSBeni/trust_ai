@@ -388,7 +388,7 @@ def verify_framework_runtime_service_authority_worker_receipt(
         errors.append("framework runtime service authority worker require_fresh must be boolean")
         effective_require_fresh = False
     if authority_dossier is None:
-        warnings.append("framework runtime service authority worker authority dossier artifact was not supplied; source was not replayed")
+        errors.append("framework runtime service authority worker authority dossier artifact is required for verification")
     else:
         expected_authority = _authority_record(authority_dossier)
         if receipt.get("authority") != expected_authority:
@@ -402,7 +402,7 @@ def verify_framework_runtime_service_authority_worker_receipt(
             if expected_execution.get("dossier_storage_hash") != content_hash(authority_dossier):
                 errors.append("framework runtime service authority worker dossier_storage_hash does not match supplied authority dossier")
         if provider_receipt is None:
-            warnings.append("framework runtime service authority worker provider receipt artifact was not supplied; authority source was not fully replayed")
+            errors.append("framework runtime service authority worker provider receipt artifact is required for verification")
         else:
             result = verify_framework_runtime_service_authority_dossier(
                 authority_dossier,
