@@ -1066,23 +1066,27 @@ from .external_evidence import (
     append_external_evidence_manifest,
     build_external_evidence_manifest,
     build_external_evidence_collection_plan,
+    build_external_evidence_intake,
     build_roadmap_evidence_bundle,
     build_roadmap_evidence_report,
     extract_roadmap_evidence_bundle_sources,
     load_external_evidence_manifest,
     load_external_evidence_collection_plan,
+    load_external_evidence_intake,
     load_roadmap_evidence_bundle,
     load_roadmap_evidence_report,
     parse_evidence_arg,
     parse_bundle_source_artifact_arg,
     verify_external_evidence_manifest,
     verify_external_evidence_collection_plan,
+    verify_external_evidence_intake,
     verify_roadmap_evidence_chain,
     verify_roadmap_evidence_bundle,
     verify_roadmap_evidence_report,
     write_external_evidence_manifest,
     write_external_evidence_collection_plan,
     write_external_evidence_collection_plan_markdown,
+    write_external_evidence_intake,
     write_external_evidence_markdown,
     write_roadmap_evidence_bundle,
     write_roadmap_evidence_bundle_markdown,
@@ -14199,6 +14203,83 @@ def cmd_external_evidence_plan_verify(args: argparse.Namespace) -> int:
         print(f"- {error}", file=sys.stderr)
     return 1
 
+def cmd_external_evidence_intake(args: argparse.Namespace) -> int:
+    try:
+        roadmap_audit = load_roadmap_audit(args.roadmap_audit)
+        manifest = load_external_evidence_manifest(args.manifest)
+        plan = load_external_evidence_collection_plan(args.plan)
+        intake = build_external_evidence_intake(
+            plan,
+            manifest,
+            roadmap_audit,
+            root=args.root,
+            task_ref=args.task,
+            artifact_path=args.artifact,
+            description=args.description,
+            issuer=args.issuer,
+            subject=args.subject,
+            source_uri=args.source_uri,
+            issued_at=args.issued_at,
+            expires_at=args.expires_at,
+        )
+        result = verify_external_evidence_intake(
+            intake,
+            plan,
+            manifest,
+            roadmap_audit,
+            root=args.root,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence intake failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("external evidence intake verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_external_evidence_intake(args.out, intake)
+    print(f"external evidence intake: {args.out}")
+    print(f"intake id: {intake['intake_id']}")
+    print(f"task ref: {intake['task']['task_ref']}")
+    print(f"evidence id: {intake['evidence_item']['evidence_id']}")
+    print(f"evidence argument: {intake['evidence_argument']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_external_evidence_intake_verify(args: argparse.Namespace) -> int:
+    try:
+        roadmap_audit = load_roadmap_audit(args.roadmap_audit)
+        manifest = load_external_evidence_manifest(args.manifest)
+        plan = load_external_evidence_collection_plan(args.plan)
+        intake = load_external_evidence_intake(args.intake)
+        result = verify_external_evidence_intake(
+            intake,
+            plan,
+            manifest,
+            roadmap_audit,
+            root=args.root,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence intake verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        print(f"verified external evidence intake: {args.intake}")
+        print(f"intake id: {intake.get('intake_id')}")
+        print(f"evidence argument: {intake.get('evidence_argument')}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"external evidence intake verification failed: {args.intake}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
 def cmd_roadmap_evidence_verify(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
     result = verify_roadmap_evidence_chain(
@@ -23607,6 +23688,34 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_plan_verify.add_argument("roadmap_audit")
     external_evidence_plan_verify.add_argument("--root", default=".")
     external_evidence_plan_verify.set_defaults(func=cmd_external_evidence_plan_verify)
+
+    external_evidence_intake = subparsers.add_parser("external-evidence-intake", help="hash and map one collected authority artifact to a collection-plan task")
+    external_evidence_intake.add_argument("plan")
+    external_evidence_intake.add_argument("manifest")
+    external_evidence_intake.add_argument("roadmap_audit")
+    external_evidence_intake.add_argument("--root", default=".")
+    external_evidence_intake.add_argument("--task", required=True, help="task_id, task_ref, unit_id, or unit_ref from the collection plan")
+    external_evidence_intake.add_argument("--artifact", required=True, help="repository-relative collected authority artifact path")
+    external_evidence_intake.add_argument("--description", required=True)
+    external_evidence_intake.add_argument("--issuer")
+    external_evidence_intake.add_argument("--subject")
+    external_evidence_intake.add_argument("--source-uri")
+    external_evidence_intake.add_argument("--issued-at")
+    external_evidence_intake.add_argument("--expires-at")
+    external_evidence_intake.add_argument("--require-fresh", action="store_true")
+    external_evidence_intake.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to intake generated_at")
+    external_evidence_intake.add_argument("--out", default="artifacts/external-evidence-intake.json")
+    external_evidence_intake.set_defaults(func=cmd_external_evidence_intake)
+
+    external_evidence_intake_verify = subparsers.add_parser("external-evidence-intake-verify", help="verify an external-evidence intake receipt")
+    external_evidence_intake_verify.add_argument("intake")
+    external_evidence_intake_verify.add_argument("plan")
+    external_evidence_intake_verify.add_argument("manifest")
+    external_evidence_intake_verify.add_argument("roadmap_audit")
+    external_evidence_intake_verify.add_argument("--root", default=".")
+    external_evidence_intake_verify.add_argument("--require-fresh", action="store_true")
+    external_evidence_intake_verify.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to intake generated_at")
+    external_evidence_intake_verify.set_defaults(func=cmd_external_evidence_intake_verify)
 
     external_evidence_append = subparsers.add_parser("external-evidence-append", help="append a verified external-evidence manifest to an evidence chain")
     external_evidence_append.add_argument("manifest")

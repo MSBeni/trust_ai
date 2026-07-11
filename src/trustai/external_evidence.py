@@ -18,6 +18,7 @@ EXTERNAL_EVIDENCE_ENTRY_TYPE = "trustai.external_evidence_manifest.attested"
 ROADMAP_EVIDENCE_REPORT_SCHEMA = "trustai.roadmap-evidence-report/0.1"
 ROADMAP_EVIDENCE_BUNDLE_SCHEMA = "trustai.roadmap-evidence-bundle/0.1"
 EXTERNAL_EVIDENCE_COLLECTION_PLAN_SCHEMA = "trustai.external-evidence-collection-plan/0.1"
+EXTERNAL_EVIDENCE_INTAKE_SCHEMA = "trustai.external-evidence-intake/0.1"
 
 BUNDLE_SOURCE_ARTIFACT_KINDS = {
     "roadmap-audit",
@@ -146,6 +147,13 @@ class RoadmapEvidenceBundleVerification:
 
 @dataclass
 class ExternalEvidenceCollectionPlanVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class ExternalEvidenceIntakeVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -408,6 +416,146 @@ def verify_external_evidence_collection_plan(
             errors.append("collection plan body does not match source manifest and status filter")
 
     return ExternalEvidenceCollectionPlanVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
+def build_external_evidence_intake(
+    plan: dict[str, Any],
+    manifest: dict[str, Any],
+    roadmap_audit: dict[str, Any],
+    *,
+    root: str | Path,
+    task_ref: str,
+    artifact_path: str,
+    description: str,
+    issuer: str | None = None,
+    subject: str | None = None,
+    source_uri: str | None = None,
+    issued_at: str | None = None,
+    expires_at: str | None = None,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    plan_result = verify_external_evidence_collection_plan(plan, manifest, roadmap_audit, root=root)
+    if not plan_result.ok:
+        raise ValueError("invalid external evidence collection plan: " + "; ".join(plan_result.errors))
+    task = _find_collection_task(plan, task_ref)
+    if task is None:
+        raise ValueError(f"external evidence collection task not found: {task_ref}")
+    if ";" in description:
+        raise ValueError("external evidence intake description cannot contain ';' because it is rendered into a CLI evidence argument")
+
+    requirements = _reference_attested_requirements(roadmap_audit)
+    required_ids = [requirement["id"] for requirement in requirements]
+    required_authority_kinds = {
+        requirement["id"]: _allowed_authority_kinds_for_requirement(requirement)
+        for requirement in requirements
+    }
+    evidence_input = {
+        "requirement_id": task.get("requirement_id"),
+        "authority_kind": task.get("authority_kind"),
+        "path": artifact_path,
+        "description": description,
+        "issuer": issuer,
+        "subject": subject,
+        "source_uri": source_uri,
+        "issued_at": issued_at,
+        "expires_at": expires_at,
+    }
+    evidence_item = _build_evidence_item(Path(root), evidence_input, required_ids, required_authority_kinds)
+    body = {
+        "schema": EXTERNAL_EVIDENCE_INTAKE_SCHEMA,
+        "generated_at": generated_at or utc_now(),
+        "source_plan": _collection_plan_source_record(plan),
+        "source_manifest": _collection_intake_manifest_record(manifest),
+        "source_roadmap_audit": manifest.get("source_roadmap_audit"),
+        "task": _intake_task_record(task),
+        "evidence_item": evidence_item,
+        "evidence_argument": _evidence_argument(evidence_item),
+        "limitations": [
+            "This intake receipt hashes and maps one collected artifact to a collection-plan task; it does not itself satisfy roadmap completion.",
+            "Coverage is updated only after rebuilding and verifying an external evidence manifest with the emitted evidence argument.",
+            "Issuer authority and freshness remain bounded by the collected artifact and manifest verification options.",
+        ],
+    }
+    return {**body, "intake_id": content_hash(body)}
+
+
+def verify_external_evidence_intake(
+    intake: dict[str, Any],
+    plan: dict[str, Any],
+    manifest: dict[str, Any],
+    roadmap_audit: dict[str, Any],
+    *,
+    root: str | Path,
+    require_fresh: bool = False,
+    now: str | None = None,
+) -> ExternalEvidenceIntakeVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    if intake.get("schema") != EXTERNAL_EVIDENCE_INTAKE_SCHEMA:
+        errors.append(f"unsupported external evidence intake schema: {intake.get('schema')}")
+    if intake.get("intake_id") != content_hash(without_keys(intake, "intake_id")):
+        errors.append("intake_id does not match canonical intake body")
+
+    plan_result = verify_external_evidence_collection_plan(plan, manifest, roadmap_audit, root=root)
+    warnings.extend(plan_result.warnings)
+    if not plan_result.ok:
+        errors.extend(f"source plan: {error}" for error in plan_result.errors)
+
+    if intake.get("source_plan") != _collection_plan_source_record(plan):
+        errors.append("source_plan does not match supplied collection plan")
+    if intake.get("source_manifest") != _collection_intake_manifest_record(manifest):
+        errors.append("source_manifest does not match supplied external evidence manifest")
+    if intake.get("source_roadmap_audit") != manifest.get("source_roadmap_audit"):
+        errors.append("source_roadmap_audit does not match supplied manifest")
+
+    task_record = intake.get("task")
+    if not isinstance(task_record, dict):
+        errors.append("intake task must be an object")
+        task_record = {}
+    task = _find_collection_task(plan, str(task_record.get("task_id") or task_record.get("task_ref") or task_record.get("unit_ref") or ""))
+    if task is None:
+        errors.append("intake task is not present in supplied collection plan")
+    else:
+        expected_task = _intake_task_record(task)
+        if task_record != expected_task:
+            errors.append("intake task does not match supplied collection plan")
+
+    evidence_item = intake.get("evidence_item")
+    if not isinstance(evidence_item, dict):
+        errors.append("intake evidence_item must be an object")
+        evidence_item = {}
+    if task is not None:
+        if evidence_item.get("requirement_id") != task.get("requirement_id"):
+            errors.append("intake evidence requirement_id does not match task")
+        if evidence_item.get("authority_kind") != task.get("authority_kind"):
+            errors.append("intake evidence authority_kind does not match task")
+
+    requirements = _reference_attested_requirements(roadmap_audit)
+    required_authority_kinds = {
+        requirement["id"]: _allowed_authority_kinds_for_requirement(requirement)
+        for requirement in requirements
+    }
+    freshness_now = _freshness_reference(intake, now, errors)
+    _verify_evidence_item(
+        Path(root),
+        evidence_item,
+        errors,
+        warnings,
+        now=freshness_now,
+        require_fresh=require_fresh,
+        allowed_authority_kinds=required_authority_kinds.get(str(evidence_item.get("requirement_id") or ""), []),
+    )
+    try:
+        expected_evidence_argument = _evidence_argument(evidence_item)
+    except ValueError as exc:
+        expected_evidence_argument = None
+        errors.append(str(exc))
+    if expected_evidence_argument is not None and intake.get("evidence_argument") != expected_evidence_argument:
+        errors.append("evidence_argument does not match intake evidence item")
+
+    return ExternalEvidenceIntakeVerification(ok=not errors, errors=errors, warnings=warnings)
+
 
 def verify_roadmap_evidence_chain(
     chain: EvidenceChain,
@@ -870,6 +1018,16 @@ def write_external_evidence_collection_plan(path: str | Path, plan: dict[str, An
 
 
 def load_external_evidence_collection_plan(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def write_external_evidence_intake(path: str | Path, intake: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(intake, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_external_evidence_intake(path: str | Path) -> dict[str, Any]:
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
@@ -1859,6 +2017,73 @@ def _count_tasks_by(tasks: list[dict[str, Any]], key: str) -> dict[str, int]:
         counts[value] = counts.get(value, 0) + 1
     return {value: counts[value] for value in sorted(counts)}
 
+
+def _find_collection_task(plan: dict[str, Any], task_ref: str) -> dict[str, Any] | None:
+    tasks = plan.get("tasks", [])
+    if not isinstance(tasks, list):
+        return None
+    for task in tasks:
+        if not isinstance(task, dict):
+            continue
+        refs = {
+            str(task.get("task_id") or ""),
+            str(task.get("task_ref") or ""),
+            str(task.get("unit_id") or ""),
+            str(task.get("unit_ref") or ""),
+        }
+        if task_ref in refs:
+            return task
+    return None
+
+
+def _collection_plan_source_record(plan: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "plan_id": plan.get("plan_id"),
+        "plan_hash": content_hash(plan),
+        "status_filter": plan.get("status_filter"),
+        "source_manifest": plan.get("source_manifest"),
+    }
+
+
+def _collection_intake_manifest_record(manifest: dict[str, Any]) -> dict[str, Any]:
+    summary = manifest.get("summary", {})
+    if not isinstance(summary, dict):
+        summary = {}
+    return {
+        "manifest_id": manifest.get("manifest_id"),
+        "manifest_hash": content_hash(manifest),
+        "manifest_ref": manifest.get("manifest_ref"),
+        "status": summary.get("status"),
+        "required_authority_kind_count": summary.get("required_authority_kind_count", 0),
+        "covered_authority_kind_count": summary.get("covered_authority_kind_count", 0),
+        "missing_authority_kind_count": summary.get("missing_authority_kind_count", 0),
+    }
+
+
+def _intake_task_record(task: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "task_id": task.get("task_id"),
+        "task_ref": task.get("task_ref"),
+        "unit_id": task.get("unit_id"),
+        "unit_ref": task.get("unit_ref"),
+        "requirement_id": task.get("requirement_id"),
+        "authority_kind": task.get("authority_kind"),
+        "coverage_status": task.get("coverage_status"),
+        "suggested_artifact_path": task.get("suggested_artifact_path"),
+    }
+
+
+def _evidence_argument(item: dict[str, Any]) -> str:
+    description = str(item.get("description") or "")
+    if ";" in description:
+        raise ValueError("external evidence description cannot contain ';'")
+    metadata = []
+    for key in ("issuer", "subject", "source_uri", "issued_at", "expires_at"):
+        value = item.get(key)
+        if value:
+            metadata.append(f"{key}={value}")
+    suffix = ";" + ";".join(metadata) if metadata else ""
+    return f"{item.get('requirement_id')},{item.get('authority_kind')},{item.get('path')},{description}{suffix}"
 
 def _file_ref(root: Path, path: str | Path) -> dict[str, Any]:
     relative = Path(path).as_posix()

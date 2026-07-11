@@ -108,6 +108,30 @@ A collection-plan verifier MUST recompute the source manifest verification,
 rebuild the plan using the same `status_filter` and `generated_at`, recompute
 `plan_id`, and reject stale or edited task bodies.
 
+## External Evidence Intake Receipt
+
+`external-evidence-intake` emits `trustai.external-evidence-intake/0.1`, a
+pre-manifest receipt for one collected authority artifact. It binds a collected
+file to a collection-plan task, records the file hash, validates freshness
+metadata when requested, and emits the exact evidence argument that can be used
+with `external-evidence-manifest`.
+
+Required fields:
+
+- `intake_id`: canonical hash of the intake body without `intake_id`.
+- `source_plan`: plan ID, plan hash, status filter, and source manifest binding.
+- `source_manifest`: manifest ID/hash/ref and authority-kind coverage counts.
+- `source_roadmap_audit`: the roadmap-audit binding from the manifest.
+- `task`: the selected collection task ID/ref/unit/requirement/authority binding.
+- `evidence_item`: the manifest-ready evidence item with artifact path, SHA-256,
+  accepted authority kinds, issuer metadata, and freshness window.
+- `evidence_argument`: the exact CLI argument for a later manifest rebuild.
+
+An intake verifier MUST verify the supplied collection plan against the manifest
+and roadmap audit, recompute the source bindings, confirm the selected task still
+exists, re-hash the artifact, verify task requirement/authority alignment, check
+freshness when requested, and reject stale or edited intake receipts.
+
 ## Evidence Chain Entry
 
 A verified manifest can be appended to an evidence chain as
