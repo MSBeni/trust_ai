@@ -20,6 +20,7 @@ from trustai.trust_network_authority import (
 )
 from trustai.trust_network_service import write_trust_network_service_attestation
 from trustai.trust_network_worker import write_trust_network_worker_receipt
+from trustai.trust_network_worker_bundle import build_trust_network_worker_bundle
 
 import tests.test_trust_network_worker as worker_test_helpers
 
@@ -36,10 +37,67 @@ class TrustNetworkAuthorityTests(unittest.TestCase):
         helper = worker_test_helpers.TrustNetworkWorkerTests()
         sources = helper._sources(tmp)
         sources["worker"] = helper._receipt(sources)
+        paths = {
+            "worker_receipt": tmp / "trust-network-worker.json",
+            "service_attestation": tmp / "trust-network-service.json",
+            "registry_receipt": tmp / "trust-network-registry.json",
+            "trust_network_manifest": tmp / "trust-network-manifest.json",
+            "vendor_identity_receipt": tmp / "vendor-identity.json",
+            "identity_provider_attestation": tmp / "identity-provider-attestation.json",
+            "identity_payload": tmp / "identity-payload.json",
+            "procurement_receipt": tmp / "procurement.json",
+            "procurement_integration_receipt": tmp / "procurement-integration.json",
+            "proof_packs": [tmp / "proof-pack.json"],
+            "registry_status_receipt": tmp / "registry-status.json",
+            "marketplace_catalog": tmp / "marketplace-catalog.json",
+            "marketplace_distribution": tmp / "marketplace-distribution.json",
+            "marketplace_author_governance": tmp / "marketplace-author-governance.json",
+            "marketplace_settlement": tmp / "marketplace-settlement.json",
+        }
+        _write_json(paths["worker_receipt"], sources["worker"])
+        _write_json(paths["service_attestation"], sources["service"])
+        _write_json(paths["registry_receipt"], sources["registry"])
+        _write_json(paths["trust_network_manifest"], sources["manifest"])
+        _write_json(paths["vendor_identity_receipt"], sources["vendor"])
+        _write_json(paths["identity_provider_attestation"], sources["identity_attestation"])
+        _write_json(paths["identity_payload"], sources["identity_payload"])
+        _write_json(paths["procurement_receipt"], sources["procurement"])
+        _write_json(paths["procurement_integration_receipt"], sources["integration"])
+        _write_json(paths["proof_packs"][0], sources["pack"])
+        _write_json(paths["registry_status_receipt"], sources["status"])
+        _write_json(paths["marketplace_catalog"], sources["catalog"])
+        _write_json(paths["marketplace_distribution"], sources["distribution"])
+        _write_json(paths["marketplace_author_governance"], sources["author"])
+        _write_json(paths["marketplace_settlement"], sources["settlement"])
+        sources["worker_bundle"] = build_trust_network_worker_bundle(
+            sources["worker"],
+            sources["service"],
+            sources["registry"],
+            trust_network_manifest=sources["manifest"],
+            vendor_identity_receipt=sources["vendor"],
+            identity_provider_attestation=sources["identity_attestation"],
+            identity_payload=sources["identity_payload"],
+            procurement_receipt=sources["procurement"],
+            procurement_integration_receipt=sources["integration"],
+            proof_packs=[sources["pack"]],
+            registry_status_receipt=sources["status"],
+            marketplace_catalog=sources["catalog"],
+            marketplace_distribution=sources["distribution"],
+            frontend_bundle_path=sources["frontend_bundle_path"],
+            marketplace_author_governance=sources["author"],
+            marketplace_settlement=sources["settlement"],
+            artifact_paths=paths,
+            root=ROOT,
+            mode="procurement-review",
+            environment="aitrade-prod",
+            reviewer_ref="oidc:buyer.example/procurement-reviewer",
+            generated_at="2026-07-12T04:00:00Z",
+        )
         return sources
 
     def _source_kwargs(self, sources: dict) -> dict:
         return {
+            "worker_bundles": [sources["worker_bundle"]],
             "registry_receipt": sources["registry"],
             "trust_network_manifest": sources["manifest"],
             "vendor_identity_receipt": sources["vendor"],
@@ -114,9 +172,11 @@ class TrustNetworkAuthorityTests(unittest.TestCase):
             )
             self.assertEqual(entry["entry_type"], TRUST_NETWORK_AUTHORITY_ENTRY_TYPE)
             self.assertEqual(entry["payload"]["dossier_id"], dossier["dossier_id"])
-            self.assertEqual(entry["payload"]["control_summary"], {"deferred": 1, "passed": 5})
+            self.assertEqual(entry["payload"]["control_summary"], {"deferred": 1, "passed": 6})
             self.assertEqual(entry["payload"]["service_attestation_binding"]["attestation_id"], sources["service"]["attestation_id"])
             self.assertEqual(entry["payload"]["worker_receipt_bindings"][0]["worker_operation_id"], sources["worker"]["worker_operation_id"])
+            self.assertEqual(entry["payload"]["worker_bundle_bindings"][0]["bundle_id"], sources["worker_bundle"]["bundle_id"])
+            self.assertTrue(entry["payload"]["worker_bundle_bindings"][0]["frontend_bundle_replayed"])
 
     def test_trust_network_authority_detects_worker_tamper(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -132,6 +192,23 @@ class TrustNetworkAuthorityTests(unittest.TestCase):
             )
             self.assertFalse(result.ok)
             self.assertTrue(any("worker receipt binding" in error for error in result.errors))
+
+    def test_trust_network_authority_detects_worker_bundle_tamper(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            sources = self._sources(Path(tmp_dir))
+            dossier = self._dossier(sources)
+            tampered_sources = dict(sources)
+            tampered_bundle = copy.deepcopy(sources["worker_bundle"])
+            tampered_bundle["source"]["worker_operation_id"] = "tampered-worker-operation"
+            tampered_sources["worker_bundle"] = tampered_bundle
+            result = verify_trust_network_authority_dossier(
+                dossier,
+                service_attestation=sources["service"],
+                worker_receipts=[sources["worker"]],
+                **self._source_kwargs(tampered_sources),
+            )
+            self.assertFalse(result.ok)
+            self.assertTrue(any("worker_bundle_bindings" in error or "worker bundle source" in error for error in result.errors), result.errors)
 
     def test_trust_network_authority_strict_freshness_rejects_missing_window(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -202,6 +279,7 @@ class TrustNetworkAuthorityTests(unittest.TestCase):
                 "author": tmp / "author-governance.json",
                 "settlement": tmp / "settlement.json",
                 "worker": tmp / "worker.json",
+                "worker_bundle": tmp / "trust-network-worker-bundle.json",
                 "dossier": tmp / "authority.json",
                 "entry": tmp / "authority-entry.json",
                 "chain": tmp / "chain.json",
@@ -210,12 +288,14 @@ class TrustNetworkAuthorityTests(unittest.TestCase):
                 _write_json(paths[key], sources[key])
             write_trust_network_service_attestation(paths["service"], sources["service"])
             write_trust_network_worker_receipt(paths["worker"], sources["worker"])
+            _write_json(paths["worker_bundle"], sources["worker_bundle"])
 
             evidence = "hosted-registry-marketplace-worker-fleet,hosted-service,trust-network:hosted/workers,sha256:trust-network-hosted-worker-fleet,Hosted trust-network worker fleet export;issuer=TrustAI Hosted Ops;subject=aitrade-prod trust-network;source_uri=https://trust-network.example/audit/workers;issued_at=2026-07-14T06:10:00Z;expires_at=2026-07-21T06:10:00Z"
             source_args = [
                 str(paths["registry"]),
                 "--service-attestation", str(paths["service"]),
                 "--worker", str(paths["worker"]),
+                "--worker-bundle", str(paths["worker_bundle"]),
                 "--manifest", str(paths["manifest"]),
                 "--vendor-identity", str(paths["vendor"]),
                 "--identity-attestation", str(paths["identity_attestation"]),

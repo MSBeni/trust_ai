@@ -17618,12 +17618,16 @@ def _load_trust_network_authority_sources(args: argparse.Namespace) -> dict[str,
     workers = [load_trust_network_worker_receipt(path) for path in (getattr(args, "worker", None) or [])]
     if not workers:
         raise ValueError("at least one --worker receipt is required")
+    worker_bundles = [load_trust_network_worker_bundle(path) for path in (getattr(args, "worker_bundle", None) or [])]
     sources["worker_receipts"] = workers
+    if worker_bundles:
+        sources["worker_bundles"] = worker_bundles
     return sources
 
 
 def _trust_network_authority_source_kwargs(sources: dict[str, Any], args: argparse.Namespace) -> dict[str, Any]:
     return {
+        "worker_bundles": sources.get("worker_bundles"),
         "registry_receipt": sources["registry"],
         "trust_network_manifest": sources["manifest"],
         "vendor_identity_receipt": sources["vendor"],
@@ -17682,6 +17686,7 @@ def cmd_trust_network_authority(args: argparse.Namespace) -> int:
     print(f"dossier id: {dossier['dossier_id']}")
     print(f"service attestation id: {dossier['service_attestation_binding']['attestation_id']}")
     print(f"worker receipts: {len(dossier['worker_receipt_bindings'])}")
+    print(f"worker bundles: {len(dossier.get('worker_bundle_bindings', []))}")
     print(f"covered requirements: {result.covered_count}/{result.required_count}")
     for warning in result.warnings:
         print(f"warning: {warning}")
@@ -24833,6 +24838,7 @@ def build_parser() -> argparse.ArgumentParser:
             parser.add_argument("dossier")
         _add_trust_network_worker_sources(parser)
         parser.add_argument("--worker", action="append", required=True)
+        parser.add_argument("--worker-bundle", action="append", help="trust-network worker review bundle; repeatable")
         parser.add_argument("--source-now", help="RFC3339 verification time for replaying trust-network source freshness checks")
 
     def _add_trust_network_authority_fields(parser: argparse.ArgumentParser) -> None:

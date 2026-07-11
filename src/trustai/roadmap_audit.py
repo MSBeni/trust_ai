@@ -681,7 +681,7 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "tests/test_trust_network_authority.py",
         ],
         "external_authority": [
-            "Signed trust-network service attestations, worker receipts, worker review bundles, and production authority dossiers cover local/reference proof, but live hosted services, provider-owned identity events, marketplace payouts, revocation propagation, callbacks, and procurement propagation remain external evidence until fresh provider-owned exports are supplied.",
+            "Signed trust-network service attestations, worker receipts, worker review bundles, and production authority dossiers cover local/reference proof; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, marketplace asset replay, frontend replay, and service/worker linkage before external trust-network authority evidence is accepted. Live hosted services, provider-owned identity events, marketplace payouts, revocation propagation, callbacks, and procurement propagation remain external evidence until fresh provider-owned exports are supplied.",
         ],
     },
 )
