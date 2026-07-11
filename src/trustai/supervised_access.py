@@ -11,6 +11,7 @@ from .chain import EvidenceChain
 from .crypto import sign_value, verify_value
 from .insurer import build_insurer_telemetry
 from .regulator import verify_regulator_disclosure
+from .regulator_view import render_regulator_html
 from .verifier import verify_proof_pack
 
 SUPERVISED_ACCESS_SCHEMA = "trustai.supervised-access/0.1"
@@ -177,6 +178,14 @@ def verify_supervised_access_receipt(
         insurer_telemetry_path,
         errors,
         warnings,
+    )
+    _verify_cross_source_bindings(
+        proof_pack=proof_pack,
+        disclosure=disclosure,
+        view_path=view_path,
+        insurer_telemetry=insurer_telemetry,
+        errors=errors,
+        key=key,
     )
 
     expected_session_id = content_hash(
@@ -403,6 +412,62 @@ def _artifact_ref(artifact: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _verify_cross_source_bindings(
+    *,
+    proof_pack: dict[str, Any] | None,
+    disclosure: dict[str, Any] | None,
+    view_path: str | Path | None,
+    insurer_telemetry: dict[str, Any] | None,
+    errors: list[str],
+    key: str | None,
+) -> None:
+    if proof_pack is not None and disclosure is not None:
+        source = disclosure.get("source_proof_pack", {})
+        if not isinstance(source, dict):
+            errors.append("regulator disclosure source proof pack summary must be an object")
+        else:
+            decision = proof_pack.get("gate_decision", {})
+            if not isinstance(decision, dict):
+                decision = {}
+            expected = {
+                "pack_id": proof_pack.get("pack_id"),
+                "contract_hash": proof_pack.get("contract", {}).get("hash"),
+                "contract_id": decision.get("contract_id"),
+                "agent": decision.get("agent", {}),
+                "gate_outcome": decision.get("outcome"),
+                "gate_decision_hash": content_hash(decision) if decision else None,
+            }
+            for field, expected_value in expected.items():
+                if source.get(field) != expected_value:
+                    errors.append(f"regulator disclosure source {field} mismatch")
+
+    if disclosure is not None and view_path is not None:
+        verification = verify_regulator_disclosure(disclosure, key=key)
+        expected_html = render_regulator_html(disclosure, verification)
+        actual_html = Path(view_path).read_text(encoding="utf-8")
+        if actual_html != expected_html:
+            errors.append("static view does not match regulator disclosure render")
+
+    if proof_pack is not None and insurer_telemetry is not None:
+        decision = proof_pack.get("gate_decision", {})
+        if not isinstance(decision, dict):
+            decision = {}
+        signals = insurer_telemetry.get("signals", {})
+        if not isinstance(signals, dict):
+            signals = {}
+        expected = {
+            "pack_id": proof_pack.get("pack_id"),
+            "contract_id": decision.get("contract_id"),
+            "agent": decision.get("agent", {}),
+            "gate_outcome": decision.get("outcome"),
+        }
+        for field, expected_value in expected.items():
+            if insurer_telemetry.get(field) != expected_value:
+                errors.append(f"insurer telemetry {field} mismatch")
+        if signals.get("chain_root") != proof_pack.get("chain", {}).get("tree", {}).get("root"):
+            errors.append("insurer telemetry chain_root mismatch")
+
+
 def _verify_supplied_proof_pack(
     artifact: dict[str, Any] | None,
     proof_pack: dict[str, Any] | None,
@@ -484,6 +549,8 @@ def _compare_artifact(
     if actual is None:
         errors.append(f"receipt missing artifact: {expected['name']}")
         return
-    for field in ("name", "artifact_type", "content_hash", "sha256", "size_bytes", "pack_id", "disclosure_id", "consent_id"):
-        if field in expected and expected.get(field) != actual.get(field):
+    for field, expected_value in expected.items():
+        if field == "path":
+            continue
+        if expected_value != actual.get(field):
             errors.append(f"artifact {expected['name']} {field} mismatch")

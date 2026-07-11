@@ -56,11 +56,17 @@ Supported artifact records:
 - valid issued/expiry time window, with expiry surfaced as a warning when
   verifying after `expires_at`;
 - required artifact types for the selected audience;
+- source artifact hash and recorded summary-field binding when source files are
+  supplied;
 - optional source proof pack validity when `--pack` is supplied;
 - optional regulator disclosure validity when `--disclosure` is supplied;
+- regulator-disclosure source proof-pack binding to the supplied proof pack;
 - optional static HTML view hash when `--view` is supplied;
+- static regulator view replay against the supplied disclosure render;
 - optional insurer telemetry schema and active consent when
   `--insurer-telemetry` is supplied;
+- insurer telemetry pack id, contract id, agent, gate outcome, and chain-root
+  binding to the supplied proof pack;
 - `session_id` binding to audience, reviewer, expiry, and artifact references.
 
 `trustai supervised-access-append` first verifies the receipt, then appends
