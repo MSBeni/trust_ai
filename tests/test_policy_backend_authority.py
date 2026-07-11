@@ -126,6 +126,16 @@ class PolicyBackendAuthorityTests(unittest.TestCase):
             self.assertTrue(chain.verify_all().ok)
             self.assertTrue(sources["chain"].verify_all().ok)
 
+    def test_policy_backend_authority_requires_provider_bundle_replay(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            _, _, _, _, dossier = self._dossier(tmp)
+
+            result = verify_policy_backend_authority_dossier(dossier)
+
+            self.assertFalse(result.ok)
+            self.assertTrue(any("provider bundle is required" in error for error in result.errors), result.errors)
+
     def test_policy_backend_authority_detects_bundle_tamper(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)

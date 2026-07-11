@@ -531,7 +531,7 @@ def _verify_provider_bundle_binding(
         if binding.get(field) in (None, "", []):
             errors.append(f"policy backend authority provider_bundle_binding.{field} is required")
     if provider_bundle is None:
-        warnings.append("policy backend authority provider bundle was not supplied; provider bundle source was not replayed")
+        errors.append("policy backend authority provider bundle is required for verification")
         return
     expected = _provider_bundle_binding(provider_bundle)
     if binding != expected:
