@@ -7,7 +7,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.framework_adapter_matrix import (
     build_framework_adapter_matrix,
     load_framework_adapter_matrix_source,
@@ -107,6 +109,14 @@ class FrameworkRuntimeAuditTests(unittest.TestCase):
         )
         return receipt, audit_export, operation, trace, release, matrix
 
+    def _resign_receipt(self, receipt: dict) -> None:
+        body = without_keys(receipt, "runtime_audit_id", "signatures")
+        runtime_audit_id = content_hash(body)
+        receipt["runtime_audit_id"] = runtime_audit_id
+        receipt["signatures"] = [
+            sign_value({"runtime_audit_id": runtime_audit_id, "framework_runtime_audit": body})
+        ]
+
     def test_framework_runtime_audit_verifies_and_appends(self):
         receipt, audit_export, operation, trace, release, matrix = self._receipt()
         result = verify_framework_runtime_audit_receipt(
@@ -201,6 +211,44 @@ class FrameworkRuntimeAuditTests(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertIn("framework runtime audit credential must be a redacted reference", result.errors)
         self.assertTrue(any("secret-like field" in error for error in result.errors))
+
+    def test_framework_runtime_audit_requires_source_replay_artifacts_without_sources(self):
+        receipt, *_ = self._receipt()
+
+        result = verify_framework_runtime_audit_receipt(receipt)
+
+        self.assertFalse(result.ok)
+        self.assertTrue(any("operation source artifacts are required for verification" in error for error in result.errors), result.errors)
+        self.assertIn("framework runtime audit export is required for verification", result.errors)
+
+    def test_framework_runtime_audit_requires_complete_signed_summaries(self):
+        receipt, *_ = self._receipt()
+        cases = [
+            ("missing_operation_binding_key", "operation_binding.runtime_process_ref is required"),
+            ("missing_operation_trace_roots", "operation_binding.trace_roots is required"),
+            ("invalid_operation_trace_roots", "operation_binding.trace_roots must be an array"),
+            ("missing_audit_export_key", "audit_export.next_cursor_ref is required"),
+            ("missing_matched_event_key", "matched_event.event_kind is required"),
+        ]
+        for case_name, expected_error in cases:
+            with self.subTest(case=case_name):
+                tampered = copy.deepcopy(receipt)
+                if case_name == "missing_operation_binding_key":
+                    tampered["operation_binding"].pop("runtime_process_ref")
+                elif case_name == "missing_operation_trace_roots":
+                    tampered["operation_binding"]["trace_roots"] = []
+                elif case_name == "invalid_operation_trace_roots":
+                    tampered["operation_binding"]["trace_roots"] = "not-a-list"
+                elif case_name == "missing_audit_export_key":
+                    tampered["audit_export"].pop("next_cursor_ref")
+                else:
+                    tampered["matched_event"].pop("event_kind")
+                self._resign_receipt(tampered)
+
+                result = verify_framework_runtime_audit_receipt(tampered)
+
+                self.assertFalse(result.ok)
+                self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
 
     def test_cli_framework_runtime_audit_round_trip(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

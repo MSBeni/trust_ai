@@ -15,6 +15,77 @@ FRAMEWORK_RUNTIME_AUDIT_SCHEMA = "trustai.framework-runtime-audit/0.1"
 FRAMEWORK_RUNTIME_AUDIT_ENTRY_TYPE = "framework_runtime.audit_exported"
 FRAMEWORK_RUNTIME_AUDIT_MODES = {"local-export", "provider-export", "production-export"}
 SECRET_KEY_MARKERS = ("token", "secret", "private_key", "client_secret", "password", "credential")
+OPERATION_BINDING_EXPECTED_FIELDS = (
+    "operation_id",
+    "operation_hash",
+    "operation_ref",
+    "operation_mode",
+    "operation_environment",
+    "captured_at",
+    "framework",
+    "runtime_package",
+    "runtime_version",
+    "runtime_instance_ref",
+    "runtime_process_ref",
+    "collector_hook_ref",
+    "hook_release_hash",
+    "release_id",
+    "release_hash",
+    "matrix_id",
+    "matrix_hash",
+    "trace_id",
+    "source_trace_hash",
+    "event_count",
+    "event_root",
+    "trace_roots",
+    "operation_audit_log_ref",
+    "operation_audit_log_root",
+)
+OPERATION_BINDING_REQUIRED_FIELDS = tuple(
+    field for field in OPERATION_BINDING_EXPECTED_FIELDS if field != "runtime_process_ref"
+)
+AUDIT_EXPORT_EXPECTED_FIELDS = (
+    "export_ref",
+    "schema",
+    "provider",
+    "environment",
+    "runtime_instance_ref",
+    "runtime_process_ref",
+    "audit_log_ref",
+    "audit_log_root",
+    "window_start",
+    "window_end",
+    "cursor_ref",
+    "next_cursor_ref",
+    "hash",
+    "event_count",
+    "event_root",
+)
+AUDIT_EXPORT_REQUIRED_FIELDS = (
+    "export_ref",
+    "schema",
+    "provider",
+    "environment",
+    "runtime_instance_ref",
+    "audit_log_ref",
+    "audit_log_root",
+    "window_start",
+    "window_end",
+    "hash",
+    "event_count",
+    "event_root",
+)
+MATCHED_EVENT_EXPECTED_FIELDS = (
+    "event_id",
+    "event_kind",
+    "timestamp",
+    "event_hash",
+    "framework",
+    "trace_id",
+    "operation_ref",
+    "runtime_instance_ref",
+    "collector_hook_ref",
+)
 
 
 @dataclass
@@ -329,11 +400,28 @@ def _verify_operation_binding(
     errors: list[str],
     warnings: list[str],
 ) -> None:
-    for field in ("operation_id", "operation_hash", "operation_ref", "framework", "runtime_instance_ref", "trace_id", "event_root"):
-        if not binding.get(field):
+    for field in OPERATION_BINDING_EXPECTED_FIELDS:
+        if field not in binding:
             errors.append(f"framework runtime audit operation_binding.{field} is required")
-    if operation is None or trace_payload is None or release is None or matrix is None:
-        warnings.append("framework runtime audit operation/trace/release/matrix replay was not fully supplied")
+    for field in OPERATION_BINDING_REQUIRED_FIELDS:
+        if binding.get(field) in (None, "", [], {}):
+            errors.append(f"framework runtime audit operation_binding.{field} is required")
+    if "trace_roots" in binding and not isinstance(binding.get("trace_roots"), list):
+        errors.append("framework runtime audit operation_binding.trace_roots must be an array")
+    if "event_count" in binding and (not isinstance(binding.get("event_count"), int) or binding.get("event_count") < 1):
+        errors.append("framework runtime audit operation_binding.event_count must be a positive integer")
+    missing_sources = [
+        source_type
+        for source_type, value in (
+            ("framework-hook-operation", operation),
+            ("framework-trace", trace_payload),
+            ("framework-hook-release", release),
+            ("framework-adapter-matrix", matrix),
+        )
+        if value is None
+    ]
+    if missing_sources:
+        errors.append("framework runtime audit operation source artifacts are required for verification: " + ", ".join(missing_sources))
         return
     result = verify_framework_hook_operation(operation, trace_payload, release, matrix, root=root, key=key)
     if not result.ok:
@@ -354,9 +442,14 @@ def _verify_audit_export_binding(
     if not isinstance(record, dict):
         errors.append("framework runtime audit audit_export must be an object")
         record = {}
-    for field in ("audit_log_ref", "audit_log_root", "window_start", "window_end", "hash", "event_count", "event_root"):
-        if not record.get(field):
+    for field in AUDIT_EXPORT_EXPECTED_FIELDS:
+        if field not in record:
             errors.append(f"framework runtime audit audit_export.{field} is required")
+    for field in AUDIT_EXPORT_REQUIRED_FIELDS:
+        if record.get(field) in (None, "", [], {}):
+            errors.append(f"framework runtime audit audit_export.{field} is required")
+    if "event_count" in record and (not isinstance(record.get("event_count"), int) or record.get("event_count") < 1):
+        errors.append("framework runtime audit audit_export.event_count must be a positive integer")
     try:
         start = parse_rfc3339(str(record.get("window_start") or ""))
         end = parse_rfc3339(str(record.get("window_end") or ""))
@@ -367,8 +460,9 @@ def _verify_audit_export_binding(
         start = end = None
     if not _is_hash_ref(str(record.get("audit_log_root") or "")):
         errors.append("framework runtime audit audit_log_root must be a sha256 reference")
+    _verify_matched_event_summary(receipt.get("matched_event"), errors)
     if audit_export is None:
-        warnings.append("framework runtime audit export was not supplied; audit export hash and event root were not replayed")
+        errors.append("framework runtime audit export is required for verification")
         return
     try:
         events = _normalize_audit_events(audit_export)
@@ -433,6 +527,25 @@ def _verify_audit_export_binding(
             _validate_event_timestamp(matched_event, start, end)
     except ValueError as exc:
         errors.append(str(exc))
+
+
+def _verify_matched_event_summary(value: Any, errors: list[str]) -> None:
+    if not isinstance(value, dict):
+        errors.append("framework runtime audit matched_event must be an object")
+        return
+    for field in MATCHED_EVENT_EXPECTED_FIELDS:
+        if field not in value:
+            errors.append(f"framework runtime audit matched_event.{field} is required")
+    for field in MATCHED_EVENT_EXPECTED_FIELDS:
+        if value.get(field) in (None, "", [], {}):
+            errors.append(f"framework runtime audit matched_event.{field} is required")
+    if value.get("event_hash") and not _is_hash_ref(str(value.get("event_hash"))):
+        errors.append("framework runtime audit matched_event.event_hash must be a sha256 reference")
+    if value.get("timestamp"):
+        try:
+            parse_rfc3339(str(value.get("timestamp")))
+        except ValueError as exc:
+            errors.append(f"framework runtime audit matched_event.timestamp invalid: {exc}")
 
 
 def _verify_provider_exchange(value: Any, errors: list[str]) -> None:

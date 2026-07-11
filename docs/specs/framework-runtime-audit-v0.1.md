@@ -42,6 +42,13 @@ operation ID, runtime instance ref, and collector hook ref. Optional event
 fields such as hook release hash, source trace hash, event root, runtime process
 ref, and operation audit-log ref must match the operation binding when present.
 
+Offline verification is fail-closed. A runtime audit receipt must include
+complete operation binding, audit export, and matched-event summaries, and the
+verifier must reject signed receipts unless the hook operation, source trace,
+hook release, adapter matrix, and provider audit export are all supplied for
+replay. A valid detached signature over partial summaries is not enough to prove
+runtime/provider audit authority.
+
 `framework-runtime-audit-append` requires the receipt, audit export, hook
 operation, source trace, hook release, and adapter matrix. The appended evidence
 chain entry records only hash-bound summary metadata.
