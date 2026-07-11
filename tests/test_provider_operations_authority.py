@@ -7,7 +7,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.provider_operations_authority import (
     PRODUCTION_AUTHORITY_REQUIREMENT_IDS,
     PROVIDER_OPERATIONS_AUTHORITY_ENTRY_TYPE,
@@ -102,6 +104,23 @@ class ProviderOperationsAuthorityTests(unittest.TestCase):
 
         self.assertFalse(result.ok)
         self.assertTrue(any("service_attestation_binding does not match" in error for error in result.errors), result.errors)
+
+    def test_provider_operations_authority_requires_complete_binding_without_source(self):
+        _, _, dossier = self._dossier()
+        tampered = copy.deepcopy(dossier)
+        tampered["service_attestation_binding"].pop("source_schemas")
+        body = without_keys(tampered, "dossier_id", "signatures")
+        dossier_id = content_hash(body)
+        tampered["dossier_id"] = dossier_id
+        tampered["signatures"] = [sign_value({"dossier_id": dossier_id, "provider_operations_authority": body})]
+
+        result = verify_provider_operations_authority_dossier(tampered)
+
+        self.assertFalse(result.ok)
+        self.assertTrue(
+            any("service_attestation_binding.source_schemas is required" in error for error in result.errors),
+            result.errors,
+        )
 
     def test_provider_operations_authority_requires_freshness_when_strict(self):
         evidence = [dict(self._authority_evidence()[0])]

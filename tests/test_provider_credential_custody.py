@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from test_provider_audit_worker import (
+from tests.test_provider_audit_worker import (
     WEBHOOK_SECRET,
     _audit_log,
     _correlation,

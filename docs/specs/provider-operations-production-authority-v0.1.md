@@ -57,6 +57,13 @@ external proof of continuously operated provider infrastructure. The schema is
 9. `production-dossier` mode is rejected unless every production authority
    requirement is covered.
 
+If the provider operations service source is omitted, verification may warn that
+source hashes were not replayed, but it still rejects incomplete signed service
+bindings with missing attestation schemas, source schema/type lists, service
+replica details, ingress/worker/storage/vault/KMS refs, scheduler/lease/checkpoint
+refs, security/network/egress/rate-limit controls, audit refs, retention,
+actor/credential refs, or evidence refs.
+
 ## CLI
 
 ```powershell
