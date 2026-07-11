@@ -1,8 +1,9 @@
 # Policy Backend Production Authority Dossier v0.1
 
 Policy backend production authority dossiers bind a verified policy backend
-provider export review bundle to an explicit external-authority checklist for
-OPA/Cedar production operation. They are intended for auditors, insurers,
+provider export review bundle, plus optional independently verified service
+review bundles, to an explicit external-authority checklist for OPA/Cedar
+production operation. They are intended for auditors, insurers,
 regulators, model-risk teams, and customer security reviewers who need to see
 which live authority categories are covered, fresh, missing, or intentionally
 deferred. The schema is
@@ -19,6 +20,10 @@ deferred. The schema is
   service attestation id, enforcement id, backend, engine, endpoint, decision
   hash, decision-log root, audit-log root, source artifact roots, provider
   record roots, and policy-engine replay status.
+- `service_bundle_bindings`: optional service review bundle ids/hashes,
+  service attestation and enforcement hashes, backend, engine, endpoint,
+  policy/action/decision bindings, decision and audit roots, embedded source
+  artifact roots, and policy-engine replay status.
 - `required_production_authority`: the v0.1 checklist for continuously
   operated OPA/Cedar backend fleets, scheduler/queue/lease exports, decision
   and audit retention, credential custody, KMS/HSM control, mTLS/authz,
@@ -29,9 +34,9 @@ deferred. The schema is
   issued time, expiry time, and deterministic `evidence_id`.
 - `summary`: required, covered, missing, evidence, and freshness-window counts
   plus covered and missing requirement ids.
-- `controls`: provider bundle replay, bundle binding, authority evidence
-  manifesting, freshness-window tracking, complete live authority status, and
-  production claim limiting.
+- `controls`: provider bundle replay, provider bundle binding, optional service
+  review bundle binding, authority evidence manifesting, freshness-window
+  tracking, complete live authority status, and production claim limiting.
 - `dossier_id` and `signatures`: canonical dossier hash and detached
   signatures.
 
@@ -43,32 +48,37 @@ deferred. The schema is
 2. Supported mode, RFC 3339 generation timestamp, and required refs.
 3. Provider bundle binding presence and, when `--provider-bundle` is supplied,
    exact replay through `policy-backend-provider-export-bundle-verify`.
-4. The required production authority checklist exactly matches v0.1.
-5. Every authority evidence item uses a known requirement id, accepted
+4. Optional service bundle bindings and, when `--service-bundle` is supplied,
+   exact replay through `policy-backend-service-bundle-verify` plus linkage to
+   the provider bundle service attestation, enforcement, backend, endpoint,
+   engine, and decision hash.
+5. The required production authority checklist exactly matches v0.1.
+6. Every authority evidence item uses a known requirement id, accepted
    authority kind, non-empty reference and description, and `sha256:` hash.
-6. Evidence ids, summary, controls, freshness metadata, and redacted
+7. Evidence ids, summary, controls, freshness metadata, and redacted
    secret-like fields are deterministic and valid.
-7. `--require-complete` turns missing checklist coverage into a verification
+8. `--require-complete` turns missing checklist coverage into a verification
    error.
-8. `--require-fresh` turns missing, not-yet-issued, or expired freshness
+9. `--require-fresh` turns missing, not-yet-issued, or expired freshness
    windows into verification errors.
-9. `production-dossier` mode is rejected unless every production authority
+10. `production-dossier` mode is rejected unless every production authority
    requirement is covered.
 
 ## CLI
 
 ```powershell
-python -m trustai policy-backend-authority artifacts/policy-backend-provider-export-bundle.json --environment aitrade-prod --dossier-ref dossier:policy-backend-authority/lg-trace-001 --authority-ref authority:policy-backend/aitrade-prod --producer-ref oidc:trustai.example/policy-backend-authority-worker --authority-evidence "opa-cedar-backend-fleet,hosted-service,service:policy-backend-fleet/aitrade-prod,sha256:policy-backend-fleet-authority,Hosted OPA/Cedar backend fleet deployment export;issuer=TrustAI Cloud;subject=aitrade-prod policy backend fleet;source_uri=https://ops.example/trustai/policy-backend/aitrade-prod;issued_at=2026-07-04T00:00:00Z;expires_at=2026-07-11T00:00:00Z" --generated-at 2026-07-04T05:20:00Z --out artifacts/policy-backend-authority.json
-python -m trustai policy-backend-authority-verify artifacts/policy-backend-authority.json --provider-bundle artifacts/policy-backend-provider-export-bundle.json
-python -m trustai policy-backend-authority-append artifacts/policy-backend-authority.json --provider-bundle artifacts/policy-backend-provider-export-bundle.json --state .trustai/policy-backend-authority-demo/evidence-chain.json --tenant policy-backend-authority-local --out artifacts/policy-backend-authority-entry.json
+python -m trustai policy-backend-authority artifacts/policy-backend-provider-export-bundle.json --service-bundle artifacts/policy-backend-service-bundle.json --environment aitrade-prod --dossier-ref dossier:policy-backend-authority/lg-trace-001 --authority-ref authority:policy-backend/aitrade-prod --producer-ref oidc:trustai.example/policy-backend-authority-worker --authority-evidence "opa-cedar-backend-fleet,hosted-service,service:policy-backend-fleet/aitrade-prod,sha256:policy-backend-fleet-authority,Hosted OPA/Cedar backend fleet deployment export;issuer=TrustAI Cloud;subject=aitrade-prod policy backend fleet;source_uri=https://ops.example/trustai/policy-backend/aitrade-prod;issued_at=2026-07-04T00:00:00Z;expires_at=2026-07-11T00:00:00Z" --generated-at 2026-07-04T05:20:00Z --out artifacts/policy-backend-authority.json
+python -m trustai policy-backend-authority-verify artifacts/policy-backend-authority.json --provider-bundle artifacts/policy-backend-provider-export-bundle.json --service-bundle artifacts/policy-backend-service-bundle.json
+python -m trustai policy-backend-authority-append artifacts/policy-backend-authority.json --provider-bundle artifacts/policy-backend-provider-export-bundle.json --service-bundle artifacts/policy-backend-service-bundle.json --state .trustai/policy-backend-authority-demo/evidence-chain.json --tenant policy-backend-authority-local --out artifacts/policy-backend-authority-entry.json
 ```
 
 ## Chain Entry
 
 `trustai policy-backend-authority-append` verifies the dossier and appends a
 `policy_backend.production_authority_recorded` evidence-chain entry with the
-dossier id/hash, production authority refs, provider bundle binding, coverage
-summary, control summary, and authority evidence references.
+dossier id/hash, production authority refs, provider bundle binding, service
+bundle bindings, coverage summary, control summary, and authority evidence
+references.
 
 ## Limits
 

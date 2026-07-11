@@ -16,6 +16,7 @@ from trustai.policy_backend_authority import (
     build_policy_backend_authority_dossier,
     verify_policy_backend_authority_dossier,
 )
+from trustai.policy_backend_service_bundle import build_policy_backend_service_bundle
 
 from tests import test_policy_backend_provider_bundle as bundle_fixtures
 
@@ -30,7 +31,31 @@ def _write_json(path: Path, value: object) -> None:
 class PolicyBackendAuthorityTests(unittest.TestCase):
     def _bundle(self, tmp: Path):
         helper = bundle_fixtures.PolicyBackendProviderBundleTests()
-        return helper._bundle(tmp)
+        sources, provider_bundle, paths = helper._bundle(tmp)
+        service_bundle = build_policy_backend_service_bundle(
+            sources["attestation"],
+            sources["enforcement"],
+            sources["policy"],
+            sources["action"],
+            sources["pack"],
+            sources["policy_decision"],
+            sources["policy_export"],
+            policy_engine_receipt=sources["engine_receipt"],
+            artifact_paths={
+                "service_attestation": paths["service_attestation"],
+                "enforcement": paths["enforcement"],
+                "policy_pack": paths["policy_pack"],
+                "runtime_action": paths["runtime_action"],
+                "proof_pack": paths["proof_pack"],
+                "policy_decision": paths["policy_decision"],
+                "policy_export": paths["policy_export"],
+                "policy_engine_receipt": paths["policy_engine_receipt"],
+            },
+            environment="aitrade-prod",
+            reviewer_ref="oidc:auditor.example/policy-backend-reviewer",
+            generated_at="2026-07-04T05:00:00Z",
+        )
+        return sources, provider_bundle, service_bundle, paths
 
     def _authority_evidence(self) -> list[dict]:
         return [
@@ -61,9 +86,10 @@ class PolicyBackendAuthorityTests(unittest.TestCase):
         ]
 
     def _dossier(self, tmp: Path, *, mode: str = "provider-dossier", authority_evidence: list[dict] | None = None):
-        sources, bundle, paths = self._bundle(tmp)
+        sources, bundle, service_bundle, paths = self._bundle(tmp)
         dossier = build_policy_backend_authority_dossier(
             bundle,
+            service_bundles=[service_bundle],
             mode=mode,
             environment="aitrade-prod",
             dossier_ref="dossier:policy-backend-authority/lg-trace-001",
@@ -72,16 +98,16 @@ class PolicyBackendAuthorityTests(unittest.TestCase):
             authority_evidence=authority_evidence if authority_evidence is not None else self._authority_evidence(),
             generated_at="2026-07-04T05:20:00Z",
         )
-        return sources, bundle, paths, dossier
+        return sources, bundle, service_bundle, paths, dossier
 
     def test_policy_backend_authority_verifies_and_appends(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)
-            sources, bundle, _, dossier = self._dossier(tmp)
+            sources, bundle, service_bundle, _, dossier = self._dossier(tmp)
 
-            result = verify_policy_backend_authority_dossier(dossier, provider_bundle=bundle)
+            result = verify_policy_backend_authority_dossier(dossier, provider_bundle=bundle, service_bundles=[service_bundle])
             chain = EvidenceChain.load(tmp / "policy-backend-authority-chain.json", tenant_id="policy-backend-authority-test")
-            entry = append_policy_backend_authority_dossier(chain, dossier, provider_bundle=bundle)
+            entry = append_policy_backend_authority_dossier(chain, dossier, provider_bundle=bundle, service_bundles=[service_bundle])
 
             self.assertTrue(result.ok, result.errors)
             self.assertEqual(POLICY_BACKEND_AUTHORITY_SCHEMA, dossier["schema"])
@@ -92,21 +118,35 @@ class PolicyBackendAuthorityTests(unittest.TestCase):
             self.assertEqual(POLICY_BACKEND_AUTHORITY_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(dossier["dossier_id"], entry["payload"]["dossier_id"])
             self.assertEqual(bundle["bundle_id"], entry["payload"]["provider_bundle_binding"]["bundle_id"])
-            self.assertEqual({"deferred": 1, "passed": 5}, entry["payload"]["control_summary"])
+            self.assertEqual(service_bundle["bundle_id"], entry["payload"]["service_bundle_bindings"][0]["bundle_id"])
+            self.assertTrue(entry["payload"]["service_bundle_bindings"][0]["policy_engine_receipt_replayed"])
+            self.assertEqual({"deferred": 1, "passed": 6}, entry["payload"]["control_summary"])
             self.assertTrue(chain.verify_all().ok)
             self.assertTrue(sources["chain"].verify_all().ok)
 
     def test_policy_backend_authority_detects_bundle_tamper(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)
-            _, bundle, _, dossier = self._dossier(tmp)
+            _, bundle, service_bundle, _, dossier = self._dossier(tmp)
             tampered = copy.deepcopy(bundle)
             tampered["source"]["provider"] = "other-provider"
 
-            result = verify_policy_backend_authority_dossier(dossier, provider_bundle=tampered)
+            result = verify_policy_backend_authority_dossier(dossier, provider_bundle=tampered, service_bundles=[service_bundle])
 
             self.assertFalse(result.ok)
             self.assertTrue(any("provider_bundle_binding does not match" in error for error in result.errors), result.errors)
+
+    def test_policy_backend_authority_detects_service_bundle_tamper(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            _, bundle, service_bundle, _, dossier = self._dossier(tmp)
+            tampered = copy.deepcopy(service_bundle)
+            tampered["source"]["backend_ref"] = "opa:other-backend"
+
+            result = verify_policy_backend_authority_dossier(dossier, provider_bundle=bundle, service_bundles=[tampered])
+
+            self.assertFalse(result.ok)
+            self.assertTrue(any("service_bundle_bindings" in error or "service bundle source" in error for error in result.errors), result.errors)
 
     def test_policy_backend_authority_requires_freshness_when_strict(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -114,9 +154,9 @@ class PolicyBackendAuthorityTests(unittest.TestCase):
             evidence = [dict(self._authority_evidence()[0])]
             evidence[0].pop("issued_at")
             evidence[0].pop("expires_at")
-            _, bundle, _, dossier = self._dossier(tmp, authority_evidence=evidence)
+            _, bundle, service_bundle, _, dossier = self._dossier(tmp, authority_evidence=evidence)
 
-            result = verify_policy_backend_authority_dossier(dossier, provider_bundle=bundle, require_fresh=True)
+            result = verify_policy_backend_authority_dossier(dossier, provider_bundle=bundle, service_bundles=[service_bundle], require_fresh=True)
 
             self.assertFalse(result.ok)
             self.assertTrue(any("freshness metadata missing" in error for error in result.errors), result.errors)
@@ -124,9 +164,9 @@ class PolicyBackendAuthorityTests(unittest.TestCase):
     def test_policy_backend_authority_rejects_incomplete_production_claim(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)
-            _, bundle, _, dossier = self._dossier(tmp, mode="production-dossier")
+            _, bundle, service_bundle, _, dossier = self._dossier(tmp, mode="production-dossier")
 
-            result = verify_policy_backend_authority_dossier(dossier, provider_bundle=bundle)
+            result = verify_policy_backend_authority_dossier(dossier, provider_bundle=bundle, service_bundles=[service_bundle])
 
             self.assertFalse(result.ok)
             self.assertTrue(any("production-dossier mode requires" in error for error in result.errors), result.errors)
@@ -134,12 +174,14 @@ class PolicyBackendAuthorityTests(unittest.TestCase):
     def test_cli_policy_backend_authority_round_trip(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)
-            _, bundle, _, _ = self._dossier(tmp)
+            _, bundle, service_bundle, _, _ = self._dossier(tmp)
             bundle_path = tmp / "policy-backend-provider-export-bundle.json"
+            service_bundle_path = tmp / "policy-backend-service-bundle.json"
             dossier_path = tmp / "policy-backend-authority.json"
             entry_path = tmp / "policy-backend-authority-entry.json"
             state_path = tmp / "policy-backend-authority-chain.json"
             _write_json(bundle_path, bundle)
+            _write_json(service_bundle_path, service_bundle)
 
             evidence_arg = (
                 "opa-cedar-backend-fleet,hosted-service,service:policy-backend-fleet/aitrade-prod,"
@@ -157,6 +199,8 @@ class PolicyBackendAuthorityTests(unittest.TestCase):
                     "trustai",
                     "policy-backend-authority",
                     str(bundle_path),
+                    "--service-bundle",
+                    str(service_bundle_path),
                     "--environment",
                     "aitrade-prod",
                     "--dossier-ref",
@@ -185,6 +229,8 @@ class PolicyBackendAuthorityTests(unittest.TestCase):
                     str(dossier_path),
                     "--provider-bundle",
                     str(bundle_path),
+                    "--service-bundle",
+                    str(service_bundle_path),
                 ],
                 cwd=ROOT,
                 env=env,
@@ -199,6 +245,8 @@ class PolicyBackendAuthorityTests(unittest.TestCase):
                     str(dossier_path),
                     "--provider-bundle",
                     str(bundle_path),
+                    "--service-bundle",
+                    str(service_bundle_path),
                     "--state",
                     str(state_path),
                     "--tenant",
