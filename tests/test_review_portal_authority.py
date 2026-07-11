@@ -29,6 +29,12 @@ def _write_json(path: Path, value: object) -> None:
 
 
 class ReviewPortalAuthorityTests(unittest.TestCase):
+    def _resign_dossier(self, dossier: dict) -> None:
+        body = without_keys(dossier, "dossier_id", "signatures")
+        dossier_id = content_hash(body)
+        dossier["dossier_id"] = dossier_id
+        dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "review_portal_authority": body})]
+
     def _service(self):
         helper = service_fixtures.ReviewPortalServiceTests()
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -110,6 +116,22 @@ class ReviewPortalAuthorityTests(unittest.TestCase):
 
         self.assertFalse(result.ok)
         self.assertTrue(any("service_attestation_binding does not match" in error for error in result.errors), result.errors)
+
+    def test_review_portal_authority_rejects_resigned_authority_context_mismatch(self):
+        sources, attestation, dossier = self._dossier()
+        tampered = copy.deepcopy(dossier)
+        item = tampered["authority_evidence"][0]
+        item["service_context"]["service_ref"] = "review-portal:other"
+        item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+        self._resign_dossier(tampered)
+
+        result = verify_review_portal_authority_dossier(tampered, service_attestation=attestation, **sources)
+
+        self.assertFalse(result.ok)
+        self.assertNotIn("dossier_id does not match canonical review portal authority body", result.errors)
+        self.assertNotIn("review portal authority signature verification failed", result.errors)
+        self.assertNotIn("review portal authority evidence_id does not match evidence body: hosted-portal-worker-fleet", result.errors)
+        self.assertIn("review portal authority service_context does not match service attestation binding: hosted-portal-worker-fleet", result.errors)
 
     def test_review_portal_authority_detects_control_tamper(self):
         sources, attestation, dossier = self._dossier()

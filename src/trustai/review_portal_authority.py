@@ -172,9 +172,9 @@ def build_review_portal_authority_dossier(
     if not source_result.ok:
         raise ValueError("invalid review portal service source: " + "; ".join(source_result.errors))
 
-    evidence_items = [_build_authority_evidence_item(item) for item in (authority_evidence or [])]
-    summary = _summary(evidence_items)
     binding = _service_attestation_binding(service_attestation)
+    evidence_items = [_build_authority_evidence_item(item, binding) for item in (authority_evidence or [])]
+    summary = _summary(evidence_items)
     body: dict[str, Any] = {
         "schema": REVIEW_PORTAL_AUTHORITY_SCHEMA,
         "mode": mode,
@@ -270,12 +270,13 @@ def verify_review_portal_authority_dossier(
         errors.append("review portal authority authority_evidence must be a list")
         evidence = []
     freshness_counts = {"fresh": 0, "stale": 0, "missing": 0}
+    service_binding_for_evidence = dossier.get("service_attestation_binding") if isinstance(dossier.get("service_attestation_binding"), dict) else {}
     for item in evidence:
         if not isinstance(item, dict):
             errors.append("review portal authority evidence item must be an object")
             freshness_counts["missing"] += 1
             continue
-        freshness_counts[_verify_authority_evidence_item(item, errors, warnings, now=freshness_now, require_fresh=require_fresh)] += 1
+        freshness_counts[_verify_authority_evidence_item(item, errors, warnings, now=freshness_now, require_fresh=require_fresh, service_binding=service_binding_for_evidence)] += 1
 
     expected_summary = _summary([item for item in evidence if isinstance(item, dict)])
     if dossier.get("summary") != expected_summary:
@@ -342,7 +343,7 @@ def append_review_portal_authority_dossier(
         "summary": dossier.get("summary"),
         "control_summary": _status_summary(dossier.get("controls", [])),
         "authority_evidence": [
-            {"requirement_id": item.get("requirement_id"), "authority_kind": item.get("authority_kind"), "evidence_ref": item.get("evidence_ref"), "evidence_hash": item.get("evidence_hash"), "evidence_id": item.get("evidence_id"), "issued_at": item.get("issued_at"), "expires_at": item.get("expires_at")}
+            {"requirement_id": item.get("requirement_id"), "authority_kind": item.get("authority_kind"), "evidence_ref": item.get("evidence_ref"), "evidence_hash": item.get("evidence_hash"), "evidence_id": item.get("evidence_id"), "issued_at": item.get("issued_at"), "expires_at": item.get("expires_at"), "service_context": item.get("service_context")}
             for item in dossier.get("authority_evidence", [])
             if isinstance(item, dict)
         ],
@@ -432,7 +433,7 @@ def _verify_service_attestation_binding(binding: Any, service_attestation: dict[
     warnings.extend(f"review portal authority service source: {warning}" for warning in result.warnings)
 
 
-def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
+def _build_authority_evidence_item(item: dict[str, Any], service_binding: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(item, dict):
         raise ValueError("authority evidence item must be an object")
     requirement_id = str(item.get("requirement_id") or "")
@@ -463,6 +464,7 @@ def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
         "source_uri": item.get("source_uri"),
         "issued_at": item.get("issued_at"),
         "expires_at": item.get("expires_at"),
+        "service_context": _authority_evidence_service_context(service_binding),
     }
     return {**body, "evidence_id": content_hash(body)}
 
@@ -474,6 +476,7 @@ def _verify_authority_evidence_item(
     *,
     now: Any,
     require_fresh: bool,
+    service_binding: dict[str, Any],
 ) -> str:
     if item.get("evidence_id") != content_hash(without_keys(item, "evidence_id")):
         errors.append(f"review portal authority evidence_id does not match evidence body: {item.get('requirement_id')}")
@@ -490,6 +493,11 @@ def _verify_authority_evidence_item(
             errors.append(f"review portal authority {field} is required: {requirement_id}")
     if item.get("evidence_hash") and not str(item.get("evidence_hash")).startswith("sha256:"):
         errors.append(f"review portal authority evidence_hash must start with sha256: {requirement_id}")
+    expected_context = _authority_evidence_service_context(service_binding)
+    if not isinstance(item.get("service_context"), dict):
+        errors.append(f"review portal authority service_context is required: {requirement_id}")
+    elif item.get("service_context") != expected_context:
+        errors.append(f"review portal authority service_context does not match service attestation binding: {requirement_id}")
 
     issued_at = _parse_optional_timestamp(item, "issued_at", errors)
     expires_at = _parse_optional_timestamp(item, "expires_at", errors)
@@ -523,6 +531,23 @@ def _verify_authority_evidence_item(
             require_fresh=require_fresh,
         )
     return freshness_status
+
+
+def _authority_evidence_service_context(binding: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "attestation_id": binding.get("attestation_id"),
+        "attestation_hash": binding.get("attestation_hash"),
+        "environment": binding.get("environment"),
+        "service_ref": binding.get("service_ref"),
+        "portal_kind": binding.get("portal_kind"),
+        "endpoint_url": binding.get("endpoint_url"),
+        "frontend_bundle_hash": binding.get("frontend_bundle_hash"),
+        "supervised_access_receipt_id": binding.get("supervised_access_receipt_id"),
+        "session_id": binding.get("session_id"),
+        "audience_type": binding.get("audience_type"),
+        "reviewer_subject_ref": binding.get("reviewer_subject_ref"),
+        "reviewer_organization": binding.get("reviewer_organization"),
+    }
 
 
 def _verify_required_authority(value: Any, errors: list[str]) -> None:

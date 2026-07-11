@@ -45,7 +45,7 @@ The v0.1 checklist contains:
 - `portal-observability-alerting`.
 - `supervised-access-session-replay`.
 
-Each evidence item contains `requirement_id`, `authority_kind`, `evidence_ref`, `evidence_hash`, `description`, optional `issuer`, `subject`, `source_uri`, `issued_at`, `expires_at`, and derived `evidence_id`. Evidence hashes must use `sha256:` references. Authority kinds must be accepted by the requirement.
+Each evidence item contains `requirement_id`, `authority_kind`, `evidence_ref`, `evidence_hash`, `description`, optional `issuer`, `subject`, `source_uri`, `issued_at`, `expires_at`, derived `service_context`, and derived `evidence_id`. Evidence hashes must use `sha256:` references. Authority kinds must be accepted by the requirement. The derived `service_context` binds each external authority row to the exact service attestation id/hash, environment, service ref, portal kind, endpoint, frontend bundle hash, supervised-access receipt/session, audience type, reviewer subject, and reviewer organization recorded in `service_attestation_binding`.
 
 ## Verification
 
@@ -55,7 +55,7 @@ A conforming verifier must:
 - Require every service attestation binding field emitted by the v0.1 builder, even when source artifacts are omitted.
 - Recompute the service attestation binding from the supplied review portal service attestation when supplied.
 - Verify the source service attestation, including optional proof pack, supervised access, disclosure, view, frontend bundle, regulator acceptance, and EU AI Act documentation when supplied.
-- Verify every authority evidence id and evidence hash reference.
+- Verify every authority evidence id, evidence hash reference, and derived service-context binding.
 - Recompute the summary from evidence.
 - Warn for missing production authority requirements.
 - Fail when `--require-complete` is set and any requirement is missing.
@@ -79,4 +79,4 @@ python -m trustai review-portal-authority-append artifacts/review-portal-authori
 
 ## Limits
 
-This artifact proves signed binding, coverage accounting, freshness windows, and strict claim gates. It does not itself prove a live hosted portal exists. Production operation still requires fresh external evidence from the actual identity provider, hosted portal workers, immutable access logs, account lifecycle systems, KMS/session data stores, and hosted frontend/API infrastructure.
+This artifact proves signed service-context binding for each authority evidence row, coverage accounting, freshness windows, and strict claim gates. It does not itself prove a live hosted portal exists. Production operation still requires fresh external evidence from the actual identity provider, hosted portal workers, immutable access logs, account lifecycle systems, KMS/session data stores, and hosted frontend/API infrastructure.
