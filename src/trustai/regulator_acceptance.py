@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -213,6 +214,8 @@ def verify_regulator_acceptance(
         key,
     )
 
+    _verify_acceptance_source_bindings(acceptance, supervised_access_receipt, errors)
+
     expected_names = [artifact.get("name") for artifact in artifacts if isinstance(artifact, dict)]
     if scope.get("source_artifact_names") != expected_names:
         errors.append("review_scope source_artifact_names does not match source_artifacts")
@@ -325,7 +328,7 @@ def _proof_pack_record(proof_pack: dict[str, Any]) -> dict[str, Any]:
         "content_hash": content_hash(proof_pack),
         "pack_id": proof_pack.get("pack_id"),
         "contract_id": decision.get("contract_id"),
-        "agent": decision.get("agent", {}),
+        "agent": deepcopy(decision.get("agent", {})),
         "gate_outcome": decision.get("outcome"),
     }
 
@@ -360,8 +363,8 @@ def _supervised_access_record(receipt: dict[str, Any]) -> dict[str, Any]:
         "content_hash": content_hash(receipt),
         "receipt_id": receipt.get("receipt_id"),
         "session_id": receipt.get("session_id"),
-        "audience": receipt.get("audience"),
-        "reviewer": receipt.get("reviewer"),
+        "audience": deepcopy(receipt.get("audience")),
+        "reviewer": deepcopy(receipt.get("reviewer")),
     }
 
 
@@ -464,6 +467,39 @@ def _verify_supplied_supervised_access(
     warnings.extend(f"source supervised access receipt warning: {warning}" for warning in result.warnings)
 
 
+def _verify_acceptance_source_bindings(
+    acceptance: dict[str, Any],
+    supervised_access_receipt: dict[str, Any] | None,
+    errors: list[str],
+) -> None:
+    if supervised_access_receipt is None:
+        return
+    regulator = acceptance.get("regulator", {})
+    review_scope = acceptance.get("review_scope", {})
+    period = review_scope.get("review_period", {}) if isinstance(review_scope.get("review_period"), dict) else {}
+    reviewer = supervised_access_receipt.get("reviewer", {})
+    audience = supervised_access_receipt.get("audience", {})
+
+    if isinstance(audience, dict) and audience.get("type") != "regulator":
+        errors.append("supervised access audience type must be regulator for regulator acceptance")
+    if isinstance(reviewer, dict):
+        if regulator.get("reviewer_ref") != reviewer.get("subject_ref"):
+            errors.append("regulator acceptance reviewer_ref does not match supervised access reviewer subject_ref")
+        if regulator.get("name") != reviewer.get("organization"):
+            errors.append("regulator acceptance regulator name does not match supervised access reviewer organization")
+
+    issued_at = supervised_access_receipt.get("issued_at")
+    if period.get("start") and period.get("end") and issued_at:
+        try:
+            start_dt = parse_rfc3339(str(period.get("start")))
+            end_dt = parse_rfc3339(str(period.get("end")))
+            issued_dt = parse_rfc3339(str(issued_at))
+            if issued_dt < start_dt or issued_dt > end_dt:
+                errors.append("supervised access issued_at is outside regulator acceptance review period")
+        except ValueError as exc:
+            errors.append(f"invalid supervised access review-period binding: {exc}")
+
+
 def _compare_artifact(
     actual: dict[str, Any] | None,
     expected: dict[str, Any],
@@ -472,19 +508,6 @@ def _compare_artifact(
     if actual is None:
         errors.append(f"regulator acceptance missing source artifact: {expected['name']}")
         return
-    fields = (
-        "name",
-        "artifact_type",
-        "content_hash",
-        "pack_id",
-        "contract_id",
-        "gate_outcome",
-        "disclosure_id",
-        "document_id",
-        "receipt_id",
-        "session_id",
-        "section_count",
-    )
-    for field in fields:
-        if field in expected and expected.get(field) != actual.get(field):
+    for field, expected_value in expected.items():
+        if expected_value != actual.get(field):
             errors.append(f"artifact {expected['name']} {field} mismatch")

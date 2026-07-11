@@ -22,7 +22,8 @@ Required top-level fields:
   names, and offline verification requirement.
 - `source_artifacts`: canonical hash records for the proof pack, regulator
   disclosure, EU AI Act technical documentation, and optional supervised-access
-  receipt.
+  receipt. Source records deep-copy nested source summaries so acceptance
+  artifacts cannot mutate supplied source objects in memory.
 - `controls`: local-reference and planned-production controls.
 - `signatures`: detached local HMAC signature over the acceptance id and body.
 
@@ -52,8 +53,12 @@ verifiable receipts but surface verifier warnings.
   - EU AI Act technical documentation,
   - supervised-access receipt.
 
-When source artifacts are supplied, the verifier checks their canonical hashes
-and delegates to the existing artifact-specific verifiers.
+When source artifacts are supplied, the verifier checks every recorded source
+summary field against the supplied artifacts, delegates to the existing
+artifact-specific verifiers, and enforces acceptance-level bindings: regulator
+reviewer identity and organization must match the supervised-access reviewer,
+the supervised-access audience must be `regulator`, and supervised-access
+issuance must fall inside the acceptance review period when one is declared.
 
 ## Evidence Chain Entry
 

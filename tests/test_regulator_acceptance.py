@@ -3,6 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
+from trustai.crypto import sign_value
 from trustai.chain import EvidenceChain
 from trustai.contracts import load_contract, register_contract
 from trustai.eu_ai_act import build_eu_ai_act_document
@@ -78,6 +80,12 @@ class RegulatorAcceptanceTests(unittest.TestCase):
         )
         return chain, pack, disclosure, document, supervised
 
+    def _resign_acceptance(self, acceptance: dict) -> None:
+        body = without_keys(acceptance, "acceptance_id", "signatures")
+        acceptance_id = content_hash(body)
+        acceptance["acceptance_id"] = acceptance_id
+        acceptance["signatures"] = [sign_value({"acceptance_id": acceptance_id, "acceptance": body})]
+
     def test_regulator_acceptance_verifies_sources_and_appends(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             chain, pack, disclosure, document, supervised = self._sources(Path(tmp_dir))
@@ -140,6 +148,88 @@ class RegulatorAcceptanceTests(unittest.TestCase):
             self.assertFalse(result.ok)
             self.assertIn("acceptance_id does not match canonical acceptance body", result.errors)
             self.assertIn("artifact eu_ai_act_document document_id mismatch", result.errors)
+
+    def test_regulator_acceptance_rejects_resigned_source_summary_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            _, pack, disclosure, document, supervised = self._sources(Path(tmp_dir))
+            acceptance = build_regulator_acceptance(
+                pack,
+                disclosure,
+                document,
+                supervised_access_receipt=supervised,
+                regulator="Example Supervisor",
+                authority_ref="EU-NCA:EXAMPLE",
+                reviewer_ref="oidc:regulator.example/supervisor-123",
+                accepted_at="2026-07-10T00:00:00Z",
+            )
+            artifact_by_name = {artifact["name"]: artifact for artifact in acceptance["source_artifacts"]}
+            artifact_by_name["supervised_access"]["reviewer"]["role"] = "changed"
+            self._resign_acceptance(acceptance)
+
+            result = verify_regulator_acceptance(
+                acceptance,
+                proof_pack=pack,
+                regulator_disclosure=disclosure,
+                eu_ai_act_document=document,
+                supervised_access_receipt=supervised,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("acceptance_id does not match canonical acceptance body", result.errors)
+            self.assertNotIn("regulator acceptance signature invalid", result.errors)
+            self.assertIn("artifact supervised_access reviewer mismatch", result.errors)
+
+    def test_regulator_acceptance_rejects_reviewer_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            _, pack, disclosure, document, supervised = self._sources(Path(tmp_dir))
+            acceptance = build_regulator_acceptance(
+                pack,
+                disclosure,
+                document,
+                supervised_access_receipt=supervised,
+                regulator="Example Supervisor",
+                authority_ref="EU-NCA:EXAMPLE",
+                reviewer_ref="oidc:regulator.example/different-reviewer",
+                accepted_at="2026-07-10T00:00:00Z",
+            )
+
+            result = verify_regulator_acceptance(
+                acceptance,
+                proof_pack=pack,
+                regulator_disclosure=disclosure,
+                eu_ai_act_document=document,
+                supervised_access_receipt=supervised,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertIn("regulator acceptance reviewer_ref does not match supervised access reviewer subject_ref", result.errors)
+
+    def test_regulator_acceptance_rejects_supervised_access_outside_review_period(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            _, pack, disclosure, document, supervised = self._sources(Path(tmp_dir))
+            acceptance = build_regulator_acceptance(
+                pack,
+                disclosure,
+                document,
+                supervised_access_receipt=supervised,
+                regulator="Example Supervisor",
+                authority_ref="EU-NCA:EXAMPLE",
+                reviewer_ref="oidc:regulator.example/supervisor-123",
+                accepted_at="2026-07-10T00:00:00Z",
+                review_period_start="2026-07-09T00:00:00Z",
+                review_period_end="2026-07-10T00:00:00Z",
+            )
+
+            result = verify_regulator_acceptance(
+                acceptance,
+                proof_pack=pack,
+                regulator_disclosure=disclosure,
+                eu_ai_act_document=document,
+                supervised_access_receipt=supervised,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertIn("supervised access issued_at is outside regulator acceptance review period", result.errors)
 
     def test_regulator_acceptance_warns_when_not_accepted(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
