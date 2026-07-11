@@ -177,6 +177,21 @@ roadmap evidence relationships:
    evidence items.
 
 
+## Manifest Rebuild from Intake Receipts
+
+`external-evidence-manifest-from-intakes` consumes a collection plan, the source
+manifest that produced that plan, the roadmap audit, and one or more
+`trustai.external-evidence-intake/0.1` receipts. The command verifies every
+receipt against the supplied plan and source manifest before rebuilding a new
+manifest.
+
+The rebuilt manifest preserves evidence already present in the source manifest
+and overlays each verified intake by `(requirement_id, authority_kind)`. Duplicate
+intake receipts for the same authority coverage unit are rejected so that a
+manifest cannot silently choose between conflicting collected artifacts. Use the
+rebuilt manifest as the next source manifest before appending to the roadmap
+evidence chain.
+
 ## Roadmap Evidence Report
 
 `roadmap-evidence-report` emits `trustai.roadmap-evidence-report/0.1`, a

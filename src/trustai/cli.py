@@ -1065,6 +1065,7 @@ from .roadmap_audit import (
 from .external_evidence import (
     append_external_evidence_manifest,
     build_external_evidence_manifest,
+    build_external_evidence_manifest_from_intakes,
     build_external_evidence_collection_plan,
     build_external_evidence_intake,
     build_roadmap_evidence_bundle,
@@ -14145,6 +14146,55 @@ def cmd_external_evidence_verify(args: argparse.Namespace) -> int:
     return 1
 
 
+def cmd_external_evidence_manifest_from_intakes(args: argparse.Namespace) -> int:
+    try:
+        roadmap_audit = load_roadmap_audit(args.roadmap_audit)
+        source_manifest = load_external_evidence_manifest(args.manifest)
+        plan = load_external_evidence_collection_plan(args.plan)
+        intakes = [load_external_evidence_intake(path) for path in args.intake]
+        manifest = build_external_evidence_manifest_from_intakes(
+            plan,
+            source_manifest,
+            roadmap_audit,
+            root=args.root,
+            intakes=intakes,
+            manifest_ref=args.manifest_ref,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence manifest from intakes failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_external_evidence_manifest(
+        manifest,
+        roadmap_audit,
+        root=args.root,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if not result.ok:
+        print("external evidence manifest from intakes verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_external_evidence_manifest(args.out, manifest)
+    if args.markdown:
+        write_external_evidence_markdown(args.markdown, manifest)
+        print(f"external evidence markdown: {args.markdown}")
+    summary = manifest["summary"]
+    print(f"external evidence manifest from intakes: {args.out}")
+    print(f"source manifest id: {source_manifest.get('manifest_id')}")
+    print(f"intake receipts: {len(intakes)}")
+    print(f"manifest id: {manifest['manifest_id']}")
+    print(f"status: {summary['status']}")
+    print(f"covered requirements: {summary['covered_requirement_count']}/{summary['required_requirement_count']}")
+    print(f"covered authority kinds: {summary['covered_authority_kind_count']}/{summary['required_authority_kind_count']}")
+    print(f"fresh evidence: {result.fresh_evidence_count}/{summary['evidence_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
 def cmd_external_evidence_plan(args: argparse.Namespace) -> int:
     try:
         roadmap_audit = load_roadmap_audit(args.roadmap_audit)
@@ -23717,6 +23767,19 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_intake_verify.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to intake generated_at")
     external_evidence_intake_verify.set_defaults(func=cmd_external_evidence_intake_verify)
 
+    external_evidence_from_intakes = subparsers.add_parser("external-evidence-manifest-from-intakes", help="rebuild an external-evidence manifest from verified intake receipts")
+    external_evidence_from_intakes.add_argument("plan")
+    external_evidence_from_intakes.add_argument("manifest")
+    external_evidence_from_intakes.add_argument("roadmap_audit")
+    external_evidence_from_intakes.add_argument("--root", default=".")
+    external_evidence_from_intakes.add_argument("--intake", action="append", required=True, help="external-evidence intake receipt JSON; repeat for multiple receipts")
+    external_evidence_from_intakes.add_argument("--manifest-ref")
+    external_evidence_from_intakes.add_argument("--require-complete", action="store_true")
+    external_evidence_from_intakes.add_argument("--require-fresh", action="store_true", help="fail unless every intake and final evidence item has an unexpired issued_at/expires_at window")
+    external_evidence_from_intakes.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to generated_at")
+    external_evidence_from_intakes.add_argument("--out", default="artifacts/external-evidence-manifest-from-intakes.json")
+    external_evidence_from_intakes.add_argument("--markdown", default="artifacts/external-evidence-manifest-from-intakes.md")
+    external_evidence_from_intakes.set_defaults(func=cmd_external_evidence_manifest_from_intakes)
     external_evidence_append = subparsers.add_parser("external-evidence-append", help="append a verified external-evidence manifest to an evidence chain")
     external_evidence_append.add_argument("manifest")
     external_evidence_append.add_argument("roadmap_audit")

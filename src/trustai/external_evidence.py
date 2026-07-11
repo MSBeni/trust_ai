@@ -557,6 +557,81 @@ def verify_external_evidence_intake(
     return ExternalEvidenceIntakeVerification(ok=not errors, errors=errors, warnings=warnings)
 
 
+def build_external_evidence_manifest_from_intakes(
+    plan: dict[str, Any],
+    manifest: dict[str, Any],
+    roadmap_audit: dict[str, Any],
+    *,
+    root: str | Path,
+    intakes: list[dict[str, Any]],
+    manifest_ref: str | None = None,
+    require_fresh: bool = False,
+    now: str | None = None,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    manifest_result = verify_external_evidence_manifest(manifest, roadmap_audit, root=root)
+    if not manifest_result.ok:
+        raise ValueError("invalid source external evidence manifest: " + "; ".join(manifest_result.errors))
+    plan_result = verify_external_evidence_collection_plan(plan, manifest, roadmap_audit, root=root)
+    if not plan_result.ok:
+        raise ValueError("invalid external evidence collection plan: " + "; ".join(plan_result.errors))
+
+    evidence_by_unit: dict[tuple[str, str], dict[str, Any]] = {}
+    evidence = manifest.get("evidence", [])
+    if not isinstance(evidence, list):
+        raise ValueError("source manifest evidence must be a list")
+    for item in evidence:
+        if not isinstance(item, dict):
+            raise ValueError("source manifest evidence item must be an object")
+        unit_key = _evidence_unit_key(item)
+        if unit_key in evidence_by_unit:
+            raise ValueError(f"source manifest has duplicate evidence for authority unit: {unit_key[0]}:{unit_key[1]}")
+        evidence_by_unit[unit_key] = item
+
+    seen_intake_units: set[tuple[str, str]] = set()
+    for intake in intakes:
+        if not isinstance(intake, dict):
+            raise ValueError("external evidence intake must be an object")
+        intake_result = verify_external_evidence_intake(
+            intake,
+            plan,
+            manifest,
+            roadmap_audit,
+            root=root,
+            require_fresh=require_fresh,
+            now=now,
+        )
+        if not intake_result.ok:
+            intake_label = intake.get("intake_id") or intake.get("task", {}).get("unit_ref") or "unknown"
+            raise ValueError(f"invalid external evidence intake {intake_label}: " + "; ".join(intake_result.errors))
+        evidence_item = intake.get("evidence_item")
+        if not isinstance(evidence_item, dict):
+            raise ValueError("external evidence intake evidence_item must be an object")
+        unit_key = _evidence_unit_key(evidence_item)
+        if unit_key in seen_intake_units:
+            raise ValueError(f"duplicate intake receipt for authority unit: {unit_key[0]}:{unit_key[1]}")
+        seen_intake_units.add(unit_key)
+        evidence_by_unit[unit_key] = evidence_item
+
+    requirements = _reference_attested_requirements(roadmap_audit)
+    requirement_order = {requirement["id"]: index for index, requirement in enumerate(requirements)}
+    authority_order = {authority_kind: index for index, authority_kind in enumerate(AUTHORITY_KIND_ORDER)}
+    ordered_evidence = sorted(
+        evidence_by_unit.values(),
+        key=lambda item: (
+            requirement_order.get(str(item.get("requirement_id") or ""), len(requirement_order)),
+            authority_order.get(str(item.get("authority_kind") or ""), len(authority_order)),
+            str(item.get("path") or ""),
+        ),
+    )
+    return build_external_evidence_manifest(
+        roadmap_audit,
+        root=root,
+        evidence=ordered_evidence,
+        manifest_ref=manifest_ref or str(manifest.get("manifest_ref") or "production-external-evidence"),
+        generated_at=generated_at,
+    )
+
 def verify_roadmap_evidence_chain(
     chain: EvidenceChain,
     *,
@@ -2084,6 +2159,11 @@ def _evidence_argument(item: dict[str, Any]) -> str:
             metadata.append(f"{key}={value}")
     suffix = ";" + ";".join(metadata) if metadata else ""
     return f"{item.get('requirement_id')},{item.get('authority_kind')},{item.get('path')},{description}{suffix}"
+
+
+def _evidence_unit_key(item: dict[str, Any]) -> tuple[str, str]:
+    return (str(item.get("requirement_id") or ""), str(item.get("authority_kind") or ""))
+
 
 def _file_ref(root: Path, path: str | Path) -> dict[str, Any]:
     relative = Path(path).as_posix()

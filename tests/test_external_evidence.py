@@ -19,12 +19,14 @@ from trustai.external_evidence import (
     _authority_unit_id,
     append_external_evidence_manifest,
     build_external_evidence_manifest,
+    build_external_evidence_manifest_from_intakes,
     build_external_evidence_collection_plan,
     build_external_evidence_intake,
     build_roadmap_evidence_bundle,
     extract_roadmap_evidence_bundle_sources,
     build_roadmap_evidence_report,
     load_roadmap_evidence_report,
+    load_external_evidence_manifest,
     load_external_evidence_collection_plan,
     load_external_evidence_intake,
     load_roadmap_evidence_bundle,
@@ -251,6 +253,87 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         tampered_result = verify_external_evidence_intake(tampered, plan, manifest, audit, root=ROOT)
         self.assertFalse(tampered_result.ok)
         self.assertTrue(any("hash mismatch" in error for error in tampered_result.errors), tampered_result.errors)
+
+    def test_external_evidence_manifest_from_intakes_preserves_source_and_overlays_receipts(self):
+        audit = build_roadmap_audit(ROOT)
+        source_manifest = build_external_evidence_manifest(
+            audit,
+            root=ROOT,
+            evidence=[
+                {
+                    "requirement_id": "oss-verifier-and-public-spec",
+                    "authority_kind": "ci-run",
+                    "path": FIXTURE,
+                    "description": "Recorded verifier workflow run export.",
+                    "issuer": "GitHub Actions",
+                    "subject": "trustai go verifier release workflow",
+                    "source_uri": "https://github.com/MSBeni/trust_ai/actions",
+                    "issued_at": "2026-07-08T00:00:00Z",
+                    "expires_at": "2026-12-31T00:00:00Z",
+                }
+            ],
+        )
+        plan = build_external_evidence_collection_plan(
+            source_manifest,
+            audit,
+            root=ROOT,
+            status_filter="missing",
+            generated_at="2026-07-09T00:00:00Z",
+        )
+        intake = build_external_evidence_intake(
+            plan,
+            source_manifest,
+            audit,
+            root=ROOT,
+            task_ref="oss-verifier-and-public-spec:provider-api",
+            artifact_path=FIXTURE,
+            description="Recorded provider API export",
+            issuer="GitHub API",
+            subject="trustai go verifier release workflow",
+            source_uri="https://github.com/MSBeni/trust_ai/actions",
+            issued_at="2026-07-08T00:00:00Z",
+            expires_at="2026-12-31T00:00:00Z",
+            generated_at="2026-07-09T00:00:00Z",
+        )
+
+        rebuilt = build_external_evidence_manifest_from_intakes(
+            plan,
+            source_manifest,
+            audit,
+            root=ROOT,
+            intakes=[intake],
+            require_fresh=True,
+            now="2026-07-09T00:00:00Z",
+            generated_at="2026-07-09T00:01:00Z",
+        )
+        result = verify_external_evidence_manifest(
+            rebuilt,
+            audit,
+            root=ROOT,
+            require_fresh=True,
+            now="2026-07-09T00:00:00Z",
+        )
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(2, rebuilt["summary"]["evidence_count"])
+        self.assertEqual(2, rebuilt["summary"]["covered_authority_kind_count"])
+        self.assertEqual(
+            ["ci-run", "provider-api"],
+            rebuilt["summary"]["covered_authority_kinds_by_requirement"]["oss-verifier-and-public-spec"],
+        )
+        self.assertEqual(68, rebuilt["summary"]["missing_authority_kind_count"])
+
+        tampered = copy.deepcopy(intake)
+        tampered["source_manifest"]["manifest_id"] = "wrong"
+        tampered["intake_id"] = content_hash(without_keys(tampered, "intake_id"))
+        with self.assertRaisesRegex(ValueError, "invalid external evidence intake"):
+            build_external_evidence_manifest_from_intakes(
+                plan,
+                source_manifest,
+                audit,
+                root=ROOT,
+                intakes=[tampered],
+            )
 
     def test_external_evidence_freshness_windows_are_verifiable(self):
         audit = build_roadmap_audit(ROOT)
@@ -571,6 +654,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             all_plan_path = tmp_path / "external-evidence-plan-all.json"
             plan_markdown_path = tmp_path / "external-evidence-plan.md"
             intake_path = tmp_path / "external-evidence-intake.json"
+            rebuilt_manifest_path = tmp_path / "external-evidence-manifest-from-intakes.json"
             report_path = tmp_path / "roadmap-evidence-report.json"
             report_markdown_path = tmp_path / "roadmap-evidence-report.md"
             bundle_path = tmp_path / "roadmap-evidence-bundle.json"
@@ -767,8 +851,49 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     sys.executable,
                     "-m",
                     "trustai",
-                    "external-evidence-append",
+                    "external-evidence-manifest-from-intakes",
+                    str(all_plan_path),
                     str(manifest_path),
+                    str(audit_path),
+                    "--root",
+                    str(ROOT),
+                    "--intake",
+                    str(intake_path),
+                    "--require-fresh",
+                    "--now",
+                    "2026-07-09T00:00:00Z",
+                    "--out",
+                    str(rebuilt_manifest_path),
+                    "--markdown",
+                    "",
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-verify",
+                    str(rebuilt_manifest_path),
+                    str(audit_path),
+                    "--root",
+                    str(ROOT),
+                    "--require-fresh",
+                    "--now",
+                    "2026-07-09T00:00:00Z",
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-append",
+                    str(rebuilt_manifest_path),
                     str(audit_path),
                     "--root",
                     str(ROOT),
@@ -858,7 +983,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     "--source-artifact",
                     f"roadmap-audit,{audit_path.name},Generated roadmap audit JSON",
                     "--source-artifact",
-                    f"external-evidence-manifest,{manifest_path.name},Generated external evidence manifest JSON",
+                    f"external-evidence-manifest,{rebuilt_manifest_path.name},Generated external evidence manifest JSON",
                     "--include-manifest-evidence",
                     "--require-source-artifacts",
                     "--out",
@@ -906,10 +1031,12 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertTrue(chain.verify_all().ok)
             plan = load_external_evidence_collection_plan(plan_path)
             intake = load_external_evidence_intake(intake_path)
+            rebuilt_manifest = load_external_evidence_manifest(rebuilt_manifest_path)
             self.assertEqual(69, plan["summary"]["selected_task_count"])
             self.assertTrue(plan_markdown_path.exists())
             self.assertIn("External Evidence Collection Plan", plan_markdown_path.read_text(encoding="utf-8"))
             self.assertIn("oss-verifier-and-public-spec,ci-run", intake["evidence_argument"])
+            self.assertEqual(1, rebuilt_manifest["summary"]["covered_authority_kind_count"])
             report = load_roadmap_evidence_report(report_path)
             self.assertEqual(2, report["summary"]["chain_entry_count"])
             self.assertEqual(1, report["summary"]["fresh_external_evidence_entry_count"])
@@ -922,7 +1049,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertTrue(bundle_markdown_path.exists())
             self.assertIn("Embedded source artifacts: 3", bundle_markdown_path.read_text(encoding="utf-8"))
             self.assertTrue((bundle_extract_dir / audit_path.name).exists())
-            self.assertTrue((bundle_extract_dir / manifest_path.name).exists())
+            self.assertTrue((bundle_extract_dir / rebuilt_manifest_path.name).exists())
             self.assertTrue((bundle_extract_dir / FIXTURE).exists())
             direct_extract_dir = tmp_path / "direct-roadmap-evidence-bundle-sources"
             extracted = extract_roadmap_evidence_bundle_sources(
