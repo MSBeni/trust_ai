@@ -686,7 +686,7 @@ def _verify_provider_binding(
     )
     _verify_provider_exchange_binding(binding.get("provider_exchange"), errors)
     if authority_provider_receipt is None:
-        warnings.append("framework runtime service authority provider receipt was not supplied; provider source was not replayed")
+        errors.append("framework runtime service authority attestation authority provider receipt is required for verification")
         return
     expected = _authority_provider_binding(authority_provider_receipt)
     if binding != expected:
@@ -753,7 +753,7 @@ def _verify_dossier_binding(
     )
     _verify_dossier_summary_binding(binding.get("summary"), errors)
     if authority_dossier is None:
-        warnings.append("framework runtime service authority dossier was not supplied; dossier source was not replayed")
+        errors.append("framework runtime service authority attestation authority dossier is required for verification")
         return
     expected = _authority_dossier_binding(authority_dossier)
     if binding != expected:

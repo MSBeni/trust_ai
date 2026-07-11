@@ -366,6 +366,47 @@ class FrameworkRuntimeServiceAuthorityAttestationTests(unittest.TestCase):
                 self.assertFalse(result.ok)
                 self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
 
+    def test_framework_runtime_service_authority_attestation_requires_replay_artifacts_without_sources(self):
+        attestation, authority_provider_receipt, _, _, authority_dossier, *_ = self._attestation()
+
+        missing_all = verify_framework_runtime_service_authority_attestation(
+            attestation,
+            require_fresh=True,
+            now="2026-07-09T01:10:00Z",
+        )
+        missing_dossier = verify_framework_runtime_service_authority_attestation(
+            attestation,
+            authority_provider_receipt=authority_provider_receipt,
+            require_fresh=True,
+            now="2026-07-09T01:10:00Z",
+        )
+        missing_provider = verify_framework_runtime_service_authority_attestation(
+            attestation,
+            authority_dossier=authority_dossier,
+            require_fresh=True,
+            now="2026-07-09T01:10:00Z",
+        )
+
+        self.assertFalse(missing_all.ok)
+        self.assertIn(
+            "framework runtime service authority attestation authority provider receipt is required for verification",
+            missing_all.errors,
+        )
+        self.assertIn(
+            "framework runtime service authority attestation authority dossier is required for verification",
+            missing_all.errors,
+        )
+        self.assertFalse(missing_dossier.ok)
+        self.assertIn(
+            "framework runtime service authority attestation authority dossier is required for verification",
+            missing_dossier.errors,
+        )
+        self.assertFalse(missing_provider.ok)
+        self.assertIn(
+            "framework runtime service authority attestation authority provider receipt is required for verification",
+            missing_provider.errors,
+        )
+
     def test_framework_runtime_service_authority_attestation_rejects_stale_evidence_when_strict(self):
         evidence = copy.deepcopy(self._attestation_evidence())
         evidence[0]["expires_at"] = "2026-07-09T01:09:00Z"

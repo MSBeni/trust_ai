@@ -36,19 +36,19 @@ fields, recalculates attestation evidence IDs, and enforces freshness when
 and `authority_dossier_binding` key emitted by the v0.1 builder. Provider
 receipt metadata, worker/dossier hashes, authority request roots, provider
 export roots, nested provider exchange fields, dossier metadata, and dossier
-summary counts/lists must be present even when the source artifacts are omitted.
+summary counts/lists must be present and source artifacts must be supplied for replay.
 
-When supplied with the authority provider receipt/export, authority worker
-receipt, authority dossier, service provider receipt/export, service worker
-receipt, service attestation, storage receipt/export, runtime worker receipt,
-runtime audit receipt, audit export, hook operation, source trace, hook release,
-and adapter matrix, verification first replays
+Offline verification is fail-closed: the authority provider receipt/export,
+authority worker receipt, authority dossier, service provider receipt/export,
+service worker receipt, service attestation, storage receipt/export, runtime
+worker receipt, runtime audit receipt, audit export, hook operation, source
+trace, hook release, and adapter matrix are required. Verification first replays
 `framework-runtime-service-authority-provider-verify`, then replays
 `framework-runtime-service-authority-verify` against the source dossier. It
 rejects mismatches in provider receipt hashes, dossier hashes, authority
 evidence roots, missing requirement roots, provider export roots, or dossier
-coverage summaries. Omitted source artifacts may produce replay warnings, but
-they must not permit partial provider receipt or authority dossier summaries.
+coverage summaries. A detached signature over partial replay inputs is not
+enough to verify the attestation.
 
 `production-attestation` mode requires a `production-export` authority provider
 receipt, successful provider exchange evidence, complete production-authority
