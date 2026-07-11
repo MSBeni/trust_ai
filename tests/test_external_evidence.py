@@ -14,6 +14,7 @@ from trustai.external_evidence import (
     ROADMAP_EVIDENCE_REPORT_SCHEMA,
     ROADMAP_EVIDENCE_BUNDLE_SCHEMA,
     _allowed_authority_kinds_for_requirement,
+    _authority_unit_id,
     append_external_evidence_manifest,
     build_external_evidence_manifest,
     build_roadmap_evidence_bundle,
@@ -68,6 +69,9 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertIn("Covered Authorities", markdown)
         self.assertIn("Missing Authorities", markdown)
         self.assertIn("Authority Evidence Needed", markdown)
+        self.assertIn("Authority Coverage Units", markdown)
+        self.assertIn("Unit ID", markdown)
+        self.assertIn("Unit Ref", markdown)
         self.assertIn("oss-verifier-and-public-spec", markdown)
         self.assertIn("self-serve-onboarding", markdown)
         self.assertIn("`ci-run`", markdown)
@@ -87,6 +91,26 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             manifest["summary"]["missing_authority_kinds_by_requirement"].get("oss-verifier-and-public-spec", []),
         )
         self.assertGreater(manifest["summary"]["missing_authority_kind_count"], 0)
+        self.assertEqual(
+            manifest["summary"]["required_authority_kind_count"],
+            len(manifest["required_authority_evidence_units"]),
+        )
+        ci_unit = next(
+            item
+            for item in manifest["required_authority_evidence_units"]
+            if item["requirement_id"] == "oss-verifier-and-public-spec" and item["authority_kind"] == "ci-run"
+        )
+        provider_unit = next(
+            item
+            for item in manifest["required_authority_evidence_units"]
+            if item["requirement_id"] == "oss-verifier-and-public-spec" and item["authority_kind"] == "provider-api"
+        )
+        self.assertEqual(_authority_unit_id("oss-verifier-and-public-spec", "ci-run"), ci_unit["unit_id"])
+        self.assertEqual("oss-verifier-and-public-spec:ci-run", ci_unit["unit_ref"])
+        self.assertEqual("covered", ci_unit["coverage_status"])
+        self.assertEqual("missing", provider_unit["coverage_status"])
+        self.assertIn(ci_unit["unit_id"], markdown)
+        self.assertIn(ci_unit["unit_ref"], markdown)
 
     def test_external_evidence_freshness_windows_are_verifiable(self):
         audit = build_roadmap_audit(ROOT)
@@ -756,6 +780,11 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual(len(requirements), result.covered_count)
         self.assertEqual(result.required_authority_kind_count, result.covered_authority_kind_count)
         self.assertEqual(0, result.missing_authority_kind_count)
+        self.assertEqual(
+            manifest["summary"]["required_authority_kind_count"],
+            len(manifest["required_authority_evidence_units"]),
+        )
+        self.assertTrue(all(unit["coverage_status"] == "covered" for unit in manifest["required_authority_evidence_units"]))
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="external-evidence-complete")
@@ -792,6 +821,32 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 "authority kind customer is not accepted for requirement oss-verifier-and-public-spec" in error
                 for error in result.errors
             ),
+            result.errors,
+        )
+
+    def test_external_evidence_rejects_stale_authority_evidence_units(self):
+        audit = build_roadmap_audit(ROOT)
+        manifest = build_external_evidence_manifest(
+            audit,
+            root=ROOT,
+            evidence=[
+                {
+                    "requirement_id": "oss-verifier-and-public-spec",
+                    "authority_kind": "ci-run",
+                    "path": FIXTURE,
+                    "description": "Recorded verifier workflow run export.",
+                }
+            ],
+        )
+        tampered = copy.deepcopy(manifest)
+        tampered["required_authority_evidence_units"] = tampered["required_authority_evidence_units"][:-1]
+        tampered["manifest_id"] = content_hash(without_keys(tampered, "manifest_id"))
+
+        result = verify_external_evidence_manifest(tampered, audit, root=ROOT)
+
+        self.assertFalse(result.ok)
+        self.assertTrue(
+            any("required_authority_evidence_units" in error for error in result.errors),
             result.errors,
         )
 

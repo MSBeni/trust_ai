@@ -26,9 +26,27 @@ hashed files and verified offline.
 - `required_external_requirements`: every `reference-attested` requirement from
   the roadmap audit, including the accepted external authority kinds derived
   from that requirement's external-authority claim.
+- `required_authority_evidence_units`: one deterministic collection unit for
+  every `(requirement_id, authority_kind)` pair required for complete external
+  authority coverage.
 - `evidence`: supplied external evidence artifacts.
 - `summary`: requirement coverage, authority-kind coverage, missing requirement IDs, missing authority kinds, and evidence freshness-window counts.
 - `limitations`: explicit non-claims about live fetching and issuer quality.
+
+## Authority Evidence Unit
+
+Each required authority evidence unit contains:
+
+- `unit_id`: canonical hash of `requirement_id` and `authority_kind`, stable
+  across manifests until the roadmap authority policy changes.
+- `unit_ref`: human-readable `<requirement_id>:<authority_kind>` reference.
+- `requirement_id`, `phase`, `priority`, and `title`: roadmap context for the
+  collection task.
+- `authority_kind`: the required external authority category.
+- `coverage_status`: `covered` when at least one supplied evidence item covers
+  the same requirement and authority kind, otherwise `missing`.
+- `external_authority_required`: the roadmap audit text explaining the external
+  evidence need.
 
 ## Evidence Item
 
@@ -57,10 +75,11 @@ Each evidence item contains:
 The optional Markdown rendering MUST expose the manifest as an external-evidence
 collection checklist. It includes every required `reference-attested`
 requirement, coverage state, accepted authority kinds, covered authority kinds,
-missing authority kinds, and the roadmap audit's external authority text,
-followed by supplied evidence rows with accepted authority kinds and freshness
-windows. This keeps the human review artifact aligned with the
-machine-verifiable authority-kind policy.
+missing authority kinds, deterministic authority evidence unit IDs, human-readable
+unit references, and the roadmap audit's external authority text, followed by
+supplied evidence rows with accepted authority kinds and freshness windows. This
+keeps the human review artifact aligned with the machine-verifiable
+authority-kind policy.
 
 ## Evidence Chain Entry
 
@@ -179,7 +198,7 @@ A verifier MUST:
    `accepted_authority_kinds` list does not match that derived policy.
 7. Reject absolute paths or paths containing `..`.
 8. Re-hash every evidence artifact and compare it to the recorded SHA-256.
-9. Recompute coverage summary, missing requirement IDs, missing authority kinds,
+9. Recompute required authority evidence units, coverage summary, missing requirement IDs, missing authority kinds,
    and freshness-window counts.
 10. Parse any `issued_at` and `expires_at` values, reject windows where
    `expires_at <= issued_at`, and warn on missing, future-issued, or expired

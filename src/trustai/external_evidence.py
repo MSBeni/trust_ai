@@ -136,6 +136,7 @@ def build_external_evidence_manifest(
             }
             for requirement in requirements
         ],
+        "required_authority_evidence_units": _authority_evidence_units(requirements, required_authority_kinds, summary),
         "evidence": evidence_items,
         "summary": summary,
         "limitations": [
@@ -234,6 +235,9 @@ def verify_external_evidence_manifest(
     expected_summary = _summary(required_ids, [item for item in evidence if isinstance(item, dict)], required_authority_kinds)
     if manifest.get("summary") != expected_summary:
         errors.append("summary does not match evidence coverage")
+    expected_units = _authority_evidence_units(requirements, required_authority_kinds, expected_summary)
+    if manifest.get("required_authority_evidence_units") != expected_units:
+        errors.append("required_authority_evidence_units do not match authority-kind coverage policy")
 
     missing = [requirement_id for requirement_id in required_ids if requirement_id not in covered_ids]
     missing_authority_kinds = expected_summary.get("missing_authority_kinds_by_requirement", {})
@@ -805,6 +809,17 @@ def render_external_evidence_markdown(manifest: dict[str, Any]) -> str:
         )
         for item in manifest.get("required_external_requirements", [])
     )
+    unit_rows = "\n".join(
+        "| `{unit_id}` | `{unit_ref}` | `{requirement}` | {authority} | {status} | {title} |".format(
+            unit_id=_markdown_cell(item.get("unit_id", "")),
+            unit_ref=_markdown_cell(item.get("unit_ref", "")),
+            requirement=_markdown_cell(item.get("requirement_id", "")),
+            authority=_markdown_cell(item.get("authority_kind", "")),
+            status=_markdown_cell(item.get("coverage_status", "")),
+            title=_markdown_cell(item.get("title", "")),
+        )
+        for item in manifest.get("required_authority_evidence_units", [])
+    )
     evidence_rows = "\n".join(
         "| `{requirement}` | {kind} | {accepted} | `{path}` | {freshness} | {description} |".format(
             requirement=_markdown_cell(item.get("requirement_id", "")),
@@ -841,6 +856,12 @@ Status: {summary.get('status', '')}
 | Requirement | Phase | Priority | Coverage | Accepted Authorities | Covered Authorities | Missing Authorities | Authority Evidence Needed |
 |---|---|---|---|---|---|---|---|
 {requirement_rows or "| - | - | - | - | - | - | - | - |"}
+
+## Authority Coverage Units
+
+| Unit ID | Unit Ref | Requirement | Authority | Status | Title |
+|---|---|---|---|---|---|
+{unit_rows or "| - | - | - | - | - | - |"}
 
 ## Evidence
 
@@ -1538,6 +1559,41 @@ def _allowed_authority_kinds_for_requirement(requirement: dict[str, Any]) -> lis
         if any(needle in text for needle in needles)
     ]
     return allowed or ["other"]
+
+
+def _authority_unit_id(requirement_id: str, authority_kind: str) -> str:
+    return content_hash({"authority_kind": authority_kind, "requirement_id": requirement_id})
+
+
+def _authority_evidence_units(
+    requirements: list[dict[str, Any]],
+    required_authority_kinds: dict[str, list[str]],
+    summary: dict[str, Any],
+) -> list[dict[str, Any]]:
+    covered = summary.get("covered_authority_kinds_by_requirement", {})
+    if not isinstance(covered, dict):
+        covered = {}
+    units: list[dict[str, Any]] = []
+    for requirement in requirements:
+        requirement_id = str(requirement.get("id") or "")
+        covered_kinds = covered.get(requirement_id, [])
+        if not isinstance(covered_kinds, list):
+            covered_kinds = []
+        for authority_kind in required_authority_kinds.get(requirement_id, []):
+            units.append(
+                {
+                    "unit_id": _authority_unit_id(requirement_id, authority_kind),
+                    "unit_ref": f"{requirement_id}:{authority_kind}",
+                    "requirement_id": requirement_id,
+                    "phase": requirement.get("phase"),
+                    "priority": requirement.get("priority"),
+                    "title": requirement.get("title"),
+                    "authority_kind": authority_kind,
+                    "coverage_status": "covered" if authority_kind in covered_kinds else "missing",
+                    "external_authority_required": requirement.get("external_authority_required", []),
+                }
+            )
+    return units
 
 
 def _file_ref(root: Path, path: str | Path) -> dict[str, Any]:
