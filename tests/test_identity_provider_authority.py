@@ -7,7 +7,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.identity_provider_attestation import write_identity_provider_attestation
 from trustai.identity_provider_authority import (
     IDENTITY_PROVIDER_AUTHORITY_ENTRY_TYPE,
@@ -145,6 +147,29 @@ class IdentityProviderAuthorityTests(unittest.TestCase):
             self.assertFalse(result.ok)
             self.assertTrue(any("worker_binding does not match" in error for error in result.errors), result.errors)
 
+    def test_identity_provider_authority_requires_complete_binding_without_sources(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            sources = self._sources(Path(tmp_dir))
+            dossier = self._dossier(sources)
+            cases = [
+                ("worker_schema", "worker_binding.worker_schema is required"),
+                ("metrics_ref", "worker_binding.metrics_ref is required"),
+                ("session_revocation_log_root", "worker_binding.session_revocation_log_root is required"),
+                ("control_summary", "worker_binding.control_summary is required"),
+            ]
+            for field, expected_error in cases:
+                with self.subTest(field=field):
+                    tampered = copy.deepcopy(dossier)
+                    tampered["worker_binding"].pop(field)
+                    body = without_keys(tampered, "dossier_id", "signatures")
+                    dossier_id = content_hash(body)
+                    tampered["dossier_id"] = dossier_id
+                    tampered["signatures"] = [sign_value({"dossier_id": dossier_id, "identity_provider_authority": body})]
+
+                    result = verify_identity_provider_authority_dossier(tampered)
+
+                    self.assertFalse(result.ok)
+                    self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
     def test_identity_provider_authority_requires_freshness_when_strict(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             sources = self._sources(Path(tmp_dir))

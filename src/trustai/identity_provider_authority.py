@@ -30,6 +30,75 @@ PRODUCTION_AUTHORITY_REQUIREMENTS = [
 ]
 PRODUCTION_AUTHORITY_REQUIREMENT_IDS = [item["id"] for item in PRODUCTION_AUTHORITY_REQUIREMENTS]
 
+WORKER_BINDING_EXPECTED_FIELDS = (
+    "worker_operation_id",
+    "worker_receipt_hash",
+    "worker_schema",
+    "worker_mode",
+    "environment",
+    "recorded_at",
+    "provider",
+    "source_operation_id",
+    "source_operation_hash",
+    "identity_id",
+    "identity_record_hash",
+    "operation_kind",
+    "worker_ref",
+    "run_ref",
+    "worker_success",
+    "schedule_ref",
+    "lease_ref",
+    "checkpoint_ref",
+    "checkpoint_hash",
+    "queue_ref",
+    "queue_message_ref",
+    "destination_ref",
+    "propagation_log_ref",
+    "propagation_log_root",
+    "account_state_log_root",
+    "session_revocation_log_root",
+    "token_revocation_log_root",
+    "request_hash",
+    "response_status",
+    "response_hash",
+    "metrics_ref",
+    "audit_log_ref",
+    "audit_log_root",
+    "retention_until",
+    "credential_ref",
+    "control_summary",
+)
+
+WORKER_BINDING_REQUIRED_FIELDS = (
+    "worker_operation_id",
+    "worker_receipt_hash",
+    "worker_schema",
+    "worker_mode",
+    "environment",
+    "recorded_at",
+    "provider",
+    "source_operation_id",
+    "source_operation_hash",
+    "identity_id",
+    "identity_record_hash",
+    "operation_kind",
+    "worker_ref",
+    "run_ref",
+    "worker_success",
+    "schedule_ref",
+    "lease_ref",
+    "checkpoint_ref",
+    "queue_ref",
+    "destination_ref",
+    "propagation_log_ref",
+    "propagation_log_root",
+    "metrics_ref",
+    "audit_log_ref",
+    "audit_log_root",
+    "retention_until",
+    "credential_ref",
+    "control_summary",
+)
 
 @dataclass
 class IdentityProviderAuthorityVerification:
@@ -380,32 +449,10 @@ def _verify_worker_binding(
     if not isinstance(binding, dict):
         errors.append("identity provider authority worker_binding must be an object")
         return
-    for field in (
-        "worker_operation_id",
-        "worker_receipt_hash",
-        "worker_mode",
-        "environment",
-        "recorded_at",
-        "provider",
-        "source_operation_id",
-        "source_operation_hash",
-        "identity_id",
-        "identity_record_hash",
-        "operation_kind",
-        "worker_ref",
-        "run_ref",
-        "worker_success",
-        "schedule_ref",
-        "lease_ref",
-        "checkpoint_ref",
-        "queue_ref",
-        "destination_ref",
-        "propagation_log_ref",
-        "propagation_log_root",
-        "audit_log_root",
-        "retention_until",
-        "credential_ref",
-    ):
+    for field in WORKER_BINDING_EXPECTED_FIELDS:
+        if field not in binding:
+            errors.append(f"identity provider authority worker_binding.{field} is required")
+    for field in WORKER_BINDING_REQUIRED_FIELDS:
         if binding.get(field) in (None, "", []):
             errors.append(f"identity provider authority worker_binding.{field} is required")
     if worker_receipt is None:

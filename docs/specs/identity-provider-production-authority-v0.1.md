@@ -72,14 +72,15 @@ A verifier must:
 
 1. Verify the schema, canonical `dossier_id`, and at least one valid signature.
 2. Verify `mode`, `environment`, `dossier_ref`, `authority_ref`, `producer_ref`, and RFC3339 timestamps.
-3. Re-verify the bound identity-provider lifecycle worker receipt against the supplied lifecycle operation, identity-provider attestation, optional identity-provider session receipt, identity payload, vendor identity receipt, trust-network manifest, and proof packs.
-4. Compare the dossier `worker_binding` content hashes to the supplied source documents.
-5. Require the `required_production_authority` checklist to match this specification exactly.
-6. Reject evidence with unknown requirement ids or disallowed authority kinds.
-7. Reject malformed evidence references, hashes, and timestamp windows.
-8. Count missing, stale, and fresh evidence. With `--require-complete`, every requirement id must be covered. With `--require-fresh`, every covered evidence item must include a valid current freshness window.
-9. Reject `production-dossier` mode unless all requirements are covered with fresh evidence.
-10. Reject raw secrets in the dossier. Secret-bearing fields must be redacted references such as `env:`, `vault:`, `kms:`, or content hashes.
+3. Require every `worker_binding` key emitted by the v0.1 builder, and require non-null values for the mandatory worker, source-operation, scheduler, propagation, observability, credential, and control-summary fields. Optional lifecycle roots and response fields may be null only when the original receipt recorded them as null.
+4. Re-verify the bound identity-provider lifecycle worker receipt against the supplied lifecycle operation, identity-provider attestation, optional identity-provider session receipt, identity payload, vendor identity receipt, trust-network manifest, and proof packs when supplied.
+5. Compare the dossier `worker_binding` content hashes to the supplied source documents. Omitted sources may produce replay warnings, but they must not permit partial worker binding summaries.
+6. Require the `required_production_authority` checklist to match this specification exactly.
+7. Reject evidence with unknown requirement ids or disallowed authority kinds.
+8. Reject malformed evidence references, hashes, and timestamp windows.
+9. Count missing, stale, and fresh evidence. With `--require-complete`, every requirement id must be covered. With `--require-fresh`, every covered evidence item must include a valid current freshness window.
+10. Reject `production-dossier` mode unless all requirements are covered with fresh evidence.
+11. Reject raw secrets in the dossier. Secret-bearing fields must be redacted references such as `env:`, `vault:`, `kms:`, or content hashes.
 
 ## CLI Examples
 
