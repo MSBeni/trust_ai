@@ -26,6 +26,48 @@ FRAMEWORK_RUNTIME_SERVICE_AUTHORITY_WORKER_OPERATION_KINDS = {
     "provider_authority_reconcile",
 }
 SECRET_KEY_MARKERS = ("token", "secret", "private_key", "client_secret", "password", "credential")
+AUTHORITY_BINDING_EXPECTED_FIELDS = (
+    "dossier_id",
+    "dossier_hash",
+    "schema",
+    "mode",
+    "environment",
+    "generated_at",
+    "dossier_ref",
+    "authority_ref",
+    "producer_ref",
+    "provider_receipt_id",
+    "provider_receipt_hash",
+    "service_worker_operation_id",
+    "authority_evidence_count",
+    "covered_requirement_count",
+    "missing_requirement_count",
+    "freshness_window_count",
+    "status",
+)
+AUTHORITY_BINDING_REQUIRED_FIELDS = AUTHORITY_BINDING_EXPECTED_FIELDS
+AUTHORITY_BINDING_COUNT_FIELDS = (
+    "authority_evidence_count",
+    "covered_requirement_count",
+    "missing_requirement_count",
+    "freshness_window_count",
+)
+SOURCE_ARTIFACT_KINDS = (
+    "framework-runtime-service-authority-dossier",
+    "framework-runtime-service-provider-receipt",
+    "framework-runtime-service-provider-export",
+    "framework-runtime-service-worker",
+    "framework-runtime-service-attestation",
+    "framework-runtime-storage-receipt",
+    "framework-runtime-storage-export",
+    "framework-runtime-worker",
+    "framework-runtime-audit-receipt",
+    "framework-runtime-audit-export",
+    "framework-hook-operation",
+    "framework-trace-payload",
+    "framework-hook-release",
+    "framework-adapter-matrix",
+)
 
 
 @dataclass
@@ -511,25 +553,9 @@ def _execution_record(authority_dossier: dict[str, Any], **values: Any) -> dict[
 
 
 def _source_artifacts(*artifacts: dict[str, Any]) -> list[dict[str, Any]]:
-    names = [
-        "framework-runtime-service-authority-dossier",
-        "framework-runtime-service-provider-receipt",
-        "framework-runtime-service-provider-export",
-        "framework-runtime-service-worker",
-        "framework-runtime-service-attestation",
-        "framework-runtime-storage-receipt",
-        "framework-runtime-storage-export",
-        "framework-runtime-worker",
-        "framework-runtime-audit-receipt",
-        "framework-runtime-audit-export",
-        "framework-hook-operation",
-        "framework-trace-payload",
-        "framework-hook-release",
-        "framework-adapter-matrix",
-    ]
     return [
         {"kind": name, "hash": content_hash(artifact)}
-        for name, artifact in zip(names, artifacts)
+        for name, artifact in zip(SOURCE_ARTIFACT_KINDS, artifacts)
         if isinstance(artifact, dict)
     ]
 
@@ -583,23 +609,17 @@ def _verify_authority(value: Any, errors: list[str]) -> None:
     if not isinstance(value, dict):
         errors.append("framework runtime service authority worker authority must be an object")
         return
-    for field in (
-        "dossier_id",
-        "dossier_hash",
-        "schema",
-        "mode",
-        "environment",
-        "generated_at",
-        "dossier_ref",
-        "authority_ref",
-        "provider_receipt_id",
-        "provider_receipt_hash",
-        "authority_evidence_count",
-        "covered_requirement_count",
-        "missing_requirement_count",
-    ):
-        if value.get(field) is None:
+    for field in AUTHORITY_BINDING_EXPECTED_FIELDS:
+        if field not in value:
             errors.append(f"framework runtime service authority worker authority.{field} is required")
+    for field in AUTHORITY_BINDING_REQUIRED_FIELDS:
+        if value.get(field) in (None, "", [], {}):
+            errors.append(f"framework runtime service authority worker authority.{field} is required")
+    for field in AUTHORITY_BINDING_COUNT_FIELDS:
+        if not isinstance(value.get(field), int) or value.get(field) < 0:
+            errors.append(f"framework runtime service authority worker authority.{field} must be non-negative")
+    if not isinstance(value.get("authority_evidence_count"), int) or value.get("authority_evidence_count") <= 0:
+        errors.append("framework runtime service authority worker authority.authority_evidence_count must be positive")
     for field in ("generated_at",):
         _parse_required_timestamp(value.get(field), f"authority.{field}", errors)
 
@@ -690,14 +710,32 @@ def _verify_source_artifacts(value: Any, errors: list[str]) -> None:
     if not isinstance(value, list) or not value:
         errors.append("framework runtime service authority worker source_artifacts are required")
         return
+    actual_kinds: set[str] = set()
+    duplicate_kinds: set[str] = set()
     for index, item in enumerate(value):
         if not isinstance(item, dict):
             errors.append(f"framework runtime service authority worker source_artifacts[{index}] must be an object")
             continue
-        if not item.get("kind"):
+        kind = item.get("kind")
+        if not kind:
             errors.append(f"framework runtime service authority worker source_artifacts[{index}].kind is required")
+        elif not isinstance(kind, str):
+            errors.append(f"framework runtime service authority worker source_artifacts[{index}].kind must be a string")
+        else:
+            if kind in actual_kinds:
+                duplicate_kinds.add(kind)
+            actual_kinds.add(kind)
         if not item.get("hash") or not _is_sha256_ref(str(item.get("hash"))):
             errors.append(f"framework runtime service authority worker source_artifacts[{index}].hash must be a sha256 reference")
+    expected_kinds = set(SOURCE_ARTIFACT_KINDS)
+    missing = sorted(expected_kinds - actual_kinds)
+    extra = sorted(actual_kinds - expected_kinds)
+    if missing:
+        errors.append("framework runtime service authority worker source_artifacts missing: " + ", ".join(missing))
+    if extra:
+        errors.append("framework runtime service authority worker source_artifacts unsupported: " + ", ".join(extra))
+    if duplicate_kinds:
+        errors.append("framework runtime service authority worker source_artifacts duplicate: " + ", ".join(sorted(duplicate_kinds)))
 
 
 def _compare_source_hash(receipt: dict[str, Any], kind: str, artifact: dict[str, Any] | None, errors: list[str]) -> None:

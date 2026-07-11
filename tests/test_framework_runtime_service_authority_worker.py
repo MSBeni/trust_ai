@@ -7,8 +7,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from trustai.canonical import content_hash
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.framework_adapter_matrix import write_framework_adapter_matrix
 from trustai.framework_hook_operation import write_framework_hook_operation
 from trustai.framework_hook_release import write_framework_hook_release
@@ -132,6 +133,14 @@ class FrameworkRuntimeServiceAuthorityWorkerTests(unittest.TestCase):
             matrix,
         )
 
+    def _resign_receipt(self, receipt: dict) -> None:
+        body = without_keys(receipt, "worker_operation_id", "signatures")
+        worker_operation_id = content_hash(body)
+        receipt["worker_operation_id"] = worker_operation_id
+        receipt["signatures"] = [
+            sign_value({"worker_operation_id": worker_operation_id, "framework_runtime_service_authority_worker": body})
+        ]
+
     def test_framework_runtime_service_authority_worker_verifies_and_appends(self):
         (
             receipt,
@@ -250,6 +259,36 @@ class FrameworkRuntimeServiceAuthorityWorkerTests(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("authority binding does not match" in error for error in result.errors))
         self.assertTrue(any("dossier_storage_hash" in error for error in result.errors))
+
+    def test_framework_runtime_service_authority_worker_requires_complete_summaries_without_sources(self):
+        receipt, *_ = self._receipt()
+        cases = [
+            ("missing_authority_key", "authority.producer_ref is required"),
+            ("nonpositive_evidence_count", "authority.authority_evidence_count must be positive"),
+            ("missing_source_artifact", "source_artifacts missing: framework-runtime-service-provider-export"),
+        ]
+        for case_name, expected_error in cases:
+            with self.subTest(case=case_name):
+                tampered = copy.deepcopy(receipt)
+                if case_name == "missing_authority_key":
+                    tampered["authority"].pop("producer_ref")
+                elif case_name == "nonpositive_evidence_count":
+                    tampered["authority"]["authority_evidence_count"] = 0
+                else:
+                    tampered["source_artifacts"] = [
+                        artifact
+                        for artifact in tampered["source_artifacts"]
+                        if artifact.get("kind") != "framework-runtime-service-provider-export"
+                    ]
+                self._resign_receipt(tampered)
+
+                result = verify_framework_runtime_service_authority_worker_receipt(
+                    tampered,
+                    now="2026-07-09T01:05:00Z",
+                )
+
+                self.assertFalse(result.ok)
+                self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
 
     def test_framework_runtime_service_authority_worker_rejects_raw_credential(self):
         (
