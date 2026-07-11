@@ -8,7 +8,7 @@ against the uploaded roadmap.
 | Roadmap Item | Evidence in Repository |
 |---|---|
 | Verification Contract DSL + registry | `src/trustai/contracts.py`, `docs/specs/verification-contract-v0.1.md` |
-| Merkle evidence chain + signing | `src/trustai/chain.py`, `src/trustai/merkle.py`, provider-tagged HMAC signatures |
+| Merkle evidence chain + signing | `src/trustai/chain.py`, `src/trustai/merkle.py`, provider-tagged HMAC signatures, persisted tree-header verification against entries |
 | Large-log tamper stress reports | `src/trustai/tamper_stress.py`, `tamper-stress-report`, `tamper-stress-verify`, sampled inclusion proofs, single-byte payload/signature/timestamp/entry-id tamper vectors, explicit Phase 0 1,000,000-entry target metadata plus strict `--require-roadmap-target` verification, `tests/test_tamper_stress.py`, `docs/specs/tamper-stress-report-v0.1.md` |
 | Local TSA timestamp tokens | `src/trustai/timestamping.py`, entry-level timestamp verification |
 | Provider-aware local keyring verification and rotation | `src/trustai/keyring.py`, `keyring-init`, `keyring-rotate`, `chain-verify`, `verify --keyring` |

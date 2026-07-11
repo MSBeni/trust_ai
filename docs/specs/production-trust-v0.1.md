@@ -67,6 +67,15 @@ public-log root and entry reference, inclusion proof hash, optional witness or
 blockchain references, redacted provider credential reference, and immutable
 audit-log root. See `docs/specs/anchor-provider-receipt-v0.1.md`.
 
+## Persisted Chain Tree Headers
+
+Every saved evidence-chain document stores `tree.size` and `tree.root`.
+`EvidenceChain.verify_all()` recomputes the tree from the entry list and rejects
+missing headers, non-object headers, size mismatches, and root mismatches.
+Appends after load clear the stale declared header until the chain is saved
+again, so verification compares against current entries while saved snapshots
+cannot hide metadata tampering.
+
 ## WORM Receipts and Legal Holds
 
 `trustai seal` writes an artifact to a content-addressed local WORM object store

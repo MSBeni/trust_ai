@@ -60,10 +60,19 @@ def verify_entry(entry: dict[str, Any], key: str | None = None) -> list[str]:
 
 
 class EvidenceChain:
-    def __init__(self, path: Path, tenant_id: str, entries: list[dict[str, Any]] | None = None):
+    def __init__(
+        self,
+        path: Path,
+        tenant_id: str,
+        entries: list[dict[str, Any]] | None = None,
+        declared_tree: Any | None = None,
+        declared_tree_required: bool = False,
+    ):
         self.path = path
         self.tenant_id = tenant_id
         self.entries = entries or []
+        self.declared_tree = declared_tree
+        self._declared_tree_required = declared_tree_required or declared_tree is not None
 
     @classmethod
     def load(cls, path: str | Path, tenant_id: str = "local") -> "EvidenceChain":
@@ -74,17 +83,26 @@ class EvidenceChain:
         data = json.loads(chain_path.read_text(encoding="utf-8"))
         if data.get("spec_version") != CHAIN_SPEC_VERSION:
             raise ValueError(f"unsupported chain spec version: {data.get('spec_version')}")
-        return cls(chain_path, data["tenant_id"], data.get("entries", []))
+        return cls(
+            chain_path,
+            data["tenant_id"],
+            data.get("entries", []),
+            declared_tree=data.get("tree"),
+            declared_tree_required=True,
+        )
 
     def save(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        tree = self.tree()
         data = {
             "spec_version": CHAIN_SPEC_VERSION,
             "tenant_id": self.tenant_id,
-            "tree": self.tree(),
+            "tree": tree,
             "entries": self.entries,
         }
         self.path.write_text(json.dumps(data, indent=2, sort_keys=True), encoding="utf-8")
+        self.declared_tree = tree
+        self._declared_tree_required = True
 
     def tree(self) -> dict[str, Any]:
         ids = [entry["entry_id"] for entry in self.entries]
@@ -121,6 +139,8 @@ class EvidenceChain:
             ),
         }
         self.entries.append(entry)
+        self.declared_tree = None
+        self._declared_tree_required = False
         return entry
 
     def entry_ids(self) -> list[str]:
@@ -163,7 +183,21 @@ class EvidenceChain:
             expected_previous = entry.get("entry_id")
 
         ids = self.entry_ids()
-        root = merkle_root(ids)
+        tree = self.tree()
+        if self.declared_tree is None:
+            if self._declared_tree_required:
+                errors.append("declared chain tree missing")
+        elif not isinstance(self.declared_tree, dict):
+            errors.append("declared chain tree must be an object")
+        else:
+            declared_size = self.declared_tree.get("size")
+            declared_root = self.declared_tree.get("root")
+            if type(declared_size) is not int or declared_size != tree["size"]:
+                errors.append("declared chain tree size mismatch")
+            if not isinstance(declared_root, str) or declared_root != tree["root"]:
+                errors.append("declared chain tree root mismatch")
+
+        root = tree["root"]
         for entry in self.entries:
             proof = inclusion_proof(ids, entry["index"])
             if not verify_inclusion(entry["entry_id"], proof, root):
