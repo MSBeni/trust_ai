@@ -63,7 +63,12 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertTrue(any("incomplete" in error for error in strict_result.errors))
         self.assertEqual("partial", manifest["summary"]["status"])
         self.assertIn("TrustAI External Evidence Manifest", markdown)
+        self.assertIn("Required External Evidence", markdown)
+        self.assertIn("Accepted Authorities", markdown)
+        self.assertIn("Authority Evidence Needed", markdown)
         self.assertIn("oss-verifier-and-public-spec", markdown)
+        self.assertIn("self-serve-onboarding", markdown)
+        self.assertIn("`ci-run`", markdown)
         required = next(
             item
             for item in manifest["required_external_requirements"]

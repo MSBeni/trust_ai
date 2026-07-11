@@ -52,6 +52,15 @@ Each evidence item contains:
   authority artifact. With strict freshness verification, both timestamps are
   required and `expires_at` MUST be later than the verifier's `now` value.
 
+## Markdown Rendering
+
+The optional Markdown rendering MUST expose the manifest as an external-evidence
+collection checklist. It includes every required `reference-attested`
+requirement, coverage state, accepted authority kinds, and the roadmap audit's
+external authority text, followed by supplied evidence rows with accepted
+authority kinds and freshness windows. This keeps the human review artifact
+aligned with the machine-verifiable authority-kind policy.
+
 ## Evidence Chain Entry
 
 A verified manifest can be appended to an evidence chain as

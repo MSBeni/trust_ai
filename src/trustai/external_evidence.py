@@ -733,19 +733,57 @@ def write_roadmap_evidence_bundle_markdown(path: str | Path, bundle: dict[str, A
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(render_roadmap_evidence_bundle_markdown(bundle), encoding="utf-8")
 
+def _markdown_cell(value: Any) -> str:
+    return str(value).replace("|", "\\|").replace("\r\n", "<br>").replace("\n", "<br>").replace("\r", "<br>")
+
+
+def _markdown_code_list(values: Any) -> str:
+    if not isinstance(values, list):
+        return ""
+    return ", ".join(f"`{_markdown_cell(value)}`" for value in values if str(value))
+
+
+def _markdown_text_list(values: Any) -> str:
+    if not isinstance(values, list):
+        return ""
+    return "<br>".join(_markdown_cell(value) for value in values if str(value))
+
+
+def _external_evidence_freshness_cell(item: dict[str, Any]) -> str:
+    issued_at = str(item.get("issued_at") or "")
+    expires_at = str(item.get("expires_at") or "")
+    if issued_at or expires_at:
+        return _markdown_cell(f"{issued_at or 'missing issued_at'} to {expires_at or 'missing expires_at'}")
+    return "missing"
+
+
 def render_external_evidence_markdown(manifest: dict[str, Any]) -> str:
-    rows = "\n".join(
-        "| {requirement} | {kind} | `{path}` | {description} |".format(
-            requirement=item.get("requirement_id", ""),
-            kind=item.get("authority_kind", ""),
-            path=item.get("path", ""),
-            description=item.get("description", ""),
+    summary = manifest.get("summary", {})
+    covered_ids = set(summary.get("covered_requirement_ids", []))
+    requirement_rows = "\n".join(
+        "| `{requirement}` | {phase} | {priority} | {coverage} | {accepted} | {authority} |".format(
+            requirement=_markdown_cell(item.get("id", "")),
+            phase=_markdown_cell(item.get("phase", "")),
+            priority=_markdown_cell(item.get("priority", "")),
+            coverage="covered" if item.get("id") in covered_ids else "missing",
+            accepted=_markdown_code_list(item.get("allowed_authority_kinds", [])),
+            authority=_markdown_text_list(item.get("external_authority_required", [])),
+        )
+        for item in manifest.get("required_external_requirements", [])
+    )
+    evidence_rows = "\n".join(
+        "| `{requirement}` | {kind} | {accepted} | `{path}` | {freshness} | {description} |".format(
+            requirement=_markdown_cell(item.get("requirement_id", "")),
+            kind=_markdown_cell(item.get("authority_kind", "")),
+            accepted=_markdown_code_list(item.get("accepted_authority_kinds", [])),
+            path=_markdown_cell(item.get("path", "")),
+            freshness=_external_evidence_freshness_cell(item),
+            description=_markdown_cell(item.get("description", "")),
         )
         for item in manifest.get("evidence", [])
     )
-    missing = manifest.get("summary", {}).get("missing_requirement_ids", [])
-    missing_lines = "\n".join(f"- `{requirement_id}`" for requirement_id in missing)
-    summary = manifest.get("summary", {})
+    missing = summary.get("missing_requirement_ids", [])
+    missing_lines = "\n".join(f"- `{_markdown_cell(requirement_id)}`" for requirement_id in missing)
     return f"""# TrustAI External Evidence Manifest
 
 Manifest ID: `{manifest.get('manifest_id', '')}`
@@ -761,11 +799,17 @@ Status: {summary.get('status', '')}
 - Evidence with expires_at: {summary.get('expires_at_count', 0)}
 - Evidence with freshness windows: {summary.get('freshness_window_count', 0)}
 
+## Required External Evidence
+
+| Requirement | Phase | Priority | Coverage | Accepted Authorities | Authority Evidence Needed |
+|---|---|---|---|---|---|
+{requirement_rows or "| - | - | - | - | - | - |"}
+
 ## Evidence
 
-| Requirement | Authority | Artifact | Description |
-|---|---|---|---|
-{rows}
+| Requirement | Authority | Accepted Authorities | Artifact | Freshness Window | Description |
+|---|---|---|---|---|---|
+{evidence_rows or "| - | - | - | - | - | - |"}
 
 ## Missing Requirements
 
