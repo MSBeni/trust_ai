@@ -505,7 +505,7 @@ def _verify_service_worker_binding(
         if binding.get(field) in (None, "", []):
             errors.append(f"framework runtime service provider binding.{field} is required")
     if service_worker is None:
-        warnings.append("framework runtime service provider service worker artifact was not supplied; worker source was not replayed")
+        errors.append("framework runtime service provider service worker artifact is required for verification")
         return
     expected = _service_worker_binding(service_worker)
     if binding != expected:
@@ -545,7 +545,7 @@ def _verify_provider_export_binding(receipt: dict[str, Any], provider_export: di
         if not isinstance(export.get(field), int) or export.get(field) <= 0:
             errors.append(f"framework runtime service provider provider_export.{field} must be positive")
     if provider_export is None:
-        warnings.append("framework runtime service provider export artifact was not supplied; provider records were not replayed")
+        errors.append("framework runtime service provider export artifact is required for verification")
         return
     if export.get("hash") != content_hash(provider_export):
         errors.append("framework runtime service provider export hash does not match supplied provider export")

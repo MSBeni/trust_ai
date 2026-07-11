@@ -44,11 +44,11 @@ message hashes, lease/checkpoint/cursor evidence, KMS response hashes, stream
 message hashes, WORM object hashes, ClickHouse/Postgres/control-index hashes, or
 audit roots.
 
-`framework-runtime-service-provider-append` requires all source artifacts. The
-chain entry records only hash-bound summaries while offline reviewers can replay
-disclosed provider records. Omitted source artifacts during standalone
-verification may produce replay warnings, but they must not permit partial
-service worker or provider export summaries.
+`framework-runtime-service-provider-append` requires all source artifacts. Offline
+verification is also fail-closed: the provider export, service worker receipt,
+and every nested service-worker source artifact are required so reviewers can
+replay provider records and the worker operation. A detached signature over
+partial replay inputs is not enough to verify the receipt.
 
 ## CLI
 

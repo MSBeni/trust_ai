@@ -320,6 +320,39 @@ class FrameworkRuntimeServiceProviderTests(unittest.TestCase):
                 self.assertFalse(result.ok)
                 self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
 
+    def test_framework_runtime_service_provider_requires_replay_artifacts_without_sources(self):
+        receipt, provider_export, service_worker, *_ = self._receipt()
+
+        missing_all = verify_framework_runtime_service_provider_receipt(receipt)
+        missing_provider_export = verify_framework_runtime_service_provider_receipt(
+            receipt,
+            service_worker=service_worker,
+        )
+        missing_service_worker = verify_framework_runtime_service_provider_receipt(
+            receipt,
+            provider_export=provider_export,
+        )
+
+        self.assertFalse(missing_all.ok)
+        self.assertIn(
+            "framework runtime service provider service worker artifact is required for verification",
+            missing_all.errors,
+        )
+        self.assertIn(
+            "framework runtime service provider export artifact is required for verification",
+            missing_all.errors,
+        )
+        self.assertFalse(missing_provider_export.ok)
+        self.assertIn(
+            "framework runtime service provider export artifact is required for verification",
+            missing_provider_export.errors,
+        )
+        self.assertFalse(missing_service_worker.ok)
+        self.assertIn(
+            "framework runtime service provider service worker artifact is required for verification",
+            missing_service_worker.errors,
+        )
+
     def test_framework_runtime_service_provider_rejects_raw_credential(self):
         receipt, provider_export, service_worker, service, storage_receipt, storage_export, worker, runtime_audit, audit_export, operation, trace, release, matrix = self._receipt()
         tampered = copy.deepcopy(receipt)
