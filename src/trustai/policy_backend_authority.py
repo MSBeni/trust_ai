@@ -81,6 +81,72 @@ PRODUCTION_AUTHORITY_REQUIREMENTS = [
 ]
 PRODUCTION_AUTHORITY_REQUIREMENT_IDS = [item["id"] for item in PRODUCTION_AUTHORITY_REQUIREMENTS]
 
+PROVIDER_BUNDLE_BINDING_REQUIRED_FIELDS = (
+    "bundle_id",
+    "bundle_hash",
+    "bundle_schema",
+    "bundle_mode",
+    "environment",
+    "generated_at",
+    "reviewer_ref",
+    "bundle_ref",
+    "provider_receipt_id",
+    "provider_receipt_hash",
+    "provider",
+    "provider_export_hash",
+    "provider_export_ref",
+    "worker_operation_id",
+    "worker_operation_hash",
+    "service_attestation_id",
+    "enforcement_id",
+    "backend_ref",
+    "engine",
+    "endpoint_url",
+    "decision_hash",
+    "decision_log_root",
+    "audit_log_root",
+    "source_artifact_count",
+    "source_artifact_sha256_root",
+    "source_artifact_content_root",
+    "provider_record_root_count",
+    "provider_record_roots",
+    "policy_engine_receipt_replayed",
+)
+
+SERVICE_BUNDLE_BINDING_REQUIRED_FIELDS = (
+    "bundle_id",
+    "bundle_hash",
+    "bundle_schema",
+    "bundle_mode",
+    "environment",
+    "generated_at",
+    "reviewer_ref",
+    "bundle_ref",
+    "service_attestation_id",
+    "service_attestation_hash",
+    "service_ref",
+    "service_version",
+    "enforcement_id",
+    "enforcement_hash",
+    "engine",
+    "backend_ref",
+    "endpoint_url",
+    "policy_bundle_ref",
+    "policy_bundle_hash",
+    "policy_pack_id",
+    "policy_pack_version",
+    "decision_hash",
+    "decision_outcome",
+    "decision_passed",
+    "decision_log_root",
+    "audit_log_root",
+    "source_artifact_count",
+    "source_artifact_sha256_root",
+    "source_artifact_content_root",
+    "policy_engine_receipt_replayed",
+    "service_control_summary",
+    "enforcement_control_summary",
+)
 
 @dataclass
 class PolicyBackendAuthorityVerification:
@@ -461,28 +527,7 @@ def _verify_provider_bundle_binding(
     if not isinstance(binding, dict):
         errors.append("policy backend authority provider_bundle_binding must be an object")
         return
-    for field in (
-        "bundle_id",
-        "bundle_hash",
-        "bundle_mode",
-        "environment",
-        "generated_at",
-        "provider_receipt_id",
-        "provider_receipt_hash",
-        "provider",
-        "provider_export_hash",
-        "worker_operation_id",
-        "worker_operation_hash",
-        "service_attestation_id",
-        "enforcement_id",
-        "backend_ref",
-        "engine",
-        "endpoint_url",
-        "decision_log_root",
-        "audit_log_root",
-        "source_artifact_count",
-        "source_artifact_content_root",
-    ):
+    for field in PROVIDER_BUNDLE_BINDING_REQUIRED_FIELDS:
         if binding.get(field) in (None, "", []):
             errors.append(f"policy backend authority provider_bundle_binding.{field} is required")
     if provider_bundle is None:
@@ -516,24 +561,7 @@ def _verify_service_bundle_bindings(
         if not isinstance(binding, dict):
             errors.append("policy backend authority service bundle binding must be an object")
             continue
-        for field in (
-            "bundle_id",
-            "bundle_hash",
-            "bundle_mode",
-            "environment",
-            "generated_at",
-            "service_attestation_id",
-            "service_attestation_hash",
-            "enforcement_id",
-            "enforcement_hash",
-            "backend_ref",
-            "engine",
-            "endpoint_url",
-            "decision_log_root",
-            "audit_log_root",
-            "source_artifact_count",
-            "source_artifact_content_root",
-        ):
+        for field in SERVICE_BUNDLE_BINDING_REQUIRED_FIELDS:
             if binding.get(field) in (None, "", []):
                 errors.append(f"policy backend authority service_bundle_bindings.{field} is required")
     if isinstance(provider_binding, dict):

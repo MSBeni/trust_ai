@@ -46,12 +46,17 @@ deferred. The schema is
 
 1. Schema, canonical `dossier_id`, and at least one valid signature.
 2. Supported mode, RFC 3339 generation timestamp, and required refs.
-3. Provider bundle binding presence and, when `--provider-bundle` is supplied,
-   exact replay through `policy-backend-provider-export-bundle-verify`.
-4. Optional service bundle bindings and, when `--service-bundle` is supplied,
-   exact replay through `policy-backend-service-bundle-verify` plus linkage to
-   the provider bundle service attestation, enforcement, backend, endpoint,
-   engine, and decision hash.
+3. Provider bundle binding presence and every non-null provider binding field
+   emitted by the v0.1 builder. When `--provider-bundle` is supplied, the
+   binding must also replay exactly through
+   `policy-backend-provider-export-bundle-verify`.
+4. Optional service bundle bindings and every non-null service binding field
+   emitted by the v0.1 builder. When `--service-bundle` is supplied, each
+   binding must also replay exactly through
+   `policy-backend-service-bundle-verify` plus linkage to the provider bundle
+   service attestation, enforcement, backend, endpoint, engine, and decision
+   hash. Omitted sources may produce replay warnings, but they must not permit
+   partial provider or service binding summaries.
 5. The required production authority checklist exactly matches v0.1.
 6. Every authority evidence item uses a known requirement id, accepted
    authority kind, non-empty reference and description, and `sha256:` hash.

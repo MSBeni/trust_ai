@@ -7,7 +7,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.policy_backend_authority import (
     POLICY_BACKEND_AUTHORITY_ENTRY_TYPE,
     POLICY_BACKEND_AUTHORITY_SCHEMA,
@@ -147,6 +149,32 @@ class PolicyBackendAuthorityTests(unittest.TestCase):
 
             self.assertFalse(result.ok)
             self.assertTrue(any("service_bundle_bindings" in error or "service bundle source" in error for error in result.errors), result.errors)
+
+    def test_policy_backend_authority_requires_complete_bindings_without_sources(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            _, _, _, _, dossier = self._dossier(tmp)
+            cases = [
+                (["provider_bundle_binding"], "provider_record_roots", "provider_bundle_binding.provider_record_roots is required"),
+                (["provider_bundle_binding"], "policy_engine_receipt_replayed", "provider_bundle_binding.policy_engine_receipt_replayed is required"),
+                (["service_bundle_bindings", 0], "service_control_summary", "service_bundle_bindings.service_control_summary is required"),
+            ]
+            for path, field, expected_error in cases:
+                with self.subTest(field=field):
+                    tampered = copy.deepcopy(dossier)
+                    target = tampered
+                    for part in path:
+                        target = target[part]
+                    target.pop(field)
+                    body = without_keys(tampered, "dossier_id", "signatures")
+                    dossier_id = content_hash(body)
+                    tampered["dossier_id"] = dossier_id
+                    tampered["signatures"] = [sign_value({"dossier_id": dossier_id, "policy_backend_authority": body})]
+
+                    result = verify_policy_backend_authority_dossier(tampered)
+
+                    self.assertFalse(result.ok)
+                    self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
 
     def test_policy_backend_authority_requires_freshness_when_strict(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
