@@ -36,6 +36,8 @@ The worker bundle binding records worker review bundle ID/hash, service and work
 
 Verification recomputes every binding from supplied service, worker, and worker-bundle artifacts. If telemetry, underwriting quote, actuarial product/corpus, or frontend bundle sources are supplied, the verifier also replays the underlying service and worker checks. If worker bundles are supplied, the verifier also verifies each bundle and rejects bundles that do not reference the supplied service attestation and worker receipt hashes.
 
+If service, worker, worker-bundle, telemetry, underwriting quote, actuarial, or frontend sources are omitted, verification may warn that source hashes were not replayed, but it still rejects incomplete signed bindings with missing attestation schemas, source schema/type lists, frontend artifact hashes, consent and risk fields, delivery/audit/access log refs, policy workflow/binding hashes, replay-status fields, source-artifact roots, or worker control summaries.
+
 ## Production Authority Requirements
 
 The v0.1 checklist contains:

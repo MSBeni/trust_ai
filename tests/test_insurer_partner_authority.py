@@ -8,7 +8,9 @@ import unittest
 from pathlib import Path
 
 import tests.test_insurer_partner_worker as worker_test_helpers
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.insurer_partner_authority import (
     INSURER_PARTNER_AUTHORITY_ENTRY_TYPE,
     INSURER_PARTNER_AUTHORITY_SCHEMA,
@@ -178,6 +180,24 @@ class InsurerPartnerAuthorityTests(unittest.TestCase):
 
             self.assertFalse(result.ok)
             self.assertTrue(any("worker_bundle_bindings" in error or "worker bundle source" in error for error in result.errors), result.errors)
+
+    def test_insurer_partner_authority_requires_complete_bindings_without_sources(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            _, _, _, dossier = self._dossier(Path(tmp_dir))
+            tampered = copy.deepcopy(dossier)
+            tampered["worker_bundle_bindings"][0].pop("frontend_bundle_replayed")
+            body = without_keys(tampered, "dossier_id", "signatures")
+            dossier_id = content_hash(body)
+            tampered["dossier_id"] = dossier_id
+            tampered["signatures"] = [sign_value({"dossier_id": dossier_id, "insurer_partner_authority": body})]
+
+            result = verify_insurer_partner_authority_dossier(tampered)
+
+            self.assertFalse(result.ok)
+            self.assertTrue(
+                any("worker_bundle_binding.frontend_bundle_replayed is required" in error for error in result.errors),
+                result.errors,
+            )
 
     def test_insurer_partner_authority_requires_freshness_when_strict(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
