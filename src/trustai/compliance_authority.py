@@ -415,10 +415,7 @@ def _verify_source_binding(
     if not isinstance(binding, dict):
         errors.append("compliance authority source_binding is required")
         return
-    if not isinstance(binding.get("compliance_export"), dict):
-        errors.append("compliance authority source_binding.compliance_export is required")
-    if not isinstance(binding.get("eu_ai_act_document"), dict):
-        errors.append("compliance authority source_binding.eu_ai_act_document is required")
+    _verify_binding_completeness(binding, errors)
     if compliance_export is None:
         warnings.append("compliance authority compliance export source was not supplied; export binding hashes were not replayed")
         return
@@ -440,14 +437,86 @@ def _verify_source_binding(
         errors.append("compliance authority source_binding does not match supplied source artifacts")
 
 
+def _verify_binding_completeness(binding: dict[str, Any], errors: list[str]) -> None:
+    export = binding.get("compliance_export")
+    if not isinstance(export, dict):
+        errors.append("compliance authority source_binding.compliance_export is required")
+        export = {}
+    for field in ("schema", "export_hash", "pack_id", "issued_at"):
+        _require_binding_field(export, f"source_binding.compliance_export.{field}", errors)
+    for field in ("frameworks", "required_frameworks", "chain_roots"):
+        _require_binding_field(export, f"source_binding.compliance_export.{field}", errors)
+    _require_binding_field(export, "source_binding.compliance_export.missing_frameworks", errors, allow_empty_list=True)
+    for field in ("framework_count", "control_count"):
+        _require_positive_binding_count(export, f"source_binding.compliance_export.{field}", errors)
+
+    document = binding.get("eu_ai_act_document")
+    if not isinstance(document, dict):
+        errors.append("compliance authority source_binding.eu_ai_act_document is required")
+        document = {}
+    for field in ("document_id", "document_hash", "schema", "issued_at", "source_proof_pack_id", "source_regulator_disclosure_id"):
+        _require_binding_field(document, f"source_binding.eu_ai_act_document.{field}", errors)
+    _require_binding_field(document, "source_binding.eu_ai_act_document.section_ids", errors)
+    _require_positive_binding_count(document, "source_binding.eu_ai_act_document.section_count", errors)
+
+    pack = binding.get("proof_pack")
+    if pack is not None:
+        if not isinstance(pack, dict):
+            errors.append("compliance authority source_binding.proof_pack must be an object")
+        else:
+            for field in ("pack_id", "pack_hash", "spec_version", "issued_at", "chain_root"):
+                _require_binding_field(pack, f"source_binding.proof_pack.{field}", errors)
+            _require_positive_binding_count(pack, "source_binding.proof_pack.entry_count", errors)
+
+    disclosure = binding.get("regulator_disclosure")
+    if disclosure is not None:
+        if not isinstance(disclosure, dict):
+            errors.append("compliance authority source_binding.regulator_disclosure must be an object")
+        else:
+            for field in ("disclosure_id", "disclosure_hash", "schema", "issued_at"):
+                _require_binding_field(disclosure, f"source_binding.regulator_disclosure.{field}", errors)
+            _require_positive_binding_count(disclosure, "source_binding.regulator_disclosure.disclosed_entry_count", errors)
+
+    data_plane = binding.get("eu_data_plane")
+    if data_plane is not None:
+        if not isinstance(data_plane, dict):
+            errors.append("compliance authority source_binding.eu_data_plane must be an object")
+        else:
+            for field in ("attestation_id", "attestation_hash", "schema", "mode", "environment", "attested_at", "regions"):
+                _require_binding_field(data_plane, f"source_binding.eu_data_plane.{field}", errors)
+            residency = data_plane.get("residency")
+            if not isinstance(residency, dict):
+                errors.append("compliance authority source_binding.eu_data_plane.residency is required")
+                residency = {}
+            for field in ("tenant_id", "data_plane_ref", "customer_account_ref"):
+                _require_binding_field(residency, f"source_binding.eu_data_plane.residency.{field}", errors)
+            _require_binding_field(data_plane, "source_binding.eu_data_plane.control_summary", errors)
+
+
+def _require_binding_field(container: dict[str, Any], path: str, errors: list[str], *, allow_empty_list: bool = False) -> None:
+    field = path.rsplit(".", 1)[-1]
+    value = container.get(field)
+    if value is None or value == "" or (value == [] and not allow_empty_list) or value == {}:
+        errors.append(f"compliance authority {path} is required")
+
+
+def _require_positive_binding_count(container: dict[str, Any], path: str, errors: list[str]) -> None:
+    field = path.rsplit(".", 1)[-1]
+    value = container.get(field)
+    if not isinstance(value, int) or value <= 0:
+        errors.append(f"compliance authority {path} is required")
+
 def _source_binding_complete(binding: dict[str, Any]) -> bool:
+    errors: list[str] = []
+    _verify_binding_completeness(binding, errors)
     export = binding.get("compliance_export") if isinstance(binding.get("compliance_export"), dict) else {}
     document = binding.get("eu_ai_act_document") if isinstance(binding.get("eu_ai_act_document"), dict) else {}
     pack = binding.get("proof_pack") if isinstance(binding.get("proof_pack"), dict) else {}
     disclosure = binding.get("regulator_disclosure") if isinstance(binding.get("regulator_disclosure"), dict) else {}
     data_plane = binding.get("eu_data_plane") if isinstance(binding.get("eu_data_plane"), dict) else {}
     return bool(
-        export.get("pack_id")
+        not errors
+        and export.get("pack_id")
         and not export.get("missing_frameworks")
         and len(export.get("chain_roots", [])) == 1
         and document.get("document_id")

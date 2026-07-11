@@ -80,6 +80,10 @@ Verifiers must:
 - verify the EU data-plane attestation when supplied
 - compare source bindings to supplied compliance, EU AI Act, proof-pack,
   disclosure, and EU data-plane artifacts
+- reject incomplete source bindings even when raw source artifacts are omitted,
+  including missing nested IDs, hashes, framework coverage, section summaries,
+  source replay summaries, disclosure summaries, EU residency references, or
+  control summaries
 - recompute the authority evidence summary
 - recompute controls from the dossier body
 - reject malformed authority evidence and unsupported authority kinds

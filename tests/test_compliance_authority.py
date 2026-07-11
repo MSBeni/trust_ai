@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from trustai.canonical import content_hash
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
 from trustai.compliance import build_compliance_export
 from trustai.compliance_authority import (
@@ -17,6 +17,7 @@ from trustai.compliance_authority import (
     verify_compliance_authority_dossier,
 )
 from trustai.contracts import load_contract, register_contract
+from trustai.crypto import sign_value
 from trustai.eu_ai_act import build_eu_ai_act_document
 from trustai.gate import append_eval_and_gate
 from trustai.lifecycle import append_demotion, append_incident, append_rollback, load_incident
@@ -153,6 +154,32 @@ class ComplianceAuthorityTests(unittest.TestCase):
             self.assertFalse(result.ok)
             self.assertIn("compliance export does not match supplied proof pack", result.errors)
             self.assertIn("compliance authority source_binding does not match supplied source artifacts", result.errors)
+
+    def test_verification_requires_complete_source_binding_without_sources(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            _, pack, disclosure, compliance_export, document = self._sources(Path(tmp_dir))
+            dossier = build_compliance_authority_dossier(
+                compliance_export,
+                document,
+                proof_pack=pack,
+                regulator_disclosure=disclosure,
+                mode="provider-dossier",
+                environment="aitrade-prod",
+                dossier_ref="dossier:compliance-authority/aitrade-prod",
+                authority_ref="authority:compliance/aitrade-prod",
+                producer_ref="oidc:trustai.example/compliance-authority-worker",
+            )
+            tampered = copy.deepcopy(dossier)
+            tampered["source_binding"]["compliance_export"].pop("export_hash")
+            body = without_keys(tampered, "dossier_id", "signatures")
+            dossier_id = content_hash(body)
+            tampered["dossier_id"] = dossier_id
+            tampered["signatures"] = [sign_value({"dossier_id": dossier_id, "compliance_authority": body})]
+
+            result = verify_compliance_authority_dossier(tampered)
+
+            self.assertFalse(result.ok)
+            self.assertTrue(any("compliance_export.export_hash is required" in error for error in result.errors), result.errors)
 
     def test_require_fresh_rejects_missing_freshness_windows(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
