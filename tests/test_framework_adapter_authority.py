@@ -7,7 +7,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.framework_adapter_authority import (
     FRAMEWORK_ADAPTER_AUTHORITY_ENTRY_TYPE,
     FRAMEWORK_ADAPTER_AUTHORITY_SCHEMA,
@@ -161,6 +163,20 @@ class FrameworkAdapterAuthorityTests(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("source_binding does not match" in error for error in result.errors))
         self.assertTrue(any("matrix source" in error for error in result.errors))
+
+    def test_framework_adapter_authority_requires_complete_source_binding_without_sources(self):
+        dossier, *_ = self._dossier()
+        tampered = copy.deepcopy(dossier)
+        tampered["source_binding"]["hook_release"].pop("release_hash")
+        body = without_keys(tampered, "dossier_id", "signatures")
+        dossier_id = content_hash(body)
+        tampered["dossier_id"] = dossier_id
+        tampered["signatures"] = [sign_value({"dossier_id": dossier_id, "framework_adapter_authority": body})]
+
+        result = verify_framework_adapter_authority_dossier(tampered, root=ROOT)
+
+        self.assertFalse(result.ok)
+        self.assertTrue(any("hook_release.release_hash is required" in error for error in result.errors), result.errors)
 
     def test_framework_adapter_authority_requires_freshness_when_strict(self):
         evidence = [dict(self._authority_evidence()[0])]

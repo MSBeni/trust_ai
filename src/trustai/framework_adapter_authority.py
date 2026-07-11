@@ -371,10 +371,7 @@ def _verify_source_binding(
     if not isinstance(binding, dict):
         errors.append("framework adapter authority source_binding is required")
         return
-    if not isinstance(binding.get("adapter_matrix"), dict):
-        errors.append("framework adapter authority source_binding.adapter_matrix is required")
-    if not isinstance(binding.get("hook_release"), dict):
-        errors.append("framework adapter authority source_binding.hook_release is required")
+    _verify_binding_completeness(binding, errors)
     if matrix is None:
         warnings.append("framework adapter authority matrix source was not supplied; matrix binding hashes were not replayed")
         return
@@ -396,12 +393,72 @@ def _verify_source_binding(
         errors.append("framework adapter authority source_binding does not match supplied source artifacts")
 
 
+def _verify_binding_completeness(binding: dict[str, Any], errors: list[str]) -> None:
+    matrix = _binding_section(binding, "adapter_matrix", errors)
+    for field in ("matrix_id", "matrix_hash", "schema", "matrix_ref", "issued_at", "adapter_package_version"):
+        _require_binding_field(matrix, f"source_binding.adapter_matrix.{field}", errors)
+    _verify_summary_binding(matrix.get("summary"), "source_binding.adapter_matrix.summary", errors)
+
+    release = _binding_section(binding, "hook_release", errors)
+    for field in ("release_id", "release_hash", "schema", "release_ref", "released_at"):
+        _require_binding_field(release, f"source_binding.hook_release.{field}", errors)
+    _verify_summary_binding(release.get("summary"), "source_binding.hook_release.summary", errors)
+    _require_binding_field(release, "source_binding.hook_release.status_counts", errors)
+    release_matrix = release.get("adapter_matrix")
+    if not isinstance(release_matrix, dict):
+        errors.append("framework adapter authority source_binding.hook_release.adapter_matrix is required")
+        release_matrix = {}
+    for field in ("matrix_id", "matrix_hash", "matrix_ref", "issued_at"):
+        _require_binding_field(release_matrix, f"source_binding.hook_release.adapter_matrix.{field}", errors)
+
+    _require_binding_field(binding, "source_binding.frameworks", errors)
+    runtime_versions = binding.get("runtime_versions")
+    if not isinstance(runtime_versions, list) or not runtime_versions:
+        errors.append("framework adapter authority source_binding.runtime_versions is required")
+    else:
+        for index, runtime in enumerate(runtime_versions):
+            if not isinstance(runtime, dict):
+                errors.append(f"framework adapter authority source_binding.runtime_versions[{index}] must be an object")
+                continue
+            for field in ("framework", "package", "version", "status"):
+                _require_binding_field(runtime, f"source_binding.runtime_versions[{index}].{field}", errors)
+
+    runtime_authority = binding.get("runtime_service_authority")
+    if runtime_authority is not None:
+        if not isinstance(runtime_authority, dict):
+            errors.append("framework adapter authority source_binding.runtime_service_authority must be an object")
+        else:
+            for field in ("dossier_id", "dossier_hash", "schema", "mode", "environment", "generated_at", "summary", "authority_ref"):
+                _require_binding_field(runtime_authority, f"source_binding.runtime_service_authority.{field}", errors)
+
+
+def _binding_section(binding: dict[str, Any], section: str, errors: list[str]) -> dict[str, Any]:
+    value = binding.get(section)
+    if not isinstance(value, dict):
+        errors.append(f"framework adapter authority source_binding.{section} is required")
+        return {}
+    return value
+
+
+def _verify_summary_binding(value: Any, path: str, errors: list[str]) -> None:
+    if not isinstance(value, dict):
+        errors.append(f"framework adapter authority {path} is required")
+        return
+    for field in ("row_count", "framework_count", "frameworks", "by_status", "by_hook_mode"):
+        _require_binding_field(value, f"{path}.{field}", errors)
+
+
+def _require_binding_field(container: dict[str, Any], path: str, errors: list[str]) -> None:
+    field = path.rsplit(".", 1)[-1]
+    value = container.get(field)
+    if value is None or value == "" or value == [] or value == {}:
+        errors.append(f"framework adapter authority {path} is required")
+
+
 def _source_binding_complete(binding: dict[str, Any]) -> bool:
-    return bool(
-        isinstance(binding.get("adapter_matrix"), dict)
-        and isinstance(binding.get("hook_release"), dict)
-        and isinstance(binding.get("runtime_service_authority"), dict)
-    )
+    errors: list[str] = []
+    _verify_binding_completeness(binding, errors)
+    return not errors and isinstance(binding.get("runtime_service_authority"), dict)
 
 
 def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
@@ -492,7 +549,7 @@ def _controls(mode: str, binding: dict[str, Any], evidence_items: list[dict[str,
     matrix_rows = _summary_count(binding.get("adapter_matrix"), "row_count")
     release_rows = _summary_count(binding.get("hook_release"), "row_count")
     row_parity = matrix_rows is not None and release_rows is not None and matrix_rows == release_rows
-    production_ready = mode == "production-dossier" and matrix_bound and release_bound and runtime_bound and not missing and freshness["missing"] == 0
+    production_ready = mode == "production-dossier" and _source_binding_complete(binding) and not missing and freshness["missing"] == 0
     return [
         {"id": "adapter-matrix-bound", "status": "passed" if matrix_bound else "failed", "detail": "Dossier binds the signed framework adapter compatibility matrix, matrix hash, issued_at, and runtime version rows."},
         {"id": "hook-release-bound", "status": "passed" if release_bound else "failed", "detail": "Dossier binds the signed framework hook release receipt, source artifact hashes, fixture replay roots, and status counts."},

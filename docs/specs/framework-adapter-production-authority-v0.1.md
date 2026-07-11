@@ -47,12 +47,15 @@ A verifier must:
 4. Replay the hook release against the supplied adapter matrix when supplied.
 5. Replay the optional framework runtime service authority dossier when supplied.
 6. Recompute `source_binding`, `summary`, and `controls`.
-7. Validate every authority evidence item against the fixed checklist and
+7. Reject incomplete source bindings even when raw source artifacts are
+   omitted, including missing nested matrix, hook release, release-matrix,
+   runtime-version, and runtime service authority identifiers and hashes.
+8. Validate every authority evidence item against the fixed checklist and
    accepted authority kinds.
-8. Enforce freshness when `require_fresh` is set.
-9. Reject `production-dossier` mode unless all requirements are covered with
-   fresh evidence and matrix, hook release, and runtime service authority
-   bindings are present.
+9. Enforce freshness when `require_fresh` is set.
+10. Reject `production-dossier` mode unless all requirements are covered with
+    fresh evidence and complete matrix, hook release, runtime-version, and
+    runtime service authority bindings are present.
 
 ## CLI
 
