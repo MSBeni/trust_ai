@@ -29,6 +29,72 @@ AUTHORITY_ATTESTATION_EVIDENCE_KINDS = {
     "external-authority",
 }
 SECRET_KEY_MARKERS = ("token", "secret", "private_key", "client_secret", "password", "credential")
+AUTHORITY_PROVIDER_BINDING_EXPECTED_FIELDS = (
+    "provider_receipt_id",
+    "provider_receipt_hash",
+    "provider_schema",
+    "provider_mode",
+    "provider",
+    "environment",
+    "exported_at",
+    "worker_operation_id",
+    "worker_operation_hash",
+    "dossier_id",
+    "dossier_hash",
+    "authority_ref",
+    "service_worker_operation_id",
+    "run_ref",
+    "authority_request_ref",
+    "authority_evidence_root",
+    "missing_requirement_root",
+    "provider_export_hash",
+    "scheduler_record_root",
+    "queue_record_root",
+    "request_record_root",
+    "storage_record_root",
+    "audit_record_root",
+    "audit_log_root",
+    "provider_exchange",
+)
+AUTHORITY_PROVIDER_BINDING_REQUIRED_FIELDS = AUTHORITY_PROVIDER_BINDING_EXPECTED_FIELDS
+AUTHORITY_PROVIDER_EXCHANGE_EXPECTED_FIELDS = (
+    "endpoint_url",
+    "request_hash",
+    "response_status",
+    "response_hash",
+    "success",
+    "actor_ref",
+)
+AUTHORITY_DOSSIER_BINDING_EXPECTED_FIELDS = (
+    "dossier_id",
+    "dossier_hash",
+    "schema",
+    "mode",
+    "environment",
+    "generated_at",
+    "dossier_ref",
+    "authority_ref",
+    "producer_ref",
+    "provider_receipt_id",
+    "summary",
+)
+AUTHORITY_DOSSIER_BINDING_REQUIRED_FIELDS = AUTHORITY_DOSSIER_BINDING_EXPECTED_FIELDS
+AUTHORITY_DOSSIER_SUMMARY_EXPECTED_FIELDS = (
+    "status",
+    "required_requirement_count",
+    "covered_requirement_count",
+    "missing_requirement_count",
+    "evidence_count",
+    "covered_requirement_ids",
+    "missing_requirement_ids",
+)
+AUTHORITY_DOSSIER_SUMMARY_COUNT_FIELDS = (
+    "required_requirement_count",
+    "covered_requirement_count",
+    "missing_requirement_count",
+    "evidence_count",
+)
+AUTHORITY_DOSSIER_SUMMARY_LIST_FIELDS = ("covered_requirement_ids", "missing_requirement_ids")
 
 
 @dataclass
@@ -531,6 +597,59 @@ def _authority_dossier_binding(dossier: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _require_binding_fields(
+    binding: dict[str, Any],
+    expected_fields: tuple[str, ...],
+    required_fields: tuple[str, ...],
+    prefix: str,
+    errors: list[str],
+) -> None:
+    for field in expected_fields:
+        if field not in binding:
+            errors.append(f"{prefix}.{field} is required")
+    for field in required_fields:
+        if binding.get(field) in (None, "", []):
+            errors.append(f"{prefix}.{field} is required")
+
+
+def _verify_provider_exchange_binding(value: Any, errors: list[str]) -> None:
+    prefix = "framework runtime service authority attestation authority_provider_binding.provider_exchange"
+    if not isinstance(value, dict):
+        errors.append(f"{prefix} is required")
+        return
+    for field in AUTHORITY_PROVIDER_EXCHANGE_EXPECTED_FIELDS:
+        if field not in value:
+            errors.append(f"{prefix}.{field} is required")
+    for field in ("endpoint_url", "request_hash", "response_hash", "actor_ref"):
+        if value.get(field) in (None, "", []):
+            errors.append(f"{prefix}.{field} is required")
+    status = value.get("response_status")
+    if not isinstance(status, int) or status < 100 or status > 599:
+        errors.append(f"{prefix}.response_status must be an HTTP status code")
+    if not isinstance(value.get("success"), bool):
+        errors.append(f"{prefix}.success is required")
+
+
+def _verify_dossier_summary_binding(value: Any, errors: list[str]) -> None:
+    prefix = "framework runtime service authority attestation authority_dossier_binding.summary"
+    if not isinstance(value, dict):
+        errors.append(f"{prefix} must be an object")
+        return
+    for field in AUTHORITY_DOSSIER_SUMMARY_EXPECTED_FIELDS:
+        if field not in value:
+            errors.append(f"{prefix}.{field} is required")
+    if value.get("status") in (None, "", []):
+        errors.append(f"{prefix}.status is required")
+    for field in AUTHORITY_DOSSIER_SUMMARY_COUNT_FIELDS:
+        if not isinstance(value.get(field), int) or value.get(field) < 0:
+            errors.append(f"{prefix}.{field} must be a nonnegative integer")
+    for field in AUTHORITY_DOSSIER_SUMMARY_LIST_FIELDS:
+        if field not in value:
+            continue
+        if not isinstance(value.get(field), list):
+            errors.append(f"{prefix}.{field} must be a list")
+
+
 def _verify_provider_binding(
     binding: Any,
     authority_provider_receipt: dict[str, Any] | None,
@@ -558,20 +677,14 @@ def _verify_provider_binding(
     if not isinstance(binding, dict):
         errors.append("framework runtime service authority attestation authority_provider_binding must be an object")
         return
-    for field in (
-        "provider_receipt_id",
-        "provider_receipt_hash",
-        "provider_mode",
-        "provider",
-        "environment",
-        "worker_operation_id",
-        "dossier_id",
-        "dossier_hash",
-        "provider_export_hash",
-        "audit_log_root",
-    ):
-        if not binding.get(field):
-            errors.append(f"framework runtime service authority attestation authority_provider_binding.{field} is required")
+    _require_binding_fields(
+        binding,
+        AUTHORITY_PROVIDER_BINDING_EXPECTED_FIELDS,
+        AUTHORITY_PROVIDER_BINDING_REQUIRED_FIELDS,
+        "framework runtime service authority attestation authority_provider_binding",
+        errors,
+    )
+    _verify_provider_exchange_binding(binding.get("provider_exchange"), errors)
     if authority_provider_receipt is None:
         warnings.append("framework runtime service authority provider receipt was not supplied; provider source was not replayed")
         return
@@ -631,9 +744,14 @@ def _verify_dossier_binding(
     if not isinstance(binding, dict):
         errors.append("framework runtime service authority attestation authority_dossier_binding must be an object")
         return
-    for field in ("dossier_id", "dossier_hash", "mode", "environment", "authority_ref", "provider_receipt_id", "summary"):
-        if not binding.get(field):
-            errors.append(f"framework runtime service authority attestation authority_dossier_binding.{field} is required")
+    _require_binding_fields(
+        binding,
+        AUTHORITY_DOSSIER_BINDING_EXPECTED_FIELDS,
+        AUTHORITY_DOSSIER_BINDING_REQUIRED_FIELDS,
+        "framework runtime service authority attestation authority_dossier_binding",
+        errors,
+    )
+    _verify_dossier_summary_binding(binding.get("summary"), errors)
     if authority_dossier is None:
         warnings.append("framework runtime service authority dossier was not supplied; dossier source was not replayed")
         return

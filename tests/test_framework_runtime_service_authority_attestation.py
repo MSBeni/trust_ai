@@ -7,7 +7,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.framework_adapter_matrix import write_framework_adapter_matrix
 from trustai.framework_hook_operation import write_framework_hook_operation
 from trustai.framework_hook_release import write_framework_hook_release
@@ -143,6 +145,14 @@ class FrameworkRuntimeServiceAuthorityAttestationTests(unittest.TestCase):
             release,
             matrix,
         )
+
+    def _resign_attestation(self, attestation: dict) -> None:
+        body = without_keys(attestation, "attestation_id", "signatures")
+        attestation_id = content_hash(body)
+        attestation["attestation_id"] = attestation_id
+        attestation["signatures"] = [
+            sign_value({"attestation_id": attestation_id, "framework_runtime_service_authority_attestation": body})
+        ]
 
     def test_framework_runtime_service_authority_attestation_verifies_and_appends(self):
         (
@@ -327,6 +337,34 @@ class FrameworkRuntimeServiceAuthorityAttestationTests(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("authority_dossier_binding does not match" in error for error in result.errors))
         self.assertTrue(any("dossier source" in error for error in result.errors))
+
+    def test_framework_runtime_service_authority_attestation_requires_complete_bindings_without_sources(self):
+        attestation, *_ = self._attestation()
+        cases = [
+            (["authority_provider_binding"], "provider_schema", "authority_provider_binding.provider_schema is required"),
+            (["authority_provider_binding"], "service_worker_operation_id", "authority_provider_binding.service_worker_operation_id is required"),
+            (["authority_provider_binding"], "request_record_root", "authority_provider_binding.request_record_root is required"),
+            (["authority_provider_binding", "provider_exchange"], "actor_ref", "authority_provider_binding.provider_exchange.actor_ref is required"),
+            (["authority_dossier_binding"], "producer_ref", "authority_dossier_binding.producer_ref is required"),
+            (["authority_dossier_binding", "summary"], "missing_requirement_ids", "authority_dossier_binding.summary.missing_requirement_ids is required"),
+        ]
+        for parent_path, field, expected_error in cases:
+            with self.subTest(field=field):
+                tampered = copy.deepcopy(attestation)
+                target = tampered
+                for part in parent_path:
+                    target = target[part]
+                target.pop(field)
+                self._resign_attestation(tampered)
+
+                result = verify_framework_runtime_service_authority_attestation(
+                    tampered,
+                    require_fresh=True,
+                    now="2026-07-09T01:10:00Z",
+                )
+
+                self.assertFalse(result.ok)
+                self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
 
     def test_framework_runtime_service_authority_attestation_rejects_stale_evidence_when_strict(self):
         evidence = copy.deepcopy(self._attestation_evidence())
