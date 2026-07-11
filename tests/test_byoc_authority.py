@@ -175,6 +175,12 @@ class BYOCAuthorityTests(unittest.TestCase):
         )
         return dossier, deployment, attestation, receipt, legal_hold, store_root
 
+    def _resign_dossier(self, dossier: dict) -> None:
+        body = without_keys(dossier, "dossier_id", "signatures")
+        dossier_id = content_hash(body)
+        dossier["dossier_id"] = dossier_id
+        dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "byoc_authority": body})]
+
     def test_byoc_authority_verifies_and_appends(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)
@@ -213,6 +219,8 @@ class BYOCAuthorityTests(unittest.TestCase):
             self.assertTrue(any("missing for" in warning for warning in result.warnings))
             self.assertEqual(BYOC_AUTHORITY_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(dossier["dossier_id"], entry["payload"]["dossier_id"])
+            self.assertEqual(dossier["authority_evidence"][0]["source_context"], entry["payload"]["authority_evidence"][0]["source_context"])
+            self.assertEqual(content_hash(dossier["source_binding"]), dossier["authority_evidence"][0]["source_context"]["source_binding_hash"])
             self.assertEqual({"deferred": 2, "passed": 10}, entry["payload"]["control_summary"])
             self.assertEqual(1, entry["payload"]["artifact_summary"]["artifact_count"])
             self.assertTrue(chain.verify_all().ok)
@@ -227,6 +235,50 @@ class BYOCAuthorityTests(unittest.TestCase):
             self.assertIn("network-policy-admission-audit-export", requirement_ids)
             self.assertIn("network-policy-admission-audit-export", dossier["summary"]["covered_requirement_ids"])
             self.assertEqual("passed", control_by_id["network-policy-admission-audit-export-covered"]["status"])
+
+    def test_byoc_authority_rejects_resigned_source_context_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            dossier, deployment, attestation, receipt, legal_hold, store_root = self._dossier(tmp, authority_artifacts=[])
+            tampered = copy.deepcopy(dossier)
+            item = tampered["authority_evidence"][0]
+            item["source_context"]["source_binding_hash"] = "sha256:tampered-source-binding"
+            item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+            self._resign_dossier(tampered)
+
+            result = verify_byoc_authority_dossier(
+                tampered,
+                deployment_manifest=deployment,
+                byoc_operator=attestation,
+                root=ROOT,
+                store=store_root,
+                worm_receipt=receipt,
+                legal_hold=legal_hold,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertIn("BYOC authority source_context does not match source binding: live-cloud-account-binding", result.errors)
+
+    def test_byoc_authority_rejects_resigned_control_tamper(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            dossier, deployment, attestation, receipt, legal_hold, store_root = self._dossier(tmp)
+            tampered = copy.deepcopy(dossier)
+            tampered["controls"][0]["status"] = "deferred"
+            self._resign_dossier(tampered)
+
+            result = verify_byoc_authority_dossier(
+                tampered,
+                deployment_manifest=deployment,
+                byoc_operator=attestation,
+                root=ROOT,
+                store=store_root,
+                worm_receipt=receipt,
+                legal_hold=legal_hold,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertIn("BYOC authority controls do not match dossier body", result.errors)
 
     def test_byoc_authority_rejects_artifact_replay_tamper(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

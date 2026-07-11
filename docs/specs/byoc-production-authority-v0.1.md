@@ -70,6 +70,7 @@ Each evidence item records:
 - evidence hash, prefixed with `sha256:`
 - description
 - optional issuer, subject, source URI, issued_at, and expires_at
+- derived `source_context` computed from `source_binding`
 - canonical evidence ID
 
 ## Authority Artifacts
@@ -112,7 +113,9 @@ Verifiers must:
 - optionally compare caller-supplied `--authority-artifact` inputs to the
   dossier's retained artifact metadata
 - recompute controls from the dossier body, including the dedicated NetworkPolicy admission/audit evidence and artifact replay controls
-- reject malformed authority evidence and unsupported authority kinds
+- reject malformed authority evidence, unsupported authority kinds, mismatched
+  evidence IDs, missing `source_context`, and `source_context` values that do
+  not match `source_binding`
 - reject raw secret-like values that are not references or hashes
 - reject `production-dossier` mode unless all production authority requirements
   are covered, all evidence items are fresh, and deployment, BYOC operator,
@@ -128,5 +131,5 @@ fresh evidence windows.
 
 The chain payload records the dossier ID/hash, mode, environment, producer and
 authority references, source binding summary, authority evidence summary,
-authority artifact summary, control summary, authority evidence metadata, and
-retained authority artifact metadata.
+authority artifact summary, control summary, authority evidence metadata
+including `source_context`, and retained authority artifact metadata.

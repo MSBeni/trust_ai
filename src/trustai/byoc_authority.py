@@ -186,11 +186,12 @@ def build_byoc_authority_dossier(
 
     timestamp = generated_at or utc_now()
     parse_rfc3339(timestamp)
-    evidence_items = [_build_authority_evidence_item(item) for item in (authority_evidence or [])]
+    binding = _source_binding(deployment_manifest, byoc_operator)
+    source_context = _authority_evidence_source_context(binding)
+    evidence_items = [_build_authority_evidence_item(item, source_context) for item in (authority_evidence or [])]
     artifact_items = [_build_authority_artifact(Path(root), item, evidence_items) for item in (authority_artifacts or [])]
     summary = _summary(evidence_items)
     artifact_summary = _artifact_summary(artifact_items)
-    binding = _source_binding(deployment_manifest, byoc_operator)
     body: dict[str, Any] = {
         "schema": BYOC_AUTHORITY_SCHEMA,
         "mode": mode,
@@ -280,13 +281,23 @@ def verify_byoc_authority_dossier(
     if not isinstance(evidence, list):
         errors.append("BYOC authority authority_evidence must be a list")
         evidence = []
+    evidence_source_context = _authority_evidence_source_context(
+        dossier.get("source_binding") if isinstance(dossier.get("source_binding"), dict) else {}
+    )
     freshness_counts = {"fresh": 0, "stale": 0, "missing": 0}
     for item in evidence:
         if not isinstance(item, dict):
             errors.append("BYOC authority evidence item must be an object")
             freshness_counts["missing"] += 1
             continue
-        status = _verify_authority_evidence_item(item, errors, warnings, now=freshness_now, require_fresh=require_fresh)
+        status = _verify_authority_evidence_item(
+            item,
+            errors,
+            warnings,
+            now=freshness_now,
+            require_fresh=require_fresh,
+            source_context=evidence_source_context,
+        )
         freshness_counts[status] += 1
 
     evidence_dicts = [item for item in evidence if isinstance(item, dict)]
@@ -392,6 +403,7 @@ def append_byoc_authority_dossier(
                 "evidence_ref": item.get("evidence_ref"),
                 "evidence_hash": item.get("evidence_hash"),
                 "evidence_id": item.get("evidence_id"),
+                "source_context": item.get("source_context"),
                 "issued_at": item.get("issued_at"),
                 "expires_at": item.get("expires_at"),
             }
@@ -645,7 +657,7 @@ def _source_binding_complete(binding: dict[str, Any]) -> bool:
     )
 
 
-def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
+def _build_authority_evidence_item(item: dict[str, Any], source_context: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(item, dict):
         raise ValueError("authority evidence item must be an object")
     requirement_id = str(item.get("requirement_id") or "")
@@ -673,18 +685,32 @@ def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
             parse_rfc3339(str(built[field]))
     if built.get("issued_at") and built.get("expires_at") and parse_rfc3339(str(built["issued_at"])) > parse_rfc3339(str(built["expires_at"])):
         raise ValueError("authority evidence issued_at must not be after expires_at")
+    built["source_context"] = source_context
     built["evidence_id"] = content_hash(built)
     return built
 
 
-def _verify_authority_evidence_item(item: dict[str, Any], errors: list[str], warnings: list[str], *, now, require_fresh: bool) -> str:
+def _verify_authority_evidence_item(
+    item: dict[str, Any],
+    errors: list[str],
+    warnings: list[str],
+    *,
+    now,
+    require_fresh: bool,
+    source_context: dict[str, Any],
+) -> str:
     try:
-        expected = _build_authority_evidence_item(item)
+        _build_authority_evidence_item(item, source_context)
     except ValueError as exc:
         errors.append(f"invalid BYOC authority evidence: {exc}")
         return "missing"
-    if item != expected:
-        errors.append("BYOC authority evidence_id does not match evidence body")
+    requirement_id = item.get("requirement_id")
+    if item.get("evidence_id") != content_hash(without_keys(item, "evidence_id")):
+        errors.append(f"BYOC authority evidence_id does not match evidence body: {requirement_id}")
+    if not isinstance(item.get("source_context"), dict):
+        errors.append(f"BYOC authority source_context is required: {requirement_id}")
+    elif item.get("source_context") != source_context:
+        errors.append(f"BYOC authority source_context does not match source binding: {requirement_id}")
     issued_at = item.get("issued_at")
     expires_at = item.get("expires_at")
     if not issued_at or not expires_at:
@@ -704,6 +730,57 @@ def _verify_authority_evidence_item(item: dict[str, Any], errors: list[str], war
             warnings.append(message)
         return "stale"
     return "fresh"
+
+
+def _authority_evidence_source_context(binding: dict[str, Any]) -> dict[str, Any]:
+    deployment = binding.get("deployment_manifest") if isinstance(binding.get("deployment_manifest"), dict) else {}
+    operator = binding.get("byoc_operator") if isinstance(binding.get("byoc_operator"), dict) else {}
+    object_lock = binding.get("object_lock") if isinstance(binding.get("object_lock"), dict) else {}
+    tenancy = binding.get("tenancy") if isinstance(binding.get("tenancy"), dict) else {}
+    network = binding.get("network") if isinstance(binding.get("network"), dict) else {}
+    backup = binding.get("backup") if isinstance(binding.get("backup"), dict) else {}
+    audit_log = binding.get("audit_log") if isinstance(binding.get("audit_log"), dict) else {}
+    receipt = object_lock.get("worm_receipt") if isinstance(object_lock.get("worm_receipt"), dict) else {}
+    legal_hold = object_lock.get("legal_hold") if isinstance(object_lock.get("legal_hold"), dict) else {}
+    return {
+        "source_binding_hash": content_hash(binding),
+        "deployment_manifest_id": deployment.get("manifest_id"),
+        "deployment_manifest_hash": deployment.get("manifest_hash"),
+        "deployment_environment": deployment.get("environment"),
+        "deployment_artifact_type": deployment.get("artifact_type"),
+        "byoc_operator_attestation_id": operator.get("attestation_id"),
+        "byoc_operator_attestation_hash": operator.get("attestation_hash"),
+        "byoc_operator_environment": operator.get("environment"),
+        "byoc_operator_image_digest": operator.get("image_digest"),
+        "byoc_operator_namespace": operator.get("namespace"),
+        "object_lock_bucket_ref": object_lock.get("bucket_ref"),
+        "object_lock_region": object_lock.get("region"),
+        "object_lock_retention_mode": object_lock.get("retention_mode"),
+        "object_lock_retention_until": object_lock.get("retention_until"),
+        "object_lock_legal_hold_required": object_lock.get("legal_hold_required"),
+        "worm_receipt_id": receipt.get("receipt_id"),
+        "worm_receipt_hash": receipt.get("receipt_hash"),
+        "worm_receipt_content_hash": receipt.get("content_hash"),
+        "legal_hold_id": legal_hold.get("legal_hold_id"),
+        "legal_hold_hash": legal_hold.get("legal_hold_hash"),
+        "legal_hold_status": legal_hold.get("status"),
+        "tenant_id": tenancy.get("tenant_id"),
+        "customer_account_ref": tenancy.get("customer_account_ref"),
+        "data_plane_ref": tenancy.get("data_plane_ref"),
+        "control_plane_ref": tenancy.get("control_plane_ref"),
+        "keyring_ref": tenancy.get("keyring_ref"),
+        "backup_policy_ref": backup.get("backup_policy_ref"),
+        "restore_test_ref": backup.get("restore_test_ref"),
+        "restore_test_at": backup.get("restore_test_at"),
+        "network_ingress_mode": network.get("ingress_mode"),
+        "network_egress_policy_ref": network.get("egress_policy_ref"),
+        "network_private_endpoint": network.get("private_endpoint"),
+        "network_airgap_bundle_ref": network.get("airgap_bundle_ref"),
+        "network_airgap_bundle_hash": network.get("airgap_bundle_hash"),
+        "audit_log_ref": audit_log.get("audit_log_ref"),
+        "audit_log_root": audit_log.get("root"),
+        "audit_log_retention_until": audit_log.get("retention_until"),
+    }
 
 
 def _build_authority_artifact(root: Path, item: dict[str, Any], evidence_items: list[dict[str, Any]]) -> dict[str, Any]:
