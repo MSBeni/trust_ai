@@ -7,7 +7,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.framework_adapter_matrix import write_framework_adapter_matrix
 from trustai.framework_hook_operation import write_framework_hook_operation
 from trustai.framework_hook_release import write_framework_hook_release
@@ -128,6 +130,12 @@ class FrameworkRuntimeServiceAuthorityTests(unittest.TestCase):
             matrix,
         )
 
+    def _resign_dossier(self, dossier: dict) -> None:
+        body = without_keys(dossier, "dossier_id", "signatures")
+        dossier_id = content_hash(body)
+        dossier["dossier_id"] = dossier_id
+        dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "framework_runtime_service_authority": body})]
+
     def test_framework_runtime_service_authority_verifies_and_appends(self):
         (
             dossier,
@@ -239,6 +247,34 @@ class FrameworkRuntimeServiceAuthorityTests(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("provider_receipt_binding does not match" in error for error in result.errors))
         self.assertTrue(any("provider source" in error for error in result.errors))
+
+    def test_framework_runtime_service_authority_requires_complete_provider_binding_without_sources(self):
+        dossier, *_ = self._dossier()
+        cases = [
+            (("provider_receipt_binding",), "provider_schema", "provider_receipt_binding.provider_schema is required"),
+            (("provider_receipt_binding",), "scheduler_record_root", "provider_receipt_binding.scheduler_record_root is required"),
+            (
+                ("provider_receipt_binding", "provider_exchange"),
+                "response_hash",
+                "provider_receipt_binding.provider_exchange.response_hash is required",
+            ),
+        ]
+        for parent_path, field, expected_error in cases:
+            with self.subTest(field=field):
+                tampered = copy.deepcopy(dossier)
+                target = tampered
+                for part in parent_path:
+                    target = target[part]
+                target.pop(field)
+                self._resign_dossier(tampered)
+
+                result = verify_framework_runtime_service_authority_dossier(
+                    tampered,
+                    now="2026-07-09T01:00:00Z",
+                )
+
+                self.assertFalse(result.ok)
+                self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
 
     def test_framework_runtime_service_authority_requires_freshness_when_strict(self):
         evidence = [dict(self._authority_evidence()[0])]

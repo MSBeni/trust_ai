@@ -15,6 +15,40 @@ FRAMEWORK_RUNTIME_SERVICE_AUTHORITY_SCHEMA = "trustai.framework-runtime-service-
 FRAMEWORK_RUNTIME_SERVICE_AUTHORITY_ENTRY_TYPE = "framework_runtime.service_authority_dossiered"
 FRAMEWORK_RUNTIME_SERVICE_AUTHORITY_MODES = {"local-dossier", "provider-dossier", "production-dossier"}
 SECRET_KEY_MARKERS = ("token", "secret", "private_key", "client_secret", "password", "credential")
+PROVIDER_RECEIPT_BINDING_EXPECTED_FIELDS = (
+    "provider_receipt_id",
+    "provider_receipt_hash",
+    "provider_schema",
+    "provider_mode",
+    "provider",
+    "environment",
+    "exported_at",
+    "service_worker_operation_id",
+    "service_worker_operation_hash",
+    "service_attestation_id",
+    "storage_receipt_id",
+    "run_ref",
+    "queue_message_ref",
+    "stream_message_ref",
+    "provider_export_hash",
+    "scheduler_record_root",
+    "queue_record_root",
+    "kms_record_root",
+    "stream_record_root",
+    "storage_record_root",
+    "audit_record_root",
+    "audit_log_root",
+    "provider_exchange",
+)
+PROVIDER_RECEIPT_BINDING_REQUIRED_FIELDS = PROVIDER_RECEIPT_BINDING_EXPECTED_FIELDS
+PROVIDER_EXCHANGE_BINDING_EXPECTED_FIELDS = (
+    "endpoint_url",
+    "request_hash",
+    "response_status",
+    "response_hash",
+    "success",
+    "actor_ref",
+)
 
 PRODUCTION_AUTHORITY_REQUIREMENTS = [
     {
@@ -452,20 +486,13 @@ def _verify_provider_receipt_binding(
     if not isinstance(binding, dict):
         errors.append("framework runtime service authority provider_receipt_binding must be an object")
         return
-    for field in (
-        "provider_receipt_id",
-        "provider_receipt_hash",
-        "provider_mode",
-        "provider",
-        "environment",
-        "service_worker_operation_id",
-        "service_attestation_id",
-        "storage_receipt_id",
-        "provider_export_hash",
-        "audit_log_root",
-    ):
-        if not binding.get(field):
+    for field in PROVIDER_RECEIPT_BINDING_EXPECTED_FIELDS:
+        if field not in binding:
             errors.append(f"framework runtime service authority provider_receipt_binding.{field} is required")
+    for field in PROVIDER_RECEIPT_BINDING_REQUIRED_FIELDS:
+        if binding.get(field) in (None, "", [], {}):
+            errors.append(f"framework runtime service authority provider_receipt_binding.{field} is required")
+    _verify_provider_exchange_binding(binding.get("provider_exchange"), errors)
     if provider_receipt is None:
         warnings.append("framework runtime service authority provider receipt was not supplied; provider source was not replayed")
         return
@@ -492,6 +519,27 @@ def _verify_provider_receipt_binding(
     if not result.ok:
         errors.extend(f"framework runtime service authority provider source: {error}" for error in result.errors)
     warnings.extend(f"framework runtime service authority provider source: {warning}" for warning in result.warnings)
+
+
+def _verify_provider_exchange_binding(value: Any, errors: list[str]) -> None:
+    if not isinstance(value, dict):
+        errors.append("framework runtime service authority provider_receipt_binding.provider_exchange must be an object")
+        return
+    for field in PROVIDER_EXCHANGE_BINDING_EXPECTED_FIELDS:
+        if field not in value:
+            errors.append(f"framework runtime service authority provider_receipt_binding.provider_exchange.{field} is required")
+        elif value.get(field) in (None, "", [], {}):
+            errors.append(f"framework runtime service authority provider_receipt_binding.provider_exchange.{field} is required")
+    status = value.get("response_status")
+    if not isinstance(status, int) or status < 100 or status > 599:
+        errors.append("framework runtime service authority provider_receipt_binding.provider_exchange.response_status must be an HTTP status code")
+    for field in ("request_hash", "response_hash"):
+        field_value = value.get(field)
+        if field_value and not str(field_value).startswith("sha256:"):
+            errors.append(f"framework runtime service authority provider_receipt_binding.provider_exchange.{field} must be a sha256 reference")
+    if not isinstance(value.get("success"), bool):
+        errors.append("framework runtime service authority provider_receipt_binding.provider_exchange.success must be boolean")
+
 
 
 def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
