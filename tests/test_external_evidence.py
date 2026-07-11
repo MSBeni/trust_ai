@@ -13,6 +13,7 @@ from trustai.external_evidence import (
     EXTERNAL_EVIDENCE_SCHEMA,
     ROADMAP_EVIDENCE_REPORT_SCHEMA,
     ROADMAP_EVIDENCE_BUNDLE_SCHEMA,
+    _allowed_authority_kinds_for_requirement,
     append_external_evidence_manifest,
     build_external_evidence_manifest,
     build_roadmap_evidence_bundle,
@@ -63,6 +64,16 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual("partial", manifest["summary"]["status"])
         self.assertIn("TrustAI External Evidence Manifest", markdown)
         self.assertIn("oss-verifier-and-public-spec", markdown)
+        required = next(
+            item
+            for item in manifest["required_external_requirements"]
+            if item["id"] == "oss-verifier-and-public-spec"
+        )
+        self.assertIn("ci-run", required["allowed_authority_kinds"])
+        self.assertEqual(
+            required["allowed_authority_kinds"],
+            manifest["evidence"][0]["accepted_authority_kinds"],
+        )
 
     def test_external_evidence_freshness_windows_are_verifiable(self):
         audit = build_roadmap_audit(ROOT)
@@ -614,18 +625,21 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
 
     def test_complete_external_evidence_manifest_covers_reference_requirements(self):
         audit = build_roadmap_audit(ROOT)
-        requirements = [
-            requirement["id"]
+        reference_requirements = {
+            requirement["id"]: requirement
             for requirement in audit["requirements"]
             if requirement["status"] == STATUS_REFERENCE_ATTESTED
-        ]
+        }
+        requirements = list(reference_requirements)
         manifest = build_external_evidence_manifest(
             audit,
             root=ROOT,
             evidence=[
                 {
                     "requirement_id": requirement_id,
-                    "authority_kind": "other",
+                    "authority_kind": _allowed_authority_kinds_for_requirement(
+                        reference_requirements[requirement_id]
+                    )[0],
                     "path": FIXTURE,
                     "description": f"Fixture evidence for {requirement_id}.",
                 }
@@ -645,6 +659,35 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             chain_result = verify_roadmap_evidence_chain(chain, require_external=True, require_complete=True)
             self.assertTrue(chain_result.ok, chain_result.errors)
             self.assertEqual(1, chain_result.complete_external_evidence_entry_count)
+
+    def test_external_evidence_rejects_wrong_authority_kind_for_requirement(self):
+        audit = build_roadmap_audit(ROOT)
+        manifest = build_external_evidence_manifest(
+            audit,
+            root=ROOT,
+            evidence=[
+                {
+                    "requirement_id": "oss-verifier-and-public-spec",
+                    "authority_kind": "ci-run",
+                    "path": FIXTURE,
+                    "description": "Recorded verifier workflow run export.",
+                }
+            ],
+        )
+        tampered = copy.deepcopy(manifest)
+        item = tampered["evidence"][0]
+        item["authority_kind"] = "customer"
+        item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+        tampered["manifest_id"] = content_hash(without_keys(tampered, "manifest_id"))
+        result = verify_external_evidence_manifest(tampered, audit, root=ROOT)
+        self.assertFalse(result.ok)
+        self.assertTrue(
+            any(
+                "authority kind customer is not accepted for requirement oss-verifier-and-public-spec" in error
+                for error in result.errors
+            ),
+            result.errors,
+        )
 
     def test_external_evidence_detects_artifact_hash_tamper(self):
         audit = build_roadmap_audit(ROOT)

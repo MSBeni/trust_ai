@@ -24,7 +24,8 @@ hashed files and verified offline.
 - `source_roadmap_audit`: `audit_id`, audit content hash, and completion
   position for the roadmap audit this manifest satisfies.
 - `required_external_requirements`: every `reference-attested` requirement from
-  the roadmap audit.
+  the roadmap audit, including the accepted external authority kinds derived
+  from that requirement's external-authority claim.
 - `evidence`: supplied external evidence artifacts.
 - `summary`: coverage totals, missing requirement IDs, and evidence freshness-window counts.
 - `limitations`: explicit non-claims about live fetching and issuer quality.
@@ -39,6 +40,9 @@ Each evidence item contains:
   `cloud-object-lock`, `provider-api`, `hosted-service`,
   `identity-provider`, `regulator`, `insurer`, `standards-body`, `customer`,
   or `other`.
+- `accepted_authority_kinds`: the complete authority-kind allowlist for this
+  requirement, derived from the roadmap audit and repeated on the evidence item
+  so a verifier can reject category swaps.
 - `path`: repository-relative path to the supplied evidence artifact.
 - `sha256`: SHA-256 hash of the supplied artifact.
 - `description`: short human-readable reason the artifact satisfies the
@@ -156,19 +160,22 @@ A verifier MUST:
 1. Recompute `manifest_id` from the canonical manifest body.
 2. Verify the supplied roadmap audit first.
 3. Recompute the roadmap audit content hash and source audit metadata.
-4. Confirm the required requirement list exactly matches `reference-attested`
-   roadmap audit requirements.
+4. Confirm the required requirement list and accepted authority-kind policy
+   exactly match `reference-attested` roadmap audit requirements.
 5. Reject evidence for unknown or non-external requirement IDs.
-6. Reject absolute paths or paths containing `..`.
-7. Re-hash every evidence artifact and compare it to the recorded SHA-256.
-8. Recompute coverage summary, missing requirement IDs, and freshness-window
+6. Reject evidence whose `authority_kind` is outside the accepted authority
+   kinds for its requirement, and reject evidence whose
+   `accepted_authority_kinds` list does not match that derived policy.
+7. Reject absolute paths or paths containing `..`.
+8. Re-hash every evidence artifact and compare it to the recorded SHA-256.
+9. Recompute coverage summary, missing requirement IDs, and freshness-window
    counts.
-9. Parse any `issued_at` and `expires_at` values, reject windows where
+10. Parse any `issued_at` and `expires_at` values, reject windows where
    `expires_at <= issued_at`, and warn on missing, future-issued, or expired
    evidence when strict freshness is not requested.
-10. When complete production evidence is required, reject manifests that do not
+11. When complete production evidence is required, reject manifests that do not
    cover every reference-attested requirement.
-11. When fresh production evidence is required, reject manifests where any
+12. When fresh production evidence is required, reject manifests where any
    evidence item lacks a freshness window, has not yet been issued, or has
    expired at the verifier's `now` value.
 

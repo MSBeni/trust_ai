@@ -41,6 +41,20 @@ AUTHORITY_KINDS = {
     "other",
 }
 
+AUTHORITY_KIND_KEYWORDS = {
+    "ci-run": ("ci", "workflow", "github actions", "gitlab", "build", "release run"),
+    "kms-hsm": ("kms", "hsm", "key custody", "signing key"),
+    "tsa": ("tsa", "rfc 3161", "timestamp"),
+    "cloud-object-lock": ("object lock", "worm", "retention", "cloud"),
+    "provider-api": ("provider", "api", "github", "gitlab", "slack", "cloud", "kubernetes"),
+    "hosted-service": ("hosted", "service", "portal", "registry", "marketplace"),
+    "identity-provider": ("identity", "okta", "entra", "oidc"),
+    "regulator": ("regulator", "supervisor", "conformity"),
+    "insurer": ("insurer", "underwriter", "premium"),
+    "standards-body": ("standards", "standards-body", "iso", "ieee", "etsi", "linux foundation"),
+    "customer": ("customer", "partner", "contract", "procurement", "payment", "arr"),
+}
+
 
 @dataclass
 class ExternalEvidenceVerification:
@@ -90,8 +104,12 @@ def build_external_evidence_manifest(
     root_path = Path(root)
     requirements = _reference_attested_requirements(roadmap_audit)
     required_ids = [requirement["id"] for requirement in requirements]
+    required_authority_kinds = {
+        requirement["id"]: _allowed_authority_kinds_for_requirement(requirement)
+        for requirement in requirements
+    }
     evidence_items = [
-        _build_evidence_item(root_path, item, required_ids)
+        _build_evidence_item(root_path, item, required_ids, required_authority_kinds)
         for item in (evidence or [])
     ]
     summary = _summary(required_ids, evidence_items, status=status)
@@ -111,6 +129,7 @@ def build_external_evidence_manifest(
                 "priority": requirement.get("priority"),
                 "title": requirement.get("title"),
                 "external_authority_required": requirement.get("external_authority_required", []),
+                "allowed_authority_kinds": required_authority_kinds.get(requirement["id"], ["other"]),
             }
             for requirement in requirements
         ],
@@ -155,8 +174,13 @@ def verify_external_evidence_manifest(
     if manifest.get("source_roadmap_audit") != expected_audit:
         errors.append("source_roadmap_audit does not match supplied roadmap audit")
 
-    required_ids = [requirement["id"] for requirement in _reference_attested_requirements(roadmap_audit)]
+    requirements = _reference_attested_requirements(roadmap_audit)
+    required_ids = [requirement["id"] for requirement in requirements]
     required_set = set(required_ids)
+    required_authority_kinds = {
+        requirement["id"]: _allowed_authority_kinds_for_requirement(requirement)
+        for requirement in requirements
+    }
     declared_requirements = manifest.get("required_external_requirements", [])
     if not isinstance(declared_requirements, list):
         errors.append("required_external_requirements must be a list")
@@ -164,6 +188,19 @@ def verify_external_evidence_manifest(
     declared_ids = [item.get("id") for item in declared_requirements if isinstance(item, dict)]
     if declared_ids != required_ids:
         errors.append("required_external_requirements do not match reference-attested roadmap requirements")
+    expected_declared_requirements = [
+        {
+            "id": requirement["id"],
+            "phase": requirement.get("phase"),
+            "priority": requirement.get("priority"),
+            "title": requirement.get("title"),
+            "external_authority_required": requirement.get("external_authority_required", []),
+            "allowed_authority_kinds": required_authority_kinds.get(requirement["id"], ["other"]),
+        }
+        for requirement in requirements
+    ]
+    if declared_requirements != expected_declared_requirements:
+        errors.append("required_external_requirements authority-kind policy does not match reference-attested roadmap requirements")
 
     evidence = manifest.get("evidence", [])
     if not isinstance(evidence, list):
@@ -187,6 +224,7 @@ def verify_external_evidence_manifest(
             warnings,
             now=freshness_now,
             require_fresh=require_fresh,
+            allowed_authority_kinds=required_authority_kinds.get(requirement_id, []),
         )
         freshness_counts[freshness_status] += 1
 
@@ -1263,7 +1301,12 @@ def _reference_attested_requirements(roadmap_audit: dict[str, Any]) -> list[dict
     ]
 
 
-def _build_evidence_item(root: Path, item: dict[str, Any], required_ids: list[str]) -> dict[str, Any]:
+def _build_evidence_item(
+    root: Path,
+    item: dict[str, Any],
+    required_ids: list[str],
+    required_authority_kinds: dict[str, list[str]],
+) -> dict[str, Any]:
     requirement_id = str(item.get("requirement_id") or "")
     authority_kind = str(item.get("authority_kind") or "")
     path = str(item.get("path") or "")
@@ -1271,6 +1314,12 @@ def _build_evidence_item(root: Path, item: dict[str, Any], required_ids: list[st
         raise ValueError(f"unknown or non-external roadmap requirement: {requirement_id}")
     if authority_kind not in AUTHORITY_KINDS:
         raise ValueError(f"unsupported authority kind: {authority_kind}")
+    allowed_authority_kinds = required_authority_kinds.get(requirement_id, ["other"])
+    if authority_kind not in allowed_authority_kinds:
+        raise ValueError(
+            f"authority kind {authority_kind} is not accepted for requirement {requirement_id}; "
+            f"expected one of {', '.join(allowed_authority_kinds)}"
+        )
     if not path:
         raise ValueError("external evidence path is required")
     file_ref = _file_ref(root, path)
@@ -1279,6 +1328,7 @@ def _build_evidence_item(root: Path, item: dict[str, Any], required_ids: list[st
     body = {
         "requirement_id": requirement_id,
         "authority_kind": authority_kind,
+        "accepted_authority_kinds": allowed_authority_kinds,
         "path": file_ref["path"],
         "sha256": file_ref["sha256"],
         "description": str(item.get("description") or ""),
@@ -1329,12 +1379,20 @@ def _verify_evidence_item(
     *,
     now,
     require_fresh: bool,
+    allowed_authority_kinds: list[str],
 ) -> str:
     if item.get("evidence_id") != content_hash(without_keys(item, "evidence_id")):
         errors.append(f"evidence_id does not match evidence body: {item.get('requirement_id')}")
     authority_kind = item.get("authority_kind")
     if authority_kind not in AUTHORITY_KINDS:
         errors.append(f"unsupported authority kind: {authority_kind}")
+    elif allowed_authority_kinds and authority_kind not in allowed_authority_kinds:
+        errors.append(
+            f"authority kind {authority_kind} is not accepted for requirement {item.get('requirement_id')}; "
+            f"expected one of {', '.join(allowed_authority_kinds)}"
+        )
+    if item.get("accepted_authority_kinds") != allowed_authority_kinds:
+        errors.append(f"accepted_authority_kinds do not match requirement policy: {item.get('requirement_id')}")
     if not item.get("description"):
         errors.append(f"external evidence description is required: {item.get('requirement_id')}")
 
@@ -1371,6 +1429,16 @@ def _verify_evidence_item(
         )
     _verify_file_ref(root, item, errors)
     return freshness_status
+
+
+def _allowed_authority_kinds_for_requirement(requirement: dict[str, Any]) -> list[str]:
+    text = " ".join(str(item) for item in requirement.get("external_authority_required", [])).lower()
+    allowed = [
+        kind
+        for kind, needles in AUTHORITY_KIND_KEYWORDS.items()
+        if any(needle in text for needle in needles)
+    ]
+    return allowed or ["other"]
 
 
 def _file_ref(root: Path, path: str | Path) -> dict[str, Any]:
