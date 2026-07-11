@@ -48,8 +48,10 @@ from trustai.external_evidence import (
     verify_roadmap_evidence_chain,
     verify_roadmap_evidence_bundle,
     verify_roadmap_evidence_report,
+    write_external_evidence_collection_plan,
+    write_external_evidence_manifest,
 )
-from trustai.roadmap_audit import STATUS_REFERENCE_ATTESTED, append_roadmap_audit, build_roadmap_audit
+from trustai.roadmap_audit import STATUS_REFERENCE_ATTESTED, append_roadmap_audit, build_roadmap_audit, write_roadmap_audit
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -365,6 +367,107 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertEqual("file-copy", snapshot["retrieval_method"])
             self.assertEqual("https://provider.example/runs/1234567890", snapshot["source_uri"])
             self.assertEqual("sha256:" + sha256(source_path.read_bytes()).hexdigest(), snapshot["body_sha256"])
+
+    def test_cli_external_evidence_collect_creates_snapshot_and_intake(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_path = Path(tmp_dir)
+            audit_path = tmp_path / "roadmap-audit.json"
+            manifest_path = tmp_path / "external-evidence-manifest.json"
+            plan_path = tmp_path / "external-evidence-plan-all.json"
+            intake_path = tmp_path / "external-evidence-intake.json"
+            source_path = tmp_path / "provider-export.json"
+            snapshot_rel = Path("artifacts/test-external-evidence-collect/source-snapshot.json")
+            snapshot_path = ROOT / snapshot_rel
+            shutil.rmtree(snapshot_path.parent, ignore_errors=True)
+            source_path.write_text('{"run":"ok","status":"completed"}\n', encoding="utf-8")
+
+            try:
+                audit = build_roadmap_audit(ROOT)
+                manifest = build_external_evidence_manifest(
+                    audit,
+                    root=ROOT,
+                    evidence=[],
+                    generated_at="2026-07-09T00:00:00Z",
+                )
+                plan = build_external_evidence_collection_plan(
+                    manifest,
+                    audit,
+                    root=ROOT,
+                    status_filter="all",
+                    generated_at="2026-07-09T00:00:00Z",
+                )
+                write_roadmap_audit(audit_path, audit)
+                write_external_evidence_manifest(manifest_path, manifest)
+                write_external_evidence_collection_plan(plan_path, plan)
+
+                subprocess.run(
+                    [
+                        sys.executable,
+                        "-m",
+                        "trustai",
+                        "external-evidence-collect",
+                        str(plan_path),
+                        str(manifest_path),
+                        str(audit_path),
+                        "https://provider.example/runs/1234567890",
+                        "--root",
+                        str(ROOT),
+                        "--task",
+                        "oss-verifier-and-public-spec:ci-run",
+                        "--source-file",
+                        str(source_path),
+                        "--description",
+                        "Snapshot of provider workflow export",
+                        "--issuer",
+                        "Provider API",
+                        "--subject",
+                        "trustai external evidence source export",
+                        "--content-type",
+                        "application/json",
+                        "--issued-at",
+                        "2026-07-08T00:00:00Z",
+                        "--expires-at",
+                        "2026-12-31T00:00:00Z",
+                        "--snapshot-out",
+                        snapshot_rel.as_posix(),
+                        "--intake-out",
+                        str(intake_path),
+                        "--require-fresh",
+                        "--now",
+                        "2026-07-09T00:00:00Z",
+                    ],
+                    cwd=ROOT,
+                    check=True,
+                )
+                subprocess.run(
+                    [
+                        sys.executable,
+                        "-m",
+                        "trustai",
+                        "external-evidence-intake-verify",
+                        str(intake_path),
+                        str(plan_path),
+                        str(manifest_path),
+                        str(audit_path),
+                        "--root",
+                        str(ROOT),
+                        "--require-fresh",
+                        "--now",
+                        "2026-07-09T00:00:00Z",
+                    ],
+                    cwd=ROOT,
+                    check=True,
+                )
+                snapshot = load_external_evidence_source_snapshot(snapshot_path)
+                intake = load_external_evidence_intake(intake_path)
+
+                self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_SNAPSHOT_SCHEMA, snapshot["schema"])
+                self.assertEqual("file-copy", snapshot["retrieval_method"])
+                self.assertEqual(snapshot_rel.as_posix(), intake["evidence_item"]["path"])
+                self.assertEqual("sha256:" + sha256(snapshot_path.read_bytes()).hexdigest(), intake["evidence_item"]["sha256"])
+                self.assertIn("oss-verifier-and-public-spec,ci-run", intake["evidence_argument"])
+            finally:
+                shutil.rmtree(snapshot_path.parent, ignore_errors=True)
 
     def test_external_evidence_manifest_from_intakes_preserves_source_and_overlays_receipts(self):
         audit = build_roadmap_audit(ROOT)

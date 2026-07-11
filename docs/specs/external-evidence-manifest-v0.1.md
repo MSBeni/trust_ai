@@ -136,6 +136,14 @@ freshness windows when requested. Snapshot verification does not replace intake
 or manifest verification; it makes the collected source artifact itself portable
 and hashable before it is bound to a collection-plan task.
 
+`external-evidence-collect` is a CLI composition over source snapshots and intake
+receipts. It loads a collection plan, source manifest, and roadmap audit;
+captures the authority source into a snapshot under the repository root; verifies
+that snapshot; then creates and verifies the matching intake receipt using the
+snapshot's repository-relative artifact path. It emits no additional schema, but
+it is the preferred operator workflow for collecting many authority receipts
+because the snapshot and intake cannot drift apart.
+
 ## External Evidence Intake Receipt
 
 `external-evidence-intake` emits `trustai.external-evidence-intake/0.1`, a

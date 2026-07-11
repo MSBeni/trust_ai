@@ -14258,6 +14258,30 @@ def cmd_external_evidence_plan_verify(args: argparse.Namespace) -> int:
         print(f"- {error}", file=sys.stderr)
     return 1
 
+def _external_evidence_slug(value: str) -> str:
+    slug = "".join(ch.lower() if ch.isalnum() else "-" for ch in value)
+    slug = "-".join(part for part in slug.split("-") if part)
+    return slug or "external-evidence"
+
+
+def _external_evidence_collect_output_path(path: str | None, directory: str, task_ref: str) -> Path:
+    if path:
+        return Path(path)
+    return Path(directory) / f"{_external_evidence_slug(task_ref)}.json"
+
+
+def _repository_relative_artifact_path(root: str | Path, path: str | Path) -> tuple[Path, str]:
+    root_path = Path(root).resolve()
+    target = Path(path)
+    if not target.is_absolute():
+        target = root_path / target
+    resolved = target.resolve()
+    try:
+        relative = resolved.relative_to(root_path)
+    except ValueError as exc:
+        raise ValueError(f"external evidence snapshot output must be under --root: {path}") from exc
+    return resolved, relative.as_posix()
+
 def _read_external_evidence_snapshot_source(args: argparse.Namespace) -> tuple[bytes, str | None, int | None, dict[str, str]]:
     if args.source_file:
         return Path(args.source_file).read_bytes(), args.content_type, None, {}
@@ -14337,6 +14361,76 @@ def cmd_external_evidence_snapshot_verify(args: argparse.Namespace) -> int:
     for error in result.errors:
         print(f"- {error}", file=sys.stderr)
     return 1
+
+def cmd_external_evidence_collect(args: argparse.Namespace) -> int:
+    try:
+        roadmap_audit = load_roadmap_audit(args.roadmap_audit)
+        manifest = load_external_evidence_manifest(args.manifest)
+        plan = load_external_evidence_collection_plan(args.plan)
+        body, content_type, status_code, headers = _read_external_evidence_snapshot_source(args)
+        retrieval_method = args.retrieval_method or ("file-copy" if args.source_file else "http-get")
+        snapshot = build_external_evidence_source_snapshot(
+            source_uri=args.source_uri,
+            body=body,
+            retrieval_method=retrieval_method,
+            issuer=args.issuer,
+            subject=args.subject,
+            content_type=content_type,
+            status_code=status_code,
+            response_headers=headers,
+            issued_at=args.issued_at,
+            expires_at=args.expires_at,
+        )
+        snapshot_result = verify_external_evidence_source_snapshot(
+            snapshot,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+        if not snapshot_result.ok:
+            raise ValueError("invalid external evidence source snapshot: " + "; ".join(snapshot_result.errors))
+        snapshot_path = _external_evidence_collect_output_path(args.snapshot_out, args.snapshot_dir, args.task)
+        snapshot_target, snapshot_artifact_path = _repository_relative_artifact_path(args.root, snapshot_path)
+        write_external_evidence_source_snapshot(snapshot_target, snapshot)
+        intake = build_external_evidence_intake(
+            plan,
+            manifest,
+            roadmap_audit,
+            root=args.root,
+            task_ref=args.task,
+            artifact_path=snapshot_artifact_path,
+            description=args.description,
+            issuer=args.issuer,
+            subject=args.subject,
+            source_uri=args.source_uri,
+            issued_at=args.issued_at,
+            expires_at=args.expires_at,
+        )
+        intake_result = verify_external_evidence_intake(
+            intake,
+            plan,
+            manifest,
+            roadmap_audit,
+            root=args.root,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+        if not intake_result.ok:
+            raise ValueError("invalid external evidence intake: " + "; ".join(intake_result.errors))
+        intake_path = _external_evidence_collect_output_path(args.intake_out, args.intake_dir, args.task)
+        write_external_evidence_intake(intake_path, intake)
+    except (OSError, ValueError) as exc:
+        print(f"external evidence collection failed: {exc}", file=sys.stderr)
+        return 1
+    print(f"external evidence source snapshot: {snapshot_target}")
+    print(f"snapshot id: {snapshot['snapshot_id']}")
+    print(f"snapshot artifact path: {snapshot_artifact_path}")
+    print(f"external evidence intake: {intake_path}")
+    print(f"intake id: {intake['intake_id']}")
+    print(f"task ref: {intake['task']['task_ref']}")
+    print(f"evidence argument: {intake['evidence_argument']}")
+    for warning in snapshot_result.warnings + intake_result.warnings:
+        print(f"warning: {warning}")
+    return 0
 
 def cmd_external_evidence_intake(args: argparse.Namespace) -> int:
     try:
@@ -23844,6 +23938,30 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_snapshot_verify.add_argument("--require-fresh", action="store_true")
     external_evidence_snapshot_verify.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to snapshot generated_at")
     external_evidence_snapshot_verify.set_defaults(func=cmd_external_evidence_snapshot_verify)
+
+    external_evidence_collect = subparsers.add_parser("external-evidence-collect", help="snapshot an authority source and create the matching external-evidence intake receipt")
+    external_evidence_collect.add_argument("plan")
+    external_evidence_collect.add_argument("manifest")
+    external_evidence_collect.add_argument("roadmap_audit")
+    external_evidence_collect.add_argument("source_uri")
+    external_evidence_collect.add_argument("--root", default=".")
+    external_evidence_collect.add_argument("--task", required=True, help="task_id, task_ref, unit_id, or unit_ref from the collection plan")
+    external_evidence_collect.add_argument("--source-file", help="local authority export to embed instead of fetching source_uri")
+    external_evidence_collect.add_argument("--retrieval-method", help="defaults to file-copy for --source-file and http-get otherwise")
+    external_evidence_collect.add_argument("--content-type")
+    external_evidence_collect.add_argument("--description", required=True)
+    external_evidence_collect.add_argument("--issuer")
+    external_evidence_collect.add_argument("--subject")
+    external_evidence_collect.add_argument("--issued-at")
+    external_evidence_collect.add_argument("--expires-at")
+    external_evidence_collect.add_argument("--require-fresh", action="store_true")
+    external_evidence_collect.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to generated_at")
+    external_evidence_collect.add_argument("--timeout-seconds", type=float, default=30.0)
+    external_evidence_collect.add_argument("--snapshot-dir", default="artifacts/external-evidence-sources")
+    external_evidence_collect.add_argument("--snapshot-out")
+    external_evidence_collect.add_argument("--intake-dir", default="artifacts/external-evidence-intakes")
+    external_evidence_collect.add_argument("--intake-out")
+    external_evidence_collect.set_defaults(func=cmd_external_evidence_collect)
 
     external_evidence_intake = subparsers.add_parser("external-evidence-intake", help="hash and map one collected authority artifact to a collection-plan task")
     external_evidence_intake.add_argument("plan")

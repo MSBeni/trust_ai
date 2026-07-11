@@ -63,14 +63,11 @@ jobs:
       - name: Generate all-authority external evidence collection plan
         run: python -m trustai external-evidence-plan artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --status-filter all --out artifacts/external-evidence-plan-all.json --markdown artifacts/external-evidence-plan-all.md
 
-      - name: Snapshot external evidence source export
-        run: python -m trustai external-evidence-snapshot https://github.com/MSBeni/trust_ai/actions --source-file examples/aitrade/external-evidence/go-verifier-workflow-run.json --issuer "GitHub Actions" --subject "trustai go verifier release workflow" --content-type application/json --issued-at 2026-07-08T00:00:00Z --expires-at 2026-12-31T00:00:00Z --require-fresh --now 2026-07-09T00:00:00Z --out artifacts/external-evidence-source-snapshot.json
+      - name: Collect external evidence source and intake receipt
+        run: python -m trustai external-evidence-collect artifacts/external-evidence-plan-all.json artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json https://github.com/MSBeni/trust_ai/actions --task oss-verifier-and-public-spec:ci-run --source-file examples/aitrade/external-evidence/go-verifier-workflow-run.json --description "Snapshot of recorded verifier workflow run export" --issuer "GitHub Actions" --subject "trustai go verifier release workflow" --content-type application/json --issued-at 2026-07-08T00:00:00Z --expires-at 2026-12-31T00:00:00Z --snapshot-out artifacts/external-evidence-source-snapshot.json --intake-out artifacts/external-evidence-intake.json --require-fresh --now 2026-07-09T00:00:00Z
 
       - name: Verify external evidence source snapshot
         run: python -m trustai external-evidence-snapshot-verify artifacts/external-evidence-source-snapshot.json --require-fresh --now 2026-07-09T00:00:00Z
-
-      - name: Generate external evidence intake receipt
-        run: python -m trustai external-evidence-intake artifacts/external-evidence-plan-all.json artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --task oss-verifier-and-public-spec:ci-run --artifact artifacts/external-evidence-source-snapshot.json --description "Snapshot of recorded verifier workflow run export" --issuer "GitHub Actions" --subject "trustai go verifier release workflow" --source-uri https://github.com/MSBeni/trust_ai/actions --issued-at 2026-07-08T00:00:00Z --expires-at 2026-12-31T00:00:00Z --require-fresh --now 2026-07-09T00:00:00Z --out artifacts/external-evidence-intake.json
 
       - name: Verify external evidence intake receipt
         run: python -m trustai external-evidence-intake-verify artifacts/external-evidence-intake.json artifacts/external-evidence-plan-all.json artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --require-fresh --now 2026-07-09T00:00:00Z
