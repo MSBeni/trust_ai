@@ -46,9 +46,9 @@ Supported modes:
 - replay window between 1 and 600 seconds;
 - required network-policy and rate-limit references;
 - provider endpoint signature schemes and source installation IDs/hashes;
-- provider installation replay plus callback-store replay with source artifacts when callback-store evidence is supplied.
+- provider installation replay plus required callback-store manifest, database, and source-artifact replay whenever ingress records callback-store evidence.
 
-Verifier warnings are emitted when non-required source artifacts are not supplied, WAF or DNS
+Verifier errors are emitted when recorded callback-store evidence is not supplied for replay. Warnings are emitted when non-required source artifacts are not supplied, WAF or DNS
 references are missing, or a non-operational mode is used.
 
 ## Chain Entry

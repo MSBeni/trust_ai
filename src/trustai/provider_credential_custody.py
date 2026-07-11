@@ -239,6 +239,9 @@ def verify_provider_credential_custody_receipt(
     audit_worker: dict[str, Any] | None = None,
     provider_ingress_manifest: dict[str, Any] | None = None,
     callback_storage_manifest: dict[str, Any] | None = None,
+    callback_store_manifest: dict[str, Any] | None = None,
+    callback_store_db_path: str | Path | None = None,
+    callback_store_source_artifacts: list[dict[str, Any]] | None = None,
     key: str | None = None,
     now: str | None = None,
 ) -> ProviderCredentialCustodyVerification:
@@ -403,6 +406,9 @@ def verify_provider_credential_custody_receipt(
             audit_worker=audit_worker,
             provider_ingress_manifest=provider_ingress_manifest,
             callback_storage_manifest=callback_storage_manifest,
+            callback_store_manifest=callback_store_manifest,
+            callback_store_db_path=callback_store_db_path,
+            callback_store_source_artifacts=callback_store_source_artifacts,
             key=key,
             errors=errors,
             warnings=warnings,
@@ -437,6 +443,9 @@ def append_provider_credential_custody_receipt(
     audit_worker: dict[str, Any] | None = None,
     provider_ingress_manifest: dict[str, Any] | None = None,
     callback_storage_manifest: dict[str, Any] | None = None,
+    callback_store_manifest: dict[str, Any] | None = None,
+    callback_store_db_path: str | Path | None = None,
+    callback_store_source_artifacts: list[dict[str, Any]] | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
     result = verify_provider_credential_custody_receipt(
@@ -447,6 +456,9 @@ def append_provider_credential_custody_receipt(
         audit_worker=audit_worker,
         provider_ingress_manifest=provider_ingress_manifest,
         callback_storage_manifest=callback_storage_manifest,
+        callback_store_manifest=callback_store_manifest,
+        callback_store_db_path=callback_store_db_path,
+        callback_store_source_artifacts=callback_store_source_artifacts,
         key=key,
     )
     if not result.ok:
@@ -538,6 +550,9 @@ def _verify_supplied_sources(
     audit_worker: dict[str, Any] | None,
     provider_ingress_manifest: dict[str, Any] | None,
     callback_storage_manifest: dict[str, Any] | None,
+    callback_store_manifest: dict[str, Any] | None,
+    callback_store_db_path: str | Path | None,
+    callback_store_source_artifacts: list[dict[str, Any]] | None,
     key: str | None,
     errors: list[str],
     warnings: list[str],
@@ -548,7 +563,16 @@ def _verify_supplied_sources(
             errors.extend(f"provider credential custody installation invalid: {error}" for error in result.errors)
         warnings.extend(f"provider credential custody installation warning: {warning}" for warning in result.warnings)
     if lifecycle_manifest is not None:
-        result = verify_provider_lifecycle_manifest(lifecycle_manifest, provider_installation=provider_installation, provider_ingress_manifest=provider_ingress_manifest, callback_storage_manifest=callback_storage_manifest, key=key)
+        result = verify_provider_lifecycle_manifest(
+            lifecycle_manifest,
+            provider_installation=provider_installation,
+            provider_ingress_manifest=provider_ingress_manifest,
+            callback_storage_manifest=callback_storage_manifest,
+            callback_store_manifest=callback_store_manifest,
+            callback_store_db_path=callback_store_db_path,
+            callback_store_source_artifacts=callback_store_source_artifacts,
+            key=key,
+        )
         if not result.ok:
             errors.extend(f"provider credential custody lifecycle invalid: {error}" for error in result.errors)
         warnings.extend(f"provider credential custody lifecycle warning: {warning}" for warning in result.warnings)

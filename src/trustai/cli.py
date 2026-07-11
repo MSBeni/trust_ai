@@ -9898,19 +9898,20 @@ def cmd_provider_audit_worker_append(args: argparse.Namespace) -> int:
     return 0
 
 
-def _load_provider_credential_custody_inputs(args: argparse.Namespace) -> tuple[dict | None, dict | None, dict | None, dict | None, dict | None, dict | None]:
+def _load_provider_credential_custody_inputs(args: argparse.Namespace) -> tuple[dict | None, dict | None, dict | None, dict | None, dict | None, dict | None, dict | None, str | None, list[dict] | None]:
     provider_installation = load_provider_installation_manifest(args.provider_installation) if args.provider_installation else None
     lifecycle_manifest = load_provider_lifecycle_manifest(args.lifecycle) if args.lifecycle else None
     lifecycle_operation = load_provider_lifecycle_operation_receipt(args.lifecycle_operation) if args.lifecycle_operation else None
     audit_worker = load_provider_audit_worker_receipt(args.audit_worker) if args.audit_worker else None
     provider_ingress = load_provider_ingress_manifest(args.provider_ingress) if args.provider_ingress else None
     callback_storage = load_provider_callback_storage_manifest(args.callback_storage) if args.callback_storage else None
-    return provider_installation, lifecycle_manifest, lifecycle_operation, audit_worker, provider_ingress, callback_storage
+    callback_store, callback_store_db_path, callback_store_artifacts = _load_provider_callback_store_replay_inputs(args)
+    return provider_installation, lifecycle_manifest, lifecycle_operation, audit_worker, provider_ingress, callback_storage, callback_store, callback_store_db_path, callback_store_artifacts
 
 
 def cmd_provider_credential_custody(args: argparse.Namespace) -> int:
     try:
-        provider_installation, lifecycle_manifest, lifecycle_operation, audit_worker, provider_ingress, callback_storage = _load_provider_credential_custody_inputs(args)
+        provider_installation, lifecycle_manifest, lifecycle_operation, audit_worker, provider_ingress, callback_storage, callback_store, callback_store_db_path, callback_store_artifacts = _load_provider_credential_custody_inputs(args)
         receipt = build_provider_credential_custody_receipt(
             credential_ref=args.credential_ref,
             credential_kind=args.credential_kind,
@@ -9956,6 +9957,9 @@ def cmd_provider_credential_custody(args: argparse.Namespace) -> int:
             audit_worker=audit_worker,
             provider_ingress_manifest=provider_ingress,
             callback_storage_manifest=callback_storage,
+            callback_store_manifest=callback_store,
+            callback_store_db_path=callback_store_db_path,
+            callback_store_source_artifacts=callback_store_artifacts,
             key=args.key,
         )
     except (OSError, ValueError) as exc:
@@ -9979,7 +9983,7 @@ def cmd_provider_credential_custody(args: argparse.Namespace) -> int:
 def cmd_provider_credential_custody_verify(args: argparse.Namespace) -> int:
     try:
         receipt = load_provider_credential_custody_receipt(args.receipt)
-        provider_installation, lifecycle_manifest, lifecycle_operation, audit_worker, provider_ingress, callback_storage = _load_provider_credential_custody_inputs(args)
+        provider_installation, lifecycle_manifest, lifecycle_operation, audit_worker, provider_ingress, callback_storage, callback_store, callback_store_db_path, callback_store_artifacts = _load_provider_credential_custody_inputs(args)
     except (OSError, ValueError) as exc:
         print(f"provider credential custody receipt verification failed: {exc}", file=sys.stderr)
         return 1
@@ -9991,6 +9995,9 @@ def cmd_provider_credential_custody_verify(args: argparse.Namespace) -> int:
         audit_worker=audit_worker,
         provider_ingress_manifest=provider_ingress,
         callback_storage_manifest=callback_storage,
+        callback_store_manifest=callback_store,
+        callback_store_db_path=callback_store_db_path,
+        callback_store_source_artifacts=callback_store_artifacts,
         key=args.key,
     )
     if result.ok:
@@ -10008,7 +10015,7 @@ def cmd_provider_credential_custody_verify(args: argparse.Namespace) -> int:
 def cmd_provider_credential_custody_append(args: argparse.Namespace) -> int:
     try:
         receipt = load_provider_credential_custody_receipt(args.receipt)
-        provider_installation, lifecycle_manifest, lifecycle_operation, audit_worker, provider_ingress, callback_storage = _load_provider_credential_custody_inputs(args)
+        provider_installation, lifecycle_manifest, lifecycle_operation, audit_worker, provider_ingress, callback_storage, callback_store, callback_store_db_path, callback_store_artifacts = _load_provider_credential_custody_inputs(args)
     except (OSError, ValueError) as exc:
         print(f"provider credential custody receipt append failed: {exc}", file=sys.stderr)
         return 1
@@ -10023,6 +10030,9 @@ def cmd_provider_credential_custody_append(args: argparse.Namespace) -> int:
             audit_worker=audit_worker,
             provider_ingress_manifest=provider_ingress,
             callback_storage_manifest=callback_storage,
+            callback_store_manifest=callback_store,
+            callback_store_db_path=callback_store_db_path,
+            callback_store_source_artifacts=callback_store_artifacts,
             key=args.key,
         )
     except ValueError as exc:
@@ -10505,11 +10515,18 @@ def _load_optional_provider_callback_storage(path: str | None) -> dict | None:
     return load_provider_callback_storage_manifest(path) if path else None
 
 
+def _load_provider_callback_store_replay_inputs(args: argparse.Namespace) -> tuple[dict | None, str | None, list[dict] | None]:
+    callback_store = load_provider_callback_store_manifest(args.callback_store) if getattr(args, "callback_store", None) else None
+    callback_store_artifacts = _load_provider_callback_artifacts(getattr(args, "callback_store_artifact", []) or []) or None
+    return callback_store, getattr(args, "callback_store_db", None), callback_store_artifacts
+
+
 def cmd_provider_lifecycle(args: argparse.Namespace) -> int:
     try:
         installation = load_provider_installation_manifest(args.provider_installation)
         provider_ingress = _load_optional_provider_ingress(args.provider_ingress)
         callback_storage = _load_optional_provider_callback_storage(args.callback_storage)
+        callback_store, callback_store_db_path, callback_store_artifacts = _load_provider_callback_store_replay_inputs(args)
         manifest = build_provider_lifecycle_manifest(
             provider_installation=installation,
             lifecycle_ref=args.lifecycle_ref,
@@ -10535,6 +10552,9 @@ def cmd_provider_lifecycle(args: argparse.Namespace) -> int:
             provider_installation=installation,
             provider_ingress_manifest=provider_ingress,
             callback_storage_manifest=callback_storage,
+            callback_store_manifest=callback_store,
+            callback_store_db_path=callback_store_db_path,
+            callback_store_source_artifacts=callback_store_artifacts,
             key=args.key,
         )
     except (OSError, ValueError) as exc:
@@ -10561,6 +10581,7 @@ def cmd_provider_lifecycle_verify(args: argparse.Namespace) -> int:
         installation = load_provider_installation_manifest(args.provider_installation) if args.provider_installation else None
         provider_ingress = _load_optional_provider_ingress(args.provider_ingress)
         callback_storage = _load_optional_provider_callback_storage(args.callback_storage)
+        callback_store, callback_store_db_path, callback_store_artifacts = _load_provider_callback_store_replay_inputs(args)
     except (OSError, ValueError) as exc:
         print(f"provider lifecycle verification failed: {exc}", file=sys.stderr)
         return 1
@@ -10569,6 +10590,9 @@ def cmd_provider_lifecycle_verify(args: argparse.Namespace) -> int:
         provider_installation=installation,
         provider_ingress_manifest=provider_ingress,
         callback_storage_manifest=callback_storage,
+        callback_store_manifest=callback_store,
+        callback_store_db_path=callback_store_db_path,
+        callback_store_source_artifacts=callback_store_artifacts,
         key=args.key,
     )
     if result.ok:
@@ -10589,6 +10613,7 @@ def cmd_provider_lifecycle_append(args: argparse.Namespace) -> int:
         installation = load_provider_installation_manifest(args.provider_installation) if args.provider_installation else None
         provider_ingress = _load_optional_provider_ingress(args.provider_ingress)
         callback_storage = _load_optional_provider_callback_storage(args.callback_storage)
+        callback_store, callback_store_db_path, callback_store_artifacts = _load_provider_callback_store_replay_inputs(args)
     except (OSError, ValueError) as exc:
         print(f"provider lifecycle append failed: {exc}", file=sys.stderr)
         return 1
@@ -10600,6 +10625,9 @@ def cmd_provider_lifecycle_append(args: argparse.Namespace) -> int:
             provider_installation=installation,
             provider_ingress_manifest=provider_ingress,
             callback_storage_manifest=callback_storage,
+            callback_store_manifest=callback_store,
+            callback_store_db_path=callback_store_db_path,
+            callback_store_source_artifacts=callback_store_artifacts,
             key=args.key,
         )
     except ValueError as exc:
@@ -22224,6 +22252,9 @@ def build_parser() -> argparse.ArgumentParser:
     provider_credential_custody.add_argument("--audit-worker", help="provider audit worker receipt to replay")
     provider_credential_custody.add_argument("--provider-ingress", help="provider ingress manifest for lifecycle replay")
     provider_credential_custody.add_argument("--callback-storage", help="provider callback storage manifest for lifecycle replay")
+    provider_credential_custody.add_argument("--callback-store", help="provider callback store manifest for nested lifecycle/storage replay")
+    provider_credential_custody.add_argument("--callback-store-db", help="SQLite callback store path used to replay callback-store evidence")
+    provider_credential_custody.add_argument("--callback-store-artifact", action="append", default=[], help="callback-store source artifact to replay; repeatable")
     provider_credential_custody.add_argument("--credential-ref", required=True)
     provider_credential_custody.add_argument("--credential-kind", choices=sorted(CREDENTIAL_KINDS), required=True)
     provider_credential_custody.add_argument("--custody-ref", required=True)
@@ -22266,6 +22297,9 @@ def build_parser() -> argparse.ArgumentParser:
     provider_credential_custody_verify.add_argument("--audit-worker", help="provider audit worker receipt to replay")
     provider_credential_custody_verify.add_argument("--provider-ingress", help="provider ingress manifest for lifecycle replay")
     provider_credential_custody_verify.add_argument("--callback-storage", help="provider callback storage manifest for lifecycle replay")
+    provider_credential_custody_verify.add_argument("--callback-store", help="provider callback store manifest for nested lifecycle/storage replay")
+    provider_credential_custody_verify.add_argument("--callback-store-db", help="SQLite callback store path used to replay callback-store evidence")
+    provider_credential_custody_verify.add_argument("--callback-store-artifact", action="append", default=[], help="callback-store source artifact to replay; repeatable")
     provider_credential_custody_verify.add_argument("--key")
     provider_credential_custody_verify.set_defaults(func=cmd_provider_credential_custody_verify)
 
@@ -22277,6 +22311,9 @@ def build_parser() -> argparse.ArgumentParser:
     provider_credential_custody_append.add_argument("--audit-worker", help="provider audit worker receipt to replay")
     provider_credential_custody_append.add_argument("--provider-ingress", help="provider ingress manifest for lifecycle replay")
     provider_credential_custody_append.add_argument("--callback-storage", help="provider callback storage manifest for lifecycle replay")
+    provider_credential_custody_append.add_argument("--callback-store", help="provider callback store manifest for nested lifecycle/storage replay")
+    provider_credential_custody_append.add_argument("--callback-store-db", help="SQLite callback store path used to replay callback-store evidence")
+    provider_credential_custody_append.add_argument("--callback-store-artifact", action="append", default=[], help="callback-store source artifact to replay; repeatable")
     provider_credential_custody_append.add_argument("--out", default="artifacts/provider-credential-custody-entry.json")
     provider_credential_custody_append.add_argument("--key")
     _add_state_args(provider_credential_custody_append)
@@ -22559,6 +22596,9 @@ def build_parser() -> argparse.ArgumentParser:
     provider_lifecycle.add_argument("--environment", default="local")
     provider_lifecycle.add_argument("--provider-ingress")
     provider_lifecycle.add_argument("--callback-storage")
+    provider_lifecycle.add_argument("--callback-store", help="provider callback store manifest for nested ingress/storage replay")
+    provider_lifecycle.add_argument("--callback-store-db", help="SQLite callback store path used to replay callback-store evidence")
+    provider_lifecycle.add_argument("--callback-store-artifact", action="append", default=[], help="callback-store source artifact to replay; repeatable")
     provider_lifecycle.add_argument("--generated-at")
     provider_lifecycle.add_argument("--out", default="artifacts/provider-lifecycle.json")
     provider_lifecycle.add_argument("--key")
@@ -22569,6 +22609,9 @@ def build_parser() -> argparse.ArgumentParser:
     provider_lifecycle_verify.add_argument("--provider-installation", help="provider installation manifest to replay")
     provider_lifecycle_verify.add_argument("--provider-ingress", help="provider ingress manifest to replay")
     provider_lifecycle_verify.add_argument("--callback-storage", help="provider callback storage manifest to replay")
+    provider_lifecycle_verify.add_argument("--callback-store", help="provider callback store manifest for nested ingress/storage replay")
+    provider_lifecycle_verify.add_argument("--callback-store-db", help="SQLite callback store path used to replay callback-store evidence")
+    provider_lifecycle_verify.add_argument("--callback-store-artifact", action="append", default=[], help="callback-store source artifact to replay; repeatable")
     provider_lifecycle_verify.add_argument("--key")
     provider_lifecycle_verify.set_defaults(func=cmd_provider_lifecycle_verify)
 
@@ -22577,6 +22620,9 @@ def build_parser() -> argparse.ArgumentParser:
     provider_lifecycle_append.add_argument("--provider-installation", help="provider installation manifest to replay")
     provider_lifecycle_append.add_argument("--provider-ingress", help="provider ingress manifest to replay")
     provider_lifecycle_append.add_argument("--callback-storage", help="provider callback storage manifest to replay")
+    provider_lifecycle_append.add_argument("--callback-store", help="provider callback store manifest for nested ingress/storage replay")
+    provider_lifecycle_append.add_argument("--callback-store-db", help="SQLite callback store path used to replay callback-store evidence")
+    provider_lifecycle_append.add_argument("--callback-store-artifact", action="append", default=[], help="callback-store source artifact to replay; repeatable")
     provider_lifecycle_append.add_argument("--out", default="artifacts/provider-lifecycle-entry.json")
     provider_lifecycle_append.add_argument("--key")
     _add_state_args(provider_lifecycle_append)

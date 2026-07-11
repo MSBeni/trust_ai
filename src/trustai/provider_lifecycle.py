@@ -156,6 +156,9 @@ def verify_provider_lifecycle_manifest(
     provider_installation: dict[str, Any] | None = None,
     provider_ingress_manifest: dict[str, Any] | None = None,
     callback_storage_manifest: dict[str, Any] | None = None,
+    callback_store_manifest: dict[str, Any] | None = None,
+    callback_store_db_path: str | Path | None = None,
+    callback_store_source_artifacts: list[dict[str, Any]] | None = None,
     key: str | None = None,
 ) -> ProviderLifecycleVerification:
     errors: list[str] = []
@@ -260,7 +263,14 @@ def verify_provider_lifecycle_manifest(
             errors.append("provider lifecycle installation record does not match supplied provider installation")
 
     if provider_ingress_manifest is not None:
-        ingress_result = verify_provider_ingress_manifest(provider_ingress_manifest, key=key)
+        ingress_result = verify_provider_ingress_manifest(
+            provider_ingress_manifest,
+            provider_installations=[provider_installation] if provider_installation is not None else None,
+            callback_store_manifest=callback_store_manifest,
+            callback_store_db_path=callback_store_db_path,
+            callback_store_source_artifacts=callback_store_source_artifacts,
+            key=key,
+        )
         if not ingress_result.ok:
             errors.extend(f"provider lifecycle ingress invalid: {error}" for error in ingress_result.errors)
         warnings.extend(f"provider lifecycle ingress warning: {warning}" for warning in ingress_result.warnings)
@@ -272,7 +282,14 @@ def verify_provider_lifecycle_manifest(
         warnings.append("provider lifecycle ingress manifest was not supplied; ingress hash was not replayed")
 
     if callback_storage_manifest is not None:
-        storage_result = verify_provider_callback_storage_manifest(callback_storage_manifest, key=key)
+        storage_result = verify_provider_callback_storage_manifest(
+            callback_storage_manifest,
+            callback_store_manifest=callback_store_manifest,
+            callback_store_db_path=callback_store_db_path,
+            callback_store_source_artifacts=callback_store_source_artifacts,
+            provider_ingress_manifest=provider_ingress_manifest,
+            key=key,
+        )
         if not storage_result.ok:
             errors.extend(f"provider lifecycle callback storage invalid: {error}" for error in storage_result.errors)
         warnings.extend(f"provider lifecycle callback storage warning: {warning}" for warning in storage_result.warnings)
@@ -303,6 +320,9 @@ def append_provider_lifecycle_manifest(
     provider_installation: dict[str, Any] | None = None,
     provider_ingress_manifest: dict[str, Any] | None = None,
     callback_storage_manifest: dict[str, Any] | None = None,
+    callback_store_manifest: dict[str, Any] | None = None,
+    callback_store_db_path: str | Path | None = None,
+    callback_store_source_artifacts: list[dict[str, Any]] | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
     result = verify_provider_lifecycle_manifest(
@@ -310,6 +330,9 @@ def append_provider_lifecycle_manifest(
         provider_installation=provider_installation,
         provider_ingress_manifest=provider_ingress_manifest,
         callback_storage_manifest=callback_storage_manifest,
+        callback_store_manifest=callback_store_manifest,
+        callback_store_db_path=callback_store_db_path,
+        callback_store_source_artifacts=callback_store_source_artifacts,
         key=key,
     )
     if not result.ok:

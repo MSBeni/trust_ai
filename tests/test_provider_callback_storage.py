@@ -139,6 +139,25 @@ class ProviderCallbackStorageTests(unittest.TestCase):
             self.assertEqual(manifest["storage_manifest_id"], entry["payload"]["storage_manifest_id"])
             self.assertTrue(chain.verify_all().ok)
 
+    def test_provider_callback_storage_requires_callback_store_replay(self):
+        installation = _installation()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            db_path = Path(tmp_dir) / "provider-callbacks.sqlite"
+            callback_store = build_provider_callback_store_manifest(
+                db_path,
+                source_artifacts=[installation],
+                generated_at="2026-07-08T04:00:00Z",
+                retention_until="2033-07-08T00:00:00Z",
+            )
+            manifest = build_provider_callback_storage_manifest(
+                **_storage_kwargs(),
+                callback_store_manifest=callback_store,
+            )
+
+            result = verify_provider_callback_storage_manifest(manifest)
+
+            self.assertFalse(result.ok)
+            self.assertIn("provider callback storage callback-store manifest is required for verification", result.errors)
     def test_provider_callback_storage_rejects_under_replicated_ha(self):
         installation = _installation()
         with tempfile.TemporaryDirectory() as tmp_dir:

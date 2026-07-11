@@ -253,7 +253,10 @@ def verify_provider_callback_storage_manifest(
         errors.append("provider callback storage source_artifacts must be a list")
         manifest_sources = []
     if callback_store_manifest is None:
-        warnings.append("provider callback storage callback-store manifest was not supplied; source hash and migration plan were not replayed")
+        if any(source.get("artifact_type") == "provider_callback_store" for source in manifest_sources if isinstance(source, dict)):
+            errors.append("provider callback storage callback-store manifest is required for verification")
+        else:
+            warnings.append("provider callback storage callback-store manifest was not supplied; source hash and migration plan were not replayed")
     else:
         store_result = verify_provider_callback_store_manifest(
             callback_store_manifest,

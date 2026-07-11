@@ -139,6 +139,9 @@ class ProviderLifecycleTests(unittest.TestCase):
                 provider_installation=installation,
                 provider_ingress_manifest=ingress,
                 callback_storage_manifest=storage,
+                callback_store_manifest=callback_store,
+                callback_store_db_path=db_path,
+                callback_store_source_artifacts=[installation],
             )
 
             self.assertTrue(result.ok, result.errors)
@@ -158,6 +161,9 @@ class ProviderLifecycleTests(unittest.TestCase):
                 provider_installation=installation,
                 provider_ingress_manifest=ingress,
                 callback_storage_manifest=storage,
+                callback_store_manifest=callback_store,
+                callback_store_db_path=db_path,
+                callback_store_source_artifacts=[installation],
             )
 
             self.assertEqual(PROVIDER_LIFECYCLE_ENTRY_TYPE, entry["entry_type"])
@@ -230,6 +236,12 @@ class ProviderLifecycleTests(unittest.TestCase):
                 str(ingress_path),
                 "--callback-storage",
                 str(storage_path),
+                "--callback-store",
+                str(callback_store_path),
+                "--callback-store-db",
+                str(db_path),
+                "--callback-store-artifact",
+                str(installation_path),
             ]
 
             subprocess.run(
@@ -319,6 +331,9 @@ class ProviderLifecycleTests(unittest.TestCase):
                 provider_installation=installation,
                 provider_ingress_manifest=ingress,
                 callback_storage_manifest=storage,
+                callback_store_manifest=callback_store,
+                callback_store_db_path=db_path,
+                callback_store_source_artifacts=[installation],
             )
             self.assertTrue(result.ok, result.errors)
             self.assertEqual(manifest["lifecycle_manifest_id"], entry["payload"]["lifecycle_manifest_id"])

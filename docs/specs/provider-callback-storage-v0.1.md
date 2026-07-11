@@ -47,7 +47,7 @@ Supported modes:
 - minimum HA topology of two replicas, primary region, failover runbook, RPO,
   and RTO;
 - backup, network, and monitoring references;
-- callback-store SQLite replay with source artifacts when callback-store evidence is supplied, plus provider-ingress hash replay.
+- required callback-store manifest, SQLite database, and source-artifact replay whenever storage records callback-store evidence, plus provider-ingress hash replay when supplied.
 
 Verification fails when recorded callback-store source artifacts are omitted; it emits warnings when non-required source artifacts are not supplied or when the
 mode does not claim live managed-Postgres operation.

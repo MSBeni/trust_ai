@@ -51,9 +51,9 @@ Supported modes:
 - redacted token-store reference and absence of raw token/secret-like fields;
 - optional provider installation replay;
 - optional provider ingress replay and OAuth callback host alignment;
-- optional callback storage manifest replay.
+- optional callback storage manifest replay, including nested callback-store manifest, database, and source-artifact replay when supplied ingress or storage evidence records callback-store bindings.
 
-Verification emits warnings when source artifacts are not supplied or when the
+Verification emits warnings when optional lifecycle source artifacts are not supplied. It fails when supplied ingress or storage evidence records callback-store bindings and callback-store replay inputs are omitted, or when the
 mode does not claim recorded live provider lifecycle operation.
 
 ## Chain Entry

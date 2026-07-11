@@ -272,7 +272,7 @@ def verify_provider_ingress_manifest(
             errors.extend(f"provider ingress callback store invalid: {error}" for error in store_result.errors)
         warnings.extend(f"provider ingress callback store warning: {warning}" for warning in store_result.warnings)
     elif any(source.get("artifact_type") == "provider_callback_store" for source in manifest_sources):
-        warnings.append("provider ingress callback-store manifest was not supplied; callback-store hash was not replayed")
+        errors.append("provider ingress callback-store manifest is required for verification")
 
     controls = manifest.get("controls", [])
     if not isinstance(controls, list) or not controls:

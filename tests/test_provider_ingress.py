@@ -115,6 +115,26 @@ class ProviderIngressTests(unittest.TestCase):
             self.assertEqual(manifest["ingress_manifest_id"], entry["payload"]["ingress_manifest_id"])
             self.assertTrue(chain.verify_all().ok)
 
+    def test_provider_ingress_requires_callback_store_replay(self):
+        installation = _installation()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            db_path = Path(tmp_dir) / "provider-callbacks.sqlite"
+            callback_store = build_provider_callback_store_manifest(
+                db_path,
+                source_artifacts=[installation],
+                generated_at="2026-07-08T04:00:00Z",
+                retention_until="2033-07-08T00:00:00Z",
+            )
+            manifest = build_provider_ingress_manifest(
+                **_ingress_kwargs(),
+                provider_installations=[installation],
+                callback_store_manifest=callback_store,
+            )
+
+            result = verify_provider_ingress_manifest(manifest, provider_installations=[installation])
+
+            self.assertFalse(result.ok)
+            self.assertIn("provider ingress callback-store manifest is required for verification", result.errors)
     def test_provider_ingress_rejects_non_https_ingress(self):
         installation = _installation()
         manifest = build_provider_ingress_manifest(
