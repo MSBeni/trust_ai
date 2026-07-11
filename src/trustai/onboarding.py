@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
+import shlex
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -20,13 +22,33 @@ REQUIRED_SOURCE_PATHS = (
     "docs/specs/typescript-sdk-v0.1.md",
     "docs/specs/otel-ingest-v0.1.md",
     "docs/specs/mcp-gateway-v0.1.md",
+    "src/trustai/cli.py",
     "src/trustai/sdk.py",
     "src/trustai/ingest.py",
     "src/trustai/mcp_gateway.py",
     "sdk/typescript/src/index.mjs",
     "examples/aitrade/verification-contract.yaml",
     "examples/aitrade/mcp-transcript.json",
+    "examples/aitrade/otel-events.json",
 )
+QUICKSTART_SOURCE_TARGETS: dict[str, tuple[str, ...]] = {
+    "instrument-python-sdk": ("src/trustai/sdk.py", "docs/specs/python-sdk-v0.1.md"),
+    "instrument-typescript-sdk": ("sdk/typescript/src/index.mjs", "docs/specs/typescript-sdk-v0.1.md"),
+    "initialize-local-chain": ("src/trustai/cli.py",),
+    "register-contract": ("src/trustai/cli.py", "examples/aitrade/verification-contract.yaml"),
+    "verify-pack": ("src/trustai/cli.py",),
+    "capture-mcp-transcript": ("src/trustai/cli.py", "src/trustai/mcp_gateway.py", "docs/specs/mcp-gateway-v0.1.md", "examples/aitrade/mcp-transcript.json"),
+    "ingest-otel-events": ("src/trustai/cli.py", "src/trustai/ingest.py", "docs/specs/otel-ingest-v0.1.md", "examples/aitrade/otel-events.json"),
+}
+
+QUICKSTART_GENERATED_TARGETS: dict[str, tuple[str, ...]] = {
+    "initialize-local-chain": (".trustai/demo/evidence-chain.json",),
+    "verify-pack": ("artifacts/aitrade-proof-pack.json",),
+    "capture-mcp-transcript": (".trustai/demo/evidence-chain.json",),
+    "ingest-otel-events": (".trustai/demo/evidence-chain.json",),
+}
+
+CLI_ADD_PARSER_PATTERN = re.compile(r'add_parser\("([^"]+)"')
 
 
 @dataclass
@@ -79,6 +101,8 @@ def build_self_serve_onboarding_receipt(
     parse_rfc3339(timestamp)
     root_path = Path(root)
     source_artifacts = [_file_binding(root_path, relative_path) for relative_path in REQUIRED_SOURCE_PATHS]
+    quickstart_steps = _quickstart_steps(sdk_scope, gateway_mode)
+    quickstart_replay = _quickstart_replay(root_path, quickstart_steps)
     body: dict[str, Any] = {
         "schema": SELF_SERVE_ONBOARDING_SCHEMA,
         "generated_at": timestamp,
@@ -90,8 +114,9 @@ def build_self_serve_onboarding_receipt(
         "sdk_scope": sdk_scope,
         "gateway_mode": gateway_mode,
         "source_artifacts": source_artifacts,
-        "quickstart_steps": _quickstart_steps(sdk_scope, gateway_mode),
-        "controls": _controls(source_artifacts, sdk_scope, gateway_mode),
+        "quickstart_steps": quickstart_steps,
+        "quickstart_replay": quickstart_replay,
+        "controls": _controls(source_artifacts, quickstart_replay, sdk_scope, gateway_mode),
         "limitations": [
             "This receipt proves the local self-serve SDK, OTel ingest, MCP gateway, examples, and quickstart commands are present and hash-bound.",
             "It does not claim a hosted onboarding portal, metered billing, or live user signup flow.",
@@ -172,7 +197,10 @@ def verify_self_serve_onboarding_receipt(
     expected_steps = _quickstart_steps(str(sdk_scope), str(gateway_mode)) if sdk_scope in SDK_SCOPES and gateway_mode in GATEWAY_MODES else []
     if receipt.get("quickstart_steps") != expected_steps:
         errors.append("self-serve onboarding quickstart_steps do not match sdk_scope and gateway_mode")
-    expected_controls = _controls(artifacts, str(sdk_scope), str(gateway_mode)) if sdk_scope in SDK_SCOPES and gateway_mode in GATEWAY_MODES else []
+    expected_replay = _quickstart_replay(root_path, expected_steps) if expected_steps else []
+    if receipt.get("quickstart_replay") != expected_replay:
+        errors.append("self-serve onboarding quickstart_replay does not match local CLI/source replay")
+    expected_controls = _controls(artifacts, expected_replay, str(sdk_scope), str(gateway_mode)) if sdk_scope in SDK_SCOPES and gateway_mode in GATEWAY_MODES else []
     if receipt.get("controls") != expected_controls:
         errors.append("self-serve onboarding controls do not match receipt body")
     if gateway_mode == "otel-only":
@@ -202,6 +230,7 @@ def append_self_serve_onboarding_receipt(
         "gateway_mode": receipt.get("gateway_mode"),
         "source_artifact_count": len(receipt.get("source_artifacts", [])),
         "quickstart_step_count": len(receipt.get("quickstart_steps", [])),
+        "quickstart_replay_count": len(receipt.get("quickstart_replay", [])),
         "control_summary": _status_summary(receipt.get("controls", [])),
     }
     return chain.append(SELF_SERVE_ONBOARDING_ENTRY_TYPE, payload, key=key, timestamp=receipt.get("generated_at"))
@@ -272,8 +301,64 @@ def _quickstart_steps(sdk_scope: str, gateway_mode: str) -> list[dict[str, str]]
     return steps
 
 
-def _controls(source_artifacts: list[dict[str, Any]], sdk_scope: str, gateway_mode: str) -> list[dict[str, str]]:
+def _quickstart_replay(root: Path, steps: list[dict[str, str]]) -> list[dict[str, Any]]:
+    registered_commands = _registered_trustai_commands(root)
+    replay: list[dict[str, Any]] = []
+    for step in steps:
+        step_id = str(step.get("id") or "")
+        command = str(step.get("command") or "")
+        parsed = _parse_quickstart_command(command, registered_commands)
+        source_bindings = [_file_binding(root, path) for path in QUICKSTART_SOURCE_TARGETS.get(step_id, ())]
+        command_valid = bool(parsed.get("recognized")) and bool(parsed.get("registered")) and all(binding.get("sha256") for binding in source_bindings)
+        replay.append(
+            {
+                "id": step_id,
+                "command": command,
+                "tool": parsed.get("tool"),
+                "subcommand": parsed.get("subcommand"),
+                "recognized": parsed.get("recognized"),
+                "registered": parsed.get("registered"),
+                "source_bindings": source_bindings,
+                "generated_targets": list(QUICKSTART_GENERATED_TARGETS.get(step_id, ())),
+                "command_valid": command_valid,
+            }
+        )
+    return replay
+
+
+def _registered_trustai_commands(root: Path) -> set[str]:
+    cli_source = (root / "src/trustai/cli.py").read_text(encoding="utf-8-sig")
+    return set(CLI_ADD_PARSER_PATTERN.findall(cli_source))
+
+
+def _parse_quickstart_command(command: str, registered_commands: set[str]) -> dict[str, Any]:
+    try:
+        parts = shlex.split(command, posix=False)
+    except ValueError:
+        return {"tool": None, "subcommand": None, "recognized": False, "registered": False}
+    if len(parts) >= 4 and parts[0] == "python" and parts[1] == "-m" and parts[2] == "trustai":
+        subcommand = parts[3]
+        return {
+            "tool": "trustai-cli",
+            "subcommand": subcommand,
+            "recognized": True,
+            "registered": subcommand in registered_commands,
+        }
+    if len(parts) >= 3 and parts[0] == "python" and parts[1] == "-c" and "trustai.sdk" in command:
+        return {"tool": "python-import", "subcommand": "trustai.sdk.TrustAIClient", "recognized": True, "registered": True}
+    if len(parts) >= 2 and parts[0] == "node" and parts[1] == "sdk/typescript/src/index.mjs":
+        return {"tool": "node-script", "subcommand": "sdk/typescript/src/index.mjs", "recognized": True, "registered": True}
+    return {"tool": None, "subcommand": None, "recognized": False, "registered": False}
+
+
+def _controls(
+    source_artifacts: list[dict[str, Any]],
+    quickstart_replay: list[dict[str, Any]],
+    sdk_scope: str,
+    gateway_mode: str,
+) -> list[dict[str, str]]:
     paths = {artifact.get("path") for artifact in source_artifacts if isinstance(artifact, dict)}
+    replay_ok = bool(quickstart_replay) and all(item.get("command_valid") is True for item in quickstart_replay)
     return [
         {
             "id": "python-sdk-quickstart-bound",
@@ -287,8 +372,8 @@ def _controls(source_artifacts: list[dict[str, Any]], sdk_scope: str, gateway_mo
         },
         {
             "id": "otel-ingest-quickstart-bound",
-            "status": "passed" if "src/trustai/ingest.py" in paths and "docs/specs/otel-ingest-v0.1.md" in paths else "failed",
-            "detail": "OTel ingest source and spec are available for direct self-serve event capture.",
+            "status": "passed" if "src/trustai/ingest.py" in paths and "docs/specs/otel-ingest-v0.1.md" in paths and "examples/aitrade/otel-events.json" in paths else "failed",
+            "detail": "OTel ingest source, spec, and event example are available for direct self-serve event capture.",
         },
         {
             "id": "mcp-gateway-quickstart-bound",
@@ -299,6 +384,11 @@ def _controls(source_artifacts: list[dict[str, Any]], sdk_scope: str, gateway_mo
             "id": "verification-contract-example-bound",
             "status": "passed" if "examples/aitrade/verification-contract.yaml" in paths else "failed",
             "detail": "A pre-registration contract example is included in the onboarding path.",
+        },
+        {
+            "id": "quickstart-command-replay-bound",
+            "status": "passed" if replay_ok and "src/trustai/cli.py" in paths else "failed",
+            "detail": "Quickstart commands replay against registered TrustAI CLI subcommands and hash-bound local source targets.",
         },
         {
             "id": "hosted-plg-claim-limited",

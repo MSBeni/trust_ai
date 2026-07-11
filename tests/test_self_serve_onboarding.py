@@ -40,11 +40,35 @@ class SelfServeOnboardingTests(unittest.TestCase):
 
         self.assertTrue(result.ok, result.errors)
         self.assertEqual(SELF_SERVE_ONBOARDING_SCHEMA, receipt["schema"])
-        self.assertEqual(10, len(receipt["source_artifacts"]))
+        self.assertEqual(12, len(receipt["source_artifacts"]))
+        self.assertEqual(len(receipt["quickstart_steps"]), len(receipt["quickstart_replay"]))
+        self.assertTrue(all(item["command_valid"] for item in receipt["quickstart_replay"]))
+        replay_by_id = {item["id"]: item for item in receipt["quickstart_replay"]}
+        self.assertEqual("mcp-capture", replay_by_id["capture-mcp-transcript"]["subcommand"])
+        self.assertTrue(any(binding["path"] == "src/trustai/cli.py" for binding in replay_by_id["register-contract"]["source_bindings"]))
+        self.assertTrue(any(artifact["path"] == "examples/aitrade/otel-events.json" for artifact in receipt["source_artifacts"]))
         self.assertEqual({"passed"}, {control["status"] for control in receipt["controls"]})
         self.assertEqual(SELF_SERVE_ONBOARDING_ENTRY_TYPE, entry["entry_type"])
         self.assertEqual(receipt["receipt_id"], entry["payload"]["receipt_id"])
-        self.assertEqual({"passed": 6}, entry["payload"]["control_summary"])
+        self.assertEqual(len(receipt["quickstart_replay"]), entry["payload"]["quickstart_replay_count"])
+        self.assertEqual({"passed": 7}, entry["payload"]["control_summary"])
+
+    def test_receipt_detects_quickstart_replay_tamper(self):
+        receipt = build_self_serve_onboarding_receipt(
+            ROOT,
+            onboarding_ref="onboarding:self-serve/aitrade",
+            tenant_ref="tenant:aitrade-local",
+            agent_ref="agent:aitrade-risk",
+            requester_ref="mailto:engineer@example.com",
+        )
+        tampered = copy.deepcopy(receipt)
+        tampered["quickstart_replay"][0]["registered"] = False
+
+        result = verify_self_serve_onboarding_receipt(tampered, root=ROOT)
+
+        self.assertFalse(result.ok)
+        self.assertIn("receipt_id does not match canonical self-serve onboarding body", result.errors)
+        self.assertIn("self-serve onboarding quickstart_replay does not match local CLI/source replay", result.errors)
 
     def test_receipt_detects_source_artifact_tamper(self):
         receipt = build_self_serve_onboarding_receipt(

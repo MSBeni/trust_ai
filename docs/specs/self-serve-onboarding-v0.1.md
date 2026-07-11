@@ -5,7 +5,8 @@ Status: draft
 ## Purpose
 
 The self-serve onboarding receipt proves that the local SDK/gateway quickstart
-surface is present, hash-bound, and ready for offline review. It targets the
+surface is present, hash-bound, structurally replayed against registered CLI
+commands, and ready for offline review. It targets the
 roadmap's SDK/gateway tier: Python SDK, TypeScript SDK, OTel GenAI ingest, MCP
 gateway capture, example verification contracts, and offline verifier commands.
 
@@ -25,12 +26,14 @@ The receipt binds these source artifacts by path, `sha256:` hash, and size:
 - `docs/specs/typescript-sdk-v0.1.md`
 - `docs/specs/otel-ingest-v0.1.md`
 - `docs/specs/mcp-gateway-v0.1.md`
+- `src/trustai/cli.py`
 - `src/trustai/sdk.py`
 - `src/trustai/ingest.py`
 - `src/trustai/mcp_gateway.py`
 - `sdk/typescript/src/index.mjs`
 - `examples/aitrade/verification-contract.yaml`
 - `examples/aitrade/mcp-transcript.json`
+- `examples/aitrade/otel-events.json`
 
 ## Receipt Fields
 
@@ -44,8 +47,11 @@ The receipt binds these source artifacts by path, `sha256:` hash, and size:
 - `source_artifacts`: bound source file references.
 - `quickstart_steps`: deterministic commands derived from SDK scope and gateway
   mode.
-- `controls`: derived status checks for SDK, OTel, MCP, contract example, and
-  production-claim limits.
+- `quickstart_replay`: local structural replay for each command, including CLI
+  subcommand registration, source file bindings, generated targets, and command
+  validity.
+- `controls`: derived status checks for SDK, OTel, MCP, contract example,
+  quickstart command replay, and production-claim limits.
 - `signatures`: one or more signatures over `{receipt_id,
   self_serve_onboarding}`.
 
@@ -59,6 +65,8 @@ Verifiers must:
 - recompute every source artifact hash from the supplied repository root
 - reject missing, duplicated, unexpected, or tampered source artifacts
 - recompute quickstart steps from `sdk_scope` and `gateway_mode`
+- replay each quickstart command against bound source files and registered
+  `python -m trustai` CLI subcommands in `src/trustai/cli.py`
 - recompute controls from the receipt body
 - warn when `gateway_mode` omits the MCP gateway path
 
@@ -69,7 +77,8 @@ Appending a valid receipt writes entry type:
 `onboarding.self_serve.completed`
 
 The payload records receipt identity, tenant, agent, requester, SDK scope,
-gateway mode, source-artifact count, quickstart-step count, and control summary.
+gateway mode, source-artifact count, quickstart-step count, quickstart-replay
+count, and control summary.
 
 ## CLI
 

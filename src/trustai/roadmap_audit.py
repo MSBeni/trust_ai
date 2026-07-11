@@ -155,7 +155,7 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "tests/test_mcp_gateway.py",
         ],
         "external_authority": [
-            "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, MCP gateway, examples, quickstart commands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence.",
+            "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, MCP gateway, examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence.",
         ],
     },
     {
