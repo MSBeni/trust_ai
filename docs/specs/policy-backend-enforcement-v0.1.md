@@ -69,8 +69,12 @@ Supported modes:
 - backend outcome metadata matches the recorded policy decision.
 - policy export schema, content hash, backend target, and target hash.
 - optional policy-engine receipt hash, engine, mode, and decision binding.
-- source artifact hashes when supplied.
+- source artifact hashes for required replay artifacts.
 - absence of secret-like plaintext fields.
+
+Verification is fail-closed when required replay artifacts are omitted. The
+policy-engine receipt remains optional only when the enforcement receipt did not
+record one.
 
 `trustai policy-backend-enforcement-append` first verifies the receipt and
 source artifacts, then appends `policy_backend.enforcement_recorded` to the

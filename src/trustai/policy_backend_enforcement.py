@@ -248,6 +248,16 @@ def verify_policy_backend_enforcement_receipt(
 
     _verify_redacted_ref(receipt.get("credential"), "policy backend enforcement credential", errors)
 
+    for source_type, source_value, required in (
+        ("policy-pack", policy_pack, True),
+        ("runtime-action", action, True),
+        ("proof-pack", proof_pack, True),
+        ("policy-decision", decision, True),
+        ("policy-export", policy_export, True),
+        ("policy-engine-receipt", policy_engine_receipt, bool(receipt.get("policy_engine_receipt"))),
+    ):
+        if source_value is None and required:
+            errors.append(f"policy backend enforcement {source_type} artifact is required for verification")
     if policy_pack is not None:
         try:
             validate_policy_pack(policy_pack)
@@ -309,16 +319,13 @@ def verify_policy_backend_enforcement_receipt(
     export_ref = receipt.get("policy_export")
     if not isinstance(export_ref, dict):
         errors.append("policy backend enforcement policy_export is required")
-    else:
-        if policy_export is None:
-            warnings.append("policy backend enforcement policy export source not supplied; export hash was not replayed")
-        else:
-            export_errors = _policy_export_errors(policy_export)
-            errors.extend(f"policy backend enforcement policy export invalid: {error}" for error in export_errors)
-            if not export_errors:
-                expected = _policy_export_record(policy_export, str(engine or ""))
-                if export_ref != expected:
-                    errors.append("policy backend enforcement policy_export record does not match supplied policy export")
+    elif policy_export is not None:
+        export_errors = _policy_export_errors(policy_export)
+        errors.extend(f"policy backend enforcement policy export invalid: {error}" for error in export_errors)
+        if not export_errors:
+            expected = _policy_export_record(policy_export, str(engine or ""))
+            if export_ref != expected:
+                errors.append("policy backend enforcement policy_export record does not match supplied policy export")
 
     source_artifacts = receipt.get("source_artifacts", [])
     if not isinstance(source_artifacts, list) or not source_artifacts:
@@ -334,14 +341,10 @@ def verify_policy_backend_enforcement_receipt(
     if supplied_sources:
         if source_artifacts != supplied_sources:
             errors.append("policy backend enforcement source_artifacts do not match supplied source artifacts")
-    else:
-        warnings.append("policy backend enforcement source artifacts were not supplied; source hashes were not replayed")
 
     receipt_engine_ref = receipt.get("policy_engine_receipt")
-    if receipt_engine_ref:
-        if policy_engine_receipt is None:
-            warnings.append("policy backend enforcement policy engine receipt source not supplied; engine receipt hash was not replayed")
-        else:
+    if receipt_engine_ref and policy_engine_receipt is not None:
+        if all(source is not None for source in (policy_pack, action, proof_pack, decision, policy_export)):
             engine_result = verify_policy_engine_receipt(
                 policy_engine_receipt,
                 policy_pack,
@@ -354,12 +357,12 @@ def verify_policy_backend_enforcement_receipt(
             if not engine_result.ok:
                 errors.extend(f"policy backend enforcement engine receipt invalid: {error}" for error in engine_result.errors)
             warnings.extend(f"policy backend enforcement engine receipt warning: {warning}" for warning in engine_result.warnings)
-            expected = _policy_engine_receipt_record(policy_engine_receipt)
-            if receipt_engine_ref != expected:
-                errors.append("policy backend enforcement policy_engine_receipt record does not match supplied receipt")
-            engine_name = policy_engine_receipt.get("engine", {}).get("name")
-            if engine_name != engine:
-                errors.append("policy backend enforcement backend engine does not match policy engine receipt")
+        expected = _policy_engine_receipt_record(policy_engine_receipt)
+        if receipt_engine_ref != expected:
+            errors.append("policy backend enforcement policy_engine_receipt record does not match supplied receipt")
+        engine_name = policy_engine_receipt.get("engine", {}).get("name")
+        if engine_name != engine:
+            errors.append("policy backend enforcement backend engine does not match policy engine receipt")
 
     controls = receipt.get("controls", [])
     if not isinstance(controls, list) or not controls:
