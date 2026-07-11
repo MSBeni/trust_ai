@@ -3,6 +3,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from hashlib import sha256
 import unittest
 from pathlib import Path
 
@@ -13,6 +14,7 @@ from trustai.external_evidence import (
     EXTERNAL_EVIDENCE_SCHEMA,
     EXTERNAL_EVIDENCE_COLLECTION_PLAN_SCHEMA,
     EXTERNAL_EVIDENCE_INTAKE_SCHEMA,
+    EXTERNAL_EVIDENCE_SOURCE_SNAPSHOT_SCHEMA,
     ROADMAP_EVIDENCE_REPORT_SCHEMA,
     ROADMAP_EVIDENCE_BUNDLE_SCHEMA,
     _allowed_authority_kinds_for_requirement,
@@ -22,6 +24,7 @@ from trustai.external_evidence import (
     build_external_evidence_manifest_from_intakes,
     build_external_evidence_collection_plan,
     build_external_evidence_intake,
+    build_external_evidence_source_snapshot,
     build_roadmap_evidence_bundle,
     extract_roadmap_evidence_bundle_sources,
     build_roadmap_evidence_report,
@@ -30,6 +33,7 @@ from trustai.external_evidence import (
     load_external_evidence_collection_plan,
     load_external_evidence_intake,
     load_external_evidence_intakes,
+    load_external_evidence_source_snapshot,
     load_roadmap_evidence_bundle,
     parse_evidence_arg,
     parse_bundle_source_artifact_arg,
@@ -40,6 +44,7 @@ from trustai.external_evidence import (
     verify_external_evidence_manifest,
     verify_external_evidence_collection_plan,
     verify_external_evidence_intake,
+    verify_external_evidence_source_snapshot,
     verify_roadmap_evidence_chain,
     verify_roadmap_evidence_bundle,
     verify_roadmap_evidence_report,
@@ -254,6 +259,112 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         tampered_result = verify_external_evidence_intake(tampered, plan, manifest, audit, root=ROOT)
         self.assertFalse(tampered_result.ok)
         self.assertTrue(any("hash mismatch" in error for error in tampered_result.errors), tampered_result.errors)
+
+    def test_external_evidence_source_snapshot_hashes_body_and_freshness(self):
+        body = (ROOT / FIXTURE).read_bytes()
+        snapshot = build_external_evidence_source_snapshot(
+            source_uri="https://github.com/MSBeni/trust_ai/actions/runs/1234567890",
+            body=body,
+            retrieval_method="file-copy",
+            issuer="GitHub Actions",
+            subject="trustai verifier release workflow",
+            content_type="application/json",
+            response_headers={"ETag": "run-123"},
+            issued_at="2026-07-08T00:00:00Z",
+            expires_at="2026-12-31T00:00:00Z",
+            generated_at="2026-07-09T00:00:00Z",
+        )
+        result = verify_external_evidence_source_snapshot(
+            snapshot,
+            require_fresh=True,
+            now="2026-07-09T00:00:00Z",
+        )
+
+        self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_SNAPSHOT_SCHEMA, snapshot["schema"])
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual("sha256:" + sha256(body).hexdigest(), snapshot["body_sha256"])
+        self.assertEqual(len(body), snapshot["body_size_bytes"])
+        self.assertEqual("run-123", snapshot["response_headers"]["etag"])
+
+        tampered = copy.deepcopy(snapshot)
+        tampered["body_base64"] = "eyJ0YW1wZXJlZCI6dHJ1ZX0K"
+        tampered["snapshot_id"] = content_hash(without_keys(tampered, "snapshot_id"))
+        tampered_result = verify_external_evidence_source_snapshot(tampered)
+        self.assertFalse(tampered_result.ok)
+        self.assertTrue(any("body_sha256 mismatch" in error for error in tampered_result.errors), tampered_result.errors)
+
+        missing_freshness = build_external_evidence_source_snapshot(
+            source_uri="https://provider.example/export",
+            body="{}",
+            retrieval_method="manual-export",
+            generated_at="2026-07-09T00:00:00Z",
+        )
+        nonstrict = verify_external_evidence_source_snapshot(missing_freshness, now="2026-07-09T00:00:00Z")
+        strict = verify_external_evidence_source_snapshot(
+            missing_freshness,
+            require_fresh=True,
+            now="2026-07-09T00:00:00Z",
+        )
+        self.assertTrue(nonstrict.ok, nonstrict.errors)
+        self.assertTrue(any("freshness metadata missing" in warning for warning in nonstrict.warnings))
+        self.assertFalse(strict.ok)
+        self.assertTrue(any("freshness metadata missing" in error for error in strict.errors), strict.errors)
+
+    def test_cli_external_evidence_snapshot_round_trip(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_path = Path(tmp_dir)
+            source_path = tmp_path / "provider-export.json"
+            snapshot_path = tmp_path / "external-evidence-source-snapshot.json"
+            source_path.write_text('{"run":"ok","status":"completed"}\n', encoding="utf-8")
+
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-snapshot",
+                    "https://provider.example/runs/1234567890",
+                    "--source-file",
+                    str(source_path),
+                    "--issuer",
+                    "Provider API",
+                    "--subject",
+                    "trustai external evidence source export",
+                    "--content-type",
+                    "application/json",
+                    "--issued-at",
+                    "2026-07-08T00:00:00Z",
+                    "--expires-at",
+                    "2026-12-31T00:00:00Z",
+                    "--require-fresh",
+                    "--now",
+                    "2026-07-09T00:00:00Z",
+                    "--out",
+                    str(snapshot_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-snapshot-verify",
+                    str(snapshot_path),
+                    "--require-fresh",
+                    "--now",
+                    "2026-07-09T00:00:00Z",
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            snapshot = load_external_evidence_source_snapshot(snapshot_path)
+
+            self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_SNAPSHOT_SCHEMA, snapshot["schema"])
+            self.assertEqual("file-copy", snapshot["retrieval_method"])
+            self.assertEqual("https://provider.example/runs/1234567890", snapshot["source_uri"])
+            self.assertEqual("sha256:" + sha256(source_path.read_bytes()).hexdigest(), snapshot["body_sha256"])
 
     def test_external_evidence_manifest_from_intakes_preserves_source_and_overlays_receipts(self):
         audit = build_roadmap_audit(ROOT)

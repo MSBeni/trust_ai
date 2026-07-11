@@ -1068,6 +1068,7 @@ from .external_evidence import (
     build_external_evidence_manifest_from_intakes,
     build_external_evidence_collection_plan,
     build_external_evidence_intake,
+    build_external_evidence_source_snapshot,
     build_roadmap_evidence_bundle,
     build_roadmap_evidence_report,
     extract_roadmap_evidence_bundle_sources,
@@ -1075,6 +1076,7 @@ from .external_evidence import (
     load_external_evidence_collection_plan,
     load_external_evidence_intake,
     load_external_evidence_intakes,
+    load_external_evidence_source_snapshot,
     load_roadmap_evidence_bundle,
     load_roadmap_evidence_report,
     parse_evidence_arg,
@@ -1082,6 +1084,7 @@ from .external_evidence import (
     verify_external_evidence_manifest,
     verify_external_evidence_collection_plan,
     verify_external_evidence_intake,
+    verify_external_evidence_source_snapshot,
     verify_roadmap_evidence_chain,
     verify_roadmap_evidence_bundle,
     verify_roadmap_evidence_report,
@@ -1089,6 +1092,7 @@ from .external_evidence import (
     write_external_evidence_collection_plan,
     write_external_evidence_collection_plan_markdown,
     write_external_evidence_intake,
+    write_external_evidence_source_snapshot,
     write_external_evidence_markdown,
     write_roadmap_evidence_bundle,
     write_roadmap_evidence_bundle_markdown,
@@ -14254,6 +14258,86 @@ def cmd_external_evidence_plan_verify(args: argparse.Namespace) -> int:
         print(f"- {error}", file=sys.stderr)
     return 1
 
+def _read_external_evidence_snapshot_source(args: argparse.Namespace) -> tuple[bytes, str | None, int | None, dict[str, str]]:
+    if args.source_file:
+        return Path(args.source_file).read_bytes(), args.content_type, None, {}
+
+    import urllib.request
+
+    request = urllib.request.Request(
+        args.source_uri,
+        headers={"User-Agent": "trustai-external-evidence-snapshot/0.1"},
+    )
+    with urllib.request.urlopen(request, timeout=args.timeout_seconds) as response:
+        body = response.read()
+        status_code = response.getcode()
+        headers = {str(key): str(value) for key, value in response.headers.items()}
+        content_type = args.content_type or response.headers.get("Content-Type")
+    return body, content_type, status_code if isinstance(status_code, int) else None, headers
+
+
+def cmd_external_evidence_snapshot(args: argparse.Namespace) -> int:
+    try:
+        body, content_type, status_code, headers = _read_external_evidence_snapshot_source(args)
+        retrieval_method = args.retrieval_method or ("file-copy" if args.source_file else "http-get")
+        snapshot = build_external_evidence_source_snapshot(
+            source_uri=args.source_uri,
+            body=body,
+            retrieval_method=retrieval_method,
+            issuer=args.issuer,
+            subject=args.subject,
+            content_type=content_type,
+            status_code=status_code,
+            response_headers=headers,
+            issued_at=args.issued_at,
+            expires_at=args.expires_at,
+        )
+        result = verify_external_evidence_source_snapshot(
+            snapshot,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence source snapshot failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("external evidence source snapshot verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_external_evidence_source_snapshot(args.out, snapshot)
+    print(f"external evidence source snapshot: {args.out}")
+    print(f"snapshot id: {snapshot['snapshot_id']}")
+    print(f"source uri: {snapshot['source_uri']}")
+    print(f"body sha256: {snapshot['body_sha256']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_external_evidence_snapshot_verify(args: argparse.Namespace) -> int:
+    try:
+        snapshot = load_external_evidence_source_snapshot(args.snapshot)
+        result = verify_external_evidence_source_snapshot(
+            snapshot,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence source snapshot verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        print(f"verified external evidence source snapshot: {args.snapshot}")
+        print(f"snapshot id: {snapshot.get('snapshot_id')}")
+        print(f"body sha256: {snapshot.get('body_sha256')}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"external evidence source snapshot verification failed: {args.snapshot}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
 def cmd_external_evidence_intake(args: argparse.Namespace) -> int:
     try:
         roadmap_audit = load_roadmap_audit(args.roadmap_audit)
@@ -23739,6 +23823,27 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_plan_verify.add_argument("roadmap_audit")
     external_evidence_plan_verify.add_argument("--root", default=".")
     external_evidence_plan_verify.set_defaults(func=cmd_external_evidence_plan_verify)
+
+    external_evidence_snapshot = subparsers.add_parser("external-evidence-snapshot", help="snapshot a source URI or local authority export as a hashable external evidence artifact")
+    external_evidence_snapshot.add_argument("source_uri")
+    external_evidence_snapshot.add_argument("--source-file", help="local authority export to embed instead of fetching source_uri")
+    external_evidence_snapshot.add_argument("--retrieval-method", help="defaults to file-copy for --source-file and http-get otherwise")
+    external_evidence_snapshot.add_argument("--content-type")
+    external_evidence_snapshot.add_argument("--issuer")
+    external_evidence_snapshot.add_argument("--subject")
+    external_evidence_snapshot.add_argument("--issued-at")
+    external_evidence_snapshot.add_argument("--expires-at")
+    external_evidence_snapshot.add_argument("--require-fresh", action="store_true")
+    external_evidence_snapshot.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to snapshot generated_at")
+    external_evidence_snapshot.add_argument("--timeout-seconds", type=float, default=30.0)
+    external_evidence_snapshot.add_argument("--out", default="artifacts/external-evidence-source-snapshot.json")
+    external_evidence_snapshot.set_defaults(func=cmd_external_evidence_snapshot)
+
+    external_evidence_snapshot_verify = subparsers.add_parser("external-evidence-snapshot-verify", help="verify an external evidence source snapshot")
+    external_evidence_snapshot_verify.add_argument("snapshot")
+    external_evidence_snapshot_verify.add_argument("--require-fresh", action="store_true")
+    external_evidence_snapshot_verify.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to snapshot generated_at")
+    external_evidence_snapshot_verify.set_defaults(func=cmd_external_evidence_snapshot_verify)
 
     external_evidence_intake = subparsers.add_parser("external-evidence-intake", help="hash and map one collected authority artifact to a collection-plan task")
     external_evidence_intake.add_argument("plan")

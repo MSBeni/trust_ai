@@ -9,7 +9,7 @@ GitHub Actions run exports, KMS/HSM attestations, RFC 3161 TSA receipts, cloud
 Object Lock reports, provider API responses, hosted service audit roots,
 identity-provider events, regulator acknowledgements, insurer responses,
 standards-body dockets, and customer acceptance artifacts can all be supplied as
-hashed files and verified offline.
+hashed files and verified offline. Source snapshots can preserve fetched or manually exported authority responses before they are mapped to collection-plan tasks.
 
 ## Schema
 
@@ -107,6 +107,34 @@ Required fields:
 A collection-plan verifier MUST recompute the source manifest verification,
 rebuild the plan using the same `status_filter` and `generated_at`, recompute
 `plan_id`, and reject stale or edited task bodies.
+
+## External Evidence Source Snapshot
+
+`external-evidence-snapshot` emits
+`trustai.external-evidence-source-snapshot/0.1`, a repository-local artifact for
+one fetched or manually exported authority response. It is intended to be the
+file supplied to `external-evidence-intake` when the original source is a live
+provider URL, hosted service endpoint, regulator portal export, insurer API
+response, or customer-owned document export.
+
+Required fields:
+
+- `snapshot_id`: canonical hash of the snapshot body without `snapshot_id`.
+- `source_uri`: the authority source URI or stable export reference.
+- `retrieval_method`: `http-get`, `file-copy`, `manual-export`, or another
+  caller-supplied method label.
+- Optional `issuer`, `subject`, `content_type`, `status_code`,
+  `response_headers`, `issued_at`, and `expires_at` fields.
+- `body_sha256`, `body_size_bytes`, and `body_base64`: the captured response
+  body and deterministic integrity metadata.
+- `limitations`: explicit non-claims about future source availability and
+  authority quality.
+
+A snapshot verifier MUST recompute `snapshot_id`, decode `body_base64`, verify
+`body_sha256` and `body_size_bytes`, validate optional HTTP metadata, and enforce
+freshness windows when requested. Snapshot verification does not replace intake
+or manifest verification; it makes the collected source artifact itself portable
+and hashable before it is bound to a collection-plan task.
 
 ## External Evidence Intake Receipt
 

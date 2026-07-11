@@ -19,6 +19,7 @@ ROADMAP_EVIDENCE_REPORT_SCHEMA = "trustai.roadmap-evidence-report/0.1"
 ROADMAP_EVIDENCE_BUNDLE_SCHEMA = "trustai.roadmap-evidence-bundle/0.1"
 EXTERNAL_EVIDENCE_COLLECTION_PLAN_SCHEMA = "trustai.external-evidence-collection-plan/0.1"
 EXTERNAL_EVIDENCE_INTAKE_SCHEMA = "trustai.external-evidence-intake/0.1"
+EXTERNAL_EVIDENCE_SOURCE_SNAPSHOT_SCHEMA = "trustai.external-evidence-source-snapshot/0.1"
 
 BUNDLE_SOURCE_ARTIFACT_KINDS = {
     "roadmap-audit",
@@ -147,6 +148,13 @@ class RoadmapEvidenceBundleVerification:
 
 @dataclass
 class ExternalEvidenceCollectionPlanVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class ExternalEvidenceSourceSnapshotVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -417,6 +425,129 @@ def verify_external_evidence_collection_plan(
 
     return ExternalEvidenceCollectionPlanVerification(ok=not errors, errors=errors, warnings=warnings)
 
+
+def build_external_evidence_source_snapshot(
+    *,
+    source_uri: str,
+    body: bytes | str,
+    retrieval_method: str,
+    issuer: str | None = None,
+    subject: str | None = None,
+    content_type: str | None = None,
+    status_code: int | None = None,
+    response_headers: dict[str, Any] | None = None,
+    issued_at: str | None = None,
+    expires_at: str | None = None,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    if not source_uri:
+        raise ValueError("external evidence source_uri is required")
+    if not retrieval_method:
+        raise ValueError("external evidence retrieval_method is required")
+    body_bytes = body.encode("utf-8") if isinstance(body, str) else bytes(body)
+    if not body_bytes:
+        raise ValueError("external evidence source snapshot body is required")
+    headers = {
+        str(key).lower(): str(value)
+        for key, value in sorted((response_headers or {}).items(), key=lambda item: str(item[0]).lower())
+        if value is not None
+    }
+    body_record = {
+        "schema": EXTERNAL_EVIDENCE_SOURCE_SNAPSHOT_SCHEMA,
+        "generated_at": generated_at or utc_now(),
+        "source_uri": source_uri,
+        "retrieval_method": retrieval_method,
+        "issuer": issuer,
+        "subject": subject,
+        "content_type": content_type,
+        "status_code": status_code,
+        "response_headers": headers,
+        "issued_at": issued_at,
+        "expires_at": expires_at,
+        "body_sha256": "sha256:" + sha256(body_bytes).hexdigest(),
+        "body_size_bytes": len(body_bytes),
+        "body_base64": base64.b64encode(body_bytes).decode("ascii"),
+        "limitations": [
+            "This source snapshot preserves one collected authority response as a hashable artifact; it does not prove that the authority will return the same response later.",
+            "Verifier checks cover snapshot integrity, body hash, optional HTTP metadata, and optional freshness metadata.",
+            "Use this snapshot as the artifact supplied to external-evidence-intake for the matching collection-plan task.",
+        ],
+    }
+    return {**body_record, "snapshot_id": content_hash(body_record)}
+
+
+def verify_external_evidence_source_snapshot(
+    snapshot: dict[str, Any],
+    *,
+    require_fresh: bool = False,
+    now: str | None = None,
+) -> ExternalEvidenceSourceSnapshotVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    if snapshot.get("schema") != EXTERNAL_EVIDENCE_SOURCE_SNAPSHOT_SCHEMA:
+        errors.append(f"unsupported external evidence source snapshot schema: {snapshot.get('schema')}")
+    if snapshot.get("snapshot_id") != content_hash(without_keys(snapshot, "snapshot_id")):
+        errors.append("snapshot_id does not match canonical source snapshot body")
+    if not snapshot.get("source_uri"):
+        errors.append("external evidence source snapshot source_uri is required")
+    if not snapshot.get("retrieval_method"):
+        errors.append("external evidence source snapshot retrieval_method is required")
+
+    status_code = snapshot.get("status_code")
+    if status_code is not None and (not isinstance(status_code, int) or status_code < 100 or status_code > 599):
+        errors.append("external evidence source snapshot status_code must be an HTTP status code")
+    headers = snapshot.get("response_headers")
+    if not isinstance(headers, dict):
+        errors.append("external evidence source snapshot response_headers must be an object")
+
+    body_base64 = snapshot.get("body_base64")
+    body_bytes = b""
+    if not isinstance(body_base64, str) or not body_base64:
+        errors.append("external evidence source snapshot body_base64 is required")
+    else:
+        try:
+            body_bytes = base64.b64decode(body_base64.encode("ascii"), validate=True)
+        except (binascii.Error, UnicodeEncodeError) as exc:
+            errors.append(f"external evidence source snapshot body_base64 invalid: {exc}")
+    if body_bytes:
+        expected_hash = "sha256:" + sha256(body_bytes).hexdigest()
+        if snapshot.get("body_sha256") != expected_hash:
+            errors.append("external evidence source snapshot body_sha256 mismatch")
+        if snapshot.get("body_size_bytes") != len(body_bytes):
+            errors.append("external evidence source snapshot body_size_bytes mismatch")
+    elif not errors:
+        errors.append("external evidence source snapshot body is empty")
+
+    freshness_now = _freshness_reference(snapshot, now, errors)
+    issued_at = _parse_optional_timestamp(snapshot, "issued_at", errors)
+    expires_at = _parse_optional_timestamp(snapshot, "expires_at", errors)
+    missing_fields = [field for field in ("issued_at", "expires_at") if not snapshot.get(field)]
+    if missing_fields:
+        _freshness_problem(
+            f"external evidence source snapshot freshness metadata missing: {', '.join(missing_fields)}",
+            errors,
+            warnings,
+            require_fresh=require_fresh,
+        )
+    if issued_at is not None and expires_at is not None and expires_at <= issued_at:
+        errors.append("external evidence source snapshot expires_at must be after issued_at")
+    if freshness_now is not None and issued_at is not None and issued_at > freshness_now:
+        _freshness_problem(
+            f"external evidence source snapshot is not yet issued: {snapshot.get('issued_at')}",
+            errors,
+            warnings,
+            require_fresh=require_fresh,
+        )
+    if freshness_now is not None and expires_at is not None and expires_at <= freshness_now:
+        _freshness_problem(
+            f"external evidence source snapshot expired: {snapshot.get('expires_at')}",
+            errors,
+            warnings,
+            require_fresh=require_fresh,
+        )
+
+    return ExternalEvidenceSourceSnapshotVerification(ok=not errors, errors=errors, warnings=warnings)
 
 def build_external_evidence_intake(
     plan: dict[str, Any],
@@ -1095,6 +1226,15 @@ def write_external_evidence_collection_plan(path: str | Path, plan: dict[str, An
 def load_external_evidence_collection_plan(path: str | Path) -> dict[str, Any]:
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
+
+def write_external_evidence_source_snapshot(path: str | Path, snapshot: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(snapshot, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_external_evidence_source_snapshot(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
 
 def write_external_evidence_intake(path: str | Path, intake: dict[str, Any]) -> None:
     target = Path(path)
