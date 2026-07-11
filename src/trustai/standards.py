@@ -351,7 +351,7 @@ CONFORMANCE_TARGETS = (
     },
     {
         "id": "mcp-gateway-production-authority-dossiers",
-        "description": "MCP gateway production authority dossiers bind normalized MCP transcript hash chains to production proxy fleet, tool registry, session auth, replay, immutable audit, scheduler, policy, network, KMS, freshness, and observability authority evidence.",
+        "description": "MCP gateway production authority dossiers bind normalized MCP transcript hash chains and per-evidence transcript source_context to production proxy fleet, tool registry, session auth, replay, immutable audit, scheduler, policy, network, KMS, freshness, and observability authority evidence.",
         "reference": "src/trustai/mcp_gateway_authority.py",
         "commands": [
             "python -m trustai mcp-gateway-authority examples/aitrade/mcp-transcript.json --mode proxy-dossier --environment aitrade-prod --dossier-ref dossier:mcp-gateway-authority/aitrade-prod --authority-ref authority:mcp-gateway/proxy-prod --producer-ref oidc:trustai.example/mcp-gateway-authority-worker --authority-evidence 'production-mcp-proxy-worker-fleet,hosted-service,mcp-proxy:fleet/aitrade-prod,sha256:mcp-proxy-worker-fleet,Hosted MCP proxy worker fleet export for governed tool-call capture;issuer=TrustAI Hosted Ops;subject=aitrade-prod MCP proxy fleet;source_uri=https://mcp.example/audit/fleet/aitrade-prod;issued_at=2026-07-12T03:10:00Z;expires_at=2026-07-19T03:10:00Z' --generated-at 2026-07-12T03:12:00Z --now 2026-07-15T00:00:00Z",

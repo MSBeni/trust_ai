@@ -69,6 +69,12 @@ class McpGatewayAuthorityTests(unittest.TestCase):
             generated_at="2026-07-12T03:12:00Z",
         )
 
+    def _resign_dossier(self, dossier: dict) -> None:
+        body = without_keys(dossier, "dossier_id", "signatures")
+        dossier_id = content_hash(body)
+        dossier["dossier_id"] = dossier_id
+        dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "mcp_gateway_authority": body})]
+
     def test_mcp_gateway_authority_verifies_and_appends(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             calls = self._calls()
@@ -86,6 +92,7 @@ class McpGatewayAuthorityTests(unittest.TestCase):
             self.assertEqual(MCP_GATEWAY_AUTHORITY_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(dossier["dossier_id"], entry["payload"]["dossier_id"])
             self.assertEqual(dossier["transcript_binding"]["transcript_hash"], entry["payload"]["transcript_binding"]["transcript_hash"])
+            self.assertEqual(dossier["authority_evidence"][0]["source_context"], entry["payload"]["authority_evidence"][0]["source_context"])
             self.assertEqual({"deferred": 2, "passed": 3}, entry["payload"]["control_summary"])
 
     def test_mcp_gateway_authority_rejects_empty_transcript(self):
@@ -117,6 +124,37 @@ class McpGatewayAuthorityTests(unittest.TestCase):
 
         self.assertFalse(result.ok)
         self.assertTrue(any("tool_call_records[0].response_hash is required" in error for error in result.errors), result.errors)
+
+    def test_mcp_gateway_authority_rejects_resigned_authority_source_context_mismatch(self):
+        calls = self._calls()
+        dossier = self._dossier(calls)
+        tampered = copy.deepcopy(dossier)
+        item = tampered["authority_evidence"][0]
+        item["source_context"]["transcript_hash"] = "tampered-transcript-hash"
+        item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+        self._resign_dossier(tampered)
+
+        result = verify_mcp_gateway_authority_dossier(tampered, transcript_calls=calls)
+
+        self.assertFalse(result.ok)
+        self.assertNotIn("dossier_id does not match canonical MCP gateway authority body", result.errors)
+        self.assertNotIn("MCP gateway authority signature verification failed", result.errors)
+        self.assertNotIn("MCP gateway authority evidence_id does not match evidence body: production-mcp-proxy-worker-fleet", result.errors)
+        self.assertIn("MCP gateway authority source_context does not match transcript binding: production-mcp-proxy-worker-fleet", result.errors)
+
+    def test_mcp_gateway_authority_rejects_resigned_control_tamper(self):
+        calls = self._calls()
+        dossier = self._dossier(calls)
+        tampered = copy.deepcopy(dossier)
+        tampered["controls"][0]["status"] = "deferred"
+        self._resign_dossier(tampered)
+
+        result = verify_mcp_gateway_authority_dossier(tampered, transcript_calls=calls)
+
+        self.assertFalse(result.ok)
+        self.assertNotIn("dossier_id does not match canonical MCP gateway authority body", result.errors)
+        self.assertNotIn("MCP gateway authority signature verification failed", result.errors)
+        self.assertIn("MCP gateway authority controls do not match dossier body", result.errors)
 
     def test_mcp_gateway_authority_requires_freshness_when_strict(self):
         calls = self._calls()

@@ -104,9 +104,10 @@ def build_mcp_gateway_authority_dossier(
     records = build_mcp_transcript_chain(transcript_calls)
     if not records:
         raise ValueError("MCP gateway authority requires at least one MCP tool call")
-    evidence_items = [_build_authority_evidence_item(item) for item in (authority_evidence or [])]
-    summary = _summary(evidence_items)
     binding = _transcript_binding(transcript_calls, records)
+    source_context = _authority_evidence_source_context(binding)
+    evidence_items = [_build_authority_evidence_item(item, source_context) for item in (authority_evidence or [])]
+    summary = _summary(evidence_items)
     body: dict[str, Any] = {
         "schema": MCP_GATEWAY_AUTHORITY_SCHEMA,
         "mode": mode,
@@ -177,13 +178,23 @@ def verify_mcp_gateway_authority_dossier(
     if not isinstance(evidence, list):
         errors.append("MCP gateway authority authority_evidence must be a list")
         evidence = []
+    evidence_source_context = _authority_evidence_source_context(
+        dossier.get("transcript_binding") if isinstance(dossier.get("transcript_binding"), dict) else {}
+    )
     freshness_counts = {"fresh": 0, "stale": 0, "missing": 0}
     for item in evidence:
         if not isinstance(item, dict):
             errors.append("MCP gateway authority evidence item must be an object")
             freshness_counts["missing"] += 1
             continue
-        freshness_status = _verify_authority_evidence_item(item, errors, warnings, now=freshness_now, require_fresh=require_fresh)
+        freshness_status = _verify_authority_evidence_item(
+            item,
+            errors,
+            warnings,
+            now=freshness_now,
+            require_fresh=require_fresh,
+            source_context=evidence_source_context,
+        )
         freshness_counts[freshness_status] += 1
 
     evidence_dicts = [item for item in evidence if isinstance(item, dict)]
@@ -259,6 +270,7 @@ def append_mcp_gateway_authority_dossier(
                 "evidence_id": item.get("evidence_id"),
                 "issued_at": item.get("issued_at"),
                 "expires_at": item.get("expires_at"),
+                "source_context": item.get("source_context"),
             }
             for item in dossier.get("authority_evidence", [])
             if isinstance(item, dict)
@@ -366,7 +378,7 @@ def _verify_transcript_binding(
         errors.append("MCP gateway transcript_binding does not match supplied transcript source")
 
 
-def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
+def _build_authority_evidence_item(item: dict[str, Any], source_context: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(item, dict):
         raise ValueError("authority evidence item must be an object")
     requirement_id = str(item.get("requirement_id") or "")
@@ -398,6 +410,7 @@ def _build_authority_evidence_item(item: dict[str, Any]) -> dict[str, Any]:
             parse_rfc3339(str(built[field]))
     if built.get("issued_at") and built.get("expires_at") and parse_rfc3339(str(built["issued_at"])) > parse_rfc3339(str(built["expires_at"])):
         raise ValueError("authority evidence issued_at must not be after expires_at")
+    built["source_context"] = source_context
     built["evidence_id"] = content_hash(built)
     return built
 
@@ -409,14 +422,20 @@ def _verify_authority_evidence_item(
     *,
     now,
     require_fresh: bool,
+    source_context: dict[str, Any],
 ) -> str:
     try:
-        expected = _build_authority_evidence_item(item)
+        _build_authority_evidence_item(item, source_context)
     except ValueError as exc:
         errors.append(f"invalid MCP gateway authority evidence: {exc}")
         return "missing"
-    if item != expected:
-        errors.append("MCP gateway authority evidence_id does not match evidence body")
+    requirement_id = item.get("requirement_id")
+    if item.get("evidence_id") != content_hash(without_keys(item, "evidence_id")):
+        errors.append(f"MCP gateway authority evidence_id does not match evidence body: {requirement_id}")
+    if not isinstance(item.get("source_context"), dict):
+        errors.append(f"MCP gateway authority source_context is required: {requirement_id}")
+    elif item.get("source_context") != source_context:
+        errors.append(f"MCP gateway authority source_context does not match transcript binding: {requirement_id}")
     issued_at = item.get("issued_at")
     expires_at = item.get("expires_at")
     if not issued_at or not expires_at:
@@ -436,6 +455,28 @@ def _verify_authority_evidence_item(
             warnings.append(message)
         return "stale"
     return "fresh"
+
+
+def _authority_evidence_source_context(binding: dict[str, Any]) -> dict[str, Any]:
+    records = binding.get("tool_call_records") if isinstance(binding.get("tool_call_records"), list) else []
+    record_dicts = [record for record in records if isinstance(record, dict)]
+    return {
+        "transcript_schema": binding.get("transcript_schema"),
+        "transcript_hash": binding.get("transcript_hash"),
+        "source_transcript_hash": binding.get("source_transcript_hash"),
+        "call_count": binding.get("call_count"),
+        "session_ids": binding.get("session_ids"),
+        "tool_names": binding.get("tool_names"),
+        "contract_hashes": binding.get("contract_hashes"),
+        "agent_bindings": binding.get("agent_bindings"),
+        "first_timestamp": binding.get("first_timestamp"),
+        "last_timestamp": binding.get("last_timestamp"),
+        "transcript_roots": binding.get("transcript_roots"),
+        "tool_call_records_hash": content_hash(record_dicts),
+        "tool_call_hashes": sorted({str(record.get("tool_call_hash")) for record in record_dicts if record.get("tool_call_hash")}),
+        "request_hashes": sorted({str(record.get("request_hash")) for record in record_dicts if record.get("request_hash")}),
+        "response_hashes": sorted({str(record.get("response_hash")) for record in record_dicts if record.get("response_hash")}),
+    }
 
 
 def _verify_required_authority(value: Any, errors: list[str]) -> None:
