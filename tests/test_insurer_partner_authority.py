@@ -29,6 +29,12 @@ def _write_json(path: Path, value: object) -> None:
 
 
 class InsurerPartnerAuthorityTests(unittest.TestCase):
+    def _resign_dossier(self, dossier: dict) -> None:
+        body = without_keys(dossier, "dossier_id", "signatures")
+        dossier_id = content_hash(body)
+        dossier["dossier_id"] = dossier_id
+        dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "insurer_partner_authority": body})]
+
     def _sources(self, tmp: Path) -> dict:
         helper = worker_test_helpers.InsurerPartnerWorkerTests(methodName="test_insurer_partner_worker_verifies_and_appends")
         sources = helper._sources(tmp)
@@ -167,6 +173,47 @@ class InsurerPartnerAuthorityTests(unittest.TestCase):
 
             self.assertFalse(result.ok)
             self.assertTrue(any("worker_receipt_bindings do not match" in error for error in result.errors), result.errors)
+
+    def test_insurer_partner_authority_rejects_resigned_authority_source_context_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            sources, service, workers, dossier = self._dossier(Path(tmp_dir))
+            tampered = copy.deepcopy(dossier)
+            item = tampered["authority_evidence"][0]
+            item["source_context"]["quote_id"] = "quote:other"
+            item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+            self._resign_dossier(tampered)
+
+            result = verify_insurer_partner_authority_dossier(
+                tampered,
+                service_attestation=service,
+                worker_receipts=workers,
+                **self._verify_source_kwargs(sources),
+            )
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("dossier_id does not match canonical insurer partner authority body", result.errors)
+            self.assertNotIn("insurer partner authority signature verification failed", result.errors)
+            self.assertNotIn("insurer partner authority evidence_id does not match evidence body: credentialed-partner-api-calls", result.errors)
+            self.assertIn("insurer partner authority source_context does not match source bindings: credentialed-partner-api-calls", result.errors)
+
+    def test_insurer_partner_authority_rejects_resigned_control_tamper(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            sources, service, workers, dossier = self._dossier(Path(tmp_dir))
+            tampered = copy.deepcopy(dossier)
+            tampered["controls"][0]["status"] = "deferred"
+            self._resign_dossier(tampered)
+
+            result = verify_insurer_partner_authority_dossier(
+                tampered,
+                service_attestation=service,
+                worker_receipts=workers,
+                **self._verify_source_kwargs(sources),
+            )
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("dossier_id does not match canonical insurer partner authority body", result.errors)
+            self.assertNotIn("insurer partner authority signature verification failed", result.errors)
+            self.assertIn("insurer partner authority controls do not match dossier body", result.errors)
 
     def test_insurer_partner_authority_detects_worker_bundle_tamper(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

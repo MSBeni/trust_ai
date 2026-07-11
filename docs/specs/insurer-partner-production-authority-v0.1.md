@@ -54,7 +54,7 @@ The v0.1 checklist contains:
 - `actuarial-risk-data-publication`.
 - `insurer-observability-alerting`.
 
-Each evidence item contains `requirement_id`, `authority_kind`, `evidence_ref`, `evidence_hash`, `description`, optional `issuer`, `subject`, `source_uri`, `issued_at`, `expires_at`, and derived `evidence_id`. Evidence hashes must use `sha256:` references. Authority kinds must be accepted by the requirement.
+Each evidence item contains `requirement_id`, `authority_kind`, `evidence_ref`, `evidence_hash`, `description`, optional `issuer`, `subject`, `source_uri`, `issued_at`, `expires_at`, derived `source_context`, and derived `evidence_id`. Evidence hashes must use `sha256:` references. Authority kinds must be accepted by the requirement. The derived `source_context` binds each external authority row to the service attestation id/hash, environment, service ref, partner API endpoint, underwriter, quote, telemetry, consent, frontend, actuarial product, worker operation IDs/hashes/run refs, policy binding hashes, worker bundle IDs/hashes, and bundled source roots recorded in the dossier.
 
 ## Verification
 
@@ -64,8 +64,9 @@ A conforming verifier must:
 - Recompute service and worker bindings from supplied source artifacts.
 - Verify service and worker source artifacts, including optional telemetry, underwriting quote, actuarial product/corpus, and frontend bundle replay when supplied.
 - Verify supplied worker review bundles and compare their service, worker, telemetry, source-artifact, frontend replay, and actuarial replay bindings to the dossier.
-- Verify every authority evidence id and hash reference.
+- Verify every authority evidence id, hash reference, and derived source-context binding.
 - Recompute the summary from evidence.
+- Recompute controls from service, worker, bundle, evidence, and summary bindings.
 - Warn for missing production authority requirements.
 - Fail when `--require-complete` is set and any requirement is missing.
 - Fail when `--require-fresh` is set and any evidence item lacks an unexpired `issued_at`/`expires_at` window.
@@ -88,4 +89,4 @@ python -m trustai insurer-partner-authority-append artifacts/insurer-partner-aut
 
 ## Limits
 
-This artifact proves signed binding, coverage accounting, freshness windows, and strict production-claim gates. It does not itself prove live insurer operation. Production operation still requires fresh external evidence from the actual insurer API, identity provider, policy system, scheduler/queue/lease stores, immutable delivery logs, KMS/vault custody, and operated worker infrastructure.
+This artifact proves signed source-context binding for each authority evidence row, coverage accounting, freshness windows, and strict production-claim gates. It does not itself prove live insurer operation. Production operation still requires fresh external evidence from the actual insurer API, identity provider, policy system, scheduler/queue/lease stores, immutable delivery logs, KMS/vault custody, and operated worker infrastructure.
