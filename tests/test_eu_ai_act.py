@@ -3,6 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
+from trustai.crypto import sign_value
 from trustai.chain import EvidenceChain
 from trustai.contracts import load_contract, register_contract
 from trustai.eu_ai_act import (
@@ -62,6 +64,12 @@ class EUAIActDocumentTests(unittest.TestCase):
         disclosure = build_regulator_disclosure(chain, pack)
         return pack, disclosure
 
+    def _resign_document(self, document: dict) -> None:
+        body = without_keys(document, "document_id", "signatures")
+        document_id = content_hash(body)
+        document["document_id"] = document_id
+        document["signatures"] = [sign_value({"document_id": document_id, "document": body})]
+
     def test_eu_ai_act_document_links_pack_disclosure_and_post_market_evidence(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             pack, disclosure = self._sources(Path(tmp_dir))
@@ -90,6 +98,51 @@ class EUAIActDocumentTests(unittest.TestCase):
 
             self.assertFalse(result.ok)
             self.assertIn("document_id does not match canonical document body", result.errors)
+
+    def test_eu_ai_act_document_rejects_resigned_contract_hash_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            pack, disclosure = self._sources(Path(tmp_dir))
+            document = build_eu_ai_act_document(pack, disclosure)
+            sections = {section["id"]: section for section in document["sections"]}
+            sections["system_description"]["content"]["contract_hash"] = "0" * 64
+            self._resign_document(document)
+
+            result = verify_eu_ai_act_document(document, proof_pack=pack, regulator_disclosure=disclosure)
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("document_id does not match canonical document body", result.errors)
+            self.assertNotIn("EU AI Act document signature invalid", result.errors)
+            self.assertIn("system_description contract_hash mismatch", result.errors)
+
+    def test_eu_ai_act_document_rejects_resigned_source_summary_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            pack, disclosure = self._sources(Path(tmp_dir))
+            document = build_eu_ai_act_document(pack, disclosure)
+            sections = {section["id"]: section for section in document["sections"]}
+            document["source_artifacts"]["proof_pack"]["chain_tree"]["size"] = 1
+            sections["logging_and_traceability"]["content"]["source_artifacts"] = document["source_artifacts"]
+            self._resign_document(document)
+
+            result = verify_eu_ai_act_document(document, proof_pack=pack, regulator_disclosure=disclosure)
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("document_id does not match canonical document body", result.errors)
+            self.assertNotIn("EU AI Act document signature invalid", result.errors)
+            self.assertIn("source proof pack summary mismatch", result.errors)
+            self.assertIn("logging_and_traceability source_artifacts mismatch", result.errors)
+
+    def test_eu_ai_act_document_rejects_invalid_supplied_proof_pack(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            pack, disclosure = self._sources(Path(tmp_dir))
+            document = build_eu_ai_act_document(pack, disclosure)
+            tampered_pack = copy.deepcopy(pack)
+            tampered_pack["contract"]["hash"] = "0" * 64
+
+            result = verify_eu_ai_act_document(document, proof_pack=tampered_pack, regulator_disclosure=disclosure)
+
+            self.assertFalse(result.ok)
+            self.assertTrue(any(error.startswith("source proof pack invalid:") for error in result.errors), result.errors)
+            self.assertIn("regulator disclosure source contract hash does not match supplied proof pack", result.errors)
 
 
 if __name__ == "__main__":

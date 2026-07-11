@@ -14,7 +14,7 @@ Top-level fields:
 - `issued_at`: generation timestamp.
 - `title`: human-readable title.
 - `regulatory_basis`: declared regulatory basis for the package.
-- `source_artifacts`: proof pack and regulator disclosure identifiers.
+- `source_artifacts`: deep-copied proof pack and regulator disclosure summaries, including ids, timestamps, and chain tree headers.
 - `sections`: generated documentation sections.
 - `signatures`: detached signature over `document_id` and the document body.
 
@@ -49,12 +49,18 @@ The offline verifier checks:
 - canonical `document_id`.
 - detached signature.
 - presence of every required section.
-- optional source proof-pack id match.
-- optional regulator-disclosure id match.
+- supplied proof-pack verification with the offline proof-pack verifier.
+- supplied regulator-disclosure verification with the regulator disclosure verifier.
+- source proof-pack and regulator-disclosure summary binding.
+- regulator-disclosure source proof-pack binding to the supplied proof pack.
+- section content binding for contract, freeze, holdout, gate, approvals,
+  policy, post-market, and logging fields.
+- evidence reference replay against supplied source chain entries.
 
 When source artifacts are provided to `eu-ai-act-verify`, the verifier first
-verifies the proof pack and regulator disclosure before checking the generated
-document.
+verifies the proof pack and regulator disclosure, then rejects re-signed EU AI
+Act documents whose section claims or source summaries no longer match those
+verified sources.
 
 ## CLI
 
