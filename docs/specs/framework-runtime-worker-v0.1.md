@@ -40,6 +40,12 @@ trace, hook release, and adapter matrix, verification first replays
 rejects any mismatch. This catches tampering in either the worker receipt or the
 source runtime audit/export evidence.
 
+Offline verification is fail-closed. A worker receipt must carry the complete
+runtime-audit source summary, and the verifier must reject signed receipts when
+any runtime audit receipt, audit export, hook operation, trace, hook release, or
+adapter matrix source artifact is missing. A valid detached signature over a
+partial source summary is not enough to prove runtime worker processing.
+
 `framework-runtime-worker-append` requires all source artifacts. Chain append
 therefore records only hashes and summary metadata, while offline reviewers can
 replay the raw trace and runtime audit export when disclosed.

@@ -7,7 +7,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.framework_adapter_matrix import (
     build_framework_adapter_matrix,
     load_framework_adapter_matrix_source,
@@ -164,6 +166,14 @@ class FrameworkRuntimeWorkerTests(unittest.TestCase):
         )
         return worker, runtime_audit, audit_export, operation, trace, release, matrix
 
+    def _resign_worker(self, worker: dict) -> None:
+        body = without_keys(worker, "worker_operation_id", "signatures")
+        worker_operation_id = content_hash(body)
+        worker["worker_operation_id"] = worker_operation_id
+        worker["signatures"] = [
+            sign_value({"worker_operation_id": worker_operation_id, "framework_runtime_worker": body})
+        ]
+
     def test_framework_runtime_worker_verifies_and_appends(self):
         worker, runtime_audit, audit_export, operation, trace, release, matrix = self._worker()
         result = verify_framework_runtime_worker_receipt(
@@ -259,6 +269,37 @@ class FrameworkRuntimeWorkerTests(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertIn("framework runtime worker credential must be a redacted reference", result.errors)
         self.assertTrue(any("secret-like field" in error for error in result.errors))
+
+    def test_framework_runtime_worker_requires_source_replay_artifacts_without_sources(self):
+        worker, *_ = self._worker()
+
+        result = verify_framework_runtime_worker_receipt(worker)
+
+        self.assertFalse(result.ok)
+        self.assertTrue(any("source artifacts are required for verification" in error for error in result.errors), result.errors)
+
+    def test_framework_runtime_worker_requires_complete_signed_source_summary(self):
+        worker, *_ = self._worker()
+        cases = [
+            ("missing_source_key", "source.runtime_process_ref is required"),
+            ("missing_required_source_value", "source.trace_roots is required"),
+            ("invalid_trace_roots_type", "source.trace_roots must be an array"),
+        ]
+        for case_name, expected_error in cases:
+            with self.subTest(case=case_name):
+                tampered = copy.deepcopy(worker)
+                if case_name == "missing_source_key":
+                    tampered["source"].pop("runtime_process_ref")
+                elif case_name == "missing_required_source_value":
+                    tampered["source"]["trace_roots"] = []
+                else:
+                    tampered["source"]["trace_roots"] = "not-a-list"
+                self._resign_worker(tampered)
+
+                result = verify_framework_runtime_worker_receipt(tampered)
+
+                self.assertFalse(result.ok)
+                self.assertTrue(any(expected_error in error for error in result.errors), result.errors)
 
     def test_cli_framework_runtime_worker_round_trip(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

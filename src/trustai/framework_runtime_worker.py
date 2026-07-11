@@ -20,6 +20,39 @@ FRAMEWORK_RUNTIME_WORKER_OPERATION_KINDS = {
     "retry_reconcile",
 }
 SECRET_KEY_MARKERS = ("token", "secret", "private_key", "client_secret", "password", "credential")
+SOURCE_SUMMARY_EXPECTED_FIELDS = (
+    "runtime_audit_id",
+    "runtime_audit_hash",
+    "runtime_audit_mode",
+    "provider",
+    "exported_at",
+    "operation_id",
+    "operation_hash",
+    "operation_ref",
+    "framework",
+    "trace_id",
+    "runtime_instance_ref",
+    "runtime_process_ref",
+    "collector_hook_ref",
+    "hook_release_hash",
+    "source_trace_hash",
+    "event_root",
+    "trace_roots",
+    "audit_export_ref",
+    "audit_export_hash",
+    "audit_event_root",
+    "audit_log_ref",
+    "audit_log_root",
+    "window_start",
+    "window_end",
+    "cursor_ref",
+    "next_cursor_ref",
+    "matched_event_id",
+    "matched_event_hash",
+)
+SOURCE_SUMMARY_REQUIRED_FIELDS = tuple(
+    field for field in SOURCE_SUMMARY_EXPECTED_FIELDS if field != "runtime_process_ref"
+)
 
 
 @dataclass
@@ -437,11 +470,28 @@ def _verify_source(
     if not isinstance(value, dict):
         errors.append("framework runtime worker source must be an object")
         value = {}
-    for field in ("runtime_audit_id", "runtime_audit_hash", "operation_id", "operation_hash", "framework", "trace_id", "runtime_instance_ref", "audit_export_hash", "audit_event_root", "audit_log_root", "matched_event_hash"):
-        if not value.get(field):
+    for field in SOURCE_SUMMARY_EXPECTED_FIELDS:
+        if field not in value:
             errors.append(f"framework runtime worker source.{field} is required")
-    if not all(source is not None for source in (runtime_audit, audit_export, operation, trace_payload, release, matrix)):
-        warnings.append("framework runtime worker runtime audit/operation/trace/release/matrix replay was not fully supplied")
+    for field in SOURCE_SUMMARY_REQUIRED_FIELDS:
+        if value.get(field) in (None, "", [], {}):
+            errors.append(f"framework runtime worker source.{field} is required")
+    if "trace_roots" in value and not isinstance(value.get("trace_roots"), list):
+        errors.append("framework runtime worker source.trace_roots must be an array")
+    missing_sources = [
+        source_type
+        for source_type, source_value in (
+            ("framework-runtime-audit", runtime_audit),
+            ("framework-runtime-audit-export", audit_export),
+            ("framework-hook-operation", operation),
+            ("framework-trace", trace_payload),
+            ("framework-hook-release", release),
+            ("framework-adapter-matrix", matrix),
+        )
+        if source_value is None
+    ]
+    if missing_sources:
+        errors.append("framework runtime worker source artifacts are required for verification: " + ", ".join(missing_sources))
         return
     result = verify_framework_runtime_audit_receipt(
         runtime_audit or {},
