@@ -1,0 +1,2014 @@
+{
+  "generated_at": "2026-07-12T01:34:32Z",
+  "limitations": [
+    "This plan assigns external authority evidence collection work; it does not satisfy any task by itself.",
+    "A task is covered only after a matching evidence artifact is supplied to an external evidence manifest and verified.",
+    "Freshness and issuer authority remain bounded by the supplied evidence artifact and manifest verification options."
+  ],
+  "plan_id": "36b35c68177d22206dc6cbb28708d2cb7a02f8d4986f42a2a0dba9b7bfcac266",
+  "schema": "trustai.external-evidence-collection-plan/0.1",
+  "source_manifest": {
+    "generated_at": "2026-07-12T01:34:16Z",
+    "manifest_hash": "b9fa9c9ba2b665164bd6be87fb179357fe6f2a472323c8c38da985af7e6c3522",
+    "manifest_id": "903f0307ba1b865dbf55b0be7117ff68a496cb50b032e6835150f4a11dc17165",
+    "manifest_ref": "production-external-evidence",
+    "status": "partial"
+  },
+  "source_roadmap_audit": {
+    "audit_hash": "80bc40fb368621e686df5546a334e535de195c5d556d741f722ffd54f7faa31a",
+    "audit_id": "224755b843c355c30d30cb023e3349444a95e3645f1b78dff39e422501687343",
+    "completion_position": "local-reference-complete-with-external-authority-deferred"
+  },
+  "status_filter": "missing",
+  "summary": {
+    "covered_authority_kind_count": 3,
+    "missing_authority_kind_count": 67,
+    "missing_task_count_by_authority_kind": {
+      "ci-run": 8,
+      "cloud-object-lock": 1,
+      "customer": 9,
+      "hosted-service": 8,
+      "identity-provider": 8,
+      "insurer": 4,
+      "kms-hsm": 7,
+      "provider-api": 11,
+      "regulator": 5,
+      "standards-body": 6
+    },
+    "required_authority_kind_count": 70,
+    "selected_covered_task_count": 0,
+    "selected_missing_task_count": 67,
+    "selected_task_count": 67,
+    "source_manifest_status": "partial",
+    "task_count_by_authority_kind": {
+      "ci-run": 8,
+      "cloud-object-lock": 1,
+      "customer": 9,
+      "hosted-service": 8,
+      "identity-provider": 8,
+      "insurer": 4,
+      "kms-hsm": 7,
+      "provider-api": 11,
+      "regulator": 5,
+      "standards-body": 6
+    },
+    "task_count_by_phase": {
+      "P0-P4": 2,
+      "P1": 18,
+      "P1-P2": 6,
+      "P1-P3": 5,
+      "P1-P4": 5,
+      "P2": 11,
+      "P2-P3": 3,
+      "P2-P4": 8,
+      "P3": 5,
+      "P4": 4
+    },
+    "total_authority_unit_count": 70
+  },
+  "tasks": [
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be hosted-service and accepted for self-serve-onboarding.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "hosted-service",
+      "coverage_status": "missing",
+      "evidence_argument_template": "self-serve-onboarding,hosted-service,external-evidence/self-serve-onboarding/hosted-service.json,hosted-service evidence for self-serve-onboarding;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, MCP gateway, examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence."
+      ],
+      "owner_hint": "service owner",
+      "phase": "P2",
+      "priority": "P1",
+      "requirement_id": "self-serve-onboarding",
+      "suggested_artifact_path": "external-evidence/self-serve-onboarding/hosted-service.json",
+      "suggested_evidence_sources": [
+        "hosted service health or deployment export",
+        "service audit root",
+        "operational SLO/status evidence"
+      ],
+      "task_id": "1fa1a8cea6e5c45b6c7c6b0c5cae7bdb8cd9830071617da44eb808463ac44ed2",
+      "task_ref": "external-evidence:self-serve-onboarding:hosted-service",
+      "title": "Self-serve SDK and MCP gateway onboarding",
+      "unit_id": "b99727e2b8a71b61ea2303a0ebf484b85996c716e0729a296e3057cf63b396c6",
+      "unit_ref": "self-serve-onboarding:hosted-service"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be identity-provider and accepted for self-serve-onboarding.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "identity-provider",
+      "coverage_status": "missing",
+      "evidence_argument_template": "self-serve-onboarding,identity-provider,external-evidence/self-serve-onboarding/identity-provider.json,identity-provider evidence for self-serve-onboarding;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, MCP gateway, examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence."
+      ],
+      "owner_hint": "IAM/identity owner",
+      "phase": "P2",
+      "priority": "P1",
+      "requirement_id": "self-serve-onboarding",
+      "suggested_artifact_path": "external-evidence/self-serve-onboarding/identity-provider.json",
+      "suggested_evidence_sources": [
+        "identity-provider event export",
+        "OIDC/session/lifecycle evidence",
+        "RBAC or account-state report"
+      ],
+      "task_id": "e4776c238bf7deaa482f7e908897fbbc7b86e75ec7da8bd956155fa15b675472",
+      "task_ref": "external-evidence:self-serve-onboarding:identity-provider",
+      "title": "Self-serve SDK and MCP gateway onboarding",
+      "unit_id": "048ce4ad141c77f48a321bc4f61b09d2b2a58ea8500164d40e192bb3c8405364",
+      "unit_ref": "self-serve-onboarding:identity-provider"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be ci-run and accepted for mcp-gateway.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "ci-run",
+      "coverage_status": "missing",
+      "evidence_argument_template": "mcp-gateway,ci-run,external-evidence/mcp-gateway/ci-run.json,ci-run evidence for mcp-gateway;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "MCP proxy capture receipts cover retained raw proxy event export byte replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
+      ],
+      "owner_hint": "release engineering",
+      "phase": "P1",
+      "priority": "P0",
+      "requirement_id": "mcp-gateway",
+      "suggested_artifact_path": "external-evidence/mcp-gateway/ci-run.json",
+      "suggested_evidence_sources": [
+        "completed CI workflow export",
+        "release run URL or provider-native run record",
+        "artifact/check provenance"
+      ],
+      "task_id": "8c5543b564326dfe798955c6c0be0376ef1d80413df723bdf5f83d882238aa4c",
+      "task_ref": "external-evidence:mcp-gateway:ci-run",
+      "title": "MCP evidence gateway reference capture",
+      "unit_id": "192e8c60958d436e54ccf727609f72edb9a581776a8d80f731eef32c1bd62725",
+      "unit_ref": "mcp-gateway:ci-run"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be kms-hsm and accepted for mcp-gateway.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "kms-hsm",
+      "coverage_status": "missing",
+      "evidence_argument_template": "mcp-gateway,kms-hsm,external-evidence/mcp-gateway/kms-hsm.json,kms-hsm evidence for mcp-gateway;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "MCP proxy capture receipts cover retained raw proxy event export byte replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
+      ],
+      "owner_hint": "security/platform KMS owner",
+      "phase": "P1",
+      "priority": "P0",
+      "requirement_id": "mcp-gateway",
+      "suggested_artifact_path": "external-evidence/mcp-gateway/kms-hsm.json",
+      "suggested_evidence_sources": [
+        "KMS/HSM key policy export",
+        "signing operation receipt",
+        "custody or audit-log root"
+      ],
+      "task_id": "a6cb67e23bea269fb4ef1abdaa7fd77c9a57bfc611c02c09a1efd19d90a6c737",
+      "task_ref": "external-evidence:mcp-gateway:kms-hsm",
+      "title": "MCP evidence gateway reference capture",
+      "unit_id": "b6bff59993928600d982fe3a58ffd8124707f853906888cab9ca1024a7a15840",
+      "unit_ref": "mcp-gateway:kms-hsm"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be provider-api and accepted for mcp-gateway.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "provider-api",
+      "coverage_status": "missing",
+      "evidence_argument_template": "mcp-gateway,provider-api,external-evidence/mcp-gateway/provider-api.json,provider-api evidence for mcp-gateway;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "MCP proxy capture receipts cover retained raw proxy event export byte replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
+      ],
+      "owner_hint": "integration/platform owner",
+      "phase": "P1",
+      "priority": "P0",
+      "requirement_id": "mcp-gateway",
+      "suggested_artifact_path": "external-evidence/mcp-gateway/provider-api.json",
+      "suggested_evidence_sources": [
+        "provider API response export",
+        "request/response transcript",
+        "provider-owned audit event"
+      ],
+      "task_id": "74f73767f9ec7e8f759c6b2135fab1c24fd052424c78eceae7d4a820b5fe41b6",
+      "task_ref": "external-evidence:mcp-gateway:provider-api",
+      "title": "MCP evidence gateway reference capture",
+      "unit_id": "f113eea739eb3d407bee25f22f68afebda945e20ff27f75406db56edb016892c",
+      "unit_ref": "mcp-gateway:provider-api"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be hosted-service and accepted for mcp-gateway.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "hosted-service",
+      "coverage_status": "missing",
+      "evidence_argument_template": "mcp-gateway,hosted-service,external-evidence/mcp-gateway/hosted-service.json,hosted-service evidence for mcp-gateway;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "MCP proxy capture receipts cover retained raw proxy event export byte replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
+      ],
+      "owner_hint": "service owner",
+      "phase": "P1",
+      "priority": "P0",
+      "requirement_id": "mcp-gateway",
+      "suggested_artifact_path": "external-evidence/mcp-gateway/hosted-service.json",
+      "suggested_evidence_sources": [
+        "hosted service health or deployment export",
+        "service audit root",
+        "operational SLO/status evidence"
+      ],
+      "task_id": "2f7cb1b22473df0f0dcca97d28b1184fb4831eb54b9b3f5408866e2d10d5e6df",
+      "task_ref": "external-evidence:mcp-gateway:hosted-service",
+      "title": "MCP evidence gateway reference capture",
+      "unit_id": "8766be3ea5e06276839b71f9e28a0032782143df739db18f6b58dcc76e899249",
+      "unit_ref": "mcp-gateway:hosted-service"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be kms-hsm and accepted for shadow-replay-temporal-holdout.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "kms-hsm",
+      "coverage_status": "missing",
+      "evidence_argument_template": "shadow-replay-temporal-holdout,kms-hsm,external-evidence/shadow-replay-temporal-holdout/kms-hsm.json,kms-hsm evidence for shadow-replay-temporal-holdout;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
+      ],
+      "owner_hint": "security/platform KMS owner",
+      "phase": "P1",
+      "priority": "P0",
+      "requirement_id": "shadow-replay-temporal-holdout",
+      "suggested_artifact_path": "external-evidence/shadow-replay-temporal-holdout/kms-hsm.json",
+      "suggested_evidence_sources": [
+        "KMS/HSM key policy export",
+        "signing operation receipt",
+        "custody or audit-log root"
+      ],
+      "task_id": "d3017ae6fcc7d06172506074706607049c15814f54655245f15c15a500693204",
+      "task_ref": "external-evidence:shadow-replay-temporal-holdout:kms-hsm",
+      "title": "Shadow replay, temporal holdout, soak reports, and distributional re-execution",
+      "unit_id": "b22b20e47680d557c73438b85016ce39e0b37d13afc0cf1bd5ebb7ad109e6e55",
+      "unit_ref": "shadow-replay-temporal-holdout:kms-hsm"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be provider-api and accepted for shadow-replay-temporal-holdout.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "provider-api",
+      "coverage_status": "missing",
+      "evidence_argument_template": "shadow-replay-temporal-holdout,provider-api,external-evidence/shadow-replay-temporal-holdout/provider-api.json,provider-api evidence for shadow-replay-temporal-holdout;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
+      ],
+      "owner_hint": "integration/platform owner",
+      "phase": "P1",
+      "priority": "P0",
+      "requirement_id": "shadow-replay-temporal-holdout",
+      "suggested_artifact_path": "external-evidence/shadow-replay-temporal-holdout/provider-api.json",
+      "suggested_evidence_sources": [
+        "provider API response export",
+        "request/response transcript",
+        "provider-owned audit event"
+      ],
+      "task_id": "d80551bd511665073ae5004725f7a510593a7f944c11d3350a3af384c10d57f5",
+      "task_ref": "external-evidence:shadow-replay-temporal-holdout:provider-api",
+      "title": "Shadow replay, temporal holdout, soak reports, and distributional re-execution",
+      "unit_id": "e0f691dce6a7859dec40b0439af39824bbe030c9eb08662294e3aaaef3695b39",
+      "unit_ref": "shadow-replay-temporal-holdout:provider-api"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be identity-provider and accepted for shadow-replay-temporal-holdout.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "identity-provider",
+      "coverage_status": "missing",
+      "evidence_argument_template": "shadow-replay-temporal-holdout,identity-provider,external-evidence/shadow-replay-temporal-holdout/identity-provider.json,identity-provider evidence for shadow-replay-temporal-holdout;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
+      ],
+      "owner_hint": "IAM/identity owner",
+      "phase": "P1",
+      "priority": "P0",
+      "requirement_id": "shadow-replay-temporal-holdout",
+      "suggested_artifact_path": "external-evidence/shadow-replay-temporal-holdout/identity-provider.json",
+      "suggested_evidence_sources": [
+        "identity-provider event export",
+        "OIDC/session/lifecycle evidence",
+        "RBAC or account-state report"
+      ],
+      "task_id": "4ab97d4e2347b46aff33524c887d3a6651588edbce84a753d5ef2b6fa905c84e",
+      "task_ref": "external-evidence:shadow-replay-temporal-holdout:identity-provider",
+      "title": "Shadow replay, temporal holdout, soak reports, and distributional re-execution",
+      "unit_id": "19e307dd982131f9693256f22f8f05f0ea7a1af37e92c38556afabb57305c88c",
+      "unit_ref": "shadow-replay-temporal-holdout:identity-provider"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be standards-body and accepted for shadow-replay-temporal-holdout.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "standards-body",
+      "coverage_status": "missing",
+      "evidence_argument_template": "shadow-replay-temporal-holdout,standards-body,external-evidence/shadow-replay-temporal-holdout/standards-body.json,standards-body evidence for shadow-replay-temporal-holdout;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
+      ],
+      "owner_hint": "standards/governance owner",
+      "phase": "P1",
+      "priority": "P0",
+      "requirement_id": "shadow-replay-temporal-holdout",
+      "suggested_artifact_path": "external-evidence/shadow-replay-temporal-holdout/standards-body.json",
+      "suggested_evidence_sources": [
+        "standards-body submission receipt",
+        "working-group status record",
+        "ballot or docket export"
+      ],
+      "task_id": "ee6d57dfd25d9d2b65ee1976add9dbcf5a609b3959fb87167dfb38c75015ebeb",
+      "task_ref": "external-evidence:shadow-replay-temporal-holdout:standards-body",
+      "title": "Shadow replay, temporal holdout, soak reports, and distributional re-execution",
+      "unit_id": "15afd330474ec578f826292afa08c9726a1d3219d1dfc6b4a35fdf93597aa2cb",
+      "unit_ref": "shadow-replay-temporal-holdout:standards-body"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be ci-run and accepted for cicd-provider-approvals.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "ci-run",
+      "coverage_status": "missing",
+      "evidence_argument_template": "cicd-provider-approvals,ci-run,external-evidence/cicd-provider-approvals/ci-run.json,ci-run evidence for cicd-provider-approvals;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Provider delivery receipts cover retained provider delivery payload artifact replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs and provider-native status shape before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
+      ],
+      "owner_hint": "release engineering",
+      "phase": "P1",
+      "priority": "P0",
+      "requirement_id": "cicd-provider-approvals",
+      "suggested_artifact_path": "external-evidence/cicd-provider-approvals/ci-run.json",
+      "suggested_evidence_sources": [
+        "completed CI workflow export",
+        "release run URL or provider-native run record",
+        "artifact/check provenance"
+      ],
+      "task_id": "20b9c48e557203d954f30537eb494facce24e8bcb8209b1b2db872adabbdf886",
+      "task_ref": "external-evidence:cicd-provider-approvals:ci-run",
+      "title": "CI/CD promotion gates, provider callbacks, and Slack approvals",
+      "unit_id": "a2f5b5c8b59b829199e864beeadb0ec5df9ab9517725793a2b96f3dd9b40bafd",
+      "unit_ref": "cicd-provider-approvals:ci-run"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be provider-api and accepted for cicd-provider-approvals.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "provider-api",
+      "coverage_status": "missing",
+      "evidence_argument_template": "cicd-provider-approvals,provider-api,external-evidence/cicd-provider-approvals/provider-api.json,provider-api evidence for cicd-provider-approvals;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Provider delivery receipts cover retained provider delivery payload artifact replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs and provider-native status shape before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
+      ],
+      "owner_hint": "integration/platform owner",
+      "phase": "P1",
+      "priority": "P0",
+      "requirement_id": "cicd-provider-approvals",
+      "suggested_artifact_path": "external-evidence/cicd-provider-approvals/provider-api.json",
+      "suggested_evidence_sources": [
+        "provider API response export",
+        "request/response transcript",
+        "provider-owned audit event"
+      ],
+      "task_id": "1613dfe0c10d959894e11bafc9cc330e543123bba2f797865c8138e5f0d962f0",
+      "task_ref": "external-evidence:cicd-provider-approvals:provider-api",
+      "title": "CI/CD promotion gates, provider callbacks, and Slack approvals",
+      "unit_id": "31e8e21963fde1bef9b47458dc8af2b4f52a423d4563d25da09321b39474aeda",
+      "unit_ref": "cicd-provider-approvals:provider-api"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be hosted-service and accepted for cicd-provider-approvals.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "hosted-service",
+      "coverage_status": "missing",
+      "evidence_argument_template": "cicd-provider-approvals,hosted-service,external-evidence/cicd-provider-approvals/hosted-service.json,hosted-service evidence for cicd-provider-approvals;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Provider delivery receipts cover retained provider delivery payload artifact replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs and provider-native status shape before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
+      ],
+      "owner_hint": "service owner",
+      "phase": "P1",
+      "priority": "P0",
+      "requirement_id": "cicd-provider-approvals",
+      "suggested_artifact_path": "external-evidence/cicd-provider-approvals/hosted-service.json",
+      "suggested_evidence_sources": [
+        "hosted service health or deployment export",
+        "service audit root",
+        "operational SLO/status evidence"
+      ],
+      "task_id": "4cdba0f0aca03393de0cfa02487a21059b395c42c829951cf738fb9889e6b586",
+      "task_ref": "external-evidence:cicd-provider-approvals:hosted-service",
+      "title": "CI/CD promotion gates, provider callbacks, and Slack approvals",
+      "unit_id": "bd40c9ffec33f3e3d54eedb4dcfd520d69fdba4cf91bc83ea579b015d63ec7e0",
+      "unit_ref": "cicd-provider-approvals:hosted-service"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be identity-provider and accepted for cicd-provider-approvals.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "identity-provider",
+      "coverage_status": "missing",
+      "evidence_argument_template": "cicd-provider-approvals,identity-provider,external-evidence/cicd-provider-approvals/identity-provider.json,identity-provider evidence for cicd-provider-approvals;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Provider delivery receipts cover retained provider delivery payload artifact replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs and provider-native status shape before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
+      ],
+      "owner_hint": "IAM/identity owner",
+      "phase": "P1",
+      "priority": "P0",
+      "requirement_id": "cicd-provider-approvals",
+      "suggested_artifact_path": "external-evidence/cicd-provider-approvals/identity-provider.json",
+      "suggested_evidence_sources": [
+        "identity-provider event export",
+        "OIDC/session/lifecycle evidence",
+        "RBAC or account-state report"
+      ],
+      "task_id": "c6285514734f63d79d421e20f98b98f657d40d7192dfb60958d104bc649495fa",
+      "task_ref": "external-evidence:cicd-provider-approvals:identity-provider",
+      "title": "CI/CD promotion gates, provider callbacks, and Slack approvals",
+      "unit_id": "91813bff0d72214132e2e8fe3c142e5c096ec7a8db1723c9e67213e757f6c901",
+      "unit_ref": "cicd-provider-approvals:identity-provider"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be regulator and accepted for design-partner-pilot-exit-criteria.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "regulator",
+      "coverage_status": "missing",
+      "evidence_argument_template": "design-partner-pilot-exit-criteria,regulator,external-evidence/design-partner-pilot-exit-criteria/regulator.json,regulator evidence for design-partner-pilot-exit-criteria;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, and external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
+      ],
+      "owner_hint": "legal/compliance owner",
+      "phase": "P1",
+      "priority": "P0",
+      "requirement_id": "design-partner-pilot-exit-criteria",
+      "suggested_artifact_path": "external-evidence/design-partner-pilot-exit-criteria/regulator.json",
+      "suggested_evidence_sources": [
+        "regulator acknowledgement",
+        "supervisor portal receipt",
+        "conformity-assessment record"
+      ],
+      "task_id": "8beb464dea5f99349b68fac304cdbfe073de0b3d8f0d3871a3c552b611e5fe57",
+      "task_ref": "external-evidence:design-partner-pilot-exit-criteria:regulator",
+      "title": "Design-partner pilot and external-scrutiny exit criteria",
+      "unit_id": "a1e976a67018099d65aa78e30ffa6013c78716d28bab10e5906ee4e78db9a043",
+      "unit_ref": "design-partner-pilot-exit-criteria:regulator"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be insurer and accepted for design-partner-pilot-exit-criteria.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "insurer",
+      "coverage_status": "missing",
+      "evidence_argument_template": "design-partner-pilot-exit-criteria,insurer,external-evidence/design-partner-pilot-exit-criteria/insurer.json,insurer evidence for design-partner-pilot-exit-criteria;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, and external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
+      ],
+      "owner_hint": "risk/insurance owner",
+      "phase": "P1",
+      "priority": "P0",
+      "requirement_id": "design-partner-pilot-exit-criteria",
+      "suggested_artifact_path": "external-evidence/design-partner-pilot-exit-criteria/insurer.json",
+      "suggested_evidence_sources": [
+        "underwriter response",
+        "premium or policy-system quote",
+        "insurer API response export"
+      ],
+      "task_id": "f89ead8e5b1ef2df684cdafe8b68cc53afc9a520feb84ac4cf8a2372f4b9d833",
+      "task_ref": "external-evidence:design-partner-pilot-exit-criteria:insurer",
+      "title": "Design-partner pilot and external-scrutiny exit criteria",
+      "unit_id": "d41d0d5c4e7c4c9fd33df8fb1685df9b9c7a4d826a0f813f8ab6d17dfc8fd769",
+      "unit_ref": "design-partner-pilot-exit-criteria:insurer"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be customer and accepted for design-partner-pilot-exit-criteria.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "customer",
+      "coverage_status": "missing",
+      "evidence_argument_template": "design-partner-pilot-exit-criteria,customer,external-evidence/design-partner-pilot-exit-criteria/customer.json,customer evidence for design-partner-pilot-exit-criteria;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, and external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
+      ],
+      "owner_hint": "customer success/account owner",
+      "phase": "P1",
+      "priority": "P0",
+      "requirement_id": "design-partner-pilot-exit-criteria",
+      "suggested_artifact_path": "external-evidence/design-partner-pilot-exit-criteria/customer.json",
+      "suggested_evidence_sources": [
+        "customer acceptance artifact",
+        "contract/payment/procurement evidence",
+        "deployment or signoff record"
+      ],
+      "task_id": "3b433a43be3da2c0e04eb8936dac0b61ec81ee1421fb95fe1c400b8a58f0e6b3",
+      "task_ref": "external-evidence:design-partner-pilot-exit-criteria:customer",
+      "title": "Design-partner pilot and external-scrutiny exit criteria",
+      "unit_id": "f59acd1b3d75f14f173e51163ad559dba1aed89a00fba70e143375b6b5be60d7",
+      "unit_ref": "design-partner-pilot-exit-criteria:customer"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be ci-run and accepted for framework-adapters.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "ci-run",
+      "coverage_status": "missing",
+      "evidence_argument_template": "framework-adapters,ci-run,external-evidence/framework-adapters/ci-run.json,ci-run evidence for framework-adapters;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
+      ],
+      "owner_hint": "release engineering",
+      "phase": "P1",
+      "priority": "P1",
+      "requirement_id": "framework-adapters",
+      "suggested_artifact_path": "external-evidence/framework-adapters/ci-run.json",
+      "suggested_evidence_sources": [
+        "completed CI workflow export",
+        "release run URL or provider-native run record",
+        "artifact/check provenance"
+      ],
+      "task_id": "ab8887f1051e79a457ce56e289a9f4ad3306687a8df45f30c0ed0217570eb002",
+      "task_ref": "external-evidence:framework-adapters:ci-run",
+      "title": "Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex",
+      "unit_id": "296efe1c318d771e413fcdcd87e51d2005055054e50a06f26580db00eefed0d0",
+      "unit_ref": "framework-adapters:ci-run"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be provider-api and accepted for framework-adapters.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "provider-api",
+      "coverage_status": "missing",
+      "evidence_argument_template": "framework-adapters,provider-api,external-evidence/framework-adapters/provider-api.json,provider-api evidence for framework-adapters;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
+      ],
+      "owner_hint": "integration/platform owner",
+      "phase": "P1",
+      "priority": "P1",
+      "requirement_id": "framework-adapters",
+      "suggested_artifact_path": "external-evidence/framework-adapters/provider-api.json",
+      "suggested_evidence_sources": [
+        "provider API response export",
+        "request/response transcript",
+        "provider-owned audit event"
+      ],
+      "task_id": "51819e7ba85f3a34a8b43c2d8ffbfa42795c75f94b7502ccb16ce7e5581f30c7",
+      "task_ref": "external-evidence:framework-adapters:provider-api",
+      "title": "Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex",
+      "unit_id": "2535596ebea2fa0ea008bafb1b71f80fde51939a25399cb76f40582f920e5acb",
+      "unit_ref": "framework-adapters:provider-api"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be hosted-service and accepted for framework-adapters.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "hosted-service",
+      "coverage_status": "missing",
+      "evidence_argument_template": "framework-adapters,hosted-service,external-evidence/framework-adapters/hosted-service.json,hosted-service evidence for framework-adapters;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
+      ],
+      "owner_hint": "service owner",
+      "phase": "P1",
+      "priority": "P1",
+      "requirement_id": "framework-adapters",
+      "suggested_artifact_path": "external-evidence/framework-adapters/hosted-service.json",
+      "suggested_evidence_sources": [
+        "hosted service health or deployment export",
+        "service audit root",
+        "operational SLO/status evidence"
+      ],
+      "task_id": "e27eb6adfc3eea49f178660893ced3d9f7ff54e45675d1ef258678a2d0596267",
+      "task_ref": "external-evidence:framework-adapters:hosted-service",
+      "title": "Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex",
+      "unit_id": "8563dcf215b5ef63455bca12f81e4fb2d7e98b515192ee839340c62b8332ca82",
+      "unit_ref": "framework-adapters:hosted-service"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be kms-hsm and accepted for auditor-and-review-portal.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "kms-hsm",
+      "coverage_status": "missing",
+      "evidence_argument_template": "auditor-and-review-portal,kms-hsm,external-evidence/auditor-and-review-portal/kms-hsm.json,kms-hsm evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
+      ],
+      "owner_hint": "security/platform KMS owner",
+      "phase": "P1-P3",
+      "priority": "P1",
+      "requirement_id": "auditor-and-review-portal",
+      "suggested_artifact_path": "external-evidence/auditor-and-review-portal/kms-hsm.json",
+      "suggested_evidence_sources": [
+        "KMS/HSM key policy export",
+        "signing operation receipt",
+        "custody or audit-log root"
+      ],
+      "task_id": "0b35d2f033f96f6bd1373d1d28cc0ff5b3e53a6f39da2e7691cfdaf27df40f31",
+      "task_ref": "external-evidence:auditor-and-review-portal:kms-hsm",
+      "title": "Auditor view, supervised access, regulator view, and review portal attestations",
+      "unit_id": "aed4464e8ca3f3876b3d0d61b0581228cf84688f6e293a0fddb5e31b9ef9e574",
+      "unit_ref": "auditor-and-review-portal:kms-hsm"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be provider-api and accepted for auditor-and-review-portal.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "provider-api",
+      "coverage_status": "missing",
+      "evidence_argument_template": "auditor-and-review-portal,provider-api,external-evidence/auditor-and-review-portal/provider-api.json,provider-api evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
+      ],
+      "owner_hint": "integration/platform owner",
+      "phase": "P1-P3",
+      "priority": "P1",
+      "requirement_id": "auditor-and-review-portal",
+      "suggested_artifact_path": "external-evidence/auditor-and-review-portal/provider-api.json",
+      "suggested_evidence_sources": [
+        "provider API response export",
+        "request/response transcript",
+        "provider-owned audit event"
+      ],
+      "task_id": "699e8d3307be54666ad631cdf7fb69f8177fcb9f54115c67c83b917bca3dea7b",
+      "task_ref": "external-evidence:auditor-and-review-portal:provider-api",
+      "title": "Auditor view, supervised access, regulator view, and review portal attestations",
+      "unit_id": "248848c8b3fa34f616469d68be67714e13edfe6ba6707a55d6d646b69329ba60",
+      "unit_ref": "auditor-and-review-portal:provider-api"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be hosted-service and accepted for auditor-and-review-portal.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "hosted-service",
+      "coverage_status": "missing",
+      "evidence_argument_template": "auditor-and-review-portal,hosted-service,external-evidence/auditor-and-review-portal/hosted-service.json,hosted-service evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
+      ],
+      "owner_hint": "service owner",
+      "phase": "P1-P3",
+      "priority": "P1",
+      "requirement_id": "auditor-and-review-portal",
+      "suggested_artifact_path": "external-evidence/auditor-and-review-portal/hosted-service.json",
+      "suggested_evidence_sources": [
+        "hosted service health or deployment export",
+        "service audit root",
+        "operational SLO/status evidence"
+      ],
+      "task_id": "4a20afe57cc9f2971078547577b16f64216382a3ce57613712a53d233e191ce4",
+      "task_ref": "external-evidence:auditor-and-review-portal:hosted-service",
+      "title": "Auditor view, supervised access, regulator view, and review portal attestations",
+      "unit_id": "dc3dc8fc4c61aa25bafced7670bea6e23899a911be0bb3e56028576312c58f5b",
+      "unit_ref": "auditor-and-review-portal:hosted-service"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be identity-provider and accepted for auditor-and-review-portal.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "identity-provider",
+      "coverage_status": "missing",
+      "evidence_argument_template": "auditor-and-review-portal,identity-provider,external-evidence/auditor-and-review-portal/identity-provider.json,identity-provider evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
+      ],
+      "owner_hint": "IAM/identity owner",
+      "phase": "P1-P3",
+      "priority": "P1",
+      "requirement_id": "auditor-and-review-portal",
+      "suggested_artifact_path": "external-evidence/auditor-and-review-portal/identity-provider.json",
+      "suggested_evidence_sources": [
+        "identity-provider event export",
+        "OIDC/session/lifecycle evidence",
+        "RBAC or account-state report"
+      ],
+      "task_id": "a5df2131c85c2fc3035d01e886ed613d473d2494e864149834b747d7f38f533b",
+      "task_ref": "external-evidence:auditor-and-review-portal:identity-provider",
+      "title": "Auditor view, supervised access, regulator view, and review portal attestations",
+      "unit_id": "e751495f6bd0337a851b9cf8192967544a97538cca79641c714107ddf77b25fb",
+      "unit_ref": "auditor-and-review-portal:identity-provider"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be regulator and accepted for auditor-and-review-portal.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "regulator",
+      "coverage_status": "missing",
+      "evidence_argument_template": "auditor-and-review-portal,regulator,external-evidence/auditor-and-review-portal/regulator.json,regulator evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
+      ],
+      "owner_hint": "legal/compliance owner",
+      "phase": "P1-P3",
+      "priority": "P1",
+      "requirement_id": "auditor-and-review-portal",
+      "suggested_artifact_path": "external-evidence/auditor-and-review-portal/regulator.json",
+      "suggested_evidence_sources": [
+        "regulator acknowledgement",
+        "supervisor portal receipt",
+        "conformity-assessment record"
+      ],
+      "task_id": "5587a2f2cd16dbff0317d1329cb227cf9a44a025d41f1cde680f23d8872f6d1c",
+      "task_ref": "external-evidence:auditor-and-review-portal:regulator",
+      "title": "Auditor view, supervised access, regulator view, and review portal attestations",
+      "unit_id": "cd15f092fb1c9a822cec2283efb08d822b5ff05589d858414daf4b0f487d3d5a",
+      "unit_ref": "auditor-and-review-portal:regulator"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be ci-run and accepted for byoc-self-hosted.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "ci-run",
+      "coverage_status": "missing",
+      "evidence_argument_template": "byoc-self-hosted,ci-run,external-evidence/byoc-self-hosted/ci-run.json,ci-run evidence for byoc-self-hosted;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
+      ],
+      "owner_hint": "release engineering",
+      "phase": "P1-P2",
+      "priority": "P0",
+      "requirement_id": "byoc-self-hosted",
+      "suggested_artifact_path": "external-evidence/byoc-self-hosted/ci-run.json",
+      "suggested_evidence_sources": [
+        "completed CI workflow export",
+        "release run URL or provider-native run record",
+        "artifact/check provenance"
+      ],
+      "task_id": "4d92ba8183803168ec0e515166b6dded4b68ce807a0af3f3e938f3f26d84a6bb",
+      "task_ref": "external-evidence:byoc-self-hosted:ci-run",
+      "title": "BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations",
+      "unit_id": "258ddae8b0d2abfcfe94f2af5f499c3d166afafdac4ac60e547854652b124283",
+      "unit_ref": "byoc-self-hosted:ci-run"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be kms-hsm and accepted for byoc-self-hosted.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "kms-hsm",
+      "coverage_status": "missing",
+      "evidence_argument_template": "byoc-self-hosted,kms-hsm,external-evidence/byoc-self-hosted/kms-hsm.json,kms-hsm evidence for byoc-self-hosted;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
+      ],
+      "owner_hint": "security/platform KMS owner",
+      "phase": "P1-P2",
+      "priority": "P0",
+      "requirement_id": "byoc-self-hosted",
+      "suggested_artifact_path": "external-evidence/byoc-self-hosted/kms-hsm.json",
+      "suggested_evidence_sources": [
+        "KMS/HSM key policy export",
+        "signing operation receipt",
+        "custody or audit-log root"
+      ],
+      "task_id": "acee8369547848548e2f0a6cb4c8041fdb299be36c604a0ea878cc0aea1f09c7",
+      "task_ref": "external-evidence:byoc-self-hosted:kms-hsm",
+      "title": "BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations",
+      "unit_id": "2bcd0837822dd6f900c5af6c143f127ab8ac19389f33240f12ad65d748039f7f",
+      "unit_ref": "byoc-self-hosted:kms-hsm"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be cloud-object-lock and accepted for byoc-self-hosted.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "cloud-object-lock",
+      "coverage_status": "missing",
+      "evidence_argument_template": "byoc-self-hosted,cloud-object-lock,external-evidence/byoc-self-hosted/cloud-object-lock.json,cloud-object-lock evidence for byoc-self-hosted;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
+      ],
+      "owner_hint": "cloud storage owner",
+      "phase": "P1-P2",
+      "priority": "P0",
+      "requirement_id": "byoc-self-hosted",
+      "suggested_artifact_path": "external-evidence/byoc-self-hosted/cloud-object-lock.json",
+      "suggested_evidence_sources": [
+        "Object Lock retention export",
+        "legal-hold report",
+        "bucket/versioning policy evidence"
+      ],
+      "task_id": "6c2e1a289a57e6763bc1da0f5b1595f2292aebd6b55b5ff9317976ab1562affb",
+      "task_ref": "external-evidence:byoc-self-hosted:cloud-object-lock",
+      "title": "BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations",
+      "unit_id": "fd68b54a87d92370973d95e70de86f09c347fa118a1fbac2c00288b6432556dc",
+      "unit_ref": "byoc-self-hosted:cloud-object-lock"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be provider-api and accepted for byoc-self-hosted.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "provider-api",
+      "coverage_status": "missing",
+      "evidence_argument_template": "byoc-self-hosted,provider-api,external-evidence/byoc-self-hosted/provider-api.json,provider-api evidence for byoc-self-hosted;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
+      ],
+      "owner_hint": "integration/platform owner",
+      "phase": "P1-P2",
+      "priority": "P0",
+      "requirement_id": "byoc-self-hosted",
+      "suggested_artifact_path": "external-evidence/byoc-self-hosted/provider-api.json",
+      "suggested_evidence_sources": [
+        "provider API response export",
+        "request/response transcript",
+        "provider-owned audit event"
+      ],
+      "task_id": "797f7917c38f899d5ab17ed1413c25d567b11336d6539f023de5fe16083a542f",
+      "task_ref": "external-evidence:byoc-self-hosted:provider-api",
+      "title": "BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations",
+      "unit_id": "64d4667c99729b35f69640585f1edc1ff182b4d937c9158f6324966f61b617fb",
+      "unit_ref": "byoc-self-hosted:provider-api"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be standards-body and accepted for byoc-self-hosted.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "standards-body",
+      "coverage_status": "missing",
+      "evidence_argument_template": "byoc-self-hosted,standards-body,external-evidence/byoc-self-hosted/standards-body.json,standards-body evidence for byoc-self-hosted;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
+      ],
+      "owner_hint": "standards/governance owner",
+      "phase": "P1-P2",
+      "priority": "P0",
+      "requirement_id": "byoc-self-hosted",
+      "suggested_artifact_path": "external-evidence/byoc-self-hosted/standards-body.json",
+      "suggested_evidence_sources": [
+        "standards-body submission receipt",
+        "working-group status record",
+        "ballot or docket export"
+      ],
+      "task_id": "09a6381d810ea0bc6732d04d967db1b8032a8bb71972d1910eed26868700c179",
+      "task_ref": "external-evidence:byoc-self-hosted:standards-body",
+      "title": "BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations",
+      "unit_id": "23db7466b75b02375e66e230fdc6f7c8e7c43b3e6b8522424e6075e65df0cf92",
+      "unit_ref": "byoc-self-hosted:standards-body"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be customer and accepted for byoc-self-hosted.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "customer",
+      "coverage_status": "missing",
+      "evidence_argument_template": "byoc-self-hosted,customer,external-evidence/byoc-self-hosted/customer.json,customer evidence for byoc-self-hosted;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
+      ],
+      "owner_hint": "customer success/account owner",
+      "phase": "P1-P2",
+      "priority": "P0",
+      "requirement_id": "byoc-self-hosted",
+      "suggested_artifact_path": "external-evidence/byoc-self-hosted/customer.json",
+      "suggested_evidence_sources": [
+        "customer acceptance artifact",
+        "contract/payment/procurement evidence",
+        "deployment or signoff record"
+      ],
+      "task_id": "af50b681baa31018d24096abc1a794738c8a80afce398c4557fbc08f8ace0bd3",
+      "task_ref": "external-evidence:byoc-self-hosted:customer",
+      "title": "BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations",
+      "unit_id": "9297fdb1f50d33b4eba4fed3e17c0e75f331d198336a8614cef909311c42eb6f",
+      "unit_ref": "byoc-self-hosted:customer"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be provider-api and accepted for compliance-mapper-and-eu-ai-act.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "provider-api",
+      "coverage_status": "missing",
+      "evidence_argument_template": "compliance-mapper-and-eu-ai-act,provider-api,external-evidence/compliance-mapper-and-eu-ai-act/provider-api.json,provider-api evidence for compliance-mapper-and-eu-ai-act;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Compliance production authority dossiers cover the local/reference authority checklist for framework-control ontology, ISO 42001, NIST AI RMF, EU AI Act, SR 11-7, SOC 2, proof-pack source replay, selective regulator disclosure, GRC exports, EU data-plane sovereignty, conformity-assessment review, and per-evidence source_context bound to the signed compliance source binding; actual fresh GRC-platform acceptance, regulator/supervisor acceptance, conformity-assessment review, and continuously operated EU data-plane provider exports remain external deployment evidence."
+      ],
+      "owner_hint": "integration/platform owner",
+      "phase": "P2-P3",
+      "priority": "P0",
+      "requirement_id": "compliance-mapper-and-eu-ai-act",
+      "suggested_artifact_path": "external-evidence/compliance-mapper-and-eu-ai-act/provider-api.json",
+      "suggested_evidence_sources": [
+        "provider API response export",
+        "request/response transcript",
+        "provider-owned audit event"
+      ],
+      "task_id": "484c9782666dd0087b90aaf9a4c972b8034610dda1313a7c3e0a1099c0d79800",
+      "task_ref": "external-evidence:compliance-mapper-and-eu-ai-act:provider-api",
+      "title": "Compliance framework mapper and EU AI Act technical documentation",
+      "unit_id": "36ac9829ac984b1f249d4e1ea9930f20f4c0c61096fad3c3952daf78a5564d20",
+      "unit_ref": "compliance-mapper-and-eu-ai-act:provider-api"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be regulator and accepted for compliance-mapper-and-eu-ai-act.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "regulator",
+      "coverage_status": "missing",
+      "evidence_argument_template": "compliance-mapper-and-eu-ai-act,regulator,external-evidence/compliance-mapper-and-eu-ai-act/regulator.json,regulator evidence for compliance-mapper-and-eu-ai-act;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Compliance production authority dossiers cover the local/reference authority checklist for framework-control ontology, ISO 42001, NIST AI RMF, EU AI Act, SR 11-7, SOC 2, proof-pack source replay, selective regulator disclosure, GRC exports, EU data-plane sovereignty, conformity-assessment review, and per-evidence source_context bound to the signed compliance source binding; actual fresh GRC-platform acceptance, regulator/supervisor acceptance, conformity-assessment review, and continuously operated EU data-plane provider exports remain external deployment evidence."
+      ],
+      "owner_hint": "legal/compliance owner",
+      "phase": "P2-P3",
+      "priority": "P0",
+      "requirement_id": "compliance-mapper-and-eu-ai-act",
+      "suggested_artifact_path": "external-evidence/compliance-mapper-and-eu-ai-act/regulator.json",
+      "suggested_evidence_sources": [
+        "regulator acknowledgement",
+        "supervisor portal receipt",
+        "conformity-assessment record"
+      ],
+      "task_id": "efdd0185105add24a52759ee29be077818128afc6c5bcfd98fb7ce260eff6203",
+      "task_ref": "external-evidence:compliance-mapper-and-eu-ai-act:regulator",
+      "title": "Compliance framework mapper and EU AI Act technical documentation",
+      "unit_id": "0b3f64f4ef452edb07353ea70520838eff57187ae2e51e48a8b98bfedc099d43",
+      "unit_ref": "compliance-mapper-and-eu-ai-act:regulator"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be standards-body and accepted for compliance-mapper-and-eu-ai-act.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "standards-body",
+      "coverage_status": "missing",
+      "evidence_argument_template": "compliance-mapper-and-eu-ai-act,standards-body,external-evidence/compliance-mapper-and-eu-ai-act/standards-body.json,standards-body evidence for compliance-mapper-and-eu-ai-act;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Compliance production authority dossiers cover the local/reference authority checklist for framework-control ontology, ISO 42001, NIST AI RMF, EU AI Act, SR 11-7, SOC 2, proof-pack source replay, selective regulator disclosure, GRC exports, EU data-plane sovereignty, conformity-assessment review, and per-evidence source_context bound to the signed compliance source binding; actual fresh GRC-platform acceptance, regulator/supervisor acceptance, conformity-assessment review, and continuously operated EU data-plane provider exports remain external deployment evidence."
+      ],
+      "owner_hint": "standards/governance owner",
+      "phase": "P2-P3",
+      "priority": "P0",
+      "requirement_id": "compliance-mapper-and-eu-ai-act",
+      "suggested_artifact_path": "external-evidence/compliance-mapper-and-eu-ai-act/standards-body.json",
+      "suggested_evidence_sources": [
+        "standards-body submission receipt",
+        "working-group status record",
+        "ballot or docket export"
+      ],
+      "task_id": "b923ba4be3220b26b60462e2e4f7eb1fd045ecf460283a55747d16b47a7efbce",
+      "task_ref": "external-evidence:compliance-mapper-and-eu-ai-act:standards-body",
+      "title": "Compliance framework mapper and EU AI Act technical documentation",
+      "unit_id": "1368ada925aab817480082f48d64bd4df1719ce87b96f409e195d96d2a8a462c",
+      "unit_ref": "compliance-mapper-and-eu-ai-act:standards-body"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be standards-body and accepted for trustai-own-compliance.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "standards-body",
+      "coverage_status": "missing",
+      "evidence_argument_template": "trustai-own-compliance,standards-body,external-evidence/trustai-own-compliance/standards-body.json,standards-body evidence for trustai-own-compliance;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "TrustAI own compliance dossiers cover local/reference readiness and external-certification schemas for SOC 2 Type II and ISO/IEC 42001; actual SOC 2 Type II audit reports, ISO/IEC 42001 certificates, auditor bridge letters, management-system scope approvals, continuous control operation evidence, and board/customer acceptance remain external compliance evidence."
+      ],
+      "owner_hint": "standards/governance owner",
+      "phase": "P2",
+      "priority": "P0",
+      "requirement_id": "trustai-own-compliance",
+      "suggested_artifact_path": "external-evidence/trustai-own-compliance/standards-body.json",
+      "suggested_evidence_sources": [
+        "standards-body submission receipt",
+        "working-group status record",
+        "ballot or docket export"
+      ],
+      "task_id": "d9c2a5f823eab100329838a4c9fa0f9bac697f4ae4d5612faf55c31b0a6277f4",
+      "task_ref": "external-evidence:trustai-own-compliance:standards-body",
+      "title": "TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance proof",
+      "unit_id": "49736e67d3741ae33d3b5b762fb01b09f4fc037bf25c27e9133eb84df23c6db0",
+      "unit_ref": "trustai-own-compliance:standards-body"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be customer and accepted for trustai-own-compliance.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "customer",
+      "coverage_status": "missing",
+      "evidence_argument_template": "trustai-own-compliance,customer,external-evidence/trustai-own-compliance/customer.json,customer evidence for trustai-own-compliance;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "TrustAI own compliance dossiers cover local/reference readiness and external-certification schemas for SOC 2 Type II and ISO/IEC 42001; actual SOC 2 Type II audit reports, ISO/IEC 42001 certificates, auditor bridge letters, management-system scope approvals, continuous control operation evidence, and board/customer acceptance remain external compliance evidence."
+      ],
+      "owner_hint": "customer success/account owner",
+      "phase": "P2",
+      "priority": "P0",
+      "requirement_id": "trustai-own-compliance",
+      "suggested_artifact_path": "external-evidence/trustai-own-compliance/customer.json",
+      "suggested_evidence_sources": [
+        "customer acceptance artifact",
+        "contract/payment/procurement evidence",
+        "deployment or signoff record"
+      ],
+      "task_id": "8664c070d85fa3d19f3b7a29d9c3f50ca11f01535a8e0098514f6a9075ab24e9",
+      "task_ref": "external-evidence:trustai-own-compliance:customer",
+      "title": "TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance proof",
+      "unit_id": "0b0685688ff5c43969ac273e7d922987929297f3b65444e891466a290afe346a",
+      "unit_ref": "trustai-own-compliance:customer"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be regulator and accepted for vertical-packs.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "regulator",
+      "coverage_status": "missing",
+      "evidence_argument_template": "vertical-packs,regulator,external-evidence/vertical-packs/regulator.json,regulator evidence for vertical-packs;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Vertical pack receipts cover local/reference templates, source bindings, control mappings, and production-claim limits for trading/treasury, insurance claims, healthcare RCM, and public sector packs; live SR 11-7 owner signoff, NAIC/state insurance legal review, HIPAA/BAA posture, FDA SaMD classification, FedRAMP boundary/ATO evidence, customer deployments, and external regulator/insurer/auditor acceptance remain external evidence."
+      ],
+      "owner_hint": "legal/compliance owner",
+      "phase": "P3",
+      "priority": "P1",
+      "requirement_id": "vertical-packs",
+      "suggested_artifact_path": "external-evidence/vertical-packs/regulator.json",
+      "suggested_evidence_sources": [
+        "regulator acknowledgement",
+        "supervisor portal receipt",
+        "conformity-assessment record"
+      ],
+      "task_id": "60540fdb77545787cb7866c1378dca24cc318e459d744a71667331266c72d2a2",
+      "task_ref": "external-evidence:vertical-packs:regulator",
+      "title": "Vertical packs for trading, insurance claims, healthcare, and public sector",
+      "unit_id": "e78020bae7fc082f74b07cb761b3762f734f20e5fe1764e02487419cc0a6cca6",
+      "unit_ref": "vertical-packs:regulator"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be insurer and accepted for vertical-packs.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "insurer",
+      "coverage_status": "missing",
+      "evidence_argument_template": "vertical-packs,insurer,external-evidence/vertical-packs/insurer.json,insurer evidence for vertical-packs;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Vertical pack receipts cover local/reference templates, source bindings, control mappings, and production-claim limits for trading/treasury, insurance claims, healthcare RCM, and public sector packs; live SR 11-7 owner signoff, NAIC/state insurance legal review, HIPAA/BAA posture, FDA SaMD classification, FedRAMP boundary/ATO evidence, customer deployments, and external regulator/insurer/auditor acceptance remain external evidence."
+      ],
+      "owner_hint": "risk/insurance owner",
+      "phase": "P3",
+      "priority": "P1",
+      "requirement_id": "vertical-packs",
+      "suggested_artifact_path": "external-evidence/vertical-packs/insurer.json",
+      "suggested_evidence_sources": [
+        "underwriter response",
+        "premium or policy-system quote",
+        "insurer API response export"
+      ],
+      "task_id": "9cd53ad47435b80a6de93611fa9813c703575346a6e0d6640747d0d411835410",
+      "task_ref": "external-evidence:vertical-packs:insurer",
+      "title": "Vertical packs for trading, insurance claims, healthcare, and public sector",
+      "unit_id": "3a7cfb04dda73fb1c524d89bb531334e6812d8f082e81c450cf7d19b2f70d62b",
+      "unit_ref": "vertical-packs:insurer"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be customer and accepted for vertical-packs.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "customer",
+      "coverage_status": "missing",
+      "evidence_argument_template": "vertical-packs,customer,external-evidence/vertical-packs/customer.json,customer evidence for vertical-packs;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Vertical pack receipts cover local/reference templates, source bindings, control mappings, and production-claim limits for trading/treasury, insurance claims, healthcare RCM, and public sector packs; live SR 11-7 owner signoff, NAIC/state insurance legal review, HIPAA/BAA posture, FDA SaMD classification, FedRAMP boundary/ATO evidence, customer deployments, and external regulator/insurer/auditor acceptance remain external evidence."
+      ],
+      "owner_hint": "customer success/account owner",
+      "phase": "P3",
+      "priority": "P1",
+      "requirement_id": "vertical-packs",
+      "suggested_artifact_path": "external-evidence/vertical-packs/customer.json",
+      "suggested_evidence_sources": [
+        "customer acceptance artifact",
+        "contract/payment/procurement evidence",
+        "deployment or signoff record"
+      ],
+      "task_id": "ae2ff75742f182d47963b6ceb336038330944042cb4f326c3d45ed9b9467ce68",
+      "task_ref": "external-evidence:vertical-packs:customer",
+      "title": "Vertical packs for trading, insurance claims, healthcare, and public sector",
+      "unit_id": "7de2b92bf19642ca938cd04c8188773c255a627b13a2f5e512939b807c17e851",
+      "unit_ref": "vertical-packs:customer"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be ci-run and accepted for insurer-api-and-actuarial-products.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "ci-run",
+      "coverage_status": "missing",
+      "evidence_argument_template": "insurer-api-and-actuarial-products,ci-run,external-evidence/insurer-api-and-actuarial-products/ci-run.json,ci-run evidence for insurer-api-and-actuarial-products;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
+      ],
+      "owner_hint": "release engineering",
+      "phase": "P2-P4",
+      "priority": "P0",
+      "requirement_id": "insurer-api-and-actuarial-products",
+      "suggested_artifact_path": "external-evidence/insurer-api-and-actuarial-products/ci-run.json",
+      "suggested_evidence_sources": [
+        "completed CI workflow export",
+        "release run URL or provider-native run record",
+        "artifact/check provenance"
+      ],
+      "task_id": "ea9fb5aa2b064a81cad7ef59ae24d745831dae9a1f0ed3f5188901ae7c2dbb6d",
+      "task_ref": "external-evidence:insurer-api-and-actuarial-products:ci-run",
+      "title": "Consent-gated insurer telemetry, underwriting quotes, and actuarial products",
+      "unit_id": "979f4abe956ca3a60d9264d0f2c64ec6a80ee489f4e5cdea597883178b2d3d3d",
+      "unit_ref": "insurer-api-and-actuarial-products:ci-run"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be kms-hsm and accepted for insurer-api-and-actuarial-products.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "kms-hsm",
+      "coverage_status": "missing",
+      "evidence_argument_template": "insurer-api-and-actuarial-products,kms-hsm,external-evidence/insurer-api-and-actuarial-products/kms-hsm.json,kms-hsm evidence for insurer-api-and-actuarial-products;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
+      ],
+      "owner_hint": "security/platform KMS owner",
+      "phase": "P2-P4",
+      "priority": "P0",
+      "requirement_id": "insurer-api-and-actuarial-products",
+      "suggested_artifact_path": "external-evidence/insurer-api-and-actuarial-products/kms-hsm.json",
+      "suggested_evidence_sources": [
+        "KMS/HSM key policy export",
+        "signing operation receipt",
+        "custody or audit-log root"
+      ],
+      "task_id": "4bc6c354d31aac131cd1f8fa9cb9451124c2231482600681d05ecf665cf12252",
+      "task_ref": "external-evidence:insurer-api-and-actuarial-products:kms-hsm",
+      "title": "Consent-gated insurer telemetry, underwriting quotes, and actuarial products",
+      "unit_id": "4d33cee7e2005f0f855cd1f3cad8c2e2862b5acda6f9ca893ba1f2b2b30155a8",
+      "unit_ref": "insurer-api-and-actuarial-products:kms-hsm"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be provider-api and accepted for insurer-api-and-actuarial-products.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "provider-api",
+      "coverage_status": "missing",
+      "evidence_argument_template": "insurer-api-and-actuarial-products,provider-api,external-evidence/insurer-api-and-actuarial-products/provider-api.json,provider-api evidence for insurer-api-and-actuarial-products;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
+      ],
+      "owner_hint": "integration/platform owner",
+      "phase": "P2-P4",
+      "priority": "P0",
+      "requirement_id": "insurer-api-and-actuarial-products",
+      "suggested_artifact_path": "external-evidence/insurer-api-and-actuarial-products/provider-api.json",
+      "suggested_evidence_sources": [
+        "provider API response export",
+        "request/response transcript",
+        "provider-owned audit event"
+      ],
+      "task_id": "8a1c69e9de014653f116fbf20e000e659ce983679ddf2f2c48acb58c7dfdb0e3",
+      "task_ref": "external-evidence:insurer-api-and-actuarial-products:provider-api",
+      "title": "Consent-gated insurer telemetry, underwriting quotes, and actuarial products",
+      "unit_id": "ec41a716efbbbffacaace5827fe9eb8be1b5f3001c97dd502b1b92eebe09f800",
+      "unit_ref": "insurer-api-and-actuarial-products:provider-api"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be hosted-service and accepted for insurer-api-and-actuarial-products.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "hosted-service",
+      "coverage_status": "missing",
+      "evidence_argument_template": "insurer-api-and-actuarial-products,hosted-service,external-evidence/insurer-api-and-actuarial-products/hosted-service.json,hosted-service evidence for insurer-api-and-actuarial-products;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
+      ],
+      "owner_hint": "service owner",
+      "phase": "P2-P4",
+      "priority": "P0",
+      "requirement_id": "insurer-api-and-actuarial-products",
+      "suggested_artifact_path": "external-evidence/insurer-api-and-actuarial-products/hosted-service.json",
+      "suggested_evidence_sources": [
+        "hosted service health or deployment export",
+        "service audit root",
+        "operational SLO/status evidence"
+      ],
+      "task_id": "eb8cf37d890a258e16d3af9df709c8b155f11a0fb0846a3731237c27961a1327",
+      "task_ref": "external-evidence:insurer-api-and-actuarial-products:hosted-service",
+      "title": "Consent-gated insurer telemetry, underwriting quotes, and actuarial products",
+      "unit_id": "2094b694497fad70e48e0e62455bdda09a0055591ad393962bfb59465d58c367",
+      "unit_ref": "insurer-api-and-actuarial-products:hosted-service"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be identity-provider and accepted for insurer-api-and-actuarial-products.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "identity-provider",
+      "coverage_status": "missing",
+      "evidence_argument_template": "insurer-api-and-actuarial-products,identity-provider,external-evidence/insurer-api-and-actuarial-products/identity-provider.json,identity-provider evidence for insurer-api-and-actuarial-products;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
+      ],
+      "owner_hint": "IAM/identity owner",
+      "phase": "P2-P4",
+      "priority": "P0",
+      "requirement_id": "insurer-api-and-actuarial-products",
+      "suggested_artifact_path": "external-evidence/insurer-api-and-actuarial-products/identity-provider.json",
+      "suggested_evidence_sources": [
+        "identity-provider event export",
+        "OIDC/session/lifecycle evidence",
+        "RBAC or account-state report"
+      ],
+      "task_id": "be476f5a0609a99f8bdfc11244dd070cf7e05e146b850f2865c8a5961d905fa2",
+      "task_ref": "external-evidence:insurer-api-and-actuarial-products:identity-provider",
+      "title": "Consent-gated insurer telemetry, underwriting quotes, and actuarial products",
+      "unit_id": "28b281bd8d494e059053e05528c651d80bedfca517b74c3185c2e21460f3771b",
+      "unit_ref": "insurer-api-and-actuarial-products:identity-provider"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be insurer and accepted for insurer-api-and-actuarial-products.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "insurer",
+      "coverage_status": "missing",
+      "evidence_argument_template": "insurer-api-and-actuarial-products,insurer,external-evidence/insurer-api-and-actuarial-products/insurer.json,insurer evidence for insurer-api-and-actuarial-products;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
+      ],
+      "owner_hint": "risk/insurance owner",
+      "phase": "P2-P4",
+      "priority": "P0",
+      "requirement_id": "insurer-api-and-actuarial-products",
+      "suggested_artifact_path": "external-evidence/insurer-api-and-actuarial-products/insurer.json",
+      "suggested_evidence_sources": [
+        "underwriter response",
+        "premium or policy-system quote",
+        "insurer API response export"
+      ],
+      "task_id": "df7d4f7635486599b295883c711463b4aaa3a43b8c5956ee8642e9ea7df66398",
+      "task_ref": "external-evidence:insurer-api-and-actuarial-products:insurer",
+      "title": "Consent-gated insurer telemetry, underwriting quotes, and actuarial products",
+      "unit_id": "1c0b31031e056c43886090c6fbdea435d1df355188edf7ab14155de604dda823",
+      "unit_ref": "insurer-api-and-actuarial-products:insurer"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be customer and accepted for insurer-api-and-actuarial-products.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "customer",
+      "coverage_status": "missing",
+      "evidence_argument_template": "insurer-api-and-actuarial-products,customer,external-evidence/insurer-api-and-actuarial-products/customer.json,customer evidence for insurer-api-and-actuarial-products;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
+      ],
+      "owner_hint": "customer success/account owner",
+      "phase": "P2-P4",
+      "priority": "P0",
+      "requirement_id": "insurer-api-and-actuarial-products",
+      "suggested_artifact_path": "external-evidence/insurer-api-and-actuarial-products/customer.json",
+      "suggested_evidence_sources": [
+        "customer acceptance artifact",
+        "contract/payment/procurement evidence",
+        "deployment or signoff record"
+      ],
+      "task_id": "7629a131bef204524faf1bbecd64f984118e19da5f9f1b211b2d588ce40fcd8c",
+      "task_ref": "external-evidence:insurer-api-and-actuarial-products:customer",
+      "title": "Consent-gated insurer telemetry, underwriting quotes, and actuarial products",
+      "unit_id": "c199c5956cb59b9b0a0ba7fead08802096161432854f09a9dd0a1e6dd3b284ca",
+      "unit_ref": "insurer-api-and-actuarial-products:customer"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be customer and accepted for state-of-agent-reliability-report.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "customer",
+      "coverage_status": "missing",
+      "evidence_argument_template": "state-of-agent-reliability-report,customer,external-evidence/state-of-agent-reliability-report/customer.json,customer evidence for state-of-agent-reliability-report;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "State of Agent Reliability reports cover local/reference aggregate report generation, privacy thresholds, actuarial source-product bindings, and publication-evidence schemas; actual public publication, independent review, partner/customer permission, market acceptance, external distribution metrics, and continuously refreshed longitudinal data remain external GTM evidence."
+      ],
+      "owner_hint": "customer success/account owner",
+      "phase": "P2-P4",
+      "priority": "P1",
+      "requirement_id": "state-of-agent-reliability-report",
+      "suggested_artifact_path": "external-evidence/state-of-agent-reliability-report/customer.json",
+      "suggested_evidence_sources": [
+        "customer acceptance artifact",
+        "contract/payment/procurement evidence",
+        "deployment or signoff record"
+      ],
+      "task_id": "4dd50ea7ed49b54b1084e6d77f1ba62180ce3cff1da146a09a33cd42ca947883",
+      "task_ref": "external-evidence:state-of-agent-reliability-report:customer",
+      "title": "State of Agent Reliability aggregate publication",
+      "unit_id": "6be96948315c92280d1ac4b07366f82d4f503162640a4f33536b568087d9043e",
+      "unit_ref": "state-of-agent-reliability-report:customer"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be ci-run and accepted for roadmap-phase-scoreboard.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "ci-run",
+      "coverage_status": "missing",
+      "evidence_argument_template": "roadmap-phase-scoreboard,ci-run,external-evidence/roadmap-phase-scoreboard/ci-run.json,ci-run evidence for roadmap-phase-scoreboard;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Roadmap phase scoreboards cover local/reference schemas for P1-P4 business milestones and can bind external evidence references and hashes; actual paying customers, signed contracts, ARR, Series A financing, live insurer integrations, SOC 2/ISO certificates, named regulator acceptance, standards-body progress, third-party procurement clauses, data-product revenue, and generic market usage remain external business evidence."
+      ],
+      "owner_hint": "release engineering",
+      "phase": "P1-P4",
+      "priority": "P0",
+      "requirement_id": "roadmap-phase-scoreboard",
+      "suggested_artifact_path": "external-evidence/roadmap-phase-scoreboard/ci-run.json",
+      "suggested_evidence_sources": [
+        "completed CI workflow export",
+        "release run URL or provider-native run record",
+        "artifact/check provenance"
+      ],
+      "task_id": "1610c58d7c78812735abbe2d744652707138c8b709eb04e9afbee1d70c0d44d9",
+      "task_ref": "external-evidence:roadmap-phase-scoreboard:ci-run",
+      "title": "Roadmap phase exit-criteria business scoreboard",
+      "unit_id": "d924a7345884caf4f045efcab1fc7cfe4ffb5ae1a7827dc58c23de0a85d22240",
+      "unit_ref": "roadmap-phase-scoreboard:ci-run"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be regulator and accepted for roadmap-phase-scoreboard.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "regulator",
+      "coverage_status": "missing",
+      "evidence_argument_template": "roadmap-phase-scoreboard,regulator,external-evidence/roadmap-phase-scoreboard/regulator.json,regulator evidence for roadmap-phase-scoreboard;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Roadmap phase scoreboards cover local/reference schemas for P1-P4 business milestones and can bind external evidence references and hashes; actual paying customers, signed contracts, ARR, Series A financing, live insurer integrations, SOC 2/ISO certificates, named regulator acceptance, standards-body progress, third-party procurement clauses, data-product revenue, and generic market usage remain external business evidence."
+      ],
+      "owner_hint": "legal/compliance owner",
+      "phase": "P1-P4",
+      "priority": "P0",
+      "requirement_id": "roadmap-phase-scoreboard",
+      "suggested_artifact_path": "external-evidence/roadmap-phase-scoreboard/regulator.json",
+      "suggested_evidence_sources": [
+        "regulator acknowledgement",
+        "supervisor portal receipt",
+        "conformity-assessment record"
+      ],
+      "task_id": "670a948e9eb7cb0760aeb4608f77ccc5402a30588d306fb94624da02d3d805f5",
+      "task_ref": "external-evidence:roadmap-phase-scoreboard:regulator",
+      "title": "Roadmap phase exit-criteria business scoreboard",
+      "unit_id": "42d9e26d48e50bd37297681cb410c7e7acbbefe490189033ab1e543c24327489",
+      "unit_ref": "roadmap-phase-scoreboard:regulator"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be insurer and accepted for roadmap-phase-scoreboard.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "insurer",
+      "coverage_status": "missing",
+      "evidence_argument_template": "roadmap-phase-scoreboard,insurer,external-evidence/roadmap-phase-scoreboard/insurer.json,insurer evidence for roadmap-phase-scoreboard;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Roadmap phase scoreboards cover local/reference schemas for P1-P4 business milestones and can bind external evidence references and hashes; actual paying customers, signed contracts, ARR, Series A financing, live insurer integrations, SOC 2/ISO certificates, named regulator acceptance, standards-body progress, third-party procurement clauses, data-product revenue, and generic market usage remain external business evidence."
+      ],
+      "owner_hint": "risk/insurance owner",
+      "phase": "P1-P4",
+      "priority": "P0",
+      "requirement_id": "roadmap-phase-scoreboard",
+      "suggested_artifact_path": "external-evidence/roadmap-phase-scoreboard/insurer.json",
+      "suggested_evidence_sources": [
+        "underwriter response",
+        "premium or policy-system quote",
+        "insurer API response export"
+      ],
+      "task_id": "113b600c5d759e26973b4ca37a29bddf5a1afd7c83be307bec8a38a4b492ee94",
+      "task_ref": "external-evidence:roadmap-phase-scoreboard:insurer",
+      "title": "Roadmap phase exit-criteria business scoreboard",
+      "unit_id": "c2156963290b79ed29d03c3f5b09344b94ae33e0ada71ec70fbfbcae6f2bc58a",
+      "unit_ref": "roadmap-phase-scoreboard:insurer"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be standards-body and accepted for roadmap-phase-scoreboard.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "standards-body",
+      "coverage_status": "missing",
+      "evidence_argument_template": "roadmap-phase-scoreboard,standards-body,external-evidence/roadmap-phase-scoreboard/standards-body.json,standards-body evidence for roadmap-phase-scoreboard;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Roadmap phase scoreboards cover local/reference schemas for P1-P4 business milestones and can bind external evidence references and hashes; actual paying customers, signed contracts, ARR, Series A financing, live insurer integrations, SOC 2/ISO certificates, named regulator acceptance, standards-body progress, third-party procurement clauses, data-product revenue, and generic market usage remain external business evidence."
+      ],
+      "owner_hint": "standards/governance owner",
+      "phase": "P1-P4",
+      "priority": "P0",
+      "requirement_id": "roadmap-phase-scoreboard",
+      "suggested_artifact_path": "external-evidence/roadmap-phase-scoreboard/standards-body.json",
+      "suggested_evidence_sources": [
+        "standards-body submission receipt",
+        "working-group status record",
+        "ballot or docket export"
+      ],
+      "task_id": "400db0ac63ecfa446379a243372d41cde8a70a2247b6bc824e2fc6e9eb67a8a6",
+      "task_ref": "external-evidence:roadmap-phase-scoreboard:standards-body",
+      "title": "Roadmap phase exit-criteria business scoreboard",
+      "unit_id": "b00aa9b180b2499b90745635648055df97c47e914a3d5e952218ae20a4da7bec",
+      "unit_ref": "roadmap-phase-scoreboard:standards-body"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be customer and accepted for roadmap-phase-scoreboard.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "customer",
+      "coverage_status": "missing",
+      "evidence_argument_template": "roadmap-phase-scoreboard,customer,external-evidence/roadmap-phase-scoreboard/customer.json,customer evidence for roadmap-phase-scoreboard;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Roadmap phase scoreboards cover local/reference schemas for P1-P4 business milestones and can bind external evidence references and hashes; actual paying customers, signed contracts, ARR, Series A financing, live insurer integrations, SOC 2/ISO certificates, named regulator acceptance, standards-body progress, third-party procurement clauses, data-product revenue, and generic market usage remain external business evidence."
+      ],
+      "owner_hint": "customer success/account owner",
+      "phase": "P1-P4",
+      "priority": "P0",
+      "requirement_id": "roadmap-phase-scoreboard",
+      "suggested_artifact_path": "external-evidence/roadmap-phase-scoreboard/customer.json",
+      "suggested_evidence_sources": [
+        "customer acceptance artifact",
+        "contract/payment/procurement evidence",
+        "deployment or signoff record"
+      ],
+      "task_id": "068a9d84b970381e02c5f25d36a86eb60eabd97bc62503235cfd516b61a4ca92",
+      "task_ref": "external-evidence:roadmap-phase-scoreboard:customer",
+      "title": "Roadmap phase exit-criteria business scoreboard",
+      "unit_id": "dfd8d820f52d475a756ebba3046042653b0c1936d5256c032c008009a6484b81",
+      "unit_ref": "roadmap-phase-scoreboard:customer"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be ci-run and accepted for product-scope-discipline.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "ci-run",
+      "coverage_status": "missing",
+      "evidence_argument_template": "product-scope-discipline,ci-run,external-evidence/product-scope-discipline/ci-run.json,ci-run evidence for product-scope-discipline;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Product scope decisions cover local/reference checks for proof-strength, cheaper-production, wider-acceptance, and anti-focus decline controls; actual company governance adoption, product-council enforcement, customer-pressure evidence, and ongoing roadmap discipline remain external operating evidence."
+      ],
+      "owner_hint": "release engineering",
+      "phase": "P0-P4",
+      "priority": "P0",
+      "requirement_id": "product-scope-discipline",
+      "suggested_artifact_path": "external-evidence/product-scope-discipline/ci-run.json",
+      "suggested_evidence_sources": [
+        "completed CI workflow export",
+        "release run URL or provider-native run record",
+        "artifact/check provenance"
+      ],
+      "task_id": "a552209d5d56a8570afb0c1f69bf832376060c409c3565202c90487344067ee8",
+      "task_ref": "external-evidence:product-scope-discipline:ci-run",
+      "title": "Product scope discipline and anti-focus decisions",
+      "unit_id": "beeca7b595cedd378a2ecc5f6cf1174767c4e5d40c0e94e7ef728938d6c4cdae",
+      "unit_ref": "product-scope-discipline:ci-run"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be customer and accepted for product-scope-discipline.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "customer",
+      "coverage_status": "missing",
+      "evidence_argument_template": "product-scope-discipline,customer,external-evidence/product-scope-discipline/customer.json,customer evidence for product-scope-discipline;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Product scope decisions cover local/reference checks for proof-strength, cheaper-production, wider-acceptance, and anti-focus decline controls; actual company governance adoption, product-council enforcement, customer-pressure evidence, and ongoing roadmap discipline remain external operating evidence."
+      ],
+      "owner_hint": "customer success/account owner",
+      "phase": "P0-P4",
+      "priority": "P0",
+      "requirement_id": "product-scope-discipline",
+      "suggested_artifact_path": "external-evidence/product-scope-discipline/customer.json",
+      "suggested_evidence_sources": [
+        "customer acceptance artifact",
+        "contract/payment/procurement evidence",
+        "deployment or signoff record"
+      ],
+      "task_id": "de36663b0c6886897d5b1610091571596f9e94d6197b528acd8fd26b50881155",
+      "task_ref": "external-evidence:product-scope-discipline:customer",
+      "title": "Product scope discipline and anti-focus decisions",
+      "unit_id": "b9bb5a1cee7e34da59216f2b3b2abdd9998507ec8b76789cffba6731a8a24544",
+      "unit_ref": "product-scope-discipline:customer"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be ci-run and accepted for runtime-policy-and-attestation.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "ci-run",
+      "coverage_status": "missing",
+      "evidence_argument_template": "runtime-policy-and-attestation,ci-run,external-evidence/runtime-policy-and-attestation/ci-run.json,ci-run evidence for runtime-policy-and-attestation;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
+      ],
+      "owner_hint": "release engineering",
+      "phase": "P2",
+      "priority": "P1",
+      "requirement_id": "runtime-policy-and-attestation",
+      "suggested_artifact_path": "external-evidence/runtime-policy-and-attestation/ci-run.json",
+      "suggested_evidence_sources": [
+        "completed CI workflow export",
+        "release run URL or provider-native run record",
+        "artifact/check provenance"
+      ],
+      "task_id": "4dce079c5847dc9216eb45678e8cef7e33045c3db8a23112c356d227847b44ee",
+      "task_ref": "external-evidence:runtime-policy-and-attestation:ci-run",
+      "title": "Runtime attestation, policy engine receipts, and proof decay",
+      "unit_id": "0d128ea71cd5af5b6819a733b6f95e8eb1990db8a2bc68448474285b8790ff33",
+      "unit_ref": "runtime-policy-and-attestation:ci-run"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be kms-hsm and accepted for runtime-policy-and-attestation.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "kms-hsm",
+      "coverage_status": "missing",
+      "evidence_argument_template": "runtime-policy-and-attestation,kms-hsm,external-evidence/runtime-policy-and-attestation/kms-hsm.json,kms-hsm evidence for runtime-policy-and-attestation;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
+      ],
+      "owner_hint": "security/platform KMS owner",
+      "phase": "P2",
+      "priority": "P1",
+      "requirement_id": "runtime-policy-and-attestation",
+      "suggested_artifact_path": "external-evidence/runtime-policy-and-attestation/kms-hsm.json",
+      "suggested_evidence_sources": [
+        "KMS/HSM key policy export",
+        "signing operation receipt",
+        "custody or audit-log root"
+      ],
+      "task_id": "4e0d673cdd3ff36ddfa687c79936b722ec9f5e3ac15fb54991405fffe22eabc5",
+      "task_ref": "external-evidence:runtime-policy-and-attestation:kms-hsm",
+      "title": "Runtime attestation, policy engine receipts, and proof decay",
+      "unit_id": "d65055f0aa100515422d3b946633ace686f8983617e778d7581b89f748fba7ec",
+      "unit_ref": "runtime-policy-and-attestation:kms-hsm"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be provider-api and accepted for runtime-policy-and-attestation.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "provider-api",
+      "coverage_status": "missing",
+      "evidence_argument_template": "runtime-policy-and-attestation,provider-api,external-evidence/runtime-policy-and-attestation/provider-api.json,provider-api evidence for runtime-policy-and-attestation;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
+      ],
+      "owner_hint": "integration/platform owner",
+      "phase": "P2",
+      "priority": "P1",
+      "requirement_id": "runtime-policy-and-attestation",
+      "suggested_artifact_path": "external-evidence/runtime-policy-and-attestation/provider-api.json",
+      "suggested_evidence_sources": [
+        "provider API response export",
+        "request/response transcript",
+        "provider-owned audit event"
+      ],
+      "task_id": "ce6621c5587c4344d9f3f8db1d509403fea5a8f1f8581fcaf3ebc375af999ec4",
+      "task_ref": "external-evidence:runtime-policy-and-attestation:provider-api",
+      "title": "Runtime attestation, policy engine receipts, and proof decay",
+      "unit_id": "ba43e60fcdba3109317a26d9426dabc58bd32dace07922c5a84df5e0aee2907f",
+      "unit_ref": "runtime-policy-and-attestation:provider-api"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be hosted-service and accepted for runtime-policy-and-attestation.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "hosted-service",
+      "coverage_status": "missing",
+      "evidence_argument_template": "runtime-policy-and-attestation,hosted-service,external-evidence/runtime-policy-and-attestation/hosted-service.json,hosted-service evidence for runtime-policy-and-attestation;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
+      ],
+      "owner_hint": "service owner",
+      "phase": "P2",
+      "priority": "P1",
+      "requirement_id": "runtime-policy-and-attestation",
+      "suggested_artifact_path": "external-evidence/runtime-policy-and-attestation/hosted-service.json",
+      "suggested_evidence_sources": [
+        "hosted service health or deployment export",
+        "service audit root",
+        "operational SLO/status evidence"
+      ],
+      "task_id": "51b061b63412d64ce0f2dc4744658708a50a3864bdb00e74f373a831d1ba7cb7",
+      "task_ref": "external-evidence:runtime-policy-and-attestation:hosted-service",
+      "title": "Runtime attestation, policy engine receipts, and proof decay",
+      "unit_id": "6029f74fe9ceff003106411ba51fa63253e190d1b7a74c5c65c86c165e8bd856",
+      "unit_ref": "runtime-policy-and-attestation:hosted-service"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be identity-provider and accepted for runtime-policy-and-attestation.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "identity-provider",
+      "coverage_status": "missing",
+      "evidence_argument_template": "runtime-policy-and-attestation,identity-provider,external-evidence/runtime-policy-and-attestation/identity-provider.json,identity-provider evidence for runtime-policy-and-attestation;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
+      ],
+      "owner_hint": "IAM/identity owner",
+      "phase": "P2",
+      "priority": "P1",
+      "requirement_id": "runtime-policy-and-attestation",
+      "suggested_artifact_path": "external-evidence/runtime-policy-and-attestation/identity-provider.json",
+      "suggested_evidence_sources": [
+        "identity-provider event export",
+        "OIDC/session/lifecycle evidence",
+        "RBAC or account-state report"
+      ],
+      "task_id": "1d7cc30adc75215cfaa0833a1ea45ff5d0783def3982c7455a3e4d829d1c7bc6",
+      "task_ref": "external-evidence:runtime-policy-and-attestation:identity-provider",
+      "title": "Runtime attestation, policy engine receipts, and proof decay",
+      "unit_id": "7615ae83cc0b5602b4eca58785051961e3f22104b5e761ff4de4428e37833221",
+      "unit_ref": "runtime-policy-and-attestation:identity-provider"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be provider-api and accepted for agent-inventory-and-identity.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "provider-api",
+      "coverage_status": "missing",
+      "evidence_argument_template": "agent-inventory-and-identity,provider-api,external-evidence/agent-inventory-and-identity/provider-api.json,provider-api evidence for agent-inventory-and-identity;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Identity-provider production authority dossiers cover the local/reference authority checklist for live event streams, token/session propagation, lifecycle APIs, provider audit exports, credential custody, scheduler/queue evidence, per-evidence source_context bound to lifecycle worker bindings, recomputed controls, and freshness-gated production claims; actual fresh provider-owned exports remain external evidence."
+      ],
+      "owner_hint": "integration/platform owner",
+      "phase": "P2",
+      "priority": "P1",
+      "requirement_id": "agent-inventory-and-identity",
+      "suggested_artifact_path": "external-evidence/agent-inventory-and-identity/provider-api.json",
+      "suggested_evidence_sources": [
+        "provider API response export",
+        "request/response transcript",
+        "provider-owned audit event"
+      ],
+      "task_id": "6ad751328b2d1976a3bfa134863e1131850c695455c5c53ca96e0918d3a2639e",
+      "task_ref": "external-evidence:agent-inventory-and-identity:provider-api",
+      "title": "Agent registry, inventory, identity provider attestations, and lifecycle receipts",
+      "unit_id": "5b78e87c9420ec76f41c07dd0c80905ddc4126edfff06c600428da1eaf20de69",
+      "unit_ref": "agent-inventory-and-identity:provider-api"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be identity-provider and accepted for agent-inventory-and-identity.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "identity-provider",
+      "coverage_status": "missing",
+      "evidence_argument_template": "agent-inventory-and-identity,identity-provider,external-evidence/agent-inventory-and-identity/identity-provider.json,identity-provider evidence for agent-inventory-and-identity;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Identity-provider production authority dossiers cover the local/reference authority checklist for live event streams, token/session propagation, lifecycle APIs, provider audit exports, credential custody, scheduler/queue evidence, per-evidence source_context bound to lifecycle worker bindings, recomputed controls, and freshness-gated production claims; actual fresh provider-owned exports remain external evidence."
+      ],
+      "owner_hint": "IAM/identity owner",
+      "phase": "P2",
+      "priority": "P1",
+      "requirement_id": "agent-inventory-and-identity",
+      "suggested_artifact_path": "external-evidence/agent-inventory-and-identity/identity-provider.json",
+      "suggested_evidence_sources": [
+        "identity-provider event export",
+        "OIDC/session/lifecycle evidence",
+        "RBAC or account-state report"
+      ],
+      "task_id": "6f7b4b881e73f25ec58a52f33fef9f6632b584de3088171da965ebed3e090c1d",
+      "task_ref": "external-evidence:agent-inventory-and-identity:identity-provider",
+      "title": "Agent registry, inventory, identity provider attestations, and lifecycle receipts",
+      "unit_id": "2830ddc16f51490829895379277460cd4d0c7f689d2de75b8d3cc1c59e76616d",
+      "unit_ref": "agent-inventory-and-identity:identity-provider"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be kms-hsm and accepted for standards-track-and-auditor-ecosystem.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "kms-hsm",
+      "coverage_status": "missing",
+      "evidence_argument_template": "standards-track-and-auditor-ecosystem,kms-hsm,external-evidence/standards-track-and-auditor-ecosystem/kms-hsm.json,kms-hsm evidence for standards-track-and-auditor-ecosystem;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Actual standards-body acceptance and sponsor-owned KMS/HSM enforcement require external governance events."
+      ],
+      "owner_hint": "security/platform KMS owner",
+      "phase": "P3",
+      "priority": "P1",
+      "requirement_id": "standards-track-and-auditor-ecosystem",
+      "suggested_artifact_path": "external-evidence/standards-track-and-auditor-ecosystem/kms-hsm.json",
+      "suggested_evidence_sources": [
+        "KMS/HSM key policy export",
+        "signing operation receipt",
+        "custody or audit-log root"
+      ],
+      "task_id": "b3ca77081443acdd89a265983844a03f8f085020279c8e272513548181dabcec",
+      "task_ref": "external-evidence:standards-track-and-auditor-ecosystem:kms-hsm",
+      "title": "Standards-track package and auditor certification ecosystem",
+      "unit_id": "132fcd6a63da92f4b08b3ea0792e8fcd3b7428a04df7d4a7f1de8f71eabb316b",
+      "unit_ref": "standards-track-and-auditor-ecosystem:kms-hsm"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be standards-body and accepted for standards-track-and-auditor-ecosystem.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "standards-body",
+      "coverage_status": "missing",
+      "evidence_argument_template": "standards-track-and-auditor-ecosystem,standards-body,external-evidence/standards-track-and-auditor-ecosystem/standards-body.json,standards-body evidence for standards-track-and-auditor-ecosystem;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Actual standards-body acceptance and sponsor-owned KMS/HSM enforcement require external governance events."
+      ],
+      "owner_hint": "standards/governance owner",
+      "phase": "P3",
+      "priority": "P1",
+      "requirement_id": "standards-track-and-auditor-ecosystem",
+      "suggested_artifact_path": "external-evidence/standards-track-and-auditor-ecosystem/standards-body.json",
+      "suggested_evidence_sources": [
+        "standards-body submission receipt",
+        "working-group status record",
+        "ballot or docket export"
+      ],
+      "task_id": "fd4c4a579fc40de146198260048ce339850dba546a8e83bea8c12c0726794622",
+      "task_ref": "external-evidence:standards-track-and-auditor-ecosystem:standards-body",
+      "title": "Standards-track package and auditor certification ecosystem",
+      "unit_id": "9cfcf61758e21fd5536276d9d2e0c6ea8ffe1bb526f92aa50463e58906f4e931",
+      "unit_ref": "standards-track-and-auditor-ecosystem:standards-body"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be provider-api and accepted for trust-network-procurement-and-marketplace.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "provider-api",
+      "coverage_status": "missing",
+      "evidence_argument_template": "trust-network-procurement-and-marketplace,provider-api,external-evidence/trust-network-procurement-and-marketplace/provider-api.json,provider-api evidence for trust-network-procurement-and-marketplace;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Signed trust-network service attestations, worker receipts, worker review bundles, and production authority dossiers cover local/reference proof; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, marketplace asset replay, frontend replay, and service/worker linkage before external trust-network authority evidence is accepted. Live hosted services, provider-owned identity events, marketplace payouts, revocation propagation, callbacks, and procurement propagation remain external evidence until fresh provider-owned exports are supplied."
+      ],
+      "owner_hint": "integration/platform owner",
+      "phase": "P4",
+      "priority": "P1",
+      "requirement_id": "trust-network-procurement-and-marketplace",
+      "suggested_artifact_path": "external-evidence/trust-network-procurement-and-marketplace/provider-api.json",
+      "suggested_evidence_sources": [
+        "provider API response export",
+        "request/response transcript",
+        "provider-owned audit event"
+      ],
+      "task_id": "eba08154dc6363b8818d68f122608804d9f93b54a94556768cb51d654975ed40",
+      "task_ref": "external-evidence:trust-network-procurement-and-marketplace:provider-api",
+      "title": "Trust network, procurement clauses, and marketplace distribution",
+      "unit_id": "d4b8f1c0c744a35ab85646d246873fa679eec94f926a622618d1bdc2bada93cd",
+      "unit_ref": "trust-network-procurement-and-marketplace:provider-api"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be hosted-service and accepted for trust-network-procurement-and-marketplace.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "hosted-service",
+      "coverage_status": "missing",
+      "evidence_argument_template": "trust-network-procurement-and-marketplace,hosted-service,external-evidence/trust-network-procurement-and-marketplace/hosted-service.json,hosted-service evidence for trust-network-procurement-and-marketplace;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Signed trust-network service attestations, worker receipts, worker review bundles, and production authority dossiers cover local/reference proof; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, marketplace asset replay, frontend replay, and service/worker linkage before external trust-network authority evidence is accepted. Live hosted services, provider-owned identity events, marketplace payouts, revocation propagation, callbacks, and procurement propagation remain external evidence until fresh provider-owned exports are supplied."
+      ],
+      "owner_hint": "service owner",
+      "phase": "P4",
+      "priority": "P1",
+      "requirement_id": "trust-network-procurement-and-marketplace",
+      "suggested_artifact_path": "external-evidence/trust-network-procurement-and-marketplace/hosted-service.json",
+      "suggested_evidence_sources": [
+        "hosted service health or deployment export",
+        "service audit root",
+        "operational SLO/status evidence"
+      ],
+      "task_id": "8012c7726204b153c2a9cfd0f44b982194029b954fa3360882477d3fa4a1794a",
+      "task_ref": "external-evidence:trust-network-procurement-and-marketplace:hosted-service",
+      "title": "Trust network, procurement clauses, and marketplace distribution",
+      "unit_id": "a13cb2978d55a361971f9904704153efabb3cf6d2abcd50cf94b55f7688ed97b",
+      "unit_ref": "trust-network-procurement-and-marketplace:hosted-service"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be identity-provider and accepted for trust-network-procurement-and-marketplace.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "identity-provider",
+      "coverage_status": "missing",
+      "evidence_argument_template": "trust-network-procurement-and-marketplace,identity-provider,external-evidence/trust-network-procurement-and-marketplace/identity-provider.json,identity-provider evidence for trust-network-procurement-and-marketplace;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Signed trust-network service attestations, worker receipts, worker review bundles, and production authority dossiers cover local/reference proof; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, marketplace asset replay, frontend replay, and service/worker linkage before external trust-network authority evidence is accepted. Live hosted services, provider-owned identity events, marketplace payouts, revocation propagation, callbacks, and procurement propagation remain external evidence until fresh provider-owned exports are supplied."
+      ],
+      "owner_hint": "IAM/identity owner",
+      "phase": "P4",
+      "priority": "P1",
+      "requirement_id": "trust-network-procurement-and-marketplace",
+      "suggested_artifact_path": "external-evidence/trust-network-procurement-and-marketplace/identity-provider.json",
+      "suggested_evidence_sources": [
+        "identity-provider event export",
+        "OIDC/session/lifecycle evidence",
+        "RBAC or account-state report"
+      ],
+      "task_id": "b7a6b136943261cc0cb2ff72c5400de3f2a3cc90906eb21e9d416917c7f3b1bf",
+      "task_ref": "external-evidence:trust-network-procurement-and-marketplace:identity-provider",
+      "title": "Trust network, procurement clauses, and marketplace distribution",
+      "unit_id": "60c0d35622e32797f7f0b1de76e335dea7d15c5a4ae86aff3108cbad8193a0ed",
+      "unit_ref": "trust-network-procurement-and-marketplace:identity-provider"
+    },
+    {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be customer and accepted for trust-network-procurement-and-marketplace.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
+      "authority_kind": "customer",
+      "coverage_status": "missing",
+      "evidence_argument_template": "trust-network-procurement-and-marketplace,customer,external-evidence/trust-network-procurement-and-marketplace/customer.json,customer evidence for trust-network-procurement-and-marketplace;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
+      "external_authority_required": [
+        "Signed trust-network service attestations, worker receipts, worker review bundles, and production authority dossiers cover local/reference proof; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, marketplace asset replay, frontend replay, and service/worker linkage before external trust-network authority evidence is accepted. Live hosted services, provider-owned identity events, marketplace payouts, revocation propagation, callbacks, and procurement propagation remain external evidence until fresh provider-owned exports are supplied."
+      ],
+      "owner_hint": "customer success/account owner",
+      "phase": "P4",
+      "priority": "P1",
+      "requirement_id": "trust-network-procurement-and-marketplace",
+      "suggested_artifact_path": "external-evidence/trust-network-procurement-and-marketplace/customer.json",
+      "suggested_evidence_sources": [
+        "customer acceptance artifact",
+        "contract/payment/procurement evidence",
+        "deployment or signoff record"
+      ],
+      "task_id": "f9cb0522d436acb9c4ea09937a99e39c57772dc5630540a7a9306b8371f7ac7b",
+      "task_ref": "external-evidence:trust-network-procurement-and-marketplace:customer",
+      "title": "Trust network, procurement clauses, and marketplace distribution",
+      "unit_id": "8024e01208d4b0ed30eb35b15e5204d6da7ae5388a6d85509af5363821aab2e3",
+      "unit_ref": "trust-network-procurement-and-marketplace:customer"
+    }
+  ]
+}

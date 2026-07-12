@@ -576,7 +576,10 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
     def test_retained_external_evidence_examples_verify(self):
         audit = json.loads((ROOT / "examples/aitrade/external-evidence/source-roadmap-audit.json").read_text(encoding="utf-8"))
         manifest = load_external_evidence_manifest(ROOT / "examples/aitrade/external-evidence/source-external-evidence-manifest.json")
+        retained_manifest = load_external_evidence_manifest(ROOT / "examples/aitrade/external-evidence/retained-external-evidence-manifest.json")
         plan = load_external_evidence_collection_plan(ROOT / "examples/aitrade/external-evidence/source-external-evidence-plan-all.json")
+        remaining_plan = load_external_evidence_collection_plan(ROOT / "examples/aitrade/external-evidence/remaining-external-evidence-plan.json")
+        source_map = json.loads((ROOT / "examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json").read_text(encoding="utf-8"))
         provider_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/github-main-ref-source-snapshot.json")
         hosted_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/github-hosted-service-source-snapshot.json")
         ci_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/oss-verifier-ci-run.json")
@@ -592,6 +595,14 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             now="2026-07-12T00:00:00Z",
         )
         plan_result = verify_external_evidence_collection_plan(plan, manifest, audit, root=ROOT)
+        retained_manifest_result = verify_external_evidence_manifest(
+            retained_manifest,
+            audit,
+            root=ROOT,
+            require_fresh=True,
+            now="2026-07-12T00:00:00Z",
+        )
+        remaining_plan_result = verify_external_evidence_collection_plan(remaining_plan, retained_manifest, audit, root=ROOT)
         snapshot_results = [
             verify_external_evidence_source_snapshot(
                 snapshot,
@@ -626,6 +637,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertTrue(audit_result.ok, audit_result.errors)
         self.assertTrue(manifest_result.ok, manifest_result.errors)
         self.assertTrue(plan_result.ok, plan_result.errors)
+        self.assertTrue(retained_manifest_result.ok, retained_manifest_result.errors)
+        self.assertTrue(remaining_plan_result.ok, remaining_plan_result.errors)
         for result in snapshot_results:
             self.assertTrue(result.ok, result.errors)
         for result in intake_results:
@@ -637,6 +650,12 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual(70, rebuilt["summary"]["required_authority_kind_count"])
         self.assertEqual(3, rebuilt["summary"]["covered_authority_kind_count"])
         self.assertEqual(67, rebuilt["summary"]["missing_authority_kind_count"])
+        self.assertEqual(retained_manifest["summary"], rebuilt["summary"])
+        self.assertEqual(67, remaining_plan["summary"]["selected_task_count"])
+        self.assertEqual(67, remaining_plan["summary"]["selected_missing_task_count"])
+        self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA, source_map["schema"])
+        self.assertEqual(content_hash(without_keys(source_map, "source_map_id")), source_map["source_map_id"])
+        self.assertEqual(67, source_map["summary"]["entry_count"])
         self.assertEqual(
             ["ci-run", "provider-api", "hosted-service"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["oss-verifier-and-public-spec"],
