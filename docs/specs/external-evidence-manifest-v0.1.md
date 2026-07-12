@@ -145,15 +145,24 @@ it is the preferred operator workflow for collecting many authority receipts
 because the snapshot and intake cannot drift apart.
 
 
-`external-evidence-collect-batch` consumes
-`trustai.external-evidence-source-map/0.1`, a source-map JSON object with optional
-`defaults` and an `entries` array. Each entry MUST identify a unique collection
-`task`, `source_uri`, and `description`; it MAY provide or inherit `source_file`,
-`issuer`, `subject`, `content_type`, `issued_at`, `expires_at`,
-`retrieval_method`, `snapshot_out`, `intake_out`, `snapshot_dir`, `intake_dir`,
-and `timeout_seconds`. The command rejects duplicate tasks and writes a
-`trustai.external-evidence-collection-run/0.1` report with `generated_at` and listing generated snapshot
-paths, intake paths, IDs, evidence arguments, and warnings.
+`external-evidence-source-map-template` emits
+`trustai.external-evidence-source-map/0.1` from a verified collection plan. The
+source map records `source_map_id`, `generated_at`, `source_plan`, `summary`,
+optional shared `defaults`, and one `entries` item per selected collection task.
+Template entries include the collection `task`, `task_ref`, `task_id`, `unit_id`,
+`unit_ref`, `requirement_id`, `authority_kind`, operator hints, `source_uri`,
+`description`, `snapshot_out`, and `intake_out`. URI and description templates
+MAY interpolate `{task_id}`, `{task_ref}`, `{unit_id}`, `{unit_ref}`,
+`{requirement_id}`, `{authority_kind}`, `{phase}`, `{priority}`, and `{title}`.
+
+`external-evidence-collect-batch` consumes the same source-map schema. Each
+entry MUST identify a unique collection `task`, `source_uri`, and `description`;
+it MAY provide or inherit `source_file`, `issuer`, `subject`, `content_type`,
+`issued_at`, `expires_at`, `retrieval_method`, `snapshot_out`, `intake_out`,
+`snapshot_dir`, `intake_dir`, and `timeout_seconds`. The command rejects
+duplicate tasks and writes a `trustai.external-evidence-collection-run/0.1`
+report with `generated_at` and generated snapshot paths, intake paths, IDs,
+evidence arguments, and warnings.
 
 ## External Evidence Intake Receipt
 

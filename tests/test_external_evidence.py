@@ -193,6 +193,105 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertFalse(tampered_result.ok)
         self.assertTrue(any("collection plan body" in error for error in tampered_result.errors), tampered_result.errors)
 
+    def test_cli_external_evidence_source_map_template_exports_batch_entries(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_path = Path(tmp_dir)
+            audit_path = tmp_path / "roadmap-audit.json"
+            manifest_path = tmp_path / "external-evidence-manifest.json"
+            plan_path = tmp_path / "external-evidence-plan-all.json"
+            source_map_path = tmp_path / "external-evidence-source-map-template.json"
+
+            audit = build_roadmap_audit(ROOT)
+            manifest = build_external_evidence_manifest(
+                audit,
+                root=ROOT,
+                evidence=[
+                    {
+                        "requirement_id": "oss-verifier-and-public-spec",
+                        "authority_kind": "ci-run",
+                        "path": FIXTURE,
+                        "description": "Recorded verifier workflow run export.",
+                    }
+                ],
+                generated_at="2026-07-09T00:00:00Z",
+            )
+            plan = build_external_evidence_collection_plan(
+                manifest,
+                audit,
+                root=ROOT,
+                status_filter="all",
+                generated_at="2026-07-09T00:00:00Z",
+            )
+            write_roadmap_audit(audit_path, audit)
+            write_external_evidence_manifest(manifest_path, manifest)
+            write_external_evidence_collection_plan(plan_path, plan)
+
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-source-map-template",
+                    str(plan_path),
+                    "--status-filter",
+                    "missing",
+                    "--authority-kind",
+                    "provider-api",
+                    "--limit",
+                    "1",
+                    "--source-uri-template",
+                    "https://provider.example/{requirement_id}/{authority_kind}/{unit_id}",
+                    "--description-template",
+                    "{authority_kind} provider export for {requirement_id}",
+                    "--source-file",
+                    FIXTURE,
+                    "--issuer",
+                    "Provider API",
+                    "--subject",
+                    "trustai provider evidence exports",
+                    "--content-type",
+                    "application/json",
+                    "--issued-at",
+                    "2026-07-08T00:00:00Z",
+                    "--expires-at",
+                    "2026-12-31T00:00:00Z",
+                    "--snapshot-dir",
+                    "artifacts/source-map-template-sources",
+                    "--intake-dir",
+                    "artifacts/source-map-template-intakes",
+                    "--generated-at",
+                    "2026-07-09T00:00:00Z",
+                    "--out",
+                    str(source_map_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            source_map = json.loads(source_map_path.read_text(encoding="utf-8"))
+            entry = source_map["entries"][0]
+
+            self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA, source_map["schema"])
+            self.assertEqual(content_hash(without_keys(source_map, "source_map_id")), source_map["source_map_id"])
+            self.assertEqual(1, source_map["summary"]["entry_count"])
+            self.assertEqual(["provider-api"], source_map["summary"]["authority_kinds"])
+            self.assertEqual(FIXTURE, source_map["defaults"]["source_file"])
+            self.assertEqual("Provider API", source_map["defaults"]["issuer"])
+            self.assertEqual("oss-verifier-and-public-spec:provider-api", entry["task"])
+            self.assertEqual("external-evidence:oss-verifier-and-public-spec:provider-api", entry["task_ref"])
+            self.assertEqual("provider-api", entry["authority_kind"])
+            self.assertEqual(
+                "https://provider.example/oss-verifier-and-public-spec/provider-api/" + entry["unit_id"],
+                entry["source_uri"],
+            )
+            self.assertEqual(
+                "artifacts/source-map-template-sources/oss-verifier-and-public-spec/provider-api.json",
+                entry["snapshot_out"],
+            )
+            self.assertEqual(
+                "artifacts/source-map-template-intakes/oss-verifier-and-public-spec/provider-api.json",
+                entry["intake_out"],
+            )
+
     def test_external_evidence_intake_binds_artifact_to_collection_task(self):
         audit = build_roadmap_audit(ROOT)
         manifest = build_external_evidence_manifest(

@@ -1066,6 +1066,7 @@ from .external_evidence import (
     append_external_evidence_manifest,
     build_external_evidence_manifest,
     build_external_evidence_manifest_from_intakes,
+    build_external_evidence_source_map_template,
     build_external_evidence_collection_plan,
     build_external_evidence_intake,
     EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA,
@@ -14284,6 +14285,37 @@ def _repository_relative_artifact_path(root: str | Path, path: str | Path) -> tu
         raise ValueError(f"external evidence snapshot output must be under --root: {path}") from exc
     return resolved, relative.as_posix()
 
+def cmd_external_evidence_source_map_template(args: argparse.Namespace) -> int:
+    try:
+        plan = load_external_evidence_collection_plan(args.plan)
+        source_map = build_external_evidence_source_map_template(
+            plan,
+            status_filter=args.status_filter,
+            authority_kinds=args.authority_kind,
+            source_uri_template=args.source_uri_template,
+            description_template=args.description_template,
+            source_file=args.source_file,
+            retrieval_method=args.retrieval_method,
+            content_type=args.content_type,
+            issuer=args.issuer,
+            subject=args.subject,
+            issued_at=args.issued_at,
+            expires_at=args.expires_at,
+            timeout_seconds=args.timeout_seconds,
+            snapshot_dir=args.snapshot_dir,
+            intake_dir=args.intake_dir,
+            limit=args.limit,
+            generated_at=args.generated_at,
+        )
+        _write_json(args.out, source_map)
+    except (OSError, ValueError) as exc:
+        print(f"external evidence source map template failed: {exc}", file=sys.stderr)
+        return 1
+    print(f"external evidence source map template: {args.out}")
+    print(f"source map id: {source_map['source_map_id']}")
+    print(f"entries: {source_map['summary']['entry_count']}")
+    return 0
+
 def _read_external_evidence_snapshot_source_values(
     *,
     source_uri: str,
@@ -24096,6 +24128,26 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_plan_verify.add_argument("--root", default=".")
     external_evidence_plan_verify.set_defaults(func=cmd_external_evidence_plan_verify)
 
+    external_evidence_source_map_template = subparsers.add_parser("external-evidence-source-map-template", help="write a batch collection source-map template from an external-evidence collection plan")
+    external_evidence_source_map_template.add_argument("plan")
+    external_evidence_source_map_template.add_argument("--status-filter", choices=["all", "missing", "covered"], default="missing")
+    external_evidence_source_map_template.add_argument("--authority-kind", action="append", default=[])
+    external_evidence_source_map_template.add_argument("--source-uri-template", default="TODO://authority/{requirement_id}/{authority_kind}")
+    external_evidence_source_map_template.add_argument("--description-template", default="{authority_kind} evidence for {requirement_id}")
+    external_evidence_source_map_template.add_argument("--source-file")
+    external_evidence_source_map_template.add_argument("--retrieval-method")
+    external_evidence_source_map_template.add_argument("--content-type")
+    external_evidence_source_map_template.add_argument("--issuer")
+    external_evidence_source_map_template.add_argument("--subject")
+    external_evidence_source_map_template.add_argument("--issued-at")
+    external_evidence_source_map_template.add_argument("--expires-at")
+    external_evidence_source_map_template.add_argument("--timeout-seconds", type=float)
+    external_evidence_source_map_template.add_argument("--snapshot-dir", default="artifacts/external-evidence-sources")
+    external_evidence_source_map_template.add_argument("--intake-dir", default="artifacts/external-evidence-intakes")
+    external_evidence_source_map_template.add_argument("--limit", type=int)
+    external_evidence_source_map_template.add_argument("--generated-at")
+    external_evidence_source_map_template.add_argument("--out", default="artifacts/external-evidence-source-map-template.json")
+    external_evidence_source_map_template.set_defaults(func=cmd_external_evidence_source_map_template)
     external_evidence_snapshot = subparsers.add_parser("external-evidence-snapshot", help="snapshot a source URI or local authority export as a hashable external evidence artifact")
     external_evidence_snapshot.add_argument("source_uri")
     external_evidence_snapshot.add_argument("--source-file", help="local authority export to embed instead of fetching source_uri")

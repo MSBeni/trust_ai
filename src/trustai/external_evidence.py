@@ -428,6 +428,151 @@ def verify_external_evidence_collection_plan(
     return ExternalEvidenceCollectionPlanVerification(ok=not errors, errors=errors, warnings=warnings)
 
 
+def _source_map_path_segment(value: str) -> str:
+    segment = "".join(ch if ch.isalnum() or ch in "._-" else "-" for ch in value.strip())
+    segment = segment.strip("-._")
+    return segment or "unknown"
+
+
+def _source_map_join_path(base: str, requirement_id: str, authority_kind: str) -> str:
+    normalized_base = str(base or "").replace("\\", "/").rstrip("/")
+    if not normalized_base:
+        normalized_base = "artifacts/external-evidence"
+    return "/".join(
+        [
+            normalized_base,
+            _source_map_path_segment(requirement_id),
+            _source_map_path_segment(authority_kind) + ".json",
+        ]
+    )
+
+
+def _format_source_map_template(template: str, fields: dict[str, str], label: str) -> str:
+    if not template:
+        raise ValueError(f"external evidence source map {label} is required")
+    try:
+        return template.format(**fields)
+    except KeyError as exc:
+        raise ValueError(f"external evidence source map {label} references unknown field: {exc.args[0]}") from exc
+
+
+def build_external_evidence_source_map_template(
+    plan: dict[str, Any],
+    *,
+    status_filter: str = "missing",
+    authority_kinds: list[str] | None = None,
+    source_uri_template: str = "TODO://authority/{requirement_id}/{authority_kind}",
+    description_template: str = "{authority_kind} evidence for {requirement_id}",
+    source_file: str | None = None,
+    retrieval_method: str | None = None,
+    content_type: str | None = None,
+    issuer: str | None = None,
+    subject: str | None = None,
+    issued_at: str | None = None,
+    expires_at: str | None = None,
+    timeout_seconds: float | None = None,
+    snapshot_dir: str = "artifacts/external-evidence-sources",
+    intake_dir: str = "artifacts/external-evidence-intakes",
+    limit: int | None = None,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    if plan.get("schema") != EXTERNAL_EVIDENCE_COLLECTION_PLAN_SCHEMA:
+        raise ValueError(f"unsupported external evidence collection plan schema: {plan.get('schema')}")
+    if plan.get("plan_id") != content_hash(without_keys(plan, "plan_id")):
+        raise ValueError("external evidence collection plan_id does not match canonical body")
+    if status_filter not in EXTERNAL_EVIDENCE_PLAN_STATUS_FILTERS:
+        raise ValueError(f"unsupported external evidence source map status_filter: {status_filter}")
+    authority_filter = list(authority_kinds or [])
+    invalid_authorities = sorted(set(authority_filter) - AUTHORITY_KINDS)
+    if invalid_authorities:
+        raise ValueError(f"unsupported external evidence source map authority kind: {', '.join(invalid_authorities)}")
+    if limit is not None and limit < 1:
+        raise ValueError("external evidence source map limit must be positive")
+
+    tasks = plan.get("tasks", [])
+    if not isinstance(tasks, list):
+        raise ValueError("external evidence collection plan tasks must be a list")
+    selected_tasks = [
+        task
+        for task in tasks
+        if isinstance(task, dict)
+        and _collection_status_matches(task, status_filter)
+        and (not authority_filter or str(task.get("authority_kind") or "") in authority_filter)
+    ]
+    if limit is not None:
+        selected_tasks = selected_tasks[:limit]
+
+    defaults: dict[str, Any] = {}
+    for key, value in (
+        ("source_file", source_file),
+        ("retrieval_method", retrieval_method),
+        ("content_type", content_type),
+        ("issuer", issuer),
+        ("subject", subject),
+        ("issued_at", issued_at),
+        ("expires_at", expires_at),
+        ("timeout_seconds", timeout_seconds),
+    ):
+        if value is not None:
+            defaults[key] = value
+
+    entries: list[dict[str, Any]] = []
+    for task in selected_tasks:
+        fields = {
+            "task_id": str(task.get("task_id") or ""),
+            "task_ref": str(task.get("task_ref") or ""),
+            "unit_id": str(task.get("unit_id") or ""),
+            "unit_ref": str(task.get("unit_ref") or ""),
+            "requirement_id": str(task.get("requirement_id") or ""),
+            "authority_kind": str(task.get("authority_kind") or ""),
+            "phase": str(task.get("phase") or ""),
+            "priority": str(task.get("priority") or ""),
+            "title": str(task.get("title") or ""),
+        }
+        entries.append(
+            {
+                "task": fields["unit_ref"],
+                "task_ref": fields["task_ref"],
+                "task_id": fields["task_id"],
+                "unit_id": fields["unit_id"],
+                "unit_ref": fields["unit_ref"],
+                "requirement_id": fields["requirement_id"],
+                "authority_kind": fields["authority_kind"],
+                "title": fields["title"],
+                "coverage_status": task.get("coverage_status"),
+                "source_uri": _format_source_map_template(source_uri_template, fields, "source_uri_template"),
+                "description": _format_source_map_template(description_template, fields, "description_template"),
+                "snapshot_out": _source_map_join_path(snapshot_dir, fields["requirement_id"], fields["authority_kind"]),
+                "intake_out": _source_map_join_path(intake_dir, fields["requirement_id"], fields["authority_kind"]),
+                "owner_hint": task.get("owner_hint"),
+                "suggested_evidence_sources": task.get("suggested_evidence_sources", []),
+                "external_authority_required": task.get("external_authority_required", []),
+            }
+        )
+
+    body = {
+        "schema": EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA,
+        "generated_at": generated_at or utc_now(),
+        "source_plan": _collection_plan_source_record(plan),
+        "summary": {
+            "status_filter": status_filter,
+            "authority_kinds": authority_filter,
+            "entry_count": len(entries),
+            "source_plan_task_count": len(tasks),
+            "snapshot_dir": snapshot_dir,
+            "intake_dir": intake_dir,
+        },
+        "defaults": defaults,
+        "entries": entries,
+        "limitations": [
+            "This source map is an operator collection template; it does not prove external authority coverage until external-evidence-collect-batch creates verified source snapshots and intake receipts.",
+            "Placeholder source URIs, issuer fields, or freshness windows must be replaced with real authority-owned values before production use.",
+            "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths.",
+        ],
+    }
+    return {**body, "source_map_id": content_hash(body)}
+
+
 def build_external_evidence_source_snapshot(
     *,
     source_uri: str,
