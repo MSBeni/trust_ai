@@ -11,6 +11,7 @@ into queryable registry tables while keeping the chain as the source of truth.
 - `chain_entries`: indexed evidence entries with type, timestamp, payload hash,
   and contract hash where present.
 - `proof_packs`: issued proof packs and gate outcomes.
+- `ingest_events`: OTel GenAI event evidence indexed by trace, span, agent, risk class, and contract hash.
 - `promotion_statuses`: CI/CD provider promotion-status receipts bound to proof packs.
 - `runtime_attestations`: high-risk runtime action checks against contract blast-radius limits.
 - `policy_decisions`: local runtime policy/proof-decay decisions.
@@ -22,7 +23,7 @@ into queryable registry tables while keeping the chain as the source of truth.
 
 ```powershell
 python -m trustai control-index --state .trustai/demo/evidence-chain.json --tenant aitrade-local --pack artifacts/aitrade-proof-pack.json --db .trustai/control-plane.sqlite
-python -m trustai control-summary --db .trustai/control-plane.sqlite --agents --proof-packs --promotion-statuses --runtime-evidence
+python -m trustai control-summary --db .trustai/control-plane.sqlite --agents --proof-packs --ingest-events --promotion-statuses --runtime-evidence
 ```
 
 ## API
@@ -33,6 +34,7 @@ python -m trustai control-summary --db .trustai/control-plane.sqlite --agents --
 - `GET /v0/control/summary`;
 - `GET /v0/agents`;
 - `GET /v0/proof-packs`;
+- `GET /v0/ingest-events`;
 - `GET /v0/promotion-statuses`;
 - `GET /v0/runtime-evidence`.
 

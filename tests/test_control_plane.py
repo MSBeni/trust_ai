@@ -9,6 +9,7 @@ from trustai.cicd import append_promotion_status_receipt, build_promotion_check_
 from trustai.delivery import build_provider_delivery
 from trustai.contracts import load_contract, register_contract
 from trustai.gate import append_eval_and_gate
+from trustai.ingest import append_events, load_events
 from trustai.lifecycle import append_incident, load_incident
 from trustai.policy import append_policy_decision, load_policy_pack
 from trustai.policy_engine import append_policy_engine_receipt, build_policy_engine_receipt
@@ -24,6 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = ROOT / "examples" / "aitrade" / "verification-contract.yaml"
 RESULTS = ROOT / "examples" / "aitrade" / "eval-results.json"
 INVENTORY = ROOT / "examples" / "aitrade" / "agent-inventory.json"
+EVENTS = ROOT / "examples" / "aitrade" / "otel-events.json"
 ACTION = ROOT / "examples" / "aitrade" / "runtime-action.json"
 POLICY = ROOT / "examples" / "aitrade" / "policy-pack.json"
 INCIDENT = ROOT / "examples" / "aitrade" / "incident.json"
@@ -37,6 +39,7 @@ class ControlPlaneTests(unittest.TestCase):
             contract = load_contract(CONTRACT)
             register_contract(chain, contract)
             append_inventory(chain, load_inventory(INVENTORY))
+            append_events(chain, load_events(EVENTS))
             results = json.loads(RESULTS.read_text(encoding="utf-8"))
             eval_entry, gate_entry, decision = append_eval_and_gate(chain, contract, results)
             append_anchor(chain)
@@ -115,6 +118,8 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(2, summary["counts"]["agents"])
                 self.assertEqual(1, summary["counts"]["proof_packs"])
                 self.assertEqual(1, summary["counts"]["anchors"])
+                self.assertEqual(2, summary["counts"]["ingest_events"])
+                self.assertEqual(2, counts["ingest_events"])
                 self.assertEqual(1, summary["counts"]["promotion_statuses"])
                 self.assertEqual(1, counts["promotion_statuses"])
                 self.assertEqual(1, summary["counts"]["runtime_attestations"])
@@ -126,6 +131,7 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, counts["policy_engine_receipts"])
                 self.assertEqual(1, counts["incidents"])
                 self.assertEqual("passed", summary["latest_proof_pack"]["outcome"])
+                self.assertEqual("gen_ai.tool.call", summary["latest_ingest_event"]["event_name"])
                 self.assertEqual("github", summary["latest_promotion_status"]["provider"])
                 self.assertTrue(summary["latest_promotion_status"]["passed"])
                 self.assertEqual("shadow-order-20260703-001", summary["latest_runtime_attestation"]["action_id"])
@@ -137,6 +143,10 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual("high", summary["latest_incident"]["severity"])
                 self.assertEqual(2, len(control.agents()))
                 self.assertEqual(1, len(control.recent_proof_packs()))
+                ingest_events = control.recent_ingest_events()
+                self.assertEqual(2, len(ingest_events))
+                self.assertEqual("gen_ai.tool.call", ingest_events[0]["event_name"])
+                self.assertEqual("place_shadow_order", ingest_events[0]["attributes"]["tool.name"])
                 statuses = control.recent_promotion_statuses()
                 self.assertEqual(1, len(statuses))
                 self.assertEqual("volelabs/trust_ai", statuses[0]["target_ref"]["repository"])

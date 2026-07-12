@@ -9,6 +9,7 @@ from .canonical import content_hash, utc_now
 from .chain import EvidenceChain
 from .cicd import PROMOTION_STATUS_ENTRY_TYPE
 from .contracts import CONTRACT_ENTRY_TYPE
+from .ingest import INGEST_ENTRY_TYPE
 from .lifecycle import INCIDENT_ENTRY_TYPE
 from .policy import POLICY_DECISION_ENTRY_TYPE
 from .policy_engine import POLICY_ENGINE_ENTRY_TYPE
@@ -131,6 +132,22 @@ class ControlPlane:
                 path TEXT,
                 body_json TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS ingest_events (
+                entry_id TEXT PRIMARY KEY,
+                event_hash TEXT NOT NULL,
+                contract_hash TEXT NOT NULL,
+                trace_id TEXT NOT NULL,
+                span_id TEXT NOT NULL,
+                parent_span_id TEXT,
+                event_name TEXT NOT NULL,
+                agent_name TEXT,
+                agent_version TEXT,
+                risk_class TEXT,
+                schema_url TEXT,
+                observed_at TEXT,
+                attributes_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS promotion_statuses (
                 receipt_id TEXT PRIMARY KEY,
                 entry_id TEXT,
@@ -234,6 +251,7 @@ class ControlPlane:
             "contracts": 0,
             "agents": 0,
             "anchors": 0,
+            "ingest_events": 0,
             "promotion_statuses": 0,
             "runtime_attestations": 0,
             "policy_decisions": 0,
@@ -262,6 +280,37 @@ class ControlPlane:
                 ),
             )
             counts["chain_entries"] += 1
+
+            if entry.get("entry_type") == INGEST_ENTRY_TYPE:
+                event = payload.get("event", {}) if isinstance(payload.get("event"), dict) else {}
+                agent = event.get("agent", {}) if isinstance(event.get("agent"), dict) else {}
+                attributes = event.get("attributes", {}) if isinstance(event.get("attributes"), dict) else {}
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO ingest_events(
+                        entry_id, event_hash, contract_hash, trace_id, span_id,
+                        parent_span_id, event_name, agent_name, agent_version,
+                        risk_class, schema_url, observed_at, attributes_json, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        entry["entry_id"],
+                        payload.get("event_hash") or content_hash(event),
+                        payload.get("contract_hash") or event.get("contract_hash"),
+                        payload.get("trace_id") or event.get("trace_id"),
+                        payload.get("span_id") or event.get("span_id"),
+                        event.get("parent_span_id"),
+                        event.get("event_name"),
+                        agent.get("name"),
+                        agent.get("version"),
+                        event.get("risk_class"),
+                        event.get("schema_url"),
+                        event.get("timestamp") or entry.get("timestamp"),
+                        _json(attributes),
+                        _json(payload),
+                    ),
+                )
+                counts["ingest_events"] += 1
 
             if entry.get("entry_type") == CONTRACT_ENTRY_TYPE:
                 contract = payload.get("contract", {})
@@ -532,6 +581,7 @@ class ControlPlane:
             "chain_entries",
             "proof_packs",
             "anchors",
+            "ingest_events",
             "promotion_statuses",
             "runtime_attestations",
             "policy_decisions",
@@ -547,6 +597,15 @@ class ControlPlane:
         ).fetchone()
         latest_pack = self.conn.execute(
             "SELECT pack_id, contract_id, outcome, issued_at FROM proof_packs ORDER BY issued_at DESC LIMIT 1"
+        ).fetchone()
+        latest_ingest_event = self.conn.execute(
+            """
+            SELECT entry_id, event_hash, contract_hash, trace_id, span_id,
+                   event_name, agent_name, agent_version, risk_class, observed_at
+            FROM ingest_events
+            ORDER BY observed_at DESC
+            LIMIT 1
+            """
         ).fetchone()
         latest_status = self.conn.execute(
             """
@@ -612,6 +671,7 @@ class ControlPlane:
             "counts": counts,
             "latest_anchor": dict(latest_anchor) if latest_anchor else None,
             "latest_proof_pack": dict(latest_pack) if latest_pack else None,
+            "latest_ingest_event": dict(latest_ingest_event) if latest_ingest_event else None,
             "latest_promotion_status": latest_status_dict,
             "latest_runtime_attestation": latest_runtime_dict,
             "latest_policy_decision": latest_policy_decision_dict,
@@ -630,6 +690,25 @@ class ControlPlane:
             (limit,),
         ).fetchall()
         return [dict(row) for row in rows]
+
+    def recent_ingest_events(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT entry_id, event_hash, contract_hash, trace_id, span_id,
+                   parent_span_id, event_name, agent_name, agent_version,
+                   risk_class, schema_url, observed_at, attributes_json
+            FROM ingest_events
+            ORDER BY observed_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["attributes"] = _decode_json_object(item.pop("attributes_json", None))
+            items.append(item)
+        return items
 
     def recent_promotion_statuses(self, limit: int = 20) -> list[dict[str, Any]]:
         rows = self.conn.execute(

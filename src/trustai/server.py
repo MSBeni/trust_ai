@@ -155,6 +155,13 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             finally:
                 control.close()
             return
+        if parsed.path == "/v0/ingest-events":
+            control = self._control()
+            try:
+                self._json_response(200, {"ingest_events": control.recent_ingest_events()})
+            finally:
+                control.close()
+            return
         if parsed.path == "/v0/promotion-statuses":
             control = self._control()
             try:

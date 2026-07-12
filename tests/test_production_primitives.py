@@ -117,12 +117,21 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 index_body = json.loads(index_response.read().decode("utf-8"))
                 self.assertEqual(200, index_response.status)
                 self.assertEqual(4, index_body["summary"]["counts"]["chain_entries"])
+                self.assertEqual(4, index_body["summary"]["counts"]["ingest_events"])
 
                 conn.request("GET", "/v0/control/summary")
                 summary_response = conn.getresponse()
                 summary_body = json.loads(summary_response.read().decode("utf-8"))
                 self.assertEqual(200, summary_response.status)
                 self.assertEqual(4, summary_body["counts"]["chain_entries"])
+                self.assertEqual(4, summary_body["counts"]["ingest_events"])
+
+                conn.request("GET", "/v0/ingest-events")
+                ingest_events_response = conn.getresponse()
+                ingest_events_body = json.loads(ingest_events_response.read().decode("utf-8"))
+                self.assertEqual(200, ingest_events_response.status)
+                self.assertEqual(4, len(ingest_events_body["ingest_events"]))
+                self.assertEqual("gen_ai.tool.call", ingest_events_body["ingest_events"][0]["event_name"])
 
                 conn.request("GET", "/v0/runtime-evidence")
                 runtime_response = conn.getresponse()
