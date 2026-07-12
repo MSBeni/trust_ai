@@ -1,30 +1,30 @@
 {
-  "generated_at": "2026-07-12T00:43:00Z",
+  "generated_at": "2026-07-12T18:52:15Z",
   "limitations": [
     "This plan assigns external authority evidence collection work; it does not satisfy any task by itself.",
     "A task is covered only after a matching evidence artifact is supplied to an external evidence manifest and verified.",
     "Freshness and issuer authority remain bounded by the supplied evidence artifact and manifest verification options."
   ],
-  "plan_id": "cd41d014cca5cea80127909fd78cacc7ccdbd5b8aa4d7e631502cd282a7f18f8",
+  "plan_id": "b685af8d9b27661620821d1b24e56a3166f4848357244864538040283a9a5bc5",
   "schema": "trustai.external-evidence-collection-plan/0.1",
   "source_manifest": {
-    "generated_at": "2026-07-12T00:42:01Z",
-    "manifest_hash": "5a07515d14b99139430364d861687589db96415820b063143dd53cc3c003c43e",
-    "manifest_id": "5ca93e3d5f872cbf6cedfbf3813551cee1fe85c9e5643f0adde0fda217785aae",
+    "generated_at": "2026-07-12T18:51:48Z",
+    "manifest_hash": "c1375edffbc57aa1eaee9cbcb9c58cf4776aaa211338c087502b56c6f3d80da7",
+    "manifest_id": "fa03f34b7c230bb9e5cbb07702b98529505b2177809e9e43b899778282392619",
     "manifest_ref": "production-external-evidence",
     "status": "partial"
   },
   "source_roadmap_audit": {
-    "audit_hash": "019cf746aa49fda4816e090c6c5064c3b01a9c3365fa4bfd95130f71e502140d",
-    "audit_id": "3ad40a148b53bc9689f91639d55ef77a896f8316a09fa187a5d435fc558319c4",
+    "audit_hash": "38d2334fc048e1e20e6254f3d5cc66c7460b0283613172d9cadf3c3c28c91f48",
+    "audit_id": "fdf033b2362caafa8b5fdaf172f338b78470aaedb2eac00c2249c25b70559a65",
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "status_filter": "all",
   "summary": {
-    "covered_authority_kind_count": 0,
-    "missing_authority_kind_count": 70,
+    "covered_authority_kind_count": 1,
+    "missing_authority_kind_count": 69,
     "missing_task_count_by_authority_kind": {
-      "ci-run": 9,
+      "ci-run": 8,
       "cloud-object-lock": 1,
       "customer": 9,
       "hosted-service": 9,
@@ -36,8 +36,8 @@
       "standards-body": 6
     },
     "required_authority_kind_count": 70,
-    "selected_covered_task_count": 0,
-    "selected_missing_task_count": 70,
+    "selected_covered_task_count": 1,
+    "selected_missing_task_count": 69,
     "selected_task_count": 70,
     "source_manifest_status": "partial",
     "task_count_by_authority_kind": {
@@ -76,7 +76,7 @@
         "Rebuild and verify the external evidence manifest after adding the artifact."
       ],
       "authority_kind": "ci-run",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "evidence_argument_template": "oss-verifier-and-public-spec,ci-run,external-evidence/oss-verifier-and-public-spec/ci-run.json,ci-run evidence for oss-verifier-and-public-spec;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
       "external_authority_required": [
         "Verifier release authority dossiers cover the local/reference public release authority checklist and retained provider workflow export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."

@@ -3,7 +3,7 @@
   "entries": [
     {
       "authority_kind": "ci-run",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "description": "Recorded Go verifier workflow run source snapshot",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
@@ -93,14 +93,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "c96639f6c27fcd76189fe01284a108aece2f1d8adc44deace45bd571eda05631",
+  "source_map_id": "33faf1f434562eaba4af7f4ab23840d7715c544bdd5570fbc5c61b8d90f74896",
   "source_plan": {
-    "plan_hash": "e0bc2df8ec0c2b08ede607fdf7ae511e25f541b378ea0d4974b19fd4b4af8135",
-    "plan_id": "cd41d014cca5cea80127909fd78cacc7ccdbd5b8aa4d7e631502cd282a7f18f8",
+    "plan_hash": "41ed27da76596ea7d0b3e4b4ef4ada5bd3b353814c142702799957b2c85fa8f6",
+    "plan_id": "b685af8d9b27661620821d1b24e56a3166f4848357244864538040283a9a5bc5",
     "source_manifest": {
-      "generated_at": "2026-07-12T00:42:01Z",
-      "manifest_hash": "5a07515d14b99139430364d861687589db96415820b063143dd53cc3c003c43e",
-      "manifest_id": "5ca93e3d5f872cbf6cedfbf3813551cee1fe85c9e5643f0adde0fda217785aae",
+      "generated_at": "2026-07-12T18:51:48Z",
+      "manifest_hash": "c1375edffbc57aa1eaee9cbcb9c58cf4776aaa211338c087502b56c6f3d80da7",
+      "manifest_id": "fa03f34b7c230bb9e5cbb07702b98529505b2177809e9e43b899778282392619",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },

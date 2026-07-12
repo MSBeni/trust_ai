@@ -3,6 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.approvals import append_approval, load_approval
 from trustai.control_plane import ControlPlane, _sqlite_nolock_uri
 from trustai.canonical import content_hash
 from trustai.chain import EvidenceChain
@@ -27,7 +28,15 @@ from trustai.mcp_gateway import (
 from trustai.mcp_gateway_authority import append_mcp_gateway_authority_dossier, build_mcp_gateway_authority_dossier
 from trustai.phase_scoreboard import append_phase_scoreboard, build_phase_scoreboard
 from trustai.product_scope import append_product_scope_decision, build_product_scope_decision
-from trustai.lifecycle import append_incident, load_incident
+from trustai.lifecycle import (
+    append_demotion,
+    append_incident,
+    append_rollback,
+    append_soak_demotion_receipt,
+    append_soak_failure_demotion,
+    build_soak_demotion_receipt,
+    load_incident,
+)
 from trustai.own_compliance import append_own_compliance_dossier, build_own_compliance_dossier
 from trustai.reliability_report import append_reliability_report, build_reliability_report
 from trustai.policy import append_policy_decision, load_policy_pack
@@ -63,6 +72,9 @@ MCP = ROOT / "examples" / "aitrade" / "mcp-transcript.json"
 MCP_PROXY = ROOT / "examples" / "aitrade" / "mcp-proxy-events.json"
 SHADOW = ROOT / "examples" / "aitrade" / "shadow-replay.json"
 SOAK = ROOT / "examples" / "aitrade" / "soak-window.json"
+FAILED_SOAK = ROOT / "examples" / "aitrade" / "failed-soak-window.json"
+APPROVAL_MODEL_RISK = ROOT / "examples" / "aitrade" / "approval-model-risk.json"
+APPROVAL_TRADING_OPS = ROOT / "examples" / "aitrade" / "approval-trading-ops.json"
 TRAFFIC_COMPLETENESS_PROVIDER_EXPORT = ROOT / "examples" / "aitrade" / "traffic-completeness-provider-export.json"
 ACTION = ROOT / "examples" / "aitrade" / "runtime-action.json"
 POLICY = ROOT / "examples" / "aitrade" / "policy-pack.json"
@@ -776,6 +788,94 @@ class ControlPlaneTests(unittest.TestCase):
             finally:
                 control.close()
 
+    def test_indexes_promotion_lifecycle_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            chain = EvidenceChain.load(tmp / "chain.json", tenant_id="promotion-lifecycle")
+            contract = load_contract(CONTRACT)
+            register_contract(chain, contract)
+            append_approval(chain, contract, load_approval(APPROVAL_MODEL_RISK))
+            append_approval(chain, contract, load_approval(APPROVAL_TRADING_OPS))
+            incident_entry = append_incident(chain, load_incident(INCIDENT))
+            demotion_entry = append_demotion(
+                chain,
+                contract,
+                reason="High-severity latency drift incident",
+                triggering_entry_id=incident_entry["entry_id"],
+                trigger={"entry_type": incident_entry["entry_type"], "entry_id": incident_entry["entry_id"]},
+            )
+            append_rollback(
+                chain,
+                contract,
+                target_agent_version="sha256:previous-stable-agent-version",
+                reason="Restore last known stable risk agent",
+                triggering_entry_id=incident_entry["entry_id"],
+            )
+            failed_soak_entry = append_soak_report(chain, contract, load_soak_window(FAILED_SOAK))
+            soak_demotion_entry = append_soak_failure_demotion(chain, contract, failed_soak_entry)
+            soak_demotion_receipt = build_soak_demotion_receipt(
+                contract,
+                failed_soak_entry,
+                soak_demotion_entry,
+                attested_at="2026-07-04T01:05:00Z",
+            )
+            append_soak_demotion_receipt(
+                chain,
+                soak_demotion_receipt,
+                contract=contract,
+                soak_entry=failed_soak_entry,
+                demotion_entry=soak_demotion_entry,
+            )
+            chain.save()
+
+            control = ControlPlane(tmp / "control.sqlite")
+            try:
+                indexed = control.index_chain(chain)
+                summary = control.summary()
+                lifecycle = control.promotion_lifecycle_evidence()
+                roadmap = control.roadmap_evidence()
+                contract_evidence = control.contract_evidence(contract_id=contract["id"])
+                agent_evidence = control.agent_evidence(
+                    agent_name=contract["agent"]["name"],
+                    agent_version=contract["agent"]["version"],
+                )
+
+                self.assertEqual(2, indexed["human_approvals"])
+                self.assertEqual(2, indexed["promotion_demotions"])
+                self.assertEqual(1, indexed["promotion_rollbacks"])
+                self.assertEqual(1, indexed["soak_demotion_receipts"])
+                self.assertEqual(2, summary["counts"]["human_approvals"])
+                self.assertEqual(2, summary["counts"]["promotion_demotions"])
+                self.assertEqual(1, summary["counts"]["promotion_rollbacks"])
+                self.assertEqual(1, summary["counts"]["soak_demotion_receipts"])
+                self.assertEqual("trading_ops", summary["latest_human_approval"]["role"])
+                self.assertEqual("sha256:previous-stable-agent-version", summary["latest_promotion_rollback"]["target_agent_version"])
+                self.assertEqual(soak_demotion_receipt["receipt_id"], summary["latest_soak_demotion_receipt"]["receipt_id"])
+                self.assertTrue(summary["latest_soak_demotion_receipt"]["passed"])
+
+                self.assertEqual(2, len(lifecycle["human_approvals"]))
+                self.assertEqual(2, len(lifecycle["promotion_demotions"]))
+                self.assertEqual(1, len(lifecycle["promotion_rollbacks"]))
+                self.assertEqual(1, len(lifecycle["soak_demotion_receipts"]))
+                self.assertTrue(any(item["role"] == "model_risk" for item in lifecycle["human_approvals"]))
+                self.assertEqual(soak_demotion_entry["entry_id"], lifecycle["soak_demotion_receipts"][0]["demotion_entry_id"])
+                self.assertTrue(any(item["triggering_entry_id"] == failed_soak_entry["entry_id"] for item in lifecycle["promotion_demotions"]))
+                self.assertEqual(0, lifecycle["soak_demotion_receipts"][0]["violation_count"])
+                self.assertIn("soak_report_verified", lifecycle["soak_demotion_receipts"][0]["source"])
+                self.assertEqual(lifecycle, roadmap["promotion_lifecycle_evidence"])
+
+                for scoped in (contract_evidence, agent_evidence):
+                    self.assertEqual(2, scoped["counts"]["human_approvals"])
+                    self.assertEqual(2, scoped["counts"]["promotion_demotions"])
+                    self.assertEqual(1, scoped["counts"]["promotion_rollbacks"])
+                    self.assertEqual(1, scoped["counts"]["soak_demotion_receipts"])
+                    self.assertEqual(2, len(scoped["human_approvals"]))
+                    self.assertEqual(2, len(scoped["promotion_demotions"]))
+                    self.assertEqual(1, len(scoped["promotion_rollbacks"]))
+                    self.assertEqual(1, len(scoped["soak_demotion_receipts"]))
+                    self.assertTrue(scoped["soak_demotion_receipts"][0]["passed"])
+            finally:
+                control.close()
 
 if __name__ == "__main__":
     unittest.main()

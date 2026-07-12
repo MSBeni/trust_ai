@@ -1,17 +1,36 @@
 {
-  "evidence": [],
-  "generated_at": "2026-07-12T00:42:01Z",
+  "evidence": [
+    {
+      "accepted_authority_kinds": [
+        "ci-run",
+        "provider-api",
+        "hosted-service"
+      ],
+      "authority_kind": "ci-run",
+      "description": "Recorded Go verifier workflow export",
+      "evidence_id": "65044d306f9ddda9f3c33de9a71fb5ee35743810d109aeaf6d51edf7b828813b",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-08T00:00:00Z",
+      "issuer": "GitHub Actions",
+      "path": "examples/aitrade/external-evidence/go-verifier-workflow-run.json",
+      "requirement_id": "oss-verifier-and-public-spec",
+      "sha256": "sha256:a86fee6cea8e9a0f1128988ebf3d64cfb14baa788c5f1626be1bf1f6e4a99c94",
+      "source_uri": "https://github.com/MSBeni/trust_ai/actions",
+      "subject": "trustai go verifier release workflow"
+    }
+  ],
+  "generated_at": "2026-07-12T18:51:48Z",
   "limitations": [
     "This manifest verifies supplied external evidence artifacts by hash; it does not fetch live provider state.",
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "5ca93e3d5f872cbf6cedfbf3813551cee1fe85c9e5643f0adde0fda217785aae",
+  "manifest_id": "fa03f34b7c230bb9e5cbb07702b98529505b2177809e9e43b899778282392619",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
       "authority_kind": "ci-run",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Verifier release authority dossiers cover the local/reference public release authority checklist and retained provider workflow export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
       ],
@@ -1214,20 +1233,26 @@
   ],
   "schema": "trustai.external-evidence-manifest/0.1",
   "source_roadmap_audit": {
-    "audit_hash": "019cf746aa49fda4816e090c6c5064c3b01a9c3365fa4bfd95130f71e502140d",
-    "audit_id": "3ad40a148b53bc9689f91639d55ef77a896f8316a09fa187a5d435fc558319c4",
+    "audit_hash": "38d2334fc048e1e20e6254f3d5cc66c7460b0283613172d9cadf3c3c28c91f48",
+    "audit_id": "fdf033b2362caafa8b5fdaf172f338b78470aaedb2eac00c2249c25b70559a65",
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {
-    "covered_authority_kind_count": 0,
-    "covered_authority_kinds_by_requirement": {},
-    "covered_requirement_count": 0,
-    "covered_requirement_ids": [],
-    "evidence_count": 0,
-    "expires_at_count": 0,
-    "freshness_window_count": 0,
-    "issued_at_count": 0,
-    "missing_authority_kind_count": 70,
+    "covered_authority_kind_count": 1,
+    "covered_authority_kinds_by_requirement": {
+      "oss-verifier-and-public-spec": [
+        "ci-run"
+      ]
+    },
+    "covered_requirement_count": 1,
+    "covered_requirement_ids": [
+      "oss-verifier-and-public-spec"
+    ],
+    "evidence_count": 1,
+    "expires_at_count": 1,
+    "freshness_window_count": 1,
+    "issued_at_count": 1,
+    "missing_authority_kind_count": 69,
     "missing_authority_kinds_by_requirement": {
       "agent-inventory-and-identity": [
         "provider-api",
@@ -1285,7 +1310,6 @@
         "hosted-service"
       ],
       "oss-verifier-and-public-spec": [
-        "ci-run",
         "provider-api",
         "hosted-service"
       ],
@@ -1340,9 +1364,8 @@
         "customer"
       ]
     },
-    "missing_requirement_count": 20,
+    "missing_requirement_count": 19,
     "missing_requirement_ids": [
-      "oss-verifier-and-public-spec",
       "self-serve-onboarding",
       "mcp-gateway",
       "shadow-replay-temporal-holdout",

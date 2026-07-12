@@ -5,6 +5,7 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
+from .approvals import APPROVAL_ENTRY_TYPE
 from .canonical import content_hash, utc_now
 from .chain import EvidenceChain
 from .cicd import PROMOTION_STATUS_ENTRY_TYPE
@@ -20,7 +21,7 @@ from .gate import EVAL_ENTRY_TYPE, GATE_ENTRY_TYPE
 from .phase_scoreboard import PHASE_SCOREBOARD_ENTRY_TYPE
 from .product_scope import PRODUCT_SCOPE_ENTRY_TYPE
 from .ingest import INGEST_ENTRY_TYPE
-from .lifecycle import INCIDENT_ENTRY_TYPE
+from .lifecycle import DEMOTION_ENTRY_TYPE, INCIDENT_ENTRY_TYPE, ROLLBACK_ENTRY_TYPE, SOAK_DEMOTION_ENTRY_TYPE
 from .mcp_gateway import MCP_PROXY_CAPTURE_ENTRY_TYPE, MCP_TOOL_CALL_ENTRY_TYPE
 from .own_compliance import OWN_COMPLIANCE_ENTRY_TYPE, REQUIRED_CERTIFICATION_KINDS
 from .policy import POLICY_DECISION_ENTRY_TYPE
@@ -352,6 +353,63 @@ class ControlPlane:
                 holdout_passed INTEGER,
                 approvals_passed INTEGER,
                 evaluated_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS human_approvals (
+                entry_id TEXT PRIMARY KEY,
+                approval_hash TEXT NOT NULL,
+                contract_id TEXT,
+                contract_hash TEXT,
+                agent_name TEXT,
+                agent_version TEXT,
+                role TEXT,
+                approver TEXT,
+                source TEXT,
+                external_ref TEXT,
+                approved_at TEXT,
+                metadata_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS promotion_demotions (
+                entry_id TEXT PRIMARY KEY,
+                contract_id TEXT,
+                contract_hash TEXT,
+                agent_name TEXT,
+                agent_version TEXT,
+                from_environment TEXT,
+                to_environment TEXT,
+                reason TEXT,
+                triggering_entry_id TEXT,
+                trigger_json TEXT NOT NULL,
+                decided_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS promotion_rollbacks (
+                entry_id TEXT PRIMARY KEY,
+                contract_id TEXT,
+                contract_hash TEXT,
+                agent_name TEXT,
+                agent_version TEXT,
+                target_agent_version TEXT,
+                reason TEXT,
+                triggering_entry_id TEXT,
+                decided_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS soak_demotion_receipts (
+                receipt_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                receipt_hash TEXT NOT NULL,
+                contract_id TEXT,
+                contract_hash TEXT,
+                agent_name TEXT,
+                agent_version TEXT,
+                soak_report_entry_id TEXT,
+                demotion_entry_id TEXT,
+                source_json TEXT NOT NULL,
+                violation_count INTEGER NOT NULL,
+                passed INTEGER NOT NULL,
+                attested_at TEXT,
                 body_json TEXT NOT NULL
             );
             CREATE TABLE IF NOT EXISTS promotion_statuses (
@@ -736,6 +794,10 @@ class ControlPlane:
             "mcp_proxy_captures": 0,
             "eval_runs": 0,
             "gate_decisions": 0,
+            "human_approvals": 0,
+            "promotion_demotions": 0,
+            "promotion_rollbacks": 0,
+            "soak_demotion_receipts": 0,
             "promotion_statuses": 0,
             "runtime_attestations": 0,
             "policy_decisions": 0,
@@ -971,6 +1033,122 @@ class ControlPlane:
                     ),
                 )
                 counts["gate_decisions"] += 1
+
+            if entry.get("entry_type") == APPROVAL_ENTRY_TYPE:
+                approval = payload.get("approval", {}) if isinstance(payload.get("approval"), dict) else {}
+                agent = payload.get("agent", {}) if isinstance(payload.get("agent"), dict) else {}
+                metadata = approval.get("metadata", {}) if isinstance(approval.get("metadata"), dict) else {}
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO human_approvals(
+                        entry_id, approval_hash, contract_id, contract_hash,
+                        agent_name, agent_version, role, approver, source,
+                        external_ref, approved_at, metadata_json, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        entry["entry_id"],
+                        payload.get("approval_hash") or content_hash(approval),
+                        payload.get("contract_id"),
+                        payload.get("contract_hash"),
+                        agent.get("name"),
+                        agent.get("version"),
+                        approval.get("role"),
+                        approval.get("approver"),
+                        approval.get("source"),
+                        approval.get("external_ref"),
+                        approval.get("approved_at") or entry.get("timestamp"),
+                        _json(metadata),
+                        _json(payload),
+                    ),
+                )
+                counts["human_approvals"] += 1
+
+            if entry.get("entry_type") == DEMOTION_ENTRY_TYPE:
+                agent = payload.get("agent", {}) if isinstance(payload.get("agent"), dict) else {}
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO promotion_demotions(
+                        entry_id, contract_id, contract_hash, agent_name,
+                        agent_version, from_environment, to_environment,
+                        reason, triggering_entry_id, trigger_json,
+                        decided_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        entry["entry_id"],
+                        payload.get("contract_id"),
+                        payload.get("contract_hash"),
+                        agent.get("name"),
+                        agent.get("version"),
+                        payload.get("from_environment"),
+                        payload.get("to_environment"),
+                        payload.get("reason"),
+                        payload.get("triggering_entry_id"),
+                        _json(payload.get("trigger") or {}),
+                        payload.get("decided_at") or entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["promotion_demotions"] += 1
+
+            if entry.get("entry_type") == ROLLBACK_ENTRY_TYPE:
+                agent = payload.get("agent", {}) if isinstance(payload.get("agent"), dict) else {}
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO promotion_rollbacks(
+                        entry_id, contract_id, contract_hash, agent_name,
+                        agent_version, target_agent_version, reason,
+                        triggering_entry_id, decided_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        entry["entry_id"],
+                        payload.get("contract_id"),
+                        payload.get("contract_hash"),
+                        agent.get("name"),
+                        agent.get("version"),
+                        payload.get("target_agent_version"),
+                        payload.get("reason"),
+                        payload.get("triggering_entry_id"),
+                        payload.get("decided_at") or entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["promotion_rollbacks"] += 1
+
+            if entry.get("entry_type") == SOAK_DEMOTION_ENTRY_TYPE:
+                contract_binding = payload.get("contract", {}) if isinstance(payload.get("contract"), dict) else {}
+                agent = contract_binding.get("agent", {}) if isinstance(contract_binding.get("agent"), dict) else {}
+                soak_report = payload.get("soak_report", {}) if isinstance(payload.get("soak_report"), dict) else {}
+                demotion = payload.get("demotion", {}) if isinstance(payload.get("demotion"), dict) else {}
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO soak_demotion_receipts(
+                        receipt_id, entry_id, receipt_hash, contract_id,
+                        contract_hash, agent_name, agent_version,
+                        soak_report_entry_id, demotion_entry_id, source_json,
+                        violation_count, passed, attested_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("receipt_id") or entry["entry_id"],
+                        entry["entry_id"],
+                        payload.get("receipt_hash") or content_hash(payload),
+                        contract_binding.get("contract_id"),
+                        contract_binding.get("contract_hash"),
+                        agent.get("name"),
+                        agent.get("version"),
+                        soak_report.get("entry_id"),
+                        demotion.get("entry_id"),
+                        _json(payload.get("source") or {}),
+                        int(payload.get("violation_count") or 0),
+                        1 if payload.get("passed") else 0,
+                        entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["soak_demotion_receipts"] += 1
 
             if entry.get("entry_type") == AGENT_INVENTORY_ENTRY_TYPE:
                 agent = payload.get("agent", {})
@@ -1794,6 +1972,10 @@ class ControlPlane:
             "mcp_proxy_captures",
             "eval_runs",
             "gate_decisions",
+            "human_approvals",
+            "promotion_demotions",
+            "promotion_rollbacks",
+            "soak_demotion_receipts",
             "promotion_statuses",
             "runtime_attestations",
             "policy_decisions",
@@ -1851,6 +2033,49 @@ class ControlPlane:
                 latest_gate_decision_dict["holdout_passed"] = bool(latest_gate_decision_dict["holdout_passed"])
             if latest_gate_decision_dict.get("approvals_passed") is not None:
                 latest_gate_decision_dict["approvals_passed"] = bool(latest_gate_decision_dict["approvals_passed"])
+        latest_human_approval = self.conn.execute(
+            """
+            SELECT entry_id, approval_hash, contract_id, contract_hash,
+                   agent_name, agent_version, role, approver, source,
+                   external_ref, approved_at
+            FROM human_approvals
+            ORDER BY approved_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_demotion = self.conn.execute(
+            """
+            SELECT entry_id, contract_id, contract_hash, agent_name,
+                   agent_version, from_environment, to_environment,
+                   reason, triggering_entry_id, decided_at
+            FROM promotion_demotions
+            ORDER BY decided_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_rollback = self.conn.execute(
+            """
+            SELECT entry_id, contract_id, contract_hash, agent_name,
+                   agent_version, target_agent_version, reason,
+                   triggering_entry_id, decided_at
+            FROM promotion_rollbacks
+            ORDER BY decided_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_soak_demotion = self.conn.execute(
+            """
+            SELECT receipt_id, entry_id, contract_id, contract_hash,
+                   agent_name, agent_version, soak_report_entry_id,
+                   demotion_entry_id, violation_count, passed, attested_at
+            FROM soak_demotion_receipts
+            ORDER BY attested_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_soak_demotion_dict = dict(latest_soak_demotion) if latest_soak_demotion else None
+        if latest_soak_demotion_dict is not None:
+            _bool_fields(latest_soak_demotion_dict, "passed")
         latest_ingest_event = self.conn.execute(
             """
             SELECT entry_id, event_hash, contract_hash, trace_id, span_id,
@@ -2170,6 +2395,10 @@ class ControlPlane:
             "latest_proof_pack": dict(latest_pack) if latest_pack else None,
             "latest_eval_run": dict(latest_eval_run) if latest_eval_run else None,
             "latest_gate_decision": latest_gate_decision_dict,
+            "latest_human_approval": dict(latest_human_approval) if latest_human_approval else None,
+            "latest_promotion_demotion": dict(latest_demotion) if latest_demotion else None,
+            "latest_promotion_rollback": dict(latest_rollback) if latest_rollback else None,
+            "latest_soak_demotion_receipt": latest_soak_demotion_dict,
             "latest_ingest_event": dict(latest_ingest_event) if latest_ingest_event else None,
             "latest_mcp_tool_call": dict(latest_mcp_tool_call) if latest_mcp_tool_call else None,
             "latest_mcp_proxy_capture": dict(latest_mcp_proxy_capture) if latest_mcp_proxy_capture else None,
@@ -2244,6 +2473,78 @@ class ControlPlane:
                 item["approvals_passed"] = bool(item["approvals_passed"])
             decisions.append(item)
         return decisions
+
+    def recent_human_approvals(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT entry_id, approval_hash, contract_id, contract_hash,
+                   agent_name, agent_version, role, approver, source,
+                   external_ref, approved_at, metadata_json
+            FROM human_approvals
+            ORDER BY approved_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["metadata"] = _decode_json_object(item.pop("metadata_json", None))
+            items.append(item)
+        return items
+
+    def recent_promotion_demotions(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT entry_id, contract_id, contract_hash, agent_name,
+                   agent_version, from_environment, to_environment,
+                   reason, triggering_entry_id, trigger_json, decided_at
+            FROM promotion_demotions
+            ORDER BY decided_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["trigger"] = _decode_json_object(item.pop("trigger_json", None))
+            items.append(item)
+        return items
+
+    def recent_promotion_rollbacks(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT entry_id, contract_id, contract_hash, agent_name,
+                   agent_version, target_agent_version, reason,
+                   triggering_entry_id, decided_at
+            FROM promotion_rollbacks
+            ORDER BY decided_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        return [dict(row) for row in rows]
+
+    def recent_soak_demotion_receipts(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT receipt_id, entry_id, receipt_hash, contract_id,
+                   contract_hash, agent_name, agent_version,
+                   soak_report_entry_id, demotion_entry_id,
+                   source_json, violation_count, passed, attested_at
+            FROM soak_demotion_receipts
+            ORDER BY attested_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = _bool_fields(dict(row), "passed")
+            item["source"] = _decode_json_object(item.pop("source_json", None))
+            items.append(item)
+        return items
 
     def recent_proof_packs(self, limit: int = 20) -> list[dict[str, Any]]:
         rows = self.conn.execute(
@@ -2814,12 +3115,21 @@ class ControlPlane:
             "reliability_reports": self.recent_reliability_reports(limit),
             "holdout_evidence": self.holdout_evidence(limit),
             "mcp_evidence": self.mcp_evidence(limit),
+            "promotion_lifecycle_evidence": self.promotion_lifecycle_evidence(limit),
         }
 
     def mcp_evidence(self, limit: int = 20) -> dict[str, Any]:
         return {
             "mcp_tool_calls": self.recent_mcp_tool_calls(limit),
             "mcp_proxy_captures": self.recent_mcp_proxy_captures(limit),
+        }
+
+    def promotion_lifecycle_evidence(self, limit: int = 20) -> dict[str, Any]:
+        return {
+            "human_approvals": self.recent_human_approvals(limit),
+            "promotion_demotions": self.recent_promotion_demotions(limit),
+            "promotion_rollbacks": self.recent_promotion_rollbacks(limit),
+            "soak_demotion_receipts": self.recent_soak_demotion_receipts(limit),
         }
 
     def holdout_evidence(self, limit: int = 20) -> dict[str, Any]:
@@ -3332,6 +3642,74 @@ class ControlPlane:
         counts["gate_decisions"] = count
         gate_decisions = [_bool_fields(item, "passed", "holdout_passed", "approvals_passed") for item in gate_decisions]
 
+        count, human_approvals = self._scoped_rows(
+            table="human_approvals",
+            select_sql="""
+            SELECT entry_id, approval_hash, contract_id, contract_hash,
+                   agent_name, agent_version, role, approver, source,
+                   external_ref, approved_at, metadata_json
+            FROM human_approvals
+            """,
+            order_sql="ORDER BY approved_at DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+        )
+        counts["human_approvals"] = count
+        for item in human_approvals:
+            item["metadata"] = _decode_json_object(item.pop("metadata_json", None))
+
+        count, promotion_demotions = self._scoped_rows(
+            table="promotion_demotions",
+            select_sql="""
+            SELECT entry_id, contract_id, contract_hash, agent_name,
+                   agent_version, from_environment, to_environment,
+                   reason, triggering_entry_id, trigger_json, decided_at
+            FROM promotion_demotions
+            """,
+            order_sql="ORDER BY decided_at DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+        )
+        counts["promotion_demotions"] = count
+        for item in promotion_demotions:
+            item["trigger"] = _decode_json_object(item.pop("trigger_json", None))
+
+        count, promotion_rollbacks = self._scoped_rows(
+            table="promotion_rollbacks",
+            select_sql="""
+            SELECT entry_id, contract_id, contract_hash, agent_name,
+                   agent_version, target_agent_version, reason,
+                   triggering_entry_id, decided_at
+            FROM promotion_rollbacks
+            """,
+            order_sql="ORDER BY decided_at DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+        )
+        counts["promotion_rollbacks"] = count
+
+        count, soak_demotion_receipts = self._scoped_rows(
+            table="soak_demotion_receipts",
+            select_sql="""
+            SELECT receipt_id, entry_id, receipt_hash, contract_id,
+                   contract_hash, agent_name, agent_version,
+                   soak_report_entry_id, demotion_entry_id,
+                   source_json, violation_count, passed, attested_at
+            FROM soak_demotion_receipts
+            """,
+            order_sql="ORDER BY attested_at DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+        )
+        counts["soak_demotion_receipts"] = count
+        for item in soak_demotion_receipts:
+            _bool_fields(item, "passed")
+            item["source"] = _decode_json_object(item.pop("source_json", None))
+
         count, temporal_holdout_manifests = self._scoped_rows(
             table="temporal_holdout_manifests",
             select_sql="""
@@ -3597,6 +3975,10 @@ class ControlPlane:
             "chain_entries": chain_entries,
             "eval_runs": eval_runs,
             "gate_decisions": gate_decisions,
+            "human_approvals": human_approvals,
+            "promotion_demotions": promotion_demotions,
+            "promotion_rollbacks": promotion_rollbacks,
+            "soak_demotion_receipts": soak_demotion_receipts,
             "temporal_holdout_manifests": temporal_holdout_manifests,
             "shadow_replays": shadow_replays,
             "soak_reports": soak_reports,
@@ -3659,6 +4041,10 @@ class ControlPlane:
             ("contracts", "agent_name", "agent_version"),
             ("eval_runs", "agent_name", "agent_version"),
             ("gate_decisions", "agent_name", "agent_version"),
+            ("human_approvals", "agent_name", "agent_version"),
+            ("promotion_demotions", "agent_name", "agent_version"),
+            ("promotion_rollbacks", "agent_name", "agent_version"),
+            ("soak_demotion_receipts", "agent_name", "agent_version"),
             ("proof_packs", "agent_name", "agent_version"),
             ("ingest_events", "agent_name", "agent_version"),
             ("mcp_tool_calls", "agent_name", "agent_version"),
@@ -3791,6 +4177,74 @@ class ControlPlane:
         )
         counts["gate_decisions"] = count
         gate_decisions = [_bool_fields(item, "passed", "holdout_passed", "approvals_passed") for item in gate_decisions]
+
+        count, human_approvals = self._agent_scoped_rows(
+            table="human_approvals",
+            select_sql="""
+            SELECT entry_id, approval_hash, contract_id, contract_hash,
+                   agent_name, agent_version, role, approver, source,
+                   external_ref, approved_at, metadata_json
+            FROM human_approvals
+            """,
+            order_sql="ORDER BY approved_at DESC",
+            agent_name=agent_name,
+            agent_version=agent_version,
+            limit=limit,
+        )
+        counts["human_approvals"] = count
+        for item in human_approvals:
+            item["metadata"] = _decode_json_object(item.pop("metadata_json", None))
+
+        count, promotion_demotions = self._agent_scoped_rows(
+            table="promotion_demotions",
+            select_sql="""
+            SELECT entry_id, contract_id, contract_hash, agent_name,
+                   agent_version, from_environment, to_environment,
+                   reason, triggering_entry_id, trigger_json, decided_at
+            FROM promotion_demotions
+            """,
+            order_sql="ORDER BY decided_at DESC",
+            agent_name=agent_name,
+            agent_version=agent_version,
+            limit=limit,
+        )
+        counts["promotion_demotions"] = count
+        for item in promotion_demotions:
+            item["trigger"] = _decode_json_object(item.pop("trigger_json", None))
+
+        count, promotion_rollbacks = self._agent_scoped_rows(
+            table="promotion_rollbacks",
+            select_sql="""
+            SELECT entry_id, contract_id, contract_hash, agent_name,
+                   agent_version, target_agent_version, reason,
+                   triggering_entry_id, decided_at
+            FROM promotion_rollbacks
+            """,
+            order_sql="ORDER BY decided_at DESC",
+            agent_name=agent_name,
+            agent_version=agent_version,
+            limit=limit,
+        )
+        counts["promotion_rollbacks"] = count
+
+        count, soak_demotion_receipts = self._agent_scoped_rows(
+            table="soak_demotion_receipts",
+            select_sql="""
+            SELECT receipt_id, entry_id, receipt_hash, contract_id,
+                   contract_hash, agent_name, agent_version,
+                   soak_report_entry_id, demotion_entry_id,
+                   source_json, violation_count, passed, attested_at
+            FROM soak_demotion_receipts
+            """,
+            order_sql="ORDER BY attested_at DESC",
+            agent_name=agent_name,
+            agent_version=agent_version,
+            limit=limit,
+        )
+        counts["soak_demotion_receipts"] = count
+        for item in soak_demotion_receipts:
+            _bool_fields(item, "passed")
+            item["source"] = _decode_json_object(item.pop("source_json", None))
 
         count, temporal_holdout_manifests = self._hash_scoped_rows(
             table="temporal_holdout_manifests",
@@ -4046,6 +4500,10 @@ class ControlPlane:
             "chain_entries": chain_entries,
             "eval_runs": eval_runs,
             "gate_decisions": gate_decisions,
+            "human_approvals": human_approvals,
+            "promotion_demotions": promotion_demotions,
+            "promotion_rollbacks": promotion_rollbacks,
+            "soak_demotion_receipts": soak_demotion_receipts,
             "temporal_holdout_manifests": temporal_holdout_manifests,
             "shadow_replays": shadow_replays,
             "soak_reports": soak_reports,
