@@ -1,0 +1,22 @@
+{
+  "body_base64": "ewogICJzY2hlbWEiOiAidHJ1c3RhaS5leGFtcGxlLWV4dGVybmFsLWV2aWRlbmNlLzAuMSIsCiAgImF1dGhvcml0eV9raW5kIjogImNpLXJ1biIsCiAgImlzc3VlciI6ICJHaXRIdWIgQWN0aW9ucyIsCiAgInJlcG9zaXRvcnkiOiAiTVNCZW5pL3RydXN0X2FpIiwKICAid29ya2Zsb3ciOiAiLmdpdGh1Yi93b3JrZmxvd3MvZ28tdmVyaWZpZXIueW1sIiwKICAicmVmIjogInJlZnMvaGVhZHMvbWFpbiIsCiAgImNvbW1pdCI6ICI3N2Q0Zjk1IiwKICAic3RhdHVzIjogInJlY29yZGVkLWV4YW1wbGUiLAogICJjb25jbHVzaW9uIjogIm5vdC1saXZlLXJ1biIsCiAgImFydGlmYWN0cyI6IFsKICAgICJ0cnVzdGFpLXZlcmlmeS1saW51eC1hbWQ2NCIsCiAgICAidHJ1c3RhaS12ZXJpZnktbGludXgtYXJtNjQiLAogICAgInRydXN0YWktdmVyaWZ5LWRhcndpbi1hbWQ2NCIsCiAgICAidHJ1c3RhaS12ZXJpZnktZGFyd2luLWFybTY0IiwKICAgICJ0cnVzdGFpLXZlcmlmeS13aW5kb3dzLWFtZDY0LmV4ZSIsCiAgICAiY2hlY2tzdW1zLnR4dCIsCiAgICAic2JvbS5qc29uIiwKICAgICJwcm92ZW5hbmNlLmpzb24iCiAgXSwKICAibGltaXRhdGlvbnMiOiBbCiAgICAiVGhpcyBjaGVja2VkLWluIGZpeHR1cmUgZGVtb25zdHJhdGVzIG1hbmlmZXN0IGhhc2hpbmcgb25seS4iLAogICAgIlByb2R1Y3Rpb24gZXZpZGVuY2UgbXVzdCByZXBsYWNlIGl0IHdpdGggYW4gZXhwb3J0ZWQgd29ya2Zsb3cgcnVuLCBhdHRlc3RhdGlvbiwgYW5kIGFydGlmYWN0IGNoZWNrc3VtIHNldCBmcm9tIEdpdEh1YiBBY3Rpb25zLiIKICBdCn0K",
+  "body_sha256": "sha256:a86fee6cea8e9a0f1128988ebf3d64cfb14baa788c5f1626be1bf1f6e4a99c94",
+  "body_size_bytes": 801,
+  "content_type": "application/json",
+  "expires_at": "2026-12-31T00:00:00Z",
+  "generated_at": "2026-07-12T01:24:00Z",
+  "issued_at": "2026-07-08T00:00:00Z",
+  "issuer": "GitHub Actions",
+  "limitations": [
+    "This source snapshot preserves one collected authority response as a hashable artifact; it does not prove that the authority will return the same response later.",
+    "Verifier checks cover snapshot integrity, body hash, optional HTTP metadata, and optional freshness metadata.",
+    "Use this snapshot as the artifact supplied to external-evidence-intake for the matching collection-plan task."
+  ],
+  "response_headers": {},
+  "retrieval_method": "file-copy",
+  "schema": "trustai.external-evidence-source-snapshot/0.1",
+  "snapshot_id": "2208f95557299ed8f441bc0bdaf08c1839366fbaaae0c26c20b91061b33d3a9a",
+  "source_uri": "https://github.com/MSBeni/trust_ai/actions",
+  "status_code": 200,
+  "subject": "trustai go verifier release workflow"
+}

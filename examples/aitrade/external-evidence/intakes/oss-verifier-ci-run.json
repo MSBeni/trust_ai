@@ -1,5 +1,5 @@
 {
-  "evidence_argument": "oss-verifier-and-public-spec,ci-run,examples/aitrade/external-evidence/go-verifier-workflow-run.json,Recorded Go verifier workflow run export fixture;issuer=GitHub Actions;subject=trustai go verifier release workflow;source_uri=https://github.com/MSBeni/trust_ai/actions;issued_at=2026-07-08T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
+  "evidence_argument": "oss-verifier-and-public-spec,ci-run,examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json,Recorded Go verifier workflow run source snapshot;issuer=GitHub Actions;subject=trustai go verifier release workflow;source_uri=https://github.com/MSBeni/trust_ai/actions;issued_at=2026-07-08T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
   "evidence_item": {
     "accepted_authority_kinds": [
       "ci-run",
@@ -7,19 +7,19 @@
       "hosted-service"
     ],
     "authority_kind": "ci-run",
-    "description": "Recorded Go verifier workflow run export fixture",
-    "evidence_id": "90ac88f0a91acbd4fc0d9b23314b96eaac2d5151de8bf04883d9b80267ca3e46",
+    "description": "Recorded Go verifier workflow run source snapshot",
+    "evidence_id": "c6aeff30d92c518d92df2f17530437ec610f7afa97453ab519a9c8d93147037d",
     "expires_at": "2026-12-31T00:00:00Z",
     "issued_at": "2026-07-08T00:00:00Z",
     "issuer": "GitHub Actions",
-    "path": "examples/aitrade/external-evidence/go-verifier-workflow-run.json",
+    "path": "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json",
     "requirement_id": "oss-verifier-and-public-spec",
-    "sha256": "sha256:a86fee6cea8e9a0f1128988ebf3d64cfb14baa788c5f1626be1bf1f6e4a99c94",
+    "sha256": "sha256:8165b30fb6b3c768bb516d4b17c5fe0a8c9046934cb3c882016d911b70bb7362",
     "source_uri": "https://github.com/MSBeni/trust_ai/actions",
     "subject": "trustai go verifier release workflow"
   },
   "generated_at": "2026-07-12T01:25:35Z",
-  "intake_id": "18ffe3eb9b70138e3376c6fc9771e21cdcbcf7194dde5e63cd39d75a70cccc73",
+  "intake_id": "431b6245e64683140dc58a496736c73c754d1776729b352bf0612be91cb2a836",
   "limitations": [
     "This intake receipt hashes and maps one collected artifact to a collection-plan task; it does not itself satisfy roadmap completion.",
     "Coverage is updated only after rebuilding and verifying an external evidence manifest with the emitted evidence argument.",

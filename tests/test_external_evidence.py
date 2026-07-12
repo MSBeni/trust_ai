@@ -931,6 +931,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         plan = load_external_evidence_collection_plan(ROOT / "examples/aitrade/external-evidence/source-external-evidence-plan-all.json")
         remaining_plan = load_external_evidence_collection_plan(ROOT / "examples/aitrade/external-evidence/remaining-external-evidence-plan.json")
         source_map = json.loads((ROOT / "examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json").read_text(encoding="utf-8"))
+        ci_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json")
         provider_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/github-main-ref-source-snapshot.json")
         hosted_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/github-hosted-service-source-snapshot.json")
         ci_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/oss-verifier-ci-run.json")
@@ -960,7 +961,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 require_fresh=True,
                 now="2026-07-12T00:00:00Z",
             )
-            for snapshot in (provider_snapshot, hosted_snapshot)
+            for snapshot in (ci_snapshot, provider_snapshot, hosted_snapshot)
         ]
         intake_results = [
             verify_external_evidence_intake(
@@ -970,6 +971,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 audit,
                 root=ROOT,
                 require_fresh=True,
+                require_source_snapshot_artifacts=True,
+                require_fresh_source_snapshot_artifacts=True,
                 now="2026-07-12T00:00:00Z",
             )
             for intake in (ci_intake, provider_intake, hosted_intake)
@@ -981,6 +984,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             root=ROOT,
             intakes=[ci_intake, provider_intake, hosted_intake],
             require_fresh=True,
+            require_source_snapshot_artifacts=True,
+            require_fresh_source_snapshot_artifacts=True,
             now="2026-07-12T00:00:00Z",
             generated_at="2026-07-12T00:01:00Z",
         )
@@ -994,6 +999,9 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertTrue(result.ok, result.errors)
         for result in intake_results:
             self.assertTrue(result.ok, result.errors)
+        self.assertEqual("file-copy", ci_snapshot["retrieval_method"])
+        self.assertEqual("sha256:" + sha256((ROOT / "examples/aitrade/external-evidence/go-verifier-workflow-run.json").read_bytes()).hexdigest(), ci_snapshot["body_sha256"])
+        self.assertEqual("examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json", ci_intake["evidence_item"]["path"])
         for snapshot in (provider_snapshot, hosted_snapshot):
             self.assertEqual("git-ls-remote", snapshot["retrieval_method"])
             export = json.loads(base64.b64decode(snapshot["body_base64"]).decode("utf-8"))
@@ -1040,6 +1048,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     "--require-fresh",
                     "--now",
                     "2026-07-12T00:00:00Z",
+                    "--generated-at",
+                    "2026-07-12T01:29:00Z",
                     "--out",
                     str(report_path),
                     "--markdown",

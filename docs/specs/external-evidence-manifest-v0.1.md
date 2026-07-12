@@ -87,7 +87,7 @@ authority-kind policy.
 a deterministic assignment artifact derived from a verified external evidence
 manifest and its source roadmap audit. It turns authority coverage units into
 collection tasks without weakening the manifest: a task is covered only after a
-matching evidence artifact is supplied to a manifest and verified.
+matching evidence artifact is supplied to a manifest and verified. `--generated-at` MAY be supplied for reproducible checked-in collection plans.
 
 Required fields:
 
@@ -220,6 +220,7 @@ An intake verifier MUST verify the supplied collection plan against the manifest
 and roadmap audit, recompute the source bindings, confirm the selected task still
 exists, re-hash the artifact, verify task requirement/authority alignment, check
 freshness when requested, and reject stale or edited intake receipts.
+`external-evidence-intake` MAY accept `--generated-at` for reproducible checked-in receipts.
 
 ## Evidence Chain Entry
 
@@ -284,8 +285,9 @@ between conflicting collected artifacts. With `--require-source-snapshot-artifac
 the rebuild MUST apply source snapshot artifact verification to every intake
 before overlaying it; with `--require-fresh-source-snapshot-artifacts`, every
 required intake snapshot artifact MUST also be fresh at the supplied `--now`
-time. Use the rebuilt manifest as the next source manifest before appending to
-the roadmap evidence chain.
+time. `--generated-at` MAY be supplied for reproducible checked-in rebuilt
+manifests. Use the rebuilt manifest as the next source manifest before appending
+to the roadmap evidence chain.
 
 ## External Evidence Gap Report
 
@@ -295,7 +297,8 @@ manifest, collection plan, source-map template, and source roadmap audit. The
 report records source artifact IDs and hashes, covered and missing authority
 counts, remaining worklist entries, placeholder/live source URI counts, grouping
 by requirement and authority kind, verification warnings, and explicit
-limitations.
+limitations. `--generated-at` MAY be supplied for reproducible checked-in gap
+reports.
 
 `external-evidence-gap-report-verify` recomputes `gap_report_id`, verifies the
 manifest, plan, source map, and roadmap audit with the requested freshness and

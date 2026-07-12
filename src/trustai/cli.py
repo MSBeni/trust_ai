@@ -14186,6 +14186,7 @@ def cmd_external_evidence_manifest_from_intakes(args: argparse.Namespace) -> int
             require_source_snapshot_artifacts=args.require_source_snapshot_artifacts,
             require_fresh_source_snapshot_artifacts=args.require_fresh_source_snapshot_artifacts,
             now=args.now,
+            generated_at=args.generated_at,
         )
     except (OSError, ValueError) as exc:
         print(f"external evidence manifest from intakes failed: {exc}", file=sys.stderr)
@@ -14237,6 +14238,7 @@ def cmd_external_evidence_gap_report(args: argparse.Namespace) -> int:
             require_source_snapshots=args.require_source_snapshots,
             require_fresh_source_snapshots=args.require_fresh_source_snapshots,
             now=args.now,
+            generated_at=args.generated_at,
         )
         result = verify_external_evidence_gap_report(
             report,
@@ -14320,6 +14322,7 @@ def cmd_external_evidence_plan(args: argparse.Namespace) -> int:
             roadmap_audit,
             root=args.root,
             status_filter=args.status_filter,
+            generated_at=args.generated_at,
         )
         result = verify_external_evidence_collection_plan(plan, manifest, roadmap_audit, root=args.root)
     except (OSError, ValueError) as exc:
@@ -15014,6 +15017,7 @@ def cmd_external_evidence_intake(args: argparse.Namespace) -> int:
             source_uri=args.source_uri,
             issued_at=args.issued_at,
             expires_at=args.expires_at,
+            generated_at=args.generated_at,
         )
         result = verify_external_evidence_intake(
             intake,
@@ -24480,6 +24484,7 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_plan.add_argument("roadmap_audit")
     external_evidence_plan.add_argument("--root", default=".")
     external_evidence_plan.add_argument("--status-filter", choices=["all", "missing", "covered"], default="missing")
+    external_evidence_plan.add_argument("--generated-at")
     external_evidence_plan.add_argument("--out", default="artifacts/external-evidence-plan.json")
     external_evidence_plan.add_argument("--markdown", default="artifacts/external-evidence-plan.md")
     external_evidence_plan.set_defaults(func=cmd_external_evidence_plan)
@@ -24636,6 +24641,7 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_intake.add_argument("--require-source-snapshot-artifact", dest="require_source_snapshot_artifacts", action="store_true", help="fail unless the intake artifact is a verified source snapshot")
     external_evidence_intake.add_argument("--require-fresh-source-snapshot-artifact", dest="require_fresh_source_snapshot_artifacts", action="store_true", help="fail unless the required source snapshot artifact has a fresh issued_at/expires_at window")
     external_evidence_intake.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to intake generated_at")
+    external_evidence_intake.add_argument("--generated-at")
     external_evidence_intake.add_argument("--out", default="artifacts/external-evidence-intake.json")
     external_evidence_intake.set_defaults(func=cmd_external_evidence_intake)
 
@@ -24666,6 +24672,7 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_from_intakes.add_argument("--require-source-snapshot-artifacts", action="store_true", help="fail unless every intake artifact is a verified source snapshot")
     external_evidence_from_intakes.add_argument("--require-fresh-source-snapshot-artifacts", action="store_true", help="fail unless every required source snapshot artifact has a fresh issued_at/expires_at window")
     external_evidence_from_intakes.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to generated_at")
+    external_evidence_from_intakes.add_argument("--generated-at")
     external_evidence_from_intakes.add_argument("--out", default="artifacts/external-evidence-manifest-from-intakes.json")
     external_evidence_from_intakes.add_argument("--markdown", default="artifacts/external-evidence-manifest-from-intakes.md")
     external_evidence_from_intakes.set_defaults(func=cmd_external_evidence_manifest_from_intakes)
@@ -24681,6 +24688,7 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_gap_report.add_argument("--require-source-snapshots", action="store_true", help="fail unless every source_map entry has a matching source snapshot at snapshot_out")
     external_evidence_gap_report.add_argument("--require-fresh-source-snapshots", action="store_true", help="fail unless required source snapshots have fresh issued_at/expires_at windows")
     external_evidence_gap_report.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to manifest generated_at")
+    external_evidence_gap_report.add_argument("--generated-at")
     external_evidence_gap_report.add_argument("--out", default="artifacts/external-evidence-gap-report.json")
     external_evidence_gap_report.add_argument("--markdown", default="artifacts/external-evidence-gap-report.md")
     external_evidence_gap_report.set_defaults(func=cmd_external_evidence_gap_report)

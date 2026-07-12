@@ -1,6 +1,6 @@
 # TrustAI External Evidence Manifest
 
-Manifest ID: `903f0307ba1b865dbf55b0be7117ff68a496cb50b032e6835150f4a11dc17165`
+Manifest ID: `416b45d62bae52e29443a5b070edcc266085ff65ec513234fbdcf2ddd266e095`
 
 Status: partial
 
@@ -120,7 +120,7 @@ Status: partial
 
 | Requirement | Authority | Accepted Authorities | Artifact | Freshness Window | Description |
 |---|---|---|---|---|---|
-| `oss-verifier-and-public-spec` | ci-run | `ci-run`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/go-verifier-workflow-run.json` | 2026-07-08T00:00:00Z to 2026-12-31T00:00:00Z | Recorded Go verifier workflow run export fixture |
+| `oss-verifier-and-public-spec` | ci-run | `ci-run`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json` | 2026-07-08T00:00:00Z to 2026-12-31T00:00:00Z | Recorded Go verifier workflow run source snapshot |
 | `oss-verifier-and-public-spec` | provider-api | `ci-run`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/github-main-ref-source-snapshot.json` | 2026-07-12T00:00:00Z to 2026-12-31T00:00:00Z | GitHub remote main ref advertisement for pushed TrustAI checkpoint |
 | `oss-verifier-and-public-spec` | hosted-service | `ci-run`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/github-hosted-service-source-snapshot.json` | 2026-07-12T00:00:00Z to 2026-12-31T00:00:00Z | GitHub hosted git service remote advertisement for TrustAI verifier and spec repository |
 
