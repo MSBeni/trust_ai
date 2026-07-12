@@ -1133,6 +1133,122 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertTrue(report_entry["require_live_source_uris"])
             self.assertTrue(report_entry["require_source_snapshot_artifacts"])
             self.assertTrue(report_entry["require_fresh_source_snapshot_artifacts"])
+            collection_chain = EvidenceChain.load(tmp_path / "collection-chain.json", tenant_id="retained-collection-bundle")
+            append_roadmap_audit(collection_chain, audit, root=ROOT)
+            append_external_evidence_collection_run(
+                collection_chain,
+                collection_run,
+                plan,
+                manifest,
+                audit,
+                root=ROOT,
+                source_map=collected_source_map,
+                require_fresh=True,
+                require_live_source_uris=True,
+                require_fresh_source_snapshot_artifacts=True,
+                now="2026-07-12T00:00:00Z",
+            )
+            collection_report = build_roadmap_evidence_report(collection_chain, generated_at="2026-07-12T00:02:00Z")
+            retained_source_artifacts = [
+                {
+                    "kind": "roadmap-audit",
+                    "path": "examples/aitrade/external-evidence/source-roadmap-audit.json",
+                    "description": "Retained source roadmap audit JSON",
+                },
+                {
+                    "kind": "external-evidence-collection-run",
+                    "path": "examples/aitrade/external-evidence/retained-external-evidence-collection-run.json",
+                    "description": "Retained external evidence collection run JSON",
+                },
+                {
+                    "kind": "external-evidence-source-map",
+                    "path": "examples/aitrade/external-evidence/retained-external-evidence-collected-source-map.json",
+                    "description": "Retained collected external evidence source map JSON",
+                },
+                {
+                    "kind": "external-evidence-source-snapshot",
+                    "path": "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json",
+                    "description": "Retained CI source snapshot",
+                },
+                {
+                    "kind": "external-evidence-source-snapshot",
+                    "path": "examples/aitrade/external-evidence/github-main-ref-source-snapshot.json",
+                    "description": "Retained provider API source snapshot",
+                },
+                {
+                    "kind": "external-evidence-source-snapshot",
+                    "path": "examples/aitrade/external-evidence/github-hosted-service-source-snapshot.json",
+                    "description": "Retained hosted-service source snapshot",
+                },
+                {
+                    "kind": "external-evidence-intake",
+                    "path": "examples/aitrade/external-evidence/intakes/oss-verifier-ci-run.json",
+                    "description": "Retained CI intake receipt",
+                },
+                {
+                    "kind": "external-evidence-intake",
+                    "path": "examples/aitrade/external-evidence/intakes/oss-verifier-provider-api.json",
+                    "description": "Retained provider API intake receipt",
+                },
+                {
+                    "kind": "external-evidence-intake",
+                    "path": "examples/aitrade/external-evidence/intakes/oss-verifier-hosted-service.json",
+                    "description": "Retained hosted-service intake receipt",
+                },
+            ]
+            collection_bundle = build_roadmap_evidence_bundle(
+                collection_chain,
+                report=collection_report,
+                root=ROOT,
+                source_artifacts=retained_source_artifacts,
+            )
+            collection_bundle_result = verify_roadmap_evidence_bundle(collection_bundle, require_source_artifacts=True)
+            extracted = extract_roadmap_evidence_bundle_sources(
+                collection_bundle,
+                tmp_path / "collection-bundle-sources",
+                require_source_artifacts=True,
+            )
+            self.assertTrue(collection_bundle_result.ok, collection_bundle_result.errors)
+            self.assertEqual(9, collection_bundle["summary"]["source_artifact_count"])
+            self.assertEqual(1, collection_bundle["summary"]["external_evidence_collection_run_entry_count"])
+            self.assertEqual(9, len(extracted))
+            self.assertEqual(
+                [
+                    "roadmap-audit",
+                    "external-evidence-collection-run",
+                    "external-evidence-source-map",
+                    "external-evidence-source-snapshot",
+                    "external-evidence-source-snapshot",
+                    "external-evidence-source-snapshot",
+                    "external-evidence-intake",
+                    "external-evidence-intake",
+                    "external-evidence-intake",
+                ],
+                [artifact["kind"] for artifact in collection_bundle["source_artifacts"]],
+            )
+
+            missing_source_map_bundle = copy.deepcopy(collection_bundle)
+            missing_source_map_bundle["source_artifacts"] = [
+                artifact for artifact in missing_source_map_bundle["source_artifacts"] if artifact["kind"] != "external-evidence-source-map"
+            ]
+            missing_source_map_bundle["summary"]["source_artifact_count"] = 8
+            missing_source_map_bundle["bundle_id"] = content_hash(without_keys(missing_source_map_bundle, "bundle_id"))
+            nonstrict_missing_source_map = verify_roadmap_evidence_bundle(missing_source_map_bundle)
+            strict_missing_source_map = verify_roadmap_evidence_bundle(missing_source_map_bundle, require_source_artifacts=True)
+            self.assertTrue(nonstrict_missing_source_map.ok, nonstrict_missing_source_map.errors)
+            self.assertTrue(any("source map referenced by embedded collection run" in warning for warning in nonstrict_missing_source_map.warnings))
+            self.assertFalse(strict_missing_source_map.ok)
+            self.assertTrue(any("missing an embedded source-map source artifact" in error for error in strict_missing_source_map.errors))
+
+            missing_collection_run_bundle = copy.deepcopy(collection_bundle)
+            missing_collection_run_bundle["source_artifacts"] = [
+                artifact for artifact in missing_collection_run_bundle["source_artifacts"] if artifact["kind"] != "external-evidence-collection-run"
+            ]
+            missing_collection_run_bundle["summary"]["source_artifact_count"] = 8
+            missing_collection_run_bundle["bundle_id"] = content_hash(without_keys(missing_collection_run_bundle, "bundle_id"))
+            strict_missing_collection_run = verify_roadmap_evidence_bundle(missing_collection_run_bundle, require_source_artifacts=True)
+            self.assertFalse(strict_missing_collection_run.ok)
+            self.assertTrue(any("missing an embedded collection-run source artifact" in error for error in strict_missing_collection_run.errors))
 
 
     def test_cli_external_evidence_gap_report_verifies_retained_worklist(self):

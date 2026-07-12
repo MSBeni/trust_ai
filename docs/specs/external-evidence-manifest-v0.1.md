@@ -390,7 +390,7 @@ self-contained artifact for third-party review. It embeds:
 
 - the evidence-chain snapshot (`spec_version`, tenant ID, tree, and entries),
 - the roadmap evidence report generated from that chain or supplied with `--report`,
-- optional embedded source artifacts supplied with `--source-artifact` (`roadmap-audit`, `external-evidence-manifest`, `external-evidence-file`, or `other`) as repository-relative paths, SHA-256 hashes, and base64 content; `--include-manifest-evidence` expands embedded external-evidence manifests into their referenced evidence files,
+- optional embedded source artifacts supplied with `--source-artifact` (`roadmap-audit`, `external-evidence-manifest`, `external-evidence-collection-run`, `external-evidence-source-map`, `external-evidence-source-snapshot`, `external-evidence-intake`, `external-evidence-file`, or `other`) as repository-relative paths, SHA-256 hashes, and base64 content; `--include-manifest-evidence` expands embedded external-evidence manifests into their referenced evidence files, and `--include-collection-run-artifacts` expands embedded collection-run reports into their referenced source map, source snapshots, and intake receipts,
 - a summary binding the report hash, report ID, chain tree, audit, collection-run and evidence counts, and embedded source-artifact count,
 - explicit limitations for live authority claims.
 

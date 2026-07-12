@@ -29,6 +29,10 @@ EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA = "trustai.external-evidence-git-
 BUNDLE_SOURCE_ARTIFACT_KINDS = {
     "roadmap-audit",
     "external-evidence-manifest",
+    "external-evidence-collection-run",
+    "external-evidence-source-map",
+    "external-evidence-source-snapshot",
+    "external-evidence-intake",
     "external-evidence-file",
     "other",
 }
@@ -2864,8 +2868,15 @@ def _verify_bundle_source_artifacts(
         errors.append("bundle source_artifacts are required")
     manifest_evidence_refs: set[tuple[str, str]] = set()
     embedded_external_file_refs: set[tuple[str, str]] = set()
+    collection_run_source_map_hashes: set[str] = set()
+    collection_run_source_snapshot_refs: set[tuple[str, str]] = set()
+    collection_run_intake_refs: set[tuple[str, str]] = set()
     embedded_roadmap_audit_hashes: set[str] = set()
     embedded_external_manifest_hashes: set[str] = set()
+    embedded_collection_run_hashes: set[str] = set()
+    embedded_source_map_hashes: set[str] = set()
+    embedded_source_snapshot_refs: set[tuple[str, str]] = set()
+    embedded_intake_refs: set[tuple[str, str]] = set()
     decoded_artifacts: list[tuple[dict[str, Any], bytes]] = []
     for artifact in source_artifacts:
         if not isinstance(artifact, dict):
@@ -2878,10 +2889,13 @@ def _verify_bundle_source_artifacts(
         if kind not in BUNDLE_SOURCE_ARTIFACT_KINDS:
             errors.append(f"unsupported bundle source artifact kind: {kind}")
         path = artifact.get("path")
+        normalized_path = str(path or "")
         if not isinstance(path, str) or not path:
             errors.append("bundle source artifact path is required")
         elif not _is_safe_relative_path(path):
             errors.append(f"bundle source artifact path must be repository-relative: {path}")
+        else:
+            normalized_path = Path(path).as_posix()
         try:
             data = base64.b64decode(str(artifact.get("content_b64") or ""), validate=True)
         except (binascii.Error, ValueError):
@@ -2890,19 +2904,67 @@ def _verify_bundle_source_artifacts(
         actual_sha = "sha256:" + sha256(data).hexdigest()
         if artifact.get("sha256") != actual_sha:
             errors.append(f"bundle source artifact hash mismatch: {path}")
-        if kind == "external-evidence-file" and isinstance(path, str):
-            embedded_external_file_refs.add((path, actual_sha))
+        if kind == "external-evidence-file":
+            embedded_external_file_refs.add((normalized_path, actual_sha))
         decoded_artifacts.append((artifact, data))
+
         if kind == "external-evidence-manifest":
             manifest = _json_source_artifact(artifact, data, errors)
             if isinstance(manifest, dict):
                 for evidence in manifest.get("evidence", []):
                     if isinstance(evidence, dict) and evidence.get("path") and evidence.get("sha256"):
-                        manifest_evidence_refs.add((str(evidence.get("path")), str(evidence.get("sha256"))))
+                        manifest_evidence_refs.add((Path(str(evidence.get("path"))).as_posix(), str(evidence.get("sha256"))))
                 manifest_hash = content_hash(manifest)
                 embedded_external_manifest_hashes.add(manifest_hash)
                 if not _chain_has_external_manifest(chain, manifest_hash):
                     errors.append(f"external evidence manifest artifact is not committed to bundled chain: {path}")
+        elif kind == "external-evidence-collection-run":
+            collection_run = _json_source_artifact(artifact, data, errors)
+            if isinstance(collection_run, dict):
+                _verify_bundle_collection_run_artifact(collection_run, normalized_path, chain, errors)
+                embedded_collection_run_hashes.add(content_hash(collection_run))
+                source_map = collection_run.get("source_map", {})
+                if isinstance(source_map, dict) and isinstance(source_map.get("source_map_hash"), str):
+                    collection_run_source_map_hashes.add(source_map["source_map_hash"])
+                for item in collection_run.get("collected", []):
+                    if not isinstance(item, dict):
+                        continue
+                    snapshot_path = item.get("snapshot_artifact_path") or item.get("snapshot_path")
+                    snapshot_id = item.get("snapshot_id")
+                    if isinstance(snapshot_path, str) and isinstance(snapshot_id, str):
+                        collection_run_source_snapshot_refs.add((Path(snapshot_path).as_posix(), snapshot_id))
+                    intake_path = item.get("intake_path")
+                    intake_id = item.get("intake_id")
+                    if isinstance(intake_path, str) and isinstance(intake_id, str):
+                        collection_run_intake_refs.add((Path(intake_path).as_posix(), intake_id))
+        elif kind == "external-evidence-source-map":
+            source_map = _json_source_artifact(artifact, data, errors)
+            if isinstance(source_map, dict):
+                if source_map.get("schema") != EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA:
+                    errors.append(f"unsupported external evidence source map artifact schema: {path}: {source_map.get('schema')}")
+                if source_map.get("source_map_id") != content_hash(without_keys(source_map, "source_map_id")):
+                    errors.append(f"external evidence source map artifact id mismatch: {path}")
+                embedded_source_map_hashes.add(content_hash(source_map))
+        elif kind == "external-evidence-source-snapshot":
+            snapshot = _json_source_artifact(artifact, data, errors)
+            if isinstance(snapshot, dict):
+                snapshot_result = verify_external_evidence_source_snapshot(snapshot)
+                warnings.extend(f"bundle source snapshot artifact {path}: {warning}" for warning in snapshot_result.warnings)
+                if not snapshot_result.ok:
+                    errors.extend(f"bundle source snapshot artifact {path}: {error}" for error in snapshot_result.errors)
+                snapshot_id = snapshot.get("snapshot_id")
+                if isinstance(snapshot_id, str):
+                    embedded_source_snapshot_refs.add((normalized_path, snapshot_id))
+        elif kind == "external-evidence-intake":
+            intake = _json_source_artifact(artifact, data, errors)
+            if isinstance(intake, dict):
+                if intake.get("schema") != EXTERNAL_EVIDENCE_INTAKE_SCHEMA:
+                    errors.append(f"unsupported external evidence intake artifact schema: {path}: {intake.get('schema')}")
+                if intake.get("intake_id") != content_hash(without_keys(intake, "intake_id")):
+                    errors.append(f"external evidence intake artifact id mismatch: {path}")
+                intake_id = intake.get("intake_id")
+                if isinstance(intake_id, str):
+                    embedded_intake_refs.add((normalized_path, intake_id))
         elif kind == "roadmap-audit":
             audit = _json_source_artifact(artifact, data, errors)
             if isinstance(audit, dict):
@@ -2914,6 +2976,8 @@ def _verify_bundle_source_artifacts(
         chain,
         embedded_roadmap_audit_hashes,
         embedded_external_manifest_hashes,
+        embedded_collection_run_hashes,
+        embedded_source_map_hashes,
         errors,
         require_source_artifacts=require_source_artifacts,
     )
@@ -2923,18 +2987,56 @@ def _verify_bundle_source_artifacts(
             errors.append(message)
         else:
             warnings.append(message)
+    for source_map_hash in sorted(collection_run_source_map_hashes - embedded_source_map_hashes):
+        message = f"external evidence source map referenced by embedded collection run is not embedded: {source_map_hash}"
+        if require_source_artifacts:
+            errors.append(message)
+        else:
+            warnings.append(message)
+    for path, snapshot_id in sorted(collection_run_source_snapshot_refs - embedded_source_snapshot_refs):
+        message = f"external evidence source snapshot referenced by embedded collection run is not embedded: {path}"
+        if require_source_artifacts:
+            errors.append(message)
+        else:
+            warnings.append(message)
+    for path, intake_id in sorted(collection_run_intake_refs - embedded_intake_refs):
+        message = f"external evidence intake referenced by embedded collection run is not embedded: {path}"
+        if require_source_artifacts:
+            errors.append(message)
+        else:
+            warnings.append(message)
     for artifact, _data in decoded_artifacts:
-        if artifact.get("kind") != "external-evidence-file":
-            continue
-        ref = (str(artifact.get("path")), str(artifact.get("sha256")))
-        if ref not in manifest_evidence_refs:
-            warnings.append(f"external evidence file artifact is not referenced by an embedded manifest: {artifact.get('path')}")
+        kind = artifact.get("kind")
+        if kind == "external-evidence-file":
+            ref = (str(artifact.get("path")), str(artifact.get("sha256")))
+            if ref not in manifest_evidence_refs:
+                warnings.append(f"external evidence file artifact is not referenced by an embedded manifest: {artifact.get('path')}")
+        elif kind == "external-evidence-source-map":
+            source_map_hash = ""
+            try:
+                source_map_hash = content_hash(json.loads(_data.decode("utf-8")))
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                pass
+            if source_map_hash and source_map_hash not in collection_run_source_map_hashes:
+                warnings.append(f"external evidence source map artifact is not referenced by an embedded collection run: {artifact.get('path')}")
+        elif kind == "external-evidence-source-snapshot":
+            snapshot_id = _bundle_json_id(_data, "snapshot_id")
+            ref = (str(artifact.get("path")), snapshot_id)
+            if snapshot_id and ref not in collection_run_source_snapshot_refs:
+                warnings.append(f"external evidence source snapshot artifact is not referenced by an embedded collection run: {artifact.get('path')}")
+        elif kind == "external-evidence-intake":
+            intake_id = _bundle_json_id(_data, "intake_id")
+            ref = (str(artifact.get("path")), intake_id)
+            if intake_id and ref not in collection_run_intake_refs:
+                warnings.append(f"external evidence intake artifact is not referenced by an embedded collection run: {artifact.get('path')}")
 
 
 def _verify_required_bundle_source_artifacts(
     chain: EvidenceChain,
     embedded_roadmap_audit_hashes: set[str],
     embedded_external_manifest_hashes: set[str],
+    embedded_collection_run_hashes: set[str],
+    embedded_source_map_hashes: set[str],
     errors: list[str],
     *,
     require_source_artifacts: bool,
@@ -2953,6 +3055,34 @@ def _verify_required_bundle_source_artifacts(
             manifest_hash = payload.get("manifest_hash")
             if isinstance(manifest_hash, str) and manifest_hash not in embedded_external_manifest_hashes:
                 errors.append(f"external evidence chain entry {entry.get('index')} is missing an embedded manifest source artifact")
+        elif entry.get("entry_type") == EXTERNAL_EVIDENCE_COLLECTION_RUN_ENTRY_TYPE:
+            run_hash = payload.get("run_hash")
+            if isinstance(run_hash, str) and run_hash not in embedded_collection_run_hashes:
+                errors.append(f"external evidence collection run chain entry {entry.get('index')} is missing an embedded collection-run source artifact")
+            source_map_hash = payload.get("source_map_hash")
+            if isinstance(source_map_hash, str) and source_map_hash not in embedded_source_map_hashes:
+                errors.append(f"external evidence collection run chain entry {entry.get('index')} is missing an embedded source-map source artifact")
+
+
+def _verify_bundle_collection_run_artifact(collection_run: dict[str, Any], path: str, chain: EvidenceChain, errors: list[str]) -> None:
+    if collection_run.get("schema") != EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA:
+        errors.append(f"unsupported external evidence collection run artifact schema: {path}: {collection_run.get('schema')}")
+    if collection_run.get("run_id") != content_hash(without_keys(collection_run, "run_id")):
+        errors.append(f"external evidence collection run artifact id mismatch: {path}")
+    run_hash = content_hash(collection_run)
+    if not _chain_has_external_collection_run(chain, run_hash):
+        errors.append(f"external evidence collection run artifact is not committed to bundled chain: {path}")
+
+
+def _bundle_json_id(data: bytes, field: str) -> str:
+    try:
+        parsed = json.loads(data.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return ""
+    if not isinstance(parsed, dict):
+        return ""
+    value = parsed.get(field)
+    return value if isinstance(value, str) else ""
 
 
 def _json_source_artifact(artifact: dict[str, Any], data: bytes, errors: list[str]) -> dict[str, Any] | None:
@@ -2981,6 +3111,14 @@ def _chain_has_external_manifest(chain: EvidenceChain, manifest_hash: str) -> bo
         payload = entry.get("payload", {})
         if entry.get("entry_type") == EXTERNAL_EVIDENCE_ENTRY_TYPE and isinstance(payload, dict):
             if payload.get("manifest_hash") == manifest_hash:
+                return True
+    return False
+
+def _chain_has_external_collection_run(chain: EvidenceChain, run_hash: str) -> bool:
+    for entry in chain.entries:
+        payload = entry.get("payload", {})
+        if entry.get("entry_type") == EXTERNAL_EVIDENCE_COLLECTION_RUN_ENTRY_TYPE and isinstance(payload, dict):
+            if payload.get("run_hash") == run_hash:
                 return True
     return False
 

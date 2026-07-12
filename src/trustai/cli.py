@@ -15276,8 +15276,9 @@ def _expand_bundle_source_artifacts(
     source_artifacts: list[dict],
     *,
     include_manifest_evidence: bool,
+    include_collection_run_artifacts: bool = False,
 ) -> list[dict]:
-    if not include_manifest_evidence:
+    if not include_manifest_evidence and not include_collection_run_artifacts:
         return source_artifacts
     root_path = Path(root)
     expanded = list(source_artifacts)
@@ -15285,35 +15286,72 @@ def _expand_bundle_source_artifacts(
         (str(artifact.get("kind") or ""), Path(str(artifact.get("path") or "")).as_posix())
         for artifact in expanded
     }
+
+    def add_artifact(kind: str, path: str, description: str) -> None:
+        artifact_path = _safe_bundle_source_path(path, description)
+        key = (kind, artifact_path)
+        if key in seen:
+            return
+        expanded.append({"kind": kind, "path": artifact_path, "description": description})
+        seen.add(key)
+
     for artifact in source_artifacts:
-        if artifact.get("kind") != "external-evidence-manifest":
-            continue
-        manifest_path = _safe_bundle_source_path(str(artifact.get("path") or ""), "external evidence manifest source artifact")
-        target = root_path / manifest_path
-        try:
-            manifest = json.loads(target.read_text(encoding="utf-8"))
-        except FileNotFoundError as exc:
-            raise ValueError(f"external evidence manifest source artifact is missing: {manifest_path}") from exc
-        except json.JSONDecodeError as exc:
-            raise ValueError(f"external evidence manifest source artifact is not valid JSON: {manifest_path}: {exc}") from exc
-        evidence_items = manifest.get("evidence")
-        if not isinstance(evidence_items, list):
-            raise ValueError(f"external evidence manifest source artifact evidence must be a list: {manifest_path}")
-        for evidence in evidence_items:
-            if not isinstance(evidence, dict):
-                raise ValueError(f"external evidence manifest source artifact evidence item must be an object: {manifest_path}")
-            evidence_path = _safe_bundle_source_path(str(evidence.get("path") or ""), "external evidence file source artifact")
-            key = ("external-evidence-file", evidence_path)
-            if key in seen:
-                continue
-            expanded.append(
-                {
-                    "kind": "external-evidence-file",
-                    "path": evidence_path,
-                    "description": f"External evidence file referenced by {manifest_path}",
-                }
+        kind = artifact.get("kind")
+        if include_manifest_evidence and kind == "external-evidence-manifest":
+            manifest_path = _safe_bundle_source_path(str(artifact.get("path") or ""), "external evidence manifest source artifact")
+            target = root_path / manifest_path
+            try:
+                manifest = json.loads(target.read_text(encoding="utf-8"))
+            except FileNotFoundError as exc:
+                raise ValueError(f"external evidence manifest source artifact is missing: {manifest_path}") from exc
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"external evidence manifest source artifact is not valid JSON: {manifest_path}: {exc}") from exc
+            evidence_items = manifest.get("evidence")
+            if not isinstance(evidence_items, list):
+                raise ValueError(f"external evidence manifest source artifact evidence must be a list: {manifest_path}")
+            for evidence in evidence_items:
+                if not isinstance(evidence, dict):
+                    raise ValueError(f"external evidence manifest source artifact evidence item must be an object: {manifest_path}")
+                evidence_path = _safe_bundle_source_path(str(evidence.get("path") or ""), "external evidence file source artifact")
+                add_artifact(
+                    "external-evidence-file",
+                    evidence_path,
+                    f"External evidence file referenced by {manifest_path}",
+                )
+        if include_collection_run_artifacts and kind == "external-evidence-collection-run":
+            run_path = _safe_bundle_source_path(str(artifact.get("path") or ""), "external evidence collection-run source artifact")
+            target = root_path / run_path
+            try:
+                collection_run = json.loads(target.read_text(encoding="utf-8"))
+            except FileNotFoundError as exc:
+                raise ValueError(f"external evidence collection-run source artifact is missing: {run_path}") from exc
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"external evidence collection-run source artifact is not valid JSON: {run_path}: {exc}") from exc
+            source_map = collection_run.get("source_map")
+            if not isinstance(source_map, dict):
+                raise ValueError(f"external evidence collection-run source_map must be an object: {run_path}")
+            add_artifact(
+                "external-evidence-source-map",
+                str(source_map.get("path") or ""),
+                f"External evidence source map referenced by {run_path}",
             )
-            seen.add(key)
+            collected = collection_run.get("collected")
+            if not isinstance(collected, list):
+                raise ValueError(f"external evidence collection-run collected must be a list: {run_path}")
+            for item in collected:
+                if not isinstance(item, dict):
+                    raise ValueError(f"external evidence collection-run collected item must be an object: {run_path}")
+                snapshot_path = item.get("snapshot_artifact_path") or item.get("snapshot_path")
+                add_artifact(
+                    "external-evidence-source-snapshot",
+                    str(snapshot_path or ""),
+                    f"External evidence source snapshot referenced by {run_path}",
+                )
+                add_artifact(
+                    "external-evidence-intake",
+                    str(item.get("intake_path") or ""),
+                    f"External evidence intake referenced by {run_path}",
+                )
     return expanded
 
 
@@ -15336,6 +15374,7 @@ def cmd_roadmap_evidence_bundle(args: argparse.Namespace) -> int:
             args.root,
             source_artifacts,
             include_manifest_evidence=args.include_manifest_evidence,
+            include_collection_run_artifacts=args.include_collection_run_artifacts,
         )
         bundle = build_roadmap_evidence_bundle(
             chain,
@@ -24883,7 +24922,8 @@ def build_parser() -> argparse.ArgumentParser:
     roadmap_evidence_bundle.add_argument("--root", default=".")
     roadmap_evidence_bundle.add_argument("--source-artifact", action="append", default=[], help="kind,path,description")
     roadmap_evidence_bundle.add_argument("--include-manifest-evidence", action="store_true", help="embed evidence files referenced by external-evidence-manifest source artifacts")
-    roadmap_evidence_bundle.add_argument("--require-source-artifacts", action="store_true", help="fail export unless bundled chain audits, manifests, and manifest evidence files are embedded")
+    roadmap_evidence_bundle.add_argument("--include-collection-run-artifacts", action="store_true", help="embed source maps, source snapshots, and intake receipts referenced by external-evidence-collection-run source artifacts")
+    roadmap_evidence_bundle.add_argument("--require-source-artifacts", action="store_true", help="fail export unless bundled chain audits, manifests, collection runs, source maps, and referenced evidence files are embedded")
     roadmap_evidence_bundle.add_argument("--out", default="artifacts/roadmap-evidence-bundle.json")
     roadmap_evidence_bundle.add_argument("--markdown", default="artifacts/roadmap-evidence-bundle.md")
     roadmap_evidence_bundle.set_defaults(func=cmd_roadmap_evidence_bundle)
