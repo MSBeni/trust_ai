@@ -31,6 +31,7 @@ from trustai.external_evidence import (
     build_external_evidence_collection_plan,
     build_external_evidence_intake,
     build_external_evidence_source_snapshot,
+    fulfill_external_evidence_source_map,
     build_roadmap_evidence_bundle,
     extract_roadmap_evidence_bundle_sources,
     build_roadmap_evidence_report,
@@ -44,6 +45,7 @@ from trustai.external_evidence import (
     load_roadmap_evidence_bundle,
     parse_evidence_arg,
     parse_bundle_source_artifact_arg,
+    parse_source_map_fulfillment_arg,
     render_external_evidence_markdown,
     render_external_evidence_collection_plan_markdown,
     render_roadmap_evidence_markdown,
@@ -339,6 +341,59 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             )
             self.assertNotEqual(0, strict_cli.returncode)
             self.assertIn("live source URIs", strict_cli.stderr)
+
+            fulfillment = parse_source_map_fulfillment_arg(
+                "oss-verifier-and-public-spec:provider-api;"
+                "source_uri=https://github.com/MSBeni/trust_ai/actions/runs/1234567890;"
+                "description=GitHub Actions provider export for TrustAI source-map fulfillment;"
+                "issuer=GitHub Actions;"
+                "subject=trustai provider evidence export;"
+                "issued_at=2026-07-08T00:00:00Z;"
+                "expires_at=2026-12-31T00:00:00Z"
+            )
+            fulfilled = fulfill_external_evidence_source_map(
+                source_map,
+                [fulfillment],
+                generated_at="2026-07-10T00:00:00Z",
+            )
+            fulfilled_entry = fulfilled["entries"][0]
+            self.assertEqual(content_hash(without_keys(fulfilled, "source_map_id")), fulfilled["source_map_id"])
+            self.assertEqual(0, fulfilled["summary"]["placeholder_source_uri_count"])
+            self.assertEqual(1, fulfilled["summary"]["live_source_uri_count"])
+            self.assertEqual("GitHub Actions", fulfilled_entry["issuer"])
+            self.assertEqual("trustai provider evidence export", fulfilled_entry["subject"])
+            self.assertEqual("2026-07-08T00:00:00Z", fulfilled_entry["issued_at"])
+            self.assertEqual("2026-12-31T00:00:00Z", fulfilled_entry["expires_at"])
+            strict_fulfilled = verify_external_evidence_source_map_template(
+                fulfilled,
+                plan,
+                require_live_source_uris=True,
+            )
+            self.assertTrue(strict_fulfilled.ok, strict_fulfilled.errors)
+
+            fulfilled_path = tmp_path / "external-evidence-source-map-fulfilled.json"
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-source-map-fulfill",
+                    str(source_map_path),
+                    str(plan_path),
+                    "--fulfillment",
+                    "oss-verifier-and-public-spec:provider-api;source_uri=https://github.com/MSBeni/trust_ai/actions/runs/1234567890;description=GitHub Actions provider export for TrustAI source-map fulfillment",
+                    "--generated-at",
+                    "2026-07-10T00:00:00Z",
+                    "--require-live-source-uris",
+                    "--out",
+                    str(fulfilled_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            fulfilled_cli = json.loads(fulfilled_path.read_text(encoding="utf-8"))
+            self.assertEqual(0, fulfilled_cli["summary"]["placeholder_source_uri_count"])
+            self.assertEqual(1, fulfilled_cli["summary"]["live_source_uri_count"])
 
             tampered = copy.deepcopy(source_map)
             tampered["entries"][0]["snapshot_out"] = "artifacts/wrong.json"

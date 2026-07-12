@@ -48,6 +48,19 @@ AUTHORITY_KIND_ORDER = (
     "other",
 )
 EXTERNAL_EVIDENCE_PLAN_STATUS_FILTERS = {"all", "missing", "covered"}
+SOURCE_MAP_FULFILLMENT_FIELDS = {
+    "source_uri",
+    "description",
+    "source_file",
+    "retrieval_method",
+    "content_type",
+    "issuer",
+    "subject",
+    "issued_at",
+    "expires_at",
+    "timeout_seconds",
+}
+SOURCE_MAP_FULFILLMENT_TASK_KEYS = ("task", "task_ref", "task_id", "unit_id", "unit_ref")
 AUTHORITY_KINDS = {
     "ci-run",
     "kms-hsm",
@@ -732,6 +745,119 @@ def verify_external_evidence_source_map_template(
             errors.append("source map contains more entries than matching collection-plan tasks")
 
     return ExternalEvidenceSourceMapVerification(ok=not errors, errors=errors, warnings=warnings, entry_count=len(entries))
+
+
+def parse_source_map_fulfillment_arg(value: str) -> dict[str, Any]:
+    parts = [part.strip() for part in value.split(";")]
+    if len(parts) < 2 or not parts[0]:
+        raise ValueError("source map fulfillment must be task;key=value[;key=value...]")
+    fulfillment: dict[str, Any] = {"task": parts[0]}
+    for token in parts[1:]:
+        if not token:
+            continue
+        if "=" not in token:
+            raise ValueError("source map fulfillment metadata must be key=value")
+        key, raw_value = [part.strip() for part in token.split("=", 1)]
+        if key not in SOURCE_MAP_FULFILLMENT_FIELDS:
+            raise ValueError(f"unsupported source map fulfillment key: {key}")
+        if key == "timeout_seconds":
+            try:
+                timeout = float(raw_value)
+            except ValueError as exc:
+                raise ValueError("source map fulfillment timeout_seconds must be numeric") from exc
+            if timeout <= 0:
+                raise ValueError("source map fulfillment timeout_seconds must be positive")
+            fulfillment[key] = timeout
+        else:
+            if key in {"source_uri", "description"} and not raw_value:
+                raise ValueError(f"source map fulfillment {key} is required")
+            fulfillment[key] = raw_value
+    if len(fulfillment) == 1:
+        raise ValueError("source map fulfillment must include at least one metadata key")
+    return fulfillment
+
+
+def _source_map_fulfillment_task_ref(fulfillment: dict[str, Any]) -> str:
+    for key in SOURCE_MAP_FULFILLMENT_TASK_KEYS:
+        value = str(fulfillment.get(key) or "").strip()
+        if value:
+            return value
+    return ""
+
+
+def _source_map_entry_refs(entry: dict[str, Any]) -> set[str]:
+    return {
+        value
+        for key in SOURCE_MAP_FULFILLMENT_TASK_KEYS
+        for value in [str(entry.get(key) or "").strip()]
+        if value
+    }
+
+
+def fulfill_external_evidence_source_map(
+    source_map: dict[str, Any],
+    fulfillments: list[dict[str, Any]],
+    *,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    if source_map.get("schema") != EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA:
+        raise ValueError(f"unsupported external evidence source map schema: {source_map.get('schema')}")
+    if source_map.get("source_map_id") != content_hash(without_keys(source_map, "source_map_id")):
+        raise ValueError("external evidence source map_id does not match canonical body")
+    if not fulfillments:
+        raise ValueError("at least one source map fulfillment is required")
+
+    body = json.loads(json.dumps(without_keys(source_map, "source_map_id"), sort_keys=True))
+    entries = body.get("entries")
+    if not isinstance(entries, list):
+        raise ValueError("external evidence source map entries must be a list")
+    summary = body.get("summary")
+    if not isinstance(summary, dict):
+        raise ValueError("external evidence source map summary must be an object")
+    defaults = body.get("defaults", {})
+    if not isinstance(defaults, dict):
+        raise ValueError("external evidence source map defaults must be an object")
+
+    fulfilled_refs: set[str] = set()
+    for index, fulfillment in enumerate(fulfillments):
+        if not isinstance(fulfillment, dict):
+            raise ValueError(f"source map fulfillment {index} must be an object")
+        task_ref = _source_map_fulfillment_task_ref(fulfillment)
+        if not task_ref:
+            raise ValueError(f"source map fulfillment {index} is missing task reference")
+        matches = [entry for entry in entries if isinstance(entry, dict) and task_ref in _source_map_entry_refs(entry)]
+        if not matches:
+            raise ValueError(f"source map fulfillment task not found: {task_ref}")
+        if len(matches) > 1:
+            raise ValueError(f"source map fulfillment task is ambiguous: {task_ref}")
+        entry = matches[0]
+        canonical_ref = str(entry.get("unit_ref") or entry.get("task") or task_ref)
+        if canonical_ref in fulfilled_refs:
+            raise ValueError(f"duplicate source map fulfillment for task: {canonical_ref}")
+        fulfilled_refs.add(canonical_ref)
+        for key, value in fulfillment.items():
+            if key in SOURCE_MAP_FULFILLMENT_TASK_KEYS:
+                continue
+            if key not in SOURCE_MAP_FULFILLMENT_FIELDS:
+                raise ValueError(f"unsupported source map fulfillment key: {key}")
+            if key == "timeout_seconds":
+                try:
+                    timeout = float(value)
+                except (TypeError, ValueError) as exc:
+                    raise ValueError("source map fulfillment timeout_seconds must be numeric") from exc
+                if timeout <= 0:
+                    raise ValueError("source map fulfillment timeout_seconds must be positive")
+                entry[key] = timeout
+            else:
+                text = str(value or "").strip()
+                if key in {"source_uri", "description"} and not text:
+                    raise ValueError(f"source map fulfillment {key} is required")
+                entry[key] = text
+
+    summary["entry_count"] = len(entries)
+    summary.update(_source_map_source_uri_counts([entry for entry in entries if isinstance(entry, dict)]))
+    body["generated_at"] = generated_at or utc_now()
+    return {**body, "source_map_id": content_hash(body)}
 
 
 def _gap_report_source_record(document: dict[str, Any], id_key: str, hash_key: str) -> dict[str, Any]:

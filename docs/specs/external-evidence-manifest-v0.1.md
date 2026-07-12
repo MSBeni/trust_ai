@@ -167,6 +167,8 @@ reject maps that still contain placeholder or example `source_uri` values.
 Verification confirms operator worklist integrity only; it does not convert a
 source-map template into external authority evidence.
 
+`external-evidence-source-map-fulfill` merges task-bound authority metadata into an existing source map. Each fulfillment record identifies one entry by `task`, `task_ref`, `task_id`, `unit_id`, or `unit_ref`, may update only collection metadata (`source_uri`, `description`, `source_file`, `retrieval_method`, `content_type`, `issuer`, `subject`, `issued_at`, `expires_at`, `timeout_seconds`), recomputes placeholder/live source URI counts, and emits a new canonical `source_map_id`. The command MUST verify the fulfilled map against the original collection plan before export; with `--require-live-source-uris`, any remaining placeholder URI keeps the map from being used as a production collection input.
+
 `external-evidence-collect-batch` consumes the same source-map schema. Each
 entry MUST identify a unique collection `task`, `source_uri`, and `description`;
 it MAY provide or inherit `source_file`, `issuer`, `subject`, `content_type`,

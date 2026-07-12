@@ -1070,6 +1070,7 @@ from .external_evidence import (
     build_external_evidence_manifest_from_intakes,
     build_external_evidence_gap_report,
     build_external_evidence_source_map_template,
+    fulfill_external_evidence_source_map,
     build_external_evidence_collection_plan,
     build_external_evidence_intake,
     EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA,
@@ -1090,6 +1091,7 @@ from .external_evidence import (
     load_roadmap_evidence_report,
     parse_evidence_arg,
     parse_bundle_source_artifact_arg,
+    parse_source_map_fulfillment_arg,
     verify_external_evidence_manifest,
     verify_external_evidence_gap_report,
     verify_external_evidence_collection_plan,
@@ -14410,6 +14412,56 @@ def cmd_external_evidence_source_map_template(args: argparse.Namespace) -> int:
     print(f"entries: {source_map['summary']['entry_count']}")
     return 0
 
+def _load_source_map_fulfillments(values: list[str], files: list[str]) -> list[dict[str, Any]]:
+    fulfillments = [parse_source_map_fulfillment_arg(value) for value in values]
+    for path in files:
+        document = _load_json(path)
+        if isinstance(document, dict) and "fulfillments" in document:
+            document = document["fulfillments"]
+        if not isinstance(document, list):
+            raise ValueError(f"source map fulfillment file must contain a list or fulfillments list: {path}")
+        for index, item in enumerate(document):
+            if not isinstance(item, dict):
+                raise ValueError(f"source map fulfillment file item {index} must be an object: {path}")
+            fulfillments.append(item)
+    return fulfillments
+
+
+def cmd_external_evidence_source_map_fulfill(args: argparse.Namespace) -> int:
+    try:
+        source_map = load_external_evidence_source_map(args.source_map)
+        plan = load_external_evidence_collection_plan(args.plan)
+        fulfillments = _load_source_map_fulfillments(args.fulfillment, args.fulfillment_file)
+        fulfilled = fulfill_external_evidence_source_map(
+            source_map,
+            fulfillments,
+            generated_at=args.generated_at,
+        )
+        result = verify_external_evidence_source_map_template(
+            fulfilled,
+            plan,
+            require_live_source_uris=args.require_live_source_uris,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence source map fulfillment failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("external evidence source map fulfillment verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    _write_json(args.out, fulfilled)
+    summary = fulfilled["summary"]
+    print(f"external evidence source map: {args.out}")
+    print(f"source map id: {fulfilled['source_map_id']}")
+    print(f"entries: {summary['entry_count']}")
+    print(f"placeholder source URIs: {summary['placeholder_source_uri_count']}")
+    print(f"live source URIs: {summary['live_source_uri_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
 def cmd_external_evidence_source_map_verify(args: argparse.Namespace) -> int:
     try:
         source_map = load_external_evidence_source_map(args.source_map)
@@ -24430,6 +24482,16 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_source_map_template.add_argument("--generated-at")
     external_evidence_source_map_template.add_argument("--out", default="artifacts/external-evidence-source-map-template.json")
     external_evidence_source_map_template.set_defaults(func=cmd_external_evidence_source_map_template)
+
+    external_evidence_source_map_fulfill = subparsers.add_parser("external-evidence-source-map-fulfill", help="merge live authority source metadata into an external-evidence source map")
+    external_evidence_source_map_fulfill.add_argument("source_map")
+    external_evidence_source_map_fulfill.add_argument("plan")
+    external_evidence_source_map_fulfill.add_argument("--fulfillment", action="append", default=[], help="task;source_uri=URI[;description=TEXT;issuer=TEXT;issued_at=RFC3339;expires_at=RFC3339]")
+    external_evidence_source_map_fulfill.add_argument("--fulfillment-file", action="append", default=[], help="JSON list or object with a fulfillments list of source-map metadata objects")
+    external_evidence_source_map_fulfill.add_argument("--generated-at")
+    external_evidence_source_map_fulfill.add_argument("--require-live-source-uris", action="store_true", help="verify the fulfilled map has no placeholder/example source_uri values")
+    external_evidence_source_map_fulfill.add_argument("--out", default="artifacts/external-evidence-source-map-fulfilled.json")
+    external_evidence_source_map_fulfill.set_defaults(func=cmd_external_evidence_source_map_fulfill)
 
     external_evidence_source_map_verify = subparsers.add_parser("external-evidence-source-map-verify", help="verify an external-evidence source-map template against a collection plan")
     external_evidence_source_map_verify.add_argument("source_map")
