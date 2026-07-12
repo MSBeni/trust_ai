@@ -1068,6 +1068,7 @@ from .external_evidence import (
     append_external_evidence_manifest,
     build_external_evidence_manifest,
     build_external_evidence_manifest_from_intakes,
+    build_external_evidence_gap_report,
     build_external_evidence_source_map_template,
     build_external_evidence_collection_plan,
     build_external_evidence_intake,
@@ -1079,6 +1080,7 @@ from .external_evidence import (
     build_roadmap_evidence_report,
     extract_roadmap_evidence_bundle_sources,
     load_external_evidence_manifest,
+    load_external_evidence_gap_report,
     load_external_evidence_collection_plan,
     load_external_evidence_source_map,
     load_external_evidence_intake,
@@ -1089,6 +1091,7 @@ from .external_evidence import (
     parse_evidence_arg,
     parse_bundle_source_artifact_arg,
     verify_external_evidence_manifest,
+    verify_external_evidence_gap_report,
     verify_external_evidence_collection_plan,
     verify_external_evidence_source_map_template,
     verify_external_evidence_intake,
@@ -1097,6 +1100,8 @@ from .external_evidence import (
     verify_roadmap_evidence_bundle,
     verify_roadmap_evidence_report,
     write_external_evidence_manifest,
+    write_external_evidence_gap_report,
+    write_external_evidence_gap_report_markdown,
     write_external_evidence_collection_plan,
     write_external_evidence_collection_plan_markdown,
     write_external_evidence_intake,
@@ -14207,6 +14212,87 @@ def cmd_external_evidence_manifest_from_intakes(args: argparse.Namespace) -> int
     for warning in result.warnings:
         print(f"warning: {warning}")
     return 0
+def cmd_external_evidence_gap_report(args: argparse.Namespace) -> int:
+    try:
+        roadmap_audit = load_roadmap_audit(args.roadmap_audit)
+        manifest = load_external_evidence_manifest(args.manifest)
+        plan = load_external_evidence_collection_plan(args.plan)
+        source_map = load_external_evidence_source_map(args.source_map)
+        report = build_external_evidence_gap_report(
+            manifest,
+            plan,
+            source_map,
+            roadmap_audit,
+            root=args.root,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+        result = verify_external_evidence_gap_report(
+            report,
+            manifest,
+            plan,
+            source_map,
+            roadmap_audit,
+            root=args.root,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence gap report failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("external evidence gap report verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_external_evidence_gap_report(args.out, report)
+    if args.markdown:
+        write_external_evidence_gap_report_markdown(args.markdown, report)
+        print(f"external evidence gap report markdown: {args.markdown}")
+    summary = report["summary"]
+    print(f"external evidence gap report: {args.out}")
+    print(f"gap report id: {report['gap_report_id']}")
+    print(f"covered authority kinds: {summary['covered_authority_kind_count']}/{summary['required_authority_kind_count']}")
+    print(f"missing authority kinds: {summary['missing_authority_kind_count']}")
+    print(f"remaining tasks: {summary['remaining_task_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_external_evidence_gap_report_verify(args: argparse.Namespace) -> int:
+    try:
+        roadmap_audit = load_roadmap_audit(args.roadmap_audit)
+        manifest = load_external_evidence_manifest(args.manifest)
+        plan = load_external_evidence_collection_plan(args.plan)
+        source_map = load_external_evidence_source_map(args.source_map)
+        report = load_external_evidence_gap_report(args.report)
+        result = verify_external_evidence_gap_report(
+            report,
+            manifest,
+            plan,
+            source_map,
+            roadmap_audit,
+            root=args.root,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence gap report verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        summary = report.get("summary", {})
+        print(f"verified external evidence gap report: {args.report}")
+        print(f"gap report id: {report.get('gap_report_id')}")
+        print(f"missing authority kinds: {summary.get('missing_authority_kind_count', 0)}")
+        print(f"remaining tasks: {summary.get('remaining_task_count', 0)}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"external evidence gap report verification failed: {args.report}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
 
 def cmd_external_evidence_plan(args: argparse.Namespace) -> int:
     try:
@@ -24442,6 +24528,29 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_from_intakes.add_argument("--out", default="artifacts/external-evidence-manifest-from-intakes.json")
     external_evidence_from_intakes.add_argument("--markdown", default="artifacts/external-evidence-manifest-from-intakes.md")
     external_evidence_from_intakes.set_defaults(func=cmd_external_evidence_manifest_from_intakes)
+
+    external_evidence_gap_report = subparsers.add_parser("external-evidence-gap-report", help="write a verified report of remaining external authority evidence gaps")
+    external_evidence_gap_report.add_argument("manifest")
+    external_evidence_gap_report.add_argument("plan")
+    external_evidence_gap_report.add_argument("source_map")
+    external_evidence_gap_report.add_argument("roadmap_audit")
+    external_evidence_gap_report.add_argument("--root", default=".")
+    external_evidence_gap_report.add_argument("--require-fresh", action="store_true")
+    external_evidence_gap_report.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to manifest generated_at")
+    external_evidence_gap_report.add_argument("--out", default="artifacts/external-evidence-gap-report.json")
+    external_evidence_gap_report.add_argument("--markdown", default="artifacts/external-evidence-gap-report.md")
+    external_evidence_gap_report.set_defaults(func=cmd_external_evidence_gap_report)
+
+    external_evidence_gap_report_verify = subparsers.add_parser("external-evidence-gap-report-verify", help="verify an external-evidence gap report")
+    external_evidence_gap_report_verify.add_argument("report")
+    external_evidence_gap_report_verify.add_argument("manifest")
+    external_evidence_gap_report_verify.add_argument("plan")
+    external_evidence_gap_report_verify.add_argument("source_map")
+    external_evidence_gap_report_verify.add_argument("roadmap_audit")
+    external_evidence_gap_report_verify.add_argument("--root", default=".")
+    external_evidence_gap_report_verify.add_argument("--require-fresh", action="store_true")
+    external_evidence_gap_report_verify.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to manifest generated_at")
+    external_evidence_gap_report_verify.set_defaults(func=cmd_external_evidence_gap_report_verify)
     external_evidence_append = subparsers.add_parser("external-evidence-append", help="append a verified external-evidence manifest to an evidence chain")
     external_evidence_append.add_argument("manifest")
     external_evidence_append.add_argument("roadmap_audit")

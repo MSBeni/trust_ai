@@ -19,6 +19,7 @@ from trustai.external_evidence import (
     EXTERNAL_EVIDENCE_SOURCE_SNAPSHOT_SCHEMA,
     EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA,
     EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA,
+    EXTERNAL_EVIDENCE_GAP_REPORT_SCHEMA,
     EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA,
     ROADMAP_EVIDENCE_REPORT_SCHEMA,
     ROADMAP_EVIDENCE_BUNDLE_SCHEMA,
@@ -36,6 +37,7 @@ from trustai.external_evidence import (
     load_roadmap_evidence_report,
     load_external_evidence_manifest,
     load_external_evidence_collection_plan,
+    load_external_evidence_gap_report,
     load_external_evidence_intake,
     load_external_evidence_intakes,
     load_external_evidence_source_snapshot,
@@ -47,6 +49,7 @@ from trustai.external_evidence import (
     render_roadmap_evidence_markdown,
     render_roadmap_evidence_bundle_markdown,
     verify_external_evidence_manifest,
+    verify_external_evidence_gap_report,
     verify_external_evidence_collection_plan,
     verify_external_evidence_source_map_template,
     verify_external_evidence_intake,
@@ -684,6 +687,101 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             ["ci-run", "provider-api", "hosted-service"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["oss-verifier-and-public-spec"],
         )
+
+    def test_cli_external_evidence_gap_report_verifies_retained_worklist(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_path = Path(tmp_dir)
+            report_path = tmp_path / "external-evidence-gap-report.json"
+            markdown_path = tmp_path / "external-evidence-gap-report.md"
+            retained_dir = ROOT / "examples/aitrade/external-evidence"
+            manifest_path = retained_dir / "retained-external-evidence-manifest.json"
+            plan_path = retained_dir / "remaining-external-evidence-plan.json"
+            source_map_path = retained_dir / "remaining-external-evidence-source-map-template.json"
+            audit_path = retained_dir / "source-roadmap-audit.json"
+
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-gap-report",
+                    str(manifest_path),
+                    str(plan_path),
+                    str(source_map_path),
+                    str(audit_path),
+                    "--root",
+                    str(ROOT),
+                    "--require-fresh",
+                    "--now",
+                    "2026-07-12T00:00:00Z",
+                    "--out",
+                    str(report_path),
+                    "--markdown",
+                    str(markdown_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-gap-report-verify",
+                    str(report_path),
+                    str(manifest_path),
+                    str(plan_path),
+                    str(source_map_path),
+                    str(audit_path),
+                    "--root",
+                    str(ROOT),
+                    "--require-fresh",
+                    "--now",
+                    "2026-07-12T00:00:00Z",
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+
+            report = load_external_evidence_gap_report(report_path)
+            manifest = load_external_evidence_manifest(manifest_path)
+            plan = load_external_evidence_collection_plan(plan_path)
+            source_map = json.loads(source_map_path.read_text(encoding="utf-8"))
+            audit = json.loads(audit_path.read_text(encoding="utf-8"))
+            result = verify_external_evidence_gap_report(
+                report,
+                manifest,
+                plan,
+                source_map,
+                audit,
+                root=ROOT,
+                require_fresh=True,
+                now="2026-07-12T00:00:00Z",
+            )
+            self.assertTrue(result.ok, result.errors)
+            self.assertEqual(EXTERNAL_EVIDENCE_GAP_REPORT_SCHEMA, report["schema"])
+            self.assertEqual(content_hash(without_keys(report, "gap_report_id")), report["gap_report_id"])
+            self.assertEqual(3, report["summary"]["covered_authority_kind_count"])
+            self.assertEqual(67, report["summary"]["missing_authority_kind_count"])
+            self.assertEqual(67, report["summary"]["remaining_task_count"])
+            self.assertEqual(67, report["summary"]["source_map_entry_count"])
+            self.assertIn("# External Evidence Gap Report", markdown_path.read_text(encoding="utf-8"))
+
+            tampered = copy.deepcopy(report)
+            tampered["summary"]["remaining_task_count"] = 66
+            tampered["gap_report_id"] = content_hash(without_keys(tampered, "gap_report_id"))
+            tampered_result = verify_external_evidence_gap_report(
+                tampered,
+                manifest,
+                plan,
+                source_map,
+                audit,
+                root=ROOT,
+                require_fresh=True,
+                now="2026-07-12T00:00:00Z",
+            )
+            self.assertFalse(tampered_result.ok)
+            self.assertTrue(any("gap report body" in error for error in tampered_result.errors), tampered_result.errors)
 
     def test_cli_external_evidence_collect_git_ref_creates_snapshot_and_intake(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

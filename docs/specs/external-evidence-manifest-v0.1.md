@@ -266,6 +266,23 @@ authority coverage unit are rejected so that a manifest cannot silently choose
 between conflicting collected artifacts. Use the rebuilt manifest as the next
 source manifest before appending to the roadmap evidence chain.
 
+## External Evidence Gap Report
+
+`external-evidence-gap-report` emits
+`trustai.external-evidence-gap-report/0.1` from a verified external-evidence
+manifest, collection plan, source-map template, and source roadmap audit. The
+report records source artifact IDs and hashes, covered and missing authority
+counts, remaining worklist entries, grouping by requirement and authority kind,
+verification warnings, and explicit limitations.
+
+`external-evidence-gap-report-verify` recomputes `gap_report_id`, verifies the
+manifest, plan, source map, and roadmap audit with the requested freshness
+options, rebuilds the expected report body from those sources, and rejects
+stale or tampered summaries. The report is a tamper-evident worklist checkpoint;
+it does not close an authority gap. A gap is closed only after a matching
+external authority artifact, snapshot, and intake receipt are verified and a new
+manifest is rebuilt.
+
 ## Roadmap Evidence Report
 
 `roadmap-evidence-report` emits `trustai.roadmap-evidence-report/0.1`, a

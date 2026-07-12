@@ -66,7 +66,7 @@ The repository has two GitHub Actions workflows:
 
 The full local suite also verifies downstream receipt types that depend on the
 long generated artifact chain documented below. Generated `.trustai/` state,
-`artifacts/`, caches, and build outputs are intentionally ignored by Git. Retained external-evidence artifacts under `examples/aitrade/external-evidence/` include a current coverage manifest, remaining collection plan, and source-map template for the 67 authority units still requiring live external evidence.
+`artifacts/`, caches, and build outputs are intentionally ignored by Git. Retained external-evidence artifacts under `examples/aitrade/external-evidence/` include a current coverage manifest, remaining collection plan, source-map template, and gap report for the 67 authority units still requiring live external evidence.
 ## Quick Start
 
 From the repository root:
@@ -86,6 +86,8 @@ python -m trustai external-evidence-plan-verify artifacts/external-evidence-plan
 python -m trustai external-evidence-plan artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --status-filter all --out artifacts/external-evidence-plan-all.json --markdown artifacts/external-evidence-plan-all.md
 python -m trustai external-evidence-source-map-template artifacts/external-evidence-plan-all.json --status-filter missing --source-uri-template "https://authority.example/{requirement_id}/{authority_kind}/{unit_id}" --out artifacts/external-evidence-source-map-template.json
 python -m trustai external-evidence-source-map-verify artifacts/external-evidence-source-map-template.json artifacts/external-evidence-plan-all.json
+python -m trustai external-evidence-gap-report examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --require-fresh --now 2026-07-12T00:00:00Z --out artifacts/external-evidence-gap-report.json --markdown artifacts/external-evidence-gap-report.md
+python -m trustai external-evidence-gap-report-verify artifacts/external-evidence-gap-report.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --require-fresh --now 2026-07-12T00:00:00Z
 # Optional live refresh when network access is available:
 # python -m trustai external-evidence-collect-git-ref artifacts/external-evidence-plan-all.json artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json https://github.com/MSBeni/trust_ai.git --task oss-verifier-and-public-spec:provider-api --ref refs/heads/main --expected-sha $(git rev-parse HEAD) --description "GitHub remote main ref advertisement" --issuer "GitHub Git" --subject "trust_ai main branch" --issued-at 2026-07-12T00:00:00Z --expires-at 2026-12-31T00:00:00Z --snapshot-out artifacts/external-evidence-git-main-ref.json --intake-out artifacts/external-evidence-intakes/oss-verifier-provider-api.json --require-fresh --now 2026-07-12T00:00:00Z
 # Retained example artifacts live under examples/aitrade/external-evidence/ and verify ci-run, provider-api, and hosted-service authority units for the OSS verifier/public spec requirement.

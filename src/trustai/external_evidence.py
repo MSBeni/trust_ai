@@ -22,6 +22,7 @@ EXTERNAL_EVIDENCE_INTAKE_SCHEMA = "trustai.external-evidence-intake/0.1"
 EXTERNAL_EVIDENCE_SOURCE_SNAPSHOT_SCHEMA = "trustai.external-evidence-source-snapshot/0.1"
 EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA = "trustai.external-evidence-source-map/0.1"
 EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA = "trustai.external-evidence-collection-run/0.1"
+EXTERNAL_EVIDENCE_GAP_REPORT_SCHEMA = "trustai.external-evidence-gap-report/0.1"
 EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA = "trustai.external-evidence-git-remote-ref-export/0.1"
 
 BUNDLE_SOURCE_ARTIFACT_KINDS = {
@@ -162,6 +163,13 @@ class ExternalEvidenceSourceMapVerification:
     errors: list[str]
     warnings: list[str]
     entry_count: int = 0
+
+
+@dataclass
+class ExternalEvidenceGapReportVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
 
 
 @dataclass
@@ -686,6 +694,164 @@ def verify_external_evidence_source_map_template(
 
     return ExternalEvidenceSourceMapVerification(ok=not errors, errors=errors, warnings=warnings, entry_count=len(entries))
 
+
+def _gap_report_source_record(document: dict[str, Any], id_key: str, hash_key: str) -> dict[str, Any]:
+    return {
+        id_key: document.get(id_key),
+        hash_key: content_hash(document),
+        "schema": document.get("schema"),
+        "generated_at": document.get("generated_at"),
+    }
+
+
+def _gap_report_group_counts(gaps: list[dict[str, Any]], key: str) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for gap in gaps:
+        value = str(gap.get(key) or "unknown")
+        counts[value] = counts.get(value, 0) + 1
+    return {name: counts[name] for name in sorted(counts)}
+
+
+def build_external_evidence_gap_report(
+    manifest: dict[str, Any],
+    plan: dict[str, Any],
+    source_map: dict[str, Any],
+    roadmap_audit: dict[str, Any],
+    *,
+    root: str | Path,
+    require_fresh: bool = False,
+    now: str | None = None,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    manifest_result = verify_external_evidence_manifest(
+        manifest,
+        roadmap_audit,
+        root=root,
+        require_fresh=require_fresh,
+        now=now,
+    )
+    plan_result = verify_external_evidence_collection_plan(plan, manifest, roadmap_audit, root=root)
+    source_map_result = verify_external_evidence_source_map_template(source_map, plan)
+    if not manifest_result.ok:
+        raise ValueError("external evidence manifest is not valid for gap report: " + "; ".join(manifest_result.errors))
+    if not plan_result.ok:
+        raise ValueError("external evidence collection plan is not valid for gap report: " + "; ".join(plan_result.errors))
+    if not source_map_result.ok:
+        raise ValueError("external evidence source map is not valid for gap report: " + "; ".join(source_map_result.errors))
+
+    gaps: list[dict[str, Any]] = []
+    for entry in source_map.get("entries", []):
+        if not isinstance(entry, dict):
+            continue
+        gaps.append(
+            {
+                "task": entry.get("task"),
+                "task_ref": entry.get("task_ref"),
+                "task_id": entry.get("task_id"),
+                "unit_id": entry.get("unit_id"),
+                "unit_ref": entry.get("unit_ref"),
+                "requirement_id": entry.get("requirement_id"),
+                "authority_kind": entry.get("authority_kind"),
+                "title": entry.get("title"),
+                "owner_hint": entry.get("owner_hint"),
+                "source_uri": entry.get("source_uri"),
+                "snapshot_out": entry.get("snapshot_out"),
+                "intake_out": entry.get("intake_out"),
+                "suggested_evidence_sources": entry.get("suggested_evidence_sources", []),
+                "external_authority_required": entry.get("external_authority_required", []),
+            }
+        )
+
+    manifest_summary = manifest.get("summary", {}) if isinstance(manifest.get("summary"), dict) else {}
+    plan_summary = plan.get("summary", {}) if isinstance(plan.get("summary"), dict) else {}
+    source_map_summary = source_map.get("summary", {}) if isinstance(source_map.get("summary"), dict) else {}
+    body = {
+        "schema": EXTERNAL_EVIDENCE_GAP_REPORT_SCHEMA,
+        "generated_at": generated_at or utc_now(),
+        "verification_options": {
+            "require_fresh": require_fresh,
+            "now": now,
+        },
+        "sources": {
+            "manifest": _gap_report_source_record(manifest, "manifest_id", "manifest_hash"),
+            "collection_plan": _gap_report_source_record(plan, "plan_id", "plan_hash"),
+            "source_map": _gap_report_source_record(source_map, "source_map_id", "source_map_hash"),
+            "roadmap_audit": _gap_report_source_record(roadmap_audit, "audit_id", "audit_hash"),
+        },
+        "summary": {
+            "status": manifest_summary.get("status"),
+            "covered_requirement_count": manifest_summary.get("covered_requirement_count", 0),
+            "required_requirement_count": manifest_summary.get("required_requirement_count", 0),
+            "missing_requirement_count": manifest_summary.get("missing_requirement_count", 0),
+            "covered_authority_kind_count": manifest_summary.get("covered_authority_kind_count", 0),
+            "required_authority_kind_count": manifest_summary.get("required_authority_kind_count", 0),
+            "missing_authority_kind_count": manifest_summary.get("missing_authority_kind_count", 0),
+            "remaining_task_count": plan_summary.get("selected_task_count", len(gaps)),
+            "remaining_missing_task_count": plan_summary.get("selected_missing_task_count", len(gaps)),
+            "source_map_entry_count": source_map_summary.get("entry_count", len(gaps)),
+            "gap_count_by_authority_kind": _gap_report_group_counts(gaps, "authority_kind"),
+            "gap_count_by_requirement": _gap_report_group_counts(gaps, "requirement_id"),
+        },
+        "covered_authority_kinds_by_requirement": manifest_summary.get("covered_authority_kinds_by_requirement", {}),
+        "missing_authority_kinds_by_requirement": manifest_summary.get("missing_authority_kinds_by_requirement", {}),
+        "gaps": gaps,
+        "verification": {
+            "manifest_warnings": manifest_result.warnings,
+            "plan_warnings": plan_result.warnings,
+            "source_map_warnings": source_map_result.warnings,
+        },
+        "limitations": [
+            "This gap report verifies the retained manifest, remaining collection plan, and source-map worklist; it does not satisfy missing external authority evidence.",
+            "A gap is closed only by collecting a matching authority artifact, verifying its source snapshot and intake receipt, then rebuilding the external evidence manifest.",
+            "Live authority access, issuer quality, and production status remain outside this report unless supplied as external evidence artifacts.",
+        ],
+    }
+    return {**body, "gap_report_id": content_hash(body)}
+
+
+def verify_external_evidence_gap_report(
+    report: dict[str, Any],
+    manifest: dict[str, Any],
+    plan: dict[str, Any],
+    source_map: dict[str, Any],
+    roadmap_audit: dict[str, Any],
+    *,
+    root: str | Path,
+    require_fresh: bool = False,
+    now: str | None = None,
+) -> ExternalEvidenceGapReportVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    if report.get("schema") != EXTERNAL_EVIDENCE_GAP_REPORT_SCHEMA:
+        errors.append(f"unsupported external evidence gap report schema: {report.get('schema')}")
+    if report.get("gap_report_id") != content_hash(without_keys(report, "gap_report_id")):
+        errors.append("gap_report_id does not match canonical gap report body")
+    expected_options = {"require_fresh": require_fresh, "now": now}
+    if report.get("verification_options") != expected_options:
+        errors.append("verification_options do not match verifier options")
+
+    try:
+        expected = build_external_evidence_gap_report(
+            manifest,
+            plan,
+            source_map,
+            roadmap_audit,
+            root=root,
+            require_fresh=require_fresh,
+            now=now,
+            generated_at=str(report.get("generated_at") or ""),
+        )
+    except ValueError as exc:
+        errors.append(str(exc))
+    else:
+        if without_keys(report, "gap_report_id") != without_keys(expected, "gap_report_id"):
+            errors.append("gap report body does not match supplied manifest, plan, source map, and roadmap audit")
+        warnings.extend(expected.get("verification", {}).get("manifest_warnings", []))
+        warnings.extend(expected.get("verification", {}).get("plan_warnings", []))
+        warnings.extend(expected.get("verification", {}).get("source_map_warnings", []))
+
+    return ExternalEvidenceGapReportVerification(ok=not errors, errors=errors, warnings=warnings)
 
 def build_external_evidence_source_snapshot(
     *,
@@ -1551,6 +1717,21 @@ def load_external_evidence_intakes(
         raise ValueError("at least one external evidence intake receipt is required")
     return [load_external_evidence_intake(path) for path in intake_paths]
 
+def write_external_evidence_gap_report(path: str | Path, report: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_external_evidence_gap_report(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def write_external_evidence_gap_report_markdown(path: str | Path, report: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_external_evidence_gap_report_markdown(report), encoding="utf-8")
+
 def write_roadmap_evidence_report(path: str | Path, report: dict[str, Any]) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -1615,6 +1796,61 @@ def _external_evidence_freshness_cell(item: dict[str, Any]) -> str:
         return _markdown_cell(f"{issued_at or 'missing issued_at'} to {expires_at or 'missing expires_at'}")
     return "missing"
 
+
+def render_external_evidence_gap_report_markdown(report: dict[str, Any]) -> str:
+    summary = report.get("summary", {}) if isinstance(report.get("summary"), dict) else {}
+    lines = [
+        "# External Evidence Gap Report",
+        "",
+        f"- Gap report ID: `{report.get('gap_report_id')}`",
+        f"- Generated at: `{report.get('generated_at')}`",
+        f"- Status: `{summary.get('status')}`",
+        f"- Covered authority kinds: {summary.get('covered_authority_kind_count', 0)}/{summary.get('required_authority_kind_count', 0)}",
+        f"- Missing authority kinds: {summary.get('missing_authority_kind_count', 0)}",
+        f"- Remaining collection tasks: {summary.get('remaining_task_count', 0)}",
+        f"- Source-map entries: {summary.get('source_map_entry_count', 0)}",
+        "",
+        "## Gaps By Authority Kind",
+        "",
+    ]
+    by_authority = summary.get("gap_count_by_authority_kind", {})
+    if isinstance(by_authority, dict) and by_authority:
+        for authority, count in by_authority.items():
+            lines.append(f"- `{authority}`: {count}")
+    else:
+        lines.append("- None")
+    lines.extend(["", "## Gaps By Requirement", ""])
+    by_requirement = summary.get("gap_count_by_requirement", {})
+    if isinstance(by_requirement, dict) and by_requirement:
+        for requirement, count in by_requirement.items():
+            lines.append(f"- `{requirement}`: {count}")
+    else:
+        lines.append("- None")
+    lines.extend(["", "## Collection Worklist", ""])
+    gaps = report.get("gaps", [])
+    if isinstance(gaps, list) and gaps:
+        for gap in gaps:
+            if not isinstance(gap, dict):
+                continue
+            lines.append(f"### {gap.get('unit_ref')}")
+            lines.append("")
+            lines.append(f"- Title: {gap.get('title')}")
+            lines.append(f"- Authority kind: `{gap.get('authority_kind')}`")
+            lines.append(f"- Owner hint: {gap.get('owner_hint')}")
+            lines.append(f"- Source URI: `{gap.get('source_uri')}`")
+            lines.append(f"- Snapshot output: `{gap.get('snapshot_out')}`")
+            lines.append(f"- Intake output: `{gap.get('intake_out')}`")
+            suggestions = gap.get("suggested_evidence_sources", [])
+            if suggestions:
+                lines.append("- Suggested evidence sources: " + "; ".join(str(item) for item in suggestions))
+            lines.append("")
+    else:
+        lines.append("No remaining external evidence gaps.")
+        lines.append("")
+    lines.extend(["## Limitations", ""])
+    for limitation in report.get("limitations", []):
+        lines.append(f"- {limitation}")
+    return "\n".join(lines).rstrip() + "\n"
 
 def render_external_evidence_markdown(manifest: dict[str, Any]) -> str:
     summary = manifest.get("summary", {})
