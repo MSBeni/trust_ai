@@ -254,6 +254,13 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             finally:
                 control.close()
             return
+        if parsed.path in ("/v0/phase-scoreboards", "/v0/control/phase-scoreboards"):
+            control = self._control()
+            try:
+                self._json_response(200, {"phase_scoreboards": control.recent_phase_scoreboards()})
+            finally:
+                control.close()
+            return
         if parsed.path in ("/v0/readiness", "/v0/control/readiness"):
             control = self._control()
             try:

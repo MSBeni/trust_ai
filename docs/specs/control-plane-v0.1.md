@@ -29,7 +29,7 @@ into queryable registry tables while keeping the chain as the source of truth.
 
 ```powershell
 python -m trustai control-index --state .trustai/demo/evidence-chain.json --tenant aitrade-local --pack artifacts/aitrade-proof-pack.json --db .trustai/control-plane.sqlite
-python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --roadmap-evidence --readiness --external-evidence --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
+python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --roadmap-evidence --phase-scoreboards --readiness --external-evidence --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
 ```
 
 ## API
@@ -49,6 +49,7 @@ python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts
 - `GET /v0/promotion-statuses`;
 - `GET /v0/runtime-evidence`;
 - `GET /v0/roadmap-evidence`;
+- `GET /v0/phase-scoreboards` or `GET /v0/control/phase-scoreboards`;
 - `GET /v0/readiness` or `GET /v0/control/readiness`;
 - `GET /v0/external-evidence`;
 - `GET /v0/external-authority-gaps` or `GET /v0/control/external-authority-gaps`, with optional `authority_kind=...`, `requirement_id=...`, and `limit=...` filters;
@@ -62,10 +63,13 @@ surface from the Agent/Version Registry side: inventory records, associated
 contracts, direct agent evidence, and contract-hash-linked runtime/policy rows.
 These are the local analogues of model-risk or auditor review pages for a single
 pre-registered contract or governed agent version. The roadmap-evidence list
-binds roadmap audit entries, retained collection-run provenance, and external
-evidence manifests into one progress view. The readiness view aggregates those
-surfaces with promotion-gate, proof-pack, runtime-policy, and authority-dossier
-evidence into a conservative `ready` / `not_ready` status plus concrete blockers.
+binds roadmap audit entries, retained collection-run provenance, external
+evidence manifests, and phase scoreboard entries into one progress view. The
+phase-scoreboard list exposes P1-P4 milestone counters, phase counts, and
+control summaries without treating unverified business milestones as local proof.
+The readiness view aggregates those surfaces with promotion-gate, proof-pack,
+runtime-policy, authority-dossier, and phase-scoreboard evidence into a
+conservative `ready` / `not_ready` status plus concrete blockers.
 The external-evidence list exposes roadmap authority coverage, missing
 requirement IDs, missing requirement-to-authority-kind maps, deterministic
 missing authority unit/task IDs, and live-evidence counts. The external-authority

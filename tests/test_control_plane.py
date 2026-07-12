@@ -18,6 +18,7 @@ from trustai.gate import append_eval_and_gate
 from trustai.ingest import append_events, load_events
 from trustai.mcp_gateway import load_mcp_transcript
 from trustai.mcp_gateway_authority import append_mcp_gateway_authority_dossier, build_mcp_gateway_authority_dossier
+from trustai.phase_scoreboard import append_phase_scoreboard, build_phase_scoreboard
 from trustai.lifecycle import append_incident, load_incident
 from trustai.policy import append_policy_decision, load_policy_pack
 from trustai.policy_engine import append_policy_engine_receipt, build_policy_engine_receipt
@@ -159,6 +160,13 @@ class ControlPlaneTests(unittest.TestCase):
                 timestamp="2026-07-12T00:04:00Z",
             )
             append_external_evidence_manifest(chain, external_manifest, audit, root=ROOT)
+            phase_scoreboard = build_phase_scoreboard(
+                ROOT,
+                scoreboard_ref="scoreboard:trustai/roadmap/readiness",
+                producer_ref="oidc:trustai.example/strategy",
+                generated_at="2026-07-20T00:00:00Z",
+            )
+            append_phase_scoreboard(chain, phase_scoreboard, root=ROOT)
             mcp_calls = load_mcp_transcript(MCP)
             mcp_authority = build_mcp_gateway_authority_dossier(
                 mcp_calls,
@@ -226,6 +234,7 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, summary["counts"]["external_evidence_collection_runs"])
                 self.assertEqual(1, summary["counts"]["external_evidence_manifests"])
                 self.assertEqual(1, summary["counts"]["authority_dossiers"])
+                self.assertEqual(1, summary["counts"]["phase_scoreboards"])
                 self.assertEqual(1, counts["runtime_attestations"])
                 self.assertEqual(1, counts["policy_decisions"])
                 self.assertEqual(1, counts["policy_engine_receipts"])
@@ -234,6 +243,7 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, counts["external_evidence_collection_runs"])
                 self.assertEqual(1, counts["external_evidence_manifests"])
                 self.assertEqual(1, counts["authority_dossiers"])
+                self.assertEqual(1, counts["phase_scoreboards"])
                 self.assertEqual(audit["audit_id"], summary["latest_roadmap_audit"]["audit_id"])
                 self.assertEqual("local-reference-complete-with-external-authority-deferred", summary["latest_roadmap_audit"]["completion_position"])
                 self.assertEqual("collection-run-control-001", summary["latest_external_evidence_collection_run"]["run_id"])
@@ -245,6 +255,9 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual("proxy-dossier", summary["latest_authority_dossier"]["mode"])
                 self.assertFalse(summary["latest_authority_dossier"]["production_claimed"])
                 self.assertGreater(summary["latest_authority_dossier"]["missing_requirement_count"], 0)
+                self.assertEqual("scoreboard:trustai/roadmap/readiness", summary["latest_phase_scoreboard"]["scoreboard_ref"])
+                self.assertEqual("readiness", summary["latest_phase_scoreboard"]["mode"])
+                self.assertEqual({"external-required": 10, "passed": 2}, summary["latest_phase_scoreboard"]["control_summary"])
                 self.assertEqual("passed", summary["latest_proof_pack"]["outcome"])
                 self.assertEqual("aitrade-btcusdt-canary", summary["latest_eval_run"]["contract_id"])
                 self.assertEqual("passed", summary["latest_gate_decision"]["outcome"])
@@ -349,6 +362,11 @@ class ControlPlaneTests(unittest.TestCase):
                     roadmap_evidence["external_evidence_collection_runs"][0]["intake_ids"],
                 )
                 self.assertEqual(1, len(roadmap_evidence["external_evidence_manifests"]))
+                self.assertEqual(1, len(roadmap_evidence["phase_scoreboards"]))
+                phase_scoreboards = control.recent_phase_scoreboards()
+                self.assertEqual(1, len(phase_scoreboards))
+                self.assertEqual("readiness", phase_scoreboards[0]["mode"])
+                self.assertEqual({"external-required": 10, "passed": 2}, phase_scoreboards[0]["control_summary"])
                 readiness = control.readiness()
                 self.assertEqual("not_ready", readiness["status"])
                 self.assertTrue(readiness["local_reference_complete"])
@@ -358,12 +376,18 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertGreater(readiness["external_authority_gap_summary"]["missing_authority_unit_count"], 0)
                 self.assertIn("provider-api", readiness["external_authority_gap_summary"]["gap_count_by_authority_kind"])
                 self.assertFalse(readiness["production_authority_ready"])
+                self.assertFalse(readiness["roadmap_phase_scoreboard_ready"])
+                self.assertEqual("readiness", readiness["phase_scoreboard_summary"]["mode"])
+                self.assertEqual(10, readiness["phase_scoreboard_summary"]["external_required_control_count"])
                 self.assertTrue(readiness["promotion_gate_ready"])
                 self.assertTrue(readiness["proof_pack_ready"])
                 self.assertTrue(readiness["runtime_policy_ready"])
                 self.assertGreater(readiness["authority_dossier_summary"]["not_ready"], 0)
                 self.assertTrue(
                     any("external authority evidence incomplete" in blocker for blocker in readiness["blockers"])
+                )
+                self.assertTrue(
+                    any("roadmap phase scoreboard milestones incomplete" in blocker for blocker in readiness["blockers"])
                 )
                 external_evidence = control.recent_external_evidence_manifests()
                 self.assertEqual(1, len(external_evidence))

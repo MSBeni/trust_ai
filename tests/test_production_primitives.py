@@ -204,6 +204,13 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual([], roadmap_body["roadmap_audits"])
                 self.assertEqual([], roadmap_body["external_evidence_collection_runs"])
                 self.assertEqual([], roadmap_body["external_evidence_manifests"])
+                self.assertEqual([], roadmap_body["phase_scoreboards"])
+
+                conn.request("GET", "/v0/phase-scoreboards")
+                phase_scoreboards_response = conn.getresponse()
+                phase_scoreboards_body = json.loads(phase_scoreboards_response.read().decode("utf-8"))
+                self.assertEqual(200, phase_scoreboards_response.status)
+                self.assertEqual([], phase_scoreboards_body["phase_scoreboards"])
 
                 conn.request("GET", "/v0/readiness")
                 readiness_response = conn.getresponse()
@@ -213,6 +220,8 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertFalse(readiness_body["local_reference_complete"])
                 self.assertFalse(readiness_body["external_authority_complete"])
                 self.assertFalse(readiness_body["collection_run_present"])
+                self.assertFalse(readiness_body["roadmap_phase_scoreboard_ready"])
+                self.assertFalse(readiness_body["phase_scoreboard_summary"]["present"])
                 self.assertEqual(0, readiness_body["external_authority_gap_summary"]["missing_authority_unit_count"])
                 self.assertIn("no roadmap audit indexed", readiness_body["blockers"])
 

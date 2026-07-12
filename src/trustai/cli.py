@@ -2285,6 +2285,8 @@ def cmd_control_summary(args: argparse.Namespace) -> int:
             summary["runtime_evidence"] = control.runtime_evidence()
         if args.roadmap_evidence:
             summary["roadmap_evidence"] = control.roadmap_evidence()
+        if args.phase_scoreboards:
+            summary["phase_scoreboards"] = control.recent_phase_scoreboards()
         if args.readiness:
             summary["readiness"] = control.readiness()
         if args.external_evidence:
@@ -20373,6 +20375,7 @@ def build_parser() -> argparse.ArgumentParser:
     control_summary.add_argument("--promotion-statuses", action="store_true")
     control_summary.add_argument("--runtime-evidence", action="store_true")
     control_summary.add_argument("--roadmap-evidence", action="store_true")
+    control_summary.add_argument("--phase-scoreboards", action="store_true")
     control_summary.add_argument("--readiness", action="store_true")
     control_summary.add_argument("--external-evidence", action="store_true")
     control_summary.add_argument("--external-authority-gaps", action="store_true")

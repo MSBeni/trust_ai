@@ -16,6 +16,7 @@ from .external_evidence import (
     EXTERNAL_EVIDENCE_ENTRY_TYPE,
 )
 from .gate import EVAL_ENTRY_TYPE, GATE_ENTRY_TYPE
+from .phase_scoreboard import PHASE_SCOREBOARD_ENTRY_TYPE
 from .ingest import INGEST_ENTRY_TYPE
 from .lifecycle import INCIDENT_ENTRY_TYPE
 from .policy import POLICY_DECISION_ENTRY_TYPE
@@ -460,6 +461,19 @@ class ControlPlane:
                 generated_at TEXT,
                 body_json TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS phase_scoreboards (
+                scoreboard_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                scoreboard_hash TEXT NOT NULL,
+                scoreboard_ref TEXT,
+                mode TEXT,
+                environment TEXT,
+                milestone_count INTEGER NOT NULL,
+                phase_counts_json TEXT NOT NULL,
+                control_summary_json TEXT NOT NULL,
+                generated_at TEXT,
+                body_json TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS anchors (
                 anchor_id TEXT PRIMARY KEY,
                 entry_id TEXT,
@@ -495,6 +509,7 @@ class ControlPlane:
             "external_evidence_collection_runs": 0,
             "external_evidence_manifests": 0,
             "authority_dossiers": 0,
+            "phase_scoreboards": 0,
         }
         for entry in chain.entries:
             payload = entry.get("payload", {})
@@ -970,6 +985,33 @@ class ControlPlane:
                 )
                 counts["external_evidence_manifests"] += 1
 
+            if entry.get("entry_type") == PHASE_SCOREBOARD_ENTRY_TYPE:
+                phase_counts = payload.get("phase_counts") if isinstance(payload.get("phase_counts"), dict) else {}
+                control_summary = payload.get("control_summary") if isinstance(payload.get("control_summary"), dict) else {}
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO phase_scoreboards(
+                        scoreboard_id, entry_id, scoreboard_hash, scoreboard_ref,
+                        mode, environment, milestone_count, phase_counts_json,
+                        control_summary_json, generated_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("scoreboard_id") or entry["entry_id"],
+                        entry["entry_id"],
+                        payload.get("scoreboard_hash") or entry.get("payload_hash"),
+                        payload.get("scoreboard_ref"),
+                        payload.get("mode"),
+                        payload.get("environment"),
+                        int(payload.get("milestone_count") or 0),
+                        _json(phase_counts),
+                        _json(control_summary),
+                        entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["phase_scoreboards"] += 1
+
             if _is_authority_dossier_payload(entry, payload):
                 summary = payload.get("summary") if isinstance(payload.get("summary"), dict) else {}
                 evidence_items = (
@@ -1086,6 +1128,7 @@ class ControlPlane:
             "external_evidence_collection_runs",
             "external_evidence_manifests",
             "authority_dossiers",
+            "phase_scoreboards",
         ]
         counts = {
             table: self.conn.execute(f"SELECT COUNT(*) AS count FROM {table}").fetchone()["count"]
@@ -1252,6 +1295,20 @@ class ControlPlane:
         latest_authority_dossier_dict = dict(latest_authority_dossier) if latest_authority_dossier else None
         if latest_authority_dossier_dict is not None:
             _bool_fields(latest_authority_dossier_dict, "production_claimed", "production_ready")
+        latest_phase_scoreboard = self.conn.execute(
+            """
+            SELECT scoreboard_id, scoreboard_hash, scoreboard_ref, mode,
+                   environment, milestone_count, phase_counts_json,
+                   control_summary_json, generated_at
+            FROM phase_scoreboards
+            ORDER BY generated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_phase_scoreboard_dict = dict(latest_phase_scoreboard) if latest_phase_scoreboard else None
+        if latest_phase_scoreboard_dict is not None:
+            latest_phase_scoreboard_dict["phase_counts"] = _decode_json_object(latest_phase_scoreboard_dict.pop("phase_counts_json", None))
+            latest_phase_scoreboard_dict["control_summary"] = _decode_json_object(latest_phase_scoreboard_dict.pop("control_summary_json", None))
         return {
             "schema_version": SCHEMA_VERSION,
             "database": str(self.path),
@@ -1272,6 +1329,7 @@ class ControlPlane:
             "latest_external_evidence_collection_run": latest_collection_run_dict,
             "latest_external_evidence_manifest": latest_external_evidence_dict,
             "latest_authority_dossier": latest_authority_dossier_dict,
+            "latest_phase_scoreboard": latest_phase_scoreboard_dict,
         }
 
     def contracts(self, limit: int = 20) -> list[dict[str, Any]]:
@@ -1589,6 +1647,26 @@ class ControlPlane:
             "missing_authority_units": returned_units,
         }
 
+    def recent_phase_scoreboards(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT scoreboard_id, entry_id, scoreboard_hash, scoreboard_ref,
+                   mode, environment, milestone_count, phase_counts_json,
+                   control_summary_json, generated_at
+            FROM phase_scoreboards
+            ORDER BY generated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["phase_counts"] = _decode_json_object(item.pop("phase_counts_json", None))
+            item["control_summary"] = _decode_json_object(item.pop("control_summary_json", None))
+            items.append(item)
+        return items
+
     def recent_authority_dossiers(self, limit: int = 20) -> list[dict[str, Any]]:
         rows = self.conn.execute(
             """
@@ -1621,6 +1699,7 @@ class ControlPlane:
             "roadmap_audits": self.recent_roadmap_audits(limit),
             "external_evidence_collection_runs": self.recent_external_evidence_collection_runs(limit),
             "external_evidence_manifests": self.recent_external_evidence_manifests(limit),
+            "phase_scoreboards": self.recent_phase_scoreboards(limit),
         }
 
     def readiness(self) -> dict[str, Any]:
@@ -1699,6 +1778,32 @@ class ControlPlane:
             if not collection_run_strict:
                 blockers.append("latest external-evidence collection run was not collected with strict source snapshot and freshness checks")
 
+        latest_phase_scoreboard = summary.get("latest_phase_scoreboard")
+        phase_control_summary = (latest_phase_scoreboard or {}).get("control_summary") or {}
+        phase_external_required = int(phase_control_summary.get("external-required") or 0)
+        phase_scoreboard_present = latest_phase_scoreboard is not None
+        phase_scoreboard_ready = bool(
+            latest_phase_scoreboard
+            and latest_phase_scoreboard.get("mode") == "external-evidence"
+            and phase_external_required == 0
+        )
+        phase_scoreboard_summary = {
+            "present": phase_scoreboard_present,
+            "mode": (latest_phase_scoreboard or {}).get("mode"),
+            "milestone_count": int((latest_phase_scoreboard or {}).get("milestone_count") or 0),
+            "phase_counts": (latest_phase_scoreboard or {}).get("phase_counts") or {},
+            "control_summary": phase_control_summary,
+            "external_required_control_count": phase_external_required,
+        }
+        if latest_phase_scoreboard is None:
+            blockers.append("no roadmap phase scoreboard indexed")
+        elif not phase_scoreboard_ready:
+            blockers.append(
+                "roadmap phase scoreboard milestones incomplete: "
+                f"mode={latest_phase_scoreboard.get('mode')}, "
+                f"external-required control(s)={phase_external_required}"
+            )
+
         authority_row = self.conn.execute(
             """
             SELECT COUNT(*) AS total,
@@ -1759,6 +1864,7 @@ class ControlPlane:
                 external_authority_complete,
                 collection_run_complete,
                 production_authority_ready,
+                phase_scoreboard_ready,
                 promotion_gate_ready,
                 proof_pack_ready,
                 runtime_policy_ready,
@@ -1772,6 +1878,7 @@ class ControlPlane:
             "collection_run_present": collection_run_present,
             "collection_run_complete": collection_run_complete,
             "production_authority_ready": production_authority_ready,
+            "roadmap_phase_scoreboard_ready": phase_scoreboard_ready,
             "promotion_gate_ready": promotion_gate_ready,
             "proof_pack_ready": proof_pack_ready,
             "runtime_policy_ready": runtime_policy_ready,
@@ -1780,6 +1887,8 @@ class ControlPlane:
             "latest_external_evidence_manifest": latest_external_manifest,
             "latest_external_evidence_collection_run": latest_collection_run,
             "latest_authority_dossier": summary.get("latest_authority_dossier"),
+            "latest_phase_scoreboard": latest_phase_scoreboard,
+            "phase_scoreboard_summary": phase_scoreboard_summary,
             "authority_dossier_summary": authority_dossier_summary,
             "external_authority_gap_summary": external_gap_summary,
             "remaining_external_evidence_count": deferred_external,
