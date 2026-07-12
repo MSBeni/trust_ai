@@ -1,0 +1,65 @@
+{
+  "evidence_argument": "oss-verifier-and-public-spec,hosted-service,examples/aitrade/external-evidence/github-hosted-service-source-snapshot.json,GitHub hosted git service remote advertisement for TrustAI verifier and spec repository;issuer=GitHub Git;subject=MSBeni/trust_ai hosted repository service;source_uri=git+https://github.com/MSBeni/trust_ai.git#HEAD;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
+  "evidence_item": {
+    "accepted_authority_kinds": [
+      "ci-run",
+      "provider-api",
+      "hosted-service"
+    ],
+    "authority_kind": "hosted-service",
+    "description": "GitHub hosted git service remote advertisement for TrustAI verifier and spec repository",
+    "evidence_id": "76107f684894f87760d1e80449e41d3b0b4afc592709f1d5eb4d65616c9c60ce",
+    "expires_at": "2026-12-31T00:00:00Z",
+    "issued_at": "2026-07-12T00:00:00Z",
+    "issuer": "GitHub Git",
+    "path": "examples/aitrade/external-evidence/github-hosted-service-source-snapshot.json",
+    "requirement_id": "oss-verifier-and-public-spec",
+    "sha256": "sha256:338c558738c3873857ec5d1e86daae389c7e97568751762859f4ada7c9419901",
+    "source_uri": "git+https://github.com/MSBeni/trust_ai.git#HEAD",
+    "subject": "MSBeni/trust_ai hosted repository service"
+  },
+  "generated_at": "2026-07-12T01:13:55Z",
+  "intake_id": "da24c5f9826282901b01ecd196f401ea5c3ea71b22a44cf867f2f07dbef23b22",
+  "limitations": [
+    "This intake receipt hashes and maps one collected artifact to a collection-plan task; it does not itself satisfy roadmap completion.",
+    "Coverage is updated only after rebuilding and verifying an external evidence manifest with the emitted evidence argument.",
+    "Issuer authority and freshness remain bounded by the collected artifact and manifest verification options."
+  ],
+  "schema": "trustai.external-evidence-intake/0.1",
+  "source_manifest": {
+    "covered_authority_kind_count": 0,
+    "manifest_hash": "58772c607aa3dc0af6eca9ac444627da88ce8c44037a0908cc8d74d3db0ccc9c",
+    "manifest_id": "7836920505c41052cfc458621d95052fe98c1ddb41049b94cebedeb6a3a3621e",
+    "manifest_ref": "production-external-evidence",
+    "missing_authority_kind_count": 70,
+    "required_authority_kind_count": 70,
+    "status": "partial"
+  },
+  "source_plan": {
+    "plan_hash": "a055ee6858089ac996a3f61c42afad668457d76c75ba0b50f6e6043a4312ab91",
+    "plan_id": "200e981ec0f3a14dc933d944f6cf07cfbb9b3c60f75a3761fbdf7d290ed5beae",
+    "source_manifest": {
+      "generated_at": "2026-07-12T00:42:01Z",
+      "manifest_hash": "58772c607aa3dc0af6eca9ac444627da88ce8c44037a0908cc8d74d3db0ccc9c",
+      "manifest_id": "7836920505c41052cfc458621d95052fe98c1ddb41049b94cebedeb6a3a3621e",
+      "manifest_ref": "production-external-evidence",
+      "status": "partial"
+    },
+    "status_filter": "all"
+  },
+  "source_roadmap_audit": {
+    "audit_hash": "80bc40fb368621e686df5546a334e535de195c5d556d741f722ffd54f7faa31a",
+    "audit_id": "224755b843c355c30d30cb023e3349444a95e3645f1b78dff39e422501687343",
+    "completion_position": "local-reference-complete-with-external-authority-deferred"
+  },
+  "task": {
+    "authority_kind": "hosted-service",
+    "coverage_status": "missing",
+    "requirement_id": "oss-verifier-and-public-spec",
+    "suggested_artifact_path": "external-evidence/oss-verifier-and-public-spec/hosted-service.json",
+    "task_id": "24c0952fc7ae7b229d2ae304ee7604f403c462a0df0a0de49c0fa7994843fda3",
+    "task_ref": "external-evidence:oss-verifier-and-public-spec:hosted-service",
+    "unit_id": "466978af8ab034b01871214eab0240941581edb4cfe22965eb298df3c7847552",
+    "unit_ref": "oss-verifier-and-public-spec:hosted-service"
+  }
+}
