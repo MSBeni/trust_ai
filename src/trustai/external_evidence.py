@@ -259,6 +259,7 @@ def verify_external_evidence_manifest(
     root: str | Path,
     require_complete: bool = False,
     require_fresh: bool = False,
+    require_live_source_uris: bool = False,
     now: str | None = None,
 ) -> ExternalEvidenceVerification:
     errors: list[str] = []
@@ -332,6 +333,7 @@ def verify_external_evidence_manifest(
             warnings,
             now=freshness_now,
             require_fresh=require_fresh,
+            require_live_source_uris=require_live_source_uris,
             allowed_authority_kinds=required_authority_kinds.get(requirement_id, []),
         )
         freshness_counts[freshness_status] += 1
@@ -1220,6 +1222,7 @@ def verify_external_evidence_intake(
     *,
     root: str | Path,
     require_fresh: bool = False,
+    require_live_source_uris: bool = False,
     now: str | None = None,
 ) -> ExternalEvidenceIntakeVerification:
     errors: list[str] = []
@@ -1277,6 +1280,7 @@ def verify_external_evidence_intake(
         warnings,
         now=freshness_now,
         require_fresh=require_fresh,
+        require_live_source_uris=require_live_source_uris,
         allowed_authority_kinds=required_authority_kinds.get(str(evidence_item.get("requirement_id") or ""), []),
     )
     try:
@@ -1299,10 +1303,11 @@ def build_external_evidence_manifest_from_intakes(
     intakes: list[dict[str, Any]],
     manifest_ref: str | None = None,
     require_fresh: bool = False,
+    require_live_source_uris: bool = False,
     now: str | None = None,
     generated_at: str | None = None,
 ) -> dict[str, Any]:
-    manifest_result = verify_external_evidence_manifest(manifest, roadmap_audit, root=root)
+    manifest_result = verify_external_evidence_manifest(manifest, roadmap_audit, root=root, require_live_source_uris=require_live_source_uris)
     if not manifest_result.ok:
         raise ValueError("invalid source external evidence manifest: " + "; ".join(manifest_result.errors))
     plan_result = verify_external_evidence_collection_plan(plan, manifest, roadmap_audit, root=root)
@@ -1332,6 +1337,7 @@ def build_external_evidence_manifest_from_intakes(
             roadmap_audit,
             root=root,
             require_fresh=require_fresh,
+            require_live_source_uris=require_live_source_uris,
             now=now,
         )
         if not intake_result.ok:
@@ -1730,6 +1736,7 @@ def append_external_evidence_manifest(
     root: str | Path,
     require_complete: bool = False,
     require_fresh: bool = False,
+    require_live_source_uris: bool = False,
     now: str | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
@@ -1739,6 +1746,7 @@ def append_external_evidence_manifest(
         root=root,
         require_complete=require_complete,
         require_fresh=require_fresh,
+        require_live_source_uris=require_live_source_uris,
         now=now,
     )
     if not result.ok:
@@ -1754,6 +1762,7 @@ def append_external_evidence_manifest(
         "status": summary.get("status"),
         "require_complete": require_complete,
         "require_fresh": require_fresh,
+        "require_live_source_uris": require_live_source_uris,
         "freshness_checked_at": now or manifest.get("generated_at"),
         "required_requirement_count": summary.get("required_requirement_count"),
         "covered_requirement_count": summary.get("covered_requirement_count"),
@@ -2781,6 +2790,7 @@ def _verify_evidence_item(
     *,
     now,
     require_fresh: bool,
+    require_live_source_uris: bool,
     allowed_authority_kinds: list[str],
 ) -> str:
     if item.get("evidence_id") != content_hash(without_keys(item, "evidence_id")):
@@ -2797,6 +2807,16 @@ def _verify_evidence_item(
         errors.append(f"accepted_authority_kinds do not match requirement policy: {item.get('requirement_id')}")
     if not item.get("description"):
         errors.append(f"external evidence description is required: {item.get('requirement_id')}")
+    source_uri = str(item.get("source_uri") or "")
+    if _source_map_is_placeholder_uri(source_uri):
+        source_uri_message = (
+            "external evidence source_uri is placeholder or missing for "
+            f"{item.get('requirement_id')}:{item.get('authority_kind')}"
+        )
+        if require_live_source_uris:
+            errors.append(source_uri_message)
+        else:
+            warnings.append(source_uri_message)
 
     issued_at = _parse_optional_timestamp(item, "issued_at", errors)
     expires_at = _parse_optional_timestamp(item, "expires_at", errors)

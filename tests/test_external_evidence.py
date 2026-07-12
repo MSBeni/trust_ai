@@ -467,6 +467,45 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         )
         self.assertEqual(["ci-run"], rebuilt["summary"]["covered_authority_kinds_by_requirement"]["oss-verifier-and-public-spec"])
 
+        placeholder_intake = build_external_evidence_intake(
+            plan,
+            manifest,
+            audit,
+            root=ROOT,
+            task_ref="oss-verifier-and-public-spec:ci-run",
+            artifact_path=FIXTURE,
+            description="Recorded verifier workflow run export",
+            issuer="Example Provider",
+            subject="placeholder source uri check",
+            source_uri="https://provider.example/export",
+            issued_at="2026-07-08T00:00:00Z",
+            expires_at="2026-12-31T00:00:00Z",
+            generated_at="2026-07-09T00:00:00Z",
+        )
+        placeholder_nonstrict = verify_external_evidence_intake(
+            placeholder_intake,
+            plan,
+            manifest,
+            audit,
+            root=ROOT,
+            require_fresh=True,
+            now="2026-07-09T00:00:00Z",
+        )
+        placeholder_strict = verify_external_evidence_intake(
+            placeholder_intake,
+            plan,
+            manifest,
+            audit,
+            root=ROOT,
+            require_fresh=True,
+            require_live_source_uris=True,
+            now="2026-07-09T00:00:00Z",
+        )
+        self.assertTrue(placeholder_nonstrict.ok, placeholder_nonstrict.errors)
+        self.assertTrue(any("source_uri is placeholder" in warning for warning in placeholder_nonstrict.warnings))
+        self.assertFalse(placeholder_strict.ok)
+        self.assertTrue(any("source_uri is placeholder" in error for error in placeholder_strict.errors), placeholder_strict.errors)
+
         tampered = copy.deepcopy(intake)
         tampered["evidence_item"]["sha256"] = "sha256:" + "0" * 64
         tampered["intake_id"] = content_hash(without_keys(tampered, "intake_id"))
@@ -1257,6 +1296,55 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertTrue(any("freshness metadata missing" in warning for warning in nonstrict_missing.warnings))
         self.assertFalse(strict_missing.ok)
         self.assertTrue(any("freshness metadata missing" in error for error in strict_missing.errors))
+        strict_missing_source_uri = verify_external_evidence_manifest(
+            missing_freshness_manifest,
+            audit,
+            root=ROOT,
+            require_live_source_uris=True,
+            now=now,
+        )
+        self.assertFalse(strict_missing_source_uri.ok)
+        self.assertTrue(
+            any("source_uri is placeholder or missing" in error for error in strict_missing_source_uri.errors),
+            strict_missing_source_uri.errors,
+        )
+
+        placeholder_uri_manifest = build_external_evidence_manifest(
+            audit,
+            root=ROOT,
+            evidence=[
+                {
+                    "requirement_id": "oss-verifier-and-public-spec",
+                    "authority_kind": "ci-run",
+                    "path": FIXTURE,
+                    "description": "Placeholder source URI workflow export.",
+                    "issuer": "Example Provider",
+                    "subject": "placeholder source uri check",
+                    "source_uri": "https://authority.example/workflow/run",
+                    "issued_at": "2026-07-08T00:00:00Z",
+                    "expires_at": "2026-12-31T00:00:00Z",
+                }
+            ],
+        )
+        placeholder_nonstrict = verify_external_evidence_manifest(
+            placeholder_uri_manifest,
+            audit,
+            root=ROOT,
+            require_fresh=True,
+            now=now,
+        )
+        placeholder_strict = verify_external_evidence_manifest(
+            placeholder_uri_manifest,
+            audit,
+            root=ROOT,
+            require_fresh=True,
+            require_live_source_uris=True,
+            now=now,
+        )
+        self.assertTrue(placeholder_nonstrict.ok, placeholder_nonstrict.errors)
+        self.assertTrue(any("source_uri is placeholder" in warning for warning in placeholder_nonstrict.warnings))
+        self.assertFalse(placeholder_strict.ok)
+        self.assertTrue(any("source_uri is placeholder" in error for error in placeholder_strict.errors), placeholder_strict.errors)
 
         expired_manifest = build_external_evidence_manifest(
             audit,
