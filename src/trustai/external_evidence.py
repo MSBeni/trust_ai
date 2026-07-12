@@ -520,6 +520,20 @@ def _resolve_source_map_snapshot_path(root: str | Path, snapshot_out: str) -> Pa
     return resolved
 
 
+def _resolve_evidence_item_artifact_path(root: str | Path, artifact_path: str) -> Path:
+    if not artifact_path:
+        raise ValueError("path is required")
+    if not _is_safe_relative_path(artifact_path):
+        raise ValueError(f"path must be repository-relative: {artifact_path}")
+    root_path = Path(root).resolve()
+    resolved = (root_path / artifact_path).resolve()
+    try:
+        resolved.relative_to(root_path)
+    except ValueError as exc:
+        raise ValueError(f"path is outside root: {artifact_path}") from exc
+    return resolved
+
+
 def _format_source_map_template(template: str, fields: dict[str, str], label: str) -> str:
     if not template:
         raise ValueError(f"external evidence source map {label} is required")
@@ -1290,10 +1304,14 @@ def verify_external_evidence_intake(
     root: str | Path,
     require_fresh: bool = False,
     require_live_source_uris: bool = False,
+    require_source_snapshot_artifacts: bool = False,
+    require_fresh_source_snapshot_artifacts: bool = False,
     now: str | None = None,
 ) -> ExternalEvidenceIntakeVerification:
     errors: list[str] = []
     warnings: list[str] = []
+    if require_fresh_source_snapshot_artifacts and not require_source_snapshot_artifacts:
+        errors.append("source snapshot artifact freshness requires source snapshot artifact verification")
 
     if intake.get("schema") != EXTERNAL_EVIDENCE_INTAKE_SCHEMA:
         errors.append(f"unsupported external evidence intake schema: {intake.get('schema')}")
@@ -1350,6 +1368,15 @@ def verify_external_evidence_intake(
         require_live_source_uris=require_live_source_uris,
         allowed_authority_kinds=required_authority_kinds.get(str(evidence_item.get("requirement_id") or ""), []),
     )
+    if require_source_snapshot_artifacts:
+        _verify_evidence_item_source_snapshot_artifact(
+            Path(root),
+            evidence_item,
+            errors,
+            warnings,
+            require_fresh=require_fresh_source_snapshot_artifacts,
+            now=now,
+        )
     try:
         expected_evidence_argument = _evidence_argument(evidence_item)
     except ValueError as exc:
@@ -1371,6 +1398,8 @@ def build_external_evidence_manifest_from_intakes(
     manifest_ref: str | None = None,
     require_fresh: bool = False,
     require_live_source_uris: bool = False,
+    require_source_snapshot_artifacts: bool = False,
+    require_fresh_source_snapshot_artifacts: bool = False,
     now: str | None = None,
     generated_at: str | None = None,
 ) -> dict[str, Any]:
@@ -1405,6 +1434,8 @@ def build_external_evidence_manifest_from_intakes(
             root=root,
             require_fresh=require_fresh,
             require_live_source_uris=require_live_source_uris,
+            require_source_snapshot_artifacts=require_source_snapshot_artifacts,
+            require_fresh_source_snapshot_artifacts=require_fresh_source_snapshot_artifacts,
             now=now,
         )
         if not intake_result.ok:
@@ -2918,6 +2949,46 @@ def _verify_evidence_item(
         )
     _verify_file_ref(root, item, errors)
     return freshness_status
+
+
+def _verify_evidence_item_source_snapshot_artifact(
+    root: Path,
+    item: dict[str, Any],
+    errors: list[str],
+    warnings: list[str],
+    *,
+    require_fresh: bool,
+    now: str | None,
+) -> None:
+    artifact_path_value = item.get("path")
+    if not isinstance(artifact_path_value, str):
+        artifact_path_value = ""
+    try:
+        artifact_path = _resolve_evidence_item_artifact_path(root, artifact_path_value)
+    except ValueError as exc:
+        errors.append(f"intake source snapshot artifact {exc}")
+        return
+    if not artifact_path.is_file():
+        errors.append(f"intake source snapshot artifact does not exist: {artifact_path_value}")
+        return
+    try:
+        snapshot = load_external_evidence_source_snapshot(artifact_path)
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        errors.append(f"intake source snapshot artifact is not a readable source snapshot: {exc}")
+        return
+    snapshot_result = verify_external_evidence_source_snapshot(
+        snapshot,
+        require_fresh=require_fresh,
+        now=now,
+    )
+    warnings.extend(f"intake source snapshot artifact: {warning}" for warning in snapshot_result.warnings)
+    if not snapshot_result.ok:
+        errors.extend(f"intake source snapshot artifact: {error}" for error in snapshot_result.errors)
+    if str(snapshot.get("source_uri") or "") != str(item.get("source_uri") or ""):
+        errors.append("intake source snapshot artifact source_uri does not match evidence source_uri")
+    status_code = snapshot.get("status_code")
+    if isinstance(status_code, int) and (status_code < 200 or status_code >= 400):
+        errors.append(f"intake source snapshot artifact status_code is not successful: {status_code}")
 
 
 def _allowed_authority_kinds_for_requirement(requirement: dict[str, Any]) -> list[str]:

@@ -177,6 +177,8 @@ external authority evidence.
 
 `external-evidence-verify` with `--require-live-source-uris` MUST reject final manifest evidence items whose `source_uri` is missing, `TODO`, or an example/placeholder authority URI. `external-evidence-intake-verify`, `external-evidence-manifest-from-intakes`, and `external-evidence-append` expose the same strict option so production evidence cannot bypass the source-map readiness gate.
 
+`external-evidence-intake-verify` with `--require-source-snapshot-artifact` MUST load the intake evidence item `path` under `--root`, verify it as `trustai.external-evidence-source-snapshot/0.1`, require the snapshot `source_uri` to match the evidence item, and reject HTTP snapshots whose status code is outside the 2xx/3xx range. With `--require-fresh-source-snapshot-artifact`, the verifier MUST also require fresh snapshot `issued_at`/`expires_at` windows at the supplied `--now` time; this freshness option is invalid unless source snapshot artifact verification is also enabled.
+
 `external-evidence-collect-batch` consumes the same source-map schema. Each
 entry MUST identify a unique collection `task`, `source_uri`, and `description`;
 it MAY provide or inherit `source_file`, `issuer`, `subject`, `content_type`,
@@ -278,8 +280,12 @@ may be supplied explicitly or discovered recursively from intake directories;
 directory discovery only consumes JSON objects whose `schema` is
 `trustai.external-evidence-intake/0.1`. Duplicate intake receipts for the same
 authority coverage unit are rejected so that a manifest cannot silently choose
-between conflicting collected artifacts. Use the rebuilt manifest as the next
-source manifest before appending to the roadmap evidence chain.
+between conflicting collected artifacts. With `--require-source-snapshot-artifacts`,
+the rebuild MUST apply source snapshot artifact verification to every intake
+before overlaying it; with `--require-fresh-source-snapshot-artifacts`, every
+required intake snapshot artifact MUST also be fresh at the supplied `--now`
+time. Use the rebuilt manifest as the next source manifest before appending to
+the roadmap evidence chain.
 
 ## External Evidence Gap Report
 

@@ -14183,6 +14183,8 @@ def cmd_external_evidence_manifest_from_intakes(args: argparse.Namespace) -> int
             manifest_ref=args.manifest_ref,
             require_fresh=args.require_fresh,
             require_live_source_uris=args.require_live_source_uris,
+            require_source_snapshot_artifacts=args.require_source_snapshot_artifacts,
+            require_fresh_source_snapshot_artifacts=args.require_fresh_source_snapshot_artifacts,
             now=args.now,
         )
     except (OSError, ValueError) as exc:
@@ -15021,6 +15023,8 @@ def cmd_external_evidence_intake(args: argparse.Namespace) -> int:
             root=args.root,
             require_fresh=args.require_fresh,
             require_live_source_uris=args.require_live_source_uris,
+            require_source_snapshot_artifacts=args.require_source_snapshot_artifacts,
+            require_fresh_source_snapshot_artifacts=args.require_fresh_source_snapshot_artifacts,
             now=args.now,
         )
     except (OSError, ValueError) as exc:
@@ -15056,6 +15060,8 @@ def cmd_external_evidence_intake_verify(args: argparse.Namespace) -> int:
             root=args.root,
             require_fresh=args.require_fresh,
             require_live_source_uris=args.require_live_source_uris,
+            require_source_snapshot_artifacts=args.require_source_snapshot_artifacts,
+            require_fresh_source_snapshot_artifacts=args.require_fresh_source_snapshot_artifacts,
             now=args.now,
         )
     except (OSError, ValueError) as exc:
@@ -24627,6 +24633,8 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_intake.add_argument("--expires-at")
     external_evidence_intake.add_argument("--require-fresh", action="store_true")
     external_evidence_intake.add_argument("--require-live-source-uris", action="store_true", help="fail when the intake evidence item uses a placeholder/example source_uri value")
+    external_evidence_intake.add_argument("--require-source-snapshot-artifact", dest="require_source_snapshot_artifacts", action="store_true", help="fail unless the intake artifact is a verified source snapshot")
+    external_evidence_intake.add_argument("--require-fresh-source-snapshot-artifact", dest="require_fresh_source_snapshot_artifacts", action="store_true", help="fail unless the required source snapshot artifact has a fresh issued_at/expires_at window")
     external_evidence_intake.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to intake generated_at")
     external_evidence_intake.add_argument("--out", default="artifacts/external-evidence-intake.json")
     external_evidence_intake.set_defaults(func=cmd_external_evidence_intake)
@@ -24639,6 +24647,8 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_intake_verify.add_argument("--root", default=".")
     external_evidence_intake_verify.add_argument("--require-fresh", action="store_true")
     external_evidence_intake_verify.add_argument("--require-live-source-uris", action="store_true", help="fail when the intake evidence item uses a placeholder/example source_uri value")
+    external_evidence_intake_verify.add_argument("--require-source-snapshot-artifact", dest="require_source_snapshot_artifacts", action="store_true", help="fail unless the intake artifact is a verified source snapshot")
+    external_evidence_intake_verify.add_argument("--require-fresh-source-snapshot-artifact", dest="require_fresh_source_snapshot_artifacts", action="store_true", help="fail unless the required source snapshot artifact has a fresh issued_at/expires_at window")
     external_evidence_intake_verify.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to intake generated_at")
     external_evidence_intake_verify.set_defaults(func=cmd_external_evidence_intake_verify)
 
@@ -24653,6 +24663,8 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_from_intakes.add_argument("--require-complete", action="store_true")
     external_evidence_from_intakes.add_argument("--require-fresh", action="store_true", help="fail unless every intake and final evidence item has an unexpired issued_at/expires_at window")
     external_evidence_from_intakes.add_argument("--require-live-source-uris", action="store_true", help="fail when any intake or final evidence item uses a placeholder/example source_uri value")
+    external_evidence_from_intakes.add_argument("--require-source-snapshot-artifacts", action="store_true", help="fail unless every intake artifact is a verified source snapshot")
+    external_evidence_from_intakes.add_argument("--require-fresh-source-snapshot-artifacts", action="store_true", help="fail unless every required source snapshot artifact has a fresh issued_at/expires_at window")
     external_evidence_from_intakes.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to generated_at")
     external_evidence_from_intakes.add_argument("--out", default="artifacts/external-evidence-manifest-from-intakes.json")
     external_evidence_from_intakes.add_argument("--markdown", default="artifacts/external-evidence-manifest-from-intakes.md")

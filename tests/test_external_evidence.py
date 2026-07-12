@@ -61,6 +61,7 @@ from trustai.external_evidence import (
     verify_roadmap_evidence_report,
     write_external_evidence_collection_plan,
     write_external_evidence_manifest,
+    write_external_evidence_source_snapshot,
 )
 from trustai.roadmap_audit import STATUS_REFERENCE_ATTESTED, append_roadmap_audit, build_roadmap_audit, verify_roadmap_audit, write_roadmap_audit
 
@@ -590,6 +591,124 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertTrue(any("source_uri is placeholder" in warning for warning in placeholder_nonstrict.warnings))
         self.assertFalse(placeholder_strict.ok)
         self.assertTrue(any("source_uri is placeholder" in error for error in placeholder_strict.errors), placeholder_strict.errors)
+
+        strict_without_snapshot_artifact = verify_external_evidence_intake(
+            intake,
+            plan,
+            manifest,
+            audit,
+            root=ROOT,
+            require_source_snapshot_artifacts=True,
+        )
+        fresh_snapshot_without_snapshot_artifact = verify_external_evidence_intake(
+            intake,
+            plan,
+            manifest,
+            audit,
+            root=ROOT,
+            require_fresh_source_snapshot_artifacts=True,
+        )
+        self.assertFalse(strict_without_snapshot_artifact.ok)
+        self.assertTrue(
+            any("unsupported external evidence source snapshot schema" in error for error in strict_without_snapshot_artifact.errors),
+            strict_without_snapshot_artifact.errors,
+        )
+        self.assertFalse(fresh_snapshot_without_snapshot_artifact.ok)
+        self.assertTrue(
+            any("requires source snapshot artifact verification" in error for error in fresh_snapshot_without_snapshot_artifact.errors),
+            fresh_snapshot_without_snapshot_artifact.errors,
+        )
+
+        snapshot_rel = Path("artifacts/test-intake-source-snapshot/source-snapshot.json")
+        snapshot_path = ROOT / snapshot_rel
+        mismatch_rel = Path("artifacts/test-intake-source-snapshot/source-snapshot-mismatch.json")
+        mismatch_path = ROOT / mismatch_rel
+        shutil.rmtree(snapshot_path.parent, ignore_errors=True)
+        try:
+            snapshot = build_external_evidence_source_snapshot(
+                source_uri="https://github.com/MSBeni/trust_ai/actions",
+                body=(ROOT / FIXTURE).read_bytes(),
+                retrieval_method="file-copy",
+                issuer="GitHub Actions",
+                subject="trustai go verifier release workflow",
+                content_type="application/json",
+                status_code=200,
+                issued_at="2026-07-08T00:00:00Z",
+                expires_at="2026-12-31T00:00:00Z",
+                generated_at="2026-07-09T00:00:00Z",
+            )
+            write_external_evidence_source_snapshot(snapshot_path, snapshot)
+            snapshot_intake = build_external_evidence_intake(
+                plan,
+                manifest,
+                audit,
+                root=ROOT,
+                task_ref="oss-verifier-and-public-spec:ci-run",
+                artifact_path=snapshot_rel.as_posix(),
+                description="Recorded verifier workflow run source snapshot",
+                issuer="GitHub Actions",
+                subject="trustai go verifier release workflow",
+                source_uri="https://github.com/MSBeni/trust_ai/actions",
+                issued_at="2026-07-08T00:00:00Z",
+                expires_at="2026-12-31T00:00:00Z",
+                generated_at="2026-07-09T00:00:00Z",
+            )
+            snapshot_result = verify_external_evidence_intake(
+                snapshot_intake,
+                plan,
+                manifest,
+                audit,
+                root=ROOT,
+                require_fresh=True,
+                require_source_snapshot_artifacts=True,
+                require_fresh_source_snapshot_artifacts=True,
+                now="2026-07-09T00:00:00Z",
+            )
+            self.assertTrue(snapshot_result.ok, snapshot_result.errors)
+
+            mismatch_snapshot = build_external_evidence_source_snapshot(
+                source_uri="https://github.com/MSBeni/trust_ai/actions/runs/different",
+                body=(ROOT / FIXTURE).read_bytes(),
+                retrieval_method="file-copy",
+                issuer="GitHub Actions",
+                subject="trustai go verifier release workflow",
+                content_type="application/json",
+                status_code=200,
+                issued_at="2026-07-08T00:00:00Z",
+                expires_at="2026-12-31T00:00:00Z",
+                generated_at="2026-07-09T00:00:00Z",
+            )
+            write_external_evidence_source_snapshot(mismatch_path, mismatch_snapshot)
+            mismatch_intake = build_external_evidence_intake(
+                plan,
+                manifest,
+                audit,
+                root=ROOT,
+                task_ref="oss-verifier-and-public-spec:ci-run",
+                artifact_path=mismatch_rel.as_posix(),
+                description="Recorded verifier workflow run source snapshot",
+                issuer="GitHub Actions",
+                subject="trustai go verifier release workflow",
+                source_uri="https://github.com/MSBeni/trust_ai/actions",
+                issued_at="2026-07-08T00:00:00Z",
+                expires_at="2026-12-31T00:00:00Z",
+                generated_at="2026-07-09T00:00:00Z",
+            )
+            mismatch_result = verify_external_evidence_intake(
+                mismatch_intake,
+                plan,
+                manifest,
+                audit,
+                root=ROOT,
+                require_source_snapshot_artifacts=True,
+            )
+            self.assertFalse(mismatch_result.ok)
+            self.assertTrue(
+                any("source_uri does not match evidence source_uri" in error for error in mismatch_result.errors),
+                mismatch_result.errors,
+            )
+        finally:
+            shutil.rmtree(snapshot_path.parent, ignore_errors=True)
 
         tampered = copy.deepcopy(intake)
         tampered["evidence_item"]["sha256"] = "sha256:" + "0" * 64
@@ -1223,6 +1342,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     root=ROOT,
                     intakes=intakes,
                     require_fresh=True,
+                    require_source_snapshot_artifacts=True,
+                    require_fresh_source_snapshot_artifacts=True,
                     now="2026-07-09T00:00:00Z",
                     generated_at="2026-07-09T00:01:00Z",
                 )
