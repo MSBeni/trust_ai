@@ -149,13 +149,15 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "sdk/typescript/src/index.mjs",
             "examples/aitrade/verification-contract.yaml",
             "examples/aitrade/mcp-transcript.json",
+            "examples/aitrade/mcp-stdio-client-messages.json",
+            "examples/aitrade/mcp-stdio-upstream.py",
             "tests/test_self_serve_onboarding.py",
             "tests/test_ingest_runtime.py",
             "tests/test_typescript_sdk.py",
             "tests/test_mcp_gateway.py",
         ],
         "external_authority": [
-            "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, MCP gateway, examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence.",
+            "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence.",
         ],
     },
     {

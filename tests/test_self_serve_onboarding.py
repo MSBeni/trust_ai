@@ -40,11 +40,14 @@ class SelfServeOnboardingTests(unittest.TestCase):
 
         self.assertTrue(result.ok, result.errors)
         self.assertEqual(SELF_SERVE_ONBOARDING_SCHEMA, receipt["schema"])
-        self.assertEqual(12, len(receipt["source_artifacts"]))
+        self.assertEqual(14, len(receipt["source_artifacts"]))
         self.assertEqual(len(receipt["quickstart_steps"]), len(receipt["quickstart_replay"]))
         self.assertTrue(all(item["command_valid"] for item in receipt["quickstart_replay"]))
         replay_by_id = {item["id"]: item for item in receipt["quickstart_replay"]}
         self.assertEqual("mcp-capture", replay_by_id["capture-mcp-transcript"]["subcommand"])
+        self.assertEqual("mcp-proxy-stdio", replay_by_id["capture-mcp-stdio-proxy"]["subcommand"])
+        self.assertTrue(any(binding["path"] == "examples/aitrade/mcp-stdio-upstream.py" for binding in replay_by_id["capture-mcp-stdio-proxy"]["source_bindings"]))
+        self.assertIn("artifacts/mcp-proxy-stdio-capture.json", replay_by_id["capture-mcp-stdio-proxy"]["generated_targets"])
         self.assertTrue(any(binding["path"] == "src/trustai/cli.py" for binding in replay_by_id["register-contract"]["source_bindings"]))
         self.assertTrue(any(artifact["path"] == "examples/aitrade/otel-events.json" for artifact in receipt["source_artifacts"]))
         self.assertEqual({"passed"}, {control["status"] for control in receipt["controls"]})

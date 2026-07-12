@@ -8,7 +8,7 @@ The self-serve onboarding receipt proves that the local SDK/gateway quickstart
 surface is present, hash-bound, structurally replayed against registered CLI
 commands, and ready for offline review. It targets the
 roadmap's SDK/gateway tier: Python SDK, TypeScript SDK, OTel GenAI ingest, MCP
-gateway capture, example verification contracts, and offline verifier commands.
+gateway transcript capture, runnable MCP stdio proxy capture, example verification contracts, and offline verifier commands.
 
 The receipt is not a hosted signup or billing artifact. It intentionally limits
 its claim to local self-serve onboarding and records the production evidence
@@ -33,6 +33,8 @@ The receipt binds these source artifacts by path, `sha256:` hash, and size:
 - `sdk/typescript/src/index.mjs`
 - `examples/aitrade/verification-contract.yaml`
 - `examples/aitrade/mcp-transcript.json`
+- `examples/aitrade/mcp-stdio-client-messages.json`
+- `examples/aitrade/mcp-stdio-upstream.py`
 - `examples/aitrade/otel-events.json`
 
 ## Receipt Fields
@@ -49,7 +51,8 @@ The receipt binds these source artifacts by path, `sha256:` hash, and size:
   mode.
 - `quickstart_replay`: local structural replay for each command, including CLI
   subcommand registration, source file bindings, generated targets, and command
-  validity.
+  validity. Gateway modes include both transcript capture and the runnable
+  `mcp-proxy-stdio` proxy capture command.
 - `controls`: derived status checks for SDK, OTel, MCP, contract example,
   quickstart command replay, and production-claim limits.
 - `signatures`: one or more signatures over `{receipt_id,

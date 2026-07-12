@@ -29,6 +29,8 @@ REQUIRED_SOURCE_PATHS = (
     "sdk/typescript/src/index.mjs",
     "examples/aitrade/verification-contract.yaml",
     "examples/aitrade/mcp-transcript.json",
+    "examples/aitrade/mcp-stdio-client-messages.json",
+    "examples/aitrade/mcp-stdio-upstream.py",
     "examples/aitrade/otel-events.json",
 )
 QUICKSTART_SOURCE_TARGETS: dict[str, tuple[str, ...]] = {
@@ -38,6 +40,13 @@ QUICKSTART_SOURCE_TARGETS: dict[str, tuple[str, ...]] = {
     "register-contract": ("src/trustai/cli.py", "examples/aitrade/verification-contract.yaml"),
     "verify-pack": ("src/trustai/cli.py",),
     "capture-mcp-transcript": ("src/trustai/cli.py", "src/trustai/mcp_gateway.py", "docs/specs/mcp-gateway-v0.1.md", "examples/aitrade/mcp-transcript.json"),
+    "capture-mcp-stdio-proxy": (
+        "src/trustai/cli.py",
+        "src/trustai/mcp_gateway.py",
+        "docs/specs/mcp-gateway-v0.1.md",
+        "examples/aitrade/mcp-stdio-client-messages.json",
+        "examples/aitrade/mcp-stdio-upstream.py",
+    ),
     "ingest-otel-events": ("src/trustai/cli.py", "src/trustai/ingest.py", "docs/specs/otel-ingest-v0.1.md", "examples/aitrade/otel-events.json"),
 }
 
@@ -45,6 +54,7 @@ QUICKSTART_GENERATED_TARGETS: dict[str, tuple[str, ...]] = {
     "initialize-local-chain": (".trustai/demo/evidence-chain.json",),
     "verify-pack": ("artifacts/aitrade-proof-pack.json",),
     "capture-mcp-transcript": (".trustai/demo/evidence-chain.json",),
+    "capture-mcp-stdio-proxy": ("artifacts/mcp-proxy-stdio-events.json", "artifacts/mcp-proxy-stdio-capture.json"),
     "ingest-otel-events": (".trustai/demo/evidence-chain.json",),
 }
 
@@ -290,6 +300,13 @@ def _quickstart_steps(sdk_scope: str, gateway_mode: str) -> list[dict[str, str]]
                 "command": "python -m trustai mcp-capture examples/aitrade/mcp-transcript.json --state .trustai/demo/evidence-chain.json --tenant local-self-serve",
             }
         )
+        steps.append(
+            {
+                "id": "capture-mcp-stdio-proxy",
+                "title": "Run the MCP stdio proxy and write a signed capture",
+                "command": "python -m trustai mcp-proxy-stdio examples/aitrade/mcp-stdio-client-messages.json --upstream-command python --upstream-arg examples/aitrade/mcp-stdio-upstream.py --agent-name aitrade-risk-agent --agent-version sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234 --risk-class trading-prod-write --contract-hash 22a3727b124ce6664031037939cf391ce724158d681db3a55e9a0f0c51bcc7a2 --proxy-ref mcp-proxy:trustai/stdio-local --upstream-ref mcp-server:aitrade/stdio-example --session-id stdio-demo-001 --captured-at 2026-07-03T12:00:12Z --events-out artifacts/mcp-proxy-stdio-events.json --out artifacts/mcp-proxy-stdio-capture.json",
+            }
+        )
     else:
         steps.append(
             {
@@ -377,8 +394,14 @@ def _controls(
         },
         {
             "id": "mcp-gateway-quickstart-bound",
-            "status": "passed" if gateway_mode in {"mcp-gateway", "sdk-gateway"} and "src/trustai/mcp_gateway.py" in paths else "not-applicable",
-            "detail": "MCP gateway source, spec, and transcript example are hash-bound when selected.",
+            "status": "passed"
+            if gateway_mode in {"mcp-gateway", "sdk-gateway"}
+            and "src/trustai/mcp_gateway.py" in paths
+            and "examples/aitrade/mcp-transcript.json" in paths
+            and "examples/aitrade/mcp-stdio-client-messages.json" in paths
+            and "examples/aitrade/mcp-stdio-upstream.py" in paths
+            else "not-applicable",
+            "detail": "MCP gateway source, spec, transcript example, and runnable stdio proxy examples are hash-bound when selected.",
         },
         {
             "id": "verification-contract-example-bound",
