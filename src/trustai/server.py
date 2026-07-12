@@ -254,6 +254,13 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             finally:
                 control.close()
             return
+        if parsed.path == "/v0/authority-dossiers":
+            control = self._control()
+            try:
+                self._json_response(200, {"authority_dossiers": control.recent_authority_dossiers()})
+            finally:
+                control.close()
+            return
         self._json_response(404, {"error": "not found"})
 
     def do_POST(self) -> None:

@@ -11,6 +11,8 @@ from trustai.contracts import load_contract, register_contract
 from trustai.external_evidence import append_external_evidence_manifest, build_external_evidence_manifest
 from trustai.gate import append_eval_and_gate
 from trustai.ingest import append_events, load_events
+from trustai.mcp_gateway import load_mcp_transcript
+from trustai.mcp_gateway_authority import append_mcp_gateway_authority_dossier, build_mcp_gateway_authority_dossier
 from trustai.lifecycle import append_incident, load_incident
 from trustai.policy import append_policy_decision, load_policy_pack
 from trustai.policy_engine import append_policy_engine_receipt, build_policy_engine_receipt
@@ -28,6 +30,7 @@ CONTRACT = ROOT / "examples" / "aitrade" / "verification-contract.yaml"
 RESULTS = ROOT / "examples" / "aitrade" / "eval-results.json"
 INVENTORY = ROOT / "examples" / "aitrade" / "agent-inventory.json"
 EVENTS = ROOT / "examples" / "aitrade" / "otel-events.json"
+MCP = ROOT / "examples" / "aitrade" / "mcp-transcript.json"
 ACTION = ROOT / "examples" / "aitrade" / "runtime-action.json"
 POLICY = ROOT / "examples" / "aitrade" / "policy-pack.json"
 INCIDENT = ROOT / "examples" / "aitrade" / "incident.json"
@@ -114,6 +117,43 @@ class ControlPlaneTests(unittest.TestCase):
                 generated_at="2026-07-12T00:00:00Z",
             )
             append_external_evidence_manifest(chain, external_manifest, audit, root=ROOT)
+            mcp_calls = load_mcp_transcript(MCP)
+            mcp_authority = build_mcp_gateway_authority_dossier(
+                mcp_calls,
+                mode="proxy-dossier",
+                environment="aitrade-prod",
+                dossier_ref="dossier:mcp-gateway-authority/aitrade-prod",
+                authority_ref="authority:mcp-gateway/proxy-prod",
+                producer_ref="oidc:trustai.example/mcp-gateway-authority-worker",
+                authority_evidence=[
+                    {
+                        "requirement_id": "production-mcp-proxy-worker-fleet",
+                        "authority_kind": "hosted-service",
+                        "evidence_ref": "mcp-proxy:fleet/aitrade-prod",
+                        "evidence_hash": "sha256:mcp-proxy-worker-fleet",
+                        "description": "Hosted MCP proxy worker fleet export for governed tool-call capture.",
+                        "issuer": "TrustAI Hosted Ops",
+                        "subject": "aitrade-prod MCP proxy fleet",
+                        "source_uri": "https://mcp.example/audit/fleet/aitrade-prod",
+                        "issued_at": "2026-07-12T03:10:00Z",
+                        "expires_at": "2026-07-19T03:10:00Z",
+                    },
+                    {
+                        "requirement_id": "immutable-mcp-audit-logs",
+                        "authority_kind": "cloud-object-lock",
+                        "evidence_ref": "s3-object-lock:mcp/audit/aitrade-prod",
+                        "evidence_hash": "sha256:mcp-immutable-audit-root",
+                        "description": "Object Lock audit-log root for MCP proxy and tool server events.",
+                        "issuer": "Example Cloud Object Lock",
+                        "subject": "aitrade-prod MCP audit retention",
+                        "source_uri": "https://object-lock.example/mcp/audit/aitrade-prod",
+                        "issued_at": "2026-07-12T03:11:00Z",
+                        "expires_at": "2026-07-19T03:11:00Z",
+                    },
+                ],
+                generated_at="2026-07-12T03:12:00Z",
+            )
+            append_mcp_gateway_authority_dossier(chain, mcp_authority, transcript_calls=mcp_calls)
             chain.save()
 
             control = ControlPlane(tmp / "control.sqlite")
@@ -141,13 +181,19 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, summary["counts"]["policy_engine_receipts"])
                 self.assertEqual(1, summary["counts"]["incidents"])
                 self.assertEqual(1, summary["counts"]["external_evidence_manifests"])
+                self.assertEqual(1, summary["counts"]["authority_dossiers"])
                 self.assertEqual(1, counts["runtime_attestations"])
                 self.assertEqual(1, counts["policy_decisions"])
                 self.assertEqual(1, counts["policy_engine_receipts"])
                 self.assertEqual(1, counts["incidents"])
                 self.assertEqual(1, counts["external_evidence_manifests"])
+                self.assertEqual(1, counts["authority_dossiers"])
                 self.assertEqual("partial", summary["latest_external_evidence_manifest"]["status"])
                 self.assertGreater(summary["latest_external_evidence_manifest"]["missing_authority_kind_count"], 0)
+                self.assertEqual("authority:mcp-gateway/proxy-prod", summary["latest_authority_dossier"]["authority_ref"])
+                self.assertEqual("proxy-dossier", summary["latest_authority_dossier"]["mode"])
+                self.assertFalse(summary["latest_authority_dossier"]["production_claimed"])
+                self.assertGreater(summary["latest_authority_dossier"]["missing_requirement_count"], 0)
                 self.assertEqual("passed", summary["latest_proof_pack"]["outcome"])
                 self.assertEqual("aitrade-btcusdt-canary", summary["latest_eval_run"]["contract_id"])
                 self.assertEqual("passed", summary["latest_gate_decision"]["outcome"])
@@ -248,6 +294,16 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertGreater(external_evidence[0]["missing_requirement_count"], 0)
                 self.assertGreater(external_evidence[0]["missing_authority_kind_count"], 0)
                 self.assertIsInstance(external_evidence[0]["missing_requirement_ids"], list)
+                authority_dossiers = control.recent_authority_dossiers()
+                self.assertEqual(1, len(authority_dossiers))
+                self.assertEqual("mcp.gateway_authority_recorded", authority_dossiers[0]["entry_type"])
+                self.assertEqual("authority:mcp-gateway/proxy-prod", authority_dossiers[0]["authority_ref"])
+                self.assertFalse(authority_dossiers[0]["production_claimed"])
+                self.assertEqual(2, authority_dossiers[0]["covered_requirement_count"])
+                self.assertGreater(authority_dossiers[0]["missing_requirement_count"], 0)
+                self.assertEqual(2, authority_dossiers[0]["freshness_window_count"])
+                self.assertIsInstance(authority_dossiers[0]["missing_requirement_ids"], list)
+                self.assertEqual(2, authority_dossiers[0]["control_summary"]["deferred"])
             finally:
                 control.close()
 

@@ -20,13 +20,14 @@ into queryable registry tables while keeping the chain as the source of truth.
 - `policy_engine_receipts`: OPA/Cedar/local policy engine receipt metadata.
 - `incidents`: post-promotion incident evidence for drift and runtime failures.
 - `external_evidence_manifests`: roadmap external-authority coverage and missing-evidence counts.
+- `authority_dossiers`: production authority dossiers with mode, freshness windows, coverage, and missing requirement counts.
 - `anchors`: published chain-root anchors.
 
 ## CLI
 
 ```powershell
 python -m trustai control-index --state .trustai/demo/evidence-chain.json --tenant aitrade-local --pack artifacts/aitrade-proof-pack.json --db .trustai/control-plane.sqlite
-python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --external-evidence --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
+python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --external-evidence --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
 ```
 
 ## API
@@ -45,7 +46,8 @@ python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts
 - `GET /v0/ingest-events`;
 - `GET /v0/promotion-statuses`;
 - `GET /v0/runtime-evidence`;
-- `GET /v0/external-evidence`.
+- `GET /v0/external-evidence`;
+- `GET /v0/authority-dossiers`.
 
 The contract evidence endpoint returns one contract-scoped review surface with
 counts and recent rows for chain entries, eval runs, gate decisions, proof packs,
@@ -55,8 +57,10 @@ surface from the Agent/Version Registry side: inventory records, associated
 contracts, direct agent evidence, and contract-hash-linked runtime/policy rows.
 These are the local analogues of model-risk or auditor review pages for a single
 pre-registered contract or governed agent version. The external-evidence list
-exposes roadmap authority coverage and missing live-evidence counts so production
-readiness gaps stay visible in the same control-plane surface.
+exposes roadmap authority coverage and missing live-evidence counts, while the
+authority-dossier list exposes production authority dossier modes, coverage,
+freshness windows, and missing requirement IDs so production readiness gaps stay
+visible in the same control-plane surface.
 
 The implementation falls back to SQLite `nolock=1` mode when running on local
 filesystems that do not support normal SQLite locking, such as some UNC-backed

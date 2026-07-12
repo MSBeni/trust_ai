@@ -55,6 +55,37 @@ def _bool_fields(item: dict[str, Any], *fields: str) -> dict[str, Any]:
     return item
 
 
+def _decode_json_array(value: Any) -> list[Any]:
+    if not value:
+        return []
+    try:
+        decoded = json.loads(value)
+    except (TypeError, json.JSONDecodeError):
+        return []
+    return decoded if isinstance(decoded, list) else []
+
+
+def _is_authority_dossier_payload(entry: dict[str, Any], payload: Any) -> bool:
+    if not isinstance(payload, dict):
+        return False
+    if not payload.get("dossier_id") or not payload.get("authority_ref"):
+        return False
+    if not isinstance(payload.get("summary"), dict):
+        return False
+    if not isinstance(payload.get("authority_evidence"), list):
+        return False
+    entry_type = str(entry.get("entry_type") or "")
+    return "authority" in entry_type or str(payload.get("mode") or "").endswith("dossier")
+
+
+def _authority_freshness_window_count(evidence_items: list[Any]) -> int:
+    return sum(
+        1
+        for item in evidence_items
+        if isinstance(item, dict) and item.get("issued_at") and item.get("expires_at")
+    )
+
+
 class ControlPlane:
     def __init__(self, path: str | Path):
         self.path = Path(path)
@@ -289,6 +320,30 @@ class ControlPlane:
                 freshness_checked_at TEXT,
                 body_json TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS authority_dossiers (
+                dossier_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                entry_type TEXT NOT NULL,
+                dossier_hash TEXT NOT NULL,
+                dossier_ref TEXT,
+                mode TEXT,
+                environment TEXT,
+                authority_ref TEXT,
+                producer_ref TEXT,
+                production_claimed INTEGER NOT NULL,
+                production_ready INTEGER NOT NULL,
+                required_requirement_count INTEGER NOT NULL,
+                covered_requirement_count INTEGER NOT NULL,
+                missing_requirement_count INTEGER NOT NULL,
+                authority_evidence_count INTEGER NOT NULL,
+                freshness_window_count INTEGER NOT NULL,
+                missing_freshness_count INTEGER NOT NULL,
+                control_summary_json TEXT NOT NULL,
+                covered_requirement_ids_json TEXT NOT NULL,
+                missing_requirement_ids_json TEXT NOT NULL,
+                generated_at TEXT,
+                body_json TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS anchors (
                 anchor_id TEXT PRIMARY KEY,
                 entry_id TEXT,
@@ -321,6 +376,7 @@ class ControlPlane:
             "policy_engine_receipts": 0,
             "incidents": 0,
             "external_evidence_manifests": 0,
+            "authority_dossiers": 0,
         }
         for entry in chain.entries:
             payload = entry.get("payload", {})
@@ -716,6 +772,74 @@ class ControlPlane:
                     ),
                 )
                 counts["external_evidence_manifests"] += 1
+
+            if _is_authority_dossier_payload(entry, payload):
+                summary = payload.get("summary") if isinstance(payload.get("summary"), dict) else {}
+                evidence_items = (
+                    payload.get("authority_evidence") if isinstance(payload.get("authority_evidence"), list) else []
+                )
+                control_summary = (
+                    payload.get("control_summary") if isinstance(payload.get("control_summary"), dict) else {}
+                )
+                covered_ids = (
+                    summary.get("covered_requirement_ids")
+                    if isinstance(summary.get("covered_requirement_ids"), list)
+                    else []
+                )
+                missing_ids = (
+                    summary.get("missing_requirement_ids")
+                    if isinstance(summary.get("missing_requirement_ids"), list)
+                    else []
+                )
+                evidence_count = int(summary.get("authority_evidence_count") or len(evidence_items))
+                freshness_window_count = int(
+                    summary.get("freshness_window_count") or _authority_freshness_window_count(evidence_items)
+                )
+                missing_freshness_count = int(
+                    summary.get("missing_freshness_count") or max(evidence_count - freshness_window_count, 0)
+                )
+                missing_requirement_count = int(summary.get("missing_requirement_count") or 0)
+                production_claimed = payload.get("mode") == "production-dossier"
+                production_ready = production_claimed and missing_requirement_count == 0 and missing_freshness_count == 0
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO authority_dossiers(
+                        dossier_id, entry_id, entry_type, dossier_hash, dossier_ref,
+                        mode, environment, authority_ref, producer_ref,
+                        production_claimed, production_ready,
+                        required_requirement_count, covered_requirement_count,
+                        missing_requirement_count, authority_evidence_count,
+                        freshness_window_count, missing_freshness_count,
+                        control_summary_json, covered_requirement_ids_json,
+                        missing_requirement_ids_json, generated_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("dossier_id"),
+                        entry["entry_id"],
+                        entry.get("entry_type"),
+                        payload.get("dossier_hash") or entry.get("payload_hash"),
+                        payload.get("dossier_ref"),
+                        payload.get("mode"),
+                        payload.get("environment"),
+                        payload.get("authority_ref"),
+                        payload.get("producer_ref"),
+                        1 if production_claimed else 0,
+                        1 if production_ready else 0,
+                        int(summary.get("required_requirement_count") or 0),
+                        int(summary.get("covered_requirement_count") or 0),
+                        missing_requirement_count,
+                        evidence_count,
+                        freshness_window_count,
+                        missing_freshness_count,
+                        _json(control_summary),
+                        _json(covered_ids),
+                        _json(missing_ids),
+                        payload.get("generated_at") or entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["authority_dossiers"] += 1
         self.conn.commit()
         return counts
 
@@ -762,6 +886,7 @@ class ControlPlane:
             "policy_engine_receipts",
             "incidents",
             "external_evidence_manifests",
+            "authority_dossiers",
         ]
         counts = {
             table: self.conn.execute(f"SELECT COUNT(*) AS count FROM {table}").fetchone()["count"]
@@ -880,6 +1005,22 @@ class ControlPlane:
         latest_external_evidence_dict = dict(latest_external_evidence) if latest_external_evidence else None
         if latest_external_evidence_dict is not None:
             _bool_fields(latest_external_evidence_dict, "require_complete", "require_fresh", "require_live_source_uris")
+        latest_authority_dossier = self.conn.execute(
+            """
+            SELECT dossier_id, entry_type, dossier_ref, mode, environment,
+                   authority_ref, producer_ref, production_claimed,
+                   production_ready, covered_requirement_count,
+                   required_requirement_count, missing_requirement_count,
+                   authority_evidence_count, freshness_window_count,
+                   missing_freshness_count, generated_at
+            FROM authority_dossiers
+            ORDER BY generated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_authority_dossier_dict = dict(latest_authority_dossier) if latest_authority_dossier else None
+        if latest_authority_dossier_dict is not None:
+            _bool_fields(latest_authority_dossier_dict, "production_claimed", "production_ready")
         return {
             "schema_version": SCHEMA_VERSION,
             "database": str(self.path),
@@ -897,6 +1038,7 @@ class ControlPlane:
             "latest_policy_engine_receipt": latest_policy_engine_dict,
             "latest_incident": dict(latest_incident) if latest_incident else None,
             "latest_external_evidence_manifest": latest_external_evidence_dict,
+            "latest_authority_dossier": latest_authority_dossier_dict,
         }
 
     def contracts(self, limit: int = 20) -> list[dict[str, Any]]:
@@ -1102,6 +1244,33 @@ class ControlPlane:
             except (TypeError, json.JSONDecodeError):
                 missing_ids = []
             item["missing_requirement_ids"] = missing_ids if isinstance(missing_ids, list) else []
+            items.append(item)
+        return items
+
+    def recent_authority_dossiers(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT dossier_id, entry_id, entry_type, dossier_hash, dossier_ref,
+                   mode, environment, authority_ref, producer_ref,
+                   production_claimed, production_ready,
+                   required_requirement_count, covered_requirement_count,
+                   missing_requirement_count, authority_evidence_count,
+                   freshness_window_count, missing_freshness_count,
+                   control_summary_json, covered_requirement_ids_json,
+                   missing_requirement_ids_json, generated_at
+            FROM authority_dossiers
+            ORDER BY generated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            _bool_fields(item, "production_claimed", "production_ready")
+            item["control_summary"] = _decode_json_object(item.pop("control_summary_json", None))
+            item["covered_requirement_ids"] = _decode_json_array(item.pop("covered_requirement_ids_json", None))
+            item["missing_requirement_ids"] = _decode_json_array(item.pop("missing_requirement_ids_json", None))
             items.append(item)
         return items
 

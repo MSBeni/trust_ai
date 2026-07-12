@@ -128,6 +128,7 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual(0, summary_body["counts"]["eval_runs"])
                 self.assertEqual(0, summary_body["counts"]["gate_decisions"])
                 self.assertEqual(4, summary_body["counts"]["ingest_events"])
+                self.assertEqual(0, summary_body["counts"]["authority_dossiers"])
 
                 conn.request("GET", "/v0/contracts")
                 contracts_response = conn.getresponse()
@@ -199,6 +200,12 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 external_evidence_body = json.loads(external_evidence_response.read().decode("utf-8"))
                 self.assertEqual(200, external_evidence_response.status)
                 self.assertEqual([], external_evidence_body["external_evidence_manifests"])
+
+                conn.request("GET", "/v0/authority-dossiers")
+                authority_response = conn.getresponse()
+                authority_body = json.loads(authority_response.read().decode("utf-8"))
+                self.assertEqual(200, authority_response.status)
+                self.assertEqual([], authority_body["authority_dossiers"])
             finally:
                 conn.close()
                 server.shutdown()
