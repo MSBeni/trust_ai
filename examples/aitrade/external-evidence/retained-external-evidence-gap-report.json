@@ -6,7 +6,7 @@
       "hosted-service"
     ]
   },
-  "gap_report_id": "71ee61c7a9638aa4de5d6d079ddf044c19d566e4cf308684df87f48e6415ac22",
+  "gap_report_id": "7766a8803a4331281c976cc4e09e598ce12dbedd67aedf9fd3f3fb43a90533cb",
   "gaps": [
     {
       "authority_kind": "hosted-service",
@@ -1483,7 +1483,7 @@
       "unit_ref": "trust-network-procurement-and-marketplace:customer"
     }
   ],
-  "generated_at": "2026-07-12T04:16:41Z",
+  "generated_at": "2026-07-12T04:33:02Z",
   "limitations": [
     "This gap report verifies the retained manifest, remaining collection plan, and source-map worklist; it does not satisfy missing external authority evidence.",
     "A gap is closed only by collecting a matching authority artifact, verifying its source snapshot and intake receipt, then rebuilding the external evidence manifest.",
@@ -1686,6 +1686,7 @@
   "verification_options": {
     "now": "2026-07-12T00:00:00Z",
     "require_fresh": true,
+    "require_fresh_source_snapshots": false,
     "require_live_source_uris": false,
     "require_source_snapshots": false
   }

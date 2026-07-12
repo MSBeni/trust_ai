@@ -167,11 +167,13 @@ reject maps that still contain placeholder or example `source_uri` values. With
 `--require-source-snapshots`, verification MUST load every `snapshot_out` under
 `--root`, verify it as `trustai.external-evidence-source-snapshot/0.1`, require
 its `source_uri` to match the map entry, and reject HTTP snapshots whose status
-code is outside the 2xx/3xx range. Verification confirms operator worklist
-integrity and collected-source integrity only; it does not convert a source-map
-template into external authority evidence.
+code is outside the 2xx/3xx range. With `--require-fresh-source-snapshots`, the
+snapshot verifier MUST also require fresh `issued_at`/`expires_at` windows at the
+supplied `--now` time. Verification confirms operator worklist integrity and
+collected-source integrity only; it does not convert a source-map template into
+external authority evidence.
 
-`external-evidence-source-map-fulfill` merges task-bound authority metadata into an existing source map. Each fulfillment record identifies one entry by `task`, `task_ref`, `task_id`, `unit_id`, or `unit_ref`, may update only collection metadata (`source_uri`, `description`, `source_file`, `retrieval_method`, `content_type`, `issuer`, `subject`, `issued_at`, `expires_at`, `timeout_seconds`), recomputes placeholder/live source URI counts, and emits a new canonical `source_map_id`. The command MUST verify the fulfilled map against the original collection plan before export; with `--require-live-source-uris`, any remaining placeholder URI keeps the map from being used as a production collection input, and with `--require-source-snapshots`, the corresponding collected snapshots must already be present and valid under `--root`.
+`external-evidence-source-map-fulfill` merges task-bound authority metadata into an existing source map. Each fulfillment record identifies one entry by `task`, `task_ref`, `task_id`, `unit_id`, or `unit_ref`, may update only collection metadata (`source_uri`, `description`, `source_file`, `retrieval_method`, `content_type`, `issuer`, `subject`, `issued_at`, `expires_at`, `timeout_seconds`), recomputes placeholder/live source URI counts, and emits a new canonical `source_map_id`. The command MUST verify the fulfilled map against the original collection plan before export; with `--require-live-source-uris`, any remaining placeholder URI keeps the map from being used as a production collection input, and with `--require-source-snapshots`, the corresponding collected snapshots must already be present and valid under `--root`. `--require-fresh-source-snapshots` additionally requires those snapshots to be fresh at the supplied `--now` time.
 
 `external-evidence-verify` with `--require-live-source-uris` MUST reject final manifest evidence items whose `source_uri` is missing, `TODO`, or an example/placeholder authority URI. `external-evidence-intake-verify`, `external-evidence-manifest-from-intakes`, and `external-evidence-append` expose the same strict option so production evidence cannot bypass the source-map readiness gate.
 

@@ -400,6 +400,41 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 require_source_snapshots=True,
             )
             self.assertTrue(strict_snapshot_result.ok, strict_snapshot_result.errors)
+            fresh_without_snapshot_result = verify_external_evidence_source_map_template(
+                fulfilled,
+                plan,
+                root=tmp_path,
+                require_fresh_source_snapshots=True,
+                now="2026-07-12T00:00:00Z",
+            )
+            self.assertFalse(fresh_without_snapshot_result.ok)
+            self.assertTrue(any("requires --require-source-snapshots" in error for error in fresh_without_snapshot_result.errors), fresh_without_snapshot_result.errors)
+            fresh_snapshot_result = verify_external_evidence_source_map_template(
+                fulfilled,
+                plan,
+                root=tmp_path,
+                require_live_source_uris=True,
+                require_source_snapshots=True,
+                require_fresh_source_snapshots=True,
+                now="2026-07-12T00:00:00Z",
+            )
+            self.assertTrue(fresh_snapshot_result.ok, fresh_snapshot_result.errors)
+            expired_snapshot = copy.deepcopy(snapshot)
+            expired_snapshot["expires_at"] = "2026-07-11T00:00:00Z"
+            expired_snapshot["snapshot_id"] = content_hash(without_keys(expired_snapshot, "snapshot_id"))
+            snapshot_path.write_text(json.dumps(expired_snapshot, indent=2, sort_keys=True), encoding="utf-8")
+            expired_snapshot_result = verify_external_evidence_source_map_template(
+                fulfilled,
+                plan,
+                root=tmp_path,
+                require_live_source_uris=True,
+                require_source_snapshots=True,
+                require_fresh_source_snapshots=True,
+                now="2026-07-12T00:00:00Z",
+            )
+            self.assertFalse(expired_snapshot_result.ok)
+            self.assertTrue(any("snapshot expired" in error for error in expired_snapshot_result.errors), expired_snapshot_result.errors)
+            snapshot_path.write_text(json.dumps(snapshot, indent=2, sort_keys=True), encoding="utf-8")
             failed_status_snapshot = copy.deepcopy(snapshot)
             failed_status_snapshot["status_code"] = 500
             failed_status_snapshot["snapshot_id"] = content_hash(without_keys(failed_status_snapshot, "snapshot_id"))
@@ -432,6 +467,9 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     "2026-07-10T00:00:00Z",
                     "--require-live-source-uris",
                     "--require-source-snapshots",
+                    "--require-fresh-source-snapshots",
+                    "--now",
+                    "2026-07-12T00:00:00Z",
                     "--out",
                     str(fulfilled_path),
                 ],
@@ -932,6 +970,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertEqual(content_hash(without_keys(report, "gap_report_id")), report["gap_report_id"])
             self.assertFalse(report["verification_options"]["require_live_source_uris"])
             self.assertFalse(report["verification_options"]["require_source_snapshots"])
+            self.assertFalse(report["verification_options"]["require_fresh_source_snapshots"])
             strict_report_result = verify_external_evidence_gap_report(
                 report,
                 manifest,

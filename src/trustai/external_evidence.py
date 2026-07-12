@@ -655,9 +655,13 @@ def verify_external_evidence_source_map_template(
     root: str | Path = ".",
     require_live_source_uris: bool = False,
     require_source_snapshots: bool = False,
+    require_fresh_source_snapshots: bool = False,
+    now: str | None = None,
 ) -> ExternalEvidenceSourceMapVerification:
     errors: list[str] = []
     warnings: list[str] = []
+    if require_fresh_source_snapshots and not require_source_snapshots:
+        errors.append("source snapshot freshness requires --require-source-snapshots")
 
     if source_map.get("schema") != EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA:
         errors.append(f"unsupported external evidence source map schema: {source_map.get('schema')}")
@@ -764,7 +768,11 @@ def verify_external_evidence_source_map_template(
             except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
                 errors.append(f"source map entry {canonical_ref} snapshot_out is not a readable source snapshot: {exc}")
                 continue
-            snapshot_result = verify_external_evidence_source_snapshot(snapshot)
+            snapshot_result = verify_external_evidence_source_snapshot(
+                snapshot,
+                require_fresh=require_fresh_source_snapshots,
+                now=now,
+            )
             warnings.extend(f"source map entry {canonical_ref} snapshot: {warning}" for warning in snapshot_result.warnings)
             if not snapshot_result.ok:
                 errors.extend(f"source map entry {canonical_ref} snapshot: {error}" for error in snapshot_result.errors)
@@ -930,6 +938,7 @@ def build_external_evidence_gap_report(
     require_fresh: bool = False,
     require_live_source_uris: bool = False,
     require_source_snapshots: bool = False,
+    require_fresh_source_snapshots: bool = False,
     now: str | None = None,
     generated_at: str | None = None,
 ) -> dict[str, Any]:
@@ -947,6 +956,8 @@ def build_external_evidence_gap_report(
         root=root,
         require_live_source_uris=require_live_source_uris,
         require_source_snapshots=require_source_snapshots,
+        require_fresh_source_snapshots=require_fresh_source_snapshots,
+        now=now,
     )
     if not manifest_result.ok:
         raise ValueError("external evidence manifest is not valid for gap report: " + "; ".join(manifest_result.errors))
@@ -988,6 +999,7 @@ def build_external_evidence_gap_report(
             "require_fresh": require_fresh,
             "require_live_source_uris": require_live_source_uris,
             "require_source_snapshots": require_source_snapshots,
+            "require_fresh_source_snapshots": require_fresh_source_snapshots,
             "now": now,
         },
         "sources": {
@@ -1040,6 +1052,7 @@ def verify_external_evidence_gap_report(
     require_fresh: bool = False,
     require_live_source_uris: bool = False,
     require_source_snapshots: bool = False,
+    require_fresh_source_snapshots: bool = False,
     now: str | None = None,
 ) -> ExternalEvidenceGapReportVerification:
     errors: list[str] = []
@@ -1053,6 +1066,7 @@ def verify_external_evidence_gap_report(
         "require_fresh": require_fresh,
         "require_live_source_uris": require_live_source_uris,
         "require_source_snapshots": require_source_snapshots,
+        "require_fresh_source_snapshots": require_fresh_source_snapshots,
         "now": now,
     }
     if report.get("verification_options") != expected_options:
@@ -1068,6 +1082,7 @@ def verify_external_evidence_gap_report(
             require_fresh=require_fresh,
             require_live_source_uris=require_live_source_uris,
             require_source_snapshots=require_source_snapshots,
+            require_fresh_source_snapshots=require_fresh_source_snapshots,
             now=now,
             generated_at=str(report.get("generated_at") or ""),
         )
