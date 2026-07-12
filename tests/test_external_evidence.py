@@ -13,6 +13,7 @@ from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
 from trustai.external_evidence import (
     EXTERNAL_EVIDENCE_ENTRY_TYPE,
+    EXTERNAL_EVIDENCE_COLLECTION_RUN_ENTRY_TYPE,
     EXTERNAL_EVIDENCE_SCHEMA,
     EXTERNAL_EVIDENCE_COLLECTION_PLAN_SCHEMA,
     EXTERNAL_EVIDENCE_INTAKE_SCHEMA,
@@ -25,6 +26,7 @@ from trustai.external_evidence import (
     ROADMAP_EVIDENCE_BUNDLE_SCHEMA,
     _allowed_authority_kinds_for_requirement,
     _authority_unit_id,
+    append_external_evidence_collection_run,
     append_external_evidence_manifest,
     build_external_evidence_manifest,
     build_external_evidence_manifest_from_intakes,
@@ -1077,8 +1079,22 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["oss-verifier-and-public-spec"],
         )
         with tempfile.TemporaryDirectory() as tmp_dir:
-            chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="retained-external-evidence-strict")
+            tmp_path = Path(tmp_dir)
+            chain = EvidenceChain.load(tmp_path / "chain.json", tenant_id="retained-external-evidence-strict")
             append_roadmap_audit(chain, audit, root=ROOT)
+            collection_entry = append_external_evidence_collection_run(
+                chain,
+                collection_run,
+                plan,
+                manifest,
+                audit,
+                root=ROOT,
+                source_map=collected_source_map,
+                require_fresh=True,
+                require_live_source_uris=True,
+                require_fresh_source_snapshot_artifacts=True,
+                now="2026-07-12T00:00:00Z",
+            )
             entry = append_external_evidence_manifest(
                 chain,
                 retained_manifest,
@@ -1091,14 +1107,33 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 now="2026-07-12T00:00:00Z",
             )
             report = build_roadmap_evidence_report(chain, require_external=True, require_fresh=True, generated_at="2026-07-12T00:01:00Z")
+            report_result = verify_roadmap_evidence_report(report, chain, require_external=True, require_fresh=True)
             payload = entry["payload"]
             report_entry = report["external_evidence_entries"][0]
+            collection_payload = collection_entry["payload"]
+            collection_report_entry = report["external_evidence_collection_run_entries"][0]
+            self.assertTrue(report_result.ok, report_result.errors)
+            self.assertEqual(EXTERNAL_EVIDENCE_COLLECTION_RUN_ENTRY_TYPE, collection_entry["entry_type"])
+            self.assertEqual(collection_run["run_id"], collection_payload["run_id"])
+            self.assertEqual(content_hash(collection_run), collection_payload["run_hash"])
+            self.assertEqual(content_hash(collected_source_map), collection_payload["source_map_hash"])
+            self.assertEqual(3, collection_payload["collected_count"])
+            self.assertEqual(3, collection_payload["task_count"])
+            self.assertTrue(collection_payload["require_live_source_uris"])
+            self.assertTrue(collection_payload["require_source_snapshot_artifacts"])
+            self.assertTrue(collection_payload["require_fresh_source_snapshot_artifacts"])
+            self.assertEqual(1, report["summary"]["external_evidence_collection_run_entry_count"])
+            self.assertTrue(report["summary"]["has_external_evidence_collection_runs"])
+            self.assertEqual(1, len(report["external_evidence_collection_run_entries"]))
+            self.assertEqual(collection_run["run_id"], collection_report_entry["run_id"])
+            self.assertEqual(collection_payload["snapshot_ids"], collection_report_entry["snapshot_ids"])
             self.assertTrue(payload["require_live_source_uris"])
             self.assertTrue(payload["require_source_snapshot_artifacts"])
             self.assertTrue(payload["require_fresh_source_snapshot_artifacts"])
             self.assertTrue(report_entry["require_live_source_uris"])
             self.assertTrue(report_entry["require_source_snapshot_artifacts"])
             self.assertTrue(report_entry["require_fresh_source_snapshot_artifacts"])
+
 
     def test_cli_external_evidence_gap_report_verifies_retained_worklist(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -1814,6 +1849,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertEqual(0, report["summary"]["fresh_external_evidence_entry_count"])
             self.assertEqual(1, report["summary"]["roadmap_audit_entry_count"])
             self.assertEqual(1, report["summary"]["external_evidence_entry_count"])
+            self.assertEqual(0, report["summary"]["external_evidence_collection_run_entry_count"])
+            self.assertFalse(report["summary"]["has_external_evidence_collection_runs"])
             self.assertIn("TrustAI Roadmap Evidence Report", markdown)
             self.assertIn(report["chain"]["tree"]["root"], markdown)
 

@@ -203,6 +203,16 @@ match the actual artifacts. Verification MUST reject missing files, tampered
 IDs, broken canonical hashes, duplicate tasks, count mismatches, and collected
 tasks outside the supplied source map.
 
+`external-evidence-collect-batch-append` MUST run the same collection-run
+verification, require the source roadmap audit to already be appended to the
+same evidence chain, and append a
+`trustai.external_evidence_collection_run.attested` entry. The entry records the
+run ID/hash, source-map path/hash, source plan and source manifest bindings,
+source roadmap-audit binding and inclusion proof, strict verification options,
+verification time, collected task refs, source snapshot IDs, and intake IDs. It
+attests retained collection provenance only; final external authority coverage
+still requires a verified `trustai.external_evidence_manifest.attested` entry.
+
 `external-evidence-collect-git-ref` is a narrowed source collector for public or
 authenticated Git remotes. It runs `git ls-remote <remote> <ref>...`, writes a
 `trustai.external-evidence-git-remote-ref-export/0.1` body into a normal source
@@ -239,6 +249,11 @@ freshness when requested, and reject stale or edited intake receipts.
 
 ## Evidence Chain Entry
 
+A verified collection-run report can be appended to an evidence chain as
+`trustai.external_evidence_collection_run.attested`. The append operation MUST
+verify the report, its retained source snapshots, and its intake receipts before
+writing the entry, and MUST include a prior source roadmap-audit inclusion proof.
+
 A verified manifest can be appended to an evidence chain as
 `trustai.external_evidence_manifest.attested`. The chain entry records:
 
@@ -274,11 +289,16 @@ roadmap evidence relationships:
 1. At least one `trustai.roadmap_audit.attested` entry is present.
 2. Each `trustai.external_evidence_manifest.attested` entry points to a matching
    prior roadmap audit entry by `audit_id` and `audit_hash`.
-3. The stored `source_roadmap_audit_inclusion_proof` verifies against the prefix
-   tree root that existed before the external-evidence entry was appended.
-4. Requirement coverage counts and authority-kind coverage counts are internally consistent.
-5. With `--require-complete`, every external-evidence entry must carry authority-kind coverage metadata and cover every required requirement and every accepted authority kind.
-6. With `--require-fresh`, every external-evidence entry must have been appended
+3. Each `trustai.external_evidence_collection_run.attested` entry points to a
+   matching prior roadmap audit entry by `audit_id` and `audit_hash`.
+4. The stored `source_roadmap_audit_inclusion_proof` verifies against the prefix
+   tree root that existed before the external-evidence or collection-run entry
+   was appended.
+5. Collection-run entry task, source snapshot, intake, source-map, and count
+   summaries are internally consistent.
+6. Requirement coverage counts and authority-kind coverage counts are internally consistent.
+7. With `--require-complete`, every external-evidence entry must carry authority-kind coverage metadata and cover every required requirement and every accepted authority kind.
+8. With `--require-fresh`, every external-evidence entry must have been appended
    with freshness required and must record zero stale or missing-freshness
    evidence items.
 
@@ -340,8 +360,8 @@ evidence entries already committed to an evidence chain. The report records:
   coverage, or fresh external evidence was required when the report was
   generated.
 - `chain`: tenant ID, entry count, and current Merkle tree root.
-- `summary`: semantic verification status and audit/external-evidence entry
-  counts.
+- `summary`: semantic verification status and audit, collection-run, and
+  external-evidence entry counts.
 - `verification`: the exact `roadmap-evidence-verify` result, including errors
   and warnings.
 - `roadmap_audit_entries`: chained audit entry IDs, audit IDs/hashes, completion
@@ -349,6 +369,10 @@ evidence entries already committed to an evidence chain. The report records:
 - `external_evidence_entries`: chained manifest IDs/hashes, source audit binding,
   source audit inclusion proof summary, append verification options, coverage
   status, freshness counts, covered IDs, and missing IDs.
+- `external_evidence_collection_run_entries`: chained run IDs/hashes, source-map
+  path/hash, source plan and manifest bindings, source audit binding and proof
+  summary, strict collection verification options, collected task refs, source
+  snapshot IDs, and intake IDs.
 - `limitations`: explicit non-claims about live authority fetching and issuer
   quality.
 
@@ -367,7 +391,7 @@ self-contained artifact for third-party review. It embeds:
 - the evidence-chain snapshot (`spec_version`, tenant ID, tree, and entries),
 - the roadmap evidence report generated from that chain or supplied with `--report`,
 - optional embedded source artifacts supplied with `--source-artifact` (`roadmap-audit`, `external-evidence-manifest`, `external-evidence-file`, or `other`) as repository-relative paths, SHA-256 hashes, and base64 content; `--include-manifest-evidence` expands embedded external-evidence manifests into their referenced evidence files,
-- a summary binding the report hash, report ID, chain tree, evidence counts, and embedded source-artifact count,
+- a summary binding the report hash, report ID, chain tree, audit, collection-run and evidence counts, and embedded source-artifact count,
 - explicit limitations for live authority claims.
 
 `roadmap-evidence-bundle-verify` requires no separate chain state path. It

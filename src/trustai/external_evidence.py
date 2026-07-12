@@ -15,6 +15,7 @@ from .roadmap_audit import ROADMAP_AUDIT_ENTRY_TYPE, STATUS_REFERENCE_ATTESTED, 
 
 EXTERNAL_EVIDENCE_SCHEMA = "trustai.external-evidence-manifest/0.1"
 EXTERNAL_EVIDENCE_ENTRY_TYPE = "trustai.external_evidence_manifest.attested"
+EXTERNAL_EVIDENCE_COLLECTION_RUN_ENTRY_TYPE = "trustai.external_evidence_collection_run.attested"
 ROADMAP_EVIDENCE_REPORT_SCHEMA = "trustai.roadmap-evidence-report/0.1"
 ROADMAP_EVIDENCE_BUNDLE_SCHEMA = "trustai.roadmap-evidence-bundle/0.1"
 EXTERNAL_EVIDENCE_COLLECTION_PLAN_SCHEMA = "trustai.external-evidence-collection-plan/0.1"
@@ -144,6 +145,7 @@ class RoadmapEvidenceChainVerification:
     warnings: list[str]
     audit_entry_count: int = 0
     external_evidence_entry_count: int = 0
+    external_evidence_collection_run_entry_count: int = 0
     complete_external_evidence_entry_count: int = 0
     fresh_external_evidence_entry_count: int = 0
 
@@ -1760,6 +1762,7 @@ def verify_roadmap_evidence_chain(
     audit_entries: list[dict[str, Any]] = []
     audit_by_source: dict[tuple[Any, Any], dict[str, Any]] = {}
     external_entries: list[dict[str, Any]] = []
+    collection_run_entries: list[dict[str, Any]] = []
     complete_external_count = 0
     fresh_external_count = 0
 
@@ -1781,6 +1784,8 @@ def verify_roadmap_evidence_chain(
                 audit_by_source[(audit_id, audit_hash)] = entry
         elif entry_type == EXTERNAL_EVIDENCE_ENTRY_TYPE:
             external_entries.append(entry)
+        elif entry_type == EXTERNAL_EVIDENCE_COLLECTION_RUN_ENTRY_TYPE:
+            collection_run_entries.append(entry)
 
     if not audit_entries:
         errors.append("roadmap evidence chain has no roadmap audit entry")
@@ -1827,12 +1832,40 @@ def verify_roadmap_evidence_chain(
         ):
             fresh_external_count += 1
 
+    for entry in collection_run_entries:
+        payload = entry.get("payload", {})
+        source = payload.get("source_roadmap_audit")
+        if not isinstance(source, dict):
+            errors.append(f"external evidence collection run entry {entry.get('index')} missing source_roadmap_audit")
+            continue
+        source_key = (source.get("audit_id"), source.get("audit_hash"))
+        audit_entry = audit_by_source.get(source_key)
+        if audit_entry is None:
+            errors.append(f"external evidence collection run entry {entry.get('index')} source roadmap audit is not chained")
+            continue
+        if audit_entry.get("index", -1) >= entry.get("index", -1):
+            errors.append(f"external evidence collection run entry {entry.get('index')} does not follow its source roadmap audit entry")
+        proof = payload.get("source_roadmap_audit_inclusion_proof")
+        if not isinstance(proof, dict):
+            errors.append(f"external evidence collection run entry {entry.get('index')} missing source roadmap audit inclusion proof")
+        else:
+            _verify_source_roadmap_audit_inclusion_proof(
+                chain,
+                audit_entry,
+                entry,
+                proof,
+                errors,
+                label="external evidence collection run entry",
+            )
+        _verify_external_evidence_collection_run_entry_summary(entry, errors)
+
     return RoadmapEvidenceChainVerification(
         ok=not errors,
         errors=errors,
         warnings=warnings,
         audit_entry_count=len(audit_entries),
         external_evidence_entry_count=len(external_entries),
+        external_evidence_collection_run_entry_count=len(collection_run_entries),
         complete_external_evidence_entry_count=complete_external_count,
         fresh_external_evidence_entry_count=fresh_external_count,
     )
@@ -1867,6 +1900,7 @@ def build_roadmap_evidence_report(
         "verification": _roadmap_evidence_verification_record(result),
         "roadmap_audit_entries": _roadmap_audit_entry_records(chain),
         "external_evidence_entries": _external_evidence_entry_records(chain),
+        "external_evidence_collection_run_entries": _external_evidence_collection_run_entry_records(chain),
         "limitations": [
             "This report verifies evidence-chain integrity and roadmap evidence relationships only.",
             "It does not fetch live provider APIs, KMS/HSM systems, TSAs, cloud object-lock stores, regulators, insurers, or standards bodies.",
@@ -1922,6 +1956,8 @@ def verify_roadmap_evidence_report(
         errors.append("roadmap audit entries do not match supplied evidence chain")
     if report.get("external_evidence_entries") != _external_evidence_entry_records(chain):
         errors.append("external evidence entries do not match supplied evidence chain")
+    if report.get("external_evidence_collection_run_entries") != _external_evidence_collection_run_entry_records(chain):
+        errors.append("external evidence collection run entries do not match supplied evidence chain")
 
     warnings.extend(result.warnings)
     if not result.ok:
@@ -2097,6 +2133,80 @@ def extract_roadmap_evidence_bundle_sources(
             }
         )
     return extracted
+
+
+def append_external_evidence_collection_run(
+    chain: EvidenceChain,
+    collection_run: dict[str, Any],
+    plan: dict[str, Any],
+    manifest: dict[str, Any],
+    roadmap_audit: dict[str, Any],
+    *,
+    root: str | Path,
+    source_map: dict[str, Any],
+    require_fresh: bool = False,
+    require_live_source_uris: bool = False,
+    require_fresh_source_snapshot_artifacts: bool = False,
+    now: str | None = None,
+    key: str | None = None,
+) -> dict[str, Any]:
+    result = verify_external_evidence_collection_run(
+        collection_run,
+        plan,
+        manifest,
+        roadmap_audit,
+        root=root,
+        source_map=source_map,
+        require_fresh=require_fresh,
+        require_live_source_uris=require_live_source_uris,
+        require_fresh_source_snapshot_artifacts=require_fresh_source_snapshot_artifacts,
+        now=now,
+    )
+    if not result.ok:
+        raise ValueError("invalid external evidence collection run: " + "; ".join(result.errors))
+    source_audit = manifest.get("source_roadmap_audit")
+    source_audit_proof = _source_roadmap_audit_proof(chain, source_audit)
+    if source_audit_proof is None:
+        raise ValueError("source roadmap audit must be appended before collection run")
+
+    summary = collection_run.get("summary", {})
+    if not isinstance(summary, dict):
+        summary = {}
+    collected = collection_run.get("collected", [])
+    if not isinstance(collected, list):
+        collected = []
+    collected_items = [item for item in collected if isinstance(item, dict)]
+
+    payload = {
+        "run_id": collection_run["run_id"],
+        "run_hash": content_hash(collection_run),
+        "source_map": collection_run.get("source_map"),
+        "source_map_hash": content_hash(source_map),
+        "source_plan": _collection_plan_source_record(plan),
+        "source_manifest": _collection_intake_manifest_record(manifest),
+        "source_roadmap_audit": source_audit,
+        "source_roadmap_audit_inclusion_proof": source_audit_proof,
+        "require_fresh": require_fresh,
+        "require_live_source_uris": require_live_source_uris,
+        "require_source_snapshot_artifacts": True,
+        "require_fresh_source_snapshot_artifacts": require_fresh_source_snapshot_artifacts,
+        "freshness_checked_at": now or collection_run.get("generated_at"),
+        "collected_count": summary.get("collected_count"),
+        "task_count": summary.get("task_count"),
+        "collected_tasks": [item.get("task") for item in collected_items],
+        "snapshot_ids": [item.get("snapshot_id") for item in collected_items],
+        "intake_ids": [item.get("intake_id") for item in collected_items],
+        "limitations": [
+            "This entry attests that a collection-run report and its retained source snapshots/intake receipts verified offline before append.",
+            "It records collection provenance only; final external authority coverage still requires a verified external-evidence manifest entry.",
+        ],
+    }
+    return chain.append(
+        EXTERNAL_EVIDENCE_COLLECTION_RUN_ENTRY_TYPE,
+        payload,
+        key=key,
+        timestamp=collection_run.get("generated_at"),
+    )
 
 
 def append_external_evidence_manifest(
@@ -2609,6 +2719,7 @@ Semantic verification: {"passed" if verification.get("ok") else "failed"}
 
 - Roadmap audit entries: {summary.get('roadmap_audit_entry_count', 0)}
 - External evidence entries: {summary.get('external_evidence_entry_count', 0)}
+- External evidence collection run entries: {summary.get('external_evidence_collection_run_entry_count', 0)}
 - Complete external evidence entries: {summary.get('complete_external_evidence_entry_count', 0)}
 - Fresh external evidence entries: {summary.get('fresh_external_evidence_entry_count', 0)}
 
@@ -2663,6 +2774,7 @@ Semantic verification: {"passed" if report_verification.get("ok") else "failed"}
 
 - Roadmap audit entries: {summary.get('roadmap_audit_entry_count', 0)}
 - External evidence entries: {summary.get('external_evidence_entry_count', 0)}
+- External evidence collection run entries: {summary.get('external_evidence_collection_run_entry_count', 0)}
 - Complete external evidence entries: {summary.get('complete_external_evidence_entry_count', 0)}
 - Fresh external evidence entries: {summary.get('fresh_external_evidence_entry_count', 0)}
 - Embedded source artifacts: {summary.get('source_artifact_count', 0)}
@@ -2881,6 +2993,7 @@ def _roadmap_evidence_bundle_summary(chain: EvidenceChain, report: dict[str, Any
         "chain_entry_count": len(chain.entries),
         "roadmap_audit_entry_count": report_summary.get("roadmap_audit_entry_count"),
         "external_evidence_entry_count": report_summary.get("external_evidence_entry_count"),
+        "external_evidence_collection_run_entry_count": report_summary.get("external_evidence_collection_run_entry_count"),
         "complete_external_evidence_entry_count": report_summary.get("complete_external_evidence_entry_count"),
         "fresh_external_evidence_entry_count": report_summary.get("fresh_external_evidence_entry_count"),
         "source_artifact_count": len(source_artifacts or []),
@@ -2897,9 +3010,11 @@ def _roadmap_evidence_summary(
         "chain_entry_count": len(chain.entries),
         "roadmap_audit_entry_count": result.audit_entry_count,
         "external_evidence_entry_count": result.external_evidence_entry_count,
+        "external_evidence_collection_run_entry_count": result.external_evidence_collection_run_entry_count,
         "complete_external_evidence_entry_count": result.complete_external_evidence_entry_count,
         "fresh_external_evidence_entry_count": result.fresh_external_evidence_entry_count,
         "has_external_evidence": result.external_evidence_entry_count > 0,
+        "has_external_evidence_collection_runs": result.external_evidence_collection_run_entry_count > 0,
         "has_complete_external_evidence": result.complete_external_evidence_entry_count > 0,
         "has_fresh_external_evidence": result.fresh_external_evidence_entry_count > 0,
     }
@@ -2912,6 +3027,7 @@ def _roadmap_evidence_verification_record(result: RoadmapEvidenceChainVerificati
         "warnings": result.warnings,
         "audit_entry_count": result.audit_entry_count,
         "external_evidence_entry_count": result.external_evidence_entry_count,
+        "external_evidence_collection_run_entry_count": result.external_evidence_collection_run_entry_count,
         "complete_external_evidence_entry_count": result.complete_external_evidence_entry_count,
         "fresh_external_evidence_entry_count": result.fresh_external_evidence_entry_count,
     }
@@ -2999,41 +3115,88 @@ def _external_evidence_entry_records(chain: EvidenceChain) -> list[dict[str, Any
     return records
 
 
+def _external_evidence_collection_run_entry_records(chain: EvidenceChain) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for entry in chain.entries:
+        if entry.get("entry_type") != EXTERNAL_EVIDENCE_COLLECTION_RUN_ENTRY_TYPE:
+            continue
+        payload = entry.get("payload", {})
+        if not isinstance(payload, dict):
+            payload = {}
+        proof = payload.get("source_roadmap_audit_inclusion_proof")
+        proof_record = None
+        if isinstance(proof, dict):
+            proof_record = {
+                "entry_id": proof.get("entry_id"),
+                "index": proof.get("index"),
+                "tree_size": proof.get("tree_size"),
+                "tree_root": proof.get("tree_root"),
+            }
+        records.append(
+            {
+                "index": entry.get("index"),
+                "entry_id": entry.get("entry_id"),
+                "timestamp": entry.get("timestamp"),
+                "run_id": payload.get("run_id"),
+                "run_hash": payload.get("run_hash"),
+                "source_map": payload.get("source_map"),
+                "source_map_hash": payload.get("source_map_hash"),
+                "source_plan": payload.get("source_plan"),
+                "source_manifest": payload.get("source_manifest"),
+                "source_roadmap_audit": payload.get("source_roadmap_audit"),
+                "source_roadmap_audit_inclusion_proof": proof_record,
+                "require_fresh": payload.get("require_fresh"),
+                "require_live_source_uris": payload.get("require_live_source_uris"),
+                "require_source_snapshot_artifacts": payload.get("require_source_snapshot_artifacts"),
+                "require_fresh_source_snapshot_artifacts": payload.get("require_fresh_source_snapshot_artifacts"),
+                "freshness_checked_at": payload.get("freshness_checked_at"),
+                "collected_count": payload.get("collected_count"),
+                "task_count": payload.get("task_count"),
+                "collected_tasks": payload.get("collected_tasks", []),
+                "snapshot_ids": payload.get("snapshot_ids", []),
+                "intake_ids": payload.get("intake_ids", []),
+            }
+        )
+    return records
+
+
 def _verify_source_roadmap_audit_inclusion_proof(
     chain: EvidenceChain,
     audit_entry: dict[str, Any],
     external_entry: dict[str, Any],
     proof: dict[str, Any],
     errors: list[str],
+    *,
+    label: str = "external evidence entry",
 ) -> None:
     if proof.get("entry_id") != audit_entry.get("entry_id"):
-        errors.append(f"external evidence entry {external_entry.get('index')} source audit proof entry_id mismatch")
+        errors.append(f"{label} {external_entry.get('index')} source audit proof entry_id mismatch")
     if proof.get("index") != audit_entry.get("index"):
-        errors.append(f"external evidence entry {external_entry.get('index')} source audit proof index mismatch")
+        errors.append(f"{label} {external_entry.get('index')} source audit proof index mismatch")
 
     tree_size = proof.get("tree_size")
     if not isinstance(tree_size, int):
-        errors.append(f"external evidence entry {external_entry.get('index')} source audit proof tree_size invalid")
+        errors.append(f"{label} {external_entry.get('index')} source audit proof tree_size invalid")
         return
     audit_index = int(audit_entry.get("index", -1))
     external_index = int(external_entry.get("index", -1))
     if tree_size <= audit_index:
-        errors.append(f"external evidence entry {external_entry.get('index')} source audit proof tree_size excludes audit entry")
+        errors.append(f"{label} {external_entry.get('index')} source audit proof tree_size excludes audit entry")
         return
     if tree_size > external_index:
-        errors.append(f"external evidence entry {external_entry.get('index')} source audit proof was not recorded before append")
+        errors.append(f"{label} {external_entry.get('index')} source audit proof was not recorded before append")
         return
 
     prefix_ids = chain.entry_ids()[:tree_size]
     expected_root = merkle_root(prefix_ids)
     if proof.get("tree_root") != expected_root:
-        errors.append(f"external evidence entry {external_entry.get('index')} source audit proof tree_root mismatch")
+        errors.append(f"{label} {external_entry.get('index')} source audit proof tree_root mismatch")
     audit_path = proof.get("audit_path")
     if not isinstance(audit_path, list):
-        errors.append(f"external evidence entry {external_entry.get('index')} source audit proof audit_path invalid")
+        errors.append(f"{label} {external_entry.get('index')} source audit proof audit_path invalid")
         return
     if not verify_inclusion(str(audit_entry.get("entry_id")), audit_path, str(proof.get("tree_root") or "")):
-        errors.append(f"external evidence entry {external_entry.get('index')} source audit proof inclusion failed")
+        errors.append(f"{label} {external_entry.get('index')} source audit proof inclusion failed")
 
 
 def _verify_external_evidence_entry_summary(
@@ -3082,6 +3245,52 @@ def _verify_external_evidence_entry_summary(
         warnings.append(f"external evidence entry {entry.get('index')} has stale evidence")
     elif missing_freshness:
         warnings.append(f"external evidence entry {entry.get('index')} has evidence without freshness metadata")
+
+
+def _verify_external_evidence_collection_run_entry_summary(entry: dict[str, Any], errors: list[str]) -> None:
+    payload = entry.get("payload", {})
+    if not isinstance(payload, dict):
+        errors.append(f"external evidence collection run entry {entry.get('index')} payload must be an object")
+        return
+    for field in ("run_id", "run_hash", "source_map_hash"):
+        if not isinstance(payload.get(field), str) or not payload.get(field):
+            errors.append(f"external evidence collection run entry {entry.get('index')} missing {field}")
+    source_map = payload.get("source_map")
+    if not isinstance(source_map, dict):
+        errors.append(f"external evidence collection run entry {entry.get('index')} source_map must be an object")
+    elif source_map.get("source_map_hash") != payload.get("source_map_hash"):
+        errors.append(f"external evidence collection run entry {entry.get('index')} source_map hash mismatch")
+    collected_count = payload.get("collected_count")
+    task_count = payload.get("task_count")
+    collected_tasks = payload.get("collected_tasks")
+    snapshot_ids = payload.get("snapshot_ids")
+    intake_ids = payload.get("intake_ids")
+    if not isinstance(collected_tasks, list) or any(not isinstance(value, str) for value in collected_tasks):
+        errors.append(f"external evidence collection run entry {entry.get('index')} collected_tasks must be a list of strings")
+        collected_tasks = []
+    if not isinstance(snapshot_ids, list) or any(not isinstance(value, str) for value in snapshot_ids):
+        errors.append(f"external evidence collection run entry {entry.get('index')} snapshot_ids must be a list of strings")
+        snapshot_ids = []
+    if not isinstance(intake_ids, list) or any(not isinstance(value, str) for value in intake_ids):
+        errors.append(f"external evidence collection run entry {entry.get('index')} intake_ids must be a list of strings")
+        intake_ids = []
+    if isinstance(collected_count, int):
+        if len(collected_tasks) != collected_count:
+            errors.append(f"external evidence collection run entry {entry.get('index')} collected_count does not match collected_tasks")
+        if len(snapshot_ids) != collected_count:
+            errors.append(f"external evidence collection run entry {entry.get('index')} collected_count does not match snapshot_ids")
+        if len(intake_ids) != collected_count:
+            errors.append(f"external evidence collection run entry {entry.get('index')} collected_count does not match intake_ids")
+    else:
+        errors.append(f"external evidence collection run entry {entry.get('index')} collected_count must be an integer")
+    if isinstance(task_count, int):
+        if len(set(collected_tasks)) != task_count:
+            errors.append(f"external evidence collection run entry {entry.get('index')} task_count does not match unique collected tasks")
+    else:
+        errors.append(f"external evidence collection run entry {entry.get('index')} task_count must be an integer")
+    if payload.get("require_source_snapshot_artifacts") is not True:
+        errors.append(f"external evidence collection run entry {entry.get('index')} was not appended with source snapshot artifact verification")
+
 
 def _source_roadmap_audit_proof(chain: EvidenceChain, source_roadmap_audit: Any) -> dict[str, Any] | None:
     if not isinstance(source_roadmap_audit, dict):
