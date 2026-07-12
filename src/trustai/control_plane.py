@@ -9,6 +9,7 @@ from .canonical import content_hash, utc_now
 from .chain import EvidenceChain
 from .cicd import PROMOTION_STATUS_ENTRY_TYPE
 from .contracts import CONTRACT_ENTRY_TYPE
+from .design_partner import DESIGN_PARTNER_ENTRY_TYPE, P1_PARTNER_TARGET, P1_SIGNED_VALUE_TARGET_USD
 from .external_evidence import (
     AUTHORITY_KIND_EVIDENCE_HINTS,
     AUTHORITY_KIND_OWNER_HINTS,
@@ -19,6 +20,7 @@ from .gate import EVAL_ENTRY_TYPE, GATE_ENTRY_TYPE
 from .phase_scoreboard import PHASE_SCOREBOARD_ENTRY_TYPE
 from .ingest import INGEST_ENTRY_TYPE
 from .lifecycle import INCIDENT_ENTRY_TYPE
+from .own_compliance import OWN_COMPLIANCE_ENTRY_TYPE, REQUIRED_CERTIFICATION_KINDS
 from .policy import POLICY_DECISION_ENTRY_TYPE
 from .policy_engine import POLICY_ENGINE_ENTRY_TYPE
 from .proofpack import PROOF_PACK_SPEC_VERSION
@@ -474,6 +476,37 @@ class ControlPlane:
                 generated_at TEXT,
                 body_json TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS design_partner_dossiers (
+                dossier_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                dossier_hash TEXT NOT NULL,
+                dossier_ref TEXT,
+                mode TEXT,
+                environment TEXT,
+                partner_count INTEGER NOT NULL,
+                signed_partner_count INTEGER NOT NULL,
+                signed_pilot_value_usd INTEGER NOT NULL,
+                external_scrutiny_survival_count INTEGER NOT NULL,
+                source_artifact_count INTEGER NOT NULL,
+                control_summary_json TEXT NOT NULL,
+                generated_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS own_compliance_dossiers (
+                dossier_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                dossier_hash TEXT NOT NULL,
+                dossier_ref TEXT,
+                scope_ref TEXT,
+                mode TEXT,
+                environment TEXT,
+                evidence_count INTEGER NOT NULL,
+                required_certification_evidence_count INTEGER NOT NULL,
+                source_artifact_count INTEGER NOT NULL,
+                control_summary_json TEXT NOT NULL,
+                generated_at TEXT,
+                body_json TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS anchors (
                 anchor_id TEXT PRIMARY KEY,
                 entry_id TEXT,
@@ -510,6 +543,8 @@ class ControlPlane:
             "external_evidence_manifests": 0,
             "authority_dossiers": 0,
             "phase_scoreboards": 0,
+            "design_partner_dossiers": 0,
+            "own_compliance_dossiers": 0,
         }
         for entry in chain.entries:
             payload = entry.get("payload", {})
@@ -1012,6 +1047,66 @@ class ControlPlane:
                 )
                 counts["phase_scoreboards"] += 1
 
+            if entry.get("entry_type") == DESIGN_PARTNER_ENTRY_TYPE:
+                control_summary = payload.get("control_summary") if isinstance(payload.get("control_summary"), dict) else {}
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO design_partner_dossiers(
+                        dossier_id, entry_id, dossier_hash, dossier_ref,
+                        mode, environment, partner_count, signed_partner_count,
+                        signed_pilot_value_usd, external_scrutiny_survival_count,
+                        source_artifact_count, control_summary_json,
+                        generated_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("dossier_id") or entry["entry_id"],
+                        entry["entry_id"],
+                        payload.get("dossier_hash") or entry.get("payload_hash"),
+                        payload.get("dossier_ref"),
+                        payload.get("mode"),
+                        payload.get("environment"),
+                        int(payload.get("partner_count") or 0),
+                        int(payload.get("signed_partner_count") or 0),
+                        int(payload.get("signed_pilot_value_usd") or 0),
+                        int(payload.get("external_scrutiny_survival_count") or 0),
+                        int(payload.get("source_artifact_count") or 0),
+                        _json(control_summary),
+                        entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["design_partner_dossiers"] += 1
+
+            if entry.get("entry_type") == OWN_COMPLIANCE_ENTRY_TYPE:
+                control_summary = payload.get("control_summary") if isinstance(payload.get("control_summary"), dict) else {}
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO own_compliance_dossiers(
+                        dossier_id, entry_id, dossier_hash, dossier_ref,
+                        scope_ref, mode, environment, evidence_count,
+                        required_certification_evidence_count, source_artifact_count,
+                        control_summary_json, generated_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("dossier_id") or entry["entry_id"],
+                        entry["entry_id"],
+                        payload.get("dossier_hash") or entry.get("payload_hash"),
+                        payload.get("dossier_ref"),
+                        payload.get("scope_ref"),
+                        payload.get("mode"),
+                        payload.get("environment"),
+                        int(payload.get("evidence_count") or 0),
+                        int(payload.get("required_certification_evidence_count") or 0),
+                        int(payload.get("source_artifact_count") or 0),
+                        _json(control_summary),
+                        entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["own_compliance_dossiers"] += 1
+
             if _is_authority_dossier_payload(entry, payload):
                 summary = payload.get("summary") if isinstance(payload.get("summary"), dict) else {}
                 evidence_items = (
@@ -1129,6 +1224,8 @@ class ControlPlane:
             "external_evidence_manifests",
             "authority_dossiers",
             "phase_scoreboards",
+            "design_partner_dossiers",
+            "own_compliance_dossiers",
         ]
         counts = {
             table: self.conn.execute(f"SELECT COUNT(*) AS count FROM {table}").fetchone()["count"]
@@ -1309,6 +1406,34 @@ class ControlPlane:
         if latest_phase_scoreboard_dict is not None:
             latest_phase_scoreboard_dict["phase_counts"] = _decode_json_object(latest_phase_scoreboard_dict.pop("phase_counts_json", None))
             latest_phase_scoreboard_dict["control_summary"] = _decode_json_object(latest_phase_scoreboard_dict.pop("control_summary_json", None))
+        latest_design_partner_dossier = self.conn.execute(
+            """
+            SELECT dossier_id, dossier_hash, dossier_ref, mode, environment,
+                   partner_count, signed_partner_count, signed_pilot_value_usd,
+                   external_scrutiny_survival_count, source_artifact_count,
+                   control_summary_json, generated_at
+            FROM design_partner_dossiers
+            ORDER BY generated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_design_partner_dossier_dict = dict(latest_design_partner_dossier) if latest_design_partner_dossier else None
+        if latest_design_partner_dossier_dict is not None:
+            latest_design_partner_dossier_dict["control_summary"] = _decode_json_object(latest_design_partner_dossier_dict.pop("control_summary_json", None))
+        latest_own_compliance_dossier = self.conn.execute(
+            """
+            SELECT dossier_id, dossier_hash, dossier_ref, scope_ref, mode,
+                   environment, evidence_count,
+                   required_certification_evidence_count, source_artifact_count,
+                   control_summary_json, generated_at
+            FROM own_compliance_dossiers
+            ORDER BY generated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_own_compliance_dossier_dict = dict(latest_own_compliance_dossier) if latest_own_compliance_dossier else None
+        if latest_own_compliance_dossier_dict is not None:
+            latest_own_compliance_dossier_dict["control_summary"] = _decode_json_object(latest_own_compliance_dossier_dict.pop("control_summary_json", None))
         return {
             "schema_version": SCHEMA_VERSION,
             "database": str(self.path),
@@ -1330,6 +1455,8 @@ class ControlPlane:
             "latest_external_evidence_manifest": latest_external_evidence_dict,
             "latest_authority_dossier": latest_authority_dossier_dict,
             "latest_phase_scoreboard": latest_phase_scoreboard_dict,
+            "latest_design_partner_dossier": latest_design_partner_dossier_dict,
+            "latest_own_compliance_dossier": latest_own_compliance_dossier_dict,
         }
 
     def contracts(self, limit: int = 20) -> list[dict[str, Any]]:
@@ -1667,6 +1794,46 @@ class ControlPlane:
             items.append(item)
         return items
 
+    def recent_design_partner_dossiers(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT dossier_id, entry_id, dossier_hash, dossier_ref,
+                   mode, environment, partner_count, signed_partner_count,
+                   signed_pilot_value_usd, external_scrutiny_survival_count,
+                   source_artifact_count, control_summary_json, generated_at
+            FROM design_partner_dossiers
+            ORDER BY generated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["control_summary"] = _decode_json_object(item.pop("control_summary_json", None))
+            items.append(item)
+        return items
+
+    def recent_own_compliance_dossiers(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT dossier_id, entry_id, dossier_hash, dossier_ref, scope_ref,
+                   mode, environment, evidence_count,
+                   required_certification_evidence_count, source_artifact_count,
+                   control_summary_json, generated_at
+            FROM own_compliance_dossiers
+            ORDER BY generated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["control_summary"] = _decode_json_object(item.pop("control_summary_json", None))
+            items.append(item)
+        return items
+
     def recent_authority_dossiers(self, limit: int = 20) -> list[dict[str, Any]]:
         rows = self.conn.execute(
             """
@@ -1700,6 +1867,8 @@ class ControlPlane:
             "external_evidence_collection_runs": self.recent_external_evidence_collection_runs(limit),
             "external_evidence_manifests": self.recent_external_evidence_manifests(limit),
             "phase_scoreboards": self.recent_phase_scoreboards(limit),
+            "design_partner_dossiers": self.recent_design_partner_dossiers(limit),
+            "own_compliance_dossiers": self.recent_own_compliance_dossiers(limit),
         }
 
     def readiness(self) -> dict[str, Any]:
@@ -1804,6 +1973,69 @@ class ControlPlane:
                 f"external-required control(s)={phase_external_required}"
             )
 
+        latest_design_partner_dossier = summary.get("latest_design_partner_dossier")
+        design_partner_control_summary = (latest_design_partner_dossier or {}).get("control_summary") or {}
+        design_partner_external_required = int(design_partner_control_summary.get("external-required") or 0)
+        design_partner_ready = bool(
+            latest_design_partner_dossier
+            and latest_design_partner_dossier.get("mode") == "external-evidence"
+            and int(latest_design_partner_dossier.get("partner_count") or 0) >= P1_PARTNER_TARGET
+            and int(latest_design_partner_dossier.get("signed_pilot_value_usd") or 0) >= P1_SIGNED_VALUE_TARGET_USD
+            and int(latest_design_partner_dossier.get("external_scrutiny_survival_count") or 0) >= 1
+            and design_partner_external_required == 0
+        )
+        design_partner_summary = {
+            "present": latest_design_partner_dossier is not None,
+            "mode": (latest_design_partner_dossier or {}).get("mode"),
+            "partner_count": int((latest_design_partner_dossier or {}).get("partner_count") or 0),
+            "signed_partner_count": int((latest_design_partner_dossier or {}).get("signed_partner_count") or 0),
+            "signed_pilot_value_usd": int((latest_design_partner_dossier or {}).get("signed_pilot_value_usd") or 0),
+            "external_scrutiny_survival_count": int((latest_design_partner_dossier or {}).get("external_scrutiny_survival_count") or 0),
+            "control_summary": design_partner_control_summary,
+            "external_required_control_count": design_partner_external_required,
+        }
+        if latest_design_partner_dossier is None:
+            blockers.append("no design-partner pilot dossier indexed")
+        elif not design_partner_ready:
+            blockers.append(
+                "design-partner pilot milestones incomplete: "
+                f"mode={latest_design_partner_dossier.get('mode')}, "
+                f"partners={design_partner_summary['partner_count']}/{P1_PARTNER_TARGET}, "
+                f"signed-value-usd={design_partner_summary['signed_pilot_value_usd']}/{P1_SIGNED_VALUE_TARGET_USD}, "
+                f"external-scrutiny-survival(s)={design_partner_summary['external_scrutiny_survival_count']}/1, "
+                f"external-required control(s)={design_partner_external_required}"
+            )
+
+        latest_own_compliance_dossier = summary.get("latest_own_compliance_dossier")
+        own_compliance_control_summary = (latest_own_compliance_dossier or {}).get("control_summary") or {}
+        own_compliance_external_required = int(own_compliance_control_summary.get("external-required") or 0)
+        own_compliance_target_count = len(REQUIRED_CERTIFICATION_KINDS)
+        own_compliance_ready = bool(
+            latest_own_compliance_dossier
+            and latest_own_compliance_dossier.get("mode") == "external-certification"
+            and int(latest_own_compliance_dossier.get("required_certification_evidence_count") or 0) >= own_compliance_target_count
+            and own_compliance_external_required == 0
+        )
+        own_compliance_summary = {
+            "present": latest_own_compliance_dossier is not None,
+            "mode": (latest_own_compliance_dossier or {}).get("mode"),
+            "evidence_count": int((latest_own_compliance_dossier or {}).get("evidence_count") or 0),
+            "required_certification_evidence_count": int((latest_own_compliance_dossier or {}).get("required_certification_evidence_count") or 0),
+            "required_certification_target_count": own_compliance_target_count,
+            "control_summary": own_compliance_control_summary,
+            "external_required_control_count": own_compliance_external_required,
+        }
+        if latest_own_compliance_dossier is None:
+            blockers.append("no TrustAI own-compliance dossier indexed")
+        elif not own_compliance_ready:
+            blockers.append(
+                "TrustAI own-compliance certifications incomplete: "
+                f"mode={latest_own_compliance_dossier.get('mode')}, "
+                f"required-certification-evidence="
+                f"{own_compliance_summary['required_certification_evidence_count']}/{own_compliance_target_count}, "
+                f"external-required control(s)={own_compliance_external_required}"
+            )
+
         authority_row = self.conn.execute(
             """
             SELECT COUNT(*) AS total,
@@ -1865,6 +2097,8 @@ class ControlPlane:
                 collection_run_complete,
                 production_authority_ready,
                 phase_scoreboard_ready,
+                design_partner_ready,
+                own_compliance_ready,
                 promotion_gate_ready,
                 proof_pack_ready,
                 runtime_policy_ready,
@@ -1879,6 +2113,8 @@ class ControlPlane:
             "collection_run_complete": collection_run_complete,
             "production_authority_ready": production_authority_ready,
             "roadmap_phase_scoreboard_ready": phase_scoreboard_ready,
+            "design_partner_ready": design_partner_ready,
+            "own_compliance_ready": own_compliance_ready,
             "promotion_gate_ready": promotion_gate_ready,
             "proof_pack_ready": proof_pack_ready,
             "runtime_policy_ready": runtime_policy_ready,
@@ -1888,7 +2124,11 @@ class ControlPlane:
             "latest_external_evidence_collection_run": latest_collection_run,
             "latest_authority_dossier": summary.get("latest_authority_dossier"),
             "latest_phase_scoreboard": latest_phase_scoreboard,
+            "latest_design_partner_dossier": latest_design_partner_dossier,
+            "latest_own_compliance_dossier": latest_own_compliance_dossier,
             "phase_scoreboard_summary": phase_scoreboard_summary,
+            "design_partner_summary": design_partner_summary,
+            "own_compliance_summary": own_compliance_summary,
             "authority_dossier_summary": authority_dossier_summary,
             "external_authority_gap_summary": external_gap_summary,
             "remaining_external_evidence_count": deferred_external,

@@ -261,6 +261,20 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             finally:
                 control.close()
             return
+        if parsed.path in ("/v0/design-partner-dossiers", "/v0/control/design-partner-dossiers"):
+            control = self._control()
+            try:
+                self._json_response(200, {"design_partner_dossiers": control.recent_design_partner_dossiers()})
+            finally:
+                control.close()
+            return
+        if parsed.path in ("/v0/own-compliance-dossiers", "/v0/control/own-compliance-dossiers"):
+            control = self._control()
+            try:
+                self._json_response(200, {"own_compliance_dossiers": control.recent_own_compliance_dossiers()})
+            finally:
+                control.close()
+            return
         if parsed.path in ("/v0/readiness", "/v0/control/readiness"):
             control = self._control()
             try:

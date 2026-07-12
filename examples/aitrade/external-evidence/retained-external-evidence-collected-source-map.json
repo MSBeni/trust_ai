@@ -88,31 +88,26 @@
   ],
   "generated_at": "2026-07-12T01:26:10Z",
   "limitations": [
-    "This retained collected-source map binds the portable example collection run to already retained source snapshot and intake artifacts.",
-    "It is intended for collection-run verification and does not represent the remaining placeholder worklist."
+    "This source map is an operator collection template; it does not prove external authority coverage until external-evidence-collect-batch creates verified source snapshots and intake receipts.",
+    "Placeholder source URIs, issuer fields, or freshness windows must be replaced with real authority-owned values before production use.",
+    "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "e9d2ce37156d6c07b2e79e743c6c97abcdb3c238544ac7be6daa9ec5609257fd",
+  "source_map_id": "446ea046b00c39888f45d6d3c12c17dc5dfb02ee52c4b5a10e59d3107b0c4752",
   "source_plan": {
-    "plan_hash": "75bb1aeb9e9241e009915eafdf8d2da168315d47f78babb74d102cec47ffd6f7",
-    "plan_id": "8c740a29b65d5df7c93180a6d2296f716e506f9146242eaec799efe973deb6df",
-    "source_manifest": {
-      "generated_at": "2026-07-12T00:42:01Z",
-      "manifest_hash": "f801cce561a6bdfa0c8b860b0f9bce295e2e8c3d21259326edc441cf0757be89",
-      "manifest_id": "9c19cac228c5285e6600a046efaeff1351fbee92891e689fe626c211b4cc2c95",
-      "manifest_ref": "production-external-evidence",
-      "status": "partial"
-    },
-    "status_filter": "all"
+    "generated_at": "2026-07-12T00:43:00Z",
+    "plan_hash": "2ad1450660c3862ee892405cc07672cb8796b0d60e039acbd5455a2685f3328c",
+    "plan_id": "3c4c2d54f9a5c9c6a3a67cec1bfa8a094577a74cb167f4f17b76163323365a6f",
+    "schema": "trustai.external-evidence-collection-plan/0.1"
   },
   "summary": {
     "authority_kinds": [],
     "entry_count": 3,
-    "intake_dir": "examples/aitrade/external-evidence/intakes",
+    "intake_dir": "artifacts/external-evidence-intakes",
     "live_source_uri_count": 3,
     "placeholder_source_uri_count": 0,
-    "snapshot_dir": "examples/aitrade/external-evidence",
+    "snapshot_dir": "artifacts/external-evidence-sources",
     "source_plan_task_count": 70,
-    "status_filter": "all"
+    "status_filter": "missing"
   }
 }

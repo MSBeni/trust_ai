@@ -8,6 +8,7 @@ from trustai.canonical import content_hash
 from trustai.chain import EvidenceChain
 from trustai.cicd import append_promotion_status_receipt, build_promotion_check_payload, build_promotion_status_receipt
 from trustai.delivery import build_provider_delivery
+from trustai.design_partner import append_design_partner_dossier, build_design_partner_dossier
 from trustai.contracts import load_contract, register_contract
 from trustai.external_evidence import (
     EXTERNAL_EVIDENCE_COLLECTION_RUN_ENTRY_TYPE,
@@ -20,6 +21,7 @@ from trustai.mcp_gateway import load_mcp_transcript
 from trustai.mcp_gateway_authority import append_mcp_gateway_authority_dossier, build_mcp_gateway_authority_dossier
 from trustai.phase_scoreboard import append_phase_scoreboard, build_phase_scoreboard
 from trustai.lifecycle import append_incident, load_incident
+from trustai.own_compliance import append_own_compliance_dossier, build_own_compliance_dossier
 from trustai.policy import append_policy_decision, load_policy_pack
 from trustai.policy_engine import append_policy_engine_receipt, build_policy_engine_receipt
 from trustai.policy_export import export_policy_pack
@@ -167,6 +169,53 @@ class ControlPlaneTests(unittest.TestCase):
                 generated_at="2026-07-20T00:00:00Z",
             )
             append_phase_scoreboard(chain, phase_scoreboard, root=ROOT)
+            design_partner_dossier = build_design_partner_dossier(
+                ROOT,
+                dossier_ref="dossier:design-partner/phase1-readiness",
+                producer_ref="oidc:trustai.example/gtm-ops",
+                partners=[
+                    {
+                        "partner_ref": "partner:bank-a",
+                        "industry": "finserv",
+                        "agent_ref": "agent:payments-risk",
+                        "pilot_value_usd": 60000,
+                        "contract_status": "negotiating",
+                    },
+                    {
+                        "partner_ref": "partner:insurer-b",
+                        "industry": "insurance",
+                        "agent_ref": "agent:claims-triage",
+                        "pilot_value_usd": 90000,
+                        "contract_status": "negotiating",
+                    },
+                    {
+                        "partner_ref": "partner:fintech-c",
+                        "industry": "fintech",
+                        "agent_ref": "agent:treasury-ops",
+                        "pilot_value_usd": 100000,
+                        "contract_status": "negotiating",
+                    },
+                ],
+                scrutiny_events=[
+                    {
+                        "scrutiny_ref": "scrutiny:model-risk-a",
+                        "party_type": "model-risk",
+                        "party_ref": "team:model-risk",
+                        "partner_ref": "partner:bank-a",
+                        "outcome": "submitted",
+                    }
+                ],
+                generated_at="2026-07-21T00:00:00Z",
+            )
+            append_design_partner_dossier(chain, design_partner_dossier, root=ROOT)
+            own_compliance_dossier = build_own_compliance_dossier(
+                ROOT,
+                dossier_ref="dossier:trustai/own-compliance-readiness",
+                producer_ref="oidc:trustai.example/compliance-ops",
+                scope_ref="scope:trustai/company",
+                generated_at="2026-07-22T00:00:00Z",
+            )
+            append_own_compliance_dossier(chain, own_compliance_dossier, root=ROOT)
             mcp_calls = load_mcp_transcript(MCP)
             mcp_authority = build_mcp_gateway_authority_dossier(
                 mcp_calls,
@@ -235,6 +284,8 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, summary["counts"]["external_evidence_manifests"])
                 self.assertEqual(1, summary["counts"]["authority_dossiers"])
                 self.assertEqual(1, summary["counts"]["phase_scoreboards"])
+                self.assertEqual(1, summary["counts"]["design_partner_dossiers"])
+                self.assertEqual(1, summary["counts"]["own_compliance_dossiers"])
                 self.assertEqual(1, counts["runtime_attestations"])
                 self.assertEqual(1, counts["policy_decisions"])
                 self.assertEqual(1, counts["policy_engine_receipts"])
@@ -244,6 +295,8 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, counts["external_evidence_manifests"])
                 self.assertEqual(1, counts["authority_dossiers"])
                 self.assertEqual(1, counts["phase_scoreboards"])
+                self.assertEqual(1, counts["design_partner_dossiers"])
+                self.assertEqual(1, counts["own_compliance_dossiers"])
                 self.assertEqual(audit["audit_id"], summary["latest_roadmap_audit"]["audit_id"])
                 self.assertEqual("local-reference-complete-with-external-authority-deferred", summary["latest_roadmap_audit"]["completion_position"])
                 self.assertEqual("collection-run-control-001", summary["latest_external_evidence_collection_run"]["run_id"])
@@ -258,6 +311,15 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual("scoreboard:trustai/roadmap/readiness", summary["latest_phase_scoreboard"]["scoreboard_ref"])
                 self.assertEqual("readiness", summary["latest_phase_scoreboard"]["mode"])
                 self.assertEqual({"external-required": 10, "passed": 2}, summary["latest_phase_scoreboard"]["control_summary"])
+                self.assertEqual("dossier:design-partner/phase1-readiness", summary["latest_design_partner_dossier"]["dossier_ref"])
+                self.assertEqual("readiness", summary["latest_design_partner_dossier"]["mode"])
+                self.assertEqual(3, summary["latest_design_partner_dossier"]["partner_count"])
+                self.assertEqual(0, summary["latest_design_partner_dossier"]["signed_pilot_value_usd"])
+                self.assertEqual({"external-required": 2, "passed": 6}, summary["latest_design_partner_dossier"]["control_summary"])
+                self.assertEqual("dossier:trustai/own-compliance-readiness", summary["latest_own_compliance_dossier"]["dossier_ref"])
+                self.assertEqual("readiness", summary["latest_own_compliance_dossier"]["mode"])
+                self.assertEqual(0, summary["latest_own_compliance_dossier"]["required_certification_evidence_count"])
+                self.assertEqual({"external-required": 2, "passed": 6}, summary["latest_own_compliance_dossier"]["control_summary"])
                 self.assertEqual("passed", summary["latest_proof_pack"]["outcome"])
                 self.assertEqual("aitrade-btcusdt-canary", summary["latest_eval_run"]["contract_id"])
                 self.assertEqual("passed", summary["latest_gate_decision"]["outcome"])
@@ -363,10 +425,22 @@ class ControlPlaneTests(unittest.TestCase):
                 )
                 self.assertEqual(1, len(roadmap_evidence["external_evidence_manifests"]))
                 self.assertEqual(1, len(roadmap_evidence["phase_scoreboards"]))
+                self.assertEqual(1, len(roadmap_evidence["design_partner_dossiers"]))
+                self.assertEqual(1, len(roadmap_evidence["own_compliance_dossiers"]))
                 phase_scoreboards = control.recent_phase_scoreboards()
                 self.assertEqual(1, len(phase_scoreboards))
                 self.assertEqual("readiness", phase_scoreboards[0]["mode"])
                 self.assertEqual({"external-required": 10, "passed": 2}, phase_scoreboards[0]["control_summary"])
+                design_partner_dossiers = control.recent_design_partner_dossiers()
+                self.assertEqual(1, len(design_partner_dossiers))
+                self.assertEqual("dossier:design-partner/phase1-readiness", design_partner_dossiers[0]["dossier_ref"])
+                self.assertEqual(3, design_partner_dossiers[0]["partner_count"])
+                self.assertEqual({"external-required": 2, "passed": 6}, design_partner_dossiers[0]["control_summary"])
+                own_compliance_dossiers = control.recent_own_compliance_dossiers()
+                self.assertEqual(1, len(own_compliance_dossiers))
+                self.assertEqual("dossier:trustai/own-compliance-readiness", own_compliance_dossiers[0]["dossier_ref"])
+                self.assertEqual(0, own_compliance_dossiers[0]["required_certification_evidence_count"])
+                self.assertEqual({"external-required": 2, "passed": 6}, own_compliance_dossiers[0]["control_summary"])
                 readiness = control.readiness()
                 self.assertEqual("not_ready", readiness["status"])
                 self.assertTrue(readiness["local_reference_complete"])
@@ -377,8 +451,17 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertIn("provider-api", readiness["external_authority_gap_summary"]["gap_count_by_authority_kind"])
                 self.assertFalse(readiness["production_authority_ready"])
                 self.assertFalse(readiness["roadmap_phase_scoreboard_ready"])
+                self.assertFalse(readiness["design_partner_ready"])
+                self.assertFalse(readiness["own_compliance_ready"])
                 self.assertEqual("readiness", readiness["phase_scoreboard_summary"]["mode"])
                 self.assertEqual(10, readiness["phase_scoreboard_summary"]["external_required_control_count"])
+                self.assertEqual("readiness", readiness["design_partner_summary"]["mode"])
+                self.assertEqual(2, readiness["design_partner_summary"]["external_required_control_count"])
+                self.assertEqual(3, readiness["design_partner_summary"]["partner_count"])
+                self.assertEqual(0, readiness["design_partner_summary"]["signed_pilot_value_usd"])
+                self.assertEqual("readiness", readiness["own_compliance_summary"]["mode"])
+                self.assertEqual(2, readiness["own_compliance_summary"]["external_required_control_count"])
+                self.assertEqual(0, readiness["own_compliance_summary"]["required_certification_evidence_count"])
                 self.assertTrue(readiness["promotion_gate_ready"])
                 self.assertTrue(readiness["proof_pack_ready"])
                 self.assertTrue(readiness["runtime_policy_ready"])
@@ -388,6 +471,12 @@ class ControlPlaneTests(unittest.TestCase):
                 )
                 self.assertTrue(
                     any("roadmap phase scoreboard milestones incomplete" in blocker for blocker in readiness["blockers"])
+                )
+                self.assertTrue(
+                    any("design-partner pilot milestones incomplete" in blocker for blocker in readiness["blockers"])
+                )
+                self.assertTrue(
+                    any("TrustAI own-compliance certifications incomplete" in blocker for blocker in readiness["blockers"])
                 )
                 external_evidence = control.recent_external_evidence_manifests()
                 self.assertEqual(1, len(external_evidence))

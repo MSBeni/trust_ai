@@ -2287,6 +2287,10 @@ def cmd_control_summary(args: argparse.Namespace) -> int:
             summary["roadmap_evidence"] = control.roadmap_evidence()
         if args.phase_scoreboards:
             summary["phase_scoreboards"] = control.recent_phase_scoreboards()
+        if args.design_partner_dossiers:
+            summary["design_partner_dossiers"] = control.recent_design_partner_dossiers()
+        if args.own_compliance_dossiers:
+            summary["own_compliance_dossiers"] = control.recent_own_compliance_dossiers()
         if args.readiness:
             summary["readiness"] = control.readiness()
         if args.external_evidence:
@@ -20376,6 +20380,8 @@ def build_parser() -> argparse.ArgumentParser:
     control_summary.add_argument("--runtime-evidence", action="store_true")
     control_summary.add_argument("--roadmap-evidence", action="store_true")
     control_summary.add_argument("--phase-scoreboards", action="store_true")
+    control_summary.add_argument("--design-partner-dossiers", action="store_true")
+    control_summary.add_argument("--own-compliance-dossiers", action="store_true")
     control_summary.add_argument("--readiness", action="store_true")
     control_summary.add_argument("--external-evidence", action="store_true")
     control_summary.add_argument("--external-authority-gaps", action="store_true")
