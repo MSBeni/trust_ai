@@ -956,6 +956,10 @@ def _gap_report_group_counts(gaps: list[dict[str, Any]], key: str) -> dict[str, 
     return {name: counts[name] for name in sorted(counts)}
 
 
+def _source_map_effective_value(entry: dict[str, Any], defaults: dict[str, Any], key: str) -> Any:
+    return entry[key] if key in entry else defaults.get(key)
+
+
 def build_external_evidence_gap_report(
     manifest: dict[str, Any],
     plan: dict[str, Any],
@@ -994,28 +998,45 @@ def build_external_evidence_gap_report(
     if not source_map_result.ok:
         raise ValueError("external evidence source map is not valid for gap report: " + "; ".join(source_map_result.errors))
 
+    defaults = source_map.get("defaults", {})
+    if not isinstance(defaults, dict):
+        defaults = {}
     gaps: list[dict[str, Any]] = []
+    optional_collection_fields = (
+        "source_file",
+        "retrieval_method",
+        "content_type",
+        "issuer",
+        "subject",
+        "issued_at",
+        "expires_at",
+        "timeout_seconds",
+    )
     for entry in source_map.get("entries", []):
         if not isinstance(entry, dict):
             continue
-        gaps.append(
-            {
-                "task": entry.get("task"),
-                "task_ref": entry.get("task_ref"),
-                "task_id": entry.get("task_id"),
-                "unit_id": entry.get("unit_id"),
-                "unit_ref": entry.get("unit_ref"),
-                "requirement_id": entry.get("requirement_id"),
-                "authority_kind": entry.get("authority_kind"),
-                "title": entry.get("title"),
-                "owner_hint": entry.get("owner_hint"),
-                "source_uri": entry.get("source_uri"),
-                "snapshot_out": entry.get("snapshot_out"),
-                "intake_out": entry.get("intake_out"),
-                "suggested_evidence_sources": entry.get("suggested_evidence_sources", []),
-                "external_authority_required": entry.get("external_authority_required", []),
-            }
-        )
+        gap = {
+            "task": entry.get("task"),
+            "task_ref": entry.get("task_ref"),
+            "task_id": entry.get("task_id"),
+            "unit_id": entry.get("unit_id"),
+            "unit_ref": entry.get("unit_ref"),
+            "requirement_id": entry.get("requirement_id"),
+            "authority_kind": entry.get("authority_kind"),
+            "title": entry.get("title"),
+            "owner_hint": entry.get("owner_hint"),
+            "source_uri": _source_map_effective_value(entry, defaults, "source_uri"),
+            "description": _source_map_effective_value(entry, defaults, "description"),
+            "snapshot_out": _source_map_effective_value(entry, defaults, "snapshot_out"),
+            "intake_out": _source_map_effective_value(entry, defaults, "intake_out"),
+            "suggested_evidence_sources": entry.get("suggested_evidence_sources", []),
+            "external_authority_required": entry.get("external_authority_required", []),
+        }
+        for key in optional_collection_fields:
+            value = _source_map_effective_value(entry, defaults, key)
+            if value is not None:
+                gap[key] = value
+        gaps.append(gap)
 
     manifest_summary = manifest.get("summary", {}) if isinstance(manifest.get("summary"), dict) else {}
     plan_summary = plan.get("summary", {}) if isinstance(plan.get("summary"), dict) else {}
@@ -2154,7 +2175,20 @@ def render_external_evidence_gap_report_markdown(report: dict[str, Any]) -> str:
             lines.append(f"- Title: {gap.get('title')}")
             lines.append(f"- Authority kind: `{gap.get('authority_kind')}`")
             lines.append(f"- Owner hint: {gap.get('owner_hint')}")
+            lines.append(f"- Description: {gap.get('description')}")
             lines.append(f"- Source URI: `{gap.get('source_uri')}`")
+            if gap.get("source_file"):
+                lines.append(f"- Source file: `{gap.get('source_file')}`")
+            if gap.get("retrieval_method"):
+                lines.append(f"- Retrieval method: `{gap.get('retrieval_method')}`")
+            if gap.get("content_type"):
+                lines.append(f"- Content type: `{gap.get('content_type')}`")
+            if gap.get("issuer") or gap.get("subject"):
+                lines.append(f"- Issuer/subject: {gap.get('issuer') or 'missing issuer'} / {gap.get('subject') or 'missing subject'}")
+            if gap.get("issued_at") or gap.get("expires_at"):
+                lines.append(f"- Freshness: `{gap.get('issued_at') or 'missing issued_at'} to {gap.get('expires_at') or 'missing expires_at'}`")
+            if gap.get("timeout_seconds"):
+                lines.append(f"- Timeout seconds: `{gap.get('timeout_seconds')}`")
             lines.append(f"- Snapshot output: `{gap.get('snapshot_out')}`")
             lines.append(f"- Intake output: `{gap.get('intake_out')}`")
             suggestions = gap.get("suggested_evidence_sources", [])

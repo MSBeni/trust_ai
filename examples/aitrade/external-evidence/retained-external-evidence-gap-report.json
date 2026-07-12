@@ -6,10 +6,11 @@
       "hosted-service"
     ]
   },
-  "gap_report_id": "264998b5a7cc845fbf9fcc58e507352684d9c20d182a503aaaf4408841546cb0",
+  "gap_report_id": "dd90a2cfa44bd2a2d965cfa22d21f85048df30a05902791a828000f00f2420b7",
   "gaps": [
     {
       "authority_kind": "hosted-service",
+      "description": "hosted-service evidence for self-serve-onboarding",
       "external_authority_required": [
         "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, MCP gateway, examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence."
       ],
@@ -32,6 +33,7 @@
     },
     {
       "authority_kind": "identity-provider",
+      "description": "identity-provider evidence for self-serve-onboarding",
       "external_authority_required": [
         "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, MCP gateway, examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence."
       ],
@@ -54,6 +56,7 @@
     },
     {
       "authority_kind": "ci-run",
+      "description": "ci-run evidence for mcp-gateway",
       "external_authority_required": [
         "MCP proxy capture receipts cover retained raw proxy event export byte replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
       ],
@@ -76,6 +79,7 @@
     },
     {
       "authority_kind": "kms-hsm",
+      "description": "kms-hsm evidence for mcp-gateway",
       "external_authority_required": [
         "MCP proxy capture receipts cover retained raw proxy event export byte replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
       ],
@@ -98,6 +102,7 @@
     },
     {
       "authority_kind": "provider-api",
+      "description": "provider-api evidence for mcp-gateway",
       "external_authority_required": [
         "MCP proxy capture receipts cover retained raw proxy event export byte replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
       ],
@@ -120,6 +125,7 @@
     },
     {
       "authority_kind": "hosted-service",
+      "description": "hosted-service evidence for mcp-gateway",
       "external_authority_required": [
         "MCP proxy capture receipts cover retained raw proxy event export byte replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
       ],
@@ -142,6 +148,7 @@
     },
     {
       "authority_kind": "kms-hsm",
+      "description": "kms-hsm evidence for shadow-replay-temporal-holdout",
       "external_authority_required": [
         "Traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
       ],
@@ -164,6 +171,7 @@
     },
     {
       "authority_kind": "provider-api",
+      "description": "provider-api evidence for shadow-replay-temporal-holdout",
       "external_authority_required": [
         "Traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
       ],
@@ -186,6 +194,7 @@
     },
     {
       "authority_kind": "identity-provider",
+      "description": "identity-provider evidence for shadow-replay-temporal-holdout",
       "external_authority_required": [
         "Traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
       ],
@@ -208,6 +217,7 @@
     },
     {
       "authority_kind": "standards-body",
+      "description": "standards-body evidence for shadow-replay-temporal-holdout",
       "external_authority_required": [
         "Traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
       ],
@@ -230,6 +240,7 @@
     },
     {
       "authority_kind": "ci-run",
+      "description": "ci-run evidence for cicd-provider-approvals",
       "external_authority_required": [
         "Provider delivery receipts cover retained provider delivery payload artifact replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs and provider-native status shape before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
       ],
@@ -252,6 +263,7 @@
     },
     {
       "authority_kind": "provider-api",
+      "description": "provider-api evidence for cicd-provider-approvals",
       "external_authority_required": [
         "Provider delivery receipts cover retained provider delivery payload artifact replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs and provider-native status shape before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
       ],
@@ -274,6 +286,7 @@
     },
     {
       "authority_kind": "hosted-service",
+      "description": "hosted-service evidence for cicd-provider-approvals",
       "external_authority_required": [
         "Provider delivery receipts cover retained provider delivery payload artifact replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs and provider-native status shape before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
       ],
@@ -296,6 +309,7 @@
     },
     {
       "authority_kind": "identity-provider",
+      "description": "identity-provider evidence for cicd-provider-approvals",
       "external_authority_required": [
         "Provider delivery receipts cover retained provider delivery payload artifact replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs and provider-native status shape before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
       ],
@@ -318,6 +332,7 @@
     },
     {
       "authority_kind": "regulator",
+      "description": "regulator evidence for design-partner-pilot-exit-criteria",
       "external_authority_required": [
         "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, and external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
       ],
@@ -340,6 +355,7 @@
     },
     {
       "authority_kind": "insurer",
+      "description": "insurer evidence for design-partner-pilot-exit-criteria",
       "external_authority_required": [
         "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, and external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
       ],
@@ -362,6 +378,7 @@
     },
     {
       "authority_kind": "customer",
+      "description": "customer evidence for design-partner-pilot-exit-criteria",
       "external_authority_required": [
         "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, and external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
       ],
@@ -384,6 +401,7 @@
     },
     {
       "authority_kind": "ci-run",
+      "description": "ci-run evidence for framework-adapters",
       "external_authority_required": [
         "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
       ],
@@ -406,6 +424,7 @@
     },
     {
       "authority_kind": "provider-api",
+      "description": "provider-api evidence for framework-adapters",
       "external_authority_required": [
         "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
       ],
@@ -428,6 +447,7 @@
     },
     {
       "authority_kind": "hosted-service",
+      "description": "hosted-service evidence for framework-adapters",
       "external_authority_required": [
         "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
       ],
@@ -450,6 +470,7 @@
     },
     {
       "authority_kind": "kms-hsm",
+      "description": "kms-hsm evidence for auditor-and-review-portal",
       "external_authority_required": [
         "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
       ],
@@ -472,6 +493,7 @@
     },
     {
       "authority_kind": "provider-api",
+      "description": "provider-api evidence for auditor-and-review-portal",
       "external_authority_required": [
         "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
       ],
@@ -494,6 +516,7 @@
     },
     {
       "authority_kind": "hosted-service",
+      "description": "hosted-service evidence for auditor-and-review-portal",
       "external_authority_required": [
         "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
       ],
@@ -516,6 +539,7 @@
     },
     {
       "authority_kind": "identity-provider",
+      "description": "identity-provider evidence for auditor-and-review-portal",
       "external_authority_required": [
         "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
       ],
@@ -538,6 +562,7 @@
     },
     {
       "authority_kind": "regulator",
+      "description": "regulator evidence for auditor-and-review-portal",
       "external_authority_required": [
         "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
       ],
@@ -560,6 +585,7 @@
     },
     {
       "authority_kind": "ci-run",
+      "description": "ci-run evidence for byoc-self-hosted",
       "external_authority_required": [
         "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
       ],
@@ -582,6 +608,7 @@
     },
     {
       "authority_kind": "kms-hsm",
+      "description": "kms-hsm evidence for byoc-self-hosted",
       "external_authority_required": [
         "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
       ],
@@ -604,6 +631,7 @@
     },
     {
       "authority_kind": "cloud-object-lock",
+      "description": "cloud-object-lock evidence for byoc-self-hosted",
       "external_authority_required": [
         "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
       ],
@@ -626,6 +654,7 @@
     },
     {
       "authority_kind": "provider-api",
+      "description": "provider-api evidence for byoc-self-hosted",
       "external_authority_required": [
         "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
       ],
@@ -648,6 +677,7 @@
     },
     {
       "authority_kind": "standards-body",
+      "description": "standards-body evidence for byoc-self-hosted",
       "external_authority_required": [
         "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
       ],
@@ -670,6 +700,7 @@
     },
     {
       "authority_kind": "customer",
+      "description": "customer evidence for byoc-self-hosted",
       "external_authority_required": [
         "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
       ],
@@ -692,6 +723,7 @@
     },
     {
       "authority_kind": "provider-api",
+      "description": "provider-api evidence for compliance-mapper-and-eu-ai-act",
       "external_authority_required": [
         "Compliance production authority dossiers cover the local/reference authority checklist for framework-control ontology, ISO 42001, NIST AI RMF, EU AI Act, SR 11-7, SOC 2, proof-pack source replay, selective regulator disclosure, GRC exports, EU data-plane sovereignty, conformity-assessment review, and per-evidence source_context bound to the signed compliance source binding; actual fresh GRC-platform acceptance, regulator/supervisor acceptance, conformity-assessment review, and continuously operated EU data-plane provider exports remain external deployment evidence."
       ],
@@ -714,6 +746,7 @@
     },
     {
       "authority_kind": "regulator",
+      "description": "regulator evidence for compliance-mapper-and-eu-ai-act",
       "external_authority_required": [
         "Compliance production authority dossiers cover the local/reference authority checklist for framework-control ontology, ISO 42001, NIST AI RMF, EU AI Act, SR 11-7, SOC 2, proof-pack source replay, selective regulator disclosure, GRC exports, EU data-plane sovereignty, conformity-assessment review, and per-evidence source_context bound to the signed compliance source binding; actual fresh GRC-platform acceptance, regulator/supervisor acceptance, conformity-assessment review, and continuously operated EU data-plane provider exports remain external deployment evidence."
       ],
@@ -736,6 +769,7 @@
     },
     {
       "authority_kind": "standards-body",
+      "description": "standards-body evidence for compliance-mapper-and-eu-ai-act",
       "external_authority_required": [
         "Compliance production authority dossiers cover the local/reference authority checklist for framework-control ontology, ISO 42001, NIST AI RMF, EU AI Act, SR 11-7, SOC 2, proof-pack source replay, selective regulator disclosure, GRC exports, EU data-plane sovereignty, conformity-assessment review, and per-evidence source_context bound to the signed compliance source binding; actual fresh GRC-platform acceptance, regulator/supervisor acceptance, conformity-assessment review, and continuously operated EU data-plane provider exports remain external deployment evidence."
       ],
@@ -758,6 +792,7 @@
     },
     {
       "authority_kind": "standards-body",
+      "description": "standards-body evidence for trustai-own-compliance",
       "external_authority_required": [
         "TrustAI own compliance dossiers cover local/reference readiness and external-certification schemas for SOC 2 Type II and ISO/IEC 42001; actual SOC 2 Type II audit reports, ISO/IEC 42001 certificates, auditor bridge letters, management-system scope approvals, continuous control operation evidence, and board/customer acceptance remain external compliance evidence."
       ],
@@ -780,6 +815,7 @@
     },
     {
       "authority_kind": "customer",
+      "description": "customer evidence for trustai-own-compliance",
       "external_authority_required": [
         "TrustAI own compliance dossiers cover local/reference readiness and external-certification schemas for SOC 2 Type II and ISO/IEC 42001; actual SOC 2 Type II audit reports, ISO/IEC 42001 certificates, auditor bridge letters, management-system scope approvals, continuous control operation evidence, and board/customer acceptance remain external compliance evidence."
       ],
@@ -802,6 +838,7 @@
     },
     {
       "authority_kind": "regulator",
+      "description": "regulator evidence for vertical-packs",
       "external_authority_required": [
         "Vertical pack receipts cover local/reference templates, source bindings, control mappings, and production-claim limits for trading/treasury, insurance claims, healthcare RCM, and public sector packs; live SR 11-7 owner signoff, NAIC/state insurance legal review, HIPAA/BAA posture, FDA SaMD classification, FedRAMP boundary/ATO evidence, customer deployments, and external regulator/insurer/auditor acceptance remain external evidence."
       ],
@@ -824,6 +861,7 @@
     },
     {
       "authority_kind": "insurer",
+      "description": "insurer evidence for vertical-packs",
       "external_authority_required": [
         "Vertical pack receipts cover local/reference templates, source bindings, control mappings, and production-claim limits for trading/treasury, insurance claims, healthcare RCM, and public sector packs; live SR 11-7 owner signoff, NAIC/state insurance legal review, HIPAA/BAA posture, FDA SaMD classification, FedRAMP boundary/ATO evidence, customer deployments, and external regulator/insurer/auditor acceptance remain external evidence."
       ],
@@ -846,6 +884,7 @@
     },
     {
       "authority_kind": "customer",
+      "description": "customer evidence for vertical-packs",
       "external_authority_required": [
         "Vertical pack receipts cover local/reference templates, source bindings, control mappings, and production-claim limits for trading/treasury, insurance claims, healthcare RCM, and public sector packs; live SR 11-7 owner signoff, NAIC/state insurance legal review, HIPAA/BAA posture, FDA SaMD classification, FedRAMP boundary/ATO evidence, customer deployments, and external regulator/insurer/auditor acceptance remain external evidence."
       ],
@@ -868,6 +907,7 @@
     },
     {
       "authority_kind": "ci-run",
+      "description": "ci-run evidence for insurer-api-and-actuarial-products",
       "external_authority_required": [
         "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
       ],
@@ -890,6 +930,7 @@
     },
     {
       "authority_kind": "kms-hsm",
+      "description": "kms-hsm evidence for insurer-api-and-actuarial-products",
       "external_authority_required": [
         "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
       ],
@@ -912,6 +953,7 @@
     },
     {
       "authority_kind": "provider-api",
+      "description": "provider-api evidence for insurer-api-and-actuarial-products",
       "external_authority_required": [
         "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
       ],
@@ -934,6 +976,7 @@
     },
     {
       "authority_kind": "hosted-service",
+      "description": "hosted-service evidence for insurer-api-and-actuarial-products",
       "external_authority_required": [
         "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
       ],
@@ -956,6 +999,7 @@
     },
     {
       "authority_kind": "identity-provider",
+      "description": "identity-provider evidence for insurer-api-and-actuarial-products",
       "external_authority_required": [
         "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
       ],
@@ -978,6 +1022,7 @@
     },
     {
       "authority_kind": "insurer",
+      "description": "insurer evidence for insurer-api-and-actuarial-products",
       "external_authority_required": [
         "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
       ],
@@ -1000,6 +1045,7 @@
     },
     {
       "authority_kind": "customer",
+      "description": "customer evidence for insurer-api-and-actuarial-products",
       "external_authority_required": [
         "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
       ],
@@ -1022,6 +1068,7 @@
     },
     {
       "authority_kind": "customer",
+      "description": "customer evidence for state-of-agent-reliability-report",
       "external_authority_required": [
         "State of Agent Reliability reports cover local/reference aggregate report generation, privacy thresholds, actuarial source-product bindings, and publication-evidence schemas; actual public publication, independent review, partner/customer permission, market acceptance, external distribution metrics, and continuously refreshed longitudinal data remain external GTM evidence."
       ],
@@ -1044,6 +1091,7 @@
     },
     {
       "authority_kind": "ci-run",
+      "description": "ci-run evidence for roadmap-phase-scoreboard",
       "external_authority_required": [
         "Roadmap phase scoreboards cover local/reference schemas for P1-P4 business milestones and can bind external evidence references and hashes; actual paying customers, signed contracts, ARR, Series A financing, live insurer integrations, SOC 2/ISO certificates, named regulator acceptance, standards-body progress, third-party procurement clauses, data-product revenue, and generic market usage remain external business evidence."
       ],
@@ -1066,6 +1114,7 @@
     },
     {
       "authority_kind": "regulator",
+      "description": "regulator evidence for roadmap-phase-scoreboard",
       "external_authority_required": [
         "Roadmap phase scoreboards cover local/reference schemas for P1-P4 business milestones and can bind external evidence references and hashes; actual paying customers, signed contracts, ARR, Series A financing, live insurer integrations, SOC 2/ISO certificates, named regulator acceptance, standards-body progress, third-party procurement clauses, data-product revenue, and generic market usage remain external business evidence."
       ],
@@ -1088,6 +1137,7 @@
     },
     {
       "authority_kind": "insurer",
+      "description": "insurer evidence for roadmap-phase-scoreboard",
       "external_authority_required": [
         "Roadmap phase scoreboards cover local/reference schemas for P1-P4 business milestones and can bind external evidence references and hashes; actual paying customers, signed contracts, ARR, Series A financing, live insurer integrations, SOC 2/ISO certificates, named regulator acceptance, standards-body progress, third-party procurement clauses, data-product revenue, and generic market usage remain external business evidence."
       ],
@@ -1110,6 +1160,7 @@
     },
     {
       "authority_kind": "standards-body",
+      "description": "standards-body evidence for roadmap-phase-scoreboard",
       "external_authority_required": [
         "Roadmap phase scoreboards cover local/reference schemas for P1-P4 business milestones and can bind external evidence references and hashes; actual paying customers, signed contracts, ARR, Series A financing, live insurer integrations, SOC 2/ISO certificates, named regulator acceptance, standards-body progress, third-party procurement clauses, data-product revenue, and generic market usage remain external business evidence."
       ],
@@ -1132,6 +1183,7 @@
     },
     {
       "authority_kind": "customer",
+      "description": "customer evidence for roadmap-phase-scoreboard",
       "external_authority_required": [
         "Roadmap phase scoreboards cover local/reference schemas for P1-P4 business milestones and can bind external evidence references and hashes; actual paying customers, signed contracts, ARR, Series A financing, live insurer integrations, SOC 2/ISO certificates, named regulator acceptance, standards-body progress, third-party procurement clauses, data-product revenue, and generic market usage remain external business evidence."
       ],
@@ -1154,6 +1206,7 @@
     },
     {
       "authority_kind": "ci-run",
+      "description": "ci-run evidence for product-scope-discipline",
       "external_authority_required": [
         "Product scope decisions cover local/reference checks for proof-strength, cheaper-production, wider-acceptance, and anti-focus decline controls; actual company governance adoption, product-council enforcement, customer-pressure evidence, and ongoing roadmap discipline remain external operating evidence."
       ],
@@ -1176,6 +1229,7 @@
     },
     {
       "authority_kind": "customer",
+      "description": "customer evidence for product-scope-discipline",
       "external_authority_required": [
         "Product scope decisions cover local/reference checks for proof-strength, cheaper-production, wider-acceptance, and anti-focus decline controls; actual company governance adoption, product-council enforcement, customer-pressure evidence, and ongoing roadmap discipline remain external operating evidence."
       ],
@@ -1198,6 +1252,7 @@
     },
     {
       "authority_kind": "ci-run",
+      "description": "ci-run evidence for runtime-policy-and-attestation",
       "external_authority_required": [
         "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
       ],
@@ -1220,6 +1275,7 @@
     },
     {
       "authority_kind": "kms-hsm",
+      "description": "kms-hsm evidence for runtime-policy-and-attestation",
       "external_authority_required": [
         "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
       ],
@@ -1242,6 +1298,7 @@
     },
     {
       "authority_kind": "provider-api",
+      "description": "provider-api evidence for runtime-policy-and-attestation",
       "external_authority_required": [
         "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
       ],
@@ -1264,6 +1321,7 @@
     },
     {
       "authority_kind": "hosted-service",
+      "description": "hosted-service evidence for runtime-policy-and-attestation",
       "external_authority_required": [
         "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
       ],
@@ -1286,6 +1344,7 @@
     },
     {
       "authority_kind": "identity-provider",
+      "description": "identity-provider evidence for runtime-policy-and-attestation",
       "external_authority_required": [
         "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
       ],
@@ -1308,6 +1367,7 @@
     },
     {
       "authority_kind": "provider-api",
+      "description": "provider-api evidence for agent-inventory-and-identity",
       "external_authority_required": [
         "Identity-provider production authority dossiers cover the local/reference authority checklist for live event streams, token/session propagation, lifecycle APIs, provider audit exports, credential custody, scheduler/queue evidence, per-evidence source_context bound to lifecycle worker bindings, recomputed controls, and freshness-gated production claims; actual fresh provider-owned exports remain external evidence."
       ],
@@ -1330,6 +1390,7 @@
     },
     {
       "authority_kind": "identity-provider",
+      "description": "identity-provider evidence for agent-inventory-and-identity",
       "external_authority_required": [
         "Identity-provider production authority dossiers cover the local/reference authority checklist for live event streams, token/session propagation, lifecycle APIs, provider audit exports, credential custody, scheduler/queue evidence, per-evidence source_context bound to lifecycle worker bindings, recomputed controls, and freshness-gated production claims; actual fresh provider-owned exports remain external evidence."
       ],
@@ -1352,6 +1413,7 @@
     },
     {
       "authority_kind": "kms-hsm",
+      "description": "kms-hsm evidence for standards-track-and-auditor-ecosystem",
       "external_authority_required": [
         "Actual standards-body acceptance and sponsor-owned KMS/HSM enforcement require external governance events."
       ],
@@ -1374,6 +1436,7 @@
     },
     {
       "authority_kind": "standards-body",
+      "description": "standards-body evidence for standards-track-and-auditor-ecosystem",
       "external_authority_required": [
         "Actual standards-body acceptance and sponsor-owned KMS/HSM enforcement require external governance events."
       ],
@@ -1396,6 +1459,7 @@
     },
     {
       "authority_kind": "provider-api",
+      "description": "provider-api evidence for trust-network-procurement-and-marketplace",
       "external_authority_required": [
         "Signed trust-network service attestations, worker receipts, worker review bundles, and production authority dossiers cover local/reference proof; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, marketplace asset replay, frontend replay, and service/worker linkage before external trust-network authority evidence is accepted. Live hosted services, provider-owned identity events, marketplace payouts, revocation propagation, callbacks, and procurement propagation remain external evidence until fresh provider-owned exports are supplied."
       ],
@@ -1418,6 +1482,7 @@
     },
     {
       "authority_kind": "hosted-service",
+      "description": "hosted-service evidence for trust-network-procurement-and-marketplace",
       "external_authority_required": [
         "Signed trust-network service attestations, worker receipts, worker review bundles, and production authority dossiers cover local/reference proof; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, marketplace asset replay, frontend replay, and service/worker linkage before external trust-network authority evidence is accepted. Live hosted services, provider-owned identity events, marketplace payouts, revocation propagation, callbacks, and procurement propagation remain external evidence until fresh provider-owned exports are supplied."
       ],
@@ -1440,6 +1505,7 @@
     },
     {
       "authority_kind": "identity-provider",
+      "description": "identity-provider evidence for trust-network-procurement-and-marketplace",
       "external_authority_required": [
         "Signed trust-network service attestations, worker receipts, worker review bundles, and production authority dossiers cover local/reference proof; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, marketplace asset replay, frontend replay, and service/worker linkage before external trust-network authority evidence is accepted. Live hosted services, provider-owned identity events, marketplace payouts, revocation propagation, callbacks, and procurement propagation remain external evidence until fresh provider-owned exports are supplied."
       ],
@@ -1462,6 +1528,7 @@
     },
     {
       "authority_kind": "customer",
+      "description": "customer evidence for trust-network-procurement-and-marketplace",
       "external_authority_required": [
         "Signed trust-network service attestations, worker receipts, worker review bundles, and production authority dossiers cover local/reference proof; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, marketplace asset replay, frontend replay, and service/worker linkage before external trust-network authority evidence is accepted. Live hosted services, provider-owned identity events, marketplace payouts, revocation propagation, callbacks, and procurement propagation remain external evidence until fresh provider-owned exports are supplied."
       ],

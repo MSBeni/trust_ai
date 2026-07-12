@@ -29,6 +29,7 @@ from trustai.external_evidence import (
     build_external_evidence_manifest,
     build_external_evidence_manifest_from_intakes,
     build_external_evidence_collection_plan,
+    build_external_evidence_gap_report,
     build_external_evidence_intake,
     build_external_evidence_source_snapshot,
     fulfill_external_evidence_source_map,
@@ -318,6 +319,20 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             verify_result = verify_external_evidence_source_map_template(source_map, plan)
             self.assertTrue(verify_result.ok, verify_result.errors)
             self.assertEqual(1, verify_result.entry_count)
+            gap_report = build_external_evidence_gap_report(
+                manifest,
+                plan,
+                source_map,
+                audit,
+                root=ROOT,
+                generated_at="2026-07-09T00:01:00Z",
+            )
+            gap = gap_report["gaps"][0]
+            self.assertEqual(FIXTURE, gap["source_file"])
+            self.assertEqual("Provider API", gap["issuer"])
+            self.assertEqual("trustai provider evidence exports", gap["subject"])
+            self.assertEqual("application/json", gap["content_type"])
+            self.assertEqual("provider-api provider export for oss-verifier-and-public-spec", gap["description"])
             strict_result = verify_external_evidence_source_map_template(
                 source_map,
                 plan,
@@ -1155,9 +1170,16 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertEqual(67, report["summary"]["source_map_entry_count"])
             self.assertEqual(67, report["summary"]["placeholder_source_uri_count"])
             self.assertEqual(0, report["summary"]["live_source_uri_count"])
+            first_gap = report["gaps"][0]
+            self.assertEqual("self-serve-onboarding:hosted-service", first_gap["unit_ref"])
+            self.assertEqual("hosted-service evidence for self-serve-onboarding", first_gap["description"])
+            self.assertNotIn("source_file", first_gap)
+            self.assertEqual("artifacts/external-evidence-sources/self-serve-onboarding/hosted-service.json", first_gap["snapshot_out"])
+            self.assertEqual("artifacts/external-evidence-intakes/self-serve-onboarding/hosted-service.json", first_gap["intake_out"])
             markdown = markdown_path.read_text(encoding="utf-8")
             self.assertIn("# External Evidence Gap Report", markdown)
             self.assertIn("Placeholder source URIs: 67", markdown)
+            self.assertIn("- Description: hosted-service evidence for self-serve-onboarding", markdown)
 
             tampered = copy.deepcopy(report)
             tampered["summary"]["remaining_task_count"] = 66

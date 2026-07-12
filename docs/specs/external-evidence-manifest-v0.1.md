@@ -298,9 +298,11 @@ to the roadmap evidence chain.
 `trustai.external-evidence-gap-report/0.1` from a verified external-evidence
 manifest, collection plan, source-map template, and source roadmap audit. The
 report records source artifact IDs and hashes, covered and missing authority
-counts, remaining worklist entries, placeholder/live source URI counts, grouping
-by requirement and authority kind, verification warnings, and explicit
-limitations. `--generated-at` MAY be supplied for reproducible checked-in gap
+counts, remaining worklist entries with effective source-map collection metadata
+(source URI, description, source file, retrieval method, content type, issuer,
+subject, freshness window, timeout, snapshot output, and intake output),
+placeholder/live source URI counts, grouping by requirement and authority kind,
+verification warnings, and explicit limitations. `--generated-at` MAY be supplied for reproducible checked-in gap
 reports.
 
 `external-evidence-gap-report-verify` recomputes `gap_report_id`, verifies the
