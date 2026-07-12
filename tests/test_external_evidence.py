@@ -370,6 +370,50 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 require_live_source_uris=True,
             )
             self.assertTrue(strict_fulfilled.ok, strict_fulfilled.errors)
+            missing_snapshot_result = verify_external_evidence_source_map_template(
+                fulfilled,
+                plan,
+                root=tmp_path,
+                require_live_source_uris=True,
+                require_source_snapshots=True,
+            )
+            self.assertFalse(missing_snapshot_result.ok)
+            self.assertTrue(any("snapshot_out does not exist" in error for error in missing_snapshot_result.errors), missing_snapshot_result.errors)
+
+            snapshot_path = tmp_path / fulfilled_entry["snapshot_out"]
+            snapshot_path.parent.mkdir(parents=True, exist_ok=True)
+            snapshot = build_external_evidence_source_snapshot(
+                source_uri=fulfilled_entry["source_uri"],
+                body=b'{"ok": true}\n',
+                retrieval_method="http-get",
+                content_type="application/json",
+                status_code=200,
+                issued_at="2026-07-08T00:00:00Z",
+                expires_at="2026-12-31T00:00:00Z",
+            )
+            snapshot_path.write_text(json.dumps(snapshot, indent=2, sort_keys=True), encoding="utf-8")
+            strict_snapshot_result = verify_external_evidence_source_map_template(
+                fulfilled,
+                plan,
+                root=tmp_path,
+                require_live_source_uris=True,
+                require_source_snapshots=True,
+            )
+            self.assertTrue(strict_snapshot_result.ok, strict_snapshot_result.errors)
+            failed_status_snapshot = copy.deepcopy(snapshot)
+            failed_status_snapshot["status_code"] = 500
+            failed_status_snapshot["snapshot_id"] = content_hash(without_keys(failed_status_snapshot, "snapshot_id"))
+            snapshot_path.write_text(json.dumps(failed_status_snapshot, indent=2, sort_keys=True), encoding="utf-8")
+            failed_status_result = verify_external_evidence_source_map_template(
+                fulfilled,
+                plan,
+                root=tmp_path,
+                require_live_source_uris=True,
+                require_source_snapshots=True,
+            )
+            self.assertFalse(failed_status_result.ok)
+            self.assertTrue(any("status_code is not successful" in error for error in failed_status_result.errors), failed_status_result.errors)
+            snapshot_path.write_text(json.dumps(snapshot, indent=2, sort_keys=True), encoding="utf-8")
 
             fulfilled_path = tmp_path / "external-evidence-source-map-fulfilled.json"
             subprocess.run(
@@ -380,11 +424,14 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     "external-evidence-source-map-fulfill",
                     str(source_map_path),
                     str(plan_path),
+                    "--root",
+                    str(tmp_path),
                     "--fulfillment",
                     "oss-verifier-and-public-spec:provider-api;source_uri=https://github.com/MSBeni/trust_ai/actions/runs/1234567890;description=GitHub Actions provider export for TrustAI source-map fulfillment",
                     "--generated-at",
                     "2026-07-10T00:00:00Z",
                     "--require-live-source-uris",
+                    "--require-source-snapshots",
                     "--out",
                     str(fulfilled_path),
                 ],
@@ -884,6 +931,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertEqual(EXTERNAL_EVIDENCE_GAP_REPORT_SCHEMA, report["schema"])
             self.assertEqual(content_hash(without_keys(report, "gap_report_id")), report["gap_report_id"])
             self.assertFalse(report["verification_options"]["require_live_source_uris"])
+            self.assertFalse(report["verification_options"]["require_source_snapshots"])
             strict_report_result = verify_external_evidence_gap_report(
                 report,
                 manifest,

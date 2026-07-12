@@ -505,6 +505,21 @@ def _source_map_source_uri_counts(entries: list[dict[str, Any]]) -> dict[str, in
     }
 
 
+def _resolve_source_map_snapshot_path(root: str | Path, snapshot_out: str) -> Path:
+    if not snapshot_out:
+        raise ValueError("snapshot_out is required")
+    root_path = Path(root).resolve()
+    target = Path(snapshot_out)
+    if not target.is_absolute():
+        target = root_path / target
+    resolved = target.resolve()
+    try:
+        resolved.relative_to(root_path)
+    except ValueError as exc:
+        raise ValueError(f"snapshot_out is outside root: {snapshot_out}") from exc
+    return resolved
+
+
 def _format_source_map_template(template: str, fields: dict[str, str], label: str) -> str:
     if not template:
         raise ValueError(f"external evidence source map {label} is required")
@@ -637,7 +652,9 @@ def verify_external_evidence_source_map_template(
     source_map: dict[str, Any],
     plan: dict[str, Any],
     *,
+    root: str | Path = ".",
     require_live_source_uris: bool = False,
+    require_source_snapshots: bool = False,
 ) -> ExternalEvidenceSourceMapVerification:
     errors: list[str] = []
     warnings: list[str] = []
@@ -732,6 +749,30 @@ def verify_external_evidence_source_map_template(
             errors.append(f"source map entry {canonical_ref} is missing source_uri")
         if not str(entry.get("description") or ""):
             errors.append(f"source map entry {canonical_ref} is missing description")
+        if require_source_snapshots:
+            snapshot_out = str(entry.get("snapshot_out") or "")
+            try:
+                snapshot_path = _resolve_source_map_snapshot_path(root, snapshot_out)
+            except ValueError as exc:
+                errors.append(f"source map entry {canonical_ref} {exc}")
+                continue
+            if not snapshot_path.is_file():
+                errors.append(f"source map entry {canonical_ref} snapshot_out does not exist: {snapshot_out}")
+                continue
+            try:
+                snapshot = load_external_evidence_source_snapshot(snapshot_path)
+            except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+                errors.append(f"source map entry {canonical_ref} snapshot_out is not a readable source snapshot: {exc}")
+                continue
+            snapshot_result = verify_external_evidence_source_snapshot(snapshot)
+            warnings.extend(f"source map entry {canonical_ref} snapshot: {warning}" for warning in snapshot_result.warnings)
+            if not snapshot_result.ok:
+                errors.extend(f"source map entry {canonical_ref} snapshot: {error}" for error in snapshot_result.errors)
+            if str(snapshot.get("source_uri") or "") != str(entry.get("source_uri") or ""):
+                errors.append(f"source map entry {canonical_ref} snapshot source_uri does not match source_uri")
+            status_code = snapshot.get("status_code")
+            if isinstance(status_code, int) and (status_code < 200 or status_code >= 400):
+                errors.append(f"source map entry {canonical_ref} snapshot status_code is not successful: {status_code}")
 
     if status_filter in EXTERNAL_EVIDENCE_PLAN_STATUS_FILTERS:
         eligible = [
@@ -888,6 +929,7 @@ def build_external_evidence_gap_report(
     root: str | Path,
     require_fresh: bool = False,
     require_live_source_uris: bool = False,
+    require_source_snapshots: bool = False,
     now: str | None = None,
     generated_at: str | None = None,
 ) -> dict[str, Any]:
@@ -902,7 +944,9 @@ def build_external_evidence_gap_report(
     source_map_result = verify_external_evidence_source_map_template(
         source_map,
         plan,
+        root=root,
         require_live_source_uris=require_live_source_uris,
+        require_source_snapshots=require_source_snapshots,
     )
     if not manifest_result.ok:
         raise ValueError("external evidence manifest is not valid for gap report: " + "; ".join(manifest_result.errors))
@@ -943,6 +987,7 @@ def build_external_evidence_gap_report(
         "verification_options": {
             "require_fresh": require_fresh,
             "require_live_source_uris": require_live_source_uris,
+            "require_source_snapshots": require_source_snapshots,
             "now": now,
         },
         "sources": {
@@ -994,6 +1039,7 @@ def verify_external_evidence_gap_report(
     root: str | Path,
     require_fresh: bool = False,
     require_live_source_uris: bool = False,
+    require_source_snapshots: bool = False,
     now: str | None = None,
 ) -> ExternalEvidenceGapReportVerification:
     errors: list[str] = []
@@ -1003,7 +1049,12 @@ def verify_external_evidence_gap_report(
         errors.append(f"unsupported external evidence gap report schema: {report.get('schema')}")
     if report.get("gap_report_id") != content_hash(without_keys(report, "gap_report_id")):
         errors.append("gap_report_id does not match canonical gap report body")
-    expected_options = {"require_fresh": require_fresh, "require_live_source_uris": require_live_source_uris, "now": now}
+    expected_options = {
+        "require_fresh": require_fresh,
+        "require_live_source_uris": require_live_source_uris,
+        "require_source_snapshots": require_source_snapshots,
+        "now": now,
+    }
     if report.get("verification_options") != expected_options:
         errors.append("verification_options do not match verifier options")
 
@@ -1016,6 +1067,7 @@ def verify_external_evidence_gap_report(
             root=root,
             require_fresh=require_fresh,
             require_live_source_uris=require_live_source_uris,
+            require_source_snapshots=require_source_snapshots,
             now=now,
             generated_at=str(report.get("generated_at") or ""),
         )
