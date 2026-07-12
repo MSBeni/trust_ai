@@ -97,6 +97,13 @@ jobs:
         run: >
           python -c "import json; m=json.load(open('artifacts/external-evidence-manifest-from-intakes.json', encoding='utf-8')); s=m['summary']; assert s['required_authority_kind_count'] == 70, s; assert s['covered_authority_kind_count'] == 3, s; assert s['missing_authority_kind_count'] == 67, s"
 
+      - name: Verify retained external evidence worklist artifacts
+        run: |
+          python -m trustai external-evidence-verify examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --require-fresh --now 2026-07-12T00:00:00Z
+          python -m trustai external-evidence-plan-verify examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json
+          python -m trustai external-evidence-source-map-verify examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json
+          python -c "import json; m=json.load(open('examples/aitrade/external-evidence/retained-external-evidence-manifest.json', encoding='utf-8')); p=json.load(open('examples/aitrade/external-evidence/remaining-external-evidence-plan.json', encoding='utf-8')); sm=json.load(open('examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json', encoding='utf-8')); assert m['summary']['covered_authority_kind_count'] == 3, m['summary']; assert m['summary']['missing_authority_kind_count'] == 67, m['summary']; assert p['summary']['selected_task_count'] == 67, p['summary']; assert sm['summary']['entry_count'] == 67, sm['summary']"
+
       - name: Append external evidence manifest to evidence chain
         run: python -m trustai external-evidence-append artifacts/external-evidence-manifest-from-intakes.json artifacts/roadmap-audit.json --require-fresh --now 2026-07-12T00:00:00Z --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --out artifacts/external-evidence-entry.json
 

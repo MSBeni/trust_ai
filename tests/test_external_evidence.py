@@ -48,6 +48,7 @@ from trustai.external_evidence import (
     render_roadmap_evidence_bundle_markdown,
     verify_external_evidence_manifest,
     verify_external_evidence_collection_plan,
+    verify_external_evidence_source_map_template,
     verify_external_evidence_intake,
     verify_external_evidence_source_snapshot,
     verify_roadmap_evidence_chain,
@@ -293,6 +294,29 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 "artifacts/source-map-template-intakes/oss-verifier-and-public-spec/provider-api.json",
                 entry["intake_out"],
             )
+
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-source-map-verify",
+                    str(source_map_path),
+                    str(plan_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            verify_result = verify_external_evidence_source_map_template(source_map, plan)
+            self.assertTrue(verify_result.ok, verify_result.errors)
+            self.assertEqual(1, verify_result.entry_count)
+
+            tampered = copy.deepcopy(source_map)
+            tampered["entries"][0]["snapshot_out"] = "artifacts/wrong.json"
+            tampered["source_map_id"] = content_hash(without_keys(tampered, "source_map_id"))
+            tampered_result = verify_external_evidence_source_map_template(tampered, plan)
+            self.assertFalse(tampered_result.ok)
+            self.assertTrue(any("snapshot_out" in error for error in tampered_result.errors), tampered_result.errors)
 
     def test_external_evidence_intake_binds_artifact_to_collection_task(self):
         audit = build_roadmap_audit(ROOT)

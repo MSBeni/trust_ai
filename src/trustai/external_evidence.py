@@ -157,6 +157,14 @@ class ExternalEvidenceCollectionPlanVerification:
 
 
 @dataclass
+class ExternalEvidenceSourceMapVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+    entry_count: int = 0
+
+
+@dataclass
 class ExternalEvidenceSourceSnapshotVerification:
     ok: bool
     errors: list[str]
@@ -572,6 +580,111 @@ def build_external_evidence_source_map_template(
         ],
     }
     return {**body, "source_map_id": content_hash(body)}
+
+
+def verify_external_evidence_source_map_template(
+    source_map: dict[str, Any],
+    plan: dict[str, Any],
+) -> ExternalEvidenceSourceMapVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    if source_map.get("schema") != EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA:
+        errors.append(f"unsupported external evidence source map schema: {source_map.get('schema')}")
+    if source_map.get("source_map_id") != content_hash(without_keys(source_map, "source_map_id")):
+        errors.append("source_map_id does not match canonical source map body")
+    if plan.get("schema") != EXTERNAL_EVIDENCE_COLLECTION_PLAN_SCHEMA:
+        errors.append(f"unsupported external evidence collection plan schema: {plan.get('schema')}")
+    if plan.get("plan_id") != content_hash(without_keys(plan, "plan_id")):
+        errors.append("source collection plan_id does not match canonical body")
+
+    expected_source_plan = _collection_plan_source_record(plan) if plan.get("schema") == EXTERNAL_EVIDENCE_COLLECTION_PLAN_SCHEMA else None
+    if expected_source_plan is not None and source_map.get("source_plan") != expected_source_plan:
+        errors.append("source map source_plan does not match supplied collection plan")
+
+    summary = source_map.get("summary")
+    if not isinstance(summary, dict):
+        errors.append("source map summary must be an object")
+        summary = {}
+    status_filter = str(summary.get("status_filter") or "")
+    if status_filter not in EXTERNAL_EVIDENCE_PLAN_STATUS_FILTERS:
+        errors.append(f"unsupported source map status_filter: {status_filter}")
+    authority_kinds = summary.get("authority_kinds", [])
+    if not isinstance(authority_kinds, list) or any(not isinstance(value, str) for value in authority_kinds):
+        errors.append("source map authority_kinds must be a list of strings")
+        authority_kinds = []
+    invalid_authorities = sorted(set(authority_kinds) - AUTHORITY_KINDS)
+    if invalid_authorities:
+        errors.append(f"unsupported source map authority kind: {', '.join(invalid_authorities)}")
+    snapshot_dir = str(summary.get("snapshot_dir") or "artifacts/external-evidence-sources")
+    intake_dir = str(summary.get("intake_dir") or "artifacts/external-evidence-intakes")
+
+    tasks = plan.get("tasks", [])
+    if not isinstance(tasks, list):
+        errors.append("source collection plan tasks must be a list")
+        tasks = []
+    task_by_ref = {str(task.get("unit_ref") or ""): task for task in tasks if isinstance(task, dict)}
+    task_by_task_ref = {str(task.get("task_ref") or ""): task for task in tasks if isinstance(task, dict)}
+
+    entries = source_map.get("entries")
+    if not isinstance(entries, list):
+        errors.append("source map entries must be a list")
+        entries = []
+    if summary.get("entry_count") != len(entries):
+        errors.append("source map summary entry_count does not match entries length")
+    if summary.get("source_plan_task_count") != len(tasks):
+        errors.append("source map summary source_plan_task_count does not match supplied plan")
+
+    seen_tasks: set[str] = set()
+    for index, entry in enumerate(entries):
+        if not isinstance(entry, dict):
+            errors.append(f"source map entry {index} must be an object")
+            continue
+        task_ref = str(entry.get("task") or "")
+        full_task_ref = str(entry.get("task_ref") or "")
+        task = task_by_ref.get(task_ref) or task_by_task_ref.get(full_task_ref)
+        if task is None:
+            errors.append(f"source map entry {index} does not match a collection-plan task: {task_ref or full_task_ref}")
+            continue
+        canonical_ref = str(task.get("unit_ref") or "")
+        if canonical_ref in seen_tasks:
+            errors.append(f"source map entry duplicates task: {canonical_ref}")
+        seen_tasks.add(canonical_ref)
+        if status_filter in EXTERNAL_EVIDENCE_PLAN_STATUS_FILTERS and not _collection_status_matches(task, status_filter):
+            errors.append(f"source map entry {canonical_ref} does not match status_filter {status_filter}")
+        authority_kind = str(task.get("authority_kind") or "")
+        if authority_kinds and authority_kind not in authority_kinds:
+            errors.append(f"source map entry {canonical_ref} does not match authority_kinds filter")
+        for key in ("task_id", "unit_id", "unit_ref", "requirement_id", "authority_kind", "title"):
+            if str(entry.get(key) or "") != str(task.get(key) or ""):
+                errors.append(f"source map entry {canonical_ref} has mismatched {key}")
+        if str(entry.get("task_ref") or "") != str(task.get("task_ref") or ""):
+            errors.append(f"source map entry {canonical_ref} has mismatched task_ref")
+        if str(entry.get("coverage_status") or "") != str(task.get("coverage_status") or ""):
+            errors.append(f"source map entry {canonical_ref} has mismatched coverage_status")
+        if str(entry.get("snapshot_out") or "") != _source_map_join_path(snapshot_dir, str(task.get("requirement_id") or ""), authority_kind):
+            errors.append(f"source map entry {canonical_ref} has mismatched snapshot_out")
+        if str(entry.get("intake_out") or "") != _source_map_join_path(intake_dir, str(task.get("requirement_id") or ""), authority_kind):
+            errors.append(f"source map entry {canonical_ref} has mismatched intake_out")
+        if not str(entry.get("source_uri") or ""):
+            errors.append(f"source map entry {canonical_ref} is missing source_uri")
+        if not str(entry.get("description") or ""):
+            errors.append(f"source map entry {canonical_ref} is missing description")
+
+    if status_filter in EXTERNAL_EVIDENCE_PLAN_STATUS_FILTERS:
+        eligible = [
+            task
+            for task in tasks
+            if isinstance(task, dict)
+            and _collection_status_matches(task, status_filter)
+            and (not authority_kinds or str(task.get("authority_kind") or "") in authority_kinds)
+        ]
+        if len(entries) < len(eligible):
+            warnings.append("source map contains a subset of matching collection-plan tasks")
+        if len(entries) > len(eligible):
+            errors.append("source map contains more entries than matching collection-plan tasks")
+
+    return ExternalEvidenceSourceMapVerification(ok=not errors, errors=errors, warnings=warnings, entry_count=len(entries))
 
 
 def build_external_evidence_source_snapshot(
@@ -1372,6 +1485,10 @@ def write_external_evidence_collection_plan(path: str | Path, plan: dict[str, An
 
 
 def load_external_evidence_collection_plan(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def load_external_evidence_source_map(path: str | Path) -> dict[str, Any]:
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 

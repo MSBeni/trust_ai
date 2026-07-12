@@ -155,6 +155,13 @@ Template entries include the collection `task`, `task_ref`, `task_id`, `unit_id`
 MAY interpolate `{task_id}`, `{task_ref}`, `{unit_id}`, `{unit_ref}`,
 `{requirement_id}`, `{authority_kind}`, `{phase}`, `{priority}`, and `{title}`.
 
+`external-evidence-source-map-verify` verifies a source map against its source
+collection plan. It MUST recompute `source_map_id`, verify `source_plan` binding,
+validate the status and authority filters, reject duplicate or unknown tasks,
+and confirm task metadata plus generated `snapshot_out` and `intake_out` paths
+match the supplied plan. Verification confirms operator worklist integrity only;
+it does not convert a source-map template into external authority evidence.
+
 `external-evidence-collect-batch` consumes the same source-map schema. Each
 entry MUST identify a unique collection `task`, `source_uri`, and `description`;
 it MAY provide or inherit `source_file`, `issuer`, `subject`, `content_type`,

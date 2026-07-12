@@ -1080,6 +1080,7 @@ from .external_evidence import (
     extract_roadmap_evidence_bundle_sources,
     load_external_evidence_manifest,
     load_external_evidence_collection_plan,
+    load_external_evidence_source_map,
     load_external_evidence_intake,
     load_external_evidence_intakes,
     load_external_evidence_source_snapshot,
@@ -1089,6 +1090,7 @@ from .external_evidence import (
     parse_bundle_source_artifact_arg,
     verify_external_evidence_manifest,
     verify_external_evidence_collection_plan,
+    verify_external_evidence_source_map_template,
     verify_external_evidence_intake,
     verify_external_evidence_source_snapshot,
     verify_roadmap_evidence_chain,
@@ -14319,6 +14321,26 @@ def cmd_external_evidence_source_map_template(args: argparse.Namespace) -> int:
     print(f"entries: {source_map['summary']['entry_count']}")
     return 0
 
+def cmd_external_evidence_source_map_verify(args: argparse.Namespace) -> int:
+    try:
+        source_map = load_external_evidence_source_map(args.source_map)
+        plan = load_external_evidence_collection_plan(args.plan)
+        result = verify_external_evidence_source_map_template(source_map, plan)
+    except (OSError, ValueError) as exc:
+        print(f"external evidence source map verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        print(f"verified external evidence source map: {args.source_map}")
+        print(f"source map id: {source_map.get('source_map_id')}")
+        print(f"entries: {result.entry_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"external evidence source map verification failed: {args.source_map}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
 def _run_git_ls_remote(remote: str, refs: list[str], timeout_seconds: float) -> tuple[str, list[dict[str, str]]]:
     if not remote:
         raise ValueError("git remote is required")
@@ -24291,6 +24313,11 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_source_map_template.add_argument("--generated-at")
     external_evidence_source_map_template.add_argument("--out", default="artifacts/external-evidence-source-map-template.json")
     external_evidence_source_map_template.set_defaults(func=cmd_external_evidence_source_map_template)
+
+    external_evidence_source_map_verify = subparsers.add_parser("external-evidence-source-map-verify", help="verify an external-evidence source-map template against a collection plan")
+    external_evidence_source_map_verify.add_argument("source_map")
+    external_evidence_source_map_verify.add_argument("plan")
+    external_evidence_source_map_verify.set_defaults(func=cmd_external_evidence_source_map_verify)
     external_evidence_snapshot = subparsers.add_parser("external-evidence-snapshot", help="snapshot a source URI or local authority export as a hashable external evidence artifact")
     external_evidence_snapshot.add_argument("source_uri")
     external_evidence_snapshot.add_argument("--source-file", help="local authority export to embed instead of fetching source_uri")
