@@ -124,7 +124,28 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 summary_body = json.loads(summary_response.read().decode("utf-8"))
                 self.assertEqual(200, summary_response.status)
                 self.assertEqual(4, summary_body["counts"]["chain_entries"])
+                self.assertEqual(0, summary_body["counts"]["contracts"])
+                self.assertEqual(0, summary_body["counts"]["eval_runs"])
+                self.assertEqual(0, summary_body["counts"]["gate_decisions"])
                 self.assertEqual(4, summary_body["counts"]["ingest_events"])
+
+                conn.request("GET", "/v0/contracts")
+                contracts_response = conn.getresponse()
+                contracts_body = json.loads(contracts_response.read().decode("utf-8"))
+                self.assertEqual(200, contracts_response.status)
+                self.assertEqual([], contracts_body["contracts"])
+
+                conn.request("GET", "/v0/eval-runs")
+                eval_runs_response = conn.getresponse()
+                eval_runs_body = json.loads(eval_runs_response.read().decode("utf-8"))
+                self.assertEqual(200, eval_runs_response.status)
+                self.assertEqual([], eval_runs_body["eval_runs"])
+
+                conn.request("GET", "/v0/gate-decisions")
+                gate_decisions_response = conn.getresponse()
+                gate_decisions_body = json.loads(gate_decisions_response.read().decode("utf-8"))
+                self.assertEqual(200, gate_decisions_response.status)
+                self.assertEqual([], gate_decisions_body["gate_decisions"])
 
                 conn.request("GET", "/v0/ingest-events")
                 ingest_events_response = conn.getresponse()

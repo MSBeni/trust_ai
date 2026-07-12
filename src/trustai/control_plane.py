@@ -9,6 +9,7 @@ from .canonical import content_hash, utc_now
 from .chain import EvidenceChain
 from .cicd import PROMOTION_STATUS_ENTRY_TYPE
 from .contracts import CONTRACT_ENTRY_TYPE
+from .gate import EVAL_ENTRY_TYPE, GATE_ENTRY_TYPE
 from .ingest import INGEST_ENTRY_TYPE
 from .lifecycle import INCIDENT_ENTRY_TYPE
 from .policy import POLICY_DECISION_ENTRY_TYPE
@@ -148,6 +149,34 @@ class ControlPlane:
                 attributes_json TEXT NOT NULL,
                 body_json TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS eval_runs (
+                entry_id TEXT PRIMARY KEY,
+                contract_id TEXT,
+                contract_hash TEXT,
+                agent_name TEXT,
+                agent_version TEXT,
+                results_hash TEXT,
+                evaluated_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS gate_decisions (
+                entry_id TEXT PRIMARY KEY,
+                contract_id TEXT,
+                contract_hash TEXT,
+                agent_name TEXT,
+                agent_version TEXT,
+                outcome TEXT,
+                passed INTEGER NOT NULL,
+                eval_entry_id TEXT,
+                contract_entry_id TEXT,
+                results_hash TEXT,
+                check_count INTEGER NOT NULL,
+                failed_check_count INTEGER NOT NULL,
+                holdout_passed INTEGER,
+                approvals_passed INTEGER,
+                evaluated_at TEXT,
+                body_json TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS promotion_statuses (
                 receipt_id TEXT PRIMARY KEY,
                 entry_id TEXT,
@@ -252,6 +281,8 @@ class ControlPlane:
             "agents": 0,
             "anchors": 0,
             "ingest_events": 0,
+            "eval_runs": 0,
+            "gate_decisions": 0,
             "promotion_statuses": 0,
             "runtime_attestations": 0,
             "policy_decisions": 0,
@@ -334,6 +365,71 @@ class ControlPlane:
                     ),
                 )
                 counts["contracts"] += 1
+
+            if entry.get("entry_type") == EVAL_ENTRY_TYPE:
+                agent = payload.get("agent", {}) if isinstance(payload.get("agent"), dict) else {}
+                results = payload.get("results", {}) if isinstance(payload.get("results"), dict) else {}
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO eval_runs(
+                        entry_id, contract_id, contract_hash, agent_name,
+                        agent_version, results_hash, evaluated_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        entry["entry_id"],
+                        payload.get("contract_id"),
+                        payload.get("contract_hash"),
+                        agent.get("name"),
+                        agent.get("version"),
+                        payload.get("results_hash"),
+                        results.get("evaluated_at") or entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["eval_runs"] += 1
+
+            if entry.get("entry_type") == GATE_ENTRY_TYPE:
+                decision = payload.get("decision", {}) if isinstance(payload.get("decision"), dict) else {}
+                agent = payload.get("agent", {}) if isinstance(payload.get("agent"), dict) else decision.get("agent", {})
+                if not isinstance(agent, dict):
+                    agent = {}
+                checks = decision.get("checks", []) if isinstance(decision.get("checks"), list) else []
+                failed_checks = [check for check in checks if isinstance(check, dict) and not check.get("passed")]
+                holdout = decision.get("holdout", {}) if isinstance(decision.get("holdout"), dict) else {}
+                approvals = decision.get("approvals", {}) if isinstance(decision.get("approvals"), dict) else {}
+                holdout_passed = holdout.get("passed")
+                approvals_passed = approvals.get("passed")
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO gate_decisions(
+                        entry_id, contract_id, contract_hash, agent_name,
+                        agent_version, outcome, passed, eval_entry_id,
+                        contract_entry_id, results_hash, check_count,
+                        failed_check_count, holdout_passed, approvals_passed,
+                        evaluated_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        entry["entry_id"],
+                        payload.get("contract_id") or decision.get("contract_id"),
+                        payload.get("contract_hash") or decision.get("contract_hash"),
+                        agent.get("name"),
+                        agent.get("version"),
+                        decision.get("outcome"),
+                        1 if decision.get("passed") else 0,
+                        decision.get("eval_entry_id"),
+                        decision.get("contract_entry_id"),
+                        decision.get("results_hash"),
+                        len(checks),
+                        len(failed_checks),
+                        None if holdout_passed is None else (1 if holdout_passed else 0),
+                        None if approvals_passed is None else (1 if approvals_passed else 0),
+                        decision.get("evaluated_at") or entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["gate_decisions"] += 1
 
             if entry.get("entry_type") == AGENT_INVENTORY_ENTRY_TYPE:
                 agent = payload.get("agent", {})
@@ -582,6 +678,8 @@ class ControlPlane:
             "proof_packs",
             "anchors",
             "ingest_events",
+            "eval_runs",
+            "gate_decisions",
             "promotion_statuses",
             "runtime_attestations",
             "policy_decisions",
@@ -598,6 +696,32 @@ class ControlPlane:
         latest_pack = self.conn.execute(
             "SELECT pack_id, contract_id, outcome, issued_at FROM proof_packs ORDER BY issued_at DESC LIMIT 1"
         ).fetchone()
+        latest_eval_run = self.conn.execute(
+            """
+            SELECT entry_id, contract_id, contract_hash, agent_name, agent_version,
+                   results_hash, evaluated_at
+            FROM eval_runs
+            ORDER BY evaluated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_gate_decision = self.conn.execute(
+            """
+            SELECT entry_id, contract_id, contract_hash, agent_name, agent_version,
+                   outcome, passed, failed_check_count, holdout_passed,
+                   approvals_passed, evaluated_at
+            FROM gate_decisions
+            ORDER BY evaluated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_gate_decision_dict = dict(latest_gate_decision) if latest_gate_decision else None
+        if latest_gate_decision_dict is not None:
+            latest_gate_decision_dict["passed"] = bool(latest_gate_decision_dict["passed"])
+            if latest_gate_decision_dict.get("holdout_passed") is not None:
+                latest_gate_decision_dict["holdout_passed"] = bool(latest_gate_decision_dict["holdout_passed"])
+            if latest_gate_decision_dict.get("approvals_passed") is not None:
+                latest_gate_decision_dict["approvals_passed"] = bool(latest_gate_decision_dict["approvals_passed"])
         latest_ingest_event = self.conn.execute(
             """
             SELECT entry_id, event_hash, contract_hash, trace_id, span_id,
@@ -671,6 +795,8 @@ class ControlPlane:
             "counts": counts,
             "latest_anchor": dict(latest_anchor) if latest_anchor else None,
             "latest_proof_pack": dict(latest_pack) if latest_pack else None,
+            "latest_eval_run": dict(latest_eval_run) if latest_eval_run else None,
+            "latest_gate_decision": latest_gate_decision_dict,
             "latest_ingest_event": dict(latest_ingest_event) if latest_ingest_event else None,
             "latest_promotion_status": latest_status_dict,
             "latest_runtime_attestation": latest_runtime_dict,
@@ -678,6 +804,56 @@ class ControlPlane:
             "latest_policy_engine_receipt": latest_policy_engine_dict,
             "latest_incident": dict(latest_incident) if latest_incident else None,
         }
+
+    def contracts(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT contract_hash, contract_id, version, agent_name, agent_version,
+                   registered_entry_id, created_at
+            FROM contracts
+            ORDER BY created_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        return [dict(row) for row in rows]
+
+    def recent_eval_runs(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT entry_id, contract_id, contract_hash, agent_name, agent_version,
+                   results_hash, evaluated_at
+            FROM eval_runs
+            ORDER BY evaluated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        return [dict(row) for row in rows]
+
+    def recent_gate_decisions(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT entry_id, contract_id, contract_hash, agent_name, agent_version,
+                   outcome, passed, eval_entry_id, contract_entry_id, results_hash,
+                   check_count, failed_check_count, holdout_passed, approvals_passed,
+                   evaluated_at
+            FROM gate_decisions
+            ORDER BY evaluated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        decisions = []
+        for row in rows:
+            item = dict(row)
+            item["passed"] = bool(item["passed"])
+            if item.get("holdout_passed") is not None:
+                item["holdout_passed"] = bool(item["holdout_passed"])
+            if item.get("approvals_passed") is not None:
+                item["approvals_passed"] = bool(item["approvals_passed"])
+            decisions.append(item)
+        return decisions
 
     def recent_proof_packs(self, limit: int = 20) -> list[dict[str, Any]]:
         rows = self.conn.execute(

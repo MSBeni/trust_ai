@@ -2264,8 +2264,14 @@ def cmd_control_summary(args: argparse.Namespace) -> int:
     control = ControlPlane(args.db)
     try:
         summary = control.summary()
+        if args.contracts:
+            summary["contracts"] = control.contracts()
         if args.agents:
             summary["agents"] = control.agents()
+        if args.eval_runs:
+            summary["eval_runs"] = control.recent_eval_runs()
+        if args.gate_decisions:
+            summary["gate_decisions"] = control.recent_gate_decisions()
         if args.proof_packs:
             summary["proof_packs"] = control.recent_proof_packs()
         if args.ingest_events:
@@ -20327,7 +20333,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     control_summary = subparsers.add_parser("control-summary", help="print local control-plane registry summary")
     control_summary.add_argument("--db", default=".trustai/control-plane.sqlite")
+    control_summary.add_argument("--contracts", action="store_true")
     control_summary.add_argument("--agents", action="store_true")
+    control_summary.add_argument("--eval-runs", action="store_true")
+    control_summary.add_argument("--gate-decisions", action="store_true")
     control_summary.add_argument("--proof-packs", action="store_true")
     control_summary.add_argument("--ingest-events", action="store_true")
     control_summary.add_argument("--promotion-statuses", action="store_true")

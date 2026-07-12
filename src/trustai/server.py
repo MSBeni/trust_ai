@@ -141,10 +141,31 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             finally:
                 control.close()
             return
+        if parsed.path == "/v0/contracts":
+            control = self._control()
+            try:
+                self._json_response(200, {"contracts": control.contracts()})
+            finally:
+                control.close()
+            return
         if parsed.path == "/v0/agents":
             control = self._control()
             try:
                 self._json_response(200, {"agents": control.agents()})
+            finally:
+                control.close()
+            return
+        if parsed.path == "/v0/eval-runs":
+            control = self._control()
+            try:
+                self._json_response(200, {"eval_runs": control.recent_eval_runs()})
+            finally:
+                control.close()
+            return
+        if parsed.path == "/v0/gate-decisions":
+            control = self._control()
+            try:
+                self._json_response(200, {"gate_decisions": control.recent_gate_decisions()})
             finally:
                 control.close()
             return
