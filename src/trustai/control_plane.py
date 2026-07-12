@@ -87,6 +87,13 @@ def _authority_freshness_window_count(evidence_items: list[Any]) -> int:
     )
 
 
+def _sqlite_nolock_uri(path: Path) -> str:
+    posix_path = path.as_posix()
+    if posix_path.startswith("//") and not posix_path.startswith("////"):
+        posix_path = "//" + posix_path
+    return "file:" + posix_path + "?nolock=1"
+
+
 class ControlPlane:
     def __init__(self, path: str | Path):
         self.path = Path(path)
@@ -116,8 +123,7 @@ class ControlPlane:
         return self._configure(sqlite3.connect(self.path, timeout=2))
 
     def _connect_nolock(self) -> sqlite3.Connection:
-        uri = "file:" + self.path.as_posix() + "?nolock=1"
-        return self._configure(sqlite3.connect(uri, timeout=2, uri=True))
+        return self._configure(sqlite3.connect(_sqlite_nolock_uri(self.path), timeout=2, uri=True))
 
     def close(self) -> None:
         self.conn.close()
@@ -1495,6 +1501,164 @@ class ControlPlane:
             "roadmap_audits": self.recent_roadmap_audits(limit),
             "external_evidence_collection_runs": self.recent_external_evidence_collection_runs(limit),
             "external_evidence_manifests": self.recent_external_evidence_manifests(limit),
+        }
+
+    def readiness(self) -> dict[str, Any]:
+        summary = self.summary()
+        blockers: list[str] = []
+
+        latest_roadmap_audit = summary.get("latest_roadmap_audit")
+        missing_local = int((latest_roadmap_audit or {}).get("missing_local_evidence_count") or 0)
+        deferred_external = int((latest_roadmap_audit or {}).get("deferred_external_count") or 0)
+        local_reference_complete = latest_roadmap_audit is not None and missing_local == 0
+        if latest_roadmap_audit is None:
+            blockers.append("no roadmap audit indexed")
+        elif missing_local:
+            blockers.append(f"local roadmap evidence incomplete: {missing_local} requirement(s) missing local evidence")
+
+        latest_external_manifest = summary.get("latest_external_evidence_manifest")
+        external_missing_requirements = int((latest_external_manifest or {}).get("missing_requirement_count") or 0)
+        external_missing_authority_kinds = int((latest_external_manifest or {}).get("missing_authority_kind_count") or 0)
+        external_missing_freshness = int((latest_external_manifest or {}).get("missing_freshness_count") or 0)
+        external_manifest_strict = bool(
+            latest_external_manifest
+            and latest_external_manifest.get("require_complete")
+            and latest_external_manifest.get("require_fresh")
+            and latest_external_manifest.get("require_live_source_uris")
+        )
+        external_authority_complete = bool(
+            latest_external_manifest
+            and latest_external_manifest.get("status") == "complete"
+            and external_missing_requirements == 0
+            and external_missing_authority_kinds == 0
+            and external_missing_freshness == 0
+            and external_manifest_strict
+        )
+        if latest_external_manifest is None:
+            blockers.append("no external-evidence manifest indexed")
+        else:
+            if external_missing_requirements or external_missing_authority_kinds or external_missing_freshness:
+                blockers.append(
+                    "external authority evidence incomplete: "
+                    f"{external_missing_requirements} requirement(s), "
+                    f"{external_missing_authority_kinds} authority-kind assignment(s), "
+                    f"{external_missing_freshness} freshness window(s) missing"
+                )
+            if not external_manifest_strict:
+                blockers.append("latest external-evidence manifest was not generated with strict complete, fresh, live-source URI requirements")
+
+        latest_collection_run = summary.get("latest_external_evidence_collection_run")
+        collection_run_present = latest_collection_run is not None
+        collection_collected = int((latest_collection_run or {}).get("collected_count") or 0)
+        collection_tasks = int((latest_collection_run or {}).get("task_count") or 0)
+        collection_run_strict = bool(
+            latest_collection_run
+            and latest_collection_run.get("require_fresh")
+            and latest_collection_run.get("require_live_source_uris")
+            and latest_collection_run.get("require_source_snapshot_artifacts")
+            and latest_collection_run.get("require_fresh_source_snapshot_artifacts")
+        )
+        collection_run_complete = bool(
+            collection_run_present
+            and collection_run_strict
+            and collection_tasks > 0
+            and collection_collected >= collection_tasks
+        )
+        if latest_collection_run is None:
+            blockers.append("no retained external-evidence collection run indexed")
+        else:
+            if collection_collected < collection_tasks:
+                blockers.append(
+                    "latest external-evidence collection run incomplete: "
+                    f"{collection_collected}/{collection_tasks} task(s) collected"
+                )
+            if not collection_run_strict:
+                blockers.append("latest external-evidence collection run was not collected with strict source snapshot and freshness checks")
+
+        authority_row = self.conn.execute(
+            """
+            SELECT COUNT(*) AS total,
+                   COALESCE(SUM(CASE WHEN production_claimed THEN 1 ELSE 0 END), 0) AS production_claimed,
+                   COALESCE(SUM(CASE WHEN production_ready THEN 1 ELSE 0 END), 0) AS production_ready,
+                   COALESCE(SUM(CASE WHEN production_ready THEN 0 ELSE 1 END), 0) AS not_ready,
+                   COALESCE(SUM(missing_requirement_count), 0) AS missing_requirement_count,
+                   COALESCE(SUM(missing_freshness_count), 0) AS missing_freshness_count
+            FROM authority_dossiers
+            """
+        ).fetchone()
+        authority_dossier_summary = {
+            "total": int(authority_row["total"] or 0),
+            "production_claimed": int(authority_row["production_claimed"] or 0),
+            "production_ready": int(authority_row["production_ready"] or 0),
+            "not_ready": int(authority_row["not_ready"] or 0),
+            "missing_requirement_count": int(authority_row["missing_requirement_count"] or 0),
+            "missing_freshness_count": int(authority_row["missing_freshness_count"] or 0),
+        }
+        production_authority_ready = bool(
+            authority_dossier_summary["total"] > 0 and authority_dossier_summary["not_ready"] == 0
+        )
+        if authority_dossier_summary["total"] == 0:
+            blockers.append("no production authority dossiers indexed")
+        elif authority_dossier_summary["not_ready"]:
+            blockers.append(
+                "production authority dossiers are not ready: "
+                f"{authority_dossier_summary['not_ready']}/{authority_dossier_summary['total']} dossier(s) incomplete"
+            )
+
+        latest_gate_decision = summary.get("latest_gate_decision")
+        promotion_gate_ready = bool(latest_gate_decision and latest_gate_decision.get("passed"))
+        if not promotion_gate_ready:
+            blockers.append("no passed promotion gate decision indexed")
+
+        latest_proof_pack = summary.get("latest_proof_pack")
+        proof_pack_ready = bool(latest_proof_pack and latest_proof_pack.get("outcome") == "passed")
+        if not proof_pack_ready:
+            blockers.append("no passed proof pack indexed")
+
+        latest_runtime_attestation = summary.get("latest_runtime_attestation")
+        latest_policy_decision = summary.get("latest_policy_decision")
+        latest_policy_engine_receipt = summary.get("latest_policy_engine_receipt")
+        runtime_policy_ready = bool(
+            latest_runtime_attestation
+            and latest_runtime_attestation.get("passed")
+            and latest_policy_decision
+            and latest_policy_decision.get("passed")
+            and latest_policy_engine_receipt
+            and latest_policy_engine_receipt.get("decision_passed")
+        )
+        if not runtime_policy_ready:
+            blockers.append("runtime attestation and policy-engine evidence are not both passing")
+
+        ready = all(
+            [
+                local_reference_complete,
+                external_authority_complete,
+                collection_run_complete,
+                production_authority_ready,
+                promotion_gate_ready,
+                proof_pack_ready,
+                runtime_policy_ready,
+            ]
+        )
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "status": "ready" if ready else "not_ready",
+            "local_reference_complete": local_reference_complete,
+            "external_authority_complete": external_authority_complete,
+            "collection_run_present": collection_run_present,
+            "collection_run_complete": collection_run_complete,
+            "production_authority_ready": production_authority_ready,
+            "promotion_gate_ready": promotion_gate_ready,
+            "proof_pack_ready": proof_pack_ready,
+            "runtime_policy_ready": runtime_policy_ready,
+            "counts": summary["counts"],
+            "latest_roadmap_audit": latest_roadmap_audit,
+            "latest_external_evidence_manifest": latest_external_manifest,
+            "latest_external_evidence_collection_run": latest_collection_run,
+            "latest_authority_dossier": summary.get("latest_authority_dossier"),
+            "authority_dossier_summary": authority_dossier_summary,
+            "remaining_external_evidence_count": deferred_external,
+            "blockers": blockers,
         }
 
     def runtime_evidence(self, limit: int = 20) -> dict[str, Any]:

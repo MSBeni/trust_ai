@@ -29,7 +29,7 @@ into queryable registry tables while keeping the chain as the source of truth.
 
 ```powershell
 python -m trustai control-index --state .trustai/demo/evidence-chain.json --tenant aitrade-local --pack artifacts/aitrade-proof-pack.json --db .trustai/control-plane.sqlite
-python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --roadmap-evidence --external-evidence --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
+python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --roadmap-evidence --readiness --external-evidence --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
 ```
 
 ## API
@@ -49,6 +49,7 @@ python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts
 - `GET /v0/promotion-statuses`;
 - `GET /v0/runtime-evidence`;
 - `GET /v0/roadmap-evidence`;
+- `GET /v0/readiness` or `GET /v0/control/readiness`;
 - `GET /v0/external-evidence`;
 - `GET /v0/authority-dossiers`.
 
@@ -61,11 +62,13 @@ contracts, direct agent evidence, and contract-hash-linked runtime/policy rows.
 These are the local analogues of model-risk or auditor review pages for a single
 pre-registered contract or governed agent version. The roadmap-evidence list
 binds roadmap audit entries, retained collection-run provenance, and external
-evidence manifests into one progress view. The external-evidence list exposes
-roadmap authority coverage and missing live-evidence counts, while the
-authority-dossier list exposes production authority dossier modes, coverage,
-freshness windows, and missing requirement IDs so production readiness gaps stay
-visible in the same control-plane surface.
+evidence manifests into one progress view. The readiness view aggregates those
+surfaces with promotion-gate, proof-pack, runtime-policy, and authority-dossier
+evidence into a conservative `ready` / `not_ready` status plus concrete blockers.
+The external-evidence list exposes roadmap authority coverage and missing
+live-evidence counts, while the authority-dossier list exposes production
+authority dossier modes, coverage, freshness windows, and missing requirement
+IDs so production readiness gaps stay visible in the same control-plane surface.
 
 The implementation falls back to SQLite `nolock=1` mode when running on local
 filesystems that do not support normal SQLite locking, such as some UNC-backed

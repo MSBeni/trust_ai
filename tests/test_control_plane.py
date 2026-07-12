@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from trustai.control_plane import ControlPlane
+from trustai.control_plane import ControlPlane, _sqlite_nolock_uri
 from trustai.canonical import content_hash
 from trustai.chain import EvidenceChain
 from trustai.cicd import append_promotion_status_receipt, build_promotion_check_payload, build_promotion_status_receipt
@@ -42,6 +42,10 @@ INCIDENT = ROOT / "examples" / "aitrade" / "incident.json"
 
 
 class ControlPlaneTests(unittest.TestCase):
+    def test_sqlite_nolock_uri_preserves_unc_path(self):
+        uri = _sqlite_nolock_uri(Path("//wsl.localhost/Ubuntu/home/app/control.sqlite"))
+        self.assertEqual("file:////wsl.localhost/Ubuntu/home/app/control.sqlite?nolock=1", uri)
+
     def test_indexes_chain_and_proof_pack(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)
@@ -345,6 +349,20 @@ class ControlPlaneTests(unittest.TestCase):
                     roadmap_evidence["external_evidence_collection_runs"][0]["intake_ids"],
                 )
                 self.assertEqual(1, len(roadmap_evidence["external_evidence_manifests"]))
+                readiness = control.readiness()
+                self.assertEqual("not_ready", readiness["status"])
+                self.assertTrue(readiness["local_reference_complete"])
+                self.assertTrue(readiness["collection_run_present"])
+                self.assertTrue(readiness["collection_run_complete"])
+                self.assertFalse(readiness["external_authority_complete"])
+                self.assertFalse(readiness["production_authority_ready"])
+                self.assertTrue(readiness["promotion_gate_ready"])
+                self.assertTrue(readiness["proof_pack_ready"])
+                self.assertTrue(readiness["runtime_policy_ready"])
+                self.assertGreater(readiness["authority_dossier_summary"]["not_ready"], 0)
+                self.assertTrue(
+                    any("external authority evidence incomplete" in blocker for blocker in readiness["blockers"])
+                )
                 external_evidence = control.recent_external_evidence_manifests()
                 self.assertEqual(1, len(external_evidence))
                 self.assertEqual("partial", external_evidence[0]["status"])
