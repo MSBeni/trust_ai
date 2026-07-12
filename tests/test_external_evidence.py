@@ -959,6 +959,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         plan = load_external_evidence_collection_plan(ROOT / "examples/aitrade/external-evidence/source-external-evidence-plan-all.json")
         remaining_plan = load_external_evidence_collection_plan(ROOT / "examples/aitrade/external-evidence/remaining-external-evidence-plan.json")
         source_map = json.loads((ROOT / "examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json").read_text(encoding="utf-8"))
+        collected_source_map = json.loads((ROOT / "examples/aitrade/external-evidence/retained-external-evidence-collected-source-map.json").read_text(encoding="utf-8"))
+        collection_run = load_external_evidence_collection_run(ROOT / "examples/aitrade/external-evidence/retained-external-evidence-collection-run.json")
         ci_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json")
         provider_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/github-main-ref-source-snapshot.json")
         hosted_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/github-hosted-service-source-snapshot.json")
@@ -985,6 +987,18 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             now="2026-07-12T00:00:00Z",
         )
         remaining_plan_result = verify_external_evidence_collection_plan(remaining_plan, retained_manifest, audit, root=ROOT)
+        collection_run_result = verify_external_evidence_collection_run(
+            collection_run,
+            plan,
+            manifest,
+            audit,
+            root=ROOT,
+            source_map=collected_source_map,
+            require_fresh=True,
+            require_live_source_uris=True,
+            require_fresh_source_snapshot_artifacts=True,
+            now="2026-07-12T00:00:00Z",
+        )
         snapshot_results = [
             verify_external_evidence_source_snapshot(
                 snapshot,
@@ -1025,6 +1039,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertTrue(plan_result.ok, plan_result.errors)
         self.assertTrue(retained_manifest_result.ok, retained_manifest_result.errors)
         self.assertTrue(remaining_plan_result.ok, remaining_plan_result.errors)
+        self.assertTrue(collection_run_result.ok, collection_run_result.errors)
         for result in snapshot_results:
             self.assertTrue(result.ok, result.errors)
         for result in intake_results:
@@ -1047,6 +1062,16 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual(67, source_map["summary"]["entry_count"])
         self.assertEqual(67, source_map["summary"]["placeholder_source_uri_count"])
         self.assertEqual(0, source_map["summary"]["live_source_uri_count"])
+        self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA, collected_source_map["schema"])
+        self.assertEqual(content_hash(without_keys(collected_source_map, "source_map_id")), collected_source_map["source_map_id"])
+        self.assertEqual(3, collected_source_map["summary"]["entry_count"])
+        self.assertEqual(0, collected_source_map["summary"]["placeholder_source_uri_count"])
+        self.assertEqual(3, collected_source_map["summary"]["live_source_uri_count"])
+        self.assertEqual(EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA, collection_run["schema"])
+        self.assertEqual(content_hash(without_keys(collection_run, "run_id")), collection_run["run_id"])
+        self.assertEqual(content_hash(collected_source_map), collection_run["source_map"]["source_map_hash"])
+        self.assertEqual(3, collection_run["summary"]["collected_count"])
+        self.assertEqual(3, collection_run_result.collected_count)
         self.assertEqual(
             ["ci-run", "provider-api", "hosted-service"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["oss-verifier-and-public-spec"],
