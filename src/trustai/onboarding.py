@@ -26,8 +26,16 @@ REQUIRED_SOURCE_PATHS = (
     "src/trustai/sdk.py",
     "src/trustai/ingest.py",
     "src/trustai/mcp_gateway.py",
+    "src/trustai/proofpack.py",
     "sdk/typescript/src/index.mjs",
     "examples/aitrade/verification-contract.yaml",
+    "examples/aitrade/agent-inventory.json",
+    "examples/aitrade/delegation.json",
+    "examples/aitrade/runtime-action.json",
+    "examples/aitrade/shadow-replay.json",
+    "examples/aitrade/soak-window.json",
+    "examples/aitrade/reexecution-policy.json",
+    "examples/aitrade/reexecution-runner-plan.json",
     "examples/aitrade/mcp-transcript.json",
     "examples/aitrade/mcp-stdio-client-messages.json",
     "examples/aitrade/mcp-stdio-upstream.py",
@@ -38,7 +46,21 @@ QUICKSTART_SOURCE_TARGETS: dict[str, tuple[str, ...]] = {
     "instrument-typescript-sdk": ("sdk/typescript/src/index.mjs", "docs/specs/typescript-sdk-v0.1.md"),
     "initialize-local-chain": ("src/trustai/cli.py",),
     "register-contract": ("src/trustai/cli.py", "examples/aitrade/verification-contract.yaml"),
-    "verify-pack": ("src/trustai/cli.py",),
+    "generate-demo-proof-pack": (
+        "src/trustai/cli.py",
+        "src/trustai/proofpack.py",
+        "examples/aitrade/verification-contract.yaml",
+        "examples/aitrade/agent-inventory.json",
+        "examples/aitrade/otel-events.json",
+        "examples/aitrade/mcp-transcript.json",
+        "examples/aitrade/delegation.json",
+        "examples/aitrade/runtime-action.json",
+        "examples/aitrade/shadow-replay.json",
+        "examples/aitrade/soak-window.json",
+        "examples/aitrade/reexecution-policy.json",
+        "examples/aitrade/reexecution-runner-plan.json",
+    ),
+    "verify-pack": ("src/trustai/cli.py", "src/trustai/proofpack.py"),
     "capture-mcp-transcript": ("src/trustai/cli.py", "src/trustai/mcp_gateway.py", "docs/specs/mcp-gateway-v0.1.md", "examples/aitrade/mcp-transcript.json"),
     "capture-mcp-stdio-proxy": (
         "src/trustai/cli.py",
@@ -52,6 +74,14 @@ QUICKSTART_SOURCE_TARGETS: dict[str, tuple[str, ...]] = {
 
 QUICKSTART_GENERATED_TARGETS: dict[str, tuple[str, ...]] = {
     "initialize-local-chain": (".trustai/demo/evidence-chain.json",),
+    "generate-demo-proof-pack": (
+        ".trustai/demo/evidence-chain.json",
+        "artifacts/aitrade-proof-pack.json",
+        "artifacts/aitrade-proof-pack.pdf",
+        "artifacts/reexecution-runner-evidence.json",
+        "artifacts/reexecution-report.json",
+        "artifacts/reexecution-report.md",
+    ),
     "verify-pack": ("artifacts/aitrade-proof-pack.json",),
     "capture-mcp-transcript": (".trustai/demo/evidence-chain.json",),
     "capture-mcp-stdio-proxy": ("artifacts/mcp-proxy-stdio-events.json", "artifacts/mcp-proxy-stdio-capture.json"),
@@ -269,6 +299,11 @@ def _quickstart_steps(sdk_scope: str, gateway_mode: str) -> list[dict[str, str]]
             "command": "python -m trustai register examples/aitrade/verification-contract.yaml --state .trustai/demo/evidence-chain.json --tenant local-self-serve",
         },
         {
+            "id": "generate-demo-proof-pack",
+            "title": "Generate the bundled aitrade proof pack",
+            "command": "python -m trustai demo",
+        },
+        {
             "id": "verify-pack",
             "title": "Verify the resulting proof pack offline",
             "command": "python -m trustai verify artifacts/aitrade-proof-pack.json",
@@ -407,6 +442,16 @@ def _controls(
             "id": "verification-contract-example-bound",
             "status": "passed" if "examples/aitrade/verification-contract.yaml" in paths else "failed",
             "detail": "A pre-registration contract example is included in the onboarding path.",
+        },
+        {
+            "id": "demo-proof-pack-generation-bound",
+            "status": "passed"
+            if "src/trustai/proofpack.py" in paths
+            and "examples/aitrade/agent-inventory.json" in paths
+            and "examples/aitrade/shadow-replay.json" in paths
+            and "examples/aitrade/reexecution-runner-plan.json" in paths
+            else "failed",
+            "detail": "The bundled demo proof-pack compiler and aitrade input fixtures are hash-bound before the offline verify quickstart step.",
         },
         {
             "id": "quickstart-command-replay-bound",

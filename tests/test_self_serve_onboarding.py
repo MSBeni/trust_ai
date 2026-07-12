@@ -40,10 +40,13 @@ class SelfServeOnboardingTests(unittest.TestCase):
 
         self.assertTrue(result.ok, result.errors)
         self.assertEqual(SELF_SERVE_ONBOARDING_SCHEMA, receipt["schema"])
-        self.assertEqual(14, len(receipt["source_artifacts"]))
+        self.assertEqual(22, len(receipt["source_artifacts"]))
         self.assertEqual(len(receipt["quickstart_steps"]), len(receipt["quickstart_replay"]))
         self.assertTrue(all(item["command_valid"] for item in receipt["quickstart_replay"]))
         replay_by_id = {item["id"]: item for item in receipt["quickstart_replay"]}
+        self.assertEqual("demo", replay_by_id["generate-demo-proof-pack"]["subcommand"])
+        self.assertIn("artifacts/aitrade-proof-pack.json", replay_by_id["generate-demo-proof-pack"]["generated_targets"])
+        self.assertTrue(any(binding["path"] == "src/trustai/proofpack.py" for binding in replay_by_id["generate-demo-proof-pack"]["source_bindings"]))
         self.assertEqual("mcp-capture", replay_by_id["capture-mcp-transcript"]["subcommand"])
         self.assertEqual("mcp-proxy-stdio", replay_by_id["capture-mcp-stdio-proxy"]["subcommand"])
         self.assertTrue(any(binding["path"] == "examples/aitrade/mcp-stdio-upstream.py" for binding in replay_by_id["capture-mcp-stdio-proxy"]["source_bindings"]))
@@ -54,7 +57,7 @@ class SelfServeOnboardingTests(unittest.TestCase):
         self.assertEqual(SELF_SERVE_ONBOARDING_ENTRY_TYPE, entry["entry_type"])
         self.assertEqual(receipt["receipt_id"], entry["payload"]["receipt_id"])
         self.assertEqual(len(receipt["quickstart_replay"]), entry["payload"]["quickstart_replay_count"])
-        self.assertEqual({"passed": 7}, entry["payload"]["control_summary"])
+        self.assertEqual({"passed": 8}, entry["payload"]["control_summary"])
 
     def test_receipt_detects_quickstart_replay_tamper(self):
         receipt = build_self_serve_onboarding_receipt(

@@ -8,7 +8,7 @@ The self-serve onboarding receipt proves that the local SDK/gateway quickstart
 surface is present, hash-bound, structurally replayed against registered CLI
 commands, and ready for offline review. It targets the
 roadmap's SDK/gateway tier: Python SDK, TypeScript SDK, OTel GenAI ingest, MCP
-gateway transcript capture, runnable MCP stdio proxy capture, example verification contracts, and offline verifier commands.
+gateway transcript capture, runnable MCP stdio proxy capture, bundled aitrade proof-pack generation, example verification contracts, and offline verifier commands.
 
 The receipt is not a hosted signup or billing artifact. It intentionally limits
 its claim to local self-serve onboarding and records the production evidence
@@ -30,8 +30,16 @@ The receipt binds these source artifacts by path, `sha256:` hash, and size:
 - `src/trustai/sdk.py`
 - `src/trustai/ingest.py`
 - `src/trustai/mcp_gateway.py`
+- `src/trustai/proofpack.py`
 - `sdk/typescript/src/index.mjs`
 - `examples/aitrade/verification-contract.yaml`
+- `examples/aitrade/agent-inventory.json`
+- `examples/aitrade/delegation.json`
+- `examples/aitrade/runtime-action.json`
+- `examples/aitrade/shadow-replay.json`
+- `examples/aitrade/soak-window.json`
+- `examples/aitrade/reexecution-policy.json`
+- `examples/aitrade/reexecution-runner-plan.json`
 - `examples/aitrade/mcp-transcript.json`
 - `examples/aitrade/mcp-stdio-client-messages.json`
 - `examples/aitrade/mcp-stdio-upstream.py`
@@ -51,10 +59,12 @@ The receipt binds these source artifacts by path, `sha256:` hash, and size:
   mode.
 - `quickstart_replay`: local structural replay for each command, including CLI
   subcommand registration, source file bindings, generated targets, and command
-  validity. Gateway modes include both transcript capture and the runnable
-  `mcp-proxy-stdio` proxy capture command.
+  validity. The default sequence generates the bundled aitrade proof pack before
+  verifying it offline. Gateway modes include both transcript capture and the
+  runnable `mcp-proxy-stdio` proxy capture command.
 - `controls`: derived status checks for SDK, OTel, MCP, contract example,
-  quickstart command replay, and production-claim limits.
+  demo proof-pack generation, quickstart command replay, and production-claim
+  limits.
 - `signatures`: one or more signatures over `{receipt_id,
   self_serve_onboarding}`.
 
