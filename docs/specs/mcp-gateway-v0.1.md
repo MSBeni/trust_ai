@@ -76,6 +76,27 @@ Verified captures append `mcp.proxy_capture.evidenced` entries containing the
 capture id, event root, transcript root, event hashes, tool-call hashes, proxy
 ref, upstream ref, session id, agent, and contract hash.
 
+## Stdio Proxy Runtime
+
+`mcp-proxy-stdio` is the runnable reference gateway path for local MCP servers
+that communicate over line-delimited JSON-RPC on stdin/stdout. The command loads
+a JSON message list, or an object with `messages`, forwards each client request to
+an upstream command, captures one response per request, validates JSON-RPC 2.0 and
+matching ids, redacts sensitive fields, and writes a
+`trustai.mcp-proxy-stdio-session/0.1` event export. The export records the
+upstream command, request/response counts, event chain root, redacted events, and
+stderr hash/size without retaining stderr contents.
+
+The CLI then compiles that event export into the existing signed
+`trustai.mcp-proxy-capture/0.1` receipt and verifies the receipt before writing
+it. This keeps the stdio runtime compatible with the same offline verifier and
+chain append path used by retained raw proxy exports.
+
+This is still a reference development gateway. A production MCP gateway claim
+requires hosted service, identity/session authentication, KMS/HSM signing,
+immutable audit-log, scheduler/queue/lease, provider API, and live authority
+artifacts covered by the MCP gateway production authority dossier.
+
 ## Offline Verification
 
 Proof packs that include `mcp.tool_call.evidenced` entries must replay the
@@ -88,6 +109,8 @@ Proxy capture receipts are verified before chain append and can be independently
 verified with:
 
 ```powershell
+python -m trustai mcp-proxy-stdio examples/aitrade/mcp-stdio-client-messages.json --upstream-command python --upstream-arg examples/aitrade/mcp-stdio-upstream.py --agent-name aitrade-risk-agent --agent-version sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234 --risk-class trading-prod-write --contract-hash 22a3727b124ce6664031037939cf391ce724158d681db3a55e9a0f0c51bcc7a2 --proxy-ref mcp-proxy:trustai/stdio-local --upstream-ref mcp-server:aitrade/stdio-example --session-id stdio-demo-001 --captured-at 2026-07-03T12:00:12Z --events-out artifacts/mcp-proxy-stdio-events.json --out artifacts/mcp-proxy-stdio-capture.json
+python -m trustai mcp-proxy-capture-verify artifacts/mcp-proxy-stdio-capture.json --events artifacts/mcp-proxy-stdio-events.json
 python -m trustai mcp-proxy-capture examples/aitrade/mcp-proxy-events.json --agent-name aitrade-risk-agent --agent-version sha256:0d5bbd8d2357b7d36e0f3f7c5e9a0a3e1f5b7a0d2c4e6f8a9b1c3d5e7f901234 --risk-class trading-prod-write --contract-hash 22a3727b124ce6664031037939cf391ce724158d681db3a55e9a0f0c51bcc7a2 --proxy-ref mcp-proxy:trustai/local --upstream-ref mcp-server:aitrade/tools --captured-at 2026-07-03T12:00:12Z --out artifacts/mcp-proxy-capture.json
 python -m trustai mcp-proxy-capture-verify artifacts/mcp-proxy-capture.json --events examples/aitrade/mcp-proxy-events.json
 python -m trustai mcp-proxy-capture-append artifacts/mcp-proxy-capture.json --events examples/aitrade/mcp-proxy-events.json --state .trustai/mcp-proxy-capture-demo/evidence-chain.json --tenant mcp-proxy-capture-local --out artifacts/mcp-proxy-capture-entry.json

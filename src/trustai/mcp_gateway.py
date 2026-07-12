@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from dataclasses import dataclass
 from hashlib import sha256
 from pathlib import Path
@@ -14,6 +15,7 @@ MCP_TOOL_CALL_ENTRY_TYPE = "mcp.tool_call.evidenced"
 MCP_TRANSCRIPT_CHAIN_SCHEMA = "trustai.mcp-transcript-chain/0.1"
 MCP_PROXY_CAPTURE_SCHEMA = "trustai.mcp-proxy-capture/0.1"
 MCP_PROXY_CAPTURE_ENTRY_TYPE = "mcp.proxy_capture.evidenced"
+MCP_PROXY_STDIO_SESSION_SCHEMA = "trustai.mcp-proxy-stdio-session/0.1"
 MCP_PROXY_EVENT_CHAIN_SCHEMA = "trustai.mcp-proxy-event-chain/0.1"
 MCP_PROXY_DIRECTIONS = {"client_to_server", "server_to_client"}
 JSONRPC_VERSION = "2.0"
@@ -97,6 +99,131 @@ def normalize_mcp_proxy_event(event: dict[str, Any]) -> dict[str, Any]:
     normalized = json.loads(json.dumps(event, sort_keys=True))
     normalized["message"] = _redact_sensitive(normalized["message"])
     return normalized
+
+
+def load_mcp_client_messages(path: str | Path) -> list[dict[str, Any]]:
+    value = json.loads(Path(path).read_text(encoding="utf-8"))
+    if isinstance(value, dict) and "messages" in value:
+        value = value["messages"]
+    if not isinstance(value, list) or not value:
+        raise ValueError("MCP client messages must contain a non-empty list or messages list")
+    messages: list[dict[str, Any]] = []
+    for index, message in enumerate(value):
+        if not isinstance(message, dict):
+            raise ValueError(f"MCP client message {index} must be an object")
+        if message.get("jsonrpc") != JSONRPC_VERSION:
+            raise ValueError(f"MCP client message {index} must use JSON-RPC 2.0")
+        if "id" not in message or message.get("id") is None:
+            raise ValueError(f"MCP client message {index} missing JSON-RPC id")
+        messages.append(json.loads(json.dumps(message, sort_keys=True)))
+    return messages
+
+
+def build_mcp_stdio_proxy_event_export(
+    client_messages: list[dict[str, Any]],
+    *,
+    upstream_command: list[str],
+    session_id: str,
+    agent: dict[str, Any],
+    contract_hash: str,
+    proxy_ref: str,
+    upstream_ref: str,
+    captured_at: str | None = None,
+    timeout_seconds: float = 30.0,
+) -> dict[str, Any]:
+    if not upstream_command:
+        raise ValueError("MCP stdio proxy upstream_command is required")
+    if not session_id:
+        raise ValueError("MCP stdio proxy session_id is required")
+    timestamp = captured_at or utc_now()
+    parse_rfc3339(timestamp)
+    messages = _normalize_client_messages(client_messages)
+    stdin_payload = "".join(json.dumps(message, sort_keys=True, separators=(",", ":")) + "\n" for message in messages)
+    try:
+        completed = subprocess.run(
+            upstream_command,
+            input=stdin_payload,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise ValueError(f"MCP stdio upstream timed out after {timeout_seconds} seconds") from exc
+    if completed.returncode != 0:
+        raise ValueError(f"MCP stdio upstream exited with status {completed.returncode}: {completed.stderr.strip()}")
+    responses = _parse_mcp_json_lines(completed.stdout, "upstream stdout")
+    if len(responses) != len(messages):
+        raise ValueError(f"MCP stdio upstream returned {len(responses)} responses for {len(messages)} requests")
+    for index, (request, response) in enumerate(zip(messages, responses)):
+        if response.get("id") != request.get("id"):
+            raise ValueError(f"MCP stdio response {index} id does not match request id")
+
+    raw_events: list[dict[str, Any]] = []
+    for request, response in zip(messages, responses):
+        raw_events.append({"direction": "client_to_server", "timestamp": timestamp, "session_id": session_id, "message": request})
+        raw_events.append({"direction": "server_to_client", "timestamp": timestamp, "session_id": session_id, "message": response})
+    event_records = build_mcp_proxy_event_chain(raw_events)
+    redacted_events = [record["event"] for record in event_records]
+    tool_calls = _tool_calls_from_proxy_records(
+        event_records,
+        session_id=session_id,
+        agent=agent,
+        contract_hash=contract_hash,
+    )
+    stderr_bytes = completed.stderr.encode("utf-8")
+    body = {
+        "schema": MCP_PROXY_STDIO_SESSION_SCHEMA,
+        "captured_at": timestamp,
+        "session_id": session_id,
+        "proxy_ref": proxy_ref,
+        "upstream_ref": upstream_ref,
+        "upstream_command": list(upstream_command),
+        "request_count": len(messages),
+        "response_count": len(responses),
+        "event_count": len(redacted_events),
+        "tool_call_count": len(tool_calls),
+        "event_chain_root": event_records[-1]["event_hash"],
+        "stderr_sha256": "sha256:" + sha256(stderr_bytes).hexdigest(),
+        "stderr_size_bytes": len(stderr_bytes),
+        "events": redacted_events,
+        "limitations": [
+            "This local stdio proxy export records one line-delimited JSON-RPC exchange with an upstream MCP server command.",
+            "It is a reference gateway path for development and evidence capture; production deployments still require hosted service, identity, KMS, audit-log, and provider authority evidence.",
+        ],
+    }
+    return {**body, "export_id": content_hash(body)}
+
+
+def _normalize_client_messages(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    if not isinstance(messages, list) or not messages:
+        raise ValueError("MCP stdio proxy requires at least one client message")
+    normalized: list[dict[str, Any]] = []
+    for index, message in enumerate(messages):
+        if not isinstance(message, dict):
+            raise ValueError(f"MCP client message {index} must be an object")
+        _require_jsonrpc_2(message, f"MCP client message {index}")
+        if "id" not in message or message.get("id") is None:
+            raise ValueError(f"MCP client message {index} missing JSON-RPC id")
+        normalized.append(json.loads(json.dumps(message, sort_keys=True)))
+    return normalized
+
+
+def _parse_mcp_json_lines(text: str, label: str) -> list[dict[str, Any]]:
+    messages: list[dict[str, Any]] = []
+    for line_number, line in enumerate(text.splitlines(), start=1):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        try:
+            parsed = json.loads(stripped)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"{label} line {line_number} is not valid JSON: {exc}") from exc
+        if not isinstance(parsed, dict):
+            raise ValueError(f"{label} line {line_number} must be a JSON object")
+        _require_jsonrpc_2(parsed, f"{label} line {line_number}")
+        messages.append(parsed)
+    return messages
 
 
 def build_mcp_proxy_capture(

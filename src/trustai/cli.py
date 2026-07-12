@@ -815,6 +815,8 @@ from .mcp_gateway import (
     append_mcp_proxy_capture,
     append_mcp_transcript,
     build_mcp_proxy_capture,
+    build_mcp_stdio_proxy_event_export,
+    load_mcp_client_messages,
     load_mcp_proxy_capture,
     load_mcp_proxy_events,
     load_mcp_transcript,
@@ -5518,6 +5520,53 @@ def _mcp_proxy_agent_from_args(args: argparse.Namespace) -> dict[str, str]:
         agent["risk_class"] = args.risk_class
     return agent
 
+
+def cmd_mcp_proxy_stdio(args: argparse.Namespace) -> int:
+    try:
+        client_messages = load_mcp_client_messages(args.messages)
+        upstream_command = [args.upstream_command, *args.upstream_arg]
+        event_export = build_mcp_stdio_proxy_event_export(
+            client_messages,
+            upstream_command=upstream_command,
+            session_id=args.session_id,
+            agent=_mcp_proxy_agent_from_args(args),
+            contract_hash=args.contract_hash,
+            proxy_ref=args.proxy_ref,
+            upstream_ref=args.upstream_ref,
+            captured_at=args.captured_at,
+            timeout_seconds=args.timeout_seconds,
+        )
+        _write_json(args.events_out, event_export)
+        events = load_mcp_proxy_events(args.events_out)
+        capture = build_mcp_proxy_capture(
+            events,
+            agent=_mcp_proxy_agent_from_args(args),
+            contract_hash=args.contract_hash,
+            proxy_ref=args.proxy_ref,
+            upstream_ref=args.upstream_ref,
+            session_id=args.session_id,
+            captured_at=args.captured_at or event_export["captured_at"],
+            source_events_path=args.events_out,
+            key=args.key,
+        )
+        result = verify_mcp_proxy_capture(capture, source_events_path=args.events_out, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"MCP stdio proxy failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("MCP stdio proxy capture verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_mcp_proxy_capture(args.out, capture)
+    print(f"MCP stdio proxy events: {args.events_out}")
+    print(f"event export id: {event_export['export_id']}")
+    print(f"MCP proxy capture: {args.out}")
+    print(f"capture id: {capture['capture_id']}")
+    print(f"captured tool calls: {capture['tool_call_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
 
 def cmd_mcp_proxy_capture(args: argparse.Namespace) -> int:
     try:
@@ -21712,6 +21761,23 @@ def build_parser() -> argparse.ArgumentParser:
     _add_state_args(mcp)
     mcp.set_defaults(func=cmd_mcp_capture)
 
+    mcp_proxy_stdio = subparsers.add_parser("mcp-proxy-stdio", help="run a line-delimited JSON-RPC MCP stdio proxy and write a signed capture")
+    mcp_proxy_stdio.add_argument("messages", help="JSON file containing client JSON-RPC messages or {messages: [...]} to forward")
+    mcp_proxy_stdio.add_argument("--upstream-command", required=True, help="upstream MCP server command executable")
+    mcp_proxy_stdio.add_argument("--upstream-arg", action="append", default=[], help="upstream command argument; repeat to pass multiple arguments")
+    mcp_proxy_stdio.add_argument("--agent-name", required=True)
+    mcp_proxy_stdio.add_argument("--agent-version", required=True)
+    mcp_proxy_stdio.add_argument("--risk-class")
+    mcp_proxy_stdio.add_argument("--contract-hash", required=True)
+    mcp_proxy_stdio.add_argument("--proxy-ref", required=True)
+    mcp_proxy_stdio.add_argument("--upstream-ref", required=True)
+    mcp_proxy_stdio.add_argument("--session-id", required=True)
+    mcp_proxy_stdio.add_argument("--captured-at")
+    mcp_proxy_stdio.add_argument("--timeout-seconds", type=float, default=30.0)
+    mcp_proxy_stdio.add_argument("--events-out", default="artifacts/mcp-proxy-stdio-events.json")
+    mcp_proxy_stdio.add_argument("--out", default="artifacts/mcp-proxy-stdio-capture.json")
+    mcp_proxy_stdio.add_argument("--key")
+    mcp_proxy_stdio.set_defaults(func=cmd_mcp_proxy_stdio)
     mcp_proxy = subparsers.add_parser("mcp-proxy-capture", help="write a signed MCP proxy JSON-RPC capture receipt")
     mcp_proxy.add_argument("events")
     mcp_proxy.add_argument("--agent-name", required=True)

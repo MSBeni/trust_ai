@@ -1,0 +1,17 @@
+{
+  "messages": [
+    {
+      "authorization": "Bearer example-token-redacted-in-capture",
+      "id": "stdio-tool-call-001",
+      "jsonrpc": "2.0",
+      "method": "tools/call",
+      "params": {
+        "arguments": {
+          "notional_usd": 2500,
+          "symbol": "BTCUSDT"
+        },
+        "name": "place_shadow_order"
+      }
+    }
+  ]
+}

@@ -17,7 +17,9 @@ from trustai.mcp_gateway import (
     append_mcp_proxy_capture,
     append_mcp_transcript,
     build_mcp_proxy_capture,
+    build_mcp_stdio_proxy_event_export,
     build_mcp_transcript_chain,
+    load_mcp_client_messages,
     load_mcp_proxy_events,
     load_mcp_transcript,
     verify_mcp_proxy_capture,
@@ -249,6 +251,115 @@ class McpGatewayTests(unittest.TestCase):
                 proxy_ref="mcp-proxy:trustai/local",
                 upstream_ref="mcp-server:aitrade/tools",
             )
+
+    def test_mcp_stdio_proxy_runs_upstream_and_writes_signed_capture(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            upstream = tmp / "upstream_mcp.py"
+            upstream.write_text(
+                "import json, sys\n"
+                "for line in sys.stdin:\n"
+                "    message = json.loads(line)\n"
+                "    params = message.get('params', {})\n"
+                "    arguments = params.get('arguments', {})\n"
+                "    response = {'jsonrpc': '2.0', 'id': message['id'], 'result': {'status': 'accepted', 'tool': params.get('name'), 'notional_usd': arguments.get('notional_usd')}}\n"
+                "    print(json.dumps(response, sort_keys=True), flush=True)\n",
+                encoding="utf-8",
+            )
+            messages = tmp / "client-messages.json"
+            messages.write_text(
+                json.dumps(
+                    {
+                        "messages": [
+                            {
+                                "jsonrpc": "2.0",
+                                "id": "tool-call-stdio-001",
+                                "method": "tools/call",
+                                "authorization": "Bearer secret-token",
+                                "params": {"name": "place_shadow_order", "arguments": {"notional_usd": 2500}},
+                            }
+                        ]
+                    },
+                    indent=2,
+                    sort_keys=True,
+                ),
+                encoding="utf-8",
+            )
+            loaded_messages = load_mcp_client_messages(messages)
+            event_export = build_mcp_stdio_proxy_event_export(
+                loaded_messages,
+                upstream_command=[sys.executable, str(upstream)],
+                session_id="stdio-session-001",
+                agent=AGENT,
+                contract_hash=CONTRACT_HASH,
+                proxy_ref="mcp-proxy:trustai/stdio-test",
+                upstream_ref="mcp-server:test/upstream",
+                captured_at="2026-07-03T12:00:12Z",
+            )
+            self.assertEqual("trustai.mcp-proxy-stdio-session/0.1", event_export["schema"])
+            self.assertEqual(2, event_export["event_count"])
+            self.assertEqual("[REDACTED]", event_export["events"][0]["message"]["authorization"])
+            events_path = tmp / "mcp-proxy-stdio-events.json"
+            events_path.write_text(json.dumps(event_export, indent=2, sort_keys=True), encoding="utf-8")
+            capture = build_mcp_proxy_capture(
+                load_mcp_proxy_events(events_path),
+                agent=AGENT,
+                contract_hash=CONTRACT_HASH,
+                proxy_ref="mcp-proxy:trustai/stdio-test",
+                upstream_ref="mcp-server:test/upstream",
+                session_id="stdio-session-001",
+                captured_at="2026-07-03T12:00:12Z",
+                source_events_path=events_path,
+            )
+            result = verify_mcp_proxy_capture(capture, source_events_path=events_path)
+            self.assertTrue(result.ok, result.errors)
+            self.assertEqual("accepted", capture["tool_calls"][0]["response"]["status"])
+
+            capture_path = tmp / "mcp-proxy-stdio-capture.json"
+            env = os.environ.copy()
+            env["PYTHONPATH"] = str(ROOT / "src")
+            cli = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "mcp-proxy-stdio",
+                    str(messages),
+                    "--upstream-command",
+                    sys.executable,
+                    "--upstream-arg",
+                    str(upstream),
+                    "--agent-name",
+                    AGENT["name"],
+                    "--agent-version",
+                    AGENT["version"],
+                    "--risk-class",
+                    AGENT["risk_class"],
+                    "--contract-hash",
+                    CONTRACT_HASH,
+                    "--proxy-ref",
+                    "mcp-proxy:trustai/stdio-test",
+                    "--upstream-ref",
+                    "mcp-server:test/upstream",
+                    "--session-id",
+                    "stdio-session-001",
+                    "--captured-at",
+                    "2026-07-03T12:00:12Z",
+                    "--events-out",
+                    str(events_path),
+                    "--out",
+                    str(capture_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(0, cli.returncode, cli.stderr)
+            self.assertTrue(capture_path.exists())
+            cli_capture = json.loads(capture_path.read_text(encoding="utf-8"))
+            self.assertTrue(verify_mcp_proxy_capture(cli_capture, source_events_path=events_path).ok)
 
     def test_cli_mcp_proxy_capture_round_trip(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
