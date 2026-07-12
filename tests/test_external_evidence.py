@@ -39,6 +39,7 @@ from trustai.external_evidence import (
     load_roadmap_evidence_report,
     load_external_evidence_manifest,
     load_external_evidence_collection_plan,
+    load_external_evidence_collection_run,
     load_external_evidence_gap_report,
     load_external_evidence_intake,
     load_external_evidence_intakes,
@@ -55,6 +56,7 @@ from trustai.external_evidence import (
     verify_external_evidence_gap_report,
     verify_external_evidence_collection_plan,
     verify_external_evidence_source_map_template,
+    verify_external_evidence_collection_run,
     verify_external_evidence_intake,
     verify_external_evidence_source_snapshot,
     verify_roadmap_evidence_chain,
@@ -1401,7 +1403,57 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     cwd=ROOT,
                     check=True,
                 )
-                run = json.loads(run_path.read_text(encoding="utf-8"))
+                run = load_external_evidence_collection_run(run_path)
+                collection_run_result = verify_external_evidence_collection_run(
+                    run,
+                    plan,
+                    manifest,
+                    audit,
+                    root=ROOT,
+                    source_map=source_map,
+                    require_fresh=True,
+                    require_fresh_source_snapshot_artifacts=True,
+                    now="2026-07-09T00:00:00Z",
+                )
+                self.assertTrue(collection_run_result.ok, collection_run_result.errors)
+                self.assertEqual(2, collection_run_result.collected_count)
+                subprocess.run(
+                    [
+                        sys.executable,
+                        "-m",
+                        "trustai",
+                        "external-evidence-collect-batch-verify",
+                        str(run_path),
+                        str(plan_path),
+                        str(manifest_path),
+                        str(audit_path),
+                        "--root",
+                        str(ROOT),
+                        "--require-fresh",
+                        "--require-fresh-source-snapshot-artifacts",
+                        "--now",
+                        "2026-07-09T00:00:00Z",
+                    ],
+                    cwd=ROOT,
+                    check=True,
+                )
+                tampered_run = copy.deepcopy(run)
+                tampered_run["collected"][0]["snapshot_id"] = "wrong"
+                tampered_run["run_id"] = content_hash(without_keys(tampered_run, "run_id"))
+                tampered_result = verify_external_evidence_collection_run(
+                    tampered_run,
+                    plan,
+                    manifest,
+                    audit,
+                    root=ROOT,
+                    source_map=source_map,
+                    require_fresh=True,
+                    require_fresh_source_snapshot_artifacts=True,
+                    now="2026-07-09T00:00:00Z",
+                )
+                self.assertFalse(tampered_result.ok)
+                self.assertTrue(any("snapshot_id" in error for error in tampered_result.errors), tampered_result.errors)
+
                 intakes = load_external_evidence_intakes(directories=[intake_dir])
                 rebuilt = build_external_evidence_manifest_from_intakes(
                     plan,

@@ -179,6 +179,14 @@ class ExternalEvidenceSourceMapVerification:
 
 
 @dataclass
+class ExternalEvidenceCollectionRunVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+    collected_count: int = 0
+
+
+@dataclass
 class ExternalEvidenceGapReportVerification:
     ok: bool
     errors: list[str]
@@ -1423,6 +1431,223 @@ def verify_external_evidence_intake(
     return ExternalEvidenceIntakeVerification(ok=not errors, errors=errors, warnings=warnings)
 
 
+def verify_external_evidence_collection_run(
+    collection_run: dict[str, Any],
+    plan: dict[str, Any],
+    manifest: dict[str, Any],
+    roadmap_audit: dict[str, Any],
+    *,
+    root: str | Path,
+    source_map: dict[str, Any] | None = None,
+    require_fresh: bool = False,
+    require_live_source_uris: bool = False,
+    require_fresh_source_snapshot_artifacts: bool = False,
+    now: str | None = None,
+) -> ExternalEvidenceCollectionRunVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    root_path = Path(root)
+
+    if collection_run.get("schema") != EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA:
+        errors.append(f"unsupported external evidence collection run schema: {collection_run.get('schema')}")
+    if collection_run.get("run_id") != content_hash(without_keys(collection_run, "run_id")):
+        errors.append("run_id does not match canonical collection run body")
+
+    plan_result = verify_external_evidence_collection_plan(plan, manifest, roadmap_audit, root=root_path)
+    warnings.extend(plan_result.warnings)
+    if not plan_result.ok:
+        errors.extend(f"source plan: {error}" for error in plan_result.errors)
+
+    source_map_record = collection_run.get("source_map")
+    if not isinstance(source_map_record, dict):
+        errors.append("collection run source_map must be an object")
+        source_map_record = {}
+    elif source_map is not None and source_map_record.get("source_map_hash") != content_hash(source_map):
+        errors.append("collection run source_map_hash does not match supplied source map")
+
+    source_map_tasks = _collection_run_source_map_tasks(source_map, errors) if source_map is not None else None
+
+    summary = collection_run.get("summary")
+    if not isinstance(summary, dict):
+        errors.append("collection run summary must be an object")
+        summary = {}
+
+    collected = collection_run.get("collected")
+    if not isinstance(collected, list):
+        errors.append("collection run collected must be a list")
+        collected = []
+
+    seen_tasks: set[str] = set()
+    for index, item in enumerate(collected):
+        label = f"collection run item {index}"
+        if not isinstance(item, dict):
+            errors.append(f"{label} must be an object")
+            continue
+
+        task = item.get("task")
+        if not isinstance(task, str) or not task:
+            errors.append(f"{label} task is required")
+            task = ""
+        elif task in seen_tasks:
+            errors.append(f"duplicate collection run task: {task}")
+        else:
+            seen_tasks.add(task)
+
+        source_uri = item.get("source_uri")
+        if not isinstance(source_uri, str) or not source_uri:
+            errors.append(f"{label} source_uri is required")
+            source_uri = ""
+
+        warnings_value = item.get("warnings", [])
+        if not isinstance(warnings_value, list) or any(not isinstance(value, str) for value in warnings_value):
+            errors.append(f"{label} warnings must be a list of strings")
+
+        snapshot_artifact_path = item.get("snapshot_artifact_path")
+        snapshot_path: Path | None = None
+        snapshot: dict[str, Any] = {}
+        if not isinstance(snapshot_artifact_path, str) or not snapshot_artifact_path:
+            errors.append(f"{label} snapshot_artifact_path is required")
+        else:
+            try:
+                snapshot_path = _resolve_evidence_item_artifact_path(root_path, snapshot_artifact_path)
+            except ValueError as exc:
+                errors.append(f"{label} snapshot_artifact_path {exc}")
+            else:
+                if not snapshot_path.is_file():
+                    errors.append(f"{label} source snapshot artifact does not exist: {snapshot_artifact_path}")
+                else:
+                    try:
+                        snapshot = load_external_evidence_source_snapshot(snapshot_path)
+                    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+                        errors.append(f"{label} source snapshot artifact is not readable: {exc}")
+                    else:
+                        snapshot_result = verify_external_evidence_source_snapshot(
+                            snapshot,
+                            require_fresh=require_fresh_source_snapshot_artifacts,
+                            now=now,
+                        )
+                        warnings.extend(f"{label} source snapshot: {warning}" for warning in snapshot_result.warnings)
+                        if not snapshot_result.ok:
+                            errors.extend(f"{label} source snapshot: {error}" for error in snapshot_result.errors)
+                        if item.get("snapshot_id") != snapshot.get("snapshot_id"):
+                            errors.append(f"{label} snapshot_id does not match source snapshot artifact")
+                        if source_uri and snapshot.get("source_uri") != source_uri:
+                            errors.append(f"{label} source snapshot source_uri does not match run source_uri")
+
+        if item.get("snapshot_path"):
+            try:
+                reported_snapshot_path = _resolve_collection_run_file_path(root_path, item.get("snapshot_path"), f"{label} snapshot_path")
+            except ValueError as exc:
+                errors.append(str(exc))
+            else:
+                if snapshot_path is not None and reported_snapshot_path != snapshot_path.resolve():
+                    errors.append(f"{label} snapshot_path does not match snapshot_artifact_path")
+
+        intake_path: Path | None = None
+        intake: dict[str, Any] = {}
+        intake_evidence_item: dict[str, Any] = {}
+        try:
+            intake_path = _resolve_collection_run_file_path(root_path, item.get("intake_path"), f"{label} intake_path")
+        except ValueError as exc:
+            errors.append(str(exc))
+        else:
+            if not intake_path.is_file():
+                errors.append(f"{label} intake receipt does not exist: {item.get('intake_path')}")
+            else:
+                try:
+                    intake = load_external_evidence_intake(intake_path)
+                except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+                    errors.append(f"{label} intake receipt is not readable: {exc}")
+                else:
+                    intake_result = verify_external_evidence_intake(
+                        intake,
+                        plan,
+                        manifest,
+                        roadmap_audit,
+                        root=root_path,
+                        require_fresh=require_fresh,
+                        require_live_source_uris=require_live_source_uris,
+                        require_source_snapshot_artifacts=True,
+                        require_fresh_source_snapshot_artifacts=require_fresh_source_snapshot_artifacts,
+                        now=now,
+                    )
+                    warnings.extend(f"{label} intake: {warning}" for warning in intake_result.warnings)
+                    if not intake_result.ok:
+                        errors.extend(f"{label} intake: {error}" for error in intake_result.errors)
+                    if item.get("intake_id") != intake.get("intake_id"):
+                        errors.append(f"{label} intake_id does not match intake receipt")
+                    if item.get("evidence_argument") != intake.get("evidence_argument"):
+                        errors.append(f"{label} evidence_argument does not match intake receipt")
+                    evidence_item = intake.get("evidence_item") if isinstance(intake.get("evidence_item"), dict) else {}
+                    intake_evidence_item = evidence_item
+                    if snapshot_artifact_path and evidence_item.get("path") != snapshot_artifact_path:
+                        errors.append(f"{label} intake evidence path does not match snapshot_artifact_path")
+                    if source_uri and evidence_item.get("source_uri") != source_uri:
+                        errors.append(f"{label} intake source_uri does not match run source_uri")
+                    task_record = intake.get("task") if isinstance(intake.get("task"), dict) else {}
+                    task_refs = {
+                        str(task_record.get("task_id") or ""),
+                        str(task_record.get("task_ref") or ""),
+                        str(task_record.get("unit_id") or ""),
+                        str(task_record.get("unit_ref") or ""),
+                    }
+                    if task and task not in task_refs:
+                        errors.append(f"{label} intake task does not match run task")
+
+        if source_map_tasks is not None and task:
+            source_entry = source_map_tasks.get(task)
+            if source_entry is None:
+                errors.append(f"{label} task is not present in supplied source map: {task}")
+            else:
+                expected_source_uri = source_entry.get("source_uri")
+                if expected_source_uri and source_uri != str(expected_source_uri):
+                    errors.append(f"{label} source_uri does not match supplied source map")
+                expected_description = source_entry.get("description")
+                if expected_description and intake_evidence_item and intake_evidence_item.get("description") != str(expected_description):
+                    errors.append(f"{label} intake description does not match supplied source map")
+                expected_snapshot_out = source_entry.get("snapshot_out")
+                if expected_snapshot_out and snapshot_path is not None:
+                    try:
+                        expected_snapshot_path = _resolve_source_map_snapshot_path(root_path, str(expected_snapshot_out))
+                    except ValueError as exc:
+                        errors.append(f"{label} source map snapshot_out {exc}")
+                    else:
+                        if expected_snapshot_path != snapshot_path.resolve():
+                            errors.append(f"{label} snapshot_artifact_path does not match supplied source map snapshot_out")
+                expected_intake_out = source_entry.get("intake_out")
+                if expected_intake_out and intake_path is not None:
+                    try:
+                        expected_intake_path = _resolve_collection_run_file_path(root_path, str(expected_intake_out), f"{label} source map intake_out")
+                    except ValueError as exc:
+                        errors.append(str(exc))
+                    else:
+                        if expected_intake_path != intake_path.resolve():
+                            errors.append(f"{label} intake_path does not match supplied source map intake_out")
+
+    if summary.get("collected_count") != len(collected):
+        errors.append("collection run summary collected_count does not match collected items")
+    if summary.get("task_count") != len(seen_tasks):
+        errors.append("collection run summary task_count does not match unique collected tasks")
+    if not isinstance(summary.get("require_fresh"), bool):
+        errors.append("collection run summary require_fresh must be a boolean")
+
+    if source_map_tasks is not None:
+        source_tasks = set(source_map_tasks)
+        missing_tasks = sorted(source_tasks - seen_tasks)
+        extra_tasks = sorted(seen_tasks - source_tasks)
+        if missing_tasks:
+            errors.append("collection run missing supplied source map tasks: " + ", ".join(missing_tasks))
+        if extra_tasks:
+            errors.append("collection run contains tasks outside supplied source map: " + ", ".join(extra_tasks))
+
+    return ExternalEvidenceCollectionRunVerification(
+        ok=not errors,
+        errors=errors,
+        warnings=warnings,
+        collected_count=len(collected),
+    )
+
+
 def build_external_evidence_manifest_from_intakes(
     plan: dict[str, Any],
     manifest: dict[str, Any],
@@ -1991,6 +2216,10 @@ def load_external_evidence_collection_plan(path: str | Path) -> dict[str, Any]:
 
 
 def load_external_evidence_source_map(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8-sig"))
+
+
+def load_external_evidence_collection_run(path: str | Path) -> dict[str, Any]:
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
@@ -3060,6 +3289,62 @@ def _verify_evidence_item_source_snapshot_artifact(
     status_code = snapshot.get("status_code")
     if isinstance(status_code, int) and (status_code < 200 or status_code >= 400):
         errors.append(f"{label} source snapshot artifact status_code is not successful: {status_code}")
+
+
+def _collection_run_source_map_tasks(source_map: dict[str, Any], errors: list[str]) -> dict[str, dict[str, Any]]:
+    if source_map.get("schema") != EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA:
+        errors.append(f"unsupported external evidence source map schema: {source_map.get('schema')}")
+    defaults = source_map.get("defaults", {})
+    if not isinstance(defaults, dict):
+        errors.append("external evidence source map defaults must be an object")
+        defaults = {}
+    entries = source_map.get("entries", [])
+    if not isinstance(entries, list):
+        errors.append("external evidence source map entries must be a list")
+        entries = []
+
+    tasks: dict[str, dict[str, Any]] = {}
+    for index, entry in enumerate(entries):
+        if not isinstance(entry, dict):
+            errors.append(f"external evidence source map entry {index} must be an object")
+            continue
+        task_value = None
+        for key in SOURCE_MAP_FULFILLMENT_TASK_KEYS:
+            task_value = _source_map_effective_value(entry, defaults, key)
+            if task_value:
+                break
+        task = str(task_value or "")
+        if not task:
+            errors.append(f"external evidence source map entry {index} missing task")
+            continue
+        if task in tasks:
+            errors.append(f"duplicate external evidence source map task: {task}")
+            continue
+        source_uri = _source_map_effective_value(entry, defaults, "source_uri")
+        description = _source_map_effective_value(entry, defaults, "description")
+        if not str(source_uri or ""):
+            errors.append(f"external evidence source map entry {index} missing source_uri")
+        if not str(description or ""):
+            errors.append(f"external evidence source map entry {index} missing description")
+        tasks[task] = {
+            "source_uri": source_uri,
+            "description": description,
+            "snapshot_out": _source_map_effective_value(entry, defaults, "snapshot_out"),
+            "intake_out": _source_map_effective_value(entry, defaults, "intake_out"),
+        }
+    return tasks
+
+
+def _resolve_collection_run_file_path(root: str | Path, path_value: Any, label: str) -> Path:
+    if not isinstance(path_value, str) or not path_value:
+        raise ValueError(f"{label} is required")
+    candidate = Path(path_value)
+    windows_candidate = PureWindowsPath(path_value)
+    if not candidate.is_absolute() and not windows_candidate.is_absolute() and not windows_candidate.drive:
+        if not _is_safe_relative_path(path_value):
+            raise ValueError(f"{label} must be repository-relative or absolute: {path_value}")
+        candidate = Path(root) / path_value
+    return candidate.resolve()
 
 
 def _allowed_authority_kinds_for_requirement(requirement: dict[str, Any]) -> list[str]:

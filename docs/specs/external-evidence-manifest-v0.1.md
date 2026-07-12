@@ -190,6 +190,19 @@ duplicate tasks and writes a `trustai.external-evidence-collection-run/0.1`
 report with `generated_at` and generated snapshot paths, intake paths, IDs,
 evidence arguments, and warnings.
 
+`external-evidence-collect-batch-verify` verifies the collection-run report
+offline. It MUST recompute `run_id`, verify the collection plan, and, when a
+source map is supplied or recoverable from the run's `source_map.path`, verify
+`source_map_hash` plus task, `source_uri`, `snapshot_out`, and `intake_out`
+consistency. For every collected item it MUST load the repository-relative
+source snapshot artifact under `--root`, verify the snapshot ID, body hash,
+source URI, status code, and optional freshness window, then load the intake
+receipt, verify it against the supplied plan, manifest, and roadmap audit, and
+confirm the run's task, snapshot ID, intake ID, evidence argument, and paths all
+match the actual artifacts. Verification MUST reject missing files, tampered
+IDs, broken canonical hashes, duplicate tasks, count mismatches, and collected
+tasks outside the supplied source map.
+
 `external-evidence-collect-git-ref` is a narrowed source collector for public or
 authenticated Git remotes. It runs `git ls-remote <remote> <ref>...`, writes a
 `trustai.external-evidence-git-remote-ref-export/0.1` body into a normal source

@@ -1084,6 +1084,7 @@ from .external_evidence import (
     load_external_evidence_gap_report,
     load_external_evidence_collection_plan,
     load_external_evidence_source_map,
+    load_external_evidence_collection_run,
     load_external_evidence_intake,
     load_external_evidence_intakes,
     load_external_evidence_source_snapshot,
@@ -1096,6 +1097,7 @@ from .external_evidence import (
     verify_external_evidence_gap_report,
     verify_external_evidence_collection_plan,
     verify_external_evidence_source_map_template,
+    verify_external_evidence_collection_run,
     verify_external_evidence_intake,
     verify_external_evidence_source_snapshot,
     verify_roadmap_evidence_chain,
@@ -15005,6 +15007,49 @@ def cmd_external_evidence_collect_batch(args: argparse.Namespace) -> int:
             print(f"warning: {warning}")
     return 0
 
+
+def cmd_external_evidence_collect_batch_verify(args: argparse.Namespace) -> int:
+    try:
+        collection_run = load_external_evidence_collection_run(args.run)
+        roadmap_audit = load_roadmap_audit(args.roadmap_audit)
+        manifest = load_external_evidence_manifest(args.manifest)
+        plan = load_external_evidence_collection_plan(args.plan)
+        source_map_path = args.source_map
+        if not source_map_path:
+            source_map_record = collection_run.get("source_map", {})
+            if isinstance(source_map_record, dict):
+                source_map_path = source_map_record.get("path")
+        source_map = _load_json(source_map_path) if source_map_path else None
+        result = verify_external_evidence_collection_run(
+            collection_run,
+            plan,
+            manifest,
+            roadmap_audit,
+            root=args.root,
+            source_map=source_map,
+            require_fresh=args.require_fresh,
+            require_live_source_uris=args.require_live_source_uris,
+            require_fresh_source_snapshot_artifacts=args.require_fresh_source_snapshot_artifacts,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence collection run verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        print(f"verified external evidence collection run: {args.run}")
+        print(f"run id: {collection_run.get('run_id')}")
+        print(f"collected receipts: {result.collected_count}")
+        if source_map_path:
+            print(f"source map: {source_map_path}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"external evidence collection run verification failed: {args.run}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
 def cmd_external_evidence_intake(args: argparse.Namespace) -> int:
     try:
         roadmap_audit = load_roadmap_audit(args.roadmap_audit)
@@ -24635,6 +24680,20 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_collect_batch.add_argument("--intake-dir", default="artifacts/external-evidence-intakes")
     external_evidence_collect_batch.add_argument("--out", default="artifacts/external-evidence-collection-run.json")
     external_evidence_collect_batch.set_defaults(func=cmd_external_evidence_collect_batch)
+
+    external_evidence_collect_batch_verify = subparsers.add_parser("external-evidence-collect-batch-verify", help="verify an external-evidence collection-run report from collect-batch")
+    external_evidence_collect_batch_verify.add_argument("run")
+    external_evidence_collect_batch_verify.add_argument("plan")
+    external_evidence_collect_batch_verify.add_argument("manifest")
+    external_evidence_collect_batch_verify.add_argument("roadmap_audit")
+    external_evidence_collect_batch_verify.add_argument("--root", default=".")
+    external_evidence_collect_batch_verify.add_argument("--source-map", help="source-map JSON to verify against; defaults to the source_map.path recorded in the run")
+    external_evidence_collect_batch_verify.add_argument("--require-fresh", action="store_true", help="fail unless every intake evidence item has a fresh issued_at/expires_at window")
+    external_evidence_collect_batch_verify.add_argument("--require-live-source-uris", action="store_true", help="fail when any intake evidence item uses a placeholder/example source_uri value")
+    external_evidence_collect_batch_verify.add_argument("--require-fresh-source-snapshot-artifacts", action="store_true", help="fail unless every collected source snapshot artifact has a fresh issued_at/expires_at window")
+    external_evidence_collect_batch_verify.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to each artifact generated_at")
+    external_evidence_collect_batch_verify.set_defaults(func=cmd_external_evidence_collect_batch_verify)
+
     external_evidence_intake = subparsers.add_parser("external-evidence-intake", help="hash and map one collected authority artifact to a collection-plan task")
     external_evidence_intake.add_argument("plan")
     external_evidence_intake.add_argument("manifest")
