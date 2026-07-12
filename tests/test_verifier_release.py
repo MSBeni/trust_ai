@@ -66,7 +66,7 @@ class VerifierReleaseTests(unittest.TestCase):
         self.assertIn("python-reference-module", {item["id"] for item in manifest["targets"]})
         self.assertEqual(conformance["report_id"], manifest["conformance_report"]["report_id"])
         self.assertEqual(["proof-pack"], manifest["conformance_report"]["targets"])
-        self.assertEqual({"proof-pack": 5}, manifest["conformance_report"]["case_count_by_target"])
+        self.assertEqual({"proof-pack": conformance["summary"]["case_count"]}, manifest["conformance_report"]["case_count_by_target"])
         self.assertIsNone(manifest["conformance_report"]["source_provider_bundle"])
         self.assertEqual(standards["package_id"], manifest["standards_package"]["package_id"])
         self.assertIn("TrustAI Verifier Release Manifest", markdown)
@@ -103,7 +103,7 @@ class VerifierReleaseTests(unittest.TestCase):
             )
 
         self.assertTrue(result.ok, result.errors)
-        self.assertEqual(9, manifest["conformance_report"]["case_count"])
+        self.assertEqual(conformance["summary"]["case_count"], manifest["conformance_report"]["case_count"])
         self.assertEqual(
             ["framework-runtime-service-authority-recorded-export-provider-bundle", "proof-pack"],
             manifest["conformance_report"]["targets"],

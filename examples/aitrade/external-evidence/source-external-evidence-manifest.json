@@ -6,7 +6,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "aa525561f24128cdb24867bcc1335aad853648e6231c7508def2168f24bf570b",
+  "manifest_id": "0b7884fc71d8afe1dc6ab8a1aee97e4b1a54e298728632a6cf4caafe80e17a0b",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -1214,8 +1214,8 @@
   ],
   "schema": "trustai.external-evidence-manifest/0.1",
   "source_roadmap_audit": {
-    "audit_hash": "137c338129df5d96191aa996b1742881b5a35d41ebf0cb6f1383538c1fdcfa61",
-    "audit_id": "c801109bc0d14b9ca14c23a8aa09e15146adb268bb6e06861246a2236bf4495e",
+    "audit_hash": "c340ab3f5420c598b081649e431b06212234e4d0c4f622b5ad62406acecf5ff2",
+    "audit_id": "655dc36a6b5df7600050f2c40b091b8d46284be895424500b63c8794bf91582d",
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {

@@ -1,5 +1,5 @@
 {
-  "audit_id": "c801109bc0d14b9ca14c23a8aa09e15146adb268bb6e06861246a2236bf4495e",
+  "audit_id": "655dc36a6b5df7600050f2c40b091b8d46284be895424500b63c8794bf91582d",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
   "generated_at": "2026-07-12T13:47:03Z",
   "limitations": [
@@ -220,7 +220,7 @@
         {
           "path": ".github/workflows/go-verifier.yml",
           "present": true,
-          "sha256": "sha256:42337e127d0a9c23b592a1adc32fbdc69e225e66c96b92e6fc21509c756132df"
+          "sha256": "sha256:05fdbf4a4df888520eafc4e67595ef3ec62f3bf104464e0540477b400384e09e"
         },
         {
           "path": "tests/test_go_verifier_source.py",
@@ -230,7 +230,7 @@
         {
           "path": "tests/test_verifier_distribution.py",
           "present": true,
-          "sha256": "sha256:7c9e46b3b18ee06724c66b6c4eea45e6ec58977a3de6f631f310141c46a1baef"
+          "sha256": "sha256:83e0ded20fd906384ce1812086c7251570e5dabaeb66e9018643ca4857b6a6e6"
         },
         {
           "path": "tests/test_verifier_public_release.py",

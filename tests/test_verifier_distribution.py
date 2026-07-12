@@ -91,7 +91,7 @@ class VerifierDistributionTests(unittest.TestCase):
             self.assertEqual(VERIFIER_DISTRIBUTION_SCHEMA, receipt["schema"])
             self.assertEqual("source-bundle", receipt["distribution"]["mode"])
             self.assertEqual(["proof-pack"], receipt["release"]["conformance_targets"])
-            self.assertEqual({"proof-pack": 5}, receipt["release"]["conformance_case_count_by_target"])
+            self.assertEqual({"proof-pack": conformance["summary"]["case_count"]}, receipt["release"]["conformance_case_count_by_target"])
             self.assertTrue(paths["bundle_path"].exists())
             self.assertTrue(paths["sbom_path"].exists())
             self.assertTrue(paths["provenance_path"].exists())
@@ -101,7 +101,7 @@ class VerifierDistributionTests(unittest.TestCase):
             conformance_material = next(item for item in provenance["materials"] if item["uri"] == "verifier-conformance")
             self.assertEqual(["proof-pack"], sbom["release"]["conformance_targets"])
             self.assertEqual(["proof-pack"], conformance_material["targets"])
-            self.assertEqual({"proof-pack": 5}, conformance_material["case_count_by_target"])
+            self.assertEqual({"proof-pack": conformance["summary"]["case_count"]}, conformance_material["case_count_by_target"])
             self.assertEqual(VERIFIER_DISTRIBUTION_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(receipt["distribution_id"], entry["payload"]["distribution_id"])
 
