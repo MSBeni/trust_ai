@@ -355,6 +355,8 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertTrue(readiness["collection_run_present"])
                 self.assertTrue(readiness["collection_run_complete"])
                 self.assertFalse(readiness["external_authority_complete"])
+                self.assertGreater(readiness["external_authority_gap_summary"]["missing_authority_unit_count"], 0)
+                self.assertIn("provider-api", readiness["external_authority_gap_summary"]["gap_count_by_authority_kind"])
                 self.assertFalse(readiness["production_authority_ready"])
                 self.assertTrue(readiness["promotion_gate_ready"])
                 self.assertTrue(readiness["proof_pack_ready"])
@@ -370,6 +372,16 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertGreater(external_evidence[0]["missing_requirement_count"], 0)
                 self.assertGreater(external_evidence[0]["missing_authority_kind_count"], 0)
                 self.assertIsInstance(external_evidence[0]["missing_requirement_ids"], list)
+                self.assertIsInstance(external_evidence[0]["missing_authority_kinds_by_requirement"], dict)
+                self.assertEqual(
+                    external_evidence[0]["missing_authority_kind_count"],
+                    external_evidence[0]["external_authority_gap_summary"]["missing_authority_unit_count"],
+                )
+                self.assertEqual(
+                    external_evidence[0]["missing_authority_kind_count"],
+                    len(external_evidence[0]["missing_authority_units"]),
+                )
+                self.assertIn("task_id", external_evidence[0]["missing_authority_units"][0])
                 authority_dossiers = control.recent_authority_dossiers()
                 self.assertEqual(1, len(authority_dossiers))
                 self.assertEqual("mcp.gateway_authority_recorded", authority_dossiers[0]["entry_type"])

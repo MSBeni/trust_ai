@@ -213,6 +213,7 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertFalse(readiness_body["local_reference_complete"])
                 self.assertFalse(readiness_body["external_authority_complete"])
                 self.assertFalse(readiness_body["collection_run_present"])
+                self.assertEqual(0, readiness_body["external_authority_gap_summary"]["missing_authority_unit_count"])
                 self.assertIn("no roadmap audit indexed", readiness_body["blockers"])
 
                 conn.request("GET", "/v0/external-evidence")

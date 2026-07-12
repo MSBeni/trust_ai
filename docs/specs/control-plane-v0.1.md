@@ -65,10 +65,12 @@ binds roadmap audit entries, retained collection-run provenance, and external
 evidence manifests into one progress view. The readiness view aggregates those
 surfaces with promotion-gate, proof-pack, runtime-policy, and authority-dossier
 evidence into a conservative `ready` / `not_ready` status plus concrete blockers.
-The external-evidence list exposes roadmap authority coverage and missing
-live-evidence counts, while the authority-dossier list exposes production
-authority dossier modes, coverage, freshness windows, and missing requirement
-IDs so production readiness gaps stay visible in the same control-plane surface.
+The external-evidence list exposes roadmap authority coverage, missing
+requirement IDs, missing requirement-to-authority-kind maps, deterministic
+missing authority unit/task IDs, and live-evidence counts, while the
+authority-dossier list exposes production authority dossier modes, coverage,
+freshness windows, and missing requirement IDs so production readiness gaps stay
+visible in the same control-plane surface.
 
 The implementation falls back to SQLite `nolock=1` mode when running on local
 filesystems that do not support normal SQLite locking, such as some UNC-backed

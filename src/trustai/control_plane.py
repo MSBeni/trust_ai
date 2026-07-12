@@ -9,7 +9,12 @@ from .canonical import content_hash, utc_now
 from .chain import EvidenceChain
 from .cicd import PROMOTION_STATUS_ENTRY_TYPE
 from .contracts import CONTRACT_ENTRY_TYPE
-from .external_evidence import EXTERNAL_EVIDENCE_COLLECTION_RUN_ENTRY_TYPE, EXTERNAL_EVIDENCE_ENTRY_TYPE
+from .external_evidence import (
+    AUTHORITY_KIND_EVIDENCE_HINTS,
+    AUTHORITY_KIND_OWNER_HINTS,
+    EXTERNAL_EVIDENCE_COLLECTION_RUN_ENTRY_TYPE,
+    EXTERNAL_EVIDENCE_ENTRY_TYPE,
+)
 from .gate import EVAL_ENTRY_TYPE, GATE_ENTRY_TYPE
 from .ingest import INGEST_ENTRY_TYPE
 from .lifecycle import INCIDENT_ENTRY_TYPE
@@ -85,6 +90,70 @@ def _authority_freshness_window_count(evidence_items: list[Any]) -> int:
         for item in evidence_items
         if isinstance(item, dict) and item.get("issued_at") and item.get("expires_at")
     )
+
+
+def _decode_string_list_map(value: Any) -> dict[str, list[str]]:
+    if isinstance(value, str):
+        try:
+            value = json.loads(value)
+        except json.JSONDecodeError:
+            return {}
+    if not isinstance(value, dict):
+        return {}
+    result: dict[str, list[str]] = {}
+    for key, raw_items in value.items():
+        if not isinstance(raw_items, list):
+            continue
+        items = sorted(str(item) for item in raw_items if item)
+        if items:
+            result[str(key)] = items
+    return {key: result[key] for key in sorted(result)}
+
+
+def _count_items_by(items: list[dict[str, Any]], key: str) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for item in items:
+        value = str(item.get(key) or "unknown")
+        counts[value] = counts.get(value, 0) + 1
+    return {value: counts[value] for value in sorted(counts)}
+
+
+def _authority_gap_units(missing_authority_kinds_by_requirement: dict[str, list[str]]) -> list[dict[str, Any]]:
+    units: list[dict[str, Any]] = []
+    for requirement_id in sorted(missing_authority_kinds_by_requirement):
+        for authority_kind in sorted(missing_authority_kinds_by_requirement[requirement_id]):
+            unit_id = content_hash({"authority_kind": authority_kind, "requirement_id": requirement_id})
+            unit_ref = f"{requirement_id}:{authority_kind}"
+            units.append(
+                {
+                    "unit_id": unit_id,
+                    "unit_ref": unit_ref,
+                    "task_id": content_hash(
+                        {"task_kind": "external-authority-evidence", "unit_id": unit_id, "unit_ref": unit_ref}
+                    ),
+                    "task_ref": f"external-evidence:{unit_ref}",
+                    "requirement_id": requirement_id,
+                    "authority_kind": authority_kind,
+                    "owner_hint": AUTHORITY_KIND_OWNER_HINTS.get(
+                        authority_kind,
+                        AUTHORITY_KIND_OWNER_HINTS["other"],
+                    ),
+                    "suggested_evidence_sources": AUTHORITY_KIND_EVIDENCE_HINTS.get(
+                        authority_kind,
+                        AUTHORITY_KIND_EVIDENCE_HINTS["other"],
+                    ),
+                }
+            )
+    return units
+
+
+def _external_authority_gap_summary(units: list[dict[str, Any]]) -> dict[str, Any]:
+    return {
+        "missing_authority_unit_count": len(units),
+        "gap_count_by_authority_kind": _count_items_by(units, "authority_kind"),
+        "gap_count_by_requirement": _count_items_by(units, "requirement_id"),
+        "missing_authority_units": units,
+    }
 
 
 def _sqlite_nolock_uri(path: Path) -> str:
@@ -1449,7 +1518,7 @@ class ControlPlane:
                    covered_authority_kind_count, missing_authority_kind_count,
                    evidence_count, fresh_evidence_count, stale_evidence_count,
                    missing_freshness_count, source_roadmap_audit_json,
-                   missing_requirement_ids_json, freshness_checked_at
+                   missing_requirement_ids_json, freshness_checked_at, body_json
             FROM external_evidence_manifests
             ORDER BY freshness_checked_at DESC
             LIMIT ?
@@ -1466,6 +1535,14 @@ class ControlPlane:
             except (TypeError, json.JSONDecodeError):
                 missing_ids = []
             item["missing_requirement_ids"] = missing_ids if isinstance(missing_ids, list) else []
+            payload = _decode_json_object(item.pop("body_json", None))
+            covered_authority_kinds = _decode_string_list_map(payload.get("covered_authority_kinds_by_requirement"))
+            missing_authority_kinds = _decode_string_list_map(payload.get("missing_authority_kinds_by_requirement"))
+            missing_units = _authority_gap_units(missing_authority_kinds)
+            item["covered_authority_kinds_by_requirement"] = covered_authority_kinds
+            item["missing_authority_kinds_by_requirement"] = missing_authority_kinds
+            item["missing_authority_units"] = missing_units
+            item["external_authority_gap_summary"] = _external_authority_gap_summary(missing_units)
             items.append(item)
         return items
 
@@ -1517,6 +1594,10 @@ class ControlPlane:
             blockers.append(f"local roadmap evidence incomplete: {missing_local} requirement(s) missing local evidence")
 
         latest_external_manifest = summary.get("latest_external_evidence_manifest")
+        latest_external_manifest_details = self.recent_external_evidence_manifests(1)
+        if latest_external_manifest_details:
+            latest_external_manifest = latest_external_manifest_details[0]
+        external_gap_summary = (latest_external_manifest or {}).get("external_authority_gap_summary") or _external_authority_gap_summary([])
         external_missing_requirements = int((latest_external_manifest or {}).get("missing_requirement_count") or 0)
         external_missing_authority_kinds = int((latest_external_manifest or {}).get("missing_authority_kind_count") or 0)
         external_missing_freshness = int((latest_external_manifest or {}).get("missing_freshness_count") or 0)
@@ -1541,7 +1622,7 @@ class ControlPlane:
                 blockers.append(
                     "external authority evidence incomplete: "
                     f"{external_missing_requirements} requirement(s), "
-                    f"{external_missing_authority_kinds} authority-kind assignment(s), "
+                    f"{external_gap_summary['missing_authority_unit_count']} authority unit(s), "
                     f"{external_missing_freshness} freshness window(s) missing"
                 )
             if not external_manifest_strict:
@@ -1657,6 +1738,7 @@ class ControlPlane:
             "latest_external_evidence_collection_run": latest_collection_run,
             "latest_authority_dossier": summary.get("latest_authority_dossier"),
             "authority_dossier_summary": authority_dossier_summary,
+            "external_authority_gap_summary": external_gap_summary,
             "remaining_external_evidence_count": deferred_external,
             "blockers": blockers,
         }
