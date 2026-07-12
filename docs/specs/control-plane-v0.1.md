@@ -25,7 +25,7 @@ into queryable registry tables while keeping the chain as the source of truth.
 
 ```powershell
 python -m trustai control-index --state .trustai/demo/evidence-chain.json --tenant aitrade-local --pack artifacts/aitrade-proof-pack.json --db .trustai/control-plane.sqlite
-python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --contract-id aitrade-btcusdt-canary
+python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
 ```
 
 ## API
@@ -35,6 +35,7 @@ python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts
 - `POST /v0/control/index`;
 - `GET /v0/control/summary`;
 - `GET /v0/control/contract-evidence?contract_id=...` or `?contract_hash=...`;
+- `GET /v0/control/agent-evidence?agent_name=...` with optional `agent_version=...`;
 - `GET /v0/contracts`;
 - `GET /v0/agents`;
 - `GET /v0/eval-runs`;
@@ -47,8 +48,11 @@ python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts
 The contract evidence endpoint returns one contract-scoped review surface with
 counts and recent rows for chain entries, eval runs, gate decisions, proof packs,
 OTel ingest events, promotion statuses, runtime attestations, policy evidence,
-and incidents. This is the local analogue of a model-risk or auditor review page
-for a single pre-registered contract.
+and incidents. The agent evidence endpoint provides the same kind of review
+surface from the Agent/Version Registry side: inventory records, associated
+contracts, direct agent evidence, and contract-hash-linked runtime/policy rows.
+These are the local analogues of model-risk or auditor review pages for a single
+pre-registered contract or governed agent version.
 
 The implementation falls back to SQLite `nolock=1` mode when running on local
 filesystems that do not support normal SQLite locking, such as some UNC-backed

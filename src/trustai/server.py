@@ -166,6 +166,31 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             finally:
                 control.close()
             return
+        if parsed.path == "/v0/control/agent-evidence":
+            query = parse_qs(parsed.query)
+            agent_name = query.get("agent_name", [None])[0]
+            agent_version = query.get("agent_version", [None])[0]
+            if not agent_name:
+                self._json_response(422, {"error": "agent_name is required"})
+                return
+            try:
+                limit = int(query.get("limit", ["20"])[0])
+            except ValueError:
+                self._json_response(422, {"error": "limit must be an integer"})
+                return
+            control = self._control()
+            try:
+                self._json_response(
+                    200,
+                    control.agent_evidence(
+                        agent_name=agent_name,
+                        agent_version=agent_version,
+                        limit=limit,
+                    ),
+                )
+            finally:
+                control.close()
+            return
         if parsed.path == "/v0/contracts":
             control = self._control()
             try:

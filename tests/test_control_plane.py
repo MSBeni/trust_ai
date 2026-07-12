@@ -179,6 +179,33 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertLessEqual(len(hash_scoped["chain_entries"]), 1)
                 with self.assertRaises(ValueError):
                     control.contract_evidence()
+                agent_evidence = control.agent_evidence(
+                    agent_name=contract["agent"]["name"],
+                    agent_version=contract["agent"]["version"],
+                )
+                self.assertEqual(contract["agent"]["name"], agent_evidence["scope"]["agent_name"])
+                self.assertEqual(contract["agent"]["version"], agent_evidence["scope"]["agent_version"])
+                self.assertIn(contract_hash, agent_evidence["contract_hashes"])
+                self.assertEqual(1, agent_evidence["counts"]["agents"])
+                self.assertEqual(1, agent_evidence["counts"]["contracts"])
+                self.assertGreaterEqual(agent_evidence["counts"]["chain_entries"], 4)
+                self.assertEqual(1, agent_evidence["counts"]["eval_runs"])
+                self.assertEqual(1, agent_evidence["counts"]["gate_decisions"])
+                self.assertEqual(1, agent_evidence["counts"]["proof_packs"])
+                self.assertEqual(2, agent_evidence["counts"]["ingest_events"])
+                self.assertEqual(1, agent_evidence["counts"]["promotion_statuses"])
+                self.assertEqual(1, agent_evidence["counts"]["runtime_attestations"])
+                self.assertEqual(1, agent_evidence["counts"]["policy_decisions"])
+                self.assertEqual(1, agent_evidence["counts"]["policy_engine_receipts"])
+                self.assertEqual(1, agent_evidence["counts"]["incidents"])
+                self.assertTrue(agent_evidence["agents"][0]["governed"])
+                self.assertEqual("passed", agent_evidence["gate_decisions"][0]["outcome"])
+                self.assertEqual("gen_ai.tool.call", agent_evidence["ingest_events"][0]["event_name"])
+                unversioned_agent_evidence = control.agent_evidence(agent_name=contract["agent"]["name"], limit=1)
+                self.assertEqual(contract["agent"]["name"], unversioned_agent_evidence["scope"]["agent_name"])
+                self.assertLessEqual(len(unversioned_agent_evidence["chain_entries"]), 1)
+                with self.assertRaises(ValueError):
+                    control.agent_evidence(agent_name=None)
                 self.assertEqual(2, len(control.agents()))
                 eval_runs = control.recent_eval_runs()
                 self.assertEqual(1, len(eval_runs))

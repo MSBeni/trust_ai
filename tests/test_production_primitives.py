@@ -149,6 +149,23 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual(0, contract_evidence_body["counts"]["contracts"])
                 self.assertEqual(0, contract_evidence_body["counts"]["eval_runs"])
 
+                conn.request("GET", "/v0/control/agent-evidence")
+                missing_agent_response = conn.getresponse()
+                missing_agent_body = json.loads(missing_agent_response.read().decode("utf-8"))
+                self.assertEqual(422, missing_agent_response.status)
+                self.assertIn("agent_name", missing_agent_body["error"])
+
+                conn.request("GET", "/v0/control/agent-evidence?agent_name=aitrade-risk-agent")
+                agent_evidence_response = conn.getresponse()
+                agent_evidence_body = json.loads(agent_evidence_response.read().decode("utf-8"))
+                self.assertEqual(200, agent_evidence_response.status)
+                self.assertEqual("aitrade-risk-agent", agent_evidence_body["scope"]["agent_name"])
+                self.assertEqual(0, agent_evidence_body["counts"]["agents"])
+                self.assertEqual(0, agent_evidence_body["counts"]["contracts"])
+                self.assertEqual(4, agent_evidence_body["counts"]["chain_entries"])
+                self.assertEqual(4, agent_evidence_body["counts"]["ingest_events"])
+                self.assertEqual("gen_ai.tool.call", agent_evidence_body["ingest_events"][0]["event_name"])
+
                 conn.request("GET", "/v0/eval-runs")
                 eval_runs_response = conn.getresponse()
                 eval_runs_body = json.loads(eval_runs_response.read().decode("utf-8"))

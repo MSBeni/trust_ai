@@ -2261,6 +2261,9 @@ def cmd_control_index(args: argparse.Namespace) -> int:
 
 
 def cmd_control_summary(args: argparse.Namespace) -> int:
+    if args.agent_version and not args.agent_name:
+        print("--agent-version requires --agent-name", file=sys.stderr)
+        return 2
     control = ControlPlane(args.db)
     try:
         summary = control.summary()
@@ -2284,6 +2287,11 @@ def cmd_control_summary(args: argparse.Namespace) -> int:
             summary["contract_evidence"] = control.contract_evidence(
                 contract_id=args.contract_id,
                 contract_hash=args.contract_hash,
+            )
+        if args.agent_name:
+            summary["agent_evidence"] = control.agent_evidence(
+                agent_name=args.agent_name,
+                agent_version=args.agent_version,
             )
         print(json.dumps(summary, indent=2, sort_keys=True))
         return 0
@@ -20348,6 +20356,8 @@ def build_parser() -> argparse.ArgumentParser:
     control_summary.add_argument("--runtime-evidence", action="store_true")
     control_summary.add_argument("--contract-id")
     control_summary.add_argument("--contract-hash")
+    control_summary.add_argument("--agent-name")
+    control_summary.add_argument("--agent-version")
     control_summary.set_defaults(func=cmd_control_summary)
     register = subparsers.add_parser("register", help="register a verification contract")
     register.add_argument("contract")
