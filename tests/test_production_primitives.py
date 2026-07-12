@@ -123,6 +123,15 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 summary_body = json.loads(summary_response.read().decode("utf-8"))
                 self.assertEqual(200, summary_response.status)
                 self.assertEqual(4, summary_body["counts"]["chain_entries"])
+
+                conn.request("GET", "/v0/runtime-evidence")
+                runtime_response = conn.getresponse()
+                runtime_body = json.loads(runtime_response.read().decode("utf-8"))
+                self.assertEqual(200, runtime_response.status)
+                self.assertEqual([], runtime_body["runtime_attestations"])
+                self.assertEqual([], runtime_body["policy_decisions"])
+                self.assertEqual([], runtime_body["policy_engine_receipts"])
+                self.assertEqual([], runtime_body["incidents"])
             finally:
                 conn.close()
                 server.shutdown()

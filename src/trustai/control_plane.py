@@ -9,8 +9,12 @@ from .canonical import content_hash, utc_now
 from .chain import EvidenceChain
 from .cicd import PROMOTION_STATUS_ENTRY_TYPE
 from .contracts import CONTRACT_ENTRY_TYPE
+from .lifecycle import INCIDENT_ENTRY_TYPE
+from .policy import POLICY_DECISION_ENTRY_TYPE
+from .policy_engine import POLICY_ENGINE_ENTRY_TYPE
 from .proofpack import PROOF_PACK_SPEC_VERSION
 from .registry import AGENT_INVENTORY_ENTRY_TYPE
+from .runtime import RUNTIME_ENTRY_TYPE
 
 SCHEMA_VERSION = "trustai.control-plane/0.1"
 
@@ -145,6 +149,68 @@ class ControlPlane:
                 attested_at TEXT,
                 body_json TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS runtime_attestations (
+                entry_id TEXT PRIMARY KEY,
+                contract_id TEXT,
+                contract_hash TEXT,
+                action_hash TEXT,
+                action_id TEXT,
+                action_type TEXT,
+                risk_class TEXT,
+                passed INTEGER NOT NULL,
+                outcome TEXT,
+                check_count INTEGER NOT NULL,
+                failed_check_count INTEGER NOT NULL,
+                attested_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS policy_decisions (
+                entry_id TEXT PRIMARY KEY,
+                policy_pack_id TEXT,
+                policy_pack_version TEXT,
+                policy_pack_hash TEXT,
+                contract_hash TEXT,
+                action_hash TEXT,
+                passed INTEGER NOT NULL,
+                outcome TEXT,
+                matched_rule_count INTEGER NOT NULL,
+                check_count INTEGER NOT NULL,
+                failed_check_count INTEGER NOT NULL,
+                evaluated_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS policy_engine_receipts (
+                receipt_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                engine_name TEXT,
+                engine_mode TEXT,
+                policy_pack_id TEXT,
+                policy_pack_version TEXT,
+                policy_pack_hash TEXT,
+                action_hash TEXT,
+                action_id TEXT,
+                action_type TEXT,
+                risk_class TEXT,
+                pack_id TEXT,
+                contract_id TEXT,
+                contract_hash TEXT,
+                decision_entry_id TEXT,
+                decision_outcome TEXT,
+                decision_passed INTEGER,
+                evaluated_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS incidents (
+                incident_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                contract_hash TEXT,
+                agent_name TEXT,
+                agent_version TEXT,
+                severity TEXT,
+                summary TEXT,
+                detected_at TEXT,
+                body_json TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS anchors (
                 anchor_id TEXT PRIMARY KEY,
                 entry_id TEXT,
@@ -163,7 +229,17 @@ class ControlPlane:
         self.conn.commit()
 
     def index_chain(self, chain: EvidenceChain) -> dict[str, int]:
-        counts = {"chain_entries": 0, "contracts": 0, "agents": 0, "anchors": 0, "promotion_statuses": 0}
+        counts = {
+            "chain_entries": 0,
+            "contracts": 0,
+            "agents": 0,
+            "anchors": 0,
+            "promotion_statuses": 0,
+            "runtime_attestations": 0,
+            "policy_decisions": 0,
+            "policy_engine_receipts": 0,
+            "incidents": 0,
+        }
         for entry in chain.entries:
             payload = entry.get("payload", {})
             contract_hash = _payload_contract_hash(entry)
@@ -293,6 +369,132 @@ class ControlPlane:
                 )
                 counts["promotion_statuses"] += 1
 
+            if entry.get("entry_type") == RUNTIME_ENTRY_TYPE:
+                action = payload.get("action", {}) if isinstance(payload.get("action"), dict) else {}
+                checks = payload.get("checks", []) if isinstance(payload.get("checks"), list) else []
+                failed_checks = [check for check in checks if isinstance(check, dict) and not check.get("passed")]
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO runtime_attestations(
+                        entry_id, contract_id, contract_hash, action_hash,
+                        action_id, action_type, risk_class, passed, outcome,
+                        check_count, failed_check_count, attested_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        entry["entry_id"],
+                        payload.get("contract_id"),
+                        payload.get("contract_hash"),
+                        payload.get("action_hash"),
+                        action.get("action_id") or action.get("id"),
+                        action.get("type"),
+                        action.get("risk_class"),
+                        1 if payload.get("passed") else 0,
+                        payload.get("outcome"),
+                        len(checks),
+                        len(failed_checks),
+                        payload.get("timestamp") or entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["runtime_attestations"] += 1
+
+            if entry.get("entry_type") == POLICY_DECISION_ENTRY_TYPE:
+                checks = payload.get("checks", []) if isinstance(payload.get("checks"), list) else []
+                failed_checks = [check for check in checks if isinstance(check, dict) and not check.get("passed")]
+                matched_rules = payload.get("matched_rules", []) if isinstance(payload.get("matched_rules"), list) else []
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO policy_decisions(
+                        entry_id, policy_pack_id, policy_pack_version, policy_pack_hash,
+                        contract_hash, action_hash, passed, outcome, matched_rule_count,
+                        check_count, failed_check_count, evaluated_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        entry["entry_id"],
+                        payload.get("policy_pack_id"),
+                        payload.get("policy_pack_version"),
+                        payload.get("policy_pack_hash"),
+                        payload.get("contract_hash"),
+                        payload.get("action_hash"),
+                        1 if payload.get("passed") else 0,
+                        payload.get("outcome"),
+                        len(matched_rules),
+                        len(checks),
+                        len(failed_checks),
+                        payload.get("evaluated_at") or entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["policy_decisions"] += 1
+
+            if entry.get("entry_type") == POLICY_ENGINE_ENTRY_TYPE:
+                engine = payload.get("engine", {}) if isinstance(payload.get("engine"), dict) else {}
+                policy = payload.get("policy", {}) if isinstance(payload.get("policy"), dict) else {}
+                action = payload.get("action", {}) if isinstance(payload.get("action"), dict) else {}
+                proof_pack = payload.get("proof_pack", {}) if isinstance(payload.get("proof_pack"), dict) else {}
+                decision = payload.get("decision", {}) if isinstance(payload.get("decision"), dict) else {}
+                decision_passed = decision.get("passed")
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO policy_engine_receipts(
+                        receipt_id, entry_id, engine_name, engine_mode,
+                        policy_pack_id, policy_pack_version, policy_pack_hash,
+                        action_hash, action_id, action_type, risk_class,
+                        pack_id, contract_id, contract_hash, decision_entry_id,
+                        decision_outcome, decision_passed, evaluated_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("receipt_id") or entry["entry_id"],
+                        entry["entry_id"],
+                        engine.get("name"),
+                        engine.get("mode"),
+                        policy.get("id"),
+                        policy.get("version"),
+                        policy.get("hash"),
+                        action.get("hash"),
+                        action.get("id"),
+                        action.get("type"),
+                        action.get("risk_class"),
+                        proof_pack.get("pack_id"),
+                        proof_pack.get("contract_id"),
+                        proof_pack.get("contract_hash"),
+                        decision.get("entry_id"),
+                        decision.get("outcome"),
+                        None if decision_passed is None else (1 if decision_passed else 0),
+                        entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["policy_engine_receipts"] += 1
+
+            if entry.get("entry_type") == INCIDENT_ENTRY_TYPE:
+                incident = payload.get("incident", {}) if isinstance(payload.get("incident"), dict) else {}
+                agent = payload.get("agent", {}) if isinstance(payload.get("agent"), dict) else incident.get("agent", {})
+                if not isinstance(agent, dict):
+                    agent = {}
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO incidents(
+                        incident_id, entry_id, contract_hash, agent_name, agent_version,
+                        severity, summary, detected_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        incident.get("id") or payload.get("incident_hash") or entry["entry_id"],
+                        entry["entry_id"],
+                        payload.get("contract_hash") or incident.get("contract_hash"),
+                        agent.get("name"),
+                        agent.get("version"),
+                        incident.get("severity"),
+                        incident.get("summary"),
+                        incident.get("detected_at") or entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["incidents"] += 1
         self.conn.commit()
         return counts
 
@@ -324,7 +526,18 @@ class ControlPlane:
         self.conn.commit()
 
     def summary(self) -> dict[str, Any]:
-        tables = ["contracts", "agents", "chain_entries", "proof_packs", "anchors", "promotion_statuses"]
+        tables = [
+            "contracts",
+            "agents",
+            "chain_entries",
+            "proof_packs",
+            "anchors",
+            "promotion_statuses",
+            "runtime_attestations",
+            "policy_decisions",
+            "policy_engine_receipts",
+            "incidents",
+        ]
         counts = {
             table: self.conn.execute(f"SELECT COUNT(*) AS count FROM {table}").fetchone()["count"]
             for table in tables
@@ -347,6 +560,50 @@ class ControlPlane:
         latest_status_dict = dict(latest_status) if latest_status else None
         if latest_status_dict is not None:
             latest_status_dict["passed"] = bool(latest_status_dict["passed"])
+        latest_runtime = self.conn.execute(
+            """
+            SELECT entry_id, contract_id, contract_hash, action_id, risk_class,
+                   passed, outcome, failed_check_count, attested_at
+            FROM runtime_attestations
+            ORDER BY attested_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_runtime_dict = dict(latest_runtime) if latest_runtime else None
+        if latest_runtime_dict is not None:
+            latest_runtime_dict["passed"] = bool(latest_runtime_dict["passed"])
+        latest_policy_decision = self.conn.execute(
+            """
+            SELECT entry_id, policy_pack_id, contract_hash, passed, outcome,
+                   failed_check_count, evaluated_at
+            FROM policy_decisions
+            ORDER BY evaluated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_policy_decision_dict = dict(latest_policy_decision) if latest_policy_decision else None
+        if latest_policy_decision_dict is not None:
+            latest_policy_decision_dict["passed"] = bool(latest_policy_decision_dict["passed"])
+        latest_policy_engine = self.conn.execute(
+            """
+            SELECT receipt_id, engine_name, engine_mode, policy_pack_id,
+                   decision_outcome, decision_passed, evaluated_at
+            FROM policy_engine_receipts
+            ORDER BY evaluated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_policy_engine_dict = dict(latest_policy_engine) if latest_policy_engine else None
+        if latest_policy_engine_dict is not None and latest_policy_engine_dict.get("decision_passed") is not None:
+            latest_policy_engine_dict["decision_passed"] = bool(latest_policy_engine_dict["decision_passed"])
+        latest_incident = self.conn.execute(
+            """
+            SELECT incident_id, contract_hash, agent_name, severity, summary, detected_at
+            FROM incidents
+            ORDER BY detected_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
         return {
             "schema_version": SCHEMA_VERSION,
             "database": str(self.path),
@@ -356,6 +613,10 @@ class ControlPlane:
             "latest_anchor": dict(latest_anchor) if latest_anchor else None,
             "latest_proof_pack": dict(latest_pack) if latest_pack else None,
             "latest_promotion_status": latest_status_dict,
+            "latest_runtime_attestation": latest_runtime_dict,
+            "latest_policy_decision": latest_policy_decision_dict,
+            "latest_policy_engine_receipt": latest_policy_engine_dict,
+            "latest_incident": dict(latest_incident) if latest_incident else None,
         }
 
     def recent_proof_packs(self, limit: int = 20) -> list[dict[str, Any]]:
@@ -392,6 +653,86 @@ class ControlPlane:
             item["target_ref"] = _decode_json_object(item.pop("target_ref_json", None))
             statuses.append(item)
         return statuses
+
+    def recent_runtime_attestations(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT entry_id, contract_id, contract_hash, action_hash, action_id,
+                   action_type, risk_class, passed, outcome, check_count,
+                   failed_check_count, attested_at
+            FROM runtime_attestations
+            ORDER BY attested_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["passed"] = bool(item["passed"])
+            items.append(item)
+        return items
+
+    def recent_policy_decisions(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT entry_id, policy_pack_id, policy_pack_version, policy_pack_hash,
+                   contract_hash, action_hash, passed, outcome, matched_rule_count,
+                   check_count, failed_check_count, evaluated_at
+            FROM policy_decisions
+            ORDER BY evaluated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["passed"] = bool(item["passed"])
+            items.append(item)
+        return items
+
+    def recent_policy_engine_receipts(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT receipt_id, entry_id, engine_name, engine_mode, policy_pack_id,
+                   policy_pack_version, policy_pack_hash, action_hash, action_id,
+                   action_type, risk_class, pack_id, contract_id, contract_hash,
+                   decision_entry_id, decision_outcome, decision_passed, evaluated_at
+            FROM policy_engine_receipts
+            ORDER BY evaluated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            if item.get("decision_passed") is not None:
+                item["decision_passed"] = bool(item["decision_passed"])
+            items.append(item)
+        return items
+
+    def recent_incidents(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT incident_id, entry_id, contract_hash, agent_name, agent_version,
+                   severity, summary, detected_at
+            FROM incidents
+            ORDER BY detected_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        return [dict(row) for row in rows]
+
+    def runtime_evidence(self, limit: int = 20) -> dict[str, Any]:
+        return {
+            "runtime_attestations": self.recent_runtime_attestations(limit),
+            "policy_decisions": self.recent_policy_decisions(limit),
+            "policy_engine_receipts": self.recent_policy_engine_receipts(limit),
+            "incidents": self.recent_incidents(limit),
+        }
 
     def agents(self) -> list[dict[str, Any]]:
         rows = self.conn.execute(

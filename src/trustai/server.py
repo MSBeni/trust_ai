@@ -162,6 +162,13 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             finally:
                 control.close()
             return
+        if parsed.path == "/v0/runtime-evidence":
+            control = self._control()
+            try:
+                self._json_response(200, control.runtime_evidence())
+            finally:
+                control.close()
+            return
         self._json_response(404, {"error": "not found"})
 
     def do_POST(self) -> None:

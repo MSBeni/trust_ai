@@ -9,9 +9,14 @@ from trustai.cicd import append_promotion_status_receipt, build_promotion_check_
 from trustai.delivery import build_provider_delivery
 from trustai.contracts import load_contract, register_contract
 from trustai.gate import append_eval_and_gate
+from trustai.lifecycle import append_incident, load_incident
+from trustai.policy import append_policy_decision, load_policy_pack
+from trustai.policy_engine import append_policy_engine_receipt, build_policy_engine_receipt
+from trustai.policy_export import export_policy_pack
 from trustai.proofpack import compile_proof_pack
 from trustai.registry import append_inventory, load_inventory
 from trustai.anchor import append_anchor
+from trustai.runtime import append_runtime_attestation, load_action
 from trustai.verifier import verify_proof_pack
 
 
@@ -19,6 +24,9 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = ROOT / "examples" / "aitrade" / "verification-contract.yaml"
 RESULTS = ROOT / "examples" / "aitrade" / "eval-results.json"
 INVENTORY = ROOT / "examples" / "aitrade" / "agent-inventory.json"
+ACTION = ROOT / "examples" / "aitrade" / "runtime-action.json"
+POLICY = ROOT / "examples" / "aitrade" / "policy-pack.json"
+INCIDENT = ROOT / "examples" / "aitrade" / "incident.json"
 
 
 class ControlPlaneTests(unittest.TestCase):
@@ -65,6 +73,35 @@ class ControlPlaneTests(unittest.TestCase):
                 payload=payload,
                 delivery=delivery,
             )
+            action = load_action(ACTION)
+            append_runtime_attestation(chain, contract, action)
+            policy = {**load_policy_pack(POLICY), "proof_decay": {}}
+            policy_decision = append_policy_decision(
+                chain,
+                policy,
+                action,
+                proof_pack=pack,
+                now="2026-07-04T02:00:00Z",
+            )
+            policy_export = export_policy_pack(policy)
+            engine_receipt = build_policy_engine_receipt(
+                policy,
+                action,
+                pack,
+                policy_decision,
+                policy_export=policy_export,
+                engine="opa",
+            )
+            append_policy_engine_receipt(
+                chain,
+                engine_receipt,
+                policy,
+                action,
+                pack,
+                policy_decision,
+                policy_export=policy_export,
+            )
+            append_incident(chain, load_incident(INCIDENT))
             chain.save()
 
             control = ControlPlane(tmp / "control.sqlite")
@@ -80,15 +117,35 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, summary["counts"]["anchors"])
                 self.assertEqual(1, summary["counts"]["promotion_statuses"])
                 self.assertEqual(1, counts["promotion_statuses"])
+                self.assertEqual(1, summary["counts"]["runtime_attestations"])
+                self.assertEqual(1, summary["counts"]["policy_decisions"])
+                self.assertEqual(1, summary["counts"]["policy_engine_receipts"])
+                self.assertEqual(1, summary["counts"]["incidents"])
+                self.assertEqual(1, counts["runtime_attestations"])
+                self.assertEqual(1, counts["policy_decisions"])
+                self.assertEqual(1, counts["policy_engine_receipts"])
+                self.assertEqual(1, counts["incidents"])
                 self.assertEqual("passed", summary["latest_proof_pack"]["outcome"])
                 self.assertEqual("github", summary["latest_promotion_status"]["provider"])
                 self.assertTrue(summary["latest_promotion_status"]["passed"])
+                self.assertEqual("shadow-order-20260703-001", summary["latest_runtime_attestation"]["action_id"])
+                self.assertTrue(summary["latest_runtime_attestation"]["passed"])
+                self.assertEqual("trading-runtime-policy-v0", summary["latest_policy_decision"]["policy_pack_id"])
+                self.assertTrue(summary["latest_policy_decision"]["passed"])
+                self.assertEqual("opa", summary["latest_policy_engine_receipt"]["engine_name"])
+                self.assertTrue(summary["latest_policy_engine_receipt"]["decision_passed"])
+                self.assertEqual("high", summary["latest_incident"]["severity"])
                 self.assertEqual(2, len(control.agents()))
                 self.assertEqual(1, len(control.recent_proof_packs()))
                 statuses = control.recent_promotion_statuses()
                 self.assertEqual(1, len(statuses))
                 self.assertEqual("volelabs/trust_ai", statuses[0]["target_ref"]["repository"])
                 self.assertTrue(statuses[0]["provider_status_success"])
+                runtime_evidence = control.runtime_evidence()
+                self.assertEqual("shadow-order-20260703-001", runtime_evidence["runtime_attestations"][0]["action_id"])
+                self.assertEqual("trading-runtime-policy-v0", runtime_evidence["policy_decisions"][0]["policy_pack_id"])
+                self.assertEqual("opa", runtime_evidence["policy_engine_receipts"][0]["engine_name"])
+                self.assertEqual("incident-20260704-latency-drift", runtime_evidence["incidents"][0]["incident_id"])
             finally:
                 control.close()
 
