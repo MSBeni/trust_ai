@@ -8,6 +8,7 @@ from trustai.chain import EvidenceChain
 from trustai.cicd import append_promotion_status_receipt, build_promotion_check_payload, build_promotion_status_receipt
 from trustai.delivery import build_provider_delivery
 from trustai.contracts import load_contract, register_contract
+from trustai.external_evidence import append_external_evidence_manifest, build_external_evidence_manifest
 from trustai.gate import append_eval_and_gate
 from trustai.ingest import append_events, load_events
 from trustai.lifecycle import append_incident, load_incident
@@ -16,6 +17,7 @@ from trustai.policy_engine import append_policy_engine_receipt, build_policy_eng
 from trustai.policy_export import export_policy_pack
 from trustai.proofpack import compile_proof_pack
 from trustai.registry import append_inventory, load_inventory
+from trustai.roadmap_audit import build_roadmap_audit
 from trustai.anchor import append_anchor
 from trustai.runtime import append_runtime_attestation, load_action
 from trustai.verifier import verify_proof_pack
@@ -105,6 +107,13 @@ class ControlPlaneTests(unittest.TestCase):
                 policy_export=policy_export,
             )
             append_incident(chain, load_incident(INCIDENT))
+            audit = build_roadmap_audit(ROOT)
+            external_manifest = build_external_evidence_manifest(
+                audit,
+                root=ROOT,
+                generated_at="2026-07-12T00:00:00Z",
+            )
+            append_external_evidence_manifest(chain, external_manifest, audit, root=ROOT)
             chain.save()
 
             control = ControlPlane(tmp / "control.sqlite")
@@ -131,10 +140,14 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, summary["counts"]["policy_decisions"])
                 self.assertEqual(1, summary["counts"]["policy_engine_receipts"])
                 self.assertEqual(1, summary["counts"]["incidents"])
+                self.assertEqual(1, summary["counts"]["external_evidence_manifests"])
                 self.assertEqual(1, counts["runtime_attestations"])
                 self.assertEqual(1, counts["policy_decisions"])
                 self.assertEqual(1, counts["policy_engine_receipts"])
                 self.assertEqual(1, counts["incidents"])
+                self.assertEqual(1, counts["external_evidence_manifests"])
+                self.assertEqual("partial", summary["latest_external_evidence_manifest"]["status"])
+                self.assertGreater(summary["latest_external_evidence_manifest"]["missing_authority_kind_count"], 0)
                 self.assertEqual("passed", summary["latest_proof_pack"]["outcome"])
                 self.assertEqual("aitrade-btcusdt-canary", summary["latest_eval_run"]["contract_id"])
                 self.assertEqual("passed", summary["latest_gate_decision"]["outcome"])
@@ -228,6 +241,13 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual("trading-runtime-policy-v0", runtime_evidence["policy_decisions"][0]["policy_pack_id"])
                 self.assertEqual("opa", runtime_evidence["policy_engine_receipts"][0]["engine_name"])
                 self.assertEqual("incident-20260704-latency-drift", runtime_evidence["incidents"][0]["incident_id"])
+                external_evidence = control.recent_external_evidence_manifests()
+                self.assertEqual(1, len(external_evidence))
+                self.assertEqual("partial", external_evidence[0]["status"])
+                self.assertFalse(external_evidence[0]["require_complete"])
+                self.assertGreater(external_evidence[0]["missing_requirement_count"], 0)
+                self.assertGreater(external_evidence[0]["missing_authority_kind_count"], 0)
+                self.assertIsInstance(external_evidence[0]["missing_requirement_ids"], list)
             finally:
                 control.close()
 

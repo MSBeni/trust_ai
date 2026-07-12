@@ -193,6 +193,12 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual([], runtime_body["policy_decisions"])
                 self.assertEqual([], runtime_body["policy_engine_receipts"])
                 self.assertEqual([], runtime_body["incidents"])
+
+                conn.request("GET", "/v0/external-evidence")
+                external_evidence_response = conn.getresponse()
+                external_evidence_body = json.loads(external_evidence_response.read().decode("utf-8"))
+                self.assertEqual(200, external_evidence_response.status)
+                self.assertEqual([], external_evidence_body["external_evidence_manifests"])
             finally:
                 conn.close()
                 server.shutdown()

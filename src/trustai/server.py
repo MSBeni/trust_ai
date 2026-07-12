@@ -247,6 +247,13 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             finally:
                 control.close()
             return
+        if parsed.path == "/v0/external-evidence":
+            control = self._control()
+            try:
+                self._json_response(200, {"external_evidence_manifests": control.recent_external_evidence_manifests()})
+            finally:
+                control.close()
+            return
         self._json_response(404, {"error": "not found"})
 
     def do_POST(self) -> None:

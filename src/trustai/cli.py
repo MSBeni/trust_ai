@@ -2283,6 +2283,8 @@ def cmd_control_summary(args: argparse.Namespace) -> int:
             summary["promotion_statuses"] = control.recent_promotion_statuses()
         if args.runtime_evidence:
             summary["runtime_evidence"] = control.runtime_evidence()
+        if args.external_evidence:
+            summary["external_evidence_manifests"] = control.recent_external_evidence_manifests()
         if args.contract_id or args.contract_hash:
             summary["contract_evidence"] = control.contract_evidence(
                 contract_id=args.contract_id,
@@ -20354,6 +20356,7 @@ def build_parser() -> argparse.ArgumentParser:
     control_summary.add_argument("--ingest-events", action="store_true")
     control_summary.add_argument("--promotion-statuses", action="store_true")
     control_summary.add_argument("--runtime-evidence", action="store_true")
+    control_summary.add_argument("--external-evidence", action="store_true")
     control_summary.add_argument("--contract-id")
     control_summary.add_argument("--contract-hash")
     control_summary.add_argument("--agent-name")

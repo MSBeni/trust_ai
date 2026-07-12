@@ -9,6 +9,7 @@ from .canonical import content_hash, utc_now
 from .chain import EvidenceChain
 from .cicd import PROMOTION_STATUS_ENTRY_TYPE
 from .contracts import CONTRACT_ENTRY_TYPE
+from .external_evidence import EXTERNAL_EVIDENCE_ENTRY_TYPE
 from .gate import EVAL_ENTRY_TYPE, GATE_ENTRY_TYPE
 from .ingest import INGEST_ENTRY_TYPE
 from .lifecycle import INCIDENT_ENTRY_TYPE
@@ -264,6 +265,30 @@ class ControlPlane:
                 detected_at TEXT,
                 body_json TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS external_evidence_manifests (
+                manifest_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                manifest_ref TEXT,
+                manifest_hash TEXT NOT NULL,
+                status TEXT,
+                require_complete INTEGER NOT NULL,
+                require_fresh INTEGER NOT NULL,
+                require_live_source_uris INTEGER NOT NULL,
+                required_requirement_count INTEGER NOT NULL,
+                covered_requirement_count INTEGER NOT NULL,
+                missing_requirement_count INTEGER NOT NULL,
+                required_authority_kind_count INTEGER NOT NULL,
+                covered_authority_kind_count INTEGER NOT NULL,
+                missing_authority_kind_count INTEGER NOT NULL,
+                evidence_count INTEGER NOT NULL,
+                fresh_evidence_count INTEGER NOT NULL,
+                stale_evidence_count INTEGER NOT NULL,
+                missing_freshness_count INTEGER NOT NULL,
+                source_roadmap_audit_json TEXT NOT NULL,
+                missing_requirement_ids_json TEXT NOT NULL,
+                freshness_checked_at TEXT,
+                body_json TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS anchors (
                 anchor_id TEXT PRIMARY KEY,
                 entry_id TEXT,
@@ -295,6 +320,7 @@ class ControlPlane:
             "policy_decisions": 0,
             "policy_engine_receipts": 0,
             "incidents": 0,
+            "external_evidence_manifests": 0,
         }
         for entry in chain.entries:
             payload = entry.get("payload", {})
@@ -647,6 +673,49 @@ class ControlPlane:
                     ),
                 )
                 counts["incidents"] += 1
+
+            if entry.get("entry_type") == EXTERNAL_EVIDENCE_ENTRY_TYPE:
+                source_audit = payload.get("source_roadmap_audit", {}) if isinstance(payload.get("source_roadmap_audit"), dict) else {}
+                missing_ids = payload.get("missing_requirement_ids", []) if isinstance(payload.get("missing_requirement_ids"), list) else []
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO external_evidence_manifests(
+                        manifest_id, entry_id, manifest_ref, manifest_hash, status,
+                        require_complete, require_fresh, require_live_source_uris,
+                        required_requirement_count, covered_requirement_count,
+                        missing_requirement_count, required_authority_kind_count,
+                        covered_authority_kind_count, missing_authority_kind_count,
+                        evidence_count, fresh_evidence_count, stale_evidence_count,
+                        missing_freshness_count, source_roadmap_audit_json,
+                        missing_requirement_ids_json, freshness_checked_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("manifest_id") or entry["entry_id"],
+                        entry["entry_id"],
+                        payload.get("manifest_ref"),
+                        payload.get("manifest_hash") or entry.get("payload_hash"),
+                        payload.get("status"),
+                        1 if payload.get("require_complete") else 0,
+                        1 if payload.get("require_fresh") else 0,
+                        1 if payload.get("require_live_source_uris") else 0,
+                        int(payload.get("required_requirement_count") or 0),
+                        int(payload.get("covered_requirement_count") or 0),
+                        int(payload.get("missing_requirement_count") or 0),
+                        int(payload.get("required_authority_kind_count") or 0),
+                        int(payload.get("covered_authority_kind_count") or 0),
+                        int(payload.get("missing_authority_kind_count") or 0),
+                        int(payload.get("evidence_count") or 0),
+                        int(payload.get("fresh_evidence_count") or 0),
+                        int(payload.get("stale_evidence_count") or 0),
+                        int(payload.get("missing_freshness_count") or 0),
+                        _json(source_audit),
+                        _json(missing_ids),
+                        payload.get("freshness_checked_at") or entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["external_evidence_manifests"] += 1
         self.conn.commit()
         return counts
 
@@ -692,6 +761,7 @@ class ControlPlane:
             "policy_decisions",
             "policy_engine_receipts",
             "incidents",
+            "external_evidence_manifests",
         ]
         counts = {
             table: self.conn.execute(f"SELECT COUNT(*) AS count FROM {table}").fetchone()["count"]
@@ -794,6 +864,22 @@ class ControlPlane:
             LIMIT 1
             """
         ).fetchone()
+        latest_external_evidence = self.conn.execute(
+            """
+            SELECT manifest_id, manifest_ref, status, require_complete,
+                   require_fresh, require_live_source_uris,
+                   covered_requirement_count, required_requirement_count,
+                   missing_requirement_count, covered_authority_kind_count,
+                   required_authority_kind_count, missing_authority_kind_count,
+                   freshness_checked_at
+            FROM external_evidence_manifests
+            ORDER BY freshness_checked_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_external_evidence_dict = dict(latest_external_evidence) if latest_external_evidence else None
+        if latest_external_evidence_dict is not None:
+            _bool_fields(latest_external_evidence_dict, "require_complete", "require_fresh", "require_live_source_uris")
         return {
             "schema_version": SCHEMA_VERSION,
             "database": str(self.path),
@@ -810,6 +896,7 @@ class ControlPlane:
             "latest_policy_decision": latest_policy_decision_dict,
             "latest_policy_engine_receipt": latest_policy_engine_dict,
             "latest_incident": dict(latest_incident) if latest_incident else None,
+            "latest_external_evidence_manifest": latest_external_evidence_dict,
         }
 
     def contracts(self, limit: int = 20) -> list[dict[str, Any]]:
@@ -987,6 +1074,36 @@ class ControlPlane:
             (limit,),
         ).fetchall()
         return [dict(row) for row in rows]
+
+    def recent_external_evidence_manifests(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT manifest_id, entry_id, manifest_ref, manifest_hash, status,
+                   require_complete, require_fresh, require_live_source_uris,
+                   required_requirement_count, covered_requirement_count,
+                   missing_requirement_count, required_authority_kind_count,
+                   covered_authority_kind_count, missing_authority_kind_count,
+                   evidence_count, fresh_evidence_count, stale_evidence_count,
+                   missing_freshness_count, source_roadmap_audit_json,
+                   missing_requirement_ids_json, freshness_checked_at
+            FROM external_evidence_manifests
+            ORDER BY freshness_checked_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            _bool_fields(item, "require_complete", "require_fresh", "require_live_source_uris")
+            item["source_roadmap_audit"] = _decode_json_object(item.pop("source_roadmap_audit_json", None))
+            try:
+                missing_ids = json.loads(item.pop("missing_requirement_ids_json", "[]"))
+            except (TypeError, json.JSONDecodeError):
+                missing_ids = []
+            item["missing_requirement_ids"] = missing_ids if isinstance(missing_ids, list) else []
+            items.append(item)
+        return items
 
     def runtime_evidence(self, limit: int = 20) -> dict[str, Any]:
         return {
