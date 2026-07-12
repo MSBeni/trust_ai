@@ -22,6 +22,7 @@ EXTERNAL_EVIDENCE_INTAKE_SCHEMA = "trustai.external-evidence-intake/0.1"
 EXTERNAL_EVIDENCE_SOURCE_SNAPSHOT_SCHEMA = "trustai.external-evidence-source-snapshot/0.1"
 EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA = "trustai.external-evidence-source-map/0.1"
 EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA = "trustai.external-evidence-collection-run/0.1"
+EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA = "trustai.external-evidence-git-remote-ref-export/0.1"
 
 BUNDLE_SOURCE_ARTIFACT_KINDS = {
     "roadmap-audit",

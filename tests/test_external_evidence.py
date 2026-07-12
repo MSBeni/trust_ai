@@ -1,3 +1,4 @@
+import base64
 import copy
 import json
 import shutil
@@ -18,6 +19,7 @@ from trustai.external_evidence import (
     EXTERNAL_EVIDENCE_SOURCE_SNAPSHOT_SCHEMA,
     EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA,
     EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA,
+    EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA,
     ROADMAP_EVIDENCE_REPORT_SCHEMA,
     ROADMAP_EVIDENCE_BUNDLE_SCHEMA,
     _allowed_authority_kinds_for_requirement,
@@ -568,6 +570,105 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 self.assertEqual(snapshot_rel.as_posix(), intake["evidence_item"]["path"])
                 self.assertEqual("sha256:" + sha256(snapshot_path.read_bytes()).hexdigest(), intake["evidence_item"]["sha256"])
                 self.assertIn("oss-verifier-and-public-spec,ci-run", intake["evidence_argument"])
+            finally:
+                shutil.rmtree(snapshot_path.parent, ignore_errors=True)
+
+    def test_cli_external_evidence_collect_git_ref_creates_snapshot_and_intake(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_path = Path(tmp_dir)
+            audit_path = tmp_path / "roadmap-audit.json"
+            manifest_path = tmp_path / "external-evidence-manifest.json"
+            plan_path = tmp_path / "external-evidence-plan-all.json"
+            intake_path = tmp_path / "external-evidence-git-ref-intake.json"
+            remote_path = tmp_path / "remote.git"
+            work_path = tmp_path / "work"
+            snapshot_rel = Path("artifacts/test-external-evidence-git-ref/source-snapshot.json")
+            snapshot_path = ROOT / snapshot_rel
+            shutil.rmtree(snapshot_path.parent, ignore_errors=True)
+
+            subprocess.run(["git", "init", "--bare", str(remote_path)], check=True, stdout=subprocess.DEVNULL)
+            subprocess.run(["git", "init", str(work_path)], check=True, stdout=subprocess.DEVNULL)
+            subprocess.run(["git", "-C", str(work_path), "config", "user.email", "trustai@example.invalid"], check=True)
+            subprocess.run(["git", "-C", str(work_path), "config", "user.name", "TrustAI Test"], check=True)
+            (work_path / "README.md").write_text("# git ref evidence\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(work_path), "add", "README.md"], check=True)
+            subprocess.run(["git", "-C", str(work_path), "commit", "-m", "initial"], check=True, stdout=subprocess.DEVNULL)
+            commit_sha = subprocess.check_output(["git", "-C", str(work_path), "rev-parse", "HEAD"], text=True).strip()
+            subprocess.run(["git", "-C", str(work_path), "push", str(remote_path), "HEAD:refs/heads/main"], check=True, stdout=subprocess.DEVNULL)
+
+            try:
+                audit = build_roadmap_audit(ROOT)
+                manifest = build_external_evidence_manifest(
+                    audit,
+                    root=ROOT,
+                    evidence=[],
+                    generated_at="2026-07-09T00:00:00Z",
+                )
+                plan = build_external_evidence_collection_plan(
+                    manifest,
+                    audit,
+                    root=ROOT,
+                    status_filter="all",
+                    generated_at="2026-07-09T00:00:00Z",
+                )
+                write_roadmap_audit(audit_path, audit)
+                write_external_evidence_manifest(manifest_path, manifest)
+                write_external_evidence_collection_plan(plan_path, plan)
+
+                subprocess.run(
+                    [
+                        sys.executable,
+                        "-m",
+                        "trustai",
+                        "external-evidence-collect-git-ref",
+                        str(plan_path),
+                        str(manifest_path),
+                        str(audit_path),
+                        str(remote_path),
+                        "--root",
+                        str(ROOT),
+                        "--task",
+                        "oss-verifier-and-public-spec:provider-api",
+                        "--ref",
+                        "refs/heads/main",
+                        "--expected-sha",
+                        commit_sha,
+                        "--description",
+                        "Git remote main ref export",
+                        "--issuer",
+                        "Git remote",
+                        "--subject",
+                        "trustai git remote main",
+                        "--issued-at",
+                        "2026-07-08T00:00:00Z",
+                        "--expires-at",
+                        "2026-12-31T00:00:00Z",
+                        "--generated-at",
+                        "2026-07-09T00:00:00Z",
+                        "--snapshot-out",
+                        snapshot_rel.as_posix(),
+                        "--intake-out",
+                        str(intake_path),
+                        "--require-fresh",
+                        "--now",
+                        "2026-07-09T00:00:00Z",
+                    ],
+                    cwd=ROOT,
+                    check=True,
+                )
+                snapshot = load_external_evidence_source_snapshot(snapshot_path)
+                intake = load_external_evidence_intake(intake_path)
+                export = json.loads(base64.b64decode(snapshot["body_base64"]).decode("utf-8"))
+
+                self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_SNAPSHOT_SCHEMA, snapshot["schema"])
+                self.assertEqual("git-ls-remote", snapshot["retrieval_method"])
+                self.assertEqual(EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA, export["schema"])
+                self.assertEqual(commit_sha, export["expected_sha"])
+                self.assertTrue(export["expected_sha_matches"])
+                self.assertEqual([{"ref": "refs/heads/main", "sha": commit_sha}], export["records"])
+                self.assertEqual(snapshot_rel.as_posix(), intake["evidence_item"]["path"])
+                self.assertEqual("provider-api", intake["evidence_item"]["authority_kind"])
+                self.assertIn("oss-verifier-and-public-spec,provider-api", intake["evidence_argument"])
             finally:
                 shutil.rmtree(snapshot_path.parent, ignore_errors=True)
 

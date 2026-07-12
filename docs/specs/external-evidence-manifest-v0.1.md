@@ -164,6 +164,15 @@ duplicate tasks and writes a `trustai.external-evidence-collection-run/0.1`
 report with `generated_at` and generated snapshot paths, intake paths, IDs,
 evidence arguments, and warnings.
 
+`external-evidence-collect-git-ref` is a narrowed source collector for public or
+authenticated Git remotes. It runs `git ls-remote <remote> <ref>...`, writes a
+`trustai.external-evidence-git-remote-ref-export/0.1` body into a normal source
+snapshot with retrieval method `git-ls-remote`, and then creates the matching
+intake receipt. The export records `remote`, requested refs, advertised
+`records`, optional `expected_sha`, whether that SHA was advertised, and a hash
+of raw stdout. This proves the remote advertised the refs at collection time; it
+does not prove future remote availability or CI workflow success.
+
 ## External Evidence Intake Receipt
 
 `external-evidence-intake` emits `trustai.external-evidence-intake/0.1`, a

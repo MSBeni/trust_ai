@@ -4,8 +4,10 @@ import argparse
 import json
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
+from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
@@ -1070,6 +1072,7 @@ from .external_evidence import (
     build_external_evidence_collection_plan,
     build_external_evidence_intake,
     EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA,
+    EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA,
     EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA,
     build_external_evidence_source_snapshot,
     build_roadmap_evidence_bundle,
@@ -14316,6 +14319,146 @@ def cmd_external_evidence_source_map_template(args: argparse.Namespace) -> int:
     print(f"entries: {source_map['summary']['entry_count']}")
     return 0
 
+def _run_git_ls_remote(remote: str, refs: list[str], timeout_seconds: float) -> tuple[str, list[dict[str, str]]]:
+    if not remote:
+        raise ValueError("git remote is required")
+    clean_refs = [ref for ref in refs if ref]
+    if not clean_refs:
+        raise ValueError("at least one git ref is required")
+    completed = subprocess.run(
+        ["git", "ls-remote", remote, *clean_refs],
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=timeout_seconds,
+    )
+    records: list[dict[str, str]] = []
+    for line in completed.stdout.splitlines():
+        parts = line.strip().split()
+        if len(parts) != 2:
+            continue
+        sha, ref = parts
+        records.append({"sha": sha, "ref": ref})
+    if not records:
+        raise ValueError(f"git ls-remote returned no refs for: {', '.join(clean_refs)}")
+    return completed.stdout, records
+
+
+def _git_remote_source_uri(remote: str, refs: list[str], source_uri: str | None) -> str:
+    if source_uri:
+        return source_uri
+    return f"git+{remote}#{','.join(refs)}"
+
+
+def _build_git_remote_ref_export(
+    *,
+    remote: str,
+    refs: list[str],
+    stdout: str,
+    records: list[dict[str, str]],
+    expected_sha: str | None,
+    generated_at: str | None,
+) -> dict[str, Any]:
+    expected_sha_matches = None
+    if expected_sha:
+        expected_sha_matches = any(record.get("sha") == expected_sha for record in records)
+        if not expected_sha_matches:
+            raise ValueError(f"git remote ref export did not contain expected sha: {expected_sha}")
+    body = {
+        "schema": EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA,
+        "generated_at": generated_at or utc_now(),
+        "remote": remote,
+        "refs_requested": refs,
+        "records": records,
+        "expected_sha": expected_sha,
+        "expected_sha_matches": expected_sha_matches,
+        "raw_stdout_sha256": "sha256:" + sha256(stdout.encode("utf-8")).hexdigest(),
+        "limitations": [
+            "This export preserves one git ls-remote response from the named remote; it proves the remote advertised these refs at collection time, not that the remote will continue to do so later.",
+            "Use with external-evidence source snapshots and intake receipts to bind public repository or release-ref publication evidence to a roadmap authority task.",
+        ],
+    }
+    return {**body, "export_id": content_hash(body)}
+
+
+def cmd_external_evidence_collect_git_ref(args: argparse.Namespace) -> int:
+    try:
+        roadmap_audit = load_roadmap_audit(args.roadmap_audit)
+        manifest = load_external_evidence_manifest(args.manifest)
+        plan = load_external_evidence_collection_plan(args.plan)
+        stdout, records = _run_git_ls_remote(args.remote, args.ref, args.timeout_seconds)
+        export = _build_git_remote_ref_export(
+            remote=args.remote,
+            refs=args.ref,
+            stdout=stdout,
+            records=records,
+            expected_sha=args.expected_sha,
+            generated_at=args.generated_at,
+        )
+        body = (json.dumps(export, indent=2, sort_keys=True) + "\n").encode("utf-8")
+        source_uri = _git_remote_source_uri(args.remote, args.ref, args.source_uri)
+        snapshot = build_external_evidence_source_snapshot(
+            source_uri=source_uri,
+            body=body,
+            retrieval_method="git-ls-remote",
+            issuer=args.issuer,
+            subject=args.subject,
+            content_type="application/json",
+            issued_at=args.issued_at,
+            expires_at=args.expires_at,
+        )
+        snapshot_result = verify_external_evidence_source_snapshot(
+            snapshot,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+        if not snapshot_result.ok:
+            raise ValueError("invalid external evidence source snapshot: " + "; ".join(snapshot_result.errors))
+        snapshot_path = _external_evidence_collect_output_path(args.snapshot_out, args.snapshot_dir, args.task)
+        snapshot_target, snapshot_artifact_path = _repository_relative_artifact_path(args.root, snapshot_path)
+        write_external_evidence_source_snapshot(snapshot_target, snapshot)
+        intake_path = _external_evidence_collect_output_path(args.intake_out, args.intake_dir, args.task)
+        intake = build_external_evidence_intake(
+            plan,
+            manifest,
+            roadmap_audit,
+            root=args.root,
+            task_ref=args.task,
+            artifact_path=snapshot_artifact_path,
+            description=args.description,
+            issuer=args.issuer,
+            subject=args.subject,
+            source_uri=source_uri,
+            issued_at=args.issued_at,
+            expires_at=args.expires_at,
+        )
+        intake_result = verify_external_evidence_intake(
+            intake,
+            plan,
+            manifest,
+            roadmap_audit,
+            root=args.root,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+        if not intake_result.ok:
+            raise ValueError("invalid external evidence intake: " + "; ".join(intake_result.errors))
+        write_external_evidence_intake(intake_path, intake)
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired, ValueError) as exc:
+        print(f"external evidence git ref collection failed: {exc}", file=sys.stderr)
+        return 1
+    print(f"external evidence git ref export id: {export['export_id']}")
+    print(f"external evidence source snapshot: {snapshot_target}")
+    print(f"snapshot id: {snapshot['snapshot_id']}")
+    print(f"snapshot artifact path: {snapshot_artifact_path}")
+    print(f"external evidence intake: {intake_path}")
+    print(f"intake id: {intake['intake_id']}")
+    print(f"task ref: external-evidence:{args.task}")
+    print(f"evidence argument: {intake['evidence_argument']}")
+    for warning in snapshot_result.warnings + intake_result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
 def _read_external_evidence_snapshot_source_values(
     *,
     source_uri: str,
@@ -24193,6 +24336,30 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_collect.add_argument("--intake-out")
     external_evidence_collect.set_defaults(func=cmd_external_evidence_collect)
 
+    external_evidence_collect_git_ref = subparsers.add_parser("external-evidence-collect-git-ref", help="snapshot a git remote ref advertisement and create the matching external-evidence intake receipt")
+    external_evidence_collect_git_ref.add_argument("plan")
+    external_evidence_collect_git_ref.add_argument("manifest")
+    external_evidence_collect_git_ref.add_argument("roadmap_audit")
+    external_evidence_collect_git_ref.add_argument("remote")
+    external_evidence_collect_git_ref.add_argument("--root", default=".")
+    external_evidence_collect_git_ref.add_argument("--task", required=True, help="task_id, task_ref, unit_id, or unit_ref from the collection plan")
+    external_evidence_collect_git_ref.add_argument("--ref", action="append", default=[], help="git ref to query; repeat for multiple refs")
+    external_evidence_collect_git_ref.add_argument("--expected-sha")
+    external_evidence_collect_git_ref.add_argument("--source-uri")
+    external_evidence_collect_git_ref.add_argument("--description", required=True)
+    external_evidence_collect_git_ref.add_argument("--issuer", default="Git remote")
+    external_evidence_collect_git_ref.add_argument("--subject")
+    external_evidence_collect_git_ref.add_argument("--issued-at")
+    external_evidence_collect_git_ref.add_argument("--expires-at")
+    external_evidence_collect_git_ref.add_argument("--generated-at")
+    external_evidence_collect_git_ref.add_argument("--require-fresh", action="store_true")
+    external_evidence_collect_git_ref.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to generated_at")
+    external_evidence_collect_git_ref.add_argument("--timeout-seconds", type=float, default=30.0)
+    external_evidence_collect_git_ref.add_argument("--snapshot-dir", default="artifacts/external-evidence-sources")
+    external_evidence_collect_git_ref.add_argument("--snapshot-out")
+    external_evidence_collect_git_ref.add_argument("--intake-dir", default="artifacts/external-evidence-intakes")
+    external_evidence_collect_git_ref.add_argument("--intake-out")
+    external_evidence_collect_git_ref.set_defaults(func=cmd_external_evidence_collect_git_ref)
     external_evidence_collect_batch = subparsers.add_parser("external-evidence-collect-batch", help="collect multiple external-evidence source snapshots and intake receipts from a source-map JSON")
     external_evidence_collect_batch.add_argument("plan")
     external_evidence_collect_batch.add_argument("manifest")
