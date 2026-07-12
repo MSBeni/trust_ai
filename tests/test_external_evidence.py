@@ -56,7 +56,7 @@ from trustai.external_evidence import (
     write_external_evidence_collection_plan,
     write_external_evidence_manifest,
 )
-from trustai.roadmap_audit import STATUS_REFERENCE_ATTESTED, append_roadmap_audit, build_roadmap_audit, write_roadmap_audit
+from trustai.roadmap_audit import STATUS_REFERENCE_ATTESTED, append_roadmap_audit, build_roadmap_audit, verify_roadmap_audit, write_roadmap_audit
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -572,6 +572,63 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 self.assertIn("oss-verifier-and-public-spec,ci-run", intake["evidence_argument"])
             finally:
                 shutil.rmtree(snapshot_path.parent, ignore_errors=True)
+
+    def test_retained_git_ref_external_evidence_example_verifies(self):
+        audit = json.loads((ROOT / "examples/aitrade/external-evidence/source-roadmap-audit.json").read_text(encoding="utf-8"))
+        manifest = load_external_evidence_manifest(ROOT / "examples/aitrade/external-evidence/source-external-evidence-manifest.json")
+        plan = load_external_evidence_collection_plan(ROOT / "examples/aitrade/external-evidence/source-external-evidence-plan-all.json")
+        snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/github-main-ref-source-snapshot.json")
+        intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/oss-verifier-provider-api.json")
+
+        audit_result = verify_roadmap_audit(audit, root=ROOT)
+        manifest_result = verify_external_evidence_manifest(
+            manifest,
+            audit,
+            root=ROOT,
+            require_fresh=True,
+            now="2026-07-12T00:00:00Z",
+        )
+        plan_result = verify_external_evidence_collection_plan(plan, manifest, audit, root=ROOT)
+        snapshot_result = verify_external_evidence_source_snapshot(
+            snapshot,
+            require_fresh=True,
+            now="2026-07-12T00:00:00Z",
+        )
+        intake_result = verify_external_evidence_intake(
+            intake,
+            plan,
+            manifest,
+            audit,
+            root=ROOT,
+            require_fresh=True,
+            now="2026-07-12T00:00:00Z",
+        )
+        rebuilt = build_external_evidence_manifest_from_intakes(
+            plan,
+            manifest,
+            audit,
+            root=ROOT,
+            intakes=[intake],
+            require_fresh=True,
+            now="2026-07-12T00:00:00Z",
+            generated_at="2026-07-12T00:01:00Z",
+        )
+
+        self.assertTrue(audit_result.ok, audit_result.errors)
+        self.assertTrue(manifest_result.ok, manifest_result.errors)
+        self.assertTrue(plan_result.ok, plan_result.errors)
+        self.assertTrue(snapshot_result.ok, snapshot_result.errors)
+        self.assertTrue(intake_result.ok, intake_result.errors)
+        self.assertEqual("git-ls-remote", snapshot["retrieval_method"])
+        export = json.loads(base64.b64decode(snapshot["body_base64"]).decode("utf-8"))
+        self.assertEqual("trustai.external-evidence-git-remote-ref-export/0.1", export["schema"])
+        self.assertEqual(70, rebuilt["summary"]["required_authority_kind_count"])
+        self.assertEqual(1, rebuilt["summary"]["covered_authority_kind_count"])
+        self.assertEqual(69, rebuilt["summary"]["missing_authority_kind_count"])
+        self.assertEqual(
+            ["provider-api"],
+            rebuilt["summary"]["covered_authority_kinds_by_requirement"]["oss-verifier-and-public-spec"],
+        )
 
     def test_cli_external_evidence_collect_git_ref_creates_snapshot_and_intake(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

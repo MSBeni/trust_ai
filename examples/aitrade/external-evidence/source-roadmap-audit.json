@@ -1,0 +1,2388 @@
+{
+  "audit_id": "224755b843c355c30d30cb023e3349444a95e3645f1b78dff39e422501687343",
+  "completion_position": "local-reference-complete-with-external-authority-deferred",
+  "generated_at": "2026-07-12T00:42:00Z",
+  "limitations": [
+    "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
+    "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",
+    "Business milestones such as paying design partners, ARR, external regulator acceptance, and insurer discounts require external evidence; local phase scoreboards only verify references, hashes, and control logic."
+  ],
+  "requirements": [
+    {
+      "evidence": [
+        {
+          "path": "docs/specs/verification-contract-v0.1.md",
+          "present": true,
+          "sha256": "sha256:15798d69eee754916a2d0ec1ff7a7f8694aafced2a0f51e2c27c23e8e6c02b79"
+        },
+        {
+          "path": "src/trustai/contracts.py",
+          "present": true,
+          "sha256": "sha256:f3c397bf116bde8e39ebfa81308074e19972a614d56937e55668cc891e74e938"
+        },
+        {
+          "path": "src/trustai/registry.py",
+          "present": true,
+          "sha256": "sha256:09136241395c49ea9e9437c6ef599454220456a27079620e70959f3dbf46f1a3"
+        },
+        {
+          "path": "examples/aitrade/verification-contract.yaml",
+          "present": true,
+          "sha256": "sha256:dc67aad402a124f6ad19395747987e7ff0bf22c3fc6cd1787775d052a4f33610"
+        },
+        {
+          "path": "tests/test_proofpack_flow.py",
+          "present": true,
+          "sha256": "sha256:7f7aedd777dd0bc9df3cc31b04f3c168b65bc2d9e1e1f18ae0e8bbd9a3f9a7d1"
+        }
+      ],
+      "evidence_count": 5,
+      "external_authority_required": [],
+      "id": "verification-contract-dsl",
+      "missing_evidence_count": 0,
+      "phase": "P0",
+      "present_evidence_count": 5,
+      "priority": "P0",
+      "roadmap_ref": "Phase 0 Wk 1-2; Core primitive 1",
+      "status": "implemented-local",
+      "title": "Verification Contract DSL and registry"
+    },
+    {
+      "evidence": [
+        {
+          "path": "docs/specs/proof-pack-v0.1.md",
+          "present": true,
+          "sha256": "sha256:52e0165a846e2cdf53e3ea0e9807ee865fc6041cb5c33c58a4057b7fc5f8941e"
+        },
+        {
+          "path": "src/trustai/proofpack.py",
+          "present": true,
+          "sha256": "sha256:dcbcf7252e3723e61e12ac288c96e7c89c9b160d17c063074a01aa04a6986c87"
+        },
+        {
+          "path": "src/trustai/verifier.py",
+          "present": true,
+          "sha256": "sha256:39c53b7e65aba6cf0645ebc5fc4b0f1095d17b52c74f262ea786e852d0ce55c4"
+        },
+        {
+          "path": "src/trustai/frameworks.py",
+          "present": true,
+          "sha256": "sha256:4100e6445dc80635b0f68ee72cca66e8f139c9027b5656839421f3ad299c8b44"
+        },
+        {
+          "path": "src/trustai/pdf.py",
+          "present": true,
+          "sha256": "sha256:f6780006e56e553ef84838958a0ef04cb8609ffe612a1c2902df7bda0d1cc5d1"
+        },
+        {
+          "path": "tests/test_proofpack_flow.py",
+          "present": true,
+          "sha256": "sha256:7f7aedd777dd0bc9df3cc31b04f3c168b65bc2d9e1e1f18ae0e8bbd9a3f9a7d1"
+        },
+        {
+          "path": "tests/test_temporal_holdout.py",
+          "present": true,
+          "sha256": "sha256:d924778901e799596f44f58f8fedb3b53dbe38cf5ea8f7c5fccfd0bdc1a9c7a4"
+        },
+        {
+          "path": "tests/test_phase1_phase2.py",
+          "present": true,
+          "sha256": "sha256:69c003a09dc467ba651a972d02a7ef686d496748de72b10ed771feee5b629ba3"
+        },
+        {
+          "path": "tests/test_mcp_gateway.py",
+          "present": true,
+          "sha256": "sha256:6d04fa96f607160aedfcc27da36066e4692c4e467e80063d188512e5d756375d"
+        },
+        {
+          "path": "tests/test_mcp_gateway_authority.py",
+          "present": true,
+          "sha256": "sha256:c71bff9e833624b8a7073deb4883b0f517de732f1a6bfc2e92d3c242517eb80f"
+        },
+        {
+          "path": "tests/test_phase1_phase2.py",
+          "present": true,
+          "sha256": "sha256:69c003a09dc467ba651a972d02a7ef686d496748de72b10ed771feee5b629ba3"
+        }
+      ],
+      "evidence_count": 11,
+      "external_authority_required": [],
+      "id": "proof-pack-spec-and-compiler",
+      "missing_evidence_count": 0,
+      "phase": "P0",
+      "present_evidence_count": 11,
+      "priority": "P0",
+      "roadmap_ref": "Phase 0 Wk 6-8; Core primitive 5",
+      "status": "implemented-local",
+      "title": "Proof Pack spec, compiler, and offline verification"
+    },
+    {
+      "evidence": [
+        {
+          "path": "src/trustai/chain.py",
+          "present": true,
+          "sha256": "sha256:122f0eabfb1e16f35a57de8a9b7be7415a1d925139384e333c440761f29a6b44"
+        },
+        {
+          "path": "src/trustai/merkle.py",
+          "present": true,
+          "sha256": "sha256:28d5a11f57a056752ad5a3a7f9fdf046b809007e5168adcbe41dc3edb57d7edc"
+        },
+        {
+          "path": "src/trustai/timestamping.py",
+          "present": true,
+          "sha256": "sha256:ccfab5f2470c32ec7afac564f54c0dfb7a79c67d057f59f81b0abff771155534"
+        },
+        {
+          "path": "src/trustai/tamper_stress.py",
+          "present": true,
+          "sha256": "sha256:57cd541e4f0bbfe31708d8e79fa3b1a59e78cac4e716f537e5b4316d7914d66b"
+        },
+        {
+          "path": "docs/specs/tamper-stress-report-v0.1.md",
+          "present": true,
+          "sha256": "sha256:9bec8e39e2a9c5afb7ae0c11d1a0ff08d391f4d822427ffd5d9bc7e6fb687436"
+        },
+        {
+          "path": "tests/test_merkle.py",
+          "present": true,
+          "sha256": "sha256:09b5b272fa495aa949204310231bdf0e979141842103f5ba7e29248b82a64254"
+        },
+        {
+          "path": "tests/test_tamper_stress.py",
+          "present": true,
+          "sha256": "sha256:7b3bb0f9bc70a8a752eebd290d740caeebf786922d9237bba50d11ae21551ec6"
+        }
+      ],
+      "evidence_count": 7,
+      "external_authority_required": [],
+      "id": "evidence-chain-and-tamper-tests",
+      "missing_evidence_count": 0,
+      "phase": "P0",
+      "present_evidence_count": 7,
+      "priority": "P0",
+      "roadmap_ref": "Phase 0 Wk 2-4; Core primitive 2",
+      "status": "implemented-local",
+      "title": "Merkle evidence chain, signing, timestamping, and tamper stress"
+    },
+    {
+      "evidence": [
+        {
+          "path": "verifier/go/trustai-verify/main.go",
+          "present": true,
+          "sha256": "sha256:4b6cd64cbd68236e8fe5dd1d6904c4fa23f4092de4ae52e94a1a11f45ccc2c36"
+        },
+        {
+          "path": "verifier/go/trustai-verify/README.md",
+          "present": true,
+          "sha256": "sha256:0bd9cf2aa5675b33864e1116f2bb3b65673676a8ea421a91e65967c697344a55"
+        },
+        {
+          "path": "docs/specs/go-verifier-v0.1.md",
+          "present": true,
+          "sha256": "sha256:4af9166abf00fded2e85821b292ded7b2f5fbcc812fd513f25018b80bcb85f2b"
+        },
+        {
+          "path": "docs/specs/verifier-release-v0.1.md",
+          "present": true,
+          "sha256": "sha256:2ed3079c0ec5cd3e8033a497eb542d5010cafd5b376d680deca7962ffa46bf48"
+        },
+        {
+          "path": "docs/specs/verifier-distribution-v0.1.md",
+          "present": true,
+          "sha256": "sha256:f2c1417d08c330d867a20e6434cd6c69aea3fbf509354f05e1014e373d8bd125"
+        },
+        {
+          "path": "docs/specs/verifier-public-release-v0.1.md",
+          "present": true,
+          "sha256": "sha256:98fc0e7da384861b6cfa60e6a35a02a0f5a1f6d8da83bd7889c9df94085e3a2b"
+        },
+        {
+          "path": "docs/specs/verifier-public-release-authority-v0.1.md",
+          "present": true,
+          "sha256": "sha256:55b428046ae3618bf5fede9ddd1568484a5fbb83ce6f0b2893979f4ac1bb2af2"
+        },
+        {
+          "path": "src/trustai/verifier_public_release.py",
+          "present": true,
+          "sha256": "sha256:210bb6e4d68a4c61ee160085f53849dede4e4da0fde8c8a361358375e16d1928"
+        },
+        {
+          "path": "src/trustai/verifier_release_authority.py",
+          "present": true,
+          "sha256": "sha256:315b05ad473f5cc46e66becddfa76fc365a7acda2ec219b740c9d35e51bb9d27"
+        },
+        {
+          "path": "examples/aitrade/external-evidence/go-verifier-workflow-run.json",
+          "present": true,
+          "sha256": "sha256:a86fee6cea8e9a0f1128988ebf3d64cfb14baa788c5f1626be1bf1f6e4a99c94"
+        },
+        {
+          "path": ".github/workflows/go-verifier.yml",
+          "present": true,
+          "sha256": "sha256:42337e127d0a9c23b592a1adc32fbdc69e225e66c96b92e6fc21509c756132df"
+        },
+        {
+          "path": "tests/test_go_verifier_source.py",
+          "present": true,
+          "sha256": "sha256:9473727804d28eea4dbc34b068bd3584ae8413318fee8482c86ac4f70f054fea"
+        },
+        {
+          "path": "tests/test_verifier_distribution.py",
+          "present": true,
+          "sha256": "sha256:7c9e46b3b18ee06724c66b6c4eea45e6ec58977a3de6f631f310141c46a1baef"
+        },
+        {
+          "path": "tests/test_verifier_public_release.py",
+          "present": true,
+          "sha256": "sha256:33510129deb3ff812e58ada9d6d082edc4f1cee178b6ba256fb89339a6c0f79a"
+        },
+        {
+          "path": "tests/test_verifier_release_authority.py",
+          "present": true,
+          "sha256": "sha256:ec32f857abf4153b8dbb4cf6abdc7b0d1401b530d9591df2be0c3b9344bc995d"
+        }
+      ],
+      "evidence_count": 15,
+      "external_authority_required": [
+        "Verifier release authority dossiers cover the local/reference public release authority checklist and retained provider workflow export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
+      ],
+      "id": "oss-verifier-and-public-spec",
+      "missing_evidence_count": 0,
+      "phase": "P0",
+      "present_evidence_count": 15,
+      "priority": "P0",
+      "roadmap_ref": "Phase 0 exit criteria; Architecture verifier decision",
+      "status": "reference-attested",
+      "title": "Open verifier, public specs, source distribution, and release workflow"
+    },
+    {
+      "evidence": [
+        {
+          "path": "src/trustai/gate.py",
+          "present": true,
+          "sha256": "sha256:28b5b958b365c5e48a0afae646d97d55aa7572dce437ac3563ed16606ad22106"
+        },
+        {
+          "path": "src/trustai/control_plane.py",
+          "present": true,
+          "sha256": "sha256:3248b80c7a175abf84e137eefd85f1e279c977cf0c00e9fe3a172f8ea748f9f3"
+        },
+        {
+          "path": "examples/aitrade/eval-results.json",
+          "present": true,
+          "sha256": "sha256:18a727047bef50930985b815df910a3ed6c85cae3d2c70beaedd62dc0c360cfc"
+        },
+        {
+          "path": "examples/aitrade/soak-window.json",
+          "present": true,
+          "sha256": "sha256:5c84c38bcde7c46ac4faad9e8808f288e829fb97af62b79e80a9ef681c8c576d"
+        },
+        {
+          "path": "tests/test_proofpack_flow.py",
+          "present": true,
+          "sha256": "sha256:7f7aedd777dd0bc9df3cc31b04f3c168b65bc2d9e1e1f18ae0e8bbd9a3f9a7d1"
+        }
+      ],
+      "evidence_count": 5,
+      "external_authority_required": [],
+      "id": "gate-engine-and-aitrade-flow",
+      "missing_evidence_count": 0,
+      "phase": "P0",
+      "present_evidence_count": 5,
+      "priority": "P0",
+      "roadmap_ref": "Phase 0 Wk 4-8; aitrade customer #0",
+      "status": "implemented-local",
+      "title": "Contract registry, promotion gate, and bundled aitrade flow"
+    },
+    {
+      "evidence": [
+        {
+          "path": "docs/specs/otel-ingest-v0.1.md",
+          "present": true,
+          "sha256": "sha256:0a0b110a3d4c01f42dc39528d2e8dbf2aa94b34530920242636f0c8ca87c335e"
+        },
+        {
+          "path": "docs/specs/python-sdk-v0.1.md",
+          "present": true,
+          "sha256": "sha256:b2fe600829c1a70ad6b1bcc818020e21496c4f6621ecf563e23127f3929a16bb"
+        },
+        {
+          "path": "docs/specs/typescript-sdk-v0.1.md",
+          "present": true,
+          "sha256": "sha256:e246fb1f439513d571f238c36a3d998e41e87a1e6b67c521e83c34b17695e04d"
+        },
+        {
+          "path": "src/trustai/ingest.py",
+          "present": true,
+          "sha256": "sha256:d4ff0dfd9716c53ddaa6ac1e47c3750ad46bca64fef0e32752b250ae6c100b10"
+        },
+        {
+          "path": "src/trustai/sdk.py",
+          "present": true,
+          "sha256": "sha256:c79cd7d83d3eb1634168e6859b262f59da684183e9cbc0e0a492eb920f39f701"
+        },
+        {
+          "path": "sdk/typescript/src/index.mjs",
+          "present": true,
+          "sha256": "sha256:9518a198603ba3ea5c7e09407c7572d23a2d86ea9267eb7012bd05b06f4319c5"
+        },
+        {
+          "path": "tests/test_ingest_runtime.py",
+          "present": true,
+          "sha256": "sha256:23758b343a3e0aa461968837d88c21933f3d04319938b3c0bae0e43cf81324c5"
+        },
+        {
+          "path": "tests/test_typescript_sdk.py",
+          "present": true,
+          "sha256": "sha256:d509110ec92055e237d6e6af68892ab2c86590ec0988d057ea12dfca9321f032"
+        }
+      ],
+      "evidence_count": 8,
+      "external_authority_required": [],
+      "id": "otel-ingest-and-sdks",
+      "missing_evidence_count": 0,
+      "phase": "P0-P1",
+      "present_evidence_count": 8,
+      "priority": "P0",
+      "roadmap_ref": "Phase 0 Wk 6-8; Feature master list",
+      "status": "implemented-local",
+      "title": "OTel GenAI ingest plus Python and TypeScript SDK capture"
+    },
+    {
+      "evidence": [
+        {
+          "path": "docs/specs/self-serve-onboarding-v0.1.md",
+          "present": true,
+          "sha256": "sha256:23d0515a2fddb8ce5765289a537ad3892bc5bcf4bd9d26b7d955cda83f9941dc"
+        },
+        {
+          "path": "docs/specs/python-sdk-v0.1.md",
+          "present": true,
+          "sha256": "sha256:b2fe600829c1a70ad6b1bcc818020e21496c4f6621ecf563e23127f3929a16bb"
+        },
+        {
+          "path": "docs/specs/typescript-sdk-v0.1.md",
+          "present": true,
+          "sha256": "sha256:e246fb1f439513d571f238c36a3d998e41e87a1e6b67c521e83c34b17695e04d"
+        },
+        {
+          "path": "docs/specs/otel-ingest-v0.1.md",
+          "present": true,
+          "sha256": "sha256:0a0b110a3d4c01f42dc39528d2e8dbf2aa94b34530920242636f0c8ca87c335e"
+        },
+        {
+          "path": "docs/specs/mcp-gateway-v0.1.md",
+          "present": true,
+          "sha256": "sha256:1fa83db1fe172fb1ec6b4fe0faec297202fa15eb573d00a7a7418660c53b9dbd"
+        },
+        {
+          "path": "src/trustai/onboarding.py",
+          "present": true,
+          "sha256": "sha256:91b9f3e2326b886579dabc9af832272b93245b60e41c4f0721dcb8706928ba7e"
+        },
+        {
+          "path": "src/trustai/sdk.py",
+          "present": true,
+          "sha256": "sha256:c79cd7d83d3eb1634168e6859b262f59da684183e9cbc0e0a492eb920f39f701"
+        },
+        {
+          "path": "src/trustai/ingest.py",
+          "present": true,
+          "sha256": "sha256:d4ff0dfd9716c53ddaa6ac1e47c3750ad46bca64fef0e32752b250ae6c100b10"
+        },
+        {
+          "path": "src/trustai/mcp_gateway.py",
+          "present": true,
+          "sha256": "sha256:32a3beffd0ff9ac693797570246dbf29e3718e426269b402f213d96049e90503"
+        },
+        {
+          "path": "sdk/typescript/src/index.mjs",
+          "present": true,
+          "sha256": "sha256:9518a198603ba3ea5c7e09407c7572d23a2d86ea9267eb7012bd05b06f4319c5"
+        },
+        {
+          "path": "examples/aitrade/verification-contract.yaml",
+          "present": true,
+          "sha256": "sha256:dc67aad402a124f6ad19395747987e7ff0bf22c3fc6cd1787775d052a4f33610"
+        },
+        {
+          "path": "examples/aitrade/mcp-transcript.json",
+          "present": true,
+          "sha256": "sha256:889cb792fa9da0d4ccd106c5a2bcaf7da2260627bbec75243b147604b04b0bbf"
+        },
+        {
+          "path": "tests/test_self_serve_onboarding.py",
+          "present": true,
+          "sha256": "sha256:3b504e3ed2a06e707cac926ddd69a9bd33a7c8cb541e51e3d08c58adb676ade3"
+        },
+        {
+          "path": "tests/test_ingest_runtime.py",
+          "present": true,
+          "sha256": "sha256:23758b343a3e0aa461968837d88c21933f3d04319938b3c0bae0e43cf81324c5"
+        },
+        {
+          "path": "tests/test_typescript_sdk.py",
+          "present": true,
+          "sha256": "sha256:d509110ec92055e237d6e6af68892ab2c86590ec0988d057ea12dfca9321f032"
+        },
+        {
+          "path": "tests/test_mcp_gateway.py",
+          "present": true,
+          "sha256": "sha256:6d04fa96f607160aedfcc27da36066e4692c4e467e80063d188512e5d756375d"
+        }
+      ],
+      "evidence_count": 16,
+      "external_authority_required": [
+        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, MCP gateway, examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence."
+      ],
+      "id": "self-serve-onboarding",
+      "missing_evidence_count": 0,
+      "phase": "P2",
+      "present_evidence_count": 16,
+      "priority": "P1",
+      "roadmap_ref": "Phase 2 feature 6; GTM self-serve gateway tier",
+      "status": "reference-attested",
+      "title": "Self-serve SDK and MCP gateway onboarding"
+    },
+    {
+      "evidence": [
+        {
+          "path": "docs/specs/mcp-gateway-v0.1.md",
+          "present": true,
+          "sha256": "sha256:1fa83db1fe172fb1ec6b4fe0faec297202fa15eb573d00a7a7418660c53b9dbd"
+        },
+        {
+          "path": "docs/specs/mcp-gateway-production-authority-v0.1.md",
+          "present": true,
+          "sha256": "sha256:e934e17924acf2fb447c8b5d821115fce3b51549d7ad38bbc98bf48488880f7e"
+        },
+        {
+          "path": "src/trustai/mcp_gateway.py",
+          "present": true,
+          "sha256": "sha256:32a3beffd0ff9ac693797570246dbf29e3718e426269b402f213d96049e90503"
+        },
+        {
+          "path": "src/trustai/mcp_gateway_authority.py",
+          "present": true,
+          "sha256": "sha256:f80159a55f94b94eaaeb5aec20c122affe46185c93149ef93f2b0ebb8ba6f8d8"
+        },
+        {
+          "path": "examples/aitrade/mcp-transcript.json",
+          "present": true,
+          "sha256": "sha256:889cb792fa9da0d4ccd106c5a2bcaf7da2260627bbec75243b147604b04b0bbf"
+        },
+        {
+          "path": "examples/aitrade/mcp-proxy-events.json",
+          "present": true,
+          "sha256": "sha256:0bff99bf3f6c609d56563f5df5576769bf8948a0d58bf0e5fca14e2b528a5632"
+        },
+        {
+          "path": "tests/test_mcp_gateway.py",
+          "present": true,
+          "sha256": "sha256:6d04fa96f607160aedfcc27da36066e4692c4e467e80063d188512e5d756375d"
+        },
+        {
+          "path": "tests/test_mcp_gateway_authority.py",
+          "present": true,
+          "sha256": "sha256:c71bff9e833624b8a7073deb4883b0f517de732f1a6bfc2e92d3c242517eb80f"
+        },
+        {
+          "path": "tests/test_ingest_runtime.py",
+          "present": true,
+          "sha256": "sha256:23758b343a3e0aa461968837d88c21933f3d04319938b3c0bae0e43cf81324c5"
+        }
+      ],
+      "evidence_count": 9,
+      "external_authority_required": [
+        "MCP proxy capture receipts cover retained raw proxy event export byte replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
+      ],
+      "id": "mcp-gateway",
+      "missing_evidence_count": 0,
+      "phase": "P1",
+      "present_evidence_count": 9,
+      "priority": "P0",
+      "roadmap_ref": "Phase 1 feature 1",
+      "status": "reference-attested",
+      "title": "MCP evidence gateway reference capture"
+    },
+    {
+      "evidence": [
+        {
+          "path": "docs/specs/shadow-replay-v0.1.md",
+          "present": true,
+          "sha256": "sha256:913dcb939bd128865ebd599df3251581dd265282388ea8011ebf2c799c70bd22"
+        },
+        {
+          "path": "docs/specs/temporal-holdout-manifest-v0.1.md",
+          "present": true,
+          "sha256": "sha256:b07a2cfc7c6291b71a8917ce7a3796a8929120e86b05bdb490427d5c8f2f7fab"
+        },
+        {
+          "path": "docs/specs/traffic-holdout-export-v0.1.md",
+          "present": true,
+          "sha256": "sha256:5bff381bad25e74032ef62b57f453834c2389f913cbba4672d4897f7a87263da"
+        },
+        {
+          "path": "docs/specs/traffic-completeness-receipt-v0.1.md",
+          "present": true,
+          "sha256": "sha256:d2b9e9d7132228e0ba2ad4e488cc99733d604d2d2070ff605b47747750d67c6a"
+        },
+        {
+          "path": "docs/specs/soak-demotion-receipt-v0.1.md",
+          "present": true,
+          "sha256": "sha256:12680bf0dc9950dcab3f684993d34f8c62383fb7c55951096a1b2b9ca9499b9b"
+        },
+        {
+          "path": "docs/specs/reexecution-report-v0.1.md",
+          "present": true,
+          "sha256": "sha256:8faec310cfa072eae4783483194abf376e847104441d982b19819704112d9b58"
+        },
+        {
+          "path": "docs/specs/reexecution-runner-production-authority-v0.1.md",
+          "present": true,
+          "sha256": "sha256:b41d1a8eb544e4f6a52756ad3cabeb8b3a980cabb39012d85cbf5ddf27dd74eb"
+        },
+        {
+          "path": "src/trustai/shadow.py",
+          "present": true,
+          "sha256": "sha256:40346b9c1f49705e914e5eff0498a24fb29fae5b41524f79687f5aad98bb216a"
+        },
+        {
+          "path": "src/trustai/lifecycle.py",
+          "present": true,
+          "sha256": "sha256:00822e6c1fbbae76bcb6ed25d56b88db7c9504f655297e3b2af67c58b087949a"
+        },
+        {
+          "path": "src/trustai/reexecution.py",
+          "present": true,
+          "sha256": "sha256:e095b508d7480c034c45a43fc15b2c5b3de7022e0ae13a62f6356f23f2ada315"
+        },
+        {
+          "path": "src/trustai/reexecution_runner.py",
+          "present": true,
+          "sha256": "sha256:e28e04e9fe474fc782397045ddc7dd7936d3ed05e3aaee7b08f7bc05d9c15e06"
+        },
+        {
+          "path": "src/trustai/reexecution_runner_authority.py",
+          "present": true,
+          "sha256": "sha256:f9153d46f933377326468bbef4e34159ecb17f94f23696faccb890ac6deb9710"
+        },
+        {
+          "path": "examples/aitrade/shadow-replay.json",
+          "present": true,
+          "sha256": "sha256:d55325fc4d74ff40bf14b3b6e28c669240e85cbbbdc46720439e361a7fc0bcb6"
+        },
+        {
+          "path": "examples/aitrade/traffic-completeness-provider-export.json",
+          "present": true,
+          "sha256": "sha256:117736382076cfb090035f55ae6e23ea9fcf1bf70d7d2916bbe1fde66970c7df"
+        },
+        {
+          "path": "examples/aitrade/failed-soak-window.json",
+          "present": true,
+          "sha256": "sha256:b34bbc2b1b9ffe2520d52c1fc568e01d39a5cd67edf5d933a128e34073556080"
+        },
+        {
+          "path": "examples/aitrade/reexecution-runner-plan.json",
+          "present": true,
+          "sha256": "sha256:9624a99536a22009e534e1e706a0f990cf4aabdea2fdb91c31cabd0f8155ddae"
+        },
+        {
+          "path": "tests/test_temporal_holdout.py",
+          "present": true,
+          "sha256": "sha256:d924778901e799596f44f58f8fedb3b53dbe38cf5ea8f7c5fccfd0bdc1a9c7a4"
+        },
+        {
+          "path": "tests/test_phase1_phase2.py",
+          "present": true,
+          "sha256": "sha256:69c003a09dc467ba651a972d02a7ef686d496748de72b10ed771feee5b629ba3"
+        },
+        {
+          "path": "tests/test_reexecution.py",
+          "present": true,
+          "sha256": "sha256:e1dff249bc19b271ca848379706867ee16c278e760cd419149b0482f88df9e16"
+        },
+        {
+          "path": "tests/test_reexecution_runner.py",
+          "present": true,
+          "sha256": "sha256:3b3541fe5f1350373de7007e32df376175a6baf38c4828839f308bd9dadb2d49"
+        },
+        {
+          "path": "tests/test_reexecution_runner_authority.py",
+          "present": true,
+          "sha256": "sha256:3838723b786e4e55e88f106248c39d0d9db5c4a08943e6b0b8f38bf8939e0318"
+        }
+      ],
+      "evidence_count": 21,
+      "external_authority_required": [
+        "Traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
+      ],
+      "id": "shadow-replay-temporal-holdout",
+      "missing_evidence_count": 0,
+      "phase": "P1",
+      "present_evidence_count": 21,
+      "priority": "P0",
+      "roadmap_ref": "Phase 1 feature 2 and 5; Core primitive 3",
+      "status": "reference-attested",
+      "title": "Shadow replay, temporal holdout, soak reports, and distributional re-execution"
+    },
+    {
+      "evidence": [
+        {
+          "path": "src/trustai/cicd.py",
+          "present": true,
+          "sha256": "sha256:5c8cf4599284c5dea98436bb278852edce9552346f4a67bca2cf49fc24cbba27"
+        },
+        {
+          "path": "src/trustai/approval_callback.py",
+          "present": true,
+          "sha256": "sha256:11af25c052f50bf8bd3feaf9088494f1673986c90d0f4eef0614b966a9a249dd"
+        },
+        {
+          "path": "src/trustai/provider_approval_authority.py",
+          "present": true,
+          "sha256": "sha256:86493ac98868f47d44f5d024bd3d7006bedf1cdeb07be2fd5afed368e8fccc16"
+        },
+        {
+          "path": "src/trustai/provider_delivery_authority.py",
+          "present": true,
+          "sha256": "sha256:70dcb5a6a7e24555d2715997ae2dfa80386c78b67becaf296bdd52cda1d1e0cf"
+        },
+        {
+          "path": "src/trustai/provider_delivery_service.py",
+          "present": true,
+          "sha256": "sha256:8ef38f7efd1a11a4f1d3996d0e358144f9eac3d2478b885c59ab9a95e8c2eeb4"
+        },
+        {
+          "path": "src/trustai/provider_delivery_worker.py",
+          "present": true,
+          "sha256": "sha256:a25bde65e10e4351259413787cb50ca2e09481284af268ef4394b0f65c0a5c07"
+        },
+        {
+          "path": "src/trustai/provider_delivery_worker_bundle.py",
+          "present": true,
+          "sha256": "sha256:449ec1594559af0d48658b76d408fbcbff695ffc0b9cbb97de9f37c008c067dc"
+        },
+        {
+          "path": "src/trustai/provider_webhook.py",
+          "present": true,
+          "sha256": "sha256:834d1e54ad45d77733bf4d24f93d269a1fa9a9e533713c58bcad3f0ae717e19f"
+        },
+        {
+          "path": "docs/specs/provider-webhook-v0.1.md",
+          "present": true,
+          "sha256": "sha256:640fde7f43368d2abf5b7a2484a9298a20152ab820ac54a87dbbbd753d6c35ce"
+        },
+        {
+          "path": "examples/webhooks/github-check-suite.json",
+          "present": true,
+          "sha256": "sha256:647e4cf2cef00a3d98232f20cbacabd7e092cf991a4311104fbf0354fe4d1bb3"
+        },
+        {
+          "path": "docs/specs/approval-callback-v0.1.md",
+          "present": true,
+          "sha256": "sha256:bf1fe7d8e83490242f8e4cdcf3eb8e85d02b1ab67d4381853a9a815c7f5812ad"
+        },
+        {
+          "path": "docs/specs/provider-approval-production-authority-v0.1.md",
+          "present": true,
+          "sha256": "sha256:4d70c1662e261f994000a2ddcb7a066ab8ddaf24049952be79386eec02db1d1b"
+        },
+        {
+          "path": "docs/specs/provider-delivery-production-authority-v0.1.md",
+          "present": true,
+          "sha256": "sha256:9539c05cd3904c22c9b8db05d4fc5a65ca577c98d670f03de010d6ed0732903f"
+        },
+        {
+          "path": "docs/specs/provider-delivery-v0.1.md",
+          "present": true,
+          "sha256": "sha256:900cc0283e4efcca8e817c160e088d1513f23c262f736026cfc94a84d8f8ae8f"
+        },
+        {
+          "path": "docs/specs/provider-delivery-worker-v0.1.md",
+          "present": true,
+          "sha256": "sha256:0001451c81110f4ee092b3229c4d196d6de011a0b7d306b83fc634c6ae74af26"
+        },
+        {
+          "path": "docs/specs/provider-delivery-worker-bundle-v0.1.md",
+          "present": true,
+          "sha256": "sha256:8d15e0e940dcd7358f9727762041403f05c2da07fa324f50cd065a57da5277ad"
+        },
+        {
+          "path": "docs/specs/promotion-status-receipt-v0.1.md",
+          "present": true,
+          "sha256": "sha256:135fc7e02c4f628a01f46907b763a52bc58fc1b16822f8a67a9baa99f31c5fbc"
+        },
+        {
+          "path": "tests/test_approval_callback.py",
+          "present": true,
+          "sha256": "sha256:edfa84f3356eb1347ee77a75592f20539aa12e7d37c31b7fca45781920edc6d8"
+        },
+        {
+          "path": "tests/test_provider_approval_authority.py",
+          "present": true,
+          "sha256": "sha256:72845252f55fb0dbe75eba6be96e858c128d2fc0ca506fbf2671ed83f32b8cc3"
+        },
+        {
+          "path": "tests/test_provider_delivery.py",
+          "present": true,
+          "sha256": "sha256:dbd09d7995f34cd9e994ae68fea884512c0adf94a1e010c515f4cf41f67089de"
+        },
+        {
+          "path": "tests/test_provider_delivery_authority.py",
+          "present": true,
+          "sha256": "sha256:1524a6d1fbb755d80906707790328c31c089ccea21152111230fd64f5a0ecb6a"
+        },
+        {
+          "path": "tests/test_provider_delivery_worker.py",
+          "present": true,
+          "sha256": "sha256:43f56fa02c2157dcfa09f263f72e9946f97b2853b1b88a8295ef186f1a89479f"
+        },
+        {
+          "path": "tests/test_provider_delivery_worker_bundle.py",
+          "present": true,
+          "sha256": "sha256:bb27d5cebe592de339bfbd52ea1dbdc79b8b32d405371588b944568d3f4f00b6"
+        },
+        {
+          "path": "tests/test_provider_webhook.py",
+          "present": true,
+          "sha256": "sha256:55a5724b4b5d7f8374eca4b6b5799c740aa56a0bcd975ae4b8ca2a33373c74d0"
+        }
+      ],
+      "evidence_count": 24,
+      "external_authority_required": [
+        "Provider delivery receipts cover retained provider delivery payload artifact replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs and provider-native status shape before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
+      ],
+      "id": "cicd-provider-approvals",
+      "missing_evidence_count": 0,
+      "phase": "P1",
+      "present_evidence_count": 24,
+      "priority": "P0",
+      "roadmap_ref": "Phase 1 feature 3",
+      "status": "reference-attested",
+      "title": "CI/CD promotion gates, provider callbacks, and Slack approvals"
+    },
+    {
+      "evidence": [
+        {
+          "path": "docs/specs/design-partner-pilot-v0.1.md",
+          "present": true,
+          "sha256": "sha256:f8fc388b32aade1fe7fb39f8e99dd07690b2b4368759e89e913dfaeb1f4e8ba8"
+        },
+        {
+          "path": "src/trustai/design_partner.py",
+          "present": true,
+          "sha256": "sha256:f87bddcc243756efc0c67f97d5fa5da62a90812263211ce4c74091196a890c44"
+        },
+        {
+          "path": "docs/specs/proof-pack-v0.1.md",
+          "present": true,
+          "sha256": "sha256:52e0165a846e2cdf53e3ea0e9807ee865fc6041cb5c33c58a4057b7fc5f8941e"
+        },
+        {
+          "path": "docs/specs/verification-contract-v0.1.md",
+          "present": true,
+          "sha256": "sha256:15798d69eee754916a2d0ec1ff7a7f8694aafced2a0f51e2c27c23e8e6c02b79"
+        },
+        {
+          "path": "docs/specs/mcp-gateway-v0.1.md",
+          "present": true,
+          "sha256": "sha256:1fa83db1fe172fb1ec6b4fe0faec297202fa15eb573d00a7a7418660c53b9dbd"
+        },
+        {
+          "path": "docs/specs/shadow-replay-v0.1.md",
+          "present": true,
+          "sha256": "sha256:913dcb939bd128865ebd599df3251581dd265282388ea8011ebf2c799c70bd22"
+        },
+        {
+          "path": "docs/specs/control-plane-v0.1.md",
+          "present": true,
+          "sha256": "sha256:a9ee825dcbf216c4e637ec5ec3760c6a9e1b07ac6a447bffe8dccb62cd3cde6d"
+        },
+        {
+          "path": "docs/specs/review-portal-service-attestation-v0.1.md",
+          "present": true,
+          "sha256": "sha256:0ba13a87177ac9aeab5250a984025e153c5274f21533d55dfc44f3c93e4843cd"
+        },
+        {
+          "path": "docs/specs/byoc-production-authority-v0.1.md",
+          "present": true,
+          "sha256": "sha256:83e1961f68d203ee78640289104dbf97ceddfd4690689c0f997fd7cf4682a586"
+        },
+        {
+          "path": "src/trustai/gate.py",
+          "present": true,
+          "sha256": "sha256:28b5b958b365c5e48a0afae646d97d55aa7572dce437ac3563ed16606ad22106"
+        },
+        {
+          "path": "src/trustai/proofpack.py",
+          "present": true,
+          "sha256": "sha256:dcbcf7252e3723e61e12ac288c96e7c89c9b160d17c063074a01aa04a6986c87"
+        },
+        {
+          "path": "src/trustai/mcp_gateway.py",
+          "present": true,
+          "sha256": "sha256:32a3beffd0ff9ac693797570246dbf29e3718e426269b402f213d96049e90503"
+        },
+        {
+          "path": "src/trustai/shadow.py",
+          "present": true,
+          "sha256": "sha256:40346b9c1f49705e914e5eff0498a24fb29fae5b41524f79687f5aad98bb216a"
+        },
+        {
+          "path": "src/trustai/lifecycle.py",
+          "present": true,
+          "sha256": "sha256:00822e6c1fbbae76bcb6ed25d56b88db7c9504f655297e3b2af67c58b087949a"
+        },
+        {
+          "path": "src/trustai/cicd.py",
+          "present": true,
+          "sha256": "sha256:5c8cf4599284c5dea98436bb278852edce9552346f4a67bca2cf49fc24cbba27"
+        },
+        {
+          "path": "src/trustai/review_portal_service.py",
+          "present": true,
+          "sha256": "sha256:33698051f764146ee640fe9ccb427b424bcff73949a8bfb5429a9dac30ed4454"
+        },
+        {
+          "path": "src/trustai/byoc_authority.py",
+          "present": true,
+          "sha256": "sha256:1d17695f24d6afff00c0eecfd871626af7e01530d6cf376d365d03bbaf073814"
+        },
+        {
+          "path": "examples/aitrade/verification-contract.yaml",
+          "present": true,
+          "sha256": "sha256:dc67aad402a124f6ad19395747987e7ff0bf22c3fc6cd1787775d052a4f33610"
+        },
+        {
+          "path": "tests/test_design_partner.py",
+          "present": true,
+          "sha256": "sha256:26d78325776a952de23efcc64ea14e08f88672bfbcc6a369b410ab0956415641"
+        }
+      ],
+      "evidence_count": 19,
+      "external_authority_required": [
+        "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, and external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
+      ],
+      "id": "design-partner-pilot-exit-criteria",
+      "missing_evidence_count": 0,
+      "phase": "P1",
+      "present_evidence_count": 19,
+      "priority": "P0",
+      "roadmap_ref": "Phase 1 exit criteria; GTM beachhead and pricing",
+      "status": "reference-attested",
+      "title": "Design-partner pilot and external-scrutiny exit criteria"
+    },
+    {
+      "evidence": [
+        {
+          "path": "docs/specs/framework-adapters-v0.1.md",
+          "present": true,
+          "sha256": "sha256:10f0ab2425a1d44f86a0803313b67185b0dc55be57e3aba7b8be3c06c36f643e"
+        },
+        {
+          "path": "docs/specs/framework-adapter-matrix-v0.1.md",
+          "present": true,
+          "sha256": "sha256:6599622c3ea0a4acc7013215ee7c8ae7873327f61432994849209039f525776c"
+        },
+        {
+          "path": "docs/specs/framework-adapter-production-authority-v0.1.md",
+          "present": true,
+          "sha256": "sha256:9017403b68f808de22333a25c83cb578d40a92cb7eda3bcad4b25714a63590bb"
+        },
+        {
+          "path": "src/trustai/adapters.py",
+          "present": true,
+          "sha256": "sha256:e78ad0d17c7bb86612f279c0e5ee85684b3699c2009e6ad813aeaccff8568ec3"
+        },
+        {
+          "path": "src/trustai/framework_adapter_matrix.py",
+          "present": true,
+          "sha256": "sha256:d7a940cc95e9c31d4a4d2cd059b67c3fd8274cd1adb527ea79f02f5f17d7e791"
+        },
+        {
+          "path": "src/trustai/framework_adapter_authority.py",
+          "present": true,
+          "sha256": "sha256:497e77252072fab3e6b5d448da1d4f13c4ee5e100165781b43e6bb089304b0bf"
+        },
+        {
+          "path": "examples/aitrade/framework-traces.json",
+          "present": true,
+          "sha256": "sha256:32881248f3cb2ab4de356712f3854caa801cea2c9aadc1f560b8a9c3bcba87b0"
+        },
+        {
+          "path": "examples/aitrade/framework-adapter-matrix.json",
+          "present": true,
+          "sha256": "sha256:a4554ddf10917ca783148fea17766bbe962d7ce4bb123f83f48407393dbe5745"
+        },
+        {
+          "path": "tests/test_framework_adapters.py",
+          "present": true,
+          "sha256": "sha256:5d9a2aaa3d5bdf2995d3235653e0d1feadc5433ccc084b80eb98436df58c2c80"
+        },
+        {
+          "path": "tests/test_framework_adapter_matrix.py",
+          "present": true,
+          "sha256": "sha256:c93797552104643e60a0ba58e868d5f21b22c42d4d937e314de9914fb5aaf6cf"
+        },
+        {
+          "path": "tests/test_framework_adapter_authority.py",
+          "present": true,
+          "sha256": "sha256:e546e538478f249cb3fc20d94291cc0d2b9cfd0015d1e79a1b115c5ab9636d95"
+        }
+      ],
+      "evidence_count": 11,
+      "external_authority_required": [
+        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
+      ],
+      "id": "framework-adapters",
+      "missing_evidence_count": 0,
+      "phase": "P1",
+      "present_evidence_count": 11,
+      "priority": "P1",
+      "roadmap_ref": "Phase 1 feature 4",
+      "status": "reference-attested",
+      "title": "Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex"
+    },
+    {
+      "evidence": [
+        {
+          "path": "src/trustai/auditor.py",
+          "present": true,
+          "sha256": "sha256:37809869b13d6aa88088e9af6a2b38868a51d6eda81d5222d9d989cc3794f1a6"
+        },
+        {
+          "path": "src/trustai/regulator.py",
+          "present": true,
+          "sha256": "sha256:359913b137c37c0f099dca9a12f4c0d4b167ffb399465fc586d100e2930f513f"
+        },
+        {
+          "path": "src/trustai/regulator_view.py",
+          "present": true,
+          "sha256": "sha256:2c1f9777229544798e96bfb883dbf91ecdea01b0c96b0a1c0d4d1be38fea7037"
+        },
+        {
+          "path": "src/trustai/supervised_access.py",
+          "present": true,
+          "sha256": "sha256:345a108b22b0e3ea9e249a2633173fd2f882690f574922c6539f7b57a0840c59"
+        },
+        {
+          "path": "src/trustai/review_portal_service.py",
+          "present": true,
+          "sha256": "sha256:33698051f764146ee640fe9ccb427b424bcff73949a8bfb5429a9dac30ed4454"
+        },
+        {
+          "path": "src/trustai/review_portal_authority.py",
+          "present": true,
+          "sha256": "sha256:d3f89361ca7a9f0e67b0178f21e760682e44d23c6fee5b6ca82800302d6ae789"
+        },
+        {
+          "path": "docs/specs/supervised-access-v0.1.md",
+          "present": true,
+          "sha256": "sha256:2a0f165893d6306bc7ba1bee65b5654b0678990b2e3b2b83f60fc32bd1efdd78"
+        },
+        {
+          "path": "docs/specs/review-portal-service-attestation-v0.1.md",
+          "present": true,
+          "sha256": "sha256:0ba13a87177ac9aeab5250a984025e153c5274f21533d55dfc44f3c93e4843cd"
+        },
+        {
+          "path": "docs/specs/review-portal-production-authority-v0.1.md",
+          "present": true,
+          "sha256": "sha256:6f7011d73c0836a368ee7eb7f377c39b96dd5752ee4079188556c0cab7336b35"
+        },
+        {
+          "path": "tests/test_supervised_access.py",
+          "present": true,
+          "sha256": "sha256:64e216fe86e1de30a83bcfd9da33c4275f6b10ef5c18f787048b769bb66f00aa"
+        },
+        {
+          "path": "tests/test_review_portal_service.py",
+          "present": true,
+          "sha256": "sha256:8ad405cd1b65d41eb065fb986c086fcf2f9b9c6875dc9b77d37ad779e06611b7"
+        },
+        {
+          "path": "tests/test_review_portal_authority.py",
+          "present": true,
+          "sha256": "sha256:9ae3d3f0b5916feaff553c5110f2ccb94696c349adac263e70aadf562cf6fb6c"
+        }
+      ],
+      "evidence_count": 12,
+      "external_authority_required": [
+        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
+      ],
+      "id": "auditor-and-review-portal",
+      "missing_evidence_count": 0,
+      "phase": "P1-P3",
+      "present_evidence_count": 12,
+      "priority": "P1",
+      "roadmap_ref": "Phase 1 feature 6; Phase 3 regulator portal",
+      "status": "reference-attested",
+      "title": "Auditor view, supervised access, regulator view, and review portal attestations"
+    },
+    {
+      "evidence": [
+        {
+          "path": "deploy/docker/Dockerfile",
+          "present": true,
+          "sha256": "sha256:49189e5cb57f3d74d5e7378058b91b253db9632640e1ddd607499e382bc19017"
+        },
+        {
+          "path": "deploy/helm/trustai/Chart.yaml",
+          "present": true,
+          "sha256": "sha256:6a52b3fabdc4b73983e82c22b090945df8829c378e731cecc63513129a24829f"
+        },
+        {
+          "path": "deploy/helm/trustai/values.yaml",
+          "present": true,
+          "sha256": "sha256:e603e81d149289b8945ee452e9b0bbe21c0e42ee95b2b52adff8a2cb2efb22d2"
+        },
+        {
+          "path": "deploy/helm/trustai/templates/deployment.yaml",
+          "present": true,
+          "sha256": "sha256:111d2cf4a2817a33e2a8f144a07a0c71c4210ab10133439582720ad11337d828"
+        },
+        {
+          "path": "deploy/helm/trustai/templates/service.yaml",
+          "present": true,
+          "sha256": "sha256:c0cb8729b19dac7b2ea5ea89aac61c343ece86776a9ca00a4e50dd86ebd46b3d"
+        },
+        {
+          "path": "deploy/helm/trustai/templates/networkpolicy.yaml",
+          "present": true,
+          "sha256": "sha256:0f9e47d5722864e5ca9a9c6f0d9a8e5b3ec62d35f53f736812351c797139cac4"
+        },
+        {
+          "path": "docs/specs/helm-chart-validation-v0.1.md",
+          "present": true,
+          "sha256": "sha256:275c52775e816cbf85561ddd164b409ea703aa789cc51325482cec559e6e45fb"
+        },
+        {
+          "path": "docs/specs/deployment-image-integrity-v0.1.md",
+          "present": true,
+          "sha256": "sha256:bd1f92e1d119a8e81f4440bceb56aaddec41784f42e6ef8832cd5601e99c08e3"
+        },
+        {
+          "path": "docs/specs/kubernetes-release-state-v0.1.md",
+          "present": true,
+          "sha256": "sha256:74dbddefa93acdce77a1ea489d30fed8397849946c62016faab4a29cf67379f7"
+        },
+        {
+          "path": "src/trustai/deployment.py",
+          "present": true,
+          "sha256": "sha256:cd023265a3d6b3f051c7c521abf159de4e425faf0b8216607bedaa1eede85c32"
+        },
+        {
+          "path": "src/trustai/byoc_operator.py",
+          "present": true,
+          "sha256": "sha256:64657b200dc34ebe555bbc9bcf273229bb36981709fe7da45bf3240d40e37f34"
+        },
+        {
+          "path": "src/trustai/byoc_authority.py",
+          "present": true,
+          "sha256": "sha256:1d17695f24d6afff00c0eecfd871626af7e01530d6cf376d365d03bbaf073814"
+        },
+        {
+          "path": "src/trustai/object_store.py",
+          "present": true,
+          "sha256": "sha256:373f8d865880b96535f388840755314d4bac0cb2274ba1a4c71eb522e1f4b669"
+        },
+        {
+          "path": "docs/deployment/byoc.md",
+          "present": true,
+          "sha256": "sha256:13553dbe1c1f049ff757c48ac990bd1ac7ce5ec7b1bff496938ee7fafb2e8341"
+        },
+        {
+          "path": "docs/specs/byoc-production-authority-v0.1.md",
+          "present": true,
+          "sha256": "sha256:83e1961f68d203ee78640289104dbf97ceddfd4690689c0f997fd7cf4682a586"
+        },
+        {
+          "path": "examples/aitrade/byoc-network-policy-authority-export.json",
+          "present": true,
+          "sha256": "sha256:7bcb09931523c21eb03e449ff620bae9241902f6fcd650050e52ead5d2eefab3"
+        },
+        {
+          "path": "tests/test_deployment.py",
+          "present": true,
+          "sha256": "sha256:58a05b47a6788453027de99262f89bfba79b002634449ffc37d9b7a5a973c455"
+        },
+        {
+          "path": "tests/test_byoc_operator.py",
+          "present": true,
+          "sha256": "sha256:c5b6f2cdb3f2d7a8e002dfca77d76618ffe16f103821b1477ac045c84ab9fac7"
+        },
+        {
+          "path": "tests/test_byoc_authority.py",
+          "present": true,
+          "sha256": "sha256:6d45240621fc550e4d87653a34aec5e60b384efb04b027c294add069b97a71ed"
+        },
+        {
+          "path": "tests/test_worm_legal_hold.py",
+          "present": true,
+          "sha256": "sha256:36df344b076189a394e51e32f6c70ae62b7c97092435c3d7970f716197448b49"
+        }
+      ],
+      "evidence_count": 20,
+      "external_authority_required": [
+        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
+      ],
+      "id": "byoc-self-hosted",
+      "missing_evidence_count": 0,
+      "phase": "P1-P2",
+      "present_evidence_count": 20,
+      "priority": "P0",
+      "roadmap_ref": "Phase 1 feature 7; Architecture deployment decision",
+      "status": "reference-attested",
+      "title": "BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations"
+    },
+    {
+      "evidence": [
+        {
+          "path": "src/trustai/compliance.py",
+          "present": true,
+          "sha256": "sha256:559e3194ee2dbedea859c1c11453877fb803301c4eda6a315488af4d513e80e5"
+        },
+        {
+          "path": "src/trustai/compliance_authority.py",
+          "present": true,
+          "sha256": "sha256:a37e6bdc7b4b6024dcefabdbd8f6d422d8bfe04c0a2bb397dbb25e2a34436e5e"
+        },
+        {
+          "path": "src/trustai/eu_ai_act.py",
+          "present": true,
+          "sha256": "sha256:e7b424356b0a1037caf3542725446a463771f9e18ebaa67a15a89352946f7723"
+        },
+        {
+          "path": "src/trustai/eu_data_plane.py",
+          "present": true,
+          "sha256": "sha256:2433c1145f3a1aa3d1b58dcfd1bc67d1ad76915edb358e4093812b72b525b46b"
+        },
+        {
+          "path": "docs/specs/compliance-production-authority-v0.1.md",
+          "present": true,
+          "sha256": "sha256:190840b93b9a2cbd17dd210f4215c504938e320d3d1b43a9ac542adba33c9594"
+        },
+        {
+          "path": "docs/specs/eu-ai-act-technical-documentation-v0.1.md",
+          "present": true,
+          "sha256": "sha256:e1841abbe657fb3c9e96463683b637c9f2b1c1998a05240c82baa8a4c5c452c4"
+        },
+        {
+          "path": "docs/specs/eu-data-plane-attestation-v0.1.md",
+          "present": true,
+          "sha256": "sha256:30739eb387f00328b2c3366aee33506096db31bd45296a8b8e58cdc491e24f94"
+        },
+        {
+          "path": "tests/test_compliance_authority.py",
+          "present": true,
+          "sha256": "sha256:c0649de7e49bcdc97fc06c2928d682bd8aecbd434864e892f25d89d61b72c540"
+        },
+        {
+          "path": "tests/test_eu_ai_act.py",
+          "present": true,
+          "sha256": "sha256:279104cfa286887e18e45a33063c0b3bc1891062195a3e02e7599b9001b4d6c7"
+        },
+        {
+          "path": "tests/test_eu_data_plane.py",
+          "present": true,
+          "sha256": "sha256:b37e12bc1b61d9c3ceb2313eddc789746d58f71c507b70fba9164df62d18da6c"
+        }
+      ],
+      "evidence_count": 10,
+      "external_authority_required": [
+        "Compliance production authority dossiers cover the local/reference authority checklist for framework-control ontology, ISO 42001, NIST AI RMF, EU AI Act, SR 11-7, SOC 2, proof-pack source replay, selective regulator disclosure, GRC exports, EU data-plane sovereignty, conformity-assessment review, and per-evidence source_context bound to the signed compliance source binding; actual fresh GRC-platform acceptance, regulator/supervisor acceptance, conformity-assessment review, and continuously operated EU data-plane provider exports remain external deployment evidence."
+      ],
+      "id": "compliance-mapper-and-eu-ai-act",
+      "missing_evidence_count": 0,
+      "phase": "P2-P3",
+      "present_evidence_count": 10,
+      "priority": "P0",
+      "roadmap_ref": "Phase 2 feature 1; Phase 3 feature 1",
+      "status": "reference-attested",
+      "title": "Compliance framework mapper and EU AI Act technical documentation"
+    },
+    {
+      "evidence": [
+        {
+          "path": "docs/specs/own-compliance-dossier-v0.1.md",
+          "present": true,
+          "sha256": "sha256:1b9c415357bad998fb162fcc93926b8eb5e01271067eee98b6b4fb89d66b008d"
+        },
+        {
+          "path": "src/trustai/own_compliance.py",
+          "present": true,
+          "sha256": "sha256:ca708f87814fc3ccab496050768d1d74fe1bc19d99af9d8fe99d62668ff2dbfe"
+        },
+        {
+          "path": "docs/specs/proof-pack-v0.1.md",
+          "present": true,
+          "sha256": "sha256:52e0165a846e2cdf53e3ea0e9807ee865fc6041cb5c33c58a4057b7fc5f8941e"
+        },
+        {
+          "path": "docs/specs/compliance-production-authority-v0.1.md",
+          "present": true,
+          "sha256": "sha256:190840b93b9a2cbd17dd210f4215c504938e320d3d1b43a9ac542adba33c9594"
+        },
+        {
+          "path": "docs/specs/standards-submission-v0.1.md",
+          "present": true,
+          "sha256": "sha256:f5b94745f26cf47f4ac9548032132cae0a13b55e9fb0101683fb639843832538"
+        },
+        {
+          "path": "docs/specs/verifier-conformance-v0.1.md",
+          "present": true,
+          "sha256": "sha256:c94ff5cc2f419a2d12eb97e770dd8cb82f71df2494434112c5deceb284bca878"
+        },
+        {
+          "path": "docs/specs/trust-authority-receipt-v0.1.md",
+          "present": true,
+          "sha256": "sha256:38e8b941fb554a836f53695b1d661fad151e00bcd027d300a0a32ffd25a81682"
+        },
+        {
+          "path": "docs/specs/worm-object-store-v0.1.md",
+          "present": true,
+          "sha256": "sha256:f0765146203f18ce916356eba0dbb72bb790f1521fcee8a01da5d13131796532"
+        },
+        {
+          "path": "docs/specs/roadmap-audit-v0.1.md",
+          "present": true,
+          "sha256": "sha256:a233335ddab7045ca8c45ee68e32963ba4c3498ba95207840409c60f4d3399d9"
+        },
+        {
+          "path": "src/trustai/proofpack.py",
+          "present": true,
+          "sha256": "sha256:dcbcf7252e3723e61e12ac288c96e7c89c9b160d17c063074a01aa04a6986c87"
+        },
+        {
+          "path": "src/trustai/verifier.py",
+          "present": true,
+          "sha256": "sha256:39c53b7e65aba6cf0645ebc5fc4b0f1095d17b52c74f262ea786e852d0ce55c4"
+        },
+        {
+          "path": "src/trustai/compliance.py",
+          "present": true,
+          "sha256": "sha256:559e3194ee2dbedea859c1c11453877fb803301c4eda6a315488af4d513e80e5"
+        },
+        {
+          "path": "src/trustai/compliance_authority.py",
+          "present": true,
+          "sha256": "sha256:a37e6bdc7b4b6024dcefabdbd8f6d422d8bfe04c0a2bb397dbb25e2a34436e5e"
+        },
+        {
+          "path": "src/trustai/standards.py",
+          "present": true,
+          "sha256": "sha256:7f575113dffaa617d5b798f56f4f5eb5ba18d7b0ff8f6de81819ad23e740f8dd"
+        },
+        {
+          "path": "src/trustai/roadmap_audit.py",
+          "present": true,
+          "sha256": "sha256:567c452a6fdf1d06ba288c546b3b0073d1a2964875ca021edf1745fe3b16fdea"
+        },
+        {
+          "path": "src/trustai/trust_authority.py",
+          "present": true,
+          "sha256": "sha256:d7288df1c6aa6f8798b44d0bb7471525ee4520004e2235d016d876de9a84e3ae"
+        },
+        {
+          "path": "src/trustai/object_store.py",
+          "present": true,
+          "sha256": "sha256:373f8d865880b96535f388840755314d4bac0cb2274ba1a4c71eb522e1f4b669"
+        },
+        {
+          "path": "src/trustai/keyring.py",
+          "present": true,
+          "sha256": "sha256:00842a50d1133a485f2224950aacafd54a42bcd3aac7cb4fe1c6acba4ce73fc5"
+        },
+        {
+          "path": "tests/test_own_compliance.py",
+          "present": true,
+          "sha256": "sha256:a0f5e19b44e8dc838dadae60a464ee76a165a6a7b67fc3e7d63fa43ac59d5ee6"
+        }
+      ],
+      "evidence_count": 19,
+      "external_authority_required": [
+        "TrustAI own compliance dossiers cover local/reference readiness and external-certification schemas for SOC 2 Type II and ISO/IEC 42001; actual SOC 2 Type II audit reports, ISO/IEC 42001 certificates, auditor bridge letters, management-system scope approvals, continuous control operation evidence, and board/customer acceptance remain external compliance evidence."
+      ],
+      "id": "trustai-own-compliance",
+      "missing_evidence_count": 0,
+      "phase": "P2",
+      "present_evidence_count": 19,
+      "priority": "P0",
+      "roadmap_ref": "Phase 2 exit criteria; Compliance framework mapper and ourselves proof-pack requirement",
+      "status": "reference-attested",
+      "title": "TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance proof"
+    },
+    {
+      "evidence": [
+        {
+          "path": "docs/specs/vertical-pack-v0.1.md",
+          "present": true,
+          "sha256": "sha256:d4b5abe7b7c969669640ee5d39915c9010836fee5a541da732721a06b39d6304"
+        },
+        {
+          "path": "src/trustai/vertical_pack.py",
+          "present": true,
+          "sha256": "sha256:ec006cda3cdbdb93e429f6c1824e304ccf3d453070a1f6771a24db05bb6493a5"
+        },
+        {
+          "path": "docs/specs/proof-pack-v0.1.md",
+          "present": true,
+          "sha256": "sha256:52e0165a846e2cdf53e3ea0e9807ee865fc6041cb5c33c58a4057b7fc5f8941e"
+        },
+        {
+          "path": "docs/specs/verification-contract-v0.1.md",
+          "present": true,
+          "sha256": "sha256:15798d69eee754916a2d0ec1ff7a7f8694aafced2a0f51e2c27c23e8e6c02b79"
+        },
+        {
+          "path": "docs/specs/runtime-policy-v0.1.md",
+          "present": true,
+          "sha256": "sha256:2b48ed7529f079413fa276c2b0f29c2d8308e7a65f9e396754c8500ba7246cb5"
+        },
+        {
+          "path": "docs/specs/marketplace-v0.1.md",
+          "present": true,
+          "sha256": "sha256:ff562f582ad7665ab25a4f4235044459f61e18a3e3c017334fa884211087454d"
+        },
+        {
+          "path": "docs/specs/compliance-production-authority-v0.1.md",
+          "present": true,
+          "sha256": "sha256:190840b93b9a2cbd17dd210f4215c504938e320d3d1b43a9ac542adba33c9594"
+        },
+        {
+          "path": "docs/specs/insurer-consent-v0.1.md",
+          "present": true,
+          "sha256": "sha256:76b2f24d0b22855230f25b45e8abe572d6f156a66ec7b1494d76a8f838ad90f2"
+        },
+        {
+          "path": "docs/specs/underwriting-quote-v0.1.md",
+          "present": true,
+          "sha256": "sha256:7dfcf89f3e38c64120b740a7b58f8ebc57ab35b1d9b6c4897275451141fe58ca"
+        },
+        {
+          "path": "docs/specs/actuarial-product-v0.1.md",
+          "present": true,
+          "sha256": "sha256:d038f6066ecac2699d2b537d2d44aa01bbc218681e98d8b51699761b44ead5db"
+        },
+        {
+          "path": "docs/specs/supervised-access-v0.1.md",
+          "present": true,
+          "sha256": "sha256:2a0f165893d6306bc7ba1bee65b5654b0678990b2e3b2b83f60fc32bd1efdd78"
+        },
+        {
+          "path": "docs/specs/byoc-production-authority-v0.1.md",
+          "present": true,
+          "sha256": "sha256:83e1961f68d203ee78640289104dbf97ceddfd4690689c0f997fd7cf4682a586"
+        },
+        {
+          "path": "src/trustai/compliance.py",
+          "present": true,
+          "sha256": "sha256:559e3194ee2dbedea859c1c11453877fb803301c4eda6a315488af4d513e80e5"
+        },
+        {
+          "path": "src/trustai/reexecution.py",
+          "present": true,
+          "sha256": "sha256:e095b508d7480c034c45a43fc15b2c5b3de7022e0ae13a62f6356f23f2ada315"
+        },
+        {
+          "path": "src/trustai/consent.py",
+          "present": true,
+          "sha256": "sha256:2214e65e91eff90440ef3e90c9c53ad71ecbed723fa1e8f58818b79528c0d333"
+        },
+        {
+          "path": "src/trustai/insurer.py",
+          "present": true,
+          "sha256": "sha256:c3016d2490f7df6c9f429bf0e3f48a8f2a4805173b683ebbb06ab53725b3f8f1"
+        },
+        {
+          "path": "src/trustai/underwriting_quote.py",
+          "present": true,
+          "sha256": "sha256:efb95f75de0eae14cc963832dd04f6d1a9cbed35f06d1e76f18afd9fd771e2f0"
+        },
+        {
+          "path": "src/trustai/actuarial.py",
+          "present": true,
+          "sha256": "sha256:1121d760fbeac797593fbf9822bab547ca90a9b519218c806310a7743726a0b4"
+        },
+        {
+          "path": "src/trustai/regulator.py",
+          "present": true,
+          "sha256": "sha256:359913b137c37c0f099dca9a12f4c0d4b167ffb399465fc586d100e2930f513f"
+        },
+        {
+          "path": "src/trustai/supervised_access.py",
+          "present": true,
+          "sha256": "sha256:345a108b22b0e3ea9e249a2633173fd2f882690f574922c6539f7b57a0840c59"
+        },
+        {
+          "path": "src/trustai/deployment.py",
+          "present": true,
+          "sha256": "sha256:cd023265a3d6b3f051c7c521abf159de4e425faf0b8216607bedaa1eede85c32"
+        },
+        {
+          "path": "src/trustai/byoc_authority.py",
+          "present": true,
+          "sha256": "sha256:1d17695f24d6afff00c0eecfd871626af7e01530d6cf376d365d03bbaf073814"
+        },
+        {
+          "path": "src/trustai/object_store.py",
+          "present": true,
+          "sha256": "sha256:373f8d865880b96535f388840755314d4bac0cb2274ba1a4c71eb522e1f4b669"
+        },
+        {
+          "path": "examples/aitrade/verification-contract.yaml",
+          "present": true,
+          "sha256": "sha256:dc67aad402a124f6ad19395747987e7ff0bf22c3fc6cd1787775d052a4f33610"
+        },
+        {
+          "path": "examples/aitrade/policy-pack.json",
+          "present": true,
+          "sha256": "sha256:6d51510af4f820caa12af234f06306ac7519c1d1009698c76a3e169352cda46f"
+        },
+        {
+          "path": "examples/aitrade/identity-inventory.json",
+          "present": true,
+          "sha256": "sha256:4fdba6bb18889d8175faa65f43e3aaf088401e99f22969ac88ad57cfdf9adb73"
+        },
+        {
+          "path": "tests/test_vertical_pack.py",
+          "present": true,
+          "sha256": "sha256:0868857f720118c173f5bbfe07f7bee8364d1bec4b298d3045a07e3dabdb7c49"
+        }
+      ],
+      "evidence_count": 27,
+      "external_authority_required": [
+        "Vertical pack receipts cover local/reference templates, source bindings, control mappings, and production-claim limits for trading/treasury, insurance claims, healthcare RCM, and public sector packs; live SR 11-7 owner signoff, NAIC/state insurance legal review, HIPAA/BAA posture, FDA SaMD classification, FedRAMP boundary/ATO evidence, customer deployments, and external regulator/insurer/auditor acceptance remain external evidence."
+      ],
+      "id": "vertical-packs",
+      "missing_evidence_count": 0,
+      "phase": "P3",
+      "present_evidence_count": 27,
+      "priority": "P1",
+      "roadmap_ref": "Phase 3 feature 4; Feature master list vertical packs",
+      "status": "reference-attested",
+      "title": "Vertical packs for trading, insurance claims, healthcare, and public sector"
+    },
+    {
+      "evidence": [
+        {
+          "path": "src/trustai/consent.py",
+          "present": true,
+          "sha256": "sha256:2214e65e91eff90440ef3e90c9c53ad71ecbed723fa1e8f58818b79528c0d333"
+        },
+        {
+          "path": "src/trustai/insurer.py",
+          "present": true,
+          "sha256": "sha256:c3016d2490f7df6c9f429bf0e3f48a8f2a4805173b683ebbb06ab53725b3f8f1"
+        },
+        {
+          "path": "src/trustai/underwriting_quote.py",
+          "present": true,
+          "sha256": "sha256:efb95f75de0eae14cc963832dd04f6d1a9cbed35f06d1e76f18afd9fd771e2f0"
+        },
+        {
+          "path": "src/trustai/insurer_partner_service.py",
+          "present": true,
+          "sha256": "sha256:bfe7c8583a25cd77e234c8a89d269446ff0159b99e3b4a174d00f8367c0661ee"
+        },
+        {
+          "path": "src/trustai/insurer_partner_worker.py",
+          "present": true,
+          "sha256": "sha256:00f25767c7122f8ea7ff6d7c9425e10c6851d3c10134ea3160985d159c0a1c1e"
+        },
+        {
+          "path": "src/trustai/insurer_partner_worker_bundle.py",
+          "present": true,
+          "sha256": "sha256:f526817aefde6e2e2ed9161092267b92bbe5debad2eb2ec877c16c4ab7c0aed4"
+        },
+        {
+          "path": "src/trustai/insurer_partner_authority.py",
+          "present": true,
+          "sha256": "sha256:85ef07fdb2ffe0f820d8269b44dbdf655f3cc02e8d4fc48c91d10fd3169f0964"
+        },
+        {
+          "path": "src/trustai/actuarial.py",
+          "present": true,
+          "sha256": "sha256:1121d760fbeac797593fbf9822bab547ca90a9b519218c806310a7743726a0b4"
+        },
+        {
+          "path": "docs/specs/insurer-consent-v0.1.md",
+          "present": true,
+          "sha256": "sha256:76b2f24d0b22855230f25b45e8abe572d6f156a66ec7b1494d76a8f838ad90f2"
+        },
+        {
+          "path": "docs/specs/underwriting-quote-v0.1.md",
+          "present": true,
+          "sha256": "sha256:7dfcf89f3e38c64120b740a7b58f8ebc57ab35b1d9b6c4897275451141fe58ca"
+        },
+        {
+          "path": "docs/specs/insurer-partner-service-attestation-v0.1.md",
+          "present": true,
+          "sha256": "sha256:a0a81801500a83776e8ca8357012a67a40d612e7401df63041bde8e7429f1de6"
+        },
+        {
+          "path": "docs/specs/insurer-partner-worker-v0.1.md",
+          "present": true,
+          "sha256": "sha256:99a2e181ad9fca0efa18c9a9a6bcf86cecd2c1123f85819103faed3d2895736b"
+        },
+        {
+          "path": "docs/specs/insurer-partner-worker-bundle-v0.1.md",
+          "present": true,
+          "sha256": "sha256:92234dff8765771214e06e5dc9cf588d57f8a167820998de5c2c6f70f12aa16c"
+        },
+        {
+          "path": "docs/specs/insurer-partner-production-authority-v0.1.md",
+          "present": true,
+          "sha256": "sha256:bb7effdc1b836b6f391394ec3e6bc0fe3bdcba373e15f949595f5e5c4c4baef1"
+        },
+        {
+          "path": "docs/specs/actuarial-product-v0.1.md",
+          "present": true,
+          "sha256": "sha256:d038f6066ecac2699d2b537d2d44aa01bbc218681e98d8b51699761b44ead5db"
+        },
+        {
+          "path": "tests/test_consent_insurer.py",
+          "present": true,
+          "sha256": "sha256:fd815e98545100aa50104d35acec23ddda3443c783043f74a3a81d2b590a9047"
+        },
+        {
+          "path": "tests/test_underwriting_quote.py",
+          "present": true,
+          "sha256": "sha256:69e81648c5fb706441d91a441d5676fe4c13e1df86192baabd8ca17f964f706f"
+        },
+        {
+          "path": "tests/test_insurer_partner_service.py",
+          "present": true,
+          "sha256": "sha256:78f4925581048f78fb768f6435417bbddf8c4bdb3e7c4d63ec6ae9c38eee28a1"
+        },
+        {
+          "path": "tests/test_insurer_partner_worker.py",
+          "present": true,
+          "sha256": "sha256:d562db43ff8a3615f26321c2a9719df4fc2850ab37f996518297e78ce807fcf2"
+        },
+        {
+          "path": "tests/test_insurer_partner_worker_bundle.py",
+          "present": true,
+          "sha256": "sha256:470e0683d123af03bf162552e84c5d3458591b4d284f07e8d44fac4af5082a7a"
+        },
+        {
+          "path": "tests/test_insurer_partner_authority.py",
+          "present": true,
+          "sha256": "sha256:19b2adfed90c01ae528c937f647f8823f6c76b3996069d4121a39f6118bad8be"
+        },
+        {
+          "path": "tests/test_actuarial_product.py",
+          "present": true,
+          "sha256": "sha256:d807bb4549b790b28ac493364fecf5c6aa8453c734e5173f31d4693397ffd867"
+        }
+      ],
+      "evidence_count": 22,
+      "external_authority_required": [
+        "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
+      ],
+      "id": "insurer-api-and-actuarial-products",
+      "missing_evidence_count": 0,
+      "phase": "P2-P4",
+      "present_evidence_count": 22,
+      "priority": "P0",
+      "roadmap_ref": "Phase 2 feature 2; Phase 4 actuarial data products",
+      "status": "reference-attested",
+      "title": "Consent-gated insurer telemetry, underwriting quotes, and actuarial products"
+    },
+    {
+      "evidence": [
+        {
+          "path": "docs/specs/state-of-agent-reliability-report-v0.1.md",
+          "present": true,
+          "sha256": "sha256:b373176ba0a79047bba6847f64721013719b284df40d52c0af0aaac7f89f96f8"
+        },
+        {
+          "path": "src/trustai/reliability_report.py",
+          "present": true,
+          "sha256": "sha256:143a25e0bccfb5e00568f968fd265fe2a142f3ab962bfbe9770c30da91642685"
+        },
+        {
+          "path": "docs/specs/actuarial-corpus-v0.1.md",
+          "present": true,
+          "sha256": "sha256:c90dfe1cf33335c2db6913da4319c68081abe344c7a97e4180c855948e40d7d9"
+        },
+        {
+          "path": "docs/specs/actuarial-product-v0.1.md",
+          "present": true,
+          "sha256": "sha256:d038f6066ecac2699d2b537d2d44aa01bbc218681e98d8b51699761b44ead5db"
+        },
+        {
+          "path": "docs/specs/insurer-consent-v0.1.md",
+          "present": true,
+          "sha256": "sha256:76b2f24d0b22855230f25b45e8abe572d6f156a66ec7b1494d76a8f838ad90f2"
+        },
+        {
+          "path": "docs/specs/proof-pack-v0.1.md",
+          "present": true,
+          "sha256": "sha256:52e0165a846e2cdf53e3ea0e9807ee865fc6041cb5c33c58a4057b7fc5f8941e"
+        },
+        {
+          "path": "src/trustai/actuarial.py",
+          "present": true,
+          "sha256": "sha256:1121d760fbeac797593fbf9822bab547ca90a9b519218c806310a7743726a0b4"
+        },
+        {
+          "path": "src/trustai/consent.py",
+          "present": true,
+          "sha256": "sha256:2214e65e91eff90440ef3e90c9c53ad71ecbed723fa1e8f58818b79528c0d333"
+        },
+        {
+          "path": "src/trustai/proofpack.py",
+          "present": true,
+          "sha256": "sha256:dcbcf7252e3723e61e12ac288c96e7c89c9b160d17c063074a01aa04a6986c87"
+        },
+        {
+          "path": "src/trustai/insurer.py",
+          "present": true,
+          "sha256": "sha256:c3016d2490f7df6c9f429bf0e3f48a8f2a4805173b683ebbb06ab53725b3f8f1"
+        },
+        {
+          "path": "src/trustai/underwriting_quote.py",
+          "present": true,
+          "sha256": "sha256:efb95f75de0eae14cc963832dd04f6d1a9cbed35f06d1e76f18afd9fd771e2f0"
+        },
+        {
+          "path": "src/trustai/roadmap_audit.py",
+          "present": true,
+          "sha256": "sha256:567c452a6fdf1d06ba288c546b3b0073d1a2964875ca021edf1745fe3b16fdea"
+        },
+        {
+          "path": "tests/test_reliability_report.py",
+          "present": true,
+          "sha256": "sha256:ff1efe081c9c7c42111dd2b64bdad12d45b8ef1eb670620cd726bae94d516cc1"
+        }
+      ],
+      "evidence_count": 13,
+      "external_authority_required": [
+        "State of Agent Reliability reports cover local/reference aggregate report generation, privacy thresholds, actuarial source-product bindings, and publication-evidence schemas; actual public publication, independent review, partner/customer permission, market acceptance, external distribution metrics, and continuously refreshed longitudinal data remain external GTM evidence."
+      ],
+      "id": "state-of-agent-reliability-report",
+      "missing_evidence_count": 0,
+      "phase": "P2-P4",
+      "present_evidence_count": 13,
+      "priority": "P1",
+      "roadmap_ref": "GTM motion; Phase 4 actuarial data products",
+      "status": "reference-attested",
+      "title": "State of Agent Reliability aggregate publication"
+    },
+    {
+      "evidence": [
+        {
+          "path": "docs/specs/roadmap-phase-scoreboard-v0.1.md",
+          "present": true,
+          "sha256": "sha256:a978d81af3168bf542b0de380ebcc0f94ee55d0228341897434091d81697a878"
+        },
+        {
+          "path": "src/trustai/phase_scoreboard.py",
+          "present": true,
+          "sha256": "sha256:ba70da97214fb66997a0123db6b10ec04a3ec019728bc01d459ebcd002df732b"
+        },
+        {
+          "path": "docs/specs/design-partner-pilot-v0.1.md",
+          "present": true,
+          "sha256": "sha256:f8fc388b32aade1fe7fb39f8e99dd07690b2b4368759e89e913dfaeb1f4e8ba8"
+        },
+        {
+          "path": "docs/specs/own-compliance-dossier-v0.1.md",
+          "present": true,
+          "sha256": "sha256:1b9c415357bad998fb162fcc93926b8eb5e01271067eee98b6b4fb89d66b008d"
+        },
+        {
+          "path": "docs/specs/underwriting-quote-v0.1.md",
+          "present": true,
+          "sha256": "sha256:7dfcf89f3e38c64120b740a7b58f8ebc57ab35b1d9b6c4897275451141fe58ca"
+        },
+        {
+          "path": "docs/specs/regulator-acceptance-v0.1.md",
+          "present": true,
+          "sha256": "sha256:99ecf4e60cf072f421795c715ada7a059cf2fefa02f7e8939ffadfbb7fb8dfb0"
+        },
+        {
+          "path": "docs/specs/standards-body-submission-v0.1.md",
+          "present": true,
+          "sha256": "sha256:660390ed4499f060e6ab52ad3be6306236263dac082e67913b611b994d5c725d"
+        },
+        {
+          "path": "docs/specs/procurement-clause-v0.1.md",
+          "present": true,
+          "sha256": "sha256:45348a9e507326283f73f5099372458e92981f0c3ed52179f687931d128eb730"
+        },
+        {
+          "path": "docs/specs/actuarial-product-v0.1.md",
+          "present": true,
+          "sha256": "sha256:d038f6066ecac2699d2b537d2d44aa01bbc218681e98d8b51699761b44ead5db"
+        },
+        {
+          "path": "docs/specs/state-of-agent-reliability-report-v0.1.md",
+          "present": true,
+          "sha256": "sha256:b373176ba0a79047bba6847f64721013719b284df40d52c0af0aaac7f89f96f8"
+        },
+        {
+          "path": "src/trustai/design_partner.py",
+          "present": true,
+          "sha256": "sha256:f87bddcc243756efc0c67f97d5fa5da62a90812263211ce4c74091196a890c44"
+        },
+        {
+          "path": "src/trustai/own_compliance.py",
+          "present": true,
+          "sha256": "sha256:ca708f87814fc3ccab496050768d1d74fe1bc19d99af9d8fe99d62668ff2dbfe"
+        },
+        {
+          "path": "src/trustai/underwriting_quote.py",
+          "present": true,
+          "sha256": "sha256:efb95f75de0eae14cc963832dd04f6d1a9cbed35f06d1e76f18afd9fd771e2f0"
+        },
+        {
+          "path": "src/trustai/regulator_acceptance.py",
+          "present": true,
+          "sha256": "sha256:f04f88a3281f846738b93531d670ad59266ce311dd71c9f9c373944d3be33f61"
+        },
+        {
+          "path": "src/trustai/standards_body_submission.py",
+          "present": true,
+          "sha256": "sha256:ed80042b82a0ea3d88c6f56804b3d74639f10dc90179bacb88cd082474634ba5"
+        },
+        {
+          "path": "src/trustai/procurement_clause.py",
+          "present": true,
+          "sha256": "sha256:288c4fa9ad34694419e53bed651bbc21162053f218a2bd6e6517da34f829bdef"
+        },
+        {
+          "path": "src/trustai/actuarial.py",
+          "present": true,
+          "sha256": "sha256:1121d760fbeac797593fbf9822bab547ca90a9b519218c806310a7743726a0b4"
+        },
+        {
+          "path": "src/trustai/reliability_report.py",
+          "present": true,
+          "sha256": "sha256:143a25e0bccfb5e00568f968fd265fe2a142f3ab962bfbe9770c30da91642685"
+        },
+        {
+          "path": "src/trustai/roadmap_audit.py",
+          "present": true,
+          "sha256": "sha256:567c452a6fdf1d06ba288c546b3b0073d1a2964875ca021edf1745fe3b16fdea"
+        },
+        {
+          "path": "tests/test_phase_scoreboard.py",
+          "present": true,
+          "sha256": "sha256:e66569efdac517df9fedc6a503cd0f1fa0bf421a852b3a1302408448ee851be3"
+        }
+      ],
+      "evidence_count": 20,
+      "external_authority_required": [
+        "Roadmap phase scoreboards cover local/reference schemas for P1-P4 business milestones and can bind external evidence references and hashes; actual paying customers, signed contracts, ARR, Series A financing, live insurer integrations, SOC 2/ISO certificates, named regulator acceptance, standards-body progress, third-party procurement clauses, data-product revenue, and generic market usage remain external business evidence."
+      ],
+      "id": "roadmap-phase-scoreboard",
+      "missing_evidence_count": 0,
+      "phase": "P1-P4",
+      "present_evidence_count": 20,
+      "priority": "P0",
+      "roadmap_ref": "Definition of done per phase; Unicorn logic; GTM pricing and market adoption milestones",
+      "status": "reference-attested",
+      "title": "Roadmap phase exit-criteria business scoreboard"
+    },
+    {
+      "evidence": [
+        {
+          "path": "docs/specs/product-scope-decision-v0.1.md",
+          "present": true,
+          "sha256": "sha256:2636bf581a4e79becd6016e7fd82564982d61345175dd4eb1c4e1dc0eb8a4340"
+        },
+        {
+          "path": "src/trustai/product_scope.py",
+          "present": true,
+          "sha256": "sha256:af69657443dd0c6244cfe2d85b5854a5c98d786f8b926dff7414c8c026b98bb5"
+        },
+        {
+          "path": "docs/specs/proof-pack-v0.1.md",
+          "present": true,
+          "sha256": "sha256:52e0165a846e2cdf53e3ea0e9807ee865fc6041cb5c33c58a4057b7fc5f8941e"
+        },
+        {
+          "path": "docs/specs/verification-contract-v0.1.md",
+          "present": true,
+          "sha256": "sha256:15798d69eee754916a2d0ec1ff7a7f8694aafced2a0f51e2c27c23e8e6c02b79"
+        },
+        {
+          "path": "docs/specs/roadmap-audit-v0.1.md",
+          "present": true,
+          "sha256": "sha256:a233335ddab7045ca8c45ee68e32963ba4c3498ba95207840409c60f4d3399d9"
+        },
+        {
+          "path": "docs/architecture/roadmap-coverage.md",
+          "present": true,
+          "sha256": "sha256:dd1ee6026f9f47f2f476f2160cd201eb91299fa10c279fcf4baf8a13547eaf2f"
+        },
+        {
+          "path": "src/trustai/proofpack.py",
+          "present": true,
+          "sha256": "sha256:dcbcf7252e3723e61e12ac288c96e7c89c9b160d17c063074a01aa04a6986c87"
+        },
+        {
+          "path": "src/trustai/verifier.py",
+          "present": true,
+          "sha256": "sha256:39c53b7e65aba6cf0645ebc5fc4b0f1095d17b52c74f262ea786e852d0ce55c4"
+        },
+        {
+          "path": "src/trustai/gate.py",
+          "present": true,
+          "sha256": "sha256:28b5b958b365c5e48a0afae646d97d55aa7572dce437ac3563ed16606ad22106"
+        },
+        {
+          "path": "src/trustai/roadmap_audit.py",
+          "present": true,
+          "sha256": "sha256:567c452a6fdf1d06ba288c546b3b0073d1a2964875ca021edf1745fe3b16fdea"
+        },
+        {
+          "path": "tests/test_product_scope.py",
+          "present": true,
+          "sha256": "sha256:3ae2631f3c3f11e8f1addc01b496103a77c0b122f2b01c77326183b490127130"
+        }
+      ],
+      "evidence_count": 11,
+      "external_authority_required": [
+        "Product scope decisions cover local/reference checks for proof-strength, cheaper-production, wider-acceptance, and anti-focus decline controls; actual company governance adoption, product-council enforcement, customer-pressure evidence, and ongoing roadmap discipline remain external operating evidence."
+      ],
+      "id": "product-scope-discipline",
+      "missing_evidence_count": 0,
+      "phase": "P0-P4",
+      "present_evidence_count": 11,
+      "priority": "P0",
+      "roadmap_ref": "What we build vs. what we refuse to build; discipline test for feature requests",
+      "status": "reference-attested",
+      "title": "Product scope discipline and anti-focus decisions"
+    },
+    {
+      "evidence": [
+        {
+          "path": "docs/specs/runtime-policy-v0.1.md",
+          "present": true,
+          "sha256": "sha256:2b48ed7529f079413fa276c2b0f29c2d8308e7a65f9e396754c8500ba7246cb5"
+        },
+        {
+          "path": "docs/specs/policy-engine-receipt-v0.1.md",
+          "present": true,
+          "sha256": "sha256:4512748654677ba1389a2a3bbcff057d56cc96055656f2e869bd0560c8353efa"
+        },
+        {
+          "path": "src/trustai/runtime.py",
+          "present": true,
+          "sha256": "sha256:f14ade85413756f533e323a9f7814ff40f2ae5cbe10ba5a7639139ae5257089d"
+        },
+        {
+          "path": "src/trustai/policy.py",
+          "present": true,
+          "sha256": "sha256:db7a8ae2cec786e4380fec339b4702b11755e483211a03c4398606bc58c9489c"
+        },
+        {
+          "path": "src/trustai/policy_engine.py",
+          "present": true,
+          "sha256": "sha256:8e08fa75a9da774bddcd83a24210563329da4ec3d69c925b702a8a3d5d63c8ff"
+        },
+        {
+          "path": "src/trustai/policy_backend_enforcement.py",
+          "present": true,
+          "sha256": "sha256:4511c69ac966a93421e4c381979ae503357d520dd41577d1f62f70e1b6a0e69c"
+        },
+        {
+          "path": "src/trustai/policy_backend_service.py",
+          "present": true,
+          "sha256": "sha256:468c6c00a3f9d796c529b40fda55e9c6237f0d89c3c9e5e1f9382a255952607b"
+        },
+        {
+          "path": "src/trustai/policy_backend_worker.py",
+          "present": true,
+          "sha256": "sha256:1fe1ef061450ae14070b5428eb74a53ab9c79cfbb165c4ea214ca6072736e7f8"
+        },
+        {
+          "path": "src/trustai/policy_backend_provider.py",
+          "present": true,
+          "sha256": "sha256:1c63fda02959bb35f5bf008b74cd646583587670a070b4f448439bb86ccde639"
+        },
+        {
+          "path": "src/trustai/policy_backend_provider_bundle.py",
+          "present": true,
+          "sha256": "sha256:3a0b0bb568a26d09a074893ecdb494e7e70eda57fd1bca83d188667c814f9c7f"
+        },
+        {
+          "path": "src/trustai/policy_backend_service_bundle.py",
+          "present": true,
+          "sha256": "sha256:fb3f2141438e3b2cd5c7911feb54a9d8d0ffcf606f36482d5f36e6edf1e2e447"
+        },
+        {
+          "path": "src/trustai/policy_backend_authority.py",
+          "present": true,
+          "sha256": "sha256:7e722ccb29709e8bcebdc1e4793a1de1740695b85f079255e6bbfc8926e7b699"
+        },
+        {
+          "path": "docs/specs/policy-backend-service-bundle-v0.1.md",
+          "present": true,
+          "sha256": "sha256:007e480563a61e77634be6ce0fac3ecc08dda9982ea953f6766b8cc7b367bb51"
+        },
+        {
+          "path": "docs/specs/policy-backend-production-authority-v0.1.md",
+          "present": true,
+          "sha256": "sha256:e5a6dae860152fb3258ef43e59fc13c77f7a2083fffbf870ff64b2e185239576"
+        },
+        {
+          "path": "tests/test_policy_engine.py",
+          "present": true,
+          "sha256": "sha256:7a2202b3df146e93462df9d89871b68871f817c0913af3f03393c28aaba83a90"
+        },
+        {
+          "path": "tests/test_policy_backend_enforcement.py",
+          "present": true,
+          "sha256": "sha256:662c435da28e91642eb9d4a5ed4c392be78f6e3d75b6e292bffcd43d539ee7ba"
+        },
+        {
+          "path": "tests/test_policy_backend_service_bundle.py",
+          "present": true,
+          "sha256": "sha256:233a323d9574d28057eb1ad2fe3f31992c5a8570eb223ecf6fb4510754c2387b"
+        },
+        {
+          "path": "tests/test_policy_backend_authority.py",
+          "present": true,
+          "sha256": "sha256:b29f9360cf27c73f3bef373a42b22c65dc610e3455e2dc4408bc5dfe82005425"
+        }
+      ],
+      "evidence_count": 18,
+      "external_authority_required": [
+        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
+      ],
+      "id": "runtime-policy-and-attestation",
+      "missing_evidence_count": 0,
+      "phase": "P2",
+      "present_evidence_count": 18,
+      "priority": "P1",
+      "roadmap_ref": "Core primitive 6; Phase 2 feature 3",
+      "status": "reference-attested",
+      "title": "Runtime attestation, policy engine receipts, and proof decay"
+    },
+    {
+      "evidence": [
+        {
+          "path": "docs/specs/agent-registry-v0.1.md",
+          "present": true,
+          "sha256": "sha256:e5e26a74f0767b17882b50e4f54b3756c5571b28ac4522e7cc84769e5b94a440"
+        },
+        {
+          "path": "src/trustai/identity.py",
+          "present": true,
+          "sha256": "sha256:23fe166398a872387c8986ff461070a8312d7461554cd69124c24f20094e2909"
+        },
+        {
+          "path": "src/trustai/identity_provider_attestation.py",
+          "present": true,
+          "sha256": "sha256:6f70ae3c41efc325e9d92ebe7fdcfb2459305e713e078fca7436e1f738a3f46e"
+        },
+        {
+          "path": "src/trustai/identity_provider_session.py",
+          "present": true,
+          "sha256": "sha256:624f7ffdfb99492d34ffc68d87e0f09974df60e1d8d7f1970c9451a19e12bfef"
+        },
+        {
+          "path": "src/trustai/identity_provider_lifecycle_operation.py",
+          "present": true,
+          "sha256": "sha256:7c0802bd0a3d4d8c69c6ccc6332f30135b24370681e3f1d3bc66bebbe0c66ad7"
+        },
+        {
+          "path": "src/trustai/identity_provider_lifecycle_worker.py",
+          "present": true,
+          "sha256": "sha256:fc7c9d5fe90310e44fe5f29420fe9a31c5bac51090eb37f38dc460a275c89fea"
+        },
+        {
+          "path": "src/trustai/identity_provider_authority.py",
+          "present": true,
+          "sha256": "sha256:ef1b698370501918a97746a35706672517d87c07f83c31a1e3630c4f6ef698a6"
+        },
+        {
+          "path": "docs/specs/identity-provider-attestation-v0.1.md",
+          "present": true,
+          "sha256": "sha256:3d9313519f3e8296f2ee345e7d4dff696e9ce3210a3da32da1f09e1addf1c426"
+        },
+        {
+          "path": "docs/specs/identity-provider-session-v0.1.md",
+          "present": true,
+          "sha256": "sha256:953d614066e86dbcaeb5e4316d29fb020c4edea4942d347e48ed66371533c011"
+        },
+        {
+          "path": "docs/specs/identity-provider-lifecycle-operation-v0.1.md",
+          "present": true,
+          "sha256": "sha256:bfc9fa66d616d97ff0670ca85f28abf48dd5c7fa1050e9bd1396b68f71d611ab"
+        },
+        {
+          "path": "docs/specs/identity-provider-lifecycle-worker-v0.1.md",
+          "present": true,
+          "sha256": "sha256:25bf6f390dae61f63376c8ab71b9daca09ef4e2a018df5717b16984a836555c5"
+        },
+        {
+          "path": "docs/specs/identity-provider-production-authority-v0.1.md",
+          "present": true,
+          "sha256": "sha256:9340baab0374e7badb6a9f613dff43d301da9b1400a4661d82831a1df05afea6"
+        },
+        {
+          "path": "examples/aitrade/identity-inventory.json",
+          "present": true,
+          "sha256": "sha256:4fdba6bb18889d8175faa65f43e3aaf088401e99f22969ac88ad57cfdf9adb73"
+        },
+        {
+          "path": "tests/test_identity_provider_attestation.py",
+          "present": true,
+          "sha256": "sha256:e558ce69ca35fc09ac5a5f61b4879e8916f2f277482e71280193f493e7d17cbe"
+        },
+        {
+          "path": "tests/test_identity_provider_session.py",
+          "present": true,
+          "sha256": "sha256:62f6c4b965fbf9a9f3ac67c2eb9e51cd8733753e7744dc93fb57150fadc3fb1b"
+        },
+        {
+          "path": "tests/test_identity_provider_lifecycle_operation.py",
+          "present": true,
+          "sha256": "sha256:3ea507e8a62267fe609864896f8ca81ae255345f0e05ecf7f56198eb015fd4d3"
+        },
+        {
+          "path": "tests/test_identity_provider_lifecycle_worker.py",
+          "present": true,
+          "sha256": "sha256:485970a92efa7d23a2a306f30c97686f29d3225f1546f4da8f306ac660a9ae8c"
+        },
+        {
+          "path": "tests/test_identity_provider_authority.py",
+          "present": true,
+          "sha256": "sha256:969ed60cf9e44e3533139a4072027a993136d7f7773456d81b315bdaf467752e"
+        }
+      ],
+      "evidence_count": 18,
+      "external_authority_required": [
+        "Identity-provider production authority dossiers cover the local/reference authority checklist for live event streams, token/session propagation, lifecycle APIs, provider audit exports, credential custody, scheduler/queue evidence, per-evidence source_context bound to lifecycle worker bindings, recomputed controls, and freshness-gated production claims; actual fresh provider-owned exports remain external evidence."
+      ],
+      "id": "agent-inventory-and-identity",
+      "missing_evidence_count": 0,
+      "phase": "P2",
+      "present_evidence_count": 18,
+      "priority": "P1",
+      "roadmap_ref": "Phase 2 feature 4",
+      "status": "reference-attested",
+      "title": "Agent registry, inventory, identity provider attestations, and lifecycle receipts"
+    },
+    {
+      "evidence": [
+        {
+          "path": "src/trustai/identity.py",
+          "present": true,
+          "sha256": "sha256:23fe166398a872387c8986ff461070a8312d7461554cd69124c24f20094e2909"
+        },
+        {
+          "path": "examples/aitrade/delegation.json",
+          "present": true,
+          "sha256": "sha256:210d2d05a2b19935885f25e91c0877acc7316d9a70590d621c820c1dbcaeb961"
+        },
+        {
+          "path": "docs/specs/trust-network-v0.1.md",
+          "present": true,
+          "sha256": "sha256:37a8a8a3275d82c39b2daf977b2e297557193e71b5682b115037b7b5bcc8b685"
+        },
+        {
+          "path": "tests/test_phase1_phase2.py",
+          "present": true,
+          "sha256": "sha256:69c003a09dc467ba651a972d02a7ef686d496748de72b10ed771feee5b629ba3"
+        }
+      ],
+      "evidence_count": 4,
+      "external_authority_required": [],
+      "id": "multi-agent-evidence",
+      "missing_evidence_count": 0,
+      "phase": "P2",
+      "present_evidence_count": 4,
+      "priority": "P2",
+      "roadmap_ref": "Phase 2 feature 5",
+      "status": "implemented-local",
+      "title": "Multi-agent delegation evidence graphs"
+    },
+    {
+      "evidence": [
+        {
+          "path": "src/trustai/standards.py",
+          "present": true,
+          "sha256": "sha256:7f575113dffaa617d5b798f56f4f5eb5ba18d7b0ff8f6de81819ad23e740f8dd"
+        },
+        {
+          "path": "src/trustai/standards_body_submission.py",
+          "present": true,
+          "sha256": "sha256:ed80042b82a0ea3d88c6f56804b3d74639f10dc90179bacb88cd082474634ba5"
+        },
+        {
+          "path": "src/trustai/certification.py",
+          "present": true,
+          "sha256": "sha256:750f223dd77e1c0ee41dcf6fc30bfa9ad1859e415584ceba7e00e79c1dad7601"
+        },
+        {
+          "path": "src/trustai/auditor_accreditation.py",
+          "present": true,
+          "sha256": "sha256:291e139d290774979008dbd4f66452cb65f7cb5e35276603e7a23a60d3de92c4"
+        },
+        {
+          "path": "docs/specs/standards-submission-v0.1.md",
+          "present": true,
+          "sha256": "sha256:f5b94745f26cf47f4ac9548032132cae0a13b55e9fb0101683fb639843832538"
+        },
+        {
+          "path": "docs/specs/auditor-certification-v0.1.md",
+          "present": true,
+          "sha256": "sha256:9db70d7d557a2edc4949ff05c3633a11d63d8382847df061aa705d188f8fdc31"
+        },
+        {
+          "path": "tests/test_standards.py",
+          "present": true,
+          "sha256": "sha256:231b574ee1a7b153c9becf77777c472d3340b4652da28520a92791e71b77e805"
+        },
+        {
+          "path": "tests/test_certification.py",
+          "present": true,
+          "sha256": "sha256:00de48c361eeedfe23037024f2a5f1b45d262d3f870b863b762c76186973c473"
+        },
+        {
+          "path": "tests/test_auditor_accreditation.py",
+          "present": true,
+          "sha256": "sha256:eeefd5bc9e096239e991a3255a72b7e25bcbf5620659dc2f6915cbf8c75b315c"
+        }
+      ],
+      "evidence_count": 9,
+      "external_authority_required": [
+        "Actual standards-body acceptance and sponsor-owned KMS/HSM enforcement require external governance events."
+      ],
+      "id": "standards-track-and-auditor-ecosystem",
+      "missing_evidence_count": 0,
+      "phase": "P3",
+      "present_evidence_count": 9,
+      "priority": "P1",
+      "roadmap_ref": "Phase 3 features 3 and 5",
+      "status": "reference-attested",
+      "title": "Standards-track package and auditor certification ecosystem"
+    },
+    {
+      "evidence": [
+        {
+          "path": "src/trustai/trust_network.py",
+          "present": true,
+          "sha256": "sha256:7d2b5ba7a8009a5666bfc4abb326bd252b7497cf9561aceb0cc36378a1b23503"
+        },
+        {
+          "path": "src/trustai/trust_network_registry.py",
+          "present": true,
+          "sha256": "sha256:400d183fc6972996bb8c5be92e3c74d01855e8e66fa323f55d6c8c3823d8cdb1"
+        },
+        {
+          "path": "src/trustai/vendor_identity.py",
+          "present": true,
+          "sha256": "sha256:8e34df6728ad253722a9e0cd0c127c93b83231e636ea05af96d04b7d07a21d31"
+        },
+        {
+          "path": "src/trustai/procurement_clause.py",
+          "present": true,
+          "sha256": "sha256:288c4fa9ad34694419e53bed651bbc21162053f218a2bd6e6517da34f829bdef"
+        },
+        {
+          "path": "src/trustai/procurement_integration.py",
+          "present": true,
+          "sha256": "sha256:3893b377592783d6f0d1ca960a15b64f88e01225413ac050d4f8cd61a6e2ba3c"
+        },
+        {
+          "path": "src/trustai/marketplace.py",
+          "present": true,
+          "sha256": "sha256:a7883e4d429e756c13b6af39b20bd8499788a26d3fabdf673061d25578225b9b"
+        },
+        {
+          "path": "src/trustai/marketplace_settlement.py",
+          "present": true,
+          "sha256": "sha256:c341a51f8c52aaa47c73fc7e3da59dae6c885898744fc810b71d127e831cba34"
+        },
+        {
+          "path": "src/trustai/trust_network_service.py",
+          "present": true,
+          "sha256": "sha256:71490187e61f169bffa28c12c416e48fb1d2646ee4bffcb50d7967a1e6ae241f"
+        },
+        {
+          "path": "src/trustai/trust_network_worker.py",
+          "present": true,
+          "sha256": "sha256:8e431a187a1303dd59a105ba6f596a3ea3e071a2b894f3d67179d36556e11436"
+        },
+        {
+          "path": "src/trustai/trust_network_worker_bundle.py",
+          "present": true,
+          "sha256": "sha256:2f2cd741d27f1c29eb8801ffdc19e2adace7a0faf2213943eb6a93181d41cddf"
+        },
+        {
+          "path": "src/trustai/trust_network_authority.py",
+          "present": true,
+          "sha256": "sha256:f236ab50ab166d09fa093be1e3e6427c2d232c0c0d859d36ed1fd0145d1b7fbd"
+        },
+        {
+          "path": "docs/specs/procurement-clause-v0.1.md",
+          "present": true,
+          "sha256": "sha256:45348a9e507326283f73f5099372458e92981f0c3ed52179f687931d128eb730"
+        },
+        {
+          "path": "docs/specs/marketplace-v0.1.md",
+          "present": true,
+          "sha256": "sha256:ff562f582ad7665ab25a4f4235044459f61e18a3e3c017334fa884211087454d"
+        },
+        {
+          "path": "docs/specs/trust-network-service-attestation-v0.1.md",
+          "present": true,
+          "sha256": "sha256:d3f10f6c93916de37e35bef355e5305536b071501e9ac183142021b7199fea6c"
+        },
+        {
+          "path": "docs/specs/trust-network-worker-v0.1.md",
+          "present": true,
+          "sha256": "sha256:488c921402b5a9d679552631a13ecfe747051be92dea6b06c921d50f3fd6fde8"
+        },
+        {
+          "path": "docs/specs/trust-network-worker-bundle-v0.1.md",
+          "present": true,
+          "sha256": "sha256:b915c0888d69a10b829295c7c80771fba4536d81e6bbc9a980fbf385d51fcf90"
+        },
+        {
+          "path": "docs/specs/trust-network-production-authority-v0.1.md",
+          "present": true,
+          "sha256": "sha256:7b7279deeaab1f71fc88cca58c8b786206856339c85a9cea9b9ba0f9bd1fc54f"
+        },
+        {
+          "path": "tests/test_trust_network.py",
+          "present": true,
+          "sha256": "sha256:2556a3de639c6e2d73c81a335e458b0410c3300bcc9e4c16fba1ecece0de2dff"
+        },
+        {
+          "path": "tests/test_procurement_clause.py",
+          "present": true,
+          "sha256": "sha256:0d986fe92d0c34d25bdae40c916c6f6283fdfd9b33b0819e469e2b2e8da00a0d"
+        },
+        {
+          "path": "tests/test_marketplace.py",
+          "present": true,
+          "sha256": "sha256:659342900bb4facf43407fb1df6fd7f10b52ea31966d096d5c7f7b6c1b3cdfb8"
+        },
+        {
+          "path": "tests/test_trust_network_service.py",
+          "present": true,
+          "sha256": "sha256:6ac45be692f917da8af0fc92d09e7e6bf969d4bdadd3a6b5cec3581948a362a0"
+        },
+        {
+          "path": "tests/test_trust_network_worker.py",
+          "present": true,
+          "sha256": "sha256:eebe609347b959b32a083deb89c696ab110eea83740689b7cf7c0f097f968095"
+        },
+        {
+          "path": "tests/test_trust_network_worker_bundle.py",
+          "present": true,
+          "sha256": "sha256:2184a89f1ba34deabb626ee4dc8115bafa20cfd7841edc7f2201c7d413990225"
+        },
+        {
+          "path": "tests/test_trust_network_authority.py",
+          "present": true,
+          "sha256": "sha256:939df2a1b6a13a4382d764e56a786927a55692af0ac435afcba9c272ae500ea7"
+        }
+      ],
+      "evidence_count": 24,
+      "external_authority_required": [
+        "Signed trust-network service attestations, worker receipts, worker review bundles, and production authority dossiers cover local/reference proof; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, marketplace asset replay, frontend replay, and service/worker linkage before external trust-network authority evidence is accepted. Live hosted services, provider-owned identity events, marketplace payouts, revocation propagation, callbacks, and procurement propagation remain external evidence until fresh provider-owned exports are supplied."
+      ],
+      "id": "trust-network-procurement-and-marketplace",
+      "missing_evidence_count": 0,
+      "phase": "P4",
+      "present_evidence_count": 24,
+      "priority": "P1",
+      "roadmap_ref": "Phase 4 trust network and marketplace",
+      "status": "reference-attested",
+      "title": "Trust network, procurement clauses, and marketplace distribution"
+    }
+  ],
+  "schema": "trustai.roadmap-audit/0.1",
+  "source": {
+    "coverage": {
+      "path": "docs/architecture/roadmap-coverage.md",
+      "present": true,
+      "sha256": "sha256:dd1ee6026f9f47f2f476f2160cd201eb91299fa10c279fcf4baf8a13547eaf2f"
+    },
+    "requirement_count": 26,
+    "roadmap": {
+      "path": "ROADMAP.md",
+      "present": true,
+      "sha256": "sha256:9e0ac80ff99040e81188cebc3c07c27bebc7c981fa7fd20d201e4d7dbcb23a5e"
+    }
+  },
+  "summary": {
+    "by_phase": {
+      "P0": {
+        "implemented-local": 4,
+        "missing-local-evidence": 0,
+        "reference-attested": 1
+      },
+      "P0-P1": {
+        "implemented-local": 1,
+        "missing-local-evidence": 0,
+        "reference-attested": 0
+      },
+      "P0-P4": {
+        "implemented-local": 0,
+        "missing-local-evidence": 0,
+        "reference-attested": 1
+      },
+      "P1": {
+        "implemented-local": 0,
+        "missing-local-evidence": 0,
+        "reference-attested": 5
+      },
+      "P1-P2": {
+        "implemented-local": 0,
+        "missing-local-evidence": 0,
+        "reference-attested": 1
+      },
+      "P1-P3": {
+        "implemented-local": 0,
+        "missing-local-evidence": 0,
+        "reference-attested": 1
+      },
+      "P1-P4": {
+        "implemented-local": 0,
+        "missing-local-evidence": 0,
+        "reference-attested": 1
+      },
+      "P2": {
+        "implemented-local": 1,
+        "missing-local-evidence": 0,
+        "reference-attested": 4
+      },
+      "P2-P3": {
+        "implemented-local": 0,
+        "missing-local-evidence": 0,
+        "reference-attested": 1
+      },
+      "P2-P4": {
+        "implemented-local": 0,
+        "missing-local-evidence": 0,
+        "reference-attested": 2
+      },
+      "P3": {
+        "implemented-local": 0,
+        "missing-local-evidence": 0,
+        "reference-attested": 2
+      },
+      "P4": {
+        "implemented-local": 0,
+        "missing-local-evidence": 0,
+        "reference-attested": 1
+      }
+    },
+    "implemented-local": 6,
+    "missing-local-evidence": 0,
+    "reference-attested": 20,
+    "requirement_count": 26
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "body_base64": "ewogICJleHBlY3RlZF9zaGEiOiAiY2I5NWVmZDJkZTQ0OGE1NjFmYTg4ODA2NWViNGYzNzY5MTA3NjBjOSIsCiAgImV4cGVjdGVkX3NoYV9tYXRjaGVzIjogdHJ1ZSwKICAiZXhwb3J0X2lkIjogIjE5ODk1MTY5MjkyNzQxZWMxNjgzNDU2NDFhMjUxYTBkYmZmODk0MWEzZDZhYjMzN2Y3YTcyODFjNDVkMjhmZDUiLAogICJnZW5lcmF0ZWRfYXQiOiAiMjAyNi0wNy0xMlQwMDo0MjozMFoiLAogICJsaW1pdGF0aW9ucyI6IFsKICAgICJUaGlzIGV4cG9ydCBwcmVzZXJ2ZXMgb25lIGdpdCBscy1yZW1vdGUgcmVzcG9uc2UgZnJvbSB0aGUgbmFtZWQgcmVtb3RlOyBpdCBwcm92ZXMgdGhlIHJlbW90ZSBhZHZlcnRpc2VkIHRoZXNlIHJlZnMgYXQgY29sbGVjdGlvbiB0aW1lLCBub3QgdGhhdCB0aGUgcmVtb3RlIHdpbGwgY29udGludWUgdG8gZG8gc28gbGF0ZXIuIiwKICAgICJVc2Ugd2l0aCBleHRlcm5hbC1ldmlkZW5jZSBzb3VyY2Ugc25hcHNob3RzIGFuZCBpbnRha2UgcmVjZWlwdHMgdG8gYmluZCBwdWJsaWMgcmVwb3NpdG9yeSBvciByZWxlYXNlLXJlZiBwdWJsaWNhdGlvbiBldmlkZW5jZSB0byBhIHJvYWRtYXAgYXV0aG9yaXR5IHRhc2suIgogIF0sCiAgInJhd19zdGRvdXRfc2hhMjU2IjogInNoYTI1Njo0NzIxOWVkYmVkYzA0N2U0NzJmMTZiYTE3ODExMzQxYmIyM2IwNTZlNDRhYjQ2MTA5Y2I2YTE2OWM3MGVlYWMzIiwKICAicmVjb3JkcyI6IFsKICAgIHsKICAgICAgInJlZiI6ICJyZWZzL2hlYWRzL21haW4iLAogICAgICAic2hhIjogImNiOTVlZmQyZGU0NDhhNTYxZmE4ODgwNjVlYjRmMzc2OTEwNzYwYzkiCiAgICB9CiAgXSwKICAicmVmc19yZXF1ZXN0ZWQiOiBbCiAgICAicmVmcy9oZWFkcy9tYWluIgogIF0sCiAgInJlbW90ZSI6ICJodHRwczovL2dpdGh1Yi5jb20vTVNCZW5pL3RydXN0X2FpLmdpdCIsCiAgInNjaGVtYSI6ICJ0cnVzdGFpLmV4dGVybmFsLWV2aWRlbmNlLWdpdC1yZW1vdGUtcmVmLWV4cG9ydC8wLjEiCn0K",
+  "body_sha256": "sha256:f49cd61dea0e92444c777d2f44a4708d387d731bed5e3eace3f2e6654ef0621c",
+  "body_size_bytes": 987,
+  "content_type": "application/json",
+  "expires_at": "2026-12-31T00:00:00Z",
+  "generated_at": "2026-07-12T00:42:30Z",
+  "issued_at": "2026-07-12T00:00:00Z",
+  "issuer": "GitHub Git",
+  "limitations": [
+    "This source snapshot preserves one collected authority response as a hashable artifact; it does not prove that the authority will return the same response later.",
+    "Verifier checks cover snapshot integrity, body hash, optional HTTP metadata, and optional freshness metadata.",
+    "Use this snapshot as the artifact supplied to external-evidence-intake for the matching collection-plan task."
+  ],
+  "response_headers": {},
+  "retrieval_method": "git-ls-remote",
+  "schema": "trustai.external-evidence-source-snapshot/0.1",
+  "snapshot_id": "d7d2f1b5a39fac3b5ada20d7aa8b4b109d07dc714b311fe51b3a88b2a3282465",
+  "source_uri": "git+https://github.com/MSBeni/trust_ai.git#refs/heads/main",
+  "status_code": null,
+  "subject": "MSBeni/trust_ai main branch"
+}
