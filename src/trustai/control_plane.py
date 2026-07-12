@@ -47,6 +47,13 @@ def _decode_json_object(value: Any) -> dict[str, Any]:
     return decoded if isinstance(decoded, dict) else {}
 
 
+def _bool_fields(item: dict[str, Any], *fields: str) -> dict[str, Any]:
+    for field in fields:
+        if item.get(field) is not None:
+            item[field] = bool(item[field])
+    return item
+
+
 class ControlPlane:
     def __init__(self, path: str | Path):
         self.path = Path(path)
@@ -987,6 +994,275 @@ class ControlPlane:
             "policy_decisions": self.recent_policy_decisions(limit),
             "policy_engine_receipts": self.recent_policy_engine_receipts(limit),
             "incidents": self.recent_incidents(limit),
+        }
+
+    def _resolve_contract_scope(
+        self,
+        contract_id: str | None,
+        contract_hash: str | None,
+    ) -> tuple[dict[str, Any] | None, str | None, str | None]:
+        if not contract_id and not contract_hash:
+            raise ValueError("contract_id or contract_hash is required")
+        clauses = []
+        params: list[str] = []
+        if contract_id:
+            clauses.append("contract_id = ?")
+            params.append(contract_id)
+        if contract_hash:
+            clauses.append("contract_hash = ?")
+            params.append(contract_hash)
+        row = self.conn.execute(
+            f"""
+            SELECT contract_hash, contract_id, version, agent_name, agent_version,
+                   registered_entry_id, created_at
+            FROM contracts
+            WHERE {' AND '.join(clauses)}
+            ORDER BY created_at DESC
+            LIMIT 1
+            """,
+            params,
+        ).fetchone()
+        contract = dict(row) if row else None
+        return (
+            contract,
+            contract_id or (contract.get("contract_id") if contract else None),
+            contract_hash or (contract.get("contract_hash") if contract else None),
+        )
+
+    def _contract_scope_clause(
+        self,
+        contract_id: str | None,
+        contract_hash: str | None,
+        *,
+        id_column: str | None = "contract_id",
+        hash_column: str | None = "contract_hash",
+    ) -> tuple[str, list[str]]:
+        clauses = []
+        params: list[str] = []
+        if id_column and contract_id:
+            clauses.append(f"{id_column} = ?")
+            params.append(contract_id)
+        if hash_column and contract_hash:
+            clauses.append(f"{hash_column} = ?")
+            params.append(contract_hash)
+        if not clauses:
+            return "1 = 0", []
+        return "(" + " OR ".join(clauses) + ")", params
+
+    def _scoped_rows(
+        self,
+        *,
+        table: str,
+        select_sql: str,
+        order_sql: str,
+        contract_id: str | None,
+        contract_hash: str | None,
+        limit: int,
+        id_column: str | None = "contract_id",
+        hash_column: str | None = "contract_hash",
+    ) -> tuple[int, list[dict[str, Any]]]:
+        clause, params = self._contract_scope_clause(
+            contract_id,
+            contract_hash,
+            id_column=id_column,
+            hash_column=hash_column,
+        )
+        count = self.conn.execute(f"SELECT COUNT(*) AS count FROM {table} WHERE {clause}", params).fetchone()["count"]
+        rows = self.conn.execute(
+            f"{select_sql} WHERE {clause} {order_sql} LIMIT ?",
+            [*params, limit],
+        ).fetchall()
+        return count, [dict(row) for row in rows]
+
+    def contract_evidence(
+        self,
+        *,
+        contract_id: str | None = None,
+        contract_hash: str | None = None,
+        limit: int = 20,
+    ) -> dict[str, Any]:
+        contract, resolved_id, resolved_hash = self._resolve_contract_scope(contract_id, contract_hash)
+        counts: dict[str, int] = {"contracts": 1 if contract else 0}
+
+        count, chain_entries = self._scoped_rows(
+            table="chain_entries",
+            select_sql="""
+            SELECT entry_id, idx, tenant_id, entry_type, timestamp,
+                   contract_hash, payload_hash
+            FROM chain_entries
+            """,
+            order_sql="ORDER BY idx DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+            id_column=None,
+        )
+        counts["chain_entries"] = count
+
+        count, eval_runs = self._scoped_rows(
+            table="eval_runs",
+            select_sql="""
+            SELECT entry_id, contract_id, contract_hash, agent_name,
+                   agent_version, results_hash, evaluated_at
+            FROM eval_runs
+            """,
+            order_sql="ORDER BY evaluated_at DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+        )
+        counts["eval_runs"] = count
+
+        count, gate_decisions = self._scoped_rows(
+            table="gate_decisions",
+            select_sql="""
+            SELECT entry_id, contract_id, contract_hash, agent_name,
+                   agent_version, outcome, passed, eval_entry_id,
+                   contract_entry_id, results_hash, check_count,
+                   failed_check_count, holdout_passed, approvals_passed,
+                   evaluated_at
+            FROM gate_decisions
+            """,
+            order_sql="ORDER BY evaluated_at DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+        )
+        counts["gate_decisions"] = count
+        gate_decisions = [_bool_fields(item, "passed", "holdout_passed", "approvals_passed") for item in gate_decisions]
+
+        count, proof_packs = self._scoped_rows(
+            table="proof_packs",
+            select_sql="""
+            SELECT pack_id, contract_id, contract_hash, agent_name,
+                   agent_version, outcome, issued_at, path
+            FROM proof_packs
+            """,
+            order_sql="ORDER BY issued_at DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+        )
+        counts["proof_packs"] = count
+
+        count, ingest_events = self._scoped_rows(
+            table="ingest_events",
+            select_sql="""
+            SELECT entry_id, event_hash, contract_hash, trace_id, span_id,
+                   parent_span_id, event_name, agent_name, agent_version,
+                   risk_class, schema_url, observed_at, attributes_json
+            FROM ingest_events
+            """,
+            order_sql="ORDER BY observed_at DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+            id_column=None,
+        )
+        counts["ingest_events"] = count
+        for item in ingest_events:
+            item["attributes"] = _decode_json_object(item.pop("attributes_json", None))
+
+        count, promotion_statuses = self._scoped_rows(
+            table="promotion_statuses",
+            select_sql="""
+            SELECT receipt_id, provider, pack_id, contract_id, contract_hash,
+                   agent_name, agent_version, gate_outcome, passed,
+                   provider_status_kind, provider_status_success,
+                   target_ref_json, violation_count, attested_at
+            FROM promotion_statuses
+            """,
+            order_sql="ORDER BY attested_at DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+        )
+        counts["promotion_statuses"] = count
+        for item in promotion_statuses:
+            _bool_fields(item, "passed", "provider_status_success")
+            item["target_ref"] = _decode_json_object(item.pop("target_ref_json", None))
+
+        count, runtime_attestations = self._scoped_rows(
+            table="runtime_attestations",
+            select_sql="""
+            SELECT entry_id, contract_id, contract_hash, action_hash,
+                   action_id, action_type, risk_class, passed, outcome,
+                   check_count, failed_check_count, attested_at
+            FROM runtime_attestations
+            """,
+            order_sql="ORDER BY attested_at DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+        )
+        counts["runtime_attestations"] = count
+        runtime_attestations = [_bool_fields(item, "passed") for item in runtime_attestations]
+
+        count, policy_decisions = self._scoped_rows(
+            table="policy_decisions",
+            select_sql="""
+            SELECT entry_id, policy_pack_id, policy_pack_version,
+                   policy_pack_hash, contract_hash, action_hash, passed,
+                   outcome, matched_rule_count, check_count,
+                   failed_check_count, evaluated_at
+            FROM policy_decisions
+            """,
+            order_sql="ORDER BY evaluated_at DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+            id_column=None,
+        )
+        counts["policy_decisions"] = count
+        policy_decisions = [_bool_fields(item, "passed") for item in policy_decisions]
+
+        count, policy_engine_receipts = self._scoped_rows(
+            table="policy_engine_receipts",
+            select_sql="""
+            SELECT receipt_id, entry_id, engine_name, engine_mode,
+                   policy_pack_id, policy_pack_version, policy_pack_hash,
+                   action_hash, action_id, action_type, risk_class,
+                   pack_id, contract_id, contract_hash, decision_entry_id,
+                   decision_outcome, decision_passed, evaluated_at
+            FROM policy_engine_receipts
+            """,
+            order_sql="ORDER BY evaluated_at DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+        )
+        counts["policy_engine_receipts"] = count
+        policy_engine_receipts = [_bool_fields(item, "decision_passed") for item in policy_engine_receipts]
+
+        count, incidents = self._scoped_rows(
+            table="incidents",
+            select_sql="""
+            SELECT incident_id, entry_id, contract_hash, agent_name,
+                   agent_version, severity, summary, detected_at
+            FROM incidents
+            """,
+            order_sql="ORDER BY detected_at DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+            id_column=None,
+        )
+        counts["incidents"] = count
+
+        return {
+            "scope": {"contract_id": resolved_id, "contract_hash": resolved_hash},
+            "contract": contract,
+            "counts": counts,
+            "chain_entries": chain_entries,
+            "eval_runs": eval_runs,
+            "gate_decisions": gate_decisions,
+            "proof_packs": proof_packs,
+            "ingest_events": ingest_events,
+            "promotion_statuses": promotion_statuses,
+            "runtime_attestations": runtime_attestations,
+            "policy_decisions": policy_decisions,
+            "policy_engine_receipts": policy_engine_receipts,
+            "incidents": incidents,
         }
 
     def agents(self) -> list[dict[str, Any]]:

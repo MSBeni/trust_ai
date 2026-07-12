@@ -135,6 +135,20 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual(200, contracts_response.status)
                 self.assertEqual([], contracts_body["contracts"])
 
+                conn.request("GET", "/v0/control/contract-evidence")
+                missing_scope_response = conn.getresponse()
+                missing_scope_body = json.loads(missing_scope_response.read().decode("utf-8"))
+                self.assertEqual(422, missing_scope_response.status)
+                self.assertIn("contract_id or contract_hash", missing_scope_body["error"])
+
+                conn.request("GET", "/v0/control/contract-evidence?contract_id=unknown")
+                contract_evidence_response = conn.getresponse()
+                contract_evidence_body = json.loads(contract_evidence_response.read().decode("utf-8"))
+                self.assertEqual(200, contract_evidence_response.status)
+                self.assertEqual("unknown", contract_evidence_body["scope"]["contract_id"])
+                self.assertEqual(0, contract_evidence_body["counts"]["contracts"])
+                self.assertEqual(0, contract_evidence_body["counts"]["eval_runs"])
+
                 conn.request("GET", "/v0/eval-runs")
                 eval_runs_response = conn.getresponse()
                 eval_runs_body = json.loads(eval_runs_response.read().decode("utf-8"))

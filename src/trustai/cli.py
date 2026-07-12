@@ -2280,6 +2280,11 @@ def cmd_control_summary(args: argparse.Namespace) -> int:
             summary["promotion_statuses"] = control.recent_promotion_statuses()
         if args.runtime_evidence:
             summary["runtime_evidence"] = control.runtime_evidence()
+        if args.contract_id or args.contract_hash:
+            summary["contract_evidence"] = control.contract_evidence(
+                contract_id=args.contract_id,
+                contract_hash=args.contract_hash,
+            )
         print(json.dumps(summary, indent=2, sort_keys=True))
         return 0
     finally:
@@ -20341,6 +20346,8 @@ def build_parser() -> argparse.ArgumentParser:
     control_summary.add_argument("--ingest-events", action="store_true")
     control_summary.add_argument("--promotion-statuses", action="store_true")
     control_summary.add_argument("--runtime-evidence", action="store_true")
+    control_summary.add_argument("--contract-id")
+    control_summary.add_argument("--contract-hash")
     control_summary.set_defaults(func=cmd_control_summary)
     register = subparsers.add_parser("register", help="register a verification contract")
     register.add_argument("contract")

@@ -141,6 +141,31 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             finally:
                 control.close()
             return
+        if parsed.path == "/v0/control/contract-evidence":
+            query = parse_qs(parsed.query)
+            contract_id = query.get("contract_id", [None])[0]
+            contract_hash = query.get("contract_hash", [None])[0]
+            if not contract_id and not contract_hash:
+                self._json_response(422, {"error": "contract_id or contract_hash is required"})
+                return
+            try:
+                limit = int(query.get("limit", ["20"])[0])
+            except ValueError:
+                self._json_response(422, {"error": "limit must be an integer"})
+                return
+            control = self._control()
+            try:
+                self._json_response(
+                    200,
+                    control.contract_evidence(
+                        contract_id=contract_id,
+                        contract_hash=contract_hash,
+                        limit=limit,
+                    ),
+                )
+            finally:
+                control.close()
+            return
         if parsed.path == "/v0/contracts":
             control = self._control()
             try:
