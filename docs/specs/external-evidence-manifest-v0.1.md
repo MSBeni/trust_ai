@@ -144,6 +144,17 @@ snapshot's repository-relative artifact path. It emits no additional schema, but
 it is the preferred operator workflow for collecting many authority receipts
 because the snapshot and intake cannot drift apart.
 
+
+`external-evidence-collect-batch` consumes
+`trustai.external-evidence-source-map/0.1`, a source-map JSON object with optional
+`defaults` and an `entries` array. Each entry MUST identify a unique collection
+`task`, `source_uri`, and `description`; it MAY provide or inherit `source_file`,
+`issuer`, `subject`, `content_type`, `issued_at`, `expires_at`,
+`retrieval_method`, `snapshot_out`, `intake_out`, `snapshot_dir`, `intake_dir`,
+and `timeout_seconds`. The command rejects duplicate tasks and writes a
+`trustai.external-evidence-collection-run/0.1` report with `generated_at` and listing generated snapshot
+paths, intake paths, IDs, evidence arguments, and warnings.
+
 ## External Evidence Intake Receipt
 
 `external-evidence-intake` emits `trustai.external-evidence-intake/0.1`, a

@@ -1,4 +1,5 @@
 import copy
+import json
 import shutil
 import subprocess
 import sys
@@ -15,6 +16,8 @@ from trustai.external_evidence import (
     EXTERNAL_EVIDENCE_COLLECTION_PLAN_SCHEMA,
     EXTERNAL_EVIDENCE_INTAKE_SCHEMA,
     EXTERNAL_EVIDENCE_SOURCE_SNAPSHOT_SCHEMA,
+    EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA,
+    EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA,
     ROADMAP_EVIDENCE_REPORT_SCHEMA,
     ROADMAP_EVIDENCE_BUNDLE_SCHEMA,
     _allowed_authority_kinds_for_requirement,
@@ -469,6 +472,113 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             finally:
                 shutil.rmtree(snapshot_path.parent, ignore_errors=True)
 
+    def test_cli_external_evidence_collect_batch_creates_multiple_intakes(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_path = Path(tmp_dir)
+            audit_path = tmp_path / "roadmap-audit.json"
+            manifest_path = tmp_path / "external-evidence-manifest.json"
+            plan_path = tmp_path / "external-evidence-plan-all.json"
+            source_map_path = tmp_path / "external-evidence-source-map.json"
+            run_path = tmp_path / "external-evidence-collection-run.json"
+            intake_dir = tmp_path / "external-evidence-intakes"
+            source_path = tmp_path / "provider-export.json"
+            snapshot_dir_rel = Path("artifacts/test-external-evidence-batch")
+            snapshot_dir = ROOT / snapshot_dir_rel
+            shutil.rmtree(snapshot_dir, ignore_errors=True)
+            source_path.write_text('{"run":"ok","status":"completed"}\n', encoding="utf-8")
+
+            try:
+                audit = build_roadmap_audit(ROOT)
+                manifest = build_external_evidence_manifest(
+                    audit,
+                    root=ROOT,
+                    evidence=[],
+                    generated_at="2026-07-09T00:00:00Z",
+                )
+                plan = build_external_evidence_collection_plan(
+                    manifest,
+                    audit,
+                    root=ROOT,
+                    status_filter="all",
+                    generated_at="2026-07-09T00:00:00Z",
+                )
+                write_roadmap_audit(audit_path, audit)
+                write_external_evidence_manifest(manifest_path, manifest)
+                write_external_evidence_collection_plan(plan_path, plan)
+                source_map = {
+                    "schema": EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA,
+                    "defaults": {
+                        "source_file": str(source_path),
+                        "issuer": "Provider API",
+                        "subject": "trustai external evidence batch export",
+                        "content_type": "application/json",
+                        "issued_at": "2026-07-08T00:00:00Z",
+                        "expires_at": "2026-12-31T00:00:00Z",
+                    },
+                    "entries": [
+                        {
+                            "task": "oss-verifier-and-public-spec:ci-run",
+                            "source_uri": "https://provider.example/runs/1234567890",
+                            "description": "Snapshot of provider CI workflow export",
+                            "snapshot_out": (snapshot_dir_rel / "ci-run.json").as_posix(),
+                            "intake_out": str(intake_dir / "ci-run.json"),
+                        },
+                        {
+                            "task": "oss-verifier-and-public-spec:provider-api",
+                            "source_uri": "https://provider.example/api/runs/1234567890",
+                            "description": "Snapshot of provider API workflow export",
+                            "snapshot_out": (snapshot_dir_rel / "provider-api.json").as_posix(),
+                            "intake_out": str(intake_dir / "provider-api.json"),
+                        },
+                    ],
+                }
+                source_map_path.write_text(json.dumps(source_map, indent=2, sort_keys=True), encoding="utf-8-sig")
+
+                subprocess.run(
+                    [
+                        sys.executable,
+                        "-m",
+                        "trustai",
+                        "external-evidence-collect-batch",
+                        str(plan_path),
+                        str(manifest_path),
+                        str(audit_path),
+                        str(source_map_path),
+                        "--root",
+                        str(ROOT),
+                        "--require-fresh",
+                        "--now",
+                        "2026-07-09T00:00:00Z",
+                        "--out",
+                        str(run_path),
+                    ],
+                    cwd=ROOT,
+                    check=True,
+                )
+                run = json.loads(run_path.read_text(encoding="utf-8"))
+                intakes = load_external_evidence_intakes(directories=[intake_dir])
+                rebuilt = build_external_evidence_manifest_from_intakes(
+                    plan,
+                    manifest,
+                    audit,
+                    root=ROOT,
+                    intakes=intakes,
+                    require_fresh=True,
+                    now="2026-07-09T00:00:00Z",
+                    generated_at="2026-07-09T00:01:00Z",
+                )
+
+                self.assertEqual(EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA, run["schema"])
+                self.assertEqual(2, run["summary"]["collected_count"])
+                self.assertEqual(2, len(intakes))
+                self.assertEqual(2, rebuilt["summary"]["covered_authority_kind_count"])
+                self.assertEqual(68, rebuilt["summary"]["missing_authority_kind_count"])
+                self.assertEqual(
+                    ["ci-run", "provider-api"],
+                    rebuilt["summary"]["covered_authority_kinds_by_requirement"]["oss-verifier-and-public-spec"],
+                )
+            finally:
+                shutil.rmtree(snapshot_dir, ignore_errors=True)
     def test_external_evidence_manifest_from_intakes_preserves_source_and_overlays_receipts(self):
         audit = build_roadmap_audit(ROOT)
         source_manifest = build_external_evidence_manifest(

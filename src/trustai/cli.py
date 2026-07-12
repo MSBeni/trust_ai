@@ -265,7 +265,7 @@ from .auditor_program_sponsorship import (
     verify_auditor_program_sponsorship_receipt,
     write_auditor_program_sponsorship_receipt,
 )
-from .canonical import content_hash
+from .canonical import content_hash, utc_now
 from .chain import EvidenceChain
 from .design_partner import (
     DOSSIER_MODES,
@@ -1068,6 +1068,8 @@ from .external_evidence import (
     build_external_evidence_manifest_from_intakes,
     build_external_evidence_collection_plan,
     build_external_evidence_intake,
+    EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA,
+    EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA,
     build_external_evidence_source_snapshot,
     build_roadmap_evidence_bundle,
     build_roadmap_evidence_report,
@@ -1212,7 +1214,7 @@ def _repo_root() -> Path:
 
 
 def _load_json(path: str | Path) -> dict:
-    return json.loads(Path(path).read_text(encoding="utf-8"))
+    return json.loads(Path(path).read_text(encoding="utf-8-sig"))
 
 
 
@@ -14282,22 +14284,37 @@ def _repository_relative_artifact_path(root: str | Path, path: str | Path) -> tu
         raise ValueError(f"external evidence snapshot output must be under --root: {path}") from exc
     return resolved, relative.as_posix()
 
-def _read_external_evidence_snapshot_source(args: argparse.Namespace) -> tuple[bytes, str | None, int | None, dict[str, str]]:
-    if args.source_file:
-        return Path(args.source_file).read_bytes(), args.content_type, None, {}
+def _read_external_evidence_snapshot_source_values(
+    *,
+    source_uri: str,
+    source_file: str | None,
+    content_type: str | None,
+    timeout_seconds: float,
+) -> tuple[bytes, str | None, int | None, dict[str, str]]:
+    if source_file:
+        return Path(source_file).read_bytes(), content_type, None, {}
 
     import urllib.request
 
     request = urllib.request.Request(
-        args.source_uri,
+        source_uri,
         headers={"User-Agent": "trustai-external-evidence-snapshot/0.1"},
     )
-    with urllib.request.urlopen(request, timeout=args.timeout_seconds) as response:
+    with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
         body = response.read()
         status_code = response.getcode()
         headers = {str(key): str(value) for key, value in response.headers.items()}
-        content_type = args.content_type or response.headers.get("Content-Type")
-    return body, content_type, status_code if isinstance(status_code, int) else None, headers
+        resolved_content_type = content_type or response.headers.get("Content-Type")
+    return body, resolved_content_type, status_code if isinstance(status_code, int) else None, headers
+
+
+def _read_external_evidence_snapshot_source(args: argparse.Namespace) -> tuple[bytes, str | None, int | None, dict[str, str]]:
+    return _read_external_evidence_snapshot_source_values(
+        source_uri=args.source_uri,
+        source_file=args.source_file,
+        content_type=args.content_type,
+        timeout_seconds=args.timeout_seconds,
+    )
 
 
 def cmd_external_evidence_snapshot(args: argparse.Namespace) -> int:
@@ -14362,74 +14379,235 @@ def cmd_external_evidence_snapshot_verify(args: argparse.Namespace) -> int:
         print(f"- {error}", file=sys.stderr)
     return 1
 
+def _collect_external_evidence_artifacts(
+    *,
+    plan: dict[str, Any],
+    manifest: dict[str, Any],
+    roadmap_audit: dict[str, Any],
+    root: str | Path,
+    task: str,
+    source_uri: str,
+    source_file: str | None,
+    retrieval_method: str | None,
+    content_type: str | None,
+    description: str,
+    issuer: str | None,
+    subject: str | None,
+    issued_at: str | None,
+    expires_at: str | None,
+    require_fresh: bool,
+    now: str | None,
+    timeout_seconds: float,
+    snapshot_path: str | Path,
+    intake_path: str | Path,
+) -> dict[str, Any]:
+    body, resolved_content_type, status_code, headers = _read_external_evidence_snapshot_source_values(
+        source_uri=source_uri,
+        source_file=source_file,
+        content_type=content_type,
+        timeout_seconds=timeout_seconds,
+    )
+    resolved_retrieval_method = retrieval_method or ("file-copy" if source_file else "http-get")
+    snapshot = build_external_evidence_source_snapshot(
+        source_uri=source_uri,
+        body=body,
+        retrieval_method=resolved_retrieval_method,
+        issuer=issuer,
+        subject=subject,
+        content_type=resolved_content_type,
+        status_code=status_code,
+        response_headers=headers,
+        issued_at=issued_at,
+        expires_at=expires_at,
+    )
+    snapshot_result = verify_external_evidence_source_snapshot(
+        snapshot,
+        require_fresh=require_fresh,
+        now=now,
+    )
+    if not snapshot_result.ok:
+        raise ValueError("invalid external evidence source snapshot: " + "; ".join(snapshot_result.errors))
+    snapshot_target, snapshot_artifact_path = _repository_relative_artifact_path(root, snapshot_path)
+    write_external_evidence_source_snapshot(snapshot_target, snapshot)
+    intake = build_external_evidence_intake(
+        plan,
+        manifest,
+        roadmap_audit,
+        root=root,
+        task_ref=task,
+        artifact_path=snapshot_artifact_path,
+        description=description,
+        issuer=issuer,
+        subject=subject,
+        source_uri=source_uri,
+        issued_at=issued_at,
+        expires_at=expires_at,
+    )
+    intake_result = verify_external_evidence_intake(
+        intake,
+        plan,
+        manifest,
+        roadmap_audit,
+        root=root,
+        require_fresh=require_fresh,
+        now=now,
+    )
+    if not intake_result.ok:
+        raise ValueError("invalid external evidence intake: " + "; ".join(intake_result.errors))
+    write_external_evidence_intake(intake_path, intake)
+    return {
+        "task": task,
+        "source_uri": source_uri,
+        "snapshot_path": str(snapshot_target),
+        "snapshot_artifact_path": snapshot_artifact_path,
+        "snapshot_id": snapshot["snapshot_id"],
+        "intake_path": str(intake_path),
+        "intake_id": intake["intake_id"],
+        "evidence_argument": intake["evidence_argument"],
+        "warnings": snapshot_result.warnings + intake_result.warnings,
+    }
+
 def cmd_external_evidence_collect(args: argparse.Namespace) -> int:
     try:
         roadmap_audit = load_roadmap_audit(args.roadmap_audit)
         manifest = load_external_evidence_manifest(args.manifest)
         plan = load_external_evidence_collection_plan(args.plan)
-        body, content_type, status_code, headers = _read_external_evidence_snapshot_source(args)
-        retrieval_method = args.retrieval_method or ("file-copy" if args.source_file else "http-get")
-        snapshot = build_external_evidence_source_snapshot(
-            source_uri=args.source_uri,
-            body=body,
-            retrieval_method=retrieval_method,
-            issuer=args.issuer,
-            subject=args.subject,
-            content_type=content_type,
-            status_code=status_code,
-            response_headers=headers,
-            issued_at=args.issued_at,
-            expires_at=args.expires_at,
-        )
-        snapshot_result = verify_external_evidence_source_snapshot(
-            snapshot,
-            require_fresh=args.require_fresh,
-            now=args.now,
-        )
-        if not snapshot_result.ok:
-            raise ValueError("invalid external evidence source snapshot: " + "; ".join(snapshot_result.errors))
         snapshot_path = _external_evidence_collect_output_path(args.snapshot_out, args.snapshot_dir, args.task)
-        snapshot_target, snapshot_artifact_path = _repository_relative_artifact_path(args.root, snapshot_path)
-        write_external_evidence_source_snapshot(snapshot_target, snapshot)
-        intake = build_external_evidence_intake(
-            plan,
-            manifest,
-            roadmap_audit,
+        intake_path = _external_evidence_collect_output_path(args.intake_out, args.intake_dir, args.task)
+        collected = _collect_external_evidence_artifacts(
+            plan=plan,
+            manifest=manifest,
+            roadmap_audit=roadmap_audit,
             root=args.root,
-            task_ref=args.task,
-            artifact_path=snapshot_artifact_path,
+            task=args.task,
+            source_uri=args.source_uri,
+            source_file=args.source_file,
+            retrieval_method=args.retrieval_method,
+            content_type=args.content_type,
             description=args.description,
             issuer=args.issuer,
             subject=args.subject,
-            source_uri=args.source_uri,
             issued_at=args.issued_at,
             expires_at=args.expires_at,
-        )
-        intake_result = verify_external_evidence_intake(
-            intake,
-            plan,
-            manifest,
-            roadmap_audit,
-            root=args.root,
             require_fresh=args.require_fresh,
             now=args.now,
+            timeout_seconds=args.timeout_seconds,
+            snapshot_path=snapshot_path,
+            intake_path=intake_path,
         )
-        if not intake_result.ok:
-            raise ValueError("invalid external evidence intake: " + "; ".join(intake_result.errors))
-        intake_path = _external_evidence_collect_output_path(args.intake_out, args.intake_dir, args.task)
-        write_external_evidence_intake(intake_path, intake)
     except (OSError, ValueError) as exc:
         print(f"external evidence collection failed: {exc}", file=sys.stderr)
         return 1
-    print(f"external evidence source snapshot: {snapshot_target}")
-    print(f"snapshot id: {snapshot['snapshot_id']}")
-    print(f"snapshot artifact path: {snapshot_artifact_path}")
-    print(f"external evidence intake: {intake_path}")
-    print(f"intake id: {intake['intake_id']}")
-    print(f"task ref: {intake['task']['task_ref']}")
-    print(f"evidence argument: {intake['evidence_argument']}")
-    for warning in snapshot_result.warnings + intake_result.warnings:
+    print(f"external evidence source snapshot: {collected['snapshot_path']}")
+    print(f"snapshot id: {collected['snapshot_id']}")
+    print(f"snapshot artifact path: {collected['snapshot_artifact_path']}")
+    print(f"external evidence intake: {collected['intake_path']}")
+    print(f"intake id: {collected['intake_id']}")
+    print(f"task ref: external-evidence:{args.task}")
+    print(f"evidence argument: {collected['evidence_argument']}")
+    for warning in collected["warnings"]:
         print(f"warning: {warning}")
+    return 0
+
+
+def _source_map_value(entry: dict[str, Any], defaults: dict[str, Any], key: str) -> Any:
+    return entry[key] if key in entry else defaults.get(key)
+
+
+def cmd_external_evidence_collect_batch(args: argparse.Namespace) -> int:
+    try:
+        roadmap_audit = load_roadmap_audit(args.roadmap_audit)
+        manifest = load_external_evidence_manifest(args.manifest)
+        plan = load_external_evidence_collection_plan(args.plan)
+        source_map = _load_json(args.source_map)
+        if source_map.get("schema") != EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA:
+            raise ValueError(f"unsupported external evidence source map schema: {source_map.get('schema')}")
+        defaults = source_map.get("defaults", {})
+        if not isinstance(defaults, dict):
+            raise ValueError("external evidence source map defaults must be an object")
+        entries = source_map.get("entries", [])
+        if not isinstance(entries, list) or not entries:
+            raise ValueError("external evidence source map entries must be a non-empty list")
+        collected_items: list[dict[str, Any]] = []
+        seen_tasks: set[str] = set()
+        for index, entry in enumerate(entries):
+            if not isinstance(entry, dict):
+                raise ValueError(f"external evidence source map entry {index} must be an object")
+            task = str(_source_map_value(entry, defaults, "task") or _source_map_value(entry, defaults, "task_ref") or "")
+            if not task:
+                raise ValueError(f"external evidence source map entry {index} missing task")
+            if task in seen_tasks:
+                raise ValueError(f"duplicate external evidence source map task: {task}")
+            seen_tasks.add(task)
+            source_uri = str(_source_map_value(entry, defaults, "source_uri") or "")
+            description = str(_source_map_value(entry, defaults, "description") or "")
+            if not source_uri:
+                raise ValueError(f"external evidence source map entry {index} missing source_uri")
+            if not description:
+                raise ValueError(f"external evidence source map entry {index} missing description")
+            source_file = _source_map_value(entry, defaults, "source_file")
+            retrieval_method = _source_map_value(entry, defaults, "retrieval_method")
+            content_type = _source_map_value(entry, defaults, "content_type")
+            issuer = _source_map_value(entry, defaults, "issuer")
+            subject = _source_map_value(entry, defaults, "subject")
+            issued_at = _source_map_value(entry, defaults, "issued_at")
+            expires_at = _source_map_value(entry, defaults, "expires_at")
+            timeout_seconds = float(_source_map_value(entry, defaults, "timeout_seconds") or args.timeout_seconds)
+            snapshot_dir = str(_source_map_value(entry, defaults, "snapshot_dir") or args.snapshot_dir)
+            intake_dir = str(_source_map_value(entry, defaults, "intake_dir") or args.intake_dir)
+            snapshot_path = _external_evidence_collect_output_path(_source_map_value(entry, defaults, "snapshot_out"), snapshot_dir, task)
+            intake_path = _external_evidence_collect_output_path(_source_map_value(entry, defaults, "intake_out"), intake_dir, task)
+            collected_items.append(
+                _collect_external_evidence_artifacts(
+                    plan=plan,
+                    manifest=manifest,
+                    roadmap_audit=roadmap_audit,
+                    root=args.root,
+                    task=task,
+                    source_uri=source_uri,
+                    source_file=str(source_file) if source_file else None,
+                    retrieval_method=str(retrieval_method) if retrieval_method else None,
+                    content_type=str(content_type) if content_type else None,
+                    description=description,
+                    issuer=str(issuer) if issuer else None,
+                    subject=str(subject) if subject else None,
+                    issued_at=str(issued_at) if issued_at else None,
+                    expires_at=str(expires_at) if expires_at else None,
+                    require_fresh=args.require_fresh,
+                    now=args.now,
+                    timeout_seconds=timeout_seconds,
+                    snapshot_path=snapshot_path,
+                    intake_path=intake_path,
+                )
+            )
+        body = {
+            "schema": EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA,
+            "generated_at": utc_now(),
+            "source_map": {
+                "path": args.source_map,
+                "source_map_hash": content_hash(source_map),
+            },
+            "summary": {
+                "collected_count": len(collected_items),
+                "task_count": len(seen_tasks),
+                "require_fresh": args.require_fresh,
+            },
+            "collected": collected_items,
+        }
+        report = {**body, "run_id": content_hash(body)}
+        if args.out:
+            _write_json(args.out, report)
+    except (OSError, ValueError) as exc:
+        print(f"external evidence batch collection failed: {exc}", file=sys.stderr)
+        return 1
+    if args.out:
+        print(f"external evidence collection run: {args.out}")
+        print(f"run id: {report['run_id']}")
+    print(f"collected external evidence receipts: {len(collected_items)}")
+    for item in collected_items:
+        print(f"- {item['task']} -> {item['intake_path']}")
+        for warning in item["warnings"]:
+            print(f"warning: {warning}")
     return 0
 
 def cmd_external_evidence_intake(args: argparse.Namespace) -> int:
@@ -23963,6 +24141,19 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_collect.add_argument("--intake-out")
     external_evidence_collect.set_defaults(func=cmd_external_evidence_collect)
 
+    external_evidence_collect_batch = subparsers.add_parser("external-evidence-collect-batch", help="collect multiple external-evidence source snapshots and intake receipts from a source-map JSON")
+    external_evidence_collect_batch.add_argument("plan")
+    external_evidence_collect_batch.add_argument("manifest")
+    external_evidence_collect_batch.add_argument("roadmap_audit")
+    external_evidence_collect_batch.add_argument("source_map")
+    external_evidence_collect_batch.add_argument("--root", default=".")
+    external_evidence_collect_batch.add_argument("--require-fresh", action="store_true")
+    external_evidence_collect_batch.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to generated_at")
+    external_evidence_collect_batch.add_argument("--timeout-seconds", type=float, default=30.0)
+    external_evidence_collect_batch.add_argument("--snapshot-dir", default="artifacts/external-evidence-sources")
+    external_evidence_collect_batch.add_argument("--intake-dir", default="artifacts/external-evidence-intakes")
+    external_evidence_collect_batch.add_argument("--out", default="artifacts/external-evidence-collection-run.json")
+    external_evidence_collect_batch.set_defaults(func=cmd_external_evidence_collect_batch)
     external_evidence_intake = subparsers.add_parser("external-evidence-intake", help="hash and map one collected authority artifact to a collection-plan task")
     external_evidence_intake.add_argument("plan")
     external_evidence_intake.add_argument("manifest")
