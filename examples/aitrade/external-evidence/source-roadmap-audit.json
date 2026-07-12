@@ -1,5 +1,5 @@
 {
-  "audit_id": "655dc36a6b5df7600050f2c40b091b8d46284be895424500b63c8794bf91582d",
+  "audit_id": "3ad40a148b53bc9689f91639d55ef77a896f8316a09fa187a5d435fc558319c4",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
   "generated_at": "2026-07-12T13:47:03Z",
   "limitations": [
@@ -266,7 +266,7 @@
         {
           "path": "src/trustai/control_plane.py",
           "present": true,
-          "sha256": "sha256:02531e561326c78e04682e6ef64715b91c8126955371c29ad3260df010e94a24"
+          "sha256": "sha256:8b7e7cd801a903f069ba74b727bfc09d2b8467da477f9461ab0612ac33aa633e"
         },
         {
           "path": "examples/aitrade/eval-results.json",
@@ -848,7 +848,7 @@
         {
           "path": "docs/specs/control-plane-v0.1.md",
           "present": true,
-          "sha256": "sha256:664d2c65c31852f8a678e8c8a10ae9190c9f1c51fd65668d74b1aa6f902d81e2"
+          "sha256": "sha256:baf69255bf3f30a6b93b7347e96080e86beabbf5e2bfede6e30f83a24eccb8c4"
         },
         {
           "path": "docs/specs/review-portal-service-attestation-v0.1.md",
@@ -1868,7 +1868,7 @@
         {
           "path": "docs/architecture/roadmap-coverage.md",
           "present": true,
-          "sha256": "sha256:6c62447f8021314a390736773ae135676f39b1534df86b9405746975f7ef832e"
+          "sha256": "sha256:caf593e24d4198c42c8eb23b2ae435f7fda6a2bc320c77aaeee22125aed327f2"
         },
         {
           "path": "src/trustai/proofpack.py",
@@ -2358,7 +2358,7 @@
     "coverage": {
       "path": "docs/architecture/roadmap-coverage.md",
       "present": true,
-      "sha256": "sha256:6c62447f8021314a390736773ae135676f39b1534df86b9405746975f7ef832e"
+      "sha256": "sha256:caf593e24d4198c42c8eb23b2ae435f7fda6a2bc320c77aaeee22125aed327f2"
     },
     "requirement_count": 26,
     "roadmap": {

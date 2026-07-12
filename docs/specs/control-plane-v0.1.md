@@ -29,13 +29,18 @@ into queryable registry tables while keeping the chain as the source of truth.
 - `product_scope_decisions`: product-scope discipline decisions with proof-impact, anti-focus, and failed-control summaries.
 - `vertical_packs`: vertical pack receipts with vertical, risk-class, framework, source-artifact, external-requirement, and control summaries.
 - `reliability_reports`: State of Agent Reliability reports with reporting-period, cohort, source-product, incident-rate, gate-pass-rate, and control summaries.
+- `temporal_holdout_manifests`: signed post-freeze/post-holdout replay manifests with record roots and violation counts.
+- `shadow_replays`: candidate shadow replay outcomes, metric checks, holdout status, and linked temporal holdout manifests.
+- `soak_reports`: post-promotion soak windows, incidents, drift alarms, metric checks, and outcomes.
+- `traffic_holdout_exports`: signed production traffic holdout export receipts with source refs, windows, record roots, and privacy-safe counts.
+- `traffic_completeness_receipts`: provider/collector completeness receipts binding traffic exports to stream, cursor, audit, and provider exchange evidence.
 - `anchors`: published chain-root anchors.
 
 ## CLI
 
 ```powershell
 python -m trustai control-index --state .trustai/demo/evidence-chain.json --tenant aitrade-local --pack artifacts/aitrade-proof-pack.json --db .trustai/control-plane.sqlite
-python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --roadmap-evidence --phase-scoreboards --design-partner-dossiers --own-compliance-dossiers --product-scope-decisions --vertical-packs --reliability-reports --readiness --external-evidence --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
+python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --holdout-evidence --roadmap-evidence --phase-scoreboards --design-partner-dossiers --own-compliance-dossiers --product-scope-decisions --vertical-packs --reliability-reports --readiness --external-evidence --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
 ```
 
 ## API
@@ -54,6 +59,7 @@ python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts
 - `GET /v0/ingest-events`;
 - `GET /v0/promotion-statuses`;
 - `GET /v0/runtime-evidence`;
+- `GET /v0/holdout-evidence` or `GET /v0/control/holdout-evidence`;
 - `GET /v0/roadmap-evidence`;
 - `GET /v0/phase-scoreboards` or `GET /v0/control/phase-scoreboards`;
 - `GET /v0/design-partner-dossiers` or `GET /v0/control/design-partner-dossiers`;
@@ -73,8 +79,11 @@ and incidents. The agent evidence endpoint provides the same kind of review
 surface from the Agent/Version Registry side: inventory records, associated
 contracts, direct agent evidence, and contract-hash-linked runtime/policy rows.
 These are the local analogues of model-risk or auditor review pages for a single
-pre-registered contract or governed agent version. The roadmap-evidence list
-binds roadmap audit entries, retained collection-run provenance, external
+pre-registered contract or governed agent version. The holdout-evidence list
+binds temporal holdout manifests, shadow replays, soak reports, traffic holdout
+exports, and traffic completeness receipts into one Phase 1 promotion-readiness
+surface. The roadmap-evidence list binds roadmap audit entries, retained
+collection-run provenance, external
 evidence manifests, phase scoreboard entries, design-partner pilot dossiers,
 own-compliance dossiers, product-scope decisions, vertical packs, and State of
 Agent Reliability reports into one progress view. The phase-scoreboard list

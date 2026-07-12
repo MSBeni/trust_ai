@@ -32,6 +32,18 @@ from trustai.registry import append_inventory, load_inventory
 from trustai.roadmap_audit import append_roadmap_audit, build_roadmap_audit
 from trustai.anchor import append_anchor
 from trustai.runtime import append_runtime_attestation, load_action
+from trustai.shadow import (
+    append_shadow_replay,
+    append_soak_report,
+    append_temporal_holdout_manifest,
+    append_traffic_completeness_receipt,
+    append_traffic_holdout_export,
+    build_traffic_completeness_receipt,
+    build_traffic_holdout_export,
+    load_shadow_replay,
+    load_soak_window,
+    load_traffic_completeness_provider_export,
+)
 from trustai.vertical_pack import append_vertical_pack, build_vertical_pack
 from trustai.verifier import verify_proof_pack
 
@@ -42,6 +54,9 @@ RESULTS = ROOT / "examples" / "aitrade" / "eval-results.json"
 INVENTORY = ROOT / "examples" / "aitrade" / "agent-inventory.json"
 EVENTS = ROOT / "examples" / "aitrade" / "otel-events.json"
 MCP = ROOT / "examples" / "aitrade" / "mcp-transcript.json"
+SHADOW = ROOT / "examples" / "aitrade" / "shadow-replay.json"
+SOAK = ROOT / "examples" / "aitrade" / "soak-window.json"
+TRAFFIC_COMPLETENESS_PROVIDER_EXPORT = ROOT / "examples" / "aitrade" / "traffic-completeness-provider-export.json"
 ACTION = ROOT / "examples" / "aitrade" / "runtime-action.json"
 POLICY = ROOT / "examples" / "aitrade" / "policy-pack.json"
 INCIDENT = ROOT / "examples" / "aitrade" / "incident.json"
@@ -60,6 +75,53 @@ class ControlPlaneTests(unittest.TestCase):
             register_contract(chain, contract)
             append_inventory(chain, load_inventory(INVENTORY))
             append_events(chain, load_events(EVENTS))
+            shadow = load_shadow_replay(SHADOW)
+            shadow_entry = append_shadow_replay(chain, contract, shadow)
+            temporal_entry = append_temporal_holdout_manifest(
+                chain,
+                shadow_entry["payload"]["temporal_holdout_manifest"],
+                contract=contract,
+                replay=shadow,
+            )
+            soak_entry = append_soak_report(chain, contract, load_soak_window(SOAK))
+            traffic_export = build_traffic_holdout_export(
+                contract,
+                shadow,
+                export_ref="traffic-export:aitrade/prod-traffic-holdout-20260702",
+                source_ref="collector:aitrade-prod/redpanda/trustai.otel.events",
+                exporter_ref="oidc:trustai.example/traffic-exporter",
+                window_start="2026-07-02T00:00:00Z",
+                window_end="2026-07-03T23:59:59Z",
+                query_ref="query:shadow-holdout/btcusdt-prod-write",
+                cursor_start="redpanda:0:100",
+                cursor_end="redpanda:0:102",
+                produced_at="2026-07-03T12:20:00Z",
+            )
+            traffic_export_entry = append_traffic_holdout_export(
+                chain,
+                traffic_export,
+                contract=contract,
+                replay=shadow,
+            )
+            traffic_provider_export = load_traffic_completeness_provider_export(TRAFFIC_COMPLETENESS_PROVIDER_EXPORT)
+            traffic_completeness = build_traffic_completeness_receipt(
+                traffic_export,
+                traffic_provider_export,
+                mode="production-export",
+                authority_ref="authority:traffic-completeness/aitrade-prod",
+                endpoint_url="https://provider.example/aitrade/traffic-holdout/export",
+                request_hash="sha256:traffic-completeness-request",
+                response_status=200,
+                response_hash="sha256:traffic-completeness-response",
+                actor_ref="oidc:trustai.example/traffic-completeness-worker",
+                produced_at="2026-07-03T12:25:00Z",
+            )
+            traffic_completeness_entry = append_traffic_completeness_receipt(
+                chain,
+                traffic_completeness,
+                traffic_export=traffic_export,
+                provider_export=traffic_provider_export,
+            )
             results = json.loads(RESULTS.read_text(encoding="utf-8"))
             eval_entry, gate_entry, decision = append_eval_and_gate(chain, contract, results)
             append_anchor(chain)
@@ -334,6 +396,11 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, summary["counts"]["product_scope_decisions"])
                 self.assertEqual(1, summary["counts"]["vertical_packs"])
                 self.assertEqual(1, summary["counts"]["reliability_reports"])
+                self.assertEqual(1, summary["counts"]["temporal_holdout_manifests"])
+                self.assertEqual(1, summary["counts"]["shadow_replays"])
+                self.assertEqual(1, summary["counts"]["soak_reports"])
+                self.assertEqual(1, summary["counts"]["traffic_holdout_exports"])
+                self.assertEqual(1, summary["counts"]["traffic_completeness_receipts"])
                 self.assertEqual(1, counts["runtime_attestations"])
                 self.assertEqual(1, counts["policy_decisions"])
                 self.assertEqual(1, counts["policy_engine_receipts"])
@@ -348,6 +415,11 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, counts["product_scope_decisions"])
                 self.assertEqual(1, counts["vertical_packs"])
                 self.assertEqual(1, counts["reliability_reports"])
+                self.assertEqual(1, counts["temporal_holdout_manifests"])
+                self.assertEqual(1, counts["shadow_replays"])
+                self.assertEqual(1, counts["soak_reports"])
+                self.assertEqual(1, counts["traffic_holdout_exports"])
+                self.assertEqual(1, counts["traffic_completeness_receipts"])
                 self.assertEqual(audit["audit_id"], summary["latest_roadmap_audit"]["audit_id"])
                 self.assertEqual("local-reference-complete-with-external-authority-deferred", summary["latest_roadmap_audit"]["completion_position"])
                 self.assertEqual("collection-run-control-001", summary["latest_external_evidence_collection_run"]["run_id"])
@@ -385,6 +457,18 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(0, summary["latest_reliability_report"]["source_product_count"])
                 self.assertEqual(8000, summary["latest_reliability_report"]["gate_pass_rate_bps"])
                 self.assertEqual({"external-required": 2, "passed": 6}, summary["latest_reliability_report"]["control_summary"])
+                self.assertEqual(temporal_entry["payload"]["manifest_id"], summary["latest_temporal_holdout_manifest"]["manifest_id"])
+                self.assertTrue(summary["latest_temporal_holdout_manifest"]["passed"])
+                self.assertEqual(shadow_entry["entry_id"], summary["latest_shadow_replay"]["entry_id"])
+                self.assertTrue(summary["latest_shadow_replay"]["passed"])
+                self.assertTrue(summary["latest_shadow_replay"]["holdout_passed"])
+                self.assertEqual(soak_entry["entry_id"], summary["latest_soak_report"]["entry_id"])
+                self.assertTrue(summary["latest_soak_report"]["passed"])
+                self.assertEqual(traffic_export_entry["payload"]["export_id"], summary["latest_traffic_holdout_export"]["export_id"])
+                self.assertTrue(summary["latest_traffic_holdout_export"]["passed"])
+                self.assertEqual(traffic_completeness_entry["payload"]["completeness_id"], summary["latest_traffic_completeness_receipt"]["completeness_id"])
+                self.assertEqual("production-export", summary["latest_traffic_completeness_receipt"]["mode"])
+                self.assertTrue(summary["latest_traffic_completeness_receipt"]["passed"])
                 self.assertEqual("passed", summary["latest_proof_pack"]["outcome"])
                 self.assertEqual("aitrade-btcusdt-canary", summary["latest_eval_run"]["contract_id"])
                 self.assertEqual("passed", summary["latest_gate_decision"]["outcome"])
@@ -412,6 +496,11 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertGreaterEqual(contract_evidence["counts"]["chain_entries"], 4)
                 self.assertEqual(1, contract_evidence["counts"]["eval_runs"])
                 self.assertEqual(1, contract_evidence["counts"]["gate_decisions"])
+                self.assertEqual(1, contract_evidence["counts"]["temporal_holdout_manifests"])
+                self.assertEqual(1, contract_evidence["counts"]["shadow_replays"])
+                self.assertEqual(1, contract_evidence["counts"]["soak_reports"])
+                self.assertEqual(1, contract_evidence["counts"]["traffic_holdout_exports"])
+                self.assertEqual(1, contract_evidence["counts"]["traffic_completeness_receipts"])
                 self.assertEqual(1, contract_evidence["counts"]["proof_packs"])
                 self.assertEqual(2, contract_evidence["counts"]["ingest_events"])
                 self.assertEqual(1, contract_evidence["counts"]["promotion_statuses"])
@@ -421,6 +510,11 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, contract_evidence["counts"]["incidents"])
                 self.assertEqual("passed", contract_evidence["gate_decisions"][0]["outcome"])
                 self.assertTrue(contract_evidence["gate_decisions"][0]["passed"])
+                self.assertTrue(contract_evidence["shadow_replays"][0]["passed"])
+                self.assertTrue(contract_evidence["soak_reports"][0]["passed"])
+                self.assertEqual(traffic_export["export_id"], contract_evidence["traffic_holdout_exports"][0]["export_id"])
+                self.assertEqual(traffic_completeness["completeness_id"], contract_evidence["traffic_completeness_receipts"][0]["completeness_id"])
+                self.assertTrue(contract_evidence["traffic_completeness_receipts"][0]["source_completeness"]["records_root_matches"])
                 self.assertEqual("gen_ai.tool.call", contract_evidence["ingest_events"][0]["event_name"])
                 self.assertEqual("opa", contract_evidence["policy_engine_receipts"][0]["engine_name"])
                 self.assertEqual("incident-20260704-latency-drift", contract_evidence["incidents"][0]["incident_id"])
@@ -441,6 +535,11 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertGreaterEqual(agent_evidence["counts"]["chain_entries"], 4)
                 self.assertEqual(1, agent_evidence["counts"]["eval_runs"])
                 self.assertEqual(1, agent_evidence["counts"]["gate_decisions"])
+                self.assertEqual(1, agent_evidence["counts"]["temporal_holdout_manifests"])
+                self.assertEqual(1, agent_evidence["counts"]["shadow_replays"])
+                self.assertEqual(1, agent_evidence["counts"]["soak_reports"])
+                self.assertEqual(1, agent_evidence["counts"]["traffic_holdout_exports"])
+                self.assertEqual(1, agent_evidence["counts"]["traffic_completeness_receipts"])
                 self.assertEqual(1, agent_evidence["counts"]["proof_packs"])
                 self.assertEqual(2, agent_evidence["counts"]["ingest_events"])
                 self.assertEqual(1, agent_evidence["counts"]["promotion_statuses"])
@@ -450,6 +549,8 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, agent_evidence["counts"]["incidents"])
                 self.assertTrue(agent_evidence["agents"][0]["governed"])
                 self.assertEqual("passed", agent_evidence["gate_decisions"][0]["outcome"])
+                self.assertTrue(agent_evidence["shadow_replays"][0]["passed"])
+                self.assertTrue(agent_evidence["traffic_holdout_exports"][0]["passed"])
                 self.assertEqual("gen_ai.tool.call", agent_evidence["ingest_events"][0]["event_name"])
                 unversioned_agent_evidence = control.agent_evidence(agent_name=contract["agent"]["name"], limit=1)
                 self.assertEqual(contract["agent"]["name"], unversioned_agent_evidence["scope"]["agent_name"])
@@ -478,6 +579,13 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual("trading-runtime-policy-v0", runtime_evidence["policy_decisions"][0]["policy_pack_id"])
                 self.assertEqual("opa", runtime_evidence["policy_engine_receipts"][0]["engine_name"])
                 self.assertEqual("incident-20260704-latency-drift", runtime_evidence["incidents"][0]["incident_id"])
+                holdout_evidence = control.holdout_evidence()
+                self.assertEqual(temporal_entry["payload"]["manifest_id"], holdout_evidence["temporal_holdout_manifests"][0]["manifest_id"])
+                self.assertEqual(shadow_entry["entry_id"], holdout_evidence["shadow_replays"][0]["entry_id"])
+                self.assertEqual(soak_entry["entry_id"], holdout_evidence["soak_reports"][0]["entry_id"])
+                self.assertEqual(traffic_export["export_id"], holdout_evidence["traffic_holdout_exports"][0]["export_id"])
+                self.assertEqual(traffic_completeness["completeness_id"], holdout_evidence["traffic_completeness_receipts"][0]["completeness_id"])
+                self.assertEqual(3, holdout_evidence["traffic_completeness_receipts"][0]["source_completeness"]["matched_record_count"])
                 roadmap_evidence = control.roadmap_evidence()
                 self.assertEqual(audit["audit_id"], roadmap_evidence["roadmap_audits"][0]["audit_id"])
                 self.assertGreater(roadmap_evidence["roadmap_audits"][0]["deferred_external_count"], 0)
@@ -495,6 +603,8 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, len(roadmap_evidence["product_scope_decisions"]))
                 self.assertEqual(1, len(roadmap_evidence["vertical_packs"]))
                 self.assertEqual(1, len(roadmap_evidence["reliability_reports"]))
+                self.assertEqual(1, len(roadmap_evidence["holdout_evidence"]["shadow_replays"]))
+                self.assertEqual(1, len(roadmap_evidence["holdout_evidence"]["traffic_completeness_receipts"]))
                 phase_scoreboards = control.recent_phase_scoreboards()
                 self.assertEqual(1, len(phase_scoreboards))
                 self.assertEqual("readiness", phase_scoreboards[0]["mode"])

@@ -29,6 +29,13 @@ from .reliability_report import RELIABILITY_REPORT_ENTRY_TYPE
 from .registry import AGENT_INVENTORY_ENTRY_TYPE
 from .roadmap_audit import ROADMAP_AUDIT_ENTRY_TYPE
 from .runtime import RUNTIME_ENTRY_TYPE
+from .shadow import (
+    SHADOW_REPLAY_ENTRY_TYPE,
+    SOAK_REPORT_ENTRY_TYPE,
+    TEMPORAL_HOLDOUT_ENTRY_TYPE,
+    TRAFFIC_COMPLETENESS_ENTRY_TYPE,
+    TRAFFIC_HOLDOUT_EXPORT_ENTRY_TYPE,
+)
 from .vertical_pack import VERTICAL_PACK_ENTRY_TYPE
 
 SCHEMA_VERSION = "trustai.control-plane/0.1"
@@ -44,6 +51,14 @@ def _payload_contract_hash(entry: dict[str, Any]) -> str | None:
         return None
     if payload.get("contract_hash"):
         return payload["contract_hash"]
+    contract = payload.get("contract")
+    if isinstance(contract, dict) and contract.get("hash"):
+        return contract.get("hash")
+    traffic_export = payload.get("traffic_export")
+    if isinstance(traffic_export, dict):
+        traffic_contract = traffic_export.get("contract")
+        if isinstance(traffic_contract, dict) and traffic_contract.get("hash"):
+            return traffic_contract.get("hash")
     decision = payload.get("decision")
     if isinstance(decision, dict):
         return decision.get("contract_hash")
@@ -556,6 +571,102 @@ class ControlPlane:
                 generated_at TEXT,
                 body_json TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS temporal_holdout_manifests (
+                manifest_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                manifest_hash TEXT NOT NULL,
+                run_id TEXT,
+                dataset_id TEXT,
+                contract_id TEXT,
+                contract_hash TEXT,
+                candidate_version TEXT,
+                record_count INTEGER NOT NULL,
+                violation_count INTEGER NOT NULL,
+                passed INTEGER NOT NULL,
+                records_root TEXT,
+                earliest_record_timestamp TEXT,
+                latest_record_timestamp TEXT,
+                generated_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS shadow_replays (
+                entry_id TEXT PRIMARY KEY,
+                run_id TEXT,
+                contract_id TEXT,
+                contract_hash TEXT,
+                candidate_version TEXT,
+                replay_hash TEXT,
+                records_checked INTEGER NOT NULL,
+                passed INTEGER NOT NULL,
+                outcome TEXT,
+                holdout_passed INTEGER,
+                holdout_error_count INTEGER NOT NULL,
+                check_count INTEGER NOT NULL,
+                failed_check_count INTEGER NOT NULL,
+                temporal_holdout_manifest_id TEXT,
+                temporal_holdout_manifest_hash TEXT,
+                evaluated_at TEXT,
+                metrics_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS soak_reports (
+                entry_id TEXT PRIMARY KEY,
+                report_id TEXT,
+                contract_id TEXT,
+                contract_hash TEXT,
+                candidate_version TEXT,
+                soak_hash TEXT,
+                window_count INTEGER NOT NULL,
+                incident_count INTEGER NOT NULL,
+                drift_alarm_count INTEGER NOT NULL,
+                blocking_drift_alarm_count INTEGER NOT NULL,
+                passed INTEGER NOT NULL,
+                outcome TEXT,
+                check_count INTEGER NOT NULL,
+                failed_check_count INTEGER NOT NULL,
+                evaluated_at TEXT,
+                metrics_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS traffic_holdout_exports (
+                export_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                export_hash TEXT NOT NULL,
+                export_ref TEXT,
+                source_ref TEXT,
+                exporter_ref TEXT,
+                contract_id TEXT,
+                contract_hash TEXT,
+                candidate_version TEXT,
+                record_count INTEGER NOT NULL,
+                violation_count INTEGER NOT NULL,
+                passed INTEGER NOT NULL,
+                extraction_window_json TEXT NOT NULL,
+                records_root TEXT,
+                earliest_record_timestamp TEXT,
+                latest_record_timestamp TEXT,
+                produced_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS traffic_completeness_receipts (
+                completeness_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                completeness_hash TEXT NOT NULL,
+                mode TEXT,
+                authority_ref TEXT,
+                export_id TEXT,
+                export_hash TEXT,
+                contract_id TEXT,
+                contract_hash TEXT,
+                candidate_version TEXT,
+                record_count INTEGER NOT NULL,
+                violation_count INTEGER NOT NULL,
+                passed INTEGER NOT NULL,
+                source_completeness_json TEXT NOT NULL,
+                provider_exchange_json TEXT NOT NULL,
+                produced_at TEXT,
+                body_json TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS anchors (
                 anchor_id TEXT PRIMARY KEY,
                 entry_id TEXT,
@@ -597,6 +708,11 @@ class ControlPlane:
             "product_scope_decisions": 0,
             "vertical_packs": 0,
             "reliability_reports": 0,
+            "temporal_holdout_manifests": 0,
+            "shadow_replays": 0,
+            "soak_reports": 0,
+            "traffic_holdout_exports": 0,
+            "traffic_completeness_receipts": 0,
         }
         for entry in chain.entries:
             payload = entry.get("payload", {})
@@ -1253,6 +1369,206 @@ class ControlPlane:
                 )
                 counts["reliability_reports"] += 1
 
+            if entry.get("entry_type") == TEMPORAL_HOLDOUT_ENTRY_TYPE:
+                contract = payload.get("contract") if isinstance(payload.get("contract"), dict) else {}
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO temporal_holdout_manifests(
+                        manifest_id, entry_id, manifest_hash, run_id, dataset_id,
+                        contract_id, contract_hash, candidate_version, record_count,
+                        violation_count, passed, records_root,
+                        earliest_record_timestamp, latest_record_timestamp,
+                        generated_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("manifest_id") or entry["entry_id"],
+                        entry["entry_id"],
+                        payload.get("manifest_hash") or entry.get("payload_hash"),
+                        payload.get("run_id"),
+                        payload.get("dataset_id"),
+                        contract.get("id"),
+                        contract.get("hash"),
+                        payload.get("candidate_version"),
+                        int(payload.get("record_count") or 0),
+                        int(payload.get("violation_count") or 0),
+                        1 if payload.get("passed") else 0,
+                        payload.get("records_root"),
+                        payload.get("earliest_record_timestamp"),
+                        payload.get("latest_record_timestamp"),
+                        entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["temporal_holdout_manifests"] += 1
+
+            if entry.get("entry_type") == SHADOW_REPLAY_ENTRY_TYPE:
+                checks = payload.get("checks") if isinstance(payload.get("checks"), list) else []
+                failed_checks = [check for check in checks if isinstance(check, dict) and not check.get("passed")]
+                holdout = payload.get("holdout") if isinstance(payload.get("holdout"), dict) else {}
+                holdout_errors = holdout.get("errors") if isinstance(holdout.get("errors"), list) else []
+                temporal_holdout = payload.get("temporal_holdout") if isinstance(payload.get("temporal_holdout"), dict) else {}
+                metrics = payload.get("metrics") if isinstance(payload.get("metrics"), dict) else {}
+                holdout_passed = holdout.get("passed")
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO shadow_replays(
+                        entry_id, run_id, contract_id, contract_hash,
+                        candidate_version, replay_hash, records_checked,
+                        passed, outcome, holdout_passed, holdout_error_count,
+                        check_count, failed_check_count,
+                        temporal_holdout_manifest_id,
+                        temporal_holdout_manifest_hash, evaluated_at,
+                        metrics_json, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        entry["entry_id"],
+                        payload.get("run_id"),
+                        payload.get("contract_id"),
+                        payload.get("contract_hash"),
+                        payload.get("candidate_version"),
+                        payload.get("replay_hash"),
+                        int(payload.get("records_checked") or 0),
+                        1 if payload.get("passed") else 0,
+                        payload.get("outcome"),
+                        None if holdout_passed is None else (1 if holdout_passed else 0),
+                        len(holdout_errors),
+                        len(checks),
+                        len(failed_checks),
+                        temporal_holdout.get("manifest_id"),
+                        temporal_holdout.get("manifest_hash"),
+                        payload.get("evaluated_at") or entry.get("timestamp"),
+                        _json(metrics),
+                        _json(payload),
+                    ),
+                )
+                counts["shadow_replays"] += 1
+
+            if entry.get("entry_type") == SOAK_REPORT_ENTRY_TYPE:
+                checks = payload.get("checks") if isinstance(payload.get("checks"), list) else []
+                failed_checks = [check for check in checks if isinstance(check, dict) and not check.get("passed")]
+                incidents = payload.get("incidents") if isinstance(payload.get("incidents"), list) else []
+                drift_alarms = payload.get("drift_alarms") if isinstance(payload.get("drift_alarms"), list) else []
+                blocking_drift = [
+                    alarm
+                    for alarm in drift_alarms
+                    if isinstance(alarm, dict) and str(alarm.get("severity") or "").lower() in {"high", "critical", "blocking"}
+                ]
+                soak = payload.get("soak") if isinstance(payload.get("soak"), dict) else {}
+                metrics = {
+                    str(check.get("name")): check.get("actual")
+                    for check in checks
+                    if isinstance(check, dict) and check.get("name")
+                }
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO soak_reports(
+                        entry_id, report_id, contract_id, contract_hash,
+                        candidate_version, soak_hash, window_count,
+                        incident_count, drift_alarm_count,
+                        blocking_drift_alarm_count, passed, outcome,
+                        check_count, failed_check_count, evaluated_at,
+                        metrics_json, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        entry["entry_id"],
+                        payload.get("report_id"),
+                        payload.get("contract_id"),
+                        payload.get("contract_hash"),
+                        soak.get("candidate_version"),
+                        payload.get("soak_hash"),
+                        int(payload.get("window_count") or 0),
+                        len(incidents),
+                        len(drift_alarms),
+                        len(blocking_drift),
+                        1 if payload.get("passed") else 0,
+                        payload.get("outcome"),
+                        len(checks),
+                        len(failed_checks),
+                        payload.get("evaluated_at") or entry.get("timestamp"),
+                        _json(metrics),
+                        _json(payload),
+                    ),
+                )
+                counts["soak_reports"] += 1
+            if entry.get("entry_type") == TRAFFIC_HOLDOUT_EXPORT_ENTRY_TYPE:
+                contract = payload.get("contract") if isinstance(payload.get("contract"), dict) else {}
+                replay = payload.get("replay") if isinstance(payload.get("replay"), dict) else {}
+                extraction_window = payload.get("extraction_window") if isinstance(payload.get("extraction_window"), dict) else {}
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO traffic_holdout_exports(
+                        export_id, entry_id, export_hash, export_ref,
+                        source_ref, exporter_ref, contract_id, contract_hash,
+                        candidate_version, record_count, violation_count,
+                        passed, extraction_window_json, records_root,
+                        earliest_record_timestamp, latest_record_timestamp,
+                        produced_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("export_id") or entry["entry_id"],
+                        entry["entry_id"],
+                        payload.get("export_hash") or entry.get("payload_hash"),
+                        payload.get("export_ref"),
+                        payload.get("source_ref"),
+                        payload.get("exporter_ref"),
+                        contract.get("id"),
+                        contract.get("hash"),
+                        replay.get("candidate_version"),
+                        int(payload.get("record_count") or 0),
+                        int(payload.get("violation_count") or 0),
+                        1 if payload.get("passed") else 0,
+                        _json(extraction_window),
+                        payload.get("records_root"),
+                        payload.get("earliest_record_timestamp"),
+                        payload.get("latest_record_timestamp"),
+                        entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["traffic_holdout_exports"] += 1
+
+            if entry.get("entry_type") == TRAFFIC_COMPLETENESS_ENTRY_TYPE:
+                traffic_export = payload.get("traffic_export") if isinstance(payload.get("traffic_export"), dict) else {}
+                contract = traffic_export.get("contract") if isinstance(traffic_export.get("contract"), dict) else {}
+                replay = traffic_export.get("replay") if isinstance(traffic_export.get("replay"), dict) else {}
+                source_completeness = payload.get("source_completeness") if isinstance(payload.get("source_completeness"), dict) else {}
+                provider_exchange = payload.get("provider_exchange") if isinstance(payload.get("provider_exchange"), dict) else {}
+                record_count = int(traffic_export.get("record_count") or source_completeness.get("traffic_record_count") or 0)
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO traffic_completeness_receipts(
+                        completeness_id, entry_id, completeness_hash, mode,
+                        authority_ref, export_id, export_hash, contract_id,
+                        contract_hash, candidate_version, record_count,
+                        violation_count, passed, source_completeness_json,
+                        provider_exchange_json, produced_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("completeness_id") or entry["entry_id"],
+                        entry["entry_id"],
+                        payload.get("completeness_hash") or entry.get("payload_hash"),
+                        payload.get("mode"),
+                        payload.get("authority_ref"),
+                        traffic_export.get("export_id"),
+                        traffic_export.get("export_hash"),
+                        contract.get("id"),
+                        contract.get("hash"),
+                        replay.get("candidate_version"),
+                        record_count,
+                        int(payload.get("violation_count") or 0),
+                        1 if payload.get("passed") else 0,
+                        _json(source_completeness),
+                        _json(provider_exchange),
+                        entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["traffic_completeness_receipts"] += 1
             if _is_authority_dossier_payload(entry, payload):
                 summary = payload.get("summary") if isinstance(payload.get("summary"), dict) else {}
                 evidence_items = (
@@ -1375,6 +1691,11 @@ class ControlPlane:
             "product_scope_decisions",
             "vertical_packs",
             "reliability_reports",
+            "temporal_holdout_manifests",
+            "shadow_replays",
+            "soak_reports",
+            "traffic_holdout_exports",
+            "traffic_completeness_receipts",
         ]
         counts = {
             table: self.conn.execute(f"SELECT COUNT(*) AS count FROM {table}").fetchone()["count"]
@@ -1629,6 +1950,76 @@ class ControlPlane:
         if latest_reliability_report_dict is not None:
             latest_reliability_report_dict["reporting_period"] = _decode_json_object(latest_reliability_report_dict.pop("reporting_period_json", None))
             latest_reliability_report_dict["control_summary"] = _decode_json_object(latest_reliability_report_dict.pop("control_summary_json", None))
+        latest_temporal_holdout_manifest = self.conn.execute(
+            """
+            SELECT manifest_id, entry_id, run_id, dataset_id, contract_id,
+                   contract_hash, candidate_version, record_count,
+                   violation_count, passed, earliest_record_timestamp,
+                   latest_record_timestamp, generated_at
+            FROM temporal_holdout_manifests
+            ORDER BY generated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_temporal_holdout_manifest_dict = dict(latest_temporal_holdout_manifest) if latest_temporal_holdout_manifest else None
+        if latest_temporal_holdout_manifest_dict is not None:
+            _bool_fields(latest_temporal_holdout_manifest_dict, "passed")
+        latest_shadow_replay = self.conn.execute(
+            """
+            SELECT entry_id, run_id, contract_id, contract_hash,
+                   candidate_version, records_checked, passed, outcome,
+                   holdout_passed, holdout_error_count, failed_check_count,
+                   temporal_holdout_manifest_id, evaluated_at
+            FROM shadow_replays
+            ORDER BY evaluated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_shadow_replay_dict = dict(latest_shadow_replay) if latest_shadow_replay else None
+        if latest_shadow_replay_dict is not None:
+            _bool_fields(latest_shadow_replay_dict, "passed", "holdout_passed")
+        latest_soak_report = self.conn.execute(
+            """
+            SELECT entry_id, report_id, contract_id, contract_hash,
+                   candidate_version, window_count, incident_count,
+                   drift_alarm_count, blocking_drift_alarm_count, passed,
+                   outcome, failed_check_count, evaluated_at
+            FROM soak_reports
+            ORDER BY evaluated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_soak_report_dict = dict(latest_soak_report) if latest_soak_report else None
+        if latest_soak_report_dict is not None:
+            _bool_fields(latest_soak_report_dict, "passed")
+        latest_traffic_holdout_export = self.conn.execute(
+            """
+            SELECT export_id, entry_id, export_ref, source_ref, exporter_ref,
+                   contract_id, contract_hash, candidate_version,
+                   record_count, violation_count, passed,
+                   earliest_record_timestamp, latest_record_timestamp,
+                   produced_at
+            FROM traffic_holdout_exports
+            ORDER BY produced_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_traffic_holdout_export_dict = dict(latest_traffic_holdout_export) if latest_traffic_holdout_export else None
+        if latest_traffic_holdout_export_dict is not None:
+            _bool_fields(latest_traffic_holdout_export_dict, "passed")
+        latest_traffic_completeness_receipt = self.conn.execute(
+            """
+            SELECT completeness_id, entry_id, mode, authority_ref, export_id,
+                   contract_id, contract_hash, candidate_version,
+                   record_count, violation_count, passed, produced_at
+            FROM traffic_completeness_receipts
+            ORDER BY produced_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_traffic_completeness_receipt_dict = dict(latest_traffic_completeness_receipt) if latest_traffic_completeness_receipt else None
+        if latest_traffic_completeness_receipt_dict is not None:
+            _bool_fields(latest_traffic_completeness_receipt_dict, "passed")
         return {
             "schema_version": SCHEMA_VERSION,
             "database": str(self.path),
@@ -1655,6 +2046,11 @@ class ControlPlane:
             "latest_product_scope_decision": latest_product_scope_decision_dict,
             "latest_vertical_pack": latest_vertical_pack_dict,
             "latest_reliability_report": latest_reliability_report_dict,
+            "latest_temporal_holdout_manifest": latest_temporal_holdout_manifest_dict,
+            "latest_shadow_replay": latest_shadow_replay_dict,
+            "latest_soak_report": latest_soak_report_dict,
+            "latest_traffic_holdout_export": latest_traffic_holdout_export_dict,
+            "latest_traffic_completeness_receipt": latest_traffic_completeness_receipt_dict,
         }
 
     def contracts(self, limit: int = 20) -> list[dict[str, Any]]:
@@ -2096,6 +2492,106 @@ class ControlPlane:
             items.append(item)
         return items
 
+    def recent_temporal_holdout_manifests(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT manifest_id, entry_id, manifest_hash, run_id, dataset_id,
+                   contract_id, contract_hash, candidate_version, record_count,
+                   violation_count, passed, records_root,
+                   earliest_record_timestamp, latest_record_timestamp, generated_at
+            FROM temporal_holdout_manifests
+            ORDER BY generated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        return [_bool_fields(dict(row), "passed") for row in rows]
+
+    def recent_shadow_replays(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT entry_id, run_id, contract_id, contract_hash,
+                   candidate_version, replay_hash, records_checked, passed,
+                   outcome, holdout_passed, holdout_error_count, check_count,
+                   failed_check_count, temporal_holdout_manifest_id,
+                   temporal_holdout_manifest_hash, evaluated_at, metrics_json
+            FROM shadow_replays
+            ORDER BY evaluated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = _bool_fields(dict(row), "passed", "holdout_passed")
+            item["metrics"] = _decode_json_object(item.pop("metrics_json", None))
+            items.append(item)
+        return items
+
+    def recent_soak_reports(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT entry_id, report_id, contract_id, contract_hash,
+                   candidate_version, soak_hash, window_count, incident_count,
+                   drift_alarm_count, blocking_drift_alarm_count, passed,
+                   outcome, check_count, failed_check_count, evaluated_at,
+                   metrics_json
+            FROM soak_reports
+            ORDER BY evaluated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = _bool_fields(dict(row), "passed")
+            item["metrics"] = _decode_json_object(item.pop("metrics_json", None))
+            items.append(item)
+        return items
+
+    def recent_traffic_holdout_exports(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT export_id, entry_id, export_hash, export_ref, source_ref,
+                   exporter_ref, contract_id, contract_hash, candidate_version,
+                   record_count, violation_count, passed,
+                   extraction_window_json, records_root,
+                   earliest_record_timestamp, latest_record_timestamp,
+                   produced_at
+            FROM traffic_holdout_exports
+            ORDER BY produced_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = _bool_fields(dict(row), "passed")
+            item["extraction_window"] = _decode_json_object(item.pop("extraction_window_json", None))
+            items.append(item)
+        return items
+
+    def recent_traffic_completeness_receipts(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT completeness_id, entry_id, completeness_hash, mode,
+                   authority_ref, export_id, export_hash, contract_id,
+                   contract_hash, candidate_version, record_count,
+                   violation_count, passed, source_completeness_json,
+                   provider_exchange_json, produced_at
+            FROM traffic_completeness_receipts
+            ORDER BY produced_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = _bool_fields(dict(row), "passed")
+            item["source_completeness"] = _decode_json_object(item.pop("source_completeness_json", None))
+            item["provider_exchange"] = _decode_json_object(item.pop("provider_exchange_json", None))
+            items.append(item)
+        return items
     def recent_authority_dossiers(self, limit: int = 20) -> list[dict[str, Any]]:
         rows = self.conn.execute(
             """
@@ -2134,6 +2630,16 @@ class ControlPlane:
             "product_scope_decisions": self.recent_product_scope_decisions(limit),
             "vertical_packs": self.recent_vertical_packs(limit),
             "reliability_reports": self.recent_reliability_reports(limit),
+            "holdout_evidence": self.holdout_evidence(limit),
+        }
+
+    def holdout_evidence(self, limit: int = 20) -> dict[str, Any]:
+        return {
+            "temporal_holdout_manifests": self.recent_temporal_holdout_manifests(limit),
+            "shadow_replays": self.recent_shadow_replays(limit),
+            "soak_reports": self.recent_soak_reports(limit),
+            "traffic_holdout_exports": self.recent_traffic_holdout_exports(limit),
+            "traffic_completeness_receipts": self.recent_traffic_completeness_receipts(limit),
         }
 
     def readiness(self) -> dict[str, Any]:
@@ -2637,6 +3143,105 @@ class ControlPlane:
         counts["gate_decisions"] = count
         gate_decisions = [_bool_fields(item, "passed", "holdout_passed", "approvals_passed") for item in gate_decisions]
 
+        count, temporal_holdout_manifests = self._scoped_rows(
+            table="temporal_holdout_manifests",
+            select_sql="""
+            SELECT manifest_id, entry_id, manifest_hash, run_id, dataset_id,
+                   contract_id, contract_hash, candidate_version, record_count,
+                   violation_count, passed, records_root,
+                   earliest_record_timestamp, latest_record_timestamp, generated_at
+            FROM temporal_holdout_manifests
+            """,
+            order_sql="ORDER BY generated_at DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+        )
+        counts["temporal_holdout_manifests"] = count
+        temporal_holdout_manifests = [_bool_fields(item, "passed") for item in temporal_holdout_manifests]
+
+        count, shadow_replays = self._scoped_rows(
+            table="shadow_replays",
+            select_sql="""
+            SELECT entry_id, run_id, contract_id, contract_hash,
+                   candidate_version, replay_hash, records_checked, passed,
+                   outcome, holdout_passed, holdout_error_count, check_count,
+                   failed_check_count, temporal_holdout_manifest_id,
+                   temporal_holdout_manifest_hash, evaluated_at, metrics_json
+            FROM shadow_replays
+            """,
+            order_sql="ORDER BY evaluated_at DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+        )
+        counts["shadow_replays"] = count
+        for item in shadow_replays:
+            _bool_fields(item, "passed", "holdout_passed")
+            item["metrics"] = _decode_json_object(item.pop("metrics_json", None))
+
+        count, soak_reports = self._scoped_rows(
+            table="soak_reports",
+            select_sql="""
+            SELECT entry_id, report_id, contract_id, contract_hash,
+                   candidate_version, soak_hash, window_count, incident_count,
+                   drift_alarm_count, blocking_drift_alarm_count, passed,
+                   outcome, check_count, failed_check_count, evaluated_at,
+                   metrics_json
+            FROM soak_reports
+            """,
+            order_sql="ORDER BY evaluated_at DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+        )
+        counts["soak_reports"] = count
+        for item in soak_reports:
+            _bool_fields(item, "passed")
+            item["metrics"] = _decode_json_object(item.pop("metrics_json", None))
+
+        count, traffic_holdout_exports = self._scoped_rows(
+            table="traffic_holdout_exports",
+            select_sql="""
+            SELECT export_id, entry_id, export_hash, export_ref, source_ref,
+                   exporter_ref, contract_id, contract_hash, candidate_version,
+                   record_count, violation_count, passed,
+                   extraction_window_json, records_root,
+                   earliest_record_timestamp, latest_record_timestamp,
+                   produced_at
+            FROM traffic_holdout_exports
+            """,
+            order_sql="ORDER BY produced_at DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+        )
+        counts["traffic_holdout_exports"] = count
+        for item in traffic_holdout_exports:
+            _bool_fields(item, "passed")
+            item["extraction_window"] = _decode_json_object(item.pop("extraction_window_json", None))
+
+        count, traffic_completeness_receipts = self._scoped_rows(
+            table="traffic_completeness_receipts",
+            select_sql="""
+            SELECT completeness_id, entry_id, completeness_hash, mode,
+                   authority_ref, export_id, export_hash, contract_id,
+                   contract_hash, candidate_version, record_count,
+                   violation_count, passed, source_completeness_json,
+                   provider_exchange_json, produced_at
+            FROM traffic_completeness_receipts
+            """,
+            order_sql="ORDER BY produced_at DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+        )
+        counts["traffic_completeness_receipts"] = count
+        for item in traffic_completeness_receipts:
+            _bool_fields(item, "passed")
+            item["source_completeness"] = _decode_json_object(item.pop("source_completeness_json", None))
+            item["provider_exchange"] = _decode_json_object(item.pop("provider_exchange_json", None))
+
         count, proof_packs = self._scoped_rows(
             table="proof_packs",
             select_sql="""
@@ -2762,6 +3367,11 @@ class ControlPlane:
             "chain_entries": chain_entries,
             "eval_runs": eval_runs,
             "gate_decisions": gate_decisions,
+            "temporal_holdout_manifests": temporal_holdout_manifests,
+            "shadow_replays": shadow_replays,
+            "soak_reports": soak_reports,
+            "traffic_holdout_exports": traffic_holdout_exports,
+            "traffic_completeness_receipts": traffic_completeness_receipts,
             "proof_packs": proof_packs,
             "ingest_events": ingest_events,
             "promotion_statuses": promotion_statuses,
@@ -2948,6 +3558,100 @@ class ControlPlane:
         counts["gate_decisions"] = count
         gate_decisions = [_bool_fields(item, "passed", "holdout_passed", "approvals_passed") for item in gate_decisions]
 
+        count, temporal_holdout_manifests = self._hash_scoped_rows(
+            table="temporal_holdout_manifests",
+            select_sql="""
+            SELECT manifest_id, entry_id, manifest_hash, run_id, dataset_id,
+                   contract_id, contract_hash, candidate_version, record_count,
+                   violation_count, passed, records_root,
+                   earliest_record_timestamp, latest_record_timestamp, generated_at
+            FROM temporal_holdout_manifests
+            """,
+            order_sql="ORDER BY generated_at DESC",
+            hashes=contract_hashes,
+            limit=limit,
+        )
+        counts["temporal_holdout_manifests"] = count
+        temporal_holdout_manifests = [_bool_fields(item, "passed") for item in temporal_holdout_manifests]
+
+        count, shadow_replays = self._hash_scoped_rows(
+            table="shadow_replays",
+            select_sql="""
+            SELECT entry_id, run_id, contract_id, contract_hash,
+                   candidate_version, replay_hash, records_checked, passed,
+                   outcome, holdout_passed, holdout_error_count, check_count,
+                   failed_check_count, temporal_holdout_manifest_id,
+                   temporal_holdout_manifest_hash, evaluated_at, metrics_json
+            FROM shadow_replays
+            """,
+            order_sql="ORDER BY evaluated_at DESC",
+            hashes=contract_hashes,
+            limit=limit,
+        )
+        counts["shadow_replays"] = count
+        for item in shadow_replays:
+            _bool_fields(item, "passed", "holdout_passed")
+            item["metrics"] = _decode_json_object(item.pop("metrics_json", None))
+
+        count, soak_reports = self._hash_scoped_rows(
+            table="soak_reports",
+            select_sql="""
+            SELECT entry_id, report_id, contract_id, contract_hash,
+                   candidate_version, soak_hash, window_count, incident_count,
+                   drift_alarm_count, blocking_drift_alarm_count, passed,
+                   outcome, check_count, failed_check_count, evaluated_at,
+                   metrics_json
+            FROM soak_reports
+            """,
+            order_sql="ORDER BY evaluated_at DESC",
+            hashes=contract_hashes,
+            limit=limit,
+        )
+        counts["soak_reports"] = count
+        for item in soak_reports:
+            _bool_fields(item, "passed")
+            item["metrics"] = _decode_json_object(item.pop("metrics_json", None))
+
+        count, traffic_holdout_exports = self._hash_scoped_rows(
+            table="traffic_holdout_exports",
+            select_sql="""
+            SELECT export_id, entry_id, export_hash, export_ref, source_ref,
+                   exporter_ref, contract_id, contract_hash, candidate_version,
+                   record_count, violation_count, passed,
+                   extraction_window_json, records_root,
+                   earliest_record_timestamp, latest_record_timestamp,
+                   produced_at
+            FROM traffic_holdout_exports
+            """,
+            order_sql="ORDER BY produced_at DESC",
+            hashes=contract_hashes,
+            limit=limit,
+        )
+        counts["traffic_holdout_exports"] = count
+        for item in traffic_holdout_exports:
+            _bool_fields(item, "passed")
+            item["extraction_window"] = _decode_json_object(item.pop("extraction_window_json", None))
+
+        count, traffic_completeness_receipts = self._hash_scoped_rows(
+            table="traffic_completeness_receipts",
+            select_sql="""
+            SELECT completeness_id, entry_id, completeness_hash, mode,
+                   authority_ref, export_id, export_hash, contract_id,
+                   contract_hash, candidate_version, record_count,
+                   violation_count, passed, source_completeness_json,
+                   provider_exchange_json, produced_at
+            FROM traffic_completeness_receipts
+            """,
+            order_sql="ORDER BY produced_at DESC",
+            hashes=contract_hashes,
+            limit=limit,
+        )
+        counts["traffic_completeness_receipts"] = count
+        for item in traffic_completeness_receipts:
+            _bool_fields(item, "passed")
+            item["source_completeness"] = _decode_json_object(item.pop("source_completeness_json", None))
+            item["provider_exchange"] = _decode_json_object(item.pop("provider_exchange_json", None))
+
         count, proof_packs = self._agent_scoped_rows(
             table="proof_packs",
             select_sql="""
@@ -3069,6 +3773,11 @@ class ControlPlane:
             "chain_entries": chain_entries,
             "eval_runs": eval_runs,
             "gate_decisions": gate_decisions,
+            "temporal_holdout_manifests": temporal_holdout_manifests,
+            "shadow_replays": shadow_replays,
+            "soak_reports": soak_reports,
+            "traffic_holdout_exports": traffic_holdout_exports,
+            "traffic_completeness_receipts": traffic_completeness_receipts,
             "proof_packs": proof_packs,
             "ingest_events": ingest_events,
             "promotion_statuses": promotion_statuses,

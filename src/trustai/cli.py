@@ -2283,6 +2283,8 @@ def cmd_control_summary(args: argparse.Namespace) -> int:
             summary["promotion_statuses"] = control.recent_promotion_statuses()
         if args.runtime_evidence:
             summary["runtime_evidence"] = control.runtime_evidence()
+        if args.holdout_evidence:
+            summary["holdout_evidence"] = control.holdout_evidence()
         if args.roadmap_evidence:
             summary["roadmap_evidence"] = control.roadmap_evidence()
         if args.phase_scoreboards:
@@ -20384,6 +20386,7 @@ def build_parser() -> argparse.ArgumentParser:
     control_summary.add_argument("--ingest-events", action="store_true")
     control_summary.add_argument("--promotion-statuses", action="store_true")
     control_summary.add_argument("--runtime-evidence", action="store_true")
+    control_summary.add_argument("--holdout-evidence", action="store_true")
     control_summary.add_argument("--roadmap-evidence", action="store_true")
     control_summary.add_argument("--phase-scoreboards", action="store_true")
     control_summary.add_argument("--design-partner-dossiers", action="store_true")

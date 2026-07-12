@@ -202,6 +202,22 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual([], runtime_body["policy_engine_receipts"])
                 self.assertEqual([], runtime_body["incidents"])
 
+                conn.request("GET", "/v0/holdout-evidence")
+                holdout_response = conn.getresponse()
+                holdout_body = json.loads(holdout_response.read().decode("utf-8"))
+                self.assertEqual(200, holdout_response.status)
+                self.assertEqual([], holdout_body["temporal_holdout_manifests"])
+                self.assertEqual([], holdout_body["shadow_replays"])
+                self.assertEqual([], holdout_body["soak_reports"])
+                self.assertEqual([], holdout_body["traffic_holdout_exports"])
+                self.assertEqual([], holdout_body["traffic_completeness_receipts"])
+
+                conn.request("GET", "/v0/control/holdout-evidence")
+                control_holdout_response = conn.getresponse()
+                control_holdout_body = json.loads(control_holdout_response.read().decode("utf-8"))
+                self.assertEqual(200, control_holdout_response.status)
+                self.assertEqual([], control_holdout_body["shadow_replays"])
+
                 conn.request("GET", "/v0/roadmap-evidence")
                 roadmap_response = conn.getresponse()
                 roadmap_body = json.loads(roadmap_response.read().decode("utf-8"))
@@ -215,6 +231,7 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual([], roadmap_body["product_scope_decisions"])
                 self.assertEqual([], roadmap_body["vertical_packs"])
                 self.assertEqual([], roadmap_body["reliability_reports"])
+                self.assertEqual([], roadmap_body["holdout_evidence"]["shadow_replays"])
 
                 conn.request("GET", "/v0/phase-scoreboards")
                 phase_scoreboards_response = conn.getresponse()
