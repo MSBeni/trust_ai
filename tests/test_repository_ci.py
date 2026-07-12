@@ -68,6 +68,7 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("python -m unittest discover -v -p test_repository_ci.py", workflow)
         self.assertIn("tests.test_go_verifier_release_workflow", workflow)
         self.assertIn("tests.test_repository_ci", workflow)
+        self.assertIn("tests.test_packaging", workflow)
         self.assertIn("tests.test_roadmap_audit", workflow)
         self.assertIn("tests.test_external_evidence", workflow)
         self.assertIn("tests.test_tamper_stress", workflow)

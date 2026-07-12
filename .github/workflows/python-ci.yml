@@ -141,6 +141,7 @@ jobs:
           tests.test_go_verifier_build
           tests.test_go_verifier_release_workflow
           tests.test_repository_ci
+          tests.test_packaging
           tests.test_roadmap_audit
           tests.test_external_evidence
           tests.test_tamper_stress
