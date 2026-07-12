@@ -21,6 +21,7 @@ from .phase_scoreboard import PHASE_SCOREBOARD_ENTRY_TYPE
 from .product_scope import PRODUCT_SCOPE_ENTRY_TYPE
 from .ingest import INGEST_ENTRY_TYPE
 from .lifecycle import INCIDENT_ENTRY_TYPE
+from .mcp_gateway import MCP_PROXY_CAPTURE_ENTRY_TYPE, MCP_TOOL_CALL_ENTRY_TYPE
 from .own_compliance import OWN_COMPLIANCE_ENTRY_TYPE, REQUIRED_CERTIFICATION_KINDS
 from .policy import POLICY_DECISION_ENTRY_TYPE
 from .policy_engine import POLICY_ENGINE_ENTRY_TYPE
@@ -283,6 +284,46 @@ class ControlPlane:
                 schema_url TEXT,
                 observed_at TEXT,
                 attributes_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS mcp_tool_calls (
+                entry_id TEXT PRIMARY KEY,
+                session_id TEXT,
+                request_id TEXT,
+                tool_name TEXT,
+                contract_hash TEXT,
+                agent_name TEXT,
+                agent_version TEXT,
+                risk_class TEXT,
+                request_hash TEXT,
+                response_hash TEXT,
+                tool_call_hash TEXT,
+                transcript_sequence INTEGER NOT NULL,
+                transcript_call_count INTEGER NOT NULL,
+                previous_transcript_node_hash TEXT,
+                transcript_node_hash TEXT,
+                transcript_root TEXT,
+                observed_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS mcp_proxy_captures (
+                capture_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                proxy_ref TEXT,
+                upstream_ref TEXT,
+                session_id TEXT,
+                contract_hash TEXT,
+                agent_name TEXT,
+                agent_version TEXT,
+                risk_class TEXT,
+                event_count INTEGER NOT NULL,
+                tool_call_count INTEGER NOT NULL,
+                event_chain_root TEXT,
+                transcript_root TEXT,
+                proxy_events_artifact_json TEXT NOT NULL,
+                event_hashes_json TEXT NOT NULL,
+                tool_call_hashes_json TEXT NOT NULL,
+                captured_at TEXT,
                 body_json TEXT NOT NULL
             );
             CREATE TABLE IF NOT EXISTS eval_runs (
@@ -691,6 +732,8 @@ class ControlPlane:
             "agents": 0,
             "anchors": 0,
             "ingest_events": 0,
+            "mcp_tool_calls": 0,
+            "mcp_proxy_captures": 0,
             "eval_runs": 0,
             "gate_decisions": 0,
             "promotion_statuses": 0,
@@ -767,6 +810,79 @@ class ControlPlane:
                     ),
                 )
                 counts["ingest_events"] += 1
+
+            if entry.get("entry_type") == MCP_TOOL_CALL_ENTRY_TYPE:
+                tool_call = payload.get("tool_call", {}) if isinstance(payload.get("tool_call"), dict) else {}
+                agent = tool_call.get("agent", {}) if isinstance(tool_call.get("agent"), dict) else {}
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO mcp_tool_calls(
+                        entry_id, session_id, request_id, tool_name,
+                        contract_hash, agent_name, agent_version, risk_class,
+                        request_hash, response_hash, tool_call_hash,
+                        transcript_sequence, transcript_call_count,
+                        previous_transcript_node_hash, transcript_node_hash,
+                        transcript_root, observed_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        entry["entry_id"],
+                        payload.get("session_id") or tool_call.get("session_id"),
+                        payload.get("request_id") or tool_call.get("request_id"),
+                        payload.get("tool_name") or tool_call.get("tool_name"),
+                        payload.get("contract_hash") or tool_call.get("contract_hash"),
+                        agent.get("name"),
+                        agent.get("version"),
+                        tool_call.get("risk_class") or agent.get("risk_class"),
+                        payload.get("request_hash"),
+                        payload.get("response_hash"),
+                        payload.get("tool_call_hash"),
+                        int(payload.get("transcript_sequence") or 0),
+                        int(payload.get("transcript_call_count") or 0),
+                        payload.get("previous_transcript_node_hash"),
+                        payload.get("transcript_node_hash"),
+                        payload.get("transcript_root"),
+                        tool_call.get("timestamp") or entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["mcp_tool_calls"] += 1
+
+            if entry.get("entry_type") == MCP_PROXY_CAPTURE_ENTRY_TYPE:
+                agent = payload.get("agent", {}) if isinstance(payload.get("agent"), dict) else {}
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO mcp_proxy_captures(
+                        capture_id, entry_id, proxy_ref, upstream_ref,
+                        session_id, contract_hash, agent_name, agent_version,
+                        risk_class, event_count, tool_call_count,
+                        event_chain_root, transcript_root,
+                        proxy_events_artifact_json, event_hashes_json,
+                        tool_call_hashes_json, captured_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("capture_id") or entry["entry_id"],
+                        entry["entry_id"],
+                        payload.get("proxy_ref"),
+                        payload.get("upstream_ref"),
+                        payload.get("session_id"),
+                        payload.get("contract_hash"),
+                        agent.get("name"),
+                        agent.get("version"),
+                        agent.get("risk_class"),
+                        int(payload.get("event_count") or 0),
+                        int(payload.get("tool_call_count") or 0),
+                        payload.get("event_chain_root"),
+                        payload.get("transcript_root"),
+                        _json(payload.get("proxy_events_artifact") or {}),
+                        _json(payload.get("event_hashes") or []),
+                        _json(payload.get("tool_call_hashes") or []),
+                        entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["mcp_proxy_captures"] += 1
 
             if entry.get("entry_type") == CONTRACT_ENTRY_TYPE:
                 contract = payload.get("contract", {})
@@ -1674,6 +1790,8 @@ class ControlPlane:
             "proof_packs",
             "anchors",
             "ingest_events",
+            "mcp_tool_calls",
+            "mcp_proxy_captures",
             "eval_runs",
             "gate_decisions",
             "promotion_statuses",
@@ -1739,6 +1857,28 @@ class ControlPlane:
                    event_name, agent_name, agent_version, risk_class, observed_at
             FROM ingest_events
             ORDER BY observed_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_mcp_tool_call = self.conn.execute(
+            """
+            SELECT entry_id, session_id, request_id, tool_name,
+                   contract_hash, agent_name, agent_version, risk_class,
+                   transcript_sequence, transcript_call_count,
+                   transcript_root, observed_at
+            FROM mcp_tool_calls
+            ORDER BY observed_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_mcp_proxy_capture = self.conn.execute(
+            """
+            SELECT capture_id, entry_id, proxy_ref, upstream_ref, session_id,
+                   contract_hash, agent_name, agent_version, risk_class,
+                   event_count, tool_call_count, event_chain_root,
+                   transcript_root, captured_at
+            FROM mcp_proxy_captures
+            ORDER BY captured_at DESC
             LIMIT 1
             """
         ).fetchone()
@@ -2031,6 +2171,8 @@ class ControlPlane:
             "latest_eval_run": dict(latest_eval_run) if latest_eval_run else None,
             "latest_gate_decision": latest_gate_decision_dict,
             "latest_ingest_event": dict(latest_ingest_event) if latest_ingest_event else None,
+            "latest_mcp_tool_call": dict(latest_mcp_tool_call) if latest_mcp_tool_call else None,
+            "latest_mcp_proxy_capture": dict(latest_mcp_proxy_capture) if latest_mcp_proxy_capture else None,
             "latest_promotion_status": latest_status_dict,
             "latest_runtime_attestation": latest_runtime_dict,
             "latest_policy_decision": latest_policy_decision_dict,
@@ -2131,6 +2273,46 @@ class ControlPlane:
         for row in rows:
             item = dict(row)
             item["attributes"] = _decode_json_object(item.pop("attributes_json", None))
+            items.append(item)
+        return items
+
+    def recent_mcp_tool_calls(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT entry_id, session_id, request_id, tool_name,
+                   contract_hash, agent_name, agent_version, risk_class,
+                   request_hash, response_hash, tool_call_hash,
+                   transcript_sequence, transcript_call_count,
+                   previous_transcript_node_hash, transcript_node_hash,
+                   transcript_root, observed_at
+            FROM mcp_tool_calls
+            ORDER BY observed_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        return [dict(row) for row in rows]
+
+    def recent_mcp_proxy_captures(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT capture_id, entry_id, proxy_ref, upstream_ref, session_id,
+                   contract_hash, agent_name, agent_version, risk_class,
+                   event_count, tool_call_count, event_chain_root,
+                   transcript_root, proxy_events_artifact_json,
+                   event_hashes_json, tool_call_hashes_json, captured_at
+            FROM mcp_proxy_captures
+            ORDER BY captured_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["proxy_events_artifact"] = _decode_json_object(item.pop("proxy_events_artifact_json", None))
+            item["event_hashes"] = _decode_json_array(item.pop("event_hashes_json", None))
+            item["tool_call_hashes"] = _decode_json_array(item.pop("tool_call_hashes_json", None))
             items.append(item)
         return items
 
@@ -2631,6 +2813,13 @@ class ControlPlane:
             "vertical_packs": self.recent_vertical_packs(limit),
             "reliability_reports": self.recent_reliability_reports(limit),
             "holdout_evidence": self.holdout_evidence(limit),
+            "mcp_evidence": self.mcp_evidence(limit),
+        }
+
+    def mcp_evidence(self, limit: int = 20) -> dict[str, Any]:
+        return {
+            "mcp_tool_calls": self.recent_mcp_tool_calls(limit),
+            "mcp_proxy_captures": self.recent_mcp_proxy_captures(limit),
         }
 
     def holdout_evidence(self, limit: int = 20) -> dict[str, Any]:
@@ -3274,6 +3463,47 @@ class ControlPlane:
         for item in ingest_events:
             item["attributes"] = _decode_json_object(item.pop("attributes_json", None))
 
+        count, mcp_tool_calls = self._scoped_rows(
+            table="mcp_tool_calls",
+            select_sql="""
+            SELECT entry_id, session_id, request_id, tool_name,
+                   contract_hash, agent_name, agent_version, risk_class,
+                   request_hash, response_hash, tool_call_hash,
+                   transcript_sequence, transcript_call_count,
+                   previous_transcript_node_hash, transcript_node_hash,
+                   transcript_root, observed_at
+            FROM mcp_tool_calls
+            """,
+            order_sql="ORDER BY observed_at DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+            id_column=None,
+        )
+        counts["mcp_tool_calls"] = count
+
+        count, mcp_proxy_captures = self._scoped_rows(
+            table="mcp_proxy_captures",
+            select_sql="""
+            SELECT capture_id, entry_id, proxy_ref, upstream_ref, session_id,
+                   contract_hash, agent_name, agent_version, risk_class,
+                   event_count, tool_call_count, event_chain_root,
+                   transcript_root, proxy_events_artifact_json,
+                   event_hashes_json, tool_call_hashes_json, captured_at
+            FROM mcp_proxy_captures
+            """,
+            order_sql="ORDER BY captured_at DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+            id_column=None,
+        )
+        counts["mcp_proxy_captures"] = count
+        for item in mcp_proxy_captures:
+            item["proxy_events_artifact"] = _decode_json_object(item.pop("proxy_events_artifact_json", None))
+            item["event_hashes"] = _decode_json_array(item.pop("event_hashes_json", None))
+            item["tool_call_hashes"] = _decode_json_array(item.pop("tool_call_hashes_json", None))
+
         count, promotion_statuses = self._scoped_rows(
             table="promotion_statuses",
             select_sql="""
@@ -3374,6 +3604,8 @@ class ControlPlane:
             "traffic_completeness_receipts": traffic_completeness_receipts,
             "proof_packs": proof_packs,
             "ingest_events": ingest_events,
+            "mcp_tool_calls": mcp_tool_calls,
+            "mcp_proxy_captures": mcp_proxy_captures,
             "promotion_statuses": promotion_statuses,
             "runtime_attestations": runtime_attestations,
             "policy_decisions": policy_decisions,
@@ -3429,6 +3661,8 @@ class ControlPlane:
             ("gate_decisions", "agent_name", "agent_version"),
             ("proof_packs", "agent_name", "agent_version"),
             ("ingest_events", "agent_name", "agent_version"),
+            ("mcp_tool_calls", "agent_name", "agent_version"),
+            ("mcp_proxy_captures", "agent_name", "agent_version"),
             ("promotion_statuses", "agent_name", "agent_version"),
             ("incidents", "agent_name", "agent_version"),
         ]
@@ -3683,6 +3917,45 @@ class ControlPlane:
         for item in ingest_events:
             item["attributes"] = _decode_json_object(item.pop("attributes_json", None))
 
+        count, mcp_tool_calls = self._agent_scoped_rows(
+            table="mcp_tool_calls",
+            select_sql="""
+            SELECT entry_id, session_id, request_id, tool_name,
+                   contract_hash, agent_name, agent_version, risk_class,
+                   request_hash, response_hash, tool_call_hash,
+                   transcript_sequence, transcript_call_count,
+                   previous_transcript_node_hash, transcript_node_hash,
+                   transcript_root, observed_at
+            FROM mcp_tool_calls
+            """,
+            order_sql="ORDER BY observed_at DESC",
+            agent_name=agent_name,
+            agent_version=agent_version,
+            limit=limit,
+        )
+        counts["mcp_tool_calls"] = count
+
+        count, mcp_proxy_captures = self._agent_scoped_rows(
+            table="mcp_proxy_captures",
+            select_sql="""
+            SELECT capture_id, entry_id, proxy_ref, upstream_ref, session_id,
+                   contract_hash, agent_name, agent_version, risk_class,
+                   event_count, tool_call_count, event_chain_root,
+                   transcript_root, proxy_events_artifact_json,
+                   event_hashes_json, tool_call_hashes_json, captured_at
+            FROM mcp_proxy_captures
+            """,
+            order_sql="ORDER BY captured_at DESC",
+            agent_name=agent_name,
+            agent_version=agent_version,
+            limit=limit,
+        )
+        counts["mcp_proxy_captures"] = count
+        for item in mcp_proxy_captures:
+            item["proxy_events_artifact"] = _decode_json_object(item.pop("proxy_events_artifact_json", None))
+            item["event_hashes"] = _decode_json_array(item.pop("event_hashes_json", None))
+            item["tool_call_hashes"] = _decode_json_array(item.pop("tool_call_hashes_json", None))
+
         count, promotion_statuses = self._agent_scoped_rows(
             table="promotion_statuses",
             select_sql="""
@@ -3780,6 +4053,8 @@ class ControlPlane:
             "traffic_completeness_receipts": traffic_completeness_receipts,
             "proof_packs": proof_packs,
             "ingest_events": ingest_events,
+            "mcp_tool_calls": mcp_tool_calls,
+            "mcp_proxy_captures": mcp_proxy_captures,
             "promotion_statuses": promotion_statuses,
             "runtime_attestations": runtime_attestations,
             "policy_decisions": policy_decisions,

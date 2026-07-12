@@ -17,7 +17,13 @@ from trustai.external_evidence import (
 )
 from trustai.gate import append_eval_and_gate
 from trustai.ingest import append_events, load_events
-from trustai.mcp_gateway import load_mcp_transcript
+from trustai.mcp_gateway import (
+    append_mcp_proxy_capture,
+    append_mcp_transcript,
+    build_mcp_proxy_capture,
+    load_mcp_proxy_events,
+    load_mcp_transcript,
+)
 from trustai.mcp_gateway_authority import append_mcp_gateway_authority_dossier, build_mcp_gateway_authority_dossier
 from trustai.phase_scoreboard import append_phase_scoreboard, build_phase_scoreboard
 from trustai.product_scope import append_product_scope_decision, build_product_scope_decision
@@ -54,6 +60,7 @@ RESULTS = ROOT / "examples" / "aitrade" / "eval-results.json"
 INVENTORY = ROOT / "examples" / "aitrade" / "agent-inventory.json"
 EVENTS = ROOT / "examples" / "aitrade" / "otel-events.json"
 MCP = ROOT / "examples" / "aitrade" / "mcp-transcript.json"
+MCP_PROXY = ROOT / "examples" / "aitrade" / "mcp-proxy-events.json"
 SHADOW = ROOT / "examples" / "aitrade" / "shadow-replay.json"
 SOAK = ROOT / "examples" / "aitrade" / "soak-window.json"
 TRAFFIC_COMPLETENESS_PROVIDER_EXPORT = ROOT / "examples" / "aitrade" / "traffic-completeness-provider-export.json"
@@ -324,6 +331,17 @@ class ControlPlaneTests(unittest.TestCase):
             )
             append_reliability_report(chain, reliability_report, root=ROOT)
             mcp_calls = load_mcp_transcript(MCP)
+            mcp_entries = append_mcp_transcript(chain, mcp_calls)
+            mcp_proxy_capture = build_mcp_proxy_capture(
+                load_mcp_proxy_events(MCP_PROXY),
+                agent=mcp_calls[0]["agent"],
+                contract_hash=mcp_calls[0]["contract_hash"],
+                proxy_ref="mcp-proxy:trustai/local",
+                upstream_ref="mcp-server:aitrade/tools",
+                captured_at="2026-07-03T12:00:12Z",
+                source_events_path=MCP_PROXY,
+            )
+            mcp_proxy_entry = append_mcp_proxy_capture(chain, mcp_proxy_capture, source_events_path=MCP_PROXY)
             mcp_authority = build_mcp_gateway_authority_dossier(
                 mcp_calls,
                 mode="proxy-dossier",
@@ -380,6 +398,10 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, summary["counts"]["anchors"])
                 self.assertEqual(2, summary["counts"]["ingest_events"])
                 self.assertEqual(2, counts["ingest_events"])
+                self.assertEqual(1, summary["counts"]["mcp_tool_calls"])
+                self.assertEqual(1, summary["counts"]["mcp_proxy_captures"])
+                self.assertEqual(1, counts["mcp_tool_calls"])
+                self.assertEqual(1, counts["mcp_proxy_captures"])
                 self.assertEqual(1, summary["counts"]["promotion_statuses"])
                 self.assertEqual(1, counts["promotion_statuses"])
                 self.assertEqual(1, summary["counts"]["runtime_attestations"])
@@ -476,6 +498,9 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertTrue(summary["latest_gate_decision"]["holdout_passed"])
                 self.assertTrue(summary["latest_gate_decision"]["approvals_passed"])
                 self.assertEqual("gen_ai.tool.call", summary["latest_ingest_event"]["event_name"])
+                self.assertEqual("place_shadow_order", summary["latest_mcp_tool_call"]["tool_name"])
+                self.assertEqual(mcp_proxy_capture["capture_id"], summary["latest_mcp_proxy_capture"]["capture_id"])
+                self.assertEqual("mcp-proxy:trustai/local", summary["latest_mcp_proxy_capture"]["proxy_ref"])
                 self.assertEqual("github", summary["latest_promotion_status"]["provider"])
                 self.assertTrue(summary["latest_promotion_status"]["passed"])
                 self.assertEqual("shadow-order-20260703-001", summary["latest_runtime_attestation"]["action_id"])
@@ -503,6 +528,8 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, contract_evidence["counts"]["traffic_completeness_receipts"])
                 self.assertEqual(1, contract_evidence["counts"]["proof_packs"])
                 self.assertEqual(2, contract_evidence["counts"]["ingest_events"])
+                self.assertEqual(1, contract_evidence["counts"]["mcp_tool_calls"])
+                self.assertEqual(1, contract_evidence["counts"]["mcp_proxy_captures"])
                 self.assertEqual(1, contract_evidence["counts"]["promotion_statuses"])
                 self.assertEqual(1, contract_evidence["counts"]["runtime_attestations"])
                 self.assertEqual(1, contract_evidence["counts"]["policy_decisions"])
@@ -516,6 +543,11 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(traffic_completeness["completeness_id"], contract_evidence["traffic_completeness_receipts"][0]["completeness_id"])
                 self.assertTrue(contract_evidence["traffic_completeness_receipts"][0]["source_completeness"]["records_root_matches"])
                 self.assertEqual("gen_ai.tool.call", contract_evidence["ingest_events"][0]["event_name"])
+                self.assertEqual("place_shadow_order", contract_evidence["mcp_tool_calls"][0]["tool_name"])
+                self.assertEqual(mcp_entries[0]["entry_id"], contract_evidence["mcp_tool_calls"][0]["entry_id"])
+                self.assertEqual(mcp_proxy_entry["payload"]["capture_id"], contract_evidence["mcp_proxy_captures"][0]["capture_id"])
+                self.assertEqual(mcp_proxy_capture["event_chain_root"], contract_evidence["mcp_proxy_captures"][0]["event_chain_root"])
+                self.assertEqual(2, contract_evidence["mcp_proxy_captures"][0]["proxy_events_artifact"]["event_count"])
                 self.assertEqual("opa", contract_evidence["policy_engine_receipts"][0]["engine_name"])
                 self.assertEqual("incident-20260704-latency-drift", contract_evidence["incidents"][0]["incident_id"])
                 hash_scoped = control.contract_evidence(contract_hash=contract_hash, limit=1)
@@ -542,6 +574,8 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, agent_evidence["counts"]["traffic_completeness_receipts"])
                 self.assertEqual(1, agent_evidence["counts"]["proof_packs"])
                 self.assertEqual(2, agent_evidence["counts"]["ingest_events"])
+                self.assertEqual(1, agent_evidence["counts"]["mcp_tool_calls"])
+                self.assertEqual(1, agent_evidence["counts"]["mcp_proxy_captures"])
                 self.assertEqual(1, agent_evidence["counts"]["promotion_statuses"])
                 self.assertEqual(1, agent_evidence["counts"]["runtime_attestations"])
                 self.assertEqual(1, agent_evidence["counts"]["policy_decisions"])
@@ -552,6 +586,8 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertTrue(agent_evidence["shadow_replays"][0]["passed"])
                 self.assertTrue(agent_evidence["traffic_holdout_exports"][0]["passed"])
                 self.assertEqual("gen_ai.tool.call", agent_evidence["ingest_events"][0]["event_name"])
+                self.assertEqual("place_shadow_order", agent_evidence["mcp_tool_calls"][0]["tool_name"])
+                self.assertEqual(mcp_proxy_capture["capture_id"], agent_evidence["mcp_proxy_captures"][0]["capture_id"])
                 unversioned_agent_evidence = control.agent_evidence(agent_name=contract["agent"]["name"], limit=1)
                 self.assertEqual(contract["agent"]["name"], unversioned_agent_evidence["scope"]["agent_name"])
                 self.assertLessEqual(len(unversioned_agent_evidence["chain_entries"]), 1)
@@ -570,6 +606,11 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(2, len(ingest_events))
                 self.assertEqual("gen_ai.tool.call", ingest_events[0]["event_name"])
                 self.assertEqual("place_shadow_order", ingest_events[0]["attributes"]["tool.name"])
+                mcp_evidence = control.mcp_evidence()
+                self.assertEqual("place_shadow_order", mcp_evidence["mcp_tool_calls"][0]["tool_name"])
+                self.assertEqual(mcp_proxy_capture["capture_id"], mcp_evidence["mcp_proxy_captures"][0]["capture_id"])
+                self.assertEqual(1, len(control.recent_mcp_tool_calls()))
+                self.assertEqual(1, len(control.recent_mcp_proxy_captures()))
                 statuses = control.recent_promotion_statuses()
                 self.assertEqual(1, len(statuses))
                 self.assertEqual("volelabs/trust_ai", statuses[0]["target_ref"]["repository"])
@@ -605,6 +646,8 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, len(roadmap_evidence["reliability_reports"]))
                 self.assertEqual(1, len(roadmap_evidence["holdout_evidence"]["shadow_replays"]))
                 self.assertEqual(1, len(roadmap_evidence["holdout_evidence"]["traffic_completeness_receipts"]))
+                self.assertEqual(1, len(roadmap_evidence["mcp_evidence"]["mcp_tool_calls"]))
+                self.assertEqual(1, len(roadmap_evidence["mcp_evidence"]["mcp_proxy_captures"]))
                 phase_scoreboards = control.recent_phase_scoreboards()
                 self.assertEqual(1, len(phase_scoreboards))
                 self.assertEqual("readiness", phase_scoreboards[0]["mode"])

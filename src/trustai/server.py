@@ -254,6 +254,13 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             finally:
                 control.close()
             return
+        if parsed.path in ("/v0/mcp-evidence", "/v0/control/mcp-evidence"):
+            control = self._control()
+            try:
+                self._json_response(200, control.mcp_evidence())
+            finally:
+                control.close()
+            return
         if parsed.path == "/v0/roadmap-evidence":
             control = self._control()
             try:

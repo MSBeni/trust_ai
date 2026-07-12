@@ -128,6 +128,8 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual(0, summary_body["counts"]["eval_runs"])
                 self.assertEqual(0, summary_body["counts"]["gate_decisions"])
                 self.assertEqual(4, summary_body["counts"]["ingest_events"])
+                self.assertEqual(0, summary_body["counts"]["mcp_tool_calls"])
+                self.assertEqual(0, summary_body["counts"]["mcp_proxy_captures"])
                 self.assertEqual(0, summary_body["counts"]["roadmap_audits"])
                 self.assertEqual(0, summary_body["counts"]["external_evidence_collection_runs"])
                 self.assertEqual(0, summary_body["counts"]["authority_dossiers"])
@@ -218,6 +220,19 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual(200, control_holdout_response.status)
                 self.assertEqual([], control_holdout_body["shadow_replays"])
 
+                conn.request("GET", "/v0/mcp-evidence")
+                mcp_response = conn.getresponse()
+                mcp_body = json.loads(mcp_response.read().decode("utf-8"))
+                self.assertEqual(200, mcp_response.status)
+                self.assertEqual([], mcp_body["mcp_tool_calls"])
+                self.assertEqual([], mcp_body["mcp_proxy_captures"])
+
+                conn.request("GET", "/v0/control/mcp-evidence")
+                control_mcp_response = conn.getresponse()
+                control_mcp_body = json.loads(control_mcp_response.read().decode("utf-8"))
+                self.assertEqual(200, control_mcp_response.status)
+                self.assertEqual([], control_mcp_body["mcp_tool_calls"])
+
                 conn.request("GET", "/v0/roadmap-evidence")
                 roadmap_response = conn.getresponse()
                 roadmap_body = json.loads(roadmap_response.read().decode("utf-8"))
@@ -232,6 +247,7 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual([], roadmap_body["vertical_packs"])
                 self.assertEqual([], roadmap_body["reliability_reports"])
                 self.assertEqual([], roadmap_body["holdout_evidence"]["shadow_replays"])
+                self.assertEqual([], roadmap_body["mcp_evidence"]["mcp_tool_calls"])
 
                 conn.request("GET", "/v0/phase-scoreboards")
                 phase_scoreboards_response = conn.getresponse()
