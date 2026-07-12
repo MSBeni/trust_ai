@@ -155,6 +155,13 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             finally:
                 control.close()
             return
+        if parsed.path == "/v0/promotion-statuses":
+            control = self._control()
+            try:
+                self._json_response(200, {"promotion_statuses": control.recent_promotion_statuses()})
+            finally:
+                control.close()
+            return
         self._json_response(404, {"error": "not found"})
 
     def do_POST(self) -> None:

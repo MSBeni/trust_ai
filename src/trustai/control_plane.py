@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 import sqlite3
@@ -7,6 +7,7 @@ from typing import Any
 
 from .canonical import content_hash, utc_now
 from .chain import EvidenceChain
+from .cicd import PROMOTION_STATUS_ENTRY_TYPE
 from .contracts import CONTRACT_ENTRY_TYPE
 from .proofpack import PROOF_PACK_SPEC_VERSION
 from .registry import AGENT_INVENTORY_ENTRY_TYPE
@@ -28,6 +29,16 @@ def _payload_contract_hash(entry: dict[str, Any]) -> str | None:
     if isinstance(decision, dict):
         return decision.get("contract_hash")
     return None
+
+
+def _decode_json_object(value: Any) -> dict[str, Any]:
+    if not value:
+        return {}
+    try:
+        decoded = json.loads(value)
+    except (TypeError, json.JSONDecodeError):
+        return {}
+    return decoded if isinstance(decoded, dict) else {}
 
 
 class ControlPlane:
@@ -116,6 +127,24 @@ class ControlPlane:
                 path TEXT,
                 body_json TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS promotion_statuses (
+                receipt_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                provider TEXT,
+                pack_id TEXT,
+                contract_id TEXT,
+                contract_hash TEXT,
+                agent_name TEXT,
+                agent_version TEXT,
+                gate_outcome TEXT,
+                passed INTEGER NOT NULL,
+                provider_status_kind TEXT,
+                provider_status_success INTEGER,
+                target_ref_json TEXT NOT NULL,
+                violation_count INTEGER NOT NULL,
+                attested_at TEXT,
+                body_json TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS anchors (
                 anchor_id TEXT PRIMARY KEY,
                 entry_id TEXT,
@@ -134,7 +163,7 @@ class ControlPlane:
         self.conn.commit()
 
     def index_chain(self, chain: EvidenceChain) -> dict[str, int]:
-        counts = {"chain_entries": 0, "contracts": 0, "agents": 0, "anchors": 0}
+        counts = {"chain_entries": 0, "contracts": 0, "agents": 0, "anchors": 0, "promotion_statuses": 0}
         for entry in chain.entries:
             payload = entry.get("payload", {})
             contract_hash = _payload_contract_hash(entry)
@@ -226,6 +255,44 @@ class ControlPlane:
                     ),
                 )
                 counts["anchors"] += 1
+            if entry.get("entry_type") == PROMOTION_STATUS_ENTRY_TYPE:
+                proof_pack = payload.get("proof_pack", {}) if isinstance(payload.get("proof_pack"), dict) else {}
+                gate_decision = payload.get("gate_decision", {}) if isinstance(payload.get("gate_decision"), dict) else {}
+                agent = gate_decision.get("agent", {}) if isinstance(gate_decision.get("agent"), dict) else {}
+                provider_status = payload.get("provider_status", {}) if isinstance(payload.get("provider_status"), dict) else {}
+                provider_payload = payload.get("provider_payload", {}) if isinstance(payload.get("provider_payload"), dict) else {}
+                target_ref = provider_payload.get("target_ref", {}) if isinstance(provider_payload.get("target_ref"), dict) else {}
+                provider_success = provider_status.get("success")
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO promotion_statuses(
+                        receipt_id, entry_id, provider, pack_id, contract_id,
+                        contract_hash, agent_name, agent_version, gate_outcome,
+                        passed, provider_status_kind, provider_status_success,
+                        target_ref_json, violation_count, attested_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("receipt_id") or entry["entry_id"],
+                        entry["entry_id"],
+                        payload.get("provider"),
+                        proof_pack.get("pack_id"),
+                        gate_decision.get("contract_id"),
+                        gate_decision.get("contract_hash"),
+                        agent.get("name"),
+                        agent.get("version"),
+                        gate_decision.get("outcome"),
+                        1 if payload.get("passed") else 0,
+                        provider_status.get("kind"),
+                        None if provider_success is None else (1 if provider_success else 0),
+                        _json(target_ref),
+                        int(payload.get("violation_count") or 0),
+                        entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["promotion_statuses"] += 1
+
         self.conn.commit()
         return counts
 
@@ -257,7 +324,7 @@ class ControlPlane:
         self.conn.commit()
 
     def summary(self) -> dict[str, Any]:
-        tables = ["contracts", "agents", "chain_entries", "proof_packs", "anchors"]
+        tables = ["contracts", "agents", "chain_entries", "proof_packs", "anchors", "promotion_statuses"]
         counts = {
             table: self.conn.execute(f"SELECT COUNT(*) AS count FROM {table}").fetchone()["count"]
             for table in tables
@@ -268,6 +335,18 @@ class ControlPlane:
         latest_pack = self.conn.execute(
             "SELECT pack_id, contract_id, outcome, issued_at FROM proof_packs ORDER BY issued_at DESC LIMIT 1"
         ).fetchone()
+        latest_status = self.conn.execute(
+            """
+            SELECT receipt_id, provider, pack_id, contract_id, gate_outcome,
+                   passed, violation_count, attested_at
+            FROM promotion_statuses
+            ORDER BY attested_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_status_dict = dict(latest_status) if latest_status else None
+        if latest_status_dict is not None:
+            latest_status_dict["passed"] = bool(latest_status_dict["passed"])
         return {
             "schema_version": SCHEMA_VERSION,
             "database": str(self.path),
@@ -276,6 +355,7 @@ class ControlPlane:
             "counts": counts,
             "latest_anchor": dict(latest_anchor) if latest_anchor else None,
             "latest_proof_pack": dict(latest_pack) if latest_pack else None,
+            "latest_promotion_status": latest_status_dict,
         }
 
     def recent_proof_packs(self, limit: int = 20) -> list[dict[str, Any]]:
@@ -289,6 +369,29 @@ class ControlPlane:
             (limit,),
         ).fetchall()
         return [dict(row) for row in rows]
+
+    def recent_promotion_statuses(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT receipt_id, provider, pack_id, contract_id, contract_hash,
+                   agent_name, agent_version, gate_outcome, passed,
+                   provider_status_kind, provider_status_success,
+                   target_ref_json, violation_count, attested_at
+            FROM promotion_statuses
+            ORDER BY attested_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        statuses = []
+        for row in rows:
+            item = dict(row)
+            item["passed"] = bool(item["passed"])
+            if item.get("provider_status_success") is not None:
+                item["provider_status_success"] = bool(item["provider_status_success"])
+            item["target_ref"] = _decode_json_object(item.pop("target_ref_json", None))
+            statuses.append(item)
+        return statuses
 
     def agents(self) -> list[dict[str, Any]]:
         rows = self.conn.execute(

@@ -11,13 +11,14 @@ into queryable registry tables while keeping the chain as the source of truth.
 - `chain_entries`: indexed evidence entries with type, timestamp, payload hash,
   and contract hash where present.
 - `proof_packs`: issued proof packs and gate outcomes.
+- `promotion_statuses`: CI/CD provider promotion-status receipts bound to proof packs.
 - `anchors`: published chain-root anchors.
 
 ## CLI
 
 ```powershell
 python -m trustai control-index --state .trustai/demo/evidence-chain.json --tenant aitrade-local --pack artifacts/aitrade-proof-pack.json --db .trustai/control-plane.sqlite
-python -m trustai control-summary --db .trustai/control-plane.sqlite --agents --proof-packs
+python -m trustai control-summary --db .trustai/control-plane.sqlite --agents --proof-packs --promotion-statuses
 ```
 
 ## API
@@ -27,7 +28,8 @@ python -m trustai control-summary --db .trustai/control-plane.sqlite --agents --
 - `POST /v0/control/index`;
 - `GET /v0/control/summary`;
 - `GET /v0/agents`;
-- `GET /v0/proof-packs`.
+- `GET /v0/proof-packs`;
+- `GET /v0/promotion-statuses`.
 
 The implementation falls back to SQLite `nolock=1` mode when running on local
 filesystems that do not support normal SQLite locking, such as some UNC-backed
