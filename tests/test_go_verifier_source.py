@@ -45,6 +45,7 @@ class GoVerifierSourceTests(unittest.TestCase):
             "bytes",
             "crypto/hmac",
             "crypto/sha256",
+            "encoding/base64",
             "encoding/hex",
             "encoding/json",
             "flag",
@@ -63,6 +64,14 @@ class GoVerifierSourceTests(unittest.TestCase):
         source = MAIN_GO.read_text(encoding="utf-8")
         required_markers = [
             "proofPackSpecVersion",
+            "roadmapEvidenceBundleSchema",
+            "verifyRoadmapEvidenceBundle",
+            "--require-source-artifacts",
+            "bundle_id does not match canonical bundle body",
+            "bundle source_artifacts must be a list",
+            "external evidence collection run artifact is not committed to bundled chain",
+            "external evidence source snapshot referenced by embedded collection run is not embedded",
+            "source audit proof inclusion failed",
             "canonicalBytes",
             "verifyValue",
             "verifyTimestampToken",
@@ -97,6 +106,7 @@ class GoVerifierSourceTests(unittest.TestCase):
         readme = README.read_text(encoding="utf-8")
         self.assertIn("go build -trimpath", readme)
         self.assertIn("artifacts/trustai-verify-go.exe artifacts/aitrade-proof-pack.json", readme)
+        self.assertIn("artifacts/trustai-verify-go.exe --require-source-artifacts artifacts/retained-collection-run-roadmap-evidence-bundle.json", readme)
         self.assertIn("does not include `go` on PATH", readme)
 
     def test_fresh_python_reference_pack_still_verifies(self):

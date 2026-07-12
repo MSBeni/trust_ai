@@ -1,7 +1,7 @@
 # TrustAI Go Verifier Source
 
 This directory contains the dependency-free Go source for the roadmap's static
-offline verifier. It mirrors the local Python verifier checks for proof packs:
+offline verifier. It mirrors the local Python verifier checks for proof packs and self-contained roadmap evidence bundles:
 
 - canonical JSON hashing with sorted object keys;
 - local HMAC proof-pack, chain-entry, and timestamp-token signature checks;
@@ -10,7 +10,9 @@ offline verifier. It mirrors the local Python verifier checks for proof packs:
 - contract hash, proof-pack wrapper, and eval results hash binding;
 - recomputed gate decision checks, including temporal holdout and approvals;
 - proof-pack subject agent/environment binding;
-- deterministic compliance framework mapping checks.
+- deterministic compliance framework mapping checks;
+- roadmap evidence bundle `bundle_id`, bundled chain tree, report summary, and source artifact hash checks;
+- strict `--require-source-artifacts` checks for embedded roadmap audits, external manifests, collection runs, source maps, source snapshots, and intake receipts.
 
 Run source tests when a Go toolchain is available:
 
@@ -49,6 +51,7 @@ Reference verification command:
 
 ```powershell
 artifacts/trustai-verify-go.exe artifacts/aitrade-proof-pack.json
+artifacts/trustai-verify-go.exe --require-source-artifacts artifacts/retained-collection-run-roadmap-evidence-bundle.json
 ```
 
 CI release automation lives in `.github/workflows/go-verifier.yml`. It runs the

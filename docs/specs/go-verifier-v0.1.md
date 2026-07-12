@@ -1,7 +1,7 @@
 # TrustAI Go Offline Verifier Source v0.1
 
 This specification defines the dependency-free Go verifier source target for
-TrustAI proof packs.
+TrustAI proof packs and self-contained roadmap evidence bundles.
 
 ## Source Target
 
@@ -11,7 +11,7 @@ TrustAI proof packs.
 - Intended artifact: static offline verifier binary built from the source tree
 
 The Go verifier source mirrors the Python reference verifier's offline
-accountless verification checks so proof packs can be inspected by third
+accountless verification checks so proof packs and roadmap evidence bundles can be inspected by third
 parties without network access or a TrustAI tenant.
 
 ## Required Verification Checks
@@ -42,6 +42,15 @@ An implementation conforming to this source target verifies:
     environment, plus eval/gate agent binding to the same contract agent.
 15. Deterministic compliance framework mappings derived from the packed gate
     decision.
+16. Roadmap evidence bundle schema, `bundle_id`, bundled chain tree, report
+    summary, verification block, and chain entry records.
+17. Embedded roadmap evidence source artifacts: canonical artifact IDs, base64
+    payload SHA-256 hashes, JSON source artifact IDs, and chain commitment
+    checks for roadmap audits, external manifests, collection runs, and source
+    maps.
+18. Strict `--require-source-artifacts` checks that fail when collection-run
+    source maps, source snapshots, intake receipts, or manifest evidence files
+    referenced by embedded artifacts are missing.
 
 ## Build and Test
 
@@ -61,6 +70,8 @@ is available:
 
 ```powershell
 python -m unittest tests.test_go_verifier_source
+# After building a binary:
+artifacts/trustai-verify-go.exe --require-source-artifacts artifacts/retained-collection-run-roadmap-evidence-bundle.json
 ```
 
 ## Release Boundary
