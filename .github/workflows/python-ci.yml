@@ -49,10 +49,10 @@ jobs:
         run: python -m trustai chain-verify --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci
 
       - name: Generate external evidence manifest
-        run: python -m trustai external-evidence-manifest artifacts/roadmap-audit.json --require-fresh --now 2026-07-09T00:00:00Z --evidence "oss-verifier-and-public-spec,ci-run,examples/aitrade/external-evidence/go-verifier-workflow-run.json,Recorded Go verifier workflow export;issuer=GitHub Actions;subject=trustai go verifier release workflow;source_uri=https://github.com/MSBeni/trust_ai/actions;issued_at=2026-07-08T00:00:00Z;expires_at=2026-12-31T00:00:00Z" --out artifacts/external-evidence-manifest.json --markdown artifacts/external-evidence-manifest.md
+        run: python -m trustai external-evidence-manifest artifacts/roadmap-audit.json --require-fresh --now 2026-07-12T00:00:00Z --evidence "oss-verifier-and-public-spec,ci-run,examples/aitrade/external-evidence/go-verifier-workflow-run.json,Recorded Go verifier workflow export;issuer=GitHub Actions;subject=trustai go verifier release workflow;source_uri=https://github.com/MSBeni/trust_ai/actions;issued_at=2026-07-08T00:00:00Z;expires_at=2026-12-31T00:00:00Z" --out artifacts/external-evidence-manifest.json --markdown artifacts/external-evidence-manifest.md
 
       - name: Verify external evidence manifest
-        run: python -m trustai external-evidence-verify artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --require-fresh --now 2026-07-09T00:00:00Z
+        run: python -m trustai external-evidence-verify artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --require-fresh --now 2026-07-12T00:00:00Z
 
       - name: Generate external evidence collection plan
         run: python -m trustai external-evidence-plan artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --out artifacts/external-evidence-plan.json --markdown artifacts/external-evidence-plan.md
@@ -64,24 +64,35 @@ jobs:
         run: python -m trustai external-evidence-plan artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --status-filter all --out artifacts/external-evidence-plan-all.json --markdown artifacts/external-evidence-plan-all.md
 
       - name: Collect external evidence source and intake receipt
-        run: python -m trustai external-evidence-collect artifacts/external-evidence-plan-all.json artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json https://github.com/MSBeni/trust_ai/actions --task oss-verifier-and-public-spec:ci-run --source-file examples/aitrade/external-evidence/go-verifier-workflow-run.json --description "Snapshot of recorded verifier workflow run export" --issuer "GitHub Actions" --subject "trustai go verifier release workflow" --content-type application/json --issued-at 2026-07-08T00:00:00Z --expires-at 2026-12-31T00:00:00Z --snapshot-out artifacts/external-evidence-source-snapshot.json --intake-out artifacts/external-evidence-intake.json --require-fresh --now 2026-07-09T00:00:00Z
+        run: python -m trustai external-evidence-collect artifacts/external-evidence-plan-all.json artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json https://github.com/MSBeni/trust_ai/actions --task oss-verifier-and-public-spec:ci-run --source-file examples/aitrade/external-evidence/go-verifier-workflow-run.json --description "Snapshot of recorded verifier workflow run export" --issuer "GitHub Actions" --subject "trustai go verifier release workflow" --content-type application/json --issued-at 2026-07-08T00:00:00Z --expires-at 2026-12-31T00:00:00Z --snapshot-out artifacts/external-evidence-source-snapshot.json --intake-out artifacts/external-evidence-intake.json --require-fresh --now 2026-07-12T00:00:00Z
 
       - name: Verify external evidence source snapshot
-        run: python -m trustai external-evidence-snapshot-verify artifacts/external-evidence-source-snapshot.json --require-fresh --now 2026-07-09T00:00:00Z
+        run: python -m trustai external-evidence-snapshot-verify artifacts/external-evidence-source-snapshot.json --require-fresh --now 2026-07-12T00:00:00Z
 
       - name: Verify external evidence intake receipt
-        run: python -m trustai external-evidence-intake-verify artifacts/external-evidence-intake.json artifacts/external-evidence-plan-all.json artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --require-fresh --now 2026-07-09T00:00:00Z
+        run: python -m trustai external-evidence-intake-verify artifacts/external-evidence-intake.json artifacts/external-evidence-plan-all.json artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --require-fresh --now 2026-07-12T00:00:00Z
+
+      - name: Create retained git-ref external evidence intake receipt
+        run: python -m trustai external-evidence-intake artifacts/external-evidence-plan-all.json artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --root . --task oss-verifier-and-public-spec:provider-api --artifact examples/aitrade/external-evidence/github-main-ref-source-snapshot.json --description "GitHub remote main ref advertisement for pushed TrustAI checkpoint" --issuer "GitHub Git" --subject "MSBeni/trust_ai main branch" --source-uri "git+https://github.com/MSBeni/trust_ai.git#refs/heads/main" --issued-at 2026-07-12T00:00:00Z --expires-at 2026-12-31T00:00:00Z --require-fresh --now 2026-07-12T00:00:00Z --out artifacts/external-evidence-provider-api-intake.json
+
+      - name: Verify retained git-ref external evidence intake receipt
+        run: python -m trustai external-evidence-intake-verify artifacts/external-evidence-provider-api-intake.json artifacts/external-evidence-plan-all.json artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --root . --require-fresh --now 2026-07-12T00:00:00Z
+
       - name: Stage external evidence intake directory
-        run: mkdir -p artifacts/external-evidence-intakes && cp artifacts/external-evidence-intake.json artifacts/external-evidence-intakes/oss-verifier-ci-run.json
+        run: mkdir -p artifacts/external-evidence-intakes && cp artifacts/external-evidence-intake.json artifacts/external-evidence-intakes/oss-verifier-ci-run.json && cp artifacts/external-evidence-provider-api-intake.json artifacts/external-evidence-intakes/oss-verifier-provider-api.json
 
       - name: Rebuild external evidence manifest from intake receipts
-        run: python -m trustai external-evidence-manifest-from-intakes artifacts/external-evidence-plan-all.json artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --intake-dir artifacts/external-evidence-intakes --require-fresh --now 2026-07-09T00:00:00Z --out artifacts/external-evidence-manifest-from-intakes.json --markdown artifacts/external-evidence-manifest-from-intakes.md
+        run: python -m trustai external-evidence-manifest-from-intakes artifacts/external-evidence-plan-all.json artifacts/external-evidence-manifest.json artifacts/roadmap-audit.json --intake-dir artifacts/external-evidence-intakes --require-fresh --now 2026-07-12T00:00:00Z --out artifacts/external-evidence-manifest-from-intakes.json --markdown artifacts/external-evidence-manifest-from-intakes.md
 
       - name: Verify rebuilt external evidence manifest from intake receipts
-        run: python -m trustai external-evidence-verify artifacts/external-evidence-manifest-from-intakes.json artifacts/roadmap-audit.json --require-fresh --now 2026-07-09T00:00:00Z
+        run: python -m trustai external-evidence-verify artifacts/external-evidence-manifest-from-intakes.json artifacts/roadmap-audit.json --require-fresh --now 2026-07-12T00:00:00Z
+
+      - name: Check rebuilt external evidence authority coverage
+        run: >
+          python -c "import json; m=json.load(open('artifacts/external-evidence-manifest-from-intakes.json', encoding='utf-8')); s=m['summary']; assert s['required_authority_kind_count'] == 70, s; assert s['covered_authority_kind_count'] == 2, s; assert s['missing_authority_kind_count'] == 68, s"
 
       - name: Append external evidence manifest to evidence chain
-        run: python -m trustai external-evidence-append artifacts/external-evidence-manifest-from-intakes.json artifacts/roadmap-audit.json --require-fresh --now 2026-07-09T00:00:00Z --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --out artifacts/external-evidence-entry.json
+        run: python -m trustai external-evidence-append artifacts/external-evidence-manifest-from-intakes.json artifacts/roadmap-audit.json --require-fresh --now 2026-07-12T00:00:00Z --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --out artifacts/external-evidence-entry.json
 
       - name: Verify roadmap evidence chain semantics
         run: python -m trustai roadmap-evidence-verify --state .trustai/roadmap-audit-ci/evidence-chain.json --tenant roadmap-audit-ci --require-external --require-fresh
