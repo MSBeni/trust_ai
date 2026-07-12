@@ -1,12 +1,14 @@
 # External Evidence Gap Report
 
-- Gap report ID: `8fa253729443eff072877a5fbdd24c7aaba19be295edf72b84fc9d3f3967388e`
-- Generated at: `2026-07-12T02:04:28Z`
+- Gap report ID: `034b2d7107fae4c28536829a6ca37f6dcdae9c5f6db2d0a6685d66b34849cf94`
+- Generated at: `2026-07-12T02:27:43Z`
 - Status: `partial`
 - Covered authority kinds: 3/70
 - Missing authority kinds: 67
 - Remaining collection tasks: 67
 - Source-map entries: 67
+- Placeholder source URIs: 67
+- Live source URIs: 0
 
 ## Gaps By Authority Kind
 

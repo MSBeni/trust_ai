@@ -279,6 +279,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA, source_map["schema"])
             self.assertEqual(content_hash(without_keys(source_map, "source_map_id")), source_map["source_map_id"])
             self.assertEqual(1, source_map["summary"]["entry_count"])
+            self.assertEqual(1, source_map["summary"]["placeholder_source_uri_count"])
+            self.assertEqual(0, source_map["summary"]["live_source_uri_count"])
             self.assertEqual(["provider-api"], source_map["summary"]["authority_kinds"])
             self.assertEqual(FIXTURE, source_map["defaults"]["source_file"])
             self.assertEqual("Provider API", source_map["defaults"]["issuer"])
@@ -683,6 +685,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA, source_map["schema"])
         self.assertEqual(content_hash(without_keys(source_map, "source_map_id")), source_map["source_map_id"])
         self.assertEqual(67, source_map["summary"]["entry_count"])
+        self.assertEqual(67, source_map["summary"]["placeholder_source_uri_count"])
+        self.assertEqual(0, source_map["summary"]["live_source_uri_count"])
         self.assertEqual(
             ["ci-run", "provider-api", "hosted-service"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["oss-verifier-and-public-spec"],
@@ -765,7 +769,11 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertEqual(67, report["summary"]["missing_authority_kind_count"])
             self.assertEqual(67, report["summary"]["remaining_task_count"])
             self.assertEqual(67, report["summary"]["source_map_entry_count"])
-            self.assertIn("# External Evidence Gap Report", markdown_path.read_text(encoding="utf-8"))
+            self.assertEqual(67, report["summary"]["placeholder_source_uri_count"])
+            self.assertEqual(0, report["summary"]["live_source_uri_count"])
+            markdown = markdown_path.read_text(encoding="utf-8")
+            self.assertIn("# External Evidence Gap Report", markdown)
+            self.assertIn("Placeholder source URIs: 67", markdown)
 
             tampered = copy.deepcopy(report)
             tampered["summary"]["remaining_task_count"] = 66

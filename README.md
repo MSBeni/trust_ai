@@ -66,7 +66,7 @@ The repository has two GitHub Actions workflows:
 
 The full local suite also verifies downstream receipt types that depend on the
 long generated artifact chain documented below. Generated `.trustai/` state,
-`artifacts/`, caches, and build outputs are intentionally ignored by Git. Retained external-evidence artifacts under `examples/aitrade/external-evidence/` include a current coverage manifest, remaining collection plan, source-map template, and gap report for the 67 authority units still requiring live external evidence.
+`artifacts/`, caches, and build outputs are intentionally ignored by Git. Retained external-evidence artifacts under `examples/aitrade/external-evidence/` include a current coverage manifest, remaining collection plan, source-map template, and gap report with placeholder/live source URI counts for the 67 authority units still requiring live external evidence.
 ## Quick Start
 
 From the repository root:

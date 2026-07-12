@@ -50,6 +50,8 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("python -m trustai external-evidence-plan-verify examples/aitrade/external-evidence/remaining-external-evidence-plan.json", workflow)
         self.assertIn("remaining_task_count", workflow)
         self.assertIn("source_map_entry_count", workflow)
+        self.assertIn("placeholder_source_uri_count", workflow)
+        self.assertIn("live_source_uri_count", workflow)
         self.assertIn("python -m trustai external-evidence-append artifacts/external-evidence-manifest-from-intakes.json", workflow)
         self.assertIn("--require-fresh --now 2026-07-12T00:00:00Z", workflow)
         self.assertIn("python -m trustai roadmap-evidence-verify --state .trustai/roadmap-audit-ci/evidence-chain.json", workflow)

@@ -6,7 +6,7 @@
       "hosted-service"
     ]
   },
-  "gap_report_id": "8fa253729443eff072877a5fbdd24c7aaba19be295edf72b84fc9d3f3967388e",
+  "gap_report_id": "034b2d7107fae4c28536829a6ca37f6dcdae9c5f6db2d0a6685d66b34849cf94",
   "gaps": [
     {
       "authority_kind": "hosted-service",
@@ -1483,7 +1483,7 @@
       "unit_ref": "trust-network-procurement-and-marketplace:customer"
     }
   ],
-  "generated_at": "2026-07-12T02:04:28Z",
+  "generated_at": "2026-07-12T02:27:43Z",
   "limitations": [
     "This gap report verifies the retained manifest, remaining collection plan, and source-map worklist; it does not satisfy missing external authority evidence.",
     "A gap is closed only by collecting a matching authority artifact, verifying its source snapshot and intake receipt, then rebuilding the external evidence manifest.",
@@ -1619,8 +1619,8 @@
     "source_map": {
       "generated_at": "2026-07-12T01:34:51Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "7647cb4d5317f2a731d089faa464ef02134fe285758b7603eddc9e59d9b29bd7",
-      "source_map_id": "a50d19383ae2c81ecd228058acf1656dddc9961f637bb2875265ade37510c812"
+      "source_map_hash": "16541cadf3ae91d79387ae425143c32e14b63fbd5b2025b42e752cc99f1856e6",
+      "source_map_id": "a646e275aed7ca6d8b9172c2655500057d4c37d85a4ac142849d055cce91ff9c"
     }
   },
   "summary": {
@@ -1659,8 +1659,10 @@
       "trustai-own-compliance": 2,
       "vertical-packs": 3
     },
+    "live_source_uri_count": 0,
     "missing_authority_kind_count": 67,
     "missing_requirement_count": 19,
+    "placeholder_source_uri_count": 67,
     "remaining_missing_task_count": 67,
     "remaining_task_count": 67,
     "required_authority_kind_count": 70,
@@ -1677,7 +1679,9 @@
       "external evidence missing for: self-serve-onboarding, mcp-gateway, shadow-replay-temporal-holdout, cicd-provider-approvals, design-partner-pilot-exit-criteria, framework-adapters, auditor-and-review-portal, byoc-self-hosted, compliance-mapper-and-eu-ai-act, trustai-own-compliance, vertical-packs, insurer-api-and-actuarial-products, state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, runtime-policy-and-attestation, agent-inventory-and-identity, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
       "external evidence authority kinds missing for: self-serve-onboarding: hosted-service, identity-provider; mcp-gateway: ci-run, kms-hsm, provider-api, hosted-service; shadow-replay-temporal-holdout: kms-hsm, provider-api, identity-provider, standards-body; cicd-provider-approvals: ci-run, provider-api, hosted-service, identity-provider; design-partner-pilot-exit-criteria: regulator, insurer, customer; framework-adapters: ci-run, provider-api, hosted-service; auditor-and-review-portal: kms-hsm, provider-api, hosted-service, identity-provider, regulator; byoc-self-hosted: ci-run, kms-hsm, cloud-object-lock, provider-api, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run, kms-hsm, provider-api, hosted-service, identity-provider; agent-inventory-and-identity: provider-api, identity-provider; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
     ],
-    "source_map_warnings": []
+    "source_map_warnings": [
+      "source map contains 67 placeholder source_uri values"
+    ]
   },
   "verification_options": {
     "now": "2026-07-12T00:00:00Z",

@@ -154,6 +154,9 @@ Template entries include the collection `task`, `task_ref`, `task_id`, `unit_id`
 `description`, `snapshot_out`, and `intake_out`. URI and description templates
 MAY interpolate `{task_id}`, `{task_ref}`, `{unit_id}`, `{unit_ref}`,
 `{requirement_id}`, `{authority_kind}`, `{phase}`, `{priority}`, and `{title}`.
+The summary records `placeholder_source_uri_count` and `live_source_uri_count`
+so operators can distinguish a generated worklist from a ready-to-collect map
+that points at real authority-owned sources.
 
 `external-evidence-source-map-verify` verifies a source map against its source
 collection plan. It MUST recompute `source_map_id`, verify `source_plan` binding,
@@ -272,8 +275,9 @@ source manifest before appending to the roadmap evidence chain.
 `trustai.external-evidence-gap-report/0.1` from a verified external-evidence
 manifest, collection plan, source-map template, and source roadmap audit. The
 report records source artifact IDs and hashes, covered and missing authority
-counts, remaining worklist entries, grouping by requirement and authority kind,
-verification warnings, and explicit limitations.
+counts, remaining worklist entries, placeholder/live source URI counts, grouping
+by requirement and authority kind, verification warnings, and explicit
+limitations.
 
 `external-evidence-gap-report-verify` recomputes `gap_report_id`, verifies the
 manifest, plan, source map, and roadmap audit with the requested freshness

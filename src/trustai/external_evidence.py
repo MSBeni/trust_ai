@@ -464,6 +464,32 @@ def _source_map_join_path(base: str, requirement_id: str, authority_kind: str) -
     )
 
 
+def _source_map_is_placeholder_uri(source_uri: str) -> bool:
+    normalized = str(source_uri or "").strip().lower()
+    if not normalized:
+        return True
+    placeholder_markers = (
+        "authority.example",
+        "provider.example",
+        "example.com",
+        "example.net",
+        "example.org",
+        "<source-uri>",
+    )
+    return normalized.startswith("todo:") or any(marker in normalized for marker in placeholder_markers)
+
+
+def _source_map_source_uri_counts(entries: list[dict[str, Any]]) -> dict[str, int]:
+    placeholder_count = 0
+    for entry in entries:
+        if _source_map_is_placeholder_uri(str(entry.get("source_uri") or "")):
+            placeholder_count += 1
+    return {
+        "placeholder_source_uri_count": placeholder_count,
+        "live_source_uri_count": len(entries) - placeholder_count,
+    }
+
+
 def _format_source_map_template(template: str, fields: dict[str, str], label: str) -> str:
     if not template:
         raise ValueError(f"external evidence source map {label} is required")
@@ -567,6 +593,7 @@ def build_external_evidence_source_map_template(
             }
         )
 
+    source_uri_counts = _source_map_source_uri_counts(entries)
     body = {
         "schema": EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA,
         "generated_at": generated_at or utc_now(),
@@ -578,6 +605,7 @@ def build_external_evidence_source_map_template(
             "source_plan_task_count": len(tasks),
             "snapshot_dir": snapshot_dir,
             "intake_dir": intake_dir,
+            **source_uri_counts,
         },
         "defaults": defaults,
         "entries": entries,
@@ -642,6 +670,14 @@ def verify_external_evidence_source_map_template(
         errors.append("source map summary entry_count does not match entries length")
     if summary.get("source_plan_task_count") != len(tasks):
         errors.append("source map summary source_plan_task_count does not match supplied plan")
+    source_uri_counts = _source_map_source_uri_counts([entry for entry in entries if isinstance(entry, dict)])
+    for key, expected_count in source_uri_counts.items():
+        if summary.get(key) != expected_count:
+            errors.append(f"source map summary {key} does not match entries")
+    if source_uri_counts["placeholder_source_uri_count"]:
+        warnings.append(
+            f"source map contains {source_uri_counts['placeholder_source_uri_count']} placeholder source_uri values"
+        )
 
     seen_tasks: set[str] = set()
     for index, entry in enumerate(entries):
@@ -789,6 +825,8 @@ def build_external_evidence_gap_report(
             "remaining_task_count": plan_summary.get("selected_task_count", len(gaps)),
             "remaining_missing_task_count": plan_summary.get("selected_missing_task_count", len(gaps)),
             "source_map_entry_count": source_map_summary.get("entry_count", len(gaps)),
+            "placeholder_source_uri_count": source_map_summary.get("placeholder_source_uri_count", 0),
+            "live_source_uri_count": source_map_summary.get("live_source_uri_count", 0),
             "gap_count_by_authority_kind": _gap_report_group_counts(gaps, "authority_kind"),
             "gap_count_by_requirement": _gap_report_group_counts(gaps, "requirement_id"),
         },
@@ -1809,6 +1847,8 @@ def render_external_evidence_gap_report_markdown(report: dict[str, Any]) -> str:
         f"- Missing authority kinds: {summary.get('missing_authority_kind_count', 0)}",
         f"- Remaining collection tasks: {summary.get('remaining_task_count', 0)}",
         f"- Source-map entries: {summary.get('source_map_entry_count', 0)}",
+        f"- Placeholder source URIs: {summary.get('placeholder_source_uri_count', 0)}",
+        f"- Live source URIs: {summary.get('live_source_uri_count', 0)}",
         "",
         "## Gaps By Authority Kind",
         "",

@@ -1617,7 +1617,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "a50d19383ae2c81ecd228058acf1656dddc9961f637bb2875265ade37510c812",
+  "source_map_id": "a646e275aed7ca6d8b9172c2655500057d4c37d85a4ac142849d055cce91ff9c",
   "source_plan": {
     "plan_hash": "fdcf85d8dfd386f72473dbf10b07df0cff0ed652e8309f72b36e6e11850bad27",
     "plan_id": "36b35c68177d22206dc6cbb28708d2cb7a02f8d4986f42a2a0dba9b7bfcac266",
@@ -1634,6 +1634,8 @@
     "authority_kinds": [],
     "entry_count": 67,
     "intake_dir": "artifacts/external-evidence-intakes",
+    "live_source_uri_count": 0,
+    "placeholder_source_uri_count": 67,
     "snapshot_dir": "artifacts/external-evidence-sources",
     "source_plan_task_count": 67,
     "status_filter": "missing"
