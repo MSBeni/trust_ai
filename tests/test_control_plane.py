@@ -382,6 +382,20 @@ class ControlPlaneTests(unittest.TestCase):
                     len(external_evidence[0]["missing_authority_units"]),
                 )
                 self.assertIn("task_id", external_evidence[0]["missing_authority_units"][0])
+                gap_worklist = control.external_authority_gaps(authority_kind="provider-api", limit=2)
+                self.assertEqual(2, len(gap_worklist["missing_authority_units"]))
+                self.assertEqual(2, gap_worklist["summary"]["returned_missing_authority_unit_count"])
+                self.assertGreater(gap_worklist["summary"]["selected_missing_authority_unit_count"], 2)
+                self.assertTrue(
+                    all(unit["authority_kind"] == "provider-api" for unit in gap_worklist["missing_authority_units"])
+                )
+                first_requirement = external_evidence[0]["missing_authority_units"][0]["requirement_id"]
+                requirement_gaps = control.external_authority_gaps(requirement_id=first_requirement)
+                self.assertTrue(
+                    all(unit["requirement_id"] == first_requirement for unit in requirement_gaps["missing_authority_units"])
+                )
+                with self.assertRaises(ValueError):
+                    control.external_authority_gaps(limit=0)
                 authority_dossiers = control.recent_authority_dossiers()
                 self.assertEqual(1, len(authority_dossiers))
                 self.assertEqual("mcp.gateway_authority_recorded", authority_dossiers[0]["entry_type"])

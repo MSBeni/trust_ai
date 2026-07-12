@@ -1546,6 +1546,49 @@ class ControlPlane:
             items.append(item)
         return items
 
+    def external_authority_gaps(
+        self,
+        *,
+        authority_kind: str | None = None,
+        requirement_id: str | None = None,
+        limit: int | None = None,
+    ) -> dict[str, Any]:
+        if limit is not None and limit < 1:
+            raise ValueError("limit must be a positive integer")
+        manifests = self.recent_external_evidence_manifests(1)
+        if not manifests:
+            units: list[dict[str, Any]] = []
+            selected_units: list[dict[str, Any]] = []
+            returned_units: list[dict[str, Any]] = []
+            latest_manifest = None
+        else:
+            latest_manifest = manifests[0]
+            units = list(latest_manifest.get("missing_authority_units") or [])
+            selected_units = [
+                unit
+                for unit in units
+                if (authority_kind is None or unit.get("authority_kind") == authority_kind)
+                and (requirement_id is None or unit.get("requirement_id") == requirement_id)
+            ]
+            returned_units = selected_units[:limit] if limit is not None else selected_units
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "filters": {
+                "authority_kind": authority_kind,
+                "requirement_id": requirement_id,
+                "limit": limit,
+            },
+            "latest_external_evidence_manifest": latest_manifest,
+            "summary": {
+                "total_missing_authority_unit_count": len(units),
+                "selected_missing_authority_unit_count": len(selected_units),
+                "returned_missing_authority_unit_count": len(returned_units),
+                "gap_count_by_authority_kind": _count_items_by(selected_units, "authority_kind"),
+                "gap_count_by_requirement": _count_items_by(selected_units, "requirement_id"),
+            },
+            "missing_authority_units": returned_units,
+        }
+
     def recent_authority_dossiers(self, limit: int = 20) -> list[dict[str, Any]]:
         rows = self.conn.execute(
             """

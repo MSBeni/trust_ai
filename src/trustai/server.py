@@ -268,6 +268,29 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             finally:
                 control.close()
             return
+        if parsed.path in ("/v0/external-authority-gaps", "/v0/control/external-authority-gaps"):
+            query = parse_qs(parsed.query)
+            raw_limit = (query.get("limit") or [None])[0]
+            try:
+                limit = int(raw_limit) if raw_limit is not None else None
+            except ValueError:
+                self._json_response(422, {"error": "limit must be a positive integer"})
+                return
+            control = self._control()
+            try:
+                self._json_response(
+                    200,
+                    control.external_authority_gaps(
+                        authority_kind=(query.get("authority_kind") or [None])[0],
+                        requirement_id=(query.get("requirement_id") or [None])[0],
+                        limit=limit,
+                    ),
+                )
+            except ValueError as exc:
+                self._json_response(422, {"error": str(exc)})
+            finally:
+                control.close()
+            return
         if parsed.path == "/v0/authority-dossiers":
             control = self._control()
             try:

@@ -2289,6 +2289,16 @@ def cmd_control_summary(args: argparse.Namespace) -> int:
             summary["readiness"] = control.readiness()
         if args.external_evidence:
             summary["external_evidence_manifests"] = control.recent_external_evidence_manifests()
+        if args.external_authority_gaps:
+            try:
+                summary["external_authority_gaps"] = control.external_authority_gaps(
+                    authority_kind=args.authority_kind,
+                    requirement_id=args.requirement_id,
+                    limit=args.gap_limit,
+                )
+            except ValueError as exc:
+                print(str(exc), file=sys.stderr)
+                return 2
         if args.authority_dossiers:
             summary["authority_dossiers"] = control.recent_authority_dossiers()
         if args.contract_id or args.contract_hash:
@@ -20365,6 +20375,10 @@ def build_parser() -> argparse.ArgumentParser:
     control_summary.add_argument("--roadmap-evidence", action="store_true")
     control_summary.add_argument("--readiness", action="store_true")
     control_summary.add_argument("--external-evidence", action="store_true")
+    control_summary.add_argument("--external-authority-gaps", action="store_true")
+    control_summary.add_argument("--authority-kind", help="filter --external-authority-gaps by exact authority kind")
+    control_summary.add_argument("--requirement-id", help="filter --external-authority-gaps by exact roadmap requirement ID")
+    control_summary.add_argument("--gap-limit", type=int, help="limit returned --external-authority-gaps units")
     control_summary.add_argument("--authority-dossiers", action="store_true")
     control_summary.add_argument("--contract-id")
     control_summary.add_argument("--contract-hash")

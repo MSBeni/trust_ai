@@ -222,6 +222,19 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual(200, external_evidence_response.status)
                 self.assertEqual([], external_evidence_body["external_evidence_manifests"])
 
+                conn.request("GET", "/v0/external-authority-gaps?authority_kind=provider-api&limit=2")
+                authority_gaps_response = conn.getresponse()
+                authority_gaps_body = json.loads(authority_gaps_response.read().decode("utf-8"))
+                self.assertEqual(200, authority_gaps_response.status)
+                self.assertEqual(0, authority_gaps_body["summary"]["total_missing_authority_unit_count"])
+                self.assertEqual([], authority_gaps_body["missing_authority_units"])
+
+                conn.request("GET", "/v0/external-authority-gaps?limit=0")
+                invalid_gaps_response = conn.getresponse()
+                invalid_gaps_body = json.loads(invalid_gaps_response.read().decode("utf-8"))
+                self.assertEqual(422, invalid_gaps_response.status)
+                self.assertEqual("limit must be a positive integer", invalid_gaps_body["error"])
+
                 conn.request("GET", "/v0/authority-dossiers")
                 authority_response = conn.getresponse()
                 authority_body = json.loads(authority_response.read().decode("utf-8"))

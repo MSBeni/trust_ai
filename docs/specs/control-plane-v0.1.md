@@ -29,7 +29,7 @@ into queryable registry tables while keeping the chain as the source of truth.
 
 ```powershell
 python -m trustai control-index --state .trustai/demo/evidence-chain.json --tenant aitrade-local --pack artifacts/aitrade-proof-pack.json --db .trustai/control-plane.sqlite
-python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --roadmap-evidence --readiness --external-evidence --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
+python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --roadmap-evidence --readiness --external-evidence --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
 ```
 
 ## API
@@ -51,6 +51,7 @@ python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts
 - `GET /v0/roadmap-evidence`;
 - `GET /v0/readiness` or `GET /v0/control/readiness`;
 - `GET /v0/external-evidence`;
+- `GET /v0/external-authority-gaps` or `GET /v0/control/external-authority-gaps`, with optional `authority_kind=...`, `requirement_id=...`, and `limit=...` filters;
 - `GET /v0/authority-dossiers`.
 
 The contract evidence endpoint returns one contract-scoped review surface with
@@ -67,7 +68,10 @@ surfaces with promotion-gate, proof-pack, runtime-policy, and authority-dossier
 evidence into a conservative `ready` / `not_ready` status plus concrete blockers.
 The external-evidence list exposes roadmap authority coverage, missing
 requirement IDs, missing requirement-to-authority-kind maps, deterministic
-missing authority unit/task IDs, and live-evidence counts, while the
+missing authority unit/task IDs, and live-evidence counts. The external-authority
+gap worklist returns the latest deterministic missing-unit tasks with exact
+authority-kind, requirement-ID, and limit filters so collection owners can pull
+their remaining live-evidence queue without parsing the full manifest. The
 authority-dossier list exposes production authority dossier modes, coverage,
 freshness windows, and missing requirement IDs so production readiness gaps stay
 visible in the same control-plane surface.

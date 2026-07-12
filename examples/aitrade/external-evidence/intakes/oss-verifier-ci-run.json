@@ -19,7 +19,7 @@
     "subject": "trustai go verifier release workflow"
   },
   "generated_at": "2026-07-12T01:25:35Z",
-  "intake_id": "e73ad606a06f54aadffeadec9d830478183a9fe294af28e9cad387927c0d18ac",
+  "intake_id": "b4a70bbde49764410b61afb13926a895404e53ce83dfb6e6f3ee5de0c953c6c1",
   "limitations": [
     "This intake receipt hashes and maps one collected artifact to a collection-plan task; it does not itself satisfy roadmap completion.",
     "Coverage is updated only after rebuilding and verifying an external evidence manifest with the emitted evidence argument.",
@@ -28,28 +28,28 @@
   "schema": "trustai.external-evidence-intake/0.1",
   "source_manifest": {
     "covered_authority_kind_count": 0,
-    "manifest_hash": "3ed946166665746245eaf966406752cf41145290b3443732316f91d40a392d2f",
-    "manifest_id": "2552ccf15579043df37d772327454067f6b30922514cf334fd556fe509a7ccc4",
+    "manifest_hash": "00c58564eefec58c5c11a3ab61e1e56e230eede7839a1d57d5fb554f2fce6add",
+    "manifest_id": "f60ae0013d7446ff6893b3df026d277b7967df9d7b36a22c580f3204aa8cb6a5",
     "manifest_ref": "production-external-evidence",
     "missing_authority_kind_count": 70,
     "required_authority_kind_count": 70,
     "status": "partial"
   },
   "source_plan": {
-    "plan_hash": "53ea676d9f3d3b7d33120c391324d795f6508663e21e0302ba82e5f4a4157c93",
-    "plan_id": "13936b75834ae05868c17a39b75fd996fa88b40fb601a2633c8b17597fb0f46b",
+    "plan_hash": "cfbacc840ac2762e56390acd63c6711259fce4610acb8cedc066579252f23c7e",
+    "plan_id": "843193798bb90ec0dae39342ff917a828698194ede513fc6f0e7322918099c41",
     "source_manifest": {
       "generated_at": "2026-07-12T00:42:01Z",
-      "manifest_hash": "3ed946166665746245eaf966406752cf41145290b3443732316f91d40a392d2f",
-      "manifest_id": "2552ccf15579043df37d772327454067f6b30922514cf334fd556fe509a7ccc4",
+      "manifest_hash": "00c58564eefec58c5c11a3ab61e1e56e230eede7839a1d57d5fb554f2fce6add",
+      "manifest_id": "f60ae0013d7446ff6893b3df026d277b7967df9d7b36a22c580f3204aa8cb6a5",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },
     "status_filter": "all"
   },
   "source_roadmap_audit": {
-    "audit_hash": "3b1c21b3d5f9be577f37369d509542ec575cf17477c1191de830bed67d16d925",
-    "audit_id": "c1e9a1c9d0f5ddc3033abf6c92f4953ebb8243504466f3ad6950e27c45e1c5f1",
+    "audit_hash": "15e40d611b025ca93c3931e7803ca2b3d01c3715c31c45cefc012e81c66c5bdb",
+    "audit_id": "d8bf38d5561198f3dc68c9c89a8e31af8ad5581eef9bcb6b1a96d79a89fcb68e",
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "task": {
