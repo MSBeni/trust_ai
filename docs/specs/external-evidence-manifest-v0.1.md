@@ -162,8 +162,10 @@ that points at real authority-owned sources.
 collection plan. It MUST recompute `source_map_id`, verify `source_plan` binding,
 validate the status and authority filters, reject duplicate or unknown tasks,
 and confirm task metadata plus generated `snapshot_out` and `intake_out` paths
-match the supplied plan. Verification confirms operator worklist integrity only;
-it does not convert a source-map template into external authority evidence.
+match the supplied plan. With `--require-live-source-uris`, verification MUST
+reject maps that still contain placeholder or example `source_uri` values.
+Verification confirms operator worklist integrity only; it does not convert a
+source-map template into external authority evidence.
 
 `external-evidence-collect-batch` consumes the same source-map schema. Each
 entry MUST identify a unique collection `task`, `source_uri`, and `description`;
@@ -280,9 +282,12 @@ by requirement and authority kind, verification warnings, and explicit
 limitations.
 
 `external-evidence-gap-report-verify` recomputes `gap_report_id`, verifies the
-manifest, plan, source map, and roadmap audit with the requested freshness
-options, rebuilds the expected report body from those sources, and rejects
-stale or tampered summaries. The report is a tamper-evident worklist checkpoint;
+manifest, plan, source map, and roadmap audit with the requested freshness and
+source-URI readiness options, rebuilds the expected report body from those
+sources, and rejects stale or tampered summaries. With
+`--require-live-source-uris`, verification MUST reject reports built from source
+maps that still contain placeholder or example `source_uri` values. The report
+is a tamper-evident worklist checkpoint;
 it does not close an authority gap. A gap is closed only after a matching
 external authority artifact, snapshot, and intake receipt are verified and a new
 manifest is rebuilt.

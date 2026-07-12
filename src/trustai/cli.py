@@ -14225,6 +14225,7 @@ def cmd_external_evidence_gap_report(args: argparse.Namespace) -> int:
             roadmap_audit,
             root=args.root,
             require_fresh=args.require_fresh,
+            require_live_source_uris=args.require_live_source_uris,
             now=args.now,
         )
         result = verify_external_evidence_gap_report(
@@ -14235,6 +14236,7 @@ def cmd_external_evidence_gap_report(args: argparse.Namespace) -> int:
             roadmap_audit,
             root=args.root,
             require_fresh=args.require_fresh,
+            require_live_source_uris=args.require_live_source_uris,
             now=args.now,
         )
     except (OSError, ValueError) as exc:
@@ -14275,6 +14277,7 @@ def cmd_external_evidence_gap_report_verify(args: argparse.Namespace) -> int:
             roadmap_audit,
             root=args.root,
             require_fresh=args.require_fresh,
+            require_live_source_uris=args.require_live_source_uris,
             now=args.now,
         )
     except (OSError, ValueError) as exc:
@@ -14411,7 +14414,11 @@ def cmd_external_evidence_source_map_verify(args: argparse.Namespace) -> int:
     try:
         source_map = load_external_evidence_source_map(args.source_map)
         plan = load_external_evidence_collection_plan(args.plan)
-        result = verify_external_evidence_source_map_template(source_map, plan)
+        result = verify_external_evidence_source_map_template(
+            source_map,
+            plan,
+            require_live_source_uris=args.require_live_source_uris,
+        )
     except (OSError, ValueError) as exc:
         print(f"external evidence source map verification failed: {exc}", file=sys.stderr)
         return 1
@@ -14797,6 +14804,21 @@ def _source_map_value(entry: dict[str, Any], defaults: dict[str, Any], key: str)
     return entry[key] if key in entry else defaults.get(key)
 
 
+def _source_map_cli_is_placeholder_uri(source_uri: str) -> bool:
+    normalized = str(source_uri or "").strip().lower()
+    if not normalized:
+        return True
+    placeholder_markers = (
+        "authority.example",
+        "provider.example",
+        "example.com",
+        "example.net",
+        "example.org",
+        "<source-uri>",
+    )
+    return normalized.startswith("todo:") or any(marker in normalized for marker in placeholder_markers)
+
+
 def cmd_external_evidence_collect_batch(args: argparse.Namespace) -> int:
     try:
         roadmap_audit = load_roadmap_audit(args.roadmap_audit)
@@ -14811,6 +14833,15 @@ def cmd_external_evidence_collect_batch(args: argparse.Namespace) -> int:
         entries = source_map.get("entries", [])
         if not isinstance(entries, list) or not entries:
             raise ValueError("external evidence source map entries must be a non-empty list")
+        if args.require_live_source_uris:
+            placeholder_count = sum(
+                1
+                for entry in entries
+                if isinstance(entry, dict)
+                and _source_map_cli_is_placeholder_uri(str(_source_map_value(entry, defaults, "source_uri") or ""))
+            )
+            if placeholder_count:
+                raise ValueError(f"source map contains {placeholder_count} placeholder source_uri values but live source URIs are required")
         collected_items: list[dict[str, Any]] = []
         seen_tasks: set[str] = set()
         for index, entry in enumerate(entries):
@@ -24403,6 +24434,7 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_source_map_verify = subparsers.add_parser("external-evidence-source-map-verify", help="verify an external-evidence source-map template against a collection plan")
     external_evidence_source_map_verify.add_argument("source_map")
     external_evidence_source_map_verify.add_argument("plan")
+    external_evidence_source_map_verify.add_argument("--require-live-source-uris", action="store_true", help="fail when source_map entries still use placeholder/example source_uri values")
     external_evidence_source_map_verify.set_defaults(func=cmd_external_evidence_source_map_verify)
     external_evidence_snapshot = subparsers.add_parser("external-evidence-snapshot", help="snapshot a source URI or local authority export as a hashable external evidence artifact")
     external_evidence_snapshot.add_argument("source_uri")
@@ -24480,6 +24512,7 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_collect_batch.add_argument("source_map")
     external_evidence_collect_batch.add_argument("--root", default=".")
     external_evidence_collect_batch.add_argument("--require-fresh", action="store_true")
+    external_evidence_collect_batch.add_argument("--require-live-source-uris", action="store_true", help="fail before collection when source_map entries still use placeholder/example source_uri values")
     external_evidence_collect_batch.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to generated_at")
     external_evidence_collect_batch.add_argument("--timeout-seconds", type=float, default=30.0)
     external_evidence_collect_batch.add_argument("--snapshot-dir", default="artifacts/external-evidence-sources")
@@ -24536,6 +24569,7 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_gap_report.add_argument("roadmap_audit")
     external_evidence_gap_report.add_argument("--root", default=".")
     external_evidence_gap_report.add_argument("--require-fresh", action="store_true")
+    external_evidence_gap_report.add_argument("--require-live-source-uris", action="store_true", help="fail when the source_map still uses placeholder/example source_uri values")
     external_evidence_gap_report.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to manifest generated_at")
     external_evidence_gap_report.add_argument("--out", default="artifacts/external-evidence-gap-report.json")
     external_evidence_gap_report.add_argument("--markdown", default="artifacts/external-evidence-gap-report.md")
@@ -24549,6 +24583,7 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_gap_report_verify.add_argument("roadmap_audit")
     external_evidence_gap_report_verify.add_argument("--root", default=".")
     external_evidence_gap_report_verify.add_argument("--require-fresh", action="store_true")
+    external_evidence_gap_report_verify.add_argument("--require-live-source-uris", action="store_true", help="fail when the source_map still uses placeholder/example source_uri values")
     external_evidence_gap_report_verify.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to manifest generated_at")
     external_evidence_gap_report_verify.set_defaults(func=cmd_external_evidence_gap_report_verify)
     external_evidence_append = subparsers.add_parser("external-evidence-append", help="append a verified external-evidence manifest to an evidence chain")

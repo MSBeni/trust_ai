@@ -315,6 +315,30 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             verify_result = verify_external_evidence_source_map_template(source_map, plan)
             self.assertTrue(verify_result.ok, verify_result.errors)
             self.assertEqual(1, verify_result.entry_count)
+            strict_result = verify_external_evidence_source_map_template(
+                source_map,
+                plan,
+                require_live_source_uris=True,
+            )
+            self.assertFalse(strict_result.ok)
+            self.assertTrue(any("live source URIs" in error for error in strict_result.errors), strict_result.errors)
+            strict_cli = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-source-map-verify",
+                    str(source_map_path),
+                    str(plan_path),
+                    "--require-live-source-uris",
+                ],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertNotEqual(0, strict_cli.returncode)
+            self.assertIn("live source URIs", strict_cli.stderr)
 
             tampered = copy.deepcopy(source_map)
             tampered["entries"][0]["snapshot_out"] = "artifacts/wrong.json"
@@ -765,6 +789,20 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertTrue(result.ok, result.errors)
             self.assertEqual(EXTERNAL_EVIDENCE_GAP_REPORT_SCHEMA, report["schema"])
             self.assertEqual(content_hash(without_keys(report, "gap_report_id")), report["gap_report_id"])
+            self.assertFalse(report["verification_options"]["require_live_source_uris"])
+            strict_report_result = verify_external_evidence_gap_report(
+                report,
+                manifest,
+                plan,
+                source_map,
+                audit,
+                root=ROOT,
+                require_fresh=True,
+                require_live_source_uris=True,
+                now="2026-07-12T00:00:00Z",
+            )
+            self.assertFalse(strict_report_result.ok)
+            self.assertTrue(any("live source URIs" in error for error in strict_report_result.errors), strict_report_result.errors)
             self.assertEqual(3, report["summary"]["covered_authority_kind_count"])
             self.assertEqual(67, report["summary"]["missing_authority_kind_count"])
             self.assertEqual(67, report["summary"]["remaining_task_count"])
@@ -951,6 +989,28 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     ],
                 }
                 source_map_path.write_text(json.dumps(source_map, indent=2, sort_keys=True), encoding="utf-8-sig")
+
+                strict_batch = subprocess.run(
+                    [
+                        sys.executable,
+                        "-m",
+                        "trustai",
+                        "external-evidence-collect-batch",
+                        str(plan_path),
+                        str(manifest_path),
+                        str(audit_path),
+                        str(source_map_path),
+                        "--root",
+                        str(ROOT),
+                        "--require-live-source-uris",
+                    ],
+                    cwd=ROOT,
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                self.assertNotEqual(0, strict_batch.returncode)
+                self.assertIn("live source URIs", strict_batch.stderr)
 
                 subprocess.run(
                     [

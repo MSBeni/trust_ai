@@ -621,6 +621,8 @@ def build_external_evidence_source_map_template(
 def verify_external_evidence_source_map_template(
     source_map: dict[str, Any],
     plan: dict[str, Any],
+    *,
+    require_live_source_uris: bool = False,
 ) -> ExternalEvidenceSourceMapVerification:
     errors: list[str] = []
     warnings: list[str] = []
@@ -675,9 +677,10 @@ def verify_external_evidence_source_map_template(
         if summary.get(key) != expected_count:
             errors.append(f"source map summary {key} does not match entries")
     if source_uri_counts["placeholder_source_uri_count"]:
-        warnings.append(
-            f"source map contains {source_uri_counts['placeholder_source_uri_count']} placeholder source_uri values"
-        )
+        placeholder_message = f"source map contains {source_uri_counts['placeholder_source_uri_count']} placeholder source_uri values"
+        warnings.append(placeholder_message)
+        if require_live_source_uris:
+            errors.append(placeholder_message + " but live source URIs are required")
 
     seen_tasks: set[str] = set()
     for index, entry in enumerate(entries):
@@ -756,6 +759,7 @@ def build_external_evidence_gap_report(
     *,
     root: str | Path,
     require_fresh: bool = False,
+    require_live_source_uris: bool = False,
     now: str | None = None,
     generated_at: str | None = None,
 ) -> dict[str, Any]:
@@ -767,7 +771,11 @@ def build_external_evidence_gap_report(
         now=now,
     )
     plan_result = verify_external_evidence_collection_plan(plan, manifest, roadmap_audit, root=root)
-    source_map_result = verify_external_evidence_source_map_template(source_map, plan)
+    source_map_result = verify_external_evidence_source_map_template(
+        source_map,
+        plan,
+        require_live_source_uris=require_live_source_uris,
+    )
     if not manifest_result.ok:
         raise ValueError("external evidence manifest is not valid for gap report: " + "; ".join(manifest_result.errors))
     if not plan_result.ok:
@@ -806,6 +814,7 @@ def build_external_evidence_gap_report(
         "generated_at": generated_at or utc_now(),
         "verification_options": {
             "require_fresh": require_fresh,
+            "require_live_source_uris": require_live_source_uris,
             "now": now,
         },
         "sources": {
@@ -856,6 +865,7 @@ def verify_external_evidence_gap_report(
     *,
     root: str | Path,
     require_fresh: bool = False,
+    require_live_source_uris: bool = False,
     now: str | None = None,
 ) -> ExternalEvidenceGapReportVerification:
     errors: list[str] = []
@@ -865,7 +875,7 @@ def verify_external_evidence_gap_report(
         errors.append(f"unsupported external evidence gap report schema: {report.get('schema')}")
     if report.get("gap_report_id") != content_hash(without_keys(report, "gap_report_id")):
         errors.append("gap_report_id does not match canonical gap report body")
-    expected_options = {"require_fresh": require_fresh, "now": now}
+    expected_options = {"require_fresh": require_fresh, "require_live_source_uris": require_live_source_uris, "now": now}
     if report.get("verification_options") != expected_options:
         errors.append("verification_options do not match verifier options")
 
@@ -877,6 +887,7 @@ def verify_external_evidence_gap_report(
             roadmap_audit,
             root=root,
             require_fresh=require_fresh,
+            require_live_source_uris=require_live_source_uris,
             now=now,
             generated_at=str(report.get("generated_at") or ""),
         )
