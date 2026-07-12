@@ -65,14 +65,14 @@
     "It is intended for collection-run verification and does not represent the remaining placeholder worklist."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "56e9c27eeca0186225c94e81833cda8bf03ff223e265443d48834595f311f80a",
+  "source_map_id": "29746f5e1f00b9c214e51ad4fc28331553117560ef9f24bdc37407a4ab8fb40e",
   "source_plan": {
-    "plan_hash": "a055ee6858089ac996a3f61c42afad668457d76c75ba0b50f6e6043a4312ab91",
-    "plan_id": "200e981ec0f3a14dc933d944f6cf07cfbb9b3c60f75a3761fbdf7d290ed5beae",
+    "plan_hash": "77200d3778e43ddc3a1dafd5d85168d15f5341c4ebf6da99979cf7b7558cd789",
+    "plan_id": "ae59a78b89d1441bebceb69d5b6bd90d6e57f14ae247fbcd3e3e45022760b777",
     "source_manifest": {
       "generated_at": "2026-07-12T00:42:01Z",
-      "manifest_hash": "58772c607aa3dc0af6eca9ac444627da88ce8c44037a0908cc8d74d3db0ccc9c",
-      "manifest_id": "7836920505c41052cfc458621d95052fe98c1ddb41049b94cebedeb6a3a3621e",
+      "manifest_hash": "d189cc0ac43a7b38c4eb86d50bfe0afbe00d28ee2b278ba769f993b630aecd65",
+      "manifest_id": "4007f5a6fe9472e51c9e71c49cf9fb2e88b3dc2a8a4c49968a022078e4eace7b",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },

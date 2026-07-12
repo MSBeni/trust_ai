@@ -1,22 +1,22 @@
 {
-  "generated_at": "2026-07-12T00:42:15Z",
+  "generated_at": "2026-07-12T00:43:00Z",
   "limitations": [
     "This plan assigns external authority evidence collection work; it does not satisfy any task by itself.",
     "A task is covered only after a matching evidence artifact is supplied to an external evidence manifest and verified.",
     "Freshness and issuer authority remain bounded by the supplied evidence artifact and manifest verification options."
   ],
-  "plan_id": "200e981ec0f3a14dc933d944f6cf07cfbb9b3c60f75a3761fbdf7d290ed5beae",
+  "plan_id": "ae59a78b89d1441bebceb69d5b6bd90d6e57f14ae247fbcd3e3e45022760b777",
   "schema": "trustai.external-evidence-collection-plan/0.1",
   "source_manifest": {
     "generated_at": "2026-07-12T00:42:01Z",
-    "manifest_hash": "58772c607aa3dc0af6eca9ac444627da88ce8c44037a0908cc8d74d3db0ccc9c",
-    "manifest_id": "7836920505c41052cfc458621d95052fe98c1ddb41049b94cebedeb6a3a3621e",
+    "manifest_hash": "d189cc0ac43a7b38c4eb86d50bfe0afbe00d28ee2b278ba769f993b630aecd65",
+    "manifest_id": "4007f5a6fe9472e51c9e71c49cf9fb2e88b3dc2a8a4c49968a022078e4eace7b",
     "manifest_ref": "production-external-evidence",
     "status": "partial"
   },
   "source_roadmap_audit": {
-    "audit_hash": "80bc40fb368621e686df5546a334e535de195c5d556d741f722ffd54f7faa31a",
-    "audit_id": "224755b843c355c30d30cb023e3349444a95e3645f1b78dff39e422501687343",
+    "audit_hash": "680fe728f5df7eb4b64ce4f29cb9d84cdf82d893aeb1fad2f5f9c2b1a8e0f3c5",
+    "audit_id": "cc88b8343b1b69a31a47c2f54fac172135d2005e8c65656a3b48ee1175815441",
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "status_filter": "all",
@@ -166,7 +166,7 @@
       "coverage_status": "missing",
       "evidence_argument_template": "self-serve-onboarding,hosted-service,external-evidence/self-serve-onboarding/hosted-service.json,hosted-service evidence for self-serve-onboarding;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
       "external_authority_required": [
-        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, MCP gateway, examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence."
+        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence."
       ],
       "owner_hint": "service owner",
       "phase": "P2",
@@ -195,7 +195,7 @@
       "coverage_status": "missing",
       "evidence_argument_template": "self-serve-onboarding,identity-provider,external-evidence/self-serve-onboarding/identity-provider.json,identity-provider evidence for self-serve-onboarding;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
       "external_authority_required": [
-        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, MCP gateway, examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence."
+        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence."
       ],
       "owner_hint": "IAM/identity owner",
       "phase": "P2",

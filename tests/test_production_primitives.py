@@ -128,6 +128,8 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual(0, summary_body["counts"]["eval_runs"])
                 self.assertEqual(0, summary_body["counts"]["gate_decisions"])
                 self.assertEqual(4, summary_body["counts"]["ingest_events"])
+                self.assertEqual(0, summary_body["counts"]["roadmap_audits"])
+                self.assertEqual(0, summary_body["counts"]["external_evidence_collection_runs"])
                 self.assertEqual(0, summary_body["counts"]["authority_dossiers"])
 
                 conn.request("GET", "/v0/contracts")
@@ -194,6 +196,14 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual([], runtime_body["policy_decisions"])
                 self.assertEqual([], runtime_body["policy_engine_receipts"])
                 self.assertEqual([], runtime_body["incidents"])
+
+                conn.request("GET", "/v0/roadmap-evidence")
+                roadmap_response = conn.getresponse()
+                roadmap_body = json.loads(roadmap_response.read().decode("utf-8"))
+                self.assertEqual(200, roadmap_response.status)
+                self.assertEqual([], roadmap_body["roadmap_audits"])
+                self.assertEqual([], roadmap_body["external_evidence_collection_runs"])
+                self.assertEqual([], roadmap_body["external_evidence_manifests"])
 
                 conn.request("GET", "/v0/external-evidence")
                 external_evidence_response = conn.getresponse()

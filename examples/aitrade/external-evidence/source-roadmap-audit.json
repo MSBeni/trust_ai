@@ -1,7 +1,7 @@
 {
-  "audit_id": "224755b843c355c30d30cb023e3349444a95e3645f1b78dff39e422501687343",
+  "audit_id": "cc88b8343b1b69a31a47c2f54fac172135d2005e8c65656a3b48ee1175815441",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
-  "generated_at": "2026-07-12T00:42:00Z",
+  "generated_at": "2026-07-12T11:45:46Z",
   "limitations": [
     "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
     "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",
@@ -92,7 +92,7 @@
         {
           "path": "tests/test_mcp_gateway.py",
           "present": true,
-          "sha256": "sha256:6d04fa96f607160aedfcc27da36066e4692c4e467e80063d188512e5d756375d"
+          "sha256": "sha256:09f8b94a471ed5b14a11025dbadf8c40f1480a36a3076ca4bbdb6edcef89b40e"
         },
         {
           "path": "tests/test_mcp_gateway_authority.py",
@@ -170,17 +170,17 @@
         {
           "path": "verifier/go/trustai-verify/main.go",
           "present": true,
-          "sha256": "sha256:4b6cd64cbd68236e8fe5dd1d6904c4fa23f4092de4ae52e94a1a11f45ccc2c36"
+          "sha256": "sha256:f5192baf8d3f8ba3b987fd3e29631078472b21252473e2c1e729f723ee85bca9"
         },
         {
           "path": "verifier/go/trustai-verify/README.md",
           "present": true,
-          "sha256": "sha256:0bd9cf2aa5675b33864e1116f2bb3b65673676a8ea421a91e65967c697344a55"
+          "sha256": "sha256:020d7c0ae3d1300720bd4e3031839121f3f6d87afef804d41d41fde182c40427"
         },
         {
           "path": "docs/specs/go-verifier-v0.1.md",
           "present": true,
-          "sha256": "sha256:4af9166abf00fded2e85821b292ded7b2f5fbcc812fd513f25018b80bcb85f2b"
+          "sha256": "sha256:130bcb2ef46345d0754c9b9996179c9acddac9720b9f4e2c23e71bda1da79bf7"
         },
         {
           "path": "docs/specs/verifier-release-v0.1.md",
@@ -225,7 +225,7 @@
         {
           "path": "tests/test_go_verifier_source.py",
           "present": true,
-          "sha256": "sha256:9473727804d28eea4dbc34b068bd3584ae8413318fee8482c86ac4f70f054fea"
+          "sha256": "sha256:c807741c62869f4e23c4f2c0f7f9f5944d4bd1ba6ddcdf23cd4ed6bedcc0a000"
         },
         {
           "path": "tests/test_verifier_distribution.py",
@@ -266,7 +266,7 @@
         {
           "path": "src/trustai/control_plane.py",
           "present": true,
-          "sha256": "sha256:3248b80c7a175abf84e137eefd85f1e279c977cf0c00e9fe3a172f8ea748f9f3"
+          "sha256": "sha256:53797e6047b749aac926d9cb2a6c7c6f838ee97e65645577f871f8c4805a736b"
         },
         {
           "path": "examples/aitrade/eval-results.json",
@@ -354,7 +354,7 @@
         {
           "path": "docs/specs/self-serve-onboarding-v0.1.md",
           "present": true,
-          "sha256": "sha256:23d0515a2fddb8ce5765289a537ad3892bc5bcf4bd9d26b7d955cda83f9941dc"
+          "sha256": "sha256:655f65d628e9fa54035f1da17d01cc3d68037d7b2d65116cc39e72eb32177d50"
         },
         {
           "path": "docs/specs/python-sdk-v0.1.md",
@@ -374,12 +374,12 @@
         {
           "path": "docs/specs/mcp-gateway-v0.1.md",
           "present": true,
-          "sha256": "sha256:1fa83db1fe172fb1ec6b4fe0faec297202fa15eb573d00a7a7418660c53b9dbd"
+          "sha256": "sha256:f99ce2db7c45d76bc2fb3b5f12f119a34a16382eb8ea386acb1998416caa603b"
         },
         {
           "path": "src/trustai/onboarding.py",
           "present": true,
-          "sha256": "sha256:91b9f3e2326b886579dabc9af832272b93245b60e41c4f0721dcb8706928ba7e"
+          "sha256": "sha256:ff3bf16d48b9ff029a1e7415a15bf6339d0a7b3998e9b97209242bbfa3dd94fd"
         },
         {
           "path": "src/trustai/sdk.py",
@@ -394,7 +394,12 @@
         {
           "path": "src/trustai/mcp_gateway.py",
           "present": true,
-          "sha256": "sha256:32a3beffd0ff9ac693797570246dbf29e3718e426269b402f213d96049e90503"
+          "sha256": "sha256:7a96d39abfdeb4f14f7c4450dc315dae425a698da13da6128b1d383465908659"
+        },
+        {
+          "path": "src/trustai/proofpack.py",
+          "present": true,
+          "sha256": "sha256:dcbcf7252e3723e61e12ac288c96e7c89c9b160d17c063074a01aa04a6986c87"
         },
         {
           "path": "sdk/typescript/src/index.mjs",
@@ -407,14 +412,59 @@
           "sha256": "sha256:dc67aad402a124f6ad19395747987e7ff0bf22c3fc6cd1787775d052a4f33610"
         },
         {
+          "path": "examples/aitrade/agent-inventory.json",
+          "present": true,
+          "sha256": "sha256:34fbd625b35bc9f5d34f90429d3025b4bc5482954ac38ccc3629a1a16cc65b58"
+        },
+        {
+          "path": "examples/aitrade/delegation.json",
+          "present": true,
+          "sha256": "sha256:210d2d05a2b19935885f25e91c0877acc7316d9a70590d621c820c1dbcaeb961"
+        },
+        {
+          "path": "examples/aitrade/runtime-action.json",
+          "present": true,
+          "sha256": "sha256:e542a0d4768d1f920c432fe77004bd8ba614f7e46c5167c310a2c69b1c569b55"
+        },
+        {
+          "path": "examples/aitrade/shadow-replay.json",
+          "present": true,
+          "sha256": "sha256:d55325fc4d74ff40bf14b3b6e28c669240e85cbbbdc46720439e361a7fc0bcb6"
+        },
+        {
+          "path": "examples/aitrade/soak-window.json",
+          "present": true,
+          "sha256": "sha256:5c84c38bcde7c46ac4faad9e8808f288e829fb97af62b79e80a9ef681c8c576d"
+        },
+        {
+          "path": "examples/aitrade/reexecution-policy.json",
+          "present": true,
+          "sha256": "sha256:cd6f370031974eaa38e7d8597202e482b8391e70379499e75abff62ff4423022"
+        },
+        {
+          "path": "examples/aitrade/reexecution-runner-plan.json",
+          "present": true,
+          "sha256": "sha256:9624a99536a22009e534e1e706a0f990cf4aabdea2fdb91c31cabd0f8155ddae"
+        },
+        {
           "path": "examples/aitrade/mcp-transcript.json",
           "present": true,
           "sha256": "sha256:889cb792fa9da0d4ccd106c5a2bcaf7da2260627bbec75243b147604b04b0bbf"
         },
         {
+          "path": "examples/aitrade/mcp-stdio-client-messages.json",
+          "present": true,
+          "sha256": "sha256:2a68da7852778ccd191fd85c3849417ee59187feab74b9724ed9d377404e2953"
+        },
+        {
+          "path": "examples/aitrade/mcp-stdio-upstream.py",
+          "present": true,
+          "sha256": "sha256:053e2ef144276980ee22e9944af131415868b100371e11c75d4f1dd754efdcf0"
+        },
+        {
           "path": "tests/test_self_serve_onboarding.py",
           "present": true,
-          "sha256": "sha256:3b504e3ed2a06e707cac926ddd69a9bd33a7c8cb541e51e3d08c58adb676ade3"
+          "sha256": "sha256:70f72a0ee62f69e476bc373ca0c7634ce81fe9c6c162cfe9b681c65d326aea46"
         },
         {
           "path": "tests/test_ingest_runtime.py",
@@ -429,17 +479,17 @@
         {
           "path": "tests/test_mcp_gateway.py",
           "present": true,
-          "sha256": "sha256:6d04fa96f607160aedfcc27da36066e4692c4e467e80063d188512e5d756375d"
+          "sha256": "sha256:09f8b94a471ed5b14a11025dbadf8c40f1480a36a3076ca4bbdb6edcef89b40e"
         }
       ],
-      "evidence_count": 16,
+      "evidence_count": 26,
       "external_authority_required": [
-        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, MCP gateway, examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence."
+        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence."
       ],
       "id": "self-serve-onboarding",
       "missing_evidence_count": 0,
       "phase": "P2",
-      "present_evidence_count": 16,
+      "present_evidence_count": 26,
       "priority": "P1",
       "roadmap_ref": "Phase 2 feature 6; GTM self-serve gateway tier",
       "status": "reference-attested",
@@ -450,7 +500,7 @@
         {
           "path": "docs/specs/mcp-gateway-v0.1.md",
           "present": true,
-          "sha256": "sha256:1fa83db1fe172fb1ec6b4fe0faec297202fa15eb573d00a7a7418660c53b9dbd"
+          "sha256": "sha256:f99ce2db7c45d76bc2fb3b5f12f119a34a16382eb8ea386acb1998416caa603b"
         },
         {
           "path": "docs/specs/mcp-gateway-production-authority-v0.1.md",
@@ -460,7 +510,7 @@
         {
           "path": "src/trustai/mcp_gateway.py",
           "present": true,
-          "sha256": "sha256:32a3beffd0ff9ac693797570246dbf29e3718e426269b402f213d96049e90503"
+          "sha256": "sha256:7a96d39abfdeb4f14f7c4450dc315dae425a698da13da6128b1d383465908659"
         },
         {
           "path": "src/trustai/mcp_gateway_authority.py",
@@ -480,7 +530,7 @@
         {
           "path": "tests/test_mcp_gateway.py",
           "present": true,
-          "sha256": "sha256:6d04fa96f607160aedfcc27da36066e4692c4e467e80063d188512e5d756375d"
+          "sha256": "sha256:09f8b94a471ed5b14a11025dbadf8c40f1480a36a3076ca4bbdb6edcef89b40e"
         },
         {
           "path": "tests/test_mcp_gateway_authority.py",
@@ -788,7 +838,7 @@
         {
           "path": "docs/specs/mcp-gateway-v0.1.md",
           "present": true,
-          "sha256": "sha256:1fa83db1fe172fb1ec6b4fe0faec297202fa15eb573d00a7a7418660c53b9dbd"
+          "sha256": "sha256:f99ce2db7c45d76bc2fb3b5f12f119a34a16382eb8ea386acb1998416caa603b"
         },
         {
           "path": "docs/specs/shadow-replay-v0.1.md",
@@ -798,7 +848,7 @@
         {
           "path": "docs/specs/control-plane-v0.1.md",
           "present": true,
-          "sha256": "sha256:a9ee825dcbf216c4e637ec5ec3760c6a9e1b07ac6a447bffe8dccb62cd3cde6d"
+          "sha256": "sha256:8c42689248ecf685a58e6949a698c5cce26b327e82309c2533de4bef38e481b7"
         },
         {
           "path": "docs/specs/review-portal-service-attestation-v0.1.md",
@@ -823,7 +873,7 @@
         {
           "path": "src/trustai/mcp_gateway.py",
           "present": true,
-          "sha256": "sha256:32a3beffd0ff9ac693797570246dbf29e3718e426269b402f213d96049e90503"
+          "sha256": "sha256:7a96d39abfdeb4f14f7c4450dc315dae425a698da13da6128b1d383465908659"
         },
         {
           "path": "src/trustai/shadow.py",
@@ -1278,7 +1328,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:567c452a6fdf1d06ba288c546b3b0073d1a2964875ca021edf1745fe3b16fdea"
+          "sha256": "sha256:c573e108cb8b2589a0c2a78fd8d87048210b24f6355ddd07a59c1099ee95fe46"
         },
         {
           "path": "src/trustai/trust_authority.py",
@@ -1651,7 +1701,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:567c452a6fdf1d06ba288c546b3b0073d1a2964875ca021edf1745fe3b16fdea"
+          "sha256": "sha256:c573e108cb8b2589a0c2a78fd8d87048210b24f6355ddd07a59c1099ee95fe46"
         },
         {
           "path": "tests/test_reliability_report.py",
@@ -1767,7 +1817,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:567c452a6fdf1d06ba288c546b3b0073d1a2964875ca021edf1745fe3b16fdea"
+          "sha256": "sha256:c573e108cb8b2589a0c2a78fd8d87048210b24f6355ddd07a59c1099ee95fe46"
         },
         {
           "path": "tests/test_phase_scoreboard.py",
@@ -1818,7 +1868,7 @@
         {
           "path": "docs/architecture/roadmap-coverage.md",
           "present": true,
-          "sha256": "sha256:dd1ee6026f9f47f2f476f2160cd201eb91299fa10c279fcf4baf8a13547eaf2f"
+          "sha256": "sha256:deae307501cd0f253addff782a8326bb122a5de7b9777750c8b0a0e2cfd8ba25"
         },
         {
           "path": "src/trustai/proofpack.py",
@@ -1838,7 +1888,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:567c452a6fdf1d06ba288c546b3b0073d1a2964875ca021edf1745fe3b16fdea"
+          "sha256": "sha256:c573e108cb8b2589a0c2a78fd8d87048210b24f6355ddd07a59c1099ee95fe46"
         },
         {
           "path": "tests/test_product_scope.py",
@@ -2308,7 +2358,7 @@
     "coverage": {
       "path": "docs/architecture/roadmap-coverage.md",
       "present": true,
-      "sha256": "sha256:dd1ee6026f9f47f2f476f2160cd201eb91299fa10c279fcf4baf8a13547eaf2f"
+      "sha256": "sha256:deae307501cd0f253addff782a8326bb122a5de7b9777750c8b0a0e2cfd8ba25"
     },
     "requirement_count": 26,
     "roadmap": {

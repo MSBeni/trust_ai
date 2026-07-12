@@ -1,22 +1,22 @@
 {
-  "generated_at": "2026-07-12T01:27:00Z",
+  "generated_at": "2026-07-12T01:26:00Z",
   "limitations": [
     "This plan assigns external authority evidence collection work; it does not satisfy any task by itself.",
     "A task is covered only after a matching evidence artifact is supplied to an external evidence manifest and verified.",
     "Freshness and issuer authority remain bounded by the supplied evidence artifact and manifest verification options."
   ],
-  "plan_id": "ce9a96432eb2a5aa884cb9273a5e60846c43f5f5f33d306bca0375b4e75b899e",
+  "plan_id": "5e251dbe8643fb6605858bbba3e26bb67662c03a7c3c666a23632f45ddd604a3",
   "schema": "trustai.external-evidence-collection-plan/0.1",
   "source_manifest": {
-    "generated_at": "2026-07-12T01:26:00Z",
-    "manifest_hash": "303efac84502b9a5c0e5ec9148688885dfbadfd176378e17b670184a8c443d8f",
-    "manifest_id": "416b45d62bae52e29443a5b070edcc266085ff65ec513234fbdcf2ddd266e095",
-    "manifest_ref": "retained-production-external-evidence",
+    "generated_at": "2026-07-12T00:01:00Z",
+    "manifest_hash": "dcb1837227d6817a1bc30dfe5104103d717946a52125c18da3e530a4d652f2e3",
+    "manifest_id": "2df609c1e2429547d454132274c939f4bc1d97ec91a1269d55c5c477faac845f",
+    "manifest_ref": "production-external-evidence",
     "status": "partial"
   },
   "source_roadmap_audit": {
-    "audit_hash": "80bc40fb368621e686df5546a334e535de195c5d556d741f722ffd54f7faa31a",
-    "audit_id": "224755b843c355c30d30cb023e3349444a95e3645f1b78dff39e422501687343",
+    "audit_hash": "680fe728f5df7eb4b64ce4f29cb9d84cdf82d893aeb1fad2f5f9c2b1a8e0f3c5",
+    "audit_id": "cc88b8343b1b69a31a47c2f54fac172135d2005e8c65656a3b48ee1175815441",
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "status_filter": "missing",
@@ -78,7 +78,7 @@
       "coverage_status": "missing",
       "evidence_argument_template": "self-serve-onboarding,hosted-service,external-evidence/self-serve-onboarding/hosted-service.json,hosted-service evidence for self-serve-onboarding;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
       "external_authority_required": [
-        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, MCP gateway, examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence."
+        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence."
       ],
       "owner_hint": "service owner",
       "phase": "P2",
@@ -107,7 +107,7 @@
       "coverage_status": "missing",
       "evidence_argument_template": "self-serve-onboarding,identity-provider,external-evidence/self-serve-onboarding/identity-provider.json,identity-provider evidence for self-serve-onboarding;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
       "external_authority_required": [
-        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, MCP gateway, examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence."
+        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence."
       ],
       "owner_hint": "IAM/identity owner",
       "phase": "P2",

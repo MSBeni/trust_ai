@@ -4,11 +4,16 @@ import unittest
 from pathlib import Path
 
 from trustai.control_plane import ControlPlane
+from trustai.canonical import content_hash
 from trustai.chain import EvidenceChain
 from trustai.cicd import append_promotion_status_receipt, build_promotion_check_payload, build_promotion_status_receipt
 from trustai.delivery import build_provider_delivery
 from trustai.contracts import load_contract, register_contract
-from trustai.external_evidence import append_external_evidence_manifest, build_external_evidence_manifest
+from trustai.external_evidence import (
+    EXTERNAL_EVIDENCE_COLLECTION_RUN_ENTRY_TYPE,
+    append_external_evidence_manifest,
+    build_external_evidence_manifest,
+)
 from trustai.gate import append_eval_and_gate
 from trustai.ingest import append_events, load_events
 from trustai.mcp_gateway import load_mcp_transcript
@@ -19,7 +24,7 @@ from trustai.policy_engine import append_policy_engine_receipt, build_policy_eng
 from trustai.policy_export import export_policy_pack
 from trustai.proofpack import compile_proof_pack
 from trustai.registry import append_inventory, load_inventory
-from trustai.roadmap_audit import build_roadmap_audit
+from trustai.roadmap_audit import append_roadmap_audit, build_roadmap_audit
 from trustai.anchor import append_anchor
 from trustai.runtime import append_runtime_attestation, load_action
 from trustai.verifier import verify_proof_pack
@@ -111,10 +116,43 @@ class ControlPlaneTests(unittest.TestCase):
             )
             append_incident(chain, load_incident(INCIDENT))
             audit = build_roadmap_audit(ROOT)
+            audit_entry = append_roadmap_audit(chain, audit, root=ROOT)
             external_manifest = build_external_evidence_manifest(
                 audit,
                 root=ROOT,
                 generated_at="2026-07-12T00:00:00Z",
+            )
+            collection_payload = {
+                "run_id": "collection-run-control-001",
+                "run_hash": "sha256:collection-run-control-001",
+                "source_map": {"source_map_id": "source-map-control-001"},
+                "source_map_hash": "sha256:source-map-control-001",
+                "source_plan": {"plan_id": "roadmap-plan-control-001", "plan_hash": "sha256:roadmap-plan-control-001"},
+                "source_manifest": {
+                    "manifest_id": external_manifest["manifest_id"],
+                    "manifest_ref": external_manifest.get("manifest_ref"),
+                    "manifest_hash": content_hash(external_manifest),
+                },
+                "source_roadmap_audit": external_manifest["source_roadmap_audit"],
+                "source_roadmap_audit_inclusion_proof": chain.proof_for(audit_entry),
+                "require_fresh": True,
+                "require_live_source_uris": True,
+                "require_source_snapshot_artifacts": True,
+                "require_fresh_source_snapshot_artifacts": True,
+                "freshness_checked_at": "2026-07-12T00:05:00Z",
+                "collected_count": 2,
+                "task_count": 2,
+                "collected_tasks": ["oss-verifier-and-public-spec:provider-api", "oss-verifier-and-public-spec:ci-run"],
+                "snapshot_ids": ["snapshot:github-main-ref", "snapshot:github-actions-run"],
+                "intake_ids": ["intake:github-main-ref", "intake:github-actions-run"],
+                "limitations": [
+                    "Control-plane fixture for collection-run indexing; collection-run verification is covered separately.",
+                ],
+            }
+            chain.append(
+                EXTERNAL_EVIDENCE_COLLECTION_RUN_ENTRY_TYPE,
+                collection_payload,
+                timestamp="2026-07-12T00:04:00Z",
             )
             append_external_evidence_manifest(chain, external_manifest, audit, root=ROOT)
             mcp_calls = load_mcp_transcript(MCP)
@@ -180,14 +218,23 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, summary["counts"]["policy_decisions"])
                 self.assertEqual(1, summary["counts"]["policy_engine_receipts"])
                 self.assertEqual(1, summary["counts"]["incidents"])
+                self.assertEqual(1, summary["counts"]["roadmap_audits"])
+                self.assertEqual(1, summary["counts"]["external_evidence_collection_runs"])
                 self.assertEqual(1, summary["counts"]["external_evidence_manifests"])
                 self.assertEqual(1, summary["counts"]["authority_dossiers"])
                 self.assertEqual(1, counts["runtime_attestations"])
                 self.assertEqual(1, counts["policy_decisions"])
                 self.assertEqual(1, counts["policy_engine_receipts"])
                 self.assertEqual(1, counts["incidents"])
+                self.assertEqual(1, counts["roadmap_audits"])
+                self.assertEqual(1, counts["external_evidence_collection_runs"])
                 self.assertEqual(1, counts["external_evidence_manifests"])
                 self.assertEqual(1, counts["authority_dossiers"])
+                self.assertEqual(audit["audit_id"], summary["latest_roadmap_audit"]["audit_id"])
+                self.assertEqual("local-reference-complete-with-external-authority-deferred", summary["latest_roadmap_audit"]["completion_position"])
+                self.assertEqual("collection-run-control-001", summary["latest_external_evidence_collection_run"]["run_id"])
+                self.assertTrue(summary["latest_external_evidence_collection_run"]["require_fresh"])
+                self.assertEqual(2, summary["latest_external_evidence_collection_run"]["collected_count"])
                 self.assertEqual("partial", summary["latest_external_evidence_manifest"]["status"])
                 self.assertGreater(summary["latest_external_evidence_manifest"]["missing_authority_kind_count"], 0)
                 self.assertEqual("authority:mcp-gateway/proxy-prod", summary["latest_authority_dossier"]["authority_ref"])
@@ -287,6 +334,17 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual("trading-runtime-policy-v0", runtime_evidence["policy_decisions"][0]["policy_pack_id"])
                 self.assertEqual("opa", runtime_evidence["policy_engine_receipts"][0]["engine_name"])
                 self.assertEqual("incident-20260704-latency-drift", runtime_evidence["incidents"][0]["incident_id"])
+                roadmap_evidence = control.roadmap_evidence()
+                self.assertEqual(audit["audit_id"], roadmap_evidence["roadmap_audits"][0]["audit_id"])
+                self.assertGreater(roadmap_evidence["roadmap_audits"][0]["deferred_external_count"], 0)
+                self.assertEqual("collection-run-control-001", roadmap_evidence["external_evidence_collection_runs"][0]["run_id"])
+                self.assertEqual(2, roadmap_evidence["external_evidence_collection_runs"][0]["task_count"])
+                self.assertTrue(roadmap_evidence["external_evidence_collection_runs"][0]["require_live_source_uris"])
+                self.assertEqual(
+                    ["intake:github-main-ref", "intake:github-actions-run"],
+                    roadmap_evidence["external_evidence_collection_runs"][0]["intake_ids"],
+                )
+                self.assertEqual(1, len(roadmap_evidence["external_evidence_manifests"]))
                 external_evidence = control.recent_external_evidence_manifests()
                 self.assertEqual(1, len(external_evidence))
                 self.assertEqual("partial", external_evidence[0]["status"])
