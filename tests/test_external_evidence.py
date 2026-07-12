@@ -573,12 +573,13 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             finally:
                 shutil.rmtree(snapshot_path.parent, ignore_errors=True)
 
-    def test_retained_git_ref_external_evidence_examples_verify(self):
+    def test_retained_external_evidence_examples_verify(self):
         audit = json.loads((ROOT / "examples/aitrade/external-evidence/source-roadmap-audit.json").read_text(encoding="utf-8"))
         manifest = load_external_evidence_manifest(ROOT / "examples/aitrade/external-evidence/source-external-evidence-manifest.json")
         plan = load_external_evidence_collection_plan(ROOT / "examples/aitrade/external-evidence/source-external-evidence-plan-all.json")
         provider_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/github-main-ref-source-snapshot.json")
         hosted_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/github-hosted-service-source-snapshot.json")
+        ci_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/oss-verifier-ci-run.json")
         provider_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/oss-verifier-provider-api.json")
         hosted_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/oss-verifier-hosted-service.json")
 
@@ -609,14 +610,14 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 require_fresh=True,
                 now="2026-07-12T00:00:00Z",
             )
-            for intake in (provider_intake, hosted_intake)
+            for intake in (ci_intake, provider_intake, hosted_intake)
         ]
         rebuilt = build_external_evidence_manifest_from_intakes(
             plan,
             manifest,
             audit,
             root=ROOT,
-            intakes=[provider_intake, hosted_intake],
+            intakes=[ci_intake, provider_intake, hosted_intake],
             require_fresh=True,
             now="2026-07-12T00:00:00Z",
             generated_at="2026-07-12T00:01:00Z",
@@ -634,10 +635,10 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             export = json.loads(base64.b64decode(snapshot["body_base64"]).decode("utf-8"))
             self.assertEqual("trustai.external-evidence-git-remote-ref-export/0.1", export["schema"])
         self.assertEqual(70, rebuilt["summary"]["required_authority_kind_count"])
-        self.assertEqual(2, rebuilt["summary"]["covered_authority_kind_count"])
-        self.assertEqual(68, rebuilt["summary"]["missing_authority_kind_count"])
+        self.assertEqual(3, rebuilt["summary"]["covered_authority_kind_count"])
+        self.assertEqual(67, rebuilt["summary"]["missing_authority_kind_count"])
         self.assertEqual(
-            ["provider-api", "hosted-service"],
+            ["ci-run", "provider-api", "hosted-service"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["oss-verifier-and-public-spec"],
         )
 

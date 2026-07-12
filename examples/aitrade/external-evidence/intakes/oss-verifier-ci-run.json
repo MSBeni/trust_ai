@@ -1,0 +1,65 @@
+{
+  "evidence_argument": "oss-verifier-and-public-spec,ci-run,examples/aitrade/external-evidence/go-verifier-workflow-run.json,Recorded Go verifier workflow run export fixture;issuer=GitHub Actions;subject=trustai go verifier release workflow;source_uri=https://github.com/MSBeni/trust_ai/actions;issued_at=2026-07-08T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
+  "evidence_item": {
+    "accepted_authority_kinds": [
+      "ci-run",
+      "provider-api",
+      "hosted-service"
+    ],
+    "authority_kind": "ci-run",
+    "description": "Recorded Go verifier workflow run export fixture",
+    "evidence_id": "90ac88f0a91acbd4fc0d9b23314b96eaac2d5151de8bf04883d9b80267ca3e46",
+    "expires_at": "2026-12-31T00:00:00Z",
+    "issued_at": "2026-07-08T00:00:00Z",
+    "issuer": "GitHub Actions",
+    "path": "examples/aitrade/external-evidence/go-verifier-workflow-run.json",
+    "requirement_id": "oss-verifier-and-public-spec",
+    "sha256": "sha256:a86fee6cea8e9a0f1128988ebf3d64cfb14baa788c5f1626be1bf1f6e4a99c94",
+    "source_uri": "https://github.com/MSBeni/trust_ai/actions",
+    "subject": "trustai go verifier release workflow"
+  },
+  "generated_at": "2026-07-12T01:25:35Z",
+  "intake_id": "18ffe3eb9b70138e3376c6fc9771e21cdcbcf7194dde5e63cd39d75a70cccc73",
+  "limitations": [
+    "This intake receipt hashes and maps one collected artifact to a collection-plan task; it does not itself satisfy roadmap completion.",
+    "Coverage is updated only after rebuilding and verifying an external evidence manifest with the emitted evidence argument.",
+    "Issuer authority and freshness remain bounded by the collected artifact and manifest verification options."
+  ],
+  "schema": "trustai.external-evidence-intake/0.1",
+  "source_manifest": {
+    "covered_authority_kind_count": 0,
+    "manifest_hash": "58772c607aa3dc0af6eca9ac444627da88ce8c44037a0908cc8d74d3db0ccc9c",
+    "manifest_id": "7836920505c41052cfc458621d95052fe98c1ddb41049b94cebedeb6a3a3621e",
+    "manifest_ref": "production-external-evidence",
+    "missing_authority_kind_count": 70,
+    "required_authority_kind_count": 70,
+    "status": "partial"
+  },
+  "source_plan": {
+    "plan_hash": "a055ee6858089ac996a3f61c42afad668457d76c75ba0b50f6e6043a4312ab91",
+    "plan_id": "200e981ec0f3a14dc933d944f6cf07cfbb9b3c60f75a3761fbdf7d290ed5beae",
+    "source_manifest": {
+      "generated_at": "2026-07-12T00:42:01Z",
+      "manifest_hash": "58772c607aa3dc0af6eca9ac444627da88ce8c44037a0908cc8d74d3db0ccc9c",
+      "manifest_id": "7836920505c41052cfc458621d95052fe98c1ddb41049b94cebedeb6a3a3621e",
+      "manifest_ref": "production-external-evidence",
+      "status": "partial"
+    },
+    "status_filter": "all"
+  },
+  "source_roadmap_audit": {
+    "audit_hash": "80bc40fb368621e686df5546a334e535de195c5d556d741f722ffd54f7faa31a",
+    "audit_id": "224755b843c355c30d30cb023e3349444a95e3645f1b78dff39e422501687343",
+    "completion_position": "local-reference-complete-with-external-authority-deferred"
+  },
+  "task": {
+    "authority_kind": "ci-run",
+    "coverage_status": "missing",
+    "requirement_id": "oss-verifier-and-public-spec",
+    "suggested_artifact_path": "external-evidence/oss-verifier-and-public-spec/ci-run.json",
+    "task_id": "c2521c5f457d2de81cf4cf25e9cefef5c4600ee0604422d22ec421923ccfcb60",
+    "task_ref": "external-evidence:oss-verifier-and-public-spec:ci-run",
+    "unit_id": "e5d2eb86fc1a22a4ca8fa6d150608ee18c7cc632e416491e780495135cf9d1ed",
+    "unit_ref": "oss-verifier-and-public-spec:ci-run"
+  }
+}
