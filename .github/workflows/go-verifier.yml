@@ -1,4 +1,4 @@
-﻿name: Go verifier
+name: Go verifier
 
 on:
   push:
@@ -78,8 +78,8 @@ jobs:
           ARTIFACT: dist/trustai-verify-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
         run: |
           mkdir -p dist
-          output="dist/trustai-verify-${GOOS}-${GOARCH}${{ matrix.ext }}"
-          go build -trimpath -ldflags "-s -w" -o "${output}" ./verifier/go/trustai-verify
+          output="${GITHUB_WORKSPACE}/dist/trustai-verify-${GOOS}-${GOARCH}${{ matrix.ext }}"
+          (cd verifier/go/trustai-verify && go build -trimpath -ldflags "-s -w" -o "${output}" .)
           test -s "${output}"
 
       - name: Generate checksums, SBOM, and provenance

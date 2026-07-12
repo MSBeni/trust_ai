@@ -2291,6 +2291,12 @@ def cmd_control_summary(args: argparse.Namespace) -> int:
             summary["design_partner_dossiers"] = control.recent_design_partner_dossiers()
         if args.own_compliance_dossiers:
             summary["own_compliance_dossiers"] = control.recent_own_compliance_dossiers()
+        if args.product_scope_decisions:
+            summary["product_scope_decisions"] = control.recent_product_scope_decisions()
+        if args.vertical_packs:
+            summary["vertical_packs"] = control.recent_vertical_packs()
+        if args.reliability_reports:
+            summary["reliability_reports"] = control.recent_reliability_reports()
         if args.readiness:
             summary["readiness"] = control.readiness()
         if args.external_evidence:
@@ -20382,6 +20388,9 @@ def build_parser() -> argparse.ArgumentParser:
     control_summary.add_argument("--phase-scoreboards", action="store_true")
     control_summary.add_argument("--design-partner-dossiers", action="store_true")
     control_summary.add_argument("--own-compliance-dossiers", action="store_true")
+    control_summary.add_argument("--product-scope-decisions", action="store_true")
+    control_summary.add_argument("--vertical-packs", action="store_true")
+    control_summary.add_argument("--reliability-reports", action="store_true")
     control_summary.add_argument("--readiness", action="store_true")
     control_summary.add_argument("--external-evidence", action="store_true")
     control_summary.add_argument("--external-authority-gaps", action="store_true")

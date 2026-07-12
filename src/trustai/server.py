@@ -275,6 +275,27 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             finally:
                 control.close()
             return
+        if parsed.path in ("/v0/product-scope-decisions", "/v0/control/product-scope-decisions"):
+            control = self._control()
+            try:
+                self._json_response(200, {"product_scope_decisions": control.recent_product_scope_decisions()})
+            finally:
+                control.close()
+            return
+        if parsed.path in ("/v0/vertical-packs", "/v0/control/vertical-packs"):
+            control = self._control()
+            try:
+                self._json_response(200, {"vertical_packs": control.recent_vertical_packs()})
+            finally:
+                control.close()
+            return
+        if parsed.path in ("/v0/reliability-reports", "/v0/control/reliability-reports"):
+            control = self._control()
+            try:
+                self._json_response(200, {"reliability_reports": control.recent_reliability_reports()})
+            finally:
+                control.close()
+            return
         if parsed.path in ("/v0/readiness", "/v0/control/readiness"):
             control = self._control()
             try:

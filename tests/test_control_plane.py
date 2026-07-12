@@ -20,8 +20,10 @@ from trustai.ingest import append_events, load_events
 from trustai.mcp_gateway import load_mcp_transcript
 from trustai.mcp_gateway_authority import append_mcp_gateway_authority_dossier, build_mcp_gateway_authority_dossier
 from trustai.phase_scoreboard import append_phase_scoreboard, build_phase_scoreboard
+from trustai.product_scope import append_product_scope_decision, build_product_scope_decision
 from trustai.lifecycle import append_incident, load_incident
 from trustai.own_compliance import append_own_compliance_dossier, build_own_compliance_dossier
+from trustai.reliability_report import append_reliability_report, build_reliability_report
 from trustai.policy import append_policy_decision, load_policy_pack
 from trustai.policy_engine import append_policy_engine_receipt, build_policy_engine_receipt
 from trustai.policy_export import export_policy_pack
@@ -30,6 +32,7 @@ from trustai.registry import append_inventory, load_inventory
 from trustai.roadmap_audit import append_roadmap_audit, build_roadmap_audit
 from trustai.anchor import append_anchor
 from trustai.runtime import append_runtime_attestation, load_action
+from trustai.vertical_pack import append_vertical_pack, build_vertical_pack
 from trustai.verifier import verify_proof_pack
 
 
@@ -216,6 +219,48 @@ class ControlPlaneTests(unittest.TestCase):
                 generated_at="2026-07-22T00:00:00Z",
             )
             append_own_compliance_dossier(chain, own_compliance_dossier, root=ROOT)
+            product_scope_decision = build_product_scope_decision(
+                ROOT,
+                decision_ref="scope:request/regulator-export",
+                requester_ref="product:gtm",
+                reviewer_ref="oidc:trustai.example/product",
+                feature_title="Regulator export evidence",
+                feature_summary="Portable regulator export that strengthens third-party proof review.",
+                decision="accept",
+                proof_impacts=["proof-strength", "wider-acceptance"],
+                generated_at="2026-07-22T00:10:00Z",
+            )
+            append_product_scope_decision(chain, product_scope_decision, root=ROOT)
+            vertical_pack = build_vertical_pack(
+                ROOT,
+                pack_ref="vertical-pack:trading-treasury/readiness",
+                vertical="trading-treasury",
+                producer_ref="oidc:trustai.example/vertical-pack",
+                reviewer_ref="oidc:trustai.example/model-risk",
+                generated_at="2026-07-22T00:20:00Z",
+            )
+            append_vertical_pack(chain, vertical_pack, root=ROOT)
+            reliability_report = build_reliability_report(
+                ROOT,
+                report_ref="report:state-of-agent-reliability/readiness",
+                producer_ref="oidc:trustai.example/reliability",
+                period_start="2026-01-01T00:00:00Z",
+                period_end="2026-07-01T00:00:00Z",
+                cohorts=[
+                    {
+                        "segment_ref": "segment:finserv-agents",
+                        "contributing_org_count": 3,
+                        "agent_count": 4,
+                        "proof_pack_count": 5,
+                        "promotion_pass_count": 4,
+                        "promotion_fail_count": 1,
+                        "incident_count": 1,
+                        "total_action_count": 100000,
+                    }
+                ],
+                generated_at="2026-07-22T00:30:00Z",
+            )
+            append_reliability_report(chain, reliability_report, root=ROOT)
             mcp_calls = load_mcp_transcript(MCP)
             mcp_authority = build_mcp_gateway_authority_dossier(
                 mcp_calls,
@@ -286,6 +331,9 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, summary["counts"]["phase_scoreboards"])
                 self.assertEqual(1, summary["counts"]["design_partner_dossiers"])
                 self.assertEqual(1, summary["counts"]["own_compliance_dossiers"])
+                self.assertEqual(1, summary["counts"]["product_scope_decisions"])
+                self.assertEqual(1, summary["counts"]["vertical_packs"])
+                self.assertEqual(1, summary["counts"]["reliability_reports"])
                 self.assertEqual(1, counts["runtime_attestations"])
                 self.assertEqual(1, counts["policy_decisions"])
                 self.assertEqual(1, counts["policy_engine_receipts"])
@@ -297,6 +345,9 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, counts["phase_scoreboards"])
                 self.assertEqual(1, counts["design_partner_dossiers"])
                 self.assertEqual(1, counts["own_compliance_dossiers"])
+                self.assertEqual(1, counts["product_scope_decisions"])
+                self.assertEqual(1, counts["vertical_packs"])
+                self.assertEqual(1, counts["reliability_reports"])
                 self.assertEqual(audit["audit_id"], summary["latest_roadmap_audit"]["audit_id"])
                 self.assertEqual("local-reference-complete-with-external-authority-deferred", summary["latest_roadmap_audit"]["completion_position"])
                 self.assertEqual("collection-run-control-001", summary["latest_external_evidence_collection_run"]["run_id"])
@@ -320,6 +371,20 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual("readiness", summary["latest_own_compliance_dossier"]["mode"])
                 self.assertEqual(0, summary["latest_own_compliance_dossier"]["required_certification_evidence_count"])
                 self.assertEqual({"external-required": 2, "passed": 6}, summary["latest_own_compliance_dossier"]["control_summary"])
+                self.assertEqual("scope:request/regulator-export", summary["latest_product_scope_decision"]["decision_ref"])
+                self.assertEqual("accept", summary["latest_product_scope_decision"]["decision"])
+                self.assertEqual(["proof-strength", "wider-acceptance"], summary["latest_product_scope_decision"]["proof_impacts"])
+                self.assertEqual({"passed": 10}, summary["latest_product_scope_decision"]["control_summary"])
+                self.assertEqual("vertical-pack:trading-treasury/readiness", summary["latest_vertical_pack"]["pack_ref"])
+                self.assertEqual("trading-treasury", summary["latest_vertical_pack"]["vertical"])
+                self.assertEqual(2, summary["latest_vertical_pack"]["external_requirement_count"])
+                self.assertEqual({"external-required": 1, "passed": 7}, summary["latest_vertical_pack"]["control_summary"])
+                self.assertEqual("report:state-of-agent-reliability/readiness", summary["latest_reliability_report"]["report_ref"])
+                self.assertEqual("draft", summary["latest_reliability_report"]["mode"])
+                self.assertEqual(1, summary["latest_reliability_report"]["cohort_count"])
+                self.assertEqual(0, summary["latest_reliability_report"]["source_product_count"])
+                self.assertEqual(8000, summary["latest_reliability_report"]["gate_pass_rate_bps"])
+                self.assertEqual({"external-required": 2, "passed": 6}, summary["latest_reliability_report"]["control_summary"])
                 self.assertEqual("passed", summary["latest_proof_pack"]["outcome"])
                 self.assertEqual("aitrade-btcusdt-canary", summary["latest_eval_run"]["contract_id"])
                 self.assertEqual("passed", summary["latest_gate_decision"]["outcome"])
@@ -427,6 +492,9 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, len(roadmap_evidence["phase_scoreboards"]))
                 self.assertEqual(1, len(roadmap_evidence["design_partner_dossiers"]))
                 self.assertEqual(1, len(roadmap_evidence["own_compliance_dossiers"]))
+                self.assertEqual(1, len(roadmap_evidence["product_scope_decisions"]))
+                self.assertEqual(1, len(roadmap_evidence["vertical_packs"]))
+                self.assertEqual(1, len(roadmap_evidence["reliability_reports"]))
                 phase_scoreboards = control.recent_phase_scoreboards()
                 self.assertEqual(1, len(phase_scoreboards))
                 self.assertEqual("readiness", phase_scoreboards[0]["mode"])
@@ -441,6 +509,22 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual("dossier:trustai/own-compliance-readiness", own_compliance_dossiers[0]["dossier_ref"])
                 self.assertEqual(0, own_compliance_dossiers[0]["required_certification_evidence_count"])
                 self.assertEqual({"external-required": 2, "passed": 6}, own_compliance_dossiers[0]["control_summary"])
+                product_scope_decisions = control.recent_product_scope_decisions()
+                self.assertEqual(1, len(product_scope_decisions))
+                self.assertEqual("scope:request/regulator-export", product_scope_decisions[0]["decision_ref"])
+                self.assertEqual(["proof-strength", "wider-acceptance"], product_scope_decisions[0]["proof_impacts"])
+                self.assertEqual({"passed": 10}, product_scope_decisions[0]["control_summary"])
+                vertical_packs = control.recent_vertical_packs()
+                self.assertEqual(1, len(vertical_packs))
+                self.assertEqual("trading-treasury", vertical_packs[0]["vertical"])
+                self.assertEqual(["SR 11-7", "ISO 42001", "NIST AI RMF", "SOC 2"], vertical_packs[0]["frameworks"])
+                self.assertEqual({"external-required": 1, "passed": 7}, vertical_packs[0]["control_summary"])
+                reliability_reports = control.recent_reliability_reports()
+                self.assertEqual(1, len(reliability_reports))
+                self.assertEqual("draft", reliability_reports[0]["mode"])
+                self.assertEqual("2026-01-01T00:00:00Z", reliability_reports[0]["reporting_period"]["start"])
+                self.assertEqual(1, reliability_reports[0]["incident_rate_per_100k_actions"])
+                self.assertEqual({"external-required": 2, "passed": 6}, reliability_reports[0]["control_summary"])
                 readiness = control.readiness()
                 self.assertEqual("not_ready", readiness["status"])
                 self.assertTrue(readiness["local_reference_complete"])
@@ -453,6 +537,9 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertFalse(readiness["roadmap_phase_scoreboard_ready"])
                 self.assertFalse(readiness["design_partner_ready"])
                 self.assertFalse(readiness["own_compliance_ready"])
+                self.assertTrue(readiness["product_scope_ready"])
+                self.assertFalse(readiness["vertical_pack_ready"])
+                self.assertFalse(readiness["reliability_report_ready"])
                 self.assertEqual("readiness", readiness["phase_scoreboard_summary"]["mode"])
                 self.assertEqual(10, readiness["phase_scoreboard_summary"]["external_required_control_count"])
                 self.assertEqual("readiness", readiness["design_partner_summary"]["mode"])
@@ -462,6 +549,14 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual("readiness", readiness["own_compliance_summary"]["mode"])
                 self.assertEqual(2, readiness["own_compliance_summary"]["external_required_control_count"])
                 self.assertEqual(0, readiness["own_compliance_summary"]["required_certification_evidence_count"])
+                self.assertEqual("accept", readiness["product_scope_summary"]["decision"])
+                self.assertEqual(2, readiness["product_scope_summary"]["proof_impact_count"])
+                self.assertEqual(0, readiness["product_scope_summary"]["failed_control_count"])
+                self.assertEqual("trading-treasury", readiness["vertical_pack_summary"]["vertical"])
+                self.assertEqual(1, readiness["vertical_pack_summary"]["external_required_control_count"])
+                self.assertEqual("draft", readiness["reliability_report_summary"]["mode"])
+                self.assertEqual(0, readiness["reliability_report_summary"]["source_product_count"])
+                self.assertEqual(2, readiness["reliability_report_summary"]["external_required_control_count"])
                 self.assertTrue(readiness["promotion_gate_ready"])
                 self.assertTrue(readiness["proof_pack_ready"])
                 self.assertTrue(readiness["runtime_policy_ready"])
@@ -477,6 +572,12 @@ class ControlPlaneTests(unittest.TestCase):
                 )
                 self.assertTrue(
                     any("TrustAI own-compliance certifications incomplete" in blocker for blocker in readiness["blockers"])
+                )
+                self.assertTrue(
+                    any("vertical-pack production acceptance incomplete" in blocker for blocker in readiness["blockers"])
+                )
+                self.assertTrue(
+                    any("State of Agent Reliability publication incomplete" in blocker for blocker in readiness["blockers"])
                 )
                 external_evidence = control.recent_external_evidence_manifests()
                 self.assertEqual(1, len(external_evidence))

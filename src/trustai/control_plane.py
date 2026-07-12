@@ -18,15 +18,18 @@ from .external_evidence import (
 )
 from .gate import EVAL_ENTRY_TYPE, GATE_ENTRY_TYPE
 from .phase_scoreboard import PHASE_SCOREBOARD_ENTRY_TYPE
+from .product_scope import PRODUCT_SCOPE_ENTRY_TYPE
 from .ingest import INGEST_ENTRY_TYPE
 from .lifecycle import INCIDENT_ENTRY_TYPE
 from .own_compliance import OWN_COMPLIANCE_ENTRY_TYPE, REQUIRED_CERTIFICATION_KINDS
 from .policy import POLICY_DECISION_ENTRY_TYPE
 from .policy_engine import POLICY_ENGINE_ENTRY_TYPE
 from .proofpack import PROOF_PACK_SPEC_VERSION
+from .reliability_report import RELIABILITY_REPORT_ENTRY_TYPE
 from .registry import AGENT_INVENTORY_ENTRY_TYPE
 from .roadmap_audit import ROADMAP_AUDIT_ENTRY_TYPE
 from .runtime import RUNTIME_ENTRY_TYPE
+from .vertical_pack import VERTICAL_PACK_ENTRY_TYPE
 
 SCHEMA_VERSION = "trustai.control-plane/0.1"
 
@@ -507,6 +510,52 @@ class ControlPlane:
                 generated_at TEXT,
                 body_json TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS product_scope_decisions (
+                decision_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                decision_hash TEXT NOT NULL,
+                decision_ref TEXT,
+                decision TEXT,
+                feature_title TEXT,
+                proof_impacts_json TEXT NOT NULL,
+                anti_focus_flags_json TEXT NOT NULL,
+                control_summary_json TEXT NOT NULL,
+                generated_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS vertical_packs (
+                pack_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                pack_hash TEXT NOT NULL,
+                pack_ref TEXT,
+                vertical TEXT,
+                title TEXT,
+                producer_ref TEXT,
+                reviewer_ref TEXT,
+                environment TEXT,
+                risk_classes_json TEXT NOT NULL,
+                frameworks_json TEXT NOT NULL,
+                source_artifact_count INTEGER NOT NULL,
+                external_requirement_count INTEGER NOT NULL,
+                control_summary_json TEXT NOT NULL,
+                generated_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS reliability_reports (
+                report_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                report_hash TEXT NOT NULL,
+                report_ref TEXT,
+                mode TEXT,
+                reporting_period_json TEXT NOT NULL,
+                cohort_count INTEGER NOT NULL,
+                source_product_count INTEGER NOT NULL,
+                incident_rate_per_100k_actions INTEGER,
+                gate_pass_rate_bps INTEGER,
+                control_summary_json TEXT NOT NULL,
+                generated_at TEXT,
+                body_json TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS anchors (
                 anchor_id TEXT PRIMARY KEY,
                 entry_id TEXT,
@@ -545,6 +594,9 @@ class ControlPlane:
             "phase_scoreboards": 0,
             "design_partner_dossiers": 0,
             "own_compliance_dossiers": 0,
+            "product_scope_decisions": 0,
+            "vertical_packs": 0,
+            "reliability_reports": 0,
         }
         for entry in chain.entries:
             payload = entry.get("payload", {})
@@ -1107,6 +1159,100 @@ class ControlPlane:
                 )
                 counts["own_compliance_dossiers"] += 1
 
+            if entry.get("entry_type") == PRODUCT_SCOPE_ENTRY_TYPE:
+                proof_impacts = payload.get("proof_impacts") if isinstance(payload.get("proof_impacts"), list) else []
+                anti_focus_flags = payload.get("anti_focus_flags") if isinstance(payload.get("anti_focus_flags"), list) else []
+                control_summary = payload.get("control_summary") if isinstance(payload.get("control_summary"), dict) else {}
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO product_scope_decisions(
+                        decision_id, entry_id, decision_hash, decision_ref,
+                        decision, feature_title, proof_impacts_json,
+                        anti_focus_flags_json, control_summary_json,
+                        generated_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("decision_id") or entry["entry_id"],
+                        entry["entry_id"],
+                        payload.get("decision_hash") or entry.get("payload_hash"),
+                        payload.get("decision_ref"),
+                        payload.get("decision"),
+                        payload.get("feature_title"),
+                        _json(proof_impacts),
+                        _json(anti_focus_flags),
+                        _json(control_summary),
+                        entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["product_scope_decisions"] += 1
+
+            if entry.get("entry_type") == VERTICAL_PACK_ENTRY_TYPE:
+                risk_classes = payload.get("risk_classes") if isinstance(payload.get("risk_classes"), list) else []
+                frameworks = payload.get("frameworks") if isinstance(payload.get("frameworks"), list) else []
+                control_summary = payload.get("control_summary") if isinstance(payload.get("control_summary"), dict) else {}
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO vertical_packs(
+                        pack_id, entry_id, pack_hash, pack_ref, vertical,
+                        title, producer_ref, reviewer_ref, environment,
+                        risk_classes_json, frameworks_json, source_artifact_count,
+                        external_requirement_count, control_summary_json,
+                        generated_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("pack_id") or entry["entry_id"],
+                        entry["entry_id"],
+                        payload.get("pack_hash") or entry.get("payload_hash"),
+                        payload.get("pack_ref"),
+                        payload.get("vertical"),
+                        payload.get("title"),
+                        payload.get("producer_ref"),
+                        payload.get("reviewer_ref"),
+                        payload.get("environment"),
+                        _json(risk_classes),
+                        _json(frameworks),
+                        int(payload.get("source_artifact_count") or 0),
+                        int(payload.get("external_requirement_count") or 0),
+                        _json(control_summary),
+                        entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["vertical_packs"] += 1
+
+            if entry.get("entry_type") == RELIABILITY_REPORT_ENTRY_TYPE:
+                reporting_period = payload.get("reporting_period") if isinstance(payload.get("reporting_period"), dict) else {}
+                control_summary = payload.get("control_summary") if isinstance(payload.get("control_summary"), dict) else {}
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO reliability_reports(
+                        report_id, entry_id, report_hash, report_ref, mode,
+                        reporting_period_json, cohort_count, source_product_count,
+                        incident_rate_per_100k_actions, gate_pass_rate_bps,
+                        control_summary_json, generated_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("report_id") or entry["entry_id"],
+                        entry["entry_id"],
+                        payload.get("report_hash") or entry.get("payload_hash"),
+                        payload.get("report_ref"),
+                        payload.get("mode"),
+                        _json(reporting_period),
+                        int(payload.get("cohort_count") or 0),
+                        int(payload.get("source_product_count") or 0),
+                        payload.get("incident_rate_per_100k_actions"),
+                        payload.get("gate_pass_rate_bps"),
+                        _json(control_summary),
+                        entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["reliability_reports"] += 1
+
             if _is_authority_dossier_payload(entry, payload):
                 summary = payload.get("summary") if isinstance(payload.get("summary"), dict) else {}
                 evidence_items = (
@@ -1226,6 +1372,9 @@ class ControlPlane:
             "phase_scoreboards",
             "design_partner_dossiers",
             "own_compliance_dossiers",
+            "product_scope_decisions",
+            "vertical_packs",
+            "reliability_reports",
         ]
         counts = {
             table: self.conn.execute(f"SELECT COUNT(*) AS count FROM {table}").fetchone()["count"]
@@ -1434,6 +1583,52 @@ class ControlPlane:
         latest_own_compliance_dossier_dict = dict(latest_own_compliance_dossier) if latest_own_compliance_dossier else None
         if latest_own_compliance_dossier_dict is not None:
             latest_own_compliance_dossier_dict["control_summary"] = _decode_json_object(latest_own_compliance_dossier_dict.pop("control_summary_json", None))
+        latest_product_scope_decision = self.conn.execute(
+            """
+            SELECT decision_id, entry_id, decision_hash, decision_ref,
+                   decision, feature_title, proof_impacts_json,
+                   anti_focus_flags_json, control_summary_json, generated_at
+            FROM product_scope_decisions
+            ORDER BY generated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_product_scope_decision_dict = dict(latest_product_scope_decision) if latest_product_scope_decision else None
+        if latest_product_scope_decision_dict is not None:
+            latest_product_scope_decision_dict["proof_impacts"] = _decode_json_array(latest_product_scope_decision_dict.pop("proof_impacts_json", None))
+            latest_product_scope_decision_dict["anti_focus_flags"] = _decode_json_array(latest_product_scope_decision_dict.pop("anti_focus_flags_json", None))
+            latest_product_scope_decision_dict["control_summary"] = _decode_json_object(latest_product_scope_decision_dict.pop("control_summary_json", None))
+        latest_vertical_pack = self.conn.execute(
+            """
+            SELECT pack_id, entry_id, pack_hash, pack_ref, vertical, title,
+                   producer_ref, reviewer_ref, environment, risk_classes_json,
+                   frameworks_json, source_artifact_count,
+                   external_requirement_count, control_summary_json, generated_at
+            FROM vertical_packs
+            ORDER BY generated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_vertical_pack_dict = dict(latest_vertical_pack) if latest_vertical_pack else None
+        if latest_vertical_pack_dict is not None:
+            latest_vertical_pack_dict["risk_classes"] = _decode_json_array(latest_vertical_pack_dict.pop("risk_classes_json", None))
+            latest_vertical_pack_dict["frameworks"] = _decode_json_array(latest_vertical_pack_dict.pop("frameworks_json", None))
+            latest_vertical_pack_dict["control_summary"] = _decode_json_object(latest_vertical_pack_dict.pop("control_summary_json", None))
+        latest_reliability_report = self.conn.execute(
+            """
+            SELECT report_id, entry_id, report_hash, report_ref, mode,
+                   reporting_period_json, cohort_count, source_product_count,
+                   incident_rate_per_100k_actions, gate_pass_rate_bps,
+                   control_summary_json, generated_at
+            FROM reliability_reports
+            ORDER BY generated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_reliability_report_dict = dict(latest_reliability_report) if latest_reliability_report else None
+        if latest_reliability_report_dict is not None:
+            latest_reliability_report_dict["reporting_period"] = _decode_json_object(latest_reliability_report_dict.pop("reporting_period_json", None))
+            latest_reliability_report_dict["control_summary"] = _decode_json_object(latest_reliability_report_dict.pop("control_summary_json", None))
         return {
             "schema_version": SCHEMA_VERSION,
             "database": str(self.path),
@@ -1457,6 +1652,9 @@ class ControlPlane:
             "latest_phase_scoreboard": latest_phase_scoreboard_dict,
             "latest_design_partner_dossier": latest_design_partner_dossier_dict,
             "latest_own_compliance_dossier": latest_own_compliance_dossier_dict,
+            "latest_product_scope_decision": latest_product_scope_decision_dict,
+            "latest_vertical_pack": latest_vertical_pack_dict,
+            "latest_reliability_report": latest_reliability_report_dict,
         }
 
     def contracts(self, limit: int = 20) -> list[dict[str, Any]]:
@@ -1834,6 +2032,70 @@ class ControlPlane:
             items.append(item)
         return items
 
+    def recent_product_scope_decisions(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT decision_id, entry_id, decision_hash, decision_ref,
+                   decision, feature_title, proof_impacts_json,
+                   anti_focus_flags_json, control_summary_json, generated_at
+            FROM product_scope_decisions
+            ORDER BY generated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["proof_impacts"] = _decode_json_array(item.pop("proof_impacts_json", None))
+            item["anti_focus_flags"] = _decode_json_array(item.pop("anti_focus_flags_json", None))
+            item["control_summary"] = _decode_json_object(item.pop("control_summary_json", None))
+            items.append(item)
+        return items
+
+    def recent_vertical_packs(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT pack_id, entry_id, pack_hash, pack_ref, vertical, title,
+                   producer_ref, reviewer_ref, environment, risk_classes_json,
+                   frameworks_json, source_artifact_count,
+                   external_requirement_count, control_summary_json, generated_at
+            FROM vertical_packs
+            ORDER BY generated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["risk_classes"] = _decode_json_array(item.pop("risk_classes_json", None))
+            item["frameworks"] = _decode_json_array(item.pop("frameworks_json", None))
+            item["control_summary"] = _decode_json_object(item.pop("control_summary_json", None))
+            items.append(item)
+        return items
+
+    def recent_reliability_reports(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT report_id, entry_id, report_hash, report_ref, mode,
+                   reporting_period_json, cohort_count, source_product_count,
+                   incident_rate_per_100k_actions, gate_pass_rate_bps,
+                   control_summary_json, generated_at
+            FROM reliability_reports
+            ORDER BY generated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["reporting_period"] = _decode_json_object(item.pop("reporting_period_json", None))
+            item["control_summary"] = _decode_json_object(item.pop("control_summary_json", None))
+            items.append(item)
+        return items
+
     def recent_authority_dossiers(self, limit: int = 20) -> list[dict[str, Any]]:
         rows = self.conn.execute(
             """
@@ -1869,6 +2131,9 @@ class ControlPlane:
             "phase_scoreboards": self.recent_phase_scoreboards(limit),
             "design_partner_dossiers": self.recent_design_partner_dossiers(limit),
             "own_compliance_dossiers": self.recent_own_compliance_dossiers(limit),
+            "product_scope_decisions": self.recent_product_scope_decisions(limit),
+            "vertical_packs": self.recent_vertical_packs(limit),
+            "reliability_reports": self.recent_reliability_reports(limit),
         }
 
     def readiness(self) -> dict[str, Any]:
@@ -2036,6 +2301,88 @@ class ControlPlane:
                 f"external-required control(s)={own_compliance_external_required}"
             )
 
+        latest_product_scope_decision = summary.get("latest_product_scope_decision")
+        product_scope_control_summary = (latest_product_scope_decision or {}).get("control_summary") or {}
+        product_scope_failed = int(product_scope_control_summary.get("failed") or 0)
+        product_scope_ready = bool(latest_product_scope_decision and product_scope_failed == 0)
+        product_scope_summary = {
+            "present": latest_product_scope_decision is not None,
+            "decision": (latest_product_scope_decision or {}).get("decision"),
+            "proof_impact_count": len((latest_product_scope_decision or {}).get("proof_impacts") or []),
+            "anti_focus_flag_count": len((latest_product_scope_decision or {}).get("anti_focus_flags") or []),
+            "control_summary": product_scope_control_summary,
+            "failed_control_count": product_scope_failed,
+        }
+        if latest_product_scope_decision is None:
+            blockers.append("no product-scope decision indexed")
+        elif not product_scope_ready:
+            blockers.append(
+                "product-scope discipline controls failed: "
+                f"failed control(s)={product_scope_failed}"
+            )
+
+        latest_vertical_pack = summary.get("latest_vertical_pack")
+        vertical_pack_control_summary = (latest_vertical_pack or {}).get("control_summary") or {}
+        vertical_pack_external_required = int(vertical_pack_control_summary.get("external-required") or 0)
+        vertical_pack_failed = int(vertical_pack_control_summary.get("failed") or 0)
+        vertical_pack_ready = bool(
+            latest_vertical_pack
+            and vertical_pack_external_required == 0
+            and vertical_pack_failed == 0
+        )
+        vertical_pack_summary = {
+            "present": latest_vertical_pack is not None,
+            "vertical": (latest_vertical_pack or {}).get("vertical"),
+            "environment": (latest_vertical_pack or {}).get("environment"),
+            "external_requirement_count": int((latest_vertical_pack or {}).get("external_requirement_count") or 0),
+            "control_summary": vertical_pack_control_summary,
+            "external_required_control_count": vertical_pack_external_required,
+            "failed_control_count": vertical_pack_failed,
+        }
+        if latest_vertical_pack is None:
+            blockers.append("no vertical pack indexed")
+        elif not vertical_pack_ready:
+            blockers.append(
+                "vertical-pack production acceptance incomplete: "
+                f"vertical={latest_vertical_pack.get('vertical')}, "
+                f"external-required control(s)={vertical_pack_external_required}, "
+                f"failed control(s)={vertical_pack_failed}"
+            )
+
+        latest_reliability_report = summary.get("latest_reliability_report")
+        reliability_report_control_summary = (latest_reliability_report or {}).get("control_summary") or {}
+        reliability_report_external_required = int(reliability_report_control_summary.get("external-required") or 0)
+        reliability_report_failed = int(reliability_report_control_summary.get("failed") or 0)
+        reliability_report_source_products = int((latest_reliability_report or {}).get("source_product_count") or 0)
+        reliability_report_ready = bool(
+            latest_reliability_report
+            and latest_reliability_report.get("mode") == "published-evidence"
+            and reliability_report_source_products > 0
+            and reliability_report_external_required == 0
+            and reliability_report_failed == 0
+        )
+        reliability_report_summary = {
+            "present": latest_reliability_report is not None,
+            "mode": (latest_reliability_report or {}).get("mode"),
+            "cohort_count": int((latest_reliability_report or {}).get("cohort_count") or 0),
+            "source_product_count": reliability_report_source_products,
+            "control_summary": reliability_report_control_summary,
+            "external_required_control_count": reliability_report_external_required,
+            "failed_control_count": reliability_report_failed,
+            "incident_rate_per_100k_actions": (latest_reliability_report or {}).get("incident_rate_per_100k_actions"),
+            "gate_pass_rate_bps": (latest_reliability_report or {}).get("gate_pass_rate_bps"),
+        }
+        if latest_reliability_report is None:
+            blockers.append("no State of Agent Reliability report indexed")
+        elif not reliability_report_ready:
+            blockers.append(
+                "State of Agent Reliability publication incomplete: "
+                f"mode={latest_reliability_report.get('mode')}, "
+                f"source-products={reliability_report_source_products}, "
+                f"external-required control(s)={reliability_report_external_required}, "
+                f"failed control(s)={reliability_report_failed}"
+            )
+
         authority_row = self.conn.execute(
             """
             SELECT COUNT(*) AS total,
@@ -2099,6 +2446,9 @@ class ControlPlane:
                 phase_scoreboard_ready,
                 design_partner_ready,
                 own_compliance_ready,
+                product_scope_ready,
+                vertical_pack_ready,
+                reliability_report_ready,
                 promotion_gate_ready,
                 proof_pack_ready,
                 runtime_policy_ready,
@@ -2115,6 +2465,9 @@ class ControlPlane:
             "roadmap_phase_scoreboard_ready": phase_scoreboard_ready,
             "design_partner_ready": design_partner_ready,
             "own_compliance_ready": own_compliance_ready,
+            "product_scope_ready": product_scope_ready,
+            "vertical_pack_ready": vertical_pack_ready,
+            "reliability_report_ready": reliability_report_ready,
             "promotion_gate_ready": promotion_gate_ready,
             "proof_pack_ready": proof_pack_ready,
             "runtime_policy_ready": runtime_policy_ready,
@@ -2126,9 +2479,15 @@ class ControlPlane:
             "latest_phase_scoreboard": latest_phase_scoreboard,
             "latest_design_partner_dossier": latest_design_partner_dossier,
             "latest_own_compliance_dossier": latest_own_compliance_dossier,
+            "latest_product_scope_decision": latest_product_scope_decision,
+            "latest_vertical_pack": latest_vertical_pack,
+            "latest_reliability_report": latest_reliability_report,
             "phase_scoreboard_summary": phase_scoreboard_summary,
             "design_partner_summary": design_partner_summary,
             "own_compliance_summary": own_compliance_summary,
+            "product_scope_summary": product_scope_summary,
+            "vertical_pack_summary": vertical_pack_summary,
+            "reliability_report_summary": reliability_report_summary,
             "authority_dossier_summary": authority_dossier_summary,
             "external_authority_gap_summary": external_gap_summary,
             "remaining_external_evidence_count": deferred_external,
