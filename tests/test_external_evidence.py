@@ -552,6 +552,17 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             evidence=[parse_evidence_arg(intake["evidence_argument"])],
         )
         self.assertEqual(["ci-run"], rebuilt["summary"]["covered_authority_kinds_by_requirement"]["oss-verifier-and-public-spec"])
+        strict_manifest_without_snapshot_artifact = verify_external_evidence_manifest(
+            manifest,
+            audit,
+            root=ROOT,
+            require_source_snapshot_artifacts=True,
+        )
+        self.assertFalse(strict_manifest_without_snapshot_artifact.ok)
+        self.assertTrue(
+            any("external evidence source snapshot artifact" in error for error in strict_manifest_without_snapshot_artifact.errors),
+            strict_manifest_without_snapshot_artifact.errors,
+        )
 
         placeholder_intake = build_external_evidence_intake(
             plan,
@@ -952,6 +963,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             audit,
             root=ROOT,
             require_fresh=True,
+            require_source_snapshot_artifacts=True,
+            require_fresh_source_snapshot_artifacts=True,
             now="2026-07-12T00:00:00Z",
         )
         remaining_plan_result = verify_external_evidence_collection_plan(remaining_plan, retained_manifest, audit, root=ROOT)
@@ -1021,6 +1034,29 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             ["ci-run", "provider-api", "hosted-service"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["oss-verifier-and-public-spec"],
         )
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="retained-external-evidence-strict")
+            append_roadmap_audit(chain, audit, root=ROOT)
+            entry = append_external_evidence_manifest(
+                chain,
+                retained_manifest,
+                audit,
+                root=ROOT,
+                require_fresh=True,
+                require_live_source_uris=True,
+                require_source_snapshot_artifacts=True,
+                require_fresh_source_snapshot_artifacts=True,
+                now="2026-07-12T00:00:00Z",
+            )
+            report = build_roadmap_evidence_report(chain, require_external=True, require_fresh=True, generated_at="2026-07-12T00:01:00Z")
+            payload = entry["payload"]
+            report_entry = report["external_evidence_entries"][0]
+            self.assertTrue(payload["require_live_source_uris"])
+            self.assertTrue(payload["require_source_snapshot_artifacts"])
+            self.assertTrue(payload["require_fresh_source_snapshot_artifacts"])
+            self.assertTrue(report_entry["require_live_source_uris"])
+            self.assertTrue(report_entry["require_source_snapshot_artifacts"])
+            self.assertTrue(report_entry["require_fresh_source_snapshot_artifacts"])
 
     def test_cli_external_evidence_gap_report_verifies_retained_worklist(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -1654,6 +1690,9 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertEqual(manifest["manifest_id"], entry["payload"]["manifest_id"])
             self.assertEqual("partial", entry["payload"]["status"])
             self.assertEqual(1, entry["payload"]["covered_requirement_count"])
+            self.assertFalse(entry["payload"]["require_live_source_uris"])
+            self.assertFalse(entry["payload"]["require_source_snapshot_artifacts"])
+            self.assertFalse(entry["payload"]["require_fresh_source_snapshot_artifacts"])
             self.assertEqual(audit_entry["entry_id"], entry["payload"]["source_roadmap_audit_inclusion_proof"]["entry_id"])
             self.assertTrue(chain.verify_all().ok)
             semantic_result = verify_roadmap_evidence_chain(chain, require_external=True)

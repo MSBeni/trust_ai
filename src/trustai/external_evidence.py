@@ -260,10 +260,14 @@ def verify_external_evidence_manifest(
     require_complete: bool = False,
     require_fresh: bool = False,
     require_live_source_uris: bool = False,
+    require_source_snapshot_artifacts: bool = False,
+    require_fresh_source_snapshot_artifacts: bool = False,
     now: str | None = None,
 ) -> ExternalEvidenceVerification:
     errors: list[str] = []
     warnings: list[str] = []
+    if require_fresh_source_snapshot_artifacts and not require_source_snapshot_artifacts:
+        errors.append("source snapshot artifact freshness requires source snapshot artifact verification")
     root_path = Path(root)
     freshness_now = _freshness_reference(manifest, now, errors)
 
@@ -337,6 +341,16 @@ def verify_external_evidence_manifest(
             allowed_authority_kinds=required_authority_kinds.get(requirement_id, []),
         )
         freshness_counts[freshness_status] += 1
+        if require_source_snapshot_artifacts:
+            _verify_evidence_item_source_snapshot_artifact(
+                root_path,
+                item,
+                errors,
+                warnings,
+                require_fresh=require_fresh_source_snapshot_artifacts,
+                now=now,
+                label="external evidence",
+            )
 
     expected_summary = _summary(required_ids, [item for item in evidence if isinstance(item, dict)], required_authority_kinds)
     if manifest.get("summary") != expected_summary:
@@ -1461,13 +1475,26 @@ def build_external_evidence_manifest_from_intakes(
             str(item.get("path") or ""),
         ),
     )
-    return build_external_evidence_manifest(
+    rebuilt_manifest = build_external_evidence_manifest(
         roadmap_audit,
         root=root,
         evidence=ordered_evidence,
         manifest_ref=manifest_ref or str(manifest.get("manifest_ref") or "production-external-evidence"),
         generated_at=generated_at,
     )
+    rebuilt_result = verify_external_evidence_manifest(
+        rebuilt_manifest,
+        roadmap_audit,
+        root=root,
+        require_fresh=require_fresh,
+        require_live_source_uris=require_live_source_uris,
+        require_source_snapshot_artifacts=require_source_snapshot_artifacts,
+        require_fresh_source_snapshot_artifacts=require_fresh_source_snapshot_artifacts,
+        now=now,
+    )
+    if not rebuilt_result.ok:
+        raise ValueError("invalid rebuilt external evidence manifest: " + "; ".join(rebuilt_result.errors))
+    return rebuilt_manifest
 
 def verify_roadmap_evidence_chain(
     chain: EvidenceChain,
@@ -1835,6 +1862,8 @@ def append_external_evidence_manifest(
     require_complete: bool = False,
     require_fresh: bool = False,
     require_live_source_uris: bool = False,
+    require_source_snapshot_artifacts: bool = False,
+    require_fresh_source_snapshot_artifacts: bool = False,
     now: str | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
@@ -1845,6 +1874,8 @@ def append_external_evidence_manifest(
         require_complete=require_complete,
         require_fresh=require_fresh,
         require_live_source_uris=require_live_source_uris,
+        require_source_snapshot_artifacts=require_source_snapshot_artifacts,
+        require_fresh_source_snapshot_artifacts=require_fresh_source_snapshot_artifacts,
         now=now,
     )
     if not result.ok:
@@ -1861,6 +1892,8 @@ def append_external_evidence_manifest(
         "require_complete": require_complete,
         "require_fresh": require_fresh,
         "require_live_source_uris": require_live_source_uris,
+        "require_source_snapshot_artifacts": require_source_snapshot_artifacts,
+        "require_fresh_source_snapshot_artifacts": require_fresh_source_snapshot_artifacts,
         "freshness_checked_at": now or manifest.get("generated_at"),
         "required_requirement_count": summary.get("required_requirement_count"),
         "covered_requirement_count": summary.get("covered_requirement_count"),
@@ -2677,6 +2710,9 @@ def _external_evidence_entry_records(chain: EvidenceChain) -> list[dict[str, Any
                 "status": payload.get("status"),
                 "require_complete": payload.get("require_complete"),
                 "require_fresh": payload.get("require_fresh"),
+                "require_live_source_uris": payload.get("require_live_source_uris"),
+                "require_source_snapshot_artifacts": payload.get("require_source_snapshot_artifacts"),
+                "require_fresh_source_snapshot_artifacts": payload.get("require_fresh_source_snapshot_artifacts"),
                 "freshness_checked_at": payload.get("freshness_checked_at"),
                 "required_requirement_count": payload.get("required_requirement_count"),
                 "covered_requirement_count": payload.get("covered_requirement_count"),
@@ -2959,6 +2995,7 @@ def _verify_evidence_item_source_snapshot_artifact(
     *,
     require_fresh: bool,
     now: str | None,
+    label: str = "intake",
 ) -> None:
     artifact_path_value = item.get("path")
     if not isinstance(artifact_path_value, str):
@@ -2966,29 +3003,29 @@ def _verify_evidence_item_source_snapshot_artifact(
     try:
         artifact_path = _resolve_evidence_item_artifact_path(root, artifact_path_value)
     except ValueError as exc:
-        errors.append(f"intake source snapshot artifact {exc}")
+        errors.append(f"{label} source snapshot artifact {exc}")
         return
     if not artifact_path.is_file():
-        errors.append(f"intake source snapshot artifact does not exist: {artifact_path_value}")
+        errors.append(f"{label} source snapshot artifact does not exist: {artifact_path_value}")
         return
     try:
         snapshot = load_external_evidence_source_snapshot(artifact_path)
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-        errors.append(f"intake source snapshot artifact is not a readable source snapshot: {exc}")
+        errors.append(f"{label} source snapshot artifact is not a readable source snapshot: {exc}")
         return
     snapshot_result = verify_external_evidence_source_snapshot(
         snapshot,
         require_fresh=require_fresh,
         now=now,
     )
-    warnings.extend(f"intake source snapshot artifact: {warning}" for warning in snapshot_result.warnings)
+    warnings.extend(f"{label} source snapshot artifact: {warning}" for warning in snapshot_result.warnings)
     if not snapshot_result.ok:
-        errors.extend(f"intake source snapshot artifact: {error}" for error in snapshot_result.errors)
+        errors.extend(f"{label} source snapshot artifact: {error}" for error in snapshot_result.errors)
     if str(snapshot.get("source_uri") or "") != str(item.get("source_uri") or ""):
-        errors.append("intake source snapshot artifact source_uri does not match evidence source_uri")
+        errors.append(f"{label} source snapshot artifact source_uri does not match evidence source_uri")
     status_code = snapshot.get("status_code")
     if isinstance(status_code, int) and (status_code < 200 or status_code >= 400):
-        errors.append(f"intake source snapshot artifact status_code is not successful: {status_code}")
+        errors.append(f"{label} source snapshot artifact status_code is not successful: {status_code}")
 
 
 def _allowed_authority_kinds_for_requirement(requirement: dict[str, Any]) -> list[str]:

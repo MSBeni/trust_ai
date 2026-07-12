@@ -14120,6 +14120,8 @@ def cmd_external_evidence_manifest(args: argparse.Namespace) -> int:
         require_complete=args.require_complete,
         require_fresh=args.require_fresh,
         require_live_source_uris=args.require_live_source_uris,
+        require_source_snapshot_artifacts=args.require_source_snapshot_artifacts,
+        require_fresh_source_snapshot_artifacts=args.require_fresh_source_snapshot_artifacts,
         now=args.now,
     )
     if not result.ok:
@@ -14152,6 +14154,8 @@ def cmd_external_evidence_verify(args: argparse.Namespace) -> int:
         require_complete=args.require_complete,
         require_fresh=args.require_fresh,
         require_live_source_uris=args.require_live_source_uris,
+        require_source_snapshot_artifacts=args.require_source_snapshot_artifacts,
+        require_fresh_source_snapshot_artifacts=args.require_fresh_source_snapshot_artifacts,
         now=args.now,
     )
     if result.ok:
@@ -14198,6 +14202,8 @@ def cmd_external_evidence_manifest_from_intakes(args: argparse.Namespace) -> int
         require_complete=args.require_complete,
         require_fresh=args.require_fresh,
         require_live_source_uris=args.require_live_source_uris,
+        require_source_snapshot_artifacts=args.require_source_snapshot_artifacts,
+        require_fresh_source_snapshot_artifacts=args.require_fresh_source_snapshot_artifacts,
         now=args.now,
     )
     if not result.ok:
@@ -15344,6 +15350,8 @@ def cmd_external_evidence_append(args: argparse.Namespace) -> int:
             require_complete=args.require_complete,
             require_fresh=args.require_fresh,
             require_live_source_uris=args.require_live_source_uris,
+            require_source_snapshot_artifacts=args.require_source_snapshot_artifacts,
+            require_fresh_source_snapshot_artifacts=args.require_fresh_source_snapshot_artifacts,
             now=args.now,
             key=args.key,
         )
@@ -24464,6 +24472,8 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence.add_argument("--require-complete", action="store_true")
     external_evidence.add_argument("--require-fresh", action="store_true", help="fail unless every evidence item has an unexpired issued_at/expires_at window")
     external_evidence.add_argument("--require-live-source-uris", action="store_true", help="fail when evidence items use placeholder/example source_uri values")
+    external_evidence.add_argument("--require-source-snapshot-artifacts", action="store_true", help="fail unless every evidence artifact is a verified source snapshot")
+    external_evidence.add_argument("--require-fresh-source-snapshot-artifacts", action="store_true", help="fail unless every required source snapshot artifact has a fresh issued_at/expires_at window")
     external_evidence.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to manifest generated_at")
     external_evidence.add_argument("--out", default="artifacts/external-evidence-manifest.json")
     external_evidence.add_argument("--markdown", default="artifacts/external-evidence-manifest.md")
@@ -24476,6 +24486,8 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_verify.add_argument("--require-complete", action="store_true")
     external_evidence_verify.add_argument("--require-fresh", action="store_true", help="fail unless every evidence item has an unexpired issued_at/expires_at window")
     external_evidence_verify.add_argument("--require-live-source-uris", action="store_true", help="fail when evidence items use placeholder/example source_uri values")
+    external_evidence_verify.add_argument("--require-source-snapshot-artifacts", action="store_true", help="fail unless every evidence artifact is a verified source snapshot")
+    external_evidence_verify.add_argument("--require-fresh-source-snapshot-artifacts", action="store_true", help="fail unless every required source snapshot artifact has a fresh issued_at/expires_at window")
     external_evidence_verify.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to manifest generated_at")
     external_evidence_verify.set_defaults(func=cmd_external_evidence_verify)
 
@@ -24713,6 +24725,8 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_append.add_argument("--require-complete", action="store_true")
     external_evidence_append.add_argument("--require-fresh", action="store_true", help="fail unless every evidence item has an unexpired issued_at/expires_at window")
     external_evidence_append.add_argument("--require-live-source-uris", action="store_true", help="fail when evidence items use placeholder/example source_uri values")
+    external_evidence_append.add_argument("--require-source-snapshot-artifacts", action="store_true", help="fail unless every evidence artifact is a verified source snapshot")
+    external_evidence_append.add_argument("--require-fresh-source-snapshot-artifacts", action="store_true", help="fail unless every required source snapshot artifact has a fresh issued_at/expires_at window")
     external_evidence_append.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to manifest generated_at")
     external_evidence_append.add_argument("--out", default="artifacts/external-evidence-entry.json")
     external_evidence_append.add_argument("--key")

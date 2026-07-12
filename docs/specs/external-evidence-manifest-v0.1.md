@@ -177,6 +177,8 @@ external authority evidence.
 
 `external-evidence-verify` with `--require-live-source-uris` MUST reject final manifest evidence items whose `source_uri` is missing, `TODO`, or an example/placeholder authority URI. `external-evidence-intake-verify`, `external-evidence-manifest-from-intakes`, and `external-evidence-append` expose the same strict option so production evidence cannot bypass the source-map readiness gate.
 
+`external-evidence-verify` and `external-evidence-append` with `--require-source-snapshot-artifacts` MUST load every final manifest evidence item `path` under `--root`, verify it as `trustai.external-evidence-source-snapshot/0.1`, require the snapshot `source_uri` to match the evidence item, and reject HTTP snapshots whose status code is outside the 2xx/3xx range. With `--require-fresh-source-snapshot-artifacts`, final manifest verification MUST also require fresh snapshot `issued_at`/`expires_at` windows at the supplied `--now` time; this freshness option is invalid unless source snapshot artifact verification is also enabled.
+
 `external-evidence-intake-verify` with `--require-source-snapshot-artifact` MUST load the intake evidence item `path` under `--root`, verify it as `trustai.external-evidence-source-snapshot/0.1`, require the snapshot `source_uri` to match the evidence item, and reject HTTP snapshots whose status code is outside the 2xx/3xx range. With `--require-fresh-source-snapshot-artifact`, the verifier MUST also require fresh snapshot `issued_at`/`expires_at` windows at the supplied `--now` time; this freshness option is invalid unless source snapshot artifact verification is also enabled.
 
 `external-evidence-collect-batch` consumes the same source-map schema. Each
@@ -236,8 +238,9 @@ A verified manifest can be appended to an evidence chain as
 - Freshness enforcement mode, verification time, issued/expires/fresh-window
   counts, and fresh/stale/missing-freshness evidence counts.
 - Covered and missing requirement IDs, plus covered and missing authority kinds by requirement.
-- Whether complete production evidence and fresh evidence were required at
-  append time.
+- Whether complete production evidence, fresh evidence, live source URIs,
+  source snapshot artifact verification, and fresh source snapshot artifacts
+  were required at append time.
 
 The append operation MUST verify the manifest against the supplied roadmap audit
 before writing the chain entry. If the same chain already contains a matching
@@ -329,8 +332,8 @@ evidence entries already committed to an evidence chain. The report records:
 - `roadmap_audit_entries`: chained audit entry IDs, audit IDs/hashes, completion
   position, and local/reference/missing counts.
 - `external_evidence_entries`: chained manifest IDs/hashes, source audit binding,
-  source audit inclusion proof summary, coverage status, freshness counts,
-  covered IDs, and missing IDs.
+  source audit inclusion proof summary, append verification options, coverage
+  status, freshness counts, covered IDs, and missing IDs.
 - `limitations`: explicit non-claims about live authority fetching and issuer
   quality.
 
