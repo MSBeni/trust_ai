@@ -45,6 +45,8 @@ class SelfServeOnboardingTests(unittest.TestCase):
         self.assertTrue(all(item["command_valid"] for item in receipt["quickstart_replay"]))
         replay_by_id = {item["id"]: item for item in receipt["quickstart_replay"]}
         self.assertEqual("demo", replay_by_id["generate-demo-proof-pack"]["subcommand"])
+        self.assertIn("--no-clean", replay_by_id["generate-demo-proof-pack"]["command"])
+        self.assertIn("--tenant local-self-serve", replay_by_id["generate-demo-proof-pack"]["command"])
         self.assertIn("artifacts/aitrade-proof-pack.json", replay_by_id["generate-demo-proof-pack"]["generated_targets"])
         self.assertTrue(any(binding["path"] == "src/trustai/proofpack.py" for binding in replay_by_id["generate-demo-proof-pack"]["source_bindings"]))
         self.assertEqual("mcp-capture", replay_by_id["capture-mcp-transcript"]["subcommand"])

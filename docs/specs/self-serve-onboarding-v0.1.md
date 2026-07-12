@@ -60,8 +60,10 @@ The receipt binds these source artifacts by path, `sha256:` hash, and size:
 - `quickstart_replay`: local structural replay for each command, including CLI
   subcommand registration, source file bindings, generated targets, and command
   validity. The default sequence generates the bundled aitrade proof pack before
-  verifying it offline. Gateway modes include both transcript capture and the
-  runnable `mcp-proxy-stdio` proxy capture command.
+  verifying it offline, using `demo --no-clean` so the initialized local chain
+  and pre-registered contract remain part of the same onboarding run. Gateway
+  modes include both transcript capture and the runnable `mcp-proxy-stdio`
+  proxy capture command.
 - `controls`: derived status checks for SDK, OTel, MCP, contract example,
   demo proof-pack generation, quickstart command replay, and production-claim
   limits.

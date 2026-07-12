@@ -26510,7 +26510,8 @@ def build_parser() -> argparse.ArgumentParser:
     demo.add_argument("--reexecution-policy", default="examples/aitrade/reexecution-policy.json")
     demo.add_argument("--reexecution-runner-plan", default="examples/aitrade/reexecution-runner-plan.json")
     demo.add_argument("--reexecution-runner-out", default="artifacts/reexecution-runner-evidence.json")
-    demo.add_argument("--clean", action="store_true", default=True)
+    demo.add_argument("--clean", dest="clean", action="store_true", default=True, help="reset the demo evidence-chain directory before running")
+    demo.add_argument("--no-clean", dest="clean", action="store_false", help="preserve any existing demo evidence-chain directory")
     demo.set_defaults(func=cmd_demo)
 
     tamper = subparsers.add_parser("tamper-test", help="prove single-entry tamper detection")

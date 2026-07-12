@@ -301,7 +301,7 @@ def _quickstart_steps(sdk_scope: str, gateway_mode: str) -> list[dict[str, str]]
         {
             "id": "generate-demo-proof-pack",
             "title": "Generate the bundled aitrade proof pack",
-            "command": "python -m trustai demo",
+            "command": "python -m trustai demo --no-clean --state .trustai/demo/evidence-chain.json --tenant local-self-serve",
         },
         {
             "id": "verify-pack",
