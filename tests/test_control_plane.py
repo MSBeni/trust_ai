@@ -16,6 +16,13 @@ from trustai.external_evidence import (
     append_external_evidence_manifest,
     build_external_evidence_manifest,
 )
+from trustai.framework_adapter_authority import (
+    append_framework_adapter_authority_dossier,
+    build_framework_adapter_authority_dossier,
+)
+from trustai.framework_adapter_matrix import append_framework_adapter_matrix, build_framework_adapter_matrix, load_framework_adapter_matrix_source
+from trustai.framework_hook_operation import append_framework_hook_operation, build_framework_hook_operation, load_framework_trace_payload
+from trustai.framework_hook_release import append_framework_hook_release, build_framework_hook_release, load_framework_hook_release_source
 from trustai.gate import append_eval_and_gate
 from trustai.ingest import append_events, load_events
 from trustai.mcp_gateway import (
@@ -70,6 +77,9 @@ INVENTORY = ROOT / "examples" / "aitrade" / "agent-inventory.json"
 EVENTS = ROOT / "examples" / "aitrade" / "otel-events.json"
 MCP = ROOT / "examples" / "aitrade" / "mcp-transcript.json"
 MCP_PROXY = ROOT / "examples" / "aitrade" / "mcp-proxy-events.json"
+FRAMEWORK_MATRIX = ROOT / "examples" / "aitrade" / "framework-adapter-matrix.json"
+FRAMEWORK_HOOK_RELEASE = ROOT / "examples" / "aitrade" / "framework-hook-release.json"
+FRAMEWORK_TRACES = ROOT / "examples" / "aitrade" / "framework-traces.json"
 SHADOW = ROOT / "examples" / "aitrade" / "shadow-replay.json"
 SOAK = ROOT / "examples" / "aitrade" / "soak-window.json"
 FAILED_SOAK = ROOT / "examples" / "aitrade" / "failed-soak-window.json"
@@ -785,6 +795,138 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(2, authority_dossiers[0]["freshness_window_count"])
                 self.assertIsInstance(authority_dossiers[0]["missing_requirement_ids"], list)
                 self.assertEqual(2, authority_dossiers[0]["control_summary"]["deferred"])
+            finally:
+                control.close()
+
+    def test_indexes_framework_adapter_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            chain = EvidenceChain.load(tmp / "chain.json", tenant_id="framework-adapter-control")
+            contract = load_contract(CONTRACT)
+            register_contract(chain, contract)
+            matrix = build_framework_adapter_matrix(
+                load_framework_adapter_matrix_source(FRAMEWORK_MATRIX),
+                root=ROOT,
+                issued_at="2026-07-09T00:00:00Z",
+            )
+            release = build_framework_hook_release(
+                load_framework_hook_release_source(FRAMEWORK_HOOK_RELEASE),
+                matrix,
+                root=ROOT,
+                released_at="2026-07-09T00:30:00Z",
+            )
+            trace = load_framework_trace_payload(FRAMEWORK_TRACES)
+            operation = build_framework_hook_operation(
+                trace,
+                release,
+                matrix,
+                framework="langgraph",
+                trace_id="lg-trace-001",
+                root=ROOT,
+                mode="collector-observed",
+                environment="aitrade-prod",
+                operation_ref="framework-hook-operation:aitrade/langgraph/lg-trace-001",
+                runtime_instance_ref="runtime:aitrade/langgraph/prod-worker-1",
+                runtime_process_ref="pid:4242",
+                collector_service_ref="collector:trustai/otel-prod",
+                collector_worker_ref="worker-run:collector/framework-hook/lg-trace-001",
+                stream_message_ref="stream-message:collector/framework-hook/lg-trace-001",
+                audit_log_ref="audit-log:framework-hooks/aitrade",
+                audit_log_root="sha256:framework-hook-operation-audit-root",
+                actor_ref="oidc:trustai.example/framework-hook-runtime",
+                credential_ref="env:FRAMEWORK_HOOK_TOKEN",
+                evidence_refs=["evidence:framework-hook/lg-trace-001"],
+                captured_at="2026-07-09T00:40:00Z",
+            )
+            authority = build_framework_adapter_authority_dossier(
+                matrix,
+                release,
+                root=ROOT,
+                mode="provider-dossier",
+                environment="aitrade-prod",
+                dossier_ref="dossier:framework-adapter-authority/aitrade-prod",
+                authority_ref="authority:framework-adapter/aitrade-prod",
+                producer_ref="oidc:trustai.example/framework-adapter-authority-worker",
+                authority_evidence=[
+                    {
+                        "requirement_id": "exact-runtime-release-matrix",
+                        "authority_kind": "ci-run",
+                        "evidence_ref": "ci:framework-adapter-matrix/nightly/aitrade-prod",
+                        "evidence_hash": "sha256:framework-adapter-matrix-ci-run",
+                        "description": "Nightly adapter matrix replay export for exact framework runtime versions.",
+                        "issuer": "TrustAI CI",
+                        "subject": "aitrade-prod framework adapter matrix",
+                        "source_uri": "https://ci.example/trustai/framework-adapter-matrix/aitrade-prod",
+                        "issued_at": "2026-07-09T00:45:00Z",
+                        "expires_at": "2026-12-31T00:00:00Z",
+                    },
+                    {
+                        "requirement_id": "native-hook-package-provenance",
+                        "authority_kind": "ci-run",
+                        "evidence_ref": "ci:framework-hook-release/provenance/0.1.0",
+                        "evidence_hash": "sha256:framework-hook-release-provenance",
+                        "description": "Hook package build provenance and source artifact attestation.",
+                        "issuer": "TrustAI CI",
+                        "subject": "trustai-framework-hooks 0.1.0",
+                        "source_uri": "https://ci.example/trustai/framework-hook-release/0.1.0",
+                        "issued_at": "2026-07-09T00:46:00Z",
+                        "expires_at": "2026-12-31T00:00:00Z",
+                    },
+                ],
+                generated_at="2026-07-09T01:05:00Z",
+            )
+            matrix_entry = append_framework_adapter_matrix(chain, matrix, root=ROOT)
+            release_entry = append_framework_hook_release(chain, release, matrix, root=ROOT)
+            operation_entry = append_framework_hook_operation(chain, operation, trace, release, matrix, root=ROOT)
+            authority_entry = append_framework_adapter_authority_dossier(chain, authority, matrix=matrix, release=release, root=ROOT)
+            chain.save()
+
+            contract_hash = content_hash(contract)
+            self.assertEqual(contract_hash, operation["trace"]["contract_hashes"][0])
+
+            control = ControlPlane(tmp / "control.sqlite")
+            try:
+                indexed = control.index_chain(chain)
+                summary = control.summary()
+                evidence = control.framework_adapter_evidence()
+                roadmap = control.roadmap_evidence()
+                contract_evidence = control.contract_evidence(contract_id=contract["id"])
+                agent_evidence = control.agent_evidence(
+                    agent_name=contract["agent"]["name"],
+                    agent_version=contract["agent"]["version"],
+                )
+
+                self.assertEqual(1, indexed["framework_adapter_matrices"])
+                self.assertEqual(1, indexed["framework_hook_releases"])
+                self.assertEqual(1, indexed["framework_hook_operations"])
+                self.assertEqual(1, indexed["framework_adapter_authority_dossiers"])
+                self.assertEqual(1, summary["counts"]["framework_adapter_matrices"])
+                self.assertEqual(1, summary["counts"]["framework_hook_releases"])
+                self.assertEqual(1, summary["counts"]["framework_hook_operations"])
+                self.assertEqual(1, summary["counts"]["framework_adapter_authority_dossiers"])
+                self.assertEqual(matrix["matrix_id"], summary["latest_framework_adapter_matrix"]["matrix_id"])
+                self.assertEqual(release["release_id"], summary["latest_framework_hook_release"]["release_id"])
+                self.assertEqual(operation["operation_id"], summary["latest_framework_hook_operation"]["operation_id"])
+                self.assertEqual(authority["dossier_id"], summary["latest_framework_adapter_authority_dossier"]["dossier_id"])
+                self.assertFalse(summary["latest_framework_adapter_authority_dossier"]["production_claimed"])
+
+                self.assertEqual(matrix_entry["payload"]["matrix_id"], evidence["framework_adapter_matrices"][0]["matrix_id"])
+                self.assertIn("langgraph", evidence["framework_adapter_matrices"][0]["frameworks"])
+                self.assertEqual(release_entry["payload"]["release_id"], evidence["framework_hook_releases"][0]["release_id"])
+                self.assertEqual(matrix["matrix_id"], evidence["framework_hook_releases"][0]["matrix_id"])
+                self.assertEqual(operation_entry["payload"]["operation_id"], evidence["framework_hook_operations"][0]["operation_id"])
+                self.assertEqual("langgraph", evidence["framework_hook_operations"][0]["framework"])
+                self.assertEqual(2, evidence["framework_hook_operations"][0]["event_count"])
+                self.assertEqual(5, evidence["framework_hook_operations"][0]["control_summary"]["passed"])
+                self.assertEqual(authority_entry["payload"]["dossier_id"], evidence["framework_adapter_authority_dossiers"][0]["dossier_id"])
+                self.assertEqual(2, evidence["framework_adapter_authority_dossiers"][0]["covered_requirement_count"])
+                self.assertGreater(evidence["framework_adapter_authority_dossiers"][0]["missing_requirement_count"], 0)
+                self.assertEqual(evidence, roadmap["framework_adapter_evidence"])
+
+                self.assertEqual(1, contract_evidence["counts"]["framework_hook_operations"])
+                self.assertEqual(operation["operation_id"], contract_evidence["framework_hook_operations"][0]["operation_id"])
+                self.assertEqual(1, agent_evidence["counts"]["framework_hook_operations"])
+                self.assertEqual(operation["operation_id"], agent_evidence["framework_hook_operations"][0]["operation_id"])
             finally:
                 control.close()
 

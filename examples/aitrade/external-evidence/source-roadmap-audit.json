@@ -1,7 +1,7 @@
 {
-  "audit_id": "fdf033b2362caafa8b5fdaf172f338b78470aaedb2eac00c2249c25b70559a65",
+  "audit_id": "e51056f63450a70a21c1e7e8ed4a76995ea663d7e81455c1e45b2fb269cbaa4c",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
-  "generated_at": "2026-07-12T18:51:33Z",
+  "generated_at": "2026-07-12T20:28:49Z",
   "limitations": [
     "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
     "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",
@@ -266,7 +266,7 @@
         {
           "path": "src/trustai/control_plane.py",
           "present": true,
-          "sha256": "sha256:46962734aa7f79e557f8e8afc01a3e94be44284c4c13cef9df0821d0c5aa4d8e"
+          "sha256": "sha256:f437f4bcfee26cfcbaf8fa0592cc9a9756cebe4b960606bd3dd1fcfcdcf452e1"
         },
         {
           "path": "examples/aitrade/eval-results.json",
@@ -848,7 +848,7 @@
         {
           "path": "docs/specs/control-plane-v0.1.md",
           "present": true,
-          "sha256": "sha256:e3a2314985bc5f9b29b2cce8491fc6bfb22655a44797e4feea26b747d7c32aeb"
+          "sha256": "sha256:deb03e50c7125023b3856332a7b6ba77a9ee3611bb7bf2fe797917d494c57c41"
         },
         {
           "path": "docs/specs/review-portal-service-attestation-v0.1.md",
@@ -1868,7 +1868,7 @@
         {
           "path": "docs/architecture/roadmap-coverage.md",
           "present": true,
-          "sha256": "sha256:4a4ebe8b9b831690155a5d4bce9a10eb0466a9a34a024476c303a1b3d33e7607"
+          "sha256": "sha256:085842c400b84406cc4573f8bbd704284b4a20fbc13cf07c4cc13992788db3a5"
         },
         {
           "path": "src/trustai/proofpack.py",
@@ -2358,7 +2358,7 @@
     "coverage": {
       "path": "docs/architecture/roadmap-coverage.md",
       "present": true,
-      "sha256": "sha256:4a4ebe8b9b831690155a5d4bce9a10eb0466a9a34a024476c303a1b3d33e7607"
+      "sha256": "sha256:085842c400b84406cc4573f8bbd704284b4a20fbc13cf07c4cc13992788db3a5"
     },
     "requirement_count": 26,
     "roadmap": {

@@ -252,6 +252,21 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual(200, control_lifecycle_response.status)
                 self.assertEqual([], control_lifecycle_body["human_approvals"])
 
+                conn.request("GET", "/v0/framework-adapter-evidence")
+                framework_response = conn.getresponse()
+                framework_body = json.loads(framework_response.read().decode("utf-8"))
+                self.assertEqual(200, framework_response.status)
+                self.assertEqual([], framework_body["framework_adapter_matrices"])
+                self.assertEqual([], framework_body["framework_hook_releases"])
+                self.assertEqual([], framework_body["framework_hook_operations"])
+                self.assertEqual([], framework_body["framework_adapter_authority_dossiers"])
+
+                conn.request("GET", "/v0/control/framework-adapter-evidence")
+                control_framework_response = conn.getresponse()
+                control_framework_body = json.loads(control_framework_response.read().decode("utf-8"))
+                self.assertEqual(200, control_framework_response.status)
+                self.assertEqual([], control_framework_body["framework_hook_operations"])
+
                 conn.request("GET", "/v0/roadmap-evidence")
                 roadmap_response = conn.getresponse()
                 roadmap_body = json.loads(roadmap_response.read().decode("utf-8"))
@@ -268,6 +283,7 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual([], roadmap_body["holdout_evidence"]["shadow_replays"])
                 self.assertEqual([], roadmap_body["mcp_evidence"]["mcp_tool_calls"])
                 self.assertEqual([], roadmap_body["promotion_lifecycle_evidence"]["human_approvals"])
+                self.assertEqual([], roadmap_body["framework_adapter_evidence"]["framework_hook_operations"])
 
                 conn.request("GET", "/v0/phase-scoreboards")
                 phase_scoreboards_response = conn.getresponse()

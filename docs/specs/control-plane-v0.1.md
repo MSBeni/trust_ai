@@ -46,7 +46,7 @@ into queryable registry tables while keeping the chain as the source of truth.
 
 ```powershell
 python -m trustai control-index --state .trustai/demo/evidence-chain.json --tenant aitrade-local --pack artifacts/aitrade-proof-pack.json --db .trustai/control-plane.sqlite
-python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --holdout-evidence --mcp-evidence --promotion-lifecycle-evidence --roadmap-evidence --phase-scoreboards --design-partner-dossiers --own-compliance-dossiers --product-scope-decisions --vertical-packs --reliability-reports --readiness --external-evidence --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
+python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --holdout-evidence --mcp-evidence --promotion-lifecycle-evidence --framework-adapter-evidence --roadmap-evidence --phase-scoreboards --design-partner-dossiers --own-compliance-dossiers --product-scope-decisions --vertical-packs --reliability-reports --readiness --external-evidence --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
 ```
 
 ## API
@@ -68,6 +68,7 @@ python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts
 - `GET /v0/holdout-evidence` or `GET /v0/control/holdout-evidence`;
 - `GET /v0/mcp-evidence` or `GET /v0/control/mcp-evidence`;
 - `GET /v0/promotion-lifecycle-evidence` or `GET /v0/control/promotion-lifecycle-evidence`;
+- `GET /v0/framework-adapter-evidence` or `GET /v0/control/framework-adapter-evidence`;
 - `GET /v0/roadmap-evidence`;
 - `GET /v0/phase-scoreboards` or `GET /v0/control/phase-scoreboards`;
 - `GET /v0/design-partner-dossiers` or `GET /v0/control/design-partner-dossiers`;
@@ -95,7 +96,9 @@ surface. The MCP evidence list binds tool-call transcript hashes and proxy-captu
 event roots into one gateway review surface without exposing raw tool payloads.
 The promotion-lifecycle evidence list binds human approvals, demotions,
 rollbacks, and failed-soak demotion receipts into one CI/CD promotion review
-surface.
+surface. The framework-adapter evidence list binds adapter matrices, native hook
+releases, hook operation receipts, and framework adapter production-authority
+dossiers into one Phase 1 adapter coverage surface.
 The roadmap-evidence list binds roadmap audit entries, retained
 collection-run provenance, external
 evidence manifests, phase scoreboard entries, design-partner pilot dossiers,

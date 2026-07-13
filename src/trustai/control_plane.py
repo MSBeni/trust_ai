@@ -17,6 +17,10 @@ from .external_evidence import (
     EXTERNAL_EVIDENCE_COLLECTION_RUN_ENTRY_TYPE,
     EXTERNAL_EVIDENCE_ENTRY_TYPE,
 )
+from .framework_adapter_authority import FRAMEWORK_ADAPTER_AUTHORITY_ENTRY_TYPE
+from .framework_adapter_matrix import FRAMEWORK_ADAPTER_MATRIX_ENTRY_TYPE
+from .framework_hook_operation import FRAMEWORK_HOOK_OPERATION_ENTRY_TYPE
+from .framework_hook_release import FRAMEWORK_HOOK_RELEASE_ENTRY_TYPE
 from .gate import EVAL_ENTRY_TYPE, GATE_ENTRY_TYPE
 from .phase_scoreboard import PHASE_SCOREBOARD_ENTRY_TYPE
 from .product_scope import PRODUCT_SCOPE_ENTRY_TYPE
@@ -64,6 +68,13 @@ def _payload_contract_hash(entry: dict[str, Any]) -> str | None:
     decision = payload.get("decision")
     if isinstance(decision, dict):
         return decision.get("contract_hash")
+    trace = payload.get("trace")
+    if isinstance(trace, dict):
+        contract_hashes = trace.get("contract_hashes")
+        if isinstance(contract_hashes, list):
+            for item in contract_hashes:
+                if item:
+                    return str(item)
     return None
 
 
@@ -325,6 +336,100 @@ class ControlPlane:
                 event_hashes_json TEXT NOT NULL,
                 tool_call_hashes_json TEXT NOT NULL,
                 captured_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS framework_adapter_matrices (
+                matrix_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                matrix_hash TEXT NOT NULL,
+                matrix_ref TEXT,
+                adapter_schema_url TEXT,
+                adapter_package_version TEXT,
+                row_count INTEGER NOT NULL,
+                framework_count INTEGER NOT NULL,
+                production_certified_count INTEGER NOT NULL,
+                total_fixture_events INTEGER NOT NULL,
+                summary_json TEXT NOT NULL,
+                frameworks_json TEXT NOT NULL,
+                compatibility_hashes_json TEXT NOT NULL,
+                issued_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS framework_hook_releases (
+                release_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                release_hash TEXT NOT NULL,
+                release_ref TEXT,
+                matrix_id TEXT,
+                matrix_hash TEXT,
+                row_count INTEGER NOT NULL,
+                framework_count INTEGER NOT NULL,
+                production_certified_count INTEGER NOT NULL,
+                adapter_matrix_json TEXT NOT NULL,
+                frameworks_json TEXT NOT NULL,
+                hook_release_hashes_json TEXT NOT NULL,
+                control_summary_json TEXT NOT NULL,
+                released_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS framework_hook_operations (
+                operation_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                operation_hash TEXT NOT NULL,
+                mode TEXT,
+                environment TEXT,
+                operation_ref TEXT,
+                contract_hash TEXT,
+                agent_name TEXT,
+                agent_version TEXT,
+                risk_class TEXT,
+                framework TEXT,
+                runtime_package TEXT,
+                runtime_version TEXT,
+                hook_package TEXT,
+                hook_version TEXT,
+                collector_hook_ref TEXT,
+                hook_release_hash TEXT,
+                source_trace_id TEXT,
+                trace_id TEXT,
+                event_count INTEGER NOT NULL,
+                event_root TEXT,
+                runtime_json TEXT NOT NULL,
+                hook_json TEXT NOT NULL,
+                release_binding_json TEXT NOT NULL,
+                trace_json TEXT NOT NULL,
+                collector_json TEXT NOT NULL,
+                control_summary_json TEXT NOT NULL,
+                captured_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS framework_adapter_authority_dossiers (
+                dossier_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                dossier_hash TEXT NOT NULL,
+                dossier_ref TEXT,
+                mode TEXT,
+                environment TEXT,
+                authority_ref TEXT,
+                producer_ref TEXT,
+                matrix_id TEXT,
+                matrix_hash TEXT,
+                release_id TEXT,
+                release_hash TEXT,
+                production_claimed INTEGER NOT NULL,
+                production_ready INTEGER NOT NULL,
+                required_requirement_count INTEGER NOT NULL,
+                covered_requirement_count INTEGER NOT NULL,
+                missing_requirement_count INTEGER NOT NULL,
+                authority_evidence_count INTEGER NOT NULL,
+                fresh_evidence_count INTEGER NOT NULL,
+                stale_evidence_count INTEGER NOT NULL,
+                missing_freshness_count INTEGER NOT NULL,
+                source_binding_json TEXT NOT NULL,
+                summary_json TEXT NOT NULL,
+                control_summary_json TEXT NOT NULL,
+                authority_evidence_json TEXT NOT NULL,
+                generated_at TEXT,
                 body_json TEXT NOT NULL
             );
             CREATE TABLE IF NOT EXISTS eval_runs (
@@ -792,6 +897,10 @@ class ControlPlane:
             "ingest_events": 0,
             "mcp_tool_calls": 0,
             "mcp_proxy_captures": 0,
+            "framework_adapter_matrices": 0,
+            "framework_hook_releases": 0,
+            "framework_hook_operations": 0,
+            "framework_adapter_authority_dossiers": 0,
             "eval_runs": 0,
             "gate_decisions": 0,
             "human_approvals": 0,
@@ -945,6 +1054,190 @@ class ControlPlane:
                     ),
                 )
                 counts["mcp_proxy_captures"] += 1
+
+            if entry.get("entry_type") == FRAMEWORK_ADAPTER_MATRIX_ENTRY_TYPE:
+                summary = payload.get("summary", {}) if isinstance(payload.get("summary"), dict) else {}
+                by_status = summary.get("by_status", {}) if isinstance(summary.get("by_status"), dict) else {}
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO framework_adapter_matrices(
+                        matrix_id, entry_id, matrix_hash, matrix_ref,
+                        adapter_schema_url, adapter_package_version,
+                        row_count, framework_count, production_certified_count,
+                        total_fixture_events, summary_json, frameworks_json,
+                        compatibility_hashes_json, issued_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("matrix_id"),
+                        entry["entry_id"],
+                        payload.get("matrix_hash") or entry.get("payload_hash"),
+                        payload.get("matrix_ref"),
+                        payload.get("adapter_schema_url"),
+                        payload.get("adapter_package_version"),
+                        int(summary.get("row_count") or 0),
+                        int(summary.get("framework_count") or 0),
+                        int(by_status.get("production-certified") or 0),
+                        int(summary.get("total_fixture_events") or 0),
+                        _json(summary),
+                        _json(payload.get("frameworks") or []),
+                        _json(payload.get("compatibility_hashes") or []),
+                        payload.get("issued_at") or entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["framework_adapter_matrices"] += 1
+
+            if entry.get("entry_type") == FRAMEWORK_HOOK_RELEASE_ENTRY_TYPE:
+                adapter_matrix = payload.get("adapter_matrix") if isinstance(payload.get("adapter_matrix"), dict) else {}
+                control_summary = payload.get("control_summary") if isinstance(payload.get("control_summary"), dict) else {}
+                frameworks = payload.get("frameworks") if isinstance(payload.get("frameworks"), list) else []
+                production_certified_count = int(control_summary.get("production-certified") or 0)
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO framework_hook_releases(
+                        release_id, entry_id, release_hash, release_ref,
+                        matrix_id, matrix_hash, row_count, framework_count,
+                        production_certified_count, adapter_matrix_json,
+                        frameworks_json, hook_release_hashes_json,
+                        control_summary_json, released_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("release_id"),
+                        entry["entry_id"],
+                        payload.get("release_hash") or entry.get("payload_hash"),
+                        payload.get("release_ref"),
+                        adapter_matrix.get("matrix_id"),
+                        adapter_matrix.get("matrix_hash"),
+                        len(frameworks),
+                        len(set(str(item) for item in frameworks if item)),
+                        production_certified_count,
+                        _json(adapter_matrix),
+                        _json(frameworks),
+                        _json(payload.get("hook_release_hashes") or []),
+                        _json(control_summary),
+                        payload.get("released_at") or entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["framework_hook_releases"] += 1
+
+            if entry.get("entry_type") == FRAMEWORK_HOOK_OPERATION_ENTRY_TYPE:
+                runtime = payload.get("runtime") if isinstance(payload.get("runtime"), dict) else {}
+                hook = payload.get("hook") if isinstance(payload.get("hook"), dict) else {}
+                release_binding = payload.get("release_binding") if isinstance(payload.get("release_binding"), dict) else {}
+                trace = payload.get("trace") if isinstance(payload.get("trace"), dict) else {}
+                collector = payload.get("collector") if isinstance(payload.get("collector"), dict) else {}
+                control_summary = payload.get("control_summary") if isinstance(payload.get("control_summary"), dict) else {}
+                agent = trace.get("agent") if isinstance(trace.get("agent"), dict) else {}
+                contract_hashes = trace.get("contract_hashes") if isinstance(trace.get("contract_hashes"), list) else []
+                operation_contract_hash = next((str(item) for item in contract_hashes if item), None)
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO framework_hook_operations(
+                        operation_id, entry_id, operation_hash, mode,
+                        environment, operation_ref, contract_hash, agent_name,
+                        agent_version, risk_class, framework, runtime_package,
+                        runtime_version, hook_package, hook_version,
+                        collector_hook_ref, hook_release_hash, source_trace_id,
+                        trace_id, event_count, event_root, runtime_json,
+                        hook_json, release_binding_json, trace_json,
+                        collector_json, control_summary_json, captured_at,
+                        body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("operation_id"),
+                        entry["entry_id"],
+                        payload.get("operation_hash") or entry.get("payload_hash"),
+                        payload.get("mode"),
+                        payload.get("environment"),
+                        payload.get("operation_ref"),
+                        operation_contract_hash,
+                        agent.get("name"),
+                        agent.get("version"),
+                        agent.get("risk_class"),
+                        runtime.get("framework"),
+                        runtime.get("package"),
+                        runtime.get("version"),
+                        hook.get("package"),
+                        hook.get("version"),
+                        hook.get("collector_hook_ref"),
+                        hook.get("hook_release_hash"),
+                        trace.get("source_trace_id"),
+                        trace.get("trace_id"),
+                        int(trace.get("event_count") or 0),
+                        trace.get("event_root"),
+                        _json(runtime),
+                        _json(hook),
+                        _json(release_binding),
+                        _json(trace),
+                        _json(collector),
+                        _json(control_summary),
+                        payload.get("captured_at") or entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["framework_hook_operations"] += 1
+
+            if entry.get("entry_type") == FRAMEWORK_ADAPTER_AUTHORITY_ENTRY_TYPE:
+                source_binding = payload.get("source_binding") if isinstance(payload.get("source_binding"), dict) else {}
+                matrix_binding = source_binding.get("adapter_matrix") if isinstance(source_binding.get("adapter_matrix"), dict) else {}
+                release_binding = source_binding.get("hook_release") if isinstance(source_binding.get("hook_release"), dict) else {}
+                summary = payload.get("summary") if isinstance(payload.get("summary"), dict) else {}
+                control_summary = payload.get("control_summary") if isinstance(payload.get("control_summary"), dict) else {}
+                authority_evidence = payload.get("authority_evidence") if isinstance(payload.get("authority_evidence"), list) else []
+                missing_requirement_count = int(summary.get("missing_requirement_count") or 0)
+                missing_freshness_count = int(summary.get("missing_freshness_count") or 0)
+                production_claimed = payload.get("mode") == "production-dossier"
+                production_ready = production_claimed and missing_requirement_count == 0 and missing_freshness_count == 0
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO framework_adapter_authority_dossiers(
+                        dossier_id, entry_id, dossier_hash, dossier_ref,
+                        mode, environment, authority_ref, producer_ref,
+                        matrix_id, matrix_hash, release_id, release_hash,
+                        production_claimed, production_ready,
+                        required_requirement_count, covered_requirement_count,
+                        missing_requirement_count, authority_evidence_count,
+                        fresh_evidence_count, stale_evidence_count,
+                        missing_freshness_count, source_binding_json,
+                        summary_json, control_summary_json,
+                        authority_evidence_json, generated_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("dossier_id"),
+                        entry["entry_id"],
+                        payload.get("dossier_hash") or entry.get("payload_hash"),
+                        payload.get("dossier_ref"),
+                        payload.get("mode"),
+                        payload.get("environment"),
+                        payload.get("authority_ref"),
+                        payload.get("producer_ref"),
+                        matrix_binding.get("matrix_id"),
+                        matrix_binding.get("matrix_hash"),
+                        release_binding.get("release_id"),
+                        release_binding.get("release_hash"),
+                        1 if production_claimed else 0,
+                        1 if production_ready else 0,
+                        int(summary.get("required_requirement_count") or 0),
+                        int(summary.get("covered_requirement_count") or 0),
+                        missing_requirement_count,
+                        int(summary.get("authority_evidence_count") or len(authority_evidence)),
+                        int(summary.get("fresh_evidence_count") or 0),
+                        int(summary.get("stale_evidence_count") or 0),
+                        missing_freshness_count,
+                        _json(source_binding),
+                        _json(summary),
+                        _json(control_summary),
+                        _json(authority_evidence),
+                        payload.get("generated_at") or entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["framework_adapter_authority_dossiers"] += 1
 
             if entry.get("entry_type") == CONTRACT_ENTRY_TYPE:
                 contract = payload.get("contract", {})
@@ -1970,6 +2263,10 @@ class ControlPlane:
             "ingest_events",
             "mcp_tool_calls",
             "mcp_proxy_captures",
+            "framework_adapter_matrices",
+            "framework_hook_releases",
+            "framework_hook_operations",
+            "framework_adapter_authority_dossiers",
             "eval_runs",
             "gate_decisions",
             "human_approvals",
@@ -2107,6 +2404,53 @@ class ControlPlane:
             LIMIT 1
             """
         ).fetchone()
+        latest_framework_matrix = self.conn.execute(
+            """
+            SELECT matrix_id, entry_id, matrix_hash, matrix_ref,
+                   adapter_package_version, row_count, framework_count,
+                   production_certified_count, total_fixture_events, issued_at
+            FROM framework_adapter_matrices
+            ORDER BY issued_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_framework_release = self.conn.execute(
+            """
+            SELECT release_id, entry_id, release_hash, release_ref,
+                   matrix_id, matrix_hash, row_count, framework_count,
+                   production_certified_count, released_at
+            FROM framework_hook_releases
+            ORDER BY released_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_framework_operation = self.conn.execute(
+            """
+            SELECT operation_id, entry_id, mode, environment, contract_hash,
+                   agent_name, agent_version, risk_class, framework,
+                   runtime_package, runtime_version, source_trace_id,
+                   event_count, captured_at
+            FROM framework_hook_operations
+            ORDER BY captured_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_framework_authority = self.conn.execute(
+            """
+            SELECT dossier_id, entry_id, dossier_hash, dossier_ref, mode,
+                   environment, authority_ref, producer_ref, matrix_id,
+                   release_id, production_claimed, production_ready,
+                   covered_requirement_count, required_requirement_count,
+                   missing_requirement_count, authority_evidence_count,
+                   missing_freshness_count, generated_at
+            FROM framework_adapter_authority_dossiers
+            ORDER BY generated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_framework_authority_dict = dict(latest_framework_authority) if latest_framework_authority else None
+        if latest_framework_authority_dict is not None:
+            _bool_fields(latest_framework_authority_dict, "production_claimed", "production_ready")
         latest_status = self.conn.execute(
             """
             SELECT receipt_id, provider, pack_id, contract_id, gate_outcome,
@@ -2402,6 +2746,10 @@ class ControlPlane:
             "latest_ingest_event": dict(latest_ingest_event) if latest_ingest_event else None,
             "latest_mcp_tool_call": dict(latest_mcp_tool_call) if latest_mcp_tool_call else None,
             "latest_mcp_proxy_capture": dict(latest_mcp_proxy_capture) if latest_mcp_proxy_capture else None,
+            "latest_framework_adapter_matrix": dict(latest_framework_matrix) if latest_framework_matrix else None,
+            "latest_framework_hook_release": dict(latest_framework_release) if latest_framework_release else None,
+            "latest_framework_hook_operation": dict(latest_framework_operation) if latest_framework_operation else None,
+            "latest_framework_adapter_authority_dossier": latest_framework_authority_dict,
             "latest_promotion_status": latest_status_dict,
             "latest_runtime_attestation": latest_runtime_dict,
             "latest_policy_decision": latest_policy_decision_dict,
@@ -3075,6 +3423,113 @@ class ControlPlane:
             item["provider_exchange"] = _decode_json_object(item.pop("provider_exchange_json", None))
             items.append(item)
         return items
+
+    def recent_framework_adapter_matrices(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT matrix_id, entry_id, matrix_hash, matrix_ref,
+                   adapter_schema_url, adapter_package_version,
+                   row_count, framework_count, production_certified_count,
+                   total_fixture_events, summary_json, frameworks_json,
+                   compatibility_hashes_json, issued_at
+            FROM framework_adapter_matrices
+            ORDER BY issued_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["summary"] = _decode_json_object(item.pop("summary_json", None))
+            item["frameworks"] = _decode_json_array(item.pop("frameworks_json", None))
+            item["compatibility_hashes"] = _decode_json_array(item.pop("compatibility_hashes_json", None))
+            items.append(item)
+        return items
+
+    def recent_framework_hook_releases(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT release_id, entry_id, release_hash, release_ref,
+                   matrix_id, matrix_hash, row_count, framework_count,
+                   production_certified_count, adapter_matrix_json,
+                   frameworks_json, hook_release_hashes_json,
+                   control_summary_json, released_at
+            FROM framework_hook_releases
+            ORDER BY released_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["adapter_matrix"] = _decode_json_object(item.pop("adapter_matrix_json", None))
+            item["frameworks"] = _decode_json_array(item.pop("frameworks_json", None))
+            item["hook_release_hashes"] = _decode_json_array(item.pop("hook_release_hashes_json", None))
+            item["control_summary"] = _decode_json_object(item.pop("control_summary_json", None))
+            items.append(item)
+        return items
+
+    def recent_framework_hook_operations(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT operation_id, entry_id, operation_hash, mode, environment,
+                   operation_ref, contract_hash, agent_name, agent_version,
+                   risk_class, framework, runtime_package, runtime_version,
+                   hook_package, hook_version, collector_hook_ref,
+                   hook_release_hash, source_trace_id, trace_id, event_count,
+                   event_root, runtime_json, hook_json, release_binding_json,
+                   trace_json, collector_json, control_summary_json,
+                   captured_at
+            FROM framework_hook_operations
+            ORDER BY captured_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["runtime"] = _decode_json_object(item.pop("runtime_json", None))
+            item["hook"] = _decode_json_object(item.pop("hook_json", None))
+            item["release_binding"] = _decode_json_object(item.pop("release_binding_json", None))
+            item["trace"] = _decode_json_object(item.pop("trace_json", None))
+            item["collector"] = _decode_json_object(item.pop("collector_json", None))
+            item["control_summary"] = _decode_json_object(item.pop("control_summary_json", None))
+            items.append(item)
+        return items
+
+    def recent_framework_adapter_authority_dossiers(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT dossier_id, entry_id, dossier_hash, dossier_ref, mode,
+                   environment, authority_ref, producer_ref, matrix_id,
+                   matrix_hash, release_id, release_hash,
+                   production_claimed, production_ready,
+                   required_requirement_count, covered_requirement_count,
+                   missing_requirement_count, authority_evidence_count,
+                   fresh_evidence_count, stale_evidence_count,
+                   missing_freshness_count, source_binding_json,
+                   summary_json, control_summary_json,
+                   authority_evidence_json, generated_at
+            FROM framework_adapter_authority_dossiers
+            ORDER BY generated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            _bool_fields(item, "production_claimed", "production_ready")
+            item["source_binding"] = _decode_json_object(item.pop("source_binding_json", None))
+            item["summary"] = _decode_json_object(item.pop("summary_json", None))
+            item["control_summary"] = _decode_json_object(item.pop("control_summary_json", None))
+            item["authority_evidence"] = _decode_json_array(item.pop("authority_evidence_json", None))
+            items.append(item)
+        return items
+
     def recent_authority_dossiers(self, limit: int = 20) -> list[dict[str, Any]]:
         rows = self.conn.execute(
             """
@@ -3116,6 +3571,15 @@ class ControlPlane:
             "holdout_evidence": self.holdout_evidence(limit),
             "mcp_evidence": self.mcp_evidence(limit),
             "promotion_lifecycle_evidence": self.promotion_lifecycle_evidence(limit),
+            "framework_adapter_evidence": self.framework_adapter_evidence(limit),
+        }
+
+    def framework_adapter_evidence(self, limit: int = 20) -> dict[str, Any]:
+        return {
+            "framework_adapter_matrices": self.recent_framework_adapter_matrices(limit),
+            "framework_hook_releases": self.recent_framework_hook_releases(limit),
+            "framework_hook_operations": self.recent_framework_hook_operations(limit),
+            "framework_adapter_authority_dossiers": self.recent_framework_adapter_authority_dossiers(limit),
         }
 
     def mcp_evidence(self, limit: int = 20) -> dict[str, Any]:
@@ -3882,6 +4346,34 @@ class ControlPlane:
             item["event_hashes"] = _decode_json_array(item.pop("event_hashes_json", None))
             item["tool_call_hashes"] = _decode_json_array(item.pop("tool_call_hashes_json", None))
 
+        count, framework_hook_operations = self._scoped_rows(
+            table="framework_hook_operations",
+            select_sql="""
+            SELECT operation_id, entry_id, operation_hash, mode, environment,
+                   contract_hash, agent_name, agent_version, risk_class,
+                   framework, runtime_package, runtime_version,
+                   hook_package, hook_version, collector_hook_ref,
+                   hook_release_hash, source_trace_id, trace_id,
+                   event_count, event_root, runtime_json, hook_json,
+                   release_binding_json, trace_json, collector_json,
+                   control_summary_json, captured_at
+            FROM framework_hook_operations
+            """,
+            order_sql="ORDER BY captured_at DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+            id_column=None,
+        )
+        counts["framework_hook_operations"] = count
+        for item in framework_hook_operations:
+            item["runtime"] = _decode_json_object(item.pop("runtime_json", None))
+            item["hook"] = _decode_json_object(item.pop("hook_json", None))
+            item["release_binding"] = _decode_json_object(item.pop("release_binding_json", None))
+            item["trace"] = _decode_json_object(item.pop("trace_json", None))
+            item["collector"] = _decode_json_object(item.pop("collector_json", None))
+            item["control_summary"] = _decode_json_object(item.pop("control_summary_json", None))
+
         count, promotion_statuses = self._scoped_rows(
             table="promotion_statuses",
             select_sql="""
@@ -3988,6 +4480,7 @@ class ControlPlane:
             "ingest_events": ingest_events,
             "mcp_tool_calls": mcp_tool_calls,
             "mcp_proxy_captures": mcp_proxy_captures,
+            "framework_hook_operations": framework_hook_operations,
             "promotion_statuses": promotion_statuses,
             "runtime_attestations": runtime_attestations,
             "policy_decisions": policy_decisions,
@@ -4410,6 +4903,33 @@ class ControlPlane:
             item["event_hashes"] = _decode_json_array(item.pop("event_hashes_json", None))
             item["tool_call_hashes"] = _decode_json_array(item.pop("tool_call_hashes_json", None))
 
+        count, framework_hook_operations = self._agent_scoped_rows(
+            table="framework_hook_operations",
+            select_sql="""
+            SELECT operation_id, entry_id, operation_hash, mode, environment,
+                   contract_hash, agent_name, agent_version, risk_class,
+                   framework, runtime_package, runtime_version,
+                   hook_package, hook_version, collector_hook_ref,
+                   hook_release_hash, source_trace_id, trace_id,
+                   event_count, event_root, runtime_json, hook_json,
+                   release_binding_json, trace_json, collector_json,
+                   control_summary_json, captured_at
+            FROM framework_hook_operations
+            """,
+            order_sql="ORDER BY captured_at DESC",
+            agent_name=agent_name,
+            agent_version=agent_version,
+            limit=limit,
+        )
+        counts["framework_hook_operations"] = count
+        for item in framework_hook_operations:
+            item["runtime"] = _decode_json_object(item.pop("runtime_json", None))
+            item["hook"] = _decode_json_object(item.pop("hook_json", None))
+            item["release_binding"] = _decode_json_object(item.pop("release_binding_json", None))
+            item["trace"] = _decode_json_object(item.pop("trace_json", None))
+            item["collector"] = _decode_json_object(item.pop("collector_json", None))
+            item["control_summary"] = _decode_json_object(item.pop("control_summary_json", None))
+
         count, promotion_statuses = self._agent_scoped_rows(
             table="promotion_statuses",
             select_sql="""
@@ -4513,6 +5033,7 @@ class ControlPlane:
             "ingest_events": ingest_events,
             "mcp_tool_calls": mcp_tool_calls,
             "mcp_proxy_captures": mcp_proxy_captures,
+            "framework_hook_operations": framework_hook_operations,
             "promotion_statuses": promotion_statuses,
             "runtime_attestations": runtime_attestations,
             "policy_decisions": policy_decisions,
