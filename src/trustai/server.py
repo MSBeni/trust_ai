@@ -275,6 +275,13 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             finally:
                 control.close()
             return
+        if parsed.path in ("/v0/review-portal-evidence", "/v0/control/review-portal-evidence"):
+            control = self._control()
+            try:
+                self._json_response(200, control.review_portal_evidence())
+            finally:
+                control.close()
+            return
         if parsed.path == "/v0/roadmap-evidence":
             control = self._control()
             try:
@@ -394,7 +401,7 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             chain = EvidenceChain.load(body.get("state_path", self.state_path), tenant_id=self.tenant_id)
             control = self._control()
             try:
-                counts = control.index_chain(chain)
+                counts = control.rebuild_from_chain(chain) if body.get("rebuild") else control.index_chain(chain)
                 if body.get("proof_pack_path"):
                     pack = load_proof_pack(body["proof_pack_path"])
                     result = verify_proof_pack(pack, key=self.signing_key)

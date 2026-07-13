@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from .approvals import APPROVAL_ENTRY_TYPE
-from .canonical import content_hash, utc_now
+from .canonical import content_hash, parse_rfc3339, utc_now
 from .chain import EvidenceChain
 from .cicd import PROMOTION_STATUS_ENTRY_TYPE
 from .contracts import CONTRACT_ENTRY_TYPE
@@ -32,9 +32,13 @@ from .policy import POLICY_DECISION_ENTRY_TYPE
 from .policy_engine import POLICY_ENGINE_ENTRY_TYPE
 from .proofpack import PROOF_PACK_SPEC_VERSION
 from .reliability_report import RELIABILITY_REPORT_ENTRY_TYPE
+from .regulator_acceptance import REGULATOR_ACCEPTANCE_ENTRY_TYPE
 from .registry import AGENT_INVENTORY_ENTRY_TYPE
+from .review_portal_authority import REVIEW_PORTAL_AUTHORITY_ENTRY_TYPE
+from .review_portal_service import REVIEW_PORTAL_SERVICE_ENTRY_TYPE
 from .roadmap_audit import ROADMAP_AUDIT_ENTRY_TYPE
 from .runtime import RUNTIME_ENTRY_TYPE
+from .supervised_access import SUPERVISED_ACCESS_ENTRY_TYPE
 from .shadow import (
     SHADOW_REPLAY_ENTRY_TYPE,
     SOAK_REPORT_ENTRY_TYPE,
@@ -45,6 +49,51 @@ from .shadow import (
 from .vertical_pack import VERTICAL_PACK_ENTRY_TYPE
 
 SCHEMA_VERSION = "trustai.control-plane/0.1"
+
+INDEX_TABLES = (
+    "contracts",
+    "agents",
+    "chain_entries",
+    "proof_packs",
+    "anchors",
+    "ingest_events",
+    "mcp_tool_calls",
+    "mcp_proxy_captures",
+    "framework_adapter_matrices",
+    "framework_hook_releases",
+    "framework_hook_operations",
+    "framework_adapter_authority_dossiers",
+    "supervised_access_receipts",
+    "regulator_acceptances",
+    "review_portal_service_attestations",
+    "review_portal_authority_dossiers",
+    "eval_runs",
+    "gate_decisions",
+    "human_approvals",
+    "promotion_demotions",
+    "promotion_rollbacks",
+    "soak_demotion_receipts",
+    "promotion_statuses",
+    "runtime_attestations",
+    "policy_decisions",
+    "policy_engine_receipts",
+    "incidents",
+    "roadmap_audits",
+    "external_evidence_collection_runs",
+    "external_evidence_manifests",
+    "authority_dossiers",
+    "phase_scoreboards",
+    "design_partner_dossiers",
+    "own_compliance_dossiers",
+    "product_scope_decisions",
+    "vertical_packs",
+    "reliability_reports",
+    "temporal_holdout_manifests",
+    "shadow_replays",
+    "soak_reports",
+    "traffic_holdout_exports",
+    "traffic_completeness_receipts",
+)
 
 
 def _json(value: Any) -> str:
@@ -124,6 +173,30 @@ def _authority_freshness_window_count(evidence_items: list[Any]) -> int:
         for item in evidence_items
         if isinstance(item, dict) and item.get("issued_at") and item.get("expires_at")
     )
+
+
+def _authority_freshness_counts(evidence_items: list[Any], reference: Any) -> dict[str, int]:
+    counts = {"fresh": 0, "stale": 0, "missing": 0}
+    try:
+        reference_time = parse_rfc3339(str(reference))
+    except (TypeError, ValueError):
+        counts["missing"] = len(evidence_items)
+        return counts
+    for item in evidence_items:
+        if not isinstance(item, dict) or not item.get("issued_at") or not item.get("expires_at"):
+            counts["missing"] += 1
+            continue
+        try:
+            issued_at = parse_rfc3339(str(item["issued_at"]))
+            expires_at = parse_rfc3339(str(item["expires_at"]))
+        except ValueError:
+            counts["missing"] += 1
+            continue
+        if issued_at <= reference_time < expires_at:
+            counts["fresh"] += 1
+        else:
+            counts["stale"] += 1
+    return counts
 
 
 def _decode_string_list_map(value: Any) -> dict[str, list[str]]:
@@ -426,6 +499,97 @@ class ControlPlane:
                 stale_evidence_count INTEGER NOT NULL,
                 missing_freshness_count INTEGER NOT NULL,
                 source_binding_json TEXT NOT NULL,
+                summary_json TEXT NOT NULL,
+                control_summary_json TEXT NOT NULL,
+                authority_evidence_json TEXT NOT NULL,
+                generated_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS supervised_access_receipts (
+                receipt_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                receipt_hash TEXT NOT NULL,
+                session_id TEXT,
+                audience_type TEXT,
+                audience_purpose TEXT,
+                reviewer_subject_ref TEXT,
+                reviewer_organization TEXT,
+                reviewer_role TEXT,
+                artifact_count INTEGER NOT NULL,
+                issued_at TEXT,
+                expires_at TEXT,
+                artifact_refs_json TEXT NOT NULL,
+                limitations_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS regulator_acceptances (
+                acceptance_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                acceptance_hash TEXT NOT NULL,
+                regulator_name TEXT,
+                authority_ref TEXT,
+                reviewer_ref TEXT,
+                outcome TEXT,
+                accepted INTEGER NOT NULL,
+                examination_ref TEXT,
+                purpose TEXT,
+                framework TEXT,
+                source_ref_count INTEGER NOT NULL,
+                source_refs_json TEXT NOT NULL,
+                limitations_json TEXT NOT NULL,
+                issued_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS review_portal_service_attestations (
+                attestation_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                attestation_hash TEXT NOT NULL,
+                mode TEXT,
+                environment TEXT,
+                service_ref TEXT,
+                service_version TEXT,
+                portal_kind TEXT,
+                endpoint_url TEXT,
+                service_image_digest TEXT,
+                frontend_bundle_ref TEXT,
+                frontend_bundle_hash TEXT,
+                api_ref TEXT,
+                supervised_access_receipt_id TEXT,
+                session_id TEXT,
+                audience_type TEXT,
+                reviewer_subject_ref TEXT,
+                reviewer_organization TEXT,
+                reviewer_role TEXT,
+                artifact_count INTEGER NOT NULL,
+                source_count INTEGER NOT NULL,
+                control_summary_json TEXT NOT NULL,
+                attested_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS review_portal_authority_dossiers (
+                dossier_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                dossier_hash TEXT NOT NULL,
+                mode TEXT,
+                environment TEXT,
+                dossier_ref TEXT,
+                authority_ref TEXT,
+                producer_ref TEXT,
+                production_claimed INTEGER NOT NULL,
+                production_ready INTEGER NOT NULL,
+                service_attestation_id TEXT,
+                service_ref TEXT,
+                portal_kind TEXT,
+                audience_type TEXT,
+                reviewer_subject_ref TEXT,
+                required_requirement_count INTEGER NOT NULL,
+                covered_requirement_count INTEGER NOT NULL,
+                missing_requirement_count INTEGER NOT NULL,
+                authority_evidence_count INTEGER NOT NULL,
+                fresh_evidence_count INTEGER NOT NULL,
+                stale_evidence_count INTEGER NOT NULL,
+                missing_freshness_count INTEGER NOT NULL,
+                service_attestation_binding_json TEXT NOT NULL,
                 summary_json TEXT NOT NULL,
                 control_summary_json TEXT NOT NULL,
                 authority_evidence_json TEXT NOT NULL,
@@ -888,6 +1052,20 @@ class ControlPlane:
         )
         self.conn.commit()
 
+    def clear_index(self) -> dict[str, int]:
+        deleted: dict[str, int] = {}
+        with self.conn:
+            for table in INDEX_TABLES:
+                deleted[table] = int(
+                    self.conn.execute(f"SELECT COUNT(*) AS count FROM {table}").fetchone()["count"]
+                )
+                self.conn.execute(f"DELETE FROM {table}")
+        return deleted
+
+    def rebuild_from_chain(self, chain: EvidenceChain) -> dict[str, int]:
+        self.clear_index()
+        return self.index_chain(chain)
+
     def index_chain(self, chain: EvidenceChain) -> dict[str, int]:
         counts = {
             "chain_entries": 0,
@@ -901,6 +1079,10 @@ class ControlPlane:
             "framework_hook_releases": 0,
             "framework_hook_operations": 0,
             "framework_adapter_authority_dossiers": 0,
+            "supervised_access_receipts": 0,
+            "regulator_acceptances": 0,
+            "review_portal_service_attestations": 0,
+            "review_portal_authority_dossiers": 0,
             "eval_runs": 0,
             "gate_decisions": 0,
             "human_approvals": 0,
@@ -1238,6 +1420,185 @@ class ControlPlane:
                     ),
                 )
                 counts["framework_adapter_authority_dossiers"] += 1
+
+            if entry.get("entry_type") == SUPERVISED_ACCESS_ENTRY_TYPE:
+                audience = payload.get("audience") if isinstance(payload.get("audience"), dict) else {}
+                reviewer = payload.get("reviewer") if isinstance(payload.get("reviewer"), dict) else {}
+                artifact_refs = payload.get("artifact_refs") if isinstance(payload.get("artifact_refs"), list) else []
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO supervised_access_receipts(
+                        receipt_id, entry_id, receipt_hash, session_id,
+                        audience_type, audience_purpose, reviewer_subject_ref,
+                        reviewer_organization, reviewer_role, artifact_count,
+                        issued_at, expires_at, artifact_refs_json, limitations_json,
+                        body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("receipt_id"),
+                        entry["entry_id"],
+                        payload.get("receipt_hash") or entry.get("payload_hash"),
+                        payload.get("session_id"),
+                        audience.get("type"),
+                        audience.get("purpose"),
+                        reviewer.get("subject_ref"),
+                        reviewer.get("organization"),
+                        reviewer.get("role"),
+                        int(payload.get("artifact_count") or len(artifact_refs)),
+                        entry.get("timestamp"),
+                        payload.get("expires_at") or entry.get("timestamp"),
+                        _json(artifact_refs),
+                        _json(payload.get("limitations") or []),
+                        _json(payload),
+                    ),
+                )
+                counts["supervised_access_receipts"] += 1
+
+            if entry.get("entry_type") == REGULATOR_ACCEPTANCE_ENTRY_TYPE:
+                regulator = payload.get("regulator") if isinstance(payload.get("regulator"), dict) else {}
+                decision = payload.get("decision") if isinstance(payload.get("decision"), dict) else {}
+                review_scope = payload.get("review_scope") if isinstance(payload.get("review_scope"), dict) else {}
+                source_refs = payload.get("source_refs") if isinstance(payload.get("source_refs"), list) else []
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO regulator_acceptances(
+                        acceptance_id, entry_id, acceptance_hash, regulator_name,
+                        authority_ref, reviewer_ref, outcome, accepted,
+                        examination_ref, purpose, framework, source_ref_count,
+                        source_refs_json, limitations_json, issued_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("acceptance_id"),
+                        entry["entry_id"],
+                        payload.get("acceptance_hash") or entry.get("payload_hash"),
+                        regulator.get("name"),
+                        regulator.get("authority_ref"),
+                        regulator.get("reviewer_ref"),
+                        decision.get("outcome"),
+                        1 if decision.get("accepted") else 0,
+                        decision.get("examination_ref"),
+                        review_scope.get("purpose"),
+                        review_scope.get("framework"),
+                        len(source_refs),
+                        _json(source_refs),
+                        _json(payload.get("limitations") or []),
+                        entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["regulator_acceptances"] += 1
+
+            if entry.get("entry_type") == REVIEW_PORTAL_SERVICE_ENTRY_TYPE:
+                service = payload.get("service") if isinstance(payload.get("service"), dict) else {}
+                access = payload.get("access") if isinstance(payload.get("access"), dict) else {}
+                source = payload.get("source") if isinstance(payload.get("source"), dict) else {}
+                control_summary = payload.get("control_status_summary") if isinstance(payload.get("control_status_summary"), dict) else {}
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO review_portal_service_attestations(
+                        attestation_id, entry_id, attestation_hash, mode,
+                        environment, service_ref, service_version, portal_kind,
+                        endpoint_url, service_image_digest, frontend_bundle_ref,
+                        frontend_bundle_hash, api_ref, supervised_access_receipt_id,
+                        session_id, audience_type, reviewer_subject_ref,
+                        reviewer_organization, reviewer_role, artifact_count,
+                        source_count, control_summary_json, attested_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("attestation_id"),
+                        entry["entry_id"],
+                        payload.get("attestation_hash") or entry.get("payload_hash"),
+                        payload.get("mode"),
+                        payload.get("environment"),
+                        service.get("service_ref"),
+                        service.get("version"),
+                        service.get("portal_kind"),
+                        service.get("endpoint_url"),
+                        service.get("service_image_digest"),
+                        service.get("frontend_bundle_ref"),
+                        service.get("frontend_bundle_hash"),
+                        service.get("api_ref"),
+                        access.get("supervised_access_receipt_id"),
+                        access.get("session_id"),
+                        access.get("audience_type"),
+                        access.get("reviewer_subject_ref"),
+                        access.get("reviewer_organization"),
+                        access.get("reviewer_role"),
+                        int(access.get("artifact_count") or 0),
+                        int(source.get("source_count") or 0),
+                        _json(control_summary),
+                        entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["review_portal_service_attestations"] += 1
+
+            if entry.get("entry_type") == REVIEW_PORTAL_AUTHORITY_ENTRY_TYPE:
+                binding = payload.get("service_attestation_binding") if isinstance(payload.get("service_attestation_binding"), dict) else {}
+                summary = payload.get("summary") if isinstance(payload.get("summary"), dict) else {}
+                control_summary = payload.get("control_summary") if isinstance(payload.get("control_summary"), dict) else {}
+                authority_evidence = payload.get("authority_evidence") if isinstance(payload.get("authority_evidence"), list) else []
+                generated_at = payload.get("generated_at") or entry.get("timestamp")
+                freshness = _authority_freshness_counts(authority_evidence, generated_at)
+                missing_requirement_count = int(summary.get("missing_requirement_count") or 0)
+                production_claimed = payload.get("mode") == "production-dossier"
+                production_ready = bool(
+                    production_claimed
+                    and missing_requirement_count == 0
+                    and freshness["stale"] == 0
+                    and freshness["missing"] == 0
+                )
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO review_portal_authority_dossiers(
+                        dossier_id, entry_id, dossier_hash, mode,
+                        environment, dossier_ref, authority_ref, producer_ref,
+                        production_claimed, production_ready,
+                        service_attestation_id, service_ref, portal_kind,
+                        audience_type, reviewer_subject_ref,
+                        required_requirement_count, covered_requirement_count,
+                        missing_requirement_count, authority_evidence_count,
+                        fresh_evidence_count, stale_evidence_count,
+                        missing_freshness_count, service_attestation_binding_json,
+                        summary_json, control_summary_json,
+                        authority_evidence_json, generated_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("dossier_id"),
+                        entry["entry_id"],
+                        payload.get("dossier_hash") or entry.get("payload_hash"),
+                        payload.get("mode"),
+                        payload.get("environment"),
+                        payload.get("dossier_ref"),
+                        payload.get("authority_ref"),
+                        payload.get("producer_ref"),
+                        1 if production_claimed else 0,
+                        1 if production_ready else 0,
+                        binding.get("attestation_id"),
+                        binding.get("service_ref"),
+                        binding.get("portal_kind"),
+                        binding.get("audience_type"),
+                        binding.get("reviewer_subject_ref"),
+                        int(summary.get("required_requirement_count") or 0),
+                        int(summary.get("covered_requirement_count") or 0),
+                        missing_requirement_count,
+                        int(summary.get("authority_evidence_count") or len(authority_evidence)),
+                        freshness["fresh"],
+                        freshness["stale"],
+                        freshness["missing"],
+                        _json(binding),
+                        _json(summary),
+                        _json(control_summary),
+                        _json(authority_evidence),
+                        generated_at,
+                        _json(payload),
+                    ),
+                )
+                counts["review_portal_authority_dossiers"] += 1
 
             if entry.get("entry_type") == CONTRACT_ENTRY_TYPE:
                 contract = payload.get("contract", {})
@@ -2254,49 +2615,9 @@ class ControlPlane:
         self.conn.commit()
 
     def summary(self) -> dict[str, Any]:
-        tables = [
-            "contracts",
-            "agents",
-            "chain_entries",
-            "proof_packs",
-            "anchors",
-            "ingest_events",
-            "mcp_tool_calls",
-            "mcp_proxy_captures",
-            "framework_adapter_matrices",
-            "framework_hook_releases",
-            "framework_hook_operations",
-            "framework_adapter_authority_dossiers",
-            "eval_runs",
-            "gate_decisions",
-            "human_approvals",
-            "promotion_demotions",
-            "promotion_rollbacks",
-            "soak_demotion_receipts",
-            "promotion_statuses",
-            "runtime_attestations",
-            "policy_decisions",
-            "policy_engine_receipts",
-            "incidents",
-            "roadmap_audits",
-            "external_evidence_collection_runs",
-            "external_evidence_manifests",
-            "authority_dossiers",
-            "phase_scoreboards",
-            "design_partner_dossiers",
-            "own_compliance_dossiers",
-            "product_scope_decisions",
-            "vertical_packs",
-            "reliability_reports",
-            "temporal_holdout_manifests",
-            "shadow_replays",
-            "soak_reports",
-            "traffic_holdout_exports",
-            "traffic_completeness_receipts",
-        ]
         counts = {
             table: self.conn.execute(f"SELECT COUNT(*) AS count FROM {table}").fetchone()["count"]
-            for table in tables
+            for table in INDEX_TABLES
         }
         latest_anchor = self.conn.execute(
             "SELECT anchor_id, tree_root, tree_size, published_at FROM anchors ORDER BY published_at DESC LIMIT 1"
@@ -2451,6 +2772,62 @@ class ControlPlane:
         latest_framework_authority_dict = dict(latest_framework_authority) if latest_framework_authority else None
         if latest_framework_authority_dict is not None:
             _bool_fields(latest_framework_authority_dict, "production_claimed", "production_ready")
+        latest_supervised_access = self.conn.execute(
+            """
+            SELECT receipt_id, entry_id, receipt_hash, session_id,
+                   audience_type, audience_purpose, reviewer_subject_ref,
+                   reviewer_organization, reviewer_role, artifact_count,
+                   issued_at, expires_at
+            FROM supervised_access_receipts
+            ORDER BY issued_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_regulator_acceptance = self.conn.execute(
+            """
+            SELECT acceptance_id, entry_id, acceptance_hash, regulator_name,
+                   authority_ref, reviewer_ref, outcome, accepted,
+                   examination_ref, purpose, framework, source_ref_count,
+                   issued_at
+            FROM regulator_acceptances
+            ORDER BY issued_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_regulator_acceptance_dict = dict(latest_regulator_acceptance) if latest_regulator_acceptance else None
+        if latest_regulator_acceptance_dict is not None:
+            _bool_fields(latest_regulator_acceptance_dict, "accepted")
+        latest_review_portal_service = self.conn.execute(
+            """
+            SELECT attestation_id, entry_id, attestation_hash, mode,
+                   environment, service_ref, service_version, portal_kind,
+                   endpoint_url, supervised_access_receipt_id, session_id,
+                   audience_type, reviewer_subject_ref, reviewer_organization,
+                   reviewer_role, artifact_count, source_count, attested_at
+            FROM review_portal_service_attestations
+            ORDER BY attested_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_review_portal_authority = self.conn.execute(
+            """
+            SELECT dossier_id, entry_id, dossier_hash, dossier_ref, mode,
+                   environment, authority_ref, producer_ref,
+                   production_claimed, production_ready,
+                   service_attestation_id, service_ref, portal_kind,
+                   audience_type, reviewer_subject_ref,
+                   required_requirement_count, covered_requirement_count,
+                   missing_requirement_count, authority_evidence_count,
+                   fresh_evidence_count, stale_evidence_count,
+                   missing_freshness_count, generated_at
+            FROM review_portal_authority_dossiers
+            ORDER BY generated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_review_portal_authority_dict = dict(latest_review_portal_authority) if latest_review_portal_authority else None
+        if latest_review_portal_authority_dict is not None:
+            _bool_fields(latest_review_portal_authority_dict, "production_claimed", "production_ready")
         latest_status = self.conn.execute(
             """
             SELECT receipt_id, provider, pack_id, contract_id, gate_outcome,
@@ -2750,6 +3127,10 @@ class ControlPlane:
             "latest_framework_hook_release": dict(latest_framework_release) if latest_framework_release else None,
             "latest_framework_hook_operation": dict(latest_framework_operation) if latest_framework_operation else None,
             "latest_framework_adapter_authority_dossier": latest_framework_authority_dict,
+            "latest_supervised_access_receipt": dict(latest_supervised_access) if latest_supervised_access else None,
+            "latest_regulator_acceptance": latest_regulator_acceptance_dict,
+            "latest_review_portal_service_attestation": dict(latest_review_portal_service) if latest_review_portal_service else None,
+            "latest_review_portal_authority_dossier": latest_review_portal_authority_dict,
             "latest_promotion_status": latest_status_dict,
             "latest_runtime_attestation": latest_runtime_dict,
             "latest_policy_decision": latest_policy_decision_dict,
@@ -3530,6 +3911,105 @@ class ControlPlane:
             items.append(item)
         return items
 
+    def recent_supervised_access_receipts(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT receipt_id, entry_id, receipt_hash, session_id,
+                   audience_type, audience_purpose, reviewer_subject_ref,
+                   reviewer_organization, reviewer_role, artifact_count,
+                   issued_at, expires_at, artifact_refs_json,
+                   limitations_json
+            FROM supervised_access_receipts
+            ORDER BY issued_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["artifact_refs"] = _decode_json_array(item.pop("artifact_refs_json", None))
+            item["limitations"] = _decode_json_array(item.pop("limitations_json", None))
+            items.append(item)
+        return items
+
+    def recent_regulator_acceptances(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT acceptance_id, entry_id, acceptance_hash, regulator_name,
+                   authority_ref, reviewer_ref, outcome, accepted,
+                   examination_ref, purpose, framework, source_ref_count,
+                   source_refs_json, limitations_json, issued_at
+            FROM regulator_acceptances
+            ORDER BY issued_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = _bool_fields(dict(row), "accepted")
+            item["source_refs"] = _decode_json_array(item.pop("source_refs_json", None))
+            item["limitations"] = _decode_json_array(item.pop("limitations_json", None))
+            items.append(item)
+        return items
+
+    def recent_review_portal_service_attestations(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT attestation_id, entry_id, attestation_hash, mode,
+                   environment, service_ref, service_version, portal_kind,
+                   endpoint_url, service_image_digest, frontend_bundle_ref,
+                   frontend_bundle_hash, api_ref,
+                   supervised_access_receipt_id, session_id, audience_type,
+                   reviewer_subject_ref, reviewer_organization, reviewer_role,
+                   artifact_count, source_count, control_summary_json,
+                   attested_at
+            FROM review_portal_service_attestations
+            ORDER BY attested_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["control_summary"] = _decode_json_object(item.pop("control_summary_json", None))
+            items.append(item)
+        return items
+
+    def recent_review_portal_authority_dossiers(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT dossier_id, entry_id, dossier_hash, dossier_ref, mode,
+                   environment, authority_ref, producer_ref,
+                   production_claimed, production_ready,
+                   service_attestation_id, service_ref, portal_kind,
+                   audience_type, reviewer_subject_ref,
+                   required_requirement_count, covered_requirement_count,
+                   missing_requirement_count, authority_evidence_count,
+                   fresh_evidence_count, stale_evidence_count,
+                   missing_freshness_count, service_attestation_binding_json,
+                   summary_json, control_summary_json,
+                   authority_evidence_json, generated_at
+            FROM review_portal_authority_dossiers
+            ORDER BY generated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = _bool_fields(dict(row), "production_claimed", "production_ready")
+            item["service_attestation_binding"] = _decode_json_object(
+                item.pop("service_attestation_binding_json", None)
+            )
+            item["summary"] = _decode_json_object(item.pop("summary_json", None))
+            item["control_summary"] = _decode_json_object(item.pop("control_summary_json", None))
+            item["authority_evidence"] = _decode_json_array(item.pop("authority_evidence_json", None))
+            items.append(item)
+        return items
+
     def recent_authority_dossiers(self, limit: int = 20) -> list[dict[str, Any]]:
         rows = self.conn.execute(
             """
@@ -3572,6 +4052,7 @@ class ControlPlane:
             "mcp_evidence": self.mcp_evidence(limit),
             "promotion_lifecycle_evidence": self.promotion_lifecycle_evidence(limit),
             "framework_adapter_evidence": self.framework_adapter_evidence(limit),
+            "review_portal_evidence": self.review_portal_evidence(limit),
         }
 
     def framework_adapter_evidence(self, limit: int = 20) -> dict[str, Any]:
@@ -3580,6 +4061,14 @@ class ControlPlane:
             "framework_hook_releases": self.recent_framework_hook_releases(limit),
             "framework_hook_operations": self.recent_framework_hook_operations(limit),
             "framework_adapter_authority_dossiers": self.recent_framework_adapter_authority_dossiers(limit),
+        }
+
+    def review_portal_evidence(self, limit: int = 20) -> dict[str, Any]:
+        return {
+            "supervised_access_receipts": self.recent_supervised_access_receipts(limit),
+            "regulator_acceptances": self.recent_regulator_acceptances(limit),
+            "review_portal_service_attestations": self.recent_review_portal_service_attestations(limit),
+            "review_portal_authority_dossiers": self.recent_review_portal_authority_dossiers(limit),
         }
 
     def mcp_evidence(self, limit: int = 20) -> dict[str, Any]:

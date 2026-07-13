@@ -2244,7 +2244,7 @@ def cmd_control_index(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
     control = ControlPlane(args.db)
     try:
-        counts = control.index_chain(chain)
+        counts = control.rebuild_from_chain(chain) if args.rebuild else control.index_chain(chain)
         if args.pack:
             pack = load_proof_pack(args.pack)
             result = verify_proof_pack(pack, key=args.key)
@@ -2291,6 +2291,8 @@ def cmd_control_summary(args: argparse.Namespace) -> int:
             summary["promotion_lifecycle_evidence"] = control.promotion_lifecycle_evidence()
         if args.framework_adapter_evidence:
             summary["framework_adapter_evidence"] = control.framework_adapter_evidence()
+        if args.review_portal_evidence:
+            summary["review_portal_evidence"] = control.review_portal_evidence()
         if args.roadmap_evidence:
             summary["roadmap_evidence"] = control.roadmap_evidence()
         if args.phase_scoreboards:
@@ -20379,6 +20381,7 @@ def build_parser() -> argparse.ArgumentParser:
     control_index = subparsers.add_parser("control-index", help="index a chain and optional proof pack into the local control-plane database")
     control_index.add_argument("--db", default=".trustai/control-plane.sqlite")
     control_index.add_argument("--pack")
+    control_index.add_argument("--rebuild", action="store_true", help="clear the read model before indexing the supplied chain and proof pack")
     _add_state_args(control_index)
     control_index.set_defaults(func=cmd_control_index)
 
@@ -20396,6 +20399,7 @@ def build_parser() -> argparse.ArgumentParser:
     control_summary.add_argument("--mcp-evidence", action="store_true")
     control_summary.add_argument("--promotion-lifecycle-evidence", action="store_true")
     control_summary.add_argument("--framework-adapter-evidence", action="store_true")
+    control_summary.add_argument("--review-portal-evidence", action="store_true")
     control_summary.add_argument("--roadmap-evidence", action="store_true")
     control_summary.add_argument("--phase-scoreboards", action="store_true")
     control_summary.add_argument("--design-partner-dossiers", action="store_true")

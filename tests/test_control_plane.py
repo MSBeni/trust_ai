@@ -3,6 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from tests import test_review_portal_service as service_fixtures
 from trustai.approvals import append_approval, load_approval
 from trustai.control_plane import ControlPlane, _sqlite_nolock_uri
 from trustai.canonical import content_hash
@@ -16,6 +17,7 @@ from trustai.external_evidence import (
     append_external_evidence_manifest,
     build_external_evidence_manifest,
 )
+from trustai.eu_ai_act import build_eu_ai_act_document
 from trustai.framework_adapter_authority import (
     append_framework_adapter_authority_dossier,
     build_framework_adapter_authority_dossier,
@@ -46,6 +48,12 @@ from trustai.lifecycle import (
 )
 from trustai.own_compliance import append_own_compliance_dossier, build_own_compliance_dossier
 from trustai.reliability_report import append_reliability_report, build_reliability_report
+from trustai.regulator_acceptance import append_regulator_acceptance, build_regulator_acceptance
+from trustai.review_portal_authority import (
+    append_review_portal_authority_dossier,
+    build_review_portal_authority_dossier,
+)
+from trustai.review_portal_service import append_review_portal_service_attestation
 from trustai.policy import append_policy_decision, load_policy_pack
 from trustai.policy_engine import append_policy_engine_receipt, build_policy_engine_receipt
 from trustai.policy_export import export_policy_pack
@@ -66,6 +74,7 @@ from trustai.shadow import (
     load_soak_window,
     load_traffic_completeness_provider_export,
 )
+from trustai.supervised_access import append_supervised_access_receipt
 from trustai.vertical_pack import append_vertical_pack, build_vertical_pack
 from trustai.verifier import verify_proof_pack
 
@@ -927,6 +936,180 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(operation["operation_id"], contract_evidence["framework_hook_operations"][0]["operation_id"])
                 self.assertEqual(1, agent_evidence["counts"]["framework_hook_operations"])
                 self.assertEqual(operation["operation_id"], agent_evidence["framework_hook_operations"][0]["operation_id"])
+            finally:
+                control.close()
+
+    def test_indexes_review_portal_evidence_and_rebuilds(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            helper = service_fixtures.ReviewPortalServiceTests()
+            (
+                chain,
+                pack,
+                pack_path,
+                disclosure,
+                disclosure_path,
+                view_path,
+                frontend_bundle_path,
+                frontend_bundle_hash,
+                receipt,
+                _,
+            ) = helper._fixtures(tmp)
+            document = build_eu_ai_act_document(pack, disclosure, operator="aitrade")
+            acceptance = build_regulator_acceptance(
+                pack,
+                disclosure,
+                document,
+                supervised_access_receipt=receipt,
+                supervised_view_path=view_path,
+                regulator="Example Supervisor",
+                authority_ref="EU-NCA:EXAMPLE",
+                reviewer_ref="oidc:regulator.example/supervisor-123",
+                examination_ref="EXAM-2026-TRUSTAI-CONTROL",
+                accepted_at="2026-07-08T05:45:00Z",
+                review_period_start="2026-07-08T00:00:00Z",
+                review_period_end="2026-07-08T05:45:00Z",
+            )
+            attestation = helper._attestation(
+                receipt,
+                pack,
+                pack_path,
+                disclosure,
+                disclosure_path,
+                view_path,
+                frontend_bundle_path,
+                frontend_bundle_hash,
+                regulator_acceptance=acceptance,
+                eu_ai_act_document=document,
+            )
+            authority_evidence = [
+                {
+                    "requirement_id": "hosted-portal-worker-fleet",
+                    "authority_kind": "hosted-service",
+                    "evidence_ref": "service:review-portal/regulator-prod",
+                    "evidence_hash": "sha256:review-portal-hosted-service-authority",
+                    "description": "Hosted regulator review portal service export.",
+                    "issuer": "TrustAI Cloud",
+                    "subject": "aitrade-prod regulator review portal",
+                    "source_uri": "https://ops.example/trustai/review-portal/regulator-prod",
+                    "issued_at": "2026-07-08T06:10:00Z",
+                    "expires_at": "2026-07-15T06:10:00Z",
+                },
+                {
+                    "requirement_id": "production-identity-provider-sessions",
+                    "authority_kind": "identity-provider",
+                    "evidence_ref": "idp:review-portal/regulator-prod",
+                    "evidence_hash": "sha256:review-portal-idp-session-authority",
+                    "description": "Identity-provider session audit export.",
+                    "issuer": "Example IdP",
+                    "subject": "regulator reviewer sessions",
+                    "source_uri": "https://idp.example/audit/review-portal/regulator",
+                    "issued_at": "2026-07-08T06:11:00Z",
+                    "expires_at": "2026-07-15T06:11:00Z",
+                },
+            ]
+            dossier = build_review_portal_authority_dossier(
+                attestation,
+                supervised_access_receipt=receipt,
+                proof_pack=pack,
+                proof_pack_path=pack_path,
+                regulator_disclosure=disclosure,
+                disclosure_path=disclosure_path,
+                view_path=view_path,
+                frontend_bundle_path=frontend_bundle_path,
+                regulator_acceptance=acceptance,
+                eu_ai_act_document=document,
+                mode="provider-dossier",
+                environment="aitrade-prod",
+                dossier_ref="dossier:review-portal-authority/control-plane",
+                authority_ref="authority:review-portal/control-plane",
+                producer_ref="oidc:trustai.example/review-portal-authority-worker",
+                authority_evidence=authority_evidence,
+                generated_at="2026-07-08T06:15:00Z",
+            )
+
+            receipt_entry = append_supervised_access_receipt(chain, receipt)
+            acceptance_entry = append_regulator_acceptance(chain, acceptance)
+            service_entry = append_review_portal_service_attestation(
+                chain,
+                attestation,
+                receipt,
+                proof_pack=pack,
+                proof_pack_path=pack_path,
+                regulator_disclosure=disclosure,
+                disclosure_path=disclosure_path,
+                view_path=view_path,
+                frontend_bundle_path=frontend_bundle_path,
+                regulator_acceptance=acceptance,
+                eu_ai_act_document=document,
+            )
+            authority_entry = append_review_portal_authority_dossier(
+                chain,
+                dossier,
+                service_attestation=attestation,
+                supervised_access_receipt=receipt,
+                proof_pack=pack,
+                proof_pack_path=pack_path,
+                regulator_disclosure=disclosure,
+                disclosure_path=disclosure_path,
+                view_path=view_path,
+                frontend_bundle_path=frontend_bundle_path,
+                regulator_acceptance=acceptance,
+                eu_ai_act_document=document,
+            )
+            chain.save()
+
+            control = ControlPlane(tmp / "control.sqlite")
+            try:
+                indexed = control.index_chain(chain)
+                control.index_proof_pack(pack, pack_path)
+                summary = control.summary()
+                evidence = control.review_portal_evidence()
+
+                for table in (
+                    "supervised_access_receipts",
+                    "regulator_acceptances",
+                    "review_portal_service_attestations",
+                    "review_portal_authority_dossiers",
+                ):
+                    self.assertEqual(1, indexed[table])
+                    self.assertEqual(1, summary["counts"][table])
+
+                self.assertEqual(receipt["receipt_id"], summary["latest_supervised_access_receipt"]["receipt_id"])
+                self.assertEqual(acceptance["acceptance_id"], summary["latest_regulator_acceptance"]["acceptance_id"])
+                self.assertTrue(summary["latest_regulator_acceptance"]["accepted"])
+                self.assertEqual(attestation["attestation_id"], summary["latest_review_portal_service_attestation"]["attestation_id"])
+                self.assertEqual(dossier["dossier_id"], summary["latest_review_portal_authority_dossier"]["dossier_id"])
+                self.assertFalse(summary["latest_review_portal_authority_dossier"]["production_claimed"])
+                self.assertEqual(2, summary["latest_review_portal_authority_dossier"]["fresh_evidence_count"])
+
+                self.assertEqual(receipt_entry["payload"]["receipt_id"], evidence["supervised_access_receipts"][0]["receipt_id"])
+                self.assertEqual(receipt_entry["timestamp"], evidence["supervised_access_receipts"][0]["issued_at"])
+                self.assertEqual(receipt_entry["payload"]["artifact_count"], len(evidence["supervised_access_receipts"][0]["artifact_refs"]))
+                self.assertEqual(acceptance_entry["payload"]["acceptance_id"], evidence["regulator_acceptances"][0]["acceptance_id"])
+                self.assertTrue(evidence["regulator_acceptances"][0]["accepted"])
+                self.assertEqual(service_entry["payload"]["attestation_id"], evidence["review_portal_service_attestations"][0]["attestation_id"])
+                self.assertEqual(attestation["source"]["source_count"], evidence["review_portal_service_attestations"][0]["source_count"])
+                self.assertEqual(authority_entry["payload"]["dossier_id"], evidence["review_portal_authority_dossiers"][0]["dossier_id"])
+                self.assertEqual(2, evidence["review_portal_authority_dossiers"][0]["fresh_evidence_count"])
+                self.assertEqual(2, len(evidence["review_portal_authority_dossiers"][0]["authority_evidence"]))
+                self.assertEqual(evidence, control.roadmap_evidence()["review_portal_evidence"])
+
+                deleted = control.clear_index()
+                self.assertEqual(1, deleted["proof_packs"])
+                self.assertTrue(all(count == 0 for count in control.summary()["counts"].values()))
+
+                rebuilt = control.rebuild_from_chain(chain)
+                rebuilt_summary = control.summary()
+                for table in (
+                    "supervised_access_receipts",
+                    "regulator_acceptances",
+                    "review_portal_service_attestations",
+                    "review_portal_authority_dossiers",
+                ):
+                    self.assertEqual(1, rebuilt[table])
+                    self.assertEqual(1, rebuilt_summary["counts"][table])
+                self.assertEqual(0, rebuilt_summary["counts"]["proof_packs"])
             finally:
                 control.close()
 

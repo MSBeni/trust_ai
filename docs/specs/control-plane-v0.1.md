@@ -16,6 +16,10 @@ into queryable registry tables while keeping the chain as the source of truth.
 - `ingest_events`: OTel GenAI event evidence indexed by trace, span, agent, risk class, and contract hash.
 - `mcp_tool_calls`: MCP transcript tool-call receipts with request/response hashes, transcript sequence, and transcript root.
 - `mcp_proxy_captures`: MCP proxy capture receipts with proxy/upstream refs, event-chain roots, transcript roots, and artifact hashes.
+- `supervised_access_receipts`: time-bounded reviewer sessions with audience, reviewer, and disclosed artifact references.
+- `regulator_acceptances`: regulator review decisions with authority, examination, scope, and source references.
+- `review_portal_service_attestations`: hosted/static portal service identity, frontend integrity, supervised access, and control summaries.
+- `review_portal_authority_dossiers`: hosted portal production-authority coverage, freshness, service bindings, and evidence references.
 - `human_approvals`: human approval entries bound to contract, agent, role, approver, source, and external reference metadata.
 - `promotion_demotions`: promotion gate demotion decisions with source/target environment, trigger, reason, and contract/agent binding.
 - `promotion_rollbacks`: rollback decisions with target agent version, reason, triggering evidence, and contract/agent binding.
@@ -45,15 +49,15 @@ into queryable registry tables while keeping the chain as the source of truth.
 ## CLI
 
 ```powershell
-python -m trustai control-index --state .trustai/demo/evidence-chain.json --tenant aitrade-local --pack artifacts/aitrade-proof-pack.json --db .trustai/control-plane.sqlite
-python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --holdout-evidence --mcp-evidence --promotion-lifecycle-evidence --framework-adapter-evidence --roadmap-evidence --phase-scoreboards --design-partner-dossiers --own-compliance-dossiers --product-scope-decisions --vertical-packs --reliability-reports --readiness --external-evidence --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
+python -m trustai control-index --state .trustai/demo/evidence-chain.json --tenant aitrade-local --pack artifacts/aitrade-proof-pack.json --db .trustai/control-plane.sqlite --rebuild
+python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --holdout-evidence --mcp-evidence --promotion-lifecycle-evidence --framework-adapter-evidence --review-portal-evidence --roadmap-evidence --phase-scoreboards --design-partner-dossiers --own-compliance-dossiers --product-scope-decisions --vertical-packs --reliability-reports --readiness --external-evidence --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
 ```
 
 ## API
 
 `trustai serve` exposes:
 
-- `POST /v0/control/index`;
+- `POST /v0/control/index`, with optional `rebuild: true` to clear the read model before indexing;
 - `GET /v0/control/summary`;
 - `GET /v0/control/contract-evidence?contract_id=...` or `?contract_hash=...`;
 - `GET /v0/control/agent-evidence?agent_name=...` with optional `agent_version=...`;
@@ -69,6 +73,7 @@ python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts
 - `GET /v0/mcp-evidence` or `GET /v0/control/mcp-evidence`;
 - `GET /v0/promotion-lifecycle-evidence` or `GET /v0/control/promotion-lifecycle-evidence`;
 - `GET /v0/framework-adapter-evidence` or `GET /v0/control/framework-adapter-evidence`;
+- `GET /v0/review-portal-evidence` or `GET /v0/control/review-portal-evidence`;
 - `GET /v0/roadmap-evidence`;
 - `GET /v0/phase-scoreboards` or `GET /v0/control/phase-scoreboards`;
 - `GET /v0/design-partner-dossiers` or `GET /v0/control/design-partner-dossiers`;
@@ -99,6 +104,11 @@ rollbacks, and failed-soak demotion receipts into one CI/CD promotion review
 surface. The framework-adapter evidence list binds adapter matrices, native hook
 releases, hook operation receipts, and framework adapter production-authority
 dossiers into one Phase 1 adapter coverage surface.
+The review-portal evidence list binds supervised access, regulator acceptance,
+service attestation, and production-authority dossier records into one hosted
+auditor/regulator review surface. Rebuild mode clears all derived read-model
+tables before replaying the evidence chain, while leaving the chain itself as
+the source of truth.
 The roadmap-evidence list binds roadmap audit entries, retained
 collection-run provenance, external
 evidence manifests, phase scoreboard entries, design-partner pilot dossiers,
