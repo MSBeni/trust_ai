@@ -151,7 +151,7 @@ jobs:
           if-no-files-found: error
 
       - name: Attest build provenance
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && !github.event.repository.private
         uses: actions/attest-build-provenance@v2
         with:
           subject-path: dist/trustai-verify-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}

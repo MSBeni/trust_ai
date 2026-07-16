@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
-from .canonical import content_hash, utc_now, without_keys
+from .canonical import content_hash, file_sha256_ref, utc_now, without_keys
 from .chain import EvidenceChain
 
 ROADMAP_AUDIT_SCHEMA = "trustai.roadmap-audit/0.1"
@@ -974,8 +973,7 @@ def _file_ref(root: Path, path: str | Path) -> dict[str, Any]:
     relative = Path(path).as_posix()
     target = root / relative
     if target.exists() and target.is_file():
-        digest = "sha256:" + sha256(target.read_bytes()).hexdigest()
-        return {"path": relative, "present": True, "sha256": digest}
+        return {"path": relative, "present": True, "sha256": file_sha256_ref(target)}
     return {"path": relative, "present": False, "sha256": None}
 
 
@@ -1009,7 +1007,7 @@ def _verify_evidence_ref(root: Path, item: dict[str, Any], req_id: str, errors: 
             errors.append(f"requirement {req_id} evidence path missing: {path_value}")
             return
         expected_hash = item.get("sha256")
-        actual_hash = "sha256:" + sha256(target.read_bytes()).hexdigest()
+        actual_hash = file_sha256_ref(target)
         if expected_hash != actual_hash:
             errors.append(f"requirement {req_id} evidence hash mismatch: {path_value}")
     else:

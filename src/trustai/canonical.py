@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 from hashlib import sha256
+from pathlib import Path
 from typing import Any
 
 
@@ -21,6 +22,21 @@ def canonical_bytes(value: Any) -> bytes:
 
 def sha256_hex(data: bytes) -> str:
     return sha256(data).hexdigest()
+
+
+def canonical_file_bytes(path: str | Path) -> bytes:
+    data = Path(path).read_bytes()
+    if b"\x00" in data:
+        return data
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError:
+        return data
+    return text.replace("\r\n", "\n").replace("\r", "\n").encode("utf-8")
+
+
+def file_sha256_ref(path: str | Path) -> str:
+    return "sha256:" + sha256_hex(canonical_file_bytes(path))
 
 
 def content_hash(value: Any) -> str:

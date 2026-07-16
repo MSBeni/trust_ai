@@ -1,5 +1,5 @@
 {
-  "evidence_argument": "oss-verifier-and-public-spec,ci-run,examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json,Recorded Go verifier workflow run source snapshot;issuer=GitHub Actions;subject=trustai go verifier release workflow;source_uri=https://github.com/MSBeni/trust_ai/actions;issued_at=2026-07-08T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
+  "evidence_argument": "oss-verifier-and-public-spec,ci-run,examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json,Snapshot of recorded verifier workflow run export;issuer=GitHub Actions;subject=trustai go verifier release workflow;source_uri=https://github.com/MSBeni/trust_ai/actions;issued_at=2026-07-08T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
   "evidence_item": {
     "accepted_authority_kinds": [
       "ci-run",
@@ -7,19 +7,19 @@
       "hosted-service"
     ],
     "authority_kind": "ci-run",
-    "description": "Recorded Go verifier workflow run source snapshot",
-    "evidence_id": "1d08a0a079a9c5e6e3a4ba9a34d847c79a4f5b2138a5b453659a21c8dbf47e29",
+    "description": "Snapshot of recorded verifier workflow run export",
+    "evidence_id": "13fc9c008f6da0ef75945c98e2a8a1929799d48949c37ed202848b87b8efe94c",
     "expires_at": "2026-12-31T00:00:00Z",
     "issued_at": "2026-07-08T00:00:00Z",
     "issuer": "GitHub Actions",
     "path": "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json",
     "requirement_id": "oss-verifier-and-public-spec",
-    "sha256": "sha256:25aa4190359d96e1e53a55de1a59987e80ea612de61db1dfaf90ddf0846985f9",
+    "sha256": "sha256:fa67caec568890efabdecbfbc188f6b3842c288c810e9ee34a3f42aca90f9646",
     "source_uri": "https://github.com/MSBeni/trust_ai/actions",
     "subject": "trustai go verifier release workflow"
   },
-  "generated_at": "2026-07-13T04:36:20Z",
-  "intake_id": "a6a2e090c2d1e935d7bc5e2db1146971761b642d46d204dffd970a233a60004d",
+  "generated_at": "2026-07-16T05:20:22Z",
+  "intake_id": "4245a3b55e1c6d7fe12f94f98c90ea69713ba8fd66932ec32a3800e6c6cb6057",
   "limitations": [
     "This intake receipt hashes and maps one collected artifact to a collection-plan task; it does not itself satisfy roadmap completion.",
     "Coverage is updated only after rebuilding and verifying an external evidence manifest with the emitted evidence argument.",
@@ -28,28 +28,28 @@
   "schema": "trustai.external-evidence-intake/0.1",
   "source_manifest": {
     "covered_authority_kind_count": 1,
-    "manifest_hash": "fa94c626408822fdf43a37f22afd9be496e84077dcd1941bc0346563d392864d",
-    "manifest_id": "a265ed263d6dda2d1ce2b729f576ac512f8c3b64e0ee451191c47394ae57f2cb",
+    "manifest_hash": "0c26eb19cbbac468aa6037574699dc9e6c53e237fc9ec25b8cdb272e54427f28",
+    "manifest_id": "f254494d21c60e4d03f2281f3533d72803c1e44d07c8fa2062f722063b3ffc47",
     "manifest_ref": "production-external-evidence",
     "missing_authority_kind_count": 69,
     "required_authority_kind_count": 70,
     "status": "partial"
   },
   "source_plan": {
-    "plan_hash": "4d63dab7f9e7fdb5239c3e22198a98c284629042c56618b18bd4c057907989b2",
-    "plan_id": "c2af8ff86935b512c688dd8b86d53a2e5702fd956e2e99de35955d68d86224e5",
+    "plan_hash": "12e330f44b933675c0236d698019b824fcf771dc7847f3e9a8038e4c6d503807",
+    "plan_id": "5f1019fe227de53869df3f7cb89dd192229f61fb3385121f2e2a1ec7521f92ea",
     "source_manifest": {
-      "generated_at": "2026-07-13T04:33:11Z",
-      "manifest_hash": "fa94c626408822fdf43a37f22afd9be496e84077dcd1941bc0346563d392864d",
-      "manifest_id": "a265ed263d6dda2d1ce2b729f576ac512f8c3b64e0ee451191c47394ae57f2cb",
+      "generated_at": "2026-07-16T05:19:54Z",
+      "manifest_hash": "0c26eb19cbbac468aa6037574699dc9e6c53e237fc9ec25b8cdb272e54427f28",
+      "manifest_id": "f254494d21c60e4d03f2281f3533d72803c1e44d07c8fa2062f722063b3ffc47",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },
     "status_filter": "all"
   },
   "source_roadmap_audit": {
-    "audit_hash": "e2e36fde8a987b695c4ff38e0b48b9f19ec0deb57e2e918620322bba6f0c1e50",
-    "audit_id": "d4863183f648a48fbb8e88dd74971bac2bc539bd9cf5ac24fb66051cbbb523b7",
+    "audit_hash": "e67fa171bc3f83dbe67c103504df1fab59bf4bfe81c51b28e41a9591e213a638",
+    "audit_id": "1cd06518377bc79cf909031282ae9f43c9283131c5b565644c9c4a184e70bddb",
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "task": {

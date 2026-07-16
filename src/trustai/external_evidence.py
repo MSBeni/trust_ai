@@ -8,7 +8,7 @@ from hashlib import sha256
 from pathlib import Path, PureWindowsPath
 from typing import Any
 
-from .canonical import content_hash, parse_rfc3339, utc_now, without_keys
+from .canonical import canonical_file_bytes, content_hash, file_sha256_ref, parse_rfc3339, utc_now, without_keys
 from .chain import CHAIN_SPEC_VERSION, EvidenceChain
 from .merkle import merkle_root, verify_inclusion
 from .roadmap_audit import ROADMAP_AUDIT_ENTRY_TYPE, STATUS_REFERENCE_ATTESTED, verify_roadmap_audit
@@ -2841,7 +2841,7 @@ def _build_bundle_source_artifacts(root: Path, source_artifacts: list[dict[str, 
         target = root / path
         if not target.exists() or not target.is_file():
             raise ValueError(f"bundle source artifact file is missing: {path}")
-        data = target.read_bytes()
+        data = canonical_file_bytes(target)
         body = {
             "kind": kind,
             "path": Path(path).as_posix(),
@@ -3891,7 +3891,7 @@ def _file_ref(root: Path, path: str | Path) -> dict[str, Any]:
         return {
             "path": relative,
             "present": True,
-            "sha256": "sha256:" + sha256(target.read_bytes()).hexdigest(),
+            "sha256": file_sha256_ref(target),
         }
     return {"path": relative, "present": False, "sha256": None}
 
@@ -3908,7 +3908,7 @@ def _verify_file_ref(root: Path, item: dict[str, Any], errors: list[str]) -> Non
     if not target.exists() or not target.is_file():
         errors.append(f"external evidence file missing: {path}")
         return
-    actual_hash = "sha256:" + sha256(target.read_bytes()).hexdigest()
+    actual_hash = file_sha256_ref(target)
     if item.get("sha256") != actual_hash:
         errors.append(f"external evidence hash mismatch: {path}")
 

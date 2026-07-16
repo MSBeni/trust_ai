@@ -4,7 +4,7 @@
     {
       "authority_kind": "ci-run",
       "coverage_status": "covered",
-      "description": "Recorded Go verifier workflow run source snapshot",
+      "description": "Snapshot of recorded verifier workflow run export",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
         "Verifier release authority dossiers cover the local/reference public release authority checklist and retained provider workflow export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
@@ -93,14 +93,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "33faf1f434562eaba4af7f4ab23840d7715c544bdd5570fbc5c61b8d90f74896",
+  "source_map_id": "b76124e042ee787a9185665fb1c08c83e25842d13ffb00cf5e7c05750db1d775",
   "source_plan": {
-    "plan_hash": "41ed27da76596ea7d0b3e4b4ef4ada5bd3b353814c142702799957b2c85fa8f6",
-    "plan_id": "b685af8d9b27661620821d1b24e56a3166f4848357244864538040283a9a5bc5",
+    "plan_hash": "12e330f44b933675c0236d698019b824fcf771dc7847f3e9a8038e4c6d503807",
+    "plan_id": "5f1019fe227de53869df3f7cb89dd192229f61fb3385121f2e2a1ec7521f92ea",
     "source_manifest": {
-      "generated_at": "2026-07-12T18:51:48Z",
-      "manifest_hash": "c1375edffbc57aa1eaee9cbcb9c58cf4776aaa211338c087502b56c6f3d80da7",
-      "manifest_id": "fa03f34b7c230bb9e5cbb07702b98529505b2177809e9e43b899778282392619",
+      "generated_at": "2026-07-16T05:19:54Z",
+      "manifest_hash": "0c26eb19cbbac468aa6037574699dc9e6c53e237fc9ec25b8cdb272e54427f28",
+      "manifest_id": "f254494d21c60e4d03f2281f3533d72803c1e44d07c8fa2062f722063b3ffc47",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },
@@ -114,6 +114,6 @@
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "artifacts/external-evidence-sources",
     "source_plan_task_count": 70,
-    "status_filter": "missing"
+    "status_filter": "all"
   }
 }

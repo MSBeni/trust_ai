@@ -9,7 +9,7 @@ from hashlib import sha256
 import unittest
 from pathlib import Path
 
-from trustai.canonical import content_hash, without_keys
+from trustai.canonical import content_hash, file_sha256_ref, without_keys
 from trustai.chain import EvidenceChain
 from trustai.external_evidence import (
     EXTERNAL_EVIDENCE_ENTRY_TYPE,
@@ -949,7 +949,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_SNAPSHOT_SCHEMA, snapshot["schema"])
                 self.assertEqual("file-copy", snapshot["retrieval_method"])
                 self.assertEqual(snapshot_rel.as_posix(), intake["evidence_item"]["path"])
-                self.assertEqual("sha256:" + sha256(snapshot_path.read_bytes()).hexdigest(), intake["evidence_item"]["sha256"])
+                self.assertEqual(file_sha256_ref(snapshot_path), intake["evidence_item"]["sha256"])
                 self.assertIn("oss-verifier-and-public-spec,ci-run", intake["evidence_argument"])
             finally:
                 shutil.rmtree(snapshot_path.parent, ignore_errors=True)
