@@ -6,7 +6,7 @@
       "hosted-service"
     ]
   },
-  "gap_report_id": "f541aced15882df1ea3a13dbc9158ca90b441d4c07a2d48138d9d6ccdf77bb0a",
+  "gap_report_id": "04ede4b92c2a8dcd7877f03283bfd1c8bb9eda6dfac703e71b6acd553d7c03e3",
   "gaps": [
     {
       "authority_kind": "hosted-service",
@@ -1550,7 +1550,7 @@
       "unit_ref": "trust-network-procurement-and-marketplace:customer"
     }
   ],
-  "generated_at": "2026-07-16T14:12:01Z",
+  "generated_at": "2026-07-16T20:39:50Z",
   "limitations": [
     "This gap report verifies the retained manifest, remaining collection plan, and source-map worklist; it does not satisfy missing external authority evidence.",
     "A gap is closed only by collecting a matching authority artifact, verifying its source snapshot and intake receipt, then rebuilding the external evidence manifest.",
@@ -1666,28 +1666,28 @@
   "schema": "trustai.external-evidence-gap-report/0.1",
   "sources": {
     "collection_plan": {
-      "generated_at": "2026-07-16T14:11:38Z",
-      "plan_hash": "770628eef49cbb50ee2f0137487455184058cda678b0c0be7c0842b2ffe11281",
-      "plan_id": "38f9b9ddd136bec71b175bcaa50bc881baa8e96e2d3babab84f4fea8d4916c13",
+      "generated_at": "2026-07-16T20:39:21Z",
+      "plan_hash": "d21deba9fd31c590fa8a922fec4a1903e5fa72cf590688fbccd57cad346d63a9",
+      "plan_id": "cb504963b97d016cc9049ec686ec58d8b7fdb3cdb3cc4702e59a108304c62a17",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "manifest": {
-      "generated_at": "2026-07-16T14:11:25Z",
-      "manifest_hash": "e26e3d75b630464789cd7429fc4e70e4b66450b7357c9200b63a098b680bb31a",
-      "manifest_id": "a6ad9357b0f619e94e48e358b0461a77618e9e0d1be6292a96d66a7ce13da39e",
+      "generated_at": "2026-07-16T20:39:04Z",
+      "manifest_hash": "2b452f15062bdae5f92d45f5fe07015fc62a9b738a0608a39c6c0df2b1808431",
+      "manifest_id": "73f3530feb69e629328262aa6ab61b36b5927e64d90a6fe171eb8807d32eaf4b",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
-      "audit_hash": "05532a16c23468d3a329b4154eb3d7525db70b027d62c9db3791cb6ac1525af8",
-      "audit_id": "d57c32a613e4d86b4594e07c02dc0aa2bca9f36bd64adea184fba576340be46d",
-      "generated_at": "2026-07-16T14:09:38Z",
+      "audit_hash": "e0ce5278fcbc97c7ec92c83cf1f7e02263f32d625cb17de4ad78e9065a31b97c",
+      "audit_id": "97bf3bdca64243e37ed6c7d3413ee7c70d8c346c5de10231713dcebe159bba1a",
+      "generated_at": "2026-07-16T20:36:48Z",
       "schema": "trustai.roadmap-audit/0.1"
     },
     "source_map": {
-      "generated_at": "2026-07-16T14:11:48Z",
+      "generated_at": "2026-07-16T20:39:33Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "ebc83b1b4bf390e2fdad6ad6acf6a0c99e7ff34f7a510a16e75a2eaa212227ec",
-      "source_map_id": "fd7cb69d2309b8141a8d8d65f16a5252241ad4c9c526a08110d7d1862c5466f7"
+      "source_map_hash": "2f5d0bd4a24e161bb12ad8d5223b25847d9853be86ae78e101ffbf8278e879a6",
+      "source_map_id": "2d9f9c7f872dc9af335280223b47575aaf9c3a9be88d10709e8f37a5c7019b90"
     }
   },
   "summary": {

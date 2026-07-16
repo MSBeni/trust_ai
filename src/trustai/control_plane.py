@@ -24,6 +24,11 @@ from .framework_adapter_matrix import FRAMEWORK_ADAPTER_MATRIX_ENTRY_TYPE
 from .framework_hook_operation import FRAMEWORK_HOOK_OPERATION_ENTRY_TYPE
 from .framework_hook_release import FRAMEWORK_HOOK_RELEASE_ENTRY_TYPE
 from .gate import EVAL_ENTRY_TYPE, GATE_ENTRY_TYPE
+from .identity_provider_attestation import IDENTITY_PROVIDER_ATTESTATION_ENTRY_TYPE
+from .identity_provider_authority import IDENTITY_PROVIDER_AUTHORITY_ENTRY_TYPE
+from .identity_provider_lifecycle_operation import IDENTITY_PROVIDER_LIFECYCLE_OPERATION_ENTRY_TYPE
+from .identity_provider_lifecycle_worker import IDENTITY_PROVIDER_LIFECYCLE_WORKER_ENTRY_TYPE
+from .identity_provider_session import IDENTITY_PROVIDER_SESSION_ENTRY_TYPE
 from .phase_scoreboard import PHASE_SCOREBOARD_ENTRY_TYPE
 from .product_scope import PRODUCT_SCOPE_ENTRY_TYPE
 from .ingest import INGEST_ENTRY_TYPE
@@ -50,6 +55,7 @@ from .shadow import (
     TRAFFIC_COMPLETENESS_ENTRY_TYPE,
     TRAFFIC_HOLDOUT_EXPORT_ENTRY_TYPE,
 )
+from .vendor_identity import VENDOR_IDENTITY_ENTRY_TYPE
 from .vertical_pack import VERTICAL_PACK_ENTRY_TYPE
 
 SCHEMA_VERSION = "trustai.control-plane/0.1"
@@ -62,6 +68,12 @@ INDEX_TABLES = (
     "anchors",
     "byoc_operator_attestations",
     "byoc_authority_dossiers",
+    "vendor_identity_receipts",
+    "identity_provider_attestations",
+    "identity_provider_sessions",
+    "identity_provider_lifecycle_operations",
+    "identity_provider_lifecycle_workers",
+    "identity_provider_authority_dossiers",
     "ingest_events",
     "mcp_tool_calls",
     "mcp_proxy_captures",
@@ -587,6 +599,182 @@ class ControlPlane:
                 control_summary_json TEXT NOT NULL,
                 authority_evidence_json TEXT NOT NULL,
                 authority_artifacts_json TEXT NOT NULL,
+                generated_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS vendor_identity_receipts (
+                receipt_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                receipt_hash TEXT NOT NULL,
+                vendor_name TEXT,
+                legal_name TEXT,
+                subject_ref TEXT,
+                domain TEXT,
+                identity_provider TEXT,
+                identity_id TEXT,
+                proof_pack_count INTEGER NOT NULL,
+                trust_network_manifest_id TEXT,
+                trust_network_manifest_hash TEXT,
+                issued_at TEXT,
+                expires_at TEXT,
+                vendor_json TEXT NOT NULL,
+                proof_packs_json TEXT NOT NULL,
+                trust_network_json TEXT NOT NULL,
+                limitations_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS identity_provider_attestations (
+                attestation_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                attestation_hash TEXT NOT NULL,
+                provider TEXT,
+                authentication_method TEXT,
+                tenant_ref TEXT,
+                observed_at TEXT,
+                source TEXT,
+                subject_ref TEXT,
+                identity_provider TEXT,
+                identity_id TEXT,
+                identity_record_hash TEXT,
+                agent_name TEXT,
+                agent_version TEXT,
+                vendor_receipt_id TEXT,
+                vendor_receipt_hash TEXT,
+                source_artifact_count INTEGER NOT NULL,
+                issued_at TEXT,
+                authentication_json TEXT NOT NULL,
+                subject_json TEXT NOT NULL,
+                vendor_binding_json TEXT NOT NULL,
+                source_payload_json TEXT NOT NULL,
+                source_artifacts_json TEXT NOT NULL,
+                limitations_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS identity_provider_sessions (
+                session_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                session_hash TEXT NOT NULL,
+                provider TEXT,
+                mode TEXT,
+                environment TEXT,
+                attestation_id TEXT,
+                attestation_hash TEXT,
+                session_ref TEXT,
+                event_kind TEXT,
+                provider_event_id TEXT,
+                identity_provider TEXT,
+                identity_id TEXT,
+                identity_record_hash TEXT,
+                decision TEXT,
+                risk_level TEXT,
+                response_status INTEGER,
+                success INTEGER NOT NULL,
+                session_log_ref TEXT,
+                session_log_root TEXT,
+                audit_log_ref TEXT,
+                audit_log_root TEXT,
+                recorded_at TEXT,
+                identity_attestation_json TEXT NOT NULL,
+                session_json TEXT NOT NULL,
+                authentication_context_json TEXT NOT NULL,
+                provider_evidence_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS identity_provider_lifecycle_operations (
+                operation_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                operation_hash TEXT NOT NULL,
+                provider TEXT,
+                mode TEXT,
+                environment TEXT,
+                attestation_id TEXT,
+                attestation_hash TEXT,
+                source_session_id TEXT,
+                source_session_hash TEXT,
+                operation_kind TEXT,
+                operation_ref TEXT,
+                provider_operation_id TEXT,
+                identity_provider TEXT,
+                identity_id TEXT,
+                identity_record_hash TEXT,
+                target_state TEXT,
+                outcome TEXT,
+                success INTEGER NOT NULL,
+                response_status INTEGER,
+                system_log_ref TEXT,
+                system_log_root TEXT,
+                audit_log_ref TEXT,
+                audit_log_root TEXT,
+                recorded_at TEXT,
+                identity_attestation_json TEXT NOT NULL,
+                source_session_json TEXT NOT NULL,
+                operation_json TEXT NOT NULL,
+                change_refs_json TEXT NOT NULL,
+                provider_evidence_json TEXT NOT NULL,
+                control_summary_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS identity_provider_lifecycle_workers (
+                worker_operation_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                worker_operation_hash TEXT NOT NULL,
+                provider TEXT,
+                mode TEXT,
+                environment TEXT,
+                source_operation_id TEXT,
+                source_operation_hash TEXT,
+                identity_id TEXT,
+                identity_record_hash TEXT,
+                operation_kind TEXT,
+                worker_ref TEXT,
+                run_ref TEXT,
+                worker_success INTEGER NOT NULL,
+                schedule_ref TEXT,
+                queue_ref TEXT,
+                destination_ref TEXT,
+                response_status INTEGER,
+                propagation_log_ref TEXT,
+                propagation_log_root TEXT,
+                audit_log_ref TEXT,
+                audit_log_root TEXT,
+                recorded_at TEXT,
+                source_operation_json TEXT NOT NULL,
+                worker_json TEXT NOT NULL,
+                scheduler_json TEXT NOT NULL,
+                propagation_json TEXT NOT NULL,
+                observability_json TEXT NOT NULL,
+                control_summary_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS identity_provider_authority_dossiers (
+                dossier_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                dossier_hash TEXT NOT NULL,
+                mode TEXT,
+                environment TEXT,
+                dossier_ref TEXT,
+                authority_ref TEXT,
+                producer_ref TEXT,
+                production_claimed INTEGER NOT NULL,
+                production_ready INTEGER NOT NULL,
+                worker_operation_id TEXT,
+                worker_receipt_hash TEXT,
+                provider TEXT,
+                identity_id TEXT,
+                identity_record_hash TEXT,
+                operation_kind TEXT,
+                worker_ref TEXT,
+                required_requirement_count INTEGER NOT NULL,
+                covered_requirement_count INTEGER NOT NULL,
+                missing_requirement_count INTEGER NOT NULL,
+                authority_evidence_count INTEGER NOT NULL,
+                fresh_evidence_count INTEGER NOT NULL,
+                stale_evidence_count INTEGER NOT NULL,
+                missing_freshness_count INTEGER NOT NULL,
+                worker_binding_json TEXT NOT NULL,
+                summary_json TEXT NOT NULL,
+                control_summary_json TEXT NOT NULL,
+                authority_evidence_json TEXT NOT NULL,
                 generated_at TEXT,
                 body_json TEXT NOT NULL
             );
@@ -1229,6 +1417,12 @@ class ControlPlane:
             "anchors": 0,
             "byoc_operator_attestations": 0,
             "byoc_authority_dossiers": 0,
+            "vendor_identity_receipts": 0,
+            "identity_provider_attestations": 0,
+            "identity_provider_sessions": 0,
+            "identity_provider_lifecycle_operations": 0,
+            "identity_provider_lifecycle_workers": 0,
+            "identity_provider_authority_dossiers": 0,
             "ingest_events": 0,
             "mcp_tool_calls": 0,
             "mcp_proxy_captures": 0,
@@ -1291,6 +1485,325 @@ class ControlPlane:
                 ),
             )
             counts["chain_entries"] += 1
+
+            if entry.get("entry_type") == VENDOR_IDENTITY_ENTRY_TYPE:
+                vendor = payload.get("vendor") if isinstance(payload.get("vendor"), dict) else {}
+                proof_packs = payload.get("proof_packs") if isinstance(payload.get("proof_packs"), list) else []
+                trust_network = payload.get("trust_network") if isinstance(payload.get("trust_network"), dict) else {}
+                limitations = payload.get("limitations") if isinstance(payload.get("limitations"), list) else []
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO vendor_identity_receipts(
+                        receipt_id, entry_id, receipt_hash, vendor_name, legal_name,
+                        subject_ref, domain, identity_provider, identity_id,
+                        proof_pack_count, trust_network_manifest_id,
+                        trust_network_manifest_hash, issued_at, expires_at,
+                        vendor_json, proof_packs_json, trust_network_json,
+                        limitations_json, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("receipt_id") or entry["entry_id"],
+                        entry["entry_id"],
+                        payload.get("receipt_hash") or entry.get("payload_hash"),
+                        vendor.get("name"),
+                        vendor.get("legal_name"),
+                        vendor.get("subject_ref"),
+                        vendor.get("domain"),
+                        vendor.get("identity_provider"),
+                        vendor.get("identity_id"),
+                        len(proof_packs),
+                        trust_network.get("manifest_id"),
+                        trust_network.get("manifest_hash"),
+                        entry.get("timestamp"),
+                        payload.get("expires_at"),
+                        _json(vendor),
+                        _json(proof_packs),
+                        _json(trust_network),
+                        _json(limitations),
+                        _json(payload),
+                    ),
+                )
+                counts["vendor_identity_receipts"] += 1
+
+            if entry.get("entry_type") == IDENTITY_PROVIDER_ATTESTATION_ENTRY_TYPE:
+                authentication = payload.get("authentication") if isinstance(payload.get("authentication"), dict) else {}
+                subject = payload.get("subject") if isinstance(payload.get("subject"), dict) else {}
+                agent = subject.get("agent") if isinstance(subject.get("agent"), dict) else {}
+                vendor_binding = payload.get("vendor_binding") if isinstance(payload.get("vendor_binding"), dict) else {}
+                source_artifacts = payload.get("source_artifacts") if isinstance(payload.get("source_artifacts"), list) else []
+                limitations = payload.get("limitations") if isinstance(payload.get("limitations"), list) else []
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO identity_provider_attestations(
+                        attestation_id, entry_id, attestation_hash, provider,
+                        authentication_method, tenant_ref, observed_at, source,
+                        subject_ref, identity_provider, identity_id,
+                        identity_record_hash, agent_name, agent_version,
+                        vendor_receipt_id, vendor_receipt_hash,
+                        source_artifact_count, issued_at, authentication_json,
+                        subject_json, vendor_binding_json, source_payload_json,
+                        source_artifacts_json, limitations_json, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("attestation_id") or entry["entry_id"],
+                        entry["entry_id"],
+                        payload.get("attestation_hash") or entry.get("payload_hash"),
+                        authentication.get("provider") or subject.get("identity_provider"),
+                        authentication.get("method"),
+                        authentication.get("tenant_ref"),
+                        authentication.get("observed_at"),
+                        authentication.get("source"),
+                        subject.get("subject_ref"),
+                        subject.get("identity_provider"),
+                        subject.get("identity_id"),
+                        subject.get("identity_record_hash"),
+                        agent.get("name"),
+                        agent.get("version"),
+                        vendor_binding.get("receipt_id"),
+                        vendor_binding.get("receipt_hash"),
+                        len(source_artifacts),
+                        entry.get("timestamp"),
+                        _json(authentication),
+                        _json(subject),
+                        _json(vendor_binding),
+                        _json(payload.get("source_payload") if isinstance(payload.get("source_payload"), dict) else {}),
+                        _json(source_artifacts),
+                        _json(limitations),
+                        _json(payload),
+                    ),
+                )
+                counts["identity_provider_attestations"] += 1
+
+            if entry.get("entry_type") == IDENTITY_PROVIDER_SESSION_ENTRY_TYPE:
+                identity_attestation = payload.get("identity_attestation") if isinstance(payload.get("identity_attestation"), dict) else {}
+                session = payload.get("session") if isinstance(payload.get("session"), dict) else {}
+                authentication_context = payload.get("authentication_context") if isinstance(payload.get("authentication_context"), dict) else {}
+                provider_evidence = payload.get("provider_evidence") if isinstance(payload.get("provider_evidence"), dict) else {}
+                success = bool(provider_evidence.get("success"))
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO identity_provider_sessions(
+                        session_id, entry_id, session_hash, provider, mode,
+                        environment, attestation_id, attestation_hash,
+                        session_ref, event_kind, provider_event_id,
+                        identity_provider, identity_id, identity_record_hash,
+                        decision, risk_level, response_status, success,
+                        session_log_ref, session_log_root, audit_log_ref,
+                        audit_log_root, recorded_at, identity_attestation_json,
+                        session_json, authentication_context_json,
+                        provider_evidence_json, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("session_id") or entry["entry_id"],
+                        entry["entry_id"],
+                        payload.get("session_hash") or entry.get("payload_hash"),
+                        payload.get("provider") or session.get("identity_provider"),
+                        payload.get("mode"),
+                        payload.get("environment"),
+                        identity_attestation.get("attestation_id"),
+                        identity_attestation.get("attestation_hash"),
+                        session.get("session_ref"),
+                        session.get("event_kind"),
+                        session.get("provider_event_id"),
+                        session.get("identity_provider"),
+                        session.get("identity_id"),
+                        session.get("identity_record_hash"),
+                        authentication_context.get("decision"),
+                        authentication_context.get("risk_level"),
+                        provider_evidence.get("response_status"),
+                        1 if success else 0,
+                        provider_evidence.get("session_log_ref"),
+                        provider_evidence.get("session_log_root"),
+                        provider_evidence.get("audit_log_ref"),
+                        provider_evidence.get("audit_log_root"),
+                        entry.get("timestamp"),
+                        _json(identity_attestation),
+                        _json(session),
+                        _json(authentication_context),
+                        _json(provider_evidence),
+                        _json(payload),
+                    ),
+                )
+                counts["identity_provider_sessions"] += 1
+
+            if entry.get("entry_type") == IDENTITY_PROVIDER_LIFECYCLE_OPERATION_ENTRY_TYPE:
+                identity_attestation = payload.get("identity_attestation") if isinstance(payload.get("identity_attestation"), dict) else {}
+                source_session = payload.get("source_session") if isinstance(payload.get("source_session"), dict) else {}
+                operation = payload.get("operation") if isinstance(payload.get("operation"), dict) else {}
+                change_refs = payload.get("change_refs") if isinstance(payload.get("change_refs"), dict) else {}
+                provider_evidence = payload.get("provider_evidence") if isinstance(payload.get("provider_evidence"), dict) else {}
+                control_summary = payload.get("control_summary") if isinstance(payload.get("control_summary"), dict) else {}
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO identity_provider_lifecycle_operations(
+                        operation_id, entry_id, operation_hash, provider, mode,
+                        environment, attestation_id, attestation_hash,
+                        source_session_id, source_session_hash, operation_kind,
+                        operation_ref, provider_operation_id, identity_provider,
+                        identity_id, identity_record_hash, target_state, outcome,
+                        success, response_status, system_log_ref, system_log_root,
+                        audit_log_ref, audit_log_root, recorded_at,
+                        identity_attestation_json, source_session_json,
+                        operation_json, change_refs_json, provider_evidence_json,
+                        control_summary_json, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("operation_id") or entry["entry_id"],
+                        entry["entry_id"],
+                        payload.get("operation_hash") or entry.get("payload_hash"),
+                        payload.get("provider") or operation.get("identity_provider"),
+                        payload.get("mode"),
+                        payload.get("environment"),
+                        identity_attestation.get("attestation_id"),
+                        identity_attestation.get("attestation_hash"),
+                        source_session.get("session_id"),
+                        source_session.get("session_hash"),
+                        operation.get("kind"),
+                        operation.get("operation_ref"),
+                        operation.get("provider_operation_id"),
+                        operation.get("identity_provider"),
+                        operation.get("identity_id"),
+                        operation.get("identity_record_hash"),
+                        operation.get("target_state"),
+                        operation.get("outcome"),
+                        1 if provider_evidence.get("success") else 0,
+                        provider_evidence.get("response_status"),
+                        provider_evidence.get("system_log_ref"),
+                        provider_evidence.get("system_log_root"),
+                        provider_evidence.get("audit_log_ref"),
+                        provider_evidence.get("audit_log_root"),
+                        payload.get("recorded_at") or entry.get("timestamp"),
+                        _json(identity_attestation),
+                        _json(source_session),
+                        _json(operation),
+                        _json(change_refs),
+                        _json(provider_evidence),
+                        _json(control_summary),
+                        _json(payload),
+                    ),
+                )
+                counts["identity_provider_lifecycle_operations"] += 1
+
+            if entry.get("entry_type") == IDENTITY_PROVIDER_LIFECYCLE_WORKER_ENTRY_TYPE:
+                source_operation = payload.get("source_operation") if isinstance(payload.get("source_operation"), dict) else {}
+                worker = payload.get("worker") if isinstance(payload.get("worker"), dict) else {}
+                scheduler = payload.get("scheduler") if isinstance(payload.get("scheduler"), dict) else {}
+                propagation = payload.get("propagation") if isinstance(payload.get("propagation"), dict) else {}
+                observability = payload.get("observability") if isinstance(payload.get("observability"), dict) else {}
+                control_summary = payload.get("control_summary") if isinstance(payload.get("control_summary"), dict) else {}
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO identity_provider_lifecycle_workers(
+                        worker_operation_id, entry_id, worker_operation_hash,
+                        provider, mode, environment, source_operation_id,
+                        source_operation_hash, identity_id, identity_record_hash,
+                        operation_kind, worker_ref, run_ref, worker_success,
+                        schedule_ref, queue_ref, destination_ref, response_status,
+                        propagation_log_ref, propagation_log_root, audit_log_ref,
+                        audit_log_root, recorded_at, source_operation_json,
+                        worker_json, scheduler_json, propagation_json,
+                        observability_json, control_summary_json, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("worker_operation_id") or entry["entry_id"],
+                        entry["entry_id"],
+                        payload.get("worker_operation_hash") or entry.get("payload_hash"),
+                        payload.get("provider") or source_operation.get("provider"),
+                        payload.get("mode"),
+                        payload.get("environment"),
+                        source_operation.get("operation_id"),
+                        source_operation.get("operation_hash"),
+                        source_operation.get("identity_id"),
+                        source_operation.get("identity_record_hash"),
+                        source_operation.get("kind"),
+                        worker.get("worker_ref"),
+                        worker.get("run_ref"),
+                        1 if worker.get("success") else 0,
+                        scheduler.get("schedule_ref"),
+                        scheduler.get("queue_ref"),
+                        propagation.get("destination_ref"),
+                        propagation.get("response_status"),
+                        propagation.get("propagation_log_ref"),
+                        propagation.get("propagation_log_root"),
+                        observability.get("audit_log_ref"),
+                        observability.get("audit_log_root"),
+                        payload.get("recorded_at") or entry.get("timestamp"),
+                        _json(source_operation),
+                        _json(worker),
+                        _json(scheduler),
+                        _json(propagation),
+                        _json(observability),
+                        _json(control_summary),
+                        _json(payload),
+                    ),
+                )
+                counts["identity_provider_lifecycle_workers"] += 1
+
+            if entry.get("entry_type") == IDENTITY_PROVIDER_AUTHORITY_ENTRY_TYPE:
+                worker_binding = payload.get("worker_binding") if isinstance(payload.get("worker_binding"), dict) else {}
+                summary = payload.get("summary") if isinstance(payload.get("summary"), dict) else {}
+                control_summary = payload.get("control_summary") if isinstance(payload.get("control_summary"), dict) else {}
+                authority_evidence = payload.get("authority_evidence") if isinstance(payload.get("authority_evidence"), list) else []
+                generated_at = payload.get("generated_at") or entry.get("timestamp")
+                freshness = _authority_freshness_counts(authority_evidence, generated_at)
+                missing_requirement_count = int(summary.get("missing_requirement_count") or len(summary.get("missing_requirement_ids") or []))
+                production_claimed = payload.get("mode") == "production-dossier"
+                production_ready = bool(production_claimed and missing_requirement_count == 0 and freshness["stale"] == 0 and freshness["missing"] == 0)
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO identity_provider_authority_dossiers(
+                        dossier_id, entry_id, dossier_hash, mode, environment,
+                        dossier_ref, authority_ref, producer_ref,
+                        production_claimed, production_ready, worker_operation_id,
+                        worker_receipt_hash, provider, identity_id,
+                        identity_record_hash, operation_kind, worker_ref,
+                        required_requirement_count, covered_requirement_count,
+                        missing_requirement_count, authority_evidence_count,
+                        fresh_evidence_count, stale_evidence_count,
+                        missing_freshness_count, worker_binding_json,
+                        summary_json, control_summary_json, authority_evidence_json,
+                        generated_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("dossier_id") or entry["entry_id"],
+                        entry["entry_id"],
+                        payload.get("dossier_hash") or entry.get("payload_hash"),
+                        payload.get("mode"),
+                        payload.get("environment"),
+                        payload.get("dossier_ref"),
+                        payload.get("authority_ref"),
+                        payload.get("producer_ref"),
+                        1 if production_claimed else 0,
+                        1 if production_ready else 0,
+                        worker_binding.get("worker_operation_id"),
+                        worker_binding.get("worker_receipt_hash"),
+                        worker_binding.get("provider"),
+                        worker_binding.get("identity_id"),
+                        worker_binding.get("identity_record_hash"),
+                        worker_binding.get("operation_kind"),
+                        worker_binding.get("worker_ref"),
+                        int(summary.get("required_requirement_count") or 0),
+                        int(summary.get("covered_requirement_count") or 0),
+                        missing_requirement_count,
+                        int(summary.get("evidence_count") or len(authority_evidence)),
+                        freshness["fresh"],
+                        freshness["stale"],
+                        freshness["missing"],
+                        _json(worker_binding),
+                        _json(summary),
+                        _json(control_summary),
+                        _json(authority_evidence),
+                        generated_at,
+                        _json(payload),
+                    ),
+                )
+                counts["identity_provider_authority_dossiers"] += 1
 
             if entry.get("entry_type") == INGEST_ENTRY_TYPE:
                 event = payload.get("event", {}) if isinstance(payload.get("event"), dict) else {}
@@ -3580,6 +4093,99 @@ class ControlPlane:
             latest_insurer_authority_dict["control_summary"] = _decode_json_object(
                 latest_insurer_authority_dict.pop("control_summary_json", None)
             )
+        latest_vendor_identity = self.conn.execute(
+            """
+            SELECT receipt_id, entry_id, receipt_hash, vendor_name, legal_name,
+                   subject_ref, domain, identity_provider, identity_id,
+                   proof_pack_count, trust_network_manifest_id, issued_at,
+                   expires_at
+            FROM vendor_identity_receipts
+            ORDER BY issued_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_identity_attestation = self.conn.execute(
+            """
+            SELECT attestation_id, entry_id, attestation_hash, provider,
+                   authentication_method, tenant_ref, observed_at, source,
+                   subject_ref, identity_provider, identity_id,
+                   identity_record_hash, agent_name, agent_version,
+                   vendor_receipt_id, source_artifact_count, issued_at
+            FROM identity_provider_attestations
+            ORDER BY issued_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_identity_session = self.conn.execute(
+            """
+            SELECT session_id, entry_id, session_hash, provider, mode,
+                   environment, attestation_id, session_ref, event_kind,
+                   provider_event_id, identity_provider, identity_id,
+                   decision, risk_level, response_status, success,
+                   session_log_ref, audit_log_ref, recorded_at
+            FROM identity_provider_sessions
+            ORDER BY recorded_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_identity_session_dict = dict(latest_identity_session) if latest_identity_session else None
+        if latest_identity_session_dict is not None:
+            _bool_fields(latest_identity_session_dict, "success")
+        latest_identity_operation = self.conn.execute(
+            """
+            SELECT operation_id, entry_id, operation_hash, provider, mode,
+                   environment, attestation_id, source_session_id,
+                   operation_kind, operation_ref, provider_operation_id,
+                   identity_provider, identity_id, target_state, outcome,
+                   success, response_status, system_log_ref, audit_log_ref,
+                   recorded_at, control_summary_json
+            FROM identity_provider_lifecycle_operations
+            ORDER BY recorded_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_identity_operation_dict = dict(latest_identity_operation) if latest_identity_operation else None
+        if latest_identity_operation_dict is not None:
+            _bool_fields(latest_identity_operation_dict, "success")
+            latest_identity_operation_dict["control_summary"] = _decode_json_object(latest_identity_operation_dict.pop("control_summary_json", None))
+        latest_identity_worker = self.conn.execute(
+            """
+            SELECT worker_operation_id, entry_id, worker_operation_hash,
+                   provider, mode, environment, source_operation_id,
+                   source_operation_hash, identity_id, operation_kind,
+                   worker_ref, run_ref, worker_success, schedule_ref,
+                   queue_ref, destination_ref, response_status,
+                   propagation_log_ref, audit_log_ref, recorded_at,
+                   control_summary_json
+            FROM identity_provider_lifecycle_workers
+            ORDER BY recorded_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_identity_worker_dict = dict(latest_identity_worker) if latest_identity_worker else None
+        if latest_identity_worker_dict is not None:
+            _bool_fields(latest_identity_worker_dict, "worker_success")
+            latest_identity_worker_dict["control_summary"] = _decode_json_object(latest_identity_worker_dict.pop("control_summary_json", None))
+        latest_identity_authority = self.conn.execute(
+            """
+            SELECT dossier_id, entry_id, dossier_hash, mode, environment,
+                   dossier_ref, authority_ref, producer_ref,
+                   production_claimed, production_ready, worker_operation_id,
+                   provider, identity_id, operation_kind, worker_ref,
+                   required_requirement_count, covered_requirement_count,
+                   missing_requirement_count, authority_evidence_count,
+                   fresh_evidence_count, stale_evidence_count,
+                   missing_freshness_count, generated_at,
+                   control_summary_json
+            FROM identity_provider_authority_dossiers
+            ORDER BY generated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_identity_authority_dict = dict(latest_identity_authority) if latest_identity_authority else None
+        if latest_identity_authority_dict is not None:
+            _bool_fields(latest_identity_authority_dict, "production_claimed", "production_ready")
+            latest_identity_authority_dict["control_summary"] = _decode_json_object(latest_identity_authority_dict.pop("control_summary_json", None))
         latest_temporal_holdout_manifest = self.conn.execute(
             """
             SELECT manifest_id, entry_id, run_id, dataset_id, contract_id,
@@ -3686,6 +4292,12 @@ class ControlPlane:
             "latest_authority_dossier": latest_authority_dossier_dict,
             "latest_byoc_operator_attestation": latest_byoc_operator_dict,
             "latest_byoc_authority_dossier": latest_byoc_authority_dict,
+            "latest_vendor_identity_receipt": dict(latest_vendor_identity) if latest_vendor_identity else None,
+            "latest_identity_provider_attestation": dict(latest_identity_attestation) if latest_identity_attestation else None,
+            "latest_identity_provider_session": latest_identity_session_dict,
+            "latest_identity_provider_lifecycle_operation": latest_identity_operation_dict,
+            "latest_identity_provider_lifecycle_worker": latest_identity_worker_dict,
+            "latest_identity_provider_authority_dossier": latest_identity_authority_dict,
             "latest_phase_scoreboard": latest_phase_scoreboard_dict,
             "latest_design_partner_dossier": latest_design_partner_dossier_dict,
             "latest_own_compliance_dossier": latest_own_compliance_dossier_dict,
@@ -4720,6 +5332,183 @@ class ControlPlane:
             items.append(item)
         return items
 
+    def recent_vendor_identity_receipts(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT receipt_id, entry_id, receipt_hash, vendor_name, legal_name,
+                   subject_ref, domain, identity_provider, identity_id,
+                   proof_pack_count, trust_network_manifest_id,
+                   trust_network_manifest_hash, issued_at, expires_at,
+                   vendor_json, proof_packs_json, trust_network_json,
+                   limitations_json
+            FROM vendor_identity_receipts
+            ORDER BY issued_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["vendor"] = _decode_json_object(item.pop("vendor_json", None))
+            item["proof_packs"] = _decode_json_array(item.pop("proof_packs_json", None))
+            item["trust_network"] = _decode_json_object(item.pop("trust_network_json", None))
+            item["limitations"] = _decode_json_array(item.pop("limitations_json", None))
+            items.append(item)
+        return items
+
+    def recent_identity_provider_attestations(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT attestation_id, entry_id, attestation_hash, provider,
+                   authentication_method, tenant_ref, observed_at, source,
+                   subject_ref, identity_provider, identity_id,
+                   identity_record_hash, agent_name, agent_version,
+                   vendor_receipt_id, vendor_receipt_hash,
+                   source_artifact_count, issued_at, authentication_json,
+                   subject_json, vendor_binding_json, source_payload_json,
+                   source_artifacts_json, limitations_json
+            FROM identity_provider_attestations
+            ORDER BY issued_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["authentication"] = _decode_json_object(item.pop("authentication_json", None))
+            item["subject"] = _decode_json_object(item.pop("subject_json", None))
+            item["vendor_binding"] = _decode_json_object(item.pop("vendor_binding_json", None))
+            item["source_payload"] = _decode_json_object(item.pop("source_payload_json", None))
+            item["source_artifacts"] = _decode_json_array(item.pop("source_artifacts_json", None))
+            item["limitations"] = _decode_json_array(item.pop("limitations_json", None))
+            items.append(item)
+        return items
+
+    def recent_identity_provider_sessions(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT session_id, entry_id, session_hash, provider, mode,
+                   environment, attestation_id, attestation_hash,
+                   session_ref, event_kind, provider_event_id,
+                   identity_provider, identity_id, identity_record_hash,
+                   decision, risk_level, response_status, success,
+                   session_log_ref, session_log_root, audit_log_ref,
+                   audit_log_root, recorded_at, identity_attestation_json,
+                   session_json, authentication_context_json,
+                   provider_evidence_json
+            FROM identity_provider_sessions
+            ORDER BY recorded_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            _bool_fields(item, "success")
+            item["identity_attestation"] = _decode_json_object(item.pop("identity_attestation_json", None))
+            item["session"] = _decode_json_object(item.pop("session_json", None))
+            item["authentication_context"] = _decode_json_object(item.pop("authentication_context_json", None))
+            item["provider_evidence"] = _decode_json_object(item.pop("provider_evidence_json", None))
+            items.append(item)
+        return items
+
+    def recent_identity_provider_lifecycle_operations(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT operation_id, entry_id, operation_hash, provider, mode,
+                   environment, attestation_id, attestation_hash,
+                   source_session_id, source_session_hash, operation_kind,
+                   operation_ref, provider_operation_id, identity_provider,
+                   identity_id, identity_record_hash, target_state, outcome,
+                   success, response_status, system_log_ref, system_log_root,
+                   audit_log_ref, audit_log_root, recorded_at,
+                   identity_attestation_json, source_session_json,
+                   operation_json, change_refs_json, provider_evidence_json,
+                   control_summary_json
+            FROM identity_provider_lifecycle_operations
+            ORDER BY recorded_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            _bool_fields(item, "success")
+            item["identity_attestation"] = _decode_json_object(item.pop("identity_attestation_json", None))
+            item["source_session"] = _decode_json_object(item.pop("source_session_json", None))
+            item["operation"] = _decode_json_object(item.pop("operation_json", None))
+            item["change_refs"] = _decode_json_object(item.pop("change_refs_json", None))
+            item["provider_evidence"] = _decode_json_object(item.pop("provider_evidence_json", None))
+            item["control_summary"] = _decode_json_object(item.pop("control_summary_json", None))
+            items.append(item)
+        return items
+
+    def recent_identity_provider_lifecycle_workers(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT worker_operation_id, entry_id, worker_operation_hash,
+                   provider, mode, environment, source_operation_id,
+                   source_operation_hash, identity_id, identity_record_hash,
+                   operation_kind, worker_ref, run_ref, worker_success,
+                   schedule_ref, queue_ref, destination_ref, response_status,
+                   propagation_log_ref, propagation_log_root, audit_log_ref,
+                   audit_log_root, recorded_at, source_operation_json,
+                   worker_json, scheduler_json, propagation_json,
+                   observability_json, control_summary_json
+            FROM identity_provider_lifecycle_workers
+            ORDER BY recorded_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            _bool_fields(item, "worker_success")
+            item["source_operation"] = _decode_json_object(item.pop("source_operation_json", None))
+            item["worker"] = _decode_json_object(item.pop("worker_json", None))
+            item["scheduler"] = _decode_json_object(item.pop("scheduler_json", None))
+            item["propagation"] = _decode_json_object(item.pop("propagation_json", None))
+            item["observability"] = _decode_json_object(item.pop("observability_json", None))
+            item["control_summary"] = _decode_json_object(item.pop("control_summary_json", None))
+            items.append(item)
+        return items
+
+    def recent_identity_provider_authority_dossiers(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT dossier_id, entry_id, dossier_hash, mode, environment,
+                   dossier_ref, authority_ref, producer_ref,
+                   production_claimed, production_ready, worker_operation_id,
+                   worker_receipt_hash, provider, identity_id,
+                   identity_record_hash, operation_kind, worker_ref,
+                   required_requirement_count, covered_requirement_count,
+                   missing_requirement_count, authority_evidence_count,
+                   fresh_evidence_count, stale_evidence_count,
+                   missing_freshness_count, worker_binding_json,
+                   summary_json, control_summary_json, authority_evidence_json,
+                   generated_at
+            FROM identity_provider_authority_dossiers
+            ORDER BY generated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            _bool_fields(item, "production_claimed", "production_ready")
+            item["worker_binding"] = _decode_json_object(item.pop("worker_binding_json", None))
+            item["summary"] = _decode_json_object(item.pop("summary_json", None))
+            item["control_summary"] = _decode_json_object(item.pop("control_summary_json", None))
+            item["authority_evidence"] = _decode_json_array(item.pop("authority_evidence_json", None))
+            items.append(item)
+        return items
+
     def roadmap_evidence(self, limit: int = 20) -> dict[str, Any]:
         return {
             "roadmap_audits": self.recent_roadmap_audits(limit),
@@ -4736,6 +5525,7 @@ class ControlPlane:
             "mcp_evidence": self.mcp_evidence(limit),
             "promotion_lifecycle_evidence": self.promotion_lifecycle_evidence(limit),
             "byoc_evidence": self.byoc_evidence(limit),
+            "identity_provider_evidence": self.identity_provider_evidence(limit),
             "framework_adapter_evidence": self.framework_adapter_evidence(limit),
             "review_portal_evidence": self.review_portal_evidence(limit),
         }
@@ -4750,6 +5540,16 @@ class ControlPlane:
         return {
             "byoc_operator_attestations": self.recent_byoc_operator_attestations(limit),
             "byoc_authority_dossiers": self.recent_byoc_authority_dossiers(limit),
+        }
+
+    def identity_provider_evidence(self, limit: int = 20) -> dict[str, Any]:
+        return {
+            "vendor_identity_receipts": self.recent_vendor_identity_receipts(limit),
+            "identity_provider_attestations": self.recent_identity_provider_attestations(limit),
+            "identity_provider_sessions": self.recent_identity_provider_sessions(limit),
+            "identity_provider_lifecycle_operations": self.recent_identity_provider_lifecycle_operations(limit),
+            "identity_provider_lifecycle_workers": self.recent_identity_provider_lifecycle_workers(limit),
+            "identity_provider_authority_dossiers": self.recent_identity_provider_authority_dossiers(limit),
         }
 
     def framework_adapter_evidence(self, limit: int = 20) -> dict[str, Any]:

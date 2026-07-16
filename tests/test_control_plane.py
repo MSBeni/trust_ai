@@ -3,6 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from tests import test_identity_provider_authority as identity_authority_fixtures
 from tests import test_insurer_partner_authority as insurer_authority_fixtures
 from tests import test_review_portal_service as service_fixtures
 from trustai.approvals import append_approval, load_approval
@@ -31,6 +32,11 @@ from trustai.framework_hook_operation import append_framework_hook_operation, bu
 from trustai.framework_hook_release import append_framework_hook_release, build_framework_hook_release, load_framework_hook_release_source
 from trustai.gate import append_eval_and_gate
 from trustai.ingest import append_events, load_events
+from trustai.identity_provider_attestation import append_identity_provider_attestation
+from trustai.identity_provider_authority import append_identity_provider_authority_dossier
+from trustai.identity_provider_lifecycle_operation import append_identity_provider_lifecycle_operation_receipt
+from trustai.identity_provider_lifecycle_worker import append_identity_provider_lifecycle_worker_receipt
+from trustai.identity_provider_session import append_identity_provider_session_receipt
 from trustai.insurer_partner_authority import append_insurer_partner_authority_dossier
 from trustai.mcp_gateway import (
     append_mcp_proxy_capture,
@@ -82,6 +88,7 @@ from trustai.shadow import (
 )
 from trustai.supervised_access import append_supervised_access_receipt
 from trustai.underwriting_quote import append_underwriting_quote
+from trustai.vendor_identity import append_vendor_identity_receipt
 from trustai.vertical_pack import append_vertical_pack, build_vertical_pack
 from trustai.verifier import verify_proof_pack
 
@@ -975,6 +982,140 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(evidence, roadmap["byoc_evidence"])
                 self.assertEqual(authority["dossier_id"], generic_authority[0]["dossier_id"])
                 self.assertEqual("deployment.byoc_production_authority_recorded", generic_authority[0]["entry_type"])
+            finally:
+                control.close()
+
+    def test_indexes_identity_provider_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            helper = identity_authority_fixtures.IdentityProviderAuthorityTests(
+                methodName="test_identity_provider_authority_verifies_and_appends"
+            )
+            sources = helper._sources(tmp)
+            dossier = helper._dossier(sources)
+            chain = EvidenceChain.load(tmp / "chain.json", tenant_id="identity-provider-lifecycle-test")
+            vendor_entry = append_vendor_identity_receipt(
+                chain,
+                sources["vendor"],
+                proof_packs=[sources["pack"]],
+                trust_network_manifest=sources["manifest"],
+            )
+            attestation_entry = append_identity_provider_attestation(
+                chain,
+                sources["attestation"],
+                identity_payload=sources["identity_payload"],
+                identity_payload_path=sources["identity_payload_path"],
+                vendor_identity_receipt=sources["vendor"],
+                proof_packs=[sources["pack"]],
+                trust_network_manifest=sources["manifest"],
+            )
+            session_entry = append_identity_provider_session_receipt(
+                chain,
+                sources["session"],
+                identity_provider_attestation=sources["attestation"],
+                identity_payload=sources["identity_payload"],
+                identity_payload_path=sources["identity_payload_path"],
+                vendor_identity_receipt=sources["vendor"],
+                proof_packs=[sources["pack"]],
+                trust_network_manifest=sources["manifest"],
+            )
+            operation_entry = append_identity_provider_lifecycle_operation_receipt(
+                chain,
+                sources["lifecycle_operation"],
+                identity_provider_attestation=sources["attestation"],
+                identity_provider_session_receipt=sources["session"],
+                identity_payload=sources["identity_payload"],
+                identity_payload_path=sources["identity_payload_path"],
+                vendor_identity_receipt=sources["vendor"],
+                proof_packs=[sources["pack"]],
+                trust_network_manifest=sources["manifest"],
+            )
+            worker_entry = append_identity_provider_lifecycle_worker_receipt(
+                chain,
+                sources["worker"],
+                lifecycle_operation_receipt=sources["lifecycle_operation"],
+                identity_provider_attestation=sources["attestation"],
+                identity_provider_session_receipt=sources["session"],
+                identity_payload=sources["identity_payload"],
+                identity_payload_path=sources["identity_payload_path"],
+                vendor_identity_receipt=sources["vendor"],
+                proof_packs=[sources["pack"]],
+                trust_network_manifest=sources["manifest"],
+            )
+            authority_entry = append_identity_provider_authority_dossier(
+                chain,
+                dossier,
+                worker_receipt=sources["worker"],
+                lifecycle_operation_receipt=sources["lifecycle_operation"],
+                identity_provider_attestation=sources["attestation"],
+                identity_provider_session_receipt=sources["session"],
+                identity_payload=sources["identity_payload"],
+                identity_payload_path=sources["identity_payload_path"],
+                vendor_identity_receipt=sources["vendor"],
+                proof_packs=[sources["pack"]],
+                trust_network_manifest=sources["manifest"],
+            )
+
+            control = ControlPlane(tmp / "control.sqlite")
+            try:
+                indexed = control.index_chain(chain)
+                summary = control.summary()
+                evidence = control.identity_provider_evidence()
+                roadmap = control.roadmap_evidence()
+
+                expected_counts = {
+                    "vendor_identity_receipts": 1,
+                    "identity_provider_attestations": 1,
+                    "identity_provider_sessions": 1,
+                    "identity_provider_lifecycle_operations": 1,
+                    "identity_provider_lifecycle_workers": 1,
+                    "identity_provider_authority_dossiers": 1,
+                }
+                for table, expected in expected_counts.items():
+                    self.assertEqual(expected, indexed[table], table)
+                    self.assertEqual(expected, summary["counts"][table], table)
+
+                latest_vendor = summary["latest_vendor_identity_receipt"]
+                self.assertEqual(vendor_entry["payload"]["receipt_id"], latest_vendor["receipt_id"])
+                self.assertEqual("aitrade", latest_vendor["vendor_name"])
+                self.assertEqual("okta-agent-aitrade-risk", latest_vendor["identity_id"])
+
+                latest_attestation = summary["latest_identity_provider_attestation"]
+                self.assertEqual(attestation_entry["payload"]["attestation_id"], latest_attestation["attestation_id"])
+                self.assertEqual("okta", latest_attestation["provider"])
+                self.assertEqual(sources["vendor"]["receipt_id"], latest_attestation["vendor_receipt_id"])
+
+                latest_session = summary["latest_identity_provider_session"]
+                self.assertEqual(session_entry["payload"]["session_id"], latest_session["session_id"])
+                self.assertEqual("token_introspection", latest_session["event_kind"])
+                self.assertTrue(latest_session["success"])
+
+                latest_operation = summary["latest_identity_provider_lifecycle_operation"]
+                self.assertEqual(operation_entry["payload"]["operation_id"], latest_operation["operation_id"])
+                self.assertEqual("app_assignment", latest_operation["operation_kind"])
+                self.assertTrue(latest_operation["success"])
+
+                latest_worker = summary["latest_identity_provider_lifecycle_worker"]
+                self.assertEqual(worker_entry["payload"]["worker_operation_id"], latest_worker["worker_operation_id"])
+                self.assertEqual("worker:identity-provider/lifecycle/okta", latest_worker["worker_ref"])
+                self.assertTrue(latest_worker["worker_success"])
+
+                latest_authority = summary["latest_identity_provider_authority_dossier"]
+                self.assertEqual(authority_entry["payload"]["dossier_id"], latest_authority["dossier_id"])
+                self.assertEqual(2, latest_authority["covered_requirement_count"])
+                self.assertEqual(len(dossier["summary"]["missing_requirement_ids"]), latest_authority["missing_requirement_count"])
+                self.assertEqual(2, latest_authority["fresh_evidence_count"])
+                self.assertFalse(latest_authority["production_claimed"])
+                self.assertFalse(latest_authority["production_ready"])
+
+                self.assertEqual(vendor_entry["payload"]["receipt_id"], evidence["vendor_identity_receipts"][0]["receipt_id"])
+                self.assertEqual(attestation_entry["payload"]["attestation_id"], evidence["identity_provider_attestations"][0]["attestation_id"])
+                self.assertEqual(session_entry["payload"]["session_id"], evidence["identity_provider_sessions"][0]["session_id"])
+                self.assertEqual(operation_entry["payload"]["operation_id"], evidence["identity_provider_lifecycle_operations"][0]["operation_id"])
+                self.assertEqual(worker_entry["payload"]["worker_operation_id"], evidence["identity_provider_lifecycle_workers"][0]["worker_operation_id"])
+                self.assertEqual(authority_entry["payload"]["dossier_id"], evidence["identity_provider_authority_dossiers"][0]["dossier_id"])
+                self.assertEqual(dossier["summary"], evidence["identity_provider_authority_dossiers"][0]["summary"])
+                self.assertEqual(evidence, roadmap["identity_provider_evidence"])
             finally:
                 control.close()
 
