@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Any
 
 from .approvals import APPROVAL_ENTRY_TYPE
+from .byoc_authority import BYOC_AUTHORITY_ENTRY_TYPE
+from .byoc_operator import BYOC_OPERATOR_ENTRY_TYPE
 from .canonical import content_hash, parse_rfc3339, utc_now
 from .chain import EvidenceChain
 from .cicd import PROMOTION_STATUS_ENTRY_TYPE
@@ -56,6 +58,8 @@ INDEX_TABLES = (
     "chain_entries",
     "proof_packs",
     "anchors",
+    "byoc_operator_attestations",
+    "byoc_authority_dossiers",
     "ingest_events",
     "mcp_tool_calls",
     "mcp_proxy_captures",
@@ -502,6 +506,83 @@ class ControlPlane:
                 summary_json TEXT NOT NULL,
                 control_summary_json TEXT NOT NULL,
                 authority_evidence_json TEXT NOT NULL,
+                generated_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS byoc_operator_attestations (
+                attestation_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                attestation_hash TEXT NOT NULL,
+                mode TEXT,
+                environment TEXT,
+                deployment_manifest_id TEXT,
+                deployment_manifest_hash TEXT,
+                deployment_name TEXT,
+                deployment_mode TEXT,
+                deployment_artifact_type TEXT,
+                operator_ref TEXT,
+                operator_version TEXT,
+                operator_image TEXT,
+                operator_image_digest TEXT,
+                namespace TEXT,
+                tenant_id TEXT,
+                customer_account_ref TEXT,
+                data_plane_ref TEXT,
+                control_plane_ref TEXT,
+                keyring_ref TEXT,
+                object_lock_provider TEXT,
+                object_lock_bucket_ref TEXT,
+                object_lock_region TEXT,
+                object_lock_enabled INTEGER NOT NULL,
+                versioning_enabled INTEGER NOT NULL,
+                legal_hold_required INTEGER NOT NULL,
+                legal_hold_active INTEGER NOT NULL,
+                backup_policy_ref TEXT,
+                restore_test_ref TEXT,
+                private_endpoint INTEGER NOT NULL,
+                audit_log_ref TEXT,
+                audit_log_root TEXT,
+                source_artifact_count INTEGER NOT NULL,
+                control_summary_json TEXT NOT NULL,
+                attested_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS byoc_authority_dossiers (
+                dossier_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                dossier_hash TEXT NOT NULL,
+                mode TEXT,
+                environment TEXT,
+                dossier_ref TEXT,
+                authority_ref TEXT,
+                producer_ref TEXT,
+                production_claimed INTEGER NOT NULL,
+                production_ready INTEGER NOT NULL,
+                deployment_manifest_id TEXT,
+                deployment_manifest_hash TEXT,
+                deployment_environment TEXT,
+                byoc_operator_attestation_id TEXT,
+                operator_ref TEXT,
+                operator_image_digest TEXT,
+                namespace TEXT,
+                object_lock_bucket_ref TEXT,
+                customer_account_ref TEXT,
+                data_plane_ref TEXT,
+                required_requirement_count INTEGER NOT NULL,
+                covered_requirement_count INTEGER NOT NULL,
+                missing_requirement_count INTEGER NOT NULL,
+                authority_evidence_count INTEGER NOT NULL,
+                fresh_evidence_count INTEGER NOT NULL,
+                stale_evidence_count INTEGER NOT NULL,
+                missing_freshness_count INTEGER NOT NULL,
+                authority_artifact_count INTEGER NOT NULL,
+                authority_artifact_requirement_count INTEGER NOT NULL,
+                source_binding_json TEXT NOT NULL,
+                summary_json TEXT NOT NULL,
+                artifact_summary_json TEXT NOT NULL,
+                control_summary_json TEXT NOT NULL,
+                authority_evidence_json TEXT NOT NULL,
+                authority_artifacts_json TEXT NOT NULL,
                 generated_at TEXT,
                 body_json TEXT NOT NULL
             );
@@ -1072,6 +1153,8 @@ class ControlPlane:
             "contracts": 0,
             "agents": 0,
             "anchors": 0,
+            "byoc_operator_attestations": 0,
+            "byoc_authority_dossiers": 0,
             "ingest_events": 0,
             "mcp_tool_calls": 0,
             "mcp_proxy_captures": 0,
@@ -1420,6 +1503,163 @@ class ControlPlane:
                     ),
                 )
                 counts["framework_adapter_authority_dossiers"] += 1
+
+            if entry.get("entry_type") == BYOC_OPERATOR_ENTRY_TYPE:
+                deployment = payload.get("deployment") if isinstance(payload.get("deployment"), dict) else {}
+                operator = payload.get("operator") if isinstance(payload.get("operator"), dict) else {}
+                tenancy = payload.get("tenancy") if isinstance(payload.get("tenancy"), dict) else {}
+                object_lock = payload.get("object_lock") if isinstance(payload.get("object_lock"), dict) else {}
+                backup = payload.get("backup") if isinstance(payload.get("backup"), dict) else {}
+                network = payload.get("network") if isinstance(payload.get("network"), dict) else {}
+                audit_log = payload.get("audit_log") if isinstance(payload.get("audit_log"), dict) else {}
+                source_artifacts = payload.get("source_artifacts") if isinstance(payload.get("source_artifacts"), list) else []
+                control_summary = payload.get("control_summary") if isinstance(payload.get("control_summary"), dict) else {}
+                legal_hold = object_lock.get("legal_hold") if isinstance(object_lock.get("legal_hold"), dict) else {}
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO byoc_operator_attestations(
+                        attestation_id, entry_id, attestation_hash, mode,
+                        environment, deployment_manifest_id,
+                        deployment_manifest_hash, deployment_name,
+                        deployment_mode, deployment_artifact_type,
+                        operator_ref, operator_version, operator_image,
+                        operator_image_digest, namespace, tenant_id,
+                        customer_account_ref, data_plane_ref,
+                        control_plane_ref, keyring_ref,
+                        object_lock_provider, object_lock_bucket_ref,
+                        object_lock_region, object_lock_enabled,
+                        versioning_enabled, legal_hold_required,
+                        legal_hold_active, backup_policy_ref,
+                        restore_test_ref, private_endpoint, audit_log_ref,
+                        audit_log_root, source_artifact_count,
+                        control_summary_json, attested_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("attestation_id"),
+                        entry["entry_id"],
+                        payload.get("attestation_hash") or entry.get("payload_hash"),
+                        payload.get("mode"),
+                        payload.get("environment"),
+                        deployment.get("manifest_id"),
+                        deployment.get("manifest_hash"),
+                        deployment.get("name"),
+                        deployment.get("mode"),
+                        deployment.get("artifact_type"),
+                        operator.get("operator_ref"),
+                        operator.get("version"),
+                        operator.get("image"),
+                        operator.get("image_digest"),
+                        operator.get("namespace"),
+                        tenancy.get("tenant_id"),
+                        tenancy.get("customer_account_ref"),
+                        tenancy.get("data_plane_ref"),
+                        tenancy.get("control_plane_ref"),
+                        tenancy.get("keyring_ref"),
+                        object_lock.get("provider"),
+                        object_lock.get("bucket_ref"),
+                        object_lock.get("region"),
+                        1 if object_lock.get("object_lock_enabled") else 0,
+                        1 if object_lock.get("versioning_enabled") else 0,
+                        1 if object_lock.get("legal_hold_required") else 0,
+                        1 if legal_hold.get("legal_hold_id") else 0,
+                        backup.get("backup_policy_ref"),
+                        backup.get("restore_test_ref"),
+                        1 if network.get("private_endpoint") else 0,
+                        audit_log.get("audit_log_ref"),
+                        audit_log.get("root"),
+                        len(source_artifacts),
+                        _json(control_summary),
+                        payload.get("attested_at") or entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["byoc_operator_attestations"] += 1
+
+            if entry.get("entry_type") == BYOC_AUTHORITY_ENTRY_TYPE:
+                source_binding = payload.get("source_binding") if isinstance(payload.get("source_binding"), dict) else {}
+                deployment = source_binding.get("deployment_manifest") if isinstance(source_binding.get("deployment_manifest"), dict) else {}
+                operator = source_binding.get("byoc_operator") if isinstance(source_binding.get("byoc_operator"), dict) else {}
+                object_lock = source_binding.get("object_lock") if isinstance(source_binding.get("object_lock"), dict) else {}
+                tenancy = source_binding.get("tenancy") if isinstance(source_binding.get("tenancy"), dict) else {}
+                summary = payload.get("summary") if isinstance(payload.get("summary"), dict) else {}
+                artifact_summary = payload.get("artifact_summary") if isinstance(payload.get("artifact_summary"), dict) else {}
+                control_summary = payload.get("control_summary") if isinstance(payload.get("control_summary"), dict) else {}
+                authority_evidence = payload.get("authority_evidence") if isinstance(payload.get("authority_evidence"), list) else []
+                authority_artifacts = payload.get("authority_artifacts") if isinstance(payload.get("authority_artifacts"), list) else []
+                generated_at = payload.get("generated_at") or entry.get("timestamp")
+                freshness = _authority_freshness_counts(authority_evidence, generated_at)
+                missing_requirement_count = int(summary.get("missing_requirement_count") or 0)
+                production_claimed = payload.get("mode") == "production-dossier"
+                production_ready = bool(
+                    production_claimed
+                    and missing_requirement_count == 0
+                    and freshness["stale"] == 0
+                    and freshness["missing"] == 0
+                )
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO byoc_authority_dossiers(
+                        dossier_id, entry_id, dossier_hash, mode,
+                        environment, dossier_ref, authority_ref, producer_ref,
+                        production_claimed, production_ready,
+                        deployment_manifest_id, deployment_manifest_hash,
+                        deployment_environment, byoc_operator_attestation_id,
+                        operator_ref, operator_image_digest, namespace,
+                        object_lock_bucket_ref, customer_account_ref,
+                        data_plane_ref, required_requirement_count,
+                        covered_requirement_count, missing_requirement_count,
+                        authority_evidence_count, fresh_evidence_count,
+                        stale_evidence_count, missing_freshness_count,
+                        authority_artifact_count,
+                        authority_artifact_requirement_count,
+                        source_binding_json, summary_json,
+                        artifact_summary_json, control_summary_json,
+                        authority_evidence_json, authority_artifacts_json,
+                        generated_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("dossier_id"),
+                        entry["entry_id"],
+                        payload.get("dossier_hash") or entry.get("payload_hash"),
+                        payload.get("mode"),
+                        payload.get("environment"),
+                        payload.get("dossier_ref"),
+                        payload.get("authority_ref"),
+                        payload.get("producer_ref"),
+                        1 if production_claimed else 0,
+                        1 if production_ready else 0,
+                        deployment.get("manifest_id"),
+                        deployment.get("manifest_hash"),
+                        deployment.get("environment"),
+                        operator.get("attestation_id"),
+                        operator.get("operator_ref"),
+                        operator.get("image_digest"),
+                        operator.get("namespace"),
+                        object_lock.get("bucket_ref"),
+                        tenancy.get("customer_account_ref"),
+                        tenancy.get("data_plane_ref"),
+                        int(summary.get("required_requirement_count") or 0),
+                        int(summary.get("covered_requirement_count") or 0),
+                        missing_requirement_count,
+                        int(summary.get("authority_evidence_count") or len(authority_evidence)),
+                        freshness["fresh"],
+                        freshness["stale"],
+                        freshness["missing"],
+                        int(artifact_summary.get("artifact_count") or len(authority_artifacts)),
+                        int(artifact_summary.get("requirement_count") or 0),
+                        _json(source_binding),
+                        _json(summary),
+                        _json(artifact_summary),
+                        _json(control_summary),
+                        _json(authority_evidence),
+                        _json(authority_artifacts),
+                        generated_at,
+                        _json(payload),
+                    ),
+                )
+                counts["byoc_authority_dossiers"] += 1
 
             if entry.get("entry_type") == SUPERVISED_ACCESS_ENTRY_TYPE:
                 audience = payload.get("audience") if isinstance(payload.get("audience"), dict) else {}
@@ -2948,6 +3188,61 @@ class ControlPlane:
         latest_authority_dossier_dict = dict(latest_authority_dossier) if latest_authority_dossier else None
         if latest_authority_dossier_dict is not None:
             _bool_fields(latest_authority_dossier_dict, "production_claimed", "production_ready")
+        latest_byoc_operator = self.conn.execute(
+            """
+            SELECT attestation_id, entry_id, attestation_hash, mode,
+                   environment, deployment_manifest_id, deployment_name,
+                   operator_ref, operator_version, operator_image_digest,
+                   namespace, tenant_id, customer_account_ref, data_plane_ref,
+                   object_lock_bucket_ref, object_lock_enabled,
+                   versioning_enabled, legal_hold_required, legal_hold_active,
+                   backup_policy_ref, restore_test_ref, private_endpoint,
+                   audit_log_ref, source_artifact_count, control_summary_json,
+                   attested_at
+            FROM byoc_operator_attestations
+            ORDER BY attested_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_byoc_operator_dict = dict(latest_byoc_operator) if latest_byoc_operator else None
+        if latest_byoc_operator_dict is not None:
+            _bool_fields(
+                latest_byoc_operator_dict,
+                "object_lock_enabled",
+                "versioning_enabled",
+                "legal_hold_required",
+                "legal_hold_active",
+                "private_endpoint",
+            )
+            latest_byoc_operator_dict["control_summary"] = _decode_json_object(
+                latest_byoc_operator_dict.pop("control_summary_json", None)
+            )
+        latest_byoc_authority = self.conn.execute(
+            """
+            SELECT dossier_id, entry_id, dossier_hash, mode, environment,
+                   dossier_ref, authority_ref, producer_ref,
+                   production_claimed, production_ready,
+                   deployment_manifest_id, deployment_environment,
+                   byoc_operator_attestation_id, operator_ref,
+                   operator_image_digest, namespace, object_lock_bucket_ref,
+                   customer_account_ref, data_plane_ref,
+                   required_requirement_count, covered_requirement_count,
+                   missing_requirement_count, authority_evidence_count,
+                   fresh_evidence_count, stale_evidence_count,
+                   missing_freshness_count, authority_artifact_count,
+                   authority_artifact_requirement_count, control_summary_json,
+                   generated_at
+            FROM byoc_authority_dossiers
+            ORDER BY generated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_byoc_authority_dict = dict(latest_byoc_authority) if latest_byoc_authority else None
+        if latest_byoc_authority_dict is not None:
+            _bool_fields(latest_byoc_authority_dict, "production_claimed", "production_ready")
+            latest_byoc_authority_dict["control_summary"] = _decode_json_object(
+                latest_byoc_authority_dict.pop("control_summary_json", None)
+            )
         latest_phase_scoreboard = self.conn.execute(
             """
             SELECT scoreboard_id, scoreboard_hash, scoreboard_ref, mode,
@@ -3140,6 +3435,8 @@ class ControlPlane:
             "latest_external_evidence_collection_run": latest_collection_run_dict,
             "latest_external_evidence_manifest": latest_external_evidence_dict,
             "latest_authority_dossier": latest_authority_dossier_dict,
+            "latest_byoc_operator_attestation": latest_byoc_operator_dict,
+            "latest_byoc_authority_dossier": latest_byoc_authority_dict,
             "latest_phase_scoreboard": latest_phase_scoreboard_dict,
             "latest_design_partner_dossier": latest_design_partner_dossier_dict,
             "latest_own_compliance_dossier": latest_own_compliance_dossier_dict,
@@ -3881,6 +4178,77 @@ class ControlPlane:
             items.append(item)
         return items
 
+    def recent_byoc_operator_attestations(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT attestation_id, entry_id, attestation_hash, mode,
+                   environment, deployment_manifest_id, deployment_manifest_hash,
+                   deployment_name, deployment_mode, deployment_artifact_type,
+                   operator_ref, operator_version, operator_image,
+                   operator_image_digest, namespace, tenant_id,
+                   customer_account_ref, data_plane_ref, control_plane_ref,
+                   keyring_ref, object_lock_provider, object_lock_bucket_ref,
+                   object_lock_region, object_lock_enabled, versioning_enabled,
+                   legal_hold_required, legal_hold_active, backup_policy_ref,
+                   restore_test_ref, private_endpoint, audit_log_ref,
+                   audit_log_root, source_artifact_count, control_summary_json,
+                   attested_at
+            FROM byoc_operator_attestations
+            ORDER BY attested_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            _bool_fields(
+                item,
+                "object_lock_enabled",
+                "versioning_enabled",
+                "legal_hold_required",
+                "legal_hold_active",
+                "private_endpoint",
+            )
+            item["control_summary"] = _decode_json_object(item.pop("control_summary_json", None))
+            items.append(item)
+        return items
+
+    def recent_byoc_authority_dossiers(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT dossier_id, entry_id, dossier_hash, mode, environment,
+                   dossier_ref, authority_ref, producer_ref,
+                   production_claimed, production_ready,
+                   deployment_manifest_id, deployment_manifest_hash,
+                   deployment_environment, byoc_operator_attestation_id,
+                   operator_ref, operator_image_digest, namespace,
+                   object_lock_bucket_ref, customer_account_ref, data_plane_ref,
+                   required_requirement_count, covered_requirement_count,
+                   missing_requirement_count, authority_evidence_count,
+                   fresh_evidence_count, stale_evidence_count,
+                   missing_freshness_count, authority_artifact_count,
+                   authority_artifact_requirement_count, source_binding_json,
+                   summary_json, artifact_summary_json, control_summary_json,
+                   authority_evidence_json, authority_artifacts_json, generated_at
+            FROM byoc_authority_dossiers
+            ORDER BY generated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = _bool_fields(dict(row), "production_claimed", "production_ready")
+            item["source_binding"] = _decode_json_object(item.pop("source_binding_json", None))
+            item["summary"] = _decode_json_object(item.pop("summary_json", None))
+            item["artifact_summary"] = _decode_json_object(item.pop("artifact_summary_json", None))
+            item["control_summary"] = _decode_json_object(item.pop("control_summary_json", None))
+            item["authority_evidence"] = _decode_json_array(item.pop("authority_evidence_json", None))
+            item["authority_artifacts"] = _decode_json_array(item.pop("authority_artifacts_json", None))
+            items.append(item)
+        return items
+
     def recent_framework_adapter_authority_dossiers(self, limit: int = 20) -> list[dict[str, Any]]:
         rows = self.conn.execute(
             """
@@ -4051,8 +4419,15 @@ class ControlPlane:
             "holdout_evidence": self.holdout_evidence(limit),
             "mcp_evidence": self.mcp_evidence(limit),
             "promotion_lifecycle_evidence": self.promotion_lifecycle_evidence(limit),
+            "byoc_evidence": self.byoc_evidence(limit),
             "framework_adapter_evidence": self.framework_adapter_evidence(limit),
             "review_portal_evidence": self.review_portal_evidence(limit),
+        }
+
+    def byoc_evidence(self, limit: int = 20) -> dict[str, Any]:
+        return {
+            "byoc_operator_attestations": self.recent_byoc_operator_attestations(limit),
+            "byoc_authority_dossiers": self.recent_byoc_authority_dossiers(limit),
         }
 
     def framework_adapter_evidence(self, limit: int = 20) -> dict[str, Any]:

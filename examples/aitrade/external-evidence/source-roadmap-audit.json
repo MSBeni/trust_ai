@@ -1,7 +1,7 @@
 {
-  "audit_id": "1cd06518377bc79cf909031282ae9f43c9283131c5b565644c9c4a184e70bddb",
+  "audit_id": "ff8d76fb78115cd3a7be0dd15c0849e500562646eb88be4a2d9adf562263d11d",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
-  "generated_at": "2026-07-16T05:19:52Z",
+  "generated_at": "2026-07-16T12:47:04Z",
   "limitations": [
     "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
     "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",
@@ -266,7 +266,7 @@
         {
           "path": "src/trustai/control_plane.py",
           "present": true,
-          "sha256": "sha256:3e678f76d2d648fc640524259677f88415aba5cd2960dc6f703aede153aa918b"
+          "sha256": "sha256:af86b00e312dcce1948574afcca3306e8c67a4ac30c0c5aadb8fd0f63001bb58"
         },
         {
           "path": "examples/aitrade/eval-results.json",
@@ -1868,7 +1868,7 @@
         {
           "path": "docs/architecture/roadmap-coverage.md",
           "present": true,
-          "sha256": "sha256:a1b1cf3f151ebd36c7c879d0b6a3932d40685b9e383f2b8d791ca2171826470d"
+          "sha256": "sha256:e193b7f2811b7536eeb4bd4c4df50a96fdb92bc78b62fd3e38cd228c526213c4"
         },
         {
           "path": "src/trustai/proofpack.py",
@@ -2358,7 +2358,7 @@
     "coverage": {
       "path": "docs/architecture/roadmap-coverage.md",
       "present": true,
-      "sha256": "sha256:a1b1cf3f151ebd36c7c879d0b6a3932d40685b9e383f2b8d791ca2171826470d"
+      "sha256": "sha256:e193b7f2811b7536eeb4bd4c4df50a96fdb92bc78b62fd3e38cd228c526213c4"
     },
     "requirement_count": 26,
     "roadmap": {

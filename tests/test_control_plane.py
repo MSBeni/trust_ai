@@ -5,12 +5,15 @@ from pathlib import Path
 
 from tests import test_review_portal_service as service_fixtures
 from trustai.approvals import append_approval, load_approval
+from trustai.byoc_authority import append_byoc_authority_dossier, build_byoc_authority_dossier
+from trustai.byoc_operator import append_byoc_operator_attestation, build_byoc_operator_attestation
 from trustai.control_plane import ControlPlane, _sqlite_nolock_uri
 from trustai.canonical import content_hash
 from trustai.chain import EvidenceChain
 from trustai.cicd import append_promotion_status_receipt, build_promotion_check_payload, build_promotion_status_receipt
 from trustai.delivery import build_provider_delivery
 from trustai.design_partner import append_design_partner_dossier, build_design_partner_dossier
+from trustai.deployment import build_deployment_manifest
 from trustai.contracts import load_contract, register_contract
 from trustai.external_evidence import (
     EXTERNAL_EVIDENCE_COLLECTION_RUN_ENTRY_TYPE,
@@ -46,6 +49,7 @@ from trustai.lifecycle import (
     build_soak_demotion_receipt,
     load_incident,
 )
+from trustai.object_store import WORMStore
 from trustai.own_compliance import append_own_compliance_dossier, build_own_compliance_dossier
 from trustai.reliability_report import append_reliability_report, build_reliability_report
 from trustai.regulator_acceptance import append_regulator_acceptance, build_regulator_acceptance
@@ -804,6 +808,170 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(2, authority_dossiers[0]["freshness_window_count"])
                 self.assertIsInstance(authority_dossiers[0]["missing_requirement_ids"], list)
                 self.assertEqual(2, authority_dossiers[0]["control_summary"]["deferred"])
+            finally:
+                control.close()
+
+    def test_indexes_byoc_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            store_root = tmp / "worm"
+            store = WORMStore(store_root)
+            receipt = store.store_json(
+                {"artifact": "proof-pack", "pack_id": "pack-123"},
+                "proof-pack",
+                retention_until="2033-07-04T00:00:00Z",
+            )
+            legal_hold = store.apply_legal_hold(
+                receipt,
+                case_id="external-audit-2026-001",
+                reason="Preserve proof pack for external audit.",
+                applied_by="legal@example.com",
+                applied_at="2026-07-04T01:00:00Z",
+            )
+            deployment = build_deployment_manifest(
+                ROOT,
+                environment="aitrade-byoc",
+                generated_at="2026-07-04T00:00:00Z",
+            )
+            operator = build_byoc_operator_attestation(
+                deployment,
+                receipt,
+                legal_hold=legal_hold,
+                root=ROOT,
+                store=store_root,
+                environment="aitrade-byoc",
+                operator_ref="operator:trustai/byoc",
+                operator_version="0.1.0",
+                operator_image="ghcr.io/trustai/operator:0.1.0",
+                operator_image_digest="sha256:trustai-byoc-operator-digest",
+                namespace="trustai",
+                service_account_ref="k8s:sa/trustai/operator",
+                reconciler_ref="controller:trustai/byoc-operator",
+                upgrade_policy_ref="policy:trustai/byoc-upgrade-v0.1",
+                rollback_policy_ref="policy:trustai/byoc-rollback-v0.1",
+                tenant_id="aitrade-local",
+                customer_account_ref="aws:123456789012",
+                data_plane_ref="k8s:cluster/aitrade-prod",
+                control_plane_ref="trustai:control-plane/local",
+                keyring_ref="keyring:.trustai/keyring.local.json",
+                object_lock_provider="Example S3 Object Lock",
+                object_lock_bucket="arn:aws:s3:::trustai-aitrade-evidence",
+                object_lock_region="us-east-1",
+                backup_policy_ref="backup:trustai/daily",
+                backup_schedule="rate(1 day)",
+                restore_test_ref="restore-test:trustai/2026-07-04",
+                restore_test_at="2026-07-04T02:00:00Z",
+                rpo_minutes=60,
+                rto_minutes=240,
+                ingress_mode="private-load-balancer",
+                egress_policy_ref="egress-policy:trustai/deny-by-default",
+                allowed_egress_refs=["egress:kms", "egress:tsa"],
+                airgap_bundle_ref="bundle:trustai/airgap/2026-07-04",
+                airgap_bundle_hash="sha256:trustai-airgap-bundle",
+                audit_log_ref="audit-log:byoc/operator",
+                audit_log_root="sha256:byoc-operator-audit-root",
+                retention_until="2033-07-04T00:00:00Z",
+                actor_ref="oidc:trustai.example/byoc-operator",
+                credential_ref="env:BYOC_OPERATOR_TOKEN",
+                evidence_refs=["evidence:byoc/operator"],
+                attested_at="2026-07-04T03:00:00Z",
+            )
+            authority = build_byoc_authority_dossier(
+                deployment,
+                operator,
+                root=ROOT,
+                store=store_root,
+                worm_receipt=receipt,
+                legal_hold=legal_hold,
+                mode="operator-dossier",
+                environment="aitrade-byoc",
+                dossier_ref="dossier:byoc-authority/aitrade-byoc",
+                authority_ref="authority:byoc/aitrade-byoc",
+                producer_ref="oidc:trustai.example/byoc-authority-worker",
+                authority_evidence=[
+                    {
+                        "requirement_id": "live-cloud-account-binding",
+                        "authority_kind": "provider-api",
+                        "evidence_ref": "aws:account/123456789012/trustai-byoc",
+                        "evidence_hash": "sha256:byoc-live-cloud-account",
+                        "description": "Provider account export tying the BYOC deployment to the customer-owned account.",
+                        "issuer": "ExampleCloud",
+                        "subject": "aitrade BYOC account",
+                        "source_uri": "https://cloud.example/accounts/123456789012/trustai",
+                        "issued_at": "2026-07-04T03:05:00Z",
+                        "expires_at": "2026-12-31T00:00:00Z",
+                    },
+                    {
+                        "requirement_id": "object-lock-compliance-mode",
+                        "authority_kind": "cloud-object-lock",
+                        "evidence_ref": "s3-object-lock:trustai-aitrade-evidence",
+                        "evidence_hash": "sha256:byoc-object-lock-export",
+                        "description": "Provider Object Lock export for the retained proof-pack bucket.",
+                        "issuer": "ExampleCloud Object Lock",
+                        "subject": "trustai-aitrade-evidence",
+                        "source_uri": "https://cloud.example/s3/trustai-aitrade-evidence/object-lock",
+                        "issued_at": "2026-07-04T03:06:00Z",
+                        "expires_at": "2026-12-31T00:00:00Z",
+                    },
+                ],
+                authority_artifacts=[],
+                generated_at="2026-07-04T03:10:00Z",
+            )
+            chain = EvidenceChain.load(tmp / "chain.json", tenant_id="byoc-control")
+            operator_entry = append_byoc_operator_attestation(
+                chain,
+                operator,
+                deployment,
+                receipt,
+                legal_hold=legal_hold,
+                root=ROOT,
+                store=store_root,
+            )
+            authority_entry = append_byoc_authority_dossier(
+                chain,
+                authority,
+                deployment_manifest=deployment,
+                byoc_operator=operator,
+                worm_receipt=receipt,
+                legal_hold=legal_hold,
+                root=ROOT,
+                store=store_root,
+                authority_artifacts=[],
+            )
+            chain.save()
+
+            control = ControlPlane(tmp / "control.sqlite")
+            try:
+                indexed = control.index_chain(chain)
+                summary = control.summary()
+                evidence = control.byoc_evidence()
+                roadmap = control.roadmap_evidence()
+                generic_authority = control.recent_authority_dossiers()
+
+                self.assertEqual(1, indexed["byoc_operator_attestations"])
+                self.assertEqual(1, indexed["byoc_authority_dossiers"])
+                self.assertEqual(1, indexed["authority_dossiers"])
+                self.assertEqual(1, summary["counts"]["byoc_operator_attestations"])
+                self.assertEqual(1, summary["counts"]["byoc_authority_dossiers"])
+                self.assertEqual(operator["attestation_id"], summary["latest_byoc_operator_attestation"]["attestation_id"])
+                self.assertTrue(summary["latest_byoc_operator_attestation"]["object_lock_enabled"])
+                self.assertTrue(summary["latest_byoc_operator_attestation"]["legal_hold_active"])
+                self.assertTrue(summary["latest_byoc_operator_attestation"]["private_endpoint"])
+                self.assertEqual(authority["dossier_id"], summary["latest_byoc_authority_dossier"]["dossier_id"])
+                self.assertEqual(2, summary["latest_byoc_authority_dossier"]["covered_requirement_count"])
+                self.assertGreater(summary["latest_byoc_authority_dossier"]["missing_requirement_count"], 0)
+                self.assertFalse(summary["latest_byoc_authority_dossier"]["production_claimed"])
+                self.assertFalse(summary["latest_byoc_authority_dossier"]["production_ready"])
+
+                self.assertEqual(operator_entry["payload"]["attestation_id"], evidence["byoc_operator_attestations"][0]["attestation_id"])
+                self.assertEqual("operator:trustai/byoc", evidence["byoc_operator_attestations"][0]["operator_ref"])
+                self.assertEqual(authority_entry["payload"]["dossier_id"], evidence["byoc_authority_dossiers"][0]["dossier_id"])
+                self.assertEqual(operator["attestation_id"], evidence["byoc_authority_dossiers"][0]["byoc_operator_attestation_id"])
+                self.assertEqual(2, evidence["byoc_authority_dossiers"][0]["fresh_evidence_count"])
+                self.assertEqual(0, evidence["byoc_authority_dossiers"][0]["authority_artifact_count"])
+                self.assertEqual(evidence, roadmap["byoc_evidence"])
+                self.assertEqual(authority["dossier_id"], generic_authority[0]["dossier_id"])
+                self.assertEqual("deployment.byoc_production_authority_recorded", generic_authority[0]["entry_type"])
             finally:
                 control.close()
 
