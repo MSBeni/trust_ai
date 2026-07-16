@@ -27,6 +27,7 @@ from .gate import EVAL_ENTRY_TYPE, GATE_ENTRY_TYPE
 from .phase_scoreboard import PHASE_SCOREBOARD_ENTRY_TYPE
 from .product_scope import PRODUCT_SCOPE_ENTRY_TYPE
 from .ingest import INGEST_ENTRY_TYPE
+from .insurer_partner_authority import INSURER_PARTNER_AUTHORITY_ENTRY_TYPE
 from .lifecycle import DEMOTION_ENTRY_TYPE, INCIDENT_ENTRY_TYPE, ROLLBACK_ENTRY_TYPE, SOAK_DEMOTION_ENTRY_TYPE
 from .mcp_gateway import MCP_PROXY_CAPTURE_ENTRY_TYPE, MCP_TOOL_CALL_ENTRY_TYPE
 from .own_compliance import OWN_COMPLIANCE_ENTRY_TYPE, REQUIRED_CERTIFICATION_KINDS
@@ -41,6 +42,7 @@ from .review_portal_service import REVIEW_PORTAL_SERVICE_ENTRY_TYPE
 from .roadmap_audit import ROADMAP_AUDIT_ENTRY_TYPE
 from .runtime import RUNTIME_ENTRY_TYPE
 from .supervised_access import SUPERVISED_ACCESS_ENTRY_TYPE
+from .underwriting_quote import UNDERWRITING_QUOTE_ENTRY_TYPE
 from .shadow import (
     SHADOW_REPLAY_ENTRY_TYPE,
     SOAK_REPORT_ENTRY_TYPE,
@@ -92,6 +94,8 @@ INDEX_TABLES = (
     "product_scope_decisions",
     "vertical_packs",
     "reliability_reports",
+    "underwriting_quotes",
+    "insurer_partner_authority_dossiers",
     "temporal_holdout_manifests",
     "shadow_replays",
     "soak_reports",
@@ -1020,6 +1024,76 @@ class ControlPlane:
                 generated_at TEXT,
                 body_json TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS underwriting_quotes (
+                quote_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                quote_hash TEXT NOT NULL,
+                underwriter_name TEXT,
+                underwriter_mode TEXT,
+                product TEXT,
+                quote_ref TEXT,
+                status TEXT,
+                currency TEXT,
+                coverage_limit_usd REAL,
+                base_premium_usd REAL,
+                discount_percent REAL,
+                quoted_premium_usd REAL,
+                term_start TEXT,
+                term_end TEXT,
+                consent_id TEXT,
+                consent_active INTEGER NOT NULL,
+                pack_id TEXT,
+                contract_id TEXT,
+                chain_root TEXT,
+                risk_score REAL,
+                risk_tier TEXT,
+                gate_outcome TEXT,
+                issued_at TEXT,
+                applicant_risk_json TEXT NOT NULL,
+                quote_json TEXT NOT NULL,
+                risk_evidence_json TEXT NOT NULL,
+                limitations_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS insurer_partner_authority_dossiers (
+                dossier_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                dossier_hash TEXT NOT NULL,
+                mode TEXT,
+                environment TEXT,
+                dossier_ref TEXT,
+                authority_ref TEXT,
+                producer_ref TEXT,
+                production_claimed INTEGER NOT NULL,
+                production_ready INTEGER NOT NULL,
+                service_attestation_id TEXT,
+                service_attestation_hash TEXT,
+                service_ref TEXT,
+                partner_api_endpoint TEXT,
+                underwriter TEXT,
+                quote_id TEXT,
+                quote_ref TEXT,
+                telemetry_hash TEXT,
+                consent_id TEXT,
+                risk_tier TEXT,
+                worker_receipt_count INTEGER NOT NULL,
+                worker_bundle_count INTEGER NOT NULL,
+                required_requirement_count INTEGER NOT NULL,
+                covered_requirement_count INTEGER NOT NULL,
+                missing_requirement_count INTEGER NOT NULL,
+                authority_evidence_count INTEGER NOT NULL,
+                fresh_evidence_count INTEGER NOT NULL,
+                stale_evidence_count INTEGER NOT NULL,
+                missing_freshness_count INTEGER NOT NULL,
+                service_binding_json TEXT NOT NULL,
+                worker_receipt_bindings_json TEXT NOT NULL,
+                worker_bundle_bindings_json TEXT NOT NULL,
+                summary_json TEXT NOT NULL,
+                control_summary_json TEXT NOT NULL,
+                authority_evidence_json TEXT NOT NULL,
+                generated_at TEXT,
+                body_json TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS temporal_holdout_manifests (
                 manifest_id TEXT PRIMARY KEY,
                 entry_id TEXT,
@@ -1187,6 +1261,8 @@ class ControlPlane:
             "product_scope_decisions": 0,
             "vertical_packs": 0,
             "reliability_reports": 0,
+            "underwriting_quotes": 0,
+            "insurer_partner_authority_dossiers": 0,
             "temporal_holdout_manifests": 0,
             "shadow_replays": 0,
             "soak_reports": 0,
@@ -2557,6 +2633,139 @@ class ControlPlane:
                 )
                 counts["reliability_reports"] += 1
 
+            if entry.get("entry_type") == UNDERWRITING_QUOTE_ENTRY_TYPE:
+                underwriter = payload.get("underwriter") if isinstance(payload.get("underwriter"), dict) else {}
+                applicant_risk = payload.get("applicant_risk") if isinstance(payload.get("applicant_risk"), dict) else {}
+                quote = payload.get("quote") if isinstance(payload.get("quote"), dict) else {}
+                risk_evidence = payload.get("risk_evidence") if isinstance(payload.get("risk_evidence"), dict) else {}
+                limitations = payload.get("limitations") if isinstance(payload.get("limitations"), list) else []
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO underwriting_quotes(
+                        quote_id, entry_id, quote_hash, underwriter_name,
+                        underwriter_mode, product, quote_ref, status, currency,
+                        coverage_limit_usd, base_premium_usd,
+                        discount_percent, quoted_premium_usd,
+                        term_start, term_end, consent_id, consent_active,
+                        pack_id, contract_id, chain_root, risk_score,
+                        risk_tier, gate_outcome, issued_at,
+                        applicant_risk_json, quote_json, risk_evidence_json,
+                        limitations_json, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("quote_id") or entry["entry_id"],
+                        entry["entry_id"],
+                        payload.get("quote_hash") or entry.get("payload_hash"),
+                        underwriter.get("name"),
+                        underwriter.get("mode"),
+                        quote.get("product"),
+                        quote.get("quote_ref"),
+                        quote.get("status"),
+                        quote.get("currency"),
+                        quote.get("coverage_limit_usd"),
+                        quote.get("base_premium_usd"),
+                        quote.get("discount_percent"),
+                        quote.get("quoted_premium_usd"),
+                        quote.get("term_start"),
+                        quote.get("term_end"),
+                        risk_evidence.get("consent_id"),
+                        1 if risk_evidence.get("consent_active") else 0,
+                        risk_evidence.get("pack_id") or applicant_risk.get("pack_id"),
+                        risk_evidence.get("contract_id") or applicant_risk.get("contract_id"),
+                        risk_evidence.get("chain_root"),
+                        applicant_risk.get("risk_score"),
+                        applicant_risk.get("risk_tier"),
+                        applicant_risk.get("gate_outcome"),
+                        entry.get("timestamp"),
+                        _json(applicant_risk),
+                        _json(quote),
+                        _json(risk_evidence),
+                        _json(limitations),
+                        _json(payload),
+                    ),
+                )
+                counts["underwriting_quotes"] += 1
+
+            if entry.get("entry_type") == INSURER_PARTNER_AUTHORITY_ENTRY_TYPE:
+                service_binding = payload.get("service_attestation_binding") if isinstance(payload.get("service_attestation_binding"), dict) else {}
+                worker_bindings = payload.get("worker_receipt_bindings") if isinstance(payload.get("worker_receipt_bindings"), list) else []
+                worker_bundle_bindings = payload.get("worker_bundle_bindings") if isinstance(payload.get("worker_bundle_bindings"), list) else []
+                summary = payload.get("summary") if isinstance(payload.get("summary"), dict) else {}
+                control_summary = payload.get("control_summary") if isinstance(payload.get("control_summary"), dict) else {}
+                authority_evidence = payload.get("authority_evidence") if isinstance(payload.get("authority_evidence"), list) else []
+                generated_at = payload.get("generated_at") or entry.get("timestamp")
+                freshness = _authority_freshness_counts(authority_evidence, generated_at)
+                missing_requirement_count = int(summary.get("missing_requirement_count") or 0)
+                production_claimed = payload.get("mode") == "production-dossier"
+                production_ready = bool(
+                    production_claimed
+                    and missing_requirement_count == 0
+                    and freshness["stale"] == 0
+                    and freshness["missing"] == 0
+                )
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO insurer_partner_authority_dossiers(
+                        dossier_id, entry_id, dossier_hash, mode, environment,
+                        dossier_ref, authority_ref, producer_ref,
+                        production_claimed, production_ready,
+                        service_attestation_id, service_attestation_hash,
+                        service_ref, partner_api_endpoint, underwriter,
+                        quote_id, quote_ref, telemetry_hash, consent_id,
+                        risk_tier, worker_receipt_count,
+                        worker_bundle_count, required_requirement_count,
+                        covered_requirement_count, missing_requirement_count,
+                        authority_evidence_count, fresh_evidence_count,
+                        stale_evidence_count, missing_freshness_count,
+                        service_binding_json, worker_receipt_bindings_json,
+                        worker_bundle_bindings_json, summary_json,
+                        control_summary_json, authority_evidence_json,
+                        generated_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("dossier_id") or entry["entry_id"],
+                        entry["entry_id"],
+                        payload.get("dossier_hash") or entry.get("payload_hash"),
+                        payload.get("mode"),
+                        payload.get("environment"),
+                        payload.get("dossier_ref"),
+                        payload.get("authority_ref"),
+                        payload.get("producer_ref"),
+                        1 if production_claimed else 0,
+                        1 if production_ready else 0,
+                        service_binding.get("attestation_id"),
+                        service_binding.get("attestation_hash"),
+                        service_binding.get("service_ref"),
+                        service_binding.get("partner_api_endpoint"),
+                        service_binding.get("underwriter"),
+                        service_binding.get("quote_id"),
+                        service_binding.get("quote_ref"),
+                        service_binding.get("telemetry_hash"),
+                        service_binding.get("consent_id"),
+                        service_binding.get("risk_tier"),
+                        len(worker_bindings),
+                        len(worker_bundle_bindings),
+                        int(summary.get("required_requirement_count") or 0),
+                        int(summary.get("covered_requirement_count") or 0),
+                        missing_requirement_count,
+                        int(summary.get("evidence_count") or len(authority_evidence)),
+                        freshness["fresh"],
+                        freshness["stale"],
+                        freshness["missing"],
+                        _json(service_binding),
+                        _json(worker_bindings),
+                        _json(worker_bundle_bindings),
+                        _json(summary),
+                        _json(control_summary),
+                        _json(authority_evidence),
+                        generated_at,
+                        _json(payload),
+                    ),
+                )
+                counts["insurer_partner_authority_dossiers"] += 1
+
             if entry.get("entry_type") == TEMPORAL_HOLDOUT_ENTRY_TYPE:
                 contract = payload.get("contract") if isinstance(payload.get("contract"), dict) else {}
                 self.conn.execute(
@@ -3331,6 +3540,46 @@ class ControlPlane:
         if latest_reliability_report_dict is not None:
             latest_reliability_report_dict["reporting_period"] = _decode_json_object(latest_reliability_report_dict.pop("reporting_period_json", None))
             latest_reliability_report_dict["control_summary"] = _decode_json_object(latest_reliability_report_dict.pop("control_summary_json", None))
+        latest_underwriting_quote = self.conn.execute(
+            """
+            SELECT quote_id, entry_id, quote_hash, underwriter_name,
+                   underwriter_mode, product, quote_ref, status, currency,
+                   coverage_limit_usd, base_premium_usd, discount_percent,
+                   quoted_premium_usd, term_start, term_end, consent_id,
+                   consent_active, pack_id, contract_id, chain_root,
+                   risk_score, risk_tier, gate_outcome, issued_at
+            FROM underwriting_quotes
+            ORDER BY issued_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_underwriting_quote_dict = dict(latest_underwriting_quote) if latest_underwriting_quote else None
+        if latest_underwriting_quote_dict is not None:
+            _bool_fields(latest_underwriting_quote_dict, "consent_active")
+        latest_insurer_authority = self.conn.execute(
+            """
+            SELECT dossier_id, entry_id, dossier_hash, mode, environment,
+                   dossier_ref, authority_ref, producer_ref,
+                   production_claimed, production_ready,
+                   service_attestation_id, service_ref, partner_api_endpoint,
+                   underwriter, quote_id, quote_ref, consent_id, risk_tier,
+                   worker_receipt_count, worker_bundle_count,
+                   required_requirement_count, covered_requirement_count,
+                   missing_requirement_count, authority_evidence_count,
+                   fresh_evidence_count, stale_evidence_count,
+                   missing_freshness_count, control_summary_json,
+                   generated_at
+            FROM insurer_partner_authority_dossiers
+            ORDER BY generated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_insurer_authority_dict = dict(latest_insurer_authority) if latest_insurer_authority else None
+        if latest_insurer_authority_dict is not None:
+            _bool_fields(latest_insurer_authority_dict, "production_claimed", "production_ready")
+            latest_insurer_authority_dict["control_summary"] = _decode_json_object(
+                latest_insurer_authority_dict.pop("control_summary_json", None)
+            )
         latest_temporal_holdout_manifest = self.conn.execute(
             """
             SELECT manifest_id, entry_id, run_id, dataset_id, contract_id,
@@ -3443,6 +3692,8 @@ class ControlPlane:
             "latest_product_scope_decision": latest_product_scope_decision_dict,
             "latest_vertical_pack": latest_vertical_pack_dict,
             "latest_reliability_report": latest_reliability_report_dict,
+            "latest_underwriting_quote": latest_underwriting_quote_dict,
+            "latest_insurer_partner_authority_dossier": latest_insurer_authority_dict,
             "latest_temporal_holdout_manifest": latest_temporal_holdout_manifest_dict,
             "latest_shadow_replay": latest_shadow_replay_dict,
             "latest_soak_report": latest_soak_report_dict,
@@ -4001,6 +4252,70 @@ class ControlPlane:
             items.append(item)
         return items
 
+    def recent_underwriting_quotes(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT quote_id, entry_id, quote_hash, underwriter_name,
+                   underwriter_mode, product, quote_ref, status, currency,
+                   coverage_limit_usd, base_premium_usd, discount_percent,
+                   quoted_premium_usd, term_start, term_end, consent_id,
+                   consent_active, pack_id, contract_id, chain_root,
+                   risk_score, risk_tier, gate_outcome, issued_at,
+                   applicant_risk_json, quote_json, risk_evidence_json,
+                   limitations_json
+            FROM underwriting_quotes
+            ORDER BY issued_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            _bool_fields(item, "consent_active")
+            item["applicant_risk"] = _decode_json_object(item.pop("applicant_risk_json", None))
+            item["quote"] = _decode_json_object(item.pop("quote_json", None))
+            item["risk_evidence"] = _decode_json_object(item.pop("risk_evidence_json", None))
+            item["limitations"] = _decode_json_array(item.pop("limitations_json", None))
+            items.append(item)
+        return items
+
+    def recent_insurer_partner_authority_dossiers(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT dossier_id, entry_id, dossier_hash, mode, environment,
+                   dossier_ref, authority_ref, producer_ref,
+                   production_claimed, production_ready,
+                   service_attestation_id, service_attestation_hash,
+                   service_ref, partner_api_endpoint, underwriter,
+                   quote_id, quote_ref, telemetry_hash, consent_id,
+                   risk_tier, worker_receipt_count, worker_bundle_count,
+                   required_requirement_count, covered_requirement_count,
+                   missing_requirement_count, authority_evidence_count,
+                   fresh_evidence_count, stale_evidence_count,
+                   missing_freshness_count, service_binding_json,
+                   worker_receipt_bindings_json, worker_bundle_bindings_json,
+                   summary_json, control_summary_json,
+                   authority_evidence_json, generated_at
+            FROM insurer_partner_authority_dossiers
+            ORDER BY generated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            _bool_fields(item, "production_claimed", "production_ready")
+            item["service_binding"] = _decode_json_object(item.pop("service_binding_json", None))
+            item["worker_receipt_bindings"] = _decode_json_array(item.pop("worker_receipt_bindings_json", None))
+            item["worker_bundle_bindings"] = _decode_json_array(item.pop("worker_bundle_bindings_json", None))
+            item["summary"] = _decode_json_object(item.pop("summary_json", None))
+            item["control_summary"] = _decode_json_object(item.pop("control_summary_json", None))
+            item["authority_evidence"] = _decode_json_array(item.pop("authority_evidence_json", None))
+            items.append(item)
+        return items
+
     def recent_temporal_holdout_manifests(self, limit: int = 20) -> list[dict[str, Any]]:
         rows = self.conn.execute(
             """
@@ -4416,12 +4731,19 @@ class ControlPlane:
             "product_scope_decisions": self.recent_product_scope_decisions(limit),
             "vertical_packs": self.recent_vertical_packs(limit),
             "reliability_reports": self.recent_reliability_reports(limit),
+            "insurer_evidence": self.insurer_evidence(limit),
             "holdout_evidence": self.holdout_evidence(limit),
             "mcp_evidence": self.mcp_evidence(limit),
             "promotion_lifecycle_evidence": self.promotion_lifecycle_evidence(limit),
             "byoc_evidence": self.byoc_evidence(limit),
             "framework_adapter_evidence": self.framework_adapter_evidence(limit),
             "review_portal_evidence": self.review_portal_evidence(limit),
+        }
+
+    def insurer_evidence(self, limit: int = 20) -> dict[str, Any]:
+        return {
+            "underwriting_quotes": self.recent_underwriting_quotes(limit),
+            "insurer_partner_authority_dossiers": self.recent_insurer_partner_authority_dossiers(limit),
         }
 
     def byoc_evidence(self, limit: int = 20) -> dict[str, Any]:

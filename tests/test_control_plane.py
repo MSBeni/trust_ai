@@ -3,6 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from tests import test_insurer_partner_authority as insurer_authority_fixtures
 from tests import test_review_portal_service as service_fixtures
 from trustai.approvals import append_approval, load_approval
 from trustai.byoc_authority import append_byoc_authority_dossier, build_byoc_authority_dossier
@@ -30,6 +31,7 @@ from trustai.framework_hook_operation import append_framework_hook_operation, bu
 from trustai.framework_hook_release import append_framework_hook_release, build_framework_hook_release, load_framework_hook_release_source
 from trustai.gate import append_eval_and_gate
 from trustai.ingest import append_events, load_events
+from trustai.insurer_partner_authority import append_insurer_partner_authority_dossier
 from trustai.mcp_gateway import (
     append_mcp_proxy_capture,
     append_mcp_transcript,
@@ -79,6 +81,7 @@ from trustai.shadow import (
     load_traffic_completeness_provider_export,
 )
 from trustai.supervised_access import append_supervised_access_receipt
+from trustai.underwriting_quote import append_underwriting_quote
 from trustai.vertical_pack import append_vertical_pack, build_vertical_pack
 from trustai.verifier import verify_proof_pack
 
@@ -972,6 +975,65 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(evidence, roadmap["byoc_evidence"])
                 self.assertEqual(authority["dossier_id"], generic_authority[0]["dossier_id"])
                 self.assertEqual("deployment.byoc_production_authority_recorded", generic_authority[0]["entry_type"])
+            finally:
+                control.close()
+
+    def test_indexes_insurer_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            helper = insurer_authority_fixtures.InsurerPartnerAuthorityTests(
+                methodName="test_insurer_partner_authority_verifies_and_appends"
+            )
+            sources, service, workers, dossier = helper._dossier(tmp)
+            verify_kwargs = helper._verify_source_kwargs(sources)
+            chain = EvidenceChain.load(tmp / "chain.json", tenant_id="insurer-control")
+            quote_entry = append_underwriting_quote(chain, sources["quote"])
+            authority_entry = append_insurer_partner_authority_dossier(
+                chain,
+                dossier,
+                service_attestation=service,
+                worker_receipts=workers,
+                **verify_kwargs,
+            )
+
+            control = ControlPlane(tmp / "control.sqlite")
+            try:
+                indexed = control.index_chain(chain)
+                summary = control.summary()
+                evidence = control.insurer_evidence()
+                roadmap = control.roadmap_evidence()
+
+                self.assertEqual(1, indexed["underwriting_quotes"])
+                self.assertEqual(1, indexed["insurer_partner_authority_dossiers"])
+                self.assertEqual(1, summary["counts"]["underwriting_quotes"])
+                self.assertEqual(1, summary["counts"]["insurer_partner_authority_dossiers"])
+
+                latest_quote = summary["latest_underwriting_quote"]
+                self.assertEqual(quote_entry["payload"]["quote_id"], latest_quote["quote_id"])
+                self.assertEqual(sources["quote"]["quote"]["quote_ref"], latest_quote["quote_ref"])
+                self.assertEqual(sources["quote"]["quote"]["quoted_premium_usd"], latest_quote["quoted_premium_usd"])
+                self.assertEqual(sources["quote"]["quote"]["discount_percent"], latest_quote["discount_percent"])
+                self.assertTrue(latest_quote["consent_active"])
+                self.assertEqual(sources["telemetry"]["risk_tier"], latest_quote["risk_tier"])
+
+                latest_authority = summary["latest_insurer_partner_authority_dossier"]
+                self.assertEqual(authority_entry["payload"]["dossier_id"], latest_authority["dossier_id"])
+                self.assertEqual(service["attestation_id"], latest_authority["service_attestation_id"])
+                self.assertEqual(sources["quote"]["quote_id"], latest_authority["quote_id"])
+                self.assertEqual(1, latest_authority["worker_receipt_count"])
+                self.assertEqual(1, latest_authority["worker_bundle_count"])
+                self.assertEqual(2, latest_authority["covered_requirement_count"])
+                self.assertEqual(len(dossier["summary"]["missing_requirement_ids"]), latest_authority["missing_requirement_count"])
+                self.assertEqual(2, latest_authority["fresh_evidence_count"])
+                self.assertFalse(latest_authority["production_claimed"])
+                self.assertFalse(latest_authority["production_ready"])
+
+                self.assertEqual(quote_entry["payload"]["quote_id"], evidence["underwriting_quotes"][0]["quote_id"])
+                self.assertEqual(sources["quote"]["risk_evidence"], evidence["underwriting_quotes"][0]["risk_evidence"])
+                self.assertEqual(authority_entry["payload"]["dossier_id"], evidence["insurer_partner_authority_dossiers"][0]["dossier_id"])
+                self.assertEqual(service["attestation_id"], evidence["insurer_partner_authority_dossiers"][0]["service_attestation_id"])
+                self.assertEqual(dossier["summary"], evidence["insurer_partner_authority_dossiers"][0]["summary"])
+                self.assertEqual(evidence, roadmap["insurer_evidence"])
             finally:
                 control.close()
 
