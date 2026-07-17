@@ -6,6 +6,14 @@ from pathlib import Path
 from typing import Any
 
 from .approvals import APPROVAL_ENTRY_TYPE
+from .auditor_accreditation import AUDITOR_ACCREDITATION_ENTRY_TYPE
+from .auditor_accreditation_countersignature import AUDITOR_ACCREDITATION_COUNTERSIGNATURE_ENTRY_TYPE
+from .auditor_accreditation_kms_enforcement import AUDITOR_ACCREDITATION_KMS_ENFORCEMENT_ENTRY_TYPE
+from .auditor_accreditation_signing_audit import AUDITOR_ACCREDITATION_SIGNING_AUDIT_ENTRY_TYPE
+from .auditor_accreditation_signing_ceremony import AUDITOR_ACCREDITATION_SIGNING_CEREMONY_ENTRY_TYPE
+from .auditor_credential_registry import AUDITOR_CREDENTIAL_REGISTRY_ENTRY_TYPE
+from .auditor_program_governance import AUDITOR_PROGRAM_GOVERNANCE_ENTRY_TYPE
+from .auditor_program_sponsorship import AUDITOR_PROGRAM_SPONSORSHIP_ENTRY_TYPE
 from .byoc_authority import BYOC_AUTHORITY_ENTRY_TYPE
 from .byoc_operator import BYOC_OPERATOR_ENTRY_TYPE
 from .canonical import content_hash, parse_rfc3339, utc_now
@@ -48,6 +56,11 @@ from .roadmap_audit import ROADMAP_AUDIT_ENTRY_TYPE
 from .runtime import RUNTIME_ENTRY_TYPE
 from .supervised_access import SUPERVISED_ACCESS_ENTRY_TYPE
 from .underwriting_quote import UNDERWRITING_QUOTE_ENTRY_TYPE
+from .standards_body_ballot import STANDARDS_BODY_BALLOT_ENTRY_TYPE
+from .standards_body_ballot_system import STANDARDS_BODY_BALLOT_SYSTEM_ENTRY_TYPE
+from .standards_body_provider_posting import STANDARDS_BODY_PROVIDER_POSTING_ENTRY_TYPE
+from .standards_body_status import STANDARDS_BODY_STATUS_ENTRY_TYPE
+from .standards_body_submission import STANDARDS_BODY_SUBMISSION_ENTRY_TYPE
 from .shadow import (
     SHADOW_REPLAY_ENTRY_TYPE,
     SOAK_REPORT_ENTRY_TYPE,
@@ -87,6 +100,8 @@ INDEX_TABLES = (
     "regulator_acceptances",
     "review_portal_service_attestations",
     "review_portal_authority_dossiers",
+    "standards_body_evidence",
+    "auditor_ecosystem_evidence",
     "eval_runs",
     "gate_decisions",
     "human_approvals",
@@ -116,6 +131,44 @@ INDEX_TABLES = (
     "traffic_holdout_exports",
     "traffic_completeness_receipts",
 )
+
+STANDARDS_BODY_ENTRY_TYPES = {
+    STANDARDS_BODY_SUBMISSION_ENTRY_TYPE,
+    STANDARDS_BODY_STATUS_ENTRY_TYPE,
+    STANDARDS_BODY_BALLOT_ENTRY_TYPE,
+    STANDARDS_BODY_BALLOT_SYSTEM_ENTRY_TYPE,
+    STANDARDS_BODY_PROVIDER_POSTING_ENTRY_TYPE,
+}
+
+STANDARDS_BODY_ARTIFACT_KINDS = {
+    STANDARDS_BODY_SUBMISSION_ENTRY_TYPE: "standards-body-submission",
+    STANDARDS_BODY_STATUS_ENTRY_TYPE: "standards-body-status",
+    STANDARDS_BODY_BALLOT_ENTRY_TYPE: "standards-body-ballot",
+    STANDARDS_BODY_BALLOT_SYSTEM_ENTRY_TYPE: "standards-body-ballot-system",
+    STANDARDS_BODY_PROVIDER_POSTING_ENTRY_TYPE: "standards-body-provider-posting",
+}
+
+AUDITOR_ECOSYSTEM_ENTRY_TYPES = {
+    AUDITOR_PROGRAM_GOVERNANCE_ENTRY_TYPE,
+    AUDITOR_PROGRAM_SPONSORSHIP_ENTRY_TYPE,
+    AUDITOR_ACCREDITATION_ENTRY_TYPE,
+    AUDITOR_ACCREDITATION_COUNTERSIGNATURE_ENTRY_TYPE,
+    AUDITOR_ACCREDITATION_SIGNING_CEREMONY_ENTRY_TYPE,
+    AUDITOR_ACCREDITATION_SIGNING_AUDIT_ENTRY_TYPE,
+    AUDITOR_ACCREDITATION_KMS_ENFORCEMENT_ENTRY_TYPE,
+    AUDITOR_CREDENTIAL_REGISTRY_ENTRY_TYPE,
+}
+
+AUDITOR_ECOSYSTEM_ARTIFACT_KINDS = {
+    AUDITOR_PROGRAM_GOVERNANCE_ENTRY_TYPE: "auditor-program-governance",
+    AUDITOR_PROGRAM_SPONSORSHIP_ENTRY_TYPE: "auditor-program-sponsorship",
+    AUDITOR_ACCREDITATION_ENTRY_TYPE: "auditor-accreditation",
+    AUDITOR_ACCREDITATION_COUNTERSIGNATURE_ENTRY_TYPE: "auditor-accreditation-countersignature",
+    AUDITOR_ACCREDITATION_SIGNING_CEREMONY_ENTRY_TYPE: "auditor-accreditation-signing-ceremony",
+    AUDITOR_ACCREDITATION_SIGNING_AUDIT_ENTRY_TYPE: "auditor-accreditation-signing-audit",
+    AUDITOR_ACCREDITATION_KMS_ENFORCEMENT_ENTRY_TYPE: "auditor-accreditation-kms-enforcement",
+    AUDITOR_CREDENTIAL_REGISTRY_ENTRY_TYPE: "auditor-credential-registry",
+}
 
 
 def _json(value: Any) -> str:
@@ -147,6 +200,187 @@ def _payload_contract_hash(entry: dict[str, Any]) -> str | None:
                 if item:
                     return str(item)
     return None
+
+
+def _object(value: Any) -> dict[str, Any]:
+    return value if isinstance(value, dict) else {}
+
+
+def _first_text(*values: Any) -> str | None:
+    for value in values:
+        if value is None:
+            continue
+        if isinstance(value, str):
+            text = value.strip()
+            if text:
+                return text
+        elif isinstance(value, (int, float)):
+            return str(value)
+    return None
+
+
+def _source_artifact_count(payload: dict[str, Any]) -> int:
+    artifacts = payload.get("source_artifacts")
+    if isinstance(artifacts, list):
+        return len(artifacts)
+    refs = payload.get("source_refs")
+    return len(refs) if isinstance(refs, list) else 0
+
+
+def _source_artifacts(payload: dict[str, Any]) -> list[Any]:
+    artifacts = payload.get("source_artifacts")
+    if isinstance(artifacts, list):
+        return artifacts
+    refs = payload.get("source_refs")
+    return refs if isinstance(refs, list) else []
+
+
+def _control_count(payload: dict[str, Any]) -> int:
+    controls = payload.get("controls")
+    if isinstance(controls, list):
+        return len(controls)
+    if isinstance(controls, dict):
+        return len(controls)
+    return 0
+
+
+def _standards_body_record(entry: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    entry_type = str(entry.get("entry_type") or "")
+    standards_body = _object(payload.get("standards_body"))
+    submission = _object(payload.get("submission"))
+    status_update = _object(payload.get("status_update"))
+    ballot = _object(payload.get("ballot"))
+    request = _object(payload.get("request"))
+    response = _object(payload.get("response"))
+    target = _object(payload.get("target_submission"))
+    target_body = _object(target.get("standards_body"))
+    source = _object(payload.get("source"))
+    source_body = _object(source.get("standards_body"))
+    actor = _object(status_update.get("actor") or request.get("actor") or payload.get("actor"))
+    artifact_id = _first_text(
+        payload.get("submission_id"),
+        payload.get("status_id"),
+        payload.get("ballot_id"),
+        payload.get("ballot_system_id"),
+        payload.get("posting_id"),
+        content_hash(payload),
+    )
+    return {
+        "artifact_id": artifact_id,
+        "entry_id": entry.get("entry_id"),
+        "entry_type": entry_type,
+        "artifact_kind": STANDARDS_BODY_ARTIFACT_KINDS.get(entry_type, entry_type),
+        "artifact_hash": content_hash(payload),
+        "artifact_ref": _first_text(
+            submission.get("submission_ref"),
+            status_update.get("status_ref"),
+            status_update.get("docket_ref"),
+            ballot.get("ballot_ref"),
+            request.get("request_ref"),
+            response.get("response_ref"),
+            payload.get("posting_ref"),
+            artifact_id,
+        ),
+        "status": _first_text(
+            submission.get("status"),
+            status_update.get("new_status"),
+            ballot.get("outcome"),
+            request.get("mode"),
+            response.get("status"),
+            payload.get("mode"),
+        ),
+        "standards_body_name": _first_text(standards_body.get("name"), target_body.get("name"), source_body.get("name")),
+        "program_ref": _first_text(standards_body.get("program_ref"), target_body.get("program_ref"), source_body.get("program_ref")),
+        "target_track": _first_text(standards_body.get("target_track"), target_body.get("target_track"), source_body.get("target_track")),
+        "actor_ref": _first_text(actor.get("ref"), actor.get("actor_ref"), submission.get("submitter_ref")),
+        "source_artifact_count": _source_artifact_count(payload),
+        "control_count": _control_count(payload),
+        "observed_at": _first_text(
+            payload.get("submitted_at"),
+            payload.get("decided_at"),
+            payload.get("effective_at"),
+            payload.get("certified_at"),
+            payload.get("exported_at"),
+            payload.get("posted_at"),
+            payload.get("published_at"),
+            entry.get("timestamp"),
+        ),
+        "source_artifacts": _source_artifacts(payload),
+        "controls": payload.get("controls") if isinstance(payload.get("controls"), (dict, list)) else {},
+    }
+
+
+def _auditor_ecosystem_record(entry: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    entry_type = str(entry.get("entry_type") or "")
+    program = _object(payload.get("program"))
+    governance = _object(payload.get("governance"))
+    accreditation_body = _object(payload.get("accreditation_body"))
+    auditor = _object(payload.get("auditor"))
+    credential = _object(payload.get("credential"))
+    credential_record = _object(payload.get("credential_record"))
+    sponsorship = _object(payload.get("sponsorship"))
+    ceremony = _object(payload.get("signing_ceremony"))
+    audit = _object(payload.get("signing_audit"))
+    enforcement = _object(payload.get("kms_enforcement"))
+    registry = _object(payload.get("registry"))
+    artifact_id = _first_text(
+        payload.get("program_id"),
+        payload.get("sponsorship_id"),
+        payload.get("accreditation_id"),
+        payload.get("countersignature_id"),
+        payload.get("ceremony_id"),
+        payload.get("signing_audit_id"),
+        payload.get("enforcement_id"),
+        payload.get("registry_id"),
+        content_hash(payload),
+    )
+    return {
+        "artifact_id": artifact_id,
+        "entry_id": entry.get("entry_id"),
+        "entry_type": entry_type,
+        "artifact_kind": AUDITOR_ECOSYSTEM_ARTIFACT_KINDS.get(entry_type, entry_type),
+        "artifact_hash": content_hash(payload),
+        "artifact_ref": _first_text(
+            program.get("program_ref"),
+            governance.get("governance_ref"),
+            sponsorship.get("sponsorship_ref"),
+            credential.get("credential_id"),
+            credential_record.get("credential_id"),
+            ceremony.get("ceremony_ref"),
+            audit.get("audit_ref"),
+            enforcement.get("enforcement_ref"),
+            registry.get("publication_ref"),
+            artifact_id,
+        ),
+        "status": _first_text(
+            program.get("status"),
+            sponsorship.get("status"),
+            credential.get("status"),
+            credential_record.get("status"),
+            payload.get("status"),
+            enforcement.get("mode"),
+            payload.get("mode"),
+        ),
+        "program_ref": _first_text(program.get("program_ref"), accreditation_body.get("program_ref"), payload.get("program_ref")),
+        "auditor_ref": _first_text(auditor.get("subject_ref"), credential_record.get("subject_ref"), credential.get("auditor_ref")),
+        "auditor_organization": _first_text(auditor.get("organization"), credential_record.get("organization")),
+        "authority_ref": _first_text(accreditation_body.get("name"), program.get("accreditation_body"), payload.get("provider"), registry.get("name")),
+        "actor_ref": _first_text(governance.get("operator_ref"), payload.get("operator_ref"), audit.get("actor_ref"), enforcement.get("actor_ref")),
+        "source_artifact_count": _source_artifact_count(payload),
+        "control_count": _control_count(payload),
+        "observed_at": _first_text(
+            payload.get("issued_at"),
+            payload.get("effective_at"),
+            payload.get("countersigned_at"),
+            payload.get("signed_at"),
+            payload.get("published_at"),
+            payload.get("recorded_at"),
+            payload.get("enforced_at"),
+            entry.get("timestamp"),
+        ),
+        "source_artifacts": _source_artifacts(payload),
+        "controls": payload.get("controls") if isinstance(payload.get("controls"), (dict, list)) else {},
+    }
 
 
 def _decode_json_object(value: Any) -> dict[str, Any]:
@@ -913,6 +1147,45 @@ class ControlPlane:
                 generated_at TEXT,
                 body_json TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS standards_body_evidence (
+                artifact_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                entry_type TEXT NOT NULL,
+                artifact_kind TEXT NOT NULL,
+                artifact_hash TEXT NOT NULL,
+                artifact_ref TEXT,
+                status TEXT,
+                standards_body_name TEXT,
+                program_ref TEXT,
+                target_track TEXT,
+                actor_ref TEXT,
+                source_artifact_count INTEGER NOT NULL,
+                control_count INTEGER NOT NULL,
+                observed_at TEXT,
+                source_artifacts_json TEXT NOT NULL,
+                controls_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS auditor_ecosystem_evidence (
+                artifact_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                entry_type TEXT NOT NULL,
+                artifact_kind TEXT NOT NULL,
+                artifact_hash TEXT NOT NULL,
+                artifact_ref TEXT,
+                status TEXT,
+                program_ref TEXT,
+                auditor_ref TEXT,
+                auditor_organization TEXT,
+                authority_ref TEXT,
+                actor_ref TEXT,
+                source_artifact_count INTEGER NOT NULL,
+                control_count INTEGER NOT NULL,
+                observed_at TEXT,
+                source_artifacts_json TEXT NOT NULL,
+                controls_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS eval_runs (
                 entry_id TEXT PRIMARY KEY,
                 contract_id TEXT,
@@ -1480,6 +1753,8 @@ class ControlPlane:
             "regulator_acceptances": 0,
             "review_portal_service_attestations": 0,
             "review_portal_authority_dossiers": 0,
+            "standards_body_evidence": 0,
+            "auditor_ecosystem_evidence": 0,
             "eval_runs": 0,
             "gate_decisions": 0,
             "human_approvals": 0,
@@ -2474,6 +2749,74 @@ class ControlPlane:
                     ),
                 )
                 counts["review_portal_authority_dossiers"] += 1
+
+            if entry.get("entry_type") in STANDARDS_BODY_ENTRY_TYPES:
+                record = _standards_body_record(entry, payload if isinstance(payload, dict) else {})
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO standards_body_evidence(
+                        artifact_id, entry_id, entry_type, artifact_kind, artifact_hash,
+                        artifact_ref, status, standards_body_name, program_ref,
+                        target_track, actor_ref, source_artifact_count, control_count,
+                        observed_at, source_artifacts_json, controls_json, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        record["artifact_id"],
+                        record["entry_id"],
+                        record["entry_type"],
+                        record["artifact_kind"],
+                        record["artifact_hash"],
+                        record["artifact_ref"],
+                        record["status"],
+                        record["standards_body_name"],
+                        record["program_ref"],
+                        record["target_track"],
+                        record["actor_ref"],
+                        record["source_artifact_count"],
+                        record["control_count"],
+                        record["observed_at"],
+                        _json(record["source_artifacts"]),
+                        _json(record["controls"]),
+                        _json(payload),
+                    ),
+                )
+                counts["standards_body_evidence"] += 1
+
+            if entry.get("entry_type") in AUDITOR_ECOSYSTEM_ENTRY_TYPES:
+                record = _auditor_ecosystem_record(entry, payload if isinstance(payload, dict) else {})
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO auditor_ecosystem_evidence(
+                        artifact_id, entry_id, entry_type, artifact_kind, artifact_hash,
+                        artifact_ref, status, program_ref, auditor_ref,
+                        auditor_organization, authority_ref, actor_ref,
+                        source_artifact_count, control_count, observed_at,
+                        source_artifacts_json, controls_json, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        record["artifact_id"],
+                        record["entry_id"],
+                        record["entry_type"],
+                        record["artifact_kind"],
+                        record["artifact_hash"],
+                        record["artifact_ref"],
+                        record["status"],
+                        record["program_ref"],
+                        record["auditor_ref"],
+                        record["auditor_organization"],
+                        record["authority_ref"],
+                        record["actor_ref"],
+                        record["source_artifact_count"],
+                        record["control_count"],
+                        record["observed_at"],
+                        _json(record["source_artifacts"]),
+                        _json(record["controls"]),
+                        _json(payload),
+                    ),
+                )
+                counts["auditor_ecosystem_evidence"] += 1
 
             if entry.get("entry_type") == CONTRACT_ENTRY_TYPE:
                 contract = payload.get("contract", {})
@@ -3960,6 +4303,28 @@ class ControlPlane:
         latest_review_portal_authority_dict = dict(latest_review_portal_authority) if latest_review_portal_authority else None
         if latest_review_portal_authority_dict is not None:
             _bool_fields(latest_review_portal_authority_dict, "production_claimed", "production_ready")
+        latest_standards_body_evidence = self.conn.execute(
+            """
+            SELECT artifact_id, entry_id, entry_type, artifact_kind,
+                   artifact_hash, artifact_ref, status, standards_body_name,
+                   program_ref, target_track, actor_ref,
+                   source_artifact_count, control_count, observed_at
+            FROM standards_body_evidence
+            ORDER BY observed_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_auditor_ecosystem_evidence = self.conn.execute(
+            """
+            SELECT artifact_id, entry_id, entry_type, artifact_kind,
+                   artifact_hash, artifact_ref, status, program_ref,
+                   auditor_ref, auditor_organization, authority_ref, actor_ref,
+                   source_artifact_count, control_count, observed_at
+            FROM auditor_ecosystem_evidence
+            ORDER BY observed_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
         latest_status = self.conn.execute(
             """
             SELECT receipt_id, provider, pack_id, contract_id, gate_outcome,
@@ -4453,6 +4818,8 @@ class ControlPlane:
             "latest_regulator_acceptance": latest_regulator_acceptance_dict,
             "latest_review_portal_service_attestation": dict(latest_review_portal_service) if latest_review_portal_service else None,
             "latest_review_portal_authority_dossier": latest_review_portal_authority_dict,
+            "latest_standards_body_evidence": dict(latest_standards_body_evidence) if latest_standards_body_evidence else None,
+            "latest_auditor_ecosystem_evidence": dict(latest_auditor_ecosystem_evidence) if latest_auditor_ecosystem_evidence else None,
             "latest_promotion_status": latest_status_dict,
             "latest_runtime_attestation": latest_runtime_dict,
             "latest_policy_decision": latest_policy_decision_dict,
@@ -5732,6 +6099,54 @@ class ControlPlane:
             items.append(item)
         return items
 
+    def recent_standards_body_evidence(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT artifact_id, entry_id, entry_type, artifact_kind,
+                   artifact_hash, artifact_ref, status, standards_body_name,
+                   program_ref, target_track, actor_ref,
+                   source_artifact_count, control_count, observed_at,
+                   source_artifacts_json, controls_json, body_json
+            FROM standards_body_evidence
+            ORDER BY observed_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["source_artifacts"] = _decode_json_array(item.pop("source_artifacts_json", None))
+            controls_json = item.pop("controls_json", None)
+            item["controls"] = _decode_json_array(controls_json) or _decode_json_object(controls_json)
+            item["body"] = _decode_json_object(item.pop("body_json", None))
+            items.append(item)
+        return items
+
+    def recent_auditor_ecosystem_evidence(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT artifact_id, entry_id, entry_type, artifact_kind,
+                   artifact_hash, artifact_ref, status, program_ref,
+                   auditor_ref, auditor_organization, authority_ref, actor_ref,
+                   source_artifact_count, control_count, observed_at,
+                   source_artifacts_json, controls_json, body_json
+            FROM auditor_ecosystem_evidence
+            ORDER BY observed_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["source_artifacts"] = _decode_json_array(item.pop("source_artifacts_json", None))
+            controls_json = item.pop("controls_json", None)
+            item["controls"] = _decode_json_array(controls_json) or _decode_json_object(controls_json)
+            item["body"] = _decode_json_object(item.pop("body_json", None))
+            items.append(item)
+        return items
+
     def roadmap_evidence(self, limit: int = 20) -> dict[str, Any]:
         return {
             "roadmap_audits": self.recent_roadmap_audits(limit),
@@ -5752,6 +6167,13 @@ class ControlPlane:
             "identity_provider_evidence": self.identity_provider_evidence(limit),
             "framework_adapter_evidence": self.framework_adapter_evidence(limit),
             "review_portal_evidence": self.review_portal_evidence(limit),
+            "standards_auditor_evidence": self.standards_auditor_evidence(limit),
+        }
+
+    def standards_auditor_evidence(self, limit: int = 20) -> dict[str, Any]:
+        return {
+            "standards_body_evidence": self.recent_standards_body_evidence(limit),
+            "auditor_ecosystem_evidence": self.recent_auditor_ecosystem_evidence(limit),
         }
 
     def insurer_evidence(self, limit: int = 20) -> dict[str, Any]:

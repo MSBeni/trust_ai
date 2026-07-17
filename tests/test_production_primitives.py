@@ -267,6 +267,19 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual(200, control_framework_response.status)
                 self.assertEqual([], control_framework_body["framework_hook_operations"])
 
+                conn.request("GET", "/v0/standards-auditor-evidence")
+                standards_auditor_response = conn.getresponse()
+                standards_auditor_body = json.loads(standards_auditor_response.read().decode("utf-8"))
+                self.assertEqual(200, standards_auditor_response.status)
+                self.assertEqual([], standards_auditor_body["standards_body_evidence"])
+                self.assertEqual([], standards_auditor_body["auditor_ecosystem_evidence"])
+
+                conn.request("GET", "/v0/control/standards-auditor-evidence")
+                control_standards_auditor_response = conn.getresponse()
+                control_standards_auditor_body = json.loads(control_standards_auditor_response.read().decode("utf-8"))
+                self.assertEqual(200, control_standards_auditor_response.status)
+                self.assertEqual([], control_standards_auditor_body["auditor_ecosystem_evidence"])
+
                 conn.request("GET", "/v0/roadmap-evidence")
                 roadmap_response = conn.getresponse()
                 roadmap_body = json.loads(roadmap_response.read().decode("utf-8"))

@@ -2293,6 +2293,8 @@ def cmd_control_summary(args: argparse.Namespace) -> int:
             summary["framework_adapter_evidence"] = control.framework_adapter_evidence()
         if args.review_portal_evidence:
             summary["review_portal_evidence"] = control.review_portal_evidence()
+        if args.standards_auditor_evidence:
+            summary["standards_auditor_evidence"] = control.standards_auditor_evidence()
         if args.roadmap_evidence:
             summary["roadmap_evidence"] = control.roadmap_evidence()
         if args.phase_scoreboards:
@@ -20400,6 +20402,7 @@ def build_parser() -> argparse.ArgumentParser:
     control_summary.add_argument("--promotion-lifecycle-evidence", action="store_true")
     control_summary.add_argument("--framework-adapter-evidence", action="store_true")
     control_summary.add_argument("--review-portal-evidence", action="store_true")
+    control_summary.add_argument("--standards-auditor-evidence", action="store_true")
     control_summary.add_argument("--roadmap-evidence", action="store_true")
     control_summary.add_argument("--phase-scoreboards", action="store_true")
     control_summary.add_argument("--design-partner-dossiers", action="store_true")

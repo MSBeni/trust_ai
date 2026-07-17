@@ -6,6 +6,10 @@ from pathlib import Path
 from tests import test_identity_provider_authority as identity_authority_fixtures
 from tests import test_insurer_partner_authority as insurer_authority_fixtures
 from tests import test_review_portal_service as service_fixtures
+from tests import test_standards_body_status as standards_status_fixtures
+from tests import test_auditor_program_governance as auditor_governance_fixtures
+from trustai.auditor_accreditation import append_auditor_accreditation_receipt, build_auditor_accreditation_receipt
+from trustai.auditor_program_governance import append_auditor_program_governance_receipt, build_auditor_program_governance_receipt
 from trustai.approvals import append_approval, load_approval
 from trustai.byoc_authority import append_byoc_authority_dossier, build_byoc_authority_dossier
 from trustai.byoc_operator import append_byoc_operator_attestation, build_byoc_operator_attestation
@@ -93,6 +97,8 @@ from trustai.shadow import (
     load_soak_window,
     load_traffic_completeness_provider_export,
 )
+from trustai.standards_body_status import append_standards_body_status_receipt, build_standards_body_status_receipt
+from trustai.standards_body_submission import append_standards_body_submission_receipt
 from trustai.supervised_access import append_supervised_access_receipt
 from trustai.underwriting_quote import append_underwriting_quote
 from trustai.vendor_identity import append_vendor_identity_receipt
@@ -1061,6 +1067,129 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, parent_evidence["counts"]["agent_delegation_graphs"])
                 self.assertEqual(1, child_evidence["counts"]["agent_delegations"])
                 self.assertEqual(delegation_entry["payload"]["delegation_hash"], child_evidence["agent_delegations"][0]["delegation_hash"])
+            finally:
+                control.close()
+
+    def test_indexes_standards_and_auditor_ecosystem_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            chain = EvidenceChain.load(tmp / "chain.json", tenant_id="standards-auditor-control")
+            standards_helper = standards_status_fixtures.StandardsBodyStatusTests(
+                methodName="test_standards_body_status_verifies_and_appends"
+            )
+            standards, conformance, release, submission = standards_helper._sources()
+            submission_entry = append_standards_body_submission_receipt(
+                chain,
+                submission,
+                standards_package=standards,
+                verifier_release=release,
+                conformance_report=conformance,
+                root=ROOT,
+            )
+            status_receipt = build_standards_body_status_receipt(
+                submission,
+                standards_package=standards,
+                verifier_release=release,
+                conformance_report=conformance,
+                root=ROOT,
+                new_status="acknowledged",
+                docket_ref="LF-TRUSTAI-DKT-2026-001",
+                status_ref="LF-TRUSTAI-DKT-2026-001:ack",
+                actor_ref="oidc:standards.example/chair-1",
+                actor_role="working-group-chair",
+                reason="Submission accepted into the working-group intake docket.",
+                evidence_refs=["mail:trustai-wg/2026-07-18"],
+                decided_at="2026-07-18T00:00:00Z",
+                effective_at="2026-07-18T01:00:00Z",
+            )
+            status_entry = append_standards_body_status_receipt(
+                chain,
+                status_receipt,
+                submission_receipt=submission,
+                standards_package=standards,
+                verifier_release=release,
+                conformance_report=conformance,
+                root=ROOT,
+            )
+
+            auditor_helper = auditor_governance_fixtures.AuditorProgramGovernanceTests(
+                methodName="test_auditor_program_governance_verifies_and_appends"
+            )
+            pack, disclosure, auditor_standards, kit = auditor_helper._sources(tmp)
+            governance_receipt = build_auditor_program_governance_receipt(
+                kit,
+                standards_package=auditor_standards,
+                proof_pack=pack,
+                regulator_disclosure=disclosure,
+                root=ROOT,
+                program_ref="TRUSTAI-AUDITOR-0.1",
+                governance_ref="TRUSTAI-AUD-GOV-2026-001",
+                governance_mode="local-reference",
+                operator_ref="oidc:trustai.example/program-operator",
+                issued_at="2026-07-14T00:00:00Z",
+                effective_at="2026-07-14T01:00:00Z",
+            )
+            governance_entry = append_auditor_program_governance_receipt(
+                chain,
+                governance_receipt,
+                certification_kit=kit,
+                standards_package=auditor_standards,
+                proof_pack=pack,
+                regulator_disclosure=disclosure,
+                root=ROOT,
+            )
+            accreditation_receipt = build_auditor_accreditation_receipt(
+                kit,
+                proof_pack=pack,
+                regulator_disclosure=disclosure,
+                standards_package=auditor_standards,
+                root=ROOT,
+                auditor_name="Ada Audit",
+                auditor_ref="oidc:auditor.example/ada",
+                auditor_organization="Example AI Audit LLP",
+                credential_id="TA-AUD-2026-001",
+                status="active",
+                score_percent=100,
+                proctor_ref="oidc:trustai.example/proctor-1",
+                evidence_refs=["exam:TA-AUD-2026-001"],
+                issued_at="2026-07-15T00:00:00Z",
+                expires_at="2027-07-15T00:00:00Z",
+            )
+            accreditation_entry = append_auditor_accreditation_receipt(
+                chain,
+                accreditation_receipt,
+                certification_kit=kit,
+                proof_pack=pack,
+                regulator_disclosure=disclosure,
+                standards_package=auditor_standards,
+                root=ROOT,
+            )
+
+            control = ControlPlane(tmp / "control.sqlite")
+            try:
+                indexed = control.index_chain(chain)
+                summary = control.summary()
+                evidence = control.standards_auditor_evidence()
+                roadmap = control.roadmap_evidence()
+
+                self.assertEqual(2, indexed["standards_body_evidence"])
+                self.assertEqual(2, indexed["auditor_ecosystem_evidence"])
+                self.assertEqual(status_receipt["status_id"], summary["latest_standards_body_evidence"]["artifact_id"])
+                self.assertEqual("standards-body-status", summary["latest_standards_body_evidence"]["artifact_kind"])
+                self.assertEqual("acknowledged", summary["latest_standards_body_evidence"]["status"])
+                self.assertEqual(accreditation_receipt["accreditation_id"], summary["latest_auditor_ecosystem_evidence"]["artifact_id"])
+                self.assertEqual("auditor-accreditation", summary["latest_auditor_ecosystem_evidence"]["artifact_kind"])
+                self.assertEqual("active", summary["latest_auditor_ecosystem_evidence"]["status"])
+
+                standards_rows = evidence["standards_body_evidence"]
+                auditor_rows = evidence["auditor_ecosystem_evidence"]
+                self.assertEqual(status_entry["payload"]["status_id"], standards_rows[0]["artifact_id"])
+                self.assertEqual(submission_entry["payload"]["submission_id"], standards_rows[1]["artifact_id"])
+                self.assertEqual(status_entry["payload"]["source_refs"], standards_rows[0]["source_artifacts"])
+                self.assertEqual(accreditation_entry["payload"]["accreditation_id"], auditor_rows[0]["artifact_id"])
+                self.assertEqual(governance_entry["payload"]["program_id"], auditor_rows[1]["artifact_id"])
+                self.assertEqual(accreditation_entry["payload"]["source_refs"], auditor_rows[0]["source_artifacts"])
+                self.assertEqual(evidence, roadmap["standards_auditor_evidence"])
             finally:
                 control.close()
 
