@@ -50,7 +50,12 @@ from trustai.mcp_gateway import (
     load_mcp_transcript,
 )
 from trustai.mcp_gateway_authority import append_mcp_gateway_authority_dossier, build_mcp_gateway_authority_dossier
+from trustai.marketplace import MARKETPLACE_DISTRIBUTION_ENTRY_TYPE
+from trustai.marketplace_author import MARKETPLACE_AUTHOR_ENTRY_TYPE
+from trustai.marketplace_settlement import MARKETPLACE_SETTLEMENT_ENTRY_TYPE
 from trustai.phase_scoreboard import append_phase_scoreboard, build_phase_scoreboard
+from trustai.procurement_clause import PROCUREMENT_CLAUSE_ENTRY_TYPE
+from trustai.procurement_integration import PROCUREMENT_INTEGRATION_ENTRY_TYPE
 from trustai.product_scope import append_product_scope_decision, build_product_scope_decision
 from trustai.lifecycle import (
     append_demotion,
@@ -99,6 +104,12 @@ from trustai.shadow import (
 )
 from trustai.standards_body_status import append_standards_body_status_receipt, build_standards_body_status_receipt
 from trustai.standards_body_submission import append_standards_body_submission_receipt
+from trustai.trust_network_authority import TRUST_NETWORK_AUTHORITY_ENTRY_TYPE
+from trustai.trust_network_registry import TRUST_NETWORK_REGISTRY_ENTRY_TYPE
+from trustai.trust_network_registry_status import TRUST_NETWORK_REGISTRY_STATUS_ENTRY_TYPE
+from trustai.trust_network_service import TRUST_NETWORK_SERVICE_ENTRY_TYPE
+from trustai.trust_network_worker import TRUST_NETWORK_WORKER_ENTRY_TYPE
+from trustai.trust_network_worker_bundle import TRUST_NETWORK_WORKER_BUNDLE_ENTRY_TYPE
 from trustai.supervised_access import append_supervised_access_receipt
 from trustai.underwriting_quote import append_underwriting_quote
 from trustai.vendor_identity import append_vendor_identity_receipt
@@ -1190,6 +1201,253 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(governance_entry["payload"]["program_id"], auditor_rows[1]["artifact_id"])
                 self.assertEqual(accreditation_entry["payload"]["source_refs"], auditor_rows[0]["source_artifacts"])
                 self.assertEqual(evidence, roadmap["standards_auditor_evidence"])
+            finally:
+                control.close()
+
+
+    def test_indexes_trust_network_procurement_marketplace_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            chain = EvidenceChain.load(tmp / "trust-network-chain.json", tenant_id="trust-network-test")
+            entries = [
+                (
+                    PROCUREMENT_CLAUSE_ENTRY_TYPE,
+                    "proc-clause-001",
+                    "procurement-clause",
+                    "2026-07-10T00:00:00Z",
+                    {
+                        "receipt_id": "proc-clause-001",
+                        "receipt_hash": "sha256:proc-clause",
+                        "buyer": {"ref": "buyer:bank"},
+                        "contract": {"contract_ref": "contract:aitrade", "status": "approved"},
+                        "requirements": [{"id": "proof-pack-retention"}],
+                        "source_refs": ["docs/specs/procurement-clause-v0.1.md"],
+                        "controls": {"clause-bound": "passed"},
+                        "issued_at": "2026-07-10T00:00:00Z",
+                    },
+                ),
+                (
+                    PROCUREMENT_INTEGRATION_ENTRY_TYPE,
+                    "proc-int-001",
+                    "procurement-integration",
+                    "2026-07-10T01:00:00Z",
+                    {
+                        "integration_id": "proc-int-001",
+                        "integration_hash": "sha256:proc-int",
+                        "mode": "production-sync",
+                        "procurement_system": {"system_ref": "procurement:coupa"},
+                        "request": {"request_ref": "request:coupa/aitrade"},
+                        "response": {"response_ref": "response:coupa/aitrade", "status": "accepted"},
+                        "source_refs": ["docs/specs/procurement-integration-v0.1.md"],
+                        "controls": {"integration-delivered": "passed"},
+                        "delivered_at": "2026-07-10T01:00:00Z",
+                    },
+                ),
+                (
+                    TRUST_NETWORK_REGISTRY_ENTRY_TYPE,
+                    "tn-registry-001",
+                    "trust-network-registry",
+                    "2026-07-10T02:00:00Z",
+                    {
+                        "registration_id": "tn-registry-001",
+                        "registration_hash": "sha256:tn-registry",
+                        "registry": {"registry_ref": "registry:trust-network"},
+                        "registration": {"registration_ref": "registration:trustai", "status": "active"},
+                        "vendor": {"subject_ref": "vendor:trustai", "name": "TrustAI"},
+                        "trust_network": {"registry_ref": "registry:trust-network"},
+                        "procurement": {"marketplace_ref": "marketplace:agent-trust"},
+                        "source_refs": ["docs/specs/trust-network-v0.1.md"],
+                        "controls": {"registry-published": "passed"},
+                        "published_at": "2026-07-10T02:00:00Z",
+                    },
+                ),
+                (
+                    TRUST_NETWORK_REGISTRY_STATUS_ENTRY_TYPE,
+                    "tn-status-001",
+                    "trust-network-registry-status",
+                    "2026-07-10T03:00:00Z",
+                    {
+                        "status_id": "tn-status-001",
+                        "status_hash": "sha256:tn-status",
+                        "target_registration": {"registration_ref": "registration:trustai"},
+                        "status_update": {"status_ref": "status:registration/active", "new_status": "active"},
+                        "source_refs": ["docs/specs/trust-network-status-v0.1.md"],
+                        "controls": {"status-recorded": "passed"},
+                        "decided_at": "2026-07-10T03:00:00Z",
+                    },
+                ),
+                (
+                    MARKETPLACE_DISTRIBUTION_ENTRY_TYPE,
+                    "market-dist-001",
+                    "marketplace-distribution",
+                    "2026-07-10T04:00:00Z",
+                    {
+                        "distribution_id": "market-dist-001",
+                        "distribution_hash": "sha256:market-dist",
+                        "distribution_ref": "distribution:agent-trust/aitrade",
+                        "mode": "subscriber-distribution",
+                        "channel": {"channel_ref": "marketplace:agent-trust"},
+                        "subscriber": {"subscriber_ref": "subscriber:enterprise"},
+                        "catalog": {"catalog_ref": "catalog:trustai"},
+                        "source_artifacts": [{"path": "artifacts/marketplace-distribution.json"}],
+                        "controls": {"distribution-published": "passed"},
+                        "distributed_at": "2026-07-10T04:00:00Z",
+                    },
+                ),
+                (
+                    MARKETPLACE_AUTHOR_ENTRY_TYPE,
+                    "market-author-001",
+                    "marketplace-author-governance",
+                    "2026-07-10T05:00:00Z",
+                    {
+                        "governance_id": "market-author-001",
+                        "governance_hash": "sha256:market-author",
+                        "mode": "production-governance",
+                        "catalog": {"catalog_ref": "catalog:trustai"},
+                        "distribution": {"distribution_ref": "distribution:agent-trust/aitrade"},
+                        "author": {"subject_ref": "author:trustai"},
+                        "identity": {"subject_ref": "vendor:trustai"},
+                        "source_artifacts": [{"path": "artifacts/marketplace-author.json"}],
+                        "control_summary": {"author-governance": "passed"},
+                        "issued_at": "2026-07-10T05:00:00Z",
+                    },
+                ),
+                (
+                    MARKETPLACE_SETTLEMENT_ENTRY_TYPE,
+                    "market-settle-001",
+                    "marketplace-settlement",
+                    "2026-07-10T06:00:00Z",
+                    {
+                        "settlement_id": "market-settle-001",
+                        "settlement_hash": "sha256:market-settle",
+                        "mode": "billing-settlement",
+                        "settlement": {"settlement_ref": "settlement:agent-trust/aitrade", "status": "closed"},
+                        "invoice": {"status": "paid"},
+                        "payout": {"status": "paid"},
+                        "source_artifacts": [{"path": "artifacts/marketplace-settlement.json"}],
+                        "control_summary": {"settlement-recorded": "passed"},
+                        "issued_at": "2026-07-10T06:00:00Z",
+                    },
+                ),
+                (
+                    TRUST_NETWORK_SERVICE_ENTRY_TYPE,
+                    "tn-service-001",
+                    "trust-network-service-attestation",
+                    "2026-07-10T07:00:00Z",
+                    {
+                        "attestation_id": "tn-service-001",
+                        "attestation_hash": "sha256:tn-service",
+                        "mode": "production-service",
+                        "environment": "aitrade-prod",
+                        "service": {"service_ref": "service:trust-network", "status": "attested"},
+                        "registry": {"registry_ref": "registry:trust-network"},
+                        "marketplace": {"marketplace_ref": "marketplace:agent-trust"},
+                        "source": {"source_artifacts": [{"path": "artifacts/trust-network-service.json"}]},
+                        "control_status_summary": {"service-attested": "passed"},
+                        "attested_at": "2026-07-10T07:00:00Z",
+                    },
+                ),
+                (
+                    TRUST_NETWORK_WORKER_ENTRY_TYPE,
+                    "tn-worker-001",
+                    "trust-network-worker",
+                    "2026-07-10T08:00:00Z",
+                    {
+                        "worker_operation_id": "tn-worker-001",
+                        "worker_operation_hash": "sha256:tn-worker",
+                        "mode": "registry-propagation",
+                        "environment": "aitrade-prod",
+                        "service": {"service_ref": "service:trust-network"},
+                        "registry": {"registry_ref": "registry:trust-network"},
+                        "marketplace": {"marketplace_ref": "marketplace:agent-trust"},
+                        "worker": {"worker_ref": "worker:trust-network", "status": "recorded"},
+                        "scheduler": {"run_ref": "run:trust-network/001"},
+                        "source": {"source_refs": ["artifacts/trust-network-worker.json"]},
+                        "control_status_summary": {"worker-recorded": "passed"},
+                        "recorded_at": "2026-07-10T08:00:00Z",
+                    },
+                ),
+                (
+                    TRUST_NETWORK_WORKER_BUNDLE_ENTRY_TYPE,
+                    "tn-bundle-001",
+                    "trust-network-worker-bundle",
+                    "2026-07-10T09:00:00Z",
+                    {
+                        "bundle_id": "tn-bundle-001",
+                        "bundle_hash": "sha256:tn-bundle",
+                        "mode": "reviewer-bundle",
+                        "environment": "aitrade-prod",
+                        "reviewer_ref": "reviewer:enterprise",
+                        "bundle_ref": "bundle:trust-network/aitrade",
+                        "source": {"source_artifacts": [{"path": "artifacts/trust-network-worker-bundle.json"}]},
+                        "summary": {"status": "exported"},
+                        "control_summary": {"bundle-exported": "passed"},
+                        "generated_at": "2026-07-10T09:00:00Z",
+                    },
+                ),
+                (
+                    TRUST_NETWORK_AUTHORITY_ENTRY_TYPE,
+                    "tn-authority-001",
+                    "trust-network-authority",
+                    "2026-07-10T10:00:00Z",
+                    {
+                        "dossier_id": "tn-authority-001",
+                        "dossier_hash": "sha256:tn-authority",
+                        "mode": "production-dossier",
+                        "environment": "aitrade-prod",
+                        "dossier_ref": "dossier:trust-network/aitrade",
+                        "authority_ref": "authority:trust-network/aitrade",
+                        "producer_ref": "producer:trust-network-authority",
+                        "service_attestation_binding": {"service_ref": "service:trust-network"},
+                        "summary": {"status": "ready"},
+                        "control_summary": {"authority-ready": "passed"},
+                        "authority_evidence": [{"authority_kind": "hosted-service", "status": "fresh"}],
+                        "generated_at": "2026-07-10T10:00:00Z",
+                    },
+                ),
+            ]
+
+            for entry_type, _artifact_id, _artifact_kind, timestamp, payload in entries:
+                chain.append(entry_type, payload, timestamp=timestamp)
+            chain.save()
+
+            control = ControlPlane(tmp / "control.sqlite")
+            try:
+                indexed = control.index_chain(chain)
+                summary = control.summary()
+                evidence = control.trust_network_evidence()
+                roadmap = control.roadmap_evidence()
+
+                self.assertEqual(len(entries), indexed["trust_network_evidence"])
+                self.assertEqual(len(entries), summary["counts"]["trust_network_evidence"])
+                self.assertEqual("tn-authority-001", summary["latest_trust_network_evidence"]["artifact_id"])
+                self.assertEqual("trust-network-authority", summary["latest_trust_network_evidence"]["artifact_kind"])
+
+                rows = evidence["trust_network_evidence"]
+                self.assertEqual(len(entries), len(rows))
+                self.assertEqual("tn-authority-001", rows[0]["artifact_id"])
+                self.assertEqual("proc-clause-001", rows[-1]["artifact_id"])
+                self.assertEqual(
+                    {artifact_kind for _entry_type, _artifact_id, artifact_kind, _timestamp, _payload in entries},
+                    {row["artifact_kind"] for row in rows},
+                )
+
+                clause = next(row for row in rows if row["artifact_id"] == "proc-clause-001")
+                self.assertEqual(["docs/specs/procurement-clause-v0.1.md"], clause["source_artifacts"])
+                self.assertEqual(1, clause["source_artifact_count"])
+                self.assertEqual(1, clause["control_count"])
+                self.assertEqual("buyer:bank", clause["party_ref"])
+
+                service = next(row for row in rows if row["artifact_id"] == "tn-service-001")
+                self.assertEqual("service:trust-network", service["service_ref"])
+                self.assertEqual("registry:trust-network", service["registry_ref"])
+                self.assertEqual("marketplace:agent-trust", service["marketplace_ref"])
+                self.assertEqual(1, service["source_artifact_count"])
+
+                authority = rows[0]
+                self.assertEqual("service:trust-network", authority["service_ref"])
+                self.assertEqual("dossier:trust-network/aitrade", authority["artifact_ref"])
+                self.assertEqual(evidence, roadmap["trust_network_evidence"])
             finally:
                 control.close()
 

@@ -43,7 +43,12 @@ from .ingest import INGEST_ENTRY_TYPE
 from .insurer_partner_authority import INSURER_PARTNER_AUTHORITY_ENTRY_TYPE
 from .lifecycle import DEMOTION_ENTRY_TYPE, INCIDENT_ENTRY_TYPE, ROLLBACK_ENTRY_TYPE, SOAK_DEMOTION_ENTRY_TYPE
 from .mcp_gateway import MCP_PROXY_CAPTURE_ENTRY_TYPE, MCP_TOOL_CALL_ENTRY_TYPE
+from .marketplace import MARKETPLACE_DISTRIBUTION_ENTRY_TYPE
+from .marketplace_author import MARKETPLACE_AUTHOR_ENTRY_TYPE
+from .marketplace_settlement import MARKETPLACE_SETTLEMENT_ENTRY_TYPE
 from .own_compliance import OWN_COMPLIANCE_ENTRY_TYPE, REQUIRED_CERTIFICATION_KINDS
+from .procurement_clause import PROCUREMENT_CLAUSE_ENTRY_TYPE
+from .procurement_integration import PROCUREMENT_INTEGRATION_ENTRY_TYPE
 from .policy import POLICY_DECISION_ENTRY_TYPE
 from .policy_engine import POLICY_ENGINE_ENTRY_TYPE
 from .proofpack import PROOF_PACK_SPEC_VERSION
@@ -68,6 +73,12 @@ from .shadow import (
     TRAFFIC_COMPLETENESS_ENTRY_TYPE,
     TRAFFIC_HOLDOUT_EXPORT_ENTRY_TYPE,
 )
+from .trust_network_authority import TRUST_NETWORK_AUTHORITY_ENTRY_TYPE
+from .trust_network_registry import TRUST_NETWORK_REGISTRY_ENTRY_TYPE
+from .trust_network_registry_status import TRUST_NETWORK_REGISTRY_STATUS_ENTRY_TYPE
+from .trust_network_service import TRUST_NETWORK_SERVICE_ENTRY_TYPE
+from .trust_network_worker import TRUST_NETWORK_WORKER_ENTRY_TYPE
+from .trust_network_worker_bundle import TRUST_NETWORK_WORKER_BUNDLE_ENTRY_TYPE
 from .vendor_identity import VENDOR_IDENTITY_ENTRY_TYPE
 from .vertical_pack import VERTICAL_PACK_ENTRY_TYPE
 
@@ -102,6 +113,7 @@ INDEX_TABLES = (
     "review_portal_authority_dossiers",
     "standards_body_evidence",
     "auditor_ecosystem_evidence",
+    "trust_network_evidence",
     "eval_runs",
     "gate_decisions",
     "human_approvals",
@@ -168,6 +180,34 @@ AUDITOR_ECOSYSTEM_ARTIFACT_KINDS = {
     AUDITOR_ACCREDITATION_SIGNING_AUDIT_ENTRY_TYPE: "auditor-accreditation-signing-audit",
     AUDITOR_ACCREDITATION_KMS_ENFORCEMENT_ENTRY_TYPE: "auditor-accreditation-kms-enforcement",
     AUDITOR_CREDENTIAL_REGISTRY_ENTRY_TYPE: "auditor-credential-registry",
+}
+
+TRUST_NETWORK_ENTRY_TYPES = {
+    PROCUREMENT_CLAUSE_ENTRY_TYPE,
+    PROCUREMENT_INTEGRATION_ENTRY_TYPE,
+    TRUST_NETWORK_REGISTRY_ENTRY_TYPE,
+    TRUST_NETWORK_REGISTRY_STATUS_ENTRY_TYPE,
+    MARKETPLACE_DISTRIBUTION_ENTRY_TYPE,
+    MARKETPLACE_AUTHOR_ENTRY_TYPE,
+    MARKETPLACE_SETTLEMENT_ENTRY_TYPE,
+    TRUST_NETWORK_SERVICE_ENTRY_TYPE,
+    TRUST_NETWORK_WORKER_ENTRY_TYPE,
+    TRUST_NETWORK_WORKER_BUNDLE_ENTRY_TYPE,
+    TRUST_NETWORK_AUTHORITY_ENTRY_TYPE,
+}
+
+TRUST_NETWORK_ARTIFACT_KINDS = {
+    PROCUREMENT_CLAUSE_ENTRY_TYPE: "procurement-clause",
+    PROCUREMENT_INTEGRATION_ENTRY_TYPE: "procurement-integration",
+    TRUST_NETWORK_REGISTRY_ENTRY_TYPE: "trust-network-registry",
+    TRUST_NETWORK_REGISTRY_STATUS_ENTRY_TYPE: "trust-network-registry-status",
+    MARKETPLACE_DISTRIBUTION_ENTRY_TYPE: "marketplace-distribution",
+    MARKETPLACE_AUTHOR_ENTRY_TYPE: "marketplace-author-governance",
+    MARKETPLACE_SETTLEMENT_ENTRY_TYPE: "marketplace-settlement",
+    TRUST_NETWORK_SERVICE_ENTRY_TYPE: "trust-network-service-attestation",
+    TRUST_NETWORK_WORKER_ENTRY_TYPE: "trust-network-worker",
+    TRUST_NETWORK_WORKER_BUNDLE_ENTRY_TYPE: "trust-network-worker-bundle",
+    TRUST_NETWORK_AUTHORITY_ENTRY_TYPE: "trust-network-authority",
 }
 
 
@@ -380,6 +420,151 @@ def _auditor_ecosystem_record(entry: dict[str, Any], payload: dict[str, Any]) ->
         ),
         "source_artifacts": _source_artifacts(payload),
         "controls": payload.get("controls") if isinstance(payload.get("controls"), (dict, list)) else {},
+    }
+
+
+def _trust_network_source_artifacts(payload: dict[str, Any]) -> list[Any]:
+    artifacts = _source_artifacts(payload)
+    if artifacts:
+        return artifacts
+    source = _object(payload.get("source"))
+    source_artifacts = source.get("source_artifacts")
+    if isinstance(source_artifacts, list):
+        return source_artifacts
+    source_refs = source.get("source_refs")
+    return source_refs if isinstance(source_refs, list) else []
+
+
+def _trust_network_controls(payload: dict[str, Any]) -> Any:
+    for key in ("controls", "control_summary", "control_status_summary"):
+        value = payload.get(key)
+        if isinstance(value, (dict, list)):
+            return value
+    return {}
+
+
+def _trust_network_control_count(payload: dict[str, Any]) -> int:
+    controls = _trust_network_controls(payload)
+    return len(controls) if isinstance(controls, (dict, list)) else 0
+
+
+def _trust_network_record(entry: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    entry_type = str(entry.get("entry_type") or "")
+    buyer = _object(payload.get("buyer"))
+    contract = _object(payload.get("contract"))
+    request = _object(payload.get("request"))
+    response = _object(payload.get("response"))
+    registry = _object(payload.get("registry"))
+    registration = _object(payload.get("registration"))
+    status_update = _object(payload.get("status_update"))
+    vendor = _object(payload.get("vendor"))
+    trust_network = _object(payload.get("trust_network"))
+    procurement = _object(payload.get("procurement"))
+    channel = _object(payload.get("channel"))
+    subscriber = _object(payload.get("subscriber"))
+    catalog = _object(payload.get("catalog"))
+    distribution = _object(payload.get("distribution"))
+    author = _object(payload.get("author"))
+    identity = _object(payload.get("identity"))
+    settlement = _object(payload.get("settlement"))
+    invoice = _object(payload.get("invoice"))
+    payout = _object(payload.get("payout"))
+    service = _object(payload.get("service"))
+    marketplace = _object(payload.get("marketplace"))
+    worker = _object(payload.get("worker"))
+    scheduler = _object(payload.get("scheduler"))
+    summary = _object(payload.get("summary"))
+    service_binding = _object(payload.get("service_attestation_binding"))
+    artifact_id = _first_text(
+        payload.get("receipt_id"),
+        payload.get("integration_id"),
+        payload.get("registration_id"),
+        payload.get("status_id"),
+        payload.get("distribution_id"),
+        payload.get("governance_id"),
+        payload.get("settlement_id"),
+        payload.get("attestation_id"),
+        payload.get("worker_operation_id"),
+        payload.get("bundle_id"),
+        payload.get("dossier_id"),
+        content_hash(payload),
+    )
+    return {
+        "artifact_id": artifact_id,
+        "entry_id": entry.get("entry_id"),
+        "entry_type": entry_type,
+        "artifact_kind": TRUST_NETWORK_ARTIFACT_KINDS.get(entry_type, entry_type),
+        "artifact_hash": content_hash(payload),
+        "artifact_ref": _first_text(
+            contract.get("contract_ref"),
+            request.get("request_ref"),
+            response.get("response_ref"),
+            registration.get("registration_ref"),
+            status_update.get("status_ref"),
+            status_update.get("docket_ref"),
+            payload.get("distribution_ref"),
+            distribution.get("distribution_ref"),
+            catalog.get("catalog_ref"),
+            author.get("author_ref"),
+            author.get("subject_ref"),
+            settlement.get("settlement_ref"),
+            service.get("service_ref"),
+            worker.get("worker_ref"),
+            worker.get("operation_ref"),
+            scheduler.get("run_ref"),
+            payload.get("bundle_ref"),
+            payload.get("dossier_ref"),
+            payload.get("authority_ref"),
+            artifact_id,
+        ),
+        "status": _first_text(
+            contract.get("status"),
+            response.get("status"),
+            registration.get("status"),
+            status_update.get("new_status"),
+            invoice.get("status"),
+            payout.get("status"),
+            settlement.get("status"),
+            service.get("status"),
+            worker.get("status"),
+            summary.get("status"),
+            payload.get("status"),
+            payload.get("mode"),
+        ),
+        "mode": _first_text(payload.get("mode"), request.get("mode")),
+        "environment": _first_text(payload.get("environment"), service.get("environment"), worker.get("environment")),
+        "party_ref": _first_text(
+            buyer.get("ref"),
+            buyer.get("buyer_ref"),
+            vendor.get("subject_ref"),
+            vendor.get("name"),
+            subscriber.get("ref"),
+            subscriber.get("subscriber_ref"),
+            author.get("ref"),
+            author.get("subject_ref"),
+            identity.get("subject_ref"),
+            payload.get("producer_ref"),
+            payload.get("reviewer_ref"),
+        ),
+        "service_ref": _first_text(service.get("service_ref"), service_binding.get("service_ref"), payload.get("service_ref")),
+        "registry_ref": _first_text(registry.get("registry_ref"), registry.get("name"), registration.get("registry_ref"), trust_network.get("registry_ref")),
+        "marketplace_ref": _first_text(marketplace.get("marketplace_ref"), channel.get("channel_ref"), procurement.get("marketplace_ref")),
+        "source_artifact_count": len(_trust_network_source_artifacts(payload)),
+        "control_count": _trust_network_control_count(payload),
+        "observed_at": _first_text(
+            payload.get("issued_at"),
+            payload.get("recorded_at"),
+            payload.get("generated_at"),
+            payload.get("distributed_at"),
+            payload.get("delivered_at"),
+            payload.get("published_at"),
+            payload.get("decided_at"),
+            payload.get("attested_at"),
+            status_update.get("effective_at"),
+            entry.get("timestamp"),
+        ),
+        "source_artifacts": _trust_network_source_artifacts(payload),
+        "controls": _trust_network_controls(payload),
     }
 
 
@@ -1186,6 +1371,27 @@ class ControlPlane:
                 controls_json TEXT NOT NULL,
                 body_json TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS trust_network_evidence (
+                artifact_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                entry_type TEXT NOT NULL,
+                artifact_kind TEXT NOT NULL,
+                artifact_hash TEXT NOT NULL,
+                artifact_ref TEXT,
+                status TEXT,
+                mode TEXT,
+                environment TEXT,
+                party_ref TEXT,
+                service_ref TEXT,
+                registry_ref TEXT,
+                marketplace_ref TEXT,
+                source_artifact_count INTEGER NOT NULL,
+                control_count INTEGER NOT NULL,
+                observed_at TEXT,
+                source_artifacts_json TEXT NOT NULL,
+                controls_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS eval_runs (
                 entry_id TEXT PRIMARY KEY,
                 contract_id TEXT,
@@ -1755,6 +1961,7 @@ class ControlPlane:
             "review_portal_authority_dossiers": 0,
             "standards_body_evidence": 0,
             "auditor_ecosystem_evidence": 0,
+            "trust_network_evidence": 0,
             "eval_runs": 0,
             "gate_decisions": 0,
             "human_approvals": 0,
@@ -2817,6 +3024,43 @@ class ControlPlane:
                     ),
                 )
                 counts["auditor_ecosystem_evidence"] += 1
+
+
+            if entry.get("entry_type") in TRUST_NETWORK_ENTRY_TYPES:
+                record = _trust_network_record(entry, payload if isinstance(payload, dict) else {})
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO trust_network_evidence(
+                        artifact_id, entry_id, entry_type, artifact_kind, artifact_hash,
+                        artifact_ref, status, mode, environment, party_ref, service_ref,
+                        registry_ref, marketplace_ref, source_artifact_count,
+                        control_count, observed_at, source_artifacts_json,
+                        controls_json, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        record["artifact_id"],
+                        record["entry_id"],
+                        record["entry_type"],
+                        record["artifact_kind"],
+                        record["artifact_hash"],
+                        record["artifact_ref"],
+                        record["status"],
+                        record["mode"],
+                        record["environment"],
+                        record["party_ref"],
+                        record["service_ref"],
+                        record["registry_ref"],
+                        record["marketplace_ref"],
+                        record["source_artifact_count"],
+                        record["control_count"],
+                        record["observed_at"],
+                        _json(record["source_artifacts"]),
+                        _json(record["controls"]),
+                        _json(payload),
+                    ),
+                )
+                counts["trust_network_evidence"] += 1
 
             if entry.get("entry_type") == CONTRACT_ENTRY_TYPE:
                 contract = payload.get("contract", {})
@@ -4325,6 +4569,18 @@ class ControlPlane:
             LIMIT 1
             """
         ).fetchone()
+
+        latest_trust_network_evidence = self.conn.execute(
+            """
+            SELECT artifact_id, entry_id, entry_type, artifact_kind,
+                   artifact_hash, artifact_ref, status, mode, environment,
+                   party_ref, service_ref, registry_ref, marketplace_ref,
+                   source_artifact_count, control_count, observed_at
+            FROM trust_network_evidence
+            ORDER BY observed_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
         latest_status = self.conn.execute(
             """
             SELECT receipt_id, provider, pack_id, contract_id, gate_outcome,
@@ -4820,6 +5076,7 @@ class ControlPlane:
             "latest_review_portal_authority_dossier": latest_review_portal_authority_dict,
             "latest_standards_body_evidence": dict(latest_standards_body_evidence) if latest_standards_body_evidence else None,
             "latest_auditor_ecosystem_evidence": dict(latest_auditor_ecosystem_evidence) if latest_auditor_ecosystem_evidence else None,
+            "latest_trust_network_evidence": dict(latest_trust_network_evidence) if latest_trust_network_evidence else None,
             "latest_promotion_status": latest_status_dict,
             "latest_runtime_attestation": latest_runtime_dict,
             "latest_policy_decision": latest_policy_decision_dict,
@@ -6147,6 +6404,31 @@ class ControlPlane:
             items.append(item)
         return items
 
+
+    def recent_trust_network_evidence(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT artifact_id, entry_id, entry_type, artifact_kind,
+                   artifact_hash, artifact_ref, status, mode, environment,
+                   party_ref, service_ref, registry_ref, marketplace_ref,
+                   source_artifact_count, control_count, observed_at,
+                   source_artifacts_json, controls_json, body_json
+            FROM trust_network_evidence
+            ORDER BY observed_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["source_artifacts"] = _decode_json_array(item.pop("source_artifacts_json", None))
+            controls_json = item.pop("controls_json", None)
+            item["controls"] = _decode_json_array(controls_json) or _decode_json_object(controls_json)
+            item["body"] = _decode_json_object(item.pop("body_json", None))
+            items.append(item)
+        return items
+
     def roadmap_evidence(self, limit: int = 20) -> dict[str, Any]:
         return {
             "roadmap_audits": self.recent_roadmap_audits(limit),
@@ -6168,6 +6450,7 @@ class ControlPlane:
             "framework_adapter_evidence": self.framework_adapter_evidence(limit),
             "review_portal_evidence": self.review_portal_evidence(limit),
             "standards_auditor_evidence": self.standards_auditor_evidence(limit),
+            "trust_network_evidence": self.trust_network_evidence(limit),
         }
 
     def standards_auditor_evidence(self, limit: int = 20) -> dict[str, Any]:
@@ -6175,6 +6458,9 @@ class ControlPlane:
             "standards_body_evidence": self.recent_standards_body_evidence(limit),
             "auditor_ecosystem_evidence": self.recent_auditor_ecosystem_evidence(limit),
         }
+
+    def trust_network_evidence(self, limit: int = 20) -> dict[str, Any]:
+        return {"trust_network_evidence": self.recent_trust_network_evidence(limit)}
 
     def insurer_evidence(self, limit: int = 20) -> dict[str, Any]:
         return {

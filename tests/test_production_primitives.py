@@ -280,6 +280,19 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual(200, control_standards_auditor_response.status)
                 self.assertEqual([], control_standards_auditor_body["auditor_ecosystem_evidence"])
 
+
+                conn.request("GET", "/v0/trust-network-evidence")
+                trust_network_response = conn.getresponse()
+                trust_network_body = json.loads(trust_network_response.read().decode("utf-8"))
+                self.assertEqual(200, trust_network_response.status)
+                self.assertEqual([], trust_network_body["trust_network_evidence"])
+
+                conn.request("GET", "/v0/control/trust-network-evidence")
+                control_trust_network_response = conn.getresponse()
+                control_trust_network_body = json.loads(control_trust_network_response.read().decode("utf-8"))
+                self.assertEqual(200, control_trust_network_response.status)
+                self.assertEqual([], control_trust_network_body["trust_network_evidence"])
+
                 conn.request("GET", "/v0/roadmap-evidence")
                 roadmap_response = conn.getresponse()
                 roadmap_body = json.loads(roadmap_response.read().decode("utf-8"))

@@ -8,13 +8,13 @@
       ],
       "authority_kind": "ci-run",
       "description": "Snapshot of recorded verifier workflow run export",
-      "evidence_id": "f3b43ed07796d34fddae14b39a5525be7292a9349032f41c1581073dc70c46cf",
+      "evidence_id": "da141f6c9004b920bae20353753e3e7efd55ff38246d3db8409b3e119633bae5",
       "expires_at": "2026-12-31T00:00:00Z",
       "issued_at": "2026-07-08T00:00:00Z",
       "issuer": "GitHub Actions",
       "path": "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json",
       "requirement_id": "oss-verifier-and-public-spec",
-      "sha256": "sha256:fec7c2c458603755ae3bd0f1b6032e4e93c184a75a46351c96ef0a87074a25e7",
+      "sha256": "sha256:aa0a9ab55f02685008dd47d2ede0e6f075875face91c6a61dbfd34ee64679a78",
       "source_uri": "https://github.com/MSBeni/trust_ai/actions",
       "subject": "trustai go verifier release workflow"
     },
@@ -26,13 +26,13 @@
       ],
       "authority_kind": "provider-api",
       "description": "GitHub remote main ref advertisement for pushed TrustAI checkpoint",
-      "evidence_id": "6f0481ed0b2104cb441a56f393fa77bbe0d035102693fd96b7ef6cd995fefd40",
+      "evidence_id": "197c4991b29187c92ca5e1e943d9f34633f2d65649d2693b57473521996e9047",
       "expires_at": "2026-12-31T00:00:00Z",
       "issued_at": "2026-07-12T00:00:00Z",
       "issuer": "GitHub Git",
       "path": "examples/aitrade/external-evidence/github-main-ref-source-snapshot.json",
       "requirement_id": "oss-verifier-and-public-spec",
-      "sha256": "sha256:04524aa8bb19be0a787bba02018ac1f43459ab9333aa23d0c2663f9b0c5d1278",
+      "sha256": "sha256:4c30524b91acc4b9141eeede3cb28a3ffccf00248083a17101860b32c274ba3e",
       "source_uri": "git+https://github.com/MSBeni/trust_ai.git#refs/heads/main",
       "subject": "MSBeni/trust_ai main branch"
     },
@@ -44,13 +44,13 @@
       ],
       "authority_kind": "hosted-service",
       "description": "GitHub hosted git service remote advertisement for TrustAI verifier and spec repository",
-      "evidence_id": "98a71bfcd225e1001e250f162fdef4fea130c618be978bf74009ed20c60fbddf",
+      "evidence_id": "3b95750dca45d57e6e45afe175edc06835e95a151fbbd69d8501f62f2b189147",
       "expires_at": "2026-12-31T00:00:00Z",
       "issued_at": "2026-07-12T00:00:00Z",
       "issuer": "GitHub Git",
       "path": "examples/aitrade/external-evidence/github-hosted-service-source-snapshot.json",
       "requirement_id": "oss-verifier-and-public-spec",
-      "sha256": "sha256:621fe7ab43e1779d52abff61b4c6eacdedbd96c8d76121835b0f6a8bf68e66ff",
+      "sha256": "sha256:4851848b69fa6e1e3cf574f1dbeb6c22a6c421bf55a472b49a7fb32d68c6cb06",
       "source_uri": "git+https://github.com/MSBeni/trust_ai.git#HEAD",
       "subject": "MSBeni/trust_ai hosted repository service"
     }
@@ -61,7 +61,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "73a5adc9a787d1026b75e47e86df6949353e0d7fc2e584952d0c75c65df724f9",
+  "manifest_id": "9b3f6dce8d5c1a94114d7b0440b7dbffe7df97b1647b597e5dc8ce5880e51e85",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -1269,8 +1269,8 @@
   ],
   "schema": "trustai.external-evidence-manifest/0.1",
   "source_roadmap_audit": {
-    "audit_hash": "8f9c4f29fafd83f85f1996479a04315058168025d36334861b1c0d8d8789af3e",
-    "audit_id": "8e688bb3119288c005c9a86f01b7941682c5bdff056fa57284bfd74be9ef476a",
+    "audit_hash": "0ce09facaa8d6050d5d2054912a45ef19995de293efb72987debdb09b58191b9",
+    "audit_id": "594dfa41c088cf93c5ebe7e1ed9fe1fa93a87169b5dfa516ecb4c77eede9bbba",
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {

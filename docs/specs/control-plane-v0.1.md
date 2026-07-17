@@ -20,6 +20,7 @@ into queryable registry tables while keeping the chain as the source of truth.
 - `regulator_acceptances`: regulator review decisions with authority, examination, scope, and source references.
 - `review_portal_service_attestations`: hosted/static portal service identity, frontend integrity, supervised access, and control summaries.
 - `review_portal_authority_dossiers`: hosted portal production-authority coverage, freshness, service bindings, and evidence references.
+- `trust_network_evidence`: procurement, registry, marketplace, service, worker, bundle, and authority receipts normalized for cross-org trust-network review.
 - `human_approvals`: human approval entries bound to contract, agent, role, approver, source, and external reference metadata.
 - `promotion_demotions`: promotion gate demotion decisions with source/target environment, trigger, reason, and contract/agent binding.
 - `promotion_rollbacks`: rollback decisions with target agent version, reason, triggering evidence, and contract/agent binding.
@@ -50,7 +51,7 @@ into queryable registry tables while keeping the chain as the source of truth.
 
 ```powershell
 python -m trustai control-index --state .trustai/demo/evidence-chain.json --tenant aitrade-local --pack artifacts/aitrade-proof-pack.json --db .trustai/control-plane.sqlite --rebuild
-python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --holdout-evidence --mcp-evidence --promotion-lifecycle-evidence --framework-adapter-evidence --review-portal-evidence --roadmap-evidence --phase-scoreboards --design-partner-dossiers --own-compliance-dossiers --product-scope-decisions --vertical-packs --reliability-reports --readiness --external-evidence --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
+python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --holdout-evidence --mcp-evidence --promotion-lifecycle-evidence --framework-adapter-evidence --review-portal-evidence --standards-auditor-evidence --trust-network-evidence --roadmap-evidence --phase-scoreboards --design-partner-dossiers --own-compliance-dossiers --product-scope-decisions --vertical-packs --reliability-reports --readiness --external-evidence --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
 ```
 
 ## API
@@ -74,6 +75,8 @@ python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts
 - `GET /v0/promotion-lifecycle-evidence` or `GET /v0/control/promotion-lifecycle-evidence`;
 - `GET /v0/framework-adapter-evidence` or `GET /v0/control/framework-adapter-evidence`;
 - `GET /v0/review-portal-evidence` or `GET /v0/control/review-portal-evidence`;
+- `GET /v0/standards-auditor-evidence` or `GET /v0/control/standards-auditor-evidence`;
+- `GET /v0/trust-network-evidence` or `GET /v0/control/trust-network-evidence`;
 - `GET /v0/roadmap-evidence`;
 - `GET /v0/phase-scoreboards` or `GET /v0/control/phase-scoreboards`;
 - `GET /v0/design-partner-dossiers` or `GET /v0/control/design-partner-dossiers`;
@@ -106,9 +109,13 @@ releases, hook operation receipts, and framework adapter production-authority
 dossiers into one Phase 1 adapter coverage surface.
 The review-portal evidence list binds supervised access, regulator acceptance,
 service attestation, and production-authority dossier records into one hosted
-auditor/regulator review surface. Rebuild mode clears all derived read-model
-tables before replaying the evidence chain, while leaving the chain itself as
-the source of truth.
+auditor/regulator review surface. The trust-network evidence list binds
+procurement clause and integration receipts, registry publication/status
+receipts, marketplace distribution/author/settlement receipts, trust-network
+service and worker receipts, worker bundles, and authority dossiers into one
+cross-org review surface. Rebuild mode clears all derived read-model tables
+before replaying the evidence chain, while leaving the chain itself as the
+source of truth.
 The roadmap-evidence list binds roadmap audit entries, retained
 collection-run provenance, external
 evidence manifests, phase scoreboard entries, design-partner pilot dossiers,
