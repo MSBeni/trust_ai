@@ -2,16 +2,10 @@
   "defaults": {},
   "entries": [
     {
-      "acceptance_criteria": [
-        "Artifact path must be repository-relative and hashable before manifest verification.",
-        "Evidence item authority_kind must be ci-run and accepted for oss-verifier-and-public-spec.",
-        "Use issued_at and expires_at metadata when strict freshness verification is required.",
-        "Rebuild and verify the external evidence manifest after adding the artifact."
-      ],
       "authority_kind": "ci-run",
+      "content_type": "application/json",
       "coverage_status": "covered",
       "description": "Snapshot of recorded verifier workflow run export",
-      "evidence_argument_template": "oss-verifier-and-public-spec,ci-run,external-evidence/oss-verifier-and-public-spec/ci-run.json,ci-run evidence for oss-verifier-and-public-spec;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
         "Verifier release authority dossiers cover the local/reference public release authority checklist and retained provider workflow export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
@@ -20,13 +14,12 @@
       "issued_at": "2026-07-08T00:00:00Z",
       "issuer": "GitHub Actions",
       "owner_hint": "release engineering",
-      "phase": "P0",
-      "priority": "P0",
       "requirement_id": "oss-verifier-and-public-spec",
+      "retrieval_method": "file-copy",
       "snapshot_out": "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json",
+      "source_file": "examples/aitrade/external-evidence/go-verifier-workflow-run.json",
       "source_uri": "https://github.com/MSBeni/trust_ai/actions",
       "subject": "trustai go verifier release workflow",
-      "suggested_artifact_path": "external-evidence/oss-verifier-and-public-spec/ci-run.json",
       "suggested_evidence_sources": [
         "completed CI workflow export",
         "release run URL or provider-native run record",
@@ -40,16 +33,10 @@
       "unit_ref": "oss-verifier-and-public-spec:ci-run"
     },
     {
-      "acceptance_criteria": [
-        "Artifact path must be repository-relative and hashable before manifest verification.",
-        "Evidence item authority_kind must be provider-api and accepted for oss-verifier-and-public-spec.",
-        "Use issued_at and expires_at metadata when strict freshness verification is required.",
-        "Rebuild and verify the external evidence manifest after adding the artifact."
-      ],
       "authority_kind": "provider-api",
+      "content_type": "application/json",
       "coverage_status": "missing",
       "description": "GitHub remote main ref advertisement for pushed TrustAI checkpoint",
-      "evidence_argument_template": "oss-verifier-and-public-spec,provider-api,external-evidence/oss-verifier-and-public-spec/provider-api.json,provider-api evidence for oss-verifier-and-public-spec;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
         "Verifier release authority dossiers cover the local/reference public release authority checklist and retained provider workflow export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
@@ -58,13 +45,11 @@
       "issued_at": "2026-07-12T00:00:00Z",
       "issuer": "GitHub Git",
       "owner_hint": "integration/platform owner",
-      "phase": "P0",
-      "priority": "P0",
       "requirement_id": "oss-verifier-and-public-spec",
+      "retrieval_method": "git-ls-remote",
       "snapshot_out": "examples/aitrade/external-evidence/github-main-ref-source-snapshot.json",
       "source_uri": "git+https://github.com/MSBeni/trust_ai.git#refs/heads/main",
       "subject": "MSBeni/trust_ai main branch",
-      "suggested_artifact_path": "external-evidence/oss-verifier-and-public-spec/provider-api.json",
       "suggested_evidence_sources": [
         "provider API response export",
         "request/response transcript",
@@ -78,16 +63,10 @@
       "unit_ref": "oss-verifier-and-public-spec:provider-api"
     },
     {
-      "acceptance_criteria": [
-        "Artifact path must be repository-relative and hashable before manifest verification.",
-        "Evidence item authority_kind must be hosted-service and accepted for oss-verifier-and-public-spec.",
-        "Use issued_at and expires_at metadata when strict freshness verification is required.",
-        "Rebuild and verify the external evidence manifest after adding the artifact."
-      ],
       "authority_kind": "hosted-service",
+      "content_type": "application/json",
       "coverage_status": "missing",
       "description": "GitHub hosted git service remote advertisement for TrustAI verifier and spec repository",
-      "evidence_argument_template": "oss-verifier-and-public-spec,hosted-service,external-evidence/oss-verifier-and-public-spec/hosted-service.json,hosted-service evidence for oss-verifier-and-public-spec;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
         "Verifier release authority dossiers cover the local/reference public release authority checklist and retained provider workflow export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
@@ -96,13 +75,11 @@
       "issued_at": "2026-07-12T00:00:00Z",
       "issuer": "GitHub Git",
       "owner_hint": "service owner",
-      "phase": "P0",
-      "priority": "P0",
       "requirement_id": "oss-verifier-and-public-spec",
+      "retrieval_method": "git-ls-remote",
       "snapshot_out": "examples/aitrade/external-evidence/github-hosted-service-source-snapshot.json",
       "source_uri": "git+https://github.com/MSBeni/trust_ai.git#HEAD",
       "subject": "MSBeni/trust_ai hosted repository service",
-      "suggested_artifact_path": "external-evidence/oss-verifier-and-public-spec/hosted-service.json",
       "suggested_evidence_sources": [
         "hosted service health or deployment export",
         "service audit root",
@@ -123,14 +100,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "35a2f1a3730f76cff29c5a41495b8cc47465607f7d17611a196cdcb254c25db2",
+  "source_map_id": "5f8e4e904700078133aa507248bdca31ff58b69273b148bd44dea1960cd96623",
   "source_plan": {
-    "plan_hash": "c58b7dd4730fbd8317993e00eb58349c5630f676b4a47dd1d872b8055ef75937",
-    "plan_id": "88b3d6c841b6f0acd9fa8fbed273d632874d1c4b102bcf2e1c0bb6978e1d9ba8",
+    "plan_hash": "1a940a7fb2c0eea8ed3c2cb518b0aba28d6857e058bf2390cf67b48e956a24f8",
+    "plan_id": "bfa02a224828b31c5abb2e238abc314e8b201e50055f4d293c140edb0db62408",
     "source_manifest": {
-      "generated_at": "2026-07-16T20:36:49Z",
-      "manifest_hash": "1345577e133e2cfbd1fa272eb58208fafee073de2d4a9b5f5d50e3da6870da6f",
-      "manifest_id": "8c9f3687740788209854d9fcff73e62ed810f08506391aea3a7994ef92f7c62a",
+      "generated_at": "2026-07-17T02:46:50Z",
+      "manifest_hash": "25b4f24afab58b3d2d75aefefd1b97d7222299f3cd8cd908009819e57e06cbe9",
+      "manifest_id": "57f7aed8cadac3cad974c20b84f567fc7e335bbe0ee4dc57474258a19383a0f2",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },

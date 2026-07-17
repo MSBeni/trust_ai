@@ -8,13 +8,13 @@
       ],
       "authority_kind": "ci-run",
       "description": "Snapshot of recorded verifier workflow run export",
-      "evidence_id": "13fc9c008f6da0ef75945c98e2a8a1929799d48949c37ed202848b87b8efe94c",
+      "evidence_id": "6223e46a7208bac139f06907a4fb11e866b2e64e940b9fcf5050b48214a0c22c",
       "expires_at": "2026-12-31T00:00:00Z",
       "issued_at": "2026-07-08T00:00:00Z",
       "issuer": "GitHub Actions",
       "path": "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json",
       "requirement_id": "oss-verifier-and-public-spec",
-      "sha256": "sha256:fa67caec568890efabdecbfbc188f6b3842c288c810e9ee34a3f42aca90f9646",
+      "sha256": "sha256:4094eaddec7ebe2d8254936505868d324d1d9e3f275ed84302742355402e6e4d",
       "source_uri": "https://github.com/MSBeni/trust_ai/actions",
       "subject": "trustai go verifier release workflow"
     },
@@ -26,13 +26,13 @@
       ],
       "authority_kind": "provider-api",
       "description": "GitHub remote main ref advertisement for pushed TrustAI checkpoint",
-      "evidence_id": "da13f354fce9ae4de8fb0b8cad9d6b4902054c0c3d0b70853637d8bc2bd9c0b4",
+      "evidence_id": "ad7a54e3017cd49290aff4a7a6c784de18d28941ed6500a9bbcf5909d2e41657",
       "expires_at": "2026-12-31T00:00:00Z",
       "issued_at": "2026-07-12T00:00:00Z",
       "issuer": "GitHub Git",
       "path": "examples/aitrade/external-evidence/github-main-ref-source-snapshot.json",
       "requirement_id": "oss-verifier-and-public-spec",
-      "sha256": "sha256:e90bf0cff157359fd5135ce0ca004db3d6f6d7713d39fd038ba54baa07175706",
+      "sha256": "sha256:374380216fba9ea9a40c1a1f223072dd602e40741da16ae0c57843e55351bfbd",
       "source_uri": "git+https://github.com/MSBeni/trust_ai.git#refs/heads/main",
       "subject": "MSBeni/trust_ai main branch"
     },
@@ -44,24 +44,24 @@
       ],
       "authority_kind": "hosted-service",
       "description": "GitHub hosted git service remote advertisement for TrustAI verifier and spec repository",
-      "evidence_id": "24c8412015f2aaf0ea5421c8914909bfa1dc56c6a41675ec752124efca2cab7c",
+      "evidence_id": "912a85af380f973ed69a93187f57ebb64247643c53f4746e8fc1b29841bb473f",
       "expires_at": "2026-12-31T00:00:00Z",
       "issued_at": "2026-07-12T00:00:00Z",
       "issuer": "GitHub Git",
       "path": "examples/aitrade/external-evidence/github-hosted-service-source-snapshot.json",
       "requirement_id": "oss-verifier-and-public-spec",
-      "sha256": "sha256:0fd5438311a87ced18a9ba1e08af2bd10bd5558f4f886b1ca33e3f3f610956f8",
+      "sha256": "sha256:d8dedf3f91444cd621094805b3a21ff103d4501cdd91be4712a74ea0e5fd45ba",
       "source_uri": "git+https://github.com/MSBeni/trust_ai.git#HEAD",
       "subject": "MSBeni/trust_ai hosted repository service"
     }
   ],
-  "generated_at": "2026-07-16T20:39:04Z",
+  "generated_at": "2026-07-12T00:01:00Z",
   "limitations": [
     "This manifest verifies supplied external evidence artifacts by hash; it does not fetch live provider state.",
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "73f3530feb69e629328262aa6ab61b36b5927e64d90a6fe171eb8807d32eaf4b",
+  "manifest_id": "d9614bfadaa801e6f09d66ef5ae81103bf5fae26d883962dd842c9c8a9481b8b",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -1269,8 +1269,8 @@
   ],
   "schema": "trustai.external-evidence-manifest/0.1",
   "source_roadmap_audit": {
-    "audit_hash": "e0ce5278fcbc97c7ec92c83cf1f7e02263f32d625cb17de4ad78e9065a31b97c",
-    "audit_id": "97bf3bdca64243e37ed6c7d3413ee7c70d8c346c5de10231713dcebe159bba1a",
+    "audit_hash": "df35f8389321aac3171d9de44e2d6b19b761bb0b040bbd54308ab1e178ba1fc3",
+    "audit_id": "df1652156e79be3f48eed6c1ec97d405d35332b7051ba7d4b75a1ec3931f6d34",
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {

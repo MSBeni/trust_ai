@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import sqlite3
@@ -41,7 +41,7 @@ from .policy_engine import POLICY_ENGINE_ENTRY_TYPE
 from .proofpack import PROOF_PACK_SPEC_VERSION
 from .reliability_report import RELIABILITY_REPORT_ENTRY_TYPE
 from .regulator_acceptance import REGULATOR_ACCEPTANCE_ENTRY_TYPE
-from .registry import AGENT_INVENTORY_ENTRY_TYPE
+from .registry import AGENT_INVENTORY_ENTRY_TYPE, DELEGATION_ENTRY_TYPE, DELEGATION_GRAPH_ENTRY_TYPE
 from .review_portal_authority import REVIEW_PORTAL_AUTHORITY_ENTRY_TYPE
 from .review_portal_service import REVIEW_PORTAL_SERVICE_ENTRY_TYPE
 from .roadmap_audit import ROADMAP_AUDIT_ENTRY_TYPE
@@ -63,6 +63,8 @@ SCHEMA_VERSION = "trustai.control-plane/0.1"
 INDEX_TABLES = (
     "contracts",
     "agents",
+    "agent_delegations",
+    "agent_delegation_graphs",
     "chain_entries",
     "proof_packs",
     "anchors",
@@ -351,6 +353,48 @@ class ControlPlane:
                 governed INTEGER NOT NULL,
                 source TEXT,
                 observed_at TEXT,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS agent_delegations (
+                entry_id TEXT PRIMARY KEY,
+                delegation_hash TEXT NOT NULL,
+                contract_hash TEXT,
+                parent_agent_name TEXT,
+                parent_agent_version TEXT,
+                parent_agent_ref TEXT,
+                child_agent_name TEXT,
+                child_agent_version TEXT,
+                child_agent_ref TEXT,
+                reason TEXT,
+                scope_json TEXT NOT NULL,
+                delegated_at TEXT,
+                delegation_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS agent_delegation_graphs (
+                delegation_graph_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                delegation_graph_hash TEXT,
+                contract_hash TEXT,
+                contract_hash_filter TEXT,
+                root_agent_filter TEXT,
+                source_chain_tenant_id TEXT,
+                source_chain_entry_count INTEGER NOT NULL,
+                node_count INTEGER NOT NULL,
+                edge_count INTEGER NOT NULL,
+                max_depth INTEGER,
+                cycle_detected INTEGER NOT NULL,
+                root_agents_json TEXT NOT NULL,
+                leaf_agents_json TEXT NOT NULL,
+                missing_inventory_json TEXT NOT NULL,
+                contract_hashes_json TEXT NOT NULL,
+                agent_refs_json TEXT NOT NULL,
+                node_root TEXT,
+                edge_root TEXT,
+                filters_json TEXT NOT NULL,
+                source_chain_json TEXT NOT NULL,
+                summary_json TEXT NOT NULL,
+                generated_at TEXT,
                 body_json TEXT NOT NULL
             );
             CREATE TABLE IF NOT EXISTS chain_entries (
@@ -1414,6 +1458,8 @@ class ControlPlane:
             "chain_entries": 0,
             "contracts": 0,
             "agents": 0,
+            "agent_delegations": 0,
+            "agent_delegation_graphs": 0,
             "anchors": 0,
             "byoc_operator_attestations": 0,
             "byoc_authority_dossiers": 0,
@@ -2657,6 +2703,101 @@ class ControlPlane:
                 )
                 counts["agents"] += 1
 
+            if entry.get("entry_type") == DELEGATION_ENTRY_TYPE:
+                delegation = payload.get("delegation") if isinstance(payload.get("delegation"), dict) else {}
+                parent = delegation.get("parent_agent") if isinstance(delegation.get("parent_agent"), dict) else {}
+                child = delegation.get("child_agent") if isinstance(delegation.get("child_agent"), dict) else {}
+                parent_ref = (
+                    f"{parent.get('name')}@{parent.get('version')}"
+                    if parent.get("name") and parent.get("version")
+                    else None
+                )
+                child_ref = (
+                    f"{child.get('name')}@{child.get('version')}"
+                    if child.get("name") and child.get("version")
+                    else None
+                )
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO agent_delegations(
+                        entry_id, delegation_hash, contract_hash,
+                        parent_agent_name, parent_agent_version, parent_agent_ref,
+                        child_agent_name, child_agent_version, child_agent_ref,
+                        reason, scope_json, delegated_at, delegation_json, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        entry["entry_id"],
+                        payload.get("delegation_hash") or content_hash(delegation),
+                        payload.get("contract_hash") or delegation.get("contract_hash"),
+                        parent.get("name"),
+                        parent.get("version"),
+                        parent_ref,
+                        child.get("name"),
+                        child.get("version"),
+                        child_ref,
+                        delegation.get("reason"),
+                        _json(delegation.get("scope") if isinstance(delegation.get("scope"), dict) else {}),
+                        delegation.get("timestamp") or entry.get("timestamp"),
+                        _json(delegation),
+                        _json(payload),
+                    ),
+                )
+                counts["agent_delegations"] += 1
+
+            if entry.get("entry_type") == DELEGATION_GRAPH_ENTRY_TYPE:
+                graph = payload.get("delegation_graph") if isinstance(payload.get("delegation_graph"), dict) else {}
+                summary = payload.get("summary") if isinstance(payload.get("summary"), dict) else {}
+                filters = payload.get("filters") if isinstance(payload.get("filters"), dict) else {}
+                source_chain = payload.get("source_chain") if isinstance(payload.get("source_chain"), dict) else {}
+                nodes = graph.get("nodes") if isinstance(graph.get("nodes"), list) else []
+                agent_refs = sorted(
+                    {str(node.get("agent_ref")) for node in nodes if isinstance(node, dict) and node.get("agent_ref")}
+                )
+                contract_hashes = summary.get("contract_hashes") if isinstance(summary.get("contract_hashes"), list) else []
+                contract_hash_filter = filters.get("contract_hash")
+                graph_contract_hash = contract_hash_filter or (contract_hashes[0] if len(contract_hashes) == 1 else None)
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO agent_delegation_graphs(
+                        delegation_graph_id, entry_id, delegation_graph_hash,
+                        contract_hash, contract_hash_filter, root_agent_filter,
+                        source_chain_tenant_id, source_chain_entry_count,
+                        node_count, edge_count, max_depth, cycle_detected,
+                        root_agents_json, leaf_agents_json, missing_inventory_json,
+                        contract_hashes_json, agent_refs_json, node_root, edge_root,
+                        filters_json, source_chain_json, summary_json, generated_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("delegation_graph_id"),
+                        entry["entry_id"],
+                        payload.get("delegation_graph_hash") or content_hash(graph),
+                        graph_contract_hash,
+                        contract_hash_filter,
+                        filters.get("root_agent"),
+                        source_chain.get("tenant_id"),
+                        int(source_chain.get("entry_count") or 0),
+                        int(summary.get("node_count") or 0),
+                        int(summary.get("edge_count") or 0),
+                        summary.get("max_depth"),
+                        1 if summary.get("cycle_detected") else 0,
+                        _json(summary.get("root_agents") if isinstance(summary.get("root_agents"), list) else []),
+                        _json(summary.get("leaf_agents") if isinstance(summary.get("leaf_agents"), list) else []),
+                        _json(summary.get("missing_inventory") if isinstance(summary.get("missing_inventory"), list) else []),
+                        _json(contract_hashes),
+                        _json(agent_refs),
+                        summary.get("node_root"),
+                        summary.get("edge_root"),
+                        _json(filters),
+                        _json(source_chain),
+                        _json(summary),
+                        payload.get("generated_at") or entry.get("timestamp"),
+                        _json(payload),
+                    ),
+                )
+                counts["agent_delegation_graphs"] += 1
+
             if entry.get("entry_type") == "chain.anchor.published":
                 anchor = payload
                 tree = anchor.get("tree", {})
@@ -3656,6 +3797,35 @@ class ControlPlane:
         latest_soak_demotion_dict = dict(latest_soak_demotion) if latest_soak_demotion else None
         if latest_soak_demotion_dict is not None:
             _bool_fields(latest_soak_demotion_dict, "passed")
+        latest_delegation = self.conn.execute(
+            """
+            SELECT entry_id, delegation_hash, contract_hash, parent_agent_ref,
+                   child_agent_ref, reason, delegated_at
+            FROM agent_delegations
+            ORDER BY delegated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_delegation_graph = self.conn.execute(
+            """
+            SELECT delegation_graph_id, entry_id, delegation_graph_hash,
+                   contract_hash, contract_hash_filter, root_agent_filter,
+                   node_count, edge_count, max_depth, cycle_detected,
+                   root_agents_json, leaf_agents_json, missing_inventory_json,
+                   contract_hashes_json, agent_refs_json, generated_at
+            FROM agent_delegation_graphs
+            ORDER BY generated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_delegation_graph_dict = dict(latest_delegation_graph) if latest_delegation_graph else None
+        if latest_delegation_graph_dict is not None:
+            _bool_fields(latest_delegation_graph_dict, "cycle_detected")
+            latest_delegation_graph_dict["root_agents"] = _decode_json_array(latest_delegation_graph_dict.pop("root_agents_json", None))
+            latest_delegation_graph_dict["leaf_agents"] = _decode_json_array(latest_delegation_graph_dict.pop("leaf_agents_json", None))
+            latest_delegation_graph_dict["missing_inventory"] = _decode_json_array(latest_delegation_graph_dict.pop("missing_inventory_json", None))
+            latest_delegation_graph_dict["contract_hashes"] = _decode_json_array(latest_delegation_graph_dict.pop("contract_hashes_json", None))
+            latest_delegation_graph_dict["agent_refs"] = _decode_json_array(latest_delegation_graph_dict.pop("agent_refs_json", None))
         latest_ingest_event = self.conn.execute(
             """
             SELECT entry_id, event_hash, contract_hash, trace_id, span_id,
@@ -4270,6 +4440,8 @@ class ControlPlane:
             "latest_promotion_demotion": dict(latest_demotion) if latest_demotion else None,
             "latest_promotion_rollback": dict(latest_rollback) if latest_rollback else None,
             "latest_soak_demotion_receipt": latest_soak_demotion_dict,
+            "latest_agent_delegation": dict(latest_delegation) if latest_delegation else None,
+            "latest_agent_delegation_graph": latest_delegation_graph_dict,
             "latest_ingest_event": dict(latest_ingest_event) if latest_ingest_event else None,
             "latest_mcp_tool_call": dict(latest_mcp_tool_call) if latest_mcp_tool_call else None,
             "latest_mcp_proxy_capture": dict(latest_mcp_proxy_capture) if latest_mcp_proxy_capture else None,
@@ -4446,6 +4618,57 @@ class ControlPlane:
             (limit,),
         ).fetchall()
         return [dict(row) for row in rows]
+
+    def recent_agent_delegations(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT entry_id, delegation_hash, contract_hash,
+                   parent_agent_name, parent_agent_version, parent_agent_ref,
+                   child_agent_name, child_agent_version, child_agent_ref,
+                   reason, scope_json, delegated_at, delegation_json
+            FROM agent_delegations
+            ORDER BY delegated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["scope"] = _decode_json_object(item.pop("scope_json", None))
+            item["delegation"] = _decode_json_object(item.pop("delegation_json", None))
+            items.append(item)
+        return items
+
+    def recent_agent_delegation_graphs(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT delegation_graph_id, entry_id, delegation_graph_hash,
+                   contract_hash, contract_hash_filter, root_agent_filter,
+                   source_chain_tenant_id, source_chain_entry_count,
+                   node_count, edge_count, max_depth, cycle_detected,
+                   root_agents_json, leaf_agents_json, missing_inventory_json,
+                   contract_hashes_json, agent_refs_json, node_root, edge_root,
+                   filters_json, source_chain_json, summary_json, generated_at
+            FROM agent_delegation_graphs
+            ORDER BY generated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = _bool_fields(dict(row), "cycle_detected")
+            item["root_agents"] = _decode_json_array(item.pop("root_agents_json", None))
+            item["leaf_agents"] = _decode_json_array(item.pop("leaf_agents_json", None))
+            item["missing_inventory"] = _decode_json_array(item.pop("missing_inventory_json", None))
+            item["contract_hashes"] = _decode_json_array(item.pop("contract_hashes_json", None))
+            item["agent_refs"] = _decode_json_array(item.pop("agent_refs_json", None))
+            item["filters"] = _decode_json_object(item.pop("filters_json", None))
+            item["source_chain"] = _decode_json_object(item.pop("source_chain_json", None))
+            item["summary"] = _decode_json_object(item.pop("summary_json", None))
+            items.append(item)
+        return items
 
     def recent_ingest_events(self, limit: int = 20) -> list[dict[str, Any]]:
         rows = self.conn.execute(
@@ -5521,6 +5744,7 @@ class ControlPlane:
             "vertical_packs": self.recent_vertical_packs(limit),
             "reliability_reports": self.recent_reliability_reports(limit),
             "insurer_evidence": self.insurer_evidence(limit),
+            "multi_agent_evidence": self.multi_agent_evidence(limit),
             "holdout_evidence": self.holdout_evidence(limit),
             "mcp_evidence": self.mcp_evidence(limit),
             "promotion_lifecycle_evidence": self.promotion_lifecycle_evidence(limit),
@@ -5534,6 +5758,12 @@ class ControlPlane:
         return {
             "underwriting_quotes": self.recent_underwriting_quotes(limit),
             "insurer_partner_authority_dossiers": self.recent_insurer_partner_authority_dossiers(limit),
+        }
+
+    def multi_agent_evidence(self, limit: int = 20) -> dict[str, Any]:
+        return {
+            "agent_delegations": self.recent_agent_delegations(limit),
+            "agent_delegation_graphs": self.recent_agent_delegation_graphs(limit),
         }
 
     def byoc_evidence(self, limit: int = 20) -> dict[str, Any]:
@@ -6060,6 +6290,56 @@ class ControlPlane:
         )
         counts["chain_entries"] = count
 
+        count, agent_delegations = self._scoped_rows(
+            table="agent_delegations",
+            select_sql="""
+            SELECT entry_id, delegation_hash, contract_hash,
+                   parent_agent_name, parent_agent_version, parent_agent_ref,
+                   child_agent_name, child_agent_version, child_agent_ref,
+                   reason, scope_json, delegated_at, delegation_json
+            FROM agent_delegations
+            """,
+            order_sql="ORDER BY delegated_at DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+            id_column=None,
+        )
+        counts["agent_delegations"] = count
+        for item in agent_delegations:
+            item["scope"] = _decode_json_object(item.pop("scope_json", None))
+            item["delegation"] = _decode_json_object(item.pop("delegation_json", None))
+
+        count, agent_delegation_graphs = self._scoped_rows(
+            table="agent_delegation_graphs",
+            select_sql="""
+            SELECT delegation_graph_id, entry_id, delegation_graph_hash,
+                   contract_hash, contract_hash_filter, root_agent_filter,
+                   source_chain_tenant_id, source_chain_entry_count,
+                   node_count, edge_count, max_depth, cycle_detected,
+                   root_agents_json, leaf_agents_json, missing_inventory_json,
+                   contract_hashes_json, agent_refs_json, node_root, edge_root,
+                   filters_json, source_chain_json, summary_json, generated_at
+            FROM agent_delegation_graphs
+            """,
+            order_sql="ORDER BY generated_at DESC",
+            contract_id=resolved_id,
+            contract_hash=resolved_hash,
+            limit=limit,
+            id_column=None,
+        )
+        counts["agent_delegation_graphs"] = count
+        for item in agent_delegation_graphs:
+            _bool_fields(item, "cycle_detected")
+            item["root_agents"] = _decode_json_array(item.pop("root_agents_json", None))
+            item["leaf_agents"] = _decode_json_array(item.pop("leaf_agents_json", None))
+            item["missing_inventory"] = _decode_json_array(item.pop("missing_inventory_json", None))
+            item["contract_hashes"] = _decode_json_array(item.pop("contract_hashes_json", None))
+            item["agent_refs"] = _decode_json_array(item.pop("agent_refs_json", None))
+            item["filters"] = _decode_json_object(item.pop("filters_json", None))
+            item["source_chain"] = _decode_json_object(item.pop("source_chain_json", None))
+            item["summary"] = _decode_json_object(item.pop("summary_json", None))
+
         count, eval_runs = self._scoped_rows(
             table="eval_runs",
             select_sql="""
@@ -6451,6 +6731,8 @@ class ControlPlane:
             "contract": contract,
             "counts": counts,
             "chain_entries": chain_entries,
+            "agent_delegations": agent_delegations,
+            "agent_delegation_graphs": agent_delegation_graphs,
             "eval_runs": eval_runs,
             "gate_decisions": gate_decisions,
             "human_approvals": human_approvals,
@@ -6624,6 +6906,77 @@ class ControlPlane:
             limit=limit,
         )
         counts["chain_entries"] = count
+
+        if agent_version:
+            delegation_clause = (
+                "((parent_agent_name = ? AND parent_agent_version = ?) "
+                "OR (child_agent_name = ? AND child_agent_version = ?))"
+            )
+            delegation_params = [agent_name, agent_version, agent_name, agent_version]
+        else:
+            delegation_clause = "(parent_agent_name = ? OR child_agent_name = ?)"
+            delegation_params = [agent_name, agent_name]
+        count = self.conn.execute(
+            f"SELECT COUNT(*) AS count FROM agent_delegations WHERE {delegation_clause}",
+            delegation_params,
+        ).fetchone()["count"]
+        agent_delegations = [
+            dict(row)
+            for row in self.conn.execute(
+                f"""
+                SELECT entry_id, delegation_hash, contract_hash,
+                       parent_agent_name, parent_agent_version, parent_agent_ref,
+                       child_agent_name, child_agent_version, child_agent_ref,
+                       reason, scope_json, delegated_at, delegation_json
+                FROM agent_delegations
+                WHERE {delegation_clause}
+                ORDER BY delegated_at DESC
+                LIMIT ?
+                """,
+                [*delegation_params, limit],
+            ).fetchall()
+        ]
+        counts["agent_delegations"] = count
+        for item in agent_delegations:
+            item["scope"] = _decode_json_object(item.pop("scope_json", None))
+            item["delegation"] = _decode_json_object(item.pop("delegation_json", None))
+
+        graph_rows = [
+            dict(row)
+            for row in self.conn.execute(
+                """
+                SELECT delegation_graph_id, entry_id, delegation_graph_hash,
+                       contract_hash, contract_hash_filter, root_agent_filter,
+                       source_chain_tenant_id, source_chain_entry_count,
+                       node_count, edge_count, max_depth, cycle_detected,
+                       root_agents_json, leaf_agents_json, missing_inventory_json,
+                       contract_hashes_json, agent_refs_json, node_root, edge_root,
+                       filters_json, source_chain_json, summary_json, generated_at
+                FROM agent_delegation_graphs
+                ORDER BY generated_at DESC
+                """
+            ).fetchall()
+        ]
+        agent_ref = f"{agent_name}@{agent_version}" if agent_version else None
+        agent_ref_prefix = f"{agent_name}@"
+        agent_delegation_graphs = []
+        for row in graph_rows:
+            refs = _decode_json_array(row.get("agent_refs_json"))
+            if (agent_ref and agent_ref in refs) or (not agent_ref and any(ref.startswith(agent_ref_prefix) for ref in refs)):
+                agent_delegation_graphs.append(row)
+        count = len(agent_delegation_graphs)
+        agent_delegation_graphs = agent_delegation_graphs[:limit]
+        counts["agent_delegation_graphs"] = count
+        for item in agent_delegation_graphs:
+            _bool_fields(item, "cycle_detected")
+            item["root_agents"] = _decode_json_array(item.pop("root_agents_json", None))
+            item["leaf_agents"] = _decode_json_array(item.pop("leaf_agents_json", None))
+            item["missing_inventory"] = _decode_json_array(item.pop("missing_inventory_json", None))
+            item["contract_hashes"] = _decode_json_array(item.pop("contract_hashes_json", None))
+            item["agent_refs"] = _decode_json_array(item.pop("agent_refs_json", None))
+            item["filters"] = _decode_json_object(item.pop("filters_json", None))
+            item["source_chain"] = _decode_json_object(item.pop("source_chain_json", None))
+            item["summary"] = _decode_json_object(item.pop("summary_json", None))
 
         count, eval_runs = self._agent_scoped_rows(
             table="eval_runs",
@@ -7004,6 +7357,8 @@ class ControlPlane:
             "agents": agents,
             "contracts": contracts,
             "chain_entries": chain_entries,
+            "agent_delegations": agent_delegations,
+            "agent_delegation_graphs": agent_delegation_graphs,
             "eval_runs": eval_runs,
             "gate_decisions": gate_decisions,
             "human_approvals": human_approvals,

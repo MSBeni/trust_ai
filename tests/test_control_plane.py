@@ -70,7 +70,14 @@ from trustai.policy import append_policy_decision, load_policy_pack
 from trustai.policy_engine import append_policy_engine_receipt, build_policy_engine_receipt
 from trustai.policy_export import export_policy_pack
 from trustai.proofpack import compile_proof_pack
-from trustai.registry import append_inventory, load_inventory
+from trustai.registry import (
+    append_delegation,
+    append_delegation_graph,
+    append_inventory,
+    build_delegation_graph,
+    load_delegation,
+    load_inventory,
+)
 from trustai.roadmap_audit import append_roadmap_audit, build_roadmap_audit
 from trustai.anchor import append_anchor
 from trustai.runtime import append_runtime_attestation, load_action
@@ -97,6 +104,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = ROOT / "examples" / "aitrade" / "verification-contract.yaml"
 RESULTS = ROOT / "examples" / "aitrade" / "eval-results.json"
 INVENTORY = ROOT / "examples" / "aitrade" / "agent-inventory.json"
+DELEGATION = ROOT / "examples" / "aitrade" / "delegation.json"
 EVENTS = ROOT / "examples" / "aitrade" / "otel-events.json"
 MCP = ROOT / "examples" / "aitrade" / "mcp-transcript.json"
 MCP_PROXY = ROOT / "examples" / "aitrade" / "mcp-proxy-events.json"
@@ -982,6 +990,77 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(evidence, roadmap["byoc_evidence"])
                 self.assertEqual(authority["dossier_id"], generic_authority[0]["dossier_id"])
                 self.assertEqual("deployment.byoc_production_authority_recorded", generic_authority[0]["entry_type"])
+            finally:
+                control.close()
+
+    def test_indexes_multi_agent_delegation_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            chain = EvidenceChain.load(tmp / "chain.json", tenant_id="multi-agent-control")
+            contract = load_contract(CONTRACT)
+            register_contract(chain, contract)
+            inventory_entries = append_inventory(chain, load_inventory(INVENTORY))
+            delegation = load_delegation(DELEGATION)
+            delegation_entry = append_delegation(chain, delegation)
+            graph = build_delegation_graph(
+                chain,
+                contract_hash=delegation["contract_hash"],
+                root_agent="aitrade-risk-agent",
+                generated_at="2026-07-03T12:03:00Z",
+            )
+            graph_entry = append_delegation_graph(chain, graph, source_chain=chain)
+            chain.save()
+
+            control = ControlPlane(tmp / "control.sqlite")
+            try:
+                indexed = control.index_chain(chain)
+                summary = control.summary()
+                evidence = control.multi_agent_evidence()
+                roadmap = control.roadmap_evidence()
+                contract_evidence = control.contract_evidence(contract_id=contract["id"])
+                parent_evidence = control.agent_evidence(
+                    agent_name="aitrade-risk-agent",
+                    agent_version=delegation["parent_agent"]["version"],
+                )
+                child_evidence = control.agent_evidence(
+                    agent_name="aitrade-news-summarizer",
+                    agent_version=delegation["child_agent"]["version"],
+                )
+
+                self.assertEqual(2, len(inventory_entries))
+                self.assertEqual(1, indexed["agent_delegations"])
+                self.assertEqual(1, indexed["agent_delegation_graphs"])
+                self.assertEqual(1, summary["counts"]["agent_delegations"])
+                self.assertEqual(1, summary["counts"]["agent_delegation_graphs"])
+
+                latest_delegation = summary["latest_agent_delegation"]
+                self.assertEqual(delegation_entry["payload"]["delegation_hash"], latest_delegation["delegation_hash"])
+                self.assertEqual("aitrade-risk-agent@" + delegation["parent_agent"]["version"], latest_delegation["parent_agent_ref"])
+                self.assertEqual("aitrade-news-summarizer@" + delegation["child_agent"]["version"], latest_delegation["child_agent_ref"])
+
+                latest_graph = summary["latest_agent_delegation_graph"]
+                self.assertEqual(graph_entry["payload"]["delegation_graph_id"], latest_graph["delegation_graph_id"])
+                self.assertEqual(2, latest_graph["node_count"])
+                self.assertEqual(1, latest_graph["edge_count"])
+                self.assertFalse(latest_graph["cycle_detected"])
+                self.assertEqual(["aitrade-risk-agent@" + delegation["parent_agent"]["version"]], latest_graph["root_agents"])
+                self.assertEqual([delegation["contract_hash"]], latest_graph["contract_hashes"])
+
+                self.assertEqual(delegation_entry["payload"]["delegation_hash"], evidence["agent_delegations"][0]["delegation_hash"])
+                self.assertEqual(delegation["scope"], evidence["agent_delegations"][0]["scope"])
+                self.assertEqual(graph_entry["payload"]["delegation_graph_id"], evidence["agent_delegation_graphs"][0]["delegation_graph_id"])
+                self.assertEqual(graph["summary"], evidence["agent_delegation_graphs"][0]["summary"])
+                self.assertEqual(evidence, roadmap["multi_agent_evidence"])
+
+                self.assertEqual(1, contract_evidence["counts"]["agent_delegations"])
+                self.assertEqual(1, contract_evidence["counts"]["agent_delegation_graphs"])
+                self.assertEqual(delegation_entry["payload"]["delegation_hash"], contract_evidence["agent_delegations"][0]["delegation_hash"])
+                self.assertEqual(graph_entry["payload"]["delegation_graph_id"], contract_evidence["agent_delegation_graphs"][0]["delegation_graph_id"])
+
+                self.assertEqual(1, parent_evidence["counts"]["agent_delegations"])
+                self.assertEqual(1, parent_evidence["counts"]["agent_delegation_graphs"])
+                self.assertEqual(1, child_evidence["counts"]["agent_delegations"])
+                self.assertEqual(delegation_entry["payload"]["delegation_hash"], child_evidence["agent_delegations"][0]["delegation_hash"])
             finally:
                 control.close()
 
