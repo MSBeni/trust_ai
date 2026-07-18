@@ -20,6 +20,7 @@ from .canonical import content_hash, parse_rfc3339, utc_now
 from .chain import EvidenceChain
 from .cicd import PROMOTION_STATUS_ENTRY_TYPE
 from .contracts import CONTRACT_ENTRY_TYPE
+from .delivery import PROVIDER_DELIVERY_ENTRY_TYPE
 from .design_partner import DESIGN_PARTNER_ENTRY_TYPE, P1_PARTNER_TARGET, P1_SIGNED_VALUE_TARGET_USD
 from .external_evidence import (
     AUTHORITY_KIND_EVIDENCE_HINTS,
@@ -39,6 +40,10 @@ from .identity_provider_lifecycle_worker import IDENTITY_PROVIDER_LIFECYCLE_WORK
 from .identity_provider_session import IDENTITY_PROVIDER_SESSION_ENTRY_TYPE
 from .phase_scoreboard import PHASE_SCOREBOARD_ENTRY_TYPE
 from .product_scope import PRODUCT_SCOPE_ENTRY_TYPE
+from .provider_delivery_authority import PROVIDER_DELIVERY_AUTHORITY_ENTRY_TYPE
+from .provider_delivery_service import PROVIDER_DELIVERY_SERVICE_ENTRY_TYPE
+from .provider_delivery_worker import PROVIDER_DELIVERY_WORKER_ENTRY_TYPE
+from .provider_delivery_worker_bundle import PROVIDER_DELIVERY_WORKER_BUNDLE_ENTRY_TYPE
 from .ingest import INGEST_ENTRY_TYPE
 from .insurer_partner_authority import INSURER_PARTNER_AUTHORITY_ENTRY_TYPE
 from .lifecycle import DEMOTION_ENTRY_TYPE, INCIDENT_ENTRY_TYPE, ROLLBACK_ENTRY_TYPE, SOAK_DEMOTION_ENTRY_TYPE
@@ -114,6 +119,7 @@ INDEX_TABLES = (
     "standards_body_evidence",
     "auditor_ecosystem_evidence",
     "trust_network_evidence",
+    "provider_delivery_evidence",
     "eval_runs",
     "gate_decisions",
     "human_approvals",
@@ -208,6 +214,22 @@ TRUST_NETWORK_ARTIFACT_KINDS = {
     TRUST_NETWORK_WORKER_ENTRY_TYPE: "trust-network-worker",
     TRUST_NETWORK_WORKER_BUNDLE_ENTRY_TYPE: "trust-network-worker-bundle",
     TRUST_NETWORK_AUTHORITY_ENTRY_TYPE: "trust-network-authority",
+}
+
+PROVIDER_DELIVERY_ENTRY_TYPES = {
+    PROVIDER_DELIVERY_ENTRY_TYPE,
+    PROVIDER_DELIVERY_SERVICE_ENTRY_TYPE,
+    PROVIDER_DELIVERY_WORKER_ENTRY_TYPE,
+    PROVIDER_DELIVERY_WORKER_BUNDLE_ENTRY_TYPE,
+    PROVIDER_DELIVERY_AUTHORITY_ENTRY_TYPE,
+}
+
+PROVIDER_DELIVERY_ARTIFACT_KINDS = {
+    PROVIDER_DELIVERY_ENTRY_TYPE: "provider-delivery",
+    PROVIDER_DELIVERY_SERVICE_ENTRY_TYPE: "provider-delivery-service",
+    PROVIDER_DELIVERY_WORKER_ENTRY_TYPE: "provider-delivery-worker",
+    PROVIDER_DELIVERY_WORKER_BUNDLE_ENTRY_TYPE: "provider-delivery-worker-bundle",
+    PROVIDER_DELIVERY_AUTHORITY_ENTRY_TYPE: "provider-delivery-authority",
 }
 
 
@@ -565,6 +587,143 @@ def _trust_network_record(entry: dict[str, Any], payload: dict[str, Any]) -> dic
         ),
         "source_artifacts": _trust_network_source_artifacts(payload),
         "controls": _trust_network_controls(payload),
+    }
+
+
+def _first_int(*values: Any) -> int | None:
+    for value in values:
+        if value is None or isinstance(value, bool):
+            continue
+        if isinstance(value, int):
+            return value
+        if isinstance(value, str):
+            try:
+                return int(value)
+            except ValueError:
+                continue
+    return None
+
+
+def _first_bool(*values: Any) -> bool | None:
+    for value in values:
+        if isinstance(value, bool):
+            return value
+    return None
+
+
+def _provider_delivery_source_artifacts(payload: dict[str, Any]) -> list[Any]:
+    artifacts = _source_artifacts(payload)
+    if artifacts:
+        return artifacts
+    source = _object(payload.get("source"))
+    source_artifacts = source.get("source_artifacts")
+    if isinstance(source_artifacts, list):
+        return source_artifacts
+    source_refs = source.get("source_refs")
+    if isinstance(source_refs, list):
+        return source_refs
+    payload_artifact = payload.get("payload_artifact")
+    return [payload_artifact] if isinstance(payload_artifact, dict) else []
+
+
+def _provider_delivery_controls(payload: dict[str, Any]) -> Any:
+    for key in ("controls", "control_summary", "control_status_summary"):
+        value = payload.get(key)
+        if isinstance(value, (dict, list)):
+            return value
+    return {}
+
+
+def _provider_delivery_control_count(payload: dict[str, Any]) -> int:
+    controls = _provider_delivery_controls(payload)
+    return len(controls) if isinstance(controls, (dict, list)) else 0
+
+
+def _provider_delivery_record(entry: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    entry_type = str(entry.get("entry_type") or "")
+    request = _object(payload.get("request"))
+    response = _object(payload.get("response"))
+    service = _object(payload.get("service"))
+    dispatch = _object(payload.get("dispatch"))
+    worker = _object(payload.get("worker"))
+    source_delivery = _object(payload.get("source_delivery"))
+    provider_response = _object(payload.get("provider_response"))
+    summary = _object(payload.get("summary"))
+    service_binding = _object(payload.get("service_attestation_binding"))
+    worker_bundle_bindings = payload.get("worker_bundle_bindings")
+    bundle_binding = (
+        worker_bundle_bindings[0]
+        if isinstance(worker_bundle_bindings, list)
+        and worker_bundle_bindings
+        and isinstance(worker_bundle_bindings[0], dict)
+        else {}
+    )
+    artifact_id = _first_text(
+        payload.get("delivery_id"),
+        payload.get("attestation_id"),
+        payload.get("worker_operation_id"),
+        payload.get("bundle_id"),
+        payload.get("dossier_id"),
+        content_hash(payload),
+    )
+    success = _first_bool(
+        response.get("accepted"),
+        worker.get("success"),
+        dispatch.get("response_accepted"),
+        provider_response.get("accepted"),
+        provider_response.get("success"),
+    )
+    return {
+        "artifact_id": artifact_id,
+        "entry_id": entry.get("entry_id"),
+        "entry_type": entry_type,
+        "artifact_kind": PROVIDER_DELIVERY_ARTIFACT_KINDS.get(entry_type, entry_type),
+        "artifact_hash": content_hash(payload),
+        "artifact_ref": _first_text(
+            payload.get("target_url"),
+            dispatch.get("destination_ref"),
+            source_delivery.get("target_url"),
+            payload.get("bundle_ref"),
+            payload.get("dossier_ref"),
+            payload.get("authority_ref"),
+            service.get("service_ref"),
+            worker.get("worker_ref"),
+            artifact_id,
+        ),
+        "status": _first_text(
+            summary.get("status"),
+            service.get("status"),
+            worker.get("status"),
+            response.get("status"),
+            dispatch.get("response_status"),
+            provider_response.get("status"),
+            payload.get("mode"),
+        ),
+        "mode": _first_text(payload.get("mode"), source_delivery.get("mode")),
+        "environment": _first_text(payload.get("environment"), service.get("environment")),
+        "provider": _first_text(payload.get("provider"), service.get("provider"), source_delivery.get("provider")),
+        "service_ref": _first_text(service.get("service_ref"), service_binding.get("service_ref")),
+        "worker_ref": _first_text(worker.get("worker_ref"), dispatch.get("dispatch_worker_ref")),
+        "bundle_ref": _first_text(payload.get("bundle_ref"), bundle_binding.get("bundle_ref")),
+        "authority_ref": _first_text(payload.get("authority_ref"), payload.get("producer_ref"), payload.get("reviewer_ref")),
+        "pack_id": _first_text(payload.get("pack_id"), source_delivery.get("pack_id")),
+        "contract_id": _first_text(payload.get("contract_id"), source_delivery.get("contract_id")),
+        "contract_hash": _first_text(payload.get("contract_hash"), source_delivery.get("contract_hash")),
+        "target_ref": _first_text(payload.get("target_url"), dispatch.get("destination_ref"), source_delivery.get("target_url"), request.get("path")),
+        "provider_endpoint": _first_text(payload.get("endpoint_base"), dispatch.get("provider_endpoint_base"), dispatch.get("destination_ref")),
+        "response_status": _first_int(response.get("status"), dispatch.get("response_status"), provider_response.get("status")),
+        "success": success,
+        "source_artifact_count": len(_provider_delivery_source_artifacts(payload)),
+        "control_count": _provider_delivery_control_count(payload),
+        "observed_at": _first_text(
+            payload.get("delivered_at"),
+            payload.get("attested_at"),
+            payload.get("recorded_at"),
+            payload.get("generated_at"),
+            entry.get("timestamp"),
+        ),
+        "source_artifacts": _provider_delivery_source_artifacts(payload),
+        "controls": _provider_delivery_controls(payload),
     }
 
 
@@ -1392,6 +1551,35 @@ class ControlPlane:
                 controls_json TEXT NOT NULL,
                 body_json TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS provider_delivery_evidence (
+                artifact_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                entry_type TEXT NOT NULL,
+                artifact_kind TEXT NOT NULL,
+                artifact_hash TEXT NOT NULL,
+                artifact_ref TEXT,
+                status TEXT,
+                mode TEXT,
+                environment TEXT,
+                provider TEXT,
+                service_ref TEXT,
+                worker_ref TEXT,
+                bundle_ref TEXT,
+                authority_ref TEXT,
+                pack_id TEXT,
+                contract_id TEXT,
+                contract_hash TEXT,
+                target_ref TEXT,
+                provider_endpoint TEXT,
+                response_status INTEGER,
+                success INTEGER,
+                source_artifact_count INTEGER NOT NULL,
+                control_count INTEGER NOT NULL,
+                observed_at TEXT,
+                source_artifacts_json TEXT NOT NULL,
+                controls_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS eval_runs (
                 entry_id TEXT PRIMARY KEY,
                 contract_id TEXT,
@@ -1962,6 +2150,7 @@ class ControlPlane:
             "standards_body_evidence": 0,
             "auditor_ecosystem_evidence": 0,
             "trust_network_evidence": 0,
+            "provider_delivery_evidence": 0,
             "eval_runs": 0,
             "gate_decisions": 0,
             "human_approvals": 0,
@@ -3061,6 +3250,52 @@ class ControlPlane:
                     ),
                 )
                 counts["trust_network_evidence"] += 1
+
+
+            if entry.get("entry_type") in PROVIDER_DELIVERY_ENTRY_TYPES:
+                record = _provider_delivery_record(entry, payload if isinstance(payload, dict) else {})
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO provider_delivery_evidence(
+                        artifact_id, entry_id, entry_type, artifact_kind, artifact_hash,
+                        artifact_ref, status, mode, environment, provider, service_ref,
+                        worker_ref, bundle_ref, authority_ref, pack_id, contract_id,
+                        contract_hash, target_ref, provider_endpoint, response_status,
+                        success, source_artifact_count, control_count, observed_at,
+                        source_artifacts_json, controls_json, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        record["artifact_id"],
+                        record["entry_id"],
+                        record["entry_type"],
+                        record["artifact_kind"],
+                        record["artifact_hash"],
+                        record["artifact_ref"],
+                        record["status"],
+                        record["mode"],
+                        record["environment"],
+                        record["provider"],
+                        record["service_ref"],
+                        record["worker_ref"],
+                        record["bundle_ref"],
+                        record["authority_ref"],
+                        record["pack_id"],
+                        record["contract_id"],
+                        record["contract_hash"],
+                        record["target_ref"],
+                        record["provider_endpoint"],
+                        record["response_status"],
+                        None if record["success"] is None else (1 if record["success"] else 0),
+                        record["source_artifact_count"],
+                        record["control_count"],
+                        record["observed_at"],
+                        _json(record["source_artifacts"]),
+                        _json(record["controls"]),
+                        _json(payload),
+                    ),
+                )
+                counts["provider_delivery_evidence"] += 1
 
             if entry.get("entry_type") == CONTRACT_ENTRY_TYPE:
                 contract = payload.get("contract", {})
@@ -4581,6 +4816,24 @@ class ControlPlane:
             LIMIT 1
             """
         ).fetchone()
+
+
+        latest_provider_delivery_evidence = self.conn.execute(
+            """
+            SELECT artifact_id, entry_id, entry_type, artifact_kind,
+                   artifact_hash, artifact_ref, status, mode, environment,
+                   provider, service_ref, worker_ref, bundle_ref, authority_ref,
+                   pack_id, contract_id, contract_hash, target_ref, provider_endpoint,
+                   response_status, success, source_artifact_count, control_count,
+                   observed_at
+            FROM provider_delivery_evidence
+            ORDER BY observed_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_provider_delivery_dict = dict(latest_provider_delivery_evidence) if latest_provider_delivery_evidence else None
+        if latest_provider_delivery_dict:
+            _bool_fields(latest_provider_delivery_dict, "success")
         latest_status = self.conn.execute(
             """
             SELECT receipt_id, provider, pack_id, contract_id, gate_outcome,
@@ -5077,6 +5330,7 @@ class ControlPlane:
             "latest_standards_body_evidence": dict(latest_standards_body_evidence) if latest_standards_body_evidence else None,
             "latest_auditor_ecosystem_evidence": dict(latest_auditor_ecosystem_evidence) if latest_auditor_ecosystem_evidence else None,
             "latest_trust_network_evidence": dict(latest_trust_network_evidence) if latest_trust_network_evidence else None,
+            "latest_provider_delivery_evidence": latest_provider_delivery_dict,
             "latest_promotion_status": latest_status_dict,
             "latest_runtime_attestation": latest_runtime_dict,
             "latest_policy_decision": latest_policy_decision_dict,
@@ -6429,6 +6683,34 @@ class ControlPlane:
             items.append(item)
         return items
 
+
+    def recent_provider_delivery_evidence(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT artifact_id, entry_id, entry_type, artifact_kind,
+                   artifact_hash, artifact_ref, status, mode, environment,
+                   provider, service_ref, worker_ref, bundle_ref, authority_ref,
+                   pack_id, contract_id, contract_hash, target_ref,
+                   provider_endpoint, response_status, success,
+                   source_artifact_count, control_count, observed_at,
+                   source_artifacts_json, controls_json, body_json
+            FROM provider_delivery_evidence
+            ORDER BY observed_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            _bool_fields(item, "success")
+            item["source_artifacts"] = _decode_json_array(item.pop("source_artifacts_json", None))
+            controls_json = item.pop("controls_json", None)
+            item["controls"] = _decode_json_array(controls_json) or _decode_json_object(controls_json)
+            item["body"] = _decode_json_object(item.pop("body_json", None))
+            items.append(item)
+        return items
+
     def roadmap_evidence(self, limit: int = 20) -> dict[str, Any]:
         return {
             "roadmap_audits": self.recent_roadmap_audits(limit),
@@ -6451,6 +6733,7 @@ class ControlPlane:
             "review_portal_evidence": self.review_portal_evidence(limit),
             "standards_auditor_evidence": self.standards_auditor_evidence(limit),
             "trust_network_evidence": self.trust_network_evidence(limit),
+            "provider_delivery_evidence": self.provider_delivery_evidence(limit),
         }
 
     def standards_auditor_evidence(self, limit: int = 20) -> dict[str, Any]:
@@ -6461,6 +6744,9 @@ class ControlPlane:
 
     def trust_network_evidence(self, limit: int = 20) -> dict[str, Any]:
         return {"trust_network_evidence": self.recent_trust_network_evidence(limit)}
+
+    def provider_delivery_evidence(self, limit: int = 20) -> dict[str, Any]:
+        return {"provider_delivery_evidence": self.recent_provider_delivery_evidence(limit)}
 
     def insurer_evidence(self, limit: int = 20) -> dict[str, Any]:
         return {

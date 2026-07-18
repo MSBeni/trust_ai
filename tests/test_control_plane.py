@@ -17,7 +17,7 @@ from trustai.control_plane import ControlPlane, _sqlite_nolock_uri
 from trustai.canonical import content_hash
 from trustai.chain import EvidenceChain
 from trustai.cicd import append_promotion_status_receipt, build_promotion_check_payload, build_promotion_status_receipt
-from trustai.delivery import build_provider_delivery
+from trustai.delivery import PROVIDER_DELIVERY_ENTRY_TYPE, build_provider_delivery
 from trustai.design_partner import append_design_partner_dossier, build_design_partner_dossier
 from trustai.deployment import build_deployment_manifest
 from trustai.contracts import load_contract, register_contract
@@ -57,6 +57,10 @@ from trustai.phase_scoreboard import append_phase_scoreboard, build_phase_scoreb
 from trustai.procurement_clause import PROCUREMENT_CLAUSE_ENTRY_TYPE
 from trustai.procurement_integration import PROCUREMENT_INTEGRATION_ENTRY_TYPE
 from trustai.product_scope import append_product_scope_decision, build_product_scope_decision
+from trustai.provider_delivery_authority import PROVIDER_DELIVERY_AUTHORITY_ENTRY_TYPE
+from trustai.provider_delivery_service import PROVIDER_DELIVERY_SERVICE_ENTRY_TYPE
+from trustai.provider_delivery_worker import PROVIDER_DELIVERY_WORKER_ENTRY_TYPE
+from trustai.provider_delivery_worker_bundle import PROVIDER_DELIVERY_WORKER_BUNDLE_ENTRY_TYPE
 from trustai.lifecycle import (
     append_demotion,
     append_incident,
@@ -1448,6 +1452,179 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual("service:trust-network", authority["service_ref"])
                 self.assertEqual("dossier:trust-network/aitrade", authority["artifact_ref"])
                 self.assertEqual(evidence, roadmap["trust_network_evidence"])
+            finally:
+                control.close()
+
+
+    def test_indexes_provider_delivery_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            chain = EvidenceChain.load(tmp / "provider-delivery-chain.json", tenant_id="provider-delivery-test")
+            entries = [
+                (
+                    PROVIDER_DELIVERY_ENTRY_TYPE,
+                    "delivery-001",
+                    "provider-delivery",
+                    "2026-07-08T05:00:00Z",
+                    {
+                        "delivery_id": "delivery-001",
+                        "delivery_hash": "sha256:delivery",
+                        "provider": "github",
+                        "mode": "recorded-response",
+                        "payload_hash": "sha256:payload",
+                        "pack_id": "pack:aitrade",
+                        "contract_id": "contract:aitrade",
+                        "contract_hash": "sha256:contract",
+                        "request": {"method": "POST", "path": "/repos/volelabs/trust_ai/check-runs"},
+                        "target_url": "https://api.github.com/repos/volelabs/trust_ai/check-runs",
+                        "response": {"status": 201, "accepted": True, "body_hash": "sha256:response"},
+                        "payload_artifact": {"path": "artifacts/github-check-run-payload.json", "hash": "sha256:payload"},
+                    },
+                ),
+                (
+                    PROVIDER_DELIVERY_SERVICE_ENTRY_TYPE,
+                    "delivery-service-001",
+                    "provider-delivery-service",
+                    "2026-07-08T05:10:00Z",
+                    {
+                        "attestation_id": "delivery-service-001",
+                        "attestation_hash": "sha256:delivery-service",
+                        "mode": "provider-delivery-attested",
+                        "environment": "aitrade-prod",
+                        "attested_at": "2026-07-08T05:10:00Z",
+                        "service": {"service_ref": "provider-delivery:trustai/github-prod", "provider": "github"},
+                        "dispatch": {
+                            "dispatch_worker_ref": "worker:provider-delivery/github",
+                            "provider_endpoint_base": "https://api.github.com",
+                            "source_target_url": "https://api.github.com/repos/volelabs/trust_ai/check-runs",
+                        },
+                        "source_artifacts": [{"path": "artifacts/provider-delivery-service-attestation.json"}],
+                        "control_summary": {"service-attested": "passed"},
+                    },
+                ),
+                (
+                    PROVIDER_DELIVERY_WORKER_ENTRY_TYPE,
+                    "delivery-worker-001",
+                    "provider-delivery-worker",
+                    "2026-07-08T05:15:01Z",
+                    {
+                        "worker_operation_id": "delivery-worker-001",
+                        "worker_operation_hash": "sha256:delivery-worker",
+                        "mode": "dispatch-worker",
+                        "environment": "aitrade-prod",
+                        "recorded_at": "2026-07-08T05:15:01Z",
+                        "service": {"service_ref": "provider-delivery:trustai/github-prod", "provider": "github"},
+                        "source_delivery": {
+                            "delivery_id": "delivery-001",
+                            "provider": "github",
+                            "target_url": "https://api.github.com/repos/volelabs/trust_ai/check-runs",
+                            "pack_id": "pack:aitrade",
+                            "contract_id": "contract:aitrade",
+                            "contract_hash": "sha256:contract",
+                        },
+                        "source": {"source_refs": ["artifacts/provider-delivery-worker.json"]},
+                        "worker": {"worker_ref": "worker:provider-delivery/github", "success": True},
+                        "dispatch": {
+                            "destination_ref": "https://api.github.com/repos/volelabs/trust_ai/check-runs",
+                            "response_status": 202,
+                            "response_accepted": True,
+                        },
+                        "provider_response": {"status": 202, "accepted": True},
+                        "control_status_summary": {"worker-recorded": "passed"},
+                    },
+                ),
+                (
+                    PROVIDER_DELIVERY_WORKER_BUNDLE_ENTRY_TYPE,
+                    "delivery-bundle-001",
+                    "provider-delivery-worker-bundle",
+                    "2026-07-08T05:17:00Z",
+                    {
+                        "bundle_id": "delivery-bundle-001",
+                        "bundle_hash": "sha256:delivery-bundle",
+                        "mode": "offline-review",
+                        "environment": "aitrade-prod",
+                        "generated_at": "2026-07-08T05:17:00Z",
+                        "reviewer_ref": "reviewer:provider-delivery",
+                        "bundle_ref": "bundle:provider-delivery/github",
+                        "source": {"source_artifacts": [{"path": "artifacts/provider-delivery-worker-bundle.json"}]},
+                        "summary": {"status": "exported"},
+                        "control_summary": {"bundle-exported": "passed"},
+                    },
+                ),
+                (
+                    PROVIDER_DELIVERY_AUTHORITY_ENTRY_TYPE,
+                    "delivery-authority-001",
+                    "provider-delivery-authority",
+                    "2026-07-08T05:45:00Z",
+                    {
+                        "dossier_id": "delivery-authority-001",
+                        "dossier_hash": "sha256:delivery-authority",
+                        "mode": "provider-dossier",
+                        "environment": "aitrade-prod",
+                        "generated_at": "2026-07-08T05:45:00Z",
+                        "dossier_ref": "dossier:provider-delivery/github-prod",
+                        "authority_ref": "authority:provider-delivery/github-prod",
+                        "producer_ref": "producer:provider-delivery-authority",
+                        "service_attestation_binding": {"service_ref": "provider-delivery:trustai/github-prod"},
+                        "worker_bundle_bindings": [{"bundle_ref": "bundle:provider-delivery/github"}],
+                        "summary": {"status": "ready"},
+                        "control_summary": {"authority-ready": "passed"},
+                    },
+                ),
+            ]
+
+            for entry_type, _artifact_id, _artifact_kind, timestamp, payload in entries:
+                chain.append(entry_type, payload, timestamp=timestamp)
+            chain.save()
+
+            control = ControlPlane(tmp / "control.sqlite")
+            try:
+                indexed = control.index_chain(chain)
+                summary = control.summary()
+                evidence = control.provider_delivery_evidence()
+                roadmap = control.roadmap_evidence()
+
+                self.assertEqual(len(entries), indexed["provider_delivery_evidence"])
+                self.assertEqual(len(entries), summary["counts"]["provider_delivery_evidence"])
+                self.assertEqual("delivery-authority-001", summary["latest_provider_delivery_evidence"]["artifact_id"])
+                self.assertEqual("provider-delivery-authority", summary["latest_provider_delivery_evidence"]["artifact_kind"])
+
+                rows = evidence["provider_delivery_evidence"]
+                self.assertEqual(len(entries), len(rows))
+                self.assertEqual("delivery-authority-001", rows[0]["artifact_id"])
+                self.assertEqual("delivery-001", rows[-1]["artifact_id"])
+                self.assertEqual(
+                    {artifact_kind for _entry_type, _artifact_id, artifact_kind, _timestamp, _payload in entries},
+                    {row["artifact_kind"] for row in rows},
+                )
+
+                delivery = next(row for row in rows if row["artifact_id"] == "delivery-001")
+                self.assertEqual("github", delivery["provider"])
+                self.assertEqual("pack:aitrade", delivery["pack_id"])
+                self.assertEqual("sha256:contract", delivery["contract_hash"])
+                self.assertEqual("https://api.github.com/repos/volelabs/trust_ai/check-runs", delivery["target_ref"])
+                self.assertEqual(201, delivery["response_status"])
+                self.assertTrue(delivery["success"])
+                self.assertEqual(1, delivery["source_artifact_count"])
+
+                service = next(row for row in rows if row["artifact_id"] == "delivery-service-001")
+                self.assertEqual("provider-delivery:trustai/github-prod", service["service_ref"])
+                self.assertEqual("worker:provider-delivery/github", service["worker_ref"])
+                self.assertEqual("https://api.github.com", service["provider_endpoint"])
+                self.assertEqual(1, service["control_count"])
+
+                worker = next(row for row in rows if row["artifact_id"] == "delivery-worker-001")
+                self.assertEqual(202, worker["response_status"])
+                self.assertTrue(worker["success"])
+                self.assertEqual("worker:provider-delivery/github", worker["worker_ref"])
+                self.assertEqual("https://api.github.com/repos/volelabs/trust_ai/check-runs", worker["target_ref"])
+
+                authority = rows[0]
+                self.assertEqual("dossier:provider-delivery/github-prod", authority["artifact_ref"])
+                self.assertEqual("authority:provider-delivery/github-prod", authority["authority_ref"])
+                self.assertEqual("provider-delivery:trustai/github-prod", authority["service_ref"])
+                self.assertEqual("bundle:provider-delivery/github", authority["bundle_ref"])
+                self.assertEqual(evidence, roadmap["provider_delivery_evidence"])
             finally:
                 control.close()
 

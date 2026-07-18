@@ -293,6 +293,18 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual(200, control_trust_network_response.status)
                 self.assertEqual([], control_trust_network_body["trust_network_evidence"])
 
+                conn.request("GET", "/v0/provider-delivery-evidence")
+                provider_delivery_response = conn.getresponse()
+                provider_delivery_body = json.loads(provider_delivery_response.read().decode("utf-8"))
+                self.assertEqual(200, provider_delivery_response.status)
+                self.assertEqual([], provider_delivery_body["provider_delivery_evidence"])
+
+                conn.request("GET", "/v0/control/provider-delivery-evidence")
+                control_provider_delivery_response = conn.getresponse()
+                control_provider_delivery_body = json.loads(control_provider_delivery_response.read().decode("utf-8"))
+                self.assertEqual(200, control_provider_delivery_response.status)
+                self.assertEqual([], control_provider_delivery_body["provider_delivery_evidence"])
+
                 conn.request("GET", "/v0/roadmap-evidence")
                 roadmap_response = conn.getresponse()
                 roadmap_body = json.loads(roadmap_response.read().decode("utf-8"))
