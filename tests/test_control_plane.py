@@ -57,10 +57,24 @@ from trustai.phase_scoreboard import append_phase_scoreboard, build_phase_scoreb
 from trustai.procurement_clause import PROCUREMENT_CLAUSE_ENTRY_TYPE
 from trustai.procurement_integration import PROCUREMENT_INTEGRATION_ENTRY_TYPE
 from trustai.product_scope import append_product_scope_decision, build_product_scope_decision
+from trustai.provider_approval_authority import PROVIDER_APPROVAL_AUTHORITY_ENTRY_TYPE
+from trustai.provider_audit import PROVIDER_AUDIT_CORRELATION_ENTRY_TYPE
+from trustai.provider_audit_stream import PROVIDER_AUDIT_STREAM_ENTRY_TYPE
+from trustai.provider_audit_worker import PROVIDER_AUDIT_WORKER_ENTRY_TYPE
+from trustai.provider_callback_storage import PROVIDER_CALLBACK_STORAGE_ENTRY_TYPE
+from trustai.provider_callback_store import PROVIDER_CALLBACK_STORE_ENTRY_TYPE
+from trustai.provider_credential_custody import PROVIDER_CREDENTIAL_CUSTODY_ENTRY_TYPE
 from trustai.provider_delivery_authority import PROVIDER_DELIVERY_AUTHORITY_ENTRY_TYPE
 from trustai.provider_delivery_service import PROVIDER_DELIVERY_SERVICE_ENTRY_TYPE
 from trustai.provider_delivery_worker import PROVIDER_DELIVERY_WORKER_ENTRY_TYPE
 from trustai.provider_delivery_worker_bundle import PROVIDER_DELIVERY_WORKER_BUNDLE_ENTRY_TYPE
+from trustai.provider_ingress import PROVIDER_INGRESS_ENTRY_TYPE
+from trustai.provider_installation import PROVIDER_INSTALLATION_ENTRY_TYPE
+from trustai.provider_lifecycle import PROVIDER_LIFECYCLE_ENTRY_TYPE
+from trustai.provider_lifecycle_operation import PROVIDER_LIFECYCLE_OPERATION_ENTRY_TYPE
+from trustai.provider_operations_authority import PROVIDER_OPERATIONS_AUTHORITY_ENTRY_TYPE
+from trustai.provider_operations_service import PROVIDER_OPERATIONS_SERVICE_ENTRY_TYPE
+from trustai.provider_webhook import PROVIDER_WEBHOOK_ENTRY_TYPE
 from trustai.lifecycle import (
     append_demotion,
     append_incident,
@@ -1625,6 +1639,96 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual("provider-delivery:trustai/github-prod", authority["service_ref"])
                 self.assertEqual("bundle:provider-delivery/github", authority["bundle_ref"])
                 self.assertEqual(evidence, roadmap["provider_delivery_evidence"])
+            finally:
+                control.close()
+
+    def test_indexes_provider_operations_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            chain = EvidenceChain.load(tmp / "provider-operations-chain.json", tenant_id="provider-operations-test")
+            entries = [
+                (PROVIDER_INSTALLATION_ENTRY_TYPE, "provider-installation-001", "provider-installation", "2026-07-08T05:00:00Z", {"manifest_id": "provider-installation-001", "provider": "github", "mode": "oauth-app", "installed_at": "2026-07-08T05:00:00Z", "installation": {"installation_ref": "installation:github/trustai", "status": "installed"}, "control_summary": {"installation-registered": "passed"}}),
+                (PROVIDER_INGRESS_ENTRY_TYPE, "provider-ingress-001", "provider-ingress", "2026-07-08T05:05:00Z", {"ingress_manifest_id": "provider-ingress-001", "ingress": {"ingress_ref": "ingress:github/webhooks", "provider": "github", "endpoint_ref": "https://trustai.example/webhooks/github", "status": "ready"}, "source_artifact_count": 2, "control_summary": {"tls-attested": "passed"}}),
+                (PROVIDER_LIFECYCLE_ENTRY_TYPE, "provider-lifecycle-001", "provider-lifecycle", "2026-07-08T05:10:00Z", {"lifecycle_manifest_id": "provider-lifecycle-001", "generated_at": "2026-07-08T05:10:00Z", "lifecycle": {"lifecycle_ref": "lifecycle:github/app", "status": "active"}, "installation": {"installation_ref": "installation:github/trustai"}, "source_artifact_count": 1, "control_summary": {"lifecycle-active": "passed"}}),
+                (PROVIDER_LIFECYCLE_OPERATION_ENTRY_TYPE, "provider-lifecycle-operation-001", "provider-lifecycle-operation", "2026-07-08T05:15:00Z", {"operation_receipt_id": "provider-lifecycle-operation-001", "provider": "github", "mode": "credential-rotation", "environment": "aitrade-prod", "recorded_at": "2026-07-08T05:15:00Z", "operation": {"operation_ref": "operation:github/credential-rotation", "operation_kind": "credential_rotation", "status": "completed"}, "credential": {"credential_ref": "credential:github/app"}, "audit_log": {"audit_log_ref": "audit:github/lifecycle"}, "control_summary": {"operation-recorded": "passed"}}),
+                (PROVIDER_OPERATIONS_SERVICE_ENTRY_TYPE, "provider-operations-service-001", "provider-operations-service", "2026-07-08T05:20:00Z", {"attestation_id": "provider-operations-service-001", "mode": "provider-operations-attested", "environment": "aitrade-prod", "attested_at": "2026-07-08T05:20:00Z", "source": {"source_artifacts": [{"path": "artifacts/provider-operations-service.json"}]}, "service": {"service_ref": "service:provider-operations/github", "provider": "github", "status": "ready"}, "operations": {"operation_kind": "provider_operations", "status": "ready"}, "operation_actor": {"credential": {"credential_ref": "credential:provider-operations/actor"}}, "audit_log": {"audit_log_ref": "audit:provider-operations/service"}, "control_summary": {"service-attested": "passed"}}),
+                (PROVIDER_OPERATIONS_AUTHORITY_ENTRY_TYPE, "provider-operations-authority-001", "provider-operations-authority", "2026-07-08T05:25:00Z", {"dossier_id": "provider-operations-authority-001", "mode": "authority-dossier", "environment": "aitrade-prod", "generated_at": "2026-07-08T05:25:00Z", "dossier_ref": "dossier:provider-operations/github", "authority_ref": "authority:provider-operations/github", "service_attestation_binding": {"service_ref": "service:provider-operations/github"}, "summary": {"status": "ready"}, "control_summary": {"authority-ready": "passed"}}),
+                (PROVIDER_WEBHOOK_ENTRY_TYPE, "provider-webhook-001", "provider-webhook", "2026-07-08T05:30:00Z", {"receipt_id": "provider-webhook-001", "provider": "github", "received_at": "2026-07-08T05:30:00Z", "webhook": {"webhook_ref": "webhook:github/check-run", "event_type": "check_run", "target_ref": "https://trustai.example/webhooks/github", "status": "verified"}, "payload_artifact": {"path": "artifacts/github-webhook-payload.json", "hash": "sha256:webhook"}, "verification": {"status": "passed"}}),
+                (PROVIDER_CALLBACK_STORAGE_ENTRY_TYPE, "provider-callback-storage-001", "provider-callback-storage", "2026-07-08T05:35:00Z", {"storage_manifest_id": "provider-callback-storage-001", "generated_at": "2026-07-08T05:35:00Z", "storage": {"mode": "ha-storage", "environment": "aitrade-prod", "storage_ref": "storage:provider-callbacks", "schema_ref": "schema:provider-callbacks/v1", "status": "ready"}, "source_artifact_count": 1, "control_summary": {"storage-ready": "passed"}}),
+                (PROVIDER_CALLBACK_STORE_ENTRY_TYPE, "provider-callback-store-001", "provider-callback-store", "2026-07-08T05:40:00Z", {"store_manifest_id": "provider-callback-store-001", "generated_at": "2026-07-08T05:40:00Z", "database": {"engine": "sqlite", "store_ref": "store:provider-callbacks", "schema_version": "v1", "status": "ready"}, "operation_count": 3, "source_artifact_count": 1, "control_summary": {"store-ready": "passed"}}),
+                (PROVIDER_AUDIT_CORRELATION_ENTRY_TYPE, "provider-audit-correlation-001", "provider-audit-correlation", "2026-07-08T05:45:00Z", {"correlation_id": "provider-audit-correlation-001", "provider": "github", "correlated_at": "2026-07-08T05:45:00Z", "audit_log": {"audit_log_ref": "audit:github/provider"}, "audit_log_ref": "audit:github/provider", "source_receipts": ["provider-webhook-001"], "matches": [{"receipt_id": "provider-webhook-001"}]}),
+                (PROVIDER_AUDIT_STREAM_ENTRY_TYPE, "provider-audit-stream-001", "provider-audit-stream", "2026-07-08T05:50:00Z", {"stream_receipt_id": "provider-audit-stream-001", "provider": "github", "mode": "audit-stream", "environment": "aitrade-prod", "recorded_at": "2026-07-08T05:50:00Z", "stream": {"stream_ref": "stream:github/audit", "status": "healthy"}, "audit_log": {"audit_log_ref": "audit:github/provider"}, "credential": {"credential_ref": "credential:github/audit"}, "control_summary": {"stream-recorded": "passed"}}),
+                (PROVIDER_AUDIT_WORKER_ENTRY_TYPE, "provider-audit-worker-001", "provider-audit-worker", "2026-07-08T05:55:00Z", {"worker_operation_id": "provider-audit-worker-001", "provider": "github", "mode": "audit-worker", "environment": "aitrade-prod", "recorded_at": "2026-07-08T05:55:00Z", "worker": {"worker_ref": "worker:provider-audit/github", "status": "completed"}, "scheduler": {"run_ref": "run:provider-audit/github/001"}, "sources": {"source_refs": ["provider-audit-stream-001"], "audit_log_ref": "audit:github/provider"}, "credential": {"credential_ref": "credential:provider-audit/worker"}, "control_summary": {"worker-recorded": "passed"}}),
+                (PROVIDER_CREDENTIAL_CUSTODY_ENTRY_TYPE, "provider-credential-custody-001", "provider-credential-custody", "2026-07-08T06:00:00Z", {"custody_id": "provider-credential-custody-001", "provider": "github", "mode": "kms-custody", "environment": "aitrade-prod", "issued_at": "2026-07-08T06:00:00Z", "credential": {"credential_ref": "credential:github/app"}, "custody": {"custody_ref": "custody:github/app", "status": "escrowed"}, "vault": {"vault_ref": "vault:kms/provider-credentials"}, "policy": {"status": "enforced"}, "source_artifacts": [{"path": "artifacts/provider-credential-custody.json"}], "control_summary": {"custody-enforced": "passed"}}),
+                (PROVIDER_APPROVAL_AUTHORITY_ENTRY_TYPE, "provider-approval-authority-001", "provider-approval-authority", "2026-07-08T06:05:00Z", {"dossier_id": "provider-approval-authority-001", "mode": "authority-dossier", "environment": "aitrade-prod", "generated_at": "2026-07-08T06:05:00Z", "dossier_ref": "dossier:provider-approval/github", "authority_ref": "authority:provider-approval/github", "source_binding": {"webhook_ref": "webhook:github/check-run", "provider_operations_authority_ref": "authority:provider-operations/github"}, "summary": {"status": "ready"}, "control_summary": {"approval-authority-ready": "passed"}}),
+            ]
+
+            for entry_type, _artifact_id, _artifact_kind, timestamp, payload in entries:
+                chain.append(entry_type, payload, timestamp=timestamp)
+            chain.save()
+
+            control = ControlPlane(tmp / "control.sqlite")
+            try:
+                indexed = control.index_chain(chain)
+                summary = control.summary()
+                evidence = control.provider_operations_evidence()
+                roadmap = control.roadmap_evidence()
+
+                self.assertEqual(len(entries), indexed["provider_operations_evidence"])
+                self.assertEqual(len(entries), summary["counts"]["provider_operations_evidence"])
+                self.assertEqual("provider-approval-authority-001", summary["latest_provider_operations_evidence"]["artifact_id"])
+                self.assertEqual("provider-approval-authority", summary["latest_provider_operations_evidence"]["artifact_kind"])
+
+                rows = evidence["provider_operations_evidence"]
+                self.assertEqual(len(entries), len(rows))
+                self.assertEqual("provider-approval-authority-001", rows[0]["artifact_id"])
+                self.assertEqual("provider-installation-001", rows[-1]["artifact_id"])
+                self.assertEqual({kind for _entry_type, _artifact_id, kind, _timestamp, _payload in entries}, {row["artifact_kind"] for row in rows})
+
+                installation = next(row for row in rows if row["artifact_id"] == "provider-installation-001")
+                self.assertEqual("github", installation["provider"])
+                self.assertEqual("installation:github/trustai", installation["installation_ref"])
+                self.assertEqual(1, installation["control_count"])
+
+                ingress = next(row for row in rows if row["artifact_id"] == "provider-ingress-001")
+                self.assertEqual("ingress:github/webhooks", ingress["artifact_ref"])
+                self.assertEqual("https://trustai.example/webhooks/github", ingress["target_ref"])
+                self.assertEqual(2, ingress["source_artifact_count"])
+
+                operation = next(row for row in rows if row["artifact_id"] == "provider-lifecycle-operation-001")
+                self.assertEqual("credential_rotation", operation["operation_kind"])
+                self.assertEqual("credential:github/app", operation["credential_ref"])
+                self.assertEqual("audit:github/lifecycle", operation["audit_ref"])
+
+                service = next(row for row in rows if row["artifact_id"] == "provider-operations-service-001")
+                self.assertEqual("service:provider-operations/github", service["service_ref"])
+                self.assertEqual("provider_operations", service["operation_kind"])
+                self.assertEqual("credential:provider-operations/actor", service["credential_ref"])
+                self.assertEqual(1, service["source_artifact_count"])
+
+                webhook = next(row for row in rows if row["artifact_id"] == "provider-webhook-001")
+                self.assertEqual("check_run", webhook["operation_kind"])
+                self.assertEqual("webhook:github/check-run", webhook["webhook_ref"])
+                self.assertEqual("https://trustai.example/webhooks/github", webhook["target_ref"])
+
+                callback_storage = next(row for row in rows if row["artifact_id"] == "provider-callback-storage-001")
+                self.assertEqual("storage:provider-callbacks", callback_storage["callback_ref"])
+                self.assertEqual("schema:provider-callbacks/v1", callback_storage["target_ref"])
+
+                audit_worker = next(row for row in rows if row["artifact_id"] == "provider-audit-worker-001")
+                self.assertEqual("worker:provider-audit/github", audit_worker["artifact_ref"])
+                self.assertEqual("audit:github/provider", audit_worker["audit_ref"])
+                self.assertEqual("credential:provider-audit/worker", audit_worker["credential_ref"])
+
+                custody = next(row for row in rows if row["artifact_id"] == "provider-credential-custody-001")
+                self.assertEqual("credential:github/app", custody["credential_ref"])
+                self.assertEqual("custody:github/app", custody["artifact_ref"])
+
+                approval_authority = rows[0]
+                self.assertEqual("dossier:provider-approval/github", approval_authority["artifact_ref"])
+                self.assertEqual("authority:provider-approval/github", approval_authority["authority_ref"])
+                self.assertEqual("webhook:github/check-run", approval_authority["webhook_ref"])
+                self.assertEqual(evidence, roadmap["provider_operations_evidence"])
             finally:
                 control.close()
 

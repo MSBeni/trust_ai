@@ -40,10 +40,24 @@ from .identity_provider_lifecycle_worker import IDENTITY_PROVIDER_LIFECYCLE_WORK
 from .identity_provider_session import IDENTITY_PROVIDER_SESSION_ENTRY_TYPE
 from .phase_scoreboard import PHASE_SCOREBOARD_ENTRY_TYPE
 from .product_scope import PRODUCT_SCOPE_ENTRY_TYPE
+from .provider_approval_authority import PROVIDER_APPROVAL_AUTHORITY_ENTRY_TYPE
+from .provider_audit import PROVIDER_AUDIT_CORRELATION_ENTRY_TYPE
+from .provider_audit_stream import PROVIDER_AUDIT_STREAM_ENTRY_TYPE
+from .provider_audit_worker import PROVIDER_AUDIT_WORKER_ENTRY_TYPE
+from .provider_callback_storage import PROVIDER_CALLBACK_STORAGE_ENTRY_TYPE
+from .provider_callback_store import PROVIDER_CALLBACK_STORE_ENTRY_TYPE
+from .provider_credential_custody import PROVIDER_CREDENTIAL_CUSTODY_ENTRY_TYPE
 from .provider_delivery_authority import PROVIDER_DELIVERY_AUTHORITY_ENTRY_TYPE
 from .provider_delivery_service import PROVIDER_DELIVERY_SERVICE_ENTRY_TYPE
 from .provider_delivery_worker import PROVIDER_DELIVERY_WORKER_ENTRY_TYPE
 from .provider_delivery_worker_bundle import PROVIDER_DELIVERY_WORKER_BUNDLE_ENTRY_TYPE
+from .provider_ingress import PROVIDER_INGRESS_ENTRY_TYPE
+from .provider_installation import PROVIDER_INSTALLATION_ENTRY_TYPE
+from .provider_lifecycle import PROVIDER_LIFECYCLE_ENTRY_TYPE
+from .provider_lifecycle_operation import PROVIDER_LIFECYCLE_OPERATION_ENTRY_TYPE
+from .provider_operations_authority import PROVIDER_OPERATIONS_AUTHORITY_ENTRY_TYPE
+from .provider_operations_service import PROVIDER_OPERATIONS_SERVICE_ENTRY_TYPE
+from .provider_webhook import PROVIDER_WEBHOOK_ENTRY_TYPE
 from .ingest import INGEST_ENTRY_TYPE
 from .insurer_partner_authority import INSURER_PARTNER_AUTHORITY_ENTRY_TYPE
 from .lifecycle import DEMOTION_ENTRY_TYPE, INCIDENT_ENTRY_TYPE, ROLLBACK_ENTRY_TYPE, SOAK_DEMOTION_ENTRY_TYPE
@@ -120,6 +134,7 @@ INDEX_TABLES = (
     "auditor_ecosystem_evidence",
     "trust_network_evidence",
     "provider_delivery_evidence",
+    "provider_operations_evidence",
     "eval_runs",
     "gate_decisions",
     "human_approvals",
@@ -230,6 +245,40 @@ PROVIDER_DELIVERY_ARTIFACT_KINDS = {
     PROVIDER_DELIVERY_WORKER_ENTRY_TYPE: "provider-delivery-worker",
     PROVIDER_DELIVERY_WORKER_BUNDLE_ENTRY_TYPE: "provider-delivery-worker-bundle",
     PROVIDER_DELIVERY_AUTHORITY_ENTRY_TYPE: "provider-delivery-authority",
+}
+
+PROVIDER_OPERATIONS_ENTRY_TYPES = {
+    PROVIDER_INSTALLATION_ENTRY_TYPE,
+    PROVIDER_INGRESS_ENTRY_TYPE,
+    PROVIDER_LIFECYCLE_ENTRY_TYPE,
+    PROVIDER_LIFECYCLE_OPERATION_ENTRY_TYPE,
+    PROVIDER_OPERATIONS_SERVICE_ENTRY_TYPE,
+    PROVIDER_OPERATIONS_AUTHORITY_ENTRY_TYPE,
+    PROVIDER_WEBHOOK_ENTRY_TYPE,
+    PROVIDER_CALLBACK_STORAGE_ENTRY_TYPE,
+    PROVIDER_CALLBACK_STORE_ENTRY_TYPE,
+    PROVIDER_AUDIT_CORRELATION_ENTRY_TYPE,
+    PROVIDER_AUDIT_STREAM_ENTRY_TYPE,
+    PROVIDER_AUDIT_WORKER_ENTRY_TYPE,
+    PROVIDER_CREDENTIAL_CUSTODY_ENTRY_TYPE,
+    PROVIDER_APPROVAL_AUTHORITY_ENTRY_TYPE,
+}
+
+PROVIDER_OPERATIONS_ARTIFACT_KINDS = {
+    PROVIDER_INSTALLATION_ENTRY_TYPE: "provider-installation",
+    PROVIDER_INGRESS_ENTRY_TYPE: "provider-ingress",
+    PROVIDER_LIFECYCLE_ENTRY_TYPE: "provider-lifecycle",
+    PROVIDER_LIFECYCLE_OPERATION_ENTRY_TYPE: "provider-lifecycle-operation",
+    PROVIDER_OPERATIONS_SERVICE_ENTRY_TYPE: "provider-operations-service",
+    PROVIDER_OPERATIONS_AUTHORITY_ENTRY_TYPE: "provider-operations-authority",
+    PROVIDER_WEBHOOK_ENTRY_TYPE: "provider-webhook",
+    PROVIDER_CALLBACK_STORAGE_ENTRY_TYPE: "provider-callback-storage",
+    PROVIDER_CALLBACK_STORE_ENTRY_TYPE: "provider-callback-store",
+    PROVIDER_AUDIT_CORRELATION_ENTRY_TYPE: "provider-audit-correlation",
+    PROVIDER_AUDIT_STREAM_ENTRY_TYPE: "provider-audit-stream",
+    PROVIDER_AUDIT_WORKER_ENTRY_TYPE: "provider-audit-worker",
+    PROVIDER_CREDENTIAL_CUSTODY_ENTRY_TYPE: "provider-credential-custody",
+    PROVIDER_APPROVAL_AUTHORITY_ENTRY_TYPE: "provider-approval-authority",
 }
 
 
@@ -724,6 +773,109 @@ def _provider_delivery_record(entry: dict[str, Any], payload: dict[str, Any]) ->
         ),
         "source_artifacts": _provider_delivery_source_artifacts(payload),
         "controls": _provider_delivery_controls(payload),
+    }
+
+
+def _provider_operations_source_artifacts(payload: dict[str, Any]) -> list[Any]:
+    artifacts = _source_artifacts(payload)
+    if artifacts:
+        return artifacts
+    for key in ("source", "sources", "source_binding", "service_attestation_binding"):
+        source = _object(payload.get(key))
+        for field in ("source_artifacts", "source_refs", "source_receipts"):
+            value = source.get(field)
+            if isinstance(value, list):
+                return value
+    payload_artifact = payload.get("payload_artifact")
+    return [payload_artifact] if isinstance(payload_artifact, dict) else []
+
+
+def _provider_operations_controls(payload: dict[str, Any]) -> Any:
+    for key in ("controls", "control_summary", "control_status_summary"):
+        value = payload.get(key)
+        if isinstance(value, (dict, list)):
+            return value
+    return {}
+
+
+def _provider_operations_control_count(payload: dict[str, Any]) -> int:
+    controls = _provider_operations_controls(payload)
+    return len(controls) if isinstance(controls, (dict, list)) else 0
+
+
+def _provider_operations_source_artifact_count(payload: dict[str, Any]) -> int:
+    artifacts = _provider_operations_source_artifacts(payload)
+    explicit_count = _first_int(payload.get("source_artifact_count"))
+    return explicit_count if explicit_count is not None else len(artifacts)
+
+
+def _provider_operations_record(entry: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    entry_type = str(entry.get("entry_type") or "")
+    names = (
+        "app", "installation", "ingress", "lifecycle", "operation", "credential",
+        "token_store", "audit_log", "storage", "database", "service", "operations",
+        "webhook", "payload", "verification", "source", "security", "operation_actor",
+        "source_binding", "service_attestation_binding", "summary", "stream", "worker",
+        "scheduler", "sources", "custody", "vault", "policy",
+    )
+    o = {name: _object(payload.get(name)) for name in names}
+    actor_credential = _object(o["operation_actor"].get("credential"))
+    artifact_id = _first_text(
+        payload.get("manifest_id"), payload.get("ingress_manifest_id"), payload.get("lifecycle_manifest_id"),
+        payload.get("operation_receipt_id"), payload.get("attestation_id"), payload.get("dossier_id"),
+        payload.get("receipt_id"), payload.get("storage_manifest_id"), payload.get("store_manifest_id"),
+        payload.get("correlation_id"), payload.get("stream_receipt_id"), payload.get("worker_operation_id"),
+        payload.get("custody_id"), content_hash(payload),
+    )
+    operation_kind = _first_text(
+        o["operation"].get("operation_kind"), o["operation"].get("kind"), o["operation"].get("type"),
+        o["operations"].get("operation_kind"), o["lifecycle"].get("operation_kind"),
+        o["webhook"].get("event_type"), o["webhook"].get("event"), o["payload"].get("event_type"),
+        payload.get("operation_kind"),
+    )
+    return {
+        "artifact_id": artifact_id,
+        "entry_id": entry.get("entry_id"),
+        "entry_type": entry_type,
+        "artifact_kind": PROVIDER_OPERATIONS_ARTIFACT_KINDS.get(entry_type, entry_type),
+        "artifact_hash": content_hash(payload),
+        "artifact_ref": _first_text(
+            payload.get("dossier_ref"), payload.get("authority_ref"), o["service"].get("service_ref"),
+            o["operation"].get("operation_ref"), o["operation"].get("operation_id"),
+            o["installation"].get("installation_ref"), o["installation"].get("installation_id"),
+            o["ingress"].get("ingress_ref"), o["ingress"].get("endpoint_ref"),
+            o["webhook"].get("webhook_ref"), o["webhook"].get("event_id"),
+            o["storage"].get("storage_ref"), o["database"].get("store_ref"),
+            o["audit_log"].get("audit_log_ref"), o["audit_log"].get("log_ref"), payload.get("audit_log_ref"),
+            o["stream"].get("stream_ref"), o["worker"].get("worker_ref"),
+            o["custody"].get("custody_ref"), o["credential"].get("credential_ref"),
+            o["credential"].get("subject_ref"), o["vault"].get("vault_ref"), o["app"].get("app_ref"), artifact_id,
+        ),
+        "status": _first_text(
+            o["summary"].get("status"), o["service"].get("status"), o["operations"].get("status"),
+            o["operation"].get("status"), o["lifecycle"].get("status"), o["installation"].get("status"),
+            o["ingress"].get("status"), o["webhook"].get("status"), o["verification"].get("status"),
+            o["storage"].get("status"), o["database"].get("status"), o["stream"].get("status"),
+            o["worker"].get("status"), o["custody"].get("status"), o["policy"].get("status"),
+            o["security"].get("status"), payload.get("mode"),
+        ),
+        "mode": _first_text(payload.get("mode"), o["storage"].get("mode"), o["source"].get("mode")),
+        "environment": _first_text(payload.get("environment"), o["service"].get("environment"), o["storage"].get("environment"), o["stream"].get("environment"), o["worker"].get("environment"), o["source"].get("environment")),
+        "provider": _first_text(payload.get("provider"), o["service"].get("provider"), o["operations"].get("provider"), o["operation"].get("provider"), o["installation"].get("provider"), o["ingress"].get("provider"), o["webhook"].get("provider"), o["audit_log"].get("provider"), o["credential"].get("provider"), o["stream"].get("provider"), o["worker"].get("provider")),
+        "operation_kind": operation_kind,
+        "service_ref": _first_text(o["service"].get("service_ref"), o["service_attestation_binding"].get("service_ref"), o["source_binding"].get("service_ref")),
+        "installation_ref": _first_text(o["installation"].get("installation_ref"), o["installation"].get("installation_id"), o["source_binding"].get("installation_ref"), o["source_binding"].get("installation_id"), payload.get("installation_ref")),
+        "webhook_ref": _first_text(o["webhook"].get("webhook_ref"), o["webhook"].get("delivery_id"), o["webhook"].get("event_id"), o["source_binding"].get("webhook_ref"), payload.get("receipt_id") if entry_type == PROVIDER_WEBHOOK_ENTRY_TYPE else None),
+        "callback_ref": _first_text(o["storage"].get("storage_ref"), o["database"].get("store_ref"), o["database"].get("database_ref"), payload.get("storage_manifest_id"), payload.get("store_manifest_id"), o["source_binding"].get("callback_ref")),
+        "audit_ref": _first_text(o["audit_log"].get("audit_log_ref"), o["audit_log"].get("log_ref"), payload.get("audit_log_ref"), o["stream"].get("audit_log_ref"), o["stream"].get("stream_ref"), o["sources"].get("audit_log_ref"), o["source_binding"].get("audit_log_ref")),
+        "credential_ref": _first_text(o["credential"].get("credential_ref"), o["credential"].get("subject_ref"), actor_credential.get("credential_ref"), actor_credential.get("subject_ref"), o["token_store"].get("credential_ref"), o["custody"].get("credential_ref"), o["vault"].get("vault_ref")),
+        "authority_ref": _first_text(payload.get("authority_ref"), payload.get("producer_ref"), o["source_binding"].get("authority_ref"), o["source_binding"].get("provider_operations_authority_ref"), o["source_binding"].get("provider_approval_authority_ref")),
+        "target_ref": _first_text(o["webhook"].get("target_ref"), o["webhook"].get("endpoint_ref"), o["ingress"].get("endpoint_ref"), o["service"].get("endpoint_ref"), o["operations"].get("endpoint_ref"), o["stream"].get("stream_ref"), o["storage"].get("schema_ref"), o["database"].get("schema_version"), o["scheduler"].get("run_ref")),
+        "source_artifact_count": _provider_operations_source_artifact_count(payload),
+        "control_count": _provider_operations_control_count(payload),
+        "observed_at": _first_text(payload.get("installed_at"), payload.get("attested_at"), payload.get("recorded_at"), payload.get("received_at"), payload.get("correlated_at"), payload.get("issued_at"), payload.get("generated_at"), entry.get("timestamp")),
+        "source_artifacts": _provider_operations_source_artifacts(payload),
+        "controls": _provider_operations_controls(payload),
     }
 
 
@@ -1580,6 +1732,33 @@ class ControlPlane:
                 controls_json TEXT NOT NULL,
                 body_json TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS provider_operations_evidence (
+                artifact_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                entry_type TEXT NOT NULL,
+                artifact_kind TEXT NOT NULL,
+                artifact_hash TEXT NOT NULL,
+                artifact_ref TEXT,
+                status TEXT,
+                mode TEXT,
+                environment TEXT,
+                provider TEXT,
+                operation_kind TEXT,
+                service_ref TEXT,
+                installation_ref TEXT,
+                webhook_ref TEXT,
+                callback_ref TEXT,
+                audit_ref TEXT,
+                credential_ref TEXT,
+                authority_ref TEXT,
+                target_ref TEXT,
+                source_artifact_count INTEGER NOT NULL,
+                control_count INTEGER NOT NULL,
+                observed_at TEXT,
+                source_artifacts_json TEXT NOT NULL,
+                controls_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS eval_runs (
                 entry_id TEXT PRIMARY KEY,
                 contract_id TEXT,
@@ -2151,6 +2330,7 @@ class ControlPlane:
             "auditor_ecosystem_evidence": 0,
             "trust_network_evidence": 0,
             "provider_delivery_evidence": 0,
+            "provider_operations_evidence": 0,
             "eval_runs": 0,
             "gate_decisions": 0,
             "human_approvals": 0,
@@ -3296,6 +3476,48 @@ class ControlPlane:
                     ),
                 )
                 counts["provider_delivery_evidence"] += 1
+
+            if entry.get("entry_type") in PROVIDER_OPERATIONS_ENTRY_TYPES:
+                record = _provider_operations_record(entry, payload if isinstance(payload, dict) else {})
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO provider_operations_evidence(
+                        artifact_id, entry_id, entry_type, artifact_kind, artifact_hash,
+                        artifact_ref, status, mode, environment, provider, operation_kind,
+                        service_ref, installation_ref, webhook_ref, callback_ref, audit_ref,
+                        credential_ref, authority_ref, target_ref, source_artifact_count,
+                        control_count, observed_at, source_artifacts_json, controls_json, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        record["artifact_id"],
+                        record["entry_id"],
+                        record["entry_type"],
+                        record["artifact_kind"],
+                        record["artifact_hash"],
+                        record["artifact_ref"],
+                        record["status"],
+                        record["mode"],
+                        record["environment"],
+                        record["provider"],
+                        record["operation_kind"],
+                        record["service_ref"],
+                        record["installation_ref"],
+                        record["webhook_ref"],
+                        record["callback_ref"],
+                        record["audit_ref"],
+                        record["credential_ref"],
+                        record["authority_ref"],
+                        record["target_ref"],
+                        record["source_artifact_count"],
+                        record["control_count"],
+                        record["observed_at"],
+                        _json(record["source_artifacts"]),
+                        _json(record["controls"]),
+                        _json(payload),
+                    ),
+                )
+                counts["provider_operations_evidence"] += 1
 
             if entry.get("entry_type") == CONTRACT_ENTRY_TYPE:
                 contract = payload.get("contract", {})
@@ -4834,6 +5056,20 @@ class ControlPlane:
         latest_provider_delivery_dict = dict(latest_provider_delivery_evidence) if latest_provider_delivery_evidence else None
         if latest_provider_delivery_dict:
             _bool_fields(latest_provider_delivery_dict, "success")
+        latest_provider_operations_evidence = self.conn.execute(
+            """
+            SELECT artifact_id, entry_id, entry_type, artifact_kind,
+                   artifact_hash, artifact_ref, status, mode, environment,
+                   provider, operation_kind, service_ref, installation_ref,
+                   webhook_ref, callback_ref, audit_ref, credential_ref,
+                   authority_ref, target_ref, source_artifact_count,
+                   control_count, observed_at
+            FROM provider_operations_evidence
+            ORDER BY observed_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_provider_operations_dict = dict(latest_provider_operations_evidence) if latest_provider_operations_evidence else None
         latest_status = self.conn.execute(
             """
             SELECT receipt_id, provider, pack_id, contract_id, gate_outcome,
@@ -5331,6 +5567,7 @@ class ControlPlane:
             "latest_auditor_ecosystem_evidence": dict(latest_auditor_ecosystem_evidence) if latest_auditor_ecosystem_evidence else None,
             "latest_trust_network_evidence": dict(latest_trust_network_evidence) if latest_trust_network_evidence else None,
             "latest_provider_delivery_evidence": latest_provider_delivery_dict,
+            "latest_provider_operations_evidence": latest_provider_operations_dict,
             "latest_promotion_status": latest_status_dict,
             "latest_runtime_attestation": latest_runtime_dict,
             "latest_policy_decision": latest_policy_decision_dict,
@@ -6711,6 +6948,32 @@ class ControlPlane:
             items.append(item)
         return items
 
+    def recent_provider_operations_evidence(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT artifact_id, entry_id, entry_type, artifact_kind,
+                   artifact_hash, artifact_ref, status, mode, environment,
+                   provider, operation_kind, service_ref, installation_ref,
+                   webhook_ref, callback_ref, audit_ref, credential_ref,
+                   authority_ref, target_ref, source_artifact_count,
+                   control_count, observed_at, source_artifacts_json,
+                   controls_json, body_json
+            FROM provider_operations_evidence
+            ORDER BY observed_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["source_artifacts"] = _decode_json_array(item.pop("source_artifacts_json", None))
+            controls_json = item.pop("controls_json", None)
+            item["controls"] = _decode_json_array(controls_json) or _decode_json_object(controls_json)
+            item["body"] = _decode_json_object(item.pop("body_json", None))
+            items.append(item)
+        return items
+
     def roadmap_evidence(self, limit: int = 20) -> dict[str, Any]:
         return {
             "roadmap_audits": self.recent_roadmap_audits(limit),
@@ -6734,6 +6997,7 @@ class ControlPlane:
             "standards_auditor_evidence": self.standards_auditor_evidence(limit),
             "trust_network_evidence": self.trust_network_evidence(limit),
             "provider_delivery_evidence": self.provider_delivery_evidence(limit),
+            "provider_operations_evidence": self.provider_operations_evidence(limit),
         }
 
     def standards_auditor_evidence(self, limit: int = 20) -> dict[str, Any]:
@@ -6747,6 +7011,9 @@ class ControlPlane:
 
     def provider_delivery_evidence(self, limit: int = 20) -> dict[str, Any]:
         return {"provider_delivery_evidence": self.recent_provider_delivery_evidence(limit)}
+
+    def provider_operations_evidence(self, limit: int = 20) -> dict[str, Any]:
+        return {"provider_operations_evidence": self.recent_provider_operations_evidence(limit)}
 
     def insurer_evidence(self, limit: int = 20) -> dict[str, Any]:
         return {

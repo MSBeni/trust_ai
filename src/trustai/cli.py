@@ -2299,6 +2299,8 @@ def cmd_control_summary(args: argparse.Namespace) -> int:
             summary["trust_network_evidence"] = control.trust_network_evidence()
         if args.provider_delivery_evidence:
             summary["provider_delivery_evidence"] = control.provider_delivery_evidence()
+        if args.provider_operations_evidence:
+            summary["provider_operations_evidence"] = control.provider_operations_evidence()
         if args.roadmap_evidence:
             summary["roadmap_evidence"] = control.roadmap_evidence()
         if args.phase_scoreboards:
@@ -20409,6 +20411,7 @@ def build_parser() -> argparse.ArgumentParser:
     control_summary.add_argument("--standards-auditor-evidence", action="store_true")
     control_summary.add_argument("--trust-network-evidence", action="store_true")
     control_summary.add_argument("--provider-delivery-evidence", action="store_true")
+    control_summary.add_argument("--provider-operations-evidence", action="store_true")
     control_summary.add_argument("--roadmap-evidence", action="store_true")
     control_summary.add_argument("--phase-scoreboards", action="store_true")
     control_summary.add_argument("--design-partner-dossiers", action="store_true")

@@ -52,7 +52,7 @@ into queryable registry tables while keeping the chain as the source of truth.
 
 ```powershell
 python -m trustai control-index --state .trustai/demo/evidence-chain.json --tenant aitrade-local --pack artifacts/aitrade-proof-pack.json --db .trustai/control-plane.sqlite --rebuild
-python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --holdout-evidence --mcp-evidence --promotion-lifecycle-evidence --framework-adapter-evidence --review-portal-evidence --standards-auditor-evidence --trust-network-evidence --provider-delivery-evidence --roadmap-evidence --phase-scoreboards --design-partner-dossiers --own-compliance-dossiers --product-scope-decisions --vertical-packs --reliability-reports --readiness --external-evidence --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
+python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --holdout-evidence --mcp-evidence --promotion-lifecycle-evidence --framework-adapter-evidence --review-portal-evidence --standards-auditor-evidence --trust-network-evidence --provider-delivery-evidence --provider-operations-evidence --roadmap-evidence --phase-scoreboards --design-partner-dossiers --own-compliance-dossiers --product-scope-decisions --vertical-packs --reliability-reports --readiness --external-evidence --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
 ```
 
 ## API
@@ -79,6 +79,7 @@ python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts
 - `GET /v0/standards-auditor-evidence` or `GET /v0/control/standards-auditor-evidence`;
 - `GET /v0/trust-network-evidence` or `GET /v0/control/trust-network-evidence`;
 - `GET /v0/provider-delivery-evidence` or `GET /v0/control/provider-delivery-evidence`;
+- `GET /v0/provider-operations-evidence` or `GET /v0/control/provider-operations-evidence`;
 - `GET /v0/roadmap-evidence`;
 - `GET /v0/phase-scoreboards` or `GET /v0/control/phase-scoreboards`;
 - `GET /v0/design-partner-dossiers` or `GET /v0/control/design-partner-dossiers`;
