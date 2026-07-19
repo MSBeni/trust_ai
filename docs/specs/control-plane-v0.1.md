@@ -46,13 +46,14 @@ into queryable registry tables while keeping the chain as the source of truth.
 - `soak_reports`: post-promotion soak windows, incidents, drift alarms, metric checks, and outcomes.
 - `traffic_holdout_exports`: signed production traffic holdout export receipts with source refs, windows, record roots, and privacy-safe counts.
 - `traffic_completeness_receipts`: provider/collector completeness receipts binding traffic exports to stream, cursor, audit, and provider exchange evidence.
+- `self_serve_onboarding_receipts`: self-serve SDK/gateway onboarding receipts with tenant, agent, requester, environment, SDK scope, gateway mode, source-artifact counts, quickstart replay counts, and control summaries.
 - `anchors`: published chain-root anchors.
 
 ## CLI
 
 ```powershell
 python -m trustai control-index --state .trustai/demo/evidence-chain.json --tenant aitrade-local --pack artifacts/aitrade-proof-pack.json --db .trustai/control-plane.sqlite --rebuild
-python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --holdout-evidence --mcp-evidence --promotion-lifecycle-evidence --framework-adapter-evidence --review-portal-evidence --standards-auditor-evidence --trust-network-evidence --provider-delivery-evidence --provider-operations-evidence --compliance-evidence --policy-backend-evidence --roadmap-evidence --phase-scoreboards --design-partner-dossiers --own-compliance-dossiers --product-scope-decisions --vertical-packs --reliability-reports --readiness --external-evidence --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
+python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --holdout-evidence --mcp-evidence --onboarding-evidence --promotion-lifecycle-evidence --framework-adapter-evidence --review-portal-evidence --standards-auditor-evidence --trust-network-evidence --provider-delivery-evidence --provider-operations-evidence --compliance-evidence --policy-backend-evidence --roadmap-evidence --phase-scoreboards --design-partner-dossiers --own-compliance-dossiers --product-scope-decisions --vertical-packs --reliability-reports --readiness --external-evidence --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
 ```
 
 ## API
@@ -73,6 +74,7 @@ python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts
 - `GET /v0/runtime-evidence`;
 - `GET /v0/holdout-evidence` or `GET /v0/control/holdout-evidence`;
 - `GET /v0/mcp-evidence` or `GET /v0/control/mcp-evidence`;
+- `GET /v0/onboarding-evidence` or `GET /v0/control/onboarding-evidence`;
 - `GET /v0/promotion-lifecycle-evidence` or `GET /v0/control/promotion-lifecycle-evidence`;
 - `GET /v0/framework-adapter-evidence` or `GET /v0/control/framework-adapter-evidence`;
 - `GET /v0/review-portal-evidence` or `GET /v0/control/review-portal-evidence`;
@@ -107,6 +109,9 @@ binds temporal holdout manifests, shadow replays, soak reports, traffic holdout
 exports, and traffic completeness receipts into one Phase 1 promotion-readiness
 surface. The MCP evidence list binds tool-call transcript hashes and proxy-capture
 event roots into one gateway review surface without exposing raw tool payloads.
+The onboarding evidence list binds self-serve SDK/gateway onboarding receipts
+into one startup review surface with source-artifact, quickstart replay, and
+control-summary counts.
 The promotion-lifecycle evidence list binds human approvals, demotions,
 rollbacks, and failed-soak demotion receipts into one CI/CD promotion review
 surface. The framework-adapter evidence list binds adapter matrices, native hook

@@ -2287,6 +2287,8 @@ def cmd_control_summary(args: argparse.Namespace) -> int:
             summary["holdout_evidence"] = control.holdout_evidence()
         if args.mcp_evidence:
             summary["mcp_evidence"] = control.mcp_evidence()
+        if args.onboarding_evidence:
+            summary["onboarding_evidence"] = control.onboarding_evidence()
         if args.promotion_lifecycle_evidence:
             summary["promotion_lifecycle_evidence"] = control.promotion_lifecycle_evidence()
         if args.framework_adapter_evidence:
@@ -20409,6 +20411,7 @@ def build_parser() -> argparse.ArgumentParser:
     control_summary.add_argument("--runtime-evidence", action="store_true")
     control_summary.add_argument("--holdout-evidence", action="store_true")
     control_summary.add_argument("--mcp-evidence", action="store_true")
+    control_summary.add_argument("--onboarding-evidence", action="store_true")
     control_summary.add_argument("--promotion-lifecycle-evidence", action="store_true")
     control_summary.add_argument("--framework-adapter-evidence", action="store_true")
     control_summary.add_argument("--review-portal-evidence", action="store_true")

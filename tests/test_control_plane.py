@@ -51,6 +51,7 @@ from trustai.mcp_gateway import (
     load_mcp_proxy_events,
     load_mcp_transcript,
 )
+from trustai.onboarding import SELF_SERVE_ONBOARDING_ENTRY_TYPE
 from trustai.mcp_gateway_authority import append_mcp_gateway_authority_dossier, build_mcp_gateway_authority_dossier
 from trustai.marketplace import MARKETPLACE_DISTRIBUTION_ENTRY_TYPE
 from trustai.marketplace_author import MARKETPLACE_AUTHOR_ENTRY_TYPE
@@ -170,6 +171,56 @@ class ControlPlaneTests(unittest.TestCase):
     def test_sqlite_nolock_uri_preserves_unc_path(self):
         uri = _sqlite_nolock_uri(Path("//wsl.localhost/Ubuntu/home/app/control.sqlite"))
         self.assertEqual("file:////wsl.localhost/Ubuntu/home/app/control.sqlite?nolock=1", uri)
+
+    def test_indexes_self_serve_onboarding_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            chain = EvidenceChain.load(tmp / "chain.json", tenant_id="test")
+            payload = {
+                "receipt_id": "onboarding-receipt-001",
+                "receipt_hash": "sha256:onboarding-receipt-hash",
+                "onboarding_ref": "onboarding:self-serve/aitrade",
+                "tenant_ref": "tenant:aitrade-local",
+                "agent_ref": "agent:aitrade-risk",
+                "requester_ref": "mailto:engineer@example.com",
+                "environment": "local",
+                "sdk_scope": "python-typescript",
+                "gateway_mode": "sdk-gateway",
+                "source_artifact_count": 22,
+                "quickstart_step_count": 8,
+                "quickstart_replay_count": 8,
+                "control_summary": {"passed": 8},
+            }
+            entry = chain.append(SELF_SERVE_ONBOARDING_ENTRY_TYPE, payload, timestamp="2026-07-13T00:00:00Z")
+            chain.save()
+
+            control = ControlPlane(tmp / "control.sqlite")
+            try:
+                indexed = control.index_chain(chain)
+                summary = control.summary()
+                evidence = control.onboarding_evidence()
+                roadmap = control.roadmap_evidence()
+
+                self.assertEqual(1, indexed["self_serve_onboarding_receipts"])
+                self.assertEqual(1, summary["counts"]["self_serve_onboarding_receipts"])
+                self.assertEqual("onboarding-receipt-001", summary["latest_self_serve_onboarding_receipt"]["receipt_id"])
+                self.assertEqual({"passed": 8}, summary["latest_self_serve_onboarding_receipt"]["control_summary"])
+
+                receipts = evidence["self_serve_onboarding_receipts"]
+                self.assertEqual(1, len(receipts))
+                self.assertEqual(entry["entry_id"], receipts[0]["entry_id"])
+                self.assertEqual("tenant:aitrade-local", receipts[0]["tenant_ref"])
+                self.assertEqual("agent:aitrade-risk", receipts[0]["agent_ref"])
+                self.assertEqual("python-typescript", receipts[0]["sdk_scope"])
+                self.assertEqual("sdk-gateway", receipts[0]["gateway_mode"])
+                self.assertEqual(22, receipts[0]["source_artifact_count"])
+                self.assertEqual(8, receipts[0]["quickstart_replay_count"])
+                self.assertEqual(8, receipts[0]["control_passed_count"])
+                self.assertEqual({"passed": 8}, receipts[0]["control_summary"])
+                self.assertEqual(payload, receipts[0]["body"])
+                self.assertEqual(evidence, roadmap["onboarding_evidence"])
+            finally:
+                control.close()
 
     def test_indexes_chain_and_proof_pack(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

@@ -237,6 +237,18 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual(200, control_mcp_response.status)
                 self.assertEqual([], control_mcp_body["mcp_tool_calls"])
 
+                conn.request("GET", "/v0/onboarding-evidence")
+                onboarding_response = conn.getresponse()
+                onboarding_body = json.loads(onboarding_response.read().decode("utf-8"))
+                self.assertEqual(200, onboarding_response.status)
+                self.assertEqual([], onboarding_body["self_serve_onboarding_receipts"])
+
+                conn.request("GET", "/v0/control/onboarding-evidence")
+                control_onboarding_response = conn.getresponse()
+                control_onboarding_body = json.loads(control_onboarding_response.read().decode("utf-8"))
+                self.assertEqual(200, control_onboarding_response.status)
+                self.assertEqual([], control_onboarding_body["self_serve_onboarding_receipts"])
+
                 conn.request("GET", "/v0/promotion-lifecycle-evidence")
                 lifecycle_response = conn.getresponse()
                 lifecycle_body = json.loads(lifecycle_response.read().decode("utf-8"))
@@ -356,6 +368,7 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual([], roadmap_body["reliability_reports"])
                 self.assertEqual([], roadmap_body["holdout_evidence"]["shadow_replays"])
                 self.assertEqual([], roadmap_body["mcp_evidence"]["mcp_tool_calls"])
+                self.assertEqual([], roadmap_body["onboarding_evidence"]["self_serve_onboarding_receipts"])
                 self.assertEqual([], roadmap_body["promotion_lifecycle_evidence"]["human_approvals"])
                 self.assertEqual([], roadmap_body["framework_adapter_evidence"]["framework_hook_operations"])
                 self.assertEqual([], roadmap_body["compliance_evidence"]["compliance_evidence"])

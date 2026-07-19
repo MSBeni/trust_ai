@@ -64,6 +64,7 @@ from .ingest import INGEST_ENTRY_TYPE
 from .insurer_partner_authority import INSURER_PARTNER_AUTHORITY_ENTRY_TYPE
 from .lifecycle import DEMOTION_ENTRY_TYPE, INCIDENT_ENTRY_TYPE, ROLLBACK_ENTRY_TYPE, SOAK_DEMOTION_ENTRY_TYPE
 from .mcp_gateway import MCP_PROXY_CAPTURE_ENTRY_TYPE, MCP_TOOL_CALL_ENTRY_TYPE
+from .onboarding import SELF_SERVE_ONBOARDING_ENTRY_TYPE
 from .marketplace import MARKETPLACE_DISTRIBUTION_ENTRY_TYPE
 from .marketplace_author import MARKETPLACE_AUTHOR_ENTRY_TYPE
 from .marketplace_settlement import MARKETPLACE_SETTLEMENT_ENTRY_TYPE
@@ -131,6 +132,7 @@ INDEX_TABLES = (
     "ingest_events",
     "mcp_tool_calls",
     "mcp_proxy_captures",
+    "self_serve_onboarding_receipts",
     "framework_adapter_matrices",
     "framework_hook_releases",
     "framework_hook_operations",
@@ -1433,6 +1435,27 @@ class ControlPlane:
                 captured_at TEXT,
                 body_json TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS self_serve_onboarding_receipts (
+                receipt_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                receipt_hash TEXT NOT NULL,
+                onboarding_ref TEXT,
+                tenant_ref TEXT,
+                agent_ref TEXT,
+                requester_ref TEXT,
+                environment TEXT,
+                sdk_scope TEXT,
+                gateway_mode TEXT,
+                source_artifact_count INTEGER NOT NULL,
+                quickstart_step_count INTEGER NOT NULL,
+                quickstart_replay_count INTEGER NOT NULL,
+                control_passed_count INTEGER NOT NULL,
+                control_not_applicable_count INTEGER NOT NULL,
+                control_failed_count INTEGER NOT NULL,
+                generated_at TEXT,
+                control_summary_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS framework_adapter_matrices (
                 matrix_id TEXT PRIMARY KEY,
                 entry_id TEXT,
@@ -2611,6 +2634,7 @@ class ControlPlane:
             "ingest_events": 0,
             "mcp_tool_calls": 0,
             "mcp_proxy_captures": 0,
+            "self_serve_onboarding_receipts": 0,
             "framework_adapter_matrices": 0,
             "framework_hook_releases": 0,
             "framework_hook_operations": 0,
@@ -3100,6 +3124,44 @@ class ControlPlane:
                     ),
                 )
                 counts["mcp_proxy_captures"] += 1
+
+            if entry.get("entry_type") == SELF_SERVE_ONBOARDING_ENTRY_TYPE:
+                control_summary = payload.get("control_summary") if isinstance(payload.get("control_summary"), dict) else {}
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO self_serve_onboarding_receipts(
+                        receipt_id, entry_id, receipt_hash, onboarding_ref,
+                        tenant_ref, agent_ref, requester_ref, environment,
+                        sdk_scope, gateway_mode, source_artifact_count,
+                        quickstart_step_count, quickstart_replay_count,
+                        control_passed_count, control_not_applicable_count,
+                        control_failed_count, generated_at, control_summary_json,
+                        body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("receipt_id") or entry["entry_id"],
+                        entry["entry_id"],
+                        payload.get("receipt_hash") or entry.get("payload_hash"),
+                        payload.get("onboarding_ref"),
+                        payload.get("tenant_ref"),
+                        payload.get("agent_ref"),
+                        payload.get("requester_ref"),
+                        payload.get("environment"),
+                        payload.get("sdk_scope"),
+                        payload.get("gateway_mode"),
+                        int(payload.get("source_artifact_count") or 0),
+                        int(payload.get("quickstart_step_count") or 0),
+                        int(payload.get("quickstart_replay_count") or 0),
+                        int(control_summary.get("passed") or 0),
+                        int(control_summary.get("not-applicable") or 0),
+                        int(control_summary.get("failed") or 0),
+                        entry.get("timestamp"),
+                        _json(control_summary),
+                        _json(payload),
+                    ),
+                )
+                counts["self_serve_onboarding_receipts"] += 1
 
             if entry.get("entry_type") == FRAMEWORK_ADAPTER_MATRIX_ENTRY_TYPE:
                 summary = payload.get("summary", {}) if isinstance(payload.get("summary"), dict) else {}
@@ -5296,6 +5358,24 @@ class ControlPlane:
             LIMIT 1
             """
         ).fetchone()
+        latest_self_serve_onboarding = self.conn.execute(
+            """
+            SELECT receipt_id, entry_id, receipt_hash, onboarding_ref,
+                   tenant_ref, agent_ref, requester_ref, environment,
+                   sdk_scope, gateway_mode, source_artifact_count,
+                   quickstart_step_count, quickstart_replay_count,
+                   control_passed_count, control_not_applicable_count,
+                   control_failed_count, generated_at, control_summary_json
+            FROM self_serve_onboarding_receipts
+            ORDER BY generated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_self_serve_onboarding_dict = dict(latest_self_serve_onboarding) if latest_self_serve_onboarding else None
+        if latest_self_serve_onboarding_dict is not None:
+            latest_self_serve_onboarding_dict["control_summary"] = _decode_json_object(
+                latest_self_serve_onboarding_dict.pop("control_summary_json", None)
+            )
         latest_framework_matrix = self.conn.execute(
             """
             SELECT matrix_id, entry_id, matrix_hash, matrix_ref,
@@ -5982,6 +6062,7 @@ class ControlPlane:
             "latest_ingest_event": dict(latest_ingest_event) if latest_ingest_event else None,
             "latest_mcp_tool_call": dict(latest_mcp_tool_call) if latest_mcp_tool_call else None,
             "latest_mcp_proxy_capture": dict(latest_mcp_proxy_capture) if latest_mcp_proxy_capture else None,
+            "latest_self_serve_onboarding_receipt": latest_self_serve_onboarding_dict,
             "latest_framework_adapter_matrix": dict(latest_framework_matrix) if latest_framework_matrix else None,
             "latest_framework_hook_release": dict(latest_framework_release) if latest_framework_release else None,
             "latest_framework_hook_operation": dict(latest_framework_operation) if latest_framework_operation else None,
@@ -6273,6 +6354,29 @@ class ControlPlane:
             items.append(item)
         return items
 
+    def recent_self_serve_onboarding_receipts(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT receipt_id, entry_id, receipt_hash, onboarding_ref,
+                   tenant_ref, agent_ref, requester_ref, environment,
+                   sdk_scope, gateway_mode, source_artifact_count,
+                   quickstart_step_count, quickstart_replay_count,
+                   control_passed_count, control_not_applicable_count,
+                   control_failed_count, generated_at, control_summary_json,
+                   body_json
+            FROM self_serve_onboarding_receipts
+            ORDER BY generated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["control_summary"] = _decode_json_object(item.pop("control_summary_json", None))
+            item["body"] = _decode_json_object(item.pop("body_json", None))
+            items.append(item)
+        return items
     def recent_promotion_statuses(self, limit: int = 20) -> list[dict[str, Any]]:
         rows = self.conn.execute(
             """
@@ -7418,6 +7522,7 @@ class ControlPlane:
             "multi_agent_evidence": self.multi_agent_evidence(limit),
             "holdout_evidence": self.holdout_evidence(limit),
             "mcp_evidence": self.mcp_evidence(limit),
+            "onboarding_evidence": self.onboarding_evidence(limit),
             "promotion_lifecycle_evidence": self.promotion_lifecycle_evidence(limit),
             "byoc_evidence": self.byoc_evidence(limit),
             "identity_provider_evidence": self.identity_provider_evidence(limit),
@@ -7558,6 +7663,9 @@ class ControlPlane:
             "mcp_tool_calls": self.recent_mcp_tool_calls(limit),
             "mcp_proxy_captures": self.recent_mcp_proxy_captures(limit),
         }
+
+    def onboarding_evidence(self, limit: int = 20) -> dict[str, Any]:
+        return {"self_serve_onboarding_receipts": self.recent_self_serve_onboarding_receipts(limit)}
 
     def promotion_lifecycle_evidence(self, limit: int = 20) -> dict[str, Any]:
         return {

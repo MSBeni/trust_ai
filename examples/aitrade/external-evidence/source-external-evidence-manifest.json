@@ -19,13 +19,13 @@
       "subject": "trustai go verifier release workflow"
     }
   ],
-  "generated_at": "2026-07-19T15:24:05Z",
+  "generated_at": "2026-07-19T16:03:00Z",
   "limitations": [
     "This manifest verifies supplied external evidence artifacts by hash; it does not fetch live provider state.",
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "823b9a02444f05df02e7a5514182ba3832dfac7a40c15bbdb8a13621c407dd28",
+  "manifest_id": "c196e3fc79802d219e9d8976b24869cc6f5afc1ace2e5b4b982f1a6791561246",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -1233,8 +1233,8 @@
   ],
   "schema": "trustai.external-evidence-manifest/0.1",
   "source_roadmap_audit": {
-    "audit_hash": "779449204d1aa777a55c2dde525d9426055e305a2b6f99f821845848b6f08e4f",
-    "audit_id": "0e7bcdceabfb97e02146d7328f349a004d8fb6982341b0d7e14c154873f47f51",
+    "audit_hash": "85df2f4c164582d6f2ce438e16a4cc1d37ff5889796a219e14fc30f92ac2053e",
+    "audit_id": "dd37eb0c931c8aaff98504c8388b6600869e1fa8e48199f97ea3c7ecd81dc142",
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {
