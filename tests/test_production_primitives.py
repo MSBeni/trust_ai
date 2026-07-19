@@ -353,6 +353,19 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual(200, control_compliance_response.status)
                 self.assertEqual([], control_compliance_body["compliance_evidence"])
 
+                conn.request("GET", "/v0/insurer-evidence")
+                insurer_response = conn.getresponse()
+                insurer_body = json.loads(insurer_response.read().decode("utf-8"))
+                self.assertEqual(200, insurer_response.status)
+                self.assertEqual([], insurer_body["underwriting_quotes"])
+                self.assertEqual([], insurer_body["insurer_partner_authority_dossiers"])
+
+                conn.request("GET", "/v0/control/insurer-evidence")
+                control_insurer_response = conn.getresponse()
+                control_insurer_body = json.loads(control_insurer_response.read().decode("utf-8"))
+                self.assertEqual(200, control_insurer_response.status)
+                self.assertEqual([], control_insurer_body["underwriting_quotes"])
+
                 conn.request("GET", "/v0/roadmap-evidence")
                 roadmap_response = conn.getresponse()
                 roadmap_body = json.loads(roadmap_response.read().decode("utf-8"))
@@ -372,6 +385,7 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual([], roadmap_body["promotion_lifecycle_evidence"]["human_approvals"])
                 self.assertEqual([], roadmap_body["framework_adapter_evidence"]["framework_hook_operations"])
                 self.assertEqual([], roadmap_body["compliance_evidence"]["compliance_evidence"])
+                self.assertEqual([], roadmap_body["insurer_evidence"]["underwriting_quotes"])
 
                 conn.request("GET", "/v0/phase-scoreboards")
                 phase_scoreboards_response = conn.getresponse()

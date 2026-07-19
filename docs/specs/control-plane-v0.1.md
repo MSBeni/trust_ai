@@ -46,6 +46,8 @@ into queryable registry tables while keeping the chain as the source of truth.
 - `soak_reports`: post-promotion soak windows, incidents, drift alarms, metric checks, and outcomes.
 - `traffic_holdout_exports`: signed production traffic holdout export receipts with source refs, windows, record roots, and privacy-safe counts.
 - `traffic_completeness_receipts`: provider/collector completeness receipts binding traffic exports to stream, cursor, audit, and provider exchange evidence.
+- `underwriting_quotes`: signed proof-pack-backed underwriting quotes with risk evidence, discount, consent, term, and freshness fields.
+- `insurer_partner_authority_dossiers`: insurer partner production-authority dossiers with service, worker, quote, actuarial, authority-evidence, and control summaries.
 - `self_serve_onboarding_receipts`: self-serve SDK/gateway onboarding receipts with tenant, agent, requester, environment, SDK scope, gateway mode, source-artifact counts, quickstart replay counts, and control summaries.
 - `anchors`: published chain-root anchors.
 
@@ -53,7 +55,7 @@ into queryable registry tables while keeping the chain as the source of truth.
 
 ```powershell
 python -m trustai control-index --state .trustai/demo/evidence-chain.json --tenant aitrade-local --pack artifacts/aitrade-proof-pack.json --db .trustai/control-plane.sqlite --rebuild
-python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --holdout-evidence --mcp-evidence --onboarding-evidence --promotion-lifecycle-evidence --framework-adapter-evidence --review-portal-evidence --standards-auditor-evidence --trust-network-evidence --provider-delivery-evidence --provider-operations-evidence --compliance-evidence --policy-backend-evidence --roadmap-evidence --phase-scoreboards --design-partner-dossiers --own-compliance-dossiers --product-scope-decisions --vertical-packs --reliability-reports --readiness --external-evidence --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
+python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --holdout-evidence --mcp-evidence --onboarding-evidence --promotion-lifecycle-evidence --framework-adapter-evidence --review-portal-evidence --standards-auditor-evidence --trust-network-evidence --provider-delivery-evidence --provider-operations-evidence --compliance-evidence --policy-backend-evidence --insurer-evidence --roadmap-evidence --phase-scoreboards --design-partner-dossiers --own-compliance-dossiers --product-scope-decisions --vertical-packs --reliability-reports --readiness --external-evidence --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
 ```
 
 ## API
@@ -84,6 +86,7 @@ python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts
 - `GET /v0/provider-operations-evidence` or `GET /v0/control/provider-operations-evidence`;
 - `GET /v0/compliance-evidence` or `GET /v0/control/compliance-evidence`;
 - `GET /v0/policy-backend-evidence` or `GET /v0/control/policy-backend-evidence`;
+- `GET /v0/insurer-evidence` or `GET /v0/control/insurer-evidence`;
 - `GET /v0/roadmap-evidence`;
 - `GET /v0/phase-scoreboards` or `GET /v0/control/phase-scoreboards`;
 - `GET /v0/design-partner-dossiers` or `GET /v0/control/design-partner-dossiers`;
@@ -112,6 +115,8 @@ event roots into one gateway review surface without exposing raw tool payloads.
 The onboarding evidence list binds self-serve SDK/gateway onboarding receipts
 into one startup review surface with source-artifact, quickstart replay, and
 control-summary counts.
+The insurer evidence list binds underwriting quote receipts and insurer partner
+production-authority dossiers into one third-party underwriting review surface.
 The promotion-lifecycle evidence list binds human approvals, demotions,
 rollbacks, and failed-soak demotion receipts into one CI/CD promotion review
 surface. The framework-adapter evidence list binds adapter matrices, native hook
