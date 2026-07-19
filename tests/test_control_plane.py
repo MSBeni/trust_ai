@@ -16,6 +16,7 @@ from trustai.byoc_operator import append_byoc_operator_attestation, build_byoc_o
 from trustai.control_plane import ControlPlane, _sqlite_nolock_uri
 from trustai.canonical import content_hash
 from trustai.chain import EvidenceChain
+from trustai.compliance_authority import COMPLIANCE_AUTHORITY_ENTRY_TYPE
 from trustai.cicd import append_promotion_status_receipt, build_promotion_check_payload, build_promotion_status_receipt
 from trustai.delivery import PROVIDER_DELIVERY_ENTRY_TYPE, build_provider_delivery
 from trustai.design_partner import append_design_partner_dossier, build_design_partner_dossier
@@ -27,6 +28,7 @@ from trustai.external_evidence import (
     build_external_evidence_manifest,
 )
 from trustai.eu_ai_act import build_eu_ai_act_document
+from trustai.eu_data_plane import EU_DATA_PLANE_ENTRY_TYPE
 from trustai.framework_adapter_authority import (
     append_framework_adapter_authority_dossier,
     build_framework_adapter_authority_dossier,
@@ -1933,6 +1935,111 @@ class ControlPlaneTests(unittest.TestCase):
             finally:
                 control.close()
 
+    def test_indexes_compliance_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            chain = EvidenceChain.load(tmp / "compliance-chain.json", tenant_id="compliance-test")
+            compliance_payload = {
+                "dossier_id": "compliance-authority-001",
+                "dossier_hash": "sha256:compliance-authority-hash",
+                "mode": "provider-dossier",
+                "environment": "aitrade-prod",
+                "generated_at": "2026-07-09T09:10:00Z",
+                "dossier_ref": "dossier:compliance/aitrade-prod",
+                "authority_ref": "authority:compliance/aitrade-prod",
+                "producer_ref": "oidc:trustai.example/compliance-authority-worker",
+                "source_binding": {
+                    "compliance_export": {"pack_id": "pack-001", "export_hash": "sha256:compliance-export"},
+                    "eu_ai_act_document": {"document_id": "eu-doc-001", "document_hash": "sha256:eu-doc"},
+                    "proof_pack": {"pack_id": "pack-001", "pack_hash": "sha256:pack"},
+                    "regulator_disclosure": {"disclosure_id": "disclosure-001", "disclosure_hash": "sha256:disclosure"},
+                    "eu_data_plane": {"attestation_id": "eu-data-plane-001", "attestation_hash": "sha256:eu-data-plane", "data_plane_ref": "k8s:cluster/aitrade-eu-central-1"},
+                },
+                "summary": {
+                    "required_requirement_count": 11,
+                    "covered_requirement_count": 2,
+                    "missing_requirement_count": 9,
+                    "missing_requirement_ids": ["grc-platform-export"],
+                },
+                "control_summary": {"passed": 7, "deferred": 3},
+                "authority_evidence": [
+                    {"requirement_id": "framework-control-mapping-ontology", "authority_kind": "standards-body", "evidence_ref": "evidence:framework-controls"},
+                    {"requirement_id": "eu-ai-act-technical-documentation", "authority_kind": "regulator", "evidence_ref": "evidence:eu-doc"},
+                ],
+            }
+            data_plane_payload = {
+                "attestation_id": "eu-data-plane-001",
+                "attestation_hash": "sha256:eu-data-plane-hash",
+                "mode": "eu-data-plane-attested",
+                "environment": "aitrade-eu-prod",
+                "attested_at": "2026-07-09T09:05:00Z",
+                "source": {
+                    "deployment_manifest_id": "deployment-001",
+                    "byoc_attestation_id": "byoc-operator-001",
+                    "byoc_tenant_id": "aitrade-eu",
+                    "byoc_data_plane_ref": "k8s:cluster/aitrade-eu-central-1",
+                    "eu_ai_act_document_id": "eu-doc-001",
+                },
+                "deployment": {"manifest_id": "deployment-001", "name": "trustai", "environment": "aitrade-eu-prod"},
+                "regions": {"primary_region": "eu-central-1", "object_lock_region": "eu-central-1"},
+                "residency": {"tenant_id": "aitrade-eu", "data_plane_ref": "k8s:cluster/aitrade-eu-central-1", "control_plane_ref": "trustai:control-plane/eu"},
+                "sovereignty": {"kms_key_region": "eu-central-1", "encryption_key_ref": "kms:eu-central-1:trustai/aitrade-eu/evidence"},
+                "audit": {"audit_log_ref": "audit-log:eu-data-plane/service", "access_log_ref": "access-log:eu-data-plane/sessions"},
+                "operation": {"actor_ref": "oidc:trustai.example/eu-data-plane-operator", "evidence_refs": ["evidence:eu-data-plane/service"]},
+                "source_artifacts": [
+                    {"type": "deployment-manifest", "id": "deployment-001", "hash": "sha256:deployment"},
+                    {"type": "byoc-operator-attestation", "id": "byoc-operator-001", "hash": "sha256:byoc"},
+                    {"type": "eu-ai-act-document", "id": "eu-doc-001", "hash": "sha256:eu-doc"},
+                ],
+                "control_summary": {"sovereignty-attested": "passed", "residency-attested": "passed"},
+            }
+            chain.append(EU_DATA_PLANE_ENTRY_TYPE, data_plane_payload, timestamp=data_plane_payload["attested_at"])
+            chain.append(COMPLIANCE_AUTHORITY_ENTRY_TYPE, compliance_payload, timestamp=compliance_payload["generated_at"])
+            chain.save()
+
+            control = ControlPlane(tmp / "control.sqlite")
+            try:
+                indexed = control.index_chain(chain)
+                summary = control.summary()
+                evidence = control.compliance_evidence()
+                roadmap = control.roadmap_evidence()
+
+                self.assertEqual(2, indexed["compliance_evidence"])
+                self.assertEqual(2, summary["counts"]["compliance_evidence"])
+                self.assertEqual("compliance-authority-001", summary["latest_compliance_evidence"]["artifact_id"])
+                self.assertEqual("compliance-production-authority", summary["latest_compliance_evidence"]["artifact_kind"])
+
+                rows = evidence["compliance_evidence"]
+                self.assertEqual(2, len(rows))
+                rows_by_kind = {row["artifact_kind"]: row for row in rows}
+                authority = rows_by_kind["compliance-production-authority"]
+                data_plane = rows_by_kind["eu-data-plane-attestation"]
+
+                self.assertEqual("provider-dossier", authority["mode"])
+                self.assertEqual("eu-doc-001", authority["document_id"])
+                self.assertEqual("pack-001", authority["pack_id"])
+                self.assertEqual("disclosure-001", authority["disclosure_id"])
+                self.assertEqual("k8s:cluster/aitrade-eu-central-1", authority["data_plane_ref"])
+                self.assertEqual(11, authority["required_requirement_count"])
+                self.assertEqual(2, authority["covered_requirement_count"])
+                self.assertEqual(9, authority["missing_requirement_count"])
+                self.assertEqual(2, authority["authority_evidence_count"])
+                self.assertEqual(5, authority["source_artifact_count"])
+                self.assertEqual(2, authority["control_count"])
+                self.assertEqual("eu-doc-001", authority["source_binding"]["eu_ai_act_document"]["document_id"])
+                self.assertEqual(7, authority["controls"]["passed"])
+                self.assertEqual(["grc-platform-export"], authority["summary"]["missing_requirement_ids"])
+
+                self.assertEqual("aitrade-eu", data_plane["tenant_id"])
+                self.assertEqual("eu-central-1", data_plane["primary_region"])
+                self.assertEqual("eu-central-1", data_plane["kms_key_region"])
+                self.assertEqual("audit-log:eu-data-plane/service", data_plane["audit_ref"])
+                self.assertEqual(3, data_plane["source_artifact_count"])
+                self.assertEqual(2, data_plane["control_count"])
+                self.assertEqual("eu-doc-001", data_plane["source_binding"]["eu_ai_act_document_id"])
+                self.assertEqual(evidence, roadmap["compliance_evidence"])
+            finally:
+                control.close()
     def test_indexes_identity_provider_evidence(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)

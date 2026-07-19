@@ -1,7 +1,7 @@
 {
-  "audit_id": "1540dacaccc6d4c52ba012d3668f8b173a123f508ea55ed9d5dcaad923605ef9",
+  "audit_id": "0e7bcdceabfb97e02146d7328f349a004d8fb6982341b0d7e14c154873f47f51",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
-  "generated_at": "2026-07-19T04:09:01Z",
+  "generated_at": "2026-07-19T15:23:50Z",
   "limitations": [
     "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
     "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",
@@ -266,7 +266,7 @@
         {
           "path": "src/trustai/control_plane.py",
           "present": true,
-          "sha256": "sha256:13041f551185af4969b7ce6364df9f41b2dfadbe2c4aef40879b35409c2bc1f5"
+          "sha256": "sha256:705aa8d41ac7a895c499e7212a0682a03b60e19d07c2164a9efa89490e07980d"
         },
         {
           "path": "examples/aitrade/eval-results.json",
@@ -848,7 +848,7 @@
         {
           "path": "docs/specs/control-plane-v0.1.md",
           "present": true,
-          "sha256": "sha256:160648edfa049b1513e662f3e18dd45427a05fd0605044aeb6135744512d37e5"
+          "sha256": "sha256:ab0820018ac4b9abacb923d7fbead13656163a4f211e745592e113ab5ba17060"
         },
         {
           "path": "docs/specs/review-portal-service-attestation-v0.1.md",
@@ -1210,6 +1210,21 @@
           "sha256": "sha256:2433c1145f3a1aa3d1b58dcfd1bc67d1ad76915edb358e4093812b72b525b46b"
         },
         {
+          "path": "src/trustai/control_plane.py",
+          "present": true,
+          "sha256": "sha256:705aa8d41ac7a895c499e7212a0682a03b60e19d07c2164a9efa89490e07980d"
+        },
+        {
+          "path": "src/trustai/server.py",
+          "present": true,
+          "sha256": "sha256:93e517fb476cad6e6f36b80e7a05ecb61eb3a1cafc010e96f9b65ca55970d95d"
+        },
+        {
+          "path": "src/trustai/cli.py",
+          "present": true,
+          "sha256": "sha256:f94230a27c4bf5a61686d119d075e9abaf26c0d42cbbf992bb14a8542fe9e3e7"
+        },
+        {
           "path": "docs/specs/compliance-production-authority-v0.1.md",
           "present": true,
           "sha256": "sha256:190840b93b9a2cbd17dd210f4215c504938e320d3d1b43a9ac542adba33c9594"
@@ -1225,6 +1240,11 @@
           "sha256": "sha256:30739eb387f00328b2c3366aee33506096db31bd45296a8b8e58cdc491e24f94"
         },
         {
+          "path": "docs/specs/control-plane-v0.1.md",
+          "present": true,
+          "sha256": "sha256:ab0820018ac4b9abacb923d7fbead13656163a4f211e745592e113ab5ba17060"
+        },
+        {
           "path": "tests/test_compliance_authority.py",
           "present": true,
           "sha256": "sha256:c0649de7e49bcdc97fc06c2928d682bd8aecbd434864e892f25d89d61b72c540"
@@ -1238,16 +1258,26 @@
           "path": "tests/test_eu_data_plane.py",
           "present": true,
           "sha256": "sha256:b37e12bc1b61d9c3ceb2313eddc789746d58f71c507b70fba9164df62d18da6c"
+        },
+        {
+          "path": "tests/test_control_plane.py",
+          "present": true,
+          "sha256": "sha256:da5ef6e4ed14118b4934a95e03fa72c9a76b701c457618780b4a9bdb8408662b"
+        },
+        {
+          "path": "tests/test_production_primitives.py",
+          "present": true,
+          "sha256": "sha256:2bd69828e76a2ba37f7f8b8ec963cbc3f18fa9ac3761bd6e618f2689a3e89967"
         }
       ],
-      "evidence_count": 10,
+      "evidence_count": 16,
       "external_authority_required": [
         "Compliance production authority dossiers cover the local/reference authority checklist for framework-control ontology, ISO 42001, NIST AI RMF, EU AI Act, SR 11-7, SOC 2, proof-pack source replay, selective regulator disclosure, GRC exports, EU data-plane sovereignty, conformity-assessment review, and per-evidence source_context bound to the signed compliance source binding; actual fresh GRC-platform acceptance, regulator/supervisor acceptance, conformity-assessment review, and continuously operated EU data-plane provider exports remain external deployment evidence."
       ],
       "id": "compliance-mapper-and-eu-ai-act",
       "missing_evidence_count": 0,
       "phase": "P2-P3",
-      "present_evidence_count": 10,
+      "present_evidence_count": 16,
       "priority": "P0",
       "roadmap_ref": "Phase 2 feature 1; Phase 3 feature 1",
       "status": "reference-attested",
@@ -1328,7 +1358,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:dc3f4a19fba16db0f4a50eafbfce98fcc91ad185fbeb4f33dca38991ebb98fff"
+          "sha256": "sha256:3ea4dc51110b55a7add1de09d0c9b38b8f593084328f114fa2da3036a82395bc"
         },
         {
           "path": "src/trustai/trust_authority.py",
@@ -1701,7 +1731,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:dc3f4a19fba16db0f4a50eafbfce98fcc91ad185fbeb4f33dca38991ebb98fff"
+          "sha256": "sha256:3ea4dc51110b55a7add1de09d0c9b38b8f593084328f114fa2da3036a82395bc"
         },
         {
           "path": "tests/test_reliability_report.py",
@@ -1817,7 +1847,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:dc3f4a19fba16db0f4a50eafbfce98fcc91ad185fbeb4f33dca38991ebb98fff"
+          "sha256": "sha256:3ea4dc51110b55a7add1de09d0c9b38b8f593084328f114fa2da3036a82395bc"
         },
         {
           "path": "tests/test_phase_scoreboard.py",
@@ -1868,7 +1898,7 @@
         {
           "path": "docs/architecture/roadmap-coverage.md",
           "present": true,
-          "sha256": "sha256:1f40cfe71820373e587d8fb50d64b74d3ebe8619771222f8d1e8f8330eab623b"
+          "sha256": "sha256:3076e8f94d2321e8e3be0ee7d0f9851fc52e0b3cb96cfa2ec80e3f1dfb81650b"
         },
         {
           "path": "src/trustai/proofpack.py",
@@ -1888,7 +1918,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:dc3f4a19fba16db0f4a50eafbfce98fcc91ad185fbeb4f33dca38991ebb98fff"
+          "sha256": "sha256:3ea4dc51110b55a7add1de09d0c9b38b8f593084328f114fa2da3036a82395bc"
         },
         {
           "path": "tests/test_product_scope.py",
@@ -2358,7 +2388,7 @@
     "coverage": {
       "path": "docs/architecture/roadmap-coverage.md",
       "present": true,
-      "sha256": "sha256:1f40cfe71820373e587d8fb50d64b74d3ebe8619771222f8d1e8f8330eab623b"
+      "sha256": "sha256:3076e8f94d2321e8e3be0ee7d0f9851fc52e0b3cb96cfa2ec80e3f1dfb81650b"
     },
     "requirement_count": 26,
     "roadmap": {

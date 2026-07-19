@@ -329,6 +329,18 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual(200, control_policy_backend_response.status)
                 self.assertEqual([], control_policy_backend_body["policy_backend_evidence"])
 
+                conn.request("GET", "/v0/compliance-evidence")
+                compliance_response = conn.getresponse()
+                compliance_body = json.loads(compliance_response.read().decode("utf-8"))
+                self.assertEqual(200, compliance_response.status)
+                self.assertEqual([], compliance_body["compliance_evidence"])
+
+                conn.request("GET", "/v0/control/compliance-evidence")
+                control_compliance_response = conn.getresponse()
+                control_compliance_body = json.loads(control_compliance_response.read().decode("utf-8"))
+                self.assertEqual(200, control_compliance_response.status)
+                self.assertEqual([], control_compliance_body["compliance_evidence"])
+
                 conn.request("GET", "/v0/roadmap-evidence")
                 roadmap_response = conn.getresponse()
                 roadmap_body = json.loads(roadmap_response.read().decode("utf-8"))
@@ -346,6 +358,7 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual([], roadmap_body["mcp_evidence"]["mcp_tool_calls"])
                 self.assertEqual([], roadmap_body["promotion_lifecycle_evidence"]["human_approvals"])
                 self.assertEqual([], roadmap_body["framework_adapter_evidence"]["framework_hook_operations"])
+                self.assertEqual([], roadmap_body["compliance_evidence"]["compliance_evidence"])
 
                 conn.request("GET", "/v0/phase-scoreboards")
                 phase_scoreboards_response = conn.getresponse()

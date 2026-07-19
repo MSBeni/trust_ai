@@ -19,9 +19,11 @@ from .byoc_operator import BYOC_OPERATOR_ENTRY_TYPE
 from .canonical import content_hash, parse_rfc3339, utc_now
 from .chain import EvidenceChain
 from .cicd import PROMOTION_STATUS_ENTRY_TYPE
+from .compliance_authority import COMPLIANCE_AUTHORITY_ENTRY_TYPE
 from .contracts import CONTRACT_ENTRY_TYPE
 from .delivery import PROVIDER_DELIVERY_ENTRY_TYPE
 from .design_partner import DESIGN_PARTNER_ENTRY_TYPE, P1_PARTNER_TARGET, P1_SIGNED_VALUE_TARGET_USD
+from .eu_data_plane import EU_DATA_PLANE_ENTRY_TYPE
 from .external_evidence import (
     AUTHORITY_KIND_EVIDENCE_HINTS,
     AUTHORITY_KIND_OWNER_HINTS,
@@ -142,6 +144,7 @@ INDEX_TABLES = (
     "trust_network_evidence",
     "provider_delivery_evidence",
     "provider_operations_evidence",
+    "compliance_evidence",
     "eval_runs",
     "gate_decisions",
     "human_approvals",
@@ -270,6 +273,16 @@ PROVIDER_OPERATIONS_ENTRY_TYPES = {
     PROVIDER_AUDIT_WORKER_ENTRY_TYPE,
     PROVIDER_CREDENTIAL_CUSTODY_ENTRY_TYPE,
     PROVIDER_APPROVAL_AUTHORITY_ENTRY_TYPE,
+}
+
+COMPLIANCE_EVIDENCE_ENTRY_TYPES = {
+    COMPLIANCE_AUTHORITY_ENTRY_TYPE,
+    EU_DATA_PLANE_ENTRY_TYPE,
+}
+
+COMPLIANCE_EVIDENCE_ARTIFACT_KINDS = {
+    COMPLIANCE_AUTHORITY_ENTRY_TYPE: "compliance-production-authority",
+    EU_DATA_PLANE_ENTRY_TYPE: "eu-data-plane-attestation",
 }
 
 PROVIDER_OPERATIONS_ARTIFACT_KINDS = {
@@ -1008,6 +1021,91 @@ def _policy_backend_record(entry: dict[str, Any], payload: dict[str, Any]) -> di
         "controls": _policy_backend_controls(payload),
     }
 
+def _compliance_source_artifacts(payload: dict[str, Any]) -> list[Any]:
+    artifacts = _source_artifacts(payload)
+    if artifacts:
+        return artifacts
+    source_artifacts = payload.get("source_artifacts")
+    if isinstance(source_artifacts, list):
+        return source_artifacts
+    source_binding = _object(payload.get("source_binding"))
+    if source_binding:
+        items = []
+        for name, value in source_binding.items():
+            if isinstance(value, dict):
+                item = {"type": name}
+                item.update(value)
+                items.append(item)
+        return items
+    source = _object(payload.get("source"))
+    if source:
+        return [{"type": key, "value": value} for key, value in source.items() if value is not None]
+    authority_evidence = payload.get("authority_evidence")
+    return authority_evidence if isinstance(authority_evidence, list) else []
+
+
+def _compliance_controls(payload: dict[str, Any]) -> Any:
+    for key in ("controls", "control_summary", "control_status_summary"):
+        value = payload.get(key)
+        if isinstance(value, (dict, list)):
+            return value
+    return {}
+
+
+def _compliance_record(entry: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    entry_type = str(entry.get("entry_type") or "")
+    source_binding = _object(payload.get("source_binding"))
+    source = _object(payload.get("source"))
+    compliance_export = _object(source_binding.get("compliance_export"))
+    eu_document = _object(source_binding.get("eu_ai_act_document"))
+    proof_pack = _object(source_binding.get("proof_pack"))
+    regulator_disclosure = _object(source_binding.get("regulator_disclosure"))
+    eu_data_plane = _object(source_binding.get("eu_data_plane"))
+    regions = _object(payload.get("regions"))
+    residency = _object(payload.get("residency"))
+    sovereignty = _object(payload.get("sovereignty"))
+    audit = _object(payload.get("audit"))
+    operation = _object(payload.get("operation"))
+    summary = _object(payload.get("summary"))
+    controls = _compliance_controls(payload)
+    source_artifacts = _compliance_source_artifacts(payload)
+    return {
+        "artifact_id": _first_text(payload.get("dossier_id"), payload.get("attestation_id"), content_hash(payload)),
+        "entry_id": entry.get("entry_id"),
+        "entry_type": entry_type,
+        "artifact_kind": COMPLIANCE_EVIDENCE_ARTIFACT_KINDS.get(entry_type, entry_type),
+        "artifact_hash": _first_text(payload.get("dossier_hash"), payload.get("attestation_hash"), content_hash(payload)),
+        "artifact_ref": _first_text(
+            payload.get("dossier_ref"), residency.get("data_plane_ref"), source.get("byoc_data_plane_ref"),
+            eu_data_plane.get("data_plane_ref"), payload.get("authority_ref"), eu_document.get("document_id"),
+            source.get("eu_ai_act_document_id"), payload.get("attestation_id"), payload.get("dossier_id"),
+        ),
+        "status": _first_text(summary.get("status"), payload.get("status"), payload.get("mode")),
+        "mode": payload.get("mode"),
+        "environment": payload.get("environment"),
+        "dossier_ref": payload.get("dossier_ref"),
+        "authority_ref": payload.get("authority_ref"),
+        "producer_ref": _first_text(payload.get("producer_ref"), operation.get("actor_ref")),
+        "document_id": _first_text(eu_document.get("document_id"), source.get("eu_ai_act_document_id")),
+        "pack_id": _first_text(compliance_export.get("pack_id"), proof_pack.get("pack_id")),
+        "disclosure_id": regulator_disclosure.get("disclosure_id"),
+        "data_plane_ref": _first_text(residency.get("data_plane_ref"), source.get("byoc_data_plane_ref"), eu_data_plane.get("data_plane_ref")),
+        "tenant_id": _first_text(residency.get("tenant_id"), source.get("byoc_tenant_id")),
+        "primary_region": regions.get("primary_region"),
+        "kms_key_region": sovereignty.get("kms_key_region"),
+        "audit_ref": _first_text(audit.get("audit_log_ref"), audit.get("access_log_ref"), audit.get("transfer_log_ref")),
+        "required_requirement_count": int(summary.get("required_requirement_count") or 0),
+        "covered_requirement_count": int(summary.get("covered_requirement_count") or 0),
+        "missing_requirement_count": int(summary.get("missing_requirement_count") or 0),
+        "authority_evidence_count": len(payload.get("authority_evidence") if isinstance(payload.get("authority_evidence"), list) else []),
+        "source_artifact_count": len(source_artifacts),
+        "control_count": len(controls) if isinstance(controls, (dict, list)) else 0,
+        "observed_at": _first_text(payload.get("generated_at"), payload.get("attested_at"), entry.get("timestamp")),
+        "source_artifacts": source_artifacts,
+        "source_binding": source_binding or source,
+        "controls": controls,
+        "summary": summary,
+    }
 
 def _decode_json_object(value: Any) -> dict[str, Any]:
     if not value:
@@ -2217,6 +2315,40 @@ class ControlPlane:
                 generated_at TEXT,
                 body_json TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS compliance_evidence (
+                artifact_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                entry_type TEXT NOT NULL,
+                artifact_kind TEXT NOT NULL,
+                artifact_hash TEXT NOT NULL,
+                artifact_ref TEXT,
+                status TEXT,
+                mode TEXT,
+                environment TEXT,
+                dossier_ref TEXT,
+                authority_ref TEXT,
+                producer_ref TEXT,
+                document_id TEXT,
+                pack_id TEXT,
+                disclosure_id TEXT,
+                data_plane_ref TEXT,
+                tenant_id TEXT,
+                primary_region TEXT,
+                kms_key_region TEXT,
+                audit_ref TEXT,
+                required_requirement_count INTEGER NOT NULL,
+                covered_requirement_count INTEGER NOT NULL,
+                missing_requirement_count INTEGER NOT NULL,
+                authority_evidence_count INTEGER NOT NULL,
+                source_artifact_count INTEGER NOT NULL,
+                control_count INTEGER NOT NULL,
+                observed_at TEXT,
+                source_artifacts_json TEXT NOT NULL,
+                source_binding_json TEXT NOT NULL,
+                controls_json TEXT NOT NULL,
+                summary_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS product_scope_decisions (
                 decision_id TEXT PRIMARY KEY,
                 entry_id TEXT,
@@ -2492,6 +2624,7 @@ class ControlPlane:
             "trust_network_evidence": 0,
             "provider_delivery_evidence": 0,
             "provider_operations_evidence": 0,
+            "compliance_evidence": 0,
             "eval_runs": 0,
             "gate_decisions": 0,
             "human_approvals": 0,
@@ -3727,6 +3860,59 @@ class ControlPlane:
                     ),
                 )
                 counts["policy_backend_evidence"] += 1
+
+            if entry.get("entry_type") in COMPLIANCE_EVIDENCE_ENTRY_TYPES:
+                record = _compliance_record(entry, payload if isinstance(payload, dict) else {})
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO compliance_evidence(
+                        artifact_id, entry_id, entry_type, artifact_kind, artifact_hash,
+                        artifact_ref, status, mode, environment, dossier_ref,
+                        authority_ref, producer_ref, document_id, pack_id, disclosure_id,
+                        data_plane_ref, tenant_id, primary_region, kms_key_region, audit_ref,
+                        required_requirement_count, covered_requirement_count,
+                        missing_requirement_count, authority_evidence_count,
+                        source_artifact_count, control_count, observed_at,
+                        source_artifacts_json, source_binding_json, controls_json,
+                        summary_json, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        record["artifact_id"],
+                        record["entry_id"],
+                        record["entry_type"],
+                        record["artifact_kind"],
+                        record["artifact_hash"],
+                        record["artifact_ref"],
+                        record["status"],
+                        record["mode"],
+                        record["environment"],
+                        record["dossier_ref"],
+                        record["authority_ref"],
+                        record["producer_ref"],
+                        record["document_id"],
+                        record["pack_id"],
+                        record["disclosure_id"],
+                        record["data_plane_ref"],
+                        record["tenant_id"],
+                        record["primary_region"],
+                        record["kms_key_region"],
+                        record["audit_ref"],
+                        record["required_requirement_count"],
+                        record["covered_requirement_count"],
+                        record["missing_requirement_count"],
+                        record["authority_evidence_count"],
+                        record["source_artifact_count"],
+                        record["control_count"],
+                        record["observed_at"],
+                        _json(record["source_artifacts"]),
+                        _json(record["source_binding"]),
+                        _json(record["controls"]),
+                        _json(record["summary"]),
+                        _json(payload),
+                    ),
+                )
+                counts["compliance_evidence"] += 1
 
             if entry.get("entry_type") == CONTRACT_ENTRY_TYPE:
                 contract = payload.get("contract", {})
@@ -5295,6 +5481,22 @@ class ControlPlane:
         latest_policy_backend_dict = dict(latest_policy_backend_evidence) if latest_policy_backend_evidence else None
         if latest_policy_backend_dict is not None:
             _bool_fields(latest_policy_backend_dict, "allowed")
+        latest_compliance_evidence = self.conn.execute(
+            """
+            SELECT artifact_id, entry_id, entry_type, artifact_kind,
+                   artifact_hash, artifact_ref, status, mode, environment,
+                   dossier_ref, authority_ref, producer_ref, document_id,
+                   pack_id, disclosure_id, data_plane_ref, tenant_id,
+                   primary_region, kms_key_region, audit_ref,
+                   required_requirement_count, covered_requirement_count,
+                   missing_requirement_count, authority_evidence_count,
+                   source_artifact_count, control_count, observed_at
+            FROM compliance_evidence
+            ORDER BY observed_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_compliance_dict = dict(latest_compliance_evidence) if latest_compliance_evidence else None
         latest_status = self.conn.execute(
             """
             SELECT receipt_id, provider, pack_id, contract_id, gate_outcome,
@@ -5794,6 +5996,7 @@ class ControlPlane:
             "latest_provider_delivery_evidence": latest_provider_delivery_dict,
             "latest_provider_operations_evidence": latest_provider_operations_dict,
             "latest_policy_backend_evidence": latest_policy_backend_dict,
+            "latest_compliance_evidence": latest_compliance_dict,
             "latest_promotion_status": latest_status_dict,
             "latest_runtime_attestation": latest_runtime_dict,
             "latest_policy_decision": latest_policy_decision_dict,
@@ -7224,6 +7427,7 @@ class ControlPlane:
             "trust_network_evidence": self.trust_network_evidence(limit),
             "provider_delivery_evidence": self.provider_delivery_evidence(limit),
             "provider_operations_evidence": self.provider_operations_evidence(limit),
+            "compliance_evidence": self.compliance_evidence(limit),
             "policy_backend_evidence": self.policy_backend_evidence(limit),
         }
 
@@ -7242,6 +7446,39 @@ class ControlPlane:
     def provider_operations_evidence(self, limit: int = 20) -> dict[str, Any]:
         return {"provider_operations_evidence": self.recent_provider_operations_evidence(limit)}
 
+    def recent_compliance_evidence(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT artifact_id, entry_id, entry_type, artifact_kind,
+                   artifact_hash, artifact_ref, status, mode, environment,
+                   dossier_ref, authority_ref, producer_ref, document_id,
+                   pack_id, disclosure_id, data_plane_ref, tenant_id,
+                   primary_region, kms_key_region, audit_ref,
+                   required_requirement_count, covered_requirement_count,
+                   missing_requirement_count, authority_evidence_count,
+                   source_artifact_count, control_count, observed_at,
+                   source_artifacts_json, source_binding_json, controls_json,
+                   summary_json, body_json
+            FROM compliance_evidence
+            ORDER BY observed_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["source_artifacts"] = _decode_json_array(item.pop("source_artifacts_json", None))
+            item["source_binding"] = _decode_json_object(item.pop("source_binding_json", None))
+            controls_json = item.pop("controls_json", None)
+            item["controls"] = _decode_json_array(controls_json) or _decode_json_object(controls_json)
+            item["summary"] = _decode_json_object(item.pop("summary_json", None))
+            item["body"] = _decode_json_object(item.pop("body_json", None))
+            items.append(item)
+        return items
+
+    def compliance_evidence(self, limit: int = 20) -> dict[str, Any]:
+        return {"compliance_evidence": self.recent_compliance_evidence(limit)}
     def recent_policy_backend_evidence(self, limit: int = 20) -> list[dict[str, Any]]:
         rows = self.conn.execute(
             """

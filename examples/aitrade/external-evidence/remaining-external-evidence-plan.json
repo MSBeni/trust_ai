@@ -1,22 +1,22 @@
 {
-  "generated_at": "2026-07-19T04:17:29Z",
+  "generated_at": "2026-07-19T15:27:47Z",
   "limitations": [
     "This plan assigns external authority evidence collection work; it does not satisfy any task by itself.",
     "A task is covered only after a matching evidence artifact is supplied to an external evidence manifest and verified.",
     "Freshness and issuer authority remain bounded by the supplied evidence artifact and manifest verification options."
   ],
-  "plan_id": "48f168b8fc8c40fa1a5492fd6460d8223fac78d2872c3fb98f6447a539662646",
+  "plan_id": "6689e9f1b8a57af64f1c385e719082c46d745450a8c910a385c28245aa766d91",
   "schema": "trustai.external-evidence-collection-plan/0.1",
   "source_manifest": {
-    "generated_at": "2026-07-19T04:17:15Z",
-    "manifest_hash": "43fb5be80e375e67938d1db30f2518024be018d2b2a6a5dd67c31de4d75d8c73",
-    "manifest_id": "602f80445320bdfc023754bd7af1edd0ef2a5f7cb4cd2024fbf9bd04c82928b0",
+    "generated_at": "2026-07-19T15:27:21Z",
+    "manifest_hash": "6e57344a7473c5ca321abb68363d348c57b461f3cecf42a510cf932033e8a467",
+    "manifest_id": "94ce0c2ef5dbb01ee2ae8debc11c843c2806c79898b4f079c92702990655c859",
     "manifest_ref": "production-external-evidence",
     "status": "partial"
   },
   "source_roadmap_audit": {
-    "audit_hash": "7c38aa888d724bf52c36ba8865b63a286f2046b13f2d903094f6c079fac535e6",
-    "audit_id": "1540dacaccc6d4c52ba012d3668f8b173a123f508ea55ed9d5dcaad923605ef9",
+    "audit_hash": "779449204d1aa777a55c2dde525d9426055e305a2b6f99f821845848b6f08e4f",
+    "audit_id": "0e7bcdceabfb97e02146d7328f349a004d8fb6982341b0d7e14c154873f47f51",
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "status_filter": "missing",

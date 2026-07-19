@@ -1,6 +1,6 @@
 # TrustAI External Evidence Manifest
 
-Manifest ID: `94ce0c2ef5dbb01ee2ae8debc11c843c2806c79898b4f079c92702990655c859`
+Manifest ID: `823b9a02444f05df02e7a5514182ba3832dfac7a40c15bbdb8a13621c407dd28`
 
 Status: partial
 
@@ -9,18 +9,18 @@ Status: partial
 - Required external requirements: 20
 - Covered requirements: 1
 - Required authority kinds: 70
-- Covered authority kinds: 3
-- Missing authority kinds: 67
-- Evidence items: 3
-- Evidence with issued_at: 3
-- Evidence with expires_at: 3
-- Evidence with freshness windows: 3
+- Covered authority kinds: 1
+- Missing authority kinds: 69
+- Evidence items: 1
+- Evidence with issued_at: 1
+- Evidence with expires_at: 1
+- Evidence with freshness windows: 1
 
 ## Required External Evidence
 
 | Requirement | Phase | Priority | Coverage | Accepted Authorities | Covered Authorities | Missing Authorities | Authority Evidence Needed |
 |---|---|---|---|---|---|---|---|
-| `oss-verifier-and-public-spec` | P0 | P0 | covered | `ci-run`, `provider-api`, `hosted-service` | `ci-run`, `provider-api`, `hosted-service` |  | Verifier release authority dossiers cover the local/reference public release authority checklist and retained provider workflow export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence. |
+| `oss-verifier-and-public-spec` | P0 | P0 | missing | `ci-run`, `provider-api`, `hosted-service` | `ci-run` | `provider-api`, `hosted-service` | Verifier release authority dossiers cover the local/reference public release authority checklist and retained provider workflow export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence. |
 | `self-serve-onboarding` | P2 | P1 | missing | `hosted-service`, `identity-provider` |  | `hosted-service`, `identity-provider` | Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence. |
 | `mcp-gateway` | P1 | P0 | missing | `ci-run`, `kms-hsm`, `provider-api`, `hosted-service` |  | `ci-run`, `kms-hsm`, `provider-api`, `hosted-service` | MCP proxy capture receipts cover retained raw proxy event export byte replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence. |
 | `shadow-replay-temporal-holdout` | P1 | P0 | missing | `kms-hsm`, `provider-api`, `identity-provider`, `standards-body` |  | `kms-hsm`, `provider-api`, `identity-provider`, `standards-body` | Traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence. |
@@ -46,8 +46,8 @@ Status: partial
 | Unit ID | Unit Ref | Requirement | Authority | Status | Title |
 |---|---|---|---|---|---|
 | `e5d2eb86fc1a22a4ca8fa6d150608ee18c7cc632e416491e780495135cf9d1ed` | `oss-verifier-and-public-spec:ci-run` | `oss-verifier-and-public-spec` | ci-run | covered | Open verifier, public specs, source distribution, and release workflow |
-| `ac8364a8724ad16a070fd2dea4fba6539859dc539695c9605babeb00cbdc6383` | `oss-verifier-and-public-spec:provider-api` | `oss-verifier-and-public-spec` | provider-api | covered | Open verifier, public specs, source distribution, and release workflow |
-| `466978af8ab034b01871214eab0240941581edb4cfe22965eb298df3c7847552` | `oss-verifier-and-public-spec:hosted-service` | `oss-verifier-and-public-spec` | hosted-service | covered | Open verifier, public specs, source distribution, and release workflow |
+| `ac8364a8724ad16a070fd2dea4fba6539859dc539695c9605babeb00cbdc6383` | `oss-verifier-and-public-spec:provider-api` | `oss-verifier-and-public-spec` | provider-api | missing | Open verifier, public specs, source distribution, and release workflow |
+| `466978af8ab034b01871214eab0240941581edb4cfe22965eb298df3c7847552` | `oss-verifier-and-public-spec:hosted-service` | `oss-verifier-and-public-spec` | hosted-service | missing | Open verifier, public specs, source distribution, and release workflow |
 | `b99727e2b8a71b61ea2303a0ebf484b85996c716e0729a296e3057cf63b396c6` | `self-serve-onboarding:hosted-service` | `self-serve-onboarding` | hosted-service | missing | Self-serve SDK and MCP gateway onboarding |
 | `048ce4ad141c77f48a321bc4f61b09d2b2a58ea8500164d40e192bb3c8405364` | `self-serve-onboarding:identity-provider` | `self-serve-onboarding` | identity-provider | missing | Self-serve SDK and MCP gateway onboarding |
 | `192e8c60958d436e54ccf727609f72edb9a581776a8d80f731eef32c1bd62725` | `mcp-gateway:ci-run` | `mcp-gateway` | ci-run | missing | MCP evidence gateway reference capture |
@@ -120,9 +120,7 @@ Status: partial
 
 | Requirement | Authority | Accepted Authorities | Artifact | Freshness Window | Description |
 |---|---|---|---|---|---|
-| `oss-verifier-and-public-spec` | ci-run | `ci-run`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json` | 2026-07-08T00:00:00Z to 2026-12-31T00:00:00Z | Snapshot of recorded verifier workflow run export |
-| `oss-verifier-and-public-spec` | provider-api | `ci-run`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/github-main-ref-source-snapshot.json` | 2026-07-12T00:00:00Z to 2026-12-31T00:00:00Z | GitHub remote main ref advertisement for pushed TrustAI checkpoint |
-| `oss-verifier-and-public-spec` | hosted-service | `ci-run`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/github-hosted-service-source-snapshot.json` | 2026-07-12T00:00:00Z to 2026-12-31T00:00:00Z | GitHub hosted git service remote advertisement for TrustAI verifier and spec repository |
+| `oss-verifier-and-public-spec` | ci-run | `ci-run`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/go-verifier-workflow-run.json` | 2026-07-08T00:00:00Z to 2026-12-31T00:00:00Z | Recorded Go verifier workflow export |
 
 ## Missing Requirements
 
