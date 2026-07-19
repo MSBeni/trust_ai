@@ -317,6 +317,18 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual(200, control_provider_operations_response.status)
                 self.assertEqual([], control_provider_operations_body["provider_operations_evidence"])
 
+                conn.request("GET", "/v0/policy-backend-evidence")
+                policy_backend_response = conn.getresponse()
+                policy_backend_body = json.loads(policy_backend_response.read().decode("utf-8"))
+                self.assertEqual(200, policy_backend_response.status)
+                self.assertEqual([], policy_backend_body["policy_backend_evidence"])
+
+                conn.request("GET", "/v0/control/policy-backend-evidence")
+                control_policy_backend_response = conn.getresponse()
+                control_policy_backend_body = json.loads(control_policy_backend_response.read().decode("utf-8"))
+                self.assertEqual(200, control_policy_backend_response.status)
+                self.assertEqual([], control_policy_backend_body["policy_backend_evidence"])
+
                 conn.request("GET", "/v0/roadmap-evidence")
                 roadmap_response = conn.getresponse()
                 roadmap_body = json.loads(roadmap_response.read().decode("utf-8"))

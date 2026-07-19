@@ -75,6 +75,13 @@ from trustai.provider_lifecycle_operation import PROVIDER_LIFECYCLE_OPERATION_EN
 from trustai.provider_operations_authority import PROVIDER_OPERATIONS_AUTHORITY_ENTRY_TYPE
 from trustai.provider_operations_service import PROVIDER_OPERATIONS_SERVICE_ENTRY_TYPE
 from trustai.provider_webhook import PROVIDER_WEBHOOK_ENTRY_TYPE
+from trustai.policy_backend_authority import POLICY_BACKEND_AUTHORITY_ENTRY_TYPE
+from trustai.policy_backend_enforcement import POLICY_BACKEND_ENFORCEMENT_ENTRY_TYPE
+from trustai.policy_backend_provider import POLICY_BACKEND_PROVIDER_ENTRY_TYPE
+from trustai.policy_backend_provider_bundle import POLICY_BACKEND_PROVIDER_BUNDLE_ENTRY_TYPE
+from trustai.policy_backend_service import POLICY_BACKEND_SERVICE_ENTRY_TYPE
+from trustai.policy_backend_service_bundle import POLICY_BACKEND_SERVICE_BUNDLE_ENTRY_TYPE
+from trustai.policy_backend_worker import POLICY_BACKEND_WORKER_ENTRY_TYPE
 from trustai.lifecycle import (
     append_demotion,
     append_incident,
@@ -1729,6 +1736,200 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual("authority:provider-approval/github", approval_authority["authority_ref"])
                 self.assertEqual("webhook:github/check-run", approval_authority["webhook_ref"])
                 self.assertEqual(evidence, roadmap["provider_operations_evidence"])
+            finally:
+                control.close()
+
+    def test_indexes_policy_backend_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            chain = EvidenceChain.load(tmp / "policy-backend-chain.json", tenant_id="policy-backend-test")
+            entries = [
+                (
+                    POLICY_BACKEND_ENFORCEMENT_ENTRY_TYPE,
+                    "policy-backend-enforcement-001",
+                    "policy-backend-enforcement",
+                    "2026-07-08T07:00:00Z",
+                    {
+                        "enforcement_id": "policy-backend-enforcement-001",
+                        "mode": "enforced",
+                        "environment": "aitrade-prod",
+                        "enforced_at": "2026-07-08T07:00:00Z",
+                        "backend": {"backend_ref": "backend:opa/prod", "engine": "opa", "response_status": 200},
+                        "credential": {"credential_ref": "credential:policy-backend/client"},
+                        "policy": {"policy_ref": "policy:trading-spend-cap"},
+                        "action": {"action_ref": "action:trade/order-123"},
+                        "decision": {"decision_ref": "decision:policy/local-123", "allowed": True, "outcome": "passed"},
+                        "backend_decision": {"decision_ref": "decision:opa/prod-123", "allowed": True, "outcome": "allowed", "response_status": 200},
+                        "policy_engine_receipt": {"receipt_id": "policy-engine-receipt-123", "policy_pack_id": "policy-pack:trading"},
+                        "source_artifacts": [{"path": "artifacts/policy-backend-enforcement.json"}],
+                        "control_summary": {"backend-allowed": "passed"},
+                    },
+                ),
+                (
+                    POLICY_BACKEND_SERVICE_ENTRY_TYPE,
+                    "policy-backend-service-001",
+                    "policy-backend-service",
+                    "2026-07-08T07:05:00Z",
+                    {
+                        "attestation_id": "policy-backend-service-001",
+                        "mode": "service-attested",
+                        "environment": "aitrade-prod",
+                        "attested_at": "2026-07-08T07:05:00Z",
+                        "source": {"source_artifacts": [{"path": "artifacts/policy-backend-service.json"}]},
+                        "enforcement": {"backend_ref": "backend:opa/prod", "action_ref": "action:trade/order-123"},
+                        "service": {"service_ref": "service:policy-backend/opa", "engine": "opa", "status": "ready"},
+                        "operation": {"status": "ready"},
+                        "audit_log": {"audit_log_ref": "audit:policy-backend/service"},
+                        "control_summary": {"service-ready": "passed"},
+                    },
+                ),
+                (
+                    POLICY_BACKEND_WORKER_ENTRY_TYPE,
+                    "policy-backend-worker-001",
+                    "policy-backend-worker",
+                    "2026-07-08T07:10:00Z",
+                    {
+                        "worker_operation_id": "policy-backend-worker-001",
+                        "mode": "worker-recorded",
+                        "environment": "aitrade-prod",
+                        "recorded_at": "2026-07-08T07:10:00Z",
+                        "service": {"service_ref": "service:policy-backend/opa"},
+                        "source_enforcement": {"backend_ref": "backend:opa/prod", "engine": "opa", "action_ref": "action:trade/order-123"},
+                        "worker": {"worker_ref": "worker:policy-backend/opa", "status": "completed"},
+                        "scheduler": {"run_ref": "run:policy-backend/worker/001"},
+                        "execution": {"status": "completed"},
+                        "observability": {"audit_log_ref": "audit:policy-backend/worker"},
+                        "backend_credential": {"credential_ref": "credential:policy-backend/worker"},
+                        "control_status_summary": {"worker-recorded": "passed"},
+                    },
+                ),
+                (
+                    POLICY_BACKEND_PROVIDER_ENTRY_TYPE,
+                    "policy-backend-provider-001",
+                    "policy-backend-provider-export",
+                    "2026-07-08T07:15:00Z",
+                    {
+                        "provider_receipt_id": "policy-backend-provider-001",
+                        "mode": "provider-exported",
+                        "environment": "aitrade-prod",
+                        "provider": {"provider_ref": "provider:github-actions", "status": "exported"},
+                        "worker_operation_id": "policy-backend-worker-001",
+                        "provider_export": {"provider_ref": "provider:github-actions", "export_ref": "export:policy-backend/provider/001", "status": "complete"},
+                        "provider_exchange": {"response_status": 200},
+                        "credential_ref": "credential:provider/policy-backend",
+                        "matched_audit_record": {"audit_log_ref": "audit:policy-backend/provider"},
+                        "controls_summary": {"provider-exported": "passed"},
+                    },
+                ),
+                (
+                    POLICY_BACKEND_PROVIDER_BUNDLE_ENTRY_TYPE,
+                    "policy-backend-provider-bundle-001",
+                    "policy-backend-provider-bundle",
+                    "2026-07-08T07:20:00Z",
+                    {
+                        "bundle_id": "policy-backend-provider-bundle-001",
+                        "mode": "review-bundle",
+                        "environment": "aitrade-prod",
+                        "generated_at": "2026-07-08T07:20:00Z",
+                        "reviewer_ref": "auditor:internal/model-risk",
+                        "bundle_ref": "bundle:policy-backend/provider/001",
+                        "source": {"source_artifacts": [{"path": "artifacts/policy-backend-provider-bundle.json"}]},
+                        "summary": {"status": "ready"},
+                        "control_summary": {"bundle-ready": "passed"},
+                    },
+                ),
+                (
+                    POLICY_BACKEND_SERVICE_BUNDLE_ENTRY_TYPE,
+                    "policy-backend-service-bundle-001",
+                    "policy-backend-service-bundle",
+                    "2026-07-08T07:25:00Z",
+                    {
+                        "bundle_id": "policy-backend-service-bundle-001",
+                        "mode": "service-review-bundle",
+                        "environment": "aitrade-prod",
+                        "generated_at": "2026-07-08T07:25:00Z",
+                        "reviewer_ref": "auditor:internal/model-risk",
+                        "bundle_ref": "bundle:policy-backend/service/001",
+                        "source": {"source_artifacts": [{"path": "artifacts/policy-backend-service-bundle.json"}]},
+                        "summary": {"status": "ready"},
+                        "control_summary": {"service-bundle-ready": "passed"},
+                    },
+                ),
+                (
+                    POLICY_BACKEND_AUTHORITY_ENTRY_TYPE,
+                    "policy-backend-authority-001",
+                    "policy-backend-authority",
+                    "2026-07-08T07:30:00Z",
+                    {
+                        "dossier_id": "policy-backend-authority-001",
+                        "mode": "authority-dossier",
+                        "environment": "aitrade-prod",
+                        "generated_at": "2026-07-08T07:30:00Z",
+                        "dossier_ref": "dossier:policy-backend/opa-prod",
+                        "authority_ref": "authority:policy-backend/opa-prod",
+                        "producer_ref": "oidc:trustai.example/policy-backend-authority-worker",
+                        "provider_bundle_binding": {"bundle_ref": "bundle:policy-backend/provider/001", "service_ref": "service:policy-backend/opa"},
+                        "summary": {"status": "ready"},
+                        "authority_evidence": [{"requirement_id": "policy-backend-provider-api", "authority_kind": "provider-api", "evidence_ref": "opa:decision-log/export", "evidence_hash": "sha256:policy-backend-provider-api"}],
+                        "control_summary": {"authority-ready": "passed"},
+                    },
+                ),
+            ]
+
+            for entry_type, _artifact_id, _artifact_kind, timestamp, payload in entries:
+                chain.append(entry_type, payload, timestamp=timestamp)
+            chain.save()
+
+            control = ControlPlane(tmp / "control.sqlite")
+            try:
+                indexed = control.index_chain(chain)
+                summary = control.summary()
+                evidence = control.policy_backend_evidence()
+                runtime = control.runtime_evidence()
+                roadmap = control.roadmap_evidence()
+
+                self.assertEqual(len(entries), indexed["policy_backend_evidence"])
+                self.assertEqual(len(entries), summary["counts"]["policy_backend_evidence"])
+                self.assertEqual("policy-backend-authority-001", summary["latest_policy_backend_evidence"]["artifact_id"])
+                self.assertEqual("policy-backend-authority", summary["latest_policy_backend_evidence"]["artifact_kind"])
+
+                rows = evidence["policy_backend_evidence"]
+                self.assertEqual(len(entries), len(rows))
+                self.assertEqual("policy-backend-authority-001", rows[0]["artifact_id"])
+                self.assertEqual("policy-backend-enforcement-001", rows[-1]["artifact_id"])
+                self.assertEqual({kind for _entry_type, _artifact_id, kind, _timestamp, _payload in entries}, {row["artifact_kind"] for row in rows})
+
+                enforcement = next(row for row in rows if row["artifact_id"] == "policy-backend-enforcement-001")
+                self.assertEqual("backend:opa/prod", enforcement["backend_ref"])
+                self.assertEqual("opa", enforcement["engine"])
+                self.assertEqual("policy:trading-spend-cap", enforcement["policy_ref"])
+                self.assertEqual("action:trade/order-123", enforcement["action_ref"])
+                self.assertEqual("decision:opa/prod-123", enforcement["decision_ref"])
+                self.assertEqual("credential:policy-backend/client", enforcement["credential_ref"])
+                self.assertEqual(200, enforcement["response_status"])
+                self.assertIs(enforcement["allowed"], True)
+                self.assertEqual(1, enforcement["source_artifact_count"])
+                self.assertEqual(1, enforcement["control_count"])
+
+                service = next(row for row in rows if row["artifact_id"] == "policy-backend-service-001")
+                self.assertEqual("service:policy-backend/opa", service["service_ref"])
+                self.assertEqual("audit:policy-backend/service", service["audit_ref"])
+
+                worker = next(row for row in rows if row["artifact_id"] == "policy-backend-worker-001")
+                self.assertEqual("worker:policy-backend/opa", worker["worker_ref"])
+                self.assertEqual("credential:policy-backend/worker", worker["credential_ref"])
+
+                provider = next(row for row in rows if row["artifact_id"] == "policy-backend-provider-001")
+                self.assertEqual("provider:github-actions", provider["provider_ref"])
+                self.assertEqual("export:policy-backend/provider/001", provider["artifact_ref"])
+                self.assertEqual("credential:provider/policy-backend", provider["credential_ref"])
+
+                authority = rows[0]
+                self.assertEqual("dossier:policy-backend/opa-prod", authority["artifact_ref"])
+                self.assertEqual("authority:policy-backend/opa-prod", authority["authority_ref"])
+                self.assertEqual(1, authority["source_artifact_count"])
+                self.assertEqual(evidence, roadmap["policy_backend_evidence"])
+                self.assertEqual(rows, runtime["policy_backend_evidence"])
             finally:
                 control.close()
 

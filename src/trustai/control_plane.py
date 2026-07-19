@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 import sqlite3
@@ -69,6 +69,13 @@ from .own_compliance import OWN_COMPLIANCE_ENTRY_TYPE, REQUIRED_CERTIFICATION_KI
 from .procurement_clause import PROCUREMENT_CLAUSE_ENTRY_TYPE
 from .procurement_integration import PROCUREMENT_INTEGRATION_ENTRY_TYPE
 from .policy import POLICY_DECISION_ENTRY_TYPE
+from .policy_backend_authority import POLICY_BACKEND_AUTHORITY_ENTRY_TYPE
+from .policy_backend_enforcement import POLICY_BACKEND_ENFORCEMENT_ENTRY_TYPE
+from .policy_backend_provider import POLICY_BACKEND_PROVIDER_ENTRY_TYPE
+from .policy_backend_provider_bundle import POLICY_BACKEND_PROVIDER_BUNDLE_ENTRY_TYPE
+from .policy_backend_service import POLICY_BACKEND_SERVICE_ENTRY_TYPE
+from .policy_backend_service_bundle import POLICY_BACKEND_SERVICE_BUNDLE_ENTRY_TYPE
+from .policy_backend_worker import POLICY_BACKEND_WORKER_ENTRY_TYPE
 from .policy_engine import POLICY_ENGINE_ENTRY_TYPE
 from .proofpack import PROOF_PACK_SPEC_VERSION
 from .reliability_report import RELIABILITY_REPORT_ENTRY_TYPE
@@ -145,6 +152,7 @@ INDEX_TABLES = (
     "runtime_attestations",
     "policy_decisions",
     "policy_engine_receipts",
+    "policy_backend_evidence",
     "incidents",
     "roadmap_audits",
     "external_evidence_collection_runs",
@@ -279,6 +287,26 @@ PROVIDER_OPERATIONS_ARTIFACT_KINDS = {
     PROVIDER_AUDIT_WORKER_ENTRY_TYPE: "provider-audit-worker",
     PROVIDER_CREDENTIAL_CUSTODY_ENTRY_TYPE: "provider-credential-custody",
     PROVIDER_APPROVAL_AUTHORITY_ENTRY_TYPE: "provider-approval-authority",
+}
+
+POLICY_BACKEND_ENTRY_TYPES = {
+    POLICY_BACKEND_ENFORCEMENT_ENTRY_TYPE,
+    POLICY_BACKEND_SERVICE_ENTRY_TYPE,
+    POLICY_BACKEND_WORKER_ENTRY_TYPE,
+    POLICY_BACKEND_PROVIDER_ENTRY_TYPE,
+    POLICY_BACKEND_PROVIDER_BUNDLE_ENTRY_TYPE,
+    POLICY_BACKEND_AUTHORITY_ENTRY_TYPE,
+    POLICY_BACKEND_SERVICE_BUNDLE_ENTRY_TYPE,
+}
+
+POLICY_BACKEND_ARTIFACT_KINDS = {
+    POLICY_BACKEND_ENFORCEMENT_ENTRY_TYPE: "policy-backend-enforcement",
+    POLICY_BACKEND_SERVICE_ENTRY_TYPE: "policy-backend-service",
+    POLICY_BACKEND_WORKER_ENTRY_TYPE: "policy-backend-worker",
+    POLICY_BACKEND_PROVIDER_ENTRY_TYPE: "policy-backend-provider-export",
+    POLICY_BACKEND_PROVIDER_BUNDLE_ENTRY_TYPE: "policy-backend-provider-bundle",
+    POLICY_BACKEND_AUTHORITY_ENTRY_TYPE: "policy-backend-authority",
+    POLICY_BACKEND_SERVICE_BUNDLE_ENTRY_TYPE: "policy-backend-service-bundle",
 }
 
 
@@ -876,6 +904,108 @@ def _provider_operations_record(entry: dict[str, Any], payload: dict[str, Any]) 
         "observed_at": _first_text(payload.get("installed_at"), payload.get("attested_at"), payload.get("recorded_at"), payload.get("received_at"), payload.get("correlated_at"), payload.get("issued_at"), payload.get("generated_at"), entry.get("timestamp")),
         "source_artifacts": _provider_operations_source_artifacts(payload),
         "controls": _provider_operations_controls(payload),
+    }
+
+
+def _policy_backend_source_artifacts(payload: dict[str, Any]) -> list[Any]:
+    artifacts = _source_artifacts(payload)
+    if artifacts:
+        return artifacts
+    for key in (
+        "source", "sources", "source_enforcement", "enforcement", "service", "worker",
+        "provider_exports", "provider_export", "provider_bundle_binding", "source_binding",
+    ):
+        source = _object(payload.get(key))
+        for field in ("source_artifacts", "source_refs", "source_receipts", "artifact_refs"):
+            value = source.get(field)
+            if isinstance(value, list):
+                return value
+    authority_evidence = payload.get("authority_evidence")
+    return authority_evidence if isinstance(authority_evidence, list) else []
+
+
+def _policy_backend_controls(payload: dict[str, Any]) -> Any:
+    for key in ("controls", "control_summary", "controls_summary", "control_status_summary"):
+        value = payload.get(key)
+        if isinstance(value, (dict, list)):
+            return value
+    return {}
+
+
+def _policy_backend_control_count(payload: dict[str, Any]) -> int:
+    controls = _policy_backend_controls(payload)
+    return len(controls) if isinstance(controls, (dict, list)) else 0
+
+
+def _policy_backend_source_artifact_count(payload: dict[str, Any]) -> int:
+    explicit_count = _first_int(payload.get("source_artifact_count"))
+    return explicit_count if explicit_count is not None else len(_policy_backend_source_artifacts(payload))
+
+
+def _policy_backend_record(entry: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    entry_type = str(entry.get("entry_type") or "")
+    names = (
+        "backend", "credential", "backend_credential", "policy", "action", "proof_pack",
+        "decision", "backend_decision", "policy_export", "policy_engine_receipt", "source",
+        "enforcement", "source_enforcement", "service", "security", "operation", "audit_log",
+        "worker", "scheduler", "execution", "observability", "provider_exports", "provider",
+        "provider_export", "provider_exchange", "matched_scheduler_record", "matched_queue_record",
+        "matched_lease_record", "matched_backend_record", "matched_decision_log_record",
+        "matched_audit_record", "provider_bundle_binding", "source_binding", "summary",
+    )
+    o = {name: _object(payload.get(name)) for name in names}
+    artifact_id = _first_text(
+        payload.get("enforcement_id"),
+        payload.get("attestation_id"),
+        payload.get("provider_receipt_id"),
+        payload.get("worker_operation_id"),
+        payload.get("bundle_id"),
+        payload.get("dossier_id"),
+        content_hash(payload),
+    )
+    return {
+        "artifact_id": artifact_id,
+        "entry_id": entry.get("entry_id"),
+        "entry_type": entry_type,
+        "artifact_kind": POLICY_BACKEND_ARTIFACT_KINDS.get(entry_type, entry_type),
+        "artifact_hash": content_hash(payload),
+        "artifact_ref": _first_text(
+            payload.get("dossier_ref"), payload.get("authority_ref"), payload.get("bundle_ref"),
+            o["backend"].get("backend_ref"), o["service"].get("service_ref"),
+            o["worker"].get("worker_ref"), o["provider_export"].get("export_ref"),
+            o["provider_export"].get("provider_export_ref"), o["provider"].get("provider_ref"),
+            o["policy"].get("policy_ref"), o["policy"].get("policy_id"),
+            o["action"].get("action_ref"), o["action"].get("action_id"), artifact_id,
+        ),
+        "status": _first_text(
+            o["summary"].get("status"), o["backend_decision"].get("status"),
+            o["backend_decision"].get("outcome"), o["decision"].get("outcome"),
+            o["service"].get("status"), o["worker"].get("status"),
+            o["execution"].get("status"), o["operation"].get("status"),
+            o["provider_export"].get("status"), o["provider"].get("status"),
+            o["matched_backend_record"].get("status"), payload.get("mode"),
+        ),
+        "mode": _first_text(payload.get("mode"), o["backend"].get("mode"), o["service"].get("mode")),
+        "environment": _first_text(payload.get("environment"), o["backend"].get("environment"), o["service"].get("environment"), o["worker"].get("environment")),
+        "backend_ref": _first_text(o["backend"].get("backend_ref"), o["enforcement"].get("backend_ref"), o["source_enforcement"].get("backend_ref"), o["matched_backend_record"].get("backend_ref")),
+        "engine": _first_text(o["backend"].get("engine"), o["backend"].get("engine_name"), o["service"].get("engine"), o["source_enforcement"].get("engine"), o["policy_engine_receipt"].get("engine_name")),
+        "policy_ref": _first_text(o["policy"].get("policy_ref"), o["policy"].get("policy_id"), o["policy_export"].get("policy_ref"), o["policy_export"].get("policy_pack_id"), o["policy_engine_receipt"].get("policy_pack_id")),
+        "action_ref": _first_text(o["action"].get("action_ref"), o["action"].get("action_id"), o["source_enforcement"].get("action_ref"), o["source_enforcement"].get("action_id")),
+        "decision_ref": _first_text(o["backend_decision"].get("decision_ref"), o["backend_decision"].get("decision_id"), o["decision"].get("decision_ref"), o["decision"].get("decision_id"), o["policy_engine_receipt"].get("receipt_id")),
+        "service_ref": _first_text(o["service"].get("service_ref"), o["source"].get("service_ref"), o["provider_bundle_binding"].get("service_ref")),
+        "worker_ref": _first_text(o["worker"].get("worker_ref"), o["scheduler"].get("worker_ref"), payload.get("worker_operation_id")),
+        "provider_ref": _first_text(o["provider"].get("provider_ref"), o["provider_export"].get("provider_ref"), o["provider_exports"].get("provider_ref"), o["provider_exchange"].get("provider_ref")),
+        "bundle_ref": _first_text(payload.get("bundle_ref"), o["provider_bundle_binding"].get("bundle_ref"), o["provider_bundle_binding"].get("bundle_id")),
+        "authority_ref": _first_text(payload.get("authority_ref"), payload.get("producer_ref"), o["source_binding"].get("authority_ref")),
+        "credential_ref": _first_text(payload.get("credential_ref"), o["credential"].get("credential_ref"), o["credential"].get("ref"), o["credential"].get("subject_ref"), o["backend_credential"].get("credential_ref"), o["backend_credential"].get("ref")),
+        "audit_ref": _first_text(o["audit_log"].get("audit_log_ref"), o["audit_log"].get("log_ref"), o["observability"].get("audit_log_ref"), o["matched_audit_record"].get("audit_log_ref")),
+        "response_status": _first_int(o["backend_decision"].get("response_status"), o["backend"].get("response_status"), o["provider_exchange"].get("response_status")),
+        "allowed": _first_bool(o["backend_decision"].get("allowed"), o["decision"].get("allowed")),
+        "source_artifact_count": _policy_backend_source_artifact_count(payload),
+        "control_count": _policy_backend_control_count(payload),
+        "observed_at": _first_text(payload.get("enforced_at"), payload.get("attested_at"), payload.get("recorded_at"), payload.get("generated_at"), entry.get("timestamp")),
+        "source_artifacts": _policy_backend_source_artifacts(payload),
+        "controls": _policy_backend_controls(payload),
     }
 
 
@@ -1759,6 +1889,37 @@ class ControlPlane:
                 controls_json TEXT NOT NULL,
                 body_json TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS policy_backend_evidence (
+                artifact_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                entry_type TEXT NOT NULL,
+                artifact_kind TEXT NOT NULL,
+                artifact_hash TEXT NOT NULL,
+                artifact_ref TEXT,
+                status TEXT,
+                mode TEXT,
+                environment TEXT,
+                backend_ref TEXT,
+                engine TEXT,
+                policy_ref TEXT,
+                action_ref TEXT,
+                decision_ref TEXT,
+                service_ref TEXT,
+                worker_ref TEXT,
+                provider_ref TEXT,
+                bundle_ref TEXT,
+                authority_ref TEXT,
+                credential_ref TEXT,
+                audit_ref TEXT,
+                response_status INTEGER,
+                allowed INTEGER,
+                source_artifact_count INTEGER NOT NULL,
+                control_count INTEGER NOT NULL,
+                observed_at TEXT,
+                source_artifacts_json TEXT NOT NULL,
+                controls_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS eval_runs (
                 entry_id TEXT PRIMARY KEY,
                 contract_id TEXT,
@@ -2341,6 +2502,7 @@ class ControlPlane:
             "runtime_attestations": 0,
             "policy_decisions": 0,
             "policy_engine_receipts": 0,
+            "policy_backend_evidence": 0,
             "incidents": 0,
             "roadmap_audits": 0,
             "external_evidence_collection_runs": 0,
@@ -3518,6 +3680,53 @@ class ControlPlane:
                     ),
                 )
                 counts["provider_operations_evidence"] += 1
+
+            if entry.get("entry_type") in POLICY_BACKEND_ENTRY_TYPES:
+                record = _policy_backend_record(entry, payload if isinstance(payload, dict) else {})
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO policy_backend_evidence(
+                        artifact_id, entry_id, entry_type, artifact_kind, artifact_hash,
+                        artifact_ref, status, mode, environment, backend_ref, engine,
+                        policy_ref, action_ref, decision_ref, service_ref, worker_ref,
+                        provider_ref, bundle_ref, authority_ref, credential_ref, audit_ref,
+                        response_status, allowed, source_artifact_count, control_count,
+                        observed_at, source_artifacts_json, controls_json, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        record["artifact_id"],
+                        record["entry_id"],
+                        record["entry_type"],
+                        record["artifact_kind"],
+                        record["artifact_hash"],
+                        record["artifact_ref"],
+                        record["status"],
+                        record["mode"],
+                        record["environment"],
+                        record["backend_ref"],
+                        record["engine"],
+                        record["policy_ref"],
+                        record["action_ref"],
+                        record["decision_ref"],
+                        record["service_ref"],
+                        record["worker_ref"],
+                        record["provider_ref"],
+                        record["bundle_ref"],
+                        record["authority_ref"],
+                        record["credential_ref"],
+                        record["audit_ref"],
+                        record["response_status"],
+                        None if record["allowed"] is None else (1 if record["allowed"] else 0),
+                        record["source_artifact_count"],
+                        record["control_count"],
+                        record["observed_at"],
+                        _json(record["source_artifacts"]),
+                        _json(record["controls"]),
+                        _json(payload),
+                    ),
+                )
+                counts["policy_backend_evidence"] += 1
 
             if entry.get("entry_type") == CONTRACT_ENTRY_TYPE:
                 contract = payload.get("contract", {})
@@ -5070,6 +5279,22 @@ class ControlPlane:
             """
         ).fetchone()
         latest_provider_operations_dict = dict(latest_provider_operations_evidence) if latest_provider_operations_evidence else None
+        latest_policy_backend_evidence = self.conn.execute(
+            """
+            SELECT artifact_id, entry_id, entry_type, artifact_kind,
+                   artifact_hash, artifact_ref, status, mode, environment,
+                   backend_ref, engine, policy_ref, action_ref, decision_ref,
+                   service_ref, worker_ref, provider_ref, bundle_ref, authority_ref,
+                   credential_ref, audit_ref, response_status, allowed,
+                   source_artifact_count, control_count, observed_at
+            FROM policy_backend_evidence
+            ORDER BY observed_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        latest_policy_backend_dict = dict(latest_policy_backend_evidence) if latest_policy_backend_evidence else None
+        if latest_policy_backend_dict is not None:
+            _bool_fields(latest_policy_backend_dict, "allowed")
         latest_status = self.conn.execute(
             """
             SELECT receipt_id, provider, pack_id, contract_id, gate_outcome,
@@ -5568,6 +5793,7 @@ class ControlPlane:
             "latest_trust_network_evidence": dict(latest_trust_network_evidence) if latest_trust_network_evidence else None,
             "latest_provider_delivery_evidence": latest_provider_delivery_dict,
             "latest_provider_operations_evidence": latest_provider_operations_dict,
+            "latest_policy_backend_evidence": latest_policy_backend_dict,
             "latest_promotion_status": latest_status_dict,
             "latest_runtime_attestation": latest_runtime_dict,
             "latest_policy_decision": latest_policy_decision_dict,
@@ -6998,6 +7224,7 @@ class ControlPlane:
             "trust_network_evidence": self.trust_network_evidence(limit),
             "provider_delivery_evidence": self.provider_delivery_evidence(limit),
             "provider_operations_evidence": self.provider_operations_evidence(limit),
+            "policy_backend_evidence": self.policy_backend_evidence(limit),
         }
 
     def standards_auditor_evidence(self, limit: int = 20) -> dict[str, Any]:
@@ -7014,6 +7241,36 @@ class ControlPlane:
 
     def provider_operations_evidence(self, limit: int = 20) -> dict[str, Any]:
         return {"provider_operations_evidence": self.recent_provider_operations_evidence(limit)}
+
+    def recent_policy_backend_evidence(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT artifact_id, entry_id, entry_type, artifact_kind,
+                   artifact_hash, artifact_ref, status, mode, environment,
+                   backend_ref, engine, policy_ref, action_ref, decision_ref,
+                   service_ref, worker_ref, provider_ref, bundle_ref, authority_ref,
+                   credential_ref, audit_ref, response_status, allowed,
+                   source_artifact_count, control_count, observed_at,
+                   source_artifacts_json, controls_json, body_json
+            FROM policy_backend_evidence
+            ORDER BY observed_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            _bool_fields(item, "allowed")
+            item["source_artifacts"] = _decode_json_array(item.pop("source_artifacts_json", None))
+            controls_json = item.pop("controls_json", None)
+            item["controls"] = _decode_json_array(controls_json) or _decode_json_object(controls_json)
+            item["body"] = _decode_json_object(item.pop("body_json", None))
+            items.append(item)
+        return items
+
+    def policy_backend_evidence(self, limit: int = 20) -> dict[str, Any]:
+        return {"policy_backend_evidence": self.recent_policy_backend_evidence(limit)}
 
     def insurer_evidence(self, limit: int = 20) -> dict[str, Any]:
         return {
@@ -7445,6 +7702,7 @@ class ControlPlane:
             "runtime_attestations": self.recent_runtime_attestations(limit),
             "policy_decisions": self.recent_policy_decisions(limit),
             "policy_engine_receipts": self.recent_policy_engine_receipts(limit),
+            "policy_backend_evidence": self.recent_policy_backend_evidence(limit),
             "incidents": self.recent_incidents(limit),
         }
 
