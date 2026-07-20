@@ -100,7 +100,7 @@ python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts
 - `GET /v0/multi-agent-evidence` or `GET /v0/control/multi-agent-evidence`;
 - `GET /v0/byoc-evidence` or `GET /v0/control/byoc-evidence`;
 - `GET /v0/identity-provider-evidence` or `GET /v0/control/identity-provider-evidence`;
-- `GET /v0/roadmap-evidence`;
+- `GET /v0/roadmap-evidence` or `GET /v0/control/roadmap-evidence`;
 - `GET /v0/phase-scoreboards` or `GET /v0/control/phase-scoreboards`;
 - `GET /v0/design-partner-dossiers` or `GET /v0/control/design-partner-dossiers`;
 - `GET /v0/own-compliance-dossiers` or `GET /v0/control/own-compliance-dossiers`;
@@ -108,9 +108,9 @@ python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts
 - `GET /v0/vertical-packs` or `GET /v0/control/vertical-packs`;
 - `GET /v0/reliability-reports` or `GET /v0/control/reliability-reports`;
 - `GET /v0/readiness` or `GET /v0/control/readiness`;
-- `GET /v0/external-evidence`;
+- `GET /v0/external-evidence` or `GET /v0/control/external-evidence`;
 - `GET /v0/external-authority-gaps` or `GET /v0/control/external-authority-gaps`, with optional `authority_kind=...`, `requirement_id=...`, and `limit=...` filters;
-- `GET /v0/authority-dossiers`.
+- `GET /v0/authority-dossiers` or `GET /v0/control/authority-dossiers`.
 
 The contract evidence endpoint returns one contract-scoped review surface with
 counts and recent rows for chain entries, eval runs, gate decisions, proof packs,

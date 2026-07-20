@@ -359,7 +359,7 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             finally:
                 control.close()
             return
-        if parsed.path == "/v0/roadmap-evidence":
+        if parsed.path in ("/v0/roadmap-evidence", "/v0/control/roadmap-evidence"):
             control = self._control()
             try:
                 self._json_response(200, control.roadmap_evidence())
@@ -415,7 +415,7 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             finally:
                 control.close()
             return
-        if parsed.path == "/v0/external-evidence":
+        if parsed.path in ("/v0/external-evidence", "/v0/control/external-evidence"):
             control = self._control()
             try:
                 self._json_response(200, {"external_evidence_manifests": control.recent_external_evidence_manifests()})
@@ -445,7 +445,7 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             finally:
                 control.close()
             return
-        if parsed.path == "/v0/authority-dossiers":
+        if parsed.path in ("/v0/authority-dossiers", "/v0/control/authority-dossiers"):
             control = self._control()
             try:
                 self._json_response(200, {"authority_dossiers": control.recent_authority_dossiers()})

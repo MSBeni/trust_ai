@@ -497,6 +497,13 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual([], roadmap_body["byoc_evidence"]["byoc_operator_attestations"])
                 self.assertEqual([], roadmap_body["identity_provider_evidence"]["vendor_identity_receipts"])
 
+                conn.request("GET", "/v0/control/roadmap-evidence")
+                control_roadmap_response = conn.getresponse()
+                control_roadmap_body = json.loads(control_roadmap_response.read().decode("utf-8"))
+                self.assertEqual(200, control_roadmap_response.status)
+                self.assertEqual([], control_roadmap_body["roadmap_audits"])
+                self.assertEqual([], control_roadmap_body["external_evidence_manifests"])
+
                 conn.request("GET", "/v0/phase-scoreboards")
                 phase_scoreboards_response = conn.getresponse()
                 phase_scoreboards_body = json.loads(phase_scoreboards_response.read().decode("utf-8"))
@@ -567,6 +574,12 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual(200, external_evidence_response.status)
                 self.assertEqual([], external_evidence_body["external_evidence_manifests"])
 
+                conn.request("GET", "/v0/control/external-evidence")
+                control_external_evidence_response = conn.getresponse()
+                control_external_evidence_body = json.loads(control_external_evidence_response.read().decode("utf-8"))
+                self.assertEqual(200, control_external_evidence_response.status)
+                self.assertEqual([], control_external_evidence_body["external_evidence_manifests"])
+
                 conn.request("GET", "/v0/external-authority-gaps?authority_kind=provider-api&limit=2")
                 authority_gaps_response = conn.getresponse()
                 authority_gaps_body = json.loads(authority_gaps_response.read().decode("utf-8"))
@@ -585,6 +598,12 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 authority_body = json.loads(authority_response.read().decode("utf-8"))
                 self.assertEqual(200, authority_response.status)
                 self.assertEqual([], authority_body["authority_dossiers"])
+
+                conn.request("GET", "/v0/control/authority-dossiers")
+                control_authority_response = conn.getresponse()
+                control_authority_body = json.loads(control_authority_response.read().decode("utf-8"))
+                self.assertEqual(200, control_authority_response.status)
+                self.assertEqual([], control_authority_body["authority_dossiers"])
             finally:
                 conn.close()
                 server.shutdown()
