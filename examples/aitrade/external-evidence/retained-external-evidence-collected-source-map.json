@@ -14,8 +14,6 @@
       "issued_at": "2026-07-08T00:00:00Z",
       "issuer": "GitHub Actions",
       "owner_hint": "release engineering",
-      "phase": "P0",
-      "priority": "P0",
       "requirement_id": "oss-verifier-and-public-spec",
       "retrieval_method": "file-copy",
       "snapshot_out": "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json",
@@ -47,8 +45,6 @@
       "issued_at": "2026-07-12T00:00:00Z",
       "issuer": "GitHub Git",
       "owner_hint": "integration/platform owner",
-      "phase": "P0",
-      "priority": "P0",
       "requirement_id": "oss-verifier-and-public-spec",
       "retrieval_method": "git-ls-remote",
       "snapshot_out": "examples/aitrade/external-evidence/github-main-ref-source-snapshot.json",
@@ -79,8 +75,6 @@
       "issued_at": "2026-07-12T00:00:00Z",
       "issuer": "GitHub Git",
       "owner_hint": "service owner",
-      "phase": "P0",
-      "priority": "P0",
       "requirement_id": "oss-verifier-and-public-spec",
       "retrieval_method": "git-ls-remote",
       "snapshot_out": "examples/aitrade/external-evidence/github-hosted-service-source-snapshot.json",
@@ -99,21 +93,21 @@
       "unit_ref": "oss-verifier-and-public-spec:hosted-service"
     }
   ],
-  "generated_at": "2026-07-12T01:26:10Z",
+  "generated_at": "2026-07-20T14:59:53Z",
   "limitations": [
     "This source map is an operator collection template; it does not prove external authority coverage until external-evidence-collect-batch creates verified source snapshots and intake receipts.",
     "Placeholder source URIs, issuer fields, or freshness windows must be replaced with real authority-owned values before production use.",
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "adfa296ad7671efa8ee24ba28a9286f41fdf2f6a249593b4e30feaaa0dee9605",
+  "source_map_id": "b77f8747d87d9010e70ff805210050ee80fe0ac173661076c7b3427da28e1bc6",
   "source_plan": {
-    "plan_hash": "6f11d51c451351d5d577ba3c31abc2d219f3abaf7c7d3d90cbf626eba0e3ea07",
-    "plan_id": "6490381d5f390bf1d9d6177c1a909227ef94a5d8a53dd98cb67a9c1aa4bb1e8a",
+    "plan_hash": "91b21d2af154e32b2c97888ba8fcb2070bc9cf8d1fa449926d4e007326bfa399",
+    "plan_id": "d2637d5c122f07f9feca9c9dc21ff427afdec2121e98fc467f07deb32b877f2d",
     "source_manifest": {
-      "generated_at": "2026-07-20T13:54:29Z",
-      "manifest_hash": "3511ce1d6b36e4654be0013929bd95719b9b678380ed250c418818c061e03bd3",
-      "manifest_id": "53ae56134445694b62afba6467f6c2b0ee9aefe79d113fa208322988519aa16f",
+      "generated_at": "2026-07-20T14:53:36Z",
+      "manifest_hash": "78e639f7ad7e4d335375dba64b8c604513ccc5ef9a11853461f1b2db9a799307",
+      "manifest_id": "ac856fbf83649c87ff36b059d5111ab48dfe9b1d8563294b905173381f506d41",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },

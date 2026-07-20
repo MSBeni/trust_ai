@@ -349,6 +349,41 @@ it does not close an authority gap. A gap is closed only after a matching
 external authority artifact, snapshot, and intake receipt are verified and a new
 manifest is rebuilt.
 
+## External Evidence Work Package
+
+`external-evidence-work-package` emits
+`trustai.external-evidence-work-package/0.1` from a verified gap report and the
+same manifest, collection plan, source map, and roadmap audit used to produce
+that report. It is an owner-ready assignment artifact: it groups remaining gap
+tasks by owner hint, authority kind, phase, priority, or requirement ID and
+includes the exact task refs, snapshot/intake paths, acceptance criteria,
+source-map metadata, next actions, and replayable `external-evidence-collect`
+and intake verification commands for each task.
+
+Required fields:
+
+- `work_package_id`: canonical hash of the work-package body without
+  `work_package_id`.
+- `group_by`: one of `owner_hint`, `authority_kind`, `phase`, `priority`, or
+  `requirement_id`.
+- `command_context`: CLI path context used to render task-level collect,
+  intake verification, batch collection, and manifest rebuild commands.
+- `sources`: IDs and canonical hashes for the source gap report, manifest,
+  collection plan, source map, and roadmap audit.
+- `summary`: package count, task count, missing/covered task counts,
+  placeholder/live source URI counts, and task counts by owner, authority kind,
+  phase, priority, requirement, and package.
+- `packages`: grouped task packages. Each package records a deterministic
+  `package_id`, grouped task counts, authority/requirement coverage lists,
+  package-level batch/rebuild commands, and task-level collection commands.
+
+`external-evidence-work-package-verify` recomputes the source gap-report
+verification options, verifies every source artifact, rebuilds the work package
+with the recorded grouping and command context, recomputes every package hash
+and the top-level `work_package_id`, and rejects edited owner assignments,
+commands, paths, counts, or task bodies. The artifact remains a work assignment,
+not evidence: authority gaps close only after real source snapshots, intake
+receipts, a rebuilt manifest, and an evidence-chain entry verify successfully.
 ## Roadmap Evidence Report
 
 `roadmap-evidence-report` emits `trustai.roadmap-evidence-report/0.1`, a

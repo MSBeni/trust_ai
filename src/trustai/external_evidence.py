@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import binascii
 import json
+import shlex
 from dataclasses import dataclass
 from hashlib import sha256
 from pathlib import Path, PureWindowsPath
@@ -24,6 +25,7 @@ EXTERNAL_EVIDENCE_SOURCE_SNAPSHOT_SCHEMA = "trustai.external-evidence-source-sna
 EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA = "trustai.external-evidence-source-map/0.1"
 EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA = "trustai.external-evidence-collection-run/0.1"
 EXTERNAL_EVIDENCE_GAP_REPORT_SCHEMA = "trustai.external-evidence-gap-report/0.1"
+EXTERNAL_EVIDENCE_WORK_PACKAGE_SCHEMA = "trustai.external-evidence-work-package/0.1"
 EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA = "trustai.external-evidence-git-remote-ref-export/0.1"
 
 BUNDLE_SOURCE_ARTIFACT_KINDS = {
@@ -79,6 +81,13 @@ AUTHORITY_KINDS = {
     "standards-body",
     "customer",
     "other",
+}
+EXTERNAL_EVIDENCE_WORK_PACKAGE_GROUP_BY = {
+    "owner_hint",
+    "authority_kind",
+    "phase",
+    "priority",
+    "requirement_id",
 }
 
 AUTHORITY_KIND_KEYWORDS = {
@@ -194,6 +203,13 @@ class ExternalEvidenceCollectionRunVerification:
 
 @dataclass
 class ExternalEvidenceGapReportVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class ExternalEvidenceWorkPackageVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -1159,6 +1175,393 @@ def verify_external_evidence_gap_report(
         warnings.extend(expected.get("verification", {}).get("source_map_warnings", []))
 
     return ExternalEvidenceGapReportVerification(ok=not errors, errors=errors, warnings=warnings)
+
+def _external_evidence_work_package_gap_options(gap_report: dict[str, Any]) -> dict[str, Any]:
+    options = gap_report.get("verification_options", {})
+    if not isinstance(options, dict):
+        options = {}
+    return {
+        "require_fresh": bool(options.get("require_fresh")),
+        "require_live_source_uris": bool(options.get("require_live_source_uris")),
+        "require_source_snapshots": bool(options.get("require_source_snapshots")),
+        "require_fresh_source_snapshots": bool(options.get("require_fresh_source_snapshots")),
+        "now": options.get("now"),
+    }
+
+
+def _external_evidence_work_package_command_context(command_context: dict[str, Any] | None) -> dict[str, str]:
+    defaults = {
+        "python": "python",
+        "module": "trustai",
+        "root": ".",
+        "manifest_path": "<external-evidence-manifest.json>",
+        "plan_path": "<external-evidence-plan.json>",
+        "source_map_path": "<external-evidence-source-map.json>",
+        "roadmap_audit_path": "<roadmap-audit.json>",
+        "intake_dir": "artifacts/external-evidence-intakes",
+        "collection_run_out": "artifacts/external-evidence-collection-run.json",
+        "rebuilt_manifest_out": "artifacts/external-evidence-manifest-from-intakes.json",
+    }
+    supplied = command_context if isinstance(command_context, dict) else {}
+    for key in list(defaults):
+        value = supplied.get(key)
+        if value is not None and str(value):
+            defaults[key] = str(value)
+    return defaults
+
+
+def _external_evidence_work_package_command(args: list[str]) -> str:
+    return " ".join(shlex.quote(str(arg)) for arg in args)
+
+
+def _external_evidence_work_package_append_optional(args: list[str], flag: str, value: Any) -> None:
+    if value is not None and str(value):
+        args.extend([flag, str(value)])
+
+
+def _external_evidence_work_package_collect_args(task: dict[str, Any], context: dict[str, str]) -> list[str]:
+    args = [
+        context["python"],
+        "-m",
+        context["module"],
+        "external-evidence-collect",
+        context["plan_path"],
+        context["manifest_path"],
+        context["roadmap_audit_path"],
+        str(task.get("source_uri") or "<source-uri>"),
+        "--root",
+        context["root"],
+        "--task",
+        str(task.get("unit_ref") or task.get("task_ref") or task.get("task_id") or ""),
+        "--description",
+        str(task.get("description") or ""),
+        "--snapshot-out",
+        str(task.get("snapshot_out") or ""),
+        "--intake-out",
+        str(task.get("intake_out") or ""),
+    ]
+    for key, flag in (
+        ("source_file", "--source-file"),
+        ("retrieval_method", "--retrieval-method"),
+        ("content_type", "--content-type"),
+        ("issuer", "--issuer"),
+        ("subject", "--subject"),
+        ("issued_at", "--issued-at"),
+        ("expires_at", "--expires-at"),
+        ("timeout_seconds", "--timeout-seconds"),
+    ):
+        _external_evidence_work_package_append_optional(args, flag, task.get(key))
+    return args
+
+
+def _external_evidence_work_package_verify_intake_args(task: dict[str, Any], context: dict[str, str]) -> list[str]:
+    return [
+        context["python"],
+        "-m",
+        context["module"],
+        "external-evidence-intake-verify",
+        str(task.get("intake_out") or "<intake.json>"),
+        context["plan_path"],
+        context["manifest_path"],
+        context["roadmap_audit_path"],
+        "--root",
+        context["root"],
+    ]
+
+
+def _external_evidence_work_package_collect_batch_args(context: dict[str, str]) -> list[str]:
+    return [
+        context["python"],
+        "-m",
+        context["module"],
+        "external-evidence-collect-batch",
+        context["plan_path"],
+        context["manifest_path"],
+        context["roadmap_audit_path"],
+        context["source_map_path"],
+        "--root",
+        context["root"],
+        "--out",
+        context["collection_run_out"],
+    ]
+
+
+def _external_evidence_work_package_rebuild_manifest_args(context: dict[str, str]) -> list[str]:
+    return [
+        context["python"],
+        "-m",
+        context["module"],
+        "external-evidence-manifest-from-intakes",
+        context["plan_path"],
+        context["manifest_path"],
+        context["roadmap_audit_path"],
+        "--root",
+        context["root"],
+        "--intake-dir",
+        context["intake_dir"],
+        "--out",
+        context["rebuilt_manifest_out"],
+    ]
+
+
+def _external_evidence_work_package_next_actions(task: dict[str, Any]) -> list[str]:
+    actions = []
+    if _source_map_is_placeholder_uri(str(task.get("source_uri") or "")):
+        actions.append("Replace the placeholder source_uri with an authority-owned source export URI before collection.")
+    missing_metadata = [field for field in ("issuer", "subject", "issued_at", "expires_at") if not task.get(field)]
+    if missing_metadata:
+        actions.append("Fill authority metadata before strict verification: " + ", ".join(missing_metadata) + ".")
+    actions.extend(
+        [
+            "Run the collect command to create a source snapshot and intake receipt for this task.",
+            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
+            "Rebuild and verify the external evidence manifest after all assigned intakes are collected.",
+        ]
+    )
+    return actions
+
+
+def _external_evidence_work_package_task_record(
+    gap: dict[str, Any],
+    plan_task: dict[str, Any],
+    context: dict[str, str],
+) -> dict[str, Any]:
+    task = {
+        "task_id": plan_task.get("task_id") or gap.get("task_id"),
+        "task_ref": plan_task.get("task_ref") or gap.get("task_ref"),
+        "unit_id": plan_task.get("unit_id") or gap.get("unit_id"),
+        "unit_ref": plan_task.get("unit_ref") or gap.get("unit_ref"),
+        "requirement_id": plan_task.get("requirement_id") or gap.get("requirement_id"),
+        "phase": plan_task.get("phase") or gap.get("phase"),
+        "priority": plan_task.get("priority") or gap.get("priority"),
+        "title": plan_task.get("title") or gap.get("title"),
+        "authority_kind": plan_task.get("authority_kind") or gap.get("authority_kind"),
+        "coverage_status": plan_task.get("coverage_status") or gap.get("coverage_status"),
+        "owner_hint": plan_task.get("owner_hint") or gap.get("owner_hint"),
+        "source_uri": gap.get("source_uri"),
+        "source_uri_status": "placeholder" if _source_map_is_placeholder_uri(str(gap.get("source_uri") or "")) else "live",
+        "description": gap.get("description"),
+        "snapshot_out": gap.get("snapshot_out"),
+        "intake_out": gap.get("intake_out"),
+        "suggested_artifact_path": plan_task.get("suggested_artifact_path"),
+        "evidence_argument_template": plan_task.get("evidence_argument_template"),
+        "suggested_evidence_sources": plan_task.get("suggested_evidence_sources", []),
+        "acceptance_criteria": plan_task.get("acceptance_criteria", []),
+        "external_authority_required": plan_task.get("external_authority_required", []),
+    }
+    for key in (
+        "source_file",
+        "retrieval_method",
+        "content_type",
+        "issuer",
+        "subject",
+        "issued_at",
+        "expires_at",
+        "timeout_seconds",
+    ):
+        if key in gap:
+            task[key] = gap[key]
+    collect_args = _external_evidence_work_package_collect_args(task, context)
+    verify_args = _external_evidence_work_package_verify_intake_args(task, context)
+    task["commands"] = {
+        "collect_args": collect_args,
+        "collect_command": _external_evidence_work_package_command(collect_args),
+        "verify_intake_args": verify_args,
+        "verify_intake_command": _external_evidence_work_package_command(verify_args),
+    }
+    task["next_actions"] = _external_evidence_work_package_next_actions(task)
+    return task
+
+
+def _authority_kind_sort_index(authority_kind: str) -> int:
+    try:
+        return AUTHORITY_KIND_ORDER.index(authority_kind)
+    except ValueError:
+        return len(AUTHORITY_KIND_ORDER)
+
+
+def _external_evidence_work_package_task_sort_key(task: dict[str, Any]) -> tuple[Any, ...]:
+    return (
+        str(task.get("phase") or ""),
+        str(task.get("priority") or ""),
+        _authority_kind_sort_index(str(task.get("authority_kind") or "")),
+        str(task.get("requirement_id") or ""),
+        str(task.get("unit_ref") or ""),
+    )
+
+
+def _external_evidence_work_package_values(tasks: list[dict[str, Any]], key: str) -> list[str]:
+    return sorted({str(task.get(key) or "unknown") for task in tasks})
+
+
+def build_external_evidence_work_package(
+    gap_report: dict[str, Any],
+    manifest: dict[str, Any],
+    plan: dict[str, Any],
+    source_map: dict[str, Any],
+    roadmap_audit: dict[str, Any],
+    *,
+    root: str | Path,
+    group_by: str = "owner_hint",
+    command_context: dict[str, Any] | None = None,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    if group_by not in EXTERNAL_EVIDENCE_WORK_PACKAGE_GROUP_BY:
+        raise ValueError(f"unsupported external evidence work package group_by: {group_by}")
+    gap_options = _external_evidence_work_package_gap_options(gap_report)
+    gap_result = verify_external_evidence_gap_report(
+        gap_report,
+        manifest,
+        plan,
+        source_map,
+        roadmap_audit,
+        root=root,
+        **gap_options,
+    )
+    if not gap_result.ok:
+        raise ValueError("external evidence gap report is not valid for work packages: " + "; ".join(gap_result.errors))
+
+    context = _external_evidence_work_package_command_context(command_context)
+    gaps = gap_report.get("gaps", [])
+    if not isinstance(gaps, list):
+        raise ValueError("external evidence gap report gaps must be a list")
+    task_records: list[dict[str, Any]] = []
+    for index, gap in enumerate(gaps):
+        if not isinstance(gap, dict):
+            raise ValueError(f"external evidence gap {index} must be an object")
+        plan_task = (
+            _find_collection_task(plan, str(gap.get("unit_ref") or ""))
+            or _find_collection_task(plan, str(gap.get("task_ref") or ""))
+            or _find_collection_task(plan, str(gap.get("task_id") or ""))
+        )
+        if plan_task is None:
+            raise ValueError(f"external evidence gap does not match collection plan task: {gap.get('unit_ref') or gap.get('task_ref')}")
+        task_records.append(_external_evidence_work_package_task_record(gap, plan_task, context))
+    task_records.sort(key=_external_evidence_work_package_task_sort_key)
+
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for task in task_records:
+        group_key = str(task.get(group_by) or "unknown")
+        grouped.setdefault(group_key, []).append(task)
+
+    collect_batch_args = _external_evidence_work_package_collect_batch_args(context)
+    rebuild_manifest_args = _external_evidence_work_package_rebuild_manifest_args(context)
+    packages = []
+    for group_key in sorted(grouped):
+        package_tasks = grouped[group_key]
+        source_uri_counts = _source_map_source_uri_counts(package_tasks)
+        package_body = {
+            "package_ref": f"{group_by}:{_source_map_path_segment(group_key)}",
+            "group_by": group_by,
+            "group_key": group_key,
+            "task_count": len(package_tasks),
+            "missing_task_count": sum(1 for task in package_tasks if task.get("coverage_status") == "missing"),
+            "covered_task_count": sum(1 for task in package_tasks if task.get("coverage_status") == "covered"),
+            "placeholder_source_uri_count": source_uri_counts["placeholder_source_uri_count"],
+            "live_source_uri_count": source_uri_counts["live_source_uri_count"],
+            "authority_kinds": _external_evidence_work_package_values(package_tasks, "authority_kind"),
+            "requirement_ids": _external_evidence_work_package_values(package_tasks, "requirement_id"),
+            "phases": _external_evidence_work_package_values(package_tasks, "phase"),
+            "priorities": _external_evidence_work_package_values(package_tasks, "priority"),
+            "commands": {
+                "collect_batch_args": collect_batch_args,
+                "collect_batch_command": _external_evidence_work_package_command(collect_batch_args),
+                "rebuild_manifest_args": rebuild_manifest_args,
+                "rebuild_manifest_command": _external_evidence_work_package_command(rebuild_manifest_args),
+            },
+            "tasks": package_tasks,
+        }
+        packages.append({**package_body, "package_id": content_hash(package_body)})
+
+    source_uri_counts = _source_map_source_uri_counts(task_records)
+    body = {
+        "schema": EXTERNAL_EVIDENCE_WORK_PACKAGE_SCHEMA,
+        "generated_at": generated_at or utc_now(),
+        "group_by": group_by,
+        "command_context": context,
+        "sources": {
+            "gap_report": _gap_report_source_record(gap_report, "gap_report_id", "gap_report_hash"),
+            "manifest": _gap_report_source_record(manifest, "manifest_id", "manifest_hash"),
+            "collection_plan": _gap_report_source_record(plan, "plan_id", "plan_hash"),
+            "source_map": _gap_report_source_record(source_map, "source_map_id", "source_map_hash"),
+            "roadmap_audit": _gap_report_source_record(roadmap_audit, "audit_id", "audit_hash"),
+        },
+        "summary": {
+            "source_status": gap_report.get("summary", {}).get("status") if isinstance(gap_report.get("summary"), dict) else None,
+            "package_count": len(packages),
+            "task_count": len(task_records),
+            "missing_task_count": sum(1 for task in task_records if task.get("coverage_status") == "missing"),
+            "covered_task_count": sum(1 for task in task_records if task.get("coverage_status") == "covered"),
+            "placeholder_source_uri_count": source_uri_counts["placeholder_source_uri_count"],
+            "live_source_uri_count": source_uri_counts["live_source_uri_count"],
+            "task_count_by_owner_hint": _gap_report_group_counts(task_records, "owner_hint"),
+            "task_count_by_authority_kind": _gap_report_group_counts(task_records, "authority_kind"),
+            "task_count_by_phase": _gap_report_group_counts(task_records, "phase"),
+            "task_count_by_priority": _gap_report_group_counts(task_records, "priority"),
+            "task_count_by_requirement": _gap_report_group_counts(task_records, "requirement_id"),
+            "task_count_by_package": {package["package_ref"]: package["task_count"] for package in packages},
+        },
+        "packages": packages,
+        "limitations": [
+            "This work package is an assignment and command artifact; it does not satisfy missing external authority evidence by itself.",
+            "Placeholder source URIs and missing authority metadata must be replaced with authority-owned values before strict production collection.",
+            "A task is closed only after the resulting source snapshot, intake receipt, rebuilt manifest, and evidence chain entry verify successfully.",
+        ],
+    }
+    return {**body, "work_package_id": content_hash(body)}
+
+
+def verify_external_evidence_work_package(
+    work_package: dict[str, Any],
+    gap_report: dict[str, Any],
+    manifest: dict[str, Any],
+    plan: dict[str, Any],
+    source_map: dict[str, Any],
+    roadmap_audit: dict[str, Any],
+    *,
+    root: str | Path,
+) -> ExternalEvidenceWorkPackageVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if work_package.get("schema") != EXTERNAL_EVIDENCE_WORK_PACKAGE_SCHEMA:
+        errors.append(f"unsupported external evidence work package schema: {work_package.get('schema')}")
+    if work_package.get("work_package_id") != content_hash(without_keys(work_package, "work_package_id")):
+        errors.append("work_package_id does not match canonical work package body")
+    group_by = str(work_package.get("group_by") or "")
+    if group_by not in EXTERNAL_EVIDENCE_WORK_PACKAGE_GROUP_BY:
+        errors.append(f"unsupported external evidence work package group_by: {group_by}")
+    command_context = work_package.get("command_context")
+    if not isinstance(command_context, dict):
+        errors.append("external evidence work package command_context must be an object")
+        command_context = {}
+    try:
+        expected = build_external_evidence_work_package(
+            gap_report,
+            manifest,
+            plan,
+            source_map,
+            roadmap_audit,
+            root=root,
+            group_by=group_by if group_by in EXTERNAL_EVIDENCE_WORK_PACKAGE_GROUP_BY else "owner_hint",
+            command_context=command_context,
+            generated_at=str(work_package.get("generated_at") or ""),
+        )
+    except ValueError as exc:
+        errors.append(str(exc))
+    else:
+        if without_keys(work_package, "work_package_id") != without_keys(expected, "work_package_id"):
+            errors.append("work package body does not match supplied gap report, manifest, plan, source map, and roadmap audit")
+        gap_result = verify_external_evidence_gap_report(
+            gap_report,
+            manifest,
+            plan,
+            source_map,
+            roadmap_audit,
+            root=root,
+            **_external_evidence_work_package_gap_options(gap_report),
+        )
+        warnings.extend(gap_result.warnings)
+    return ExternalEvidenceWorkPackageVerification(ok=not errors, errors=errors, warnings=warnings)
 
 def build_external_evidence_source_snapshot(
     *,
@@ -2411,6 +2814,22 @@ def write_external_evidence_gap_report_markdown(path: str | Path, report: dict[s
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(render_external_evidence_gap_report_markdown(report), encoding="utf-8")
 
+
+def write_external_evidence_work_package(path: str | Path, work_package: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(work_package, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_external_evidence_work_package(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def write_external_evidence_work_package_markdown(path: str | Path, work_package: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_external_evidence_work_package_markdown(work_package), encoding="utf-8")
+
 def write_roadmap_evidence_report(path: str | Path, report: dict[str, Any]) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -2475,6 +2894,81 @@ def _external_evidence_freshness_cell(item: dict[str, Any]) -> str:
         return _markdown_cell(f"{issued_at or 'missing issued_at'} to {expires_at or 'missing expires_at'}")
     return "missing"
 
+
+def render_external_evidence_work_package_markdown(work_package: dict[str, Any]) -> str:
+    summary = work_package.get("summary", {}) if isinstance(work_package.get("summary"), dict) else {}
+    lines = [
+        "# External Evidence Work Packages",
+        "",
+        f"- Work package ID: `{work_package.get('work_package_id')}`",
+        f"- Generated at: `{work_package.get('generated_at')}`",
+        f"- Grouped by: `{work_package.get('group_by')}`",
+        f"- Packages: {summary.get('package_count', 0)}",
+        f"- Tasks: {summary.get('task_count', 0)}",
+        f"- Missing tasks: {summary.get('missing_task_count', 0)}",
+        f"- Placeholder source URIs: {summary.get('placeholder_source_uri_count', 0)}",
+        f"- Live source URIs: {summary.get('live_source_uri_count', 0)}",
+        "",
+        "## Tasks By Owner",
+        "",
+    ]
+    by_owner = summary.get("task_count_by_owner_hint", {})
+    if isinstance(by_owner, dict) and by_owner:
+        for owner, count in by_owner.items():
+            lines.append(f"- {owner}: {count}")
+    else:
+        lines.append("- None")
+    lines.extend(["", "## Packages", ""])
+    packages = work_package.get("packages", [])
+    if isinstance(packages, list) and packages:
+        for package in packages:
+            if not isinstance(package, dict):
+                continue
+            lines.append(f"### {package.get('group_key')}")
+            lines.append("")
+            lines.append(f"- Package ref: `{package.get('package_ref')}`")
+            lines.append(f"- Package ID: `{package.get('package_id')}`")
+            lines.append(f"- Tasks: {package.get('task_count', 0)}")
+            lines.append(f"- Authority kinds: {_markdown_code_list(package.get('authority_kinds', []))}")
+            lines.append(f"- Requirements: {_markdown_code_list(package.get('requirement_ids', []))}")
+            commands = package.get("commands", {}) if isinstance(package.get("commands"), dict) else {}
+            if commands.get("collect_batch_command"):
+                lines.append(f"- Batch collect command: `{_markdown_cell(commands.get('collect_batch_command'))}`")
+            if commands.get("rebuild_manifest_command"):
+                lines.append(f"- Rebuild manifest command: `{_markdown_cell(commands.get('rebuild_manifest_command'))}`")
+            lines.extend(["", "| Task | Phase | Priority | Authority | Source URI Status | Intake |", "|---|---|---|---|---|---|"])
+            tasks = package.get("tasks", [])
+            if isinstance(tasks, list):
+                for task in tasks:
+                    if not isinstance(task, dict):
+                        continue
+                    lines.append(
+                        "| "
+                        + " | ".join(
+                            [
+                                f"`{_markdown_cell(task.get('unit_ref'))}`",
+                                _markdown_cell(task.get("phase")),
+                                _markdown_cell(task.get("priority")),
+                                f"`{_markdown_cell(task.get('authority_kind'))}`",
+                                _markdown_cell(task.get("source_uri_status")),
+                                f"`{_markdown_cell(task.get('intake_out'))}`",
+                            ]
+                        )
+                        + " |"
+                    )
+            lines.append("")
+            lines.extend(["#### Task Commands", ""])
+            if isinstance(tasks, list):
+                for task in tasks:
+                    if not isinstance(task, dict):
+                        continue
+                    task_commands = task.get("commands", {}) if isinstance(task.get("commands"), dict) else {}
+                    lines.append(f"- `{_markdown_cell(task.get('unit_ref'))}` collect: `{_markdown_cell(task_commands.get('collect_command'))}`")
+                    lines.append(f"- `{_markdown_cell(task.get('unit_ref'))}` verify intake: `{_markdown_cell(task_commands.get('verify_intake_command'))}`")
+            lines.append("")
+    else:
+        lines.append("No work packages.")
+    return "\n".join(lines).rstrip() + "\n"
 
 def render_external_evidence_gap_report_markdown(report: dict[str, Any]) -> str:
     summary = report.get("summary", {}) if isinstance(report.get("summary"), dict) else {}

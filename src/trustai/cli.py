@@ -1072,6 +1072,7 @@ from .external_evidence import (
     build_external_evidence_manifest,
     build_external_evidence_manifest_from_intakes,
     build_external_evidence_gap_report,
+    build_external_evidence_work_package,
     build_external_evidence_source_map_template,
     fulfill_external_evidence_source_map,
     build_external_evidence_collection_plan,
@@ -1085,6 +1086,7 @@ from .external_evidence import (
     extract_roadmap_evidence_bundle_sources,
     load_external_evidence_manifest,
     load_external_evidence_gap_report,
+    load_external_evidence_work_package,
     load_external_evidence_collection_plan,
     load_external_evidence_source_map,
     load_external_evidence_collection_run,
@@ -1098,6 +1100,7 @@ from .external_evidence import (
     parse_source_map_fulfillment_arg,
     verify_external_evidence_manifest,
     verify_external_evidence_gap_report,
+    verify_external_evidence_work_package,
     verify_external_evidence_collection_plan,
     verify_external_evidence_source_map_template,
     verify_external_evidence_collection_run,
@@ -1109,6 +1112,8 @@ from .external_evidence import (
     write_external_evidence_manifest,
     write_external_evidence_gap_report,
     write_external_evidence_gap_report_markdown,
+    write_external_evidence_work_package,
+    write_external_evidence_work_package_markdown,
     write_external_evidence_collection_plan,
     write_external_evidence_collection_plan_markdown,
     write_external_evidence_intake,
@@ -15603,6 +15608,106 @@ def cmd_roadmap_evidence_bundle_extract(args: argparse.Namespace) -> int:
     return 0
 
 
+def _external_evidence_work_package_command_context(args: argparse.Namespace) -> dict[str, str]:
+    return {
+        "python": args.python,
+        "module": args.module,
+        "root": args.root,
+        "manifest_path": args.manifest,
+        "plan_path": args.plan,
+        "source_map_path": args.source_map,
+        "roadmap_audit_path": args.roadmap_audit,
+        "intake_dir": args.intake_dir,
+        "collection_run_out": args.collection_run_out,
+        "rebuilt_manifest_out": args.rebuilt_manifest_out,
+    }
+
+
+def cmd_external_evidence_work_package(args: argparse.Namespace) -> int:
+    try:
+        roadmap_audit = load_roadmap_audit(args.roadmap_audit)
+        manifest = load_external_evidence_manifest(args.manifest)
+        plan = load_external_evidence_collection_plan(args.plan)
+        source_map = load_external_evidence_source_map(args.source_map)
+        gap_report = load_external_evidence_gap_report(args.gap_report)
+        work_package = build_external_evidence_work_package(
+            gap_report,
+            manifest,
+            plan,
+            source_map,
+            roadmap_audit,
+            root=args.root,
+            group_by=args.group_by,
+            command_context=_external_evidence_work_package_command_context(args),
+            generated_at=args.generated_at,
+        )
+        result = verify_external_evidence_work_package(
+            work_package,
+            gap_report,
+            manifest,
+            plan,
+            source_map,
+            roadmap_audit,
+            root=args.root,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence work package failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("external evidence work package verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_external_evidence_work_package(args.out, work_package)
+    if args.markdown:
+        write_external_evidence_work_package_markdown(args.markdown, work_package)
+        print(f"external evidence work package markdown: {args.markdown}")
+    summary = work_package["summary"]
+    print(f"external evidence work package: {args.out}")
+    print(f"work package id: {work_package['work_package_id']}")
+    print(f"group by: {work_package['group_by']}")
+    print(f"packages: {summary['package_count']}")
+    print(f"tasks: {summary['task_count']}")
+    print(f"missing tasks: {summary['missing_task_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_external_evidence_work_package_verify(args: argparse.Namespace) -> int:
+    try:
+        roadmap_audit = load_roadmap_audit(args.roadmap_audit)
+        manifest = load_external_evidence_manifest(args.manifest)
+        plan = load_external_evidence_collection_plan(args.plan)
+        source_map = load_external_evidence_source_map(args.source_map)
+        gap_report = load_external_evidence_gap_report(args.gap_report)
+        work_package = load_external_evidence_work_package(args.work_package)
+        result = verify_external_evidence_work_package(
+            work_package,
+            gap_report,
+            manifest,
+            plan,
+            source_map,
+            roadmap_audit,
+            root=args.root,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence work package verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        summary = work_package.get("summary", {})
+        print(f"verified external evidence work package: {args.work_package}")
+        print(f"work package id: {work_package.get('work_package_id')}")
+        print(f"packages: {summary.get('package_count', 0)}")
+        print(f"tasks: {summary.get('task_count', 0)}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"external evidence work package verification failed: {args.work_package}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
 def cmd_external_evidence_append(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
     roadmap_audit = load_roadmap_audit(args.roadmap_audit)
@@ -25071,6 +25176,33 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_gap_report_verify.add_argument("--require-fresh-source-snapshots", action="store_true", help="fail unless required source snapshots have fresh issued_at/expires_at windows")
     external_evidence_gap_report_verify.add_argument("--now", help="RFC3339 verification time for freshness checks; defaults to manifest generated_at")
     external_evidence_gap_report_verify.set_defaults(func=cmd_external_evidence_gap_report_verify)
+    external_evidence_work_package = subparsers.add_parser("external-evidence-work-package", help="write owner-ready work packages from an external-evidence gap report")
+    external_evidence_work_package.add_argument("gap_report")
+    external_evidence_work_package.add_argument("manifest")
+    external_evidence_work_package.add_argument("plan")
+    external_evidence_work_package.add_argument("source_map")
+    external_evidence_work_package.add_argument("roadmap_audit")
+    external_evidence_work_package.add_argument("--root", default=".")
+    external_evidence_work_package.add_argument("--group-by", choices=["owner_hint", "authority_kind", "phase", "priority", "requirement_id"], default="owner_hint")
+    external_evidence_work_package.add_argument("--python", default="python")
+    external_evidence_work_package.add_argument("--module", default="trustai")
+    external_evidence_work_package.add_argument("--intake-dir", default="artifacts/external-evidence-intakes")
+    external_evidence_work_package.add_argument("--collection-run-out", default="artifacts/external-evidence-collection-run.json")
+    external_evidence_work_package.add_argument("--rebuilt-manifest-out", default="artifacts/external-evidence-manifest-from-intakes.json")
+    external_evidence_work_package.add_argument("--generated-at")
+    external_evidence_work_package.add_argument("--out", default="artifacts/external-evidence-work-package.json")
+    external_evidence_work_package.add_argument("--markdown", default="artifacts/external-evidence-work-package.md")
+    external_evidence_work_package.set_defaults(func=cmd_external_evidence_work_package)
+
+    external_evidence_work_package_verify = subparsers.add_parser("external-evidence-work-package-verify", help="verify an external-evidence work package")
+    external_evidence_work_package_verify.add_argument("work_package")
+    external_evidence_work_package_verify.add_argument("gap_report")
+    external_evidence_work_package_verify.add_argument("manifest")
+    external_evidence_work_package_verify.add_argument("plan")
+    external_evidence_work_package_verify.add_argument("source_map")
+    external_evidence_work_package_verify.add_argument("roadmap_audit")
+    external_evidence_work_package_verify.add_argument("--root", default=".")
+    external_evidence_work_package_verify.set_defaults(func=cmd_external_evidence_work_package_verify)
     external_evidence_append = subparsers.add_parser("external-evidence-append", help="append a verified external-evidence manifest to an evidence chain")
     external_evidence_append.add_argument("manifest")
     external_evidence_append.add_argument("roadmap_audit")

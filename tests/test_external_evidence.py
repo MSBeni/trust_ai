@@ -21,6 +21,7 @@ from trustai.external_evidence import (
     EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA,
     EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA,
     EXTERNAL_EVIDENCE_GAP_REPORT_SCHEMA,
+    EXTERNAL_EVIDENCE_WORK_PACKAGE_SCHEMA,
     EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA,
     ROADMAP_EVIDENCE_REPORT_SCHEMA,
     ROADMAP_EVIDENCE_BUNDLE_SCHEMA,
@@ -32,8 +33,10 @@ from trustai.external_evidence import (
     build_external_evidence_manifest_from_intakes,
     build_external_evidence_collection_plan,
     build_external_evidence_gap_report,
+    build_external_evidence_work_package,
     build_external_evidence_intake,
     build_external_evidence_source_snapshot,
+    build_external_evidence_source_map_template,
     fulfill_external_evidence_source_map,
     build_roadmap_evidence_bundle,
     extract_roadmap_evidence_bundle_sources,
@@ -43,6 +46,7 @@ from trustai.external_evidence import (
     load_external_evidence_collection_plan,
     load_external_evidence_collection_run,
     load_external_evidence_gap_report,
+    load_external_evidence_work_package,
     load_external_evidence_intake,
     load_external_evidence_intakes,
     load_external_evidence_source_snapshot,
@@ -52,10 +56,12 @@ from trustai.external_evidence import (
     parse_source_map_fulfillment_arg,
     render_external_evidence_markdown,
     render_external_evidence_collection_plan_markdown,
+    render_external_evidence_work_package_markdown,
     render_roadmap_evidence_markdown,
     render_roadmap_evidence_bundle_markdown,
     verify_external_evidence_manifest,
     verify_external_evidence_gap_report,
+    verify_external_evidence_work_package,
     verify_external_evidence_collection_plan,
     verify_external_evidence_source_map_template,
     verify_external_evidence_collection_run,
@@ -65,6 +71,7 @@ from trustai.external_evidence import (
     verify_roadmap_evidence_bundle,
     verify_roadmap_evidence_report,
     write_external_evidence_collection_plan,
+    write_external_evidence_gap_report,
     write_external_evidence_manifest,
     write_external_evidence_source_snapshot,
 )
@@ -507,6 +514,174 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertFalse(tampered_result.ok)
             self.assertTrue(any("snapshot_out" in error for error in tampered_result.errors), tampered_result.errors)
 
+    def test_external_evidence_work_package_groups_gap_tasks_by_owner_and_cli_verifies(self):
+        audit = build_roadmap_audit(ROOT)
+        manifest = build_external_evidence_manifest(
+            audit,
+            root=ROOT,
+            evidence=[
+                {
+                    "requirement_id": "oss-verifier-and-public-spec",
+                    "authority_kind": "ci-run",
+                    "path": FIXTURE,
+                    "description": "Recorded verifier workflow run export.",
+                }
+            ],
+            generated_at="2026-07-09T00:00:00Z",
+        )
+        plan = build_external_evidence_collection_plan(
+            manifest,
+            audit,
+            root=ROOT,
+            status_filter="missing",
+            generated_at="2026-07-09T00:00:00Z",
+        )
+        source_map = build_external_evidence_source_map_template(
+            plan,
+            status_filter="missing",
+            authority_kinds=["provider-api"],
+            source_uri_template="TODO://authority/{requirement_id}/{authority_kind}",
+            description_template="{authority_kind} provider export for {requirement_id}",
+            limit=2,
+            generated_at="2026-07-09T00:01:00Z",
+        )
+        gap_report = build_external_evidence_gap_report(
+            manifest,
+            plan,
+            source_map,
+            audit,
+            root=ROOT,
+            generated_at="2026-07-09T00:02:00Z",
+        )
+        command_context = {
+            "python": sys.executable,
+            "manifest_path": "manifest.json",
+            "plan_path": "plan.json",
+            "source_map_path": "source-map.json",
+            "roadmap_audit_path": "roadmap-audit.json",
+            "intake_dir": "artifacts/intakes",
+        }
+
+        work_package = build_external_evidence_work_package(
+            gap_report,
+            manifest,
+            plan,
+            source_map,
+            audit,
+            root=ROOT,
+            group_by="owner_hint",
+            command_context=command_context,
+            generated_at="2026-07-09T00:03:00Z",
+        )
+        result = verify_external_evidence_work_package(
+            work_package,
+            gap_report,
+            manifest,
+            plan,
+            source_map,
+            audit,
+            root=ROOT,
+        )
+        markdown = render_external_evidence_work_package_markdown(work_package)
+
+        self.assertEqual(EXTERNAL_EVIDENCE_WORK_PACKAGE_SCHEMA, work_package["schema"])
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(content_hash(without_keys(work_package, "work_package_id")), work_package["work_package_id"])
+        self.assertEqual("owner_hint", work_package["group_by"])
+        self.assertEqual(1, work_package["summary"]["package_count"])
+        self.assertEqual(2, work_package["summary"]["task_count"])
+        self.assertEqual(2, work_package["summary"]["placeholder_source_uri_count"])
+        package = work_package["packages"][0]
+        self.assertEqual("integration/platform owner", package["group_key"])
+        self.assertEqual(["provider-api"], package["authority_kinds"])
+        self.assertIn("external-evidence-manifest-from-intakes", package["commands"]["rebuild_manifest_command"])
+        task = package["tasks"][0]
+        self.assertEqual("placeholder", task["source_uri_status"])
+        self.assertIn("--snapshot-out", task["commands"]["collect_args"])
+        self.assertIn("external-evidence-collect", task["commands"]["collect_command"])
+        self.assertTrue(any("placeholder source_uri" in action for action in task["next_actions"]))
+        self.assertIn("External Evidence Work Packages", markdown)
+        self.assertIn("integration/platform owner", markdown)
+
+        tampered = copy.deepcopy(work_package)
+        tampered["packages"][0]["tasks"][0]["owner_hint"] = "wrong owner"
+        tampered["work_package_id"] = content_hash(without_keys(tampered, "work_package_id"))
+        tampered_result = verify_external_evidence_work_package(
+            tampered,
+            gap_report,
+            manifest,
+            plan,
+            source_map,
+            audit,
+            root=ROOT,
+        )
+        self.assertFalse(tampered_result.ok)
+        self.assertTrue(any("work package body" in error for error in tampered_result.errors), tampered_result.errors)
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_path = Path(tmp_dir)
+            audit_path = tmp_path / "roadmap-audit.json"
+            manifest_path = tmp_path / "manifest.json"
+            plan_path = tmp_path / "plan.json"
+            source_map_path = tmp_path / "source-map.json"
+            gap_report_path = tmp_path / "gap-report.json"
+            work_package_path = tmp_path / "work-package.json"
+            markdown_path = tmp_path / "work-package.md"
+            write_roadmap_audit(audit_path, audit)
+            write_external_evidence_manifest(manifest_path, manifest)
+            write_external_evidence_collection_plan(plan_path, plan)
+            source_map_path.write_text(json.dumps(source_map, indent=2, sort_keys=True), encoding="utf-8")
+            write_external_evidence_gap_report(gap_report_path, gap_report)
+
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-work-package",
+                    str(gap_report_path),
+                    str(manifest_path),
+                    str(plan_path),
+                    str(source_map_path),
+                    str(audit_path),
+                    "--root",
+                    str(ROOT),
+                    "--group-by",
+                    "authority_kind",
+                    "--python",
+                    sys.executable,
+                    "--generated-at",
+                    "2026-07-09T00:04:00Z",
+                    "--out",
+                    str(work_package_path),
+                    "--markdown",
+                    str(markdown_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            cli_package = load_external_evidence_work_package(work_package_path)
+            self.assertEqual("authority_kind", cli_package["group_by"])
+            self.assertEqual(1, cli_package["summary"]["package_count"])
+            self.assertTrue(markdown_path.exists())
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-work-package-verify",
+                    str(work_package_path),
+                    str(gap_report_path),
+                    str(manifest_path),
+                    str(plan_path),
+                    str(source_map_path),
+                    str(audit_path),
+                    "--root",
+                    str(ROOT),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
     def test_external_evidence_intake_binds_artifact_to_collection_task(self):
         audit = build_roadmap_audit(ROOT)
         manifest = build_external_evidence_manifest(
