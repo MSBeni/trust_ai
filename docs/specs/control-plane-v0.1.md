@@ -168,13 +168,16 @@ product-scope, vertical-pack, and reliability-report evidence into a conservativ
 `not_ready` status plus concrete blockers.
 The external-evidence list exposes roadmap authority coverage, missing
 requirement IDs, missing requirement-to-authority-kind maps, deterministic
-missing authority unit/task IDs, and live-evidence counts. The external-authority
+missing authority unit/task IDs, roadmap requirement titles/phases/priorities,
+authority owner/source hints, and live-evidence counts. The external-authority
 gap worklist returns the latest deterministic missing-unit tasks with exact
-authority-kind, requirement-ID, and limit filters so collection owners can pull
-their remaining live-evidence queue without parsing the full manifest. The
-authority-dossier list exposes production authority dossier modes, coverage,
-freshness windows, and missing requirement IDs so production readiness gaps stay
-visible in the same control-plane surface.
+authority-kind, requirement-ID, and limit filters, plus grouped counts by
+authority kind, collection-priority bucket, requirement phase, and requirement
+priority so collection owners can pull and triage their remaining live-evidence
+queue without parsing the full manifest. The authority-dossier list exposes
+production authority dossier modes, coverage, freshness windows, and missing
+requirement IDs so production readiness gaps stay visible in the same
+control-plane surface.
 
 The implementation falls back to SQLite `nolock=1` mode when running on local
 filesystems that do not support normal SQLite locking, such as some UNC-backed

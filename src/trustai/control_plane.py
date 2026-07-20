@@ -27,6 +27,7 @@ from .eu_data_plane import EU_DATA_PLANE_ENTRY_TYPE
 from .external_evidence import (
     AUTHORITY_KIND_EVIDENCE_HINTS,
     AUTHORITY_KIND_OWNER_HINTS,
+    AUTHORITY_KIND_ORDER,
     EXTERNAL_EVIDENCE_COLLECTION_RUN_ENTRY_TYPE,
     EXTERNAL_EVIDENCE_ENTRY_TYPE,
 )
@@ -1207,9 +1208,52 @@ def _count_items_by(items: list[dict[str, Any]], key: str) -> dict[str, int]:
     return {value: counts[value] for value in sorted(counts)}
 
 
-def _authority_gap_units(missing_authority_kinds_by_requirement: dict[str, list[str]]) -> list[dict[str, Any]]:
+def _roadmap_requirement_index(source_roadmap_audit: dict[str, Any] | None) -> dict[str, dict[str, Any]]:
+    if not isinstance(source_roadmap_audit, dict):
+        return {}
+    requirements = source_roadmap_audit.get("requirements")
+    if not isinstance(requirements, list):
+        return {}
+    indexed: dict[str, dict[str, Any]] = {}
+    for requirement in requirements:
+        if not isinstance(requirement, dict):
+            continue
+        requirement_id = requirement.get("id")
+        if requirement_id:
+            indexed[str(requirement_id)] = requirement
+    return indexed
+
+
+def _authority_kind_rank(authority_kind: str) -> int:
+    try:
+        return AUTHORITY_KIND_ORDER.index(authority_kind) + 1
+    except ValueError:
+        return len(AUTHORITY_KIND_ORDER) + 1
+
+
+def _authority_collection_priority(authority_kind: str) -> str:
+    if authority_kind in {
+        "ci-run",
+        "kms-hsm",
+        "tsa",
+        "cloud-object-lock",
+        "provider-api",
+        "hosted-service",
+        "identity-provider",
+    }:
+        return "deployment-operations"
+    if authority_kind in {"customer", "regulator", "insurer", "standards-body"}:
+        return "external-acceptance"
+    return "other"
+
+
+def _authority_gap_units(
+    missing_authority_kinds_by_requirement: dict[str, list[str]],
+    roadmap_requirements: dict[str, dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
     units: list[dict[str, Any]] = []
     for requirement_id in sorted(missing_authority_kinds_by_requirement):
+        requirement = (roadmap_requirements or {}).get(requirement_id, {})
         for authority_kind in sorted(missing_authority_kinds_by_requirement[requirement_id]):
             unit_id = content_hash({"authority_kind": authority_kind, "requirement_id": requirement_id})
             unit_ref = f"{requirement_id}:{authority_kind}"
@@ -1222,7 +1266,14 @@ def _authority_gap_units(missing_authority_kinds_by_requirement: dict[str, list[
                     ),
                     "task_ref": f"external-evidence:{unit_ref}",
                     "requirement_id": requirement_id,
+                    "requirement_title": requirement.get("title"),
+                    "requirement_phase": requirement.get("phase"),
+                    "requirement_priority": requirement.get("priority"),
+                    "requirement_status": requirement.get("status"),
+                    "roadmap_ref": requirement.get("roadmap_ref"),
                     "authority_kind": authority_kind,
+                    "authority_kind_rank": _authority_kind_rank(authority_kind),
+                    "collection_priority": _authority_collection_priority(authority_kind),
                     "owner_hint": AUTHORITY_KIND_OWNER_HINTS.get(
                         authority_kind,
                         AUTHORITY_KIND_OWNER_HINTS["other"],
@@ -1240,7 +1291,10 @@ def _external_authority_gap_summary(units: list[dict[str, Any]]) -> dict[str, An
     return {
         "missing_authority_unit_count": len(units),
         "gap_count_by_authority_kind": _count_items_by(units, "authority_kind"),
+        "gap_count_by_collection_priority": _count_items_by(units, "collection_priority"),
         "gap_count_by_requirement": _count_items_by(units, "requirement_id"),
+        "gap_count_by_requirement_phase": _count_items_by(units, "requirement_phase"),
+        "gap_count_by_requirement_priority": _count_items_by(units, "requirement_priority"),
         "missing_authority_units": units,
     }
 
@@ -6552,6 +6606,7 @@ class ControlPlane:
             item = dict(row)
             _bool_fields(item, "require_complete", "require_fresh", "require_live_source_uris")
             item["source_roadmap_audit"] = _decode_json_object(item.pop("source_roadmap_audit_json", None))
+            roadmap_requirements = _roadmap_requirement_index(item["source_roadmap_audit"])
             try:
                 missing_ids = json.loads(item.pop("missing_requirement_ids_json", "[]"))
             except (TypeError, json.JSONDecodeError):
@@ -6560,7 +6615,7 @@ class ControlPlane:
             payload = _decode_json_object(item.pop("body_json", None))
             covered_authority_kinds = _decode_string_list_map(payload.get("covered_authority_kinds_by_requirement"))
             missing_authority_kinds = _decode_string_list_map(payload.get("missing_authority_kinds_by_requirement"))
-            missing_units = _authority_gap_units(missing_authority_kinds)
+            missing_units = _authority_gap_units(missing_authority_kinds, roadmap_requirements)
             item["covered_authority_kinds_by_requirement"] = covered_authority_kinds
             item["missing_authority_kinds_by_requirement"] = missing_authority_kinds
             item["missing_authority_units"] = missing_units
@@ -6606,7 +6661,10 @@ class ControlPlane:
                 "selected_missing_authority_unit_count": len(selected_units),
                 "returned_missing_authority_unit_count": len(returned_units),
                 "gap_count_by_authority_kind": _count_items_by(selected_units, "authority_kind"),
+                "gap_count_by_collection_priority": _count_items_by(selected_units, "collection_priority"),
                 "gap_count_by_requirement": _count_items_by(selected_units, "requirement_id"),
+                "gap_count_by_requirement_phase": _count_items_by(selected_units, "requirement_phase"),
+                "gap_count_by_requirement_priority": _count_items_by(selected_units, "requirement_priority"),
             },
             "missing_authority_units": returned_units,
         }

@@ -585,6 +585,8 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 authority_gaps_body = json.loads(authority_gaps_response.read().decode("utf-8"))
                 self.assertEqual(200, authority_gaps_response.status)
                 self.assertEqual(0, authority_gaps_body["summary"]["total_missing_authority_unit_count"])
+                self.assertEqual({}, authority_gaps_body["summary"]["gap_count_by_collection_priority"])
+                self.assertEqual({}, authority_gaps_body["summary"]["gap_count_by_requirement_phase"])
                 self.assertEqual([], authority_gaps_body["missing_authority_units"])
 
                 conn.request("GET", "/v0/external-authority-gaps?limit=0")

@@ -896,11 +896,34 @@ class ControlPlaneTests(unittest.TestCase):
                     external_evidence[0]["missing_authority_kind_count"],
                     len(external_evidence[0]["missing_authority_units"]),
                 )
-                self.assertIn("task_id", external_evidence[0]["missing_authority_units"][0])
+                first_missing_unit = external_evidence[0]["missing_authority_units"][0]
+                self.assertIn("task_id", first_missing_unit)
+                self.assertIn("requirement_title", first_missing_unit)
+                self.assertIn("requirement_phase", first_missing_unit)
+                self.assertIn("requirement_priority", first_missing_unit)
+                self.assertIn("roadmap_ref", first_missing_unit)
+                self.assertGreaterEqual(first_missing_unit["authority_kind_rank"], 1)
+                self.assertIn(
+                    first_missing_unit["collection_priority"],
+                    {"deployment-operations", "external-acceptance", "other"},
+                )
+                self.assertIn(
+                    "gap_count_by_collection_priority",
+                    external_evidence[0]["external_authority_gap_summary"],
+                )
+                self.assertIn(
+                    "gap_count_by_requirement_phase",
+                    external_evidence[0]["external_authority_gap_summary"],
+                )
                 gap_worklist = control.external_authority_gaps(authority_kind="provider-api", limit=2)
                 self.assertEqual(2, len(gap_worklist["missing_authority_units"]))
                 self.assertEqual(2, gap_worklist["summary"]["returned_missing_authority_unit_count"])
                 self.assertGreater(gap_worklist["summary"]["selected_missing_authority_unit_count"], 2)
+                self.assertEqual(
+                    {"deployment-operations": gap_worklist["summary"]["selected_missing_authority_unit_count"]},
+                    gap_worklist["summary"]["gap_count_by_collection_priority"],
+                )
+                self.assertTrue(gap_worklist["summary"]["gap_count_by_requirement_phase"])
                 self.assertTrue(
                     all(unit["authority_kind"] == "provider-api" for unit in gap_worklist["missing_authority_units"])
                 )
