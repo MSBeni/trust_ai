@@ -338,6 +338,27 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             finally:
                 control.close()
             return
+        if parsed.path in ("/v0/multi-agent-evidence", "/v0/control/multi-agent-evidence"):
+            control = self._control()
+            try:
+                self._json_response(200, control.multi_agent_evidence())
+            finally:
+                control.close()
+            return
+        if parsed.path in ("/v0/byoc-evidence", "/v0/control/byoc-evidence"):
+            control = self._control()
+            try:
+                self._json_response(200, control.byoc_evidence())
+            finally:
+                control.close()
+            return
+        if parsed.path in ("/v0/identity-provider-evidence", "/v0/control/identity-provider-evidence"):
+            control = self._control()
+            try:
+                self._json_response(200, control.identity_provider_evidence())
+            finally:
+                control.close()
+            return
         if parsed.path == "/v0/roadmap-evidence":
             control = self._control()
             try:

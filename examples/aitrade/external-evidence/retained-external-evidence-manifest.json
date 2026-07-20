@@ -8,13 +8,13 @@
       ],
       "authority_kind": "ci-run",
       "description": "Snapshot of recorded verifier workflow run export",
-      "evidence_id": "8e933c8437bde8749dd11686bdb0f67a0791b4c7c31e42c7d535f7f1d4151f1b",
+      "evidence_id": "4b4832c4999a38233dc97e26aac005fe55cad5fadcf73084b2630d8d7a5ba484",
       "expires_at": "2026-12-31T00:00:00Z",
       "issued_at": "2026-07-08T00:00:00Z",
       "issuer": "GitHub Actions",
       "path": "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json",
       "requirement_id": "oss-verifier-and-public-spec",
-      "sha256": "sha256:4d120e70ce0b26b3c605a4b5dfc1ca7bed3b8ed1c61d0ecd5ec062cd25da86db",
+      "sha256": "sha256:97c8bec0d9bf5c3904c81ffe2868894464a3ce5770e964ef9906a868163eb4d1",
       "source_uri": "https://github.com/MSBeni/trust_ai/actions",
       "subject": "trustai go verifier release workflow"
     },
@@ -55,13 +55,13 @@
       "subject": "MSBeni/trust_ai hosted repository service"
     }
   ],
-  "generated_at": "2026-07-19T23:47:41Z",
+  "generated_at": "2026-07-20T04:57:13Z",
   "limitations": [
     "This manifest verifies supplied external evidence artifacts by hash; it does not fetch live provider state.",
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "f641a08774b6bcfe8b97fe10ac1c865e3acc135cf6cb40cefa9bc75fcbc39e6e",
+  "manifest_id": "3832c852dc0be4d5b9357eb59681c526f4f9d2eeb301ab68324cf149c26634e9",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -1269,8 +1269,8 @@
   ],
   "schema": "trustai.external-evidence-manifest/0.1",
   "source_roadmap_audit": {
-    "audit_hash": "e0f32944c99fd63fcf966117ede6e7785c627d277361fb5a259d995067f21868",
-    "audit_id": "40aaa8168ee28cc18a98a88a7a689b2844bdacc7a76b26f0758f0a55b2a7032d",
+    "audit_hash": "129c2f686fc9bd6236adeaee28979122cd29e9f927c7f936843270a9ac021211",
+    "audit_id": "35b9fc60922bb8b8575d66e5ee0132af491065464edc1ca9d0f0f04a5f6e6616",
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {

@@ -8,6 +8,8 @@ into queryable registry tables while keeping the chain as the source of truth.
 
 - `contracts`: registered Verification Contracts and agent version binding.
 - `agents`: discovered agent inventory records.
+- `agent_delegations`: signed parent/child agent delegation receipts bound to contracts and reasons.
+- `agent_delegation_graphs`: signed delegation graph exports with node/edge counts, roots, leaves, cycles, and source-chain bindings.
 - `chain_entries`: indexed evidence entries with type, timestamp, payload hash,
   and contract hash where present.
 - `eval_runs`: eval result evidence bound to contract and agent versions.
@@ -35,6 +37,14 @@ into queryable registry tables while keeping the chain as the source of truth.
 - `external_evidence_collection_runs`: retained live-authority collection-run provenance, source-map hashes, strict flags, and collected intake IDs.
 - `external_evidence_manifests`: roadmap external-authority coverage and missing-evidence counts.
 - `authority_dossiers`: production authority dossiers with mode, freshness windows, coverage, and missing requirement counts.
+- `byoc_operator_attestations`: BYOC operator, Object Lock, legal hold, keyring, network, backup, and audit-log attestations.
+- `byoc_authority_dossiers`: BYOC production-authority dossiers with deployment, operator, customer account, WORM, KMS, and freshness evidence.
+- `vendor_identity_receipts`: vendor identity receipts binding legal identity, identity-provider IDs, proof-pack counts, and trust-network references.
+- `identity_provider_attestations`: raw provider identity export attestations for agent identities.
+- `identity_provider_sessions`: identity-provider session and token event receipts.
+- `identity_provider_lifecycle_operations`: account/app/token lifecycle operation receipts.
+- `identity_provider_lifecycle_workers`: lifecycle propagation worker receipts with queue, scheduler, destination, and audit evidence.
+- `identity_provider_authority_dossiers`: identity-provider production-authority dossiers with lifecycle worker bindings, coverage, freshness, and controls.
 - `phase_scoreboards`: roadmap phase scoreboard dossiers with P1-P4 milestone and control counts.
 - `design_partner_dossiers`: Phase 1 design-partner pilot dossiers with partner, signed-value, scrutiny, and control summaries.
 - `own_compliance_dossiers`: TrustAI SOC 2 Type II / ISO 42001 own-compliance dossiers with certification evidence and control summaries.
@@ -55,7 +65,7 @@ into queryable registry tables while keeping the chain as the source of truth.
 
 ```powershell
 python -m trustai control-index --state .trustai/demo/evidence-chain.json --tenant aitrade-local --pack artifacts/aitrade-proof-pack.json --db .trustai/control-plane.sqlite --rebuild
-python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --holdout-evidence --mcp-evidence --onboarding-evidence --promotion-lifecycle-evidence --framework-adapter-evidence --review-portal-evidence --standards-auditor-evidence --trust-network-evidence --provider-delivery-evidence --provider-operations-evidence --compliance-evidence --policy-backend-evidence --insurer-evidence --roadmap-evidence --phase-scoreboards --design-partner-dossiers --own-compliance-dossiers --product-scope-decisions --vertical-packs --reliability-reports --readiness --external-evidence --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
+python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --holdout-evidence --mcp-evidence --onboarding-evidence --promotion-lifecycle-evidence --framework-adapter-evidence --review-portal-evidence --standards-auditor-evidence --trust-network-evidence --provider-delivery-evidence --provider-operations-evidence --compliance-evidence --policy-backend-evidence --insurer-evidence --multi-agent-evidence --byoc-evidence --identity-provider-evidence --roadmap-evidence --phase-scoreboards --design-partner-dossiers --own-compliance-dossiers --product-scope-decisions --vertical-packs --reliability-reports --readiness --external-evidence --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
 ```
 
 ## API
@@ -87,6 +97,9 @@ python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts
 - `GET /v0/compliance-evidence` or `GET /v0/control/compliance-evidence`;
 - `GET /v0/policy-backend-evidence` or `GET /v0/control/policy-backend-evidence`;
 - `GET /v0/insurer-evidence` or `GET /v0/control/insurer-evidence`;
+- `GET /v0/multi-agent-evidence` or `GET /v0/control/multi-agent-evidence`;
+- `GET /v0/byoc-evidence` or `GET /v0/control/byoc-evidence`;
+- `GET /v0/identity-provider-evidence` or `GET /v0/control/identity-provider-evidence`;
 - `GET /v0/roadmap-evidence`;
 - `GET /v0/phase-scoreboards` or `GET /v0/control/phase-scoreboards`;
 - `GET /v0/design-partner-dossiers` or `GET /v0/control/design-partner-dossiers`;
@@ -117,6 +130,12 @@ into one startup review surface with source-artifact, quickstart replay, and
 control-summary counts.
 The insurer evidence list binds underwriting quote receipts and insurer partner
 production-authority dossiers into one third-party underwriting review surface.
+The multi-agent evidence list binds delegation receipts and signed delegation
+graph exports into one cross-agent review surface. The BYOC evidence list binds
+operator attestations and production-authority dossiers into one self-hosted
+readiness surface. The identity-provider evidence list binds vendor identity,
+provider identity exports, sessions, lifecycle operations, lifecycle workers,
+and authority dossiers into one identity governance review surface.
 The promotion-lifecycle evidence list binds human approvals, demotions,
 rollbacks, and failed-soak demotion receipts into one CI/CD promotion review
 surface. The framework-adapter evidence list binds adapter matrices, native hook
