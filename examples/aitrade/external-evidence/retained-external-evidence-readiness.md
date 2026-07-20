@@ -1,0 +1,30 @@
+# External Evidence Production Readiness
+
+- Readiness ID: `bb4bcc6b7b261250ccf58afe093a63db1978851f5ea53e25aaf9b08534f0bbde`
+- Generated at: `2026-07-20T17:00:00Z`
+- Status: `not-ready`
+- Covered authority units: 3/70
+- Missing authority units: 67
+- Remaining collection tasks: 67
+- Placeholder source URIs: 67
+- Work packages: 10
+
+## Checks
+
+| Check | Status | Summary |
+|---|---|---|
+| `artifacts-verify` | `passed` | All referenced external-evidence artifacts verify. |
+| `authority-coverage-complete` | `failed` | Every required authority unit has accepted evidence. |
+| `collection-work-closed` | `failed` | No external-evidence collection tasks remain open. |
+| `source-map-live` | `failed` | Every source-map entry has a live authority source URI. |
+| `work-package-current` | `passed` | The work package covers the current remaining task set. |
+
+## Blockers
+
+- 67 authority units still lack accepted evidence
+- 67 external evidence collection tasks remain open
+- 67 source-map entries still use placeholder source URIs
+
+## Next Actions
+
+- Assign owner work packages, replace TODO source URIs with authority-owned sources, collect snapshots and intake receipts, rebuild the manifest, and rerun readiness with --require-ready.

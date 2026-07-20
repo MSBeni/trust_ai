@@ -349,6 +349,10 @@ it does not close an authority gap. A gap is closed only after a matching
 external authority artifact, snapshot, and intake receipt are verified and a new
 manifest is rebuilt.
 
+## External Evidence Readiness
+
+`external-evidence-readiness` writes a canonical production-readiness report over a verified retained manifest, collection plan, source map, gap report, roadmap audit, and optional work package. The report has schema `trustai.external-evidence-readiness/0.1`, a canonical `readiness_id`, source artifact hashes, readiness checks, blockers, and next actions. `external-evidence-readiness-verify --require-ready` MUST fail until every required authority unit is covered, every collection task is closed, every source-map URI is live, and the optional work package matches the remaining task set. This command is intended to separate CI health from production evidence completeness.
+
 ## External Evidence Work Package
 
 `external-evidence-work-package` emits

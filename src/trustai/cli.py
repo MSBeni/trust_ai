@@ -1073,6 +1073,7 @@ from .external_evidence import (
     build_external_evidence_manifest_from_intakes,
     build_external_evidence_gap_report,
     build_external_evidence_work_package,
+    build_external_evidence_readiness_report,
     build_external_evidence_source_map_template,
     fulfill_external_evidence_source_map,
     build_external_evidence_collection_plan,
@@ -1087,6 +1088,7 @@ from .external_evidence import (
     load_external_evidence_manifest,
     load_external_evidence_gap_report,
     load_external_evidence_work_package,
+    load_external_evidence_readiness_report,
     load_external_evidence_collection_plan,
     load_external_evidence_source_map,
     load_external_evidence_collection_run,
@@ -1101,6 +1103,7 @@ from .external_evidence import (
     verify_external_evidence_manifest,
     verify_external_evidence_gap_report,
     verify_external_evidence_work_package,
+    verify_external_evidence_readiness_report,
     verify_external_evidence_collection_plan,
     verify_external_evidence_source_map_template,
     verify_external_evidence_collection_run,
@@ -1114,6 +1117,8 @@ from .external_evidence import (
     write_external_evidence_gap_report_markdown,
     write_external_evidence_work_package,
     write_external_evidence_work_package_markdown,
+    write_external_evidence_readiness_report,
+    write_external_evidence_readiness_markdown,
     write_external_evidence_collection_plan,
     write_external_evidence_collection_plan_markdown,
     write_external_evidence_intake,
@@ -14463,6 +14468,106 @@ def cmd_external_evidence_gap_report_verify(args: argparse.Namespace) -> int:
         print(f"- {error}", file=sys.stderr)
     return 1
 
+
+
+def cmd_external_evidence_readiness(args: argparse.Namespace) -> int:
+    try:
+        roadmap_audit = load_roadmap_audit(args.roadmap_audit)
+        manifest = load_external_evidence_manifest(args.manifest)
+        plan = load_external_evidence_collection_plan(args.plan)
+        source_map = load_external_evidence_source_map(args.source_map)
+        gap_report = load_external_evidence_gap_report(args.gap_report)
+        work_package = load_external_evidence_work_package(args.work_package) if args.work_package else None
+        report = build_external_evidence_readiness_report(
+            gap_report,
+            manifest,
+            plan,
+            source_map,
+            roadmap_audit,
+            root=args.root,
+            work_package=work_package,
+            require_fresh=args.require_fresh,
+            now=args.now,
+            generated_at=args.generated_at,
+        )
+        result = verify_external_evidence_readiness_report(
+            report,
+            gap_report,
+            manifest,
+            plan,
+            source_map,
+            roadmap_audit,
+            root=args.root,
+            work_package=work_package,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence readiness failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("external evidence readiness verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_external_evidence_readiness_report(args.out, report)
+    if args.markdown:
+        write_external_evidence_readiness_markdown(args.markdown, report)
+        print(f"external evidence readiness markdown: {args.markdown}")
+    summary = report["summary"]
+    print(f"external evidence readiness: {args.out}")
+    print(f"readiness id: {report['readiness_id']}")
+    print(f"status: {summary['readiness_status']}")
+    print(f"covered authority units: {summary['covered_authority_kind_count']}/{summary['required_authority_kind_count']}")
+    print(f"missing authority units: {summary['missing_authority_kind_count']}")
+    print(f"remaining tasks: {summary['remaining_task_count']}")
+    print(f"placeholder source URIs: {summary['placeholder_source_uri_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    if args.require_ready and summary.get("readiness_status") != "ready":
+        print("external evidence is not production-ready", file=sys.stderr)
+        for blocker in report.get("blockers", []):
+            print(f"- {blocker}", file=sys.stderr)
+        return 1
+    return 0
+
+
+def cmd_external_evidence_readiness_verify(args: argparse.Namespace) -> int:
+    try:
+        roadmap_audit = load_roadmap_audit(args.roadmap_audit)
+        manifest = load_external_evidence_manifest(args.manifest)
+        plan = load_external_evidence_collection_plan(args.plan)
+        source_map = load_external_evidence_source_map(args.source_map)
+        gap_report = load_external_evidence_gap_report(args.gap_report)
+        work_package = load_external_evidence_work_package(args.work_package) if args.work_package else None
+        report = load_external_evidence_readiness_report(args.report)
+        result = verify_external_evidence_readiness_report(
+            report,
+            gap_report,
+            manifest,
+            plan,
+            source_map,
+            roadmap_audit,
+            root=args.root,
+            work_package=work_package,
+            require_ready=args.require_ready,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence readiness verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        summary = report.get("summary", {})
+        print(f"verified external evidence readiness: {args.report}")
+        print(f"readiness id: {report.get('readiness_id')}")
+        print(f"status: {summary.get('readiness_status')}")
+        print(f"missing authority units: {summary.get('missing_authority_kind_count', 0)}")
+        print(f"remaining tasks: {summary.get('remaining_task_count', 0)}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"external evidence readiness verification failed: {args.report}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
 def cmd_external_evidence_plan(args: argparse.Namespace) -> int:
     try:
         roadmap_audit = load_roadmap_audit(args.roadmap_audit)
@@ -25203,6 +25308,34 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_work_package_verify.add_argument("roadmap_audit")
     external_evidence_work_package_verify.add_argument("--root", default=".")
     external_evidence_work_package_verify.set_defaults(func=cmd_external_evidence_work_package_verify)
+
+    external_evidence_readiness = subparsers.add_parser("external-evidence-readiness", help="write a production-readiness report for retained external-evidence artifacts")
+    external_evidence_readiness.add_argument("gap_report")
+    external_evidence_readiness.add_argument("manifest")
+    external_evidence_readiness.add_argument("plan")
+    external_evidence_readiness.add_argument("source_map")
+    external_evidence_readiness.add_argument("roadmap_audit")
+    external_evidence_readiness.add_argument("--work-package")
+    external_evidence_readiness.add_argument("--root", default=".")
+    external_evidence_readiness.add_argument("--require-fresh", action="store_true")
+    external_evidence_readiness.add_argument("--require-ready", action="store_true", help="exit non-zero unless the readiness report is production-ready")
+    external_evidence_readiness.add_argument("--now", help="RFC3339 verification time for freshness checks")
+    external_evidence_readiness.add_argument("--generated-at")
+    external_evidence_readiness.add_argument("--out", default="artifacts/external-evidence-readiness.json")
+    external_evidence_readiness.add_argument("--markdown", default="artifacts/external-evidence-readiness.md")
+    external_evidence_readiness.set_defaults(func=cmd_external_evidence_readiness)
+
+    external_evidence_readiness_verify = subparsers.add_parser("external-evidence-readiness-verify", help="verify an external-evidence production-readiness report")
+    external_evidence_readiness_verify.add_argument("report")
+    external_evidence_readiness_verify.add_argument("gap_report")
+    external_evidence_readiness_verify.add_argument("manifest")
+    external_evidence_readiness_verify.add_argument("plan")
+    external_evidence_readiness_verify.add_argument("source_map")
+    external_evidence_readiness_verify.add_argument("roadmap_audit")
+    external_evidence_readiness_verify.add_argument("--work-package")
+    external_evidence_readiness_verify.add_argument("--root", default=".")
+    external_evidence_readiness_verify.add_argument("--require-ready", action="store_true", help="exit non-zero unless the readiness report is production-ready")
+    external_evidence_readiness_verify.set_defaults(func=cmd_external_evidence_readiness_verify)
     external_evidence_append = subparsers.add_parser("external-evidence-append", help="append a verified external-evidence manifest to an evidence chain")
     external_evidence_append.add_argument("manifest")
     external_evidence_append.add_argument("roadmap_audit")

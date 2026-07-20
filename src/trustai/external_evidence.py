@@ -26,6 +26,7 @@ EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA = "trustai.external-evidence-source-map/0.1"
 EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA = "trustai.external-evidence-collection-run/0.1"
 EXTERNAL_EVIDENCE_GAP_REPORT_SCHEMA = "trustai.external-evidence-gap-report/0.1"
 EXTERNAL_EVIDENCE_WORK_PACKAGE_SCHEMA = "trustai.external-evidence-work-package/0.1"
+EXTERNAL_EVIDENCE_READINESS_SCHEMA = "trustai.external-evidence-readiness/0.1"
 EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA = "trustai.external-evidence-git-remote-ref-export/0.1"
 
 BUNDLE_SOURCE_ARTIFACT_KINDS = {
@@ -210,6 +211,13 @@ class ExternalEvidenceGapReportVerification:
 
 @dataclass
 class ExternalEvidenceWorkPackageVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class ExternalEvidenceReadinessVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -1564,6 +1572,170 @@ def verify_external_evidence_work_package(
         warnings.extend(gap_result.warnings)
     return ExternalEvidenceWorkPackageVerification(ok=not errors, errors=errors, warnings=warnings)
 
+
+
+def _external_evidence_readiness_check(check_id: str, ok: bool, summary: str) -> dict[str, Any]:
+    return {"id": check_id, "status": "passed" if ok else "failed", "summary": summary}
+
+
+def _external_evidence_readiness_count(summary: dict[str, Any], key: str) -> int:
+    value = summary.get(key)
+    return value if isinstance(value, int) else 0
+
+
+def build_external_evidence_readiness_report(
+    gap_report: dict[str, Any],
+    manifest: dict[str, Any],
+    plan: dict[str, Any],
+    source_map: dict[str, Any],
+    roadmap_audit: dict[str, Any],
+    *,
+    root: str | Path,
+    work_package: dict[str, Any] | None = None,
+    require_fresh: bool = False,
+    now: str | None = None,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    manifest_result = verify_external_evidence_manifest(manifest, roadmap_audit, root=root, require_fresh=require_fresh, now=now)
+    plan_result = verify_external_evidence_collection_plan(plan, manifest, roadmap_audit, root=root)
+    source_map_result = verify_external_evidence_source_map_template(source_map, plan, root=root)
+    gap_result = verify_external_evidence_gap_report(gap_report, manifest, plan, source_map, roadmap_audit, root=root, require_fresh=require_fresh, now=now)
+    work_result = None
+    if work_package is not None:
+        work_result = verify_external_evidence_work_package(work_package, gap_report, manifest, plan, source_map, roadmap_audit, root=root)
+
+    errors: list[str] = []
+    warnings: list[str] = []
+    for label, result in (("manifest", manifest_result), ("collection plan", plan_result), ("source map", source_map_result), ("gap report", gap_result)):
+        errors.extend(f"{label}: {error}" for error in result.errors)
+        warnings.extend(f"{label}: {warning}" for warning in result.warnings)
+    if work_result is not None:
+        errors.extend(f"work package: {error}" for error in work_result.errors)
+        warnings.extend(f"work package: {warning}" for warning in work_result.warnings)
+
+    manifest_summary = manifest.get("summary", {}) if isinstance(manifest.get("summary"), dict) else {}
+    gap_summary = gap_report.get("summary", {}) if isinstance(gap_report.get("summary"), dict) else {}
+    work_summary = work_package.get("summary", {}) if isinstance(work_package, dict) and isinstance(work_package.get("summary"), dict) else {}
+    missing_authority = _external_evidence_readiness_count(gap_summary, "missing_authority_kind_count")
+    remaining_tasks = _external_evidence_readiness_count(gap_summary, "remaining_task_count")
+    placeholder_uris = _external_evidence_readiness_count(gap_summary, "placeholder_source_uri_count")
+    work_tasks = _external_evidence_readiness_count(work_summary, "task_count")
+    work_packages = _external_evidence_readiness_count(work_summary, "package_count")
+
+    blockers: list[str] = []
+    if errors:
+        blockers.append("underlying external-evidence artifacts do not verify")
+    if missing_authority:
+        blockers.append(f"{missing_authority} authority units still lack accepted evidence")
+    if remaining_tasks:
+        blockers.append(f"{remaining_tasks} external evidence collection tasks remain open")
+    if placeholder_uris:
+        blockers.append(f"{placeholder_uris} source-map entries still use placeholder source URIs")
+    if work_package is None and remaining_tasks:
+        blockers.append("remaining tasks are not bound to a current work package")
+    if work_package is not None and work_tasks != remaining_tasks:
+        blockers.append("work package task count does not match gap report remaining task count")
+    status = "ready" if not blockers else "not-ready"
+
+    body = {
+        "schema": EXTERNAL_EVIDENCE_READINESS_SCHEMA,
+        "generated_at": generated_at or utc_now(),
+        "readiness_status": status,
+        "sources": {
+            "gap_report": _gap_report_source_record(gap_report, "gap_report_id", "gap_report_hash"),
+            "manifest": _gap_report_source_record(manifest, "manifest_id", "manifest_hash"),
+            "collection_plan": _gap_report_source_record(plan, "plan_id", "plan_hash"),
+            "source_map": _gap_report_source_record(source_map, "source_map_id", "source_map_hash"),
+            "roadmap_audit": _gap_report_source_record(roadmap_audit, "audit_id", "audit_hash"),
+        },
+        "summary": {
+            "readiness_status": status,
+            "required_requirement_count": _external_evidence_readiness_count(manifest_summary, "required_requirement_count"),
+            "covered_requirement_count": _external_evidence_readiness_count(manifest_summary, "covered_requirement_count"),
+            "missing_requirement_count": _external_evidence_readiness_count(gap_summary, "missing_requirement_count"),
+            "required_authority_kind_count": _external_evidence_readiness_count(gap_summary, "required_authority_kind_count"),
+            "covered_authority_kind_count": _external_evidence_readiness_count(gap_summary, "covered_authority_kind_count"),
+            "missing_authority_kind_count": missing_authority,
+            "remaining_task_count": remaining_tasks,
+            "source_map_entry_count": _external_evidence_readiness_count(gap_summary, "source_map_entry_count"),
+            "placeholder_source_uri_count": placeholder_uris,
+            "live_source_uri_count": _external_evidence_readiness_count(gap_summary, "live_source_uri_count"),
+            "work_package_count": work_packages,
+            "work_package_task_count": work_tasks,
+            "blocking_issue_count": len(blockers),
+        },
+        "checks": [
+            _external_evidence_readiness_check("artifacts-verify", not errors, "All referenced external-evidence artifacts verify."),
+            _external_evidence_readiness_check("authority-coverage-complete", missing_authority == 0, "Every required authority unit has accepted evidence."),
+            _external_evidence_readiness_check("collection-work-closed", remaining_tasks == 0, "No external-evidence collection tasks remain open."),
+            _external_evidence_readiness_check("source-map-live", placeholder_uris == 0, "Every source-map entry has a live authority source URI."),
+            _external_evidence_readiness_check("work-package-current", work_package is not None and work_tasks == remaining_tasks, "The work package covers the current remaining task set."),
+        ],
+        "blockers": blockers,
+        "next_actions": [
+            "Assign owner work packages, replace TODO source URIs with authority-owned sources, collect snapshots and intake receipts, rebuild the manifest, and rerun readiness with --require-ready."
+            if blockers else
+            "Append the complete external-evidence manifest to the roadmap evidence chain and publish the proof bundle."
+        ],
+        "verification_options": {"require_fresh": require_fresh, "now": now},
+        "verification": {"ok": not errors, "error_count": len(errors), "warning_count": len(warnings), "errors": errors, "warnings": warnings},
+        "limitations": [
+            "This readiness report proves production external-evidence completeness; it does not collect missing authority evidence by itself.",
+            "A not-ready status is expected until every roadmap authority unit has live source evidence, source snapshots, intake receipts, and a rebuilt manifest.",
+        ],
+    }
+    if work_package is not None:
+        body["sources"]["work_package"] = _gap_report_source_record(work_package, "work_package_id", "work_package_hash")
+    return {**body, "readiness_id": content_hash(body)}
+
+
+def verify_external_evidence_readiness_report(
+    report: dict[str, Any],
+    gap_report: dict[str, Any],
+    manifest: dict[str, Any],
+    plan: dict[str, Any],
+    source_map: dict[str, Any],
+    roadmap_audit: dict[str, Any],
+    *,
+    root: str | Path,
+    work_package: dict[str, Any] | None = None,
+    require_ready: bool = False,
+) -> ExternalEvidenceReadinessVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if report.get("schema") != EXTERNAL_EVIDENCE_READINESS_SCHEMA:
+        errors.append(f"unsupported external evidence readiness schema: {report.get('schema')}")
+    if report.get("readiness_id") != content_hash(without_keys(report, "readiness_id")):
+        errors.append("readiness_id does not match canonical readiness body")
+    options = report.get("verification_options", {}) if isinstance(report.get("verification_options"), dict) else {}
+    expected = build_external_evidence_readiness_report(
+        gap_report,
+        manifest,
+        plan,
+        source_map,
+        roadmap_audit,
+        root=root,
+        work_package=work_package,
+        require_fresh=bool(options.get("require_fresh")),
+        now=options.get("now"),
+        generated_at=str(report.get("generated_at") or ""),
+    )
+    if without_keys(report, "readiness_id") != without_keys(expected, "readiness_id"):
+        errors.append("readiness report body does not match supplied external-evidence artifacts")
+    expected_warnings = expected.get("verification", {}).get("warnings", [])
+    if isinstance(expected_warnings, list):
+        warnings.extend(str(warning) for warning in expected_warnings)
+    summary = report.get("summary", {}) if isinstance(report.get("summary"), dict) else {}
+    if require_ready and summary.get("readiness_status") != "ready":
+        errors.append(
+            "external evidence is not production-ready: "
+            f"remaining_tasks={summary.get('remaining_task_count', 0)}, "
+            f"missing_authority_units={summary.get('missing_authority_kind_count', 0)}, "
+            f"placeholder_source_uris={summary.get('placeholder_source_uri_count', 0)}"
+        )
+    return ExternalEvidenceReadinessVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
 def build_external_evidence_source_snapshot(
     *,
     source_uri: str,
@@ -2831,6 +3003,22 @@ def write_external_evidence_work_package_markdown(path: str | Path, work_package
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(render_external_evidence_work_package_markdown(work_package), encoding="utf-8")
 
+
+def write_external_evidence_readiness_report(path: str | Path, report: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(report, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_external_evidence_readiness_report(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def write_external_evidence_readiness_markdown(path: str | Path, report: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_external_evidence_readiness_markdown(report), encoding="utf-8")
+
 def write_roadmap_evidence_report(path: str | Path, report: dict[str, Any]) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -2973,6 +3161,46 @@ def render_external_evidence_work_package_markdown(work_package: dict[str, Any])
             lines.append("")
     else:
         lines.append("No work packages.")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+
+def render_external_evidence_readiness_markdown(report: dict[str, Any]) -> str:
+    summary = report.get("summary", {}) if isinstance(report.get("summary"), dict) else {}
+    lines = [
+        "# External Evidence Production Readiness",
+        "",
+        f"- Readiness ID: `{report.get('readiness_id')}`",
+        f"- Generated at: `{report.get('generated_at')}`",
+        f"- Status: `{summary.get('readiness_status')}`",
+        f"- Covered authority units: {summary.get('covered_authority_kind_count', 0)}/{summary.get('required_authority_kind_count', 0)}",
+        f"- Missing authority units: {summary.get('missing_authority_kind_count', 0)}",
+        f"- Remaining collection tasks: {summary.get('remaining_task_count', 0)}",
+        f"- Placeholder source URIs: {summary.get('placeholder_source_uri_count', 0)}",
+        f"- Work packages: {summary.get('work_package_count', 0)}",
+        "",
+        "## Checks",
+        "",
+        "| Check | Status | Summary |",
+        "|---|---|---|",
+    ]
+    checks = report.get("checks", [])
+    if isinstance(checks, list):
+        for check in checks:
+            if isinstance(check, dict):
+                lines.append(f"| `{_markdown_cell(check.get('id'))}` | `{_markdown_cell(check.get('status'))}` | {_markdown_cell(check.get('summary'))} |")
+    blockers = report.get("blockers", [])
+    lines.extend(["", "## Blockers", ""])
+    if isinstance(blockers, list) and blockers:
+        lines.extend(f"- {_markdown_cell(blocker)}" for blocker in blockers)
+    else:
+        lines.append("- None")
+    next_actions = report.get("next_actions", [])
+    lines.extend(["", "## Next Actions", ""])
+    if isinstance(next_actions, list) and next_actions:
+        lines.extend(f"- {_markdown_cell(action)}" for action in next_actions)
+    else:
+        lines.append("- None")
     return "\n".join(lines).rstrip() + "\n"
 
 def render_external_evidence_gap_report_markdown(report: dict[str, Any]) -> str:
