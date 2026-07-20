@@ -374,8 +374,10 @@ Required fields:
   placeholder/live source URI counts, and task counts by owner, authority kind,
   phase, priority, requirement, and package.
 - `packages`: grouped task packages. Each package records a deterministic
-  `package_id`, grouped task counts, authority/requirement coverage lists,
-  package-level batch/rebuild commands, and task-level collection commands.
+  `package_id`, `group_by`, `group_key`, the selected grouping field (for
+  example `owner_hint` when grouped for owners), grouped task counts,
+  authority/requirement coverage lists, package-level batch/rebuild commands,
+  and task-level collection commands.
 
 `external-evidence-work-package-verify` recomputes the source gap-report
 verification options, verifies every source artifact, rebuilds the work package

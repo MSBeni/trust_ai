@@ -593,6 +593,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual(2, work_package["summary"]["placeholder_source_uri_count"])
         package = work_package["packages"][0]
         self.assertEqual("integration/platform owner", package["group_key"])
+        self.assertEqual("integration/platform owner", package["owner_hint"])
         self.assertEqual(["provider-api"], package["authority_kinds"])
         self.assertIn("external-evidence-manifest-from-intakes", package["commands"]["rebuild_manifest_command"])
         task = package["tasks"][0]
@@ -605,6 +606,21 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
 
         tampered = copy.deepcopy(work_package)
         tampered["packages"][0]["tasks"][0]["owner_hint"] = "wrong owner"
+        tampered["work_package_id"] = content_hash(without_keys(tampered, "work_package_id"))
+        tampered_result = verify_external_evidence_work_package(
+            tampered,
+            gap_report,
+            manifest,
+            plan,
+            source_map,
+            audit,
+            root=ROOT,
+        )
+        self.assertFalse(tampered_result.ok)
+        self.assertTrue(any("work package body" in error for error in tampered_result.errors), tampered_result.errors)
+
+        tampered = copy.deepcopy(work_package)
+        tampered["packages"][0]["owner_hint"] = "wrong owner"
         tampered["work_package_id"] = content_hash(without_keys(tampered, "work_package_id"))
         tampered_result = verify_external_evidence_work_package(
             tampered,

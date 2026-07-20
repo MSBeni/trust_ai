@@ -1,7 +1,7 @@
 # External Evidence Work Packages
 
-- Work package ID: `3537fbd340d65e57520b6f1ebd22a2c896647c9a2749f9a2f3e5c5c42b7c674b`
-- Generated at: `2026-07-20T15:01:15Z`
+- Work package ID: `397733d18d306a6d3f78ee22e388e5939ccbab08b29b45c2fb70473df276b39c`
+- Generated at: `2026-07-20T16:53:03Z`
 - Grouped by: `owner_hint`
 - Packages: 10
 - Tasks: 67
@@ -27,7 +27,8 @@
 ### IAM/identity owner
 
 - Package ref: `owner_hint:IAM-identity-owner`
-- Package ID: `23574c7cefbb61a075fcd3e9bce2a71743bec2eddd8066ab79f9a7c5729146f9`
+- Package ID: `305e5915b6915ee94ad63975faa9e340312d90ad6875a2e0caefce16ce14c95c`
+- Owner Hint: `IAM/identity owner`
 - Tasks: 8
 - Authority kinds: `identity-provider`
 - Requirements: `agent-inventory-and-identity`, `auditor-and-review-portal`, `cicd-provider-approvals`, `insurer-api-and-actuarial-products`, `runtime-policy-and-attestation`, `self-serve-onboarding`, `shadow-replay-temporal-holdout`, `trust-network-procurement-and-marketplace`
@@ -67,7 +68,8 @@
 ### cloud storage owner
 
 - Package ref: `owner_hint:cloud-storage-owner`
-- Package ID: `000cdf99b51aed61aed50e9058a81445baf84ccc61f257434b534899ae5ae8be`
+- Package ID: `f976ff97e618a9fce1d9d9e7045832ed202195e92415c72ac1e4f44945725ab3`
+- Owner Hint: `cloud storage owner`
 - Tasks: 1
 - Authority kinds: `cloud-object-lock`
 - Requirements: `byoc-self-hosted`
@@ -86,7 +88,8 @@
 ### customer success/account owner
 
 - Package ref: `owner_hint:customer-success-account-owner`
-- Package ID: `15388d11aee475ae016c81c256335e045eba91f43e469b95584dd3ec5978535d`
+- Package ID: `173656b21888e8ab8844f21b7a0d9c3131bcc74814956963f971cb41090013fa`
+- Owner Hint: `customer success/account owner`
 - Tasks: 9
 - Authority kinds: `customer`
 - Requirements: `byoc-self-hosted`, `design-partner-pilot-exit-criteria`, `insurer-api-and-actuarial-products`, `product-scope-discipline`, `roadmap-phase-scoreboard`, `state-of-agent-reliability-report`, `trust-network-procurement-and-marketplace`, `trustai-own-compliance`, `vertical-packs`
@@ -129,7 +132,8 @@
 ### integration/platform owner
 
 - Package ref: `owner_hint:integration-platform-owner`
-- Package ID: `6a216ac3d4b8dadb8ab0f1620bc5e51d16926288f6ecd64bd45cfae5493f3bd6`
+- Package ID: `b21c3b0b0c916b6263e27387f2984584a6b1fbfb6d7402837eceb4d0cc72d5d4`
+- Owner Hint: `integration/platform owner`
 - Tasks: 11
 - Authority kinds: `provider-api`
 - Requirements: `agent-inventory-and-identity`, `auditor-and-review-portal`, `byoc-self-hosted`, `cicd-provider-approvals`, `compliance-mapper-and-eu-ai-act`, `framework-adapters`, `insurer-api-and-actuarial-products`, `mcp-gateway`, `runtime-policy-and-attestation`, `shadow-replay-temporal-holdout`, `trust-network-procurement-and-marketplace`
@@ -178,7 +182,8 @@
 ### legal/compliance owner
 
 - Package ref: `owner_hint:legal-compliance-owner`
-- Package ID: `8cbefe627805e87b08f1ad430585dc652ad92937582aac2834000284248fc012`
+- Package ID: `4e98051ef3a152b44a99a546ceb33010a96ef2f20fabc9b9e76b173524fa6fd7`
+- Owner Hint: `legal/compliance owner`
 - Tasks: 5
 - Authority kinds: `regulator`
 - Requirements: `auditor-and-review-portal`, `compliance-mapper-and-eu-ai-act`, `design-partner-pilot-exit-criteria`, `roadmap-phase-scoreboard`, `vertical-packs`
@@ -209,7 +214,8 @@
 ### release engineering
 
 - Package ref: `owner_hint:release-engineering`
-- Package ID: `cfe6b17cafe0d8fbfcdc87be20c840c71fe5bed7d66e9d9c59c60e95b85f59c7`
+- Package ID: `100c06372d9ac0318da90b4894afe277448361a70b40641ba1e3f9919215d6d7`
+- Owner Hint: `release engineering`
 - Tasks: 8
 - Authority kinds: `ci-run`
 - Requirements: `byoc-self-hosted`, `cicd-provider-approvals`, `framework-adapters`, `insurer-api-and-actuarial-products`, `mcp-gateway`, `product-scope-discipline`, `roadmap-phase-scoreboard`, `runtime-policy-and-attestation`
@@ -249,7 +255,8 @@
 ### risk/insurance owner
 
 - Package ref: `owner_hint:risk-insurance-owner`
-- Package ID: `1175fb6387e3bf1c193b5edc0d25ffbd9889eca1c56856e1ee9ec036b91b13ee`
+- Package ID: `eb26c2da080d549ddd6745a8e1ecf419b7b898a00fd4e075107ab1680e06eb5c`
+- Owner Hint: `risk/insurance owner`
 - Tasks: 4
 - Authority kinds: `insurer`
 - Requirements: `design-partner-pilot-exit-criteria`, `insurer-api-and-actuarial-products`, `roadmap-phase-scoreboard`, `vertical-packs`
@@ -277,7 +284,8 @@
 ### security/platform KMS owner
 
 - Package ref: `owner_hint:security-platform-KMS-owner`
-- Package ID: `ea230c2257919cfc037515e3209a17ab8eec9b8a4b8a7816cf860b25decd93f4`
+- Package ID: `24611b066dab2b414cddf0b94149f35fc790a327e1995cec89f419018a8bb667`
+- Owner Hint: `security/platform KMS owner`
 - Tasks: 7
 - Authority kinds: `kms-hsm`
 - Requirements: `auditor-and-review-portal`, `byoc-self-hosted`, `insurer-api-and-actuarial-products`, `mcp-gateway`, `runtime-policy-and-attestation`, `shadow-replay-temporal-holdout`, `standards-track-and-auditor-ecosystem`
@@ -314,7 +322,8 @@
 ### service owner
 
 - Package ref: `owner_hint:service-owner`
-- Package ID: `39918cebe55862419723e6dcfe39e8b82187930c50caa888d892547188e1787f`
+- Package ID: `0bf6219cdea3901adbab27dc9f65c31f3f894d304214fc5c3b99dc4d26a2b626`
+- Owner Hint: `service owner`
 - Tasks: 8
 - Authority kinds: `hosted-service`
 - Requirements: `auditor-and-review-portal`, `cicd-provider-approvals`, `framework-adapters`, `insurer-api-and-actuarial-products`, `mcp-gateway`, `runtime-policy-and-attestation`, `self-serve-onboarding`, `trust-network-procurement-and-marketplace`
@@ -354,7 +363,8 @@
 ### standards/governance owner
 
 - Package ref: `owner_hint:standards-governance-owner`
-- Package ID: `0e209c583655801b2b6448753ba42b65258dceaeb757c22c352797b9468a5139`
+- Package ID: `4ac961d1b44e7a59cd113fc834af2ce38834d213418b3d829821ddb4ed7a6eea`
+- Owner Hint: `standards/governance owner`
 - Tasks: 6
 - Authority kinds: `standards-body`
 - Requirements: `byoc-self-hosted`, `compliance-mapper-and-eu-ai-act`, `roadmap-phase-scoreboard`, `shadow-replay-temporal-holdout`, `standards-track-and-auditor-ecosystem`, `trustai-own-compliance`

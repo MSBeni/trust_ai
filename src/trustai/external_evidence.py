@@ -1454,6 +1454,7 @@ def build_external_evidence_work_package(
             "package_ref": f"{group_by}:{_source_map_path_segment(group_key)}",
             "group_by": group_by,
             "group_key": group_key,
+            group_by: group_key,
             "task_count": len(package_tasks),
             "missing_task_count": sum(1 for task in package_tasks if task.get("coverage_status") == "missing"),
             "covered_task_count": sum(1 for task in package_tasks if task.get("coverage_status") == "covered"),
@@ -2928,6 +2929,10 @@ def render_external_evidence_work_package_markdown(work_package: dict[str, Any])
             lines.append("")
             lines.append(f"- Package ref: `{package.get('package_ref')}`")
             lines.append(f"- Package ID: `{package.get('package_id')}`")
+            group_by = package.get("group_by")
+            if isinstance(group_by, str) and group_by:
+                label = group_by.replace("_", " ").title()
+                lines.append(f"- {label}: `{_markdown_cell(package.get(group_by))}`")
             lines.append(f"- Tasks: {package.get('task_count', 0)}")
             lines.append(f"- Authority kinds: {_markdown_code_list(package.get('authority_kinds', []))}")
             lines.append(f"- Requirements: {_markdown_code_list(package.get('requirement_ids', []))}")
