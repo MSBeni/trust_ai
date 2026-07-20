@@ -8,18 +8,18 @@
     ],
     "authority_kind": "ci-run",
     "description": "Snapshot of recorded verifier workflow run export",
-    "evidence_id": "4b4832c4999a38233dc97e26aac005fe55cad5fadcf73084b2630d8d7a5ba484",
+    "evidence_id": "57cd38159899bcc92abe86bccc67e14ef202334ae1c158a98cd2f82241349472",
     "expires_at": "2026-12-31T00:00:00Z",
     "issued_at": "2026-07-08T00:00:00Z",
     "issuer": "GitHub Actions",
     "path": "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json",
     "requirement_id": "oss-verifier-and-public-spec",
-    "sha256": "sha256:97c8bec0d9bf5c3904c81ffe2868894464a3ce5770e964ef9906a868163eb4d1",
+    "sha256": "sha256:32573d2dc793d9d7a4aa2bbf8abd0ec2a1a93bf3f73a3066c133ba4abb27c866",
     "source_uri": "https://github.com/MSBeni/trust_ai/actions",
     "subject": "trustai go verifier release workflow"
   },
-  "generated_at": "2026-07-20T04:55:13Z",
-  "intake_id": "863d2a98ac2d7de784d3b045fbcb37a08261d452986417fce005f8951ca17021",
+  "generated_at": "2026-07-20T05:11:28Z",
+  "intake_id": "e65c885a6dae9b68bb02a6949e209ae8f479998194f2d1b0961fff66618f43ef",
   "limitations": [
     "This intake receipt hashes and maps one collected artifact to a collection-plan task; it does not itself satisfy roadmap completion.",
     "Coverage is updated only after rebuilding and verifying an external evidence manifest with the emitted evidence argument.",
@@ -28,28 +28,28 @@
   "schema": "trustai.external-evidence-intake/0.1",
   "source_manifest": {
     "covered_authority_kind_count": 1,
-    "manifest_hash": "af6c4531184a28a9162f2698d5ee9bbf92fd715b4bd79e160d9926933913272d",
-    "manifest_id": "dd419a681cd8973b88993a74bde0cce8f89689f70793b7b46b973945dc638959",
+    "manifest_hash": "0bd6f6b5d1eec57bf19a2aec5d2420d45c848b7a5e3bde5897eb09c9deddc565",
+    "manifest_id": "90820660b6647f92a8e8c60ce3ead3ee86dc57bc91b7eda7a816ed5ce371d1cf",
     "manifest_ref": "production-external-evidence",
     "missing_authority_kind_count": 69,
     "required_authority_kind_count": 70,
     "status": "partial"
   },
   "source_plan": {
-    "plan_hash": "385e51ac89cc1824652a2bbcd7e66a317402ea3183fc8e2a0bfe56214d4a40bc",
-    "plan_id": "e6ab6f13ededeacf8476b80c2a13de7c9fd1ba19b8f78016170eda8b9b0620dc",
+    "plan_hash": "fe9af38e2291d3d3d3ab5454f49dd396be854a4d946e3437a8cd0a623fd209b4",
+    "plan_id": "547b59fac2e279400fd4f204cfc977eaea57bc263f607467b90285ebe8253391",
     "source_manifest": {
-      "generated_at": "2026-07-20T00:06:24Z",
-      "manifest_hash": "af6c4531184a28a9162f2698d5ee9bbf92fd715b4bd79e160d9926933913272d",
-      "manifest_id": "dd419a681cd8973b88993a74bde0cce8f89689f70793b7b46b973945dc638959",
+      "generated_at": "2026-07-20T05:09:57Z",
+      "manifest_hash": "0bd6f6b5d1eec57bf19a2aec5d2420d45c848b7a5e3bde5897eb09c9deddc565",
+      "manifest_id": "90820660b6647f92a8e8c60ce3ead3ee86dc57bc91b7eda7a816ed5ce371d1cf",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },
     "status_filter": "all"
   },
   "source_roadmap_audit": {
-    "audit_hash": "129c2f686fc9bd6236adeaee28979122cd29e9f927c7f936843270a9ac021211",
-    "audit_id": "35b9fc60922bb8b8575d66e5ee0132af491065464edc1ca9d0f0f04a5f6e6616",
+    "audit_hash": "be0eda7e12141b380a1c2597f28c57740e55398ffb4e836e3e42c72fc38c554c",
+    "audit_id": "a3bc2b9ee889d89742c2dc2613f25f6667a9a2824ea104e9171a31fa0177a0c8",
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "task": {

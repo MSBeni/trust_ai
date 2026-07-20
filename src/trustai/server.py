@@ -191,56 +191,56 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             finally:
                 control.close()
             return
-        if parsed.path == "/v0/contracts":
+        if parsed.path in ("/v0/contracts", "/v0/control/contracts"):
             control = self._control()
             try:
                 self._json_response(200, {"contracts": control.contracts()})
             finally:
                 control.close()
             return
-        if parsed.path == "/v0/agents":
+        if parsed.path in ("/v0/agents", "/v0/control/agents"):
             control = self._control()
             try:
                 self._json_response(200, {"agents": control.agents()})
             finally:
                 control.close()
             return
-        if parsed.path == "/v0/eval-runs":
+        if parsed.path in ("/v0/eval-runs", "/v0/control/eval-runs"):
             control = self._control()
             try:
                 self._json_response(200, {"eval_runs": control.recent_eval_runs()})
             finally:
                 control.close()
             return
-        if parsed.path == "/v0/gate-decisions":
+        if parsed.path in ("/v0/gate-decisions", "/v0/control/gate-decisions"):
             control = self._control()
             try:
                 self._json_response(200, {"gate_decisions": control.recent_gate_decisions()})
             finally:
                 control.close()
             return
-        if parsed.path == "/v0/proof-packs":
+        if parsed.path in ("/v0/proof-packs", "/v0/control/proof-packs"):
             control = self._control()
             try:
                 self._json_response(200, {"proof_packs": control.recent_proof_packs()})
             finally:
                 control.close()
             return
-        if parsed.path == "/v0/ingest-events":
+        if parsed.path in ("/v0/ingest-events", "/v0/control/ingest-events"):
             control = self._control()
             try:
                 self._json_response(200, {"ingest_events": control.recent_ingest_events()})
             finally:
                 control.close()
             return
-        if parsed.path == "/v0/promotion-statuses":
+        if parsed.path in ("/v0/promotion-statuses", "/v0/control/promotion-statuses"):
             control = self._control()
             try:
                 self._json_response(200, {"promotion_statuses": control.recent_promotion_statuses()})
             finally:
                 control.close()
             return
-        if parsed.path == "/v0/runtime-evidence":
+        if parsed.path in ("/v0/runtime-evidence", "/v0/control/runtime-evidence"):
             control = self._control()
             try:
                 self._json_response(200, control.runtime_evidence())

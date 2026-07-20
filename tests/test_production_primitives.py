@@ -149,6 +149,24 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual(200, contracts_response.status)
                 self.assertEqual([], contracts_body["contracts"])
 
+                conn.request("GET", "/v0/control/contracts")
+                control_contracts_response = conn.getresponse()
+                control_contracts_body = json.loads(control_contracts_response.read().decode("utf-8"))
+                self.assertEqual(200, control_contracts_response.status)
+                self.assertEqual([], control_contracts_body["contracts"])
+
+                conn.request("GET", "/v0/agents")
+                agents_response = conn.getresponse()
+                agents_body = json.loads(agents_response.read().decode("utf-8"))
+                self.assertEqual(200, agents_response.status)
+                self.assertEqual([], agents_body["agents"])
+
+                conn.request("GET", "/v0/control/agents")
+                control_agents_response = conn.getresponse()
+                control_agents_body = json.loads(control_agents_response.read().decode("utf-8"))
+                self.assertEqual(200, control_agents_response.status)
+                self.assertEqual([], control_agents_body["agents"])
+
                 conn.request("GET", "/v0/control/contract-evidence")
                 missing_scope_response = conn.getresponse()
                 missing_scope_body = json.loads(missing_scope_response.read().decode("utf-8"))
@@ -186,11 +204,47 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual(200, eval_runs_response.status)
                 self.assertEqual([], eval_runs_body["eval_runs"])
 
+                conn.request("GET", "/v0/control/eval-runs")
+                control_eval_runs_response = conn.getresponse()
+                control_eval_runs_body = json.loads(control_eval_runs_response.read().decode("utf-8"))
+                self.assertEqual(200, control_eval_runs_response.status)
+                self.assertEqual([], control_eval_runs_body["eval_runs"])
+
                 conn.request("GET", "/v0/gate-decisions")
                 gate_decisions_response = conn.getresponse()
                 gate_decisions_body = json.loads(gate_decisions_response.read().decode("utf-8"))
                 self.assertEqual(200, gate_decisions_response.status)
                 self.assertEqual([], gate_decisions_body["gate_decisions"])
+
+                conn.request("GET", "/v0/control/gate-decisions")
+                control_gate_decisions_response = conn.getresponse()
+                control_gate_decisions_body = json.loads(control_gate_decisions_response.read().decode("utf-8"))
+                self.assertEqual(200, control_gate_decisions_response.status)
+                self.assertEqual([], control_gate_decisions_body["gate_decisions"])
+
+                conn.request("GET", "/v0/proof-packs")
+                proof_packs_response = conn.getresponse()
+                proof_packs_body = json.loads(proof_packs_response.read().decode("utf-8"))
+                self.assertEqual(200, proof_packs_response.status)
+                self.assertEqual([], proof_packs_body["proof_packs"])
+
+                conn.request("GET", "/v0/control/proof-packs")
+                control_proof_packs_response = conn.getresponse()
+                control_proof_packs_body = json.loads(control_proof_packs_response.read().decode("utf-8"))
+                self.assertEqual(200, control_proof_packs_response.status)
+                self.assertEqual([], control_proof_packs_body["proof_packs"])
+
+                conn.request("GET", "/v0/promotion-statuses")
+                promotion_statuses_response = conn.getresponse()
+                promotion_statuses_body = json.loads(promotion_statuses_response.read().decode("utf-8"))
+                self.assertEqual(200, promotion_statuses_response.status)
+                self.assertEqual([], promotion_statuses_body["promotion_statuses"])
+
+                conn.request("GET", "/v0/control/promotion-statuses")
+                control_promotion_statuses_response = conn.getresponse()
+                control_promotion_statuses_body = json.loads(control_promotion_statuses_response.read().decode("utf-8"))
+                self.assertEqual(200, control_promotion_statuses_response.status)
+                self.assertEqual([], control_promotion_statuses_body["promotion_statuses"])
 
                 conn.request("GET", "/v0/ingest-events")
                 ingest_events_response = conn.getresponse()
@@ -198,6 +252,12 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual(200, ingest_events_response.status)
                 self.assertEqual(4, len(ingest_events_body["ingest_events"]))
                 self.assertEqual("gen_ai.tool.call", ingest_events_body["ingest_events"][0]["event_name"])
+
+                conn.request("GET", "/v0/control/ingest-events")
+                control_ingest_events_response = conn.getresponse()
+                control_ingest_events_body = json.loads(control_ingest_events_response.read().decode("utf-8"))
+                self.assertEqual(200, control_ingest_events_response.status)
+                self.assertEqual(4, len(control_ingest_events_body["ingest_events"]))
 
                 conn.request("GET", "/v0/runtime-evidence")
                 runtime_response = conn.getresponse()
@@ -207,6 +267,13 @@ class ProductionPrimitiveTests(unittest.TestCase):
                 self.assertEqual([], runtime_body["policy_decisions"])
                 self.assertEqual([], runtime_body["policy_engine_receipts"])
                 self.assertEqual([], runtime_body["incidents"])
+
+                conn.request("GET", "/v0/control/runtime-evidence")
+                control_runtime_response = conn.getresponse()
+                control_runtime_body = json.loads(control_runtime_response.read().decode("utf-8"))
+                self.assertEqual(200, control_runtime_response.status)
+                self.assertEqual([], control_runtime_body["runtime_attestations"])
+                self.assertEqual([], control_runtime_body["policy_decisions"])
 
                 conn.request("GET", "/v0/holdout-evidence")
                 holdout_response = conn.getresponse()
