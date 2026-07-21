@@ -351,7 +351,7 @@ manifest is rebuilt.
 
 ## External Evidence Readiness
 
-`external-evidence-readiness` writes a canonical production-readiness report over a verified retained manifest, collection plan, source map, gap report, roadmap audit, and optional work package. The report has schema `trustai.external-evidence-readiness/0.1`, a canonical `readiness_id`, source artifact hashes, readiness checks, blockers, and next actions. `external-evidence-readiness-verify --require-ready` MUST fail until every required authority unit is covered, every collection task is closed, every source-map URI is live, and the optional work package matches the remaining task set. This command is intended to separate CI health from production evidence completeness.
+`external-evidence-readiness` writes a canonical production-readiness report over a verified retained manifest, collection plan, source map, gap report, roadmap audit, and optional work package. The report has schema `trustai.external-evidence-readiness/0.1`, a canonical `readiness_id`, source artifact hashes, readiness checks, blockers, and next actions. It also inspects covered evidence artifacts for explicit retained-fixture or non-live-run markers and reports `production_usable_covered_authority_kind_count` separately from raw covered authority units. `external-evidence-readiness-verify --require-ready` MUST fail until every required authority unit is covered, every collection task is closed, every source-map URI is live, and the optional work package matches the remaining task set. This command is intended to separate CI health from production evidence completeness.
 
 ## External Evidence Work Package
 

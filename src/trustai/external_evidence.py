@@ -1583,6 +1583,89 @@ def _external_evidence_readiness_count(summary: dict[str, Any], key: str) -> int
     return value if isinstance(value, int) else 0
 
 
+def _external_evidence_item_unit_ref(item: dict[str, Any]) -> str:
+    requirement_id = str(item.get("requirement_id") or "").strip()
+    authority_kind = str(item.get("authority_kind") or "").strip()
+    return f"{requirement_id}:{authority_kind}" if requirement_id and authority_kind else ""
+
+
+def _external_evidence_decode_snapshot_body(document: dict[str, Any]) -> Any:
+    if document.get("schema") != EXTERNAL_EVIDENCE_SOURCE_SNAPSHOT_SCHEMA:
+        return None
+    body_base64 = document.get("body_base64")
+    if not isinstance(body_base64, str) or not body_base64:
+        return None
+    try:
+        body_bytes = base64.b64decode(body_base64.encode("ascii"), validate=True)
+    except (binascii.Error, UnicodeEncodeError):
+        return None
+    try:
+        return json.loads(body_bytes.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return None
+
+
+def _external_evidence_non_production_reasons(document: Any) -> list[str]:
+    try:
+        serialized = json.dumps(document, sort_keys=True).lower()
+    except (TypeError, ValueError):
+        serialized = str(document).lower()
+    markers = {
+        "recorded-example": "recorded example",
+        "not-live-run": "not a live run",
+        "checked-in fixture": "checked-in fixture",
+        "demonstrates manifest hashing only": "manifest-hashing fixture",
+        "production evidence must replace": "requires production replacement",
+    }
+    return [reason for marker, reason in markers.items() if marker in serialized]
+
+
+def _external_evidence_item_production_reasons(item: dict[str, Any], *, root: str | Path) -> list[str]:
+    artifact_path = str(item.get("path") or "").strip()
+    if not artifact_path:
+        return ["missing artifact path"]
+    try:
+        resolved = _resolve_evidence_item_artifact_path(root, artifact_path)
+        document = json.loads(resolved.read_text(encoding="utf-8"))
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        return [f"artifact not inspectable: {exc}"]
+    reasons = _external_evidence_non_production_reasons(document)
+    snapshot_body = _external_evidence_decode_snapshot_body(document) if isinstance(document, dict) else None
+    if snapshot_body is not None:
+        reasons.extend(_external_evidence_non_production_reasons(snapshot_body))
+    return sorted(set(reasons))
+
+
+def _external_evidence_production_usability(manifest: dict[str, Any], *, root: str | Path) -> dict[str, Any]:
+    unit_items: dict[str, list[dict[str, Any]]] = {}
+    for item in manifest.get("evidence", []):
+        if isinstance(item, dict):
+            unit_ref = _external_evidence_item_unit_ref(item)
+            if unit_ref:
+                unit_items.setdefault(unit_ref, []).append(item)
+
+    non_production_units: list[dict[str, Any]] = []
+    production_usable_units: list[str] = []
+    for unit_ref, items in sorted(unit_items.items()):
+        item_reasons = []
+        for item in items:
+            reasons = _external_evidence_item_production_reasons(item, root=root)
+            if reasons:
+                item_reasons.append({"evidence_id": item.get("evidence_id"), "path": item.get("path"), "reasons": reasons})
+        if item_reasons and len(item_reasons) == len(items):
+            non_production_units.append({"unit_ref": unit_ref, "items": item_reasons})
+        else:
+            production_usable_units.append(unit_ref)
+
+    return {
+        "covered_unit_count": len(unit_items),
+        "production_usable_unit_refs": production_usable_units,
+        "non_production_units": non_production_units,
+        "production_usable_covered_authority_kind_count": len(production_usable_units),
+        "non_production_covered_authority_kind_count": len(non_production_units),
+    }
+
+
 def build_external_evidence_readiness_report(
     gap_report: dict[str, Any],
     manifest: dict[str, Any],
@@ -1621,10 +1704,14 @@ def build_external_evidence_readiness_report(
     placeholder_uris = _external_evidence_readiness_count(gap_summary, "placeholder_source_uri_count")
     work_tasks = _external_evidence_readiness_count(work_summary, "task_count")
     work_packages = _external_evidence_readiness_count(work_summary, "package_count")
+    production_usability = _external_evidence_production_usability(manifest, root=root)
+    non_production_covered = production_usability["non_production_covered_authority_kind_count"]
 
     blockers: list[str] = []
     if errors:
         blockers.append("underlying external-evidence artifacts do not verify")
+    if non_production_covered:
+        blockers.append(f"{non_production_covered} covered authority units use example or non-production evidence")
     if missing_authority:
         blockers.append(f"{missing_authority} authority units still lack accepted evidence")
     if remaining_tasks:
@@ -1655,6 +1742,8 @@ def build_external_evidence_readiness_report(
             "missing_requirement_count": _external_evidence_readiness_count(gap_summary, "missing_requirement_count"),
             "required_authority_kind_count": _external_evidence_readiness_count(gap_summary, "required_authority_kind_count"),
             "covered_authority_kind_count": _external_evidence_readiness_count(gap_summary, "covered_authority_kind_count"),
+            "production_usable_covered_authority_kind_count": production_usability["production_usable_covered_authority_kind_count"],
+            "non_production_covered_authority_kind_count": non_production_covered,
             "missing_authority_kind_count": missing_authority,
             "remaining_task_count": remaining_tasks,
             "source_map_entry_count": _external_evidence_readiness_count(gap_summary, "source_map_entry_count"),
@@ -1666,14 +1755,16 @@ def build_external_evidence_readiness_report(
         },
         "checks": [
             _external_evidence_readiness_check("artifacts-verify", not errors, "All referenced external-evidence artifacts verify."),
+            _external_evidence_readiness_check("covered-evidence-production-usable", non_production_covered == 0, "Covered authority units use production authority evidence rather than retained examples or fixtures."),
             _external_evidence_readiness_check("authority-coverage-complete", missing_authority == 0, "Every required authority unit has accepted evidence."),
             _external_evidence_readiness_check("collection-work-closed", remaining_tasks == 0, "No external-evidence collection tasks remain open."),
             _external_evidence_readiness_check("source-map-live", placeholder_uris == 0, "Every source-map entry has a live authority source URI."),
             _external_evidence_readiness_check("work-package-current", work_package is not None and work_tasks == remaining_tasks, "The work package covers the current remaining task set."),
         ],
         "blockers": blockers,
+        "non_production_covered_authority_units": production_usability["non_production_units"],
         "next_actions": [
-            "Assign owner work packages, replace TODO source URIs with authority-owned sources, collect snapshots and intake receipts, rebuild the manifest, and rerun readiness with --require-ready."
+            "Replace retained/example authority evidence with production authority exports, assign owner work packages, replace TODO source URIs with authority-owned sources, collect snapshots and intake receipts, rebuild the manifest, and rerun readiness with --require-ready."
             if blockers else
             "Append the complete external-evidence manifest to the roadmap evidence chain and publish the proof bundle."
         ],
@@ -1731,7 +1822,8 @@ def verify_external_evidence_readiness_report(
             "external evidence is not production-ready: "
             f"remaining_tasks={summary.get('remaining_task_count', 0)}, "
             f"missing_authority_units={summary.get('missing_authority_kind_count', 0)}, "
-            f"placeholder_source_uris={summary.get('placeholder_source_uri_count', 0)}"
+            f"placeholder_source_uris={summary.get('placeholder_source_uri_count', 0)}, "
+            f"non_production_covered_authority_units={summary.get('non_production_covered_authority_kind_count', 0)}"
         )
     return ExternalEvidenceReadinessVerification(ok=not errors, errors=errors, warnings=warnings)
 
@@ -3174,6 +3266,8 @@ def render_external_evidence_readiness_markdown(report: dict[str, Any]) -> str:
         f"- Generated at: `{report.get('generated_at')}`",
         f"- Status: `{summary.get('readiness_status')}`",
         f"- Covered authority units: {summary.get('covered_authority_kind_count', 0)}/{summary.get('required_authority_kind_count', 0)}",
+        f"- Production-usable covered authority units: {summary.get('production_usable_covered_authority_kind_count', 0)}",
+        f"- Non-production covered authority units: {summary.get('non_production_covered_authority_kind_count', 0)}",
         f"- Missing authority units: {summary.get('missing_authority_kind_count', 0)}",
         f"- Remaining collection tasks: {summary.get('remaining_task_count', 0)}",
         f"- Placeholder source URIs: {summary.get('placeholder_source_uri_count', 0)}",

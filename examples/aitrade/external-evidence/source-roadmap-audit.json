@@ -1,7 +1,7 @@
 {
-  "audit_id": "b7cb4e9bca8f325909a439bae107f089cec8c4f0b5e1299c318e3622cffa9eb8",
+  "audit_id": "5027855ec529ef0043a929887ec1c44d24d09f76f3e3502c0eefb1860d3019f9",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
-  "generated_at": "2026-07-20T19:56:18Z",
+  "generated_at": "2026-07-20T22:19:08Z",
   "limitations": [
     "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
     "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",

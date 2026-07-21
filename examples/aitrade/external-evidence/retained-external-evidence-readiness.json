@@ -1,5 +1,6 @@
 {
   "blockers": [
+    "1 covered authority units use example or non-production evidence",
     "67 authority units still lack accepted evidence",
     "67 external evidence collection tasks remain open",
     "67 source-map entries still use placeholder source URIs"
@@ -9,6 +10,11 @@
       "id": "artifacts-verify",
       "status": "passed",
       "summary": "All referenced external-evidence artifacts verify."
+    },
+    {
+      "id": "covered-evidence-production-usable",
+      "status": "failed",
+      "summary": "Covered authority units use production authority evidence rather than retained examples or fixtures."
     },
     {
       "id": "authority-coverage-complete",
@@ -31,63 +37,83 @@
       "summary": "The work package covers the current remaining task set."
     }
   ],
-  "generated_at": "2026-07-20T17:00:00Z",
+  "generated_at": "2026-07-20T20:45:00Z",
   "limitations": [
     "This readiness report proves production external-evidence completeness; it does not collect missing authority evidence by itself.",
     "A not-ready status is expected until every roadmap authority unit has live source evidence, source snapshots, intake receipts, and a rebuilt manifest."
   ],
   "next_actions": [
-    "Assign owner work packages, replace TODO source URIs with authority-owned sources, collect snapshots and intake receipts, rebuild the manifest, and rerun readiness with --require-ready."
+    "Replace retained/example authority evidence with production authority exports, assign owner work packages, replace TODO source URIs with authority-owned sources, collect snapshots and intake receipts, rebuild the manifest, and rerun readiness with --require-ready."
   ],
-  "readiness_id": "bb4bcc6b7b261250ccf58afe093a63db1978851f5ea53e25aaf9b08534f0bbde",
+  "non_production_covered_authority_units": [
+    {
+      "items": [
+        {
+          "evidence_id": "e55a9a821d8887826f3287753775794b9cf6630ce2edcf3e7d0ee5b1c39bde7d",
+          "path": "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json",
+          "reasons": [
+            "checked-in fixture",
+            "manifest-hashing fixture",
+            "not a live run",
+            "recorded example",
+            "requires production replacement"
+          ]
+        }
+      ],
+      "unit_ref": "oss-verifier-and-public-spec:ci-run"
+    }
+  ],
+  "readiness_id": "7418cda3a2852d84216767f33a32a6b01fcc8705e857656b94f2da8f3f64fd80",
   "readiness_status": "not-ready",
   "schema": "trustai.external-evidence-readiness/0.1",
   "sources": {
     "collection_plan": {
-      "generated_at": "2026-07-20T19:57:43Z",
-      "plan_hash": "8644d2c57cd6f7ad1510d64830e39c36e04cbb10f1514b347e98501c71e42334",
-      "plan_id": "5e3aaa0afac8f44a18681ca32750a51ba0ca57821059d407d8aedbbde5d0b76e",
+      "generated_at": "2026-07-20T22:20:54Z",
+      "plan_hash": "e64da8263b4c21611d660da8d7b219fae4a44c3cb82dbb7c03425f5281fda6bd",
+      "plan_id": "e3c158adc1a5de33d2b8ef180aba041ddf0ee37525ecb793ebb07208736318f5",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "gap_report": {
-      "gap_report_hash": "1059a3a7c8b133585e4c352ddd368134e8f0a7e4338866d41aefc5dfb62f1809",
-      "gap_report_id": "f5e56d5481a2202fb86b8cd8100da4b5979466d901e68c8967ab02da77dee145",
+      "gap_report_hash": "433101b279858680fc68e2a37c291338cee2cfb157535abead8e6d80401b71f5",
+      "gap_report_id": "3b141eb0070c9d21a5cccced2c05b0681b569b4a233fe551aba940f831d256af",
       "generated_at": "2026-07-12T01:29:00Z",
       "schema": "trustai.external-evidence-gap-report/0.1"
     },
     "manifest": {
-      "generated_at": "2026-07-20T19:57:33Z",
-      "manifest_hash": "ea24d53b9302e2f5f401d1602c4be12143fea6e9502738b14420940a98fc685a",
-      "manifest_id": "43c651320a248213ad6cf3982ece1486a334e9920d99a99314775ce024609cbc",
+      "generated_at": "2026-07-20T22:20:43Z",
+      "manifest_hash": "8edeaa78cdd5b35b8a00ca0d4d1265283e805fbf33984df620b5d6946be68af1",
+      "manifest_id": "07036d3c60f2259b45434307711de54a6a65ba31a0a6c696f3fcd8c3d4b539af",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
-      "audit_hash": "e048f2054f96c43989acd7b56e499aa7b7f74e7016677832afff090f53d14656",
-      "audit_id": "b7cb4e9bca8f325909a439bae107f089cec8c4f0b5e1299c318e3622cffa9eb8",
-      "generated_at": "2026-07-20T19:56:18Z",
+      "audit_hash": "8d446c420f3a620141e0b8e46b75dcc6b54b28023ee4821b7918f3f297893115",
+      "audit_id": "5027855ec529ef0043a929887ec1c44d24d09f76f3e3502c0eefb1860d3019f9",
+      "generated_at": "2026-07-20T22:19:08Z",
       "schema": "trustai.roadmap-audit/0.1"
     },
     "source_map": {
-      "generated_at": "2026-07-20T19:57:43Z",
+      "generated_at": "2026-07-20T22:20:54Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "143b4b3bf8b9bc21fa2875af3757966c3a2d1bf3464dc40ebe186c0acb376852",
-      "source_map_id": "239fdc78dfef9f6c8fdc6f0f98cd5f54d8aa1d3ddef344296582374076a297b9"
+      "source_map_hash": "b0e3d90bbbc63ca67a64ee9034666855a8e2348ed72e3929bdace11ea439d578",
+      "source_map_id": "6e31c2a6c1711d59d334ddbe03f54b7393074747367330b58ce37035ea08c619"
     },
     "work_package": {
-      "generated_at": "2026-07-20T19:58:11Z",
+      "generated_at": "2026-07-20T22:21:29Z",
       "schema": "trustai.external-evidence-work-package/0.1",
-      "work_package_hash": "b884be2892859b6a240db7b9881ce265c107cb1e5e500dc3c421ae82d5338c7b",
-      "work_package_id": "b9a371d5ab8774540cb303d894c13511b224cca39c578a236cdf76423f812a25"
+      "work_package_hash": "bc2cf0975c6fdcfcbf845143e07b83cc7b906d81dcf536bdf7577c5f7a5d059b",
+      "work_package_id": "910ecf03afbbd35910143247bbfc900ef879ee253fb0c254841f04e51cbe7e2d"
     }
   },
   "summary": {
-    "blocking_issue_count": 3,
+    "blocking_issue_count": 4,
     "covered_authority_kind_count": 3,
     "covered_requirement_count": 1,
     "live_source_uri_count": 0,
     "missing_authority_kind_count": 67,
     "missing_requirement_count": 19,
+    "non_production_covered_authority_kind_count": 1,
     "placeholder_source_uri_count": 67,
+    "production_usable_covered_authority_kind_count": 2,
     "readiness_status": "not-ready",
     "remaining_task_count": 67,
     "required_authority_kind_count": 70,
