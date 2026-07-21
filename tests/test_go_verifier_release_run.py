@@ -1,6 +1,7 @@
 import copy
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -342,6 +343,100 @@ class GoVerifierReleaseRunTests(unittest.TestCase):
         self.assertEqual(GO_VERIFIER_RELEASE_RUN_SCHEMA, receipt["schema"])
         self.assertEqual(GO_VERIFIER_RELEASE_RUN_ENTRY_TYPE, entry["entry_type"])
         self.assertEqual(receipt["run_id"], entry["payload"]["run_id"])
+
+    def test_go_verifier_release_run_github_actions_cli_uses_provider_environment(self):
+        conformance, standards, release = self._inputs()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            build_attestation, binary_path, _, sbom_path, provenance_path, signature_path = self._binary_attestation(
+                tmp, release, conformance, standards
+            )
+            conformance_path = tmp / "verifier-conformance.json"
+            standards_path = tmp / "standards-submission.json"
+            release_path = tmp / "verifier-release.json"
+            build_path = tmp / "go-verifier-build.json"
+            receipt_path = tmp / "go-verifier-github-actions-release-run.json"
+            write_verifier_conformance_report(conformance_path, conformance)
+            write_standards_submission(standards_path, standards)
+            write_verifier_release_manifest(release_path, release)
+            write_go_verifier_build_attestation(build_path, build_attestation)
+
+            common_args = [
+                str(release_path),
+                str(build_path),
+                "--conformance-report",
+                str(conformance_path),
+                "--standards-package",
+                str(standards_path),
+                "--root",
+                str(ROOT),
+                "--binary",
+                str(binary_path),
+            ]
+            env = {
+                **os.environ,
+                "PYTHONPATH": str(ROOT / "src"),
+                "GITHUB_REPOSITORY": "MSBeni/trust_ai",
+                "GITHUB_RUN_ID": "9876543210",
+                "GITHUB_RUN_ATTEMPT": "2",
+                "GITHUB_SHA": "c" * 40,
+                "GITHUB_REF": "refs/heads/main",
+                "GITHUB_EVENT_NAME": "workflow_dispatch",
+                "GITHUB_WORKFLOW_REF": "MSBeni/trust_ai/.github/workflows/go-verifier.yml@refs/heads/main",
+                "GITHUB_SERVER_URL": "https://github.com",
+                "GITHUB_JOB": "build-linux-amd64",
+                "RUNNER_ENVIRONMENT": "github-hosted",
+                "RUNNER_OS": "Linux",
+                "RUNNER_ARCH": "X64",
+            }
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "go-verifier-release-run-github-actions",
+                    *common_args,
+                    "--completed-at",
+                    "2026-07-16T00:04:00Z",
+                    "--artifact",
+                    f"{binary_path.name},{binary_path},binary",
+                    "--artifact",
+                    f"{sbom_path.name},{sbom_path},sbom",
+                    "--artifact",
+                    f"{provenance_path.name},{provenance_path},provenance",
+                    "--artifact",
+                    f"{signature_path.name},{signature_path},signature",
+                    "--hosted-provenance-ref",
+                    str(provenance_path),
+                    "--hosted-provenance-hash",
+                    _sha256_ref(provenance_path),
+                    "--generated-at",
+                    "2026-07-16T00:05:00Z",
+                    "--out",
+                    str(receipt_path),
+                ],
+                check=True,
+                cwd=ROOT,
+                env=env,
+            )
+            subprocess.run(
+                [sys.executable, "-m", "trustai", "go-verifier-release-run-verify", str(receipt_path), *common_args],
+                check=True,
+                cwd=ROOT,
+            )
+
+            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(GO_VERIFIER_RELEASE_RUN_SCHEMA, receipt["schema"])
+        self.assertEqual("9876543210", receipt["workflow_run"]["workflow_run_id"])
+        self.assertEqual(2, receipt["workflow_run"]["run_attempt"])
+        self.assertEqual("https://github.com/MSBeni/trust_ai/actions/runs/9876543210", receipt["workflow_run"]["workflow_run_url"])
+        self.assertEqual("c" * 40, receipt["workflow_run"]["commit_sha"])
+        self.assertEqual("refs/heads/main", receipt["workflow_run"]["branch_ref"])
+        self.assertEqual("workflow_dispatch", receipt["workflow_run"]["trigger_ref"])
+        self.assertEqual("github-actions:github-hosted:Linux:X64", receipt["workflow_run"]["runner_ref"])
+        self.assertEqual("repo:MSBeni/trust_ai:ref:refs/heads/main", receipt["provenance"]["oidc_subject"])
+        self.assertEqual("build-linux-amd64", receipt["checks"][0]["name"])
 
 
 if __name__ == "__main__":

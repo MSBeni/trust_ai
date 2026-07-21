@@ -7122,6 +7122,125 @@ def _parse_release_run_cli_checks(values: list[str]) -> list[dict[str, str]]:
     return checks
 
 
+def _github_actions_env_required(name: str) -> str:
+    value = os.environ.get(name)
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"GitHub Actions environment variable {name} is required")
+    return value.strip()
+
+
+def _github_actions_env_optional(name: str, default: str | None = None) -> str | None:
+    value = os.environ.get(name)
+    if isinstance(value, str) and value.strip():
+        return value.strip()
+    return default
+
+
+def _github_actions_run_attempt() -> int:
+    raw = _github_actions_env_optional("GITHUB_RUN_ATTEMPT", "1")
+    try:
+        attempt = int(str(raw))
+    except ValueError as exc:
+        raise ValueError("GitHub Actions environment variable GITHUB_RUN_ATTEMPT must be an integer") from exc
+    if attempt < 1:
+        raise ValueError("GitHub Actions environment variable GITHUB_RUN_ATTEMPT must be positive")
+    return attempt
+
+
+def _github_actions_workflow_run_url(repository: str, run_id: str) -> str:
+    server_url = _github_actions_env_optional("GITHUB_SERVER_URL", "https://github.com")
+    return f"{server_url.rstrip('/')}/{repository}/actions/runs/{run_id}"
+
+
+def _github_actions_runner_ref() -> str:
+    runner_name = _github_actions_env_optional("RUNNER_NAME")
+    runner_environment = _github_actions_env_optional("RUNNER_ENVIRONMENT")
+    runner_os = _github_actions_env_optional("RUNNER_OS")
+    runner_arch = _github_actions_env_optional("RUNNER_ARCH")
+    parts = [part for part in (runner_environment, runner_name, runner_os, runner_arch) if part]
+    if parts:
+        return "github-actions:" + ":".join(parts)
+    return "github-actions:runner"
+
+
+def _github_actions_default_check(conclusion: str) -> list[dict[str, str]]:
+    job = _github_actions_env_optional("GITHUB_JOB")
+    if not job:
+        return []
+    return [{"name": job, "status": "completed", "conclusion": conclusion}]
+
+
+def cmd_go_verifier_release_run_github_actions(args: argparse.Namespace) -> int:
+    try:
+        repository = _github_actions_env_required("GITHUB_REPOSITORY")
+        run_id = _github_actions_env_required("GITHUB_RUN_ID")
+        commit_sha = _github_actions_env_required("GITHUB_SHA")
+        branch_ref = _github_actions_env_required("GITHUB_REF")
+        sources = _load_go_verifier_release_run_sources(args)
+        workflow_ref = args.workflow_ref or _github_actions_env_optional("GITHUB_WORKFLOW_REF", args.workflow_path)
+        workflow_run_url = args.workflow_run_url or _github_actions_workflow_run_url(repository, run_id)
+        checks = _parse_release_run_cli_checks(args.check)
+        if not checks:
+            checks = _github_actions_default_check(args.conclusion)
+        receipt = build_go_verifier_release_run_receipt(
+            sources["verifier_release"],
+            sources["build_attestation"],
+            root=args.root,
+            conformance_report=sources["conformance_report"],
+            standards_package=sources["standards_package"],
+            binary_path=args.binary,
+            workflow_path=args.workflow_path,
+            provider="github-actions",
+            workflow_ref=workflow_ref,
+            workflow_run_id=run_id,
+            workflow_run_url=workflow_run_url,
+            run_attempt=_github_actions_run_attempt(),
+            commit_sha=commit_sha,
+            branch_ref=branch_ref,
+            trigger_ref=_github_actions_env_optional("GITHUB_EVENT_NAME", "workflow_dispatch"),
+            runner_ref=_github_actions_runner_ref(),
+            status=args.status,
+            conclusion=args.conclusion,
+            started_at=args.started_at,
+            completed_at=args.completed_at,
+            artifacts=_parse_release_run_cli_artifacts(args.artifact),
+            checks=checks,
+            hosted_provenance_ref=args.hosted_provenance_ref,
+            hosted_provenance_hash=args.hosted_provenance_hash,
+            oidc_issuer=args.oidc_issuer or "https://token.actions.githubusercontent.com",
+            oidc_subject=args.oidc_subject or f"repo:{repository}:ref:{branch_ref}",
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"Go verifier GitHub Actions release-run receipt failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_go_verifier_release_run_receipt(
+        receipt,
+        sources["verifier_release"],
+        sources["build_attestation"],
+        root=args.root,
+        conformance_report=sources["conformance_report"],
+        standards_package=sources["standards_package"],
+        binary_path=args.binary,
+        key=args.key,
+    )
+    if not result.ok:
+        print("Go verifier GitHub Actions release-run verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_go_verifier_release_run_receipt(args.out, receipt)
+    print(f"Go verifier GitHub Actions release-run receipt: {args.out}")
+    print(f"run id: {receipt['run_id']}")
+    print(f"workflow run id: {receipt['workflow_run']['workflow_run_id']}")
+    print(f"workflow run url: {receipt['workflow_run']['workflow_run_url']}")
+    print(f"artifacts: {len(receipt['artifacts'])}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
 def cmd_go_verifier_release_run(args: argparse.Namespace) -> int:
     sources = _load_go_verifier_release_run_sources(args)
     try:
@@ -23188,6 +23307,25 @@ def build_parser() -> argparse.ArgumentParser:
     _add_go_verifier_release_run_sources(go_verifier_release_run)
     _add_go_verifier_release_run_fields(go_verifier_release_run)
     go_verifier_release_run.set_defaults(func=cmd_go_verifier_release_run)
+
+    go_verifier_release_run_github_actions = subparsers.add_parser("go-verifier-release-run-github-actions", help="write a Go verifier release-run receipt from GitHub Actions environment metadata")
+    _add_go_verifier_release_run_sources(go_verifier_release_run_github_actions)
+    go_verifier_release_run_github_actions.add_argument("--workflow-path", default=".github/workflows/go-verifier.yml")
+    go_verifier_release_run_github_actions.add_argument("--workflow-ref", help="defaults to GITHUB_WORKFLOW_REF or --workflow-path")
+    go_verifier_release_run_github_actions.add_argument("--workflow-run-url", help="defaults to GITHUB_SERVER_URL/GITHUB_REPOSITORY/actions/runs/GITHUB_RUN_ID")
+    go_verifier_release_run_github_actions.add_argument("--status", default="completed")
+    go_verifier_release_run_github_actions.add_argument("--conclusion", default="success")
+    go_verifier_release_run_github_actions.add_argument("--started-at")
+    go_verifier_release_run_github_actions.add_argument("--completed-at")
+    go_verifier_release_run_github_actions.add_argument("--artifact", action="append", default=[], help="repeatable name,path[,kind] artifact record")
+    go_verifier_release_run_github_actions.add_argument("--check", action="append", default=[], help="repeatable name,status,conclusion[,log_ref] check record; defaults to GITHUB_JOB success when available")
+    go_verifier_release_run_github_actions.add_argument("--hosted-provenance-ref")
+    go_verifier_release_run_github_actions.add_argument("--hosted-provenance-hash")
+    go_verifier_release_run_github_actions.add_argument("--oidc-issuer")
+    go_verifier_release_run_github_actions.add_argument("--oidc-subject")
+    go_verifier_release_run_github_actions.add_argument("--generated-at")
+    go_verifier_release_run_github_actions.add_argument("--out", default="artifacts/go-verifier-release-run.json")
+    go_verifier_release_run_github_actions.set_defaults(func=cmd_go_verifier_release_run_github_actions)
 
     go_verifier_release_run_verify = subparsers.add_parser("go-verifier-release-run-verify", help="verify a signed Go verifier release workflow-run receipt")
     _add_go_verifier_release_run_sources(go_verifier_release_run_verify, include_receipt=True)

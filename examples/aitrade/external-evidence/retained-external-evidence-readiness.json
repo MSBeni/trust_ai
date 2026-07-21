@@ -37,7 +37,7 @@
       "summary": "The work package covers the current remaining task set."
     }
   ],
-  "generated_at": "2026-07-20T20:45:00Z",
+  "generated_at": "2026-07-21T00:00:00Z",
   "limitations": [
     "This readiness report proves production external-evidence completeness; it does not collect missing authority evidence by itself.",
     "A not-ready status is expected until every roadmap authority unit has live source evidence, source snapshots, intake receipts, and a rebuilt manifest."
@@ -63,45 +63,45 @@
       "unit_ref": "oss-verifier-and-public-spec:ci-run"
     }
   ],
-  "readiness_id": "7418cda3a2852d84216767f33a32a6b01fcc8705e857656b94f2da8f3f64fd80",
+  "readiness_id": "1bad39c299e02592d5a51ec6785994f0c3345f7b4cad3fc61a65261c07eaf2da",
   "readiness_status": "not-ready",
   "schema": "trustai.external-evidence-readiness/0.1",
   "sources": {
     "collection_plan": {
-      "generated_at": "2026-07-20T22:20:54Z",
-      "plan_hash": "e64da8263b4c21611d660da8d7b219fae4a44c3cb82dbb7c03425f5281fda6bd",
-      "plan_id": "e3c158adc1a5de33d2b8ef180aba041ddf0ee37525ecb793ebb07208736318f5",
+      "generated_at": "2026-07-21T06:22:17Z",
+      "plan_hash": "3c4b3098235627edea714c7d8de58794be71624fcfd68814d25779f53fbaf6d2",
+      "plan_id": "f487007924bdd464d251fc2304455b17ad4074e151643f7da9d5337df5995cc3",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "gap_report": {
-      "gap_report_hash": "433101b279858680fc68e2a37c291338cee2cfb157535abead8e6d80401b71f5",
-      "gap_report_id": "3b141eb0070c9d21a5cccced2c05b0681b569b4a233fe551aba940f831d256af",
+      "gap_report_hash": "c998d2e4bddd2796ceb9b7671982f70172fec806327808edfd08f90d0f6878a6",
+      "gap_report_id": "bcfb93a233054bdef3f7d6bb527b6976ea6e244e8be3bd7a0a474037b059f3ac",
       "generated_at": "2026-07-12T01:29:00Z",
       "schema": "trustai.external-evidence-gap-report/0.1"
     },
     "manifest": {
-      "generated_at": "2026-07-20T22:20:43Z",
-      "manifest_hash": "8edeaa78cdd5b35b8a00ca0d4d1265283e805fbf33984df620b5d6946be68af1",
-      "manifest_id": "07036d3c60f2259b45434307711de54a6a65ba31a0a6c696f3fcd8c3d4b539af",
+      "generated_at": "2026-07-21T06:22:07Z",
+      "manifest_hash": "1695f9f857e9d5f352a072282439cdaf37f73c43de6b3bb4dfdbdfdad4287599",
+      "manifest_id": "a27ecd7202dc2dd249bd56820422767322548cae048ee26e9c1b0383073a7b24",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
-      "audit_hash": "8d446c420f3a620141e0b8e46b75dcc6b54b28023ee4821b7918f3f297893115",
-      "audit_id": "5027855ec529ef0043a929887ec1c44d24d09f76f3e3502c0eefb1860d3019f9",
-      "generated_at": "2026-07-20T22:19:08Z",
+      "audit_hash": "86b746505627c5a6ee942c769c29e72248d1824ac282e3a254640e0d1d38a10b",
+      "audit_id": "4f07350d23b7ee1a303d60f5d5997eb6030626ceeb07e3d5221fa164b1213ffe",
+      "generated_at": "2026-07-21T06:20:41Z",
       "schema": "trustai.roadmap-audit/0.1"
     },
     "source_map": {
-      "generated_at": "2026-07-20T22:20:54Z",
+      "generated_at": "2026-07-21T06:22:18Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "b0e3d90bbbc63ca67a64ee9034666855a8e2348ed72e3929bdace11ea439d578",
-      "source_map_id": "6e31c2a6c1711d59d334ddbe03f54b7393074747367330b58ce37035ea08c619"
+      "source_map_hash": "951d1dd1ccb8ffd54580b58568637ddbf3502df00bd96b40fbf87c35eeed10f7",
+      "source_map_id": "a7a8c4d06601bd6e7bd59d1e2218777b08313883e35729f29cf681484a0f5367"
     },
     "work_package": {
-      "generated_at": "2026-07-20T22:21:29Z",
+      "generated_at": "2026-07-21T06:22:50Z",
       "schema": "trustai.external-evidence-work-package/0.1",
-      "work_package_hash": "bc2cf0975c6fdcfcbf845143e07b83cc7b906d81dcf536bdf7577c5f7a5d059b",
-      "work_package_id": "910ecf03afbbd35910143247bbfc900ef879ee253fb0c254841f04e51cbe7e2d"
+      "work_package_hash": "254977e8a0fd4e09c21a2b5f38d708241b52d6492598b6ced732d486fe17dbb5",
+      "work_package_id": "8a123c4f45e8370d8e0d0074e2151f6162a9da3e719f80f9907f19067ac2acd4"
     }
   },
   "summary": {

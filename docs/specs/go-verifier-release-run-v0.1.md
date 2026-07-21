@@ -82,6 +82,16 @@ python -m trustai go-verifier-release-run-verify artifacts/go-verifier-release-r
 python -m trustai go-verifier-release-run-append artifacts/go-verifier-release-run.json artifacts/verifier-release.json artifacts/go-verifier-build-attestation.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --binary $goVerifierBinary --state .trustai/go-verifier-release-run-demo/evidence-chain.json --tenant go-verifier-release-run-local --out artifacts/go-verifier-release-run-entry.json
 ```
 
+When the receipt is emitted from GitHub Actions itself, use the environment-aware
+wrapper as the final workflow step after artifacts, SBOM, provenance, and checks
+exist. The wrapper derives repository, run ID, attempt, commit, ref, event,
+runner, workflow ref, workflow URL, and the default job check from `GITHUB_*` and
+`RUNNER_*` variables while preserving the same verification rules:
+
+```bash
+python -m trustai go-verifier-release-run-github-actions artifacts/verifier-release.json artifacts/go-verifier-build-attestation.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root . --binary artifacts/trustai-verify-linux-amd64 --artifact "trustai-verify-linux-amd64,artifacts/trustai-verify-linux-amd64,binary" --artifact "trustai-verify-linux-amd64.sbom.json,artifacts/trustai-verify-linux-amd64.sbom.json,sbom" --artifact "trustai-verify-linux-amd64.provenance.json,artifacts/trustai-verify-linux-amd64.provenance.json,provenance" --hosted-provenance-ref artifacts/trustai-verify-linux-amd64.provenance.json --hosted-provenance-hash sha256:<provenance-sha256> --out artifacts/go-verifier-release-run.json
+```
+
 ## Companion Bundle
 
 Use `docs/specs/go-verifier-release-run-bundle-v0.1.md` when an auditor needs a
