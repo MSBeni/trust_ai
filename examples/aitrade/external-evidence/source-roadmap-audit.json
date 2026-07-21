@@ -1,7 +1,7 @@
 {
-  "audit_id": "4f07350d23b7ee1a303d60f5d5997eb6030626ceeb07e3d5221fa164b1213ffe",
+  "audit_id": "263dc34a5d12ed5a2a30656814ec025423e4e976dfaaf777470c5610d3db4de6",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
-  "generated_at": "2026-07-21T06:20:41Z",
+  "generated_at": "2026-07-21T17:51:15Z",
   "limitations": [
     "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
     "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",
@@ -220,7 +220,7 @@
         {
           "path": ".github/workflows/go-verifier.yml",
           "present": true,
-          "sha256": "sha256:e727904f17bd98be54002cf5456f2f41d8e28a417d18f7c804e5571c04fbdee8"
+          "sha256": "sha256:0d9caca7caa933bca6a8245a55e1a1d97277e70cfd7c69cc6b60796ede03052d"
         },
         {
           "path": "tests/test_go_verifier_source.py",

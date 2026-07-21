@@ -71,16 +71,35 @@ jobs:
           go-version-file: verifier/go/trustai-verify/go.mod
           cache: false
 
+      - name: Set up Python for TrustAI release evidence
+        if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install TrustAI package for release evidence
+        if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+
       - name: Build static verifier
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           ARTIFACT: dist/trustai-verify-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
         run: |
+          set -euo pipefail
           mkdir -p dist
           output="${GITHUB_WORKSPACE}/dist/trustai-verify-${GOOS}-${GOARCH}${{ matrix.ext }}"
-          (cd verifier/go/trustai-verify && go build -trimpath -ldflags "-s -w" -o "${output}" .)
+          build_log="${output}.build.log"
+          {
+            echo "CGO_ENABLED=${CGO_ENABLED} GOOS=${GOOS} GOARCH=${GOARCH} go build -trimpath -ldflags \"-s -w\" -o ${output} ./verifier/go/trustai-verify"
+            (cd verifier/go/trustai-verify && go build -trimpath -ldflags "-s -w" -o "${output}" .)
+          } 2>&1 | tee "${build_log}"
           test -s "${output}"
+          test -s "${build_log}"
+        shell: bash
 
       - name: Generate checksums, SBOM, and provenance
         env:
@@ -139,6 +158,108 @@ jobs:
           PY
         shell: bash
 
+      - name: Generate TrustAI release-run evidence
+        if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
+        run: |
+          set -euo pipefail
+          sha_ref() { printf 'sha256:%s' "$(sha256sum "$1" | cut -d ' ' -f 1)"; }
+
+          python -m trustai demo
+          python -m trustai verifier-conformance artifacts/aitrade-proof-pack.json --out artifacts/verifier-conformance.json --markdown artifacts/verifier-conformance.md
+          python -m trustai standards-export --out artifacts/standards-submission.json --markdown artifacts/standards-submission.md
+          python -m trustai standards-verify artifacts/standards-submission.json
+          python -m trustai verifier-release --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --out artifacts/verifier-release.json --markdown artifacts/verifier-release.md
+          python -m trustai verifier-release-verify artifacts/verifier-release.json --conformance-report artifacts/verifier-conformance.json --standards-package artifacts/standards-submission.json --root .
+
+          goVerifierBinary="dist/trustai-verify-linux-amd64"
+          goVerifierBuildLog="${goVerifierBinary}.build.log"
+          goVerifierSbom="${goVerifierBinary}.sbom.json"
+          goVerifierProvenance="${goVerifierBinary}.provenance.json"
+          goVerifierSignature="${goVerifierBinary}.sig"
+          goVerifierBuildLogHash="$(sha_ref "${goVerifierBuildLog}")"
+          goVerifierSbomHash="$(sha_ref "${goVerifierSbom}")"
+          goVerifierProvenanceHash="$(sha_ref "${goVerifierProvenance}")"
+
+          python -m trustai go-verifier-binary-signature artifacts/verifier-release.json \
+            --conformance-report artifacts/verifier-conformance.json \
+            --standards-package artifacts/standards-submission.json \
+            --root . \
+            --binary "${goVerifierBinary}" \
+            --build-log-ref "${goVerifierBuildLog}" \
+            --sbom-ref "${goVerifierSbom}" \
+            --provenance-ref "${goVerifierProvenance}" \
+            --out "${goVerifierSignature}"
+          goVerifierSignatureHash="$(sha_ref "${goVerifierSignature}")"
+
+          python -m trustai go-verifier-build-attestation artifacts/verifier-release.json \
+            --conformance-report artifacts/verifier-conformance.json \
+            --standards-package artifacts/standards-submission.json \
+            --root . \
+            --binary "${goVerifierBinary}" \
+            --mode binary-attested \
+            --builder-ref builder:github-actions/go-verifier \
+            --toolchain-ref go:github-actions/setup-go \
+            --toolchain-version "$(go env GOVERSION)" \
+            --goos linux \
+            --goarch amd64 \
+            --build-command 'CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o dist/trustai-verify-linux-amd64 ./verifier/go/trustai-verify' \
+            --build-log-ref "${goVerifierBuildLog}" \
+            --build-log-hash "${goVerifierBuildLogHash}" \
+            --sbom-ref "${goVerifierSbom}" \
+            --sbom-hash "${goVerifierSbomHash}" \
+            --provenance-ref "${goVerifierProvenance}" \
+            --provenance-hash "${goVerifierProvenanceHash}" \
+            --signature-ref "${goVerifierSignature}" \
+            --signature-hash "${goVerifierSignatureHash}" \
+            --out artifacts/go-verifier-build-attestation.json
+          python -m trustai go-verifier-build-verify artifacts/go-verifier-build-attestation.json artifacts/verifier-release.json \
+            --conformance-report artifacts/verifier-conformance.json \
+            --standards-package artifacts/standards-submission.json \
+            --root . \
+            --binary "${goVerifierBinary}"
+
+          python -m trustai go-verifier-release-run-github-actions artifacts/verifier-release.json artifacts/go-verifier-build-attestation.json \
+            --conformance-report artifacts/verifier-conformance.json \
+            --standards-package artifacts/standards-submission.json \
+            --root . \
+            --binary "${goVerifierBinary}" \
+            --artifact "trustai-verify-linux-amd64,${goVerifierBinary},binary" \
+            --artifact "trustai-verify-linux-amd64.sha256,${goVerifierBinary}.sha256,checksum" \
+            --artifact "trustai-verify-linux-amd64.build.log,${goVerifierBuildLog},build-log" \
+            --artifact "trustai-verify-linux-amd64.sbom.json,${goVerifierSbom},sbom" \
+            --artifact "trustai-verify-linux-amd64.provenance.json,${goVerifierProvenance},provenance" \
+            --artifact "trustai-verify-linux-amd64.sig,${goVerifierSignature},signature" \
+            --check "go verifier source tests,completed,success" \
+            --check "build linux/amd64,completed,success,${goVerifierBuildLog}" \
+            --hosted-provenance-ref "${goVerifierProvenance}" \
+            --hosted-provenance-hash "${goVerifierProvenanceHash}" \
+            --out artifacts/go-verifier-release-run.json
+          python -m trustai go-verifier-release-run-verify artifacts/go-verifier-release-run.json artifacts/verifier-release.json artifacts/go-verifier-build-attestation.json \
+            --conformance-report artifacts/verifier-conformance.json \
+            --standards-package artifacts/standards-submission.json \
+            --root . \
+            --binary "${goVerifierBinary}"
+        shell: bash
+
+      - name: Upload verifier release-run evidence
+        if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
+        uses: actions/upload-artifact@v4
+        with:
+          name: trustai-verify-release-run-evidence
+          path: |
+            artifacts/aitrade-proof-pack.json
+            artifacts/verifier-conformance.json
+            artifacts/verifier-conformance.md
+            artifacts/standards-submission.json
+            artifacts/standards-submission.md
+            artifacts/verifier-release.json
+            artifacts/verifier-release.md
+            artifacts/go-verifier-build-attestation.json
+            artifacts/go-verifier-release-run.json
+            dist/trustai-verify-linux-amd64.build.log
+            dist/trustai-verify-linux-amd64.sig
+          if-no-files-found: error
+
       - name: Upload verifier artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -146,6 +267,7 @@ jobs:
           path: |
             dist/trustai-verify-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
             dist/trustai-verify-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}.sha256
+            dist/trustai-verify-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}.build.log
             dist/trustai-verify-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}.sbom.json
             dist/trustai-verify-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}.provenance.json
           if-no-files-found: error

@@ -36,7 +36,11 @@ The workflow MUST:
 - generate verifier provenance JSON that records builder, repository, ref,
   commit, target OS/architecture, `cgo_enabled=false`, `trimpath=true`, and
   linker flags;
-- upload the binary, checksum, SBOM, and provenance artifacts;
+- upload the binary, checksum, SBOM, provenance, and build-log artifacts;
+- for the canonical Linux amd64 build, generate a TrustAI binary signature artifact,
+  binary-attested Go verifier build receipt, and `trustai.go-verifier-release-run/0.1`
+  receipt from GitHub Actions environment metadata;
+- upload the release-run evidence bundle as `trustai-verify-release-run-evidence`;
 - request build provenance attestation for non-pull-request runs.
 
 ## Release Evidence
@@ -53,7 +57,10 @@ The signed verifier release manifest and `trustai.go-verifier-release-run/0.1` r
 - checksum artifact hashes;
 - SBOM artifact hashes;
 - provenance artifact hashes;
-- optional GitHub build provenance attestation references.
+- optional GitHub build provenance attestation references;
+- a CI-produced `trustai-verify-release-run-evidence` artifact containing the proof pack,
+  conformance report, standards package, verifier release manifest, binary-attested build
+  receipt, release-run receipt, build log, and binary signature.
 
 ## Verification Rules
 

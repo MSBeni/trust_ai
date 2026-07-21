@@ -21,6 +21,18 @@ class GoVerifierReleaseWorkflowTests(unittest.TestCase):
         self.assertIn("sha256sum", workflow)
         self.assertIn("trustai.go-verifier-ci-sbom/0.1", workflow)
         self.assertIn("trustai.go-verifier-ci-provenance/0.1", workflow)
+        self.assertIn("actions/setup-python@v5", workflow)
+        self.assertIn('python-version: "3.12"', workflow)
+        self.assertIn("python -m pip install -e .", workflow)
+        self.assertIn("if: matrix.goos == 'linux' && matrix.goarch == 'amd64'", workflow)
+        self.assertIn("python -m trustai verifier-conformance artifacts/aitrade-proof-pack.json", workflow)
+        self.assertIn("python -m trustai standards-export --out artifacts/standards-submission.json", workflow)
+        self.assertIn("python -m trustai go-verifier-binary-signature artifacts/verifier-release.json", workflow)
+        self.assertIn("python -m trustai go-verifier-build-attestation artifacts/verifier-release.json", workflow)
+        self.assertIn("python -m trustai go-verifier-build-verify artifacts/go-verifier-build-attestation.json", workflow)
+        self.assertIn("python -m trustai go-verifier-release-run-github-actions artifacts/verifier-release.json artifacts/go-verifier-build-attestation.json", workflow)
+        self.assertIn("python -m trustai go-verifier-release-run-verify artifacts/go-verifier-release-run.json", workflow)
+        self.assertIn("trustai-verify-release-run-evidence", workflow)
         for target in (
             "goos: linux\n            goarch: amd64",
             "goos: linux\n            goarch: arm64",
@@ -41,6 +53,8 @@ class GoVerifierReleaseWorkflowTests(unittest.TestCase):
             "SBOM JSON",
             "provenance JSON",
             "binary-attested",
+            "trustai.go-verifier-release-run/0.1",
+            "trustai-verify-release-run-evidence",
         ):
             self.assertIn(required, spec)
 
