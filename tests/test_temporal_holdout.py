@@ -36,6 +36,20 @@ from trustai.shadow import (
     verify_traffic_completeness_receipt,
     verify_traffic_holdout_export,
 )
+from trustai.shadow_authority import (
+    PRODUCTION_AUTHORITY_REQUIREMENTS,
+    SHADOW_AUTHORITY_ENTRY_TYPE,
+    SHADOW_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE,
+    SHADOW_AUTHORITY_EVIDENCE_BUNDLE_SCHEMA,
+    SHADOW_AUTHORITY_SCHEMA,
+    append_shadow_authority_dossier,
+    append_shadow_authority_evidence_bundle,
+    build_shadow_authority_dossier,
+    build_shadow_authority_evidence_bundle,
+    shadow_authority_evidence_from_bundle,
+    verify_shadow_authority_dossier,
+    verify_shadow_authority_evidence_bundle,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -120,6 +134,305 @@ class TemporalHoldoutTests(unittest.TestCase):
                 }
             ],
         }
+
+    def _traffic_completeness_receipt(self, traffic_export: dict | None = None, provider_export: dict | None = None) -> dict:
+        traffic_export = traffic_export or self._traffic_export()
+        provider_export = provider_export or self._provider_export(traffic_export)
+        return build_traffic_completeness_receipt(
+            traffic_export,
+            provider_export,
+            mode="production-export",
+            authority_ref="authority:shadow-holdout/provider-completeness-prod",
+            endpoint_url="https://authority.trustai.ai/shadow/traffic-completeness",
+            request_hash="sha256:traffic-completeness-request",
+            response_status=200,
+            response_hash="sha256:traffic-completeness-response",
+            actor_ref="oidc:trustai.example/traffic-completeness-worker",
+            produced_at="2026-07-03T12:25:00Z",
+        )
+
+    def _complete_shadow_authority_evidence(self) -> list[dict]:
+        rows = []
+        for requirement in PRODUCTION_AUTHORITY_REQUIREMENTS:
+            requirement_id = requirement["id"]
+            authority_kind = requirement["authority_kinds"][0]
+            rows.append(
+                {
+                    "requirement_id": requirement_id,
+                    "authority_kind": authority_kind,
+                    "evidence_ref": f"authority:shadow/{requirement_id}",
+                    "evidence_hash": "sha256:" + content_hash({"shadow_authority_requirement": requirement_id, "authority_kind": authority_kind}),
+                    "description": f"Production shadow replay authority evidence for {requirement_id}",
+                    "issuer": "TrustAI authority exporter",
+                    "subject": f"aitrade shadow temporal holdout {requirement_id}",
+                    "source_uri": f"https://authority.trustai.ai/shadow/{requirement_id}",
+                    "issued_at": "2026-07-12T00:00:00Z",
+                    "expires_at": "2026-08-12T00:00:00Z",
+                }
+            )
+        return rows
+
+    def _shadow_authority_evidence_cli_args(self, evidence: list[dict]) -> list[str]:
+        args: list[str] = []
+        for item in evidence:
+            value = (
+                f"{item['requirement_id']},{item['authority_kind']},{item['evidence_ref']},{item['evidence_hash']},"
+                f"{item['description']};issuer={item['issuer']};subject={item['subject']};"
+                f"source_uri={item['source_uri']};issued_at={item['issued_at']};expires_at={item['expires_at']}"
+            )
+            args.extend(["--authority-evidence", value])
+        return args
+
+    def test_shadow_authority_bundle_drives_complete_production_dossier(self):
+        contract = self._contract()
+        replay = self._replay()
+        temporal = build_temporal_holdout_manifest(contract, replay, generated_at="2026-07-03T12:10:00Z")
+        traffic_export = self._traffic_export()
+        provider_export = self._provider_export(traffic_export)
+        completeness = self._traffic_completeness_receipt(traffic_export, provider_export)
+        bundle = build_shadow_authority_evidence_bundle(
+            authority_evidence=self._complete_shadow_authority_evidence(),
+            mode="production-export",
+            environment="aitrade-prod",
+            bundle_ref="bundle:shadow/aitrade-prod/20260703",
+            issuer_ref="authority:trustai/shadow-exporter",
+            subject_ref="agent:aitrade-risk-shadow@2026.07.03",
+            authority_ref="authority:shadow-holdout/provider-completeness-prod",
+            generated_at="2026-07-19T00:00:00Z",
+        )
+        bundle_result = verify_shadow_authority_evidence_bundle(
+            bundle,
+            require_complete=True,
+            require_fresh=True,
+            now="2026-07-19T00:00:00Z",
+        )
+        self.assertTrue(bundle_result.ok, bundle_result.errors)
+        self.assertEqual(SHADOW_AUTHORITY_EVIDENCE_BUNDLE_SCHEMA, bundle["schema"])
+
+        dossier = build_shadow_authority_dossier(
+            contract,
+            replay,
+            temporal,
+            traffic_export,
+            completeness,
+            provider_export=provider_export,
+            mode="production-dossier",
+            environment="aitrade-prod",
+            dossier_ref="dossier:shadow/aitrade-prod/20260703",
+            authority_ref="authority:shadow-holdout/provider-completeness-prod",
+            producer_ref="service:trustai-shadow-authority",
+            authority_evidence=shadow_authority_evidence_from_bundle(
+                bundle,
+                require_complete=True,
+                require_fresh=True,
+                now="2026-07-19T00:00:00Z",
+            ),
+            generated_at="2026-07-19T00:05:00Z",
+        )
+        result = verify_shadow_authority_dossier(
+            dossier,
+            contract=contract,
+            replay=replay,
+            temporal_holdout=temporal,
+            traffic_export=traffic_export,
+            traffic_completeness=completeness,
+            provider_export=provider_export,
+            require_complete=True,
+            require_fresh=True,
+            now="2026-07-19T00:05:00Z",
+        )
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(SHADOW_AUTHORITY_SCHEMA, dossier["schema"])
+        self.assertEqual(len(PRODUCTION_AUTHORITY_REQUIREMENTS), result.covered_count)
+        self.assertTrue(dossier["source_binding"]["passed"])
+        self.assertEqual({"passed": 8}, {control["status"]: sum(1 for item in dossier["controls"] if item["status"] == control["status"]) for control in dossier["controls"]})
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="shadow-authority-test")
+            bundle_entry = append_shadow_authority_evidence_bundle(
+                chain,
+                bundle,
+                require_complete=True,
+                require_fresh=True,
+                now="2026-07-19T00:00:00Z",
+            )
+            dossier_entry = append_shadow_authority_dossier(
+                chain,
+                dossier,
+                contract=contract,
+                replay=replay,
+                temporal_holdout=temporal,
+                traffic_export=traffic_export,
+                traffic_completeness=completeness,
+                provider_export=provider_export,
+                require_complete=True,
+                require_fresh=True,
+                now="2026-07-19T00:05:00Z",
+            )
+            self.assertEqual(SHADOW_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE, bundle_entry["entry_type"])
+            self.assertEqual(SHADOW_AUTHORITY_ENTRY_TYPE, dossier_entry["entry_type"])
+            self.assertTrue(chain.verify_all().ok)
+
+    def test_shadow_authority_evidence_bundle_detects_placeholder_source_uri(self):
+        bundle = build_shadow_authority_evidence_bundle(
+            authority_evidence=self._complete_shadow_authority_evidence(),
+            mode="production-export",
+            environment="aitrade-prod",
+            bundle_ref="bundle:shadow/aitrade-prod/placeholder",
+            issuer_ref="authority:trustai/shadow-exporter",
+            subject_ref="agent:aitrade-risk-shadow@2026.07.03",
+            authority_ref="authority:shadow-holdout/provider-completeness-prod",
+            generated_at="2026-07-19T00:00:00Z",
+        )
+        tampered = copy.deepcopy(bundle)
+        tampered["authority_evidence"][0]["source_uri"] = "TODO://authority/shadow/placeholder"
+
+        result = verify_shadow_authority_evidence_bundle(
+            tampered,
+            require_complete=True,
+            require_fresh=True,
+            now="2026-07-19T00:00:00Z",
+        )
+
+        self.assertFalse(result.ok)
+        self.assertTrue(any("bundle_id" in error for error in result.errors))
+        self.assertTrue(any("live source_uri" in error for error in result.errors))
+
+    def test_cli_shadow_authority_bundle_round_trip(self):
+        contract = self._contract()
+        replay = self._replay()
+        temporal = build_temporal_holdout_manifest(contract, replay, generated_at="2026-07-03T12:10:00Z")
+        traffic_export = self._traffic_export()
+        provider_export = self._provider_export(traffic_export)
+        completeness = self._traffic_completeness_receipt(traffic_export, provider_export)
+        evidence = self._complete_shadow_authority_evidence()
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            temporal_path = tmp / "temporal-holdout.json"
+            traffic_path = tmp / "traffic-export.json"
+            provider_path = tmp / "provider-export.json"
+            completeness_path = tmp / "traffic-completeness.json"
+            bundle_path = tmp / "shadow-authority-bundle.json"
+            dossier_path = tmp / "shadow-authority.json"
+            entry_path = tmp / "shadow-authority-entry.json"
+            state_path = tmp / "evidence-chain.json"
+            temporal_path.write_text(json.dumps(temporal, indent=2, sort_keys=True), encoding="utf-8")
+            traffic_path.write_text(json.dumps(traffic_export, indent=2, sort_keys=True), encoding="utf-8")
+            provider_path.write_text(json.dumps(provider_export, indent=2, sort_keys=True), encoding="utf-8")
+            completeness_path.write_text(json.dumps(completeness, indent=2, sort_keys=True), encoding="utf-8")
+            env = {**os.environ, "PYTHONPATH": str(ROOT / "src")}
+
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "shadow-authority-evidence-bundle",
+                    "--mode",
+                    "production-export",
+                    "--environment",
+                    "aitrade-prod",
+                    "--bundle-ref",
+                    "bundle:shadow/cli",
+                    "--issuer-ref",
+                    "authority:trustai/shadow-exporter",
+                    "--subject-ref",
+                    "agent:aitrade-risk-shadow@2026.07.03",
+                    "--authority-ref",
+                    "authority:shadow-holdout/provider-completeness-prod",
+                    "--generated-at",
+                    "2026-07-19T00:00:00Z",
+                    "--require-complete",
+                    "--require-fresh",
+                    "--now",
+                    "2026-07-19T00:00:00Z",
+                    *self._shadow_authority_evidence_cli_args(evidence),
+                    "--out",
+                    str(bundle_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "shadow-authority",
+                    str(CONTRACT),
+                    str(SHADOW),
+                    str(temporal_path),
+                    str(traffic_path),
+                    str(completeness_path),
+                    "--provider-export",
+                    str(provider_path),
+                    "--mode",
+                    "production-dossier",
+                    "--environment",
+                    "aitrade-prod",
+                    "--dossier-ref",
+                    "dossier:shadow/cli",
+                    "--authority-ref",
+                    "authority:shadow-holdout/provider-completeness-prod",
+                    "--producer-ref",
+                    "service:trustai-shadow-authority",
+                    "--generated-at",
+                    "2026-07-19T00:05:00Z",
+                    "--authority-evidence-bundle",
+                    str(bundle_path),
+                    "--require-complete",
+                    "--require-fresh",
+                    "--now",
+                    "2026-07-19T00:05:00Z",
+                    "--out",
+                    str(dossier_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "shadow-authority-append",
+                    str(dossier_path),
+                    "--contract",
+                    str(CONTRACT),
+                    "--replay",
+                    str(SHADOW),
+                    "--temporal-holdout",
+                    str(temporal_path),
+                    "--traffic-export",
+                    str(traffic_path),
+                    "--traffic-completeness",
+                    str(completeness_path),
+                    "--provider-export",
+                    str(provider_path),
+                    "--require-complete",
+                    "--require-fresh",
+                    "--now",
+                    "2026-07-19T00:05:00Z",
+                    "--state",
+                    str(state_path),
+                    "--tenant",
+                    "shadow-authority-cli",
+                    "--out",
+                    str(entry_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+            )
+
+            dossier = json.loads(dossier_path.read_text(encoding="utf-8"))
+            entry = json.loads(entry_path.read_text(encoding="utf-8"))
+            self.assertEqual(SHADOW_AUTHORITY_SCHEMA, dossier["schema"])
+            self.assertEqual(SHADOW_AUTHORITY_ENTRY_TYPE, entry["entry_type"])
+            self.assertEqual(len(PRODUCTION_AUTHORITY_REQUIREMENTS), dossier["summary"]["covered_requirement_count"])
 
     def test_traffic_holdout_export_binds_source_window_and_replay_hashes(self):
         receipt = build_traffic_holdout_export(

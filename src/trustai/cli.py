@@ -1052,6 +1052,22 @@ from .shadow import (
     write_traffic_completeness_receipt,
     write_traffic_holdout_export,
 )
+from .shadow_authority import (
+    SHADOW_AUTHORITY_EVIDENCE_BUNDLE_MODES,
+    SHADOW_AUTHORITY_MODES,
+    append_shadow_authority_dossier,
+    append_shadow_authority_evidence_bundle,
+    build_shadow_authority_dossier,
+    build_shadow_authority_evidence_bundle,
+    load_shadow_authority_dossier,
+    load_shadow_authority_evidence_bundle,
+    parse_shadow_authority_evidence_arg,
+    shadow_authority_evidence_from_bundle,
+    verify_shadow_authority_dossier,
+    verify_shadow_authority_evidence_bundle,
+    write_shadow_authority_dossier,
+    write_shadow_authority_evidence_bundle,
+)
 from .tamper_stress import (
     build_tamper_stress_report,
     load_tamper_stress_report,
@@ -6216,6 +6232,242 @@ def cmd_temporal_holdout_append(args: argparse.Namespace) -> int:
     print(f"manifest id: {manifest['manifest_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0 if manifest.get("passed") else 1
+
+
+
+def _shadow_authority_evidence_from_args(args: argparse.Namespace) -> list[dict[str, Any]]:
+    evidence = [parse_shadow_authority_evidence_arg(value) for value in getattr(args, "authority_evidence", [])]
+    for bundle_path in getattr(args, "authority_evidence_bundle", []) or []:
+        bundle = load_shadow_authority_evidence_bundle(bundle_path)
+        evidence.extend(
+            shadow_authority_evidence_from_bundle(
+                bundle,
+                key=getattr(args, "key", None),
+                require_complete=getattr(args, "require_complete", False),
+                require_fresh=getattr(args, "require_fresh", False),
+                now=getattr(args, "now", None),
+            )
+        )
+    return evidence
+
+
+def cmd_shadow_authority_evidence_bundle(args: argparse.Namespace) -> int:
+    try:
+        evidence = [parse_shadow_authority_evidence_arg(value) for value in args.authority_evidence]
+        bundle = build_shadow_authority_evidence_bundle(
+            authority_evidence=evidence,
+            mode=args.mode,
+            environment=args.environment,
+            bundle_ref=args.bundle_ref,
+            issuer_ref=args.issuer_ref,
+            subject_ref=args.subject_ref,
+            authority_ref=args.authority_ref,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_shadow_authority_evidence_bundle(
+            bundle,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"shadow authority evidence bundle failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("shadow authority evidence bundle verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_shadow_authority_evidence_bundle(args.out, bundle)
+    print(f"shadow authority evidence bundle: {args.out}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"covered requirements: {result.covered_count}/{result.required_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_shadow_authority_evidence_bundle_verify(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_shadow_authority_evidence_bundle(args.bundle)
+    except (OSError, ValueError) as exc:
+        print(f"shadow authority evidence bundle verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_shadow_authority_evidence_bundle(
+        bundle,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified shadow authority evidence bundle: {args.bundle}")
+        print(f"bundle id: {bundle['bundle_id']}")
+        print(f"covered requirements: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"shadow authority evidence bundle verification failed: {args.bundle}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_shadow_authority_evidence_bundle_append(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_shadow_authority_evidence_bundle(args.bundle)
+    except (OSError, ValueError) as exc:
+        print(f"shadow authority evidence bundle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_shadow_authority_evidence_bundle(
+            chain,
+            bundle,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"shadow authority evidence bundle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"shadow authority evidence bundle entry: {args.out}")
+    print(f"shadow authority evidence bundle entry id: {entry['entry_id']}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def _load_shadow_authority_sources(args: argparse.Namespace) -> dict[str, Any]:
+    return {
+        "contract": load_contract(args.contract),
+        "replay": load_shadow_replay(args.replay),
+        "temporal_holdout": load_temporal_holdout_manifest(args.temporal_holdout),
+        "traffic_export": load_traffic_holdout_export(args.traffic_export),
+        "traffic_completeness": load_traffic_completeness_receipt(args.traffic_completeness),
+        "provider_export": load_traffic_completeness_provider_export(args.provider_export) if getattr(args, "provider_export", None) else None,
+    }
+
+
+def cmd_shadow_authority(args: argparse.Namespace) -> int:
+    try:
+        sources = _load_shadow_authority_sources(args)
+        evidence = _shadow_authority_evidence_from_args(args)
+        dossier = build_shadow_authority_dossier(
+            sources["contract"],
+            sources["replay"],
+            sources["temporal_holdout"],
+            sources["traffic_export"],
+            sources["traffic_completeness"],
+            provider_export=sources["provider_export"],
+            provider_export_path=args.provider_export,
+            mode=args.mode,
+            environment=args.environment,
+            dossier_ref=args.dossier_ref,
+            authority_ref=args.authority_ref,
+            producer_ref=args.producer_ref,
+            authority_evidence=evidence,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_shadow_authority_dossier(
+            dossier,
+            **sources,
+            provider_export_path=args.provider_export,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"shadow authority dossier failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("shadow authority dossier verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_shadow_authority_dossier(args.out, dossier)
+    print(f"shadow authority dossier: {args.out}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"covered requirements: {result.covered_count}/{result.required_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_shadow_authority_verify(args: argparse.Namespace) -> int:
+    try:
+        dossier = load_shadow_authority_dossier(args.dossier)
+        sources = _load_shadow_authority_sources(args) if args.contract else {
+            "contract": None,
+            "replay": None,
+            "temporal_holdout": None,
+            "traffic_export": None,
+            "traffic_completeness": None,
+            "provider_export": None,
+        }
+    except (OSError, ValueError) as exc:
+        print(f"shadow authority dossier verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_shadow_authority_dossier(
+        dossier,
+        **sources,
+        provider_export_path=args.provider_export if getattr(args, "provider_export", None) else None,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified shadow authority dossier: {args.dossier}")
+        print(f"dossier id: {dossier['dossier_id']}")
+        print(f"covered requirements: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"shadow authority dossier verification failed: {args.dossier}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_shadow_authority_append(args: argparse.Namespace) -> int:
+    try:
+        dossier = load_shadow_authority_dossier(args.dossier)
+        sources = _load_shadow_authority_sources(args)
+    except (OSError, ValueError) as exc:
+        print(f"shadow authority dossier append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_shadow_authority_dossier(
+            chain,
+            dossier,
+            **sources,
+            provider_export_path=args.provider_export,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"shadow authority dossier append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"shadow authority entry: {args.out}")
+    print(f"shadow authority entry id: {entry['entry_id']}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
 
 
 def cmd_soak_report(args: argparse.Namespace) -> int:
@@ -23124,6 +23376,83 @@ def build_parser() -> argparse.ArgumentParser:
     holdout_append.add_argument("--key")
     _add_state_args(holdout_append)
     holdout_append.set_defaults(func=cmd_temporal_holdout_append)
+
+    def _add_shadow_authority_strict_flags(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--require-complete", action="store_true")
+        parser.add_argument("--require-fresh", action="store_true")
+        parser.add_argument("--now")
+        parser.add_argument("--key")
+
+    def _add_shadow_authority_evidence_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--authority-evidence", action="append", default=[], help="repeatable requirement_id,authority_kind,evidence_ref,evidence_hash,description[;issuer=...;subject=...;source_uri=...;issued_at=...;expires_at=...]")
+        parser.add_argument("--authority-evidence-bundle", action="append", default=[], help="signed shadow authority evidence bundle to verify and consume")
+
+    shadow_authority_bundle = subparsers.add_parser("shadow-authority-evidence-bundle", help="write a signed shadow replay temporal holdout authority evidence bundle")
+    shadow_authority_bundle.add_argument("--mode", choices=sorted(SHADOW_AUTHORITY_EVIDENCE_BUNDLE_MODES), default="authority-export")
+    shadow_authority_bundle.add_argument("--environment", default="local")
+    shadow_authority_bundle.add_argument("--bundle-ref", required=True)
+    shadow_authority_bundle.add_argument("--issuer-ref", required=True)
+    shadow_authority_bundle.add_argument("--subject-ref", required=True)
+    shadow_authority_bundle.add_argument("--authority-ref", required=True)
+    shadow_authority_bundle.add_argument("--generated-at")
+    shadow_authority_bundle.add_argument("--authority-evidence", action="append", default=[])
+    shadow_authority_bundle.add_argument("--out", default="artifacts/shadow-authority-evidence-bundle.json")
+    _add_shadow_authority_strict_flags(shadow_authority_bundle)
+    shadow_authority_bundle.set_defaults(func=cmd_shadow_authority_evidence_bundle)
+
+    shadow_authority_bundle_verify = subparsers.add_parser("shadow-authority-evidence-bundle-verify", help="verify a signed shadow authority evidence bundle")
+    shadow_authority_bundle_verify.add_argument("bundle")
+    _add_shadow_authority_strict_flags(shadow_authority_bundle_verify)
+    shadow_authority_bundle_verify.set_defaults(func=cmd_shadow_authority_evidence_bundle_verify)
+
+    shadow_authority_bundle_append = subparsers.add_parser("shadow-authority-evidence-bundle-append", help="append a verified shadow authority evidence bundle as chain evidence")
+    shadow_authority_bundle_append.add_argument("bundle")
+    shadow_authority_bundle_append.add_argument("--out", default="artifacts/shadow-authority-evidence-bundle-entry.json")
+    _add_shadow_authority_strict_flags(shadow_authority_bundle_append)
+    _add_state_args(shadow_authority_bundle_append)
+    shadow_authority_bundle_append.set_defaults(func=cmd_shadow_authority_evidence_bundle_append)
+
+    shadow_authority = subparsers.add_parser("shadow-authority", help="write a signed shadow replay temporal holdout production authority dossier")
+    shadow_authority.add_argument("contract")
+    shadow_authority.add_argument("replay")
+    shadow_authority.add_argument("temporal_holdout")
+    shadow_authority.add_argument("traffic_export")
+    shadow_authority.add_argument("traffic_completeness")
+    shadow_authority.add_argument("--provider-export")
+    shadow_authority.add_argument("--mode", choices=sorted(SHADOW_AUTHORITY_MODES), default="provider-dossier")
+    shadow_authority.add_argument("--environment", default="local")
+    shadow_authority.add_argument("--dossier-ref", required=True)
+    shadow_authority.add_argument("--authority-ref", required=True)
+    shadow_authority.add_argument("--producer-ref", required=True)
+    shadow_authority.add_argument("--generated-at")
+    shadow_authority.add_argument("--out", default="artifacts/shadow-authority.json")
+    _add_shadow_authority_evidence_fields(shadow_authority)
+    _add_shadow_authority_strict_flags(shadow_authority)
+    shadow_authority.set_defaults(func=cmd_shadow_authority)
+
+    shadow_authority_verify = subparsers.add_parser("shadow-authority-verify", help="verify a signed shadow replay temporal holdout authority dossier")
+    shadow_authority_verify.add_argument("dossier")
+    shadow_authority_verify.add_argument("--contract", required=True)
+    shadow_authority_verify.add_argument("--replay", required=True)
+    shadow_authority_verify.add_argument("--temporal-holdout", required=True)
+    shadow_authority_verify.add_argument("--traffic-export", required=True)
+    shadow_authority_verify.add_argument("--traffic-completeness", required=True)
+    shadow_authority_verify.add_argument("--provider-export")
+    _add_shadow_authority_strict_flags(shadow_authority_verify)
+    shadow_authority_verify.set_defaults(func=cmd_shadow_authority_verify)
+
+    shadow_authority_append = subparsers.add_parser("shadow-authority-append", help="append a verified shadow replay temporal holdout authority dossier as chain evidence")
+    shadow_authority_append.add_argument("dossier")
+    shadow_authority_append.add_argument("--contract", required=True)
+    shadow_authority_append.add_argument("--replay", required=True)
+    shadow_authority_append.add_argument("--temporal-holdout", required=True)
+    shadow_authority_append.add_argument("--traffic-export", required=True)
+    shadow_authority_append.add_argument("--traffic-completeness", required=True)
+    shadow_authority_append.add_argument("--provider-export")
+    shadow_authority_append.add_argument("--out", default="artifacts/shadow-authority-entry.json")
+    _add_shadow_authority_strict_flags(shadow_authority_append)
+    _add_state_args(shadow_authority_append)
+    shadow_authority_append.set_defaults(func=cmd_shadow_authority_append)
 
     soak = subparsers.add_parser("soak-report", help="evaluate and evidence a soak report")
     soak.add_argument("contract")
