@@ -18,13 +18,21 @@ from trustai.crypto import sign_value
 from trustai.gate import append_eval_and_gate
 from trustai.proofpack import compile_proof_pack
 from trustai.provider_approval_authority import (
+    PRODUCTION_AUTHORITY_REQUIREMENTS,
     PRODUCTION_AUTHORITY_REQUIREMENT_IDS,
     PROVIDER_APPROVAL_AUTHORITY_ENTRY_TYPE,
+    PROVIDER_APPROVAL_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE,
+    PROVIDER_APPROVAL_AUTHORITY_EVIDENCE_BUNDLE_SCHEMA,
     PROVIDER_APPROVAL_AUTHORITY_SCHEMA,
     append_provider_approval_authority_dossier,
+    append_provider_approval_authority_evidence_bundle,
     build_provider_approval_authority_dossier,
+    build_provider_approval_authority_evidence_bundle,
+    provider_approval_authority_evidence_from_bundle,
     verify_provider_approval_authority_dossier,
+    verify_provider_approval_authority_evidence_bundle,
     write_provider_approval_authority_dossier,
+    write_provider_approval_authority_evidence_bundle,
 )
 from trustai.provider_webhook import build_provider_webhook_receipt, write_provider_webhook_receipt
 
@@ -121,6 +129,34 @@ class ProviderApprovalAuthorityTests(unittest.TestCase):
             },
         ]
 
+    def _complete_authority_evidence(self) -> list[dict]:
+        evidence = []
+        for requirement in PRODUCTION_AUTHORITY_REQUIREMENTS:
+            requirement_id = requirement["id"]
+            authority_kind = requirement["authority_kinds"][0]
+            evidence.append(
+                {
+                    "requirement_id": requirement_id,
+                    "authority_kind": authority_kind,
+                    "evidence_ref": f"authority:provider-approval/github-prod/{requirement_id}",
+                    "evidence_hash": "sha256:" + content_hash({"provider_approval_authority": requirement_id, "authority_kind": authority_kind}),
+                    "description": f"Production authority export for {requirement_id}.",
+                    "issuer": "TrustAI Provider Authority",
+                    "subject": "aitrade-prod CI/CD approval authority",
+                    "source_uri": f"https://authority.trustai.ai/provider-approval/github-prod/{requirement_id}/{authority_kind}",
+                    "issued_at": "2026-07-08T06:02:00Z",
+                    "expires_at": "2026-07-15T06:02:00Z",
+                }
+            )
+        return evidence
+
+    def _evidence_cli_arg(self, item: dict) -> str:
+        return (
+            f"{item['requirement_id']},{item['authority_kind']},{item['evidence_ref']},{item['evidence_hash']},{item['description']}"
+            f";issuer={item['issuer']};subject={item['subject']};source_uri={item['source_uri']}"
+            f";issued_at={item['issued_at']};expires_at={item['expires_at']}"
+        )
+
     def _dossier(self, request, callback, webhook, delivery_authority, operations_authority, *, mode: str = "provider-dossier", authority_evidence: list[dict] | None = None) -> dict:
         return build_provider_approval_authority_dossier(
             request,
@@ -176,6 +212,107 @@ class ProviderApprovalAuthorityTests(unittest.TestCase):
             self.assertEqual(dossier["authority_evidence"][0]["source_context"], entry["payload"]["authority_evidence"][0]["source_context"])
             self.assertEqual({"deferred": 2, "passed": 5}, entry["payload"]["control_summary"])
             self.assertTrue(chain.verify_all().ok)
+
+    def test_provider_approval_authority_evidence_bundle_drives_complete_provider_dossier(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            request, callback = self._approval_sources(tmp)
+            webhook = self._webhook_receipt()
+            bundle = build_provider_approval_authority_evidence_bundle(
+                authority_evidence=self._complete_authority_evidence(),
+                mode="production-export",
+                environment="aitrade-prod",
+                bundle_ref="bundle:provider-approval-authority/github-prod/2026-07-08",
+                issuer_ref="authority:trustai-provider-authority",
+                subject_ref="approval-authority:aitrade-prod/github",
+                authority_ref="authority:provider-approval/github-prod",
+                generated_at="2026-07-08T06:04:00Z",
+            )
+            bundle_result = verify_provider_approval_authority_evidence_bundle(
+                bundle,
+                require_complete=True,
+                require_fresh=True,
+                now="2026-07-08T06:05:00Z",
+            )
+            dossier = self._dossier(
+                request,
+                callback,
+                webhook,
+                None,
+                None,
+                mode="provider-dossier",
+                authority_evidence=provider_approval_authority_evidence_from_bundle(
+                    bundle,
+                    require_complete=True,
+                    require_fresh=True,
+                    now="2026-07-08T06:05:00Z",
+                ),
+            )
+            result = verify_provider_approval_authority_dossier(
+                dossier,
+                approval_request=request,
+                approval_callback=callback,
+                webhook_receipts=[webhook],
+                require_complete=True,
+                require_fresh=True,
+                now="2026-07-08T06:05:00Z",
+            )
+            chain = EvidenceChain.load(tmp / "authority-chain.json", tenant_id="provider-approval-authority-production-test")
+            bundle_entry = append_provider_approval_authority_evidence_bundle(
+                chain,
+                bundle,
+                require_complete=True,
+                require_fresh=True,
+                now="2026-07-08T06:05:00Z",
+            )
+            dossier_entry = append_provider_approval_authority_dossier(
+                chain,
+                dossier,
+                approval_request=request,
+                approval_callback=callback,
+                webhook_receipts=[webhook],
+                require_complete=True,
+                require_fresh=True,
+                now="2026-07-08T06:05:00Z",
+            )
+
+            self.assertTrue(bundle_result.ok, bundle_result.errors)
+            self.assertTrue(result.ok, result.errors)
+            self.assertEqual(PROVIDER_APPROVAL_AUTHORITY_EVIDENCE_BUNDLE_SCHEMA, bundle["schema"])
+            self.assertEqual(len(PRODUCTION_AUTHORITY_REQUIREMENT_IDS), bundle_result.covered_count)
+            self.assertEqual(0, bundle["summary"]["missing_requirement_count"])
+            self.assertEqual(0, bundle["summary"]["placeholder_source_uri_count"])
+            self.assertEqual(len(PRODUCTION_AUTHORITY_REQUIREMENT_IDS), result.covered_count)
+            self.assertEqual(len(PRODUCTION_AUTHORITY_REQUIREMENT_IDS), result.fresh_evidence_count)
+            self.assertEqual({"passed": 5}, bundle_entry["payload"]["control_summary"])
+            self.assertEqual({"deferred": 2, "passed": 5}, dossier_entry["payload"]["control_summary"])
+            self.assertEqual(PROVIDER_APPROVAL_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE, bundle_entry["entry_type"])
+            self.assertTrue(chain.verify_all().ok)
+
+    def test_provider_approval_authority_evidence_bundle_detects_placeholder_source_uri(self):
+        bundle = build_provider_approval_authority_evidence_bundle(
+            authority_evidence=self._complete_authority_evidence(),
+            mode="production-export",
+            environment="aitrade-prod",
+            bundle_ref="bundle:provider-approval-authority/github-prod/2026-07-08",
+            issuer_ref="authority:trustai-provider-authority",
+            subject_ref="approval-authority:aitrade-prod/github",
+            authority_ref="authority:provider-approval/github-prod",
+            generated_at="2026-07-08T06:04:00Z",
+        )
+        tampered = copy.deepcopy(bundle)
+        tampered["authority_evidence"][0]["source_uri"] = "TODO://authority/provider-approval"
+
+        result = verify_provider_approval_authority_evidence_bundle(
+            tampered,
+            require_complete=True,
+            require_fresh=True,
+            now="2026-07-08T06:05:00Z",
+        )
+
+        self.assertFalse(result.ok)
+        self.assertIn("bundle_id does not match canonical provider approval authority evidence bundle body", result.errors)
+        self.assertTrue(any("source_uri is placeholder" in error for error in result.errors), result.errors)
 
     def test_provider_approval_authority_detects_callback_tamper(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -313,6 +450,136 @@ class ProviderApprovalAuthorityTests(unittest.TestCase):
 
             self.assertFalse(result.ok)
             self.assertTrue(any("production-dossier mode requires" in error for error in result.errors), result.errors)
+
+    def test_cli_provider_approval_authority_evidence_bundle_round_trip(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            request, callback = self._approval_sources(tmp)
+            webhook = self._webhook_receipt()
+            request_path = tmp / "approval-request.json"
+            callback_path = tmp / "approval-callback.json"
+            webhook_path = tmp / "provider-webhook.json"
+            bundle_path = tmp / "provider-approval-authority-evidence-bundle.json"
+            bundle_entry_path = tmp / "provider-approval-authority-evidence-bundle-entry.json"
+            dossier_path = tmp / "provider-approval-authority.json"
+            state_path = tmp / "provider-approval-authority-evidence-bundle-chain.json"
+            _write_json(request_path, request)
+            _write_json(callback_path, callback)
+            write_provider_webhook_receipt(webhook_path, webhook)
+            env = {**os.environ, "PYTHONPATH": str(ROOT / "src")}
+            base = [sys.executable, "-m", "trustai"]
+            evidence_args = []
+            for item in self._complete_authority_evidence():
+                evidence_args.extend(["--authority-evidence", self._evidence_cli_arg(item)])
+            source_args = [
+                str(request_path),
+                str(callback_path),
+                "--webhook",
+                str(webhook_path),
+            ]
+
+            subprocess.run(
+                base
+                + [
+                    "provider-approval-authority-evidence-bundle",
+                    "--mode",
+                    "production-export",
+                    "--environment",
+                    "aitrade-prod",
+                    "--bundle-ref",
+                    "bundle:provider-approval-authority/github-prod/2026-07-08",
+                    "--issuer-ref",
+                    "authority:trustai-provider-authority",
+                    "--subject-ref",
+                    "approval-authority:aitrade-prod/github",
+                    "--authority-ref",
+                    "authority:provider-approval/github-prod",
+                    *evidence_args,
+                    "--generated-at",
+                    "2026-07-08T06:04:00Z",
+                    "--require-complete",
+                    "--require-fresh",
+                    "--now",
+                    "2026-07-08T06:05:00Z",
+                    "--out",
+                    str(bundle_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            subprocess.run(
+                base + ["provider-approval-authority-evidence-bundle-verify", str(bundle_path), "--require-complete", "--require-fresh", "--now", "2026-07-08T06:05:00Z"],
+                cwd=ROOT,
+                env=env,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            subprocess.run(
+                base
+                + [
+                    "provider-approval-authority-evidence-bundle-append",
+                    str(bundle_path),
+                    "--require-complete",
+                    "--require-fresh",
+                    "--now",
+                    "2026-07-08T06:05:00Z",
+                    "--state",
+                    str(state_path),
+                    "--tenant",
+                    "provider-approval-authority-evidence-bundle-local",
+                    "--out",
+                    str(bundle_entry_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            subprocess.run(
+                base
+                + [
+                    "provider-approval-authority",
+                    *source_args,
+                    "--mode",
+                    "provider-dossier",
+                    "--environment",
+                    "aitrade-prod",
+                    "--dossier-ref",
+                    "dossier:provider-approval-authority/github-prod",
+                    "--authority-ref",
+                    "authority:provider-approval/github-prod",
+                    "--producer-ref",
+                    "oidc:trustai.example/provider-approval-authority-worker",
+                    "--authority-evidence-bundle",
+                    str(bundle_path),
+                    "--generated-at",
+                    "2026-07-08T06:05:00Z",
+                    "--require-complete",
+                    "--require-fresh",
+                    "--now",
+                    "2026-07-08T06:05:00Z",
+                    "--out",
+                    str(dossier_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            bundle = json.loads(bundle_path.read_text(encoding="utf-8"))
+            bundle_entry = json.loads(bundle_entry_path.read_text(encoding="utf-8"))
+            dossier = json.loads(dossier_path.read_text(encoding="utf-8"))
+
+            self.assertEqual(PROVIDER_APPROVAL_AUTHORITY_EVIDENCE_BUNDLE_SCHEMA, bundle["schema"])
+            self.assertEqual(PROVIDER_APPROVAL_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE, bundle_entry["entry_type"])
+            self.assertEqual(0, dossier["summary"]["missing_requirement_count"])
+            self.assertEqual("provider-dossier", dossier["mode"])
 
     def test_cli_provider_approval_authority_round_trip(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

@@ -17,6 +17,9 @@ from .provider_webhook import verify_provider_webhook_receipt
 PROVIDER_APPROVAL_AUTHORITY_SCHEMA = "trustai.provider-approval-production-authority-dossier/0.1"
 PROVIDER_APPROVAL_AUTHORITY_ENTRY_TYPE = "provider.approval_authority_recorded"
 PROVIDER_APPROVAL_AUTHORITY_MODES = {"local-dossier", "provider-dossier", "production-dossier"}
+PROVIDER_APPROVAL_AUTHORITY_EVIDENCE_BUNDLE_SCHEMA = "trustai.provider-approval-authority-evidence-bundle/0.1"
+PROVIDER_APPROVAL_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE = "provider.approval_authority_evidence_bundled"
+PROVIDER_APPROVAL_AUTHORITY_EVIDENCE_BUNDLE_MODES = {"authority-export", "offline-review", "production-export"}
 SECRET_KEY_MARKERS = ("authorization", "cookie", "token", "secret", "private_key", "client_secret", "password", "credential")
 
 PRODUCTION_AUTHORITY_REQUIREMENTS = [
@@ -47,6 +50,18 @@ class ProviderApprovalAuthorityVerification:
     missing_freshness_count: int = 0
 
 
+@dataclass
+class ProviderApprovalAuthorityEvidenceBundleVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+    covered_count: int = 0
+    required_count: int = 0
+    fresh_evidence_count: int = 0
+    stale_evidence_count: int = 0
+    missing_freshness_count: int = 0
+
+
 def load_provider_approval_authority_dossier(path: str | Path) -> dict[str, Any]:
     value = json.loads(Path(path).read_text(encoding="utf-8-sig"))
     if not isinstance(value, dict):
@@ -58,6 +73,19 @@ def write_provider_approval_authority_dossier(path: str | Path, dossier: dict[st
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(dossier, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_provider_approval_authority_evidence_bundle(path: str | Path) -> dict[str, Any]:
+    value = json.loads(Path(path).read_text(encoding="utf-8-sig"))
+    if not isinstance(value, dict):
+        raise ValueError("provider approval authority evidence bundle must contain an object")
+    return value
+
+
+def write_provider_approval_authority_evidence_bundle(path: str | Path, bundle: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(bundle, indent=2, sort_keys=True), encoding="utf-8")
 
 
 def parse_provider_approval_authority_evidence_arg(value: str) -> dict[str, Any]:
@@ -85,6 +113,198 @@ def parse_provider_approval_authority_evidence_arg(value: str) -> dict[str, Any]
         "description": description_parts[0],
         **metadata,
     }
+
+
+def build_provider_approval_authority_evidence_bundle(
+    *,
+    authority_evidence: list[dict[str, Any]],
+    mode: str = "authority-export",
+    environment: str = "local",
+    bundle_ref: str,
+    issuer_ref: str,
+    subject_ref: str,
+    authority_ref: str,
+    generated_at: str | None = None,
+    key: str | None = None,
+) -> dict[str, Any]:
+    if mode not in PROVIDER_APPROVAL_AUTHORITY_EVIDENCE_BUNDLE_MODES:
+        raise ValueError(f"mode must be one of {sorted(PROVIDER_APPROVAL_AUTHORITY_EVIDENCE_BUNDLE_MODES)}")
+    for value, field in ((environment, "environment"), (bundle_ref, "bundle_ref"), (issuer_ref, "issuer_ref"), (subject_ref, "subject_ref"), (authority_ref, "authority_ref")):
+        _require_text(value, field)
+    timestamp = generated_at or utc_now()
+    parse_rfc3339(timestamp)
+    evidence_items = [_build_authority_evidence_bundle_item(item) for item in authority_evidence]
+    summary = _evidence_bundle_summary(evidence_items, timestamp)
+    body: dict[str, Any] = {
+        "schema": PROVIDER_APPROVAL_AUTHORITY_EVIDENCE_BUNDLE_SCHEMA,
+        "mode": mode,
+        "environment": environment,
+        "generated_at": timestamp,
+        "bundle_ref": bundle_ref,
+        "issuer_ref": issuer_ref,
+        "subject_ref": subject_ref,
+        "authority_ref": authority_ref,
+        "required_production_authority": PRODUCTION_AUTHORITY_REQUIREMENTS,
+        "authority_evidence": evidence_items,
+        "summary": summary,
+        "controls": _evidence_bundle_controls(mode, summary),
+        "limitations": [
+            "This bundle records provider-approval production-authority evidence rows before they are bound to a concrete approval callback source context.",
+            "A provider approval authority dossier must still replay the approval request, approval callback, provider webhook, provider delivery authority, and provider operations authority sources.",
+            "Production claims require production-export mode, complete checklist coverage, live source URIs, and fresh evidence windows.",
+        ],
+    }
+    secret_errors: list[str] = []
+    _check_no_secret_values(body, secret_errors)
+    if secret_errors:
+        raise ValueError("provider approval authority evidence bundle contains secret-like values: " + "; ".join(secret_errors))
+    bundle_id = content_hash(body)
+    signed_value = {"bundle_id": bundle_id, "provider_approval_authority_evidence_bundle": body}
+    return {**body, "bundle_id": bundle_id, "signatures": [sign_value(signed_value, key)]}
+
+
+def verify_provider_approval_authority_evidence_bundle(
+    bundle: dict[str, Any],
+    *,
+    key: str | None = None,
+    require_complete: bool = False,
+    require_fresh: bool = False,
+    now: str | None = None,
+) -> ProviderApprovalAuthorityEvidenceBundleVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    freshness_now = _bundle_freshness_reference(bundle, now, errors)
+
+    if bundle.get("schema") != PROVIDER_APPROVAL_AUTHORITY_EVIDENCE_BUNDLE_SCHEMA:
+        errors.append(f"unsupported provider approval authority evidence bundle schema: {bundle.get('schema')}")
+    body = without_keys(bundle, "bundle_id", "signatures")
+    if bundle.get("bundle_id") != content_hash(body):
+        errors.append("bundle_id does not match canonical provider approval authority evidence bundle body")
+    signatures = bundle.get("signatures", [])
+    if not isinstance(signatures, list) or not signatures:
+        errors.append("provider approval authority evidence bundle must include at least one signature")
+    else:
+        signed_value = {"bundle_id": bundle.get("bundle_id"), "provider_approval_authority_evidence_bundle": body}
+        if not any(isinstance(signature, dict) and verify_value(signed_value, signature, key) for signature in signatures):
+            errors.append("provider approval authority evidence bundle signature verification failed")
+
+    mode = bundle.get("mode")
+    if mode not in PROVIDER_APPROVAL_AUTHORITY_EVIDENCE_BUNDLE_MODES:
+        errors.append("provider approval authority evidence bundle mode is unsupported")
+    elif mode != "production-export":
+        warnings.append(f"provider approval authority evidence bundle mode is {mode}; production evidence export is not claimed")
+    try:
+        parse_rfc3339(str(bundle.get("generated_at") or ""))
+    except ValueError as exc:
+        errors.append(f"provider approval authority evidence bundle generated_at invalid: {exc}")
+    for field in ("environment", "bundle_ref", "issuer_ref", "subject_ref", "authority_ref"):
+        if not bundle.get(field):
+            errors.append(f"provider approval authority evidence bundle {field} is required")
+    if bundle.get("required_production_authority") != PRODUCTION_AUTHORITY_REQUIREMENTS:
+        errors.append("provider approval authority evidence bundle required_production_authority does not match the required checklist")
+
+    evidence = bundle.get("authority_evidence", [])
+    if not isinstance(evidence, list):
+        errors.append("provider approval authority evidence bundle authority_evidence must be a list")
+        evidence = []
+    freshness_counts = {"fresh": 0, "stale": 0, "missing": 0}
+    evidence_items: list[dict[str, Any]] = []
+    for item in evidence:
+        if not isinstance(item, dict):
+            errors.append("provider approval authority evidence bundle item must be an object")
+            freshness_counts["missing"] += 1
+            continue
+        status = _verify_authority_evidence_bundle_item(item, errors, warnings, now=(_bundle_datetime_iso(freshness_now)), require_fresh=require_fresh)
+        freshness_counts[status] += 1
+        evidence_items.append(item)
+
+    expected_summary = _evidence_bundle_summary(evidence_items, str(bundle.get("generated_at") or utc_now()))
+    if bundle.get("summary") != expected_summary:
+        errors.append("provider approval authority evidence bundle summary does not match authority evidence")
+    expected_controls = _evidence_bundle_controls(str(mode), expected_summary)
+    if bundle.get("controls") != expected_controls:
+        errors.append("provider approval authority evidence bundle controls do not match bundle body")
+
+    missing = expected_summary["missing_requirement_ids"]
+    if missing:
+        warnings.append("provider approval authority evidence bundle missing for: " + ", ".join(missing))
+    if require_complete and missing:
+        errors.append("provider approval authority evidence bundle is incomplete")
+    if mode == "production-export" and missing:
+        errors.append("production-export mode requires every provider approval authority requirement to be covered")
+    if mode == "production-export" and expected_summary.get("placeholder_source_uri_count"):
+        errors.append("production-export mode requires every provider approval authority evidence source_uri to be live")
+    if mode == "production-export" and (freshness_counts["stale"] or freshness_counts["missing"]):
+        errors.append("production-export mode requires every provider approval authority evidence item to be fresh")
+    if not isinstance(bundle.get("controls"), list) or not bundle.get("controls"):
+        errors.append("provider approval authority evidence bundle controls are required")
+    _check_no_secret_values(bundle, errors)
+
+    return ProviderApprovalAuthorityEvidenceBundleVerification(
+        ok=not errors,
+        errors=errors,
+        warnings=warnings,
+        covered_count=expected_summary["covered_requirement_count"],
+        required_count=expected_summary["required_requirement_count"],
+        fresh_evidence_count=freshness_counts["fresh"],
+        stale_evidence_count=freshness_counts["stale"],
+        missing_freshness_count=freshness_counts["missing"],
+    )
+
+
+def provider_approval_authority_evidence_from_bundle(
+    bundle: dict[str, Any],
+    *,
+    key: str | None = None,
+    require_complete: bool = False,
+    require_fresh: bool = False,
+    now: str | None = None,
+) -> list[dict[str, Any]]:
+    result = verify_provider_approval_authority_evidence_bundle(
+        bundle,
+        key=key,
+        require_complete=require_complete,
+        require_fresh=require_fresh,
+        now=now,
+    )
+    if not result.ok:
+        raise ValueError("invalid provider approval authority evidence bundle: " + "; ".join(result.errors))
+    evidence = bundle.get("authority_evidence", [])
+    return [without_keys(item, "evidence_id") for item in evidence if isinstance(item, dict)]
+
+
+def append_provider_approval_authority_evidence_bundle(
+    chain: EvidenceChain,
+    bundle: dict[str, Any],
+    *,
+    key: str | None = None,
+    require_complete: bool = False,
+    require_fresh: bool = False,
+    now: str | None = None,
+) -> dict[str, Any]:
+    result = verify_provider_approval_authority_evidence_bundle(
+        bundle,
+        key=key,
+        require_complete=require_complete,
+        require_fresh=require_fresh,
+        now=now,
+    )
+    if not result.ok:
+        raise ValueError("invalid provider approval authority evidence bundle: " + "; ".join(result.errors))
+    payload = {
+        "bundle_id": bundle["bundle_id"],
+        "bundle_hash": content_hash(bundle),
+        "mode": bundle.get("mode"),
+        "environment": bundle.get("environment"),
+        "generated_at": bundle.get("generated_at"),
+        "bundle_ref": bundle.get("bundle_ref"),
+        "issuer_ref": bundle.get("issuer_ref"),
+        "subject_ref": bundle.get("subject_ref"),
+        "authority_ref": bundle.get("authority_ref"),
+        "summary": bundle.get("summary"),
+        "control_summary": _status_summary(bundle.get("controls", [])),
+    }
+    return chain.append(PROVIDER_APPROVAL_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE, payload, key=key, timestamp=bundle.get("generated_at"))
 
 
 def build_provider_approval_authority_dossier(
@@ -521,6 +741,194 @@ def _source_binding_complete(binding: dict[str, Any]) -> bool:
         and isinstance(binding.get("provider_delivery_authority"), dict)
         and isinstance(binding.get("provider_operations_authority"), dict)
     )
+
+
+def _build_authority_evidence_bundle_item(item: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(item, dict):
+        raise ValueError("authority evidence item must be an object")
+    requirement_id = str(item.get("requirement_id") or "")
+    authority_kind = str(item.get("authority_kind") or "")
+    evidence_ref = str(item.get("evidence_ref") or "")
+    evidence_hash = str(item.get("evidence_hash") or "")
+    description = str(item.get("description") or "")
+    if requirement_id not in PRODUCTION_AUTHORITY_REQUIREMENT_IDS:
+        raise ValueError(f"unsupported provider approval authority requirement: {requirement_id}")
+    requirement = next(req for req in PRODUCTION_AUTHORITY_REQUIREMENTS if req["id"] == requirement_id)
+    if authority_kind not in AUTHORITY_KINDS:
+        raise ValueError(f"unsupported authority kind: {authority_kind}")
+    if authority_kind not in requirement["authority_kinds"]:
+        raise ValueError(f"authority kind {authority_kind} is not valid for requirement {requirement_id}")
+    for value, field in ((evidence_ref, "evidence_ref"), (evidence_hash, "evidence_hash"), (description, "description")):
+        _require_text(value, field)
+    built = {
+        "requirement_id": requirement_id,
+        "authority_kind": authority_kind,
+        "evidence_ref": evidence_ref,
+        "evidence_hash": evidence_hash,
+        "description": description,
+    }
+    for field in ("issuer", "subject", "source_uri", "issued_at", "expires_at"):
+        if item.get(field):
+            built[field] = str(item[field])
+    for field in ("issued_at", "expires_at"):
+        if built.get(field):
+            parse_rfc3339(str(built[field]))
+    if built.get("issued_at") and built.get("expires_at") and parse_rfc3339(str(built["issued_at"])) > parse_rfc3339(str(built["expires_at"])):
+        raise ValueError("authority evidence issued_at must not be after expires_at")
+    built["evidence_id"] = content_hash(built)
+    return built
+
+
+def _verify_authority_evidence_bundle_item(
+    item: dict[str, Any],
+    errors: list[str],
+    warnings: list[str],
+    *,
+    now: str,
+    require_fresh: bool,
+) -> str:
+    try:
+        expected = _build_authority_evidence_bundle_item(item)
+    except ValueError as exc:
+        errors.append(f"invalid provider approval authority evidence bundle item: {exc}")
+        return "missing"
+    if item != expected:
+        errors.append("provider approval authority evidence bundle evidence_id does not match evidence body")
+    source_uri = str(item.get("source_uri") or "")
+    if _provider_approval_authority_source_uri_is_placeholder(source_uri):
+        message = f"provider approval authority evidence bundle source_uri is placeholder or missing: {item.get('requirement_id')}"
+        if require_fresh:
+            errors.append(message)
+        else:
+            warnings.append(message)
+    issued_at = item.get("issued_at")
+    expires_at = item.get("expires_at")
+    if not issued_at or not expires_at:
+        if require_fresh:
+            errors.append(f"provider approval authority evidence bundle {item.get('requirement_id')} freshness metadata missing")
+        return "missing"
+    issued = parse_rfc3339(str(issued_at))
+    expires = parse_rfc3339(str(expires_at))
+    if issued > expires:
+        errors.append(f"provider approval authority evidence bundle {item.get('requirement_id')} issued_at is after expires_at")
+        return "stale"
+    reference = parse_rfc3339(now)
+    if reference < issued or reference > expires:
+        message = f"provider approval authority evidence bundle {item.get('requirement_id')} is outside its freshness window"
+        if require_fresh:
+            errors.append(message)
+        else:
+            warnings.append(message)
+        return "stale"
+    return "fresh"
+
+
+def _evidence_bundle_summary(evidence_items: list[dict[str, Any]], now: str) -> dict[str, Any]:
+    covered = sorted({item.get("requirement_id") for item in evidence_items if item.get("requirement_id")})
+    missing = [req_id for req_id in PRODUCTION_AUTHORITY_REQUIREMENT_IDS if req_id not in covered]
+    source_uri_counts = _provider_approval_authority_source_uri_counts(evidence_items)
+    freshness = _evidence_bundle_freshness_counts(evidence_items, now)
+    return {
+        "required_requirement_count": len(PRODUCTION_AUTHORITY_REQUIREMENT_IDS),
+        "covered_requirement_count": len(covered),
+        "missing_requirement_count": len(missing),
+        "covered_requirement_ids": covered,
+        "missing_requirement_ids": missing,
+        "authority_evidence_count": len(evidence_items),
+        "authority_kinds": sorted({item.get("authority_kind") for item in evidence_items if item.get("authority_kind")}),
+        **source_uri_counts,
+        "fresh_evidence_count": freshness["fresh"],
+        "stale_evidence_count": freshness["stale"],
+        "missing_freshness_count": freshness["missing"],
+    }
+
+
+def _evidence_bundle_controls(mode: str, summary: dict[str, Any]) -> list[dict[str, str]]:
+    complete = summary.get("missing_requirement_count") == 0
+    fresh = summary.get("stale_evidence_count") == 0 and summary.get("missing_freshness_count") == 0 and summary.get("authority_evidence_count", 0) > 0
+    live = summary.get("placeholder_source_uri_count") == 0 and summary.get("authority_evidence_count", 0) > 0
+    production_ready = mode == "production-export" and complete and fresh and live
+    return [
+        {
+            "id": "authority-evidence-checklist-covered",
+            "status": "passed" if complete else "deferred",
+            "detail": f"{summary.get('covered_requirement_count', 0)}/{summary.get('required_requirement_count', 0)} provider approval authority categories are covered.",
+        },
+        {
+            "id": "authority-evidence-freshness-windowed",
+            "status": "passed" if fresh else "deferred",
+            "detail": f"fresh={summary.get('fresh_evidence_count', 0)} stale={summary.get('stale_evidence_count', 0)} missing={summary.get('missing_freshness_count', 0)}",
+        },
+        {
+            "id": "authority-evidence-live-source-uris",
+            "status": "passed" if live else "deferred",
+            "detail": f"live={summary.get('live_source_uri_count', 0)} placeholder={summary.get('placeholder_source_uri_count', 0)}",
+        },
+        {
+            "id": "production-export-gated",
+            "status": "passed" if production_ready else "deferred",
+            "detail": "Production provider approval authority evidence export is claimed only with complete, fresh, live authority records.",
+        },
+        {
+            "id": "raw-secret-exclusion",
+            "status": "passed",
+            "detail": "Bundle stores evidence references, hashes, and source URIs instead of provider secrets.",
+        },
+    ]
+
+
+def _provider_approval_authority_source_uri_counts(evidence_items: list[dict[str, Any]]) -> dict[str, int]:
+    placeholder_count = sum(1 for item in evidence_items if _provider_approval_authority_source_uri_is_placeholder(str(item.get("source_uri") or "")))
+    return {
+        "placeholder_source_uri_count": placeholder_count,
+        "live_source_uri_count": len(evidence_items) - placeholder_count,
+    }
+
+
+def _provider_approval_authority_source_uri_is_placeholder(source_uri: str) -> bool:
+    normalized = source_uri.strip().lower()
+    if not normalized:
+        return True
+    placeholder_markers = ("todo:", "todo://", "placeholder", "example", "localhost", "127.0.0.1", "0.0.0.0")
+    return any(marker in normalized for marker in placeholder_markers)
+
+
+def _evidence_bundle_freshness_counts(evidence_items: list[dict[str, Any]], now: str) -> dict[str, int]:
+    counts = {"fresh": 0, "stale": 0, "missing": 0}
+    try:
+        reference = parse_rfc3339(str(now))
+    except ValueError:
+        reference = parse_rfc3339(utc_now())
+    for item in evidence_items:
+        issued_at = item.get("issued_at")
+        expires_at = item.get("expires_at")
+        if not issued_at or not expires_at:
+            counts["missing"] += 1
+            continue
+        try:
+            issued = parse_rfc3339(str(issued_at))
+            expires = parse_rfc3339(str(expires_at))
+        except ValueError:
+            counts["stale"] += 1
+            continue
+        if issued <= reference <= expires:
+            counts["fresh"] += 1
+        else:
+            counts["stale"] += 1
+    return counts
+
+
+def _bundle_freshness_reference(bundle: dict[str, Any], now: str | None, errors: list[str]):
+    value = now or bundle.get("generated_at") or utc_now()
+    try:
+        return parse_rfc3339(str(value))
+    except ValueError as exc:
+        errors.append(f"provider approval authority evidence bundle freshness reference time invalid: {exc}")
+        return parse_rfc3339(utc_now())
+
+
+def _bundle_datetime_iso(value) -> str:
+    return value.isoformat().replace("+00:00", "Z")
 
 
 def _build_authority_evidence_item(item: dict[str, Any], source_context: dict[str, Any]) -> dict[str, Any]:

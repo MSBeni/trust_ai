@@ -201,13 +201,20 @@ from .approval_callback import (
     write_approval_callback,
 )
 from .provider_approval_authority import (
+    PROVIDER_APPROVAL_AUTHORITY_EVIDENCE_BUNDLE_MODES,
     PROVIDER_APPROVAL_AUTHORITY_MODES,
     append_provider_approval_authority_dossier,
+    append_provider_approval_authority_evidence_bundle,
     build_provider_approval_authority_dossier,
+    build_provider_approval_authority_evidence_bundle,
     load_provider_approval_authority_dossier,
+    load_provider_approval_authority_evidence_bundle,
     parse_provider_approval_authority_evidence_arg,
+    provider_approval_authority_evidence_from_bundle,
     verify_provider_approval_authority_dossier,
+    verify_provider_approval_authority_evidence_bundle,
     write_provider_approval_authority_dossier,
+    write_provider_approval_authority_evidence_bundle,
 )
 from .approvals import append_approval, approval_entries_for_contract, load_approval
 from .auditor import write_auditor_html
@@ -11339,10 +11346,109 @@ def _load_provider_approval_authority_sources(args: argparse.Namespace) -> tuple
     return approval_request, approval_callback, webhook_receipts, provider_delivery_authority, provider_operations_authority
 
 
+def _provider_approval_authority_evidence_from_args(args: argparse.Namespace) -> list[dict[str, Any]]:
+    evidence = [parse_provider_approval_authority_evidence_arg(value) for value in (getattr(args, "authority_evidence", None) or [])]
+    for path in (getattr(args, "authority_evidence_bundle", None) or []):
+        bundle = load_provider_approval_authority_evidence_bundle(path)
+        evidence.extend(
+            provider_approval_authority_evidence_from_bundle(
+                bundle,
+                key=getattr(args, "key", None),
+                require_fresh=getattr(args, "require_fresh", False),
+                now=getattr(args, "now", None),
+            )
+        )
+    return evidence
+
+
+def cmd_provider_approval_authority_evidence_bundle(args: argparse.Namespace) -> int:
+    try:
+        evidence = [parse_provider_approval_authority_evidence_arg(value) for value in (args.authority_evidence or [])]
+        bundle = build_provider_approval_authority_evidence_bundle(
+            authority_evidence=evidence,
+            mode=args.mode,
+            environment=args.environment,
+            bundle_ref=args.bundle_ref,
+            issuer_ref=args.issuer_ref,
+            subject_ref=args.subject_ref,
+            authority_ref=args.authority_ref,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"provider approval authority evidence bundle failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_provider_approval_authority_evidence_bundle(
+        bundle,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if not result.ok:
+        print("provider approval authority evidence bundle verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_provider_approval_authority_evidence_bundle(args.out, bundle)
+    print(f"provider approval authority evidence bundle: {args.out}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"covered requirements: {result.covered_count}/{result.required_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_provider_approval_authority_evidence_bundle_verify(args: argparse.Namespace) -> int:
+    bundle = load_provider_approval_authority_evidence_bundle(args.bundle)
+    result = verify_provider_approval_authority_evidence_bundle(
+        bundle,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified provider approval authority evidence bundle: {args.bundle}")
+        print(f"covered requirements: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"provider approval authority evidence bundle verification failed: {args.bundle}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_provider_approval_authority_evidence_bundle_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    bundle = load_provider_approval_authority_evidence_bundle(args.bundle)
+    try:
+        entry = append_provider_approval_authority_evidence_bundle(
+            chain,
+            bundle,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"provider approval authority evidence bundle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"provider approval authority evidence bundle entry: {args.out}")
+    print(f"provider approval authority evidence bundle entry id: {entry['entry_id']}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
 def cmd_provider_approval_authority(args: argparse.Namespace) -> int:
     approval_request, approval_callback, webhook_receipts, provider_delivery_authority, provider_operations_authority = _load_provider_approval_authority_sources(args)
     try:
-        evidence = [parse_provider_approval_authority_evidence_arg(value) for value in (args.authority_evidence or [])]
+        evidence = _provider_approval_authority_evidence_from_args(args)
         dossier = build_provider_approval_authority_dossier(
             approval_request,
             approval_callback,
@@ -24445,11 +24551,49 @@ def build_parser() -> argparse.ArgumentParser:
         parser.add_argument("--authority-ref", required=True)
         parser.add_argument("--producer-ref", required=True)
         parser.add_argument("--authority-evidence", action="append", help="requirement_id,authority_kind,evidence_ref,evidence_hash,description[;key=value...]")
+        parser.add_argument("--authority-evidence-bundle", action="append", help="signed provider approval authority evidence bundle JSON")
         parser.add_argument("--generated-at")
         parser.add_argument("--require-complete", action="store_true")
         parser.add_argument("--require-fresh", action="store_true")
         parser.add_argument("--now")
         parser.add_argument("--out", default="artifacts/provider-approval-authority.json")
+
+    def _add_provider_approval_authority_evidence_bundle_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--mode", choices=sorted(PROVIDER_APPROVAL_AUTHORITY_EVIDENCE_BUNDLE_MODES), default="authority-export")
+        parser.add_argument("--environment", default="aitrade-prod")
+        parser.add_argument("--bundle-ref", required=True)
+        parser.add_argument("--issuer-ref", required=True)
+        parser.add_argument("--subject-ref", required=True)
+        parser.add_argument("--authority-ref", required=True)
+        parser.add_argument("--authority-evidence", action="append", required=True, help="requirement_id,authority_kind,evidence_ref,evidence_hash,description[;key=value...]")
+        parser.add_argument("--generated-at")
+        parser.add_argument("--require-complete", action="store_true")
+        parser.add_argument("--require-fresh", action="store_true")
+        parser.add_argument("--now")
+        parser.add_argument("--key")
+
+    provider_approval_authority_evidence_bundle = subparsers.add_parser("provider-approval-authority-evidence-bundle", help="write a signed CI/CD provider approval authority evidence bundle")
+    _add_provider_approval_authority_evidence_bundle_fields(provider_approval_authority_evidence_bundle)
+    provider_approval_authority_evidence_bundle.add_argument("--out", default="artifacts/provider-approval-authority-evidence-bundle.json")
+    provider_approval_authority_evidence_bundle.set_defaults(func=cmd_provider_approval_authority_evidence_bundle)
+
+    provider_approval_authority_evidence_bundle_verify = subparsers.add_parser("provider-approval-authority-evidence-bundle-verify", help="verify a signed CI/CD provider approval authority evidence bundle")
+    provider_approval_authority_evidence_bundle_verify.add_argument("bundle")
+    provider_approval_authority_evidence_bundle_verify.add_argument("--require-complete", action="store_true")
+    provider_approval_authority_evidence_bundle_verify.add_argument("--require-fresh", action="store_true")
+    provider_approval_authority_evidence_bundle_verify.add_argument("--now")
+    provider_approval_authority_evidence_bundle_verify.add_argument("--key")
+    provider_approval_authority_evidence_bundle_verify.set_defaults(func=cmd_provider_approval_authority_evidence_bundle_verify)
+
+    provider_approval_authority_evidence_bundle_append = subparsers.add_parser("provider-approval-authority-evidence-bundle-append", help="append a provider approval authority evidence bundle as chain evidence")
+    provider_approval_authority_evidence_bundle_append.add_argument("bundle")
+    provider_approval_authority_evidence_bundle_append.add_argument("--require-complete", action="store_true")
+    provider_approval_authority_evidence_bundle_append.add_argument("--require-fresh", action="store_true")
+    provider_approval_authority_evidence_bundle_append.add_argument("--now")
+    provider_approval_authority_evidence_bundle_append.add_argument("--out", default="artifacts/provider-approval-authority-evidence-bundle-entry.json")
+    provider_approval_authority_evidence_bundle_append.add_argument("--key")
+    _add_state_args(provider_approval_authority_evidence_bundle_append)
+    provider_approval_authority_evidence_bundle_append.set_defaults(func=cmd_provider_approval_authority_evidence_bundle_append)
 
     provider_approval_authority = subparsers.add_parser("provider-approval-authority", help="write a signed CI/CD provider approval production authority dossier")
     _add_provider_approval_authority_sources(provider_approval_authority)
