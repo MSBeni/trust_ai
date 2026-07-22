@@ -831,13 +831,20 @@ from .mcp_gateway import (
     write_mcp_proxy_capture,
 )
 from .mcp_gateway_authority import (
+    MCP_GATEWAY_AUTHORITY_EVIDENCE_BUNDLE_MODES,
     MCP_GATEWAY_AUTHORITY_MODES,
     append_mcp_gateway_authority_dossier,
+    append_mcp_gateway_authority_evidence_bundle,
     build_mcp_gateway_authority_dossier,
+    build_mcp_gateway_authority_evidence_bundle,
     load_mcp_gateway_authority_dossier,
+    load_mcp_gateway_authority_evidence_bundle,
+    mcp_gateway_authority_evidence_from_bundle,
     parse_mcp_gateway_authority_evidence_arg,
     verify_mcp_gateway_authority_dossier,
+    verify_mcp_gateway_authority_evidence_bundle,
     write_mcp_gateway_authority_dossier,
+    write_mcp_gateway_authority_evidence_bundle,
 )
 from .object_store import WORMStore
 from .policy import append_policy_decision, load_policy_pack
@@ -5741,10 +5748,111 @@ def cmd_mcp_proxy_capture_append(args: argparse.Namespace) -> int:
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
+
+def _mcp_gateway_authority_evidence_from_args(args: argparse.Namespace) -> list[dict[str, Any]]:
+    evidence = [parse_mcp_gateway_authority_evidence_arg(value) for value in (getattr(args, "authority_evidence", None) or [])]
+    for path in (getattr(args, "authority_evidence_bundle", None) or []):
+        bundle = load_mcp_gateway_authority_evidence_bundle(path)
+        evidence.extend(
+            mcp_gateway_authority_evidence_from_bundle(
+                bundle,
+                key=getattr(args, "key", None),
+                require_complete=getattr(args, "require_complete", False),
+                require_fresh=getattr(args, "require_fresh", False),
+                now=getattr(args, "now", None),
+            )
+        )
+    return evidence
+
+
+def cmd_mcp_gateway_authority_evidence_bundle(args: argparse.Namespace) -> int:
+    try:
+        evidence = [parse_mcp_gateway_authority_evidence_arg(value) for value in (args.authority_evidence or [])]
+        bundle = build_mcp_gateway_authority_evidence_bundle(
+            authority_evidence=evidence,
+            mode=args.mode,
+            environment=args.environment,
+            bundle_ref=args.bundle_ref,
+            issuer_ref=args.issuer_ref,
+            subject_ref=args.subject_ref,
+            authority_ref=args.authority_ref,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"MCP gateway authority evidence bundle failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_mcp_gateway_authority_evidence_bundle(
+        bundle,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if not result.ok:
+        print("MCP gateway authority evidence bundle verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_mcp_gateway_authority_evidence_bundle(args.out, bundle)
+    print(f"MCP gateway authority evidence bundle: {args.out}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"covered requirements: {result.covered_count}/{result.required_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_mcp_gateway_authority_evidence_bundle_verify(args: argparse.Namespace) -> int:
+    bundle = load_mcp_gateway_authority_evidence_bundle(args.bundle)
+    result = verify_mcp_gateway_authority_evidence_bundle(
+        bundle,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified MCP gateway authority evidence bundle: {args.bundle}")
+        print(f"covered requirements: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"MCP gateway authority evidence bundle verification failed: {args.bundle}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_mcp_gateway_authority_evidence_bundle_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    bundle = load_mcp_gateway_authority_evidence_bundle(args.bundle)
+    try:
+        entry = append_mcp_gateway_authority_evidence_bundle(
+            chain,
+            bundle,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"MCP gateway authority evidence bundle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"MCP gateway authority evidence bundle entry: {args.out}")
+    print(f"MCP gateway authority evidence bundle entry id: {entry['entry_id']}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
 def cmd_mcp_gateway_authority(args: argparse.Namespace) -> int:
     calls = load_mcp_transcript(args.transcript)
     try:
-        evidence = [parse_mcp_gateway_authority_evidence_arg(value) for value in args.authority_evidence]
+        evidence = _mcp_gateway_authority_evidence_from_args(args)
         dossier = build_mcp_gateway_authority_dossier(
             calls,
             mode=args.mode,
@@ -22376,11 +22484,50 @@ def build_parser() -> argparse.ArgumentParser:
         parser.add_argument("--authority-ref", required=True)
         parser.add_argument("--producer-ref", required=True)
         parser.add_argument("--authority-evidence", action="append", default=[])
+        parser.add_argument("--authority-evidence-bundle", action="append", help="signed MCP gateway authority evidence bundle JSON")
         parser.add_argument("--generated-at")
         parser.add_argument("--require-complete", action="store_true")
         parser.add_argument("--require-fresh", action="store_true")
         parser.add_argument("--now")
+        parser.add_argument("--key")
         parser.add_argument("--out", default="artifacts/mcp-gateway-authority.json")
+
+    def _add_mcp_gateway_authority_evidence_bundle_fields(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--mode", choices=sorted(MCP_GATEWAY_AUTHORITY_EVIDENCE_BUNDLE_MODES), default="authority-export")
+        parser.add_argument("--environment", default="aitrade-prod")
+        parser.add_argument("--bundle-ref", required=True)
+        parser.add_argument("--issuer-ref", required=True)
+        parser.add_argument("--subject-ref", required=True)
+        parser.add_argument("--authority-ref", required=True)
+        parser.add_argument("--authority-evidence", action="append", required=True, help="requirement_id,authority_kind,evidence_ref,evidence_hash,description[;key=value...]")
+        parser.add_argument("--generated-at")
+        parser.add_argument("--require-complete", action="store_true")
+        parser.add_argument("--require-fresh", action="store_true")
+        parser.add_argument("--now")
+        parser.add_argument("--key")
+
+    mcp_gateway_authority_evidence_bundle = subparsers.add_parser("mcp-gateway-authority-evidence-bundle", help="write a signed MCP gateway authority evidence bundle")
+    _add_mcp_gateway_authority_evidence_bundle_fields(mcp_gateway_authority_evidence_bundle)
+    mcp_gateway_authority_evidence_bundle.add_argument("--out", default="artifacts/mcp-gateway-authority-evidence-bundle.json")
+    mcp_gateway_authority_evidence_bundle.set_defaults(func=cmd_mcp_gateway_authority_evidence_bundle)
+
+    mcp_gateway_authority_evidence_bundle_verify = subparsers.add_parser("mcp-gateway-authority-evidence-bundle-verify", help="verify a signed MCP gateway authority evidence bundle")
+    mcp_gateway_authority_evidence_bundle_verify.add_argument("bundle")
+    mcp_gateway_authority_evidence_bundle_verify.add_argument("--require-complete", action="store_true")
+    mcp_gateway_authority_evidence_bundle_verify.add_argument("--require-fresh", action="store_true")
+    mcp_gateway_authority_evidence_bundle_verify.add_argument("--now")
+    mcp_gateway_authority_evidence_bundle_verify.add_argument("--key")
+    mcp_gateway_authority_evidence_bundle_verify.set_defaults(func=cmd_mcp_gateway_authority_evidence_bundle_verify)
+
+    mcp_gateway_authority_evidence_bundle_append = subparsers.add_parser("mcp-gateway-authority-evidence-bundle-append", help="append a verified MCP gateway authority evidence bundle as chain evidence")
+    mcp_gateway_authority_evidence_bundle_append.add_argument("bundle")
+    mcp_gateway_authority_evidence_bundle_append.add_argument("--require-complete", action="store_true")
+    mcp_gateway_authority_evidence_bundle_append.add_argument("--require-fresh", action="store_true")
+    mcp_gateway_authority_evidence_bundle_append.add_argument("--now")
+    mcp_gateway_authority_evidence_bundle_append.add_argument("--out", default="artifacts/mcp-gateway-authority-evidence-bundle-entry.json")
+    mcp_gateway_authority_evidence_bundle_append.add_argument("--key")
+    _add_state_args(mcp_gateway_authority_evidence_bundle_append)
+    mcp_gateway_authority_evidence_bundle_append.set_defaults(func=cmd_mcp_gateway_authority_evidence_bundle_append)
 
     mcp_gateway_authority = subparsers.add_parser("mcp-gateway-authority", help="write a signed MCP gateway production authority dossier")
     mcp_gateway_authority.add_argument("transcript")
@@ -22393,6 +22540,7 @@ def build_parser() -> argparse.ArgumentParser:
     mcp_gateway_authority_verify.add_argument("--require-complete", action="store_true")
     mcp_gateway_authority_verify.add_argument("--require-fresh", action="store_true")
     mcp_gateway_authority_verify.add_argument("--now")
+    mcp_gateway_authority_verify.add_argument("--key")
     mcp_gateway_authority_verify.set_defaults(func=cmd_mcp_gateway_authority_verify)
 
     mcp_gateway_authority_append = subparsers.add_parser("mcp-gateway-authority-append", help="append a verified MCP gateway authority dossier as chain evidence")
@@ -22402,6 +22550,7 @@ def build_parser() -> argparse.ArgumentParser:
     mcp_gateway_authority_append.add_argument("--require-fresh", action="store_true")
     mcp_gateway_authority_append.add_argument("--now")
     mcp_gateway_authority_append.add_argument("--out", default="artifacts/mcp-gateway-authority-entry.json")
+    mcp_gateway_authority_append.add_argument("--key")
     _add_state_args(mcp_gateway_authority_append)
     mcp_gateway_authority_append.set_defaults(func=cmd_mcp_gateway_authority_append)
 

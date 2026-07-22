@@ -93,21 +93,21 @@
       "unit_ref": "oss-verifier-and-public-spec:hosted-service"
     }
   ],
-  "generated_at": "2026-07-21T22:56:21Z",
+  "generated_at": "2026-07-22T16:03:12Z",
   "limitations": [
     "This source map is an operator collection template; it does not prove external authority coverage until external-evidence-collect-batch creates verified source snapshots and intake receipts.",
     "Placeholder source URIs, issuer fields, or freshness windows must be replaced with real authority-owned values before production use.",
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "7695c5d4cadcc6b71338c73c3e0ae75ae3a892ed35e6da27d773ca21081da0d7",
+  "source_map_id": "e44fe73bcbfabb88a2cccbf372be4328fe6fa68de1af7244e9b612e3c0d7a008",
   "source_plan": {
-    "plan_hash": "e18f7907eaf213611a8ff726326a23b616a83ad247d4877c51eb9658fae108d9",
-    "plan_id": "9a7591a16a46318ad5c8b686c3efb05e4b1da3ead3a77c23758950c105c308e4",
+    "plan_hash": "b706920cc67133a1506f34a7f584e842c8d903a81704c9c4f5a33762dd84124d",
+    "plan_id": "c72ea93ce4e1ae962126492565b8a1bf4f0e1f2cc5da2e319ecd8871a8f320e6",
     "source_manifest": {
-      "generated_at": "2026-07-21T22:54:26Z",
-      "manifest_hash": "926443fbed6aba39c7b79676dd6b17455ccde1e950d098ed58d84d687dd26a19",
-      "manifest_id": "9e02247b0d41634014d219419eb7b424bda9298b610e83a444441acb562ab789",
+      "generated_at": "2026-07-22T16:01:06Z",
+      "manifest_hash": "b7af01e34f2c5d55a0ab27b60b6fc0fca7f8ce482d1d6394264dec991dda4ec1",
+      "manifest_id": "a92c32e47923a28d52168ee8852d2cf51b85de849d4206f2468af1800fbebb85",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },

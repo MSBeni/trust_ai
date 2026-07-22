@@ -2,7 +2,7 @@
   "collected": [
     {
       "evidence_argument": "oss-verifier-and-public-spec,ci-run,examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json,Snapshot of recorded verifier workflow run export;issuer=GitHub Actions;subject=trustai go verifier release workflow;source_uri=https://github.com/MSBeni/trust_ai/actions;issued_at=2026-07-08T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "597bafdde9a6e9a8b75f4894a11c34378e1b9712a3dbec3d3e088593769399e2",
+      "intake_id": "2322ada906550e057ab165d372bd7307b2c05379bad3bdb3dcc543128210cad5",
       "intake_path": "examples/aitrade/external-evidence/intakes/oss-verifier-ci-run.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json",
       "snapshot_id": "44a4ebacf60daa458bf821630507ff18213c952f203a882f7d8c5753eaf6e874",
@@ -13,7 +13,7 @@
     },
     {
       "evidence_argument": "oss-verifier-and-public-spec,provider-api,examples/aitrade/external-evidence/github-main-ref-source-snapshot.json,GitHub remote main ref advertisement for pushed TrustAI checkpoint;issuer=GitHub Git;subject=MSBeni/trust_ai main branch;source_uri=git+https://github.com/MSBeni/trust_ai.git#refs/heads/main;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "8c2a9aec3fde487058c700b28bbfb74c685850ae262704a59a481ceabdc322e4",
+      "intake_id": "412ef4c973af1610270d803794f8db277478251cff19a0e193d67c6dbef42d15",
       "intake_path": "examples/aitrade/external-evidence/intakes/oss-verifier-provider-api.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/github-main-ref-source-snapshot.json",
       "snapshot_id": "3772acea236098bcaac7ff2987422e802bafc8040eaf4bba600838fa291bd5db",
@@ -24,7 +24,7 @@
     },
     {
       "evidence_argument": "oss-verifier-and-public-spec,hosted-service,examples/aitrade/external-evidence/github-hosted-service-source-snapshot.json,GitHub hosted git service remote advertisement for TrustAI verifier and spec repository;issuer=GitHub Git;subject=MSBeni/trust_ai hosted repository service;source_uri=git+https://github.com/MSBeni/trust_ai.git#HEAD;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "c166a2a1e8d96291f075cefd69146e4bdf9e48bc561b875e5579d1248dd59230",
+      "intake_id": "d220850570221ef82e9b6f3dbca9bb61b22f4a35450cafb9c2581f4b2d207b90",
       "intake_path": "examples/aitrade/external-evidence/intakes/oss-verifier-hosted-service.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/github-hosted-service-source-snapshot.json",
       "snapshot_id": "82de9e92a926f5595e43e5e617ed54d8fc5d496f666dec973fc1f78d37149bee",
@@ -35,11 +35,11 @@
     }
   ],
   "generated_at": "2026-07-20T14:59:53Z",
-  "run_id": "adf0c9511b26cb3a16515756d2df6ea9240bc8c4f5f66a2dcfff72d64137c750",
+  "run_id": "af548449d1b5795b4d52aac7f9910a2bc2360c8e864ad05555457eeb1e9c9884",
   "schema": "trustai.external-evidence-collection-run/0.1",
   "source_map": {
     "path": "examples/aitrade/external-evidence/retained-external-evidence-collected-source-map.json",
-    "source_map_hash": "ebe55f96cd154e19ec188f5ae38b12f680455c87408581f18bba9060977098e5"
+    "source_map_hash": "95a8c9ff1f74cff0756f1cb7f27911f02c4ddd7d19a54211e6748ca60609db8e"
   },
   "summary": {
     "collected_count": 3,

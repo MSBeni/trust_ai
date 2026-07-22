@@ -67,6 +67,14 @@ CLI evidence strings use:
 requirement_id,authority_kind,evidence_ref,evidence_hash,description[;issuer=value;subject=value;source_uri=value;issued_at=value;expires_at=value]
 ```
 
+## Evidence Bundle
+
+`trustai.mcp-gateway-authority-evidence-bundle/0.1` records external MCP gateway authority rows before they are bound into a concrete MCP transcript. The bundle contains a mode (`authority-export`, `offline-review`, or `production-export`), environment, bundle/issuer/subject/authority refs, the fixed v0.1 production authority checklist, normalized authority evidence rows, summary counts, deterministic controls, a canonical `bundle_id`, and detached signatures.
+
+A `production-export` bundle must cover every required production authority category, carry live non-placeholder `source_uri` values, and have fresh `issued_at`/`expires_at` windows at verification time. `mcp-gateway-authority` accepts `--authority-evidence-bundle` and rebinds those rows to the replayed MCP transcript binding before producing a dossier. This keeps authority evidence collection reusable while preserving transcript-level request, response, tool-call, and root hash binding.
+
+Bundle verification rejects mismatched bundle hashes, bad signatures, unknown requirements, invalid authority kinds, stale or missing freshness windows under `--require-fresh`, incomplete coverage under `--require-complete`, placeholder source URIs in production mode, control/summary tamper, and raw secret-like fields.
+
 ## Verification Rules
 
 A verifier must:
@@ -84,10 +92,13 @@ A verifier must:
 
 ## CLI Examples
 
-Create a proxy dossier with partial production authority evidence:
+Create an authority evidence bundle, then bind it into a proxy dossier:
 
 ```powershell
-python -m trustai mcp-gateway-authority examples/aitrade/mcp-transcript.json --mode proxy-dossier --environment aitrade-prod --dossier-ref dossier:mcp-gateway-authority/aitrade-prod --authority-ref authority:mcp-gateway/proxy-prod --producer-ref oidc:trustai.example/mcp-gateway-authority-worker --authority-evidence "production-mcp-proxy-worker-fleet,hosted-service,mcp-proxy:fleet/aitrade-prod,sha256:mcp-proxy-worker-fleet,Hosted MCP proxy worker fleet export for governed tool-call capture;issuer=TrustAI Hosted Ops;subject=aitrade-prod MCP proxy fleet;source_uri=https://mcp.example/audit/fleet/aitrade-prod;issued_at=2026-07-12T03:10:00Z;expires_at=2026-07-19T03:10:00Z" --generated-at 2026-07-12T03:12:00Z --now 2026-07-15T00:00:00Z --out artifacts/mcp-gateway-authority.json
+python -m trustai mcp-gateway-authority-evidence-bundle --mode authority-export --environment aitrade-prod --bundle-ref bundle:mcp-gateway-authority/proxy-prod/2026-07-12 --issuer-ref authority:trustai-mcp-gateway-authority --subject-ref mcp-gateway:aitrade-prod/proxy --authority-ref authority:mcp-gateway/proxy-prod --authority-evidence "production-mcp-proxy-worker-fleet,hosted-service,mcp-proxy:fleet/aitrade-prod,sha256:mcp-proxy-worker-fleet,Hosted MCP proxy worker fleet export for governed tool-call capture;issuer=TrustAI Hosted Ops;subject=aitrade-prod MCP proxy fleet;source_uri=https://authority.trustai.ai/mcp-gateway/proxy-prod/production-mcp-proxy-worker-fleet;issued_at=2026-07-12T03:10:00Z;expires_at=2026-07-19T03:10:00Z" --generated-at 2026-07-12T03:12:00Z --require-fresh --now 2026-07-15T00:00:00Z --out artifacts/mcp-gateway-authority-evidence-bundle.json
+python -m trustai mcp-gateway-authority-evidence-bundle-verify artifacts/mcp-gateway-authority-evidence-bundle.json --require-fresh --now 2026-07-15T00:00:00Z
+python -m trustai mcp-gateway-authority-evidence-bundle-append artifacts/mcp-gateway-authority-evidence-bundle.json --require-fresh --now 2026-07-15T00:00:00Z --state .trustai/mcp-gateway-authority-demo/evidence-chain.json --tenant mcp-gateway-authority-local --out artifacts/mcp-gateway-authority-evidence-bundle-entry.json
+python -m trustai mcp-gateway-authority examples/aitrade/mcp-transcript.json --mode proxy-dossier --environment aitrade-prod --dossier-ref dossier:mcp-gateway-authority/aitrade-prod --authority-ref authority:mcp-gateway/proxy-prod --producer-ref oidc:trustai.example/mcp-gateway-authority-worker --authority-evidence-bundle artifacts/mcp-gateway-authority-evidence-bundle.json --generated-at 2026-07-12T03:12:00Z --now 2026-07-15T00:00:00Z --out artifacts/mcp-gateway-authority.json
 ```
 
 Verify and append the dossier:
