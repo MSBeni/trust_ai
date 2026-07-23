@@ -71,17 +71,29 @@ deferred. The schema is
 9. `--require-fresh` turns missing, not-yet-issued, or expired freshness
    windows into verification errors.
 10. `production-dossier` mode is rejected unless every production authority
-   requirement is covered.
+   requirement is covered, every evidence row is fresh, and every evidence row
+   uses a live `source_uri` rather than a placeholder collection task.
+11. `policy-backend-authority-evidence-bundle-verify` applies the same
+   schema, signature, checklist, freshness, live-source, and production-export
+   checks before a bundle can be consumed by a dossier or appended to the chain.
 
 ## CLI
 
 ```powershell
-python -m trustai policy-backend-authority artifacts/policy-backend-provider-export-bundle.json --service-bundle artifacts/policy-backend-service-bundle.json --environment aitrade-prod --dossier-ref dossier:policy-backend-authority/lg-trace-001 --authority-ref authority:policy-backend/aitrade-prod --producer-ref oidc:trustai.example/policy-backend-authority-worker --authority-evidence "opa-cedar-backend-fleet,hosted-service,service:policy-backend-fleet/aitrade-prod,sha256:policy-backend-fleet-authority,Hosted OPA/Cedar backend fleet deployment export;issuer=TrustAI Cloud;subject=aitrade-prod policy backend fleet;source_uri=https://ops.example/trustai/policy-backend/aitrade-prod;issued_at=2026-07-04T00:00:00Z;expires_at=2026-07-11T00:00:00Z" --generated-at 2026-07-04T05:20:00Z --out artifacts/policy-backend-authority.json
+python -m trustai policy-backend-authority-evidence-bundle --mode authority-export --environment aitrade-prod --bundle-ref bundle:policy-backend-authority/lg-trace-001 --issuer-ref oidc:trustai.example/policy-backend-authority-exporter --subject-ref service:policy-backend/aitrade-prod --authority-ref authority:policy-backend/aitrade-prod --authority-evidence "opa-cedar-backend-fleet,hosted-service,service:policy-backend-fleet/aitrade-prod,sha256:policy-backend-fleet-authority,Hosted OPA/Cedar backend fleet deployment export;issuer=TrustAI Cloud;subject=aitrade-prod policy backend fleet;source_uri=https://ops.example/trustai/policy-backend/aitrade-prod;issued_at=2026-07-04T00:00:00Z;expires_at=2026-07-11T00:00:00Z" --generated-at 2026-07-04T05:18:00Z --out artifacts/policy-backend-authority-evidence-bundle.json
+python -m trustai policy-backend-authority-evidence-bundle-verify artifacts/policy-backend-authority-evidence-bundle.json
+python -m trustai policy-backend-authority artifacts/policy-backend-provider-export-bundle.json --service-bundle artifacts/policy-backend-service-bundle.json --environment aitrade-prod --dossier-ref dossier:policy-backend-authority/lg-trace-001 --authority-ref authority:policy-backend/aitrade-prod --producer-ref oidc:trustai.example/policy-backend-authority-worker --authority-evidence-bundle artifacts/policy-backend-authority-evidence-bundle.json --generated-at 2026-07-04T05:20:00Z --out artifacts/policy-backend-authority.json
+python -m trustai policy-backend-authority-evidence-bundle-append artifacts/policy-backend-authority-evidence-bundle.json --state .trustai/policy-backend-authority-demo/evidence-chain.json --tenant policy-backend-authority-local --out artifacts/policy-backend-authority-evidence-bundle-entry.json
 python -m trustai policy-backend-authority-verify artifacts/policy-backend-authority.json --provider-bundle artifacts/policy-backend-provider-export-bundle.json --service-bundle artifacts/policy-backend-service-bundle.json
 python -m trustai policy-backend-authority-append artifacts/policy-backend-authority.json --provider-bundle artifacts/policy-backend-provider-export-bundle.json --service-bundle artifacts/policy-backend-service-bundle.json --state .trustai/policy-backend-authority-demo/evidence-chain.json --tenant policy-backend-authority-local --out artifacts/policy-backend-authority-entry.json
 ```
 
 ## Chain Entry
+
+`trustai policy-backend-authority-evidence-bundle-append` verifies the signed
+evidence bundle and appends a
+`policy_backend.production_authority_evidence_bundled` entry with bundle refs,
+coverage summary, control summary, and authority refs.
 
 `trustai policy-backend-authority-append` verifies the dossier and appends a
 `policy_backend.production_authority_recorded` evidence-chain entry with the

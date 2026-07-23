@@ -78,7 +78,10 @@ from trustai.provider_lifecycle_operation import PROVIDER_LIFECYCLE_OPERATION_EN
 from trustai.provider_operations_authority import PROVIDER_OPERATIONS_AUTHORITY_ENTRY_TYPE
 from trustai.provider_operations_service import PROVIDER_OPERATIONS_SERVICE_ENTRY_TYPE
 from trustai.provider_webhook import PROVIDER_WEBHOOK_ENTRY_TYPE
-from trustai.policy_backend_authority import POLICY_BACKEND_AUTHORITY_ENTRY_TYPE
+from trustai.policy_backend_authority import (
+    POLICY_BACKEND_AUTHORITY_ENTRY_TYPE,
+    POLICY_BACKEND_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE,
+)
 from trustai.policy_backend_enforcement import POLICY_BACKEND_ENFORCEMENT_ENTRY_TYPE
 from trustai.policy_backend_provider import POLICY_BACKEND_PROVIDER_ENTRY_TYPE
 from trustai.policy_backend_provider_bundle import POLICY_BACKEND_PROVIDER_BUNDLE_ENTRY_TYPE
@@ -1999,6 +2002,23 @@ class ControlPlaneTests(unittest.TestCase):
                     },
                 ),
                 (
+                    POLICY_BACKEND_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE,
+                    "policy-backend-authority-bundle-001",
+                    "policy-backend-authority-evidence-bundle",
+                    "2026-07-08T07:28:00Z",
+                    {
+                        "bundle_id": "policy-backend-authority-bundle-001",
+                        "bundle_hash": "sha256:policy-backend-authority-bundle-hash",
+                        "mode": "production-export",
+                        "environment": "aitrade-prod",
+                        "generated_at": "2026-07-08T07:28:00Z",
+                        "bundle_ref": "bundle:policy-backend/authority/001",
+                        "authority_ref": "authority:policy-backend/opa-prod",
+                        "summary": {"status": "ready", "covered_requirement_count": 12},
+                        "control_summary": {"passed": 5},
+                    },
+                ),
+                (
                     POLICY_BACKEND_AUTHORITY_ENTRY_TYPE,
                     "policy-backend-authority-001",
                     "policy-backend-authority",
@@ -2066,6 +2086,14 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual("provider:github-actions", provider["provider_ref"])
                 self.assertEqual("export:policy-backend/provider/001", provider["artifact_ref"])
                 self.assertEqual("credential:provider/policy-backend", provider["credential_ref"])
+
+                authority_bundle = next(row for row in rows if row["artifact_id"] == "policy-backend-authority-bundle-001")
+                self.assertEqual("policy-backend-authority-evidence-bundle", authority_bundle["artifact_kind"])
+                self.assertEqual("bundle:policy-backend/authority/001", authority_bundle["artifact_ref"])
+                self.assertEqual("bundle:policy-backend/authority/001", authority_bundle["bundle_ref"])
+                self.assertEqual("authority:policy-backend/opa-prod", authority_bundle["authority_ref"])
+                self.assertEqual(0, authority_bundle["source_artifact_count"])
+                self.assertEqual(1, authority_bundle["control_count"])
 
                 authority = rows[0]
                 self.assertEqual("dossier:policy-backend/opa-prod", authority["artifact_ref"])

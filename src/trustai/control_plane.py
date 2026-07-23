@@ -73,7 +73,10 @@ from .own_compliance import OWN_COMPLIANCE_ENTRY_TYPE, REQUIRED_CERTIFICATION_KI
 from .procurement_clause import PROCUREMENT_CLAUSE_ENTRY_TYPE
 from .procurement_integration import PROCUREMENT_INTEGRATION_ENTRY_TYPE
 from .policy import POLICY_DECISION_ENTRY_TYPE
-from .policy_backend_authority import POLICY_BACKEND_AUTHORITY_ENTRY_TYPE
+from .policy_backend_authority import (
+    POLICY_BACKEND_AUTHORITY_ENTRY_TYPE,
+    POLICY_BACKEND_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE,
+)
 from .policy_backend_enforcement import POLICY_BACKEND_ENFORCEMENT_ENTRY_TYPE
 from .policy_backend_provider import POLICY_BACKEND_PROVIDER_ENTRY_TYPE
 from .policy_backend_provider_bundle import POLICY_BACKEND_PROVIDER_BUNDLE_ENTRY_TYPE
@@ -313,6 +316,7 @@ POLICY_BACKEND_ENTRY_TYPES = {
     POLICY_BACKEND_PROVIDER_ENTRY_TYPE,
     POLICY_BACKEND_PROVIDER_BUNDLE_ENTRY_TYPE,
     POLICY_BACKEND_AUTHORITY_ENTRY_TYPE,
+    POLICY_BACKEND_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE,
     POLICY_BACKEND_SERVICE_BUNDLE_ENTRY_TYPE,
 }
 
@@ -323,6 +327,7 @@ POLICY_BACKEND_ARTIFACT_KINDS = {
     POLICY_BACKEND_PROVIDER_ENTRY_TYPE: "policy-backend-provider-export",
     POLICY_BACKEND_PROVIDER_BUNDLE_ENTRY_TYPE: "policy-backend-provider-bundle",
     POLICY_BACKEND_AUTHORITY_ENTRY_TYPE: "policy-backend-authority",
+    POLICY_BACKEND_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE: "policy-backend-authority-evidence-bundle",
     POLICY_BACKEND_SERVICE_BUNDLE_ENTRY_TYPE: "policy-backend-service-bundle",
 }
 
@@ -987,7 +992,7 @@ def _policy_backend_record(entry: dict[str, Any], payload: dict[str, Any]) -> di
         "artifact_kind": POLICY_BACKEND_ARTIFACT_KINDS.get(entry_type, entry_type),
         "artifact_hash": content_hash(payload),
         "artifact_ref": _first_text(
-            payload.get("dossier_ref"), payload.get("authority_ref"), payload.get("bundle_ref"),
+            payload.get("dossier_ref"), payload.get("bundle_ref"), payload.get("authority_ref"),
             o["backend"].get("backend_ref"), o["service"].get("service_ref"),
             o["worker"].get("worker_ref"), o["provider_export"].get("export_ref"),
             o["provider_export"].get("provider_export_ref"), o["provider"].get("provider_ref"),

@@ -15,6 +15,9 @@ from .policy_backend_service_bundle import verify_policy_backend_service_bundle
 POLICY_BACKEND_AUTHORITY_SCHEMA = "trustai.policy-backend-production-authority-dossier/0.1"
 POLICY_BACKEND_AUTHORITY_ENTRY_TYPE = "policy_backend.production_authority_recorded"
 POLICY_BACKEND_AUTHORITY_MODES = {"local-dossier", "provider-dossier", "production-dossier"}
+POLICY_BACKEND_AUTHORITY_EVIDENCE_BUNDLE_SCHEMA = "trustai.policy-backend-authority-evidence-bundle/0.1"
+POLICY_BACKEND_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE = "policy_backend.production_authority_evidence_bundled"
+POLICY_BACKEND_AUTHORITY_EVIDENCE_BUNDLE_MODES = {"authority-export", "offline-review", "production-export"}
 SECRET_KEY_MARKERS = ("authorization", "cookie", "token", "secret", "private_key", "client_secret", "password", "credential")
 
 PRODUCTION_AUTHORITY_REQUIREMENTS = [
@@ -160,6 +163,18 @@ class PolicyBackendAuthorityVerification:
     missing_freshness_count: int = 0
 
 
+@dataclass
+class PolicyBackendAuthorityEvidenceBundleVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+    covered_count: int = 0
+    required_count: int = 0
+    fresh_evidence_count: int = 0
+    stale_evidence_count: int = 0
+    missing_freshness_count: int = 0
+
+
 def load_policy_backend_authority_dossier(path: str | Path) -> dict[str, Any]:
     value = json.loads(Path(path).read_text(encoding="utf-8-sig"))
     if not isinstance(value, dict):
@@ -171,6 +186,19 @@ def write_policy_backend_authority_dossier(path: str | Path, dossier: dict[str, 
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(dossier, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_policy_backend_authority_evidence_bundle(path: str | Path) -> dict[str, Any]:
+    value = json.loads(Path(path).read_text(encoding="utf-8-sig"))
+    if not isinstance(value, dict):
+        raise ValueError("policy backend authority evidence bundle must contain an object")
+    return value
+
+
+def write_policy_backend_authority_evidence_bundle(path: str | Path, bundle: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(bundle, indent=2, sort_keys=True), encoding="utf-8")
 
 
 def parse_policy_backend_authority_evidence_arg(value: str) -> dict[str, Any]:
@@ -200,6 +228,207 @@ def parse_policy_backend_authority_evidence_arg(value: str) -> dict[str, Any]:
         "description": description_parts[0],
         **metadata,
     }
+
+
+def build_policy_backend_authority_evidence_bundle(
+    *,
+    authority_evidence: list[dict[str, Any]],
+    mode: str = "authority-export",
+    environment: str = "local",
+    bundle_ref: str,
+    issuer_ref: str,
+    subject_ref: str,
+    authority_ref: str,
+    generated_at: str | None = None,
+    key: str | None = None,
+) -> dict[str, Any]:
+    if mode not in POLICY_BACKEND_AUTHORITY_EVIDENCE_BUNDLE_MODES:
+        raise ValueError(f"mode must be one of {sorted(POLICY_BACKEND_AUTHORITY_EVIDENCE_BUNDLE_MODES)}")
+    for value, field in (
+        (environment, "environment"),
+        (bundle_ref, "bundle_ref"),
+        (issuer_ref, "issuer_ref"),
+        (subject_ref, "subject_ref"),
+        (authority_ref, "authority_ref"),
+    ):
+        _require_text(value, field)
+    timestamp = generated_at or utc_now()
+    parse_rfc3339(timestamp)
+    evidence_items = [_build_authority_evidence_bundle_item(item) for item in authority_evidence]
+    summary = _summary(evidence_items)
+    body = {
+        "schema": POLICY_BACKEND_AUTHORITY_EVIDENCE_BUNDLE_SCHEMA,
+        "mode": mode,
+        "environment": environment,
+        "generated_at": timestamp,
+        "bundle_ref": bundle_ref,
+        "issuer_ref": issuer_ref,
+        "subject_ref": subject_ref,
+        "authority_ref": authority_ref,
+        "required_production_authority": PRODUCTION_AUTHORITY_REQUIREMENTS,
+        "authority_evidence": evidence_items,
+        "summary": summary,
+        "controls": _bundle_controls(mode, evidence_items, summary),
+        "limitations": [
+            "This bundle records runtime policy backend production-authority evidence rows before binding them to a concrete provider export bundle.",
+            "A policy backend authority dossier must still replay the provider export bundle and any service review bundles before claiming production authority.",
+            "Production claims require production-export mode, complete checklist coverage, live source URIs, and fresh evidence windows.",
+        ],
+    }
+    secret_errors: list[str] = []
+    _check_no_secret_values(body, secret_errors)
+    if secret_errors:
+        raise ValueError("policy backend authority evidence bundle contains secret-like values: " + "; ".join(secret_errors))
+    bundle_id = content_hash(body)
+    return {
+        **body,
+        "bundle_id": bundle_id,
+        "signatures": [sign_value({"bundle_id": bundle_id, "policy_backend_authority_evidence_bundle": body}, key)],
+    }
+
+
+def verify_policy_backend_authority_evidence_bundle(
+    bundle: dict[str, Any],
+    *,
+    key: str | None = None,
+    require_complete: bool = False,
+    require_fresh: bool = False,
+    now: str | None = None,
+) -> PolicyBackendAuthorityEvidenceBundleVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    freshness_now = _freshness_reference(bundle, now, errors)
+
+    if bundle.get("schema") != POLICY_BACKEND_AUTHORITY_EVIDENCE_BUNDLE_SCHEMA:
+        errors.append(f"unsupported policy backend authority evidence bundle schema: {bundle.get('schema')}")
+    body = without_keys(bundle, "bundle_id", "signatures")
+    if bundle.get("bundle_id") != content_hash(body):
+        errors.append("bundle_id does not match canonical policy backend authority evidence bundle body")
+    signatures = bundle.get("signatures", [])
+    if not isinstance(signatures, list) or not signatures:
+        errors.append("policy backend authority evidence bundle must include at least one signature")
+    else:
+        signed_value = {"bundle_id": bundle.get("bundle_id"), "policy_backend_authority_evidence_bundle": body}
+        if not any(isinstance(signature, dict) and verify_value(signed_value, signature, key) for signature in signatures):
+            errors.append("policy backend authority evidence bundle signature verification failed")
+
+    mode = bundle.get("mode")
+    if mode not in POLICY_BACKEND_AUTHORITY_EVIDENCE_BUNDLE_MODES:
+        errors.append("policy backend authority evidence bundle mode is unsupported")
+    elif mode != "production-export":
+        warnings.append(f"policy backend authority evidence bundle mode is {mode}; production evidence export is not claimed")
+    try:
+        parse_rfc3339(str(bundle.get("generated_at") or ""))
+    except ValueError as exc:
+        errors.append(f"policy backend authority evidence bundle generated_at invalid: {exc}")
+    for field in ("environment", "bundle_ref", "issuer_ref", "subject_ref", "authority_ref"):
+        if not bundle.get(field):
+            errors.append(f"policy backend authority evidence bundle {field} is required")
+    if bundle.get("required_production_authority") != PRODUCTION_AUTHORITY_REQUIREMENTS:
+        errors.append("policy backend authority evidence bundle required_production_authority does not match v0.1 requirements")
+
+    evidence = bundle.get("authority_evidence", [])
+    if not isinstance(evidence, list):
+        errors.append("policy backend authority evidence bundle authority_evidence must be a list")
+        evidence = []
+    freshness_counts = {"fresh": 0, "stale": 0, "missing": 0}
+    evidence_items: list[dict[str, Any]] = []
+    for item in evidence:
+        if not isinstance(item, dict):
+            errors.append("policy backend authority evidence bundle item must be an object")
+            freshness_counts["missing"] += 1
+            continue
+        status = _verify_authority_evidence_bundle_item(item, errors, warnings, now=freshness_now, require_fresh=require_fresh)
+        freshness_counts[status] += 1
+        evidence_items.append(item)
+
+    expected_summary = _summary(evidence_items)
+    if bundle.get("summary") != expected_summary:
+        errors.append("policy backend authority evidence bundle summary does not match authority evidence")
+    if not isinstance(bundle.get("controls"), list) or not bundle.get("controls"):
+        errors.append("policy backend authority evidence bundle controls are required")
+    elif bundle.get("controls") != _bundle_controls(str(mode), evidence_items, expected_summary):
+        errors.append("policy backend authority evidence bundle controls do not match bundle body")
+    missing = expected_summary["missing_requirement_ids"]
+    if missing:
+        warnings.append("policy backend authority evidence bundle missing for: " + ", ".join(missing))
+    if require_complete and missing:
+        errors.append("policy backend authority evidence bundle is incomplete")
+    source_uri_counts = _source_uri_counts(evidence_items)
+    if mode == "production-export" and missing:
+        errors.append("production-export mode requires every policy backend authority requirement to be covered")
+    if mode == "production-export" and (source_uri_counts["placeholder"] or source_uri_counts["missing"]):
+        errors.append("production-export mode requires live source_uri values for every policy backend authority evidence item")
+    if mode == "production-export" and (freshness_counts["stale"] or freshness_counts["missing"]):
+        errors.append("production-export mode requires every policy backend authority evidence item to be fresh")
+    _check_no_secret_values(bundle, errors)
+
+    return PolicyBackendAuthorityEvidenceBundleVerification(
+        ok=not errors,
+        errors=errors,
+        warnings=warnings,
+        covered_count=expected_summary["covered_requirement_count"],
+        required_count=expected_summary["required_requirement_count"],
+        fresh_evidence_count=freshness_counts["fresh"],
+        stale_evidence_count=freshness_counts["stale"],
+        missing_freshness_count=freshness_counts["missing"],
+    )
+
+
+def policy_backend_authority_evidence_from_bundle(
+    bundle: dict[str, Any],
+    *,
+    key: str | None = None,
+    require_complete: bool = False,
+    require_fresh: bool = False,
+    now: str | None = None,
+) -> list[dict[str, Any]]:
+    result = verify_policy_backend_authority_evidence_bundle(
+        bundle,
+        key=key,
+        require_complete=require_complete,
+        require_fresh=require_fresh,
+        now=now,
+    )
+    if not result.ok:
+        raise ValueError("invalid policy backend authority evidence bundle: " + "; ".join(result.errors))
+    evidence: list[dict[str, Any]] = []
+    for item in bundle.get("authority_evidence", []):
+        if isinstance(item, dict):
+            evidence.append(without_keys(item, "evidence_id", "source_context"))
+    return evidence
+
+
+def append_policy_backend_authority_evidence_bundle(
+    chain: EvidenceChain,
+    bundle: dict[str, Any],
+    *,
+    key: str | None = None,
+    require_complete: bool = False,
+    require_fresh: bool = False,
+    now: str | None = None,
+) -> dict[str, Any]:
+    result = verify_policy_backend_authority_evidence_bundle(
+        bundle,
+        key=key,
+        require_complete=require_complete,
+        require_fresh=require_fresh,
+        now=now,
+    )
+    if not result.ok:
+        raise ValueError("invalid policy backend authority evidence bundle: " + "; ".join(result.errors))
+    payload = {
+        "bundle_id": bundle["bundle_id"],
+        "bundle_hash": content_hash(bundle),
+        "mode": bundle.get("mode"),
+        "environment": bundle.get("environment"),
+        "generated_at": bundle.get("generated_at"),
+        "bundle_ref": bundle.get("bundle_ref"),
+        "authority_ref": bundle.get("authority_ref"),
+        "summary": bundle.get("summary"),
+        "control_summary": _status_summary(bundle.get("controls", [])),
+    }
+    return chain.append(POLICY_BACKEND_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE, payload, key=key, timestamp=bundle.get("generated_at"))
 
 
 def build_policy_backend_authority_dossier(
@@ -358,6 +587,11 @@ def verify_policy_backend_authority_dossier(
         errors.append("policy backend authority dossier is incomplete")
     if mode == "production-dossier" and missing:
         errors.append("production-dossier mode requires every policy backend authority requirement to be covered")
+    if mode == "production-dossier" and (freshness_counts["stale"] or freshness_counts["missing"]):
+        errors.append("production-dossier mode requires every policy backend authority evidence item to be fresh")
+    source_uri_counts = _source_uri_counts(evidence_dicts)
+    if mode == "production-dossier" and (source_uri_counts["placeholder"] or source_uri_counts["missing"]):
+        errors.append("production-dossier mode requires live source_uri values for every policy backend authority evidence item")
     provider_binding_for_controls = dossier.get("provider_bundle_binding") if isinstance(dossier.get("provider_bundle_binding"), dict) else {}
     service_bindings_for_controls = [
         binding
@@ -633,6 +867,98 @@ def _build_authority_evidence_item(item: dict[str, Any], source_context: dict[st
     return {**body, "evidence_id": content_hash(body)}
 
 
+def _build_authority_evidence_bundle_item(item: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(item, dict):
+        raise ValueError("authority evidence item must be an object")
+    requirement_id = str(item.get("requirement_id") or "")
+    authority_kind = str(item.get("authority_kind") or "")
+    evidence_ref = str(item.get("evidence_ref") or "")
+    evidence_hash = str(item.get("evidence_hash") or "")
+    description = str(item.get("description") or "")
+    if requirement_id not in PRODUCTION_AUTHORITY_REQUIREMENT_IDS:
+        raise ValueError(f"unknown policy backend production authority requirement: {requirement_id}")
+    if authority_kind not in AUTHORITY_KINDS:
+        raise ValueError(f"unsupported authority kind: {authority_kind}")
+    if authority_kind not in _requirement_authority_kinds(requirement_id):
+        raise ValueError(f"authority kind {authority_kind} is not accepted for requirement {requirement_id}")
+    for value, field in ((evidence_ref, "evidence_ref"), (evidence_hash, "evidence_hash"), (description, "description")):
+        _require_text(value, field)
+    _require_hash_ref(evidence_hash, "evidence_hash")
+    for field in ("issued_at", "expires_at"):
+        if item.get(field):
+            parse_rfc3339(str(item[field]))
+    body = {
+        "requirement_id": requirement_id,
+        "authority_kind": authority_kind,
+        "evidence_ref": evidence_ref,
+        "evidence_hash": evidence_hash,
+        "description": description,
+        "issuer": item.get("issuer"),
+        "subject": item.get("subject"),
+        "source_uri": item.get("source_uri"),
+        "issued_at": item.get("issued_at"),
+        "expires_at": item.get("expires_at"),
+    }
+    return {**body, "evidence_id": content_hash(body)}
+
+
+def _verify_authority_evidence_bundle_item(
+    item: dict[str, Any],
+    errors: list[str],
+    warnings: list[str],
+    *,
+    now: Any,
+    require_fresh: bool,
+) -> str:
+    if item.get("evidence_id") != content_hash(without_keys(item, "evidence_id")):
+        errors.append(f"policy backend authority evidence bundle evidence_id does not match evidence body: {item.get('requirement_id')}")
+    requirement_id = item.get("requirement_id")
+    authority_kind = item.get("authority_kind")
+    if requirement_id not in PRODUCTION_AUTHORITY_REQUIREMENT_IDS:
+        errors.append(f"unknown policy backend production authority requirement: {requirement_id}")
+    if authority_kind not in AUTHORITY_KINDS:
+        errors.append(f"unsupported authority kind: {authority_kind}")
+    elif requirement_id in PRODUCTION_AUTHORITY_REQUIREMENT_IDS and authority_kind not in _requirement_authority_kinds(str(requirement_id)):
+        errors.append(f"authority kind {authority_kind} is not accepted for requirement {requirement_id}")
+    for field in ("evidence_ref", "evidence_hash", "description"):
+        if not item.get(field):
+            errors.append(f"policy backend authority evidence bundle {field} is required: {requirement_id}")
+    if item.get("evidence_hash") and not str(item.get("evidence_hash")).startswith("sha256:"):
+        errors.append(f"policy backend authority evidence bundle evidence_hash must start with sha256: {requirement_id}")
+    issued_at = _parse_optional_timestamp(item, "issued_at", errors)
+    expires_at = _parse_optional_timestamp(item, "expires_at", errors)
+    freshness_status = "fresh"
+    missing_fields = [field for field in ("issued_at", "expires_at") if not item.get(field)]
+    if missing_fields:
+        freshness_status = "missing"
+        _freshness_problem(
+            f"policy backend authority evidence bundle freshness metadata missing for {requirement_id}: {', '.join(missing_fields)}",
+            errors,
+            warnings,
+            require_fresh=require_fresh,
+        )
+    if issued_at is not None and expires_at is not None and expires_at <= issued_at:
+        freshness_status = "stale"
+        errors.append(f"policy backend authority evidence bundle expires_at must be after issued_at: {requirement_id}")
+    if now is not None and issued_at is not None and issued_at > now:
+        freshness_status = "stale"
+        _freshness_problem(
+            f"policy backend authority evidence bundle evidence is not yet issued for {requirement_id}: {item.get('issued_at')}",
+            errors,
+            warnings,
+            require_fresh=require_fresh,
+        )
+    if now is not None and expires_at is not None and expires_at <= now:
+        freshness_status = "stale"
+        _freshness_problem(
+            f"policy backend authority evidence bundle evidence expired for {requirement_id}: {item.get('expires_at')}",
+            errors,
+            warnings,
+            require_fresh=require_fresh,
+        )
+    return freshness_status
+
+
 def _verify_authority_evidence_item(
     item: dict[str, Any],
     errors: list[str],
@@ -779,6 +1105,37 @@ def _summary(evidence: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _bundle_controls(mode: str, evidence: list[dict[str, Any]], summary: dict[str, Any]) -> list[dict[str, Any]]:
+    source_uri_counts = _source_uri_counts(evidence)
+    return [
+        {
+            "name": "authority_evidence_manifested",
+            "status": "passed" if evidence else "failed",
+            "detail": "Policy backend authority evidence rows are canonicalized, signed, and counted before dossier binding.",
+        },
+        {
+            "name": "freshness_windows_tracked",
+            "status": "passed" if evidence and summary["freshness_window_count"] == len(evidence) else "deferred",
+            "detail": "Issued/expires freshness windows are tracked for every supplied authority item when available.",
+        },
+        {
+            "name": "live_source_uris_present",
+            "status": "passed" if evidence and source_uri_counts["missing"] == 0 and source_uri_counts["placeholder"] == 0 else "deferred",
+            "detail": "Production authority exports need live source URIs instead of placeholder collection tasks.",
+        },
+        {
+            "name": "complete_authority_coverage",
+            "status": "passed" if summary["missing_requirement_count"] == 0 else "deferred",
+            "detail": "Every runtime policy backend production authority requirement is represented before production-export mode can be used.",
+        },
+        {
+            "name": "production_export_limited",
+            "status": "passed" if mode != "production-export" or summary["missing_requirement_count"] == 0 else "failed",
+            "detail": "Production exports are limited to complete authority-evidence bundles with fresh live-source rows.",
+        },
+    ]
+
+
 def _controls(
     mode: str,
     provider_binding: dict[str, Any],
@@ -833,6 +1190,24 @@ def _status_summary(controls: list[dict[str, Any]]) -> dict[str, int]:
         status = str(control.get("status") or "unknown")
         summary[status] = summary.get(status, 0) + 1
     return dict(sorted(summary.items()))
+
+
+def _source_uri_counts(evidence: list[dict[str, Any]]) -> dict[str, int]:
+    counts = {"live": 0, "placeholder": 0, "missing": 0}
+    for item in evidence:
+        source_uri = item.get("source_uri")
+        if not source_uri:
+            counts["missing"] += 1
+        elif _source_uri_is_placeholder(source_uri):
+            counts["placeholder"] += 1
+        else:
+            counts["live"] += 1
+    return counts
+
+
+def _source_uri_is_placeholder(value: Any) -> bool:
+    text = str(value or "").strip().lower()
+    return not text or text.startswith("todo://") or "todo" in text or "placeholder" in text
 
 
 def _requirement_authority_kinds(requirement_id: str) -> set[str]:

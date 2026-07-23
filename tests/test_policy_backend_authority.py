@@ -12,11 +12,18 @@ from trustai.chain import EvidenceChain
 from trustai.crypto import sign_value
 from trustai.policy_backend_authority import (
     POLICY_BACKEND_AUTHORITY_ENTRY_TYPE,
+    POLICY_BACKEND_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE,
+    POLICY_BACKEND_AUTHORITY_EVIDENCE_BUNDLE_SCHEMA,
     POLICY_BACKEND_AUTHORITY_SCHEMA,
     PRODUCTION_AUTHORITY_REQUIREMENT_IDS,
+    PRODUCTION_AUTHORITY_REQUIREMENTS,
     append_policy_backend_authority_dossier,
+    append_policy_backend_authority_evidence_bundle,
     build_policy_backend_authority_dossier,
+    build_policy_backend_authority_evidence_bundle,
+    policy_backend_authority_evidence_from_bundle,
     verify_policy_backend_authority_dossier,
+    verify_policy_backend_authority_evidence_bundle,
 )
 from trustai.policy_backend_service_bundle import build_policy_backend_service_bundle
 
@@ -86,6 +93,29 @@ class PolicyBackendAuthorityTests(unittest.TestCase):
                 "expires_at": "2026-07-11T00:10:00Z",
             },
         ]
+
+    def _complete_authority_evidence(self) -> list[dict]:
+        rows = []
+        for requirement in PRODUCTION_AUTHORITY_REQUIREMENTS:
+            requirement_id = requirement["id"]
+            authority_kind = requirement["authority_kinds"][0]
+            rows.append(
+                {
+                    "requirement_id": requirement_id,
+                    "authority_kind": authority_kind,
+                    "evidence_ref": f"authority:policy-backend/{requirement_id}",
+                    "evidence_hash": "sha256:" + content_hash(
+                        {"policy_backend_authority": requirement_id, "authority_kind": authority_kind}
+                    ),
+                    "description": f"Policy backend production authority evidence for {requirement_id}.",
+                    "issuer": "TrustAI policy backend authority exporter",
+                    "subject": f"aitrade-prod policy backend {requirement_id}",
+                    "source_uri": f"https://authority.trustai.example/policy-backend/{requirement_id}",
+                    "issued_at": "2026-07-04T00:00:00Z",
+                    "expires_at": "2026-08-04T00:00:00Z",
+                }
+            )
+        return rows
 
     def _dossier(self, tmp: Path, *, mode: str = "provider-dossier", authority_evidence: list[dict] | None = None):
         sources, bundle, service_bundle, paths = self._bundle(tmp)
@@ -248,6 +278,274 @@ class PolicyBackendAuthorityTests(unittest.TestCase):
 
             self.assertFalse(result.ok)
             self.assertTrue(any("production-dossier mode requires" in error for error in result.errors), result.errors)
+
+    def test_policy_backend_authority_evidence_bundle_drives_complete_production_dossier(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            evidence_rows = self._complete_authority_evidence()
+            bundle = build_policy_backend_authority_evidence_bundle(
+                authority_evidence=evidence_rows,
+                mode="production-export",
+                environment="aitrade-prod",
+                bundle_ref="bundle:policy-backend-authority/aitrade-prod",
+                issuer_ref="oidc:trustai.example/policy-backend-authority-exporter",
+                subject_ref="service:policy-backend/opa",
+                authority_ref="authority:policy-backend/aitrade-prod",
+                generated_at="2026-07-04T05:18:00Z",
+            )
+
+            bundle_result = verify_policy_backend_authority_evidence_bundle(
+                bundle,
+                require_complete=True,
+                require_fresh=True,
+                now="2026-07-04T05:19:00Z",
+            )
+            extracted_evidence = policy_backend_authority_evidence_from_bundle(
+                bundle,
+                require_complete=True,
+                require_fresh=True,
+                now="2026-07-04T05:19:00Z",
+            )
+            _, provider_bundle, service_bundle, _ = self._bundle(tmp)
+            dossier = build_policy_backend_authority_dossier(
+                provider_bundle,
+                service_bundles=[service_bundle],
+                mode="production-dossier",
+                environment="aitrade-prod",
+                dossier_ref="dossier:policy-backend-authority/lg-trace-001",
+                authority_ref="authority:policy-backend/aitrade-prod",
+                producer_ref="oidc:trustai.example/policy-backend-authority-worker",
+                authority_evidence=extracted_evidence,
+                generated_at="2026-07-04T05:20:00Z",
+            )
+            dossier_result = verify_policy_backend_authority_dossier(
+                dossier,
+                provider_bundle=provider_bundle,
+                service_bundles=[service_bundle],
+                require_complete=True,
+                require_fresh=True,
+                now="2026-07-04T05:21:00Z",
+            )
+            chain = EvidenceChain.load(tmp / "policy-backend-authority-chain.json", tenant_id="policy-backend-authority-test")
+            bundle_entry = append_policy_backend_authority_evidence_bundle(
+                chain,
+                bundle,
+                require_complete=True,
+                require_fresh=True,
+                now="2026-07-04T05:19:00Z",
+            )
+            dossier_entry = append_policy_backend_authority_dossier(
+                chain,
+                dossier,
+                provider_bundle=provider_bundle,
+                service_bundles=[service_bundle],
+                require_complete=True,
+                require_fresh=True,
+                now="2026-07-04T05:21:00Z",
+            )
+
+            self.assertTrue(bundle_result.ok, bundle_result.errors)
+            self.assertEqual(POLICY_BACKEND_AUTHORITY_EVIDENCE_BUNDLE_SCHEMA, bundle["schema"])
+            self.assertEqual(len(PRODUCTION_AUTHORITY_REQUIREMENT_IDS), bundle_result.covered_count)
+            self.assertEqual(len(PRODUCTION_AUTHORITY_REQUIREMENT_IDS), len(extracted_evidence))
+            self.assertTrue(dossier_result.ok, dossier_result.errors)
+            self.assertEqual(len(PRODUCTION_AUTHORITY_REQUIREMENT_IDS), dossier_result.covered_count)
+            self.assertEqual(len(PRODUCTION_AUTHORITY_REQUIREMENT_IDS), dossier_result.fresh_evidence_count)
+            self.assertEqual({"passed": 5}, bundle_entry["payload"]["control_summary"])
+            self.assertEqual({"passed": 7}, dossier_entry["payload"]["control_summary"])
+            self.assertEqual(POLICY_BACKEND_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE, bundle_entry["entry_type"])
+            self.assertEqual(POLICY_BACKEND_AUTHORITY_ENTRY_TYPE, dossier_entry["entry_type"])
+            self.assertTrue(chain.verify_all().ok)
+
+    def test_policy_backend_authority_evidence_bundle_rejects_placeholder_source_uri(self):
+        evidence_rows = self._complete_authority_evidence()
+        evidence_rows[0] = dict(evidence_rows[0])
+        evidence_rows[0]["source_uri"] = "todo://collect-policy-backend-authority"
+        bundle = build_policy_backend_authority_evidence_bundle(
+            authority_evidence=evidence_rows,
+            mode="production-export",
+            environment="aitrade-prod",
+            bundle_ref="bundle:policy-backend-authority/aitrade-prod",
+            issuer_ref="oidc:trustai.example/policy-backend-authority-exporter",
+            subject_ref="service:policy-backend/opa",
+            authority_ref="authority:policy-backend/aitrade-prod",
+            generated_at="2026-07-04T05:18:00Z",
+        )
+
+        result = verify_policy_backend_authority_evidence_bundle(
+            bundle,
+            require_complete=True,
+            require_fresh=True,
+            now="2026-07-04T05:19:00Z",
+        )
+
+        self.assertFalse(result.ok)
+        self.assertTrue(any("live source_uri" in error for error in result.errors), result.errors)
+
+    def test_cli_policy_backend_authority_evidence_bundle_round_trip(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            _, provider_bundle, service_bundle, _ = self._bundle(tmp)
+            provider_bundle_path = tmp / "policy-backend-provider-export-bundle.json"
+            service_bundle_path = tmp / "policy-backend-service-bundle.json"
+            evidence_bundle_path = tmp / "policy-backend-authority-evidence-bundle.json"
+            evidence_bundle_entry_path = tmp / "policy-backend-authority-evidence-bundle-entry.json"
+            dossier_path = tmp / "policy-backend-authority.json"
+            dossier_entry_path = tmp / "policy-backend-authority-entry.json"
+            state_path = tmp / "policy-backend-authority-chain.json"
+            _write_json(provider_bundle_path, provider_bundle)
+            _write_json(service_bundle_path, service_bundle)
+            env = {**os.environ, "PYTHONPATH": str(ROOT / "src")}
+            evidence_args: list[str] = []
+            for evidence in self._complete_authority_evidence():
+                description = evidence["description"].rstrip(".")
+                evidence_args.extend(
+                    [
+                        "--authority-evidence",
+                        (
+                            f"{evidence['requirement_id']},{evidence['authority_kind']},{evidence['evidence_ref']},"
+                            f"{evidence['evidence_hash']},{description};issuer={evidence['issuer']};"
+                            f"subject={evidence['subject']};source_uri={evidence['source_uri']};"
+                            f"issued_at={evidence['issued_at']};expires_at={evidence['expires_at']}"
+                        ),
+                    ]
+                )
+
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "policy-backend-authority-evidence-bundle",
+                    "--mode",
+                    "production-export",
+                    "--environment",
+                    "aitrade-prod",
+                    "--bundle-ref",
+                    "bundle:policy-backend-authority/aitrade-prod",
+                    "--issuer-ref",
+                    "oidc:trustai.example/policy-backend-authority-exporter",
+                    "--subject-ref",
+                    "service:policy-backend/opa",
+                    "--authority-ref",
+                    "authority:policy-backend/aitrade-prod",
+                    "--generated-at",
+                    "2026-07-04T05:18:00Z",
+                    "--require-complete",
+                    "--require-fresh",
+                    "--now",
+                    "2026-07-04T05:19:00Z",
+                    "--out",
+                    str(evidence_bundle_path),
+                    *evidence_args,
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "policy-backend-authority-evidence-bundle-verify",
+                    str(evidence_bundle_path),
+                    "--require-complete",
+                    "--require-fresh",
+                    "--now",
+                    "2026-07-04T05:19:00Z",
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "policy-backend-authority-evidence-bundle-append",
+                    str(evidence_bundle_path),
+                    "--require-complete",
+                    "--require-fresh",
+                    "--now",
+                    "2026-07-04T05:19:00Z",
+                    "--state",
+                    str(state_path),
+                    "--tenant",
+                    "policy-backend-authority-local",
+                    "--out",
+                    str(evidence_bundle_entry_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "policy-backend-authority",
+                    str(provider_bundle_path),
+                    "--service-bundle",
+                    str(service_bundle_path),
+                    "--mode",
+                    "production-dossier",
+                    "--environment",
+                    "aitrade-prod",
+                    "--dossier-ref",
+                    "dossier:policy-backend-authority/lg-trace-001",
+                    "--authority-ref",
+                    "authority:policy-backend/aitrade-prod",
+                    "--producer-ref",
+                    "oidc:trustai.example/policy-backend-authority-worker",
+                    "--authority-evidence-bundle",
+                    str(evidence_bundle_path),
+                    "--generated-at",
+                    "2026-07-04T05:20:00Z",
+                    "--require-complete",
+                    "--require-fresh",
+                    "--now",
+                    "2026-07-04T05:21:00Z",
+                    "--out",
+                    str(dossier_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "policy-backend-authority-append",
+                    str(dossier_path),
+                    "--provider-bundle",
+                    str(provider_bundle_path),
+                    "--service-bundle",
+                    str(service_bundle_path),
+                    "--require-complete",
+                    "--require-fresh",
+                    "--now",
+                    "2026-07-04T05:21:00Z",
+                    "--state",
+                    str(state_path),
+                    "--tenant",
+                    "policy-backend-authority-local",
+                    "--out",
+                    str(dossier_entry_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+            )
+
+            self.assertTrue(evidence_bundle_path.exists())
+            self.assertTrue(evidence_bundle_entry_path.exists())
+            self.assertTrue(dossier_path.exists())
+            self.assertTrue(dossier_entry_path.exists())
 
     def test_cli_policy_backend_authority_round_trip(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
