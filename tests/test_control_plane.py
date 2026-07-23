@@ -130,6 +130,11 @@ from trustai.shadow import (
     load_soak_window,
     load_traffic_completeness_provider_export,
 )
+from trustai.shadow_authority import (
+    PRODUCTION_AUTHORITY_REQUIREMENTS as SHADOW_AUTHORITY_REQUIREMENTS,
+    append_shadow_authority_dossier,
+    build_shadow_authority_dossier,
+)
 from trustai.standards_body_status import append_standards_body_status_receipt, build_standards_body_status_receipt
 from trustai.standards_body_submission import append_standards_body_submission_receipt
 from trustai.trust_network_authority import TRUST_NETWORK_AUTHORITY_ENTRY_TYPE
@@ -144,6 +149,28 @@ from trustai.vendor_identity import append_vendor_identity_receipt
 from trustai.vertical_pack import append_vertical_pack, build_vertical_pack
 from trustai.verifier import verify_proof_pack
 
+
+
+def _complete_shadow_authority_evidence() -> list[dict]:
+    rows = []
+    for requirement in SHADOW_AUTHORITY_REQUIREMENTS:
+        requirement_id = requirement["id"]
+        authority_kind = requirement["authority_kinds"][0]
+        rows.append(
+            {
+                "requirement_id": requirement_id,
+                "authority_kind": authority_kind,
+                "evidence_ref": f"authority:shadow-control/{requirement_id}",
+                "evidence_hash": "sha256:" + content_hash({"shadow_control_authority": requirement_id, "authority_kind": authority_kind}),
+                "description": f"Control-plane shadow authority evidence for {requirement_id}",
+                "issuer": "TrustAI authority exporter",
+                "subject": f"aitrade shadow holdout {requirement_id}",
+                "source_uri": f"https://authority.trustai.ai/shadow-control/{requirement_id}",
+                "issued_at": "2026-07-12T00:00:00Z",
+                "expires_at": "2026-08-12T00:00:00Z",
+            }
+        )
+    return rows
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = ROOT / "examples" / "aitrade" / "verification-contract.yaml"
@@ -276,6 +303,34 @@ class ControlPlaneTests(unittest.TestCase):
                 traffic_completeness,
                 traffic_export=traffic_export,
                 provider_export=traffic_provider_export,
+            )
+            shadow_authority = build_shadow_authority_dossier(
+                contract,
+                shadow,
+                shadow_entry["payload"]["temporal_holdout_manifest"],
+                traffic_export,
+                traffic_completeness,
+                provider_export=traffic_provider_export,
+                mode="production-dossier",
+                environment="aitrade-prod",
+                dossier_ref="dossier:shadow-control/aitrade-prod",
+                authority_ref="authority:traffic-completeness/aitrade-prod",
+                producer_ref="service:trustai-shadow-authority",
+                authority_evidence=_complete_shadow_authority_evidence(),
+                generated_at="2026-07-19T00:05:00Z",
+            )
+            shadow_authority_entry = append_shadow_authority_dossier(
+                chain,
+                shadow_authority,
+                contract=contract,
+                replay=shadow,
+                temporal_holdout=shadow_entry["payload"]["temporal_holdout_manifest"],
+                traffic_export=traffic_export,
+                traffic_completeness=traffic_completeness,
+                provider_export=traffic_provider_export,
+                require_complete=True,
+                require_fresh=True,
+                now="2026-07-19T00:05:00Z",
             )
             results = json.loads(RESULTS.read_text(encoding="utf-8"))
             eval_entry, gate_entry, decision = append_eval_and_gate(chain, contract, results)
@@ -559,7 +614,7 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, summary["counts"]["roadmap_audits"])
                 self.assertEqual(1, summary["counts"]["external_evidence_collection_runs"])
                 self.assertEqual(1, summary["counts"]["external_evidence_manifests"])
-                self.assertEqual(1, summary["counts"]["authority_dossiers"])
+                self.assertEqual(2, summary["counts"]["authority_dossiers"])
                 self.assertEqual(1, summary["counts"]["phase_scoreboards"])
                 self.assertEqual(1, summary["counts"]["design_partner_dossiers"])
                 self.assertEqual(1, summary["counts"]["own_compliance_dossiers"])
@@ -571,6 +626,7 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, summary["counts"]["soak_reports"])
                 self.assertEqual(1, summary["counts"]["traffic_holdout_exports"])
                 self.assertEqual(1, summary["counts"]["traffic_completeness_receipts"])
+                self.assertEqual(2, summary["counts"]["authority_dossiers"])
                 self.assertEqual(1, counts["runtime_attestations"])
                 self.assertEqual(1, counts["policy_decisions"])
                 self.assertEqual(1, counts["policy_engine_receipts"])
@@ -578,7 +634,7 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, counts["roadmap_audits"])
                 self.assertEqual(1, counts["external_evidence_collection_runs"])
                 self.assertEqual(1, counts["external_evidence_manifests"])
-                self.assertEqual(1, counts["authority_dossiers"])
+                self.assertEqual(2, counts["authority_dossiers"])
                 self.assertEqual(1, counts["phase_scoreboards"])
                 self.assertEqual(1, counts["design_partner_dossiers"])
                 self.assertEqual(1, counts["own_compliance_dossiers"])
@@ -597,10 +653,8 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(2, summary["latest_external_evidence_collection_run"]["collected_count"])
                 self.assertEqual("partial", summary["latest_external_evidence_manifest"]["status"])
                 self.assertGreater(summary["latest_external_evidence_manifest"]["missing_authority_kind_count"], 0)
-                self.assertEqual("authority:mcp-gateway/proxy-prod", summary["latest_authority_dossier"]["authority_ref"])
-                self.assertEqual("proxy-dossier", summary["latest_authority_dossier"]["mode"])
-                self.assertFalse(summary["latest_authority_dossier"]["production_claimed"])
-                self.assertGreater(summary["latest_authority_dossier"]["missing_requirement_count"], 0)
+                self.assertEqual(shadow_authority_entry["payload"]["dossier_id"], summary["latest_authority_dossier"]["dossier_id"])
+                self.assertTrue(summary["latest_authority_dossier"]["production_ready"])
                 self.assertEqual("scoreboard:trustai/roadmap/readiness", summary["latest_phase_scoreboard"]["scoreboard_ref"])
                 self.assertEqual("readiness", summary["latest_phase_scoreboard"]["mode"])
                 self.assertEqual({"external-required": 10, "passed": 2}, summary["latest_phase_scoreboard"]["control_summary"])
@@ -639,6 +693,8 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(traffic_completeness_entry["payload"]["completeness_id"], summary["latest_traffic_completeness_receipt"]["completeness_id"])
                 self.assertEqual("production-export", summary["latest_traffic_completeness_receipt"]["mode"])
                 self.assertTrue(summary["latest_traffic_completeness_receipt"]["passed"])
+                self.assertEqual(shadow_authority_entry["payload"]["dossier_id"], summary["latest_authority_dossier"]["dossier_id"])
+                self.assertTrue(summary["latest_authority_dossier"]["production_ready"])
                 self.assertEqual("passed", summary["latest_proof_pack"]["outcome"])
                 self.assertEqual("aitrade-btcusdt-canary", summary["latest_eval_run"]["contract_id"])
                 self.assertEqual("passed", summary["latest_gate_decision"]["outcome"])
@@ -775,6 +831,8 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(traffic_export["export_id"], holdout_evidence["traffic_holdout_exports"][0]["export_id"])
                 self.assertEqual(traffic_completeness["completeness_id"], holdout_evidence["traffic_completeness_receipts"][0]["completeness_id"])
                 self.assertEqual(3, holdout_evidence["traffic_completeness_receipts"][0]["source_completeness"]["matched_record_count"])
+                self.assertEqual(shadow_authority_entry["payload"]["dossier_id"], holdout_evidence["shadow_authority_dossiers"][0]["dossier_id"])
+                self.assertTrue(holdout_evidence["shadow_authority_dossiers"][0]["production_ready"])
                 roadmap_evidence = control.roadmap_evidence()
                 self.assertEqual(audit["audit_id"], roadmap_evidence["roadmap_audits"][0]["audit_id"])
                 self.assertGreater(roadmap_evidence["roadmap_audits"][0]["deferred_external_count"], 0)
@@ -794,6 +852,8 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, len(roadmap_evidence["reliability_reports"]))
                 self.assertEqual(1, len(roadmap_evidence["holdout_evidence"]["shadow_replays"]))
                 self.assertEqual(1, len(roadmap_evidence["holdout_evidence"]["traffic_completeness_receipts"]))
+                self.assertEqual(1, len(roadmap_evidence["holdout_evidence"]["shadow_authority_dossiers"]))
+                self.assertEqual(2, len(roadmap_evidence["authority_dossiers"]))
                 self.assertEqual(1, len(roadmap_evidence["mcp_evidence"]["mcp_tool_calls"]))
                 self.assertEqual(1, len(roadmap_evidence["mcp_evidence"]["mcp_proxy_captures"]))
                 phase_scoreboards = control.recent_phase_scoreboards()
@@ -935,15 +995,22 @@ class ControlPlaneTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     control.external_authority_gaps(limit=0)
                 authority_dossiers = control.recent_authority_dossiers()
-                self.assertEqual(1, len(authority_dossiers))
-                self.assertEqual("mcp.gateway_authority_recorded", authority_dossiers[0]["entry_type"])
-                self.assertEqual("authority:mcp-gateway/proxy-prod", authority_dossiers[0]["authority_ref"])
-                self.assertFalse(authority_dossiers[0]["production_claimed"])
-                self.assertEqual(2, authority_dossiers[0]["covered_requirement_count"])
-                self.assertGreater(authority_dossiers[0]["missing_requirement_count"], 0)
-                self.assertEqual(2, authority_dossiers[0]["freshness_window_count"])
-                self.assertIsInstance(authority_dossiers[0]["missing_requirement_ids"], list)
-                self.assertEqual(2, authority_dossiers[0]["control_summary"]["deferred"])
+                self.assertEqual(2, len(authority_dossiers))
+                mcp_authority_dossier = next(
+                    item for item in authority_dossiers if item["entry_type"] == "mcp.gateway_authority_recorded"
+                )
+                shadow_authority_dossier = next(
+                    item for item in authority_dossiers if item["entry_type"] == shadow_authority_entry["entry_type"]
+                )
+                self.assertEqual("authority:mcp-gateway/proxy-prod", mcp_authority_dossier["authority_ref"])
+                self.assertFalse(mcp_authority_dossier["production_claimed"])
+                self.assertEqual(2, mcp_authority_dossier["covered_requirement_count"])
+                self.assertGreater(mcp_authority_dossier["missing_requirement_count"], 0)
+                self.assertEqual(2, mcp_authority_dossier["freshness_window_count"])
+                self.assertIsInstance(mcp_authority_dossier["missing_requirement_ids"], list)
+                self.assertEqual(2, mcp_authority_dossier["control_summary"]["deferred"])
+                self.assertEqual(shadow_authority_entry["payload"]["dossier_id"], shadow_authority_dossier["dossier_id"])
+                self.assertTrue(shadow_authority_dossier["production_ready"])
             finally:
                 control.close()
 

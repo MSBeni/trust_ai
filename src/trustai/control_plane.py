@@ -103,6 +103,7 @@ from .shadow import (
     TRAFFIC_COMPLETENESS_ENTRY_TYPE,
     TRAFFIC_HOLDOUT_EXPORT_ENTRY_TYPE,
 )
+from .shadow_authority import SHADOW_AUTHORITY_ENTRY_TYPE
 from .trust_network_authority import TRUST_NETWORK_AUTHORITY_ENTRY_TYPE
 from .trust_network_registry import TRUST_NETWORK_REGISTRY_ENTRY_TYPE
 from .trust_network_registry_status import TRUST_NETWORK_REGISTRY_STATUS_ENTRY_TYPE
@@ -7261,6 +7262,34 @@ class ControlPlane:
             items.append(item)
         return items
 
+    def recent_shadow_authority_dossiers(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT dossier_id, entry_id, entry_type, dossier_hash, dossier_ref,
+                   mode, environment, authority_ref, producer_ref,
+                   production_claimed, production_ready,
+                   required_requirement_count, covered_requirement_count,
+                   missing_requirement_count, authority_evidence_count,
+                   freshness_window_count, missing_freshness_count,
+                   control_summary_json, covered_requirement_ids_json,
+                   missing_requirement_ids_json, generated_at
+            FROM authority_dossiers
+            WHERE entry_type = ?
+            ORDER BY generated_at DESC
+            LIMIT ?
+            """,
+            (SHADOW_AUTHORITY_ENTRY_TYPE, limit),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            _bool_fields(item, "production_claimed", "production_ready")
+            item["control_summary"] = _decode_json_object(item.pop("control_summary_json", None))
+            item["covered_requirement_ids"] = _decode_json_array(item.pop("covered_requirement_ids_json", None))
+            item["missing_requirement_ids"] = _decode_json_array(item.pop("missing_requirement_ids_json", None))
+            items.append(item)
+        return items
+
     def recent_vendor_identity_receipts(self, limit: int = 20) -> list[dict[str, Any]]:
         rows = self.conn.execute(
             """
@@ -7570,6 +7599,7 @@ class ControlPlane:
             "roadmap_audits": self.recent_roadmap_audits(limit),
             "external_evidence_collection_runs": self.recent_external_evidence_collection_runs(limit),
             "external_evidence_manifests": self.recent_external_evidence_manifests(limit),
+            "authority_dossiers": self.recent_authority_dossiers(limit),
             "phase_scoreboards": self.recent_phase_scoreboards(limit),
             "design_partner_dossiers": self.recent_design_partner_dossiers(limit),
             "own_compliance_dossiers": self.recent_own_compliance_dossiers(limit),
@@ -7740,6 +7770,7 @@ class ControlPlane:
             "soak_reports": self.recent_soak_reports(limit),
             "traffic_holdout_exports": self.recent_traffic_holdout_exports(limit),
             "traffic_completeness_receipts": self.recent_traffic_completeness_receipts(limit),
+            "shadow_authority_dossiers": self.recent_shadow_authority_dossiers(limit),
         }
 
     def readiness(self) -> dict[str, Any]:

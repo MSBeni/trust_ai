@@ -1,7 +1,7 @@
 {
-  "audit_id": "4e6b014dbd144a1a5be605e68c3adfcd1bf04159ea3e08a82b19a71abdd19e9d",
+  "audit_id": "f518ef52ad1f7f7137684584055f7280ff6fdcbae4810622a0562631239e15cc",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
-  "generated_at": "2026-07-22T17:39:14Z",
+  "generated_at": "2026-07-22T19:45:08Z",
   "limitations": [
     "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
     "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",
@@ -266,7 +266,7 @@
         {
           "path": "src/trustai/control_plane.py",
           "present": true,
-          "sha256": "sha256:be82e3d860da0c6508b6cc4d5ae3579752c1f4a677b5f5cfe0fce7a5f63a01fd"
+          "sha256": "sha256:b099d74923192b80e4626c25ac8e88501bec8064f8461bdc1a0e747ddb9c71ff"
         },
         {
           "path": "examples/aitrade/eval-results.json",
@@ -384,7 +384,7 @@
         {
           "path": "src/trustai/control_plane.py",
           "present": true,
-          "sha256": "sha256:be82e3d860da0c6508b6cc4d5ae3579752c1f4a677b5f5cfe0fce7a5f63a01fd"
+          "sha256": "sha256:b099d74923192b80e4626c25ac8e88501bec8064f8461bdc1a0e747ddb9c71ff"
         },
         {
           "path": "src/trustai/server.py",
@@ -484,7 +484,7 @@
         {
           "path": "tests/test_control_plane.py",
           "present": true,
-          "sha256": "sha256:f747b5301e5a1bdd215fdb44862e6794dc6d12f55bcdf1909ee651da240125bc"
+          "sha256": "sha256:99cf2818c16a7717efbb3f41272433997acc2a051c6ffe989697aea712054e90"
         },
         {
           "path": "tests/test_production_primitives.py",
@@ -1166,7 +1166,7 @@
         {
           "path": "src/trustai/control_plane.py",
           "present": true,
-          "sha256": "sha256:be82e3d860da0c6508b6cc4d5ae3579752c1f4a677b5f5cfe0fce7a5f63a01fd"
+          "sha256": "sha256:b099d74923192b80e4626c25ac8e88501bec8064f8461bdc1a0e747ddb9c71ff"
         },
         {
           "path": "src/trustai/server.py",
@@ -1221,7 +1221,7 @@
         {
           "path": "tests/test_control_plane.py",
           "present": true,
-          "sha256": "sha256:f747b5301e5a1bdd215fdb44862e6794dc6d12f55bcdf1909ee651da240125bc"
+          "sha256": "sha256:99cf2818c16a7717efbb3f41272433997acc2a051c6ffe989697aea712054e90"
         },
         {
           "path": "tests/test_production_primitives.py",
@@ -1272,7 +1272,7 @@
         {
           "path": "src/trustai/control_plane.py",
           "present": true,
-          "sha256": "sha256:be82e3d860da0c6508b6cc4d5ae3579752c1f4a677b5f5cfe0fce7a5f63a01fd"
+          "sha256": "sha256:b099d74923192b80e4626c25ac8e88501bec8064f8461bdc1a0e747ddb9c71ff"
         },
         {
           "path": "src/trustai/server.py",
@@ -1322,7 +1322,7 @@
         {
           "path": "tests/test_control_plane.py",
           "present": true,
-          "sha256": "sha256:f747b5301e5a1bdd215fdb44862e6794dc6d12f55bcdf1909ee651da240125bc"
+          "sha256": "sha256:99cf2818c16a7717efbb3f41272433997acc2a051c6ffe989697aea712054e90"
         },
         {
           "path": "tests/test_production_primitives.py",
@@ -1620,7 +1620,7 @@
         {
           "path": "src/trustai/control_plane.py",
           "present": true,
-          "sha256": "sha256:be82e3d860da0c6508b6cc4d5ae3579752c1f4a677b5f5cfe0fce7a5f63a01fd"
+          "sha256": "sha256:b099d74923192b80e4626c25ac8e88501bec8064f8461bdc1a0e747ddb9c71ff"
         },
         {
           "path": "src/trustai/server.py",
@@ -1710,7 +1710,7 @@
         {
           "path": "tests/test_control_plane.py",
           "present": true,
-          "sha256": "sha256:f747b5301e5a1bdd215fdb44862e6794dc6d12f55bcdf1909ee651da240125bc"
+          "sha256": "sha256:99cf2818c16a7717efbb3f41272433997acc2a051c6ffe989697aea712054e90"
         },
         {
           "path": "tests/test_production_primitives.py",
@@ -1988,7 +1988,7 @@
         {
           "path": "docs/architecture/roadmap-coverage.md",
           "present": true,
-          "sha256": "sha256:6e5ff9e5fe19fc9f36069a7a0e211b99ce7af28c488d1842977c8b885baed88b"
+          "sha256": "sha256:b0253828644476ba93a00fc9b539b84df30ebdf38070b6bc3e36ba0522778e2f"
         },
         {
           "path": "src/trustai/proofpack.py",
@@ -2175,7 +2175,7 @@
         {
           "path": "src/trustai/control_plane.py",
           "present": true,
-          "sha256": "sha256:be82e3d860da0c6508b6cc4d5ae3579752c1f4a677b5f5cfe0fce7a5f63a01fd"
+          "sha256": "sha256:b099d74923192b80e4626c25ac8e88501bec8064f8461bdc1a0e747ddb9c71ff"
         },
         {
           "path": "src/trustai/server.py",
@@ -2250,7 +2250,7 @@
         {
           "path": "tests/test_control_plane.py",
           "present": true,
-          "sha256": "sha256:f747b5301e5a1bdd215fdb44862e6794dc6d12f55bcdf1909ee651da240125bc"
+          "sha256": "sha256:99cf2818c16a7717efbb3f41272433997acc2a051c6ffe989697aea712054e90"
         },
         {
           "path": "tests/test_production_primitives.py",
@@ -2286,7 +2286,7 @@
         {
           "path": "src/trustai/control_plane.py",
           "present": true,
-          "sha256": "sha256:be82e3d860da0c6508b6cc4d5ae3579752c1f4a677b5f5cfe0fce7a5f63a01fd"
+          "sha256": "sha256:b099d74923192b80e4626c25ac8e88501bec8064f8461bdc1a0e747ddb9c71ff"
         },
         {
           "path": "src/trustai/server.py",
@@ -2326,7 +2326,7 @@
         {
           "path": "tests/test_control_plane.py",
           "present": true,
-          "sha256": "sha256:f747b5301e5a1bdd215fdb44862e6794dc6d12f55bcdf1909ee651da240125bc"
+          "sha256": "sha256:99cf2818c16a7717efbb3f41272433997acc2a051c6ffe989697aea712054e90"
         },
         {
           "path": "tests/test_production_primitives.py",
@@ -2553,7 +2553,7 @@
     "coverage": {
       "path": "docs/architecture/roadmap-coverage.md",
       "present": true,
-      "sha256": "sha256:6e5ff9e5fe19fc9f36069a7a0e211b99ce7af28c488d1842977c8b885baed88b"
+      "sha256": "sha256:b0253828644476ba93a00fc9b539b84df30ebdf38070b6bc3e36ba0522778e2f"
     },
     "requirement_count": 26,
     "roadmap": {
