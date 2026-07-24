@@ -52,7 +52,12 @@ from trustai.mcp_gateway import (
     load_mcp_transcript,
 )
 from trustai.onboarding import SELF_SERVE_ONBOARDING_ENTRY_TYPE
-from trustai.mcp_gateway_authority import append_mcp_gateway_authority_dossier, build_mcp_gateway_authority_dossier
+from trustai.mcp_gateway_authority import (
+    append_mcp_gateway_authority_dossier,
+    append_mcp_gateway_authority_evidence_bundle,
+    build_mcp_gateway_authority_dossier,
+    build_mcp_gateway_authority_evidence_bundle,
+)
 from trustai.marketplace import MARKETPLACE_DISTRIBUTION_ENTRY_TYPE
 from trustai.marketplace_author import MARKETPLACE_AUTHOR_ENTRY_TYPE
 from trustai.marketplace_settlement import MARKETPLACE_SETTLEMENT_ENTRY_TYPE
@@ -551,6 +556,48 @@ class ControlPlaneTests(unittest.TestCase):
                 source_events_path=MCP_PROXY,
             )
             mcp_proxy_entry = append_mcp_proxy_capture(chain, mcp_proxy_capture, source_events_path=MCP_PROXY)
+            mcp_authority_evidence = [
+                {
+                    "requirement_id": "production-mcp-proxy-worker-fleet",
+                    "authority_kind": "hosted-service",
+                    "evidence_ref": "mcp-proxy:fleet/aitrade-prod",
+                    "evidence_hash": "sha256:mcp-proxy-worker-fleet",
+                    "description": "Hosted MCP proxy worker fleet export for governed tool-call capture.",
+                    "issuer": "TrustAI Hosted Ops",
+                    "subject": "aitrade-prod MCP proxy fleet",
+                    "source_uri": "https://authority.trustai.ai/mcp-gateway/proxy-prod/production-mcp-proxy-worker-fleet/hosted-service",
+                    "issued_at": "2026-07-12T03:10:00Z",
+                    "expires_at": "2026-07-19T03:10:00Z",
+                },
+                {
+                    "requirement_id": "immutable-mcp-audit-logs",
+                    "authority_kind": "cloud-object-lock",
+                    "evidence_ref": "s3-object-lock:mcp/audit/aitrade-prod",
+                    "evidence_hash": "sha256:mcp-immutable-audit-root",
+                    "description": "Object Lock audit-log root for MCP proxy and tool server events.",
+                    "issuer": "Example Cloud Object Lock",
+                    "subject": "aitrade-prod MCP audit retention",
+                    "source_uri": "https://authority.trustai.ai/mcp-gateway/proxy-prod/immutable-mcp-audit-logs/cloud-object-lock",
+                    "issued_at": "2026-07-12T03:11:00Z",
+                    "expires_at": "2026-07-19T03:11:00Z",
+                },
+            ]
+            mcp_authority_bundle = build_mcp_gateway_authority_evidence_bundle(
+                authority_evidence=mcp_authority_evidence,
+                mode="authority-export",
+                environment="aitrade-prod",
+                bundle_ref="bundle:mcp-gateway-authority/proxy-prod/2026-07-12",
+                issuer_ref="authority:trustai-mcp-gateway-authority",
+                subject_ref="mcp-gateway:aitrade-prod/proxy",
+                authority_ref="authority:mcp-gateway/proxy-prod",
+                generated_at="2026-07-12T03:12:00Z",
+            )
+            append_mcp_gateway_authority_evidence_bundle(
+                chain,
+                mcp_authority_bundle,
+                require_fresh=True,
+                now="2026-07-15T00:00:00Z",
+            )
             mcp_authority = build_mcp_gateway_authority_dossier(
                 mcp_calls,
                 mode="proxy-dossier",
@@ -558,32 +605,7 @@ class ControlPlaneTests(unittest.TestCase):
                 dossier_ref="dossier:mcp-gateway-authority/aitrade-prod",
                 authority_ref="authority:mcp-gateway/proxy-prod",
                 producer_ref="oidc:trustai.example/mcp-gateway-authority-worker",
-                authority_evidence=[
-                    {
-                        "requirement_id": "production-mcp-proxy-worker-fleet",
-                        "authority_kind": "hosted-service",
-                        "evidence_ref": "mcp-proxy:fleet/aitrade-prod",
-                        "evidence_hash": "sha256:mcp-proxy-worker-fleet",
-                        "description": "Hosted MCP proxy worker fleet export for governed tool-call capture.",
-                        "issuer": "TrustAI Hosted Ops",
-                        "subject": "aitrade-prod MCP proxy fleet",
-                        "source_uri": "https://mcp.example/audit/fleet/aitrade-prod",
-                        "issued_at": "2026-07-12T03:10:00Z",
-                        "expires_at": "2026-07-19T03:10:00Z",
-                    },
-                    {
-                        "requirement_id": "immutable-mcp-audit-logs",
-                        "authority_kind": "cloud-object-lock",
-                        "evidence_ref": "s3-object-lock:mcp/audit/aitrade-prod",
-                        "evidence_hash": "sha256:mcp-immutable-audit-root",
-                        "description": "Object Lock audit-log root for MCP proxy and tool server events.",
-                        "issuer": "Example Cloud Object Lock",
-                        "subject": "aitrade-prod MCP audit retention",
-                        "source_uri": "https://object-lock.example/mcp/audit/aitrade-prod",
-                        "issued_at": "2026-07-12T03:11:00Z",
-                        "expires_at": "2026-07-19T03:11:00Z",
-                    },
-                ],
+                authority_evidence=mcp_authority_evidence,
                 generated_at="2026-07-12T03:12:00Z",
             )
             append_mcp_gateway_authority_dossier(chain, mcp_authority, transcript_calls=mcp_calls)
@@ -609,8 +631,10 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(2, counts["ingest_events"])
                 self.assertEqual(1, summary["counts"]["mcp_tool_calls"])
                 self.assertEqual(1, summary["counts"]["mcp_proxy_captures"])
+                self.assertEqual(1, summary["counts"]["mcp_gateway_authority_evidence_bundles"])
                 self.assertEqual(1, counts["mcp_tool_calls"])
                 self.assertEqual(1, counts["mcp_proxy_captures"])
+                self.assertEqual(1, counts["mcp_gateway_authority_evidence_bundles"])
                 self.assertEqual(1, summary["counts"]["promotion_statuses"])
                 self.assertEqual(1, counts["promotion_statuses"])
                 self.assertEqual(1, summary["counts"]["runtime_attestations"])
@@ -659,6 +683,8 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(2, summary["latest_external_evidence_collection_run"]["collected_count"])
                 self.assertEqual("partial", summary["latest_external_evidence_manifest"]["status"])
                 self.assertGreater(summary["latest_external_evidence_manifest"]["missing_authority_kind_count"], 0)
+                self.assertEqual(mcp_authority_bundle["bundle_id"], summary["latest_mcp_gateway_authority_evidence_bundle"]["bundle_id"])
+                self.assertEqual(2, summary["latest_mcp_gateway_authority_evidence_bundle"]["covered_requirement_count"])
                 self.assertEqual(shadow_authority_entry["payload"]["dossier_id"], summary["latest_authority_dossier"]["dossier_id"])
                 self.assertTrue(summary["latest_authority_dossier"]["production_ready"])
                 self.assertEqual("scoreboard:trustai/roadmap/readiness", summary["latest_phase_scoreboard"]["scoreboard_ref"])
@@ -819,8 +845,13 @@ class ControlPlaneTests(unittest.TestCase):
                 mcp_evidence = control.mcp_evidence()
                 self.assertEqual("place_shadow_order", mcp_evidence["mcp_tool_calls"][0]["tool_name"])
                 self.assertEqual(mcp_proxy_capture["capture_id"], mcp_evidence["mcp_proxy_captures"][0]["capture_id"])
+                self.assertEqual(mcp_authority_bundle["bundle_id"], mcp_evidence["mcp_gateway_authority_evidence_bundles"][0]["bundle_id"])
+                self.assertEqual(2, mcp_evidence["mcp_gateway_authority_evidence_bundles"][0]["covered_requirement_count"])
+                self.assertEqual(2, mcp_evidence["mcp_gateway_authority_evidence_bundles"][0]["fresh_evidence_count"])
+                self.assertEqual(0, mcp_evidence["mcp_gateway_authority_evidence_bundles"][0]["placeholder_source_uri_count"])
                 self.assertEqual(1, len(control.recent_mcp_tool_calls()))
                 self.assertEqual(1, len(control.recent_mcp_proxy_captures()))
+                self.assertEqual(1, len(control.recent_mcp_gateway_authority_evidence_bundles()))
                 statuses = control.recent_promotion_statuses()
                 self.assertEqual(1, len(statuses))
                 self.assertEqual("volelabs/trust_ai", statuses[0]["target_ref"]["repository"])
@@ -862,6 +893,7 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(2, len(roadmap_evidence["authority_dossiers"]))
                 self.assertEqual(1, len(roadmap_evidence["mcp_evidence"]["mcp_tool_calls"]))
                 self.assertEqual(1, len(roadmap_evidence["mcp_evidence"]["mcp_proxy_captures"]))
+                self.assertEqual(1, len(roadmap_evidence["mcp_evidence"]["mcp_gateway_authority_evidence_bundles"]))
                 phase_scoreboards = control.recent_phase_scoreboards()
                 self.assertEqual(1, len(phase_scoreboards))
                 self.assertEqual("readiness", phase_scoreboards[0]["mode"])

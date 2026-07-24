@@ -193,6 +193,8 @@ class McpGatewayAuthorityTests(unittest.TestCase):
             self.assertEqual(len(PRODUCTION_AUTHORITY_REQUIREMENT_IDS), result.covered_count)
             self.assertEqual(len(PRODUCTION_AUTHORITY_REQUIREMENT_IDS), result.fresh_evidence_count)
             self.assertEqual({"passed": 5}, bundle_entry["payload"]["control_summary"])
+            self.assertEqual(len(PRODUCTION_AUTHORITY_REQUIREMENT_IDS), len(bundle_entry["payload"]["authority_evidence"]))
+            self.assertEqual(bundle["authority_evidence"][0]["evidence_id"], bundle_entry["payload"]["authority_evidence"][0]["evidence_id"])
             self.assertEqual({"deferred": 1, "passed": 4}, dossier_entry["payload"]["control_summary"])
             self.assertEqual(MCP_GATEWAY_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE, bundle_entry["entry_type"])
             self.assertTrue(chain.verify_all().ok)

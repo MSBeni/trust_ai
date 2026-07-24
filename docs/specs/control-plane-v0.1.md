@@ -18,6 +18,7 @@ into queryable registry tables while keeping the chain as the source of truth.
 - `ingest_events`: OTel GenAI event evidence indexed by trace, span, agent, risk class, and contract hash.
 - `mcp_tool_calls`: MCP transcript tool-call receipts with request/response hashes, transcript sequence, and transcript root.
 - `mcp_proxy_captures`: MCP proxy capture receipts with proxy/upstream refs, event-chain roots, transcript roots, and artifact hashes.
+- `mcp_gateway_authority_evidence_bundles`: retained MCP gateway authority evidence bundles with freshness and live source URI counts for offline proxy authority review.
 - `supervised_access_receipts`: time-bounded reviewer sessions with audience, reviewer, and disclosed artifact references.
 - `regulator_acceptances`: regulator review decisions with authority, examination, scope, and source references.
 - `review_portal_service_attestations`: hosted/static portal service identity, frontend integrity, supervised access, and control summaries.
@@ -124,8 +125,9 @@ These are the local analogues of model-risk or auditor review pages for a single
 pre-registered contract or governed agent version. The holdout-evidence list
 binds temporal holdout manifests, shadow replays, soak reports, traffic holdout
 exports, and traffic completeness receipts into one Phase 1 promotion-readiness
-surface. The MCP evidence list binds tool-call transcript hashes and proxy-capture
-event roots into one gateway review surface without exposing raw tool payloads.
+surface. The MCP evidence list binds tool-call transcript hashes, proxy-capture
+event roots, and MCP gateway authority evidence bundles into one gateway review
+surface without exposing raw tool payloads.
 The onboarding evidence list binds self-serve SDK/gateway onboarding receipts
 into one startup review surface with source-artifact, quickstart replay, and
 control-summary counts.

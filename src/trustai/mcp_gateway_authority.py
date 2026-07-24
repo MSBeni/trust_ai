@@ -300,6 +300,7 @@ def append_mcp_gateway_authority_evidence_bundle(
         "authority_ref": bundle.get("authority_ref"),
         "summary": bundle.get("summary"),
         "control_summary": _status_summary(bundle.get("controls", [])),
+        "authority_evidence": bundle.get("authority_evidence"),
     }
     return chain.append(MCP_GATEWAY_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE, payload, key=key, timestamp=bundle.get("generated_at"))
 

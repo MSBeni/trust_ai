@@ -65,6 +65,7 @@ from .ingest import INGEST_ENTRY_TYPE
 from .insurer_partner_authority import INSURER_PARTNER_AUTHORITY_ENTRY_TYPE
 from .lifecycle import DEMOTION_ENTRY_TYPE, INCIDENT_ENTRY_TYPE, ROLLBACK_ENTRY_TYPE, SOAK_DEMOTION_ENTRY_TYPE
 from .mcp_gateway import MCP_PROXY_CAPTURE_ENTRY_TYPE, MCP_TOOL_CALL_ENTRY_TYPE
+from .mcp_gateway_authority import MCP_GATEWAY_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE
 from .onboarding import SELF_SERVE_ONBOARDING_ENTRY_TYPE
 from .marketplace import MARKETPLACE_DISTRIBUTION_ENTRY_TYPE
 from .marketplace_author import MARKETPLACE_AUTHOR_ENTRY_TYPE
@@ -140,6 +141,7 @@ INDEX_TABLES = (
     "ingest_events",
     "mcp_tool_calls",
     "mcp_proxy_captures",
+    "mcp_gateway_authority_evidence_bundles",
     "self_serve_onboarding_receipts",
     "framework_adapter_matrices",
     "framework_hook_releases",
@@ -1516,6 +1518,32 @@ class ControlPlane:
                 captured_at TEXT,
                 body_json TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS mcp_gateway_authority_evidence_bundles (
+                bundle_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                bundle_hash TEXT NOT NULL,
+                mode TEXT,
+                environment TEXT,
+                bundle_ref TEXT,
+                issuer_ref TEXT,
+                subject_ref TEXT,
+                authority_ref TEXT,
+                required_requirement_count INTEGER NOT NULL,
+                covered_requirement_count INTEGER NOT NULL,
+                missing_requirement_count INTEGER NOT NULL,
+                authority_evidence_count INTEGER NOT NULL,
+                fresh_evidence_count INTEGER NOT NULL,
+                stale_evidence_count INTEGER NOT NULL,
+                missing_freshness_count INTEGER NOT NULL,
+                live_source_uri_count INTEGER NOT NULL,
+                placeholder_source_uri_count INTEGER NOT NULL,
+                missing_source_uri_count INTEGER NOT NULL,
+                summary_json TEXT NOT NULL,
+                control_summary_json TEXT NOT NULL,
+                authority_evidence_json TEXT NOT NULL,
+                generated_at TEXT,
+                body_json TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS self_serve_onboarding_receipts (
                 receipt_id TEXT PRIMARY KEY,
                 entry_id TEXT,
@@ -2741,6 +2769,7 @@ class ControlPlane:
             "ingest_events": 0,
             "mcp_tool_calls": 0,
             "mcp_proxy_captures": 0,
+            "mcp_gateway_authority_evidence_bundles": 0,
             "self_serve_onboarding_receipts": 0,
             "framework_adapter_matrices": 0,
             "framework_hook_releases": 0,
@@ -3232,6 +3261,56 @@ class ControlPlane:
                     ),
                 )
                 counts["mcp_proxy_captures"] += 1
+
+            if entry.get("entry_type") == MCP_GATEWAY_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE:
+                summary = payload.get("summary") if isinstance(payload.get("summary"), dict) else {}
+                control_summary = payload.get("control_summary") if isinstance(payload.get("control_summary"), dict) else {}
+                authority_evidence = payload.get("authority_evidence") if isinstance(payload.get("authority_evidence"), list) else []
+                source_uri_counts = _source_uri_counts(authority_evidence)
+                generated_at = payload.get("generated_at") or entry.get("timestamp")
+                freshness = _authority_freshness_counts(authority_evidence, generated_at)
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO mcp_gateway_authority_evidence_bundles(
+                        bundle_id, entry_id, bundle_hash, mode,
+                        environment, bundle_ref, issuer_ref, subject_ref,
+                        authority_ref, required_requirement_count,
+                        covered_requirement_count, missing_requirement_count,
+                        authority_evidence_count, fresh_evidence_count,
+                        stale_evidence_count, missing_freshness_count,
+                        live_source_uri_count, placeholder_source_uri_count,
+                        missing_source_uri_count, summary_json, control_summary_json,
+                        authority_evidence_json, generated_at, body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        payload.get("bundle_id"),
+                        entry["entry_id"],
+                        payload.get("bundle_hash") or entry.get("payload_hash"),
+                        payload.get("mode"),
+                        payload.get("environment"),
+                        payload.get("bundle_ref"),
+                        payload.get("issuer_ref"),
+                        payload.get("subject_ref"),
+                        payload.get("authority_ref"),
+                        int(summary.get("required_requirement_count") or 0),
+                        int(summary.get("covered_requirement_count") or 0),
+                        int(summary.get("missing_requirement_count") or 0),
+                        int(summary.get("evidence_count") or len(authority_evidence)),
+                        freshness["fresh"],
+                        freshness["stale"],
+                        freshness["missing"],
+                        source_uri_counts["live"],
+                        source_uri_counts["placeholder"],
+                        source_uri_counts["missing"],
+                        _json(summary),
+                        _json(control_summary),
+                        _json(authority_evidence),
+                        generated_at,
+                        _json(payload),
+                    ),
+                )
+                counts["mcp_gateway_authority_evidence_bundles"] += 1
 
             if entry.get("entry_type") == SELF_SERVE_ONBOARDING_ENTRY_TYPE:
                 control_summary = payload.get("control_summary") if isinstance(payload.get("control_summary"), dict) else {}
@@ -5516,6 +5595,21 @@ class ControlPlane:
             LIMIT 1
             """
         ).fetchone()
+        latest_mcp_gateway_authority_bundle = self.conn.execute(
+            """
+            SELECT bundle_id, entry_id, bundle_hash, mode, environment,
+                   bundle_ref, issuer_ref, subject_ref, authority_ref,
+                   required_requirement_count, covered_requirement_count,
+                   missing_requirement_count, authority_evidence_count,
+                   fresh_evidence_count, stale_evidence_count,
+                   missing_freshness_count, live_source_uri_count,
+                   placeholder_source_uri_count, missing_source_uri_count,
+                   generated_at
+            FROM mcp_gateway_authority_evidence_bundles
+            ORDER BY generated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
         latest_self_serve_onboarding = self.conn.execute(
             """
             SELECT receipt_id, entry_id, receipt_hash, onboarding_ref,
@@ -6235,6 +6329,7 @@ class ControlPlane:
             "latest_ingest_event": dict(latest_ingest_event) if latest_ingest_event else None,
             "latest_mcp_tool_call": dict(latest_mcp_tool_call) if latest_mcp_tool_call else None,
             "latest_mcp_proxy_capture": dict(latest_mcp_proxy_capture) if latest_mcp_proxy_capture else None,
+            "latest_mcp_gateway_authority_evidence_bundle": dict(latest_mcp_gateway_authority_bundle) if latest_mcp_gateway_authority_bundle else None,
             "latest_self_serve_onboarding_receipt": latest_self_serve_onboarding_dict,
             "latest_framework_adapter_matrix": dict(latest_framework_matrix) if latest_framework_matrix else None,
             "latest_framework_hook_release": dict(latest_framework_release) if latest_framework_release else None,
@@ -6525,6 +6620,33 @@ class ControlPlane:
             item["proxy_events_artifact"] = _decode_json_object(item.pop("proxy_events_artifact_json", None))
             item["event_hashes"] = _decode_json_array(item.pop("event_hashes_json", None))
             item["tool_call_hashes"] = _decode_json_array(item.pop("tool_call_hashes_json", None))
+            items.append(item)
+        return items
+
+    def recent_mcp_gateway_authority_evidence_bundles(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT bundle_id, entry_id, bundle_hash, mode, environment,
+                   bundle_ref, issuer_ref, subject_ref, authority_ref,
+                   required_requirement_count, covered_requirement_count,
+                   missing_requirement_count, authority_evidence_count,
+                   fresh_evidence_count, stale_evidence_count,
+                   missing_freshness_count, live_source_uri_count,
+                   placeholder_source_uri_count, missing_source_uri_count,
+                   summary_json, control_summary_json, authority_evidence_json,
+                   generated_at
+            FROM mcp_gateway_authority_evidence_bundles
+            ORDER BY generated_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["summary"] = _decode_json_object(item.pop("summary_json", None))
+            item["control_summary"] = _decode_json_object(item.pop("control_summary_json", None))
+            item["authority_evidence"] = _decode_json_array(item.pop("authority_evidence_json", None))
             items.append(item)
         return items
 
@@ -7897,6 +8019,7 @@ class ControlPlane:
         return {
             "mcp_tool_calls": self.recent_mcp_tool_calls(limit),
             "mcp_proxy_captures": self.recent_mcp_proxy_captures(limit),
+            "mcp_gateway_authority_evidence_bundles": self.recent_mcp_gateway_authority_evidence_bundles(limit),
         }
 
     def onboarding_evidence(self, limit: int = 20) -> dict[str, Any]:

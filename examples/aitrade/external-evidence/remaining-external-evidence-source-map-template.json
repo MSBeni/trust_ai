@@ -1610,21 +1610,21 @@
       "unit_ref": "trust-network-procurement-and-marketplace:customer"
     }
   ],
-  "generated_at": "2026-07-24T05:00:29Z",
+  "generated_at": "2026-07-12T01:01:00Z",
   "limitations": [
     "This source map is an operator collection template; it does not prove external authority coverage until external-evidence-collect-batch creates verified source snapshots and intake receipts.",
     "Placeholder source URIs, issuer fields, or freshness windows must be replaced with real authority-owned values before production use.",
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "2dc61ff86a2bf40323c3443c7f8ad7887d30d7b20afb5cd685347df088d8c381",
+  "source_map_id": "4c0e724eddce3f5128945823c077e9346804287cac3736fb1e5501701cb68757",
   "source_plan": {
-    "plan_hash": "1148eb456a5ba450fbc6bf25ab99af527626aefe474f710550486c90d9c66ed2",
-    "plan_id": "ef0d9a1644caf1e6f764f1b3df55b0209de499955455f166b5e7606d37a43805",
+    "plan_hash": "08946e3382aea2ba7a61c938aa010efa09667a99453a4ac08577c313b9c01e15",
+    "plan_id": "d82ec3e46b9e7b09acc8fe5073765979963453fdfec2df74550723d62cbd1756",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "e22440f31b09aa26bf4dfa5f3bf7ef244bc2356605965e485d771bde9f8e669d",
-      "manifest_id": "a09847a4a23d8bef6f9b44233e208f4e577077ce9a2fda71cacdb53f90cf9082",
+      "manifest_hash": "8cdf951feb8a255202b65b11208d7aaaa1a736d628cfac205aac540900cc896d",
+      "manifest_id": "13902832b0638a8eab4592fff7a68e05f00293cce4634136a7f6db1326b3856a",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },
