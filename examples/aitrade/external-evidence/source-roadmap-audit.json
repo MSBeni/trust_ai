@@ -1,7 +1,7 @@
 {
-  "audit_id": "5c85d1ab4bf3950ec66fed8f5b366d3bb5d96b5442aba81925d69a6a7dbc3195",
+  "audit_id": "fc97454bd3505ca3881d56e4002ef9bef93c402ee844ec725368788ab007fd57",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
-  "generated_at": "2026-07-24T16:32:01Z",
+  "generated_at": "2026-07-24T16:45:18Z",
   "limitations": [
     "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
     "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",
@@ -210,7 +210,7 @@
         {
           "path": "src/trustai/verifier_release_authority.py",
           "present": true,
-          "sha256": "sha256:315b05ad473f5cc46e66becddfa76fc365a7acda2ec219b740c9d35e51bb9d27"
+          "sha256": "sha256:e4b0d397d7fcbe95ef44535fb378552d01fbbf1ff5f3af2ad3204b684b807a4a"
         },
         {
           "path": "examples/aitrade/external-evidence/go-verifier-workflow-run.json",
@@ -240,7 +240,7 @@
         {
           "path": "tests/test_verifier_release_authority.py",
           "present": true,
-          "sha256": "sha256:ec32f857abf4153b8dbb4cf6abdc7b0d1401b530d9591df2be0c3b9344bc995d"
+          "sha256": "sha256:99f1df0f07f5661017a5e6b4d6560d3a7adbfd759cc067fad59edbad369155aa"
         }
       ],
       "evidence_count": 15,

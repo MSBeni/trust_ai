@@ -55,12 +55,13 @@ class VerifierReleaseAuthorityTests(unittest.TestCase):
             "binary_path": sources["binary_path"],
         }
 
+    def _authority_evidence_hash(self, requirement_id: str, authority_kind: str) -> str:
+        if requirement_id == "completed-provider-workflow-run" and authority_kind == "ci-run":
+            return _sha256_ref(VERIFIER_WORKFLOW_AUTHORITY_EXPORT)
+        return "sha256:" + content_hash({"verifier_release_authority": requirement_id, "authority_kind": authority_kind})
+
     def _evidence(self, requirement_id: str = "completed-provider-workflow-run", authority_kind: str = "ci-run") -> dict:
-        evidence_hash = (
-            _sha256_ref(VERIFIER_WORKFLOW_AUTHORITY_EXPORT)
-            if requirement_id == "completed-provider-workflow-run"
-            else f"sha256:verifier-release-authority-{requirement_id}"
-        )
+        evidence_hash = self._authority_evidence_hash(requirement_id, authority_kind)
         return {
             "requirement_id": requirement_id,
             "authority_kind": authority_kind,
@@ -136,6 +137,52 @@ class VerifierReleaseAuthorityTests(unittest.TestCase):
         self.assertEqual(entry["payload"]["artifact_summary"]["artifact_count"], 1)
         self.assertEqual(entry["payload"]["authority_artifacts"][0]["path"], VERIFIER_WORKFLOW_AUTHORITY_EXPORT_REL)
         self.assertTrue(chain.verify_all().ok)
+
+    def test_verifier_release_authority_normalizes_uppercase_evidence_hash(self):
+        expected_hash = self._authority_evidence_hash("public-release-api-publication", "provider-api")
+        evidence = self._evidence("public-release-api-publication", "provider-api")
+        evidence["evidence_hash"] = "sha256:" + expected_hash.removeprefix("sha256:").upper()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            sources = self._sources(Path(tmp_dir))
+            dossier = self._dossier(sources, authority_evidence=[evidence])
+            result = verify_verifier_release_authority_dossier(
+                dossier,
+                public_release_receipt=sources["public_release"],
+                **self._source_kwargs(sources),
+            )
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(expected_hash, dossier["authority_evidence"][0]["evidence_hash"])
+
+    def test_verifier_release_authority_rejects_resigned_malformed_evidence_hash(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            sources = self._sources(Path(tmp_dir))
+            dossier = self._dossier(
+                sources,
+                authority_evidence=[self._evidence("public-release-api-publication", "provider-api")],
+            )
+            tampered = copy.deepcopy(dossier)
+            item = tampered["authority_evidence"][0]
+            item["evidence_hash"] = "sha256:not-a-real-digest"
+            item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+            self._resign_dossier(tampered)
+            result = verify_verifier_release_authority_dossier(
+                tampered,
+                public_release_receipt=sources["public_release"],
+                **self._source_kwargs(sources),
+            )
+
+        self.assertFalse(result.ok)
+        self.assertIn(
+            "invalid verifier release authority evidence: verifier release authority evidence_hash must contain a 64-character sha256 digest",
+            result.errors,
+        )
+        self.assertNotIn("dossier_id does not match canonical verifier release authority body", result.errors)
+        self.assertNotIn("verifier release authority signature verification failed", result.errors)
+        self.assertNotIn(
+            "verifier release authority evidence_id does not match evidence body: public-release-api-publication",
+            result.errors,
+        )
 
     def test_verifier_release_authority_detects_public_release_tamper(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
