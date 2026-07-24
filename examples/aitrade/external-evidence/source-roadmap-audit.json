@@ -1,7 +1,7 @@
 {
-  "audit_id": "816ae91c1cd137b510e5be5f62c1d7a975dd7f85c9c045ab277b4b637fca37d3",
+  "audit_id": "5c85d1ab4bf3950ec66fed8f5b366d3bb5d96b5442aba81925d69a6a7dbc3195",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
-  "generated_at": "2026-07-24T16:22:39Z",
+  "generated_at": "2026-07-24T16:32:01Z",
   "limitations": [
     "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
     "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",
@@ -1423,7 +1423,7 @@
         {
           "path": "src/trustai/standards.py",
           "present": true,
-          "sha256": "sha256:55c5d588d3ecf96c1ce3e98b2bcfd5c021e9c3083fc6519b181f782ce57e0a60"
+          "sha256": "sha256:5b0e0e658237ee91f9f9b950ba275cdfdc6c7de13f45c71733178f7700dc082a"
         },
         {
           "path": "src/trustai/roadmap_audit.py",
@@ -2365,7 +2365,7 @@
         {
           "path": "src/trustai/standards.py",
           "present": true,
-          "sha256": "sha256:55c5d588d3ecf96c1ce3e98b2bcfd5c021e9c3083fc6519b181f782ce57e0a60"
+          "sha256": "sha256:5b0e0e658237ee91f9f9b950ba275cdfdc6c7de13f45c71733178f7700dc082a"
         },
         {
           "path": "src/trustai/standards_body_submission.py",
@@ -2476,7 +2476,7 @@
         {
           "path": "src/trustai/trust_network_authority.py",
           "present": true,
-          "sha256": "sha256:f236ab50ab166d09fa093be1e3e6427c2d232c0c0d859d36ed1fd0145d1b7fbd"
+          "sha256": "sha256:c229e42606a8420700df353b60e1a2e2ee86fcf663618fc3a4bfc73eae93526a"
         },
         {
           "path": "docs/specs/procurement-clause-v0.1.md",
@@ -2506,7 +2506,7 @@
         {
           "path": "docs/specs/trust-network-production-authority-v0.1.md",
           "present": true,
-          "sha256": "sha256:0a20c5eec31142059403f3ad171ffbf1ee6bd9c82275eb1e62deae02513afad6"
+          "sha256": "sha256:76b48d30bff11f89904231c32a110f98a7c30d89758acef9798276ce5b232968"
         },
         {
           "path": "tests/test_trust_network.py",
@@ -2541,7 +2541,7 @@
         {
           "path": "tests/test_trust_network_authority.py",
           "present": true,
-          "sha256": "sha256:89fea2f38772aa5459062d0c437e5d3f3b8caa8a03859672e4bee4300dde7a6e"
+          "sha256": "sha256:9ea5c93a105aba0e99b204c58f9dba9076b16442ef5fdfc9e1b133e3c869adfc"
         }
       ],
       "evidence_count": 24,

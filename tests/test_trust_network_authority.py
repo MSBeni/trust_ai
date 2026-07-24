@@ -117,12 +117,17 @@ class TrustNetworkAuthorityTests(unittest.TestCase):
             "root": ROOT,
         }
 
-    def _evidence(self, requirement_id: str = "hosted-registry-marketplace-worker-fleet") -> dict:
+    def _authority_evidence_hash(self, requirement_id: str, authority_kind: str) -> str:
+        return "sha256:" + content_hash({"trust_network_authority": requirement_id, "authority_kind": authority_kind})
+
+    def _evidence(
+        self, requirement_id: str = "hosted-registry-marketplace-worker-fleet", authority_kind: str = "hosted-service"
+    ) -> dict:
         return {
             "requirement_id": requirement_id,
-            "authority_kind": "hosted-service",
+            "authority_kind": authority_kind,
             "evidence_ref": f"trust-network:authority/{requirement_id}",
-            "evidence_hash": f"sha256:trust-network-authority-{requirement_id}",
+            "evidence_hash": self._authority_evidence_hash(requirement_id, authority_kind),
             "description": f"Fresh authority evidence for {requirement_id}",
             "issuer": "TrustAI Hosted Ops",
             "subject": "aitrade-prod trust-network",
@@ -186,6 +191,53 @@ class TrustNetworkAuthorityTests(unittest.TestCase):
             self.assertEqual(entry["payload"]["authority_evidence"][0]["source_context"], dossier["authority_evidence"][0]["source_context"])
             self.assertEqual(entry["payload"]["worker_bundle_bindings"][0]["bundle_id"], sources["worker_bundle"]["bundle_id"])
             self.assertTrue(entry["payload"]["worker_bundle_bindings"][0]["frontend_bundle_replayed"])
+
+    def test_trust_network_authority_normalizes_uppercase_evidence_hash(self):
+        expected_hash = self._authority_evidence_hash("hosted-registry-marketplace-worker-fleet", "hosted-service")
+        evidence = self._evidence()
+        evidence["evidence_hash"] = "sha256:" + expected_hash.removeprefix("sha256:").upper()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            sources = self._sources(Path(tmp_dir))
+            dossier = self._dossier(sources, authority_evidence=[evidence])
+
+            result = verify_trust_network_authority_dossier(
+                dossier,
+                service_attestation=sources["service"],
+                worker_receipts=[sources["worker"]],
+                **self._source_kwargs(sources),
+            )
+
+            self.assertTrue(result.ok, result.errors)
+            self.assertEqual(expected_hash, dossier["authority_evidence"][0]["evidence_hash"])
+
+    def test_trust_network_authority_rejects_resigned_malformed_evidence_hash(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            sources = self._sources(Path(tmp_dir))
+            dossier = self._dossier(sources)
+            tampered = copy.deepcopy(dossier)
+            item = tampered["authority_evidence"][0]
+            item["evidence_hash"] = "sha256:not-a-real-digest"
+            item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+            self._resign_dossier(tampered)
+
+            result = verify_trust_network_authority_dossier(
+                tampered,
+                service_attestation=sources["service"],
+                worker_receipts=[sources["worker"]],
+                **self._source_kwargs(sources),
+            )
+
+            self.assertFalse(result.ok)
+            self.assertIn(
+                "invalid trust-network authority evidence: evidence_hash must contain a 64-character sha256 digest",
+                result.errors,
+            )
+            self.assertNotIn("dossier_id does not match canonical trust-network authority body", result.errors)
+            self.assertNotIn("trust-network authority signature verification failed", result.errors)
+            self.assertNotIn(
+                "trust-network authority evidence_id does not match evidence body: hosted-registry-marketplace-worker-fleet",
+                result.errors,
+            )
 
     def test_trust_network_authority_detects_worker_tamper(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -323,8 +375,8 @@ class TrustNetworkAuthorityTests(unittest.TestCase):
             sources = self._sources(Path(tmp_dir))
             evidence = []
             for requirement in PRODUCTION_AUTHORITY_REQUIREMENTS:
-                item = self._evidence(requirement["id"])
-                item["authority_kind"] = requirement["authority_kinds"][0]
+                authority_kind = requirement["authority_kinds"][0]
+                item = self._evidence(requirement["id"], authority_kind=authority_kind)
                 item["issued_at"] = "2026-07-01T00:00:00Z"
                 item["expires_at"] = "2026-07-02T00:00:00Z"
                 evidence.append(item)
@@ -369,7 +421,7 @@ class TrustNetworkAuthorityTests(unittest.TestCase):
             write_trust_network_worker_receipt(paths["worker"], sources["worker"])
             _write_json(paths["worker_bundle"], sources["worker_bundle"])
 
-            evidence = "hosted-registry-marketplace-worker-fleet,hosted-service,trust-network:hosted/workers,sha256:trust-network-hosted-worker-fleet,Hosted trust-network worker fleet export;issuer=TrustAI Hosted Ops;subject=aitrade-prod trust-network;source_uri=https://trust-network.example/audit/workers;issued_at=2026-07-14T06:10:00Z;expires_at=2026-07-21T06:10:00Z"
+            evidence = "hosted-registry-marketplace-worker-fleet,hosted-service,trust-network:hosted/workers,sha256:5e819547081f43e3a074c4c0516b290624104105d96143bf454e3cc516a4c191,Hosted trust-network worker fleet export;issuer=TrustAI Hosted Ops;subject=aitrade-prod trust-network;source_uri=https://trust-network.example/audit/workers;issued_at=2026-07-14T06:10:00Z;expires_at=2026-07-21T06:10:00Z"
             source_args = [
                 str(paths["registry"]),
                 "--service-attestation", str(paths["service"]),
