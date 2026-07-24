@@ -100,14 +100,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "4fd8fbd6f7b8bdb7ea79c79b97e2ce22d5cc87d81f4587f0da6ed8ac97b1b868",
+  "source_map_id": "6c45403d0d90a2f3e7c2bbdafd6a894a627b0975968a4f8ef64837748f71ef35",
   "source_plan": {
-    "plan_hash": "12307d7b50acd32781b242be4345fdd17bda7f167b7f36d26f9f236903de3ff8",
-    "plan_id": "20bcf282a9380a8a39ede19f4c71b0cc49b44d22f0fa24d60d701a58b31274f8",
+    "plan_hash": "08615da5607d137e79e579e665f5f7cf4b91c8307e627d8641cb4087bfd78b7b",
+    "plan_id": "f0b09b20d4802b2b0059adcb7523c536db9d1b969af4dacbbe5efc56defda348",
     "source_manifest": {
-      "generated_at": "2026-07-24T15:10:11Z",
-      "manifest_hash": "0c9bb6da6a29e075c96858c7b0fa88a1446b4927a0151117ebb7a4ae747d8e90",
-      "manifest_id": "3f7a4a0a6d80d3be0a8246c1d47d9063883361e87a930561dc89e06fa0d73a69",
+      "generated_at": "2026-07-24T15:21:36Z",
+      "manifest_hash": "25a4cbc7532f3969ccb1c171452e974f7f44f91c1ed3503d5b96d95fdb7aad09",
+      "manifest_id": "24f74256af32d69188bfe3aefc9d50ee1fd4fda3f4633e7cc0d67e6db544aa2d",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },

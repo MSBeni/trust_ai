@@ -1,7 +1,7 @@
 {
-  "audit_id": "c63b66a689069933bd114b6bce233ffd3597d99906e6ceb09242a6ef54d7555d",
+  "audit_id": "37e1ff772e0c36587348730871709df2b2003908b8174e80166acd56570d99b0",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
-  "generated_at": "2026-07-24T15:10:10Z",
+  "generated_at": "2026-07-24T15:21:36Z",
   "limitations": [
     "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
     "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",
@@ -1423,7 +1423,7 @@
         {
           "path": "src/trustai/standards.py",
           "present": true,
-          "sha256": "sha256:7bf39205e4d42138284946dd143b464cd4e789b83349bf96d2b53cbcb33b3ef5"
+          "sha256": "sha256:f357ceaf3dd312cd3a8757a152dd03fcf0c2a5f7542e6f0bb46e83f464388afc"
         },
         {
           "path": "src/trustai/roadmap_audit.py",
@@ -1998,7 +1998,7 @@
         {
           "path": "docs/architecture/roadmap-coverage.md",
           "present": true,
-          "sha256": "sha256:f110cdd36351fc4ab78fb14b95bbb8786f4cad945d07e84d713d55b88323ae96"
+          "sha256": "sha256:d17974b65563283abc0dbd39c3546e16e9868631d25e0851f97d2bee7da97ce4"
         },
         {
           "path": "src/trustai/proofpack.py",
@@ -2365,7 +2365,7 @@
         {
           "path": "src/trustai/standards.py",
           "present": true,
-          "sha256": "sha256:7bf39205e4d42138284946dd143b464cd4e789b83349bf96d2b53cbcb33b3ef5"
+          "sha256": "sha256:f357ceaf3dd312cd3a8757a152dd03fcf0c2a5f7542e6f0bb46e83f464388afc"
         },
         {
           "path": "src/trustai/standards_body_submission.py",
@@ -2563,7 +2563,7 @@
     "coverage": {
       "path": "docs/architecture/roadmap-coverage.md",
       "present": true,
-      "sha256": "sha256:f110cdd36351fc4ab78fb14b95bbb8786f4cad945d07e84d713d55b88323ae96"
+      "sha256": "sha256:d17974b65563283abc0dbd39c3546e16e9868631d25e0851f97d2bee7da97ce4"
     },
     "requirement_count": 26,
     "roadmap": {

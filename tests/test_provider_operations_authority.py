@@ -34,6 +34,9 @@ class ProviderOperationsAuthorityTests(unittest.TestCase):
         dossier["dossier_id"] = dossier_id
         dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "provider_operations_authority": body})]
 
+    def _authority_evidence_hash(self, requirement_id: str, authority_kind: str) -> str:
+        return "sha256:" + content_hash({"provider_operations_authority": requirement_id, "authority_kind": authority_kind})
+
     def _service(self):
         tmp_dir = tempfile.TemporaryDirectory()
         self.addCleanup(tmp_dir.cleanup)
@@ -46,7 +49,7 @@ class ProviderOperationsAuthorityTests(unittest.TestCase):
                 "requirement_id": "hosted-callback-worker-fleet",
                 "authority_kind": "hosted-service",
                 "evidence_ref": "service:provider-ops/github-prod",
-                "evidence_hash": "sha256:provider-ops-hosted-fleet-authority",
+                "evidence_hash": self._authority_evidence_hash("hosted-callback-worker-fleet", "hosted-service"),
                 "description": "Hosted provider operations callback and audit worker fleet export.",
                 "issuer": "TrustAI Cloud",
                 "subject": "aitrade-prod provider operations worker fleet",
@@ -58,7 +61,7 @@ class ProviderOperationsAuthorityTests(unittest.TestCase):
                 "requirement_id": "provider-owned-vault-kms",
                 "authority_kind": "kms-hsm",
                 "evidence_ref": "kms:provider-ops/github-audit-token",
-                "evidence_hash": "sha256:provider-ops-vault-kms-authority",
+                "evidence_hash": self._authority_evidence_hash("provider-owned-vault-kms", "kms-hsm"),
                 "description": "Provider-owned KMS/vault audit export for credential custody.",
                 "issuer": "Example KMS",
                 "subject": "github provider audit token custody",
@@ -104,6 +107,36 @@ class ProviderOperationsAuthorityTests(unittest.TestCase):
         self.assertEqual(attestation["attestation_id"], entry["payload"]["service_attestation_binding"]["attestation_id"])
         self.assertEqual(dossier["authority_evidence"][0]["source_context"], entry["payload"]["authority_evidence"][0]["source_context"])
         self.assertEqual({"deferred": 1, "passed": 5}, entry["payload"]["control_summary"])
+
+    def test_provider_operations_authority_normalizes_uppercase_evidence_hash(self):
+        expected_hash = self._authority_evidence_hash("hosted-callback-worker-fleet", "hosted-service")
+        evidence = [dict(self._authority_evidence()[0])]
+        evidence[0]["evidence_hash"] = "sha256:" + expected_hash.removeprefix("sha256:").upper()
+        sources, attestation, dossier = self._dossier(authority_evidence=evidence)
+
+        result = verify_provider_operations_authority_dossier(dossier, service_attestation=attestation, **sources)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(expected_hash, dossier["authority_evidence"][0]["evidence_hash"])
+
+    def test_provider_operations_authority_rejects_resigned_malformed_evidence_hash(self):
+        sources, attestation, dossier = self._dossier()
+        tampered = copy.deepcopy(dossier)
+        item = tampered["authority_evidence"][0]
+        item["evidence_hash"] = "sha256:not-a-real-digest"
+        item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+        self._resign_dossier(tampered)
+
+        result = verify_provider_operations_authority_dossier(tampered, service_attestation=attestation, **sources)
+
+        self.assertFalse(result.ok)
+        self.assertIn(
+            "invalid provider operations authority evidence: evidence_hash must contain a 64-character sha256 digest",
+            result.errors,
+        )
+        self.assertNotIn("dossier_id does not match canonical provider operations authority body", result.errors)
+        self.assertNotIn("provider operations authority signature verification failed", result.errors)
+        self.assertNotIn("provider operations authority evidence_id does not match evidence body: hosted-callback-worker-fleet", result.errors)
 
     def test_provider_operations_authority_detects_service_tamper(self):
         sources, attestation, dossier = self._dossier()
@@ -191,9 +224,10 @@ class ProviderOperationsAuthorityTests(unittest.TestCase):
             _write_json(attestation_path, attestation)
 
             source_args: list[str] = []
+            expected_hash = self._authority_evidence_hash("hosted-callback-worker-fleet", "hosted-service")
             evidence_arg = (
                 "hosted-callback-worker-fleet,hosted-service,service:provider-ops/github-prod,"
-                "sha256:provider-ops-hosted-fleet-authority,Hosted provider operations callback and audit worker fleet export;"
+                f"{expected_hash},Hosted provider operations callback and audit worker fleet export;"
                 "issuer=TrustAI Cloud;subject=aitrade-prod provider operations worker fleet;"
                 "source_uri=https://ops.example/trustai/provider-ops/github-prod;"
                 "issued_at=2026-07-08T05:30:00Z;expires_at=2026-07-15T05:30:00Z"
