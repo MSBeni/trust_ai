@@ -7,9 +7,12 @@ from tests import test_identity_provider_authority as identity_authority_fixture
 from tests import test_insurer_partner_authority as insurer_authority_fixtures
 from tests import test_review_portal_service as service_fixtures
 from tests import test_standards_body_status as standards_status_fixtures
+from tests import test_trust_authority_kms_enforcement as trust_authority_kms_fixtures
+from tests import test_trust_authority_provider as trust_authority_provider_fixtures
 from tests import test_auditor_program_governance as auditor_governance_fixtures
 from trustai.auditor_accreditation import append_auditor_accreditation_receipt, build_auditor_accreditation_receipt
 from trustai.auditor_program_governance import append_auditor_program_governance_receipt, build_auditor_program_governance_receipt
+from trustai.anchor_provider import append_anchor_provider_receipt, build_anchor_provider_receipt
 from trustai.approvals import append_approval, load_approval
 from trustai.byoc_authority import append_byoc_authority_dossier, build_byoc_authority_dossier
 from trustai.byoc_operator import append_byoc_operator_attestation, build_byoc_operator_attestation
@@ -148,6 +151,9 @@ from trustai.shadow_authority import (
 )
 from trustai.standards_body_status import append_standards_body_status_receipt, build_standards_body_status_receipt
 from trustai.standards_body_submission import append_standards_body_submission_receipt
+from trustai.trust_authority import append_trust_authority_receipt
+from trustai.trust_authority_kms_enforcement import append_trust_authority_kms_enforcement_receipt
+from trustai.trust_authority_provider import append_trust_authority_provider_attestation
 from trustai.trust_network_authority import TRUST_NETWORK_AUTHORITY_ENTRY_TYPE
 from trustai.trust_network_registry import TRUST_NETWORK_REGISTRY_ENTRY_TYPE
 from trustai.trust_network_registry_status import TRUST_NETWORK_REGISTRY_STATUS_ENTRY_TYPE
@@ -209,6 +215,93 @@ class ControlPlaneTests(unittest.TestCase):
     def test_sqlite_nolock_uri_preserves_unc_path(self):
         uri = _sqlite_nolock_uri(Path("//wsl.localhost/Ubuntu/home/app/control.sqlite"))
         self.assertEqual("file:////wsl.localhost/Ubuntu/home/app/control.sqlite?nolock=1", uri)
+
+    def test_exposes_evidence_chain_trust_evidence(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            chain = EvidenceChain.load(tmp / "chain.json", tenant_id="evidence-chain-trust-control")
+            anchor_entry = append_anchor(chain)
+            anchor_provider = build_anchor_provider_receipt(
+                anchor_entry,
+                source_chain=chain,
+                mode="provider-anchored",
+                environment="aitrade-prod",
+                provider="Example Transparency Log",
+                endpoint="https://transparency.example/anchor",
+                publication_ref="transparency-log:trustai/anchor/2026-07-04",
+                request_hash="sha256:anchor-provider-request",
+                response_status=200,
+                response_hash="sha256:anchor-provider-response",
+                public_log_ref="public-log:trustai-example",
+                public_log_root="sha256:anchor-provider-public-log-root",
+                public_log_size=42,
+                public_log_entry_ref="public-log-entry:trustai-example/42",
+                inclusion_proof_hash="sha256:anchor-provider-inclusion-proof",
+                consistency_proof_hash="sha256:anchor-provider-consistency-proof",
+                witness_refs=["witness:example/auditor"],
+                actor_ref="oidc:trustai.example/anchor-publisher",
+                credential_ref="env:ANCHOR_PROVIDER_TOKEN",
+                audit_log_ref="audit-log:anchor-provider/example",
+                audit_log_root="sha256:anchor-provider-audit-root",
+                retention_until="2033-07-04T00:00:00Z",
+                evidence_refs=["evidence:anchor/provider"],
+                published_at="2026-07-04T03:03:00Z",
+            )
+            append_anchor_provider_receipt(chain, anchor_provider, anchor_entry, source_chain=chain)
+
+            provider_fixture = trust_authority_provider_fixtures.TrustAuthorityProviderTests()
+            source_chain, keyring, pack, trust_authority = provider_fixture._sources(tmp)
+            trust_entry = append_trust_authority_receipt(chain, trust_authority, source_chain=source_chain, keyring=keyring, proof_pack=pack)
+            provider = provider_fixture._attestation(source_chain, keyring, pack, trust_authority)
+            provider_entry = append_trust_authority_provider_attestation(
+                chain,
+                provider,
+                trust_authority,
+                source_chain,
+                keyring,
+                proof_pack=pack,
+            )
+            kms_fixture = trust_authority_kms_fixtures.TrustAuthorityKmsEnforcementTests()
+            kms_enforcement = kms_fixture._receipt(source_chain, keyring, pack, trust_authority, provider)
+            kms_entry = append_trust_authority_kms_enforcement_receipt(
+                chain,
+                kms_enforcement,
+                provider_attestation=provider,
+                trust_authority_receipt=trust_authority,
+                source_chain=source_chain,
+                keyring=keyring,
+                proof_pack=pack,
+            )
+            chain.save()
+
+            control = ControlPlane(tmp / "control.sqlite")
+            try:
+                indexed = control.index_chain(chain)
+                evidence = control.evidence_chain_trust_evidence()
+                roadmap = control.roadmap_evidence()
+
+                self.assertEqual(1, indexed["anchors"])
+                self.assertEqual(1, len(evidence["anchor_publications"]))
+                self.assertEqual(anchor_entry["entry_id"], evidence["anchor_publications"][0]["entry_id"])
+                self.assertEqual("chain-anchor-publication", evidence["anchor_publications"][0]["artifact_kind"])
+
+                trust_receipts = evidence["trust_receipts"]
+                self.assertEqual(4, len(trust_receipts))
+                self.assertEqual(
+                    {
+                        "anchor-provider-receipt",
+                        "trust-authority-receipt",
+                        "trust-authority-provider-attestation",
+                        "trust-authority-kms-enforcement",
+                    },
+                    {item["artifact_kind"] for item in trust_receipts},
+                )
+                self.assertIn(trust_entry["entry_id"], {item["entry_id"] for item in trust_receipts})
+                self.assertIn(provider_entry["payload"]["attestation_id"], {item["artifact_id"] for item in trust_receipts})
+                self.assertIn(kms_entry["payload"]["enforcement_id"], {item["artifact_id"] for item in trust_receipts})
+                self.assertEqual(evidence, roadmap["evidence_chain_trust_evidence"])
+            finally:
+                control.close()
 
     def test_indexes_self_serve_onboarding_evidence(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

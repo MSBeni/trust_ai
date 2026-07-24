@@ -5,6 +5,8 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
+from .anchor import ANCHOR_ENTRY_TYPE
+from .anchor_provider import ANCHOR_PROVIDER_ENTRY_TYPE
 from .approvals import APPROVAL_ENTRY_TYPE
 from .auditor_accreditation import AUDITOR_ACCREDITATION_ENTRY_TYPE
 from .auditor_accreditation_countersignature import AUDITOR_ACCREDITATION_COUNTERSIGNATURE_ENTRY_TYPE
@@ -97,6 +99,9 @@ from .review_portal_service import REVIEW_PORTAL_SERVICE_ENTRY_TYPE
 from .roadmap_audit import ROADMAP_AUDIT_ENTRY_TYPE
 from .runtime import RUNTIME_ENTRY_TYPE
 from .supervised_access import SUPERVISED_ACCESS_ENTRY_TYPE
+from .trust_authority import TRUST_AUTHORITY_ENTRY_TYPE
+from .trust_authority_kms_enforcement import TRUST_AUTHORITY_KMS_ENFORCEMENT_ENTRY_TYPE
+from .trust_authority_provider import TRUST_AUTHORITY_PROVIDER_ENTRY_TYPE
 from .underwriting_quote import UNDERWRITING_QUOTE_ENTRY_TYPE
 from .standards_body_ballot import STANDARDS_BODY_BALLOT_ENTRY_TYPE
 from .standards_body_ballot_system import STANDARDS_BODY_BALLOT_SYSTEM_ENTRY_TYPE
@@ -225,6 +230,20 @@ AUDITOR_ECOSYSTEM_ARTIFACT_KINDS = {
     AUDITOR_ACCREDITATION_SIGNING_AUDIT_ENTRY_TYPE: "auditor-accreditation-signing-audit",
     AUDITOR_ACCREDITATION_KMS_ENFORCEMENT_ENTRY_TYPE: "auditor-accreditation-kms-enforcement",
     AUDITOR_CREDENTIAL_REGISTRY_ENTRY_TYPE: "auditor-credential-registry",
+}
+
+EVIDENCE_CHAIN_TRUST_ENTRY_TYPES = {
+    ANCHOR_PROVIDER_ENTRY_TYPE,
+    TRUST_AUTHORITY_ENTRY_TYPE,
+    TRUST_AUTHORITY_PROVIDER_ENTRY_TYPE,
+    TRUST_AUTHORITY_KMS_ENFORCEMENT_ENTRY_TYPE,
+}
+
+EVIDENCE_CHAIN_TRUST_ARTIFACT_KINDS = {
+    ANCHOR_PROVIDER_ENTRY_TYPE: "anchor-provider-receipt",
+    TRUST_AUTHORITY_ENTRY_TYPE: "trust-authority-receipt",
+    TRUST_AUTHORITY_PROVIDER_ENTRY_TYPE: "trust-authority-provider-attestation",
+    TRUST_AUTHORITY_KMS_ENFORCEMENT_ENTRY_TYPE: "trust-authority-kms-enforcement",
 }
 
 TRUST_NETWORK_ENTRY_TYPES = {
@@ -7862,11 +7881,81 @@ class ControlPlane:
             items.append(item)
         return items
 
+    def recent_evidence_chain_anchor_publications(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT anchor_id, entry_id, tree_root, tree_size, tenant_id,
+                   published_at, body_json
+            FROM anchors
+            ORDER BY published_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            item["artifact_kind"] = "chain-anchor-publication"
+            item["entry_type"] = ANCHOR_ENTRY_TYPE
+            item["body"] = _decode_json_object(item.pop("body_json", None))
+            items.append(item)
+        return items
+
+    def recent_evidence_chain_trust_receipts(self, limit: int = 20) -> list[dict[str, Any]]:
+        entry_types = sorted(EVIDENCE_CHAIN_TRUST_ENTRY_TYPES)
+        placeholders = ",".join("?" for _ in entry_types)
+        rows = self.conn.execute(
+            f"""
+            SELECT entry_id, idx, tenant_id, entry_type, timestamp,
+                   contract_hash, payload_hash, body_json
+            FROM chain_entries
+            WHERE entry_type IN ({placeholders})
+            ORDER BY timestamp DESC, idx DESC
+            LIMIT ?
+            """,
+            (*entry_types, limit),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            body = _decode_json_object(item.pop("body_json", None))
+            payload = _object(body.get("payload")) if body else {}
+            authority = _object(payload.get("authority"))
+            enforcement = _object(payload.get("enforcement"))
+            item["artifact_kind"] = EVIDENCE_CHAIN_TRUST_ARTIFACT_KINDS.get(item["entry_type"], item["entry_type"])
+            item["artifact_id"] = (
+                payload.get("receipt_id")
+                or payload.get("attestation_id")
+                or payload.get("enforcement_id")
+                or payload.get("enforcement_ref")
+                or enforcement.get("enforcement_ref")
+                or item["entry_id"]
+            )
+            item["mode"] = payload.get("mode") or authority.get("mode")
+            item["environment"] = payload.get("environment")
+            item["produced_at"] = (
+                payload.get("generated_at")
+                or payload.get("attested_at")
+                or payload.get("enforced_at")
+                or payload.get("published_at")
+                or item["timestamp"]
+            )
+            item["body"] = body
+            items.append(item)
+        return items
+
+    def evidence_chain_trust_evidence(self, limit: int = 20) -> dict[str, Any]:
+        return {
+            "anchor_publications": self.recent_evidence_chain_anchor_publications(limit),
+            "trust_receipts": self.recent_evidence_chain_trust_receipts(limit),
+        }
+
     def roadmap_evidence(self, limit: int = 20) -> dict[str, Any]:
         return {
             "roadmap_audits": self.recent_roadmap_audits(limit),
             "external_evidence_collection_runs": self.recent_external_evidence_collection_runs(limit),
             "external_evidence_manifests": self.recent_external_evidence_manifests(limit),
+            "evidence_chain_trust_evidence": self.evidence_chain_trust_evidence(limit),
             "authority_dossiers": self.recent_authority_dossiers(limit),
             "phase_scoreboards": self.recent_phase_scoreboards(limit),
             "design_partner_dossiers": self.recent_design_partner_dossiers(limit),

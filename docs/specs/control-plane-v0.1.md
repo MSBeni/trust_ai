@@ -67,7 +67,7 @@ into queryable registry tables while keeping the chain as the source of truth.
 
 ```powershell
 python -m trustai control-index --state .trustai/demo/evidence-chain.json --tenant aitrade-local --pack artifacts/aitrade-proof-pack.json --db .trustai/control-plane.sqlite --rebuild
-python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --holdout-evidence --mcp-evidence --onboarding-evidence --promotion-lifecycle-evidence --framework-adapter-evidence --review-portal-evidence --standards-auditor-evidence --trust-network-evidence --provider-delivery-evidence --provider-operations-evidence --compliance-evidence --policy-backend-evidence --insurer-evidence --multi-agent-evidence --agent-inventory-identity-evidence --byoc-evidence --identity-provider-evidence --roadmap-evidence --phase-scoreboards --design-partner-dossiers --own-compliance-dossiers --product-scope-decisions --vertical-packs --reliability-reports --readiness --external-evidence --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
+python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --holdout-evidence --mcp-evidence --onboarding-evidence --promotion-lifecycle-evidence --framework-adapter-evidence --review-portal-evidence --standards-auditor-evidence --trust-network-evidence --provider-delivery-evidence --provider-operations-evidence --compliance-evidence --policy-backend-evidence --insurer-evidence --multi-agent-evidence --agent-inventory-identity-evidence --byoc-evidence --identity-provider-evidence --evidence-chain-trust-evidence --roadmap-evidence --phase-scoreboards --design-partner-dossiers --own-compliance-dossiers --product-scope-decisions --vertical-packs --reliability-reports --readiness --external-evidence --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
 ```
 
 ## API
@@ -103,6 +103,7 @@ python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts
 - `GET /v0/agent-inventory-identity-evidence` or `GET /v0/control/agent-inventory-identity-evidence`;
 - `GET /v0/byoc-evidence` or `GET /v0/control/byoc-evidence`;
 - `GET /v0/identity-provider-evidence` or `GET /v0/control/identity-provider-evidence`;
+- `GET /v0/evidence-chain-trust-evidence` or `GET /v0/control/evidence-chain-trust-evidence`;
 - `GET /v0/roadmap-evidence` or `GET /v0/control/roadmap-evidence`;
 - `GET /v0/phase-scoreboards` or `GET /v0/control/phase-scoreboards`;
 - `GET /v0/design-partner-dossiers` or `GET /v0/control/design-partner-dossiers`;
@@ -142,7 +143,10 @@ evidence list binds operator attestations and production-authority dossiers into
 one self-hosted readiness surface. The identity-provider evidence list binds
 vendor identity, provider identity exports, sessions, lifecycle operations,
 lifecycle workers, and authority dossiers into one identity governance review
-surface.
+surface. The evidence-chain trust evidence view binds published anchors,
+anchor-provider receipts, trust-authority receipts, KMS/TSA provider
+attestations, and KMS/HSM enforcement receipts into one core proof-layer
+review surface.
 The promotion-lifecycle evidence list binds human approvals, demotions,
 rollbacks, and failed-soak demotion receipts into one CI/CD promotion review
 surface. The framework-adapter evidence list binds adapter matrices, native hook
@@ -159,7 +163,7 @@ before replaying the evidence chain, while leaving the chain itself as the
 source of truth.
 The roadmap-evidence list binds roadmap audit entries, retained
 collection-run provenance, external
-evidence manifests, phase scoreboard entries, design-partner pilot dossiers,
+evidence manifests, evidence-chain trust receipts, phase scoreboard entries, design-partner pilot dossiers,
 own-compliance dossiers, product-scope decisions, vertical packs, State of
 Agent Reliability reports, and runtime attestation/policy evidence into one
 progress view. The phase-scoreboard list

@@ -366,6 +366,13 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             finally:
                 control.close()
             return
+        if parsed.path in ("/v0/evidence-chain-trust-evidence", "/v0/control/evidence-chain-trust-evidence"):
+            control = self._control()
+            try:
+                self._json_response(200, control.evidence_chain_trust_evidence())
+            finally:
+                control.close()
+            return
         if parsed.path in ("/v0/roadmap-evidence", "/v0/control/roadmap-evidence"):
             control = self._control()
             try:
