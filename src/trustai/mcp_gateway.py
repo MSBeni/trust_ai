@@ -130,6 +130,8 @@ def build_mcp_stdio_proxy_event_export(
     upstream_ref: str,
     captured_at: str | None = None,
     timeout_seconds: float = 30.0,
+    source_messages_path: str | Path | None = None,
+    stdout_artifact_path: str | Path | None = None,
 ) -> dict[str, Any]:
     if not upstream_command:
         raise ValueError("MCP stdio proxy upstream_command is required")
@@ -152,6 +154,11 @@ def build_mcp_stdio_proxy_event_export(
         raise ValueError(f"MCP stdio upstream timed out after {timeout_seconds} seconds") from exc
     if completed.returncode != 0:
         raise ValueError(f"MCP stdio upstream exited with status {completed.returncode}: {completed.stderr.strip()}")
+    stdout_bytes = completed.stdout.encode("utf-8")
+    if stdout_artifact_path is not None:
+        stdout_target = Path(stdout_artifact_path)
+        stdout_target.parent.mkdir(parents=True, exist_ok=True)
+        stdout_target.write_bytes(stdout_bytes)
     responses = _parse_mcp_json_lines(completed.stdout, "upstream stdout")
     if len(responses) != len(messages):
         raise ValueError(f"MCP stdio upstream returned {len(responses)} responses for {len(messages)} requests")
@@ -184,6 +191,8 @@ def build_mcp_stdio_proxy_event_export(
         "event_count": len(redacted_events),
         "tool_call_count": len(tool_calls),
         "event_chain_root": event_records[-1]["event_hash"],
+        "stdout_sha256": "sha256:" + sha256(stdout_bytes).hexdigest(),
+        "stdout_size_bytes": len(stdout_bytes),
         "stderr_sha256": "sha256:" + sha256(stderr_bytes).hexdigest(),
         "stderr_size_bytes": len(stderr_bytes),
         "events": redacted_events,
@@ -192,7 +201,96 @@ def build_mcp_stdio_proxy_event_export(
             "It is a reference gateway path for development and evidence capture; production deployments still require hosted service, identity, KMS, audit-log, and provider authority evidence.",
         ],
     }
+    if source_messages_path is not None:
+        body["client_messages_artifact"] = _mcp_client_messages_artifact(
+            source_messages_path,
+            [event["message"] for event in redacted_events if event["direction"] == "client_to_server"],
+        )
+    if stdout_artifact_path is not None:
+        body["stdout_artifact"] = _mcp_stdio_stdout_artifact(
+            stdout_artifact_path,
+            [event["message"] for event in redacted_events if event["direction"] == "server_to_client"],
+        )
     return {**body, "export_id": content_hash(body)}
+
+
+@dataclass
+class McpStdioProxyEventExportVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+def verify_mcp_stdio_proxy_event_export(
+    export: dict[str, Any],
+    *,
+    source_messages_path: str | Path | None = None,
+    stdout_artifact_path: str | Path | None = None,
+) -> McpStdioProxyEventExportVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if export.get("schema") != MCP_PROXY_STDIO_SESSION_SCHEMA:
+        errors.append(f"unsupported MCP stdio proxy event export schema: {export.get('schema')}")
+    body = without_keys(export, "export_id")
+    if export.get("export_id") != content_hash(body):
+        errors.append("MCP stdio proxy event export_id does not match canonical export body")
+    try:
+        parse_rfc3339(str(export.get("captured_at") or ""))
+    except ValueError as exc:
+        errors.append(f"MCP stdio proxy captured_at invalid: {exc}")
+    events = export.get("events")
+    if not isinstance(events, list) or not events:
+        errors.append("MCP stdio proxy event export events must be a non-empty list")
+        events = []
+    try:
+        event_records = build_mcp_proxy_event_chain(events)
+    except (TypeError, ValueError) as exc:
+        errors.append(f"MCP stdio proxy event export cannot replay event chain: {exc}")
+        event_records = []
+    if event_records:
+        if export.get("event_count") != len(event_records):
+            errors.append("MCP stdio proxy event_count mismatch")
+        if export.get("event_chain_root") != event_records[-1]["event_hash"]:
+            errors.append("MCP stdio proxy event_chain_root mismatch")
+    client_messages = [event.get("message") for event in events if isinstance(event, dict) and event.get("direction") == "client_to_server"]
+    stdout_messages = [event.get("message") for event in events if isinstance(event, dict) and event.get("direction") == "server_to_client"]
+    if export.get("request_count") != len(client_messages):
+        errors.append("MCP stdio proxy request_count mismatch")
+    if export.get("response_count") != len(stdout_messages):
+        errors.append("MCP stdio proxy response_count mismatch")
+    client_artifact = export.get("client_messages_artifact")
+    if client_artifact is not None:
+        if not isinstance(client_artifact, dict):
+            errors.append("MCP stdio proxy client_messages_artifact must be an object")
+        elif source_messages_path is None:
+            errors.append("MCP stdio proxy client_messages_artifact requires source_messages_path for byte replay")
+        else:
+            try:
+                expected_artifact = _mcp_client_messages_artifact(source_messages_path, client_messages)
+            except ValueError as exc:
+                errors.append(f"MCP stdio proxy client_messages_artifact invalid: {exc}")
+            else:
+                if client_artifact != expected_artifact:
+                    errors.append("MCP stdio proxy client_messages_artifact does not match supplied client message bytes")
+    elif source_messages_path is not None:
+        warnings.append("MCP stdio proxy client message bytes were supplied but are not bound in this export")
+    stdout_artifact = export.get("stdout_artifact")
+    if stdout_artifact is not None:
+        if not isinstance(stdout_artifact, dict):
+            errors.append("MCP stdio proxy stdout_artifact must be an object")
+        elif stdout_artifact_path is None:
+            errors.append("MCP stdio proxy stdout_artifact requires stdout_artifact_path for byte replay")
+        else:
+            try:
+                expected_artifact = _mcp_stdio_stdout_artifact(stdout_artifact_path, stdout_messages)
+            except ValueError as exc:
+                errors.append(f"MCP stdio proxy stdout_artifact invalid: {exc}")
+            else:
+                if stdout_artifact != expected_artifact:
+                    errors.append("MCP stdio proxy stdout_artifact does not match supplied stdout bytes")
+    elif stdout_artifact_path is not None:
+        warnings.append("MCP stdio proxy stdout bytes were supplied but are not bound in this export")
+    return McpStdioProxyEventExportVerification(ok=not errors, errors=errors, warnings=warnings)
 
 
 def _normalize_client_messages(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -767,6 +865,54 @@ def _redaction_errors(value: Any, path: str = "message") -> list[str]:
         for index, item in enumerate(value):
             errors.extend(_redaction_errors(item, f"{path}[{index}]"))
     return errors
+
+
+def _mcp_client_messages_artifact(path: str | Path, expected_redacted_messages: list[dict[str, Any]]) -> dict[str, Any]:
+    target = Path(path)
+    if not target.is_file():
+        raise ValueError(f"MCP client messages artifact file missing: {path}")
+    data = target.read_bytes()
+    try:
+        parsed = json.loads(data.decode("utf-8-sig"))
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"MCP client messages artifact JSON invalid: {exc}") from exc
+    messages = _normalize_client_messages(parsed.get("messages") if isinstance(parsed, dict) and "messages" in parsed else parsed)
+    redacted_messages = [_redact_sensitive(message) for message in messages]
+    if redacted_messages != expected_redacted_messages:
+        raise ValueError("MCP client messages artifact content does not match redacted client events")
+    body = {
+        "path": str(path).replace("\\", "/"),
+        "sha256": "sha256:" + sha256(data).hexdigest(),
+        "size_bytes": len(data),
+        "source_content_hash": content_hash(parsed),
+        "redacted_messages_hash": content_hash(redacted_messages),
+        "request_count": len(redacted_messages),
+        "message_hashes": [content_hash(message) for message in redacted_messages],
+    }
+    return {**body, "artifact_id": content_hash(body)}
+
+
+def _mcp_stdio_stdout_artifact(path: str | Path, expected_redacted_responses: list[dict[str, Any]]) -> dict[str, Any]:
+    target = Path(path)
+    if not target.is_file():
+        raise ValueError(f"MCP stdio stdout artifact file missing: {path}")
+    data = target.read_bytes()
+    text = data.decode("utf-8-sig")
+    responses = _parse_mcp_json_lines(text, "MCP stdio stdout artifact")
+    normalized_responses = [json.loads(json.dumps(response, sort_keys=True)) for response in responses]
+    redacted_responses = [_redact_sensitive(response) for response in normalized_responses]
+    if redacted_responses != expected_redacted_responses:
+        raise ValueError("MCP stdio stdout artifact content does not match redacted server events")
+    body = {
+        "path": str(path).replace("\\", "/"),
+        "sha256": "sha256:" + sha256(data).hexdigest(),
+        "size_bytes": len(data),
+        "stdout_content_hash": content_hash(text),
+        "redacted_responses_hash": content_hash(redacted_responses),
+        "response_count": len(redacted_responses),
+        "response_hashes": [content_hash(response) for response in redacted_responses],
+    }
+    return {**body, "artifact_id": content_hash(body)}
 
 
 def _mcp_proxy_events_artifact(path: str | Path, normalized_events: list[dict[str, Any]]) -> dict[str, Any]:

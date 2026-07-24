@@ -23,6 +23,7 @@ from trustai.mcp_gateway import (
     load_mcp_proxy_events,
     load_mcp_transcript,
     verify_mcp_proxy_capture,
+    verify_mcp_stdio_proxy_event_export,
 )
 from trustai.proofpack import compile_proof_pack
 from trustai.verifier import verify_proof_pack
@@ -267,6 +268,8 @@ class McpGatewayTests(unittest.TestCase):
                 encoding="utf-8",
             )
             messages = tmp / "client-messages.json"
+            stdout_path = tmp / "mcp-proxy-stdio-stdout.jsonl"
+            cli_stdout_path = tmp / "mcp-proxy-stdio-stdout-cli.jsonl"
             messages.write_text(
                 json.dumps(
                     {
@@ -295,10 +298,28 @@ class McpGatewayTests(unittest.TestCase):
                 proxy_ref="mcp-proxy:trustai/stdio-test",
                 upstream_ref="mcp-server:test/upstream",
                 captured_at="2026-07-03T12:00:12Z",
+                source_messages_path=messages,
+                stdout_artifact_path=stdout_path,
             )
+            event_result = verify_mcp_stdio_proxy_event_export(
+                event_export,
+                source_messages_path=messages,
+                stdout_artifact_path=stdout_path,
+            )
+            self.assertTrue(event_result.ok, event_result.errors)
             self.assertEqual("trustai.mcp-proxy-stdio-session/0.1", event_export["schema"])
             self.assertEqual(2, event_export["event_count"])
             self.assertEqual("[REDACTED]", event_export["events"][0]["message"]["authorization"])
+            self.assertEqual(_sha256_ref(messages), event_export["client_messages_artifact"]["sha256"])
+            self.assertEqual(_sha256_ref(stdout_path), event_export["stdout_artifact"]["sha256"])
+            stdout_path.write_text(stdout_path.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+            tampered_event_result = verify_mcp_stdio_proxy_event_export(
+                event_export,
+                source_messages_path=messages,
+                stdout_artifact_path=stdout_path,
+            )
+            self.assertFalse(tampered_event_result.ok)
+            self.assertTrue(any("stdout_artifact" in error for error in tampered_event_result.errors), tampered_event_result.errors)
             events_path = tmp / "mcp-proxy-stdio-events.json"
             events_path.write_text(json.dumps(event_export, indent=2, sort_keys=True), encoding="utf-8")
             capture = build_mcp_proxy_capture(
@@ -347,6 +368,8 @@ class McpGatewayTests(unittest.TestCase):
                     "2026-07-03T12:00:12Z",
                     "--events-out",
                     str(events_path),
+                    "--stdout-out",
+                    str(cli_stdout_path),
                     "--out",
                     str(capture_path),
                 ],
@@ -358,6 +381,18 @@ class McpGatewayTests(unittest.TestCase):
             )
             self.assertEqual(0, cli.returncode, cli.stderr)
             self.assertTrue(capture_path.exists())
+            self.assertTrue(cli_stdout_path.exists())
+            cli_event_export = json.loads(events_path.read_text(encoding="utf-8"))
+            self.assertIn("client_messages_artifact", cli_event_export)
+            self.assertIn("stdout_artifact", cli_event_export)
+            self.assertEqual(_sha256_ref(cli_stdout_path), cli_event_export["stdout_artifact"]["sha256"])
+            self.assertTrue(
+                verify_mcp_stdio_proxy_event_export(
+                    cli_event_export,
+                    source_messages_path=messages,
+                    stdout_artifact_path=cli_stdout_path,
+                ).ok
+            )
             cli_capture = json.loads(capture_path.read_text(encoding="utf-8"))
             self.assertTrue(verify_mcp_proxy_capture(cli_capture, source_events_path=events_path).ok)
 

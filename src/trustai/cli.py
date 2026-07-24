@@ -828,6 +828,7 @@ from .mcp_gateway import (
     load_mcp_proxy_events,
     load_mcp_transcript,
     verify_mcp_proxy_capture,
+    verify_mcp_stdio_proxy_event_export,
     write_mcp_proxy_capture,
 )
 from .mcp_gateway_authority import (
@@ -5680,7 +5681,19 @@ def cmd_mcp_proxy_stdio(args: argparse.Namespace) -> int:
             upstream_ref=args.upstream_ref,
             captured_at=args.captured_at,
             timeout_seconds=args.timeout_seconds,
+            source_messages_path=args.messages,
+            stdout_artifact_path=args.stdout_out,
         )
+        event_result = verify_mcp_stdio_proxy_event_export(
+            event_export,
+            source_messages_path=args.messages,
+            stdout_artifact_path=args.stdout_out,
+        )
+        if not event_result.ok:
+            print("MCP stdio proxy event export verification failed before capture", file=sys.stderr)
+            for error in event_result.errors:
+                print(f"- {error}", file=sys.stderr)
+            return 1
         _write_json(args.events_out, event_export)
         events = load_mcp_proxy_events(args.events_out)
         capture = build_mcp_proxy_capture(
@@ -5705,10 +5718,13 @@ def cmd_mcp_proxy_stdio(args: argparse.Namespace) -> int:
         return 1
     write_mcp_proxy_capture(args.out, capture)
     print(f"MCP stdio proxy events: {args.events_out}")
+    print(f"MCP stdio upstream stdout: {args.stdout_out}")
     print(f"event export id: {event_export['export_id']}")
     print(f"MCP proxy capture: {args.out}")
     print(f"capture id: {capture['capture_id']}")
     print(f"captured tool calls: {capture['tool_call_count']}")
+    for warning in event_result.warnings:
+        print(f"warning: {warning}")
     for warning in result.warnings:
         print(f"warning: {warning}")
     return 0
@@ -22940,6 +22956,7 @@ def build_parser() -> argparse.ArgumentParser:
     mcp_proxy_stdio.add_argument("--captured-at")
     mcp_proxy_stdio.add_argument("--timeout-seconds", type=float, default=30.0)
     mcp_proxy_stdio.add_argument("--events-out", default="artifacts/mcp-proxy-stdio-events.json")
+    mcp_proxy_stdio.add_argument("--stdout-out", default="artifacts/mcp-proxy-stdio-stdout.jsonl", help="retained upstream stdout JSONL response artifact")
     mcp_proxy_stdio.add_argument("--out", default="artifacts/mcp-proxy-stdio-capture.json")
     mcp_proxy_stdio.add_argument("--key")
     mcp_proxy_stdio.set_defaults(func=cmd_mcp_proxy_stdio)

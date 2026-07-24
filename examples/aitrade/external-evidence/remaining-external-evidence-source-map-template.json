@@ -54,7 +54,7 @@
       "coverage_status": "missing",
       "description": "ci-run evidence for mcp-gateway",
       "external_authority_required": [
-        "MCP proxy capture receipts cover retained raw proxy event export byte replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
+        "MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
       ],
       "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/ci-run.json",
       "owner_hint": "release engineering",
@@ -78,7 +78,7 @@
       "coverage_status": "missing",
       "description": "kms-hsm evidence for mcp-gateway",
       "external_authority_required": [
-        "MCP proxy capture receipts cover retained raw proxy event export byte replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
+        "MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
       ],
       "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/kms-hsm.json",
       "owner_hint": "security/platform KMS owner",
@@ -102,7 +102,7 @@
       "coverage_status": "missing",
       "description": "provider-api evidence for mcp-gateway",
       "external_authority_required": [
-        "MCP proxy capture receipts cover retained raw proxy event export byte replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
+        "MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
       ],
       "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/provider-api.json",
       "owner_hint": "integration/platform owner",
@@ -126,7 +126,7 @@
       "coverage_status": "missing",
       "description": "hosted-service evidence for mcp-gateway",
       "external_authority_required": [
-        "MCP proxy capture receipts cover retained raw proxy event export byte replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
+        "MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
       ],
       "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/hosted-service.json",
       "owner_hint": "service owner",
@@ -1617,14 +1617,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "081f7bf88a2f86e9966f4795fc16c0496d68c0a07cfe52a694df1d99ff2f93be",
+  "source_map_id": "db7e26b0aaa49bc7e967651bc0c701281f3c03cb94d584c846d81ded6a45d3ad",
   "source_plan": {
-    "plan_hash": "7d29f1aecbabe455f78d2a6e6d479db038ab76d3bd4648d8cb34a2bb9b8756bd",
-    "plan_id": "b0f2aa16f7c1f9d552e7fae98f76b6098c01fe1b767b094eb2db76b65ce89105",
+    "plan_hash": "b2f07302fb009c1886076bdfcea38670e780cc475c87a0689141d2c27db0d2cd",
+    "plan_id": "b9619382ad6f0aaac655edf850b6cbe1aaf40321d4b6549728aa925c9809984c",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "a2b9aa5b8007855381ea6a3a262a209faf045b679e9ad91ea8a907f515db8308",
-      "manifest_id": "50487b77ef6df89dcce56435b9b7b1e76f3d1328b7562120b383e56d12fc84c6",
+      "manifest_hash": "cba1ed7a4742ad3e0d70e0a8a433297973afac58ff3e3ef46b47e963205c49ae",
+      "manifest_id": "fe9242fe66e99ce877f422f90c1c71f638c03418211e42de014f1df16fdb2c05",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },
