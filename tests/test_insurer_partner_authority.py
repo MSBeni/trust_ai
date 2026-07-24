@@ -35,6 +35,9 @@ class InsurerPartnerAuthorityTests(unittest.TestCase):
         dossier["dossier_id"] = dossier_id
         dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "insurer_partner_authority": body})]
 
+    def _authority_evidence_hash(self, requirement_id: str, authority_kind: str) -> str:
+        return "sha256:" + content_hash({"insurer_partner_authority": requirement_id, "authority_kind": authority_kind})
+
     def _sources(self, tmp: Path) -> dict:
         helper = worker_test_helpers.InsurerPartnerWorkerTests(methodName="test_insurer_partner_worker_verifies_and_appends")
         sources = helper._sources(tmp)
@@ -99,7 +102,7 @@ class InsurerPartnerAuthorityTests(unittest.TestCase):
                 "requirement_id": "credentialed-partner-api-calls",
                 "authority_kind": "insurer",
                 "evidence_ref": "insurer:underwriter/api/aitrade",
-                "evidence_hash": "sha256:insurer-partner-live-api-authority",
+                "evidence_hash": self._authority_evidence_hash("credentialed-partner-api-calls", "insurer"),
                 "description": "Live underwriter API authority export.",
                 "issuer": "Example AI Liability Underwriter",
                 "subject": "aitrade-prod insurer partner API",
@@ -111,7 +114,7 @@ class InsurerPartnerAuthorityTests(unittest.TestCase):
                 "requirement_id": "partner-owned-authentication-events",
                 "authority_kind": "identity-provider",
                 "evidence_ref": "idp:underwriter/trustai/aitrade",
-                "evidence_hash": "sha256:insurer-partner-idp-authority",
+                "evidence_hash": self._authority_evidence_hash("partner-owned-authentication-events", "identity-provider"),
                 "description": "Partner-owned authentication event export for insurer API sessions.",
                 "issuer": "Example Underwriter IdP",
                 "subject": "trustai insurer partner API sessions",
@@ -162,6 +165,48 @@ class InsurerPartnerAuthorityTests(unittest.TestCase):
             self.assertEqual(sources["worker_bundle"]["bundle_id"], entry["payload"]["worker_bundle_bindings"][0]["bundle_id"])
             self.assertTrue(entry["payload"]["worker_bundle_bindings"][0]["frontend_bundle_replayed"])
             self.assertEqual({"deferred": 1, "passed": 6}, entry["payload"]["control_summary"])
+
+    def test_insurer_partner_authority_normalizes_uppercase_evidence_hash(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            expected_hash = self._authority_evidence_hash("credentialed-partner-api-calls", "insurer")
+            evidence = [dict(self._authority_evidence()[0])]
+            evidence[0]["evidence_hash"] = "sha256:" + expected_hash.removeprefix("sha256:").upper()
+            sources, service, workers, dossier = self._dossier(Path(tmp_dir), authority_evidence=evidence)
+
+            result = verify_insurer_partner_authority_dossier(
+                dossier,
+                service_attestation=service,
+                worker_receipts=workers,
+                **self._verify_source_kwargs(sources),
+            )
+
+            self.assertTrue(result.ok, result.errors)
+            self.assertEqual(expected_hash, dossier["authority_evidence"][0]["evidence_hash"])
+
+    def test_insurer_partner_authority_rejects_resigned_malformed_evidence_hash(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            sources, service, workers, dossier = self._dossier(Path(tmp_dir))
+            tampered = copy.deepcopy(dossier)
+            item = tampered["authority_evidence"][0]
+            item["evidence_hash"] = "sha256:not-a-real-digest"
+            item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+            self._resign_dossier(tampered)
+
+            result = verify_insurer_partner_authority_dossier(
+                tampered,
+                service_attestation=service,
+                worker_receipts=workers,
+                **self._verify_source_kwargs(sources),
+            )
+
+            self.assertFalse(result.ok)
+            self.assertIn(
+                "invalid insurer partner authority evidence: evidence_hash must contain a 64-character sha256 digest",
+                result.errors,
+            )
+            self.assertNotIn("dossier_id does not match canonical insurer partner authority body", result.errors)
+            self.assertNotIn("insurer partner authority signature verification failed", result.errors)
+            self.assertNotIn("insurer partner authority evidence_id does not match evidence body: credentialed-partner-api-calls", result.errors)
 
     def test_insurer_partner_authority_detects_worker_tamper(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -289,9 +334,10 @@ class InsurerPartnerAuthorityTests(unittest.TestCase):
             _write_json(product_path, sources["product"])
             _write_json(corpus_path, sources["corpus"])
 
+            evidence_hash = self._authority_evidence_hash("credentialed-partner-api-calls", "insurer")
             evidence_arg = (
                 "credentialed-partner-api-calls,insurer,insurer:underwriter/api/aitrade,"
-                "sha256:insurer-partner-live-api-authority,Live underwriter API authority export;"
+                f"{evidence_hash},Live underwriter API authority export;"
                 "issuer=Example AI Liability Underwriter;subject=aitrade-prod insurer partner API;"
                 "source_uri=https://underwriter.example/audit/trustai/aitrade;"
                 "issued_at=2026-07-08T06:20:00Z;expires_at=2026-07-15T06:20:00Z"
