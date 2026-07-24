@@ -1,7 +1,7 @@
 {
-  "audit_id": "2f6cbd2eb1e746d8b769276dac9561fca65c8a7b634ed52cb06fb8fa35bec4a5",
+  "audit_id": "3ec2e2b2f848762569029fbabe0e29f38df0933bf8d5822c40b2843f0d99c039",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
-  "generated_at": "2026-07-24T12:31:38Z",
+  "generated_at": "2026-07-24T12:50:03Z",
   "limitations": [
     "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
     "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",
@@ -802,7 +802,7 @@
         {
           "path": "docs/specs/promotion-status-receipt-v0.1.md",
           "present": true,
-          "sha256": "sha256:22aaa22813d346fbb1b9754bba6885dbe054dda0b8dab3c4c8f02df711353110"
+          "sha256": "sha256:8a8adc61c9182990820ea1ec1dd8a538070183fa7c695a236e7584b0d896df41"
         },
         {
           "path": "tests/test_approval_callback.py",

@@ -7,8 +7,8 @@
         "hosted-service"
       ],
       "authority_kind": "ci-run",
-      "description": "Recorded Go verifier workflow export",
-      "evidence_id": "65044d306f9ddda9f3c33de9a71fb5ee35743810d109aeaf6d51edf7b828813b",
+      "description": "Recorded verifier workflow run export",
+      "evidence_id": "2d3fe23c8bbe6b70bf9292e79141556b3dda82974d8d4ba24b025f6279384445",
       "expires_at": "2026-12-31T00:00:00Z",
       "issued_at": "2026-07-08T00:00:00Z",
       "issuer": "GitHub Actions",
@@ -19,13 +19,13 @@
       "subject": "trustai go verifier release workflow"
     }
   ],
-  "generated_at": "2026-07-24T12:31:48Z",
+  "generated_at": "2026-07-24T12:50:15Z",
   "limitations": [
     "This manifest verifies supplied external evidence artifacts by hash; it does not fetch live provider state.",
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "92d7007289732804a5de1f0ea7c4ad6a1cfe66cddd6e8eea84c09f9c5f4fe50f",
+  "manifest_id": "e13a52164d022a71a8a63d4ccc1899e5dda3592f4fbfe7b02b59f7ec806c91e2",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -1233,8 +1233,8 @@
   ],
   "schema": "trustai.external-evidence-manifest/0.1",
   "source_roadmap_audit": {
-    "audit_hash": "5593a216b799800c38cc2491a896b49d4876b8d1bacaf2b0d3e40832f8d483bb",
-    "audit_id": "2f6cbd2eb1e746d8b769276dac9561fca65c8a7b634ed52cb06fb8fa35bec4a5",
+    "audit_hash": "a9f059f2ac182fcb92c7a1aeb115693cd61bdef9bfe4a396ca2fe91096e1d42f",
+    "audit_id": "3ec2e2b2f848762569029fbabe0e29f38df0933bf8d5822c40b2843f0d99c039",
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {
