@@ -497,7 +497,7 @@ def _build_authority_evidence_item(item: dict[str, Any], source_context: dict[st
         raise ValueError(f"authority kind {authority_kind} is not accepted for requirement {requirement_id}")
     for value, field in ((evidence_ref, "evidence_ref"), (evidence_hash, "evidence_hash"), (description, "description")):
         _require_text(value, field)
-    _require_hash_ref(evidence_hash, "evidence_hash")
+    evidence_hash = _normalize_hash_ref(evidence_hash, "evidence_hash")
     for field in ("issued_at", "expires_at"):
         if item.get(field):
             parse_rfc3339(str(item[field]))
@@ -539,8 +539,15 @@ def _verify_authority_evidence_item(
     for field in ("evidence_ref", "evidence_hash", "description"):
         if not item.get(field):
             errors.append(f"identity provider authority {field} is required: {requirement_id}")
-    if item.get("evidence_hash") and not str(item.get("evidence_hash")).startswith("sha256:"):
-        errors.append(f"identity provider authority evidence_hash must start with sha256: {requirement_id}")
+    evidence_hash = item.get("evidence_hash")
+    if evidence_hash:
+        try:
+            normalized_hash = _normalize_hash_ref(str(evidence_hash), "evidence_hash")
+        except ValueError as exc:
+            errors.append(f"{exc}: {requirement_id}")
+        else:
+            if evidence_hash != normalized_hash:
+                errors.append(f"identity provider authority evidence_hash must be canonical lowercase sha256:64-hex: {requirement_id}")
     if not isinstance(item.get("source_context"), dict):
         errors.append(f"identity provider authority source_context is required: {requirement_id}")
     elif item.get("source_context") != source_context:
@@ -705,9 +712,14 @@ def _require_text(value: Any, field: str) -> str:
     return value
 
 
-def _require_hash_ref(value: str, field: str) -> None:
-    if not value.startswith("sha256:"):
+def _normalize_hash_ref(value: str, field: str) -> str:
+    digest = _require_text(value, field)
+    if not digest.startswith("sha256:"):
         raise ValueError(f"identity provider authority {field} must start with sha256:")
+    hexdigest = digest.removeprefix("sha256:")
+    if len(hexdigest) != 64 or any(char not in "0123456789abcdefABCDEF" for char in hexdigest):
+        raise ValueError(f"identity provider authority {field} must contain a 64-character sha256 digest")
+    return "sha256:" + hexdigest.lower()
 
 
 def _check_no_secret_values(value: Any, errors: list[str], path: str = "dossier") -> None:

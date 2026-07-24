@@ -47,7 +47,7 @@ class IdentityProviderAuthorityTests(unittest.TestCase):
                 "requirement_id": "live-identity-provider-event-streams",
                 "authority_kind": "identity-provider",
                 "evidence_ref": "okta:system-log/query/aitrade-agent-events",
-                "evidence_hash": "sha256:identity-provider-live-event-streams",
+                "evidence_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                 "description": "Okta system-log export for governed agent lifecycle events.",
                 "issuer": "Okta",
                 "subject": "aitrade-prod governed agent identity events",
@@ -59,7 +59,7 @@ class IdentityProviderAuthorityTests(unittest.TestCase):
                 "requirement_id": "credential-custody-and-kms",
                 "authority_kind": "kms-hsm",
                 "evidence_ref": "kms:identity-provider/lifecycle-worker-token",
-                "evidence_hash": "sha256:identity-provider-kms-custody",
+                "evidence_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
                 "description": "KMS/HSM custody export for the identity lifecycle worker credential.",
                 "issuer": "Example KMS",
                 "subject": "identity lifecycle worker credential custody",
@@ -211,6 +211,26 @@ class IdentityProviderAuthorityTests(unittest.TestCase):
             self.assertNotIn("identity provider authority signature verification failed", result.errors)
             self.assertIn("identity provider authority controls do not match dossier body", result.errors)
 
+    def test_identity_provider_authority_rejects_resigned_malformed_evidence_hash(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            sources = self._sources(Path(tmp_dir))
+            dossier = self._dossier(sources)
+            tampered = copy.deepcopy(dossier)
+            item = tampered["authority_evidence"][0]
+            item["evidence_hash"] = "sha256:not-a-real-digest"
+            item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+            self._resign_dossier(tampered)
+
+            result = self._verify(tampered, sources)
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("dossier_id does not match canonical identity provider authority body", result.errors)
+            self.assertNotIn("identity provider authority signature verification failed", result.errors)
+            self.assertIn(
+                "identity provider authority evidence_hash must contain a 64-character sha256 digest: live-identity-provider-event-streams",
+                result.errors,
+            )
+
     def test_identity_provider_authority_requires_freshness_when_strict(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             sources = self._sources(Path(tmp_dir))
@@ -276,7 +296,7 @@ class IdentityProviderAuthorityTests(unittest.TestCase):
             ]
             evidence_arg = (
                 "live-identity-provider-event-streams,identity-provider,okta:system-log/query/aitrade-agent-events,"
-                "sha256:identity-provider-live-event-streams,Okta system-log export for governed agent lifecycle events;"
+                "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,Okta system-log export for governed agent lifecycle events;"
                 "issuer=Okta;subject=aitrade-prod governed agent identity events;"
                 "source_uri=https://okta.example/system-log/aitrade-agent-events;"
                 "issued_at=2026-07-12T02:10:00Z;expires_at=2026-07-19T02:10:00Z"
