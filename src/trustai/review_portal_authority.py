@@ -681,7 +681,7 @@ def _build_authority_evidence_bundle_item(item: dict[str, Any]) -> dict[str, Any
         raise ValueError(f"authority kind {authority_kind} is not accepted for requirement {requirement_id}")
     for value, field in ((evidence_ref, "evidence_ref"), (evidence_hash, "evidence_hash"), (description, "description")):
         _require_text(value, field)
-    _require_hash_ref(evidence_hash, "evidence_hash")
+    evidence_hash = _normalize_sha256_ref(evidence_hash, "evidence_hash")
     for field in ("issued_at", "expires_at"):
         if item.get(field):
             parse_rfc3339(str(item[field]))
@@ -721,8 +721,14 @@ def _verify_authority_evidence_bundle_item(
     for field in ("evidence_ref", "evidence_hash", "description"):
         if not item.get(field):
             errors.append(f"review portal authority evidence bundle {field} is required: {requirement_id}")
-    if item.get("evidence_hash") and not str(item.get("evidence_hash")).startswith("sha256:"):
-        errors.append(f"review portal authority evidence bundle evidence_hash must start with sha256: {requirement_id}")
+    if item.get("evidence_hash"):
+        try:
+            normalized_hash = _normalize_sha256_ref(str(item.get("evidence_hash")), "evidence_hash")
+        except ValueError as exc:
+            errors.append(f"invalid review portal authority evidence bundle: {exc}")
+            return "missing"
+        if item.get("evidence_hash") != normalized_hash:
+            errors.append(f"review portal authority evidence bundle evidence_hash is not canonical lowercase sha256: {requirement_id}")
     if _source_uri_is_placeholder(item.get("source_uri")):
         warnings.append(f"review portal authority evidence bundle source_uri is placeholder or missing: {requirement_id}")
 
@@ -776,7 +782,7 @@ def _build_authority_evidence_item(item: dict[str, Any], service_binding: dict[s
         raise ValueError(f"authority kind {authority_kind} is not accepted for requirement {requirement_id}")
     for value, field in ((evidence_ref, "evidence_ref"), (evidence_hash, "evidence_hash"), (description, "description")):
         _require_text(value, field)
-    _require_hash_ref(evidence_hash, "evidence_hash")
+    evidence_hash = _normalize_sha256_ref(evidence_hash, "evidence_hash")
     for field in ("issued_at", "expires_at"):
         if item.get(field):
             parse_rfc3339(str(item[field]))
@@ -818,8 +824,14 @@ def _verify_authority_evidence_item(
     for field in ("evidence_ref", "evidence_hash", "description"):
         if not item.get(field):
             errors.append(f"review portal authority {field} is required: {requirement_id}")
-    if item.get("evidence_hash") and not str(item.get("evidence_hash")).startswith("sha256:"):
-        errors.append(f"review portal authority evidence_hash must start with sha256: {requirement_id}")
+    if item.get("evidence_hash"):
+        try:
+            normalized_hash = _normalize_sha256_ref(str(item.get("evidence_hash")), "evidence_hash")
+        except ValueError as exc:
+            errors.append(f"invalid review portal authority evidence: {exc}")
+            return "missing"
+        if item.get("evidence_hash") != normalized_hash:
+            errors.append(f"review portal authority evidence_hash is not canonical lowercase sha256: {requirement_id}")
     expected_context = _authority_evidence_service_context(service_binding)
     if not isinstance(item.get("service_context"), dict):
         errors.append(f"review portal authority service_context is required: {requirement_id}")
@@ -1042,9 +1054,15 @@ def _require_text(value: Any, field: str) -> str:
     return value
 
 
-def _require_hash_ref(value: str, field: str) -> None:
+def _normalize_sha256_ref(value: str | None, field: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{field} is required")
     if not value.startswith("sha256:"):
-        raise ValueError(f"review portal authority {field} must start with sha256:")
+        raise ValueError(f"{field} must start with sha256:")
+    hexdigest = value.removeprefix("sha256:")
+    if len(hexdigest) != 64 or any(character not in "0123456789abcdefABCDEF" for character in hexdigest):
+        raise ValueError(f"{field} must contain a 64-character sha256 digest")
+    return "sha256:" + hexdigest.lower()
 
 
 def _check_no_secret_values(value: Any, errors: list[str], path: str = "dossier") -> None:

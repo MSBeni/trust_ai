@@ -41,6 +41,15 @@ class ReviewPortalAuthorityTests(unittest.TestCase):
         dossier["dossier_id"] = dossier_id
         dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "review_portal_authority": body})]
 
+    def _resign_bundle(self, bundle: dict) -> None:
+        body = without_keys(bundle, "bundle_id", "signatures")
+        bundle_id = content_hash(body)
+        bundle["bundle_id"] = bundle_id
+        bundle["signatures"] = [sign_value({"bundle_id": bundle_id, "review_portal_authority_evidence_bundle": body})]
+
+    def _authority_evidence_hash(self, requirement_id: str, authority_kind: str) -> str:
+        return "sha256:" + content_hash({"review_portal_authority": requirement_id, "authority_kind": authority_kind})
+
     def _service(self):
         helper = service_fixtures.ReviewPortalServiceTests()
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -55,7 +64,7 @@ class ReviewPortalAuthorityTests(unittest.TestCase):
                 "requirement_id": "hosted-portal-worker-fleet",
                 "authority_kind": "hosted-service",
                 "evidence_ref": "service:review-portal/regulator-prod",
-                "evidence_hash": "sha256:review-portal-hosted-service-authority",
+                "evidence_hash": self._authority_evidence_hash("hosted-portal-worker-fleet", "hosted-service"),
                 "description": "Hosted regulator review portal service export.",
                 "issuer": "TrustAI Cloud",
                 "subject": "aitrade-prod regulator review portal",
@@ -67,7 +76,7 @@ class ReviewPortalAuthorityTests(unittest.TestCase):
                 "requirement_id": "production-identity-provider-sessions",
                 "authority_kind": "identity-provider",
                 "evidence_ref": "idp:review-portal/regulator-prod",
-                "evidence_hash": "sha256:review-portal-idp-session-authority",
+                "evidence_hash": self._authority_evidence_hash("production-identity-provider-sessions", "identity-provider"),
                 "description": "Identity-provider authentication and session audit export for regulator reviewers.",
                 "issuer": "Example IdP",
                 "subject": "regulator reviewer sessions",
@@ -86,7 +95,7 @@ class ReviewPortalAuthorityTests(unittest.TestCase):
                     "requirement_id": requirement_id,
                     "authority_kind": requirement["authority_kinds"][0],
                     "evidence_ref": f"authority:review-portal/{requirement_id}",
-                    "evidence_hash": f"sha256:review-portal-{requirement_id}-authority",
+                    "evidence_hash": self._authority_evidence_hash(requirement_id, requirement["authority_kinds"][0]),
                     "description": f"Retained production authority export for {requirement_id}.",
                     "issuer": "TrustAI Cloud",
                     "subject": "aitrade-prod regulator review portal",
@@ -132,6 +141,85 @@ class ReviewPortalAuthorityTests(unittest.TestCase):
         self.assertEqual(dossier["dossier_id"], entry["payload"]["dossier_id"])
         self.assertEqual(attestation["attestation_id"], entry["payload"]["service_attestation_binding"]["attestation_id"])
         self.assertEqual({"deferred": 1, "passed": 5}, entry["payload"]["control_summary"])
+
+    def test_review_portal_authority_normalizes_uppercase_evidence_hash(self):
+        expected_hash = self._authority_evidence_hash("hosted-portal-worker-fleet", "hosted-service")
+        evidence = [dict(self._authority_evidence()[0])]
+        evidence[0]["evidence_hash"] = "sha256:" + expected_hash.removeprefix("sha256:").upper()
+        sources, attestation, dossier = self._dossier(authority_evidence=evidence)
+
+        result = verify_review_portal_authority_dossier(dossier, service_attestation=attestation, **sources)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(expected_hash, dossier["authority_evidence"][0]["evidence_hash"])
+
+    def test_review_portal_authority_evidence_bundle_normalizes_uppercase_evidence_hash(self):
+        expected_hash = self._authority_evidence_hash("hosted-portal-worker-fleet", "hosted-service")
+        evidence = [dict(self._authority_evidence()[0])]
+        evidence[0]["evidence_hash"] = "sha256:" + expected_hash.removeprefix("sha256:").upper()
+        bundle = build_review_portal_authority_evidence_bundle(
+            authority_evidence=evidence,
+            mode="authority-export",
+            environment="aitrade-prod",
+            bundle_ref="bundle:review-portal-authority/regulator-prod",
+            issuer_ref="issuer:trustai-cloud/review-portal",
+            subject_ref="service:review-portal/regulator-prod",
+            authority_ref="authority:review-portal/regulator-prod",
+            generated_at="2026-07-08T06:14:00Z",
+        )
+
+        result = verify_review_portal_authority_evidence_bundle(bundle)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(expected_hash, bundle["authority_evidence"][0]["evidence_hash"])
+
+    def test_review_portal_authority_rejects_resigned_malformed_evidence_hash(self):
+        sources, attestation, dossier = self._dossier()
+        tampered = copy.deepcopy(dossier)
+        item = tampered["authority_evidence"][0]
+        item["evidence_hash"] = "sha256:not-a-real-digest"
+        item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+        self._resign_dossier(tampered)
+
+        result = verify_review_portal_authority_dossier(tampered, service_attestation=attestation, **sources)
+
+        self.assertFalse(result.ok)
+        self.assertIn(
+            "invalid review portal authority evidence: evidence_hash must contain a 64-character sha256 digest",
+            result.errors,
+        )
+        self.assertNotIn("dossier_id does not match canonical review portal authority body", result.errors)
+        self.assertNotIn("review portal authority signature verification failed", result.errors)
+        self.assertNotIn("review portal authority evidence_id does not match evidence body: hosted-portal-worker-fleet", result.errors)
+
+    def test_review_portal_authority_evidence_bundle_rejects_resigned_malformed_evidence_hash(self):
+        evidence = self._authority_evidence()
+        bundle = build_review_portal_authority_evidence_bundle(
+            authority_evidence=evidence,
+            mode="authority-export",
+            environment="aitrade-prod",
+            bundle_ref="bundle:review-portal-authority/regulator-prod",
+            issuer_ref="issuer:trustai-cloud/review-portal",
+            subject_ref="service:review-portal/regulator-prod",
+            authority_ref="authority:review-portal/regulator-prod",
+            generated_at="2026-07-08T06:14:00Z",
+        )
+        tampered = copy.deepcopy(bundle)
+        item = tampered["authority_evidence"][0]
+        item["evidence_hash"] = "sha256:not-a-real-digest"
+        item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+        self._resign_bundle(tampered)
+
+        result = verify_review_portal_authority_evidence_bundle(tampered)
+
+        self.assertFalse(result.ok)
+        self.assertIn(
+            "invalid review portal authority evidence bundle: evidence_hash must contain a 64-character sha256 digest",
+            result.errors,
+        )
+        self.assertNotIn("bundle_id does not match canonical review portal authority evidence bundle body", result.errors)
+        self.assertNotIn("review portal authority evidence bundle signature verification failed", result.errors)
+        self.assertNotIn("review portal authority evidence bundle evidence_id does not match evidence body: hosted-portal-worker-fleet", result.errors)
 
     def test_review_portal_authority_detects_service_tamper(self):
         sources, attestation, dossier = self._dossier()
@@ -308,9 +396,10 @@ class ReviewPortalAuthorityTests(unittest.TestCase):
             _write_json(service_path, attestation)
 
             source_args: list[str] = []
+            expected_hash = self._authority_evidence_hash("hosted-portal-worker-fleet", "hosted-service")
             evidence_arg = (
                 "hosted-portal-worker-fleet,hosted-service,service:review-portal/regulator-prod,"
-                "sha256:review-portal-hosted-service-authority,Hosted regulator review portal service export;"
+                f"{expected_hash},Hosted regulator review portal service export;"
                 "issuer=TrustAI Cloud;subject=aitrade-prod regulator review portal;"
                 "source_uri=https://ops.example/trustai/review-portal/regulator-prod;"
                 "issued_at=2026-07-08T06:10:00Z;expires_at=2026-07-15T06:10:00Z"
