@@ -2365,6 +2365,8 @@ def cmd_control_summary(args: argparse.Namespace) -> int:
             summary["insurer_evidence"] = control.insurer_evidence()
         if args.multi_agent_evidence:
             summary["multi_agent_evidence"] = control.multi_agent_evidence()
+        if args.agent_inventory_identity_evidence:
+            summary["agent_inventory_identity_evidence"] = control.agent_inventory_identity_evidence()
         if args.byoc_evidence:
             summary["byoc_evidence"] = control.byoc_evidence()
         if args.identity_provider_evidence:
@@ -21454,6 +21456,7 @@ def build_parser() -> argparse.ArgumentParser:
     control_summary.add_argument("--policy-backend-evidence", action="store_true")
     control_summary.add_argument("--insurer-evidence", action="store_true")
     control_summary.add_argument("--multi-agent-evidence", action="store_true")
+    control_summary.add_argument("--agent-inventory-identity-evidence", action="store_true")
     control_summary.add_argument("--byoc-evidence", action="store_true")
     control_summary.add_argument("--identity-provider-evidence", action="store_true")
     control_summary.add_argument("--roadmap-evidence", action="store_true")

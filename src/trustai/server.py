@@ -345,6 +345,13 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             finally:
                 control.close()
             return
+        if parsed.path in ("/v0/agent-inventory-identity-evidence", "/v0/control/agent-inventory-identity-evidence"):
+            control = self._control()
+            try:
+                self._json_response(200, control.agent_inventory_identity_evidence())
+            finally:
+                control.close()
+            return
         if parsed.path in ("/v0/byoc-evidence", "/v0/control/byoc-evidence"):
             control = self._control()
             try:

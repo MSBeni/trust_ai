@@ -2,10 +2,17 @@
   "defaults": {},
   "entries": [
     {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be ci-run and accepted for oss-verifier-and-public-spec.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
       "authority_kind": "ci-run",
       "content_type": "application/json",
       "coverage_status": "covered",
       "description": "Snapshot of recorded verifier workflow run export",
+      "evidence_argument_template": "oss-verifier-and-public-spec,ci-run,external-evidence/oss-verifier-and-public-spec/ci-run.json,ci-run evidence for oss-verifier-and-public-spec;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
         "Verifier release authority dossiers cover the local/reference public release authority checklist and retained provider workflow export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
@@ -14,12 +21,15 @@
       "issued_at": "2026-07-08T00:00:00Z",
       "issuer": "GitHub Actions",
       "owner_hint": "release engineering",
+      "phase": "P0",
+      "priority": "P0",
       "requirement_id": "oss-verifier-and-public-spec",
       "retrieval_method": "file-copy",
       "snapshot_out": "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json",
       "source_file": "examples/aitrade/external-evidence/go-verifier-workflow-run.json",
       "source_uri": "https://github.com/MSBeni/trust_ai/actions",
       "subject": "trustai go verifier release workflow",
+      "suggested_artifact_path": "external-evidence/oss-verifier-and-public-spec/ci-run.json",
       "suggested_evidence_sources": [
         "completed CI workflow export",
         "release run URL or provider-native run record",
@@ -33,10 +43,17 @@
       "unit_ref": "oss-verifier-and-public-spec:ci-run"
     },
     {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be provider-api and accepted for oss-verifier-and-public-spec.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
       "authority_kind": "provider-api",
       "content_type": "application/json",
       "coverage_status": "missing",
       "description": "GitHub remote main ref advertisement for pushed TrustAI checkpoint",
+      "evidence_argument_template": "oss-verifier-and-public-spec,provider-api,external-evidence/oss-verifier-and-public-spec/provider-api.json,provider-api evidence for oss-verifier-and-public-spec;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
         "Verifier release authority dossiers cover the local/reference public release authority checklist and retained provider workflow export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
@@ -45,11 +62,14 @@
       "issued_at": "2026-07-12T00:00:00Z",
       "issuer": "GitHub Git",
       "owner_hint": "integration/platform owner",
+      "phase": "P0",
+      "priority": "P0",
       "requirement_id": "oss-verifier-and-public-spec",
       "retrieval_method": "git-ls-remote",
       "snapshot_out": "examples/aitrade/external-evidence/github-main-ref-source-snapshot.json",
       "source_uri": "git+https://github.com/MSBeni/trust_ai.git#refs/heads/main",
       "subject": "MSBeni/trust_ai main branch",
+      "suggested_artifact_path": "external-evidence/oss-verifier-and-public-spec/provider-api.json",
       "suggested_evidence_sources": [
         "provider API response export",
         "request/response transcript",
@@ -63,10 +83,17 @@
       "unit_ref": "oss-verifier-and-public-spec:provider-api"
     },
     {
+      "acceptance_criteria": [
+        "Artifact path must be repository-relative and hashable before manifest verification.",
+        "Evidence item authority_kind must be hosted-service and accepted for oss-verifier-and-public-spec.",
+        "Use issued_at and expires_at metadata when strict freshness verification is required.",
+        "Rebuild and verify the external evidence manifest after adding the artifact."
+      ],
       "authority_kind": "hosted-service",
       "content_type": "application/json",
       "coverage_status": "missing",
       "description": "GitHub hosted git service remote advertisement for TrustAI verifier and spec repository",
+      "evidence_argument_template": "oss-verifier-and-public-spec,hosted-service,external-evidence/oss-verifier-and-public-spec/hosted-service.json,hosted-service evidence for oss-verifier-and-public-spec;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
         "Verifier release authority dossiers cover the local/reference public release authority checklist and retained provider workflow export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
@@ -75,11 +102,14 @@
       "issued_at": "2026-07-12T00:00:00Z",
       "issuer": "GitHub Git",
       "owner_hint": "service owner",
+      "phase": "P0",
+      "priority": "P0",
       "requirement_id": "oss-verifier-and-public-spec",
       "retrieval_method": "git-ls-remote",
       "snapshot_out": "examples/aitrade/external-evidence/github-hosted-service-source-snapshot.json",
       "source_uri": "git+https://github.com/MSBeni/trust_ai.git#HEAD",
       "subject": "MSBeni/trust_ai hosted repository service",
+      "suggested_artifact_path": "external-evidence/oss-verifier-and-public-spec/hosted-service.json",
       "suggested_evidence_sources": [
         "hosted service health or deployment export",
         "service audit root",
@@ -93,21 +123,21 @@
       "unit_ref": "oss-verifier-and-public-spec:hosted-service"
     }
   ],
-  "generated_at": "2026-07-24T06:43:38Z",
+  "generated_at": "2026-07-12T01:00:00Z",
   "limitations": [
     "This source map is an operator collection template; it does not prove external authority coverage until external-evidence-collect-batch creates verified source snapshots and intake receipts.",
     "Placeholder source URIs, issuer fields, or freshness windows must be replaced with real authority-owned values before production use.",
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "de44e31d79e50ebaea170fdb8dde850f5b98a48a42b41ebd6af6084e134210a5",
+  "source_map_id": "4859c7726e3e48219ea8ce7b6d7b58d3725956f562c5b7fb32bce73cd3058d74",
   "source_plan": {
-    "plan_hash": "8e3b09a7b73fb5c9f8f59a7e271dd111d1adfe97badaab835eba1e03e6b038ab",
-    "plan_id": "f97f6d94799c61520cc51a118c5193b4a51647f0f7309c89fdb6f8626ee4a9be",
+    "plan_hash": "d6fbdc4d66e4cd61ab3b2d8aeb3dfb024017bf875b16ad72cc1bd91c4d5a37cf",
+    "plan_id": "0cca613e2df32676a978df032e38777d9319928293b151fbef8844e6d7d9e8b9",
     "source_manifest": {
-      "generated_at": "2026-07-24T06:43:38Z",
-      "manifest_hash": "9d4a6105da14e9d3b7155e2689f78add73be022aa1a02a7ac445efd4ec8f0277",
-      "manifest_id": "d23063573df7585eb7c3699593dea803c8d76edbe545df34c7d92809d55f040c",
+      "generated_at": "2026-07-24T08:04:45Z",
+      "manifest_hash": "5e47075480a4a0163db0f6db702956a0681d46401ace07e7845b49864a0c90a9",
+      "manifest_id": "1a4a3a416d2bad5fd7294cff2cebc54a8824c6e42d90a0aa00007a7a94e13f4a",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },

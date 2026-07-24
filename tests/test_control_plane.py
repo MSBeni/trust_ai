@@ -2314,12 +2314,22 @@ class ControlPlaneTests(unittest.TestCase):
                 proof_packs=[sources["pack"]],
                 trust_network_manifest=sources["manifest"],
             )
+            inventory_entries = append_inventory(chain, load_inventory(INVENTORY))
+            delegation = load_delegation(DELEGATION)
+            delegation_entry = append_delegation(chain, delegation)
+            delegation_graph = build_delegation_graph(
+                chain,
+                contract_hash=delegation["contract_hash"],
+                generated_at="2026-07-03T12:03:00Z",
+            )
+            delegation_graph_entry = append_delegation_graph(chain, delegation_graph, source_chain=chain)
 
             control = ControlPlane(tmp / "control.sqlite")
             try:
                 indexed = control.index_chain(chain)
                 summary = control.summary()
                 evidence = control.identity_provider_evidence()
+                combined = control.agent_inventory_identity_evidence()
                 roadmap = control.roadmap_evidence()
 
                 expected_counts = {
@@ -2375,6 +2385,15 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(authority_entry["payload"]["dossier_id"], evidence["identity_provider_authority_dossiers"][0]["dossier_id"])
                 self.assertEqual(dossier["summary"], evidence["identity_provider_authority_dossiers"][0]["summary"])
                 self.assertEqual(evidence, roadmap["identity_provider_evidence"])
+                self.assertEqual(2, indexed["agents"])
+                self.assertEqual(1, indexed["agent_delegations"])
+                self.assertEqual(1, indexed["agent_delegation_graphs"])
+                self.assertEqual(2, len(combined["agents"]))
+                self.assertEqual({entry["payload"]["agent"]["name"] for entry in inventory_entries}, {agent["name"] for agent in combined["agents"]})
+                self.assertEqual(evidence, combined["identity_provider_evidence"])
+                self.assertEqual(delegation_entry["payload"]["delegation_hash"], combined["multi_agent_evidence"]["agent_delegations"][0]["delegation_hash"])
+                self.assertEqual(delegation_graph_entry["payload"]["delegation_graph_id"], combined["multi_agent_evidence"]["agent_delegation_graphs"][0]["delegation_graph_id"])
+                self.assertEqual(combined, roadmap["agent_inventory_identity_evidence"])
             finally:
                 control.close()
 

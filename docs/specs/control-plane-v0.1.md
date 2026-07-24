@@ -67,7 +67,7 @@ into queryable registry tables while keeping the chain as the source of truth.
 
 ```powershell
 python -m trustai control-index --state .trustai/demo/evidence-chain.json --tenant aitrade-local --pack artifacts/aitrade-proof-pack.json --db .trustai/control-plane.sqlite --rebuild
-python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --holdout-evidence --mcp-evidence --onboarding-evidence --promotion-lifecycle-evidence --framework-adapter-evidence --review-portal-evidence --standards-auditor-evidence --trust-network-evidence --provider-delivery-evidence --provider-operations-evidence --compliance-evidence --policy-backend-evidence --insurer-evidence --multi-agent-evidence --byoc-evidence --identity-provider-evidence --roadmap-evidence --phase-scoreboards --design-partner-dossiers --own-compliance-dossiers --product-scope-decisions --vertical-packs --reliability-reports --readiness --external-evidence --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
+python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts --agents --eval-runs --gate-decisions --proof-packs --ingest-events --promotion-statuses --runtime-evidence --holdout-evidence --mcp-evidence --onboarding-evidence --promotion-lifecycle-evidence --framework-adapter-evidence --review-portal-evidence --standards-auditor-evidence --trust-network-evidence --provider-delivery-evidence --provider-operations-evidence --compliance-evidence --policy-backend-evidence --insurer-evidence --multi-agent-evidence --agent-inventory-identity-evidence --byoc-evidence --identity-provider-evidence --roadmap-evidence --phase-scoreboards --design-partner-dossiers --own-compliance-dossiers --product-scope-decisions --vertical-packs --reliability-reports --readiness --external-evidence --external-authority-gaps --authority-kind provider-api --gap-limit 10 --authority-dossiers --contract-id aitrade-btcusdt-canary --agent-name aitrade-risk-agent
 ```
 
 ## API
@@ -100,6 +100,7 @@ python -m trustai control-summary --db .trustai/control-plane.sqlite --contracts
 - `GET /v0/policy-backend-evidence` or `GET /v0/control/policy-backend-evidence`;
 - `GET /v0/insurer-evidence` or `GET /v0/control/insurer-evidence`;
 - `GET /v0/multi-agent-evidence` or `GET /v0/control/multi-agent-evidence`;
+- `GET /v0/agent-inventory-identity-evidence` or `GET /v0/control/agent-inventory-identity-evidence`;
 - `GET /v0/byoc-evidence` or `GET /v0/control/byoc-evidence`;
 - `GET /v0/identity-provider-evidence` or `GET /v0/control/identity-provider-evidence`;
 - `GET /v0/roadmap-evidence` or `GET /v0/control/roadmap-evidence`;
@@ -134,11 +135,14 @@ control-summary counts.
 The insurer evidence list binds underwriting quote receipts and insurer partner
 production-authority dossiers into one third-party underwriting review surface.
 The multi-agent evidence list binds delegation receipts and signed delegation
-graph exports into one cross-agent review surface. The BYOC evidence list binds
-operator attestations and production-authority dossiers into one self-hosted
-readiness surface. The identity-provider evidence list binds vendor identity,
-provider identity exports, sessions, lifecycle operations, lifecycle workers,
-and authority dossiers into one identity governance review surface.
+graph exports into one cross-agent review surface. The combined agent inventory
+and identity evidence view joins discovered agent inventory, identity-provider
+evidence, and multi-agent evidence under one roadmap review surface. The BYOC
+evidence list binds operator attestations and production-authority dossiers into
+one self-hosted readiness surface. The identity-provider evidence list binds
+vendor identity, provider identity exports, sessions, lifecycle operations,
+lifecycle workers, and authority dossiers into one identity governance review
+surface.
 The promotion-lifecycle evidence list binds human approvals, demotions,
 rollbacks, and failed-soak demotion receipts into one CI/CD promotion review
 surface. The framework-adapter evidence list binds adapter matrices, native hook

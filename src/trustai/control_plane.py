@@ -7876,6 +7876,7 @@ class ControlPlane:
             "reliability_reports": self.recent_reliability_reports(limit),
             "insurer_evidence": self.insurer_evidence(limit),
             "multi_agent_evidence": self.multi_agent_evidence(limit),
+            "agent_inventory_identity_evidence": self.agent_inventory_identity_evidence(limit),
             "holdout_evidence": self.holdout_evidence(limit),
             "mcp_evidence": self.mcp_evidence(limit),
             "onboarding_evidence": self.onboarding_evidence(limit),
@@ -7980,6 +7981,13 @@ class ControlPlane:
         return {
             "agent_delegations": self.recent_agent_delegations(limit),
             "agent_delegation_graphs": self.recent_agent_delegation_graphs(limit),
+        }
+
+    def agent_inventory_identity_evidence(self, limit: int = 20) -> dict[str, Any]:
+        return {
+            "agents": self.agents(),
+            "identity_provider_evidence": self.identity_provider_evidence(limit),
+            "multi_agent_evidence": self.multi_agent_evidence(limit),
         }
 
     def byoc_evidence(self, limit: int = 20) -> dict[str, Any]:
