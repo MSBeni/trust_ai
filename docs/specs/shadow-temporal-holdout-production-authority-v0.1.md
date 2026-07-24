@@ -49,7 +49,9 @@ Production dossiers require evidence for the fixed checklist embedded in
 Authority evidence rows carry `requirement_id`, `authority_kind`,
 `evidence_ref`, `evidence_hash`, optional issuer/subject/source URI metadata,
 freshness timestamps, and a source context derived from the bound holdout
-receipts.
+receipts. `evidence_hash` MUST be a canonical lowercase `sha256:` reference
+with a 64-character hexadecimal digest; builders normalize uppercase digest
+hex, and verifiers reject malformed or symbolic hashes.
 
 ## Modes
 
@@ -76,7 +78,7 @@ python -m trustai shadow-authority-evidence-bundle \
   --issuer-ref authority:trustai/shadow-exporter \
   --subject-ref agent:aitrade-risk-shadow@2026.07.03 \
   --authority-ref authority:shadow-holdout/provider-completeness-prod \
-  --authority-evidence requirement,provider-api,ref,sha256:hash,description \
+  --authority-evidence requirement,provider-api,ref,sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,description \
   --require-complete --require-fresh --now 2026-07-19T00:00:00Z
 
 python -m trustai shadow-authority \

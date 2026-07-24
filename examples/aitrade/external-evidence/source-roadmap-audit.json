@@ -1,7 +1,7 @@
 {
-  "audit_id": "cd8a883e7640d18b1fa8f28ba7283d3586c9005cf28bff068057f8542dbc5866",
+  "audit_id": "104f3aaf130531873871188fe021f21a5c028a6dbb4e074a9abbf5658b768cc0",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
-  "generated_at": "2026-07-24T13:45:15Z",
+  "generated_at": "2026-07-24T14:15:41Z",
   "limitations": [
     "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
     "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",
@@ -82,7 +82,7 @@
         {
           "path": "tests/test_temporal_holdout.py",
           "present": true,
-          "sha256": "sha256:6c10755995c3a0c1659f4c94de10a5db2d7dafd00fd95e71fb031a8aac6f0db4"
+          "sha256": "sha256:d136b9978998912334cdee76ef650f8ed881e1edf484114752fa83c253acf33c"
         },
         {
           "path": "tests/test_phase1_phase2.py",
@@ -681,7 +681,7 @@
         {
           "path": "tests/test_temporal_holdout.py",
           "present": true,
-          "sha256": "sha256:6c10755995c3a0c1659f4c94de10a5db2d7dafd00fd95e71fb031a8aac6f0db4"
+          "sha256": "sha256:d136b9978998912334cdee76ef650f8ed881e1edf484114752fa83c253acf33c"
         },
         {
           "path": "tests/test_phase1_phase2.py",

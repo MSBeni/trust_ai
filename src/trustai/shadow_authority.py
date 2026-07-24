@@ -758,6 +758,7 @@ def _normalize_authority_evidence(
         raise ValueError(f"authority kind {authority_kind} is not valid for requirement {requirement_id}")
     for value, field in ((evidence_ref, "evidence_ref"), (evidence_hash, "evidence_hash"), (description, "description")):
         _require_text(value, field)
+    evidence_hash = _normalize_sha256_ref(evidence_hash, "evidence_hash")
     built = {
         "requirement_id": requirement_id,
         "authority_kind": authority_kind,
@@ -781,7 +782,11 @@ def _verify_authority_evidence_bundle_item(
     now: str | None,
     require_fresh: bool,
 ) -> str:
-    normalized = _normalize_authority_evidence(item, include_source_context=False)
+    try:
+        normalized = _normalize_authority_evidence(item, include_source_context=False)
+    except ValueError as exc:
+        errors.append(f"invalid shadow authority evidence bundle item: {exc}")
+        return "missing"
     if item.get("evidence_id") != content_hash(normalized):
         errors.append(f"shadow authority evidence bundle item {item.get('requirement_id')} evidence_id mismatch")
     _verify_common_authority_fields(item, errors, warnings)
@@ -799,7 +804,11 @@ def _verify_authority_evidence_item(
     require_fresh: bool,
     source_context: dict[str, Any],
 ) -> str:
-    normalized = _normalize_authority_evidence(item, include_source_context=True, source_context=source_context)
+    try:
+        normalized = _normalize_authority_evidence(item, include_source_context=True, source_context=source_context)
+    except ValueError as exc:
+        errors.append(f"invalid shadow authority evidence item: {exc}")
+        return "missing"
     if item.get("evidence_id") != content_hash(normalized):
         errors.append(f"shadow authority evidence item {item.get('requirement_id')} evidence_id mismatch")
     if item.get("source_context") != source_context:
@@ -998,3 +1007,14 @@ def _require_text(value: Any, field: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{field} is required")
     return value.strip()
+
+
+def _normalize_sha256_ref(value: str | None, field: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{field} is required")
+    if not value.startswith("sha256:"):
+        raise ValueError(f"{field} must start with sha256:")
+    hexdigest = value.removeprefix("sha256:")
+    if len(hexdigest) != 64 or any(character not in "0123456789abcdefABCDEF" for character in hexdigest):
+        raise ValueError(f"{field} must contain a 64-character sha256 digest")
+    return "sha256:" + hexdigest.lower()

@@ -8,9 +8,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from trustai.canonical import content_hash
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
 from trustai.contracts import load_contract, register_contract
+from trustai.crypto import sign_value
 from trustai.gate import append_eval_and_gate
 from trustai.proofpack import compile_proof_pack
 from trustai.verifier import verify_proof_pack
@@ -183,6 +184,18 @@ class TemporalHoldoutTests(unittest.TestCase):
             args.extend(["--authority-evidence", value])
         return args
 
+    def _resign_shadow_authority_bundle(self, bundle: dict) -> None:
+        body = without_keys(bundle, "bundle_id", "signatures")
+        bundle_id = content_hash(body)
+        bundle["bundle_id"] = bundle_id
+        bundle["signatures"] = [sign_value({"bundle_id": bundle_id, "shadow_authority_evidence_bundle": body})]
+
+    def _resign_shadow_authority_dossier(self, dossier: dict) -> None:
+        body = without_keys(dossier, "dossier_id", "signatures")
+        dossier_id = content_hash(body)
+        dossier["dossier_id"] = dossier_id
+        dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "shadow_authority": body})]
+
     def test_shadow_authority_bundle_drives_complete_production_dossier(self):
         contract = self._contract()
         replay = self._replay()
@@ -297,6 +310,99 @@ class TemporalHoldoutTests(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("bundle_id" in error for error in result.errors))
         self.assertTrue(any("live source_uri" in error for error in result.errors))
+
+    def test_shadow_authority_evidence_hash_digest_is_canonicalized(self):
+        evidence = self._complete_shadow_authority_evidence()
+        digest = evidence[0]["evidence_hash"].removeprefix("sha256:")
+        evidence[0]["evidence_hash"] = "sha256:" + digest.upper()
+
+        bundle = build_shadow_authority_evidence_bundle(
+            authority_evidence=evidence,
+            mode="production-export",
+            environment="aitrade-prod",
+            bundle_ref="bundle:shadow/aitrade-prod/canonical-hash",
+            issuer_ref="authority:trustai/shadow-exporter",
+            subject_ref="agent:aitrade-risk-shadow@2026.07.03",
+            authority_ref="authority:shadow-holdout/provider-completeness-prod",
+            generated_at="2026-07-19T00:00:00Z",
+        )
+
+        self.assertEqual("sha256:" + digest.lower(), bundle["authority_evidence"][0]["evidence_hash"])
+
+    def test_shadow_authority_evidence_bundle_rejects_malformed_evidence_hash(self):
+        bundle = build_shadow_authority_evidence_bundle(
+            authority_evidence=self._complete_shadow_authority_evidence(),
+            mode="production-export",
+            environment="aitrade-prod",
+            bundle_ref="bundle:shadow/aitrade-prod/malformed-hash",
+            issuer_ref="authority:trustai/shadow-exporter",
+            subject_ref="agent:aitrade-risk-shadow@2026.07.03",
+            authority_ref="authority:shadow-holdout/provider-completeness-prod",
+            generated_at="2026-07-19T00:00:00Z",
+        )
+        tampered = copy.deepcopy(bundle)
+        tampered["authority_evidence"][0]["evidence_hash"] = "sha256:not-a-real-digest"
+        tampered["authority_evidence"][0]["evidence_id"] = content_hash(without_keys(tampered["authority_evidence"][0], "evidence_id"))
+        self._resign_shadow_authority_bundle(tampered)
+
+        result = verify_shadow_authority_evidence_bundle(
+            tampered,
+            require_complete=True,
+            require_fresh=True,
+            now="2026-07-19T00:00:00Z",
+        )
+
+        errors = "\n".join(result.errors)
+        self.assertFalse(result.ok)
+        self.assertIn("invalid shadow authority evidence bundle item: evidence_hash must contain a 64-character sha256 digest", errors)
+        self.assertNotIn("bundle_id does not match", errors)
+        self.assertNotIn("signature verification failed", errors)
+
+    def test_shadow_authority_dossier_rejects_malformed_evidence_hash(self):
+        contract = self._contract()
+        replay = self._replay()
+        temporal = build_temporal_holdout_manifest(contract, replay, generated_at="2026-07-03T12:10:00Z")
+        traffic_export = self._traffic_export()
+        provider_export = self._provider_export(traffic_export)
+        completeness = self._traffic_completeness_receipt(traffic_export, provider_export)
+        dossier = build_shadow_authority_dossier(
+            contract,
+            replay,
+            temporal,
+            traffic_export,
+            completeness,
+            provider_export=provider_export,
+            mode="production-dossier",
+            environment="aitrade-prod",
+            dossier_ref="dossier:shadow/aitrade-prod/malformed-hash",
+            authority_ref="authority:shadow-holdout/provider-completeness-prod",
+            producer_ref="service:trustai-shadow-authority",
+            authority_evidence=self._complete_shadow_authority_evidence(),
+            generated_at="2026-07-19T00:05:00Z",
+        )
+        tampered = copy.deepcopy(dossier)
+        tampered["authority_evidence"][0]["evidence_hash"] = "sha256:not-a-real-digest"
+        tampered["authority_evidence"][0]["evidence_id"] = content_hash(without_keys(tampered["authority_evidence"][0], "evidence_id"))
+        self._resign_shadow_authority_dossier(tampered)
+
+        result = verify_shadow_authority_dossier(
+            tampered,
+            contract=contract,
+            replay=replay,
+            temporal_holdout=temporal,
+            traffic_export=traffic_export,
+            traffic_completeness=completeness,
+            provider_export=provider_export,
+            require_complete=True,
+            require_fresh=True,
+            now="2026-07-19T00:05:00Z",
+        )
+
+        errors = "\n".join(result.errors)
+        self.assertFalse(result.ok)
+        self.assertIn("invalid shadow authority evidence item: evidence_hash must contain a 64-character sha256 digest", errors)
+        self.assertNotIn("dossier_id does not match", errors)
+        self.assertNotIn("signature verification failed", errors)
 
     def test_cli_shadow_authority_bundle_round_trip(self):
         contract = self._contract()
