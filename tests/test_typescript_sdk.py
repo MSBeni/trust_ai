@@ -18,15 +18,34 @@ NODE_CANDIDATES = [
 ]
 
 
+def _node_major(candidate: str) -> int | None:
+    try:
+        result = subprocess.run(
+            [candidate, "--version"],
+            text=True,
+            capture_output=True,
+            timeout=5,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if result.returncode != 0:
+        return None
+    version = result.stdout.strip().lstrip("v")
+    try:
+        return int(version.split(".", 1)[0])
+    except (TypeError, ValueError):
+        return None
+
+
 def _node_path() -> str | None:
     for candidate in NODE_CANDIDATES:
-        if candidate and Path(candidate).exists():
+        if candidate and Path(candidate).exists() and (_node_major(candidate) or 0) >= 16:
             return candidate
     return None
 
 
 class TypeScriptSDKTests(unittest.TestCase):
-    @unittest.skipUnless(_node_path(), "Node.js runtime is not available")
+    @unittest.skipUnless(_node_path(), "Node.js >= 16 runtime is not available")
     def test_typescript_sdk_posts_events_to_ingest_api(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             state_path = Path(tmp_dir) / "typescript-sdk-chain.json"

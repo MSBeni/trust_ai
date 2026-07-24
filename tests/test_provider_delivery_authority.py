@@ -19,6 +19,7 @@ from trustai.provider_delivery_authority import (
     verify_provider_delivery_authority_dossier,
 )
 from trustai.provider_delivery_worker_bundle import build_provider_delivery_worker_bundle
+from tests.test_provider_delivery_worker import build_provider_delivery_worker_fixture, write_provider_delivery_worker_sources
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -35,38 +36,35 @@ class ProviderDeliveryAuthorityTests(unittest.TestCase):
         dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "provider_delivery_authority": body})]
 
     def _sources(self):
-        payload_artifact_path = "artifacts/github-check-run-payload.json"
-        service_path = ROOT / "artifacts" / "provider-delivery-service-attestation.json"
-        worker_path = ROOT / "artifacts" / "provider-delivery-worker.json"
-        delivery_path = ROOT / "artifacts" / "github-check-run-delivery.json"
-        payload_path = ROOT / payload_artifact_path
-        operations_path = ROOT / "artifacts" / "provider-operations-service-attestation.json"
-        service = json.loads(service_path.read_text(encoding="utf-8"))
-        worker = json.loads(worker_path.read_text(encoding="utf-8"))
-        delivery = json.loads(delivery_path.read_text(encoding="utf-8"))
-        payload = json.loads(payload_path.read_text(encoding="utf-8"))
-        operations = json.loads(operations_path.read_text(encoding="utf-8"))
+        tmp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp_dir.cleanup)
+        tmp = Path(tmp_dir.name)
+        sources, worker = build_provider_delivery_worker_fixture(tmp)
+        service = sources["service_attestation"]
+        paths = write_provider_delivery_worker_sources(tmp, sources)
+        worker_path = tmp / "provider-delivery-worker.json"
+        _write_json(worker_path, worker)
         bundle = build_provider_delivery_worker_bundle(
             worker,
             service,
-            delivery,
-            payload=payload,
-            provider_operations_service=operations,
+            sources["delivery"],
+            payload=sources["payload"],
+            provider_operations_service=sources["provider_operations_service"],
             artifact_paths={
                 "worker_receipt": worker_path,
-                "service_attestation": service_path,
-                "delivery": delivery_path,
-                "payload": payload_path,
-                "provider_operations_service": operations_path,
+                "service_attestation": paths["service_attestation"],
+                "delivery": paths["delivery"],
+                "payload": paths["payload"],
+                "provider_operations_service": paths["provider_operations_service"],
             },
             reviewer_ref="oidc:auditor.example/provider-delivery-reviewer",
             generated_at="2026-07-08T05:17:00Z",
         )
         return {
-            "delivery": delivery,
-            "payload": payload,
-            "payload_artifact_path": payload_artifact_path,
-            "provider_operations_service": operations,
+            "delivery": sources["delivery"],
+            "payload": sources["payload"],
+            "payload_artifact_path": sources["payload_artifact_path"],
+            "provider_operations_service": sources["provider_operations_service"],
             "worker_bundles": [bundle],
         }, service, [worker]
 
@@ -239,9 +237,10 @@ class ProviderDeliveryAuthorityTests(unittest.TestCase):
             _write_json(service_path, service)
             _write_json(worker_path, workers[0])
             _write_json(bundle_path, sources["worker_bundles"][0])
-            delivery_path = "artifacts/github-check-run-delivery.json"
-            payload_path = "artifacts/github-check-run-payload.json"
-            operations_path = "artifacts/provider-operations-service-attestation.json"
+            source_paths = write_provider_delivery_worker_sources(tmp, {**sources, "service_attestation": service})
+            delivery_path = source_paths["delivery"]
+            payload_path = sources["payload_artifact_path"]
+            operations_path = source_paths["provider_operations_service"]
 
             evidence_arg = (
                 "hosted-dispatch-worker-fleet,hosted-service,service:provider-delivery/github-prod,"

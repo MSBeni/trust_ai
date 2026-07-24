@@ -10,6 +10,7 @@ from pathlib import Path
 from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
 from trustai.crypto import sign_value
+from tests.test_provider_operations_service import build_provider_operations_service_fixture
 from trustai.provider_operations_authority import (
     PRODUCTION_AUTHORITY_REQUIREMENT_IDS,
     PROVIDER_OPERATIONS_AUTHORITY_ENTRY_TYPE,
@@ -34,7 +35,9 @@ class ProviderOperationsAuthorityTests(unittest.TestCase):
         dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "provider_operations_authority": body})]
 
     def _service(self):
-        attestation = json.loads((ROOT / "artifacts" / "provider-operations-service-attestation.json").read_text(encoding="utf-8"))
+        tmp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp_dir.cleanup)
+        _, attestation = build_provider_operations_service_fixture(Path(tmp_dir.name))
         return {}, attestation
 
     def _authority_evidence(self) -> list[dict]:

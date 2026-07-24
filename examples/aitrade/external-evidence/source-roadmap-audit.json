@@ -1,7 +1,7 @@
 {
-  "audit_id": "9488914d9d534a850a10042e43c463d786689a0405f6dbd809ad890946bb933f",
+  "audit_id": "5ab83bb8ffa053121ea2a02fcf51ad58479b3224b2465a8f22b805ea2ca60078",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
-  "generated_at": "2026-07-24T09:46:16Z",
+  "generated_at": "2026-07-24T10:19:11Z",
   "limitations": [
     "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
     "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",
@@ -335,7 +335,7 @@
         {
           "path": "tests/test_typescript_sdk.py",
           "present": true,
-          "sha256": "sha256:d509110ec92055e237d6e6af68892ab2c86590ec0988d057ea12dfca9321f032"
+          "sha256": "sha256:3d49e16c20681926ffbabcb28ad1889589329668084beefc9328a4e4029cdc7f"
         }
       ],
       "evidence_count": 8,
@@ -504,7 +504,7 @@
         {
           "path": "tests/test_typescript_sdk.py",
           "present": true,
-          "sha256": "sha256:d509110ec92055e237d6e6af68892ab2c86590ec0988d057ea12dfca9321f032"
+          "sha256": "sha256:3d49e16c20681926ffbabcb28ad1889589329668084beefc9328a4e4029cdc7f"
         },
         {
           "path": "tests/test_mcp_gateway.py",
@@ -812,17 +812,17 @@
         {
           "path": "tests/test_provider_delivery_authority.py",
           "present": true,
-          "sha256": "sha256:1524a6d1fbb755d80906707790328c31c089ccea21152111230fd64f5a0ecb6a"
+          "sha256": "sha256:7bec4579bd3e11560883532928f8611852040ba6590f6c83e0b6a1c8a50bcee4"
         },
         {
           "path": "tests/test_provider_delivery_worker.py",
           "present": true,
-          "sha256": "sha256:43f56fa02c2157dcfa09f263f72e9946f97b2853b1b88a8295ef186f1a89479f"
+          "sha256": "sha256:13c208e7dea7a58d41877e7e7e2ddeb1414b939504705353483a66890197cce2"
         },
         {
           "path": "tests/test_provider_delivery_worker_bundle.py",
           "present": true,
-          "sha256": "sha256:bb27d5cebe592de339bfbd52ea1dbdc79b8b32d405371588b944568d3f4f00b6"
+          "sha256": "sha256:065a63722a92e37878c7327f7fe7b54297654b8531fa321c5df785f6da214f31"
         },
         {
           "path": "tests/test_provider_webhook.py",

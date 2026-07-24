@@ -7,6 +7,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from tests.test_provider_delivery_service import (
+    build_provider_delivery_service_fixture,
+    write_provider_delivery_sources,
+)
 from trustai.chain import EvidenceChain
 from trustai.delivery import build_provider_delivery
 from trustai.provider_audit import build_provider_audit_correlation
@@ -27,15 +31,85 @@ def _load(path: str) -> dict:
     return json.loads((ROOT / path).read_text(encoding="utf-8"))
 
 
+def build_provider_delivery_worker_sources(tmp: Path) -> dict:
+    sources, service_attestation = build_provider_delivery_service_fixture(tmp)
+    return {**sources, "service_attestation": service_attestation}
+
+
+def provider_delivery_worker_values(sources: dict, **overrides) -> dict:
+    values = {
+        **sources,
+        "mode": "dispatch-worker",
+        "environment": "aitrade-prod",
+        "worker_ref": "worker:provider-delivery/github",
+        "run_ref": "worker-run:provider-delivery/github/2026-07-08T05:15:00Z",
+        "operation_kind": "provider_payload_dispatch",
+        "actor_ref": "oidc:trustai.example/provider-delivery-worker",
+        "schedule_ref": "schedule:provider-delivery/github/continuous",
+        "cadence_seconds": 30,
+        "lease_ref": "lease:provider-delivery/github/2026-07-08T05:15:00Z",
+        "checkpoint_ref": "checkpoint:provider-delivery/github",
+        "checkpoint_hash": "sha256:provider-delivery-worker-checkpoint",
+        "previous_cursor_ref": "cursor:provider-delivery/github/before",
+        "next_cursor_ref": "cursor:provider-delivery/github/after",
+        "next_run_at": "2026-07-08T05:15:30Z",
+        "attempt": 1,
+        "max_attempts": 3,
+        "queue_ref": "queue:provider-delivery/github",
+        "queue_message_ref": "queue-message:provider-delivery/github/check-run",
+        "dead_letter_queue_ref": "queue:provider-delivery/github-dlq",
+        "destination_ref": sources["delivery"]["target_url"],
+        "idempotency_record_hash": "sha256:provider-delivery-worker-idempotency",
+        "provider_request_ref": "provider-request:github/check-run/2026-07-08T05:15:00Z",
+        "request_hash": "sha256:provider-delivery-worker-request",
+        "rate_limit_bucket_ref": "github:rate-limit/checks",
+        "delivery_log_ref": "delivery-log:provider-delivery/github",
+        "delivery_log_root": "sha256:provider-delivery-worker-delivery-root",
+        "provider_event_log_ref": "github:check-run-events/aitrade",
+        "provider_event_log_root": "sha256:provider-delivery-worker-provider-event-root",
+        "metrics_ref": "metrics:provider-delivery/workers",
+        "audit_log_ref": "audit-log:provider-delivery/workers",
+        "audit_log_root": "sha256:provider-delivery-worker-audit-root",
+        "credential_ref": "env:PROVIDER_DELIVERY_WORKER_TOKEN",
+        "provider_credential_ref": "env:GITHUB_TOKEN",
+        "retention_until": "2033-07-08T00:00:00Z",
+        "evidence_refs": ["evidence:provider-delivery/worker"],
+        "started_at": "2026-07-08T05:15:00Z",
+        "completed_at": "2026-07-08T05:15:01Z",
+    }
+    values.update(overrides)
+    return values
+
+
+def build_provider_delivery_worker_fixture(tmp: Path) -> tuple[dict, dict]:
+    sources = build_provider_delivery_worker_sources(tmp)
+    return sources, build_provider_delivery_worker_receipt(**provider_delivery_worker_values(sources))
+
+
+def write_provider_delivery_worker_sources(tmp: Path, sources: dict) -> dict[str, Path]:
+    paths = write_provider_delivery_sources(tmp, sources)
+    paths["service_attestation"] = tmp / "provider-delivery-service-attestation.json"
+    paths["service_attestation"].write_text(json.dumps(sources["service_attestation"], indent=2, sort_keys=True), encoding="utf-8")
+    return paths
+
+
+def provider_delivery_worker_source_args(paths: dict[str, Path]) -> list[str]:
+    return [
+        str(paths["delivery"]),
+        "--service-attestation",
+        str(paths["service_attestation"]),
+        "--payload",
+        str(paths["payload"]),
+        "--provider-operations-service",
+        str(paths["provider_operations_service"]),
+    ]
+
+
 class ProviderDeliveryWorkerTests(unittest.TestCase):
     def _sources(self) -> dict:
-        return {
-            "service_attestation": _load("artifacts/provider-delivery-service-attestation.json"),
-            "delivery": _load("artifacts/github-check-run-delivery.json"),
-            "payload": _load("artifacts/github-check-run-payload.json"),
-            "payload_artifact_path": "artifacts/github-check-run-payload.json",
-            "provider_operations_service": _load("artifacts/provider-operations-service-attestation.json"),
-        }
+        tmp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp_dir.cleanup)
+        return build_provider_delivery_worker_sources(Path(tmp_dir.name))
 
     def _recorded_response_sources(self) -> dict:
         sources = self._sources()
@@ -138,52 +212,11 @@ class ProviderDeliveryWorkerTests(unittest.TestCase):
 
     def _receipt(self, **overrides):
         sources = self._sources()
-        values = {
-            **sources,
-            "mode": "dispatch-worker",
-            "environment": "aitrade-prod",
-            "worker_ref": "worker:provider-delivery/github",
-            "run_ref": "worker-run:provider-delivery/github/2026-07-08T05:15:00Z",
-            "operation_kind": "provider_payload_dispatch",
-            "actor_ref": "oidc:trustai.example/provider-delivery-worker",
-            "schedule_ref": "schedule:provider-delivery/github/continuous",
-            "cadence_seconds": 30,
-            "lease_ref": "lease:provider-delivery/github/2026-07-08T05:15:00Z",
-            "checkpoint_ref": "checkpoint:provider-delivery/github",
-            "checkpoint_hash": "sha256:provider-delivery-worker-checkpoint",
-            "previous_cursor_ref": "cursor:provider-delivery/github/before",
-            "next_cursor_ref": "cursor:provider-delivery/github/after",
-            "next_run_at": "2026-07-08T05:15:30Z",
-            "attempt": 1,
-            "max_attempts": 3,
-            "queue_ref": "queue:provider-delivery/github",
-            "queue_message_ref": "queue-message:provider-delivery/github/check-run",
-            "dead_letter_queue_ref": "queue:provider-delivery/github-dlq",
-            "destination_ref": sources["delivery"]["target_url"],
-            "idempotency_record_hash": "sha256:provider-delivery-worker-idempotency",
-            "provider_request_ref": "provider-request:github/check-run/2026-07-08T05:15:00Z",
-            "request_hash": "sha256:provider-delivery-worker-request",
-            "rate_limit_bucket_ref": "github:rate-limit/checks",
-            "delivery_log_ref": "delivery-log:provider-delivery/github",
-            "delivery_log_root": "sha256:provider-delivery-worker-delivery-root",
-            "provider_event_log_ref": "github:check-run-events/aitrade",
-            "provider_event_log_root": "sha256:provider-delivery-worker-provider-event-root",
-            "metrics_ref": "metrics:provider-delivery/workers",
-            "audit_log_ref": "audit-log:provider-delivery/workers",
-            "audit_log_root": "sha256:provider-delivery-worker-audit-root",
-            "credential_ref": "env:PROVIDER_DELIVERY_WORKER_TOKEN",
-            "provider_credential_ref": "env:GITHUB_TOKEN",
-            "retention_until": "2033-07-08T00:00:00Z",
-            "evidence_refs": ["evidence:provider-delivery/worker"],
-            "started_at": "2026-07-08T05:15:00Z",
-            "completed_at": "2026-07-08T05:15:01Z",
-        }
-        values.update(overrides)
-        return build_provider_delivery_worker_receipt(**values)
+        return build_provider_delivery_worker_receipt(**provider_delivery_worker_values(sources, **overrides))
 
     def test_provider_delivery_worker_verifies_and_appends(self):
         sources = self._sources()
-        receipt = self._receipt()
+        receipt = self._receipt(**sources)
         result = verify_provider_delivery_worker_receipt(receipt, **sources)
         with tempfile.TemporaryDirectory() as tmp_dir:
             chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="provider-delivery-worker-test")
@@ -199,7 +232,7 @@ class ProviderDeliveryWorkerTests(unittest.TestCase):
 
     def test_provider_delivery_worker_replays_delivery_payload_artifact(self):
         sources = self._sources()
-        receipt = self._receipt()
+        receipt = self._receipt(**sources)
 
         result = verify_provider_delivery_worker_receipt(receipt, **sources)
 
@@ -281,7 +314,7 @@ class ProviderDeliveryWorkerTests(unittest.TestCase):
 
     def test_provider_delivery_worker_rejects_delivery_source_tamper(self):
         sources = self._sources()
-        receipt = self._receipt()
+        receipt = self._receipt(**sources)
         tampered_sources = dict(sources)
         tampered_sources["delivery"] = copy.deepcopy(sources["delivery"])
         tampered_sources["delivery"]["target_url"] = "https://api.github.com/repos/other/repo/check-runs"
@@ -293,7 +326,7 @@ class ProviderDeliveryWorkerTests(unittest.TestCase):
 
     def test_provider_delivery_worker_rejects_raw_credential(self):
         sources = self._sources()
-        receipt = self._receipt()
+        receipt = self._receipt(**sources)
         receipt["provider_credential"] = "github-token-raw"
 
         result = verify_provider_delivery_worker_receipt(receipt, **sources)
@@ -309,15 +342,9 @@ class ProviderDeliveryWorkerTests(unittest.TestCase):
             entry_path = tmp / "provider-delivery-worker-entry.json"
             state_path = tmp / "provider-delivery-worker-chain.json"
             env = {**os.environ, "PYTHONPATH": str(ROOT / "src")}
-            sources = [
-                "artifacts/github-check-run-delivery.json",
-                "--service-attestation",
-                "artifacts/provider-delivery-service-attestation.json",
-                "--payload",
-                "artifacts/github-check-run-payload.json",
-                "--provider-operations-service",
-                "artifacts/provider-operations-service-attestation.json",
-            ]
+            fixture_sources = build_provider_delivery_worker_sources(tmp)
+            source_paths = write_provider_delivery_worker_sources(tmp, fixture_sources)
+            sources = provider_delivery_worker_source_args(source_paths)
             worker_args = [
                 "--mode",
                 "dispatch-worker",

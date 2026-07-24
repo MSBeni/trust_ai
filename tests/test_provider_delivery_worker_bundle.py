@@ -36,6 +36,7 @@ def _write_json(path: Path, value: object) -> None:
 class ProviderDeliveryWorkerBundleTests(unittest.TestCase):
     def _sources(self, tmp: Path):
         helper = ProviderDeliveryWorkerTests(methodName="test_provider_delivery_worker_verifies_and_appends")
+        self.addCleanup(helper.doCleanups)
         sources = helper._recorded_response_with_provider_audit_sources()
         receipt = helper._receipt(**sources)
         paths = {
