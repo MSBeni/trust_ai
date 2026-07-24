@@ -35,6 +35,9 @@ class ProviderDeliveryAuthorityTests(unittest.TestCase):
         dossier["dossier_id"] = dossier_id
         dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "provider_delivery_authority": body})]
 
+    def _authority_evidence_hash(self, requirement_id: str, authority_kind: str) -> str:
+        return "sha256:" + content_hash({"provider_delivery_authority": requirement_id, "authority_kind": authority_kind})
+
     def _sources(self):
         tmp_dir = tempfile.TemporaryDirectory()
         self.addCleanup(tmp_dir.cleanup)
@@ -74,7 +77,7 @@ class ProviderDeliveryAuthorityTests(unittest.TestCase):
                 "requirement_id": "hosted-dispatch-worker-fleet",
                 "authority_kind": "hosted-service",
                 "evidence_ref": "service:provider-delivery/github-prod",
-                "evidence_hash": "sha256:provider-delivery-hosted-fleet-authority",
+                "evidence_hash": self._authority_evidence_hash("hosted-dispatch-worker-fleet", "hosted-service"),
                 "description": "Hosted provider delivery dispatch worker fleet export.",
                 "issuer": "TrustAI Cloud",
                 "subject": "aitrade-prod provider delivery dispatch fleet",
@@ -86,7 +89,7 @@ class ProviderDeliveryAuthorityTests(unittest.TestCase):
                 "requirement_id": "production-provider-credentials",
                 "authority_kind": "kms-hsm",
                 "evidence_ref": "kms:provider-delivery/github-token",
-                "evidence_hash": "sha256:provider-delivery-credential-authority",
+                "evidence_hash": self._authority_evidence_hash("production-provider-credentials", "kms-hsm"),
                 "description": "Provider delivery token KMS custody and rotation audit export.",
                 "issuer": "Example KMS",
                 "subject": "github provider delivery token custody",
@@ -136,6 +139,36 @@ class ProviderDeliveryAuthorityTests(unittest.TestCase):
         self.assertTrue(entry["payload"]["worker_bundle_bindings"][0]["retained_payload_artifact_replayed"])
         self.assertEqual(dossier["authority_evidence"][0]["source_context"], entry["payload"]["authority_evidence"][0]["source_context"])
         self.assertEqual({"deferred": 1, "passed": 6}, entry["payload"]["control_summary"])
+
+    def test_provider_delivery_authority_normalizes_uppercase_evidence_hash(self):
+        expected_hash = self._authority_evidence_hash("hosted-dispatch-worker-fleet", "hosted-service")
+        evidence = [dict(self._authority_evidence()[0])]
+        evidence[0]["evidence_hash"] = "sha256:" + expected_hash.removeprefix("sha256:").upper()
+        sources, service, workers, dossier = self._dossier(authority_evidence=evidence)
+
+        result = verify_provider_delivery_authority_dossier(dossier, service_attestation=service, worker_receipts=workers, **sources)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(expected_hash, dossier["authority_evidence"][0]["evidence_hash"])
+
+    def test_provider_delivery_authority_rejects_resigned_malformed_evidence_hash(self):
+        sources, service, workers, dossier = self._dossier()
+        tampered = copy.deepcopy(dossier)
+        item = tampered["authority_evidence"][0]
+        item["evidence_hash"] = "sha256:not-a-real-digest"
+        item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+        self._resign_dossier(tampered)
+
+        result = verify_provider_delivery_authority_dossier(tampered, service_attestation=service, worker_receipts=workers, **sources)
+
+        self.assertFalse(result.ok)
+        self.assertIn(
+            "invalid provider delivery authority evidence: evidence_hash must contain a 64-character sha256 digest",
+            result.errors,
+        )
+        self.assertNotIn("dossier_id does not match canonical provider delivery authority body", result.errors)
+        self.assertNotIn("provider delivery authority signature verification failed", result.errors)
+        self.assertNotIn("provider delivery authority evidence_id does not match evidence body: hosted-dispatch-worker-fleet", result.errors)
 
     def test_provider_delivery_authority_detects_worker_tamper(self):
         sources, service, workers, dossier = self._dossier()
@@ -242,9 +275,10 @@ class ProviderDeliveryAuthorityTests(unittest.TestCase):
             payload_path = sources["payload_artifact_path"]
             operations_path = source_paths["provider_operations_service"]
 
+            expected_hash = self._authority_evidence_hash("hosted-dispatch-worker-fleet", "hosted-service")
             evidence_arg = (
                 "hosted-dispatch-worker-fleet,hosted-service,service:provider-delivery/github-prod,"
-                "sha256:provider-delivery-hosted-fleet-authority,Hosted provider delivery dispatch worker fleet export;"
+                f"{expected_hash},Hosted provider delivery dispatch worker fleet export;"
                 "issuer=TrustAI Cloud;subject=aitrade-prod provider delivery dispatch fleet;"
                 "source_uri=https://ops.example/trustai/provider-delivery/github-prod;"
                 "issued_at=2026-07-08T05:40:00Z;expires_at=2026-07-15T05:40:00Z"
