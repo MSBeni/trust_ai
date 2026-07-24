@@ -1,7 +1,7 @@
 {
-  "audit_id": "38ca33a0fb030cbfc8828ea57154c04e6977c2fb01034aa1c257712b499719ac",
+  "audit_id": "4c8e98eb4825fa8bbe974fa257bf5baa456171419e4f379280aea72f6f9d0b83",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
-  "generated_at": "2026-07-24T11:47:49Z",
+  "generated_at": "2026-07-24T12:08:13Z",
   "limitations": [
     "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
     "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",
@@ -82,7 +82,7 @@
         {
           "path": "tests/test_temporal_holdout.py",
           "present": true,
-          "sha256": "sha256:a8aba8786c7116c7d57aa4c2c69588577fc7bafe5e521cd714549188bf343789"
+          "sha256": "sha256:6c10755995c3a0c1659f4c94de10a5db2d7dafd00fd95e71fb031a8aac6f0db4"
         },
         {
           "path": "tests/test_phase1_phase2.py",
@@ -394,7 +394,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:df0e336739a3516fb642b222baacb21d4cf4012c693f59f93cea8badc7c14ecf"
+          "sha256": "sha256:fc1b8363de82dd89665fe0c61dfaadee60b4b11164a9b63dd003c41620c81add"
         },
         {
           "path": "src/trustai/sdk.py",
@@ -606,7 +606,7 @@
         {
           "path": "docs/specs/temporal-holdout-manifest-v0.1.md",
           "present": true,
-          "sha256": "sha256:ad2ca1686e0c65a6dbccd04d615f6dc00553493cc1c7ccdcbe0c93afe22fe611"
+          "sha256": "sha256:b8a65c2a295f209d722d91e68285cb220901f9053791240f6ad54ec1883e3143"
         },
         {
           "path": "docs/specs/traffic-holdout-export-v0.1.md",
@@ -636,7 +636,7 @@
         {
           "path": "src/trustai/shadow.py",
           "present": true,
-          "sha256": "sha256:236ae91e76df51a94f938b1e6bf5c1a49d0be4b333e63f648f65aeb73ccaa42d"
+          "sha256": "sha256:c49c353cc96452c7938a1a82b507de932f10cf517c83a933a6704f7a38f40761"
         },
         {
           "path": "src/trustai/lifecycle.py",
@@ -681,7 +681,7 @@
         {
           "path": "tests/test_temporal_holdout.py",
           "present": true,
-          "sha256": "sha256:a8aba8786c7116c7d57aa4c2c69588577fc7bafe5e521cd714549188bf343789"
+          "sha256": "sha256:6c10755995c3a0c1659f4c94de10a5db2d7dafd00fd95e71fb031a8aac6f0db4"
         },
         {
           "path": "tests/test_phase1_phase2.py",
@@ -706,7 +706,7 @@
       ],
       "evidence_count": 21,
       "external_authority_required": [
-        "Traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
+        "Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
       ],
       "id": "shadow-replay-temporal-holdout",
       "missing_evidence_count": 0,
@@ -918,7 +918,7 @@
         {
           "path": "src/trustai/shadow.py",
           "present": true,
-          "sha256": "sha256:236ae91e76df51a94f938b1e6bf5c1a49d0be4b333e63f648f65aeb73ccaa42d"
+          "sha256": "sha256:c49c353cc96452c7938a1a82b507de932f10cf517c83a933a6704f7a38f40761"
         },
         {
           "path": "src/trustai/lifecycle.py",
@@ -1186,7 +1186,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:df0e336739a3516fb642b222baacb21d4cf4012c693f59f93cea8badc7c14ecf"
+          "sha256": "sha256:fc1b8363de82dd89665fe0c61dfaadee60b4b11164a9b63dd003c41620c81add"
         },
         {
           "path": "src/trustai/object_store.py",
@@ -1292,7 +1292,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:df0e336739a3516fb642b222baacb21d4cf4012c693f59f93cea8badc7c14ecf"
+          "sha256": "sha256:fc1b8363de82dd89665fe0c61dfaadee60b4b11164a9b63dd003c41620c81add"
         },
         {
           "path": "docs/specs/compliance-production-authority-v0.1.md",
@@ -1423,12 +1423,12 @@
         {
           "path": "src/trustai/standards.py",
           "present": true,
-          "sha256": "sha256:a4bc4e0a323ab5e646211056bacb71c48415578421314cf68fdb872fb6f3e3e2"
+          "sha256": "sha256:e9fd5a1929716d9b960b07026c121c386b919f049ac222f247503c5598382791"
         },
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:ff1ca8eb38c15dc31cc7a2fe932b50b27cb6039d8fba5149bd0f073a0b3ce587"
+          "sha256": "sha256:38604d230396ae8125095fb0aa7aaf5c0cb4eb32056ec5badc0ea44b1f5ebd63"
         },
         {
           "path": "src/trustai/trust_authority.py",
@@ -1640,7 +1640,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:df0e336739a3516fb642b222baacb21d4cf4012c693f59f93cea8badc7c14ecf"
+          "sha256": "sha256:fc1b8363de82dd89665fe0c61dfaadee60b4b11164a9b63dd003c41620c81add"
         },
         {
           "path": "src/trustai/underwriting_quote.py",
@@ -1831,7 +1831,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:ff1ca8eb38c15dc31cc7a2fe932b50b27cb6039d8fba5149bd0f073a0b3ce587"
+          "sha256": "sha256:38604d230396ae8125095fb0aa7aaf5c0cb4eb32056ec5badc0ea44b1f5ebd63"
         },
         {
           "path": "tests/test_reliability_report.py",
@@ -1947,7 +1947,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:ff1ca8eb38c15dc31cc7a2fe932b50b27cb6039d8fba5149bd0f073a0b3ce587"
+          "sha256": "sha256:38604d230396ae8125095fb0aa7aaf5c0cb4eb32056ec5badc0ea44b1f5ebd63"
         },
         {
           "path": "tests/test_phase_scoreboard.py",
@@ -2018,7 +2018,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:ff1ca8eb38c15dc31cc7a2fe932b50b27cb6039d8fba5149bd0f073a0b3ce587"
+          "sha256": "sha256:38604d230396ae8125095fb0aa7aaf5c0cb4eb32056ec5badc0ea44b1f5ebd63"
         },
         {
           "path": "tests/test_product_scope.py",
@@ -2195,7 +2195,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:df0e336739a3516fb642b222baacb21d4cf4012c693f59f93cea8badc7c14ecf"
+          "sha256": "sha256:fc1b8363de82dd89665fe0c61dfaadee60b4b11164a9b63dd003c41620c81add"
         },
         {
           "path": "docs/specs/identity-provider-attestation-v0.1.md",
@@ -2306,7 +2306,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:df0e336739a3516fb642b222baacb21d4cf4012c693f59f93cea8badc7c14ecf"
+          "sha256": "sha256:fc1b8363de82dd89665fe0c61dfaadee60b4b11164a9b63dd003c41620c81add"
         },
         {
           "path": "examples/aitrade/delegation.json",
@@ -2365,7 +2365,7 @@
         {
           "path": "src/trustai/standards.py",
           "present": true,
-          "sha256": "sha256:a4bc4e0a323ab5e646211056bacb71c48415578421314cf68fdb872fb6f3e3e2"
+          "sha256": "sha256:e9fd5a1929716d9b960b07026c121c386b919f049ac222f247503c5598382791"
         },
         {
           "path": "src/trustai/standards_body_submission.py",

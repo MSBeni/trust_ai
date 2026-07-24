@@ -970,6 +970,55 @@ class TemporalHoldoutTests(unittest.TestCase):
             manifest["records"][1]["previous_record_node_hash"],
         )
 
+    def test_temporal_holdout_manifest_replays_retained_source_bytes(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            replay_path = Path(tmp_dir) / "shadow-replay.json"
+            replay_path.write_text(json.dumps(self._replay(), indent=2, sort_keys=True), encoding="utf-8")
+            replay = load_shadow_replay(replay_path)
+            manifest = build_temporal_holdout_manifest(
+                self._contract(),
+                replay,
+                generated_at="2026-07-03T12:30:00Z",
+                replay_source_path=replay_path,
+            )
+            result = verify_temporal_holdout_manifest(
+                manifest,
+                contract=self._contract(),
+                replay=replay,
+                replay_source_path=replay_path,
+            )
+            artifact_sha = _sha256_ref(replay_path)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(artifact_sha, manifest["replay_source_artifact"]["sha256"])
+        self.assertEqual(content_hash(replay), manifest["replay_source_artifact"]["replay_hash"])
+        self.assertEqual(manifest["record_count"], manifest["replay_source_artifact"]["record_count"])
+
+    def test_temporal_holdout_manifest_detects_retained_source_byte_tamper(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            replay_path = Path(tmp_dir) / "shadow-replay.json"
+            replay_body = self._replay()
+            replay_path.write_text(json.dumps(replay_body, indent=2, sort_keys=True), encoding="utf-8")
+            replay = load_shadow_replay(replay_path)
+            manifest = build_temporal_holdout_manifest(
+                self._contract(),
+                replay,
+                generated_at="2026-07-03T12:30:00Z",
+                replay_source_path=replay_path,
+            )
+            replay_path.write_text(json.dumps(replay_body, indent=4, sort_keys=True), encoding="utf-8")
+            result = verify_temporal_holdout_manifest(
+                manifest,
+                contract=self._contract(),
+                replay=load_shadow_replay(replay_path),
+                replay_source_path=replay_path,
+            )
+
+        self.assertFalse(result.ok)
+        errors = "\n".join(result.errors)
+        self.assertIn("replay_source_artifact", errors)
+        self.assertIn("bytes", errors)
+
     def test_temporal_holdout_manifest_appends_to_chain(self):
         manifest = build_temporal_holdout_manifest(
             self._contract(),
@@ -1190,6 +1239,9 @@ class TemporalHoldoutTests(unittest.TestCase):
             entry = json.loads(entry_path.read_text(encoding="utf-8"))
 
         self.assertEqual(manifest["manifest_id"], entry["payload"]["manifest_id"])
+        self.assertIn("replay_source_artifact", manifest)
+        self.assertEqual(_sha256_ref(SHADOW), manifest["replay_source_artifact"]["sha256"])
+        self.assertEqual(manifest["replay_source_artifact"], entry["payload"]["replay_source_artifact"])
 
 
 if __name__ == "__main__":

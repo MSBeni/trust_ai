@@ -6205,9 +6205,10 @@ def cmd_temporal_holdout_manifest(args: argparse.Namespace) -> int:
             contract,
             replay,
             generated_at=args.generated_at,
+            replay_source_path=args.replay,
             key=args.key,
         )
-        result = verify_temporal_holdout_manifest(manifest, contract=contract, replay=replay, key=args.key)
+        result = verify_temporal_holdout_manifest(manifest, contract=contract, replay=replay, replay_source_path=args.replay, key=args.key)
     except (OSError, ValueError) as exc:
         print(f"temporal holdout manifest generation failed: {exc}", file=sys.stderr)
         return 1
@@ -6234,7 +6235,13 @@ def cmd_temporal_holdout_verify(args: argparse.Namespace) -> int:
     except (OSError, ValueError) as exc:
         print(f"temporal holdout verification failed: {exc}", file=sys.stderr)
         return 1
-    result = verify_temporal_holdout_manifest(manifest, contract=contract, replay=replay, key=args.key)
+    result = verify_temporal_holdout_manifest(
+        manifest,
+        contract=contract,
+        replay=replay,
+        replay_source_path=args.replay if args.replay else None,
+        key=args.key,
+    )
     if result.ok:
         print(f"verified temporal holdout manifest: {args.manifest}")
         print(f"manifest id: {manifest['manifest_id']}")
@@ -6259,7 +6266,14 @@ def cmd_temporal_holdout_append(args: argparse.Namespace) -> int:
         return 1
     chain = _load_chain(args)
     try:
-        entry = append_temporal_holdout_manifest(chain, manifest, contract=contract, replay=replay, key=args.key)
+        entry = append_temporal_holdout_manifest(
+            chain,
+            manifest,
+            contract=contract,
+            replay=replay,
+            replay_source_path=args.replay if args.replay else None,
+            key=args.key,
+        )
     except ValueError as exc:
         print(f"temporal holdout append failed: {exc}", file=sys.stderr)
         return 1

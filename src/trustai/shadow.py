@@ -94,6 +94,7 @@ def build_temporal_holdout_manifest(
     replay: dict[str, Any],
     *,
     generated_at: str | None = None,
+    replay_source_path: str | Path | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
     records = _shadow_records(replay)
@@ -141,6 +142,7 @@ def build_temporal_holdout_manifest(
 
     violations = _temporal_holdout_violations(record_nodes, freeze_at, min_timestamp)
     timestamps = [node["timestamp"] for node in record_nodes]
+    replay_source_artifact = _traffic_replay_source_artifact(replay_source_path, replay) if replay_source_path is not None else None
     body = {
         "schema": TEMPORAL_HOLDOUT_SCHEMA,
         "generated_at": str(generated),
@@ -165,10 +167,12 @@ def build_temporal_holdout_manifest(
         "violations": violations,
         "passed": not violations,
         "limitations": [
-            "This manifest proves replay record timestamps and record hashes against the registered freeze and holdout boundary.",
+            "This manifest proves replay record timestamps, record hashes, and optional retained replay source bytes against the registered freeze and holdout boundary.",
             "It does not prove production traffic completeness without collector or provider-owned production export evidence.",
         ],
     }
+    if replay_source_artifact is not None:
+        body["replay_source_artifact"] = replay_source_artifact
     manifest_id = content_hash(body)
     return {
         **body,
@@ -182,6 +186,7 @@ def verify_temporal_holdout_manifest(
     *,
     contract: dict[str, Any] | None = None,
     replay: dict[str, Any] | None = None,
+    replay_source_path: str | Path | None = None,
     key: str | None = None,
     keyring: dict[str, Any] | None = None,
 ) -> TemporalHoldoutVerification:
@@ -329,6 +334,25 @@ def verify_temporal_holdout_manifest(
                     errors.append(f"temporal holdout replay record id mismatch at sequence {index}")
                 if str(record.get("timestamp") or "") != node.get("timestamp"):
                     errors.append(f"temporal holdout replay record timestamp mismatch at sequence {index}")
+    artifact = manifest.get("replay_source_artifact")
+    if artifact is not None:
+        if not isinstance(artifact, dict):
+            errors.append("temporal holdout replay_source_artifact must be an object")
+        elif replay_source_path is None:
+            errors.append("temporal holdout replay_source_artifact requires replay_source_path for byte replay")
+        else:
+            try:
+                replay_for_artifact = replay if replay is not None else load_shadow_replay(replay_source_path)
+                expected_artifact = _traffic_replay_source_artifact(replay_source_path, replay_for_artifact)
+            except (OSError, ValueError) as exc:
+                errors.append(f"temporal holdout replay_source_artifact invalid: {exc}")
+            else:
+                if artifact != expected_artifact:
+                    errors.append("temporal holdout replay_source_artifact does not match supplied replay source bytes")
+                if manifest.get("replay_hash") != expected_artifact.get("replay_hash"):
+                    errors.append("temporal holdout replay_source_artifact replay_hash mismatch")
+    elif replay_source_path is not None:
+        warnings.append("temporal holdout replay source bytes were supplied but are not bound in this manifest")
     return TemporalHoldoutVerification(ok=not errors, errors=errors, warnings=warnings)
 
 
@@ -338,9 +362,16 @@ def append_temporal_holdout_manifest(
     *,
     contract: dict[str, Any] | None = None,
     replay: dict[str, Any] | None = None,
+    replay_source_path: str | Path | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
-    result = verify_temporal_holdout_manifest(manifest, contract=contract, replay=replay, key=key)
+    result = verify_temporal_holdout_manifest(
+        manifest,
+        contract=contract,
+        replay=replay,
+        replay_source_path=replay_source_path,
+        key=key,
+    )
     if not result.ok:
         raise ValueError("invalid temporal holdout manifest: " + "; ".join(result.errors))
     payload = {
@@ -356,6 +387,7 @@ def append_temporal_holdout_manifest(
         "last_record_timestamp": manifest.get("last_record_timestamp"),
         "earliest_record_timestamp": manifest.get("earliest_record_timestamp"),
         "latest_record_timestamp": manifest.get("latest_record_timestamp"),
+        "replay_source_artifact": manifest.get("replay_source_artifact"),
         "violation_count": len(manifest.get("violations", [])),
         "passed": manifest.get("passed"),
     }

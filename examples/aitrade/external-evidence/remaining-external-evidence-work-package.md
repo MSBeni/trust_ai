@@ -1,6 +1,6 @@
 # External Evidence Work Packages
 
-- Work package ID: `43f59aa9394cc4ab9163e43c98c71186d08c4b5e12bce82e52eef952330c651a`
+- Work package ID: `984638f8cd339df394e70ec2f7e755b07c0e946338ee4fb99db0cb419348c0e8`
 - Generated at: `2026-07-12T01:30:00Z`
 - Grouped by: `owner_hint`
 - Packages: 10
@@ -27,7 +27,7 @@
 ### IAM/identity owner
 
 - Package ref: `owner_hint:IAM-identity-owner`
-- Package ID: `7dbb7307b6ec31804fce27d9f69397027f6ad35688682aa235cb04bbd7cd8aaf`
+- Package ID: `fc79ccdea8f092616e0dd3b3ec146b6cee5a7bdeb864c0ceb3c9416a188bcf76`
 - Owner Hint: `IAM/identity owner`
 - Tasks: 8
 - Authority kinds: `identity-provider`
@@ -132,7 +132,7 @@
 ### integration/platform owner
 
 - Package ref: `owner_hint:integration-platform-owner`
-- Package ID: `64aafab226c7c289ae9ec0fce114d8c401034386958bf20c39dc543777ce3e86`
+- Package ID: `73dccb50ec707723882477a738a94001a4828c6dd269a51759a278d907891ad1`
 - Owner Hint: `integration/platform owner`
 - Tasks: 11
 - Authority kinds: `provider-api`
@@ -284,7 +284,7 @@
 ### security/platform KMS owner
 
 - Package ref: `owner_hint:security-platform-KMS-owner`
-- Package ID: `ff348f4e08bb64e38230c6dc466b1dc2a4751b0f02694dc28074e75f23734a39`
+- Package ID: `e14a71225dd072cd3fd5734b93075d9c80ae14691730241b646719e5647aaf6b`
 - Owner Hint: `security/platform KMS owner`
 - Tasks: 7
 - Authority kinds: `kms-hsm`
@@ -363,7 +363,7 @@
 ### standards/governance owner
 
 - Package ref: `owner_hint:standards-governance-owner`
-- Package ID: `c6fb24e29a0ddd5c6870623781e5d67228c93affe3220f191acbb22d82336af2`
+- Package ID: `5d94296290b0b66ef274ab837e439e451459e4b5bf01aac03d840e0fde3be891`
 - Owner Hint: `standards/governance owner`
 - Tasks: 6
 - Authority kinds: `standards-body`

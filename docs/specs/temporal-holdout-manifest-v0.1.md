@@ -9,7 +9,7 @@ used as promotion evidence.
 The manifest uses schema `trustai.temporal-holdout-manifest/0.1` and records:
 
 - contract ID, contract hash, freeze timestamp, and holdout minimum timestamp;
-- replay run ID, dataset ID, candidate version, and replay payload hash;
+- replay run ID, dataset ID, candidate version, replay payload hash, and optional retained replay source artifact byte binding;
 - first, last, earliest, and latest replay record timestamps;
 - a hash-chained record list with sequence, unique record ID, timestamp, record
   hash, previous node hash, and node hash;
@@ -28,7 +28,10 @@ root.
 `temporal-holdout-verify` recalculates the manifest ID, verifies at least one
 signature, checks the internal record hash chain, recomputes duplicate record-id and
 boundary violations from the frozen contract timestamps, and optionally replays the source
-contract and replay JSON to catch source tampering.
+contract, replay JSON, and retained replay source bytes to catch source tampering. When
+`replay_source_artifact` is present, verification requires the source replay path so the
+SHA-256 bytes, canonical content hash, replay hash, record count, and record hash root can
+be recomputed.
 
 The manifest proves the supplied replay records postdate the freeze and holdout
 minimum. A `traffic-holdout-export` receipt can separately bind production

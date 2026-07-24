@@ -228,7 +228,7 @@ CONFORMANCE_TARGETS = (
     },
     {
         "id": "traffic-holdout-export-receipts",
-        "description": "Traffic holdout export and completeness receipts bind production traffic source refs, extraction windows, replay record hashes, collector/provider stream records, retained provider export byte replay, cursor bounds, audit records, freeze and holdout boundaries, privacy limits, and chain append evidence before shadow replay promotion evidence is trusted.",
+        "description": "Temporal holdout manifests, traffic holdout exports, and completeness receipts bind retained replay source bytes, production traffic source refs, extraction windows, replay record hashes, collector/provider stream records, retained provider export byte replay, cursor bounds, audit records, freeze and holdout boundaries, privacy limits, and chain append evidence before shadow replay promotion evidence is trusted.",
         "reference": "src/trustai/shadow.py",
         "commands": [
             "python -m trustai traffic-holdout-export examples/aitrade/verification-contract.yaml examples/aitrade/shadow-replay.json --export-ref traffic-export:aitrade/prod-traffic-holdout-20260702 --source-ref collector:aitrade-prod/redpanda/trustai.otel.events --exporter-ref oidc:trustai.example/traffic-exporter --window-start 2026-07-02T00:00:00Z --window-end 2026-07-03T23:59:59Z --produced-at 2026-07-03T12:20:00Z --out artifacts/traffic-holdout-export.json",
