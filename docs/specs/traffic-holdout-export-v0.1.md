@@ -14,6 +14,7 @@ The receipt uses schema `trustai.traffic-holdout-export/0.1` and records:
 - extraction window start and end timestamps;
 - contract ID, contract hash, freeze timestamp, and holdout minimum timestamp;
 - replay run ID, dataset ID, candidate version, and canonical replay hash;
+- optional `replay_source_artifact` with retained replay source path, byte SHA-256, byte size, canonical source content hash, replay hash, record count, and record-hash root;
 - first, last, earliest, and latest exported record timestamps;
 - a hash-chained record list with sequence, unique record ID, timestamp,
   canonical replay-record hash, previous export record hash, and export record
@@ -34,8 +35,11 @@ no-raw-payload privacy flag, and can
 optionally replay the source verification contract and shadow replay JSON.
 
 When a replay source is supplied, the verifier recomputes the replay hash and
-every exported record hash from the replay file. This catches source replay
-tampering after the export receipt was signed.
+every exported record hash from the replay file. When `replay_source_artifact` is
+present, it also replays the retained source file bytes and rejects byte SHA-256,
+byte size, canonical source content hash, replay hash, record count, or
+record-hash-root mismatches. This catches source replay tampering and
+reserialization after the export receipt was signed.
 
 This receipt narrows the roadmap's production-traffic completeness gap, but it
 can be paired with a `traffic-completeness` receipt that replays provider stream and audit evidence. By itself, it still does not claim upstream completeness without provider-owned collector,
@@ -48,7 +52,7 @@ Verified receipts append `traffic_holdout.export_attested` entries with:
 - export id and receipt hash;
 - export/source/exporter refs and cursors;
 - extraction window;
-- contract and replay refs;
+- contract and replay refs, including the retained replay source artifact when present;
 - record count, records root, earliest/latest timestamps;
 - violation count and pass/fail status;
 - privacy metadata.

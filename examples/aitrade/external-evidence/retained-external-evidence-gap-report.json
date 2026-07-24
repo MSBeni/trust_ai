@@ -6,7 +6,7 @@
       "hosted-service"
     ]
   },
-  "gap_report_id": "31e3368e761ad5824ec14d3a6daf01457bb7a55997915b7a3973993feffb4aa7",
+  "gap_report_id": "abb598f7fbcd32d1db7c80c0a62ed958560a6abc753397e84f4d298bf723cb60",
   "gaps": [
     {
       "authority_kind": "hosted-service",
@@ -1667,27 +1667,27 @@
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "461c92ee17e777268923dbd355f8d1dd652f9d0c362a987e0a0120be35e3a0bb",
-      "plan_id": "fafdb4bdd8b39fdba5561413d07bc6a8129d233312fc37b3a83ccd7458132274",
+      "plan_hash": "267f181240cbacafd9ecdd5f28a3b77b64db6175371b629c9e2437b3b97a9847",
+      "plan_id": "9543b1c74abb40c80de7a689abe43f6888cc9a1d075e173b4979b85cc7d14ace",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "6653165c0a151b4491ce6eded1b9fa63affd57dcdf70300c18fb8936f04e9fe4",
-      "manifest_id": "9f3d34a3d8debd336f37a84b3fbc5006f3b0bc577ecf13906c83f913c754b5c7",
+      "manifest_hash": "721009b6679d9cf2e66a02e41f2f2024e59e9dec9536752bd64e9b857e1316ec",
+      "manifest_id": "c1ec64027209cb3d42f2c36c96ce5b50c672a21f8cc4325b042de58e5baed92d",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
-      "audit_hash": "cea3502f7d549bce5110a21cbbfae7876129f6e2e7f6a8e82934885dba76e593",
-      "audit_id": "81b5dbb6587b95051dc929e44d7a22fc423b45b74cd9d87466c4f26ae20c92fc",
-      "generated_at": "2026-07-24T10:36:02Z",
+      "audit_hash": "81b5d9c52f83bb2bb0be500822b4a586ff0e7b8c2b9ed0b916a8a54267d86163",
+      "audit_id": "520e07616039dd869d0cbec051927d1e378bb961dd74b8469853d55cea6d146d",
+      "generated_at": "2026-07-24T10:51:30Z",
       "schema": "trustai.roadmap-audit/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:01:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "222e7f81f21be0f9ac132ddac62f48de77dcb55a657bb1f33f0f931725c32cc8",
-      "source_map_id": "9402b47b769daf42e39540967d0012ca2f23c56b873d6acf09a261745cc3b0f0"
+      "source_map_hash": "37bab88a5ca0d8d77d5b9044539ad090352825f0899dc45f58e9b7af03b33081",
+      "source_map_id": "3cdacb3b3514aea6bcf47161ac10ba95d3d1b32c7b3f8804f4af81cdab38be48"
     }
   },
   "summary": {

@@ -460,24 +460,77 @@ class TemporalHoldoutTests(unittest.TestCase):
         self.assertIsNone(receipt["records"][0]["previous_export_record_hash"])
         self.assertEqual(receipt["records"][0]["export_record_hash"], receipt["records"][1]["previous_export_record_hash"])
 
-    def test_traffic_holdout_export_appends_to_chain(self):
-        receipt = build_traffic_holdout_export(
-            self._contract(),
-            self._replay(),
-            export_ref="traffic-export:aitrade/prod-traffic-holdout-20260702",
-            source_ref="collector:aitrade-prod/redpanda/trustai.otel.events",
-            exporter_ref="oidc:trustai.example/traffic-exporter",
-            window_start="2026-07-02T00:00:00Z",
-            window_end="2026-07-03T23:59:59Z",
-            produced_at="2026-07-03T12:20:00Z",
-        )
-
+    def test_traffic_holdout_export_replays_retained_source_bytes(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
-            chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="traffic-holdout-test")
-            entry = append_traffic_holdout_export(chain, receipt, contract=self._contract(), replay=self._replay())
+            replay_path = Path(tmp_dir) / "shadow-replay.json"
+            replay_path.write_text(json.dumps(self._replay(), indent=2, sort_keys=True), encoding="utf-8")
+            replay = load_shadow_replay(replay_path)
+            receipt = build_traffic_holdout_export(
+                self._contract(),
+                replay,
+                export_ref="traffic-export:aitrade/prod-traffic-holdout-20260702",
+                source_ref="collector:aitrade-prod/redpanda/trustai.otel.events",
+                exporter_ref="oidc:trustai.example/traffic-exporter",
+                window_start="2026-07-02T00:00:00Z",
+                window_end="2026-07-03T23:59:59Z",
+                produced_at="2026-07-03T12:20:00Z",
+                replay_source_path=replay_path,
+            )
+            result = verify_traffic_holdout_export(receipt, contract=self._contract(), replay=replay, replay_source_path=replay_path)
+            artifact_sha = _sha256_ref(replay_path)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(artifact_sha, receipt["replay_source_artifact"]["sha256"])
+        self.assertEqual(content_hash(replay), receipt["replay_source_artifact"]["replay_hash"])
+
+    def test_traffic_holdout_export_detects_retained_source_byte_tamper(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            replay_path = Path(tmp_dir) / "shadow-replay.json"
+            replay_body = self._replay()
+            replay_path.write_text(json.dumps(replay_body, indent=2, sort_keys=True), encoding="utf-8")
+            replay = load_shadow_replay(replay_path)
+            receipt = build_traffic_holdout_export(
+                self._contract(),
+                replay,
+                export_ref="traffic-export:aitrade/prod-traffic-holdout-20260702",
+                source_ref="collector:aitrade-prod/redpanda/trustai.otel.events",
+                exporter_ref="oidc:trustai.example/traffic-exporter",
+                window_start="2026-07-02T00:00:00Z",
+                window_end="2026-07-03T23:59:59Z",
+                produced_at="2026-07-03T12:20:00Z",
+                replay_source_path=replay_path,
+            )
+            replay_path.write_text(json.dumps(replay_body, indent=4, sort_keys=True), encoding="utf-8")
+            result = verify_traffic_holdout_export(receipt, contract=self._contract(), replay=load_shadow_replay(replay_path), replay_source_path=replay_path)
+
+        self.assertFalse(result.ok)
+        errors = "\n".join(result.errors)
+        self.assertIn("replay_source_artifact", errors)
+        self.assertIn("bytes", errors)
+
+    def test_traffic_holdout_export_appends_to_chain(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            replay_path = tmp / "shadow-replay.json"
+            replay_path.write_text(json.dumps(self._replay(), indent=2, sort_keys=True), encoding="utf-8")
+            replay = load_shadow_replay(replay_path)
+            receipt = build_traffic_holdout_export(
+                self._contract(),
+                replay,
+                export_ref="traffic-export:aitrade/prod-traffic-holdout-20260702",
+                source_ref="collector:aitrade-prod/redpanda/trustai.otel.events",
+                exporter_ref="oidc:trustai.example/traffic-exporter",
+                window_start="2026-07-02T00:00:00Z",
+                window_end="2026-07-03T23:59:59Z",
+                produced_at="2026-07-03T12:20:00Z",
+                replay_source_path=replay_path,
+            )
+            chain = EvidenceChain.load(tmp / "chain.json", tenant_id="traffic-holdout-test")
+            entry = append_traffic_holdout_export(chain, receipt, contract=self._contract(), replay=replay, replay_source_path=replay_path)
 
             self.assertEqual(TRAFFIC_HOLDOUT_EXPORT_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(receipt["export_id"], entry["payload"]["export_id"])
+            self.assertEqual(receipt["replay_source_artifact"], entry["payload"]["replay_source_artifact"])
             self.assertEqual(receipt["records_root"], entry["payload"]["records_root"])
             self.assertTrue(chain.verify_all().ok)
 

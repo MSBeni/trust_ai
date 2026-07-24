@@ -1,6 +1,6 @@
 # External Evidence Production Readiness
 
-- Readiness ID: `9a92b086ee8a52af8c7ae30c4da215d6d0d3ea19b5435311839bd02f57e52f2b`
+- Readiness ID: `860bf1ac748caf17d00ba72d4ee29e8b026d5255f1602dd7708d897724f8be46`
 - Generated at: `2026-07-12T01:31:00Z`
 - Status: `not-ready`
 - Covered authority units: 3/70

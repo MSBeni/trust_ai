@@ -6030,9 +6030,10 @@ def cmd_traffic_holdout_export(args: argparse.Namespace) -> int:
             cursor_start=args.cursor_start,
             cursor_end=args.cursor_end,
             produced_at=args.produced_at,
+            replay_source_path=args.replay,
             key=args.key,
         )
-        result = verify_traffic_holdout_export(receipt, contract=contract, replay=replay, key=args.key)
+        result = verify_traffic_holdout_export(receipt, contract=contract, replay=replay, replay_source_path=args.replay, key=args.key)
     except (OSError, ValueError) as exc:
         print(f"traffic holdout export generation failed: {exc}", file=sys.stderr)
         return 1
@@ -6059,7 +6060,7 @@ def cmd_traffic_holdout_export_verify(args: argparse.Namespace) -> int:
     except (OSError, ValueError) as exc:
         print(f"traffic holdout export verification failed: {exc}", file=sys.stderr)
         return 1
-    result = verify_traffic_holdout_export(receipt, contract=contract, replay=replay, key=args.key)
+    result = verify_traffic_holdout_export(receipt, contract=contract, replay=replay, replay_source_path=args.replay if args.replay else None, key=args.key)
     if result.ok:
         print(f"verified traffic holdout export: {args.receipt}")
         print(f"export id: {receipt['export_id']}")
@@ -6084,7 +6085,7 @@ def cmd_traffic_holdout_export_append(args: argparse.Namespace) -> int:
         return 1
     chain = _load_chain(args)
     try:
-        entry = append_traffic_holdout_export(chain, receipt, contract=contract, replay=replay, key=args.key)
+        entry = append_traffic_holdout_export(chain, receipt, contract=contract, replay=replay, replay_source_path=args.replay if args.replay else None, key=args.key)
     except ValueError as exc:
         print(f"traffic holdout export append failed: {exc}", file=sys.stderr)
         return 1

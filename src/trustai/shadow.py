@@ -691,6 +691,7 @@ def build_traffic_holdout_export(
     cursor_start: str | None = None,
     cursor_end: str | None = None,
     produced_at: str | None = None,
+    replay_source_path: str | Path | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
     export_ref = _require_text(export_ref, "export_ref")
@@ -712,6 +713,7 @@ def build_traffic_holdout_export(
     )
     timestamps = [record["timestamp"] for record in records]
     violations = _traffic_holdout_export_violations(records)
+    replay_source_artifact = _traffic_replay_source_artifact(replay_source_path, replay) if replay_source_path is not None else None
     body = {
         "schema": TRAFFIC_HOLDOUT_EXPORT_SCHEMA,
         "produced_at": str(produced),
@@ -749,13 +751,15 @@ def build_traffic_holdout_export(
         "privacy": {
             "raw_payloads_embedded": False,
             "record_material": "canonical record hashes only",
-            "sensitive_data_limit": "receipt excludes full production traffic payloads; replay source must be supplied separately for offline replay",
+            "sensitive_data_limit": "receipt excludes full production traffic payloads; replay source is byte-bound when replay_source_artifact is present",
         },
         "limitations": [
             "This receipt binds the supplied production traffic export window, source refs, and replay record hashes to the registered freeze and holdout boundary.",
             "It does not prove upstream production traffic completeness without provider-owned collector, stream, storage, or immutable audit-log exports.",
         ],
     }
+    if replay_source_artifact is not None:
+        body["replay_source_artifact"] = replay_source_artifact
     export_id = content_hash(body)
     return {
         **body,
@@ -769,6 +773,7 @@ def verify_traffic_holdout_export(
     *,
     contract: dict[str, Any] | None = None,
     replay: dict[str, Any] | None = None,
+    replay_source_path: str | Path | None = None,
     key: str | None = None,
 ) -> TrafficHoldoutExportVerification:
     errors: list[str] = []
@@ -920,6 +925,25 @@ def verify_traffic_holdout_export(
                     errors.append(f"traffic holdout export replay record id mismatch at sequence {index}")
                 if record.get("timestamp") != str(source_record.get("timestamp") or ""):
                     errors.append(f"traffic holdout export replay record timestamp mismatch at sequence {index}")
+
+    artifact = receipt.get("replay_source_artifact")
+    if artifact is not None:
+        if not isinstance(artifact, dict):
+            errors.append("traffic holdout export replay_source_artifact must be an object")
+        elif replay_source_path is None:
+            errors.append("traffic holdout export replay_source_artifact requires replay_source_path for byte replay")
+        else:
+            try:
+                replay_for_artifact = replay if replay is not None else load_shadow_replay(replay_source_path)
+                expected_artifact = _traffic_replay_source_artifact(replay_source_path, replay_for_artifact)
+            except (OSError, ValueError) as exc:
+                errors.append(f"traffic holdout export replay_source_artifact invalid: {exc}")
+            else:
+                if artifact != expected_artifact:
+                    errors.append("traffic holdout export replay_source_artifact does not match supplied replay source bytes")
+    elif replay_source_path is not None:
+        warnings.append("traffic holdout export replay source bytes were supplied but are not bound in this receipt")
+
     return TrafficHoldoutExportVerification(ok=not errors, errors=errors, warnings=warnings)
 
 
@@ -929,9 +953,10 @@ def append_traffic_holdout_export(
     *,
     contract: dict[str, Any] | None = None,
     replay: dict[str, Any] | None = None,
+    replay_source_path: str | Path | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
-    result = verify_traffic_holdout_export(receipt, contract=contract, replay=replay, key=key)
+    result = verify_traffic_holdout_export(receipt, contract=contract, replay=replay, replay_source_path=replay_source_path, key=key)
     if not result.ok:
         raise ValueError("invalid traffic holdout export: " + "; ".join(result.errors))
     payload = {
@@ -946,6 +971,7 @@ def append_traffic_holdout_export(
         "extraction_window": receipt.get("extraction_window"),
         "contract": receipt.get("contract"),
         "replay": receipt.get("replay"),
+        "replay_source_artifact": receipt.get("replay_source_artifact"),
         "record_count": receipt.get("record_count"),
         "records_root": receipt.get("records_root"),
         "earliest_record_timestamp": receipt.get("earliest_record_timestamp"),
@@ -1170,6 +1196,34 @@ def append_traffic_completeness_receipt(
         "privacy": receipt.get("privacy"),
     }
     return chain.append(TRAFFIC_COMPLETENESS_ENTRY_TYPE, payload, key=key, timestamp=receipt.get("produced_at"))
+
+def _traffic_replay_source_artifact(path: str | Path, replay: dict[str, Any]) -> dict[str, Any]:
+    target = Path(path)
+    if not target.is_file():
+        raise ValueError(f"traffic replay source artifact file missing: {path}")
+    data = target.read_bytes()
+    try:
+        parsed = json.loads(data.decode("utf-8-sig"))
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"traffic replay source artifact JSON invalid: {exc}") from exc
+    if not isinstance(parsed, dict):
+        raise ValueError("traffic replay source artifact must contain an object")
+    normalized_from_file = load_shadow_replay(target)
+    if normalized_from_file != replay:
+        raise ValueError("traffic replay source artifact content does not match supplied replay object")
+    records = _shadow_records(replay)
+    record_hashes = [content_hash(record) for record in records]
+    body = {
+        "path": str(path).replace("\\", "/"),
+        "sha256": "sha256:" + sha256(data).hexdigest(),
+        "size_bytes": len(data),
+        "content_hash": content_hash(parsed),
+        "replay_hash": content_hash(replay),
+        "record_count": len(records),
+        "record_hashes_root": content_hash(record_hashes),
+    }
+    return {**body, "artifact_id": content_hash(body)}
+
 
 def _build_traffic_holdout_export_records(
     replay: dict[str, Any],
