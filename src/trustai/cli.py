@@ -5896,6 +5896,7 @@ def cmd_mcp_gateway_authority(args: argparse.Namespace) -> int:
             producer_ref=args.producer_ref,
             authority_evidence=evidence,
             generated_at=args.generated_at,
+            source_transcript_path=args.transcript,
             key=args.key,
         )
     except ValueError as exc:
@@ -5904,6 +5905,7 @@ def cmd_mcp_gateway_authority(args: argparse.Namespace) -> int:
     result = verify_mcp_gateway_authority_dossier(
         dossier,
         transcript_calls=calls,
+        source_transcript_path=args.transcript,
         key=args.key,
         require_complete=args.require_complete,
         require_fresh=args.require_fresh,
@@ -5929,6 +5931,7 @@ def cmd_mcp_gateway_authority_verify(args: argparse.Namespace) -> int:
     result = verify_mcp_gateway_authority_dossier(
         dossier,
         transcript_calls=calls,
+        source_transcript_path=args.transcript,
         key=args.key,
         require_complete=args.require_complete,
         require_fresh=args.require_fresh,
@@ -5955,6 +5958,7 @@ def cmd_mcp_gateway_authority_append(args: argparse.Namespace) -> int:
             chain,
             dossier,
             transcript_calls=calls,
+            source_transcript_path=args.transcript,
             key=args.key,
             require_complete=args.require_complete,
             require_fresh=args.require_fresh,

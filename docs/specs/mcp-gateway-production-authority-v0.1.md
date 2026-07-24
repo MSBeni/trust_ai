@@ -40,6 +40,7 @@ A dossier contains:
 - `schema`: `trustai.mcp-gateway-production-authority-dossier/0.1`.
 - `mode`, `environment`, `generated_at`, `dossier_ref`, `authority_ref`, and `producer_ref`.
 - `transcript_binding`: transcript schema, normalized transcript hash, source transcript hash, call count, session ids, tool names, contract hashes, agent bindings, timestamps, transcript roots, and per-call request/response/node hashes.
+- `transcript_artifact`: optional retained-source receipt for the transcript file path, byte SHA-256, byte size, canonical source content hash, normalized transcript hash, transcript root, and per-call request/response/tool-call hashes. The CLI records this by default from the transcript path.
 - `required_production_authority`: the exact requirement list above.
 - `authority_evidence`: authority evidence records supplied by the producer, including derived `source_context` bindings to the transcript hash chain.
 - `summary`: covered, missing, fresh, stale, and missing-freshness counts.
@@ -57,7 +58,7 @@ Each `authority_evidence` record must contain:
 - `evidence_ref`: stable external reference such as a hosted service export id, proxy fleet audit URI, object-lock root, KMS/HSM custody record, tool registry record, or customer-owned ledger pointer.
 - `evidence_hash`: hash or immutable root for the external evidence.
 - `description`: human-readable evidence description.
-- `source_context`: derived binding to the transcript schema/hash, source transcript hash, call count, sessions, tools, contract hashes, agent bindings, timestamps, transcript roots, compact tool-call record root, and per-call request/response/tool-call hashes recorded in `transcript_binding`.
+- `source_context`: derived binding to the transcript schema/hash, source transcript hash, call count, sessions, tools, contract hashes, agent bindings, timestamps, transcript roots, compact tool-call record root, per-call request/response/tool-call hashes recorded in `transcript_binding`, and the retained `transcript_artifact` receipt when present.
 
 Optional metadata fields are `issuer`, `subject`, `source_uri`, `issued_at`, and `expires_at`. The derived `source_context` is computed by the builder and must not be supplied as a CLI field. Freshness checks use `issued_at` and `expires_at`. Evidence without both timestamps is accepted for non-strict verification but counted as missing freshness.
 
@@ -81,11 +82,11 @@ A verifier must:
 
 1. Verify the schema, canonical `dossier_id`, and at least one valid signature.
 2. Verify `mode`, `environment`, `dossier_ref`, `authority_ref`, `producer_ref`, and RFC3339 timestamps.
-3. Require a complete non-empty `transcript_binding` with schema, transcript hashes, call count, sessions, tools, contract hashes, agent bindings, timestamps, transcript roots, and per-call request/response/node hashes. When the raw transcript is supplied, rebuild the MCP transcript hash chain and compare it to `transcript_binding`.
+3. Require a complete non-empty `transcript_binding` with schema, transcript hashes, call count, sessions, tools, contract hashes, agent bindings, timestamps, transcript roots, and per-call request/response/node hashes. When the raw transcript is supplied, rebuild the MCP transcript hash chain and compare it to `transcript_binding`. When `transcript_artifact` is present, replay the retained transcript file bytes and reject byte SHA-256, size, canonical source hash, normalized transcript hash, or transcript-root mismatches.
 4. Require the `required_production_authority` checklist to match this specification exactly.
 5. Reject evidence with unknown requirement ids, disallowed authority kinds, invalid evidence ids, or `source_context` that does not match `transcript_binding`.
 6. Reject malformed evidence references, hashes, and timestamp windows.
-7. Recompute summary and controls from the signed transcript binding and authority evidence, then reject mismatches.
+7. Recompute summary and controls from the signed transcript binding, retained transcript artifact, and authority evidence, then reject mismatches.
 8. Count missing, stale, and fresh evidence. With `--require-complete`, every requirement id must be covered. With `--require-fresh`, every covered evidence item must include a valid current freshness window.
 9. Reject `production-dossier` mode unless all requirements are covered with fresh evidence.
 10. Reject raw secrets in the dossier. Secret-bearing fields must be redacted references such as `env:`, `vault:`, `kms:`, or content hashes.

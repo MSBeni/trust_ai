@@ -28,6 +28,12 @@ from trustai.mcp_gateway_authority import (
     write_mcp_gateway_authority_dossier,
 )
 
+
+def _sha256_ref(path: Path) -> str:
+    import hashlib
+
+    return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+
 ROOT = Path(__file__).resolve().parents[1]
 MCP = ROOT / "examples" / "aitrade" / "mcp-transcript.json"
 
@@ -130,6 +136,63 @@ class McpGatewayAuthorityTests(unittest.TestCase):
             self.assertEqual(dossier["authority_evidence"][0]["source_context"], entry["payload"]["authority_evidence"][0]["source_context"])
             self.assertEqual({"deferred": 2, "passed": 3}, entry["payload"]["control_summary"])
 
+
+    def test_mcp_gateway_authority_binds_retained_transcript_artifact_bytes(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            transcript = tmp / "mcp-transcript.json"
+            transcript.write_text(MCP.read_text(encoding="utf-8"), encoding="utf-8")
+            calls = load_mcp_transcript(transcript)
+            dossier = build_mcp_gateway_authority_dossier(
+                calls,
+                mode="proxy-dossier",
+                environment="aitrade-prod",
+                dossier_ref="dossier:mcp-gateway-authority/aitrade-prod",
+                authority_ref="authority:mcp-gateway/proxy-prod",
+                producer_ref="oidc:trustai.example/mcp-gateway-authority-worker",
+                authority_evidence=self._authority_evidence(),
+                generated_at="2026-07-12T03:12:00Z",
+                source_transcript_path=transcript,
+            )
+
+            result = verify_mcp_gateway_authority_dossier(dossier, transcript_calls=calls, source_transcript_path=transcript)
+            chain = EvidenceChain.load(tmp / "chain.json", tenant_id="mcp-gateway-authority-artifact-test")
+            entry = append_mcp_gateway_authority_dossier(chain, dossier, transcript_calls=calls, source_transcript_path=transcript)
+
+            self.assertTrue(result.ok, result.errors)
+            self.assertEqual(_sha256_ref(transcript), dossier["transcript_artifact"]["sha256"])
+            self.assertEqual(dossier["transcript_binding"]["transcript_roots"][0], dossier["transcript_artifact"]["transcript_root"])
+            self.assertEqual(
+                dossier["transcript_artifact"]["artifact_id"],
+                dossier["authority_evidence"][0]["source_context"]["transcript_artifact"]["artifact_id"],
+            )
+            self.assertEqual(dossier["transcript_artifact"], entry["payload"]["transcript_artifact"])
+            self.assertEqual({"deferred": 2, "passed": 4}, entry["payload"]["control_summary"])
+
+    def test_mcp_gateway_authority_rejects_retained_transcript_artifact_byte_tamper(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            transcript = tmp / "mcp-transcript.json"
+            raw_transcript = json.loads(MCP.read_text(encoding="utf-8"))
+            transcript.write_text(json.dumps(raw_transcript, indent=2, sort_keys=True), encoding="utf-8")
+            calls = load_mcp_transcript(transcript)
+            dossier = build_mcp_gateway_authority_dossier(
+                calls,
+                mode="proxy-dossier",
+                environment="aitrade-prod",
+                dossier_ref="dossier:mcp-gateway-authority/aitrade-prod",
+                authority_ref="authority:mcp-gateway/proxy-prod",
+                producer_ref="oidc:trustai.example/mcp-gateway-authority-worker",
+                authority_evidence=self._authority_evidence(),
+                generated_at="2026-07-12T03:12:00Z",
+                source_transcript_path=transcript,
+            )
+            transcript.write_text(json.dumps(raw_transcript, indent=4, sort_keys=True), encoding="utf-8")
+
+            result = verify_mcp_gateway_authority_dossier(dossier, transcript_calls=load_mcp_transcript(transcript), source_transcript_path=transcript)
+
+            self.assertFalse(result.ok)
+            self.assertIn("MCP gateway transcript_artifact does not match supplied transcript bytes", result.errors)
 
     def test_mcp_gateway_authority_evidence_bundle_drives_complete_proxy_dossier(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -426,6 +489,9 @@ class McpGatewayAuthorityTests(unittest.TestCase):
             self.assertEqual(MCP_GATEWAY_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE, bundle_entry["entry_type"])
             self.assertEqual(0, dossier["summary"]["missing_requirement_count"])
             self.assertEqual("proxy-dossier", dossier["mode"])
+            self.assertEqual(MCP.read_text(encoding="utf-8"), paths["transcript"].read_text(encoding="utf-8"))
+            self.assertIn("transcript_artifact", dossier)
+            self.assertEqual(dossier["transcript_artifact"]["artifact_id"], dossier["authority_evidence"][0]["source_context"]["transcript_artifact"]["artifact_id"])
 
     def test_cli_mcp_gateway_authority_round_trip(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -504,6 +570,8 @@ class McpGatewayAuthorityTests(unittest.TestCase):
             entry = json.loads(paths["entry"].read_text(encoding="utf-8"))
             self.assertEqual(dossier["dossier_id"], entry["payload"]["dossier_id"])
             self.assertEqual(1, entry["payload"]["summary"]["covered_requirement_count"])
+            self.assertIn("transcript_artifact", dossier)
+            self.assertEqual(dossier["transcript_artifact"], entry["payload"]["transcript_artifact"])
 
 
 if __name__ == "__main__":

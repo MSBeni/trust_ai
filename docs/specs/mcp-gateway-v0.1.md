@@ -99,6 +99,8 @@ artifacts covered by the MCP gateway production authority dossier.
 
 ## Offline Verification
 
+MCP gateway production authority dossiers can bind the retained normalized transcript file bytes through a `transcript_artifact` receipt. The receipt records the source path, byte SHA-256, byte size, canonical source content hash, normalized transcript hash, transcript root, and per-call request/response/tool-call hashes. CLI-created dossiers include it by default, and verification rejects retained transcript byte changes even when parsed JSON content is semantically unchanged.
+
 Proof packs that include `mcp.tool_call.evidenced` entries must replay the
 transcript chain offline. The verifier rejects packs when request/response hashes,
 tool-call hashes, sequence numbers, call counts, previous-node pointers, node

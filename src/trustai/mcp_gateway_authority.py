@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
+from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
@@ -9,7 +10,7 @@ from .canonical import content_hash, parse_rfc3339, utc_now, without_keys
 from .chain import EvidenceChain
 from .crypto import sign_value, verify_value
 from .external_evidence import AUTHORITY_KINDS
-from .mcp_gateway import MCP_TRANSCRIPT_CHAIN_SCHEMA, build_mcp_transcript_chain
+from .mcp_gateway import MCP_TRANSCRIPT_CHAIN_SCHEMA, build_mcp_transcript_chain, load_mcp_transcript
 
 MCP_GATEWAY_AUTHORITY_SCHEMA = "trustai.mcp-gateway-production-authority-dossier/0.1"
 MCP_GATEWAY_AUTHORITY_ENTRY_TYPE = "mcp.gateway_authority_recorded"
@@ -315,6 +316,7 @@ def build_mcp_gateway_authority_dossier(
     producer_ref: str,
     authority_evidence: list[dict[str, Any]] | None = None,
     generated_at: str | None = None,
+    source_transcript_path: str | Path | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
     if mode not in MCP_GATEWAY_AUTHORITY_MODES:
@@ -327,7 +329,8 @@ def build_mcp_gateway_authority_dossier(
     if not records:
         raise ValueError("MCP gateway authority requires at least one MCP tool call")
     binding = _transcript_binding(transcript_calls, records)
-    source_context = _authority_evidence_source_context(binding)
+    transcript_artifact = _mcp_transcript_artifact(source_transcript_path, transcript_calls) if source_transcript_path is not None else None
+    source_context = _authority_evidence_source_context(binding, transcript_artifact)
     evidence_items = [_build_authority_evidence_item(item, source_context) for item in (authority_evidence or [])]
     summary = _summary(evidence_items)
     body: dict[str, Any] = {
@@ -342,13 +345,15 @@ def build_mcp_gateway_authority_dossier(
         "required_production_authority": PRODUCTION_AUTHORITY_REQUIREMENTS,
         "authority_evidence": evidence_items,
         "summary": summary,
-        "controls": _controls(mode, binding, evidence_items, summary),
         "limitations": [
             "This dossier binds a verified MCP transcript hash chain to an explicit production-authority evidence checklist.",
             "It records authority references, hashes, freshness windows, and missing live-evidence categories for production MCP proxy operation.",
             "It does not claim continuously operated production MCP proxy authority unless mode is production-dossier and every required authority category has fresh external evidence.",
         ],
     }
+    if transcript_artifact is not None:
+        body["transcript_artifact"] = transcript_artifact
+    body["controls"] = _controls(mode, binding, evidence_items, summary, transcript_artifact)
     dossier_id = content_hash(body)
     signed_value = {"dossier_id": dossier_id, "mcp_gateway_authority": body}
     return {**body, "dossier_id": dossier_id, "signatures": [sign_value(signed_value, key)]}
@@ -358,6 +363,7 @@ def verify_mcp_gateway_authority_dossier(
     dossier: dict[str, Any],
     *,
     transcript_calls: list[dict[str, Any]] | None = None,
+    source_transcript_path: str | Path | None = None,
     key: str | None = None,
     require_complete: bool = False,
     require_fresh: bool = False,
@@ -395,13 +401,15 @@ def verify_mcp_gateway_authority_dossier(
             errors.append(f"MCP gateway authority {field} is required")
 
     _verify_transcript_binding(dossier.get("transcript_binding"), transcript_calls, errors, warnings)
+    _verify_transcript_artifact(dossier.get("transcript_artifact"), source_transcript_path, transcript_calls, errors, warnings)
     _verify_required_authority(dossier.get("required_production_authority"), errors)
     evidence = dossier.get("authority_evidence", [])
     if not isinstance(evidence, list):
         errors.append("MCP gateway authority authority_evidence must be a list")
         evidence = []
     evidence_source_context = _authority_evidence_source_context(
-        dossier.get("transcript_binding") if isinstance(dossier.get("transcript_binding"), dict) else {}
+        dossier.get("transcript_binding") if isinstance(dossier.get("transcript_binding"), dict) else {},
+        dossier.get("transcript_artifact") if isinstance(dossier.get("transcript_artifact"), dict) else None,
     )
     freshness_counts = {"fresh": 0, "stale": 0, "missing": 0}
     for item in evidence:
@@ -435,7 +443,7 @@ def verify_mcp_gateway_authority_dossier(
     binding_for_controls = dossier.get("transcript_binding") if isinstance(dossier.get("transcript_binding"), dict) else {}
     if not isinstance(dossier.get("controls"), list) or not dossier.get("controls"):
         errors.append("MCP gateway authority controls are required")
-    elif dossier.get("controls") != _controls(str(mode), binding_for_controls, evidence_dicts, expected_summary):
+    elif dossier.get("controls") != _controls(str(mode), binding_for_controls, evidence_dicts, expected_summary, dossier.get("transcript_artifact") if isinstance(dossier.get("transcript_artifact"), dict) else None):
         errors.append("MCP gateway authority controls do not match dossier body")
     _check_no_secret_values(dossier, errors)
 
@@ -456,6 +464,7 @@ def append_mcp_gateway_authority_dossier(
     dossier: dict[str, Any],
     *,
     transcript_calls: list[dict[str, Any]],
+    source_transcript_path: str | Path | None = None,
     key: str | None = None,
     require_complete: bool = False,
     require_fresh: bool = False,
@@ -464,6 +473,7 @@ def append_mcp_gateway_authority_dossier(
     result = verify_mcp_gateway_authority_dossier(
         dossier,
         transcript_calls=transcript_calls,
+        source_transcript_path=source_transcript_path,
         key=key,
         require_complete=require_complete,
         require_fresh=require_fresh,
@@ -481,6 +491,7 @@ def append_mcp_gateway_authority_dossier(
         "authority_ref": dossier.get("authority_ref"),
         "producer_ref": dossier.get("producer_ref"),
         "transcript_binding": dossier.get("transcript_binding"),
+        "transcript_artifact": dossier.get("transcript_artifact"),
         "summary": dossier.get("summary"),
         "control_summary": _status_summary(dossier.get("controls", [])),
         "authority_evidence": [
@@ -598,6 +609,64 @@ def _verify_transcript_binding(
     expected = _transcript_binding(transcript_calls, records)
     if binding != expected:
         errors.append("MCP gateway transcript_binding does not match supplied transcript source")
+
+
+def _verify_transcript_artifact(
+    artifact: Any,
+    source_transcript_path: str | Path | None,
+    transcript_calls: list[dict[str, Any]] | None,
+    errors: list[str],
+    warnings: list[str],
+) -> None:
+    if artifact is None:
+        if source_transcript_path is not None:
+            warnings.append("MCP gateway transcript_artifact is missing; retained transcript bytes were not bound")
+        return
+    if not isinstance(artifact, dict):
+        errors.append("MCP gateway transcript_artifact must be an object")
+        return
+    if source_transcript_path is None:
+        errors.append("MCP gateway transcript_artifact requires source_transcript_path for byte replay")
+        return
+    try:
+        replay_calls = transcript_calls if transcript_calls is not None else load_mcp_transcript(source_transcript_path)
+        expected_artifact = _mcp_transcript_artifact(source_transcript_path, replay_calls)
+    except (OSError, ValueError) as exc:
+        errors.append(f"MCP gateway transcript_artifact invalid: {exc}")
+        return
+    if artifact != expected_artifact:
+        errors.append("MCP gateway transcript_artifact does not match supplied transcript bytes")
+
+
+def _mcp_transcript_artifact(path: str | Path, transcript_calls: list[dict[str, Any]]) -> dict[str, Any]:
+    target = Path(path)
+    if not target.is_file():
+        raise ValueError(f"MCP transcript artifact file missing: {path}")
+    data = target.read_bytes()
+    try:
+        parsed = json.loads(data.decode("utf-8-sig"))
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"MCP transcript artifact JSON invalid: {exc}") from exc
+    normalized_from_file = load_mcp_transcript(target)
+    expected_records = build_mcp_transcript_chain(transcript_calls)
+    expected_normalized = [record["tool_call"] for record in expected_records]
+    if normalized_from_file != expected_normalized:
+        raise ValueError("MCP transcript artifact content does not match supplied normalized transcript")
+    artifact_records = build_mcp_transcript_chain(normalized_from_file)
+    body = {
+        "path": str(path).replace("\\", "/"),
+        "sha256": "sha256:" + sha256(data).hexdigest(),
+        "size_bytes": len(data),
+        "source_content_hash": content_hash(parsed),
+        "normalized_transcript_hash": content_hash(normalized_from_file),
+        "transcript_schema": MCP_TRANSCRIPT_CHAIN_SCHEMA,
+        "transcript_root": artifact_records[-1]["transcript_root"],
+        "call_count": len(normalized_from_file),
+        "tool_call_hashes": [record["tool_call_hash"] for record in artifact_records],
+        "request_hashes": [record["request_hash"] for record in artifact_records],
+        "response_hashes": [record["response_hash"] for record in artifact_records],
+    }
+    return {**body, "artifact_id": content_hash(body)}
 
 
 
@@ -868,10 +937,10 @@ def _verify_authority_evidence_item(
     return "fresh"
 
 
-def _authority_evidence_source_context(binding: dict[str, Any]) -> dict[str, Any]:
+def _authority_evidence_source_context(binding: dict[str, Any], transcript_artifact: dict[str, Any] | None = None) -> dict[str, Any]:
     records = binding.get("tool_call_records") if isinstance(binding.get("tool_call_records"), list) else []
     record_dicts = [record for record in records if isinstance(record, dict)]
-    return {
+    context = {
         "transcript_schema": binding.get("transcript_schema"),
         "transcript_hash": binding.get("transcript_hash"),
         "source_transcript_hash": binding.get("source_transcript_hash"),
@@ -888,6 +957,16 @@ def _authority_evidence_source_context(binding: dict[str, Any]) -> dict[str, Any
         "request_hashes": sorted({str(record.get("request_hash")) for record in record_dicts if record.get("request_hash")}),
         "response_hashes": sorted({str(record.get("response_hash")) for record in record_dicts if record.get("response_hash")}),
     }
+    if transcript_artifact is not None:
+        context["transcript_artifact"] = {
+            "artifact_id": transcript_artifact.get("artifact_id"),
+            "sha256": transcript_artifact.get("sha256"),
+            "size_bytes": transcript_artifact.get("size_bytes"),
+            "source_content_hash": transcript_artifact.get("source_content_hash"),
+            "normalized_transcript_hash": transcript_artifact.get("normalized_transcript_hash"),
+            "transcript_root": transcript_artifact.get("transcript_root"),
+        }
+    return context
 
 
 def _verify_required_authority(value: Any, errors: list[str]) -> None:
@@ -908,11 +987,11 @@ def _summary(evidence_items: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _controls(mode: str, binding: dict[str, Any], evidence_items: list[dict[str, Any]], summary: dict[str, Any]) -> list[dict[str, Any]]:
+def _controls(mode: str, binding: dict[str, Any], evidence_items: list[dict[str, Any]], summary: dict[str, Any], transcript_artifact: dict[str, Any] | None = None) -> list[dict[str, Any]]:
     freshness = _freshness_summary(evidence_items)
     missing = summary.get("missing_requirement_count", 0)
     production_ready = mode == "production-dossier" and not missing and freshness["missing"] == 0
-    return [
+    controls = [
         {
             "id": "mcp-transcript-chain-bound",
             "status": "passed" if binding.get("call_count", 0) > 0 and binding.get("transcript_roots") else "failed",
@@ -939,6 +1018,15 @@ def _controls(mode: str, binding: dict[str, Any], evidence_items: list[dict[str,
             "detail": "Dossier stores redacted references, hashes, and roots instead of raw MCP proxy credentials or session tokens.",
         },
     ]
+    if transcript_artifact is not None:
+        controls.append(
+            {
+                "id": "retained-transcript-byte-replay-bound",
+                "status": "passed",
+                "detail": "Dossier records the retained MCP transcript file SHA-256, byte size, canonical source hash, transcript root, and per-call request/response hashes.",
+            }
+        )
+    return controls
 
 
 def _freshness_summary(evidence_items: list[dict[str, Any]]) -> dict[str, int]:
