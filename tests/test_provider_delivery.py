@@ -163,6 +163,78 @@ class ProviderDeliveryTests(unittest.TestCase):
             self.assertTrue(any("payload_artifact" in error and "bytes" in error for error in result.errors))
 
 
+    def test_delivery_replays_retained_response_artifact_bytes(self):
+        pack = self._pack()
+        payload = build_promotion_check_payload(
+            pack,
+            verify_proof_pack(pack),
+            provider="github",
+            commit_sha="0123456789abcdef0123456789abcdef01234567",
+            repository="volelabs/trust_ai",
+            target_url="https://example.test/proof-pack",
+        )
+        response_body = {"id": "check-run-123", "status": "completed", "conclusion": "success"}
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            response_path = Path(tmp_dir) / "github-response.json"
+            response_path.write_text(json.dumps(response_body, indent=2, sort_keys=True), encoding="utf-8")
+            delivery = build_provider_delivery(
+                payload,
+                endpoint_base="https://api.github.com",
+                credential_ref="env:GITHUB_TOKEN",
+                mode="recorded-response",
+                response_status=201,
+                response_body=response_body,
+                delivered_at="2026-07-04T00:00:00Z",
+                response_artifact_path=response_path,
+            )
+
+            artifact = delivery["response_artifact"]
+            result = verify_provider_delivery(delivery, payload, response_artifact_path=response_path)
+
+            self.assertTrue(result.ok, result.errors)
+            self.assertEqual(hashlib.sha256(response_path.read_bytes()).hexdigest(), artifact["sha256"])
+            self.assertEqual(response_path.stat().st_size, artifact["size_bytes"])
+            self.assertEqual("json", artifact["content_type"])
+            self.assertEqual(content_hash(response_body), artifact["body_hash"])
+
+            chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="delivery-response-artifact-test")
+            entry = append_provider_delivery(chain, delivery, payload, response_artifact_path=response_path)
+
+            self.assertEqual(artifact, entry["payload"]["response_artifact"])
+            self.assertTrue(chain.verify_all().ok)
+
+    def test_delivery_detects_retained_response_artifact_byte_tamper(self):
+        pack = self._pack()
+        payload = build_promotion_check_payload(
+            pack,
+            verify_proof_pack(pack),
+            provider="github",
+            commit_sha="0123456789abcdef0123456789abcdef01234567",
+            repository="volelabs/trust_ai",
+            target_url="https://example.test/proof-pack",
+        )
+        response_body = {"id": "check-run-123", "status": "completed", "conclusion": "success"}
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            response_path = Path(tmp_dir) / "github-response.json"
+            response_path.write_text(json.dumps(response_body, indent=2, sort_keys=True), encoding="utf-8")
+            delivery = build_provider_delivery(
+                payload,
+                endpoint_base="https://api.github.com",
+                credential_ref="env:GITHUB_TOKEN",
+                mode="recorded-response",
+                response_status=201,
+                response_body=response_body,
+                delivered_at="2026-07-04T00:00:00Z",
+                response_artifact_path=response_path,
+            )
+            response_path.write_text(json.dumps(response_body, indent=4, sort_keys=True), encoding="utf-8")
+
+            result = verify_provider_delivery(delivery, payload, response_artifact_path=response_path)
+
+            self.assertFalse(result.ok)
+            self.assertTrue(any("response_artifact" in error and "bytes" in error for error in result.errors), result.errors)
+
+
     def test_promotion_status_receipt_binds_gate_payload_and_delivery(self):
         pack = self._pack()
         verification = verify_proof_pack(pack)
@@ -583,6 +655,7 @@ class ProviderDeliveryTests(unittest.TestCase):
             with tempfile.TemporaryDirectory() as tmp_dir:
                 tmp_path = Path(tmp_dir)
                 payload_path = tmp_path / "payload.json"
+                response_path = tmp_path / "response.json"
                 delivery_path = tmp_path / "delivery.json"
                 payload_path.write_text(json.dumps(payload), encoding="utf-8")
                 env = {**os.environ, "PYTHONPATH": str(ROOT / "src"), "TRUSTAI_TEST_PROVIDER_TOKEN": "secret-token"}
@@ -600,6 +673,8 @@ class ProviderDeliveryTests(unittest.TestCase):
                         "--send",
                         "--timeout-seconds",
                         "5",
+                        "--response-artifact",
+                        str(response_path),
                         "--out",
                         str(delivery_path),
                     ],
@@ -611,8 +686,10 @@ class ProviderDeliveryTests(unittest.TestCase):
                 )
                 delivery = json.loads(delivery_path.read_text(encoding="utf-8"))
                 self.assertIn("payload_artifact", delivery)
+                self.assertIn("response_artifact", delivery)
                 self.assertEqual(hashlib.sha256(payload_path.read_bytes()).hexdigest(), delivery["payload_artifact"]["sha256"])
-                path_result = verify_provider_delivery(delivery, payload, payload_artifact_path=payload_path)
+                self.assertEqual(hashlib.sha256(response_path.read_bytes()).hexdigest(), delivery["response_artifact"]["sha256"])
+                path_result = verify_provider_delivery(delivery, payload, payload_artifact_path=payload_path, response_artifact_path=response_path)
                 self.assertTrue(path_result.ok, path_result.errors)
         finally:
             server.shutdown()

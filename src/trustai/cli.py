@@ -9606,10 +9606,12 @@ def cmd_provider_delivery(args: argparse.Namespace) -> int:
                 auth_scheme=args.auth_scheme,
                 delivered_at=args.delivered_at,
                 payload_artifact_path=args.payload,
+                response_artifact_path=args.response_artifact,
                 key=args.key,
             )
         else:
             response_body = _load_json(args.response_json) if args.response_json else None
+            response_artifact_path = args.response_artifact or args.response_json
             delivery = build_provider_delivery(
                 payload,
                 endpoint_base=args.endpoint_base,
@@ -9619,12 +9621,13 @@ def cmd_provider_delivery(args: argparse.Namespace) -> int:
                 response_body=response_body,
                 delivered_at=args.delivered_at,
                 payload_artifact_path=args.payload,
+                response_artifact_path=response_artifact_path,
                 key=args.key,
             )
     except (OSError, ValueError) as exc:
         print(f"provider delivery generation failed: {exc}", file=sys.stderr)
         return 1
-    result = verify_provider_delivery(delivery, payload, payload_artifact_path=args.payload, key=args.key)
+    result = verify_provider_delivery(delivery, payload, payload_artifact_path=args.payload, response_artifact_path=args.response_artifact or (args.response_json if not args.send else None), key=args.key)
     if not result.ok:
         print("provider delivery generation failed verification", file=sys.stderr)
         for error in result.errors:
@@ -9645,7 +9648,7 @@ def cmd_provider_delivery(args: argparse.Namespace) -> int:
 def cmd_provider_delivery_verify(args: argparse.Namespace) -> int:
     payload = load_provider_payload(args.payload) if args.payload else None
     delivery = load_provider_delivery(args.delivery)
-    result = verify_provider_delivery(delivery, payload, payload_artifact_path=args.payload if args.payload else None, key=args.key)
+    result = verify_provider_delivery(delivery, payload, payload_artifact_path=args.payload if args.payload else None, response_artifact_path=args.response_artifact, key=args.key)
     if result.ok:
         print(f"verified provider delivery: {args.delivery}")
         print(f"delivery id: {delivery['delivery_id']}")
@@ -9662,7 +9665,7 @@ def cmd_provider_delivery_append(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
     payload = load_provider_payload(args.payload) if args.payload else None
     delivery = load_provider_delivery(args.delivery)
-    entry = append_provider_delivery(chain, delivery, payload, payload_artifact_path=args.payload if args.payload else None, key=args.key)
+    entry = append_provider_delivery(chain, delivery, payload, payload_artifact_path=args.payload if args.payload else None, response_artifact_path=args.response_artifact, key=args.key)
     chain.save()
     if args.out:
         _write_json(args.out, entry)
@@ -24414,6 +24417,7 @@ def build_parser() -> argparse.ArgumentParser:
     provider_delivery.add_argument("--auth-scheme", default="Bearer")
     provider_delivery.add_argument("--response-status", type=int)
     provider_delivery.add_argument("--response-json")
+    provider_delivery.add_argument("--response-artifact", help="retained provider response body file to bind, or output path for --send")
     provider_delivery.add_argument("--delivered-at")
     provider_delivery.add_argument("--out", default="artifacts/provider-delivery.json")
     provider_delivery.add_argument("--key")
@@ -24422,12 +24426,14 @@ def build_parser() -> argparse.ArgumentParser:
     provider_delivery_verify = subparsers.add_parser("provider-delivery-verify", help="verify a signed provider delivery receipt")
     provider_delivery_verify.add_argument("delivery")
     provider_delivery_verify.add_argument("--payload")
+    provider_delivery_verify.add_argument("--response-artifact")
     provider_delivery_verify.add_argument("--key")
     provider_delivery_verify.set_defaults(func=cmd_provider_delivery_verify)
 
     provider_delivery_append = subparsers.add_parser("provider-delivery-append", help="append a provider delivery receipt as chain evidence")
     provider_delivery_append.add_argument("delivery")
     provider_delivery_append.add_argument("--payload")
+    provider_delivery_append.add_argument("--response-artifact")
     provider_delivery_append.add_argument("--out", default="artifacts/provider-delivery-entry.json")
     _add_state_args(provider_delivery_append)
     provider_delivery_append.set_defaults(func=cmd_provider_delivery_append)

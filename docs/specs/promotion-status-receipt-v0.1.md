@@ -23,8 +23,8 @@ The receipt uses schema `trustai.promotion-status/0.1` and records:
 - provider target ref binding, including concrete GitHub repository or GitLab
   project path plus a 40-character commit SHA;
 - optional provider delivery binding, including delivery ID, delivery hash,
-  payload hash match, accepted/dry-run status, response summary, and delivery
-  verification result;
+  payload hash match, accepted/dry-run status, response summary, optional
+  response artifact binding, and delivery verification result;
 - source checks, controls, violations, pass/fail status, limitations, receipt ID,
   and detached signatures.
 
@@ -42,8 +42,8 @@ When sources are supplied, the verifier recomputes proof-pack hash, provider
 payload hash, provider status success/failure and provider-native status shape, concrete repository/project commit ref binding, delivery receipt verification,
 delivery payload binding, controls, violations, and pass/fail status. Editing the
 proof-pack gate decision, provider payload conclusion/state, contract hash,
-payload hash, delivery payload hash, or delivery signature changes the replayed
-receipt result.
+payload hash, delivery payload hash, retained response artifact binding, or
+delivery signature changes the replayed receipt result.
 
 A receipt passes only when the proof pack verifies offline, the payload pack and
 contract bindings match the gate decision, the provider status/check result

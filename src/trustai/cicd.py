@@ -606,6 +606,7 @@ def _promotion_delivery_binding(delivery: dict[str, Any], payload: dict[str, Any
         "target_url": delivery.get("target_url"),
         "accepted": bool(response.get("accepted")) if response else delivery.get("mode") == "dry-run",
         "response": response or None,
+        "response_artifact": delivery.get("response_artifact"),
         "verification_ok": result.ok,
         "verification_errors": result.errors,
         "verification_warnings": result.warnings,

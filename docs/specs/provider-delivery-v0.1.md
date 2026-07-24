@@ -8,7 +8,8 @@ This v0.1 artifact can represent a dry run, a recorded provider response, or
 an HTTP dispatch performed by the reference CLI with an `env:` credential
 reference. It redacts credentials, records only hashes of request/response
 evidence needed for offline verification, and can replay the retained source
-payload file bytes that were used to create the delivery receipt.
+payload file bytes and retained provider response bytes that were used to create
+the delivery receipt.
 
 ## Schema
 
@@ -37,6 +38,9 @@ Top-level fields:
 - `delivered_at`: RFC3339 delivery timestamp.
 - `response`: optional status, body hash, accepted flag, and response header
   hash for `recorded-response` or `http-dispatch` mode.
+- `response_artifact`: optional retained provider response body binding
+  containing normalized path, raw byte SHA-256, byte size, interpreted content
+  type, content hash, response body hash, and artifact id.
 - `signatures`: one or more detached signatures over the delivery id and body.
 
 ## Verification
@@ -54,17 +58,22 @@ Top-level fields:
   payload hash when the receipt contains `payload_artifact` and `--payload` is
   supplied;
 - recorded response status/body hash when `mode` is `recorded-response`;
+- retained provider response byte hash, size, interpreted content hash, and
+  response body hash when the receipt contains `response_artifact` and
+  `--response-artifact` is supplied;
 - request header hash and response header hash when `mode` is `http-dispatch`.
 
 `dry-run` receipts verify with a warning because no provider response is
 claimed.
-Receipts that contain `payload_artifact` also verify with a warning when the
-retained source payload file is not supplied, so shallow downstream checks can
-remain compatible while full offline replay is still available.
+Receipts that contain `payload_artifact` or `response_artifact` also verify
+with a warning when the retained source file is not supplied, so shallow
+downstream checks can remain compatible while full offline replay is still
+available.
 
 `trustai provider-delivery-append` appends a `provider_delivery.recorded` chain
 entry containing the delivery id, provider, mode, payload hash, target URL,
-request hash, optional payload artifact binding, and optional response summary.
+request hash, optional payload artifact binding, optional response artifact
+binding, and optional response summary.
 
 ## CLI
 
@@ -73,8 +82,8 @@ $env:PYTHONPATH = "src"
 python -m trustai ci-payload artifacts/aitrade-proof-pack.json --provider github --commit-sha 0123456789abcdef0123456789abcdef01234567 --repository volelabs/trust_ai --target-url https://example.test/trustai/artifacts/aitrade-proof-pack.json --out artifacts/github-check-run-payload.json
 python -m trustai provider-delivery artifacts/github-check-run-payload.json --endpoint-base https://api.github.com --credential-ref env:GITHUB_TOKEN --out artifacts/github-check-run-delivery.json
 python -m trustai provider-delivery-verify artifacts/github-check-run-delivery.json --payload artifacts/github-check-run-payload.json
-# With GITHUB_TOKEN set, --send performs HTTP dispatch and records response hashes.
-python -m trustai provider-delivery artifacts/github-check-run-payload.json --endpoint-base https://api.github.com --credential-ref env:GITHUB_TOKEN --send --out artifacts/github-check-run-dispatch.json
+# With GITHUB_TOKEN set, --send performs HTTP dispatch and can retain response bytes.
+python -m trustai provider-delivery artifacts/github-check-run-payload.json --endpoint-base https://api.github.com --credential-ref env:GITHUB_TOKEN --send --response-artifact artifacts/github-check-run-response.json --out artifacts/github-check-run-dispatch.json
 python -m trustai provider-delivery-append artifacts/github-check-run-delivery.json --payload artifacts/github-check-run-payload.json --state .trustai/provider-delivery-demo/evidence-chain.json --tenant provider-delivery-local --out artifacts/github-check-run-delivery-entry.json
 ```
 
