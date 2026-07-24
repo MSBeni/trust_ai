@@ -65,7 +65,7 @@ class FrameworkAdapterAuthorityTests(unittest.TestCase):
                 "requirement_id": "exact-runtime-release-matrix",
                 "authority_kind": "ci-run",
                 "evidence_ref": "ci:framework-adapter-matrix/nightly/aitrade-prod",
-                "evidence_hash": "sha256:framework-adapter-matrix-ci-run",
+                "evidence_hash": "sha256:da1dbc3f0e823e27b23ccdbd395cd21349cdd1ff05c00b2b64d1ce97f071270c",
                 "description": "Nightly adapter matrix replay export for exact framework runtime versions.",
                 "issuer": "TrustAI CI",
                 "subject": "aitrade-prod framework adapter matrix",
@@ -77,7 +77,7 @@ class FrameworkAdapterAuthorityTests(unittest.TestCase):
                 "requirement_id": "native-hook-package-provenance",
                 "authority_kind": "ci-run",
                 "evidence_ref": "ci:framework-hook-release/provenance/0.1.0",
-                "evidence_hash": "sha256:framework-hook-release-provenance",
+                "evidence_hash": "sha256:cdae0a2dffb07721ed933c895b8c128dec2278ce0b3ce7b7829737d6975647ab",
                 "description": "Hook package build provenance and source artifact attestation.",
                 "issuer": "TrustAI CI",
                 "subject": "trustai-framework-hooks 0.1.0",
@@ -154,6 +154,48 @@ class FrameworkAdapterAuthorityTests(unittest.TestCase):
             self.assertEqual(dossier["authority_evidence"][0]["source_context"], entry["payload"]["authority_evidence"][0]["source_context"])
             self.assertEqual(content_hash(dossier["source_binding"]), dossier["authority_evidence"][0]["source_context"]["source_binding_hash"])
             self.assertTrue(chain.verify_all().ok)
+
+    def test_framework_adapter_authority_normalizes_uppercase_evidence_hash(self):
+        expected_hash = self._authority_evidence()[0]["evidence_hash"]
+        evidence = [dict(self._authority_evidence()[0])]
+        evidence[0]["evidence_hash"] = "sha256:" + expected_hash.removeprefix("sha256:").upper()
+        dossier, matrix, release, runtime_authority = self._dossier(authority_evidence=evidence)
+
+        result = verify_framework_adapter_authority_dossier(
+            dossier,
+            matrix=matrix,
+            release=release,
+            runtime_service_authority=runtime_authority,
+            root=ROOT,
+        )
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(expected_hash, dossier["authority_evidence"][0]["evidence_hash"])
+
+    def test_framework_adapter_authority_rejects_resigned_malformed_evidence_hash(self):
+        dossier, matrix, release, runtime_authority = self._dossier(authority_evidence=[dict(self._authority_evidence()[0])])
+        tampered = copy.deepcopy(dossier)
+        item = tampered["authority_evidence"][0]
+        item["evidence_hash"] = "sha256:not-a-real-digest"
+        item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+        self._resign_dossier(tampered)
+
+        result = verify_framework_adapter_authority_dossier(
+            tampered,
+            matrix=matrix,
+            release=release,
+            runtime_service_authority=runtime_authority,
+            root=ROOT,
+        )
+
+        self.assertFalse(result.ok)
+        self.assertIn(
+            "invalid framework adapter authority evidence: framework adapter authority evidence_hash must contain a 64-character sha256 digest",
+            result.errors,
+        )
+        self.assertNotIn("dossier_id does not match canonical framework adapter authority body", result.errors)
+        self.assertNotIn("framework adapter authority signature verification failed", result.errors)
+        self.assertNotIn("framework adapter authority evidence_id does not match evidence body: exact-runtime-release-matrix", result.errors)
 
     def test_framework_adapter_authority_rejects_resigned_source_context_mismatch(self):
         dossier, matrix, release, runtime_authority = self._dossier()
@@ -294,7 +336,7 @@ class FrameworkAdapterAuthorityTests(unittest.TestCase):
                     "--producer-ref",
                     "oidc:trustai.example/framework-adapter-authority-worker",
                     "--authority-evidence",
-                    "exact-runtime-release-matrix,ci-run,ci:framework-adapter-matrix/nightly/aitrade-prod,sha256:framework-adapter-matrix-ci-run,Nightly adapter matrix replay export;issuer=TrustAI CI;subject=aitrade-prod framework adapter matrix;source_uri=https://ci.example/trustai/framework-adapter-matrix/aitrade-prod;issued_at=2026-07-09T00:45:00Z;expires_at=2026-12-31T00:00:00Z",
+                    "exact-runtime-release-matrix,ci-run,ci:framework-adapter-matrix/nightly/aitrade-prod,sha256:da1dbc3f0e823e27b23ccdbd395cd21349cdd1ff05c00b2b64d1ce97f071270c,Nightly adapter matrix replay export;issuer=TrustAI CI;subject=aitrade-prod framework adapter matrix;source_uri=https://ci.example/trustai/framework-adapter-matrix/aitrade-prod;issued_at=2026-07-09T00:45:00Z;expires_at=2026-12-31T00:00:00Z",
                     "--generated-at",
                     "2026-07-09T01:05:00Z",
                     "--out",
