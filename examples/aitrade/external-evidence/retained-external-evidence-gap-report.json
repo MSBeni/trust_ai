@@ -6,7 +6,7 @@
       "hosted-service"
     ]
   },
-  "gap_report_id": "7b7ebf872b262cd18baa97a255601f266674ba4ffa979a2a48303685439a8ec1",
+  "gap_report_id": "dc8ac109bcaf33194ce0470771b399ef5e63ad7a88047f75b5010a6226c1d509",
   "gaps": [
     {
       "authority_kind": "hosted-service",
@@ -1667,27 +1667,27 @@
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "b2b8cb9b9a140c95d3a2c250af4899b433024afb8a45893a31d752ec076c4efc",
-      "plan_id": "0cb38e56ecd12f0e8f1380c5e3c3a955cfc27f61e1e2527ed321472fd423246f",
+      "plan_hash": "a336299040024f892a567e80c01fcf13e5373ad54c0486da6c85a2fa2795d9aa",
+      "plan_id": "678d9f95ca6f7b20bbea6236f939a0d23cc82d71a899c96fcf74f366691a4cd4",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "08466b890226db99b2f4f92c47b6bfd2da1842d48d784c73f547f11ec566ad3c",
-      "manifest_id": "c5615cba2704d4172356a699da89ef743a07cffeaf8899b30a11616bb7eb7b06",
+      "manifest_hash": "b56da0ce235cb4c229c93d86beb3427bd17304c04c295c80e0ec37d4999ff8d5",
+      "manifest_id": "e32a89527955a23ff88b5edadd24c422b898104aea7a1ee5474839dfcb0b98a0",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
-      "audit_hash": "53572b87e052f4892c543f62c864399f9eb179211bdb01ac988344c01d2ffa96",
-      "audit_id": "ec4e9995ed5b1538f60f484ef07b90d9b92225b81bd84131e34f41e271983506",
-      "generated_at": "2026-07-24T15:59:43Z",
+      "audit_hash": "878ad08c5aad20854e1742da88f6c0f5e5557a7efa17ab7f85b660adab3ed4d9",
+      "audit_id": "816ae91c1cd137b510e5be5f62c1d7a975dd7f85c9c045ab277b4b637fca37d3",
+      "generated_at": "2026-07-24T16:22:39Z",
       "schema": "trustai.roadmap-audit/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:01:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "2040b65378c72f07eca82152b2cafab553f25b60fb548fb24d2a8d2c4ac7b863",
-      "source_map_id": "bfb8a4fd1cedc1e573779cb144d1e79c8174bebd7c50c8fa30d2e938b9170ec6"
+      "source_map_hash": "86ddfa4617db6264288a4f5cbc0eb8cc54b0193d23b5c55377a7c599fb0f9740",
+      "source_map_id": "39b1b42419cc6807d2aaaf80d3f74cf5e8ee7246125f857faf53b43a8fea9382"
     }
   },
   "summary": {

@@ -1,7 +1,7 @@
 {
-  "audit_id": "ec4e9995ed5b1538f60f484ef07b90d9b92225b81bd84131e34f41e271983506",
+  "audit_id": "816ae91c1cd137b510e5be5f62c1d7a975dd7f85c9c045ab277b4b637fca37d3",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
-  "generated_at": "2026-07-24T15:59:43Z",
+  "generated_at": "2026-07-24T16:22:39Z",
   "limitations": [
     "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
     "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",
@@ -1423,7 +1423,7 @@
         {
           "path": "src/trustai/standards.py",
           "present": true,
-          "sha256": "sha256:b5064282d50ed98a7185c2fe5d8c557c63309a1a5f50e78ca4365dada8686e10"
+          "sha256": "sha256:55c5d588d3ecf96c1ce3e98b2bcfd5c021e9c3083fc6519b181f782ce57e0a60"
         },
         {
           "path": "src/trustai/roadmap_audit.py",
@@ -1998,7 +1998,7 @@
         {
           "path": "docs/architecture/roadmap-coverage.md",
           "present": true,
-          "sha256": "sha256:39e349bf3334140bb61531553e05ed5c7ee2bc8937f9a4ce9317ef99da12dfc1"
+          "sha256": "sha256:a6b4575cf713a949757be2016291898ec90ca0a340bfccfa4f6cf99ae96c7881"
         },
         {
           "path": "src/trustai/proofpack.py",
@@ -2099,7 +2099,7 @@
         {
           "path": "src/trustai/policy_backend_authority.py",
           "present": true,
-          "sha256": "sha256:c8b1f403be112f896158807b2a3f16e12f73abb5a01c4903bec69c34d63f4c79"
+          "sha256": "sha256:35c814fc79de345014f5953b84f13030d9b1442f1e79b22275bfc332fc5390c9"
         },
         {
           "path": "docs/specs/policy-backend-service-bundle-v0.1.md",
@@ -2109,7 +2109,7 @@
         {
           "path": "docs/specs/policy-backend-production-authority-v0.1.md",
           "present": true,
-          "sha256": "sha256:a1c0021fac8105e52d9ad681190180bbfa6bc3af1075ccd34f6254662be90f44"
+          "sha256": "sha256:b31e9009f182a2597ae03132c84a463696a7eb48543589585bcac3e7a1d65d2c"
         },
         {
           "path": "tests/test_policy_engine.py",
@@ -2129,7 +2129,7 @@
         {
           "path": "tests/test_policy_backend_authority.py",
           "present": true,
-          "sha256": "sha256:10896f533ecfed0afa48be84d01dd5f2b111d144052ab36419c60903ff07da4c"
+          "sha256": "sha256:be8a83cfa1f41c7d7ad0c95a03ecf265272941c3f6a49eca07ec5559d35d78e9"
         }
       ],
       "evidence_count": 18,
@@ -2365,7 +2365,7 @@
         {
           "path": "src/trustai/standards.py",
           "present": true,
-          "sha256": "sha256:b5064282d50ed98a7185c2fe5d8c557c63309a1a5f50e78ca4365dada8686e10"
+          "sha256": "sha256:55c5d588d3ecf96c1ce3e98b2bcfd5c021e9c3083fc6519b181f782ce57e0a60"
         },
         {
           "path": "src/trustai/standards_body_submission.py",
@@ -2563,7 +2563,7 @@
     "coverage": {
       "path": "docs/architecture/roadmap-coverage.md",
       "present": true,
-      "sha256": "sha256:39e349bf3334140bb61531553e05ed5c7ee2bc8937f9a4ce9317ef99da12dfc1"
+      "sha256": "sha256:a6b4575cf713a949757be2016291898ec90ca0a340bfccfa4f6cf99ae96c7881"
     },
     "requirement_count": 26,
     "roadmap": {

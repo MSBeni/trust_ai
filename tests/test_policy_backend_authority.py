@@ -66,13 +66,16 @@ class PolicyBackendAuthorityTests(unittest.TestCase):
         )
         return sources, provider_bundle, service_bundle, paths
 
+    def _authority_evidence_hash(self, requirement_id: str, authority_kind: str) -> str:
+        return "sha256:" + content_hash({"policy_backend_authority": requirement_id, "authority_kind": authority_kind})
+
     def _authority_evidence(self) -> list[dict]:
         return [
             {
                 "requirement_id": "opa-cedar-backend-fleet",
                 "authority_kind": "hosted-service",
                 "evidence_ref": "service:policy-backend-fleet/aitrade-prod",
-                "evidence_hash": "sha256:policy-backend-fleet-authority",
+                "evidence_hash": self._authority_evidence_hash("opa-cedar-backend-fleet", "hosted-service"),
                 "description": "Hosted OPA/Cedar backend fleet deployment export.",
                 "issuer": "TrustAI Cloud",
                 "subject": "aitrade-prod policy backend fleet",
@@ -84,7 +87,7 @@ class PolicyBackendAuthorityTests(unittest.TestCase):
                 "requirement_id": "scheduler-queue-lease",
                 "authority_kind": "provider-api",
                 "evidence_ref": "provider:redpanda-postgres/policy-backend/scheduler-queue-lease",
-                "evidence_hash": "sha256:policy-backend-scheduler-authority",
+                "evidence_hash": self._authority_evidence_hash("scheduler-queue-lease", "provider-api"),
                 "description": "Provider scheduler, queue, lease, checkpoint, and cursor export.",
                 "issuer": "Example Provider",
                 "subject": "aitrade-prod policy backend scheduler",
@@ -104,9 +107,7 @@ class PolicyBackendAuthorityTests(unittest.TestCase):
                     "requirement_id": requirement_id,
                     "authority_kind": authority_kind,
                     "evidence_ref": f"authority:policy-backend/{requirement_id}",
-                    "evidence_hash": "sha256:" + content_hash(
-                        {"policy_backend_authority": requirement_id, "authority_kind": authority_kind}
-                    ),
+                    "evidence_hash": self._authority_evidence_hash(requirement_id, authority_kind),
                     "description": f"Policy backend production authority evidence for {requirement_id}.",
                     "issuer": "TrustAI policy backend authority exporter",
                     "subject": f"aitrade-prod policy backend {requirement_id}",
@@ -138,6 +139,12 @@ class PolicyBackendAuthorityTests(unittest.TestCase):
         dossier["dossier_id"] = dossier_id
         dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "policy_backend_authority": body})]
 
+    def _resign_bundle(self, bundle: dict) -> None:
+        body = without_keys(bundle, "bundle_id", "signatures")
+        bundle_id = content_hash(body)
+        bundle["bundle_id"] = bundle_id
+        bundle["signatures"] = [sign_value({"bundle_id": bundle_id, "policy_backend_authority_evidence_bundle": body})]
+
     def test_policy_backend_authority_verifies_and_appends(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)
@@ -162,6 +169,92 @@ class PolicyBackendAuthorityTests(unittest.TestCase):
             self.assertEqual({"deferred": 1, "passed": 6}, entry["payload"]["control_summary"])
             self.assertTrue(chain.verify_all().ok)
             self.assertTrue(sources["chain"].verify_all().ok)
+
+    def test_policy_backend_authority_normalizes_uppercase_evidence_hash(self):
+        expected_hash = self._authority_evidence_hash("opa-cedar-backend-fleet", "hosted-service")
+        evidence = [dict(self._authority_evidence()[0])]
+        evidence[0]["evidence_hash"] = "sha256:" + expected_hash.removeprefix("sha256:").upper()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            _, bundle, service_bundle, _, dossier = self._dossier(tmp, authority_evidence=evidence)
+
+            result = verify_policy_backend_authority_dossier(dossier, provider_bundle=bundle, service_bundles=[service_bundle])
+
+            self.assertTrue(result.ok, result.errors)
+            self.assertEqual(expected_hash, dossier["authority_evidence"][0]["evidence_hash"])
+
+    def test_policy_backend_authority_evidence_bundle_normalizes_uppercase_evidence_hash(self):
+        expected_hash = self._authority_evidence_hash("opa-cedar-backend-fleet", "hosted-service")
+        evidence = [dict(self._authority_evidence()[0])]
+        evidence[0]["evidence_hash"] = "sha256:" + expected_hash.removeprefix("sha256:").upper()
+        bundle = build_policy_backend_authority_evidence_bundle(
+            authority_evidence=evidence,
+            mode="authority-export",
+            environment="aitrade-prod",
+            bundle_ref="bundle:policy-backend-authority/aitrade-prod",
+            issuer_ref="oidc:trustai.example/policy-backend-authority-exporter",
+            subject_ref="service:policy-backend/opa",
+            authority_ref="authority:policy-backend/aitrade-prod",
+            generated_at="2026-07-04T05:18:00Z",
+        )
+
+        result = verify_policy_backend_authority_evidence_bundle(bundle)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(expected_hash, bundle["authority_evidence"][0]["evidence_hash"])
+
+    def test_policy_backend_authority_rejects_resigned_malformed_evidence_hash(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            _, bundle, service_bundle, _, dossier = self._dossier(tmp)
+            tampered = copy.deepcopy(dossier)
+            item = tampered["authority_evidence"][0]
+            item["evidence_hash"] = "sha256:not-a-real-digest"
+            item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+            self._resign_dossier(tampered)
+
+            result = verify_policy_backend_authority_dossier(tampered, provider_bundle=bundle, service_bundles=[service_bundle])
+
+            self.assertFalse(result.ok)
+            self.assertIn(
+                "invalid policy backend authority evidence: evidence_hash must contain a 64-character sha256 digest",
+                result.errors,
+            )
+            self.assertNotIn("dossier_id does not match canonical policy backend authority body", result.errors)
+            self.assertNotIn("policy backend authority signature verification failed", result.errors)
+            self.assertNotIn("policy backend authority evidence_id does not match evidence body: opa-cedar-backend-fleet", result.errors)
+
+    def test_policy_backend_authority_evidence_bundle_rejects_resigned_malformed_evidence_hash(self):
+        evidence = self._authority_evidence()
+        bundle = build_policy_backend_authority_evidence_bundle(
+            authority_evidence=evidence,
+            mode="authority-export",
+            environment="aitrade-prod",
+            bundle_ref="bundle:policy-backend-authority/aitrade-prod",
+            issuer_ref="oidc:trustai.example/policy-backend-authority-exporter",
+            subject_ref="service:policy-backend/opa",
+            authority_ref="authority:policy-backend/aitrade-prod",
+            generated_at="2026-07-04T05:18:00Z",
+        )
+        tampered = copy.deepcopy(bundle)
+        item = tampered["authority_evidence"][0]
+        item["evidence_hash"] = "sha256:not-a-real-digest"
+        item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+        self._resign_bundle(tampered)
+
+        result = verify_policy_backend_authority_evidence_bundle(tampered)
+
+        self.assertFalse(result.ok)
+        self.assertIn(
+            "invalid policy backend authority evidence bundle: evidence_hash must contain a 64-character sha256 digest",
+            result.errors,
+        )
+        self.assertNotIn("bundle_id does not match canonical policy backend authority evidence bundle body", result.errors)
+        self.assertNotIn("policy backend authority evidence bundle signature verification failed", result.errors)
+        self.assertNotIn(
+            "policy backend authority evidence bundle evidence_id does not match evidence body: opa-cedar-backend-fleet",
+            result.errors,
+        )
 
     def test_policy_backend_authority_requires_provider_bundle_replay(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -561,7 +654,7 @@ class PolicyBackendAuthorityTests(unittest.TestCase):
 
             evidence_arg = (
                 "opa-cedar-backend-fleet,hosted-service,service:policy-backend-fleet/aitrade-prod,"
-                "sha256:policy-backend-fleet-authority,Hosted OPA/Cedar backend fleet deployment export;"
+                "sha256:361f39efd062de14d2eb6fba49c01658e35c5a21c46a524f6f380d03f273891d,Hosted OPA/Cedar backend fleet deployment export;"
                 "issuer=TrustAI Cloud;subject=aitrade-prod policy backend fleet;"
                 "source_uri=https://ops.example/trustai/policy-backend/aitrade-prod;"
                 "issued_at=2026-07-04T00:00:00Z;expires_at=2026-07-11T00:00:00Z"
