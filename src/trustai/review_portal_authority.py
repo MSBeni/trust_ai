@@ -14,6 +14,9 @@ from .review_portal_service import verify_review_portal_service_attestation
 REVIEW_PORTAL_AUTHORITY_SCHEMA = "trustai.review-portal-production-authority-dossier/0.1"
 REVIEW_PORTAL_AUTHORITY_ENTRY_TYPE = "review_portal.production_authority_recorded"
 REVIEW_PORTAL_AUTHORITY_MODES = {"local-dossier", "provider-dossier", "production-dossier"}
+REVIEW_PORTAL_AUTHORITY_EVIDENCE_BUNDLE_SCHEMA = "trustai.review-portal-authority-evidence-bundle/0.1"
+REVIEW_PORTAL_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE = "review_portal.production_authority_evidence_bundled"
+REVIEW_PORTAL_AUTHORITY_EVIDENCE_BUNDLE_MODES = {"authority-export", "offline-review", "production-export"}
 SECRET_KEY_MARKERS = ("authorization", "cookie", "token", "secret", "private_key", "client_secret", "password", "credential")
 
 PRODUCTION_AUTHORITY_REQUIREMENTS = [
@@ -96,6 +99,18 @@ class ReviewPortalAuthorityVerification:
     missing_freshness_count: int = 0
 
 
+@dataclass
+class ReviewPortalAuthorityEvidenceBundleVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+    covered_count: int = 0
+    required_count: int = 0
+    fresh_evidence_count: int = 0
+    stale_evidence_count: int = 0
+    missing_freshness_count: int = 0
+
+
 def load_review_portal_authority_dossier(path: str | Path) -> dict[str, Any]:
     value = json.loads(Path(path).read_text(encoding="utf-8-sig"))
     if not isinstance(value, dict):
@@ -107,6 +122,19 @@ def write_review_portal_authority_dossier(path: str | Path, dossier: dict[str, A
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(dossier, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_review_portal_authority_evidence_bundle(path: str | Path) -> dict[str, Any]:
+    value = json.loads(Path(path).read_text(encoding="utf-8-sig"))
+    if not isinstance(value, dict):
+        raise ValueError("review portal authority evidence bundle must contain an object")
+    return value
+
+
+def write_review_portal_authority_evidence_bundle(path: str | Path, bundle: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(bundle, indent=2, sort_keys=True), encoding="utf-8")
 
 
 def parse_review_portal_authority_evidence_arg(value: str) -> dict[str, Any]:
@@ -126,6 +154,210 @@ def parse_review_portal_authority_evidence_arg(value: str) -> dict[str, Any]:
             raise ValueError(f"unsupported authority evidence metadata key: {key}")
         metadata[key] = metadata_value
     return {"requirement_id": requirement_id, "authority_kind": authority_kind, "evidence_ref": evidence_ref, "evidence_hash": evidence_hash, "description": description_parts[0], **metadata}
+
+
+def build_review_portal_authority_evidence_bundle(
+    *,
+    authority_evidence: list[dict[str, Any]],
+    mode: str = "authority-export",
+    environment: str = "local",
+    bundle_ref: str,
+    issuer_ref: str,
+    subject_ref: str,
+    authority_ref: str,
+    generated_at: str | None = None,
+    key: str | None = None,
+) -> dict[str, Any]:
+    if mode not in REVIEW_PORTAL_AUTHORITY_EVIDENCE_BUNDLE_MODES:
+        raise ValueError(f"mode must be one of {sorted(REVIEW_PORTAL_AUTHORITY_EVIDENCE_BUNDLE_MODES)}")
+    for value, field in (
+        (environment, "environment"),
+        (bundle_ref, "bundle_ref"),
+        (issuer_ref, "issuer_ref"),
+        (subject_ref, "subject_ref"),
+        (authority_ref, "authority_ref"),
+    ):
+        _require_text(value, field)
+    timestamp = generated_at or utc_now()
+    parse_rfc3339(timestamp)
+    evidence_items = [_build_authority_evidence_bundle_item(item) for item in authority_evidence]
+    summary = _summary(evidence_items)
+    body = {
+        "schema": REVIEW_PORTAL_AUTHORITY_EVIDENCE_BUNDLE_SCHEMA,
+        "mode": mode,
+        "environment": environment,
+        "generated_at": timestamp,
+        "bundle_ref": bundle_ref,
+        "issuer_ref": issuer_ref,
+        "subject_ref": subject_ref,
+        "authority_ref": authority_ref,
+        "required_production_authority": PRODUCTION_AUTHORITY_REQUIREMENTS,
+        "authority_evidence": evidence_items,
+        "summary": summary,
+        "controls": _bundle_controls(mode, evidence_items, summary),
+        "limitations": [
+            "This bundle records review portal production-authority evidence rows before binding them to a concrete service attestation.",
+            "A review portal authority dossier must still replay the service attestation, supervised access receipt, proof pack, disclosure, and frontend bundle before claiming production authority.",
+            "Production claims require production-export mode, complete checklist coverage, live source URIs, and fresh evidence windows.",
+        ],
+    }
+    secret_errors: list[str] = []
+    _check_no_secret_values(body, secret_errors)
+    if secret_errors:
+        raise ValueError("review portal authority evidence bundle contains secret-like values: " + "; ".join(secret_errors))
+    bundle_id = content_hash(body)
+    return {
+        **body,
+        "bundle_id": bundle_id,
+        "signatures": [sign_value({"bundle_id": bundle_id, "review_portal_authority_evidence_bundle": body}, key)],
+    }
+
+
+def verify_review_portal_authority_evidence_bundle(
+    bundle: dict[str, Any],
+    *,
+    key: str | None = None,
+    require_complete: bool = False,
+    require_fresh: bool = False,
+    now: str | None = None,
+) -> ReviewPortalAuthorityEvidenceBundleVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    freshness_now = _freshness_reference(bundle, now, errors)
+
+    if bundle.get("schema") != REVIEW_PORTAL_AUTHORITY_EVIDENCE_BUNDLE_SCHEMA:
+        errors.append(f"unsupported review portal authority evidence bundle schema: {bundle.get('schema')}")
+    body = without_keys(bundle, "bundle_id", "signatures")
+    if bundle.get("bundle_id") != content_hash(body):
+        errors.append("bundle_id does not match canonical review portal authority evidence bundle body")
+    signatures = bundle.get("signatures", [])
+    if not isinstance(signatures, list) or not signatures:
+        errors.append("review portal authority evidence bundle must include at least one signature")
+    else:
+        signed_value = {"bundle_id": bundle.get("bundle_id"), "review_portal_authority_evidence_bundle": body}
+        if not any(isinstance(signature, dict) and verify_value(signed_value, signature, key) for signature in signatures):
+            errors.append("review portal authority evidence bundle signature verification failed")
+
+    mode = bundle.get("mode")
+    if mode not in REVIEW_PORTAL_AUTHORITY_EVIDENCE_BUNDLE_MODES:
+        errors.append("review portal authority evidence bundle mode is unsupported")
+    elif mode != "production-export":
+        warnings.append(f"review portal authority evidence bundle mode is {mode}; production evidence export is not claimed")
+    try:
+        parse_rfc3339(str(bundle.get("generated_at") or ""))
+    except ValueError as exc:
+        errors.append(f"review portal authority evidence bundle generated_at invalid: {exc}")
+    for field in ("environment", "bundle_ref", "issuer_ref", "subject_ref", "authority_ref"):
+        if not bundle.get(field):
+            errors.append(f"review portal authority evidence bundle {field} is required")
+    if bundle.get("required_production_authority") != PRODUCTION_AUTHORITY_REQUIREMENTS:
+        errors.append("review portal authority evidence bundle required_production_authority does not match v0.1 requirements")
+
+    evidence = bundle.get("authority_evidence", [])
+    if not isinstance(evidence, list):
+        errors.append("review portal authority evidence bundle authority_evidence must be a list")
+        evidence = []
+    freshness_counts = {"fresh": 0, "stale": 0, "missing": 0}
+    evidence_items: list[dict[str, Any]] = []
+    for item in evidence:
+        if not isinstance(item, dict):
+            errors.append("review portal authority evidence bundle item must be an object")
+            freshness_counts["missing"] += 1
+            continue
+        status = _verify_authority_evidence_bundle_item(item, errors, warnings, now=freshness_now, require_fresh=require_fresh)
+        freshness_counts[status] += 1
+        evidence_items.append(item)
+
+    expected_summary = _summary(evidence_items)
+    if bundle.get("summary") != expected_summary:
+        errors.append("review portal authority evidence bundle summary does not match authority evidence")
+    if not isinstance(bundle.get("controls"), list) or not bundle.get("controls"):
+        errors.append("review portal authority evidence bundle controls are required")
+    elif bundle.get("controls") != _bundle_controls(str(mode), evidence_items, expected_summary):
+        errors.append("review portal authority evidence bundle controls do not match bundle body")
+    missing = expected_summary["missing_requirement_ids"]
+    if missing:
+        warnings.append("review portal authority evidence bundle missing for: " + ", ".join(missing))
+    if require_complete and missing:
+        errors.append("review portal authority evidence bundle is incomplete")
+    source_uri_counts = _source_uri_counts(evidence_items)
+    if mode == "production-export" and missing:
+        errors.append("production-export mode requires every review portal authority requirement to be covered")
+    if mode == "production-export" and (source_uri_counts["placeholder"] or source_uri_counts["missing"]):
+        errors.append("production-export mode requires live source_uri values for every review portal authority evidence item")
+    if mode == "production-export" and (freshness_counts["stale"] or freshness_counts["missing"]):
+        errors.append("production-export mode requires every review portal authority evidence item to be fresh")
+    _check_no_secret_values(bundle, errors)
+
+    return ReviewPortalAuthorityEvidenceBundleVerification(
+        ok=not errors,
+        errors=errors,
+        warnings=warnings,
+        covered_count=expected_summary["covered_requirement_count"],
+        required_count=expected_summary["required_requirement_count"],
+        fresh_evidence_count=freshness_counts["fresh"],
+        stale_evidence_count=freshness_counts["stale"],
+        missing_freshness_count=freshness_counts["missing"],
+    )
+
+
+def review_portal_authority_evidence_from_bundle(
+    bundle: dict[str, Any],
+    *,
+    key: str | None = None,
+    require_complete: bool = False,
+    require_fresh: bool = False,
+    now: str | None = None,
+) -> list[dict[str, Any]]:
+    result = verify_review_portal_authority_evidence_bundle(
+        bundle,
+        key=key,
+        require_complete=require_complete,
+        require_fresh=require_fresh,
+        now=now,
+    )
+    if not result.ok:
+        raise ValueError("invalid review portal authority evidence bundle: " + "; ".join(result.errors))
+    evidence: list[dict[str, Any]] = []
+    for item in bundle.get("authority_evidence", []):
+        if isinstance(item, dict):
+            evidence.append(without_keys(item, "evidence_id", "service_context"))
+    return evidence
+
+
+def append_review_portal_authority_evidence_bundle(
+    chain: EvidenceChain,
+    bundle: dict[str, Any],
+    *,
+    key: str | None = None,
+    require_complete: bool = False,
+    require_fresh: bool = False,
+    now: str | None = None,
+) -> dict[str, Any]:
+    result = verify_review_portal_authority_evidence_bundle(
+        bundle,
+        key=key,
+        require_complete=require_complete,
+        require_fresh=require_fresh,
+        now=now,
+    )
+    if not result.ok:
+        raise ValueError("invalid review portal authority evidence bundle: " + "; ".join(result.errors))
+    payload = {
+        "bundle_id": bundle["bundle_id"],
+        "bundle_hash": content_hash(bundle),
+        "mode": bundle.get("mode"),
+        "environment": bundle.get("environment"),
+        "generated_at": bundle.get("generated_at"),
+        "bundle_ref": bundle.get("bundle_ref"),
+        "issuer_ref": bundle.get("issuer_ref"),
+        "subject_ref": bundle.get("subject_ref"),
+        "authority_ref": bundle.get("authority_ref"),
+        "summary": bundle.get("summary"),
+        "control_summary": _status_summary(bundle.get("controls", [])),
+        "authority_evidence": bundle.get("authority_evidence"),
+    }
+    return chain.append(REVIEW_PORTAL_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE, payload, key=key, timestamp=bundle.get("generated_at"))
 
 
 def build_review_portal_authority_dossier(
@@ -433,6 +665,101 @@ def _verify_service_attestation_binding(binding: Any, service_attestation: dict[
     warnings.extend(f"review portal authority service source: {warning}" for warning in result.warnings)
 
 
+def _build_authority_evidence_bundle_item(item: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(item, dict):
+        raise ValueError("authority evidence item must be an object")
+    requirement_id = str(item.get("requirement_id") or "")
+    authority_kind = str(item.get("authority_kind") or "")
+    evidence_ref = str(item.get("evidence_ref") or "")
+    evidence_hash = str(item.get("evidence_hash") or "")
+    description = str(item.get("description") or "")
+    if requirement_id not in PRODUCTION_AUTHORITY_REQUIREMENT_IDS:
+        raise ValueError(f"unknown review portal production authority requirement: {requirement_id}")
+    if authority_kind not in AUTHORITY_KINDS:
+        raise ValueError(f"unsupported authority kind: {authority_kind}")
+    if authority_kind not in _requirement_authority_kinds(requirement_id):
+        raise ValueError(f"authority kind {authority_kind} is not accepted for requirement {requirement_id}")
+    for value, field in ((evidence_ref, "evidence_ref"), (evidence_hash, "evidence_hash"), (description, "description")):
+        _require_text(value, field)
+    _require_hash_ref(evidence_hash, "evidence_hash")
+    for field in ("issued_at", "expires_at"):
+        if item.get(field):
+            parse_rfc3339(str(item[field]))
+    body = {
+        "requirement_id": requirement_id,
+        "authority_kind": authority_kind,
+        "evidence_ref": evidence_ref,
+        "evidence_hash": evidence_hash,
+        "description": description,
+        "issuer": item.get("issuer"),
+        "subject": item.get("subject"),
+        "source_uri": item.get("source_uri"),
+        "issued_at": item.get("issued_at"),
+        "expires_at": item.get("expires_at"),
+    }
+    return {**body, "evidence_id": content_hash(body)}
+
+
+def _verify_authority_evidence_bundle_item(
+    item: dict[str, Any],
+    errors: list[str],
+    warnings: list[str],
+    *,
+    now: Any,
+    require_fresh: bool,
+) -> str:
+    if item.get("evidence_id") != content_hash(without_keys(item, "evidence_id")):
+        errors.append(f"review portal authority evidence bundle evidence_id does not match evidence body: {item.get('requirement_id')}")
+    requirement_id = item.get("requirement_id")
+    authority_kind = item.get("authority_kind")
+    if requirement_id not in PRODUCTION_AUTHORITY_REQUIREMENT_IDS:
+        errors.append(f"unknown review portal production authority requirement: {requirement_id}")
+    if authority_kind not in AUTHORITY_KINDS:
+        errors.append(f"unsupported authority kind: {authority_kind}")
+    elif requirement_id in PRODUCTION_AUTHORITY_REQUIREMENT_IDS and authority_kind not in _requirement_authority_kinds(str(requirement_id)):
+        errors.append(f"authority kind {authority_kind} is not accepted for requirement {requirement_id}")
+    for field in ("evidence_ref", "evidence_hash", "description"):
+        if not item.get(field):
+            errors.append(f"review portal authority evidence bundle {field} is required: {requirement_id}")
+    if item.get("evidence_hash") and not str(item.get("evidence_hash")).startswith("sha256:"):
+        errors.append(f"review portal authority evidence bundle evidence_hash must start with sha256: {requirement_id}")
+    if _source_uri_is_placeholder(item.get("source_uri")):
+        warnings.append(f"review portal authority evidence bundle source_uri is placeholder or missing: {requirement_id}")
+
+    issued_at = _parse_optional_timestamp(item, "issued_at", errors)
+    expires_at = _parse_optional_timestamp(item, "expires_at", errors)
+    freshness_status = "fresh"
+    missing_fields = [field for field in ("issued_at", "expires_at") if not item.get(field)]
+    if missing_fields:
+        freshness_status = "missing"
+        _freshness_problem(
+            f"review portal authority evidence bundle freshness metadata missing for {requirement_id}: {', '.join(missing_fields)}",
+            errors,
+            warnings,
+            require_fresh=require_fresh,
+        )
+    if issued_at is not None and expires_at is not None and expires_at <= issued_at:
+        freshness_status = "stale"
+        errors.append(f"review portal authority evidence bundle expires_at must be after issued_at: {requirement_id}")
+    if now is not None and issued_at is not None and issued_at > now:
+        freshness_status = "stale"
+        _freshness_problem(
+            f"review portal authority evidence bundle evidence is not yet issued for {requirement_id}: {item.get('issued_at')}",
+            errors,
+            warnings,
+            require_fresh=require_fresh,
+        )
+    if now is not None and expires_at is not None and expires_at <= now:
+        freshness_status = "stale"
+        _freshness_problem(
+            f"review portal authority evidence bundle evidence expired for {requirement_id}: {item.get('expires_at')}",
+            errors,
+            warnings,
+            require_fresh=require_fresh,
+        )
+    return freshness_status
+
+
 def _build_authority_evidence_item(item: dict[str, Any], service_binding: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(item, dict):
         raise ValueError("authority evidence item must be an object")
@@ -578,6 +905,37 @@ def _summary(evidence: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _bundle_controls(mode: str, evidence: list[dict[str, Any]], summary: dict[str, Any]) -> list[dict[str, Any]]:
+    source_uri_counts = _source_uri_counts(evidence)
+    return [
+        {
+            "name": "authority_evidence_manifested",
+            "status": "passed" if evidence else "failed",
+            "detail": "Review portal authority evidence rows are canonicalized, signed, and counted before service-attestation dossier binding.",
+        },
+        {
+            "name": "freshness_windows_tracked",
+            "status": "passed" if evidence and summary["freshness_window_count"] == len(evidence) else "deferred",
+            "detail": "Issued/expires freshness windows are tracked for every supplied authority item when available.",
+        },
+        {
+            "name": "live_source_uris_present",
+            "status": "passed" if evidence and source_uri_counts["missing"] == 0 and source_uri_counts["placeholder"] == 0 else "deferred",
+            "detail": "Production authority exports need live source URIs instead of placeholder collection tasks.",
+        },
+        {
+            "name": "complete_authority_coverage",
+            "status": "passed" if summary["missing_requirement_count"] == 0 else "deferred",
+            "detail": "Every hosted review portal production authority requirement is represented before production-export mode can be used.",
+        },
+        {
+            "name": "production_export_limited",
+            "status": "passed" if mode != "production-export" or summary["missing_requirement_count"] == 0 else "failed",
+            "detail": "Production exports are limited to complete authority-evidence bundles with fresh live-source rows.",
+        },
+    ]
+
+
 def _controls(mode: str, binding: dict[str, Any], evidence: list[dict[str, Any]], summary: dict[str, Any]) -> list[dict[str, Any]]:
     return [
         {
@@ -611,6 +969,24 @@ def _controls(mode: str, binding: dict[str, Any], evidence: list[dict[str, Any]]
             "detail": "Non-production dossier modes explicitly avoid claiming live credentialed auditor/regulator portal operation.",
         },
     ]
+
+
+def _source_uri_counts(evidence: list[dict[str, Any]]) -> dict[str, int]:
+    counts = {"live": 0, "placeholder": 0, "missing": 0}
+    for item in evidence:
+        source_uri = item.get("source_uri")
+        if not source_uri:
+            counts["missing"] += 1
+        elif _source_uri_is_placeholder(source_uri):
+            counts["placeholder"] += 1
+        else:
+            counts["live"] += 1
+    return counts
+
+
+def _source_uri_is_placeholder(value: Any) -> bool:
+    text = str(value or "").strip().lower()
+    return not text or text.startswith("todo://") or "todo" in text or "placeholder" in text
 
 
 def _status_summary(controls: list[dict[str, Any]]) -> dict[str, int]:

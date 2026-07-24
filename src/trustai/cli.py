@@ -1025,13 +1025,20 @@ from .review_portal_service import (
     write_review_portal_service_attestation,
 )
 from .review_portal_authority import (
+    REVIEW_PORTAL_AUTHORITY_EVIDENCE_BUNDLE_MODES,
     REVIEW_PORTAL_AUTHORITY_MODES,
     append_review_portal_authority_dossier,
+    append_review_portal_authority_evidence_bundle,
     build_review_portal_authority_dossier,
+    build_review_portal_authority_evidence_bundle,
     load_review_portal_authority_dossier,
+    load_review_portal_authority_evidence_bundle,
     parse_review_portal_authority_evidence_arg,
+    review_portal_authority_evidence_from_bundle,
     verify_review_portal_authority_dossier,
+    verify_review_portal_authority_evidence_bundle,
     write_review_portal_authority_dossier,
+    write_review_portal_authority_evidence_bundle,
 )
 from .runtime import append_runtime_attestation, load_action
 from .server import serve
@@ -14758,10 +14765,119 @@ def _load_review_portal_authority_sources(args: argparse.Namespace) -> dict[str,
     }
 
 
+def _review_portal_authority_evidence(args: argparse.Namespace) -> list[dict[str, Any]]:
+    evidence = [parse_review_portal_authority_evidence_arg(value) for value in (args.authority_evidence or [])]
+    for bundle_path in getattr(args, "authority_evidence_bundle", []) or []:
+        bundle = load_review_portal_authority_evidence_bundle(bundle_path)
+        evidence.extend(
+            review_portal_authority_evidence_from_bundle(
+                bundle,
+                key=getattr(args, "key", None),
+                require_complete=getattr(args, "require_complete", False),
+                require_fresh=getattr(args, "require_fresh", False),
+                now=getattr(args, "now", None),
+            )
+        )
+    return evidence
+
+
+def cmd_review_portal_authority_evidence_bundle(args: argparse.Namespace) -> int:
+    try:
+        evidence = [parse_review_portal_authority_evidence_arg(value) for value in args.authority_evidence]
+        bundle = build_review_portal_authority_evidence_bundle(
+            authority_evidence=evidence,
+            mode=args.mode,
+            environment=args.environment,
+            bundle_ref=args.bundle_ref,
+            issuer_ref=args.issuer_ref,
+            subject_ref=args.subject_ref,
+            authority_ref=args.authority_ref,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_review_portal_authority_evidence_bundle(
+            bundle,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"review portal authority evidence bundle failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("review portal authority evidence bundle verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_review_portal_authority_evidence_bundle(args.out, bundle)
+    print(f"review portal authority evidence bundle: {args.out}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"covered requirements: {result.covered_count}/{result.required_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_review_portal_authority_evidence_bundle_verify(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_review_portal_authority_evidence_bundle(args.bundle)
+    except (OSError, ValueError) as exc:
+        print(f"review portal authority evidence bundle verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_review_portal_authority_evidence_bundle(
+        bundle,
+        key=args.key,
+        require_complete=args.require_complete,
+        require_fresh=args.require_fresh,
+        now=args.now,
+    )
+    if result.ok:
+        print(f"verified review portal authority evidence bundle: {args.bundle}")
+        print(f"bundle id: {bundle['bundle_id']}")
+        print(f"covered requirements: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"review portal authority evidence bundle verification failed: {args.bundle}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_review_portal_authority_evidence_bundle_append(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_review_portal_authority_evidence_bundle(args.bundle)
+    except (OSError, ValueError) as exc:
+        print(f"review portal authority evidence bundle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_review_portal_authority_evidence_bundle(
+            chain,
+            bundle,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"review portal authority evidence bundle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"review portal authority evidence bundle entry: {args.out}")
+    print(f"review portal authority evidence bundle entry id: {entry['entry_id']}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
 def cmd_review_portal_authority(args: argparse.Namespace) -> int:
     sources = _load_review_portal_authority_sources(args)
     try:
-        evidence = [parse_review_portal_authority_evidence_arg(value) for value in args.authority_evidence]
+        evidence = _review_portal_authority_evidence(args)
         dossier = build_review_portal_authority_dossier(
             sources["service_attestation"],
             supervised_access_receipt=sources["supervised_access_receipt"],
@@ -25832,6 +25948,40 @@ def build_parser() -> argparse.ArgumentParser:
         parser.add_argument("--regulator-acceptance")
         parser.add_argument("--eu-ai-act-document")
 
+    review_portal_authority_bundle = subparsers.add_parser("review-portal-authority-evidence-bundle", help="write a signed review portal authority evidence bundle")
+    review_portal_authority_bundle.add_argument("--mode", choices=sorted(REVIEW_PORTAL_AUTHORITY_EVIDENCE_BUNDLE_MODES), default="authority-export")
+    review_portal_authority_bundle.add_argument("--environment", default="local")
+    review_portal_authority_bundle.add_argument("--bundle-ref", required=True)
+    review_portal_authority_bundle.add_argument("--issuer-ref", required=True)
+    review_portal_authority_bundle.add_argument("--subject-ref", required=True)
+    review_portal_authority_bundle.add_argument("--authority-ref", required=True)
+    review_portal_authority_bundle.add_argument("--generated-at")
+    review_portal_authority_bundle.add_argument("--authority-evidence", action="append", default=[])
+    review_portal_authority_bundle.add_argument("--require-complete", action="store_true")
+    review_portal_authority_bundle.add_argument("--require-fresh", action="store_true")
+    review_portal_authority_bundle.add_argument("--now")
+    review_portal_authority_bundle.add_argument("--out", default="artifacts/review-portal-authority-evidence-bundle.json")
+    review_portal_authority_bundle.add_argument("--key")
+    review_portal_authority_bundle.set_defaults(func=cmd_review_portal_authority_evidence_bundle)
+
+    review_portal_authority_bundle_verify = subparsers.add_parser("review-portal-authority-evidence-bundle-verify", help="verify a signed review portal authority evidence bundle")
+    review_portal_authority_bundle_verify.add_argument("bundle")
+    review_portal_authority_bundle_verify.add_argument("--require-complete", action="store_true")
+    review_portal_authority_bundle_verify.add_argument("--require-fresh", action="store_true")
+    review_portal_authority_bundle_verify.add_argument("--now")
+    review_portal_authority_bundle_verify.add_argument("--key")
+    review_portal_authority_bundle_verify.set_defaults(func=cmd_review_portal_authority_evidence_bundle_verify)
+
+    review_portal_authority_bundle_append = subparsers.add_parser("review-portal-authority-evidence-bundle-append", help="append a verified review portal authority evidence bundle as chain evidence")
+    review_portal_authority_bundle_append.add_argument("bundle")
+    review_portal_authority_bundle_append.add_argument("--out", default="artifacts/review-portal-authority-evidence-bundle-entry.json")
+    review_portal_authority_bundle_append.add_argument("--require-complete", action="store_true")
+    review_portal_authority_bundle_append.add_argument("--require-fresh", action="store_true")
+    review_portal_authority_bundle_append.add_argument("--now")
+    review_portal_authority_bundle_append.add_argument("--key")
+    _add_state_args(review_portal_authority_bundle_append)
+    review_portal_authority_bundle_append.set_defaults(func=cmd_review_portal_authority_evidence_bundle_append)
+
     review_portal_authority = subparsers.add_parser("review-portal-authority", help="write a signed review portal production authority dossier")
     _add_review_portal_authority_sources(review_portal_authority)
     review_portal_authority.add_argument("--mode", choices=sorted(REVIEW_PORTAL_AUTHORITY_MODES), default="provider-dossier")
@@ -25840,6 +25990,7 @@ def build_parser() -> argparse.ArgumentParser:
     review_portal_authority.add_argument("--authority-ref", required=True)
     review_portal_authority.add_argument("--producer-ref", required=True)
     review_portal_authority.add_argument("--authority-evidence", action="append", default=[], help="requirement_id,authority_kind,evidence_ref,evidence_hash,description[;issuer=...;subject=...;source_uri=...;issued_at=...;expires_at=...]")
+    review_portal_authority.add_argument("--authority-evidence-bundle", action="append", default=[], help="signed review portal authority evidence bundle to verify and consume")
     review_portal_authority.add_argument("--generated-at")
     review_portal_authority.add_argument("--require-complete", action="store_true")
     review_portal_authority.add_argument("--require-fresh", action="store_true")

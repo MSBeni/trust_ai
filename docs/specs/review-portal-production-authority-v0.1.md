@@ -24,6 +24,16 @@ A dossier is a JSON object with:
 - `limitations`: human-readable non-claim statements.
 - `signatures`: one or more signatures over `{dossier_id, review_portal_authority}`.
 
+## Authority Evidence Bundle
+
+A review portal authority evidence bundle is a source-independent JSON artifact with schema `trustai.review-portal-authority-evidence-bundle/0.1`. It records normalized external authority evidence rows before they are rebound into a concrete service-attestation dossier.
+
+A bundle contains `bundle_id`, `mode`, `environment`, `generated_at`, `bundle_ref`, `issuer_ref`, `subject_ref`, `authority_ref`, `required_production_authority`, `authority_evidence`, `summary`, `controls`, `limitations`, and `signatures`. Modes are `authority-export`, `offline-review`, and `production-export`. `production-export` requires complete production checklist coverage, live non-placeholder `source_uri` values for every evidence item, and fresh `issued_at`/`expires_at` windows.
+
+A verifier can consume a valid bundle through `--authority-evidence-bundle`. The dossier builder rebinds each bundled row to the supplied review portal service attestation by deriving a fresh `service_context` and `evidence_id`; bundle-local service context is not trusted for dossier claims.
+
+Appending a valid bundle writes entry type `review_portal.production_authority_evidence_bundled`. The entry payload retains the bundle hash, issuer/subject/authority refs, coverage summary, control summary, and normalized authority evidence rows so the control plane can index freshness and live source URI coverage offline.
+
 ## Service Attestation Binding
 
 The service binding records the source review portal service attestation id, hash, schema, mode, environment, timestamp, source count/hash, service reference, portal kind, endpoint URL, service image and binary hashes, frontend bundle reference/hash/artifact hash, API reference, replica limits, availability zones, supervised-access receipt/session/reviewer fields, auth/session/RBAC/selective-disclosure/tenant/network/encryption references, audit and access log roots, metrics, alert policy, retention, actor reference, redacted credential reference, and evidence references.
@@ -72,7 +82,10 @@ Appending a valid dossier writes entry type `review_portal.production_authority_
 Reference commands:
 
 ```powershell
-python -m trustai review-portal-authority artifacts/review-portal-service-attestation.json --environment aitrade-prod --dossier-ref dossier:review-portal-authority/regulator-prod --authority-ref authority:review-portal/regulator-prod --producer-ref oidc:trustai.example/review-portal-authority-worker --authority-evidence "hosted-portal-worker-fleet,hosted-service,service:review-portal/regulator-prod,sha256:review-portal-hosted-service-authority,Hosted regulator review portal service export;issuer=TrustAI Cloud;subject=aitrade-prod regulator review portal;source_uri=https://ops.example/trustai/review-portal/regulator-prod;issued_at=2026-07-08T06:10:00Z;expires_at=2026-07-15T06:10:00Z" --generated-at 2026-07-08T06:15:00Z --out artifacts/review-portal-authority.json
+python -m trustai review-portal-authority-evidence-bundle --environment aitrade-prod --bundle-ref bundle:review-portal-authority/regulator-prod --issuer-ref issuer:trustai-cloud/review-portal --subject-ref service:review-portal/regulator-prod --authority-ref authority:review-portal/regulator-prod --authority-evidence "hosted-portal-worker-fleet,hosted-service,service:review-portal/regulator-prod,sha256:review-portal-hosted-service-authority,Hosted regulator review portal service export;issuer=TrustAI Cloud;subject=aitrade-prod regulator review portal;source_uri=https://ops.example/trustai/review-portal/regulator-prod;issued_at=2026-07-08T06:10:00Z;expires_at=2026-07-15T06:10:00Z" --generated-at 2026-07-08T06:14:00Z --out artifacts/review-portal-authority-evidence-bundle.json
+python -m trustai review-portal-authority-evidence-bundle-verify artifacts/review-portal-authority-evidence-bundle.json
+python -m trustai review-portal-authority-evidence-bundle-append artifacts/review-portal-authority-evidence-bundle.json --state .trustai/review-portal-authority-demo/evidence-chain.json --tenant review-portal-authority-local --out artifacts/review-portal-authority-evidence-bundle-entry.json
+python -m trustai review-portal-authority artifacts/review-portal-service-attestation.json --environment aitrade-prod --dossier-ref dossier:review-portal-authority/regulator-prod --authority-ref authority:review-portal/regulator-prod --producer-ref oidc:trustai.example/review-portal-authority-worker --authority-evidence-bundle artifacts/review-portal-authority-evidence-bundle.json --generated-at 2026-07-08T06:15:00Z --out artifacts/review-portal-authority.json
 python -m trustai review-portal-authority-verify artifacts/review-portal-authority.json artifacts/review-portal-service-attestation.json
 python -m trustai review-portal-authority-append artifacts/review-portal-authority.json artifacts/review-portal-service-attestation.json --state .trustai/review-portal-authority-demo/evidence-chain.json --tenant review-portal-authority-local --out artifacts/review-portal-authority-entry.json
 ```

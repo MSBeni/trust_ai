@@ -102,8 +102,11 @@ from trustai.own_compliance import append_own_compliance_dossier, build_own_comp
 from trustai.reliability_report import append_reliability_report, build_reliability_report
 from trustai.regulator_acceptance import append_regulator_acceptance, build_regulator_acceptance
 from trustai.review_portal_authority import (
+    REVIEW_PORTAL_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE,
     append_review_portal_authority_dossier,
+    append_review_portal_authority_evidence_bundle,
     build_review_portal_authority_dossier,
+    build_review_portal_authority_evidence_bundle,
 )
 from trustai.review_portal_service import append_review_portal_service_attestation
 from trustai.policy import append_policy_decision, load_policy_pack
@@ -2622,6 +2625,16 @@ class ControlPlaneTests(unittest.TestCase):
                 authority_evidence=authority_evidence,
                 generated_at="2026-07-08T06:15:00Z",
             )
+            authority_bundle = build_review_portal_authority_evidence_bundle(
+                authority_evidence=authority_evidence,
+                mode="authority-export",
+                environment="aitrade-prod",
+                bundle_ref="bundle:review-portal-authority/control-plane",
+                issuer_ref="issuer:trustai-cloud/review-portal",
+                subject_ref="service:review-portal/regulator-prod",
+                authority_ref="authority:review-portal/control-plane",
+                generated_at="2026-07-08T06:16:00Z",
+            )
 
             receipt_entry = append_supervised_access_receipt(chain, receipt)
             acceptance_entry = append_regulator_acceptance(chain, acceptance)
@@ -2652,6 +2665,7 @@ class ControlPlaneTests(unittest.TestCase):
                 regulator_acceptance=acceptance,
                 eu_ai_act_document=document,
             )
+            bundle_entry = append_review_portal_authority_evidence_bundle(chain, authority_bundle)
             chain.save()
 
             control = ControlPlane(tmp / "control.sqlite")
@@ -2666,6 +2680,7 @@ class ControlPlaneTests(unittest.TestCase):
                     "regulator_acceptances",
                     "review_portal_service_attestations",
                     "review_portal_authority_dossiers",
+                    "review_portal_authority_evidence_bundles",
                 ):
                     self.assertEqual(1, indexed[table])
                     self.assertEqual(1, summary["counts"][table])
@@ -2675,6 +2690,8 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertTrue(summary["latest_regulator_acceptance"]["accepted"])
                 self.assertEqual(attestation["attestation_id"], summary["latest_review_portal_service_attestation"]["attestation_id"])
                 self.assertEqual(dossier["dossier_id"], summary["latest_review_portal_authority_dossier"]["dossier_id"])
+                self.assertEqual(authority_bundle["bundle_id"], summary["latest_review_portal_authority_evidence_bundle"]["bundle_id"])
+                self.assertEqual(2, summary["latest_review_portal_authority_evidence_bundle"]["live_source_uri_count"])
                 self.assertFalse(summary["latest_review_portal_authority_dossier"]["production_claimed"])
                 self.assertEqual(2, summary["latest_review_portal_authority_dossier"]["fresh_evidence_count"])
 
@@ -2688,6 +2705,12 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(authority_entry["payload"]["dossier_id"], evidence["review_portal_authority_dossiers"][0]["dossier_id"])
                 self.assertEqual(2, evidence["review_portal_authority_dossiers"][0]["fresh_evidence_count"])
                 self.assertEqual(2, len(evidence["review_portal_authority_dossiers"][0]["authority_evidence"]))
+                self.assertEqual(bundle_entry["payload"]["bundle_id"], evidence["review_portal_authority_evidence_bundles"][0]["bundle_id"])
+                self.assertEqual(REVIEW_PORTAL_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE, bundle_entry["entry_type"])
+                self.assertEqual(2, evidence["review_portal_authority_evidence_bundles"][0]["fresh_evidence_count"])
+                self.assertEqual(2, evidence["review_portal_authority_evidence_bundles"][0]["live_source_uri_count"])
+                self.assertEqual(0, evidence["review_portal_authority_evidence_bundles"][0]["placeholder_source_uri_count"])
+                self.assertEqual(2, len(evidence["review_portal_authority_evidence_bundles"][0]["authority_evidence"]))
                 self.assertEqual(evidence, control.roadmap_evidence()["review_portal_evidence"])
 
                 deleted = control.clear_index()
@@ -2701,6 +2724,7 @@ class ControlPlaneTests(unittest.TestCase):
                     "regulator_acceptances",
                     "review_portal_service_attestations",
                     "review_portal_authority_dossiers",
+                    "review_portal_authority_evidence_bundles",
                 ):
                     self.assertEqual(1, rebuilt[table])
                     self.assertEqual(1, rebuilt_summary["counts"][table])

@@ -22,6 +22,7 @@ into queryable registry tables while keeping the chain as the source of truth.
 - `regulator_acceptances`: regulator review decisions with authority, examination, scope, and source references.
 - `review_portal_service_attestations`: hosted/static portal service identity, frontend integrity, supervised access, and control summaries.
 - `review_portal_authority_dossiers`: hosted portal production-authority coverage, freshness, service bindings, and evidence references.
+- `review_portal_authority_evidence_bundles`: retained hosted portal authority evidence bundles with freshness and live source URI counts for offline auditor review.
 - `trust_network_evidence`: procurement, registry, marketplace, service, worker, bundle, and authority receipts normalized for cross-org trust-network review.
 - `provider_delivery_evidence`: provider delivery receipts, delivery-service attestations, worker dispatch receipts, worker bundles, and authority dossiers normalized for provider, target, response, source-artifact, and control review.
 - `human_approvals`: human approval entries bound to contract, agent, role, approver, source, and external reference metadata.

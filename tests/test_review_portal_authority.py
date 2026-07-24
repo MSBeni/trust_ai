@@ -14,11 +14,17 @@ from tests import test_review_portal_service as service_fixtures
 
 from trustai.review_portal_authority import (
     PRODUCTION_AUTHORITY_REQUIREMENT_IDS,
+    PRODUCTION_AUTHORITY_REQUIREMENTS,
     REVIEW_PORTAL_AUTHORITY_ENTRY_TYPE,
+    REVIEW_PORTAL_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE,
     REVIEW_PORTAL_AUTHORITY_SCHEMA,
     append_review_portal_authority_dossier,
+    append_review_portal_authority_evidence_bundle,
     build_review_portal_authority_dossier,
+    build_review_portal_authority_evidence_bundle,
+    review_portal_authority_evidence_from_bundle,
     verify_review_portal_authority_dossier,
+    verify_review_portal_authority_evidence_bundle,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -70,6 +76,26 @@ class ReviewPortalAuthorityTests(unittest.TestCase):
                 "expires_at": "2026-07-15T06:11:00Z",
             },
         ]
+
+    def _complete_authority_evidence(self) -> list[dict]:
+        evidence = []
+        for index, requirement in enumerate(PRODUCTION_AUTHORITY_REQUIREMENTS):
+            requirement_id = requirement["id"]
+            evidence.append(
+                {
+                    "requirement_id": requirement_id,
+                    "authority_kind": requirement["authority_kinds"][0],
+                    "evidence_ref": f"authority:review-portal/{requirement_id}",
+                    "evidence_hash": f"sha256:review-portal-{requirement_id}-authority",
+                    "description": f"Retained production authority export for {requirement_id}.",
+                    "issuer": "TrustAI Cloud",
+                    "subject": "aitrade-prod regulator review portal",
+                    "source_uri": f"https://authority.trustai.example/review-portal/{requirement_id}",
+                    "issued_at": f"2026-07-08T06:{10 + index:02d}:00Z",
+                    "expires_at": f"2026-07-15T06:{10 + index:02d}:00Z",
+                }
+            )
+        return evidence
 
     def _dossier(self, *, mode: str = "provider-dossier", authority_evidence: list[dict] | None = None):
         sources, attestation = self._service()
@@ -197,11 +223,85 @@ class ReviewPortalAuthorityTests(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("production-dossier mode requires" in error for error in result.errors), result.errors)
 
+    def test_review_portal_authority_evidence_bundle_drives_complete_production_dossier(self):
+        evidence = self._complete_authority_evidence()
+        bundle = build_review_portal_authority_evidence_bundle(
+            authority_evidence=evidence,
+            mode="production-export",
+            environment="aitrade-prod",
+            bundle_ref="bundle:review-portal-authority/regulator-prod",
+            issuer_ref="issuer:trustai-cloud/review-portal",
+            subject_ref="service:review-portal/regulator-prod",
+            authority_ref="authority:review-portal/regulator-prod",
+            generated_at="2026-07-08T06:30:00Z",
+        )
+
+        bundle_result = verify_review_portal_authority_evidence_bundle(
+            bundle, require_complete=True, require_fresh=True, now="2026-07-08T06:30:00Z"
+        )
+        self.assertTrue(bundle_result.ok, bundle_result.errors)
+        self.assertEqual(len(PRODUCTION_AUTHORITY_REQUIREMENT_IDS), bundle_result.covered_count)
+
+        sources, attestation = self._service()
+        dossier = build_review_portal_authority_dossier(
+            attestation,
+            **sources,
+            mode="production-dossier",
+            environment="aitrade-prod",
+            dossier_ref="dossier:review-portal-authority/regulator-prod",
+            authority_ref="authority:review-portal/regulator-prod",
+            producer_ref="oidc:trustai.example/review-portal-authority-worker",
+            authority_evidence=review_portal_authority_evidence_from_bundle(
+                bundle, require_complete=True, require_fresh=True, now="2026-07-08T06:30:00Z"
+            ),
+            generated_at="2026-07-08T06:30:00Z",
+        )
+        dossier_result = verify_review_portal_authority_dossier(
+            dossier, service_attestation=attestation, **sources, require_complete=True, require_fresh=True, now="2026-07-08T06:30:00Z"
+        )
+        self.assertTrue(dossier_result.ok, dossier_result.errors)
+        self.assertEqual(len(PRODUCTION_AUTHORITY_REQUIREMENT_IDS), dossier_result.covered_count)
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="review-portal-authority-bundle-test")
+            entry = append_review_portal_authority_evidence_bundle(
+                chain, bundle, require_complete=True, require_fresh=True, now="2026-07-08T06:30:00Z"
+            )
+            self.assertTrue(chain.verify_all().ok)
+
+        self.assertEqual(REVIEW_PORTAL_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE, entry["entry_type"])
+        self.assertEqual(bundle["bundle_id"], entry["payload"]["bundle_id"])
+        self.assertEqual({"passed": 5}, entry["payload"]["control_summary"])
+        self.assertEqual(len(PRODUCTION_AUTHORITY_REQUIREMENT_IDS), len(entry["payload"]["authority_evidence"]))
+
+    def test_review_portal_authority_evidence_bundle_rejects_placeholder_source_uri(self):
+        evidence = self._complete_authority_evidence()
+        evidence[0]["source_uri"] = "todo://collect-review-portal-authority-source"
+        bundle = build_review_portal_authority_evidence_bundle(
+            authority_evidence=evidence,
+            mode="production-export",
+            environment="aitrade-prod",
+            bundle_ref="bundle:review-portal-authority/regulator-prod",
+            issuer_ref="issuer:trustai-cloud/review-portal",
+            subject_ref="service:review-portal/regulator-prod",
+            authority_ref="authority:review-portal/regulator-prod",
+            generated_at="2026-07-08T06:30:00Z",
+        )
+
+        result = verify_review_portal_authority_evidence_bundle(
+            bundle, require_complete=True, require_fresh=True, now="2026-07-08T06:30:00Z"
+        )
+
+        self.assertFalse(result.ok)
+        self.assertTrue(any("live source_uri values" in error for error in result.errors), result.errors)
+
     def test_cli_review_portal_authority_round_trip(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)
             sources, attestation, _ = self._dossier()
             service_path = tmp / "review-portal-service-attestation.json"
+            bundle_path = tmp / "review-portal-authority-evidence-bundle.json"
+            bundle_entry_path = tmp / "review-portal-authority-evidence-bundle-entry.json"
             dossier_path = tmp / "review-portal-authority.json"
             entry_path = tmp / "review-portal-authority-entry.json"
             state_path = tmp / "review-portal-authority-chain.json"
@@ -222,6 +322,57 @@ class ReviewPortalAuthorityTests(unittest.TestCase):
                     sys.executable,
                     "-m",
                     "trustai",
+                    "review-portal-authority-evidence-bundle",
+                    "--environment",
+                    "aitrade-prod",
+                    "--bundle-ref",
+                    "bundle:review-portal-authority/regulator-prod",
+                    "--issuer-ref",
+                    "issuer:trustai-cloud/review-portal",
+                    "--subject-ref",
+                    "service:review-portal/regulator-prod",
+                    "--authority-ref",
+                    "authority:review-portal/regulator-prod",
+                    "--authority-evidence",
+                    evidence_arg,
+                    "--generated-at",
+                    "2026-07-08T06:14:00Z",
+                    "--out",
+                    str(bundle_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+            )
+            subprocess.run(
+                [sys.executable, "-m", "trustai", "review-portal-authority-evidence-bundle-verify", str(bundle_path)],
+                cwd=ROOT,
+                env=env,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "review-portal-authority-evidence-bundle-append",
+                    str(bundle_path),
+                    "--state",
+                    str(state_path),
+                    "--tenant",
+                    "review-portal-authority-local",
+                    "--out",
+                    str(bundle_entry_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
                     "review-portal-authority",
                     str(service_path),
                     *source_args,
@@ -233,8 +384,8 @@ class ReviewPortalAuthorityTests(unittest.TestCase):
                     "authority:review-portal/regulator-prod",
                     "--producer-ref",
                     "oidc:trustai.example/review-portal-authority-worker",
-                    "--authority-evidence",
-                    evidence_arg,
+                    "--authority-evidence-bundle",
+                    str(bundle_path),
                     "--generated-at",
                     "2026-07-08T06:15:00Z",
                     "--out",
@@ -271,6 +422,8 @@ class ReviewPortalAuthorityTests(unittest.TestCase):
                 check=True,
             )
 
+            self.assertTrue(bundle_path.exists())
+            self.assertTrue(bundle_entry_path.exists())
             self.assertTrue(dossier_path.exists())
             self.assertTrue(entry_path.exists())
 
