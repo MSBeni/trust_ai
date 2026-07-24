@@ -6,7 +6,7 @@
       "hosted-service"
     ]
   },
-  "gap_report_id": "0749bfefd1d6b93b603f39c4a47a3c7d15a4f9a4f3750072d0f8c39dafb0d4c4",
+  "gap_report_id": "3e2574aced6c93aa1ff62f2332acc158b977dff5d6f558e025cb128e5f602353",
   "gaps": [
     {
       "authority_kind": "hosted-service",
@@ -1667,27 +1667,27 @@
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "46367a60fac8d0f5045a0f8967a5e71a1c12d3092d62eeb53ac222e188776cbc",
-      "plan_id": "6b804905e746021022955e0074d0ca83c85dd3c1ebde23f009f98b3f50a5cecf",
+      "plan_hash": "bdd29bface18bcae02ee2cb4b13f087c511e9c233db571a14d3a29d135944539",
+      "plan_id": "55bd32d9cc2f89d8e636fb29271840bbf5463ee1a075d1d77685b31faea942d7",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "cf69580c32a71c4739ea2d1ff7d5548cea8c3e585ee4175231c7e403b3afe88f",
-      "manifest_id": "2420d6b49332aefcc2972f5ee3e58ac9a27210bc0a8d0a6d70f5c390a36c102a",
+      "manifest_hash": "628f62d70c2b2e7512b832c3d4abbf99113c1a04f6f760d835739f1577baa7e5",
+      "manifest_id": "3b81dafb55e6b771438c262b65e5796847739506c573f719bce461ef44f222eb",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
-      "audit_hash": "090901faa1f82e3ea20241fd2a699f50b4f503752eba4e527e10ecde7cdaa757",
-      "audit_id": "efc5ababf96264e8f7f5b40c9cad9112916031d5976064a04190a4e5d62b8915",
-      "generated_at": "2026-07-24T13:30:32Z",
+      "audit_hash": "8566aa55eda12b4857a63541be8832a04466b6ed3e05c5fa800998f1ed42e57a",
+      "audit_id": "cd8a883e7640d18b1fa8f28ba7283d3586c9005cf28bff068057f8542dbc5866",
+      "generated_at": "2026-07-24T13:45:15Z",
       "schema": "trustai.roadmap-audit/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:01:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "120ef9e6cd729a46f55b97230080308a0fa427f85a035a9fd2965ba67960dab0",
-      "source_map_id": "fd8e2ab416850bcbeba7eb5b71fbd6a467fd858a41a9835d89a50d772ec822a7"
+      "source_map_hash": "4d0cfe391233c009b80b88e0e292c326bf3228010b283c3ee44dda34db9da019",
+      "source_map_id": "62e13ff2d0855a7d0acd5f94e59c1dd2df2a3590e29c1e5ebc58203d4e99e1c6"
     }
   },
   "summary": {

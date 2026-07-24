@@ -48,7 +48,7 @@ class McpGatewayAuthorityTests(unittest.TestCase):
                 "requirement_id": "production-mcp-proxy-worker-fleet",
                 "authority_kind": "hosted-service",
                 "evidence_ref": "mcp-proxy:fleet/aitrade-prod",
-                "evidence_hash": "sha256:mcp-proxy-worker-fleet",
+                "evidence_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                 "description": "Hosted MCP proxy worker fleet export for governed tool-call capture.",
                 "issuer": "TrustAI Hosted Ops",
                 "subject": "aitrade-prod MCP proxy fleet",
@@ -60,7 +60,7 @@ class McpGatewayAuthorityTests(unittest.TestCase):
                 "requirement_id": "immutable-mcp-audit-logs",
                 "authority_kind": "cloud-object-lock",
                 "evidence_ref": "s3-object-lock:mcp/audit/aitrade-prod",
-                "evidence_hash": "sha256:mcp-immutable-audit-root",
+                "evidence_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
                 "description": "Object Lock audit-log root for MCP proxy and tool server events.",
                 "issuer": "Example Cloud Object Lock",
                 "subject": "aitrade-prod MCP audit retention",
@@ -334,6 +334,26 @@ class McpGatewayAuthorityTests(unittest.TestCase):
         self.assertNotIn("MCP gateway authority evidence_id does not match evidence body: production-mcp-proxy-worker-fleet", result.errors)
         self.assertIn("MCP gateway authority source_context does not match transcript binding: production-mcp-proxy-worker-fleet", result.errors)
 
+    def test_mcp_gateway_authority_rejects_resigned_malformed_evidence_hash(self):
+        calls = self._calls()
+        dossier = self._dossier(calls)
+        tampered = copy.deepcopy(dossier)
+        item = tampered["authority_evidence"][0]
+        item["evidence_hash"] = "sha256:not-a-real-digest"
+        item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+        self._resign_dossier(tampered)
+
+        result = verify_mcp_gateway_authority_dossier(tampered, transcript_calls=calls)
+
+        self.assertFalse(result.ok)
+        self.assertNotIn("dossier_id does not match canonical MCP gateway authority body", result.errors)
+        self.assertNotIn("MCP gateway authority signature verification failed", result.errors)
+        self.assertNotIn("MCP gateway authority evidence_id does not match evidence body: production-mcp-proxy-worker-fleet", result.errors)
+        self.assertIn(
+            "invalid MCP gateway authority evidence: evidence_hash must contain a 64-character sha256 digest",
+            result.errors,
+        )
+
     def test_mcp_gateway_authority_rejects_resigned_control_tamper(self):
         calls = self._calls()
         dossier = self._dossier(calls)
@@ -505,7 +525,7 @@ class McpGatewayAuthorityTests(unittest.TestCase):
             paths["transcript"].write_text(MCP.read_text(encoding="utf-8"), encoding="utf-8")
             evidence_arg = (
                 "production-mcp-proxy-worker-fleet,hosted-service,mcp-proxy:fleet/aitrade-prod,"
-                "sha256:mcp-proxy-worker-fleet,Hosted MCP proxy worker fleet export for governed tool-call capture;"
+                "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,Hosted MCP proxy worker fleet export for governed tool-call capture;"
                 "issuer=TrustAI Hosted Ops;subject=aitrade-prod MCP proxy fleet;"
                 "source_uri=https://mcp.example/audit/fleet/aitrade-prod;"
                 "issued_at=2026-07-12T03:10:00Z;expires_at=2026-07-19T03:10:00Z"

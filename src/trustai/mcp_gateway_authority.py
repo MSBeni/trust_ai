@@ -687,6 +687,7 @@ def _build_authority_evidence_bundle_item(item: dict[str, Any]) -> dict[str, Any
         raise ValueError(f"authority kind {authority_kind} is not valid for requirement {requirement_id}")
     for value, field in ((evidence_ref, "evidence_ref"), (evidence_hash, "evidence_hash"), (description, "description")):
         _require_text(value, field)
+    evidence_hash = _normalize_sha256_ref(evidence_hash, "evidence_hash")
     built = {
         "requirement_id": requirement_id,
         "authority_kind": authority_kind,
@@ -875,6 +876,7 @@ def _build_authority_evidence_item(item: dict[str, Any], source_context: dict[st
         raise ValueError(f"authority kind {authority_kind} is not valid for requirement {requirement_id}")
     for value, field in ((evidence_ref, "evidence_ref"), (evidence_hash, "evidence_hash"), (description, "description")):
         _require_text(value, field)
+    evidence_hash = _normalize_sha256_ref(evidence_hash, "evidence_hash")
     built = {
         "requirement_id": requirement_id,
         "authority_kind": authority_kind,
@@ -1082,3 +1084,14 @@ def _is_redacted_reference(value: str) -> bool:
 def _require_text(value: str, field: str) -> None:
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{field} is required")
+
+
+def _normalize_sha256_ref(value: str | None, field: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{field} is required")
+    if not value.startswith("sha256:"):
+        raise ValueError(f"{field} must start with sha256:")
+    hexdigest = value.removeprefix("sha256:")
+    if len(hexdigest) != 64 or any(character not in "0123456789abcdefABCDEF" for character in hexdigest):
+        raise ValueError(f"{field} must contain a 64-character sha256 digest")
+    return "sha256:" + hexdigest.lower()
