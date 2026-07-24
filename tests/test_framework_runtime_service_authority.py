@@ -52,7 +52,7 @@ class FrameworkRuntimeServiceAuthorityTests(unittest.TestCase):
                 "requirement_id": "collector-fleet",
                 "authority_kind": "hosted-service",
                 "evidence_ref": "service:collector-fleet/aitrade-prod",
-                "evidence_hash": "sha256:collector-fleet-authority",
+                "evidence_hash": "sha256:e97cac965923d628721ba2cb6151dd12d79ce342dc4ab97653cf382483d8a680",
                 "description": "Hosted collector fleet deployment export.",
                 "issuer": "TrustAI Cloud",
                 "subject": "aitrade-prod framework runtime collector fleet",
@@ -64,7 +64,7 @@ class FrameworkRuntimeServiceAuthorityTests(unittest.TestCase):
                 "requirement_id": "scheduler-queue-lease",
                 "authority_kind": "provider-api",
                 "evidence_ref": "provider:redpanda-postgres/scheduler-queue-lease/lg-trace-001",
-                "evidence_hash": "sha256:scheduler-queue-lease-authority",
+                "evidence_hash": "sha256:a1096c180fa91153a0a51be6428e92ad74468cc2677c0e128ed67c4e81920a0f",
                 "description": "Provider scheduler, queue, lease, checkpoint, and cursor export.",
                 "issuer": "Example Provider",
                 "subject": "framework runtime service lg-trace-001",
@@ -206,6 +206,97 @@ class FrameworkRuntimeServiceAuthorityTests(unittest.TestCase):
             self.assertEqual(dossier["authority_evidence"][0]["source_context"], entry["payload"]["authority_evidence"][0]["source_context"])
             self.assertEqual({"deferred": 1, "passed": 5}, entry["payload"]["control_summary"])
             self.assertTrue(chain.verify_all().ok)
+
+    def test_framework_runtime_service_authority_normalizes_uppercase_evidence_hash(self):
+        expected_hash = self._authority_evidence()[0]["evidence_hash"]
+        evidence = [dict(self._authority_evidence()[0])]
+        evidence[0]["evidence_hash"] = "sha256:" + expected_hash.removeprefix("sha256:").upper()
+        (
+            dossier,
+            provider_receipt,
+            provider_export,
+            service_worker,
+            service,
+            storage_receipt,
+            storage_export,
+            worker,
+            runtime_audit,
+            audit_export,
+            operation,
+            trace,
+            release,
+            matrix,
+        ) = self._dossier(authority_evidence=evidence)
+        result = verify_framework_runtime_service_authority_dossier(
+            dossier,
+            provider_receipt=provider_receipt,
+            provider_export=provider_export,
+            service_worker=service_worker,
+            service_attestation=service,
+            storage_receipt=storage_receipt,
+            storage_export=storage_export,
+            worker=worker,
+            runtime_audit=runtime_audit,
+            audit_export=audit_export,
+            operation=operation,
+            trace_payload=trace,
+            release=release,
+            matrix=matrix,
+            root=ROOT,
+        )
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(expected_hash, dossier["authority_evidence"][0]["evidence_hash"])
+
+    def test_framework_runtime_service_authority_rejects_resigned_malformed_evidence_hash(self):
+        (
+            dossier,
+            provider_receipt,
+            provider_export,
+            service_worker,
+            service,
+            storage_receipt,
+            storage_export,
+            worker,
+            runtime_audit,
+            audit_export,
+            operation,
+            trace,
+            release,
+            matrix,
+        ) = self._dossier(authority_evidence=[dict(self._authority_evidence()[0])])
+        tampered = copy.deepcopy(dossier)
+        item = tampered["authority_evidence"][0]
+        item["evidence_hash"] = "sha256:not-a-real-digest"
+        item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+        self._resign_dossier(tampered)
+
+        result = verify_framework_runtime_service_authority_dossier(
+            tampered,
+            provider_receipt=provider_receipt,
+            provider_export=provider_export,
+            service_worker=service_worker,
+            service_attestation=service,
+            storage_receipt=storage_receipt,
+            storage_export=storage_export,
+            worker=worker,
+            runtime_audit=runtime_audit,
+            audit_export=audit_export,
+            operation=operation,
+            trace_payload=trace,
+            release=release,
+            matrix=matrix,
+            root=ROOT,
+        )
+
+        self.assertFalse(result.ok)
+        self.assertIn(
+            "invalid framework runtime service authority evidence: framework runtime service authority evidence_hash must contain a 64-character sha256 digest",
+            result.errors,
+        )
+        self.assertNotIn("dossier_id does not match canonical framework runtime service authority body", result.errors)
+        self.assertNotIn("framework runtime service authority signature verification failed", result.errors)
+        self.assertNotIn("framework runtime service authority evidence_id does not match evidence body: collector-fleet", result.errors)
 
     def test_framework_runtime_service_authority_detects_provider_tamper(self):
         (
@@ -549,7 +640,7 @@ class FrameworkRuntimeServiceAuthorityTests(unittest.TestCase):
             ]
             evidence_arg = (
                 "collector-fleet,hosted-service,service:collector-fleet/aitrade-prod,"
-                "sha256:collector-fleet-authority,Hosted collector fleet deployment export;"
+                "sha256:e97cac965923d628721ba2cb6151dd12d79ce342dc4ab97653cf382483d8a680,Hosted collector fleet deployment export;"
                 "issuer=TrustAI Cloud;subject=aitrade-prod framework runtime collector fleet;"
                 "source_uri=https://ops.example/trustai/collector-fleet/aitrade-prod;"
                 "issued_at=2026-07-09T00:50:00Z;expires_at=2026-12-31T00:00:00Z"
