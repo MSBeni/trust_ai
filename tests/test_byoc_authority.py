@@ -28,6 +28,8 @@ from trustai.object_store import WORMStore
 ROOT = Path(__file__).resolve().parents[1]
 BYOC_NETWORK_POLICY_AUTHORITY_EXPORT = ROOT / "examples" / "aitrade" / "byoc-network-policy-authority-export.json"
 BYOC_NETWORK_POLICY_AUTHORITY_EXPORT_REL = "examples/aitrade/byoc-network-policy-authority-export.json"
+BYOC_LIVE_CLOUD_ACCOUNT_HASH = "sha256:0663865319edab9e568e99299b7e142e1db5b811a77db28843cde686d1b63d00"
+BYOC_OBJECT_LOCK_EXPORT_HASH = "sha256:9ff48181c6894f37af335e7f5ad4093145009574615b1aa663c705db081cd488"
 
 
 def _sha256_ref(path: Path) -> str:
@@ -102,7 +104,7 @@ class BYOCAuthorityTests(unittest.TestCase):
                 "requirement_id": "live-cloud-account-binding",
                 "authority_kind": "provider-api",
                 "evidence_ref": "aws:account/123456789012/trustai-byoc",
-                "evidence_hash": "sha256:byoc-live-cloud-account",
+                "evidence_hash": BYOC_LIVE_CLOUD_ACCOUNT_HASH,
                 "description": "Provider account export tying the TrustAI BYOC deployment to the customer-owned account.",
                 "issuer": "ExampleCloud",
                 "subject": "aitrade BYOC account",
@@ -114,7 +116,7 @@ class BYOCAuthorityTests(unittest.TestCase):
                 "requirement_id": "object-lock-compliance-mode",
                 "authority_kind": "cloud-object-lock",
                 "evidence_ref": "s3-object-lock:trustai-aitrade-evidence",
-                "evidence_hash": "sha256:byoc-object-lock-export",
+                "evidence_hash": BYOC_OBJECT_LOCK_EXPORT_HASH,
                 "description": "Provider Object Lock export for the retained proof-pack bucket.",
                 "issuer": "ExampleCloud Object Lock",
                 "subject": "trustai-aitrade-evidence",
@@ -224,6 +226,59 @@ class BYOCAuthorityTests(unittest.TestCase):
             self.assertEqual({"deferred": 2, "passed": 10}, entry["payload"]["control_summary"])
             self.assertEqual(1, entry["payload"]["artifact_summary"]["artifact_count"])
             self.assertTrue(chain.verify_all().ok)
+
+    def test_byoc_authority_normalizes_uppercase_evidence_hash(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            expected_hash = self._authority_evidence()[0]["evidence_hash"]
+            evidence = [dict(self._authority_evidence()[0])]
+            evidence[0]["evidence_hash"] = "sha256:" + expected_hash.removeprefix("sha256:").upper()
+            dossier, deployment, attestation, receipt, legal_hold, store_root = self._dossier(tmp, authority_evidence=evidence)
+
+            result = verify_byoc_authority_dossier(
+                dossier,
+                deployment_manifest=deployment,
+                byoc_operator=attestation,
+                root=ROOT,
+                store=store_root,
+                worm_receipt=receipt,
+                legal_hold=legal_hold,
+            )
+
+            self.assertTrue(result.ok, result.errors)
+            self.assertEqual(expected_hash, dossier["authority_evidence"][0]["evidence_hash"])
+
+    def test_byoc_authority_rejects_resigned_malformed_evidence_hash(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            dossier, deployment, attestation, receipt, legal_hold, store_root = self._dossier(
+                tmp,
+                authority_evidence=[dict(self._authority_evidence()[0])],
+            )
+            tampered = copy.deepcopy(dossier)
+            item = tampered["authority_evidence"][0]
+            item["evidence_hash"] = "sha256:not-a-real-digest"
+            item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+            self._resign_dossier(tampered)
+
+            result = verify_byoc_authority_dossier(
+                tampered,
+                deployment_manifest=deployment,
+                byoc_operator=attestation,
+                root=ROOT,
+                store=store_root,
+                worm_receipt=receipt,
+                legal_hold=legal_hold,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertIn(
+                "invalid BYOC authority evidence: BYOC authority evidence_hash must contain a 64-character sha256 digest",
+                result.errors,
+            )
+            self.assertNotIn("dossier_id does not match canonical BYOC authority body", result.errors)
+            self.assertNotIn("BYOC authority signature verification failed", result.errors)
+            self.assertNotIn("BYOC authority evidence_id does not match evidence body: live-cloud-account-binding", result.errors)
 
     def test_byoc_authority_tracks_network_policy_admission_evidence(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -423,7 +478,7 @@ class BYOCAuthorityTests(unittest.TestCase):
                     "--producer-ref",
                     "oidc:trustai.example/byoc-authority-worker",
                     "--authority-evidence",
-                    "live-cloud-account-binding,provider-api,aws:account/123456789012/trustai-byoc,sha256:byoc-live-cloud-account,Provider account export;issuer=ExampleCloud;subject=aitrade BYOC account;source_uri=https://cloud.example/accounts/123456789012/trustai;issued_at=2026-07-04T03:05:00Z;expires_at=2026-12-31T00:00:00Z",
+                    "live-cloud-account-binding,provider-api,aws:account/123456789012/trustai-byoc,sha256:0663865319edab9e568e99299b7e142e1db5b811a77db28843cde686d1b63d00,Provider account export;issuer=ExampleCloud;subject=aitrade BYOC account;source_uri=https://cloud.example/accounts/123456789012/trustai;issued_at=2026-07-04T03:05:00Z;expires_at=2026-12-31T00:00:00Z",
                     "--authority-evidence",
                     "network-policy-admission-audit-export,provider-api,k8s:networkpolicy/trustai/trustai-api," + _sha256_ref(BYOC_NETWORK_POLICY_AUTHORITY_EXPORT) + ",Provider Kubernetes NetworkPolicy admission export;issuer=Example Kubernetes API;subject=trustai-api NetworkPolicy;source_uri=https://cloud.example/kubernetes/aitrade-prod/networkpolicies/trustai-api;issued_at=2026-07-04T03:07:00Z;expires_at=2026-12-31T00:00:00Z",
                     "--authority-artifact",
