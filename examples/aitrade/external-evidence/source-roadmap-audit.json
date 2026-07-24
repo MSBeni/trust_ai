@@ -1,7 +1,7 @@
 {
-  "audit_id": "104f3aaf130531873871188fe021f21a5c028a6dbb4e074a9abbf5658b768cc0",
+  "audit_id": "decbd4637c02402ec21d4c3feffa280aae5d6e073927ce43d50c35b7acf0fc2f",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
-  "generated_at": "2026-07-24T14:15:41Z",
+  "generated_at": "2026-07-24T14:48:58Z",
   "limitations": [
     "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
     "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",
@@ -732,7 +732,7 @@
         {
           "path": "src/trustai/provider_approval_authority.py",
           "present": true,
-          "sha256": "sha256:e3776793544bf29284c7c5472c3970e6903e0a1c934bc4c318ead03f4644e92c"
+          "sha256": "sha256:eae271f9aad7e8f3de8fd5b428bd789dd3d2fb9a8ac8cf4303b6b54f70fa02b5"
         },
         {
           "path": "src/trustai/provider_delivery_authority.py",
@@ -777,7 +777,7 @@
         {
           "path": "docs/specs/provider-approval-production-authority-v0.1.md",
           "present": true,
-          "sha256": "sha256:47b9336f72ecf17eeb312f9815750600748202bc3c0cbaeb6c7cd385b613045d"
+          "sha256": "sha256:ffb7be039b034b38c31afc3ef2298028d8449e43cd8e50ddaa9c6f0e5d3f495c"
         },
         {
           "path": "docs/specs/provider-delivery-production-authority-v0.1.md",
@@ -812,7 +812,7 @@
         {
           "path": "tests/test_provider_approval_authority.py",
           "present": true,
-          "sha256": "sha256:c5b15a6032b65761339932c22cb9d733100087b1e45ad5123e367fc210dabafa"
+          "sha256": "sha256:c7be840e580578b863436bf51151f64d7363a7186453fc9b60039d0f7d39e8e3"
         },
         {
           "path": "tests/test_provider_delivery.py",
@@ -1423,7 +1423,7 @@
         {
           "path": "src/trustai/standards.py",
           "present": true,
-          "sha256": "sha256:171a9e75290e1300169a46dd2dabdfc1849cc4c6a2479b20a4bdeb4428fa475d"
+          "sha256": "sha256:4a8f198b6ebc431549bd9efebf89e671fbd01d75eb281429414ed7eaad7f89cc"
         },
         {
           "path": "src/trustai/roadmap_audit.py",
@@ -2365,7 +2365,7 @@
         {
           "path": "src/trustai/standards.py",
           "present": true,
-          "sha256": "sha256:171a9e75290e1300169a46dd2dabdfc1849cc4c6a2479b20a4bdeb4428fa475d"
+          "sha256": "sha256:4a8f198b6ebc431549bd9efebf89e671fbd01d75eb281429414ed7eaad7f89cc"
         },
         {
           "path": "src/trustai/standards_body_submission.py",

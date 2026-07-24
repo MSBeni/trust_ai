@@ -59,6 +59,12 @@ class ProviderApprovalAuthorityTests(unittest.TestCase):
         dossier["dossier_id"] = dossier_id
         dossier["signatures"] = [sign_value({"dossier_id": dossier_id, "provider_approval_authority": body})]
 
+    def _resign_bundle(self, bundle: dict) -> None:
+        body = without_keys(bundle, "bundle_id", "signatures")
+        bundle_id = content_hash(body)
+        bundle["bundle_id"] = bundle_id
+        bundle["signatures"] = [sign_value({"bundle_id": bundle_id, "provider_approval_authority_evidence_bundle": body})]
+
     def _approval_sources(self, tmp: Path) -> tuple[dict, dict]:
         chain = EvidenceChain.load(tmp / "approval-chain.json", tenant_id="provider-approval-authority-test")
         contract = load_contract(CONTRACT)
@@ -101,13 +107,16 @@ class ProviderApprovalAuthorityTests(unittest.TestCase):
         _, _, operations_authority = operations_fixtures.ProviderOperationsAuthorityTests()._dossier()
         return delivery_authority, operations_authority
 
+    def _authority_evidence_hash(self, requirement_id: str, authority_kind: str) -> str:
+        return "sha256:" + content_hash({"provider_approval_authority": requirement_id, "authority_kind": authority_kind})
+
     def _authority_evidence(self) -> list[dict]:
         return [
             {
                 "requirement_id": "hosted-approval-callback-ingress",
                 "authority_kind": "hosted-service",
                 "evidence_ref": "service:provider-approval/github-prod",
-                "evidence_hash": "sha256:provider-approval-hosted-ingress-authority",
+                "evidence_hash": self._authority_evidence_hash("hosted-approval-callback-ingress", "hosted-service"),
                 "description": "Hosted approval callback ingress and worker fleet export.",
                 "issuer": "TrustAI Cloud",
                 "subject": "aitrade-prod provider approval callback fleet",
@@ -119,7 +128,7 @@ class ProviderApprovalAuthorityTests(unittest.TestCase):
                 "requirement_id": "slack-interaction-signature-replay",
                 "authority_kind": "provider-api",
                 "evidence_ref": "slack:interaction/approval-callback/replay",
-                "evidence_hash": "sha256:slack-approval-signature-replay-authority",
+                "evidence_hash": self._authority_evidence_hash("slack-interaction-signature-replay", "provider-api"),
                 "description": "Slack interaction signature replay export for approval callbacks.",
                 "issuer": "Slack Enterprise Grid",
                 "subject": "aitrade-prod Slack approval callbacks",
@@ -313,6 +322,93 @@ class ProviderApprovalAuthorityTests(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertIn("bundle_id does not match canonical provider approval authority evidence bundle body", result.errors)
         self.assertTrue(any("source_uri is placeholder" in error for error in result.errors), result.errors)
+
+    def test_provider_approval_authority_evidence_bundle_canonicalizes_sha256_digest(self):
+        evidence = self._complete_authority_evidence()
+        expected_hash = evidence[0]["evidence_hash"]
+        evidence[0]["evidence_hash"] = "sha256:" + evidence[0]["evidence_hash"].removeprefix("sha256:").upper()
+
+        bundle = build_provider_approval_authority_evidence_bundle(
+            authority_evidence=evidence,
+            mode="production-export",
+            environment="aitrade-prod",
+            bundle_ref="bundle:provider-approval-authority/github-prod/2026-07-08",
+            issuer_ref="authority:trustai-provider-authority",
+            subject_ref="approval-authority:aitrade-prod/github",
+            authority_ref="authority:provider-approval/github-prod",
+            generated_at="2026-07-08T06:04:00Z",
+        )
+        result = verify_provider_approval_authority_evidence_bundle(
+            bundle,
+            require_complete=True,
+            require_fresh=True,
+            now="2026-07-08T06:05:00Z",
+        )
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(expected_hash, bundle["authority_evidence"][0]["evidence_hash"])
+
+    def test_provider_approval_authority_evidence_bundle_rejects_resigned_malformed_evidence_hash(self):
+        bundle = build_provider_approval_authority_evidence_bundle(
+            authority_evidence=self._complete_authority_evidence(),
+            mode="production-export",
+            environment="aitrade-prod",
+            bundle_ref="bundle:provider-approval-authority/github-prod/2026-07-08",
+            issuer_ref="authority:trustai-provider-authority",
+            subject_ref="approval-authority:aitrade-prod/github",
+            authority_ref="authority:provider-approval/github-prod",
+            generated_at="2026-07-08T06:04:00Z",
+        )
+        tampered = copy.deepcopy(bundle)
+        item = tampered["authority_evidence"][0]
+        item["evidence_hash"] = "sha256:not-a-real-digest"
+        item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+        self._resign_bundle(tampered)
+
+        result = verify_provider_approval_authority_evidence_bundle(
+            tampered,
+            require_complete=True,
+            require_fresh=True,
+            now="2026-07-08T06:05:00Z",
+        )
+
+        self.assertFalse(result.ok)
+        self.assertIn(
+            "invalid provider approval authority evidence bundle item: evidence_hash must contain a 64-character sha256 digest",
+            result.errors,
+        )
+        self.assertNotIn("bundle_id does not match canonical provider approval authority evidence bundle body", result.errors)
+        self.assertNotIn("provider approval authority evidence bundle signature verification failed", result.errors)
+
+    def test_provider_approval_authority_rejects_resigned_malformed_evidence_hash(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            request, callback = self._approval_sources(tmp)
+            webhook = self._webhook_receipt()
+            delivery_authority, operations_authority = self._authority_sources()
+            dossier = self._dossier(request, callback, webhook, delivery_authority, operations_authority)
+            tampered = copy.deepcopy(dossier)
+            item = tampered["authority_evidence"][0]
+            item["evidence_hash"] = "sha256:not-a-real-digest"
+            item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+            self._resign_dossier(tampered)
+
+            result = verify_provider_approval_authority_dossier(
+                tampered,
+                approval_request=request,
+                approval_callback=callback,
+                webhook_receipts=[webhook],
+                provider_delivery_authority=delivery_authority,
+                provider_operations_authority=operations_authority,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertIn(
+                "invalid provider approval authority evidence: evidence_hash must contain a 64-character sha256 digest",
+                result.errors,
+            )
+            self.assertNotIn("dossier_id does not match canonical provider approval authority body", result.errors)
+            self.assertNotIn("provider approval authority signature verification failed", result.errors)
 
     def test_provider_approval_authority_detects_callback_tamper(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -601,9 +697,10 @@ class ProviderApprovalAuthorityTests(unittest.TestCase):
             _write_json(delivery_path, delivery_authority)
             _write_json(operations_path, operations_authority)
 
+            evidence_hash = self._authority_evidence_hash("hosted-approval-callback-ingress", "hosted-service")
             evidence_arg = (
                 "hosted-approval-callback-ingress,hosted-service,service:provider-approval/github-prod,"
-                "sha256:provider-approval-hosted-ingress-authority,Hosted approval callback ingress and worker fleet export;"
+                f"{evidence_hash},Hosted approval callback ingress and worker fleet export;"
                 "issuer=TrustAI Cloud;subject=aitrade-prod provider approval callback fleet;"
                 "source_uri=https://ops.example/trustai/provider-approval/github-prod;"
                 "issued_at=2026-07-08T06:02:00Z;expires_at=2026-07-15T06:02:00Z"
