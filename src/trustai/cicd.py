@@ -318,6 +318,8 @@ def build_promotion_status_receipt(
     payload: dict[str, Any],
     *,
     delivery: dict[str, Any] | None = None,
+    delivery_payload_artifact_path: str | Path | None = None,
+    delivery_response_artifact_path: str | Path | None = None,
     attested_at: str | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
@@ -326,6 +328,8 @@ def build_promotion_status_receipt(
         verification,
         payload,
         delivery=delivery,
+        delivery_payload_artifact_path=delivery_payload_artifact_path,
+        delivery_response_artifact_path=delivery_response_artifact_path,
         attested_at=attested_at or utc_now(),
     )
     receipt_id = content_hash(body)
@@ -343,6 +347,8 @@ def verify_promotion_status_receipt(
     verification: VerificationResult | None = None,
     payload: dict[str, Any] | None = None,
     delivery: dict[str, Any] | None = None,
+    delivery_payload_artifact_path: str | Path | None = None,
+    delivery_response_artifact_path: str | Path | None = None,
     key: str | None = None,
 ) -> PromotionStatusVerification:
     errors: list[str] = []
@@ -382,6 +388,8 @@ def verify_promotion_status_receipt(
                     verification,
                     payload,
                     delivery=delivery,
+                    delivery_payload_artifact_path=delivery_payload_artifact_path,
+                    delivery_response_artifact_path=delivery_response_artifact_path,
                     attested_at=str(receipt.get("attested_at") or ""),
                 )
             except ValueError as exc:
@@ -403,6 +411,8 @@ def append_promotion_status_receipt(
     verification: VerificationResult | None = None,
     payload: dict[str, Any] | None = None,
     delivery: dict[str, Any] | None = None,
+    delivery_payload_artifact_path: str | Path | None = None,
+    delivery_response_artifact_path: str | Path | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
     result = verify_promotion_status_receipt(
@@ -411,6 +421,8 @@ def append_promotion_status_receipt(
         verification=verification,
         payload=payload,
         delivery=delivery,
+        delivery_payload_artifact_path=delivery_payload_artifact_path,
+        delivery_response_artifact_path=delivery_response_artifact_path,
         key=key,
     )
     if not result.ok:
@@ -437,6 +449,8 @@ def _promotion_status_body(
     payload: dict[str, Any],
     *,
     delivery: dict[str, Any] | None,
+    delivery_payload_artifact_path: str | Path | None,
+    delivery_response_artifact_path: str | Path | None,
     attested_at: str,
 ) -> dict[str, Any]:
     if payload.get("provider") not in {"github", "gitlab"}:
@@ -447,7 +461,16 @@ def _promotion_status_body(
     provider_status = _provider_status(payload)
     provider_target = _provider_target_ref(payload)
     expected_success = verification.ok and decision.get("outcome") == "passed"
-    delivery_binding = _promotion_delivery_binding(delivery, payload) if delivery is not None else None
+    delivery_binding = (
+        _promotion_delivery_binding(
+            delivery,
+            payload,
+            payload_artifact_path=delivery_payload_artifact_path,
+            response_artifact_path=delivery_response_artifact_path,
+        )
+        if delivery is not None
+        else None
+    )
     source = {
         "proof_pack_verified": bool(verification.ok),
         "pack_id_matches": proof_pack.get("pack_id") == payload.get("pack_id"),
@@ -460,6 +483,8 @@ def _promotion_status_body(
         "provider_target_ref_bound": provider_target.get("bound") is True,
         "delivery_verified": True if delivery_binding is None else delivery_binding.get("verification_ok"),
         "delivery_payload_matches": True if delivery_binding is None else delivery_binding.get("payload_hash_matches"),
+        "delivery_payload_artifact_replayed": True if delivery_binding is None else delivery_binding.get("payload_artifact_replayed"),
+        "delivery_response_artifact_replayed": True if delivery_binding is None else delivery_binding.get("response_artifact_replayed"),
         "delivery_accepted": True if delivery_binding is None else delivery_binding.get("accepted"),
         "delivery_present": delivery_binding is not None,
         "verification_error_count": len(verification.errors),
@@ -594,8 +619,19 @@ def _gitlab_project_and_commit(path: str) -> tuple[str | None, str | None]:
 def _is_commit_sha(value: Any) -> bool:
     return isinstance(value, str) and len(value) == 40 and all(ch in "0123456789abcdefABCDEF" for ch in value)
 
-def _promotion_delivery_binding(delivery: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
-    result = verify_provider_delivery(delivery, payload)
+def _promotion_delivery_binding(
+    delivery: dict[str, Any],
+    payload: dict[str, Any],
+    *,
+    payload_artifact_path: str | Path | None,
+    response_artifact_path: str | Path | None,
+) -> dict[str, Any]:
+    result = verify_provider_delivery(
+        delivery,
+        payload,
+        payload_artifact_path=payload_artifact_path,
+        response_artifact_path=response_artifact_path,
+    )
     response = delivery.get("response") if isinstance(delivery.get("response"), dict) else {}
     return {
         "delivery_id": delivery.get("delivery_id"),
@@ -606,7 +642,10 @@ def _promotion_delivery_binding(delivery: dict[str, Any], payload: dict[str, Any
         "target_url": delivery.get("target_url"),
         "accepted": bool(response.get("accepted")) if response else delivery.get("mode") == "dry-run",
         "response": response or None,
+        "payload_artifact": delivery.get("payload_artifact"),
         "response_artifact": delivery.get("response_artifact"),
+        "payload_artifact_replayed": delivery.get("payload_artifact") is None or payload_artifact_path is not None,
+        "response_artifact_replayed": delivery.get("response_artifact") is None or response_artifact_path is not None,
         "verification_ok": result.ok,
         "verification_errors": result.errors,
         "verification_warnings": result.warnings,
@@ -626,6 +665,8 @@ def _promotion_status_violations(source: dict[str, Any]) -> list[dict[str, Any]]
         ("provider_target_ref_bound", "provider status/check payload is not bound to a concrete repository/project commit ref"),
         ("delivery_verified", "provider delivery receipt verification failed"),
         ("delivery_payload_matches", "provider delivery payload hash does not match status payload"),
+        ("delivery_payload_artifact_replayed", "provider delivery retained payload artifact was not replayed"),
+        ("delivery_response_artifact_replayed", "provider delivery retained response artifact was not replayed"),
         ("delivery_accepted", "provider delivery receipt does not show accepted dispatch"),
     )
     violations: list[dict[str, Any]] = []
@@ -642,6 +683,7 @@ def _promotion_status_controls(source: dict[str, Any]) -> list[dict[str, Any]]:
         {"id": "gate-outcome-bound", "status": "passed" if source.get("gate_outcome_matches") and source.get("provider_status_matches_gate") and source.get("provider_status_shape_valid") else "failed", "description": "Provider status/check result and provider-native status shape match the TrustAI gate outcome."},
         {"id": "provider-target-ref-bound", "status": "passed" if source.get("provider_target_ref_bound") else "failed", "description": "Provider status/check payload targets a concrete repository or project commit ref."},
         {"id": "delivery-bound", "status": "passed" if source.get("delivery_present") and source.get("delivery_verified") and source.get("delivery_payload_matches") else "deferred", "description": "Provider delivery receipt is replay-bound when supplied."},
+        {"id": "delivery-artifacts-replayed", "status": "passed" if source.get("delivery_payload_artifact_replayed") and source.get("delivery_response_artifact_replayed") else "failed", "description": "Retained provider delivery payload and response artifacts are replayed when the delivery receipt binds them."},
         {"id": "delivery-accepted", "status": "passed" if source.get("delivery_accepted") else "deferred", "description": "Provider delivery was accepted or explicitly dry-run for local rehearsal."},
     ]
 

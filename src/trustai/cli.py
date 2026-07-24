@@ -8349,6 +8349,8 @@ def cmd_promotion_status(args: argparse.Namespace) -> int:
             result,
             payload,
             delivery=delivery,
+            delivery_payload_artifact_path=args.delivery_payload_artifact or args.payload,
+            delivery_response_artifact_path=args.delivery_response_artifact,
             attested_at=args.attested_at,
             key=args.key,
         )
@@ -8361,6 +8363,8 @@ def cmd_promotion_status(args: argparse.Namespace) -> int:
         verification=result,
         payload=payload,
         delivery=delivery,
+        delivery_payload_artifact_path=args.delivery_payload_artifact or args.payload,
+        delivery_response_artifact_path=args.delivery_response_artifact,
         key=args.key,
     )
     if not replay.ok:
@@ -8398,6 +8402,8 @@ def cmd_promotion_status_verify(args: argparse.Namespace) -> int:
         verification=verification,
         payload=payload,
         delivery=delivery,
+        delivery_payload_artifact_path=(args.delivery_payload_artifact or args.payload) if args.payload else args.delivery_payload_artifact,
+        delivery_response_artifact_path=args.delivery_response_artifact,
         key=args.key,
     )
     if result.ok:
@@ -8433,6 +8439,8 @@ def cmd_promotion_status_append(args: argparse.Namespace) -> int:
             verification=verification,
             payload=payload,
             delivery=delivery,
+            delivery_payload_artifact_path=(args.delivery_payload_artifact or args.payload) if args.payload else args.delivery_payload_artifact,
+            delivery_response_artifact_path=args.delivery_response_artifact,
             key=args.key,
         )
     except ValueError as exc:
@@ -24404,6 +24412,8 @@ def build_parser() -> argparse.ArgumentParser:
     promotion_status.add_argument("pack")
     promotion_status.add_argument("payload")
     promotion_status.add_argument("--delivery")
+    promotion_status.add_argument("--delivery-payload-artifact", help="retained provider delivery payload artifact path; defaults to the payload file")
+    promotion_status.add_argument("--delivery-response-artifact", help="retained provider delivery response body artifact path")
     promotion_status.add_argument("--attested-at")
     promotion_status.add_argument("--out", default="artifacts/promotion-status.json")
     promotion_status.add_argument("--key")
@@ -24414,6 +24424,8 @@ def build_parser() -> argparse.ArgumentParser:
     promotion_status_verify.add_argument("--pack")
     promotion_status_verify.add_argument("--payload")
     promotion_status_verify.add_argument("--delivery")
+    promotion_status_verify.add_argument("--delivery-payload-artifact", help="retained provider delivery payload artifact path; defaults to the payload file when supplied")
+    promotion_status_verify.add_argument("--delivery-response-artifact", help="retained provider delivery response body artifact path")
     promotion_status_verify.add_argument("--key")
     promotion_status_verify.set_defaults(func=cmd_promotion_status_verify)
 
@@ -24422,6 +24434,8 @@ def build_parser() -> argparse.ArgumentParser:
     promotion_status_append.add_argument("--pack")
     promotion_status_append.add_argument("--payload")
     promotion_status_append.add_argument("--delivery")
+    promotion_status_append.add_argument("--delivery-payload-artifact", help="retained provider delivery payload artifact path; defaults to the payload file when supplied")
+    promotion_status_append.add_argument("--delivery-response-artifact", help="retained provider delivery response body artifact path")
     promotion_status_append.add_argument("--out", default="artifacts/promotion-status-entry.json")
     promotion_status_append.add_argument("--key")
     _add_state_args(promotion_status_append)

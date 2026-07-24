@@ -62,7 +62,7 @@
       "live_source_uri_count": 0,
       "missing_task_count": 8,
       "owner_hint": "IAM/identity owner",
-      "package_id": "fc79ccdea8f092616e0dd3b3ec146b6cee5a7bdeb864c0ceb3c9416a188bcf76",
+      "package_id": "f56174af928e30752d03d5f2e25c4c57866bff44bd8dbbded797136f3687478c",
       "package_ref": "owner_hint:IAM-identity-owner",
       "phases": [
         "P1",
@@ -136,7 +136,7 @@
           "description": "identity-provider evidence for cicd-provider-approvals",
           "evidence_argument_template": "cicd-provider-approvals,identity-provider,external-evidence/cicd-provider-approvals/identity-provider.json,identity-provider evidence for cicd-provider-approvals;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
           "external_authority_required": [
-            "Provider delivery receipts cover retained provider delivery payload artifact replay and retained provider response artifact byte replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs, provider-native status shape, and compact provider delivery response artifact bindings before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
+            "Provider delivery receipts cover retained provider delivery payload artifact replay and retained provider response artifact byte replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs, provider-native status shape, and replayed retained provider delivery payload/response artifacts before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
           ],
           "intake_out": "artifacts/external-evidence-intakes/cicd-provider-approvals/identity-provider.json",
           "next_actions": [
@@ -1653,7 +1653,7 @@
       "live_source_uri_count": 0,
       "missing_task_count": 11,
       "owner_hint": "integration/platform owner",
-      "package_id": "73dccb50ec707723882477a738a94001a4828c6dd269a51759a278d907891ad1",
+      "package_id": "23b227ee117264efe7121b491127ffc3cc007e16d16f0bd934e148cbfc14237c",
       "package_ref": "owner_hint:integration-platform-owner",
       "phases": [
         "P1",
@@ -1732,7 +1732,7 @@
           "description": "provider-api evidence for cicd-provider-approvals",
           "evidence_argument_template": "cicd-provider-approvals,provider-api,external-evidence/cicd-provider-approvals/provider-api.json,provider-api evidence for cicd-provider-approvals;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
           "external_authority_required": [
-            "Provider delivery receipts cover retained provider delivery payload artifact replay and retained provider response artifact byte replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs, provider-native status shape, and compact provider delivery response artifact bindings before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
+            "Provider delivery receipts cover retained provider delivery payload artifact replay and retained provider response artifact byte replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs, provider-native status shape, and replayed retained provider delivery payload/response artifacts before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
           ],
           "intake_out": "artifacts/external-evidence-intakes/cicd-provider-approvals/provider-api.json",
           "next_actions": [
@@ -3029,7 +3029,7 @@
       "live_source_uri_count": 0,
       "missing_task_count": 8,
       "owner_hint": "release engineering",
-      "package_id": "c7b3944cb7a33df6bda71b7e25627e6ce2a041be3773308945e2891cfd0f3bd6",
+      "package_id": "b024dba50173237ec85a88ae332c1aea52815ddf22566d87893f2f733fe7a585",
       "package_ref": "owner_hint:release-engineering",
       "phases": [
         "P0-P4",
@@ -3181,7 +3181,7 @@
           "description": "ci-run evidence for cicd-provider-approvals",
           "evidence_argument_template": "cicd-provider-approvals,ci-run,external-evidence/cicd-provider-approvals/ci-run.json,ci-run evidence for cicd-provider-approvals;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
           "external_authority_required": [
-            "Provider delivery receipts cover retained provider delivery payload artifact replay and retained provider response artifact byte replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs, provider-native status shape, and compact provider delivery response artifact bindings before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
+            "Provider delivery receipts cover retained provider delivery payload artifact replay and retained provider response artifact byte replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs, provider-native status shape, and replayed retained provider delivery payload/response artifacts before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
           ],
           "intake_out": "artifacts/external-evidence-intakes/cicd-provider-approvals/ci-run.json",
           "next_actions": [
@@ -4701,7 +4701,7 @@
       "live_source_uri_count": 0,
       "missing_task_count": 8,
       "owner_hint": "service owner",
-      "package_id": "28d1a4b15013fc334aa1484d3c993c5438ff20b48dafb3cf404566f2dc947f3a",
+      "package_id": "c2dc72874ed7da929b841e1c41d08ecffd417f0817522b3ee9d5167af9c39d17",
       "package_ref": "owner_hint:service-owner",
       "phases": [
         "P1",
@@ -4775,7 +4775,7 @@
           "description": "hosted-service evidence for cicd-provider-approvals",
           "evidence_argument_template": "cicd-provider-approvals,hosted-service,external-evidence/cicd-provider-approvals/hosted-service.json,hosted-service evidence for cicd-provider-approvals;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
           "external_authority_required": [
-            "Provider delivery receipts cover retained provider delivery payload artifact replay and retained provider response artifact byte replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs, provider-native status shape, and compact provider delivery response artifact bindings before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
+            "Provider delivery receipts cover retained provider delivery payload artifact replay and retained provider response artifact byte replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs, provider-native status shape, and replayed retained provider delivery payload/response artifacts before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
           ],
           "intake_out": "artifacts/external-evidence-intakes/cicd-provider-approvals/hosted-service.json",
           "next_actions": [
@@ -5882,33 +5882,33 @@
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "238bf8382e7fe2d9906ffa1126fe5f32ab6d1cc5f7575ac26d21967ad4d1f2aa",
-      "plan_id": "b4fc3d897f86731422b86d87b4327d342e03e622d458e59ca85f8e3a6ae550ef",
+      "plan_hash": "b9e272e9a2ed26ad8ae4b15c9b43a6b3362c07ece002d91cebeec64f5ee837ab",
+      "plan_id": "d71cb6153055eb80733649a8ec11bf3fa8383b079e5964746a6ac866f8d3a170",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "gap_report": {
-      "gap_report_hash": "0a5947a329832cc7eb214532dd36bf8a372c7cdffc5fd8af059c228d70f719b7",
-      "gap_report_id": "8851e52026051b073d2a3e375956824aa931527c4728466ddf9092497f7dbbfd",
+      "gap_report_hash": "c5aca2a7ea24c9479e370ef2d5d5aded2eb833b8eae00d133f3d0409896eb496",
+      "gap_report_id": "2de3b3e3f2660da4cf9a9d68ef87ed6528e85dc5c742cc9cd36cbca14f8e4284",
       "generated_at": "2026-07-12T01:29:00Z",
       "schema": "trustai.external-evidence-gap-report/0.1"
     },
     "manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "adc59e89cde4cab9ff66e79be6507cbcde9eff4f7e0e4853e75802bcb55c89de",
-      "manifest_id": "018d1755fec1a37b768581b7a0e136cfa438a6384712a2b6fe5ae9b90d5f6e95",
+      "manifest_hash": "672fc8a8f419585e886f70f696c1a9e04d9bfedd310d58b3d181a9f90d5b6f7a",
+      "manifest_id": "af18e83a55fa6bd5d46db07cd7a9f35b93839ca4004a2cebdf5b14f45e50b1e9",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
-      "audit_hash": "160d283d2b89c6f1e8e730d1fef0e834e174769f611bad99acaa8a5e0a04f34f",
-      "audit_id": "4c8e98eb4825fa8bbe974fa257bf5baa456171419e4f379280aea72f6f9d0b83",
-      "generated_at": "2026-07-24T12:08:13Z",
+      "audit_hash": "5593a216b799800c38cc2491a896b49d4876b8d1bacaf2b0d3e40832f8d483bb",
+      "audit_id": "2f6cbd2eb1e746d8b769276dac9561fca65c8a7b634ed52cb06fb8fa35bec4a5",
+      "generated_at": "2026-07-24T12:31:38Z",
       "schema": "trustai.roadmap-audit/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:01:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "1476b802a5bcaba6e3325e829f4dec32a4a7f8bac188da804781eeeaf786cd5d",
-      "source_map_id": "ec8006eeb892b6106955e63e717d09a5d6734e68c4f16e38efa15bd3c4176f4c"
+      "source_map_hash": "ef25b7d60dfa5d1042811634f57b7a259ed85f8e47da240737a524f838315479",
+      "source_map_id": "5cc64c2d24f184e8da5b2052d4d2408b0a9c9cb361f2e982cad5ba622345d8a5"
     }
   },
   "summary": {
@@ -5993,5 +5993,5 @@
       "vertical-packs": 3
     }
   },
-  "work_package_id": "984638f8cd339df394e70ec2f7e755b07c0e946338ee4fb99db0cb419348c0e8"
+  "work_package_id": "125350bfdf19f667e3138509c9f150524ab966921762ffc2ce3484d496409b6b"
 }
