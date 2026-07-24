@@ -7881,6 +7881,7 @@ class ControlPlane:
             "mcp_evidence": self.mcp_evidence(limit),
             "onboarding_evidence": self.onboarding_evidence(limit),
             "promotion_lifecycle_evidence": self.promotion_lifecycle_evidence(limit),
+            "runtime_evidence": self.runtime_evidence(limit),
             "byoc_evidence": self.byoc_evidence(limit),
             "identity_provider_evidence": self.identity_provider_evidence(limit),
             "framework_adapter_evidence": self.framework_adapter_evidence(limit),

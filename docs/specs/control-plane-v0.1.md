@@ -160,8 +160,9 @@ source of truth.
 The roadmap-evidence list binds roadmap audit entries, retained
 collection-run provenance, external
 evidence manifests, phase scoreboard entries, design-partner pilot dossiers,
-own-compliance dossiers, product-scope decisions, vertical packs, and State of
-Agent Reliability reports into one progress view. The phase-scoreboard list
+own-compliance dossiers, product-scope decisions, vertical packs, State of
+Agent Reliability reports, and runtime attestation/policy evidence into one
+progress view. The phase-scoreboard list
 exposes P1-P4 milestone counters, phase counts, and control summaries without
 treating unverified business milestones as local proof. The design-partner and
 own-compliance lists expose P1 pilot and SOC 2 / ISO 42001 evidence readiness

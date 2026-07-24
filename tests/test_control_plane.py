@@ -894,6 +894,7 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, len(roadmap_evidence["mcp_evidence"]["mcp_tool_calls"]))
                 self.assertEqual(1, len(roadmap_evidence["mcp_evidence"]["mcp_proxy_captures"]))
                 self.assertEqual(1, len(roadmap_evidence["mcp_evidence"]["mcp_gateway_authority_evidence_bundles"]))
+                self.assertEqual(runtime_evidence, roadmap_evidence["runtime_evidence"])
                 phase_scoreboards = control.recent_phase_scoreboards()
                 self.assertEqual(1, len(phase_scoreboards))
                 self.assertEqual("readiness", phase_scoreboards[0]["mode"])
@@ -2136,6 +2137,7 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, authority["source_artifact_count"])
                 self.assertEqual(evidence, roadmap["policy_backend_evidence"])
                 self.assertEqual(rows, runtime["policy_backend_evidence"])
+                self.assertEqual(runtime, roadmap["runtime_evidence"])
             finally:
                 control.close()
 

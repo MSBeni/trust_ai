@@ -1,7 +1,7 @@
 {
   "command_context": {
     "collection_run_out": "examples/aitrade/external-evidence/retained-external-evidence-collection-run.json",
-    "intake_dir": "examples/aitrade/external-evidence/intakes",
+    "intake_dir": "artifacts/external-evidence-intakes",
     "manifest_path": "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
     "module": "trustai",
     "plan_path": "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
@@ -50,11 +50,11 @@
           "--root",
           ".",
           "--intake-dir",
-          "examples/aitrade/external-evidence/intakes",
+          "artifacts/external-evidence-intakes",
           "--out",
           "examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
         ],
-        "rebuild_manifest_command": "python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir examples/aitrade/external-evidence/intakes --out examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
+        "rebuild_manifest_command": "python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
       },
       "covered_task_count": 0,
       "group_by": "owner_hint",
@@ -62,7 +62,7 @@
       "live_source_uri_count": 0,
       "missing_task_count": 8,
       "owner_hint": "IAM/identity owner",
-      "package_id": "29dc08b5376838249ef09995d27a01d88458483b8d288083a4a8d0154ada5c51",
+      "package_id": "30520f3956a313485b21e5ea9ed9c5ce76d754e04bbc99e89a74c72b1db82f38",
       "package_ref": "owner_hint:IAM-identity-owner",
       "phases": [
         "P1",
@@ -737,11 +737,11 @@
           "--root",
           ".",
           "--intake-dir",
-          "examples/aitrade/external-evidence/intakes",
+          "artifacts/external-evidence-intakes",
           "--out",
           "examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
         ],
-        "rebuild_manifest_command": "python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir examples/aitrade/external-evidence/intakes --out examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
+        "rebuild_manifest_command": "python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
       },
       "covered_task_count": 0,
       "group_by": "owner_hint",
@@ -749,7 +749,7 @@
       "live_source_uri_count": 0,
       "missing_task_count": 1,
       "owner_hint": "cloud storage owner",
-      "package_id": "2aad6cdf58d86c2fdb6c427adf473b512ddee12bfde8f6a0a0271eaaa269b3a4",
+      "package_id": "ac710ac7669dc27ae77265bfd1ca9d7de8599abd2cdd050f54a4cbd22f587e36",
       "package_ref": "owner_hint:cloud-storage-owner",
       "phases": [
         "P1-P2"
@@ -873,11 +873,11 @@
           "--root",
           ".",
           "--intake-dir",
-          "examples/aitrade/external-evidence/intakes",
+          "artifacts/external-evidence-intakes",
           "--out",
           "examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
         ],
-        "rebuild_manifest_command": "python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir examples/aitrade/external-evidence/intakes --out examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
+        "rebuild_manifest_command": "python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
       },
       "covered_task_count": 0,
       "group_by": "owner_hint",
@@ -885,7 +885,7 @@
       "live_source_uri_count": 0,
       "missing_task_count": 9,
       "owner_hint": "customer success/account owner",
-      "package_id": "d3ef98863a3ee2a5ab1cdcc3e9c5d22a0af9326f08397eff73a325cf2ba009a1",
+      "package_id": "49181d6c2a08beff2dca413e00753645c1323dc9f1fe6a6ed2f0d13523990350",
       "package_ref": "owner_hint:customer-success-account-owner",
       "phases": [
         "P0-P4",
@@ -1641,11 +1641,11 @@
           "--root",
           ".",
           "--intake-dir",
-          "examples/aitrade/external-evidence/intakes",
+          "artifacts/external-evidence-intakes",
           "--out",
           "examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
         ],
-        "rebuild_manifest_command": "python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir examples/aitrade/external-evidence/intakes --out examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
+        "rebuild_manifest_command": "python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
       },
       "covered_task_count": 0,
       "group_by": "owner_hint",
@@ -1653,7 +1653,7 @@
       "live_source_uri_count": 0,
       "missing_task_count": 11,
       "owner_hint": "integration/platform owner",
-      "package_id": "e234db71a89e119d9fece883cd151b8fda79acd679112311297ebb185c6dffdb",
+      "package_id": "ff35119a0fc938f08be5372bfa706fd2e9c9a437ee944a4c080d33a547c38b7a",
       "package_ref": "owner_hint:integration-platform-owner",
       "phases": [
         "P1",
@@ -2564,11 +2564,11 @@
           "--root",
           ".",
           "--intake-dir",
-          "examples/aitrade/external-evidence/intakes",
+          "artifacts/external-evidence-intakes",
           "--out",
           "examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
         ],
-        "rebuild_manifest_command": "python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir examples/aitrade/external-evidence/intakes --out examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
+        "rebuild_manifest_command": "python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
       },
       "covered_task_count": 0,
       "group_by": "owner_hint",
@@ -2576,7 +2576,7 @@
       "live_source_uri_count": 0,
       "missing_task_count": 5,
       "owner_hint": "legal/compliance owner",
-      "package_id": "ca9fc834cb20fc63512e8d104c495eaff45fdc7462988593c92652ee1e0724a0",
+      "package_id": "c2f23aea9e5ab293893cc6315c930d08848290d9239924cb1aba4e7689f104ba",
       "package_ref": "owner_hint:legal-compliance-owner",
       "phases": [
         "P1",
@@ -3017,11 +3017,11 @@
           "--root",
           ".",
           "--intake-dir",
-          "examples/aitrade/external-evidence/intakes",
+          "artifacts/external-evidence-intakes",
           "--out",
           "examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
         ],
-        "rebuild_manifest_command": "python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir examples/aitrade/external-evidence/intakes --out examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
+        "rebuild_manifest_command": "python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
       },
       "covered_task_count": 0,
       "group_by": "owner_hint",
@@ -3029,7 +3029,7 @@
       "live_source_uri_count": 0,
       "missing_task_count": 8,
       "owner_hint": "release engineering",
-      "package_id": "6a017fada2befce24190e8051ea5608fe9857b06784a899e202bbeafcb9f9aae",
+      "package_id": "05eacfc6ea9335a02b41c85a55f8b5afc7b68362b6674d05ce19286ca261af4a",
       "package_ref": "owner_hint:release-engineering",
       "phases": [
         "P0-P4",
@@ -3705,11 +3705,11 @@
           "--root",
           ".",
           "--intake-dir",
-          "examples/aitrade/external-evidence/intakes",
+          "artifacts/external-evidence-intakes",
           "--out",
           "examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
         ],
-        "rebuild_manifest_command": "python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir examples/aitrade/external-evidence/intakes --out examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
+        "rebuild_manifest_command": "python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
       },
       "covered_task_count": 0,
       "group_by": "owner_hint",
@@ -3717,7 +3717,7 @@
       "live_source_uri_count": 0,
       "missing_task_count": 4,
       "owner_hint": "risk/insurance owner",
-      "package_id": "cf4ec3ed07d36e1f4df626d8aa1286f062a63526ccb1688d8a8dff5303f3076a",
+      "package_id": "b283513700a8a376cd454afd787028af3209ed1f87f14f92843aa67ffc13dfcb",
       "package_ref": "owner_hint:risk-insurance-owner",
       "phases": [
         "P1",
@@ -4079,11 +4079,11 @@
           "--root",
           ".",
           "--intake-dir",
-          "examples/aitrade/external-evidence/intakes",
+          "artifacts/external-evidence-intakes",
           "--out",
           "examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
         ],
-        "rebuild_manifest_command": "python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir examples/aitrade/external-evidence/intakes --out examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
+        "rebuild_manifest_command": "python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
       },
       "covered_task_count": 0,
       "group_by": "owner_hint",
@@ -4091,7 +4091,7 @@
       "live_source_uri_count": 0,
       "missing_task_count": 7,
       "owner_hint": "security/platform KMS owner",
-      "package_id": "b0dddd40a6526cdeb1c7e18980d8bf8343796bd3bf001af2de6345c766842739",
+      "package_id": "dde034590d2fefff9aea79e84dbbabfb54e8976d2e9ad50a3867eedfda371b8d",
       "package_ref": "owner_hint:security-platform-KMS-owner",
       "phases": [
         "P1",
@@ -4689,11 +4689,11 @@
           "--root",
           ".",
           "--intake-dir",
-          "examples/aitrade/external-evidence/intakes",
+          "artifacts/external-evidence-intakes",
           "--out",
           "examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
         ],
-        "rebuild_manifest_command": "python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir examples/aitrade/external-evidence/intakes --out examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
+        "rebuild_manifest_command": "python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
       },
       "covered_task_count": 0,
       "group_by": "owner_hint",
@@ -4701,7 +4701,7 @@
       "live_source_uri_count": 0,
       "missing_task_count": 8,
       "owner_hint": "service owner",
-      "package_id": "5b873fa3ba77a2d0961b6b5bb971c6c608a9302ae1731c707d61b362da93424d",
+      "package_id": "92a82a8e93533fb14b22f18781fc8af3a6547c23c8e34974b2c0f9e87b20c77c",
       "package_ref": "owner_hint:service-owner",
       "phases": [
         "P1",
@@ -5376,11 +5376,11 @@
           "--root",
           ".",
           "--intake-dir",
-          "examples/aitrade/external-evidence/intakes",
+          "artifacts/external-evidence-intakes",
           "--out",
           "examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
         ],
-        "rebuild_manifest_command": "python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir examples/aitrade/external-evidence/intakes --out examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
+        "rebuild_manifest_command": "python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out examples/aitrade/external-evidence/retained-external-evidence-manifest.json"
       },
       "covered_task_count": 0,
       "group_by": "owner_hint",
@@ -5388,7 +5388,7 @@
       "live_source_uri_count": 0,
       "missing_task_count": 6,
       "owner_hint": "standards/governance owner",
-      "package_id": "fbecb160febea913a85c2a99afe551adffc632cddd7a636eca223afea387eb56",
+      "package_id": "c6fb24e29a0ddd5c6870623781e5d67228c93affe3220f191acbb22d82336af2",
       "package_ref": "owner_hint:standards-governance-owner",
       "phases": [
         "P1",
@@ -5882,33 +5882,33 @@
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "34bf406fb335cdc962baefa0db43fb55612f555883af16e62eea87dfb85961b1",
-      "plan_id": "7440bd4ec9c3fd07fdc4753829a3afde18b91c061a87c9b355c9410d2d3e0582",
+      "plan_hash": "90de3fd141d9b1a1a1de3161312e927f3af3dbfc12f44fc9137532534cbf4035",
+      "plan_id": "b46c1ff7c4caedf09b918c5242374310806d22f626ca70f00c01e923733667d1",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "gap_report": {
-      "gap_report_hash": "dd9bd1419e8f1f329c33c3474b515fd6c7e03a0eba44ccfb971ec52e99efc0dc",
-      "gap_report_id": "f1009c6b12675114c142889bc7b8de1cc69d8e2a6c593b1017aae58493c7673f",
+      "gap_report_hash": "a63dd63f94083ded1217de905008cdbb7be6bddef36a7d59c6734fafbb9a5249",
+      "gap_report_id": "d681db5bd30147f47dd4c8f73b6079934394c259b993fea23346d6cba9022d08",
       "generated_at": "2026-07-12T01:29:00Z",
       "schema": "trustai.external-evidence-gap-report/0.1"
     },
     "manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "a2ca1f30e9711eae2bb0b74f7b165d7368ab89772500cd3b0d533f643ca9473c",
-      "manifest_id": "e692ebf009203de1dfd7b7ebc9459e92327035a6588199d31a811e7fb03cda7e",
+      "manifest_hash": "5826277751f9ab5b6300e2d1c922aae91a4296b5434d040a6dbb0e7c53016d2d",
+      "manifest_id": "ac39020548de64c40cadcbf35d2908d7dad21652e74188986694bb120d15e6e1",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
-      "audit_hash": "e32e25d25ea13fb6dcb0599914570e5901bb4a637a9fb7f770afde764bbec208",
-      "audit_id": "32900fbecc4234dd00c95de27a0de3c0a0b28ef7c37b739ea63ab1676fc807d7",
-      "generated_at": "2026-07-24T08:04:43Z",
+      "audit_hash": "3522be914a3f1401c2eb0f50231023d639a2265d1a422eab6d0e987814b5bdd5",
+      "audit_id": "b1f2e5b049a355682f1c36ecf8f4213482cb0603f1d2b820a899407ec0699665",
+      "generated_at": "2026-07-24T08:46:35Z",
       "schema": "trustai.roadmap-audit/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:01:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "f0715b8f52031f737baff6782d20790387e69f30883b88942aaa3a890200032c",
-      "source_map_id": "79a577108f050d4fe903957a5f9ca3371ba68b4c8d588fa53c37dd355b8d333e"
+      "source_map_hash": "1be9f55e234d0702e406519e01fac1b75adbe8507d94e4cb40faccc6d60021b2",
+      "source_map_id": "d04fbea380865925319e440b4a5ff413cf68c4c42078c693009df631c9b3cd0f"
     }
   },
   "summary": {
@@ -5993,5 +5993,5 @@
       "vertical-packs": 3
     }
   },
-  "work_package_id": "333cfe53bd0d47d9353145393906cb72c2239a57ac1b87668ec99e5297777e5b"
+  "work_package_id": "94e1cc5e59c0b21bbdc6fe5da3e5accf9c3ad9fe05fe9a894dc76f05a2f6b293"
 }
