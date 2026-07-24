@@ -134,17 +134,14 @@ def build_identity_provider_session_receipt(
         raise ValueError("endpoint_url must be an absolute URL")
     if not _is_https(endpoint_url):
         raise ValueError("endpoint_url must use HTTPS")
-    for value, field in (
-        (request_hash, "request_hash"),
-        (response_hash, "response_hash"),
-        (session_log_root, "session_log_root"),
-        (audit_log_root, "audit_log_root"),
-    ):
-        if not _is_hash_ref(value):
-            raise ValueError(f"{field} must be a sha256 reference")
-    for value, field in ((source_ip_hash, "source_ip_hash"), (user_agent_hash, "user_agent_hash")):
-        if value is not None and not _is_hash_ref(value):
-            raise ValueError(f"{field} must be a sha256 reference")
+    request_hash = _normalize_hash_ref(request_hash, "request_hash")
+    response_hash = _normalize_hash_ref(response_hash, "response_hash")
+    session_log_root = _normalize_hash_ref(session_log_root, "session_log_root")
+    audit_log_root = _normalize_hash_ref(audit_log_root, "audit_log_root")
+    if source_ip_hash is not None:
+        source_ip_hash = _normalize_hash_ref(source_ip_hash, "source_ip_hash")
+    if user_agent_hash is not None:
+        user_agent_hash = _normalize_hash_ref(user_agent_hash, "user_agent_hash")
 
     attestation_result = verify_identity_provider_attestation(
         identity_provider_attestation,
@@ -456,11 +453,10 @@ def _verify_provider_evidence(value: Any, recorded_at: Any, now: str | None, err
     elif not _is_https(endpoint_url):
         errors.append("identity provider session endpoint_url must use HTTPS")
     for field in ("request_hash", "response_hash", "session_log_root", "audit_log_root"):
-        if not _is_hash_ref(str(value.get(field) or "")):
-            errors.append(f"identity provider session provider_evidence.{field} must be a sha256 reference")
+        _verify_hash_ref(value.get(field), f"identity provider session provider_evidence.{field}", errors)
     for field in ("source_ip_hash", "user_agent_hash"):
-        if value.get(field) is not None and not _is_hash_ref(str(value.get(field) or "")):
-            errors.append(f"identity provider session provider_evidence.{field} must be a sha256 reference")
+        if value.get(field) is not None:
+            _verify_hash_ref(value.get(field), f"identity provider session provider_evidence.{field}", errors)
     status = value.get("response_status")
     if not isinstance(status, int) or status < 100 or status > 599:
         errors.append("identity provider session response_status must be an HTTP status code")
@@ -544,10 +540,25 @@ def _is_https(value: str | None) -> bool:
     return bool(value and urlparse(value).scheme.lower() == "https")
 
 
-def _is_hash_ref(value: str) -> bool:
-    if value.startswith("sha256:"):
-        return bool(value.removeprefix("sha256:"))
-    return len(value) == 64 and all(character in "0123456789abcdefABCDEF" for character in value)
+def _normalize_hash_ref(value: str | None, field: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{field} is required")
+    if not value.startswith("sha256:"):
+        raise ValueError(f"{field} must start with sha256:")
+    hexdigest = value.removeprefix("sha256:")
+    if len(hexdigest) != 64 or any(character not in "0123456789abcdefABCDEF" for character in hexdigest):
+        raise ValueError(f"{field} must contain a 64-character sha256 digest")
+    return "sha256:" + hexdigest.lower()
+
+
+def _verify_hash_ref(value: Any, field: str, errors: list[str]) -> None:
+    try:
+        normalized = _normalize_hash_ref(value if isinstance(value, str) else None, field)
+    except ValueError as exc:
+        errors.append(str(exc))
+        return
+    if value != normalized:
+        errors.append(f"{field} must be canonical lowercase sha256:64-hex")
 
 
 def _is_string_list(value: Any) -> bool:

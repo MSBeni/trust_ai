@@ -7,7 +7,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.contracts import load_contract, register_contract
 from trustai.gate import append_eval_and_gate
 from trustai.identity_provider_attestation import build_identity_provider_attestation, write_identity_provider_attestation
@@ -111,16 +113,16 @@ class IdentityProviderSessionTests(unittest.TestCase):
             risk_level="low",
             endpoint_url="https://okta.example/oauth2/v1/introspect",
             credential_ref="env:OKTA_INTROSPECTION_TOKEN",
-            request_hash="sha256:identity-provider-session-request",
+            request_hash="sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
             response_status=200,
-            response_hash="sha256:identity-provider-session-response",
+            response_hash="sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
             session_log_ref="okta:system-log/query/aitrade-session",
-            session_log_root="sha256:identity-provider-session-log-root",
+            session_log_root="sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
             audit_log_ref="audit-log:identity-provider/session-worker",
-            audit_log_root="sha256:identity-provider-session-audit-root",
-            source_ip_hash="sha256:identity-provider-session-source-ip",
+            audit_log_root="sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+            source_ip_hash="sha256:1111111111111111111111111111111111111111111111111111111111111111",
             device_ref="workload:trustai/identity-session-worker",
-            user_agent_hash="sha256:identity-provider-session-user-agent",
+            user_agent_hash="sha256:2222222222222222222222222222222222222222222222222222222222222222",
             session_started_at="2026-07-12T02:00:00Z",
             session_expires_at="2026-07-12T03:00:00Z",
             observed_at="2026-07-12T02:00:05Z",
@@ -209,6 +211,35 @@ class IdentityProviderSessionTests(unittest.TestCase):
                 )
             )
 
+    def test_identity_provider_session_rejects_resigned_malformed_provider_hash(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            sources = self._sources(Path(tmp_dir))
+            receipt = self._receipt(sources)
+            tampered = copy.deepcopy(receipt)
+            tampered["provider_evidence"]["request_hash"] = "sha256:not-a-real-digest"
+            body = without_keys(tampered, "session_id", "signatures")
+            session_id = content_hash(body)
+            tampered["session_id"] = session_id
+            tampered["signatures"] = [sign_value({"session_id": session_id, "identity_provider_session": body})]
+
+            result = verify_identity_provider_session_receipt(
+                tampered,
+                identity_provider_attestation=sources["attestation"],
+                identity_payload=sources["identity_payload"],
+                identity_payload_path=sources["identity_payload_path"],
+                vendor_identity_receipt=sources["vendor"],
+                proof_packs=[sources["pack"]],
+                trust_network_manifest=sources["manifest"],
+            )
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("session_id does not match canonical identity provider session body", result.errors)
+            self.assertNotIn("identity provider session signature verification failed", result.errors)
+            self.assertIn(
+                "identity provider session provider_evidence.request_hash must contain a 64-character sha256 digest",
+                result.errors,
+            )
+
     def test_cli_identity_provider_session_round_trip(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)
@@ -273,25 +304,25 @@ class IdentityProviderSessionTests(unittest.TestCase):
                 "--credential-ref",
                 "env:OKTA_INTROSPECTION_TOKEN",
                 "--request-hash",
-                "sha256:identity-provider-session-request",
+                "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
                 "--response-status",
                 "200",
                 "--response-hash",
-                "sha256:identity-provider-session-response",
+                "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
                 "--session-log-ref",
                 "okta:system-log/query/aitrade-session",
                 "--session-log-root",
-                "sha256:identity-provider-session-log-root",
+                "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
                 "--audit-log-ref",
                 "audit-log:identity-provider/session-worker",
                 "--audit-log-root",
-                "sha256:identity-provider-session-audit-root",
+                "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
                 "--source-ip-hash",
-                "sha256:identity-provider-session-source-ip",
+                "sha256:1111111111111111111111111111111111111111111111111111111111111111",
                 "--device-ref",
                 "workload:trustai/identity-session-worker",
                 "--user-agent-hash",
-                "sha256:identity-provider-session-user-agent",
+                "sha256:2222222222222222222222222222222222222222222222222222222222222222",
                 "--session-started-at",
                 "2026-07-12T02:00:00Z",
                 "--session-expires-at",

@@ -1,7 +1,7 @@
 {
-  "audit_id": "fe12f35f9b2872fa6011b688846d883f0f24a93d89cf50f945a526d8e5c80807",
+  "audit_id": "efc5ababf96264e8f7f5b40c9cad9112916031d5976064a04190a4e5d62b8915",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
-  "generated_at": "2026-07-24T13:21:21Z",
+  "generated_at": "2026-07-24T13:30:32Z",
   "limitations": [
     "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
     "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",
@@ -1423,7 +1423,7 @@
         {
           "path": "src/trustai/standards.py",
           "present": true,
-          "sha256": "sha256:022ebd0e0b897fa86aaafb8fa4fd96d533304ac66c2bf0965637d0d975d3508f"
+          "sha256": "sha256:9a8273f44bba7f8d7c28a554f49a73fb4ca7064ead6a6105cd24976cba4ec3e5"
         },
         {
           "path": "src/trustai/roadmap_audit.py",
@@ -2165,7 +2165,7 @@
         {
           "path": "src/trustai/identity_provider_session.py",
           "present": true,
-          "sha256": "sha256:624f7ffdfb99492d34ffc68d87e0f09974df60e1d8d7f1970c9451a19e12bfef"
+          "sha256": "sha256:3380a224a2452dcbec3e400a4f15c3c8f7745ce62f011e1c99b8f3ad5e9af3a3"
         },
         {
           "path": "src/trustai/identity_provider_lifecycle_operation.py",
@@ -2205,7 +2205,7 @@
         {
           "path": "docs/specs/identity-provider-session-v0.1.md",
           "present": true,
-          "sha256": "sha256:953d614066e86dbcaeb5e4316d29fb020c4edea4942d347e48ed66371533c011"
+          "sha256": "sha256:fc0cd887c407e58f0267aa1b11b68293d081a7d9b1bebd9994e856b09f426470"
         },
         {
           "path": "docs/specs/identity-provider-lifecycle-operation-v0.1.md",
@@ -2240,12 +2240,12 @@
         {
           "path": "tests/test_identity_provider_session.py",
           "present": true,
-          "sha256": "sha256:62f6c4b965fbf9a9f3ac67c2eb9e51cd8733753e7744dc93fb57150fadc3fb1b"
+          "sha256": "sha256:856f92340a56a9556a1db6f1ae8d0d282e92a90906c35f2c4226865ff79565a2"
         },
         {
           "path": "tests/test_identity_provider_lifecycle_operation.py",
           "present": true,
-          "sha256": "sha256:3ea507e8a62267fe609864896f8ca81ae255345f0e05ecf7f56198eb015fd4d3"
+          "sha256": "sha256:124870f85b19374a53affe1558bda53f71b4690ba5fae3f9690c793cd302df0e"
         },
         {
           "path": "tests/test_identity_provider_lifecycle_worker.py",
@@ -2365,7 +2365,7 @@
         {
           "path": "src/trustai/standards.py",
           "present": true,
-          "sha256": "sha256:022ebd0e0b897fa86aaafb8fa4fd96d533304ac66c2bf0965637d0d975d3508f"
+          "sha256": "sha256:9a8273f44bba7f8d7c28a554f49a73fb4ca7064ead6a6105cd24976cba4ec3e5"
         },
         {
           "path": "src/trustai/standards_body_submission.py",
