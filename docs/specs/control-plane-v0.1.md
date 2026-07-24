@@ -60,6 +60,7 @@ into queryable registry tables while keeping the chain as the source of truth.
 - `traffic_completeness_receipts`: provider/collector completeness receipts binding traffic exports to stream, cursor, audit, and provider exchange evidence.
 - `underwriting_quotes`: signed proof-pack-backed underwriting quotes with risk evidence, discount, consent, term, and freshness fields.
 - `insurer_partner_authority_dossiers`: insurer partner production-authority dossiers with service, worker, quote, actuarial, authority-evidence, and control summaries.
+- `insurer_partner_evidence`: consent grant/revocation, underwriting quote, partner service, worker, worker bundle, authority dossier, and actuarial-product receipts normalized by artifact kind, source artifacts, controls, partner endpoint, response status, and freshness fields.
 - `self_serve_onboarding_receipts`: self-serve SDK/gateway onboarding receipts with tenant, agent, requester, environment, SDK scope, gateway mode, source-artifact counts, quickstart replay counts, and control summaries.
 - `anchors`: published chain-root anchors.
 

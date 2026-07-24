@@ -22,6 +22,8 @@ from .canonical import content_hash, parse_rfc3339, utc_now
 from .chain import EvidenceChain
 from .cicd import PROMOTION_STATUS_ENTRY_TYPE
 from .compliance_authority import COMPLIANCE_AUTHORITY_ENTRY_TYPE
+from .actuarial import ACTUARIAL_PRODUCT_ENTRY_TYPE
+from .consent import CONSENT_GRANTED_ENTRY_TYPE, CONSENT_REVOKED_ENTRY_TYPE
 from .contracts import CONTRACT_ENTRY_TYPE
 from .delivery import PROVIDER_DELIVERY_ENTRY_TYPE
 from .design_partner import DESIGN_PARTNER_ENTRY_TYPE, P1_PARTNER_TARGET, P1_SIGNED_VALUE_TARGET_USD
@@ -65,6 +67,9 @@ from .provider_operations_service import PROVIDER_OPERATIONS_SERVICE_ENTRY_TYPE
 from .provider_webhook import PROVIDER_WEBHOOK_ENTRY_TYPE
 from .ingest import INGEST_ENTRY_TYPE
 from .insurer_partner_authority import INSURER_PARTNER_AUTHORITY_ENTRY_TYPE
+from .insurer_partner_service import INSURER_PARTNER_SERVICE_ENTRY_TYPE
+from .insurer_partner_worker import INSURER_PARTNER_WORKER_ENTRY_TYPE
+from .insurer_partner_worker_bundle import INSURER_PARTNER_WORKER_BUNDLE_ENTRY_TYPE
 from .lifecycle import DEMOTION_ENTRY_TYPE, INCIDENT_ENTRY_TYPE, ROLLBACK_ENTRY_TYPE, SOAK_DEMOTION_ENTRY_TYPE
 from .mcp_gateway import MCP_PROXY_CAPTURE_ENTRY_TYPE, MCP_TOOL_CALL_ENTRY_TYPE
 from .mcp_gateway_authority import MCP_GATEWAY_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE
@@ -187,6 +192,7 @@ INDEX_TABLES = (
     "reliability_reports",
     "underwriting_quotes",
     "insurer_partner_authority_dossiers",
+    "insurer_partner_evidence",
     "temporal_holdout_manifests",
     "shadow_replays",
     "soak_reports",
@@ -354,6 +360,28 @@ POLICY_BACKEND_ARTIFACT_KINDS = {
     POLICY_BACKEND_AUTHORITY_ENTRY_TYPE: "policy-backend-authority",
     POLICY_BACKEND_AUTHORITY_EVIDENCE_BUNDLE_ENTRY_TYPE: "policy-backend-authority-evidence-bundle",
     POLICY_BACKEND_SERVICE_BUNDLE_ENTRY_TYPE: "policy-backend-service-bundle",
+}
+
+INSURER_PARTNER_ENTRY_TYPES = {
+    CONSENT_GRANTED_ENTRY_TYPE,
+    CONSENT_REVOKED_ENTRY_TYPE,
+    UNDERWRITING_QUOTE_ENTRY_TYPE,
+    INSURER_PARTNER_SERVICE_ENTRY_TYPE,
+    INSURER_PARTNER_WORKER_ENTRY_TYPE,
+    INSURER_PARTNER_WORKER_BUNDLE_ENTRY_TYPE,
+    INSURER_PARTNER_AUTHORITY_ENTRY_TYPE,
+    ACTUARIAL_PRODUCT_ENTRY_TYPE,
+}
+
+INSURER_PARTNER_ARTIFACT_KINDS = {
+    CONSENT_GRANTED_ENTRY_TYPE: "insurer-consent-grant",
+    CONSENT_REVOKED_ENTRY_TYPE: "insurer-consent-revocation",
+    UNDERWRITING_QUOTE_ENTRY_TYPE: "underwriting-quote",
+    INSURER_PARTNER_SERVICE_ENTRY_TYPE: "insurer-partner-service",
+    INSURER_PARTNER_WORKER_ENTRY_TYPE: "insurer-partner-worker",
+    INSURER_PARTNER_WORKER_BUNDLE_ENTRY_TYPE: "insurer-partner-worker-bundle",
+    INSURER_PARTNER_AUTHORITY_ENTRY_TYPE: "insurer-partner-authority",
+    ACTUARIAL_PRODUCT_ENTRY_TYPE: "actuarial-product",
 }
 
 
@@ -1053,6 +1081,115 @@ def _policy_backend_record(entry: dict[str, Any], payload: dict[str, Any]) -> di
         "observed_at": _first_text(payload.get("enforced_at"), payload.get("attested_at"), payload.get("recorded_at"), payload.get("generated_at"), entry.get("timestamp")),
         "source_artifacts": _policy_backend_source_artifacts(payload),
         "controls": _policy_backend_controls(payload),
+    }
+
+
+def _insurer_partner_source_artifacts(payload: dict[str, Any]) -> list[Any]:
+    artifacts = _source_artifacts(payload)
+    if artifacts:
+        return artifacts
+    for key in (
+        "source", "sources", "source_binding", "service_attestation_binding",
+        "telemetry", "risk_evidence", "actuarial_product", "consent",
+    ):
+        value = payload.get(key)
+        if isinstance(value, list):
+            return value
+        source = _object(value)
+        for field in ("source_artifacts", "source_refs", "artifact_refs", "evidence_refs"):
+            field_value = source.get(field)
+            if isinstance(field_value, list):
+                return field_value
+    for key in ("worker_receipt_bindings", "worker_bundle_bindings", "authority_evidence"):
+        value = payload.get(key)
+        if isinstance(value, list):
+            return value
+    payload_artifact = payload.get("payload_artifact")
+    return [payload_artifact] if isinstance(payload_artifact, dict) else []
+
+
+def _insurer_partner_controls(payload: dict[str, Any]) -> Any:
+    for key in ("controls", "control_summary", "control_status_summary", "summary"):
+        value = payload.get(key)
+        if isinstance(value, (dict, list)):
+            return value
+    return {}
+
+
+def _insurer_partner_control_count(payload: dict[str, Any]) -> int:
+    controls = _insurer_partner_controls(payload)
+    return len(controls) if isinstance(controls, (dict, list)) else 0
+
+
+def _insurer_partner_record(entry: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
+    entry_type = str(entry.get("entry_type") or "")
+    names = (
+        "underwriter", "applicant_risk", "quote", "risk_evidence", "service",
+        "partner", "risk_transfer", "worker", "scheduler", "delivery",
+        "policy_system", "observability", "source", "summary", "product",
+        "consent", "operation_actor", "service_attestation_binding",
+    )
+    o = {name: _object(payload.get(name)) for name in names}
+    source_artifacts = _insurer_partner_source_artifacts(payload)
+    controls = _insurer_partner_controls(payload)
+    consent_artifact_id = (
+        f"{entry_type}:{payload.get('consent_id')}"
+        if entry_type in {CONSENT_GRANTED_ENTRY_TYPE, CONSENT_REVOKED_ENTRY_TYPE} and payload.get("consent_id")
+        else None
+    )
+    artifact_id = _first_text(
+        consent_artifact_id, payload.get("quote_id"), payload.get("attestation_id"),
+        payload.get("worker_operation_id"), payload.get("bundle_id"), payload.get("dossier_id"),
+        payload.get("product_id"), content_hash(payload),
+    )
+    response_status = _first_int(o["delivery"].get("response_status"), o["partner"].get("response_status"))
+    return {
+        "artifact_id": artifact_id,
+        "entry_id": entry.get("entry_id"),
+        "entry_type": entry_type,
+        "artifact_kind": INSURER_PARTNER_ARTIFACT_KINDS.get(entry_type, entry_type),
+        "artifact_hash": _first_text(
+            payload.get("consent_hash"), payload.get("quote_hash"), payload.get("attestation_hash"),
+            payload.get("worker_operation_hash"), payload.get("bundle_hash"), payload.get("dossier_hash"),
+            payload.get("product_hash"), content_hash(payload),
+        ),
+        "artifact_ref": _first_text(
+            payload.get("dossier_ref"), payload.get("bundle_ref"), o["quote"].get("quote_ref"),
+            o["service"].get("service_ref"), o["worker"].get("worker_ref"),
+            o["delivery"].get("destination_ref"), o["partner"].get("partner_api_endpoint"),
+            o["product"].get("name"), payload.get("authority_ref"), artifact_id,
+        ),
+        "status": _first_text(
+            o["summary"].get("status"), o["quote"].get("status"),
+            o["policy_system"].get("workflow_status"), o["worker"].get("status"),
+            payload.get("reason") if entry_type == CONSENT_REVOKED_ENTRY_TYPE else None,
+            payload.get("mode"),
+        ),
+        "mode": payload.get("mode"),
+        "environment": payload.get("environment"),
+        "service_kind": _first_text(o["service"].get("kind"), o["service"].get("service_kind")),
+        "service_ref": _first_text(o["service"].get("service_ref"), o["service_attestation_binding"].get("service_ref")),
+        "worker_ref": _first_text(o["worker"].get("worker_ref"), payload.get("worker_operation_id")),
+        "bundle_ref": payload.get("bundle_ref"),
+        "authority_ref": _first_text(payload.get("authority_ref"), payload.get("producer_ref"), payload.get("reviewer_ref")),
+        "underwriter": _first_text(o["underwriter"].get("name"), o["partner"].get("underwriter"), o["service_attestation_binding"].get("underwriter")),
+        "partner_api_endpoint": _first_text(o["partner"].get("partner_api_endpoint"), o["service"].get("partner_api_endpoint"), o["service_attestation_binding"].get("partner_api_endpoint")),
+        "quote_id": _first_text(payload.get("quote_id"), o["service_attestation_binding"].get("quote_id")),
+        "consent_id": _first_text(payload.get("consent_id"), o["risk_evidence"].get("consent_id"), o["service_attestation_binding"].get("consent_id")),
+        "telemetry_hash": _first_text(o["risk_evidence"].get("telemetry_hash"), o["risk_transfer"].get("telemetry_hash"), o["service_attestation_binding"].get("telemetry_hash")),
+        "actuarial_product_id": payload.get("product_id"),
+        "risk_tier": _first_text(o["applicant_risk"].get("risk_tier"), o["risk_transfer"].get("risk_tier"), o["service_attestation_binding"].get("risk_tier")),
+        "response_status": response_status,
+        "success": _first_bool(o["risk_evidence"].get("consent_active"), o["worker"].get("success")),
+        "source_artifact_count": len(source_artifacts),
+        "control_count": _insurer_partner_control_count(payload),
+        "observed_at": _first_text(
+            payload.get("granted_at"), payload.get("revoked_at"), payload.get("issued_at"),
+            payload.get("attested_at"), payload.get("recorded_at"), payload.get("generated_at"),
+            entry.get("timestamp"),
+        ),
+        "source_artifacts": source_artifacts,
+        "controls": controls,
     }
 
 def _compliance_source_artifacts(payload: dict[str, Any]) -> list[Any]:
@@ -2642,6 +2779,37 @@ class ControlPlane:
                 generated_at TEXT,
                 body_json TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS insurer_partner_evidence (
+                artifact_id TEXT PRIMARY KEY,
+                entry_id TEXT,
+                entry_type TEXT NOT NULL,
+                artifact_kind TEXT NOT NULL,
+                artifact_hash TEXT NOT NULL,
+                artifact_ref TEXT,
+                status TEXT,
+                mode TEXT,
+                environment TEXT,
+                service_kind TEXT,
+                service_ref TEXT,
+                worker_ref TEXT,
+                bundle_ref TEXT,
+                authority_ref TEXT,
+                underwriter TEXT,
+                partner_api_endpoint TEXT,
+                quote_id TEXT,
+                consent_id TEXT,
+                telemetry_hash TEXT,
+                actuarial_product_id TEXT,
+                risk_tier TEXT,
+                response_status INTEGER,
+                success INTEGER,
+                source_artifact_count INTEGER NOT NULL,
+                control_count INTEGER NOT NULL,
+                observed_at TEXT,
+                source_artifacts_json TEXT NOT NULL,
+                controls_json TEXT NOT NULL,
+                body_json TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS temporal_holdout_manifests (
                 manifest_id TEXT PRIMARY KEY,
                 entry_id TEXT,
@@ -2829,6 +2997,7 @@ class ControlPlane:
             "reliability_reports": 0,
             "underwriting_quotes": 0,
             "insurer_partner_authority_dossiers": 0,
+            "insurer_partner_evidence": 0,
             "temporal_holdout_manifests": 0,
             "shadow_replays": 0,
             "soak_reports": 0,
@@ -5177,6 +5346,56 @@ class ControlPlane:
                 )
                 counts["insurer_partner_authority_dossiers"] += 1
 
+            if entry.get("entry_type") in INSURER_PARTNER_ENTRY_TYPES:
+                record = _insurer_partner_record(entry, payload if isinstance(payload, dict) else {})
+                self.conn.execute(
+                    """
+                    INSERT OR REPLACE INTO insurer_partner_evidence(
+                        artifact_id, entry_id, entry_type, artifact_kind,
+                        artifact_hash, artifact_ref, status, mode, environment,
+                        service_kind, service_ref, worker_ref, bundle_ref,
+                        authority_ref, underwriter, partner_api_endpoint,
+                        quote_id, consent_id, telemetry_hash,
+                        actuarial_product_id, risk_tier, response_status,
+                        success, source_artifact_count, control_count,
+                        observed_at, source_artifacts_json, controls_json,
+                        body_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        record["artifact_id"],
+                        record["entry_id"],
+                        record["entry_type"],
+                        record["artifact_kind"],
+                        record["artifact_hash"],
+                        record["artifact_ref"],
+                        record["status"],
+                        record["mode"],
+                        record["environment"],
+                        record["service_kind"],
+                        record["service_ref"],
+                        record["worker_ref"],
+                        record["bundle_ref"],
+                        record["authority_ref"],
+                        record["underwriter"],
+                        record["partner_api_endpoint"],
+                        record["quote_id"],
+                        record["consent_id"],
+                        record["telemetry_hash"],
+                        record["actuarial_product_id"],
+                        record["risk_tier"],
+                        record["response_status"],
+                        None if record["success"] is None else (1 if record["success"] else 0),
+                        record["source_artifact_count"],
+                        record["control_count"],
+                        record["observed_at"],
+                        _json(record["source_artifacts"]),
+                        _json(record["controls"]),
+                        _json(payload),
+                    ),
+                )
+                counts["insurer_partner_evidence"] += 1
+
             if entry.get("entry_type") == TEMPORAL_HOLDOUT_ENTRY_TYPE:
                 contract = payload.get("contract") if isinstance(payload.get("contract"), dict) else {}
                 self.conn.execute(
@@ -7118,6 +7337,35 @@ class ControlPlane:
             items.append(item)
         return items
 
+    def recent_insurer_partner_evidence(self, limit: int = 20) -> list[dict[str, Any]]:
+        rows = self.conn.execute(
+            """
+            SELECT artifact_id, entry_id, entry_type, artifact_kind,
+                   artifact_hash, artifact_ref, status, mode, environment,
+                   service_kind, service_ref, worker_ref, bundle_ref,
+                   authority_ref, underwriter, partner_api_endpoint,
+                   quote_id, consent_id, telemetry_hash,
+                   actuarial_product_id, risk_tier, response_status,
+                   success, source_artifact_count, control_count,
+                   observed_at, source_artifacts_json, controls_json,
+                   body_json
+            FROM insurer_partner_evidence
+            ORDER BY observed_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        items = []
+        for row in rows:
+            item = dict(row)
+            _bool_fields(item, "success")
+            item["source_artifacts"] = _decode_json_array(item.pop("source_artifacts_json", None))
+            controls_json = item.pop("controls_json", None)
+            item["controls"] = _decode_json_array(controls_json) or _decode_json_object(controls_json)
+            item["body"] = _decode_json_object(item.pop("body_json", None))
+            items.append(item)
+        return items
+
     def recent_temporal_holdout_manifests(self, limit: int = 20) -> list[dict[str, Any]]:
         rows = self.conn.execute(
             """
@@ -8065,6 +8313,7 @@ class ControlPlane:
         return {
             "underwriting_quotes": self.recent_underwriting_quotes(limit),
             "insurer_partner_authority_dossiers": self.recent_insurer_partner_authority_dossiers(limit),
+            "insurer_partner_evidence": self.recent_insurer_partner_evidence(limit),
         }
 
     def multi_agent_evidence(self, limit: int = 20) -> dict[str, Any]:

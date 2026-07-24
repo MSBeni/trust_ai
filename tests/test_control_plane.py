@@ -10,6 +10,7 @@ from tests import test_standards_body_status as standards_status_fixtures
 from tests import test_trust_authority_kms_enforcement as trust_authority_kms_fixtures
 from tests import test_trust_authority_provider as trust_authority_provider_fixtures
 from tests import test_auditor_program_governance as auditor_governance_fixtures
+from trustai.actuarial import ACTUARIAL_PRODUCT_ENTRY_TYPE
 from trustai.auditor_accreditation import append_auditor_accreditation_receipt, build_auditor_accreditation_receipt
 from trustai.auditor_program_governance import append_auditor_program_governance_receipt, build_auditor_program_governance_receipt
 from trustai.anchor_provider import append_anchor_provider_receipt, build_anchor_provider_receipt
@@ -20,6 +21,7 @@ from trustai.control_plane import ControlPlane, _sqlite_nolock_uri
 from trustai.canonical import content_hash
 from trustai.chain import EvidenceChain
 from trustai.compliance_authority import COMPLIANCE_AUTHORITY_ENTRY_TYPE
+from trustai.consent import CONSENT_GRANTED_ENTRY_TYPE, CONSENT_REVOKED_ENTRY_TYPE
 from trustai.cicd import append_promotion_status_receipt, build_promotion_check_payload, build_promotion_status_receipt
 from trustai.delivery import PROVIDER_DELIVERY_ENTRY_TYPE, build_provider_delivery
 from trustai.design_partner import append_design_partner_dossier, build_design_partner_dossier
@@ -46,7 +48,10 @@ from trustai.identity_provider_authority import append_identity_provider_authori
 from trustai.identity_provider_lifecycle_operation import append_identity_provider_lifecycle_operation_receipt
 from trustai.identity_provider_lifecycle_worker import append_identity_provider_lifecycle_worker_receipt
 from trustai.identity_provider_session import append_identity_provider_session_receipt
-from trustai.insurer_partner_authority import append_insurer_partner_authority_dossier
+from trustai.insurer_partner_authority import INSURER_PARTNER_AUTHORITY_ENTRY_TYPE, append_insurer_partner_authority_dossier
+from trustai.insurer_partner_service import INSURER_PARTNER_SERVICE_ENTRY_TYPE
+from trustai.insurer_partner_worker import INSURER_PARTNER_WORKER_ENTRY_TYPE
+from trustai.insurer_partner_worker_bundle import INSURER_PARTNER_WORKER_BUNDLE_ENTRY_TYPE
 from trustai.mcp_gateway import (
     append_mcp_proxy_capture,
     append_mcp_transcript,
@@ -161,7 +166,7 @@ from trustai.trust_network_service import TRUST_NETWORK_SERVICE_ENTRY_TYPE
 from trustai.trust_network_worker import TRUST_NETWORK_WORKER_ENTRY_TYPE
 from trustai.trust_network_worker_bundle import TRUST_NETWORK_WORKER_BUNDLE_ENTRY_TYPE
 from trustai.supervised_access import append_supervised_access_receipt
-from trustai.underwriting_quote import append_underwriting_quote
+from trustai.underwriting_quote import UNDERWRITING_QUOTE_ENTRY_TYPE, append_underwriting_quote
 from trustai.vendor_identity import append_vendor_identity_receipt
 from trustai.vertical_pack import append_vertical_pack, build_vertical_pack
 from trustai.verifier import verify_proof_pack
@@ -215,6 +220,206 @@ class ControlPlaneTests(unittest.TestCase):
     def test_sqlite_nolock_uri_preserves_unc_path(self):
         uri = _sqlite_nolock_uri(Path("//wsl.localhost/Ubuntu/home/app/control.sqlite"))
         self.assertEqual("file:////wsl.localhost/Ubuntu/home/app/control.sqlite?nolock=1", uri)
+
+    def test_exposes_insurer_partner_evidence_surface(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            chain = EvidenceChain.load(tmp / "chain.json", tenant_id="insurer-partner-control")
+            consent_id = "consent-pack-risk-telemetry"
+            chain.append(
+                CONSENT_GRANTED_ENTRY_TYPE,
+                {
+                    "consent_id": consent_id,
+                    "consent_hash": content_hash({"consent_id": consent_id, "scope": "proof-pack-risk-telemetry"}),
+                    "scope": "proof-pack-risk-telemetry",
+                    "granted_to": "underwriter:example",
+                    "granted_at": "2026-07-04T01:00:00Z",
+                },
+                timestamp="2026-07-04T01:00:00Z",
+            )
+            chain.append(
+                UNDERWRITING_QUOTE_ENTRY_TYPE,
+                {
+                    "quote_id": "quote-aitrade-1",
+                    "quote_hash": "sha256:quote-aitrade-1",
+                    "underwriter": {"name": "Example Underwriter", "mode": "partner-api"},
+                    "applicant_risk": {
+                        "pack_id": "pack-aitrade-1",
+                        "contract_id": "contract-aitrade-1",
+                        "risk_score": 0.12,
+                        "risk_tier": "low",
+                        "gate_outcome": "passed",
+                    },
+                    "quote": {
+                        "product": "ai-liability",
+                        "quote_ref": "quote:example/aitrade-1",
+                        "status": "quoted",
+                        "currency": "USD",
+                        "coverage_limit_usd": 1000000,
+                        "base_premium_usd": 25000,
+                        "discount_percent": 12.5,
+                        "quoted_premium_usd": 21875,
+                        "term_start": "2026-08-01",
+                        "term_end": "2027-08-01",
+                    },
+                    "risk_evidence": {
+                        "consent_id": consent_id,
+                        "consent_active": True,
+                        "pack_id": "pack-aitrade-1",
+                        "contract_id": "contract-aitrade-1",
+                        "chain_root": "sha256:aitrade-chain-root",
+                        "telemetry_hash": "sha256:insurer-telemetry",
+                    },
+                    "limitations": [],
+                },
+                timestamp="2026-07-04T01:05:00Z",
+            )
+            chain.append(
+                INSURER_PARTNER_SERVICE_ENTRY_TYPE,
+                {
+                    "attestation_id": "service-attestation-1",
+                    "attestation_hash": "sha256:service-attestation-1",
+                    "mode": "partner-service-attested",
+                    "environment": "aitrade-prod",
+                    "attested_at": "2026-07-04T01:10:00Z",
+                    "service": {
+                        "service_ref": "insurer-partner:trustai/underwriting",
+                        "kind": "underwriting-integration",
+                        "partner_api_endpoint": "https://underwriter.example/api/v1/quotes",
+                    },
+                    "partner": {
+                        "underwriter": "Example Underwriter",
+                        "partner_api_endpoint": "https://underwriter.example/api/v1/quotes",
+                    },
+                    "risk_transfer": {"telemetry_hash": "sha256:insurer-telemetry", "risk_tier": "low"},
+                    "source_artifacts": [{"type": "underwriting-quote", "id": "quote-aitrade-1"}],
+                    "controls": [{"name": "partner_auth", "passed": True}],
+                },
+                timestamp="2026-07-04T01:10:00Z",
+            )
+            chain.append(
+                INSURER_PARTNER_WORKER_ENTRY_TYPE,
+                {
+                    "worker_operation_id": "worker-run-1",
+                    "worker_operation_hash": "sha256:worker-run-1",
+                    "mode": "hosted-worker",
+                    "environment": "aitrade-prod",
+                    "recorded_at": "2026-07-04T01:15:00Z",
+                    "service": {"service_ref": "insurer-partner:trustai/underwriting"},
+                    "worker": {"worker_ref": "worker:insurer-delivery", "success": True},
+                    "delivery": {"destination_ref": "underwriter:example/quotes", "response_status": 202},
+                    "policy_system": {"workflow_status": "accepted"},
+                    "source_artifacts": [{"type": "service-attestation", "id": "service-attestation-1"}],
+                    "controls": [{"name": "delivery_log_bound", "passed": True}],
+                },
+                timestamp="2026-07-04T01:15:00Z",
+            )
+            chain.append(
+                INSURER_PARTNER_WORKER_BUNDLE_ENTRY_TYPE,
+                {
+                    "bundle_id": "worker-bundle-1",
+                    "bundle_hash": "sha256:worker-bundle-1",
+                    "mode": "underwriter-review",
+                    "environment": "aitrade-prod",
+                    "bundle_ref": "bundle:insurer/worker-run-1",
+                    "reviewer_ref": "underwriter:example/reviewer",
+                    "generated_at": "2026-07-04T01:20:00Z",
+                    "source_artifacts": [{"type": "worker-receipt", "id": "worker-run-1"}],
+                    "summary": {"status": "ready", "worker_receipt_count": 1},
+                    "controls": [{"name": "offline_replay", "passed": True}],
+                },
+                timestamp="2026-07-04T01:20:00Z",
+            )
+            chain.append(
+                ACTUARIAL_PRODUCT_ENTRY_TYPE,
+                {
+                    "product_id": "actuarial-product-1",
+                    "product_hash": "sha256:actuarial-product-1",
+                    "issued_at": "2026-07-04T01:25:00Z",
+                    "product": {"name": "TrustAI low-risk agent benchmark"},
+                    "source_corpora": [],
+                    "aggregate": {},
+                },
+                timestamp="2026-07-04T01:25:00Z",
+            )
+            chain.append(
+                INSURER_PARTNER_AUTHORITY_ENTRY_TYPE,
+                {
+                    "dossier_id": "insurer-authority-1",
+                    "dossier_hash": "sha256:insurer-authority-1",
+                    "mode": "production-dossier",
+                    "environment": "aitrade-prod",
+                    "dossier_ref": "dossier:insurer/aitrade-1",
+                    "authority_ref": "authority:insurer-partner/example",
+                    "producer_ref": "trustai:control-plane",
+                    "service_attestation_binding": {
+                        "attestation_id": "service-attestation-1",
+                        "attestation_hash": "sha256:service-attestation-1",
+                        "service_ref": "insurer-partner:trustai/underwriting",
+                        "partner_api_endpoint": "https://underwriter.example/api/v1/quotes",
+                        "underwriter": "Example Underwriter",
+                        "quote_id": "quote-aitrade-1",
+                        "quote_ref": "quote:example/aitrade-1",
+                        "telemetry_hash": "sha256:insurer-telemetry",
+                        "consent_id": consent_id,
+                        "risk_tier": "low",
+                    },
+                    "worker_receipt_bindings": [{"worker_operation_id": "worker-run-1"}],
+                    "worker_bundle_bindings": [{"bundle_id": "worker-bundle-1", "bundle_ref": "bundle:insurer/worker-run-1"}],
+                    "summary": {
+                        "required_requirement_count": 3,
+                        "covered_requirement_count": 3,
+                        "missing_requirement_count": 0,
+                        "evidence_count": 0,
+                        "status": "ready",
+                    },
+                    "control_summary": {"passed": 3, "failed": 0},
+                    "authority_evidence": [],
+                    "generated_at": "2026-07-04T01:30:00Z",
+                },
+                timestamp="2026-07-04T01:30:00Z",
+            )
+            chain.append(
+                CONSENT_REVOKED_ENTRY_TYPE,
+                {"consent_id": consent_id, "reason": "customer-request", "revoked_at": "2026-07-04T02:00:00Z"},
+                timestamp="2026-07-04T02:00:00Z",
+            )
+            chain.save()
+
+            control = ControlPlane(tmp / "control.sqlite")
+            try:
+                indexed = control.index_chain(chain)
+                evidence = control.insurer_evidence()
+                partner_evidence = evidence["insurer_partner_evidence"]
+                kinds = {item["artifact_kind"] for item in partner_evidence}
+
+                self.assertEqual(8, indexed["insurer_partner_evidence"])
+                self.assertEqual(1, len(evidence["underwriting_quotes"]))
+                self.assertEqual(1, len(evidence["insurer_partner_authority_dossiers"]))
+                self.assertEqual(
+                    {
+                        "insurer-consent-grant",
+                        "underwriting-quote",
+                        "insurer-partner-service",
+                        "insurer-partner-worker",
+                        "insurer-partner-worker-bundle",
+                        "actuarial-product",
+                        "insurer-partner-authority",
+                        "insurer-consent-revocation",
+                    },
+                    kinds,
+                )
+                service = next(item for item in partner_evidence if item["artifact_kind"] == "insurer-partner-service")
+                self.assertEqual("insurer-partner:trustai/underwriting", service["service_ref"])
+                self.assertEqual("https://underwriter.example/api/v1/quotes", service["partner_api_endpoint"])
+                worker = next(item for item in partner_evidence if item["artifact_kind"] == "insurer-partner-worker")
+                self.assertTrue(worker["success"])
+                self.assertEqual(202, worker["response_status"])
+                consent_items = [item for item in partner_evidence if item["artifact_kind"].startswith("insurer-consent-")]
+                self.assertEqual(2, len(consent_items))
+                self.assertIn("insurer_partner_evidence", control.roadmap_evidence()["insurer_evidence"])
+            finally:
+                control.close()
 
     def test_exposes_evidence_chain_trust_evidence(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
