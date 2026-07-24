@@ -18,9 +18,12 @@ def _venv_command(venv_dir: Path, command: str) -> Path:
 
 class PackagingSmokeTests(unittest.TestCase):
     def _run(self, args: list[str], *, cwd: Path, timeout: int = 240) -> subprocess.CompletedProcess[str]:
+        env = os.environ.copy()
+        env.pop("PYTHONPATH", None)
         completed = subprocess.run(
             args,
             cwd=cwd,
+            env=env,
             text=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
