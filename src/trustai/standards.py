@@ -151,7 +151,7 @@ REQUIRED_SPEC_PATHS = (
 CONFORMANCE_TARGETS = (
     {
         "id": "design-partner-pilot-dossiers",
-        "description": "Design-partner pilot dossiers bind Phase 1 exit-criteria readiness and external-evidence claims to partner counts, signed value, external scrutiny events, proof machinery source artifacts, and explicit no-customer-data limits.",
+        "description": "Design-partner pilot dossiers bind Phase 1 exit-criteria readiness and external-evidence claims to partner counts, signed value, hash-bound contract/payment evidence, hash-bound scrutiny events, proof machinery source artifacts, and explicit no-customer-data limits.",
         "reference": "src/trustai/design_partner.py",
         "commands": [
             "python -m trustai design-partner-dossier --root . --dossier-ref dossier:design-partner/phase1-readiness --producer-ref oidc:trustai.example/gtm-ops --partner \"partner:bank-a,finserv,agent:payments-risk,60000,negotiating\" --partner \"partner:insurer-b,insurance,agent:claims-triage,90000,negotiating\" --partner \"partner:fintech-c,fintech,agent:treasury-ops,100000,negotiating\" --scrutiny \"scrutiny:model-risk-a,model-risk,team:model-risk,partner:bank-a,submitted\" --out artifacts/design-partner-dossier.json",
@@ -1266,7 +1266,7 @@ def build_standards_submission(
             "Publish trust authority KMS enforcement receipt format for customer-controlled HSM attestation, key policy, timestamp policy, quorum, and audit-root evidence.",
             "Publish anchor provider receipt format for external/public chain-root anchoring evidence.",
             "Publish deployment manifest format for BYOC/self-hosted scaffold verification.",
-            "Publish design-partner pilot dossier format for Phase 1 partner count, signed value, external scrutiny, and readiness/external-evidence separation.",
+            "Publish design-partner pilot dossier format for Phase 1 partner count, signed value, hash-bound contract/payment evidence, hash-bound external scrutiny, and readiness/external-evidence separation.",
             "Publish TrustAI own compliance dossier format for SOC 2 Type II and ISO/IEC 42001 readiness/external-certification separation.",
             "Publish State of Agent Reliability report format for anonymized aggregate GTM publication evidence with source-product binding and publication-evidence separation.",
             "Publish roadmap phase scoreboard format for P1-P4 business milestone evidence references with readiness/external-evidence separation.",

@@ -234,7 +234,7 @@ def verify_design_partner_dossier(
         if mode == "readiness":
             warnings.append("readiness mode does not prove paying partners, signed value, or external scrutiny survival")
         elif any(control["status"] == "external-required" for control in expected_controls):
-            errors.append("external-evidence mode requires partner contract and scrutiny evidence references for exit-criteria claims")
+            errors.append("external-evidence mode requires hash-bound partner contract/payment and scrutiny evidence for exit-criteria claims")
     return DesignPartnerVerification(ok=not errors, errors=errors, warnings=warnings)
 
 
@@ -257,7 +257,10 @@ def append_design_partner_dossier(
         "partner_count": dossier.get("metrics", {}).get("partner_count", 0),
         "signed_partner_count": dossier.get("metrics", {}).get("signed_partner_count", 0),
         "signed_pilot_value_usd": dossier.get("metrics", {}).get("signed_pilot_value_usd", 0),
+        "paying_evidence_bound_partner_count": dossier.get("metrics", {}).get("paying_evidence_bound_partner_count", 0),
+        "evidence_bound_pilot_value_usd": dossier.get("metrics", {}).get("evidence_bound_pilot_value_usd", 0),
         "external_scrutiny_survival_count": dossier.get("metrics", {}).get("external_scrutiny_survival_count", 0),
+        "evidence_bound_scrutiny_survival_count": dossier.get("metrics", {}).get("evidence_bound_scrutiny_survival_count", 0),
         "source_artifact_count": len(dossier.get("source_artifacts", [])),
         "control_summary": _status_summary(dossier.get("controls", [])),
     }
@@ -266,8 +269,11 @@ def append_design_partner_dossier(
 
 def parse_partner(value: str) -> dict[str, Any]:
     parts = [part.strip() for part in value.split(",")]
-    if len(parts) not in {5, 6}:
-        raise ValueError("partner must be partner_ref,industry,agent_ref,pilot_value_usd,contract_status[,contract_evidence_ref]")
+    if len(parts) not in {5, 6, 7, 8, 9}:
+        raise ValueError(
+            "partner must be partner_ref,industry,agent_ref,pilot_value_usd,contract_status"
+            "[,contract_evidence_ref[,contract_evidence_hash[,payment_evidence_ref[,payment_evidence_hash]]]]"
+        )
     partner: dict[str, Any] = {
         "partner_ref": parts[0],
         "industry": parts[1],
@@ -275,15 +281,22 @@ def parse_partner(value: str) -> dict[str, Any]:
         "pilot_value_usd": int(parts[3]),
         "contract_status": parts[4],
     }
-    if len(parts) == 6 and parts[5]:
-        partner["contract_evidence_ref"] = parts[5]
+    optional_fields = (
+        "contract_evidence_ref",
+        "contract_evidence_hash",
+        "payment_evidence_ref",
+        "payment_evidence_hash",
+    )
+    for index, field in enumerate(optional_fields, start=5):
+        if len(parts) > index and parts[index]:
+            partner[field] = parts[index]
     return partner
 
 
 def parse_scrutiny(value: str) -> dict[str, Any]:
     parts = [part.strip() for part in value.split(",")]
-    if len(parts) not in {5, 6}:
-        raise ValueError("scrutiny must be scrutiny_ref,party_type,party_ref,partner_ref,outcome[,evidence_ref]")
+    if len(parts) not in {5, 6, 7}:
+        raise ValueError("scrutiny must be scrutiny_ref,party_type,party_ref,partner_ref,outcome[,evidence_ref[,evidence_hash]]")
     event: dict[str, Any] = {
         "scrutiny_ref": parts[0],
         "party_type": parts[1],
@@ -291,8 +304,10 @@ def parse_scrutiny(value: str) -> dict[str, Any]:
         "partner_ref": parts[3],
         "outcome": parts[4],
     }
-    if len(parts) == 6 and parts[5]:
+    if len(parts) >= 6 and parts[5]:
         event["evidence_ref"] = parts[5]
+    if len(parts) == 7 and parts[6]:
+        event["evidence_hash"] = parts[6]
     return event
 
 
@@ -319,6 +334,15 @@ def _normalize_partner(partner: dict[str, Any]) -> dict[str, Any]:
     evidence_ref = partner.get("contract_evidence_ref")
     if evidence_ref:
         normalized["contract_evidence_ref"] = _require_text(str(evidence_ref), "contract_evidence_ref")
+    evidence_hash = partner.get("contract_evidence_hash")
+    if evidence_hash:
+        normalized["contract_evidence_hash"] = _normalize_sha256(str(evidence_hash), "contract_evidence_hash")
+    payment_ref = partner.get("payment_evidence_ref")
+    if payment_ref:
+        normalized["payment_evidence_ref"] = _require_text(str(payment_ref), "payment_evidence_ref")
+    payment_hash = partner.get("payment_evidence_hash")
+    if payment_hash:
+        normalized["payment_evidence_hash"] = _normalize_sha256(str(payment_hash), "payment_evidence_hash")
     return normalized
 
 
@@ -340,17 +364,26 @@ def _normalize_scrutiny(event: dict[str, Any]) -> dict[str, Any]:
     evidence_ref = event.get("evidence_ref")
     if evidence_ref:
         normalized["evidence_ref"] = _require_text(str(evidence_ref), "evidence_ref")
+    evidence_hash = event.get("evidence_hash")
+    if evidence_hash:
+        normalized["evidence_hash"] = _normalize_sha256(str(evidence_hash), "evidence_hash")
     return normalized
 
 
 def _metrics(partners: list[dict[str, Any]], scrutiny_events: list[dict[str, Any]]) -> dict[str, int]:
     signed_partners = [partner for partner in partners if partner.get("contract_status") in {"signed", "active"}]
+    evidence_bound_partners = [partner for partner in signed_partners if _partner_business_evidence_bound(partner)]
+    survived_events = [event for event in scrutiny_events if event.get("outcome") in {"survived", "accepted"}]
+    evidence_bound_scrutiny = [event for event in survived_events if event.get("evidence_ref") and event.get("evidence_hash")]
     return {
         "partner_count": len(partners),
         "signed_partner_count": len(signed_partners),
+        "paying_evidence_bound_partner_count": len(evidence_bound_partners),
         "signed_pilot_value_usd": sum(int(partner.get("pilot_value_usd", 0)) for partner in signed_partners),
+        "evidence_bound_pilot_value_usd": sum(int(partner.get("pilot_value_usd", 0)) for partner in evidence_bound_partners),
         "external_scrutiny_event_count": len(scrutiny_events),
-        "external_scrutiny_survival_count": sum(1 for event in scrutiny_events if event.get("outcome") in {"survived", "accepted"}),
+        "external_scrutiny_survival_count": len(survived_events),
+        "evidence_bound_scrutiny_survival_count": len(evidence_bound_scrutiny),
     }
 
 
@@ -362,12 +395,9 @@ def _controls(
     scrutiny_events: list[dict[str, Any]],
 ) -> list[dict[str, str]]:
     paths = {artifact.get("path") for artifact in source_artifacts if isinstance(artifact, dict)}
-    contract_evidence_complete = all(
-        partner.get("contract_status") in {"signed", "active"} and partner.get("contract_evidence_ref")
-        for partner in partners
-    )
+    contract_evidence_complete = all(_partner_business_evidence_bound(partner) for partner in partners)
     scrutiny_evidence_complete = any(
-        event.get("outcome") in {"survived", "accepted"} and event.get("evidence_ref")
+        event.get("outcome") in {"survived", "accepted"} and event.get("evidence_ref") and event.get("evidence_hash")
         for event in scrutiny_events
     )
     external_claim_ready = mode == "external-evidence"
@@ -380,12 +410,12 @@ def _controls(
         {
             "id": "signed-value-target",
             "status": "passed" if external_claim_ready and metrics["signed_pilot_value_usd"] >= P1_SIGNED_VALUE_TARGET_USD and contract_evidence_complete else "external-required",
-            "detail": "Phase 1 signed-value claims require customer-owned contract evidence and at least $250k signed.",
+            "detail": "Phase 1 signed-value claims require hash-bound customer contract and payment evidence plus at least $250k signed.",
         },
         {
             "id": "external-scrutiny-survival-target",
             "status": "passed" if external_claim_ready and scrutiny_evidence_complete else "external-required",
-            "detail": "At least one proof pack must survive auditor, regulator, insurer, procurement, or model-risk scrutiny with external evidence.",
+            "detail": "At least one proof pack must survive auditor, regulator, insurer, procurement, or model-risk scrutiny with hash-bound external evidence.",
         },
         {
             "id": "promotion-gate-source-bound",
@@ -410,9 +440,19 @@ def _controls(
         {
             "id": "raw-customer-data-excluded",
             "status": "passed",
-            "detail": "Dossier stores references, hashes, values, and statuses, not raw contracts, customer data, or private proof-pack payloads.",
+            "detail": "Dossier stores references, hashes, values, and statuses, not raw contracts, payment records, customer data, or private proof-pack payloads.",
         },
     ]
+
+
+def _partner_business_evidence_bound(partner: dict[str, Any]) -> bool:
+    return (
+        partner.get("contract_status") in {"signed", "active"}
+        and bool(partner.get("contract_evidence_ref"))
+        and bool(partner.get("contract_evidence_hash"))
+        and bool(partner.get("payment_evidence_ref"))
+        and bool(partner.get("payment_evidence_hash"))
+    )
 
 
 def _status(paths: set[str], required_paths: list[str]) -> str:
@@ -436,6 +476,16 @@ def _file_binding(root: Path, relative_path: str) -> dict[str, Any]:
         "sha256": "sha256:" + hashlib.sha256(data).hexdigest(),
         "size_bytes": len(data),
     }
+
+
+def _normalize_sha256(value: str, field: str) -> str:
+    digest = _require_text(value, field)
+    if not digest.startswith("sha256:"):
+        raise ValueError(f"design-partner pilot {field} must start with sha256:")
+    hexdigest = digest.removeprefix("sha256:")
+    if len(hexdigest) != 64 or any(char not in "0123456789abcdefABCDEF" for char in hexdigest):
+        raise ValueError(f"design-partner pilot {field} must contain a 64-character sha256 digest")
+    return "sha256:" + hexdigest.lower()
 
 
 def _require_text(value: Any, field: str) -> str:

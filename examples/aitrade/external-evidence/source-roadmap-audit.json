@@ -1,7 +1,7 @@
 {
-  "audit_id": "3ec2e2b2f848762569029fbabe0e29f38df0933bf8d5822c40b2843f0d99c039",
+  "audit_id": "9e5f396b31f3afed63705d8ef297f627e5d9fe1f9aa58bf07a5266d40f3e5f4b",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
-  "generated_at": "2026-07-24T12:50:03Z",
+  "generated_at": "2026-07-24T13:01:58Z",
   "limitations": [
     "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
     "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",
@@ -394,7 +394,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:236588b4e31d220d7aa326f2a1ed65a1d1ffaf0a710ef59823645d89ed8a2073"
+          "sha256": "sha256:cf6900644112c2d0df36f89a39eb7c273e69935aec501fe19f512801ab531cef"
         },
         {
           "path": "src/trustai/sdk.py",
@@ -858,12 +858,12 @@
         {
           "path": "docs/specs/design-partner-pilot-v0.1.md",
           "present": true,
-          "sha256": "sha256:f8fc388b32aade1fe7fb39f8e99dd07690b2b4368759e89e913dfaeb1f4e8ba8"
+          "sha256": "sha256:c9918cd65a84d6075820cd1dcc6288c836d10e7dbfe481ed873a00dc239dc81d"
         },
         {
           "path": "src/trustai/design_partner.py",
           "present": true,
-          "sha256": "sha256:96126d3cec2b04e5b1b0ba302c563e3b7e64d070823502457ede7751339780c6"
+          "sha256": "sha256:e4af4d3af3a3b2c79c9c272651cde61659b80c24136ec40cfb50adaefc50b90c"
         },
         {
           "path": "docs/specs/proof-pack-v0.1.md",
@@ -948,12 +948,12 @@
         {
           "path": "tests/test_design_partner.py",
           "present": true,
-          "sha256": "sha256:26d78325776a952de23efcc64ea14e08f88672bfbcc6a369b410ab0956415641"
+          "sha256": "sha256:5dc098d46accd8181534b7f498e74ea23885cc8fcc79fb6e916cab39348a6033"
         }
       ],
       "evidence_count": 19,
       "external_authority_required": [
-        "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, and external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
+        "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, hash-bound contract/payment evidence, and hash-bound external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
       ],
       "id": "design-partner-pilot-exit-criteria",
       "missing_evidence_count": 0,
@@ -1186,7 +1186,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:236588b4e31d220d7aa326f2a1ed65a1d1ffaf0a710ef59823645d89ed8a2073"
+          "sha256": "sha256:cf6900644112c2d0df36f89a39eb7c273e69935aec501fe19f512801ab531cef"
         },
         {
           "path": "src/trustai/object_store.py",
@@ -1292,7 +1292,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:236588b4e31d220d7aa326f2a1ed65a1d1ffaf0a710ef59823645d89ed8a2073"
+          "sha256": "sha256:cf6900644112c2d0df36f89a39eb7c273e69935aec501fe19f512801ab531cef"
         },
         {
           "path": "docs/specs/compliance-production-authority-v0.1.md",
@@ -1423,12 +1423,12 @@
         {
           "path": "src/trustai/standards.py",
           "present": true,
-          "sha256": "sha256:e9fd5a1929716d9b960b07026c121c386b919f049ac222f247503c5598382791"
+          "sha256": "sha256:261aa9e36cc853ce3592048931e2089cc486a0b0b700ffb21e6c3c953c885d44"
         },
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:8be9dfe30d135a0bd3c6a9dde0d49a43b81508c13c85699bee10a133ca184492"
+          "sha256": "sha256:f081b26a03685cc286d74117c3763ce5d9e544534084753f18acae111d29fadc"
         },
         {
           "path": "src/trustai/trust_authority.py",
@@ -1640,7 +1640,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:236588b4e31d220d7aa326f2a1ed65a1d1ffaf0a710ef59823645d89ed8a2073"
+          "sha256": "sha256:cf6900644112c2d0df36f89a39eb7c273e69935aec501fe19f512801ab531cef"
         },
         {
           "path": "src/trustai/underwriting_quote.py",
@@ -1831,7 +1831,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:8be9dfe30d135a0bd3c6a9dde0d49a43b81508c13c85699bee10a133ca184492"
+          "sha256": "sha256:f081b26a03685cc286d74117c3763ce5d9e544534084753f18acae111d29fadc"
         },
         {
           "path": "tests/test_reliability_report.py",
@@ -1867,7 +1867,7 @@
         {
           "path": "docs/specs/design-partner-pilot-v0.1.md",
           "present": true,
-          "sha256": "sha256:f8fc388b32aade1fe7fb39f8e99dd07690b2b4368759e89e913dfaeb1f4e8ba8"
+          "sha256": "sha256:c9918cd65a84d6075820cd1dcc6288c836d10e7dbfe481ed873a00dc239dc81d"
         },
         {
           "path": "docs/specs/own-compliance-dossier-v0.1.md",
@@ -1907,7 +1907,7 @@
         {
           "path": "src/trustai/design_partner.py",
           "present": true,
-          "sha256": "sha256:96126d3cec2b04e5b1b0ba302c563e3b7e64d070823502457ede7751339780c6"
+          "sha256": "sha256:e4af4d3af3a3b2c79c9c272651cde61659b80c24136ec40cfb50adaefc50b90c"
         },
         {
           "path": "src/trustai/own_compliance.py",
@@ -1947,7 +1947,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:8be9dfe30d135a0bd3c6a9dde0d49a43b81508c13c85699bee10a133ca184492"
+          "sha256": "sha256:f081b26a03685cc286d74117c3763ce5d9e544534084753f18acae111d29fadc"
         },
         {
           "path": "tests/test_phase_scoreboard.py",
@@ -1998,7 +1998,7 @@
         {
           "path": "docs/architecture/roadmap-coverage.md",
           "present": true,
-          "sha256": "sha256:3e642749302292a87045b179f42cc0e0924037eba3073e2121157f60c6b90c45"
+          "sha256": "sha256:f7a4c2870f1d1e7bbe8babfa5020f6eb76dbcf4db941666c44edd74d1519db8a"
         },
         {
           "path": "src/trustai/proofpack.py",
@@ -2018,7 +2018,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:8be9dfe30d135a0bd3c6a9dde0d49a43b81508c13c85699bee10a133ca184492"
+          "sha256": "sha256:f081b26a03685cc286d74117c3763ce5d9e544534084753f18acae111d29fadc"
         },
         {
           "path": "tests/test_product_scope.py",
@@ -2195,7 +2195,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:236588b4e31d220d7aa326f2a1ed65a1d1ffaf0a710ef59823645d89ed8a2073"
+          "sha256": "sha256:cf6900644112c2d0df36f89a39eb7c273e69935aec501fe19f512801ab531cef"
         },
         {
           "path": "docs/specs/identity-provider-attestation-v0.1.md",
@@ -2306,7 +2306,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:236588b4e31d220d7aa326f2a1ed65a1d1ffaf0a710ef59823645d89ed8a2073"
+          "sha256": "sha256:cf6900644112c2d0df36f89a39eb7c273e69935aec501fe19f512801ab531cef"
         },
         {
           "path": "examples/aitrade/delegation.json",
@@ -2365,7 +2365,7 @@
         {
           "path": "src/trustai/standards.py",
           "present": true,
-          "sha256": "sha256:e9fd5a1929716d9b960b07026c121c386b919f049ac222f247503c5598382791"
+          "sha256": "sha256:261aa9e36cc853ce3592048931e2089cc486a0b0b700ffb21e6c3c953c885d44"
         },
         {
           "path": "src/trustai/standards_body_submission.py",
@@ -2563,7 +2563,7 @@
     "coverage": {
       "path": "docs/architecture/roadmap-coverage.md",
       "present": true,
-      "sha256": "sha256:3e642749302292a87045b179f42cc0e0924037eba3073e2121157f60c6b90c45"
+      "sha256": "sha256:f7a4c2870f1d1e7bbe8babfa5020f6eb76dbcf4db941666c44edd74d1519db8a"
     },
     "requirement_count": 26,
     "roadmap": {

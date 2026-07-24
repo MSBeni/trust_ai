@@ -342,7 +342,7 @@
       "coverage_status": "missing",
       "description": "regulator evidence for design-partner-pilot-exit-criteria",
       "external_authority_required": [
-        "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, and external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
+        "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, hash-bound contract/payment evidence, and hash-bound external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
       ],
       "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/regulator.json",
       "owner_hint": "legal/compliance owner",
@@ -366,7 +366,7 @@
       "coverage_status": "missing",
       "description": "insurer evidence for design-partner-pilot-exit-criteria",
       "external_authority_required": [
-        "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, and external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
+        "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, hash-bound contract/payment evidence, and hash-bound external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
       ],
       "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/insurer.json",
       "owner_hint": "risk/insurance owner",
@@ -390,7 +390,7 @@
       "coverage_status": "missing",
       "description": "customer evidence for design-partner-pilot-exit-criteria",
       "external_authority_required": [
-        "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, and external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
+        "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, hash-bound contract/payment evidence, and hash-bound external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
       ],
       "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/customer.json",
       "owner_hint": "customer success/account owner",
@@ -1617,14 +1617,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "18baf4056d478368fd97971ff61e05e6dfe635a82b5fd72b8c694a74d7f8d194",
+  "source_map_id": "b9713b4aa55838907077b43ebf8727fa52a83f0f9c49729be217821c8367a9a6",
   "source_plan": {
-    "plan_hash": "8658050142ef9b0fb8b091c613ad8a718f7c113e3e7be31eb784a05efdb9f271",
-    "plan_id": "031af8b0dd74f524f56769b4841994e04b7a680b38eed202c2f0a1404b53b69a",
+    "plan_hash": "033f1940d30eea4d2eb6791a50ae3e6f3d353b8f2e53ebcde5fd10ad6df6b3c8",
+    "plan_id": "751a2a979800ac42bcc60d37ffb8c3bccd43de0e7c631977a73213b653ed36e5",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "8697d75686d6945b47c0188a2078bed641decc22ccc447b9bfc6ba00d746e96e",
-      "manifest_id": "bac29b338d240e9e8352be3dd0e2437261d642a5e304f5a40af36d768b906697",
+      "manifest_hash": "c2254b72855ef41f4a62ada2dc20928e662dfc0470b2172ed9554349793a46bd",
+      "manifest_id": "0467502dc8eaa593454083f4510b6617feb876a7768674b9a44efb91044643b5",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },

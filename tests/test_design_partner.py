@@ -58,12 +58,50 @@ class DesignPartnerDossierTests(unittest.TestCase):
             producer_ref="oidc:trustai.example/gtm-ops",
             mode="external-evidence",
             partners=[
-                {"partner_ref": "partner:bank-a", "industry": "finserv", "agent_ref": "agent:payments-risk", "pilot_value_usd": 90000, "contract_status": "signed", "contract_evidence_ref": "contract:bank-a/MSA-2026"},
-                {"partner_ref": "partner:insurer-b", "industry": "insurance", "agent_ref": "agent:claims-triage", "pilot_value_usd": 80000, "contract_status": "active", "contract_evidence_ref": "contract:insurer-b/pilot-2026"},
-                {"partner_ref": "partner:fintech-c", "industry": "fintech", "agent_ref": "agent:treasury-ops", "pilot_value_usd": 90000, "contract_status": "signed", "contract_evidence_ref": "contract:fintech-c/SOW-2026"},
+                {
+                    "partner_ref": "partner:bank-a",
+                    "industry": "finserv",
+                    "agent_ref": "agent:payments-risk",
+                    "pilot_value_usd": 90000,
+                    "contract_status": "signed",
+                    "contract_evidence_ref": "contract:bank-a/MSA-2026",
+                    "contract_evidence_hash": "sha256:" + "1" * 64,
+                    "payment_evidence_ref": "payment:bank-a/pilot-invoice-2026",
+                    "payment_evidence_hash": "sha256:" + "2" * 64,
+                },
+                {
+                    "partner_ref": "partner:insurer-b",
+                    "industry": "insurance",
+                    "agent_ref": "agent:claims-triage",
+                    "pilot_value_usd": 80000,
+                    "contract_status": "active",
+                    "contract_evidence_ref": "contract:insurer-b/pilot-2026",
+                    "contract_evidence_hash": "sha256:" + "3" * 64,
+                    "payment_evidence_ref": "payment:insurer-b/pilot-invoice-2026",
+                    "payment_evidence_hash": "sha256:" + "4" * 64,
+                },
+                {
+                    "partner_ref": "partner:fintech-c",
+                    "industry": "fintech",
+                    "agent_ref": "agent:treasury-ops",
+                    "pilot_value_usd": 90000,
+                    "contract_status": "signed",
+                    "contract_evidence_ref": "contract:fintech-c/SOW-2026",
+                    "contract_evidence_hash": "sha256:" + "5" * 64,
+                    "payment_evidence_ref": "payment:fintech-c/pilot-invoice-2026",
+                    "payment_evidence_hash": "sha256:" + "6" * 64,
+                },
             ],
             scrutiny_events=[
-                {"scrutiny_ref": "scrutiny:auditor-a", "party_type": "auditor", "party_ref": "auditor:example", "partner_ref": "partner:bank-a", "outcome": "survived", "evidence_ref": "review:auditor-a/proof-pack-accepted"},
+                {
+                    "scrutiny_ref": "scrutiny:auditor-a",
+                    "party_type": "auditor",
+                    "party_ref": "auditor:example",
+                    "partner_ref": "partner:bank-a",
+                    "outcome": "survived",
+                    "evidence_ref": "review:auditor-a/proof-pack-accepted",
+                    "evidence_hash": "sha256:" + "7" * 64,
+                },
             ],
             generated_at="2026-07-18T01:00:00Z",
         )
@@ -75,8 +113,35 @@ class DesignPartnerDossierTests(unittest.TestCase):
         self.assertTrue(result.ok, result.errors)
         self.assertEqual([], result.warnings)
         self.assertEqual(260000, dossier["metrics"]["signed_pilot_value_usd"])
+        self.assertEqual(260000, dossier["metrics"]["evidence_bound_pilot_value_usd"])
+        self.assertEqual(3, entry["payload"]["paying_evidence_bound_partner_count"])
         self.assertEqual({"passed": 8}, entry["payload"]["control_summary"])
         self.assertEqual(1, entry["payload"]["external_scrutiny_survival_count"])
+        self.assertEqual(1, entry["payload"]["evidence_bound_scrutiny_survival_count"])
+
+    def test_external_evidence_dossier_requires_hash_bound_business_evidence(self):
+        dossier = build_design_partner_dossier(
+            ROOT,
+            dossier_ref="dossier:design-partner/phase1-weak-external",
+            producer_ref="oidc:trustai.example/gtm-ops",
+            mode="external-evidence",
+            partners=[
+                {"partner_ref": "partner:bank-a", "industry": "finserv", "agent_ref": "agent:payments-risk", "pilot_value_usd": 90000, "contract_status": "signed", "contract_evidence_ref": "contract:bank-a/MSA-2026"},
+                {"partner_ref": "partner:insurer-b", "industry": "insurance", "agent_ref": "agent:claims-triage", "pilot_value_usd": 80000, "contract_status": "active", "contract_evidence_ref": "contract:insurer-b/pilot-2026"},
+                {"partner_ref": "partner:fintech-c", "industry": "fintech", "agent_ref": "agent:treasury-ops", "pilot_value_usd": 90000, "contract_status": "signed", "contract_evidence_ref": "contract:fintech-c/SOW-2026"},
+            ],
+            scrutiny_events=[
+                {"scrutiny_ref": "scrutiny:auditor-a", "party_type": "auditor", "party_ref": "auditor:example", "partner_ref": "partner:bank-a", "outcome": "survived", "evidence_ref": "review:auditor-a/proof-pack-accepted"},
+            ],
+            generated_at="2026-07-18T01:00:00Z",
+        )
+
+        result = verify_design_partner_dossier(dossier, root=ROOT)
+
+        self.assertFalse(result.ok)
+        self.assertIn("external-evidence mode requires hash-bound partner contract/payment and scrutiny evidence for exit-criteria claims", result.errors)
+        self.assertEqual(0, dossier["metrics"]["paying_evidence_bound_partner_count"])
+        self.assertEqual(0, dossier["metrics"]["evidence_bound_scrutiny_survival_count"])
 
     def test_dossier_detects_source_artifact_tamper(self):
         dossier = build_design_partner_dossier(
