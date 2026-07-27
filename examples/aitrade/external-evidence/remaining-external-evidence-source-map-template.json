@@ -2,30 +2,6 @@
   "defaults": {},
   "entries": [
     {
-      "authority_kind": "standards-body",
-      "coverage_status": "missing",
-      "description": "standards-body evidence for trustai-own-compliance",
-      "external_authority_required": [
-        "TrustAI own compliance dossiers cover local/reference readiness and external-certification schemas for SOC 2 Type II and ISO/IEC 42001; actual SOC 2 Type II audit reports, ISO/IEC 42001 certificates, auditor bridge letters, management-system scope approvals, continuous control operation evidence, and board/customer acceptance remain external compliance evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/trustai-own-compliance/standards-body.json",
-      "owner_hint": "standards/governance owner",
-      "requirement_id": "trustai-own-compliance",
-      "snapshot_out": "artifacts/external-evidence-sources/trustai-own-compliance/standards-body.json",
-      "source_uri": "TODO://authority/trustai-own-compliance/standards-body",
-      "suggested_evidence_sources": [
-        "standards-body submission receipt",
-        "working-group status record",
-        "ballot or docket export"
-      ],
-      "task": "trustai-own-compliance:standards-body",
-      "task_id": "d9c2a5f823eab100329838a4c9fa0f9bac697f4ae4d5612faf55c31b0a6277f4",
-      "task_ref": "external-evidence:trustai-own-compliance:standards-body",
-      "title": "TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance proof",
-      "unit_id": "49736e67d3741ae33d3b5b762fb01b09f4fc037bf25c27e9133eb84df23c6db0",
-      "unit_ref": "trustai-own-compliance:standards-body"
-    },
-    {
       "authority_kind": "customer",
       "coverage_status": "missing",
       "description": "customer evidence for trustai-own-compliance",
@@ -657,14 +633,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "9395fdd48de04a18bc74cdad1762c27c72b6fd012a8bce70393e563c1acb3372",
+  "source_map_id": "b99444070edd9b272552a51e838ed1162e4b84520d5a7e60b78eb973d171d8e8",
   "source_plan": {
-    "plan_hash": "56dc295e4a25aa376644f80cd21416a9d6134a37fea0a80dbddadaa351180b83",
-    "plan_id": "4ff1320b3411851dc19565cfc1aa1e58f139374151fb3e1db835746356b8d427",
+    "plan_hash": "a3e70c67377ddb6034c24afa9a50c498af171ed0e03267add9eece4194293359",
+    "plan_id": "0f5edc4986ca4d3ed7bf8b19cf0994790e0823d6eddb02c5b017aedea5889c73",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "b9cc3685a43a3a26dcd3c68347f0ef1c7170ef0b022cedf785761a6db3126cdc",
-      "manifest_id": "8e251716ce2a122460a6dea5c406f716b57c172cbe26b8ca5759feaece771a00",
+      "manifest_hash": "36b6eef891c17c09a48974a9f6ef98e5c97d8cff5b54f1b41372c57b7862dea6",
+      "manifest_id": "143bef485356cadf9eac31762313be1d79bd4793be957999e0eb42e45578ff8f",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },
@@ -672,12 +648,12 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 27,
+    "entry_count": 26,
     "intake_dir": "artifacts/external-evidence-intakes",
     "live_source_uri_count": 0,
-    "placeholder_source_uri_count": 27,
+    "placeholder_source_uri_count": 26,
     "snapshot_dir": "artifacts/external-evidence-sources",
-    "source_plan_task_count": 27,
+    "source_plan_task_count": 26,
     "status_filter": "missing"
   }
 }

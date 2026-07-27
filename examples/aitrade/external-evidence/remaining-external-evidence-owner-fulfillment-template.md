@@ -1,14 +1,14 @@
 # External Evidence Owner Fulfillment Template
 
-- Template ID: `7e098cfa38c2b85894dda9a5fe88037939fb58e1337395516e70903b835706ea`
+- Template ID: `548513a68ce2aa50377bd0c0f17bdaf8a326cc5817ed18437351f8c575d8b9a0`
 - Generated at: `2026-07-12T00:01:00Z`
-- Fulfillments: 27
+- Fulfillments: 26
 - Owners: 9
-- Blocked tasks: 27
+- Blocked tasks: 26
 - Open tasks: 0
 - Closed tasks: 0
-- Placeholder source URIs: 27
-- Missing intakes: 27
+- Placeholder source URIs: 26
+- Missing intakes: 26
 
 ## Fulfillments
 
@@ -40,7 +40,6 @@
 | `trust-network-procurement-and-marketplace:hosted-service` | TODO://authority/trust-network-procurement-and-marketplace/hosted-service | hosted-service evidence for trust-network-procurement-and-marketplace |
 | `roadmap-phase-scoreboard:standards-body` | TODO://authority/roadmap-phase-scoreboard/standards-body | standards-body evidence for roadmap-phase-scoreboard |
 | `standards-track-and-auditor-ecosystem:standards-body` | TODO://authority/standards-track-and-auditor-ecosystem/standards-body | standards-body evidence for standards-track-and-auditor-ecosystem |
-| `trustai-own-compliance:standards-body` | TODO://authority/trustai-own-compliance/standards-body | standards-body evidence for trustai-own-compliance |
 
 ## Assignments
 
@@ -72,7 +71,6 @@
 | `trust-network-procurement-and-marketplace:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/hosted-service.json | artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/hosted-service.json |
 | `roadmap-phase-scoreboard:standards-body` | standards/governance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/roadmap-phase-scoreboard/standards-body.json | artifacts/external-evidence-intakes/roadmap-phase-scoreboard/standards-body.json |
 | `standards-track-and-auditor-ecosystem:standards-body` | standards/governance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/standards-body.json | artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/standards-body.json |
-| `trustai-own-compliance:standards-body` | standards/governance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trustai-own-compliance/standards-body.json | artifacts/external-evidence-intakes/trustai-own-compliance/standards-body.json |
 
 ## Commands
 

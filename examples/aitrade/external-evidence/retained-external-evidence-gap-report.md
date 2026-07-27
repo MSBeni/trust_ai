@@ -1,13 +1,13 @@
 # External Evidence Gap Report
 
-- Gap report ID: `c3cece6d387f89ec689d86a6d6bc791327c7177cd8e5e73ef24b3d7c0f10adb4`
+- Gap report ID: `0ff3fa98f49099730f9ba0fa771c353b0b46cfc678d87f7ba25c24db4d0b4cba`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 44/71
-- Missing authority kinds: 27
-- Remaining collection tasks: 27
-- Source-map entries: 27
-- Placeholder source URIs: 27
+- Covered authority kinds: 45/71
+- Missing authority kinds: 26
+- Remaining collection tasks: 26
+- Source-map entries: 26
+- Placeholder source URIs: 26
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
@@ -20,7 +20,7 @@
 - `kms-hsm`: 2
 - `provider-api`: 2
 - `regulator`: 2
-- `standards-body`: 3
+- `standards-body`: 2
 
 ## Gaps By Requirement
 
@@ -31,21 +31,10 @@
 - `standards-track-and-auditor-ecosystem`: 2
 - `state-of-agent-reliability-report`: 1
 - `trust-network-procurement-and-marketplace`: 4
-- `trustai-own-compliance`: 2
+- `trustai-own-compliance`: 1
 - `vertical-packs`: 3
 
 ## Collection Worklist
-
-### trustai-own-compliance:standards-body
-
-- Title: TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance proof
-- Authority kind: `standards-body`
-- Owner hint: standards/governance owner
-- Description: standards-body evidence for trustai-own-compliance
-- Source URI: `TODO://authority/trustai-own-compliance/standards-body`
-- Snapshot output: `artifacts/external-evidence-sources/trustai-own-compliance/standards-body.json`
-- Intake output: `artifacts/external-evidence-intakes/trustai-own-compliance/standards-body.json`
-- Suggested evidence sources: standards-body submission receipt; working-group status record; ballot or docket export
 
 ### trustai-own-compliance:customer
 

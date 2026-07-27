@@ -654,6 +654,20 @@ RETAINED_SOURCES: dict[str, dict[str, str]] = {
         "snapshot_out": "examples/aitrade/external-evidence/compliance-standards-body-source-snapshot.json",
         "intake_out": "examples/aitrade/external-evidence/intakes/compliance-mapper-and-eu-ai-act-standards-body.json",
     },
+    "trustai-own-compliance:standards-body": {
+        "source_uri": "https://standards.example/lf-trustai/own-compliance/soc2-iso42001/2026-07-12",
+        "description": "Retained standards-body docket export for TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance evidence",
+        "artifact": "examples/aitrade/external-evidence/trustai-own-compliance-standards-body-source-snapshot.json",
+        "source_file": "examples/aitrade/trustai-own-compliance-standards-body-authority-export.json",
+        "retrieval_method": "file-copy",
+        "content_type": "application/json",
+        "issuer": "LF TrustAI Ballot System",
+        "subject": "TrustAI own SOC 2 Type II and ISO/IEC 42001 standards-body dossier review",
+        "issued_at": "2026-07-12T00:00:00Z",
+        "expires_at": "2026-12-31T00:00:00Z",
+        "snapshot_out": "examples/aitrade/external-evidence/trustai-own-compliance-standards-body-source-snapshot.json",
+        "intake_out": "examples/aitrade/external-evidence/intakes/trustai-own-compliance-standards-body.json",
+    },
 }
 
 

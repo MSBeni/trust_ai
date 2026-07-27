@@ -726,6 +726,23 @@
     },
     {
       "accepted_authority_kinds": [
+        "standards-body",
+        "customer"
+      ],
+      "authority_kind": "standards-body",
+      "description": "Retained standards-body docket export for TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance evidence",
+      "evidence_id": "355ac383d3ccd5b9aeff6940a6f61414c117b1020667eb3d38d62baf9d694634",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "LF TrustAI Ballot System",
+      "path": "examples/aitrade/external-evidence/trustai-own-compliance-standards-body-source-snapshot.json",
+      "requirement_id": "trustai-own-compliance",
+      "sha256": "sha256:807ae49d8f7cfde67fb664f3e70bb094dbe25b69a41f47a5fab36c48b255d22c",
+      "source_uri": "https://standards.example/lf-trustai/own-compliance/soc2-iso42001/2026-07-12",
+      "subject": "TrustAI own SOC 2 Type II and ISO/IEC 42001 standards-body dossier review"
+    },
+    {
+      "accepted_authority_kinds": [
         "ci-run",
         "kms-hsm",
         "provider-api",
@@ -845,7 +862,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "8e251716ce2a122460a6dea5c406f716b57c172cbe26b8ca5759feaece771a00",
+  "manifest_id": "143bef485356cadf9eac31762313be1d79bd4793be957999e0eb42e45578ff8f",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -1344,7 +1361,7 @@
     },
     {
       "authority_kind": "standards-body",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "TrustAI own compliance dossiers cover local/reference readiness and external-certification schemas for SOC 2 Type II and ISO/IEC 42001; actual SOC 2 Type II audit reports, ISO/IEC 42001 certificates, auditor bridge letters, management-system scope approvals, continuous control operation evidence, and board/customer acceptance remain external compliance evidence."
       ],
@@ -2072,7 +2089,7 @@
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {
-    "covered_authority_kind_count": 44,
+    "covered_authority_kind_count": 45,
     "covered_authority_kinds_by_requirement": {
       "agent-inventory-and-identity": [
         "provider-api",
@@ -2141,9 +2158,12 @@
         "provider-api",
         "identity-provider",
         "standards-body"
+      ],
+      "trustai-own-compliance": [
+        "standards-body"
       ]
     },
-    "covered_requirement_count": 12,
+    "covered_requirement_count": 13,
     "covered_requirement_ids": [
       "agent-inventory-and-identity",
       "auditor-and-review-portal",
@@ -2156,13 +2176,14 @@
       "oss-verifier-and-public-spec",
       "runtime-policy-and-attestation",
       "self-serve-onboarding",
-      "shadow-replay-temporal-holdout"
+      "shadow-replay-temporal-holdout",
+      "trustai-own-compliance"
     ],
-    "evidence_count": 44,
-    "expires_at_count": 44,
-    "freshness_window_count": 44,
-    "issued_at_count": 44,
-    "missing_authority_kind_count": 27,
+    "evidence_count": 45,
+    "expires_at_count": 45,
+    "freshness_window_count": 45,
+    "issued_at_count": 45,
+    "missing_authority_kind_count": 26,
     "missing_authority_kinds_by_requirement": {
       "insurer-api-and-actuarial-products": [
         "ci-run",
@@ -2201,7 +2222,6 @@
         "customer"
       ],
       "trustai-own-compliance": [
-        "standards-body",
         "customer"
       ],
       "vertical-packs": [
@@ -2210,9 +2230,8 @@
         "customer"
       ]
     },
-    "missing_requirement_count": 8,
+    "missing_requirement_count": 7,
     "missing_requirement_ids": [
-      "trustai-own-compliance",
       "vertical-packs",
       "insurer-api-and-actuarial-products",
       "state-of-agent-reliability-report",

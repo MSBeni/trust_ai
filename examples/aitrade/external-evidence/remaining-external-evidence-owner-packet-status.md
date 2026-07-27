@@ -1,14 +1,14 @@
 # External Evidence Owner Packet Status
 
-- Status ID: `e8ff51aa6823266feb11968896bd477960b770f9add0814c8a938a47b344e88d`
+- Status ID: `e70a5fe63c6ca51a4aa5e5bde248c7e2b8d0dd4cdba11f0ad7cf4b22aeae71d8`
 - Generated at: `2026-07-12T00:01:00Z`
 - Packets: 9
-- Tasks: 27
+- Tasks: 26
 - Closed tasks: 0
 - Open tasks: 0
-- Blocked tasks: 27
-- Placeholder source URIs: 27
-- Missing intakes: 27
+- Blocked tasks: 26
+- Placeholder source URIs: 26
+- Missing intakes: 26
 
 ## Packets
 
@@ -22,7 +22,7 @@
 | risk/insurance owner | `owner-packet:owner_hint:risk-insurance-owner` | blocked | 3 | 0 | 0 | 3 |
 | security/platform KMS owner | `owner-packet:owner_hint:security-platform-KMS-owner` | blocked | 2 | 0 | 0 | 2 |
 | service owner | `owner-packet:owner_hint:service-owner` | blocked | 2 | 0 | 0 | 2 |
-| standards/governance owner | `owner-packet:owner_hint:standards-governance-owner` | blocked | 3 | 0 | 0 | 3 |
+| standards/governance owner | `owner-packet:owner_hint:standards-governance-owner` | blocked | 2 | 0 | 0 | 2 |
 
 ## Open And Blocked Tasks
 
@@ -53,7 +53,6 @@
 | `insurer-api-and-actuarial-products:hosted-service` | service owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `trust-network-procurement-and-marketplace:hosted-service` | service owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `roadmap-phase-scoreboard:standards-body` | standards/governance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
-| `trustai-own-compliance:standards-body` | standards/governance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `standards-track-and-auditor-ecosystem:standards-body` | standards/governance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 
 ## Limitations

@@ -1,19 +1,18 @@
 # External Evidence Owner Fulfillment Closure
 
-- Closure ID: `f572f551816bb845ed713518d824753c0da3f5e49d5c5b713073d6df51a29baf`
+- Closure ID: `ce3a237391638afca58624b879a91ee73bad75b6e136f430f38a01a08ad82ea1`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Closed tasks: 0/27
-- Missing intakes: 27
+- Closed tasks: 0/26
+- Missing intakes: 26
 - Invalid intake tasks: 0
-- Missing manifest coverage: 27
-- Placeholder source URIs: 27
+- Missing manifest coverage: 26
+- Placeholder source URIs: 26
 
 ## Task Closure
 
 | Task | Owner | Status | Intake | Manifest Evidence | Blocking Reasons |
 |---|---|---|---|---|---|
-| `trustai-own-compliance:standards-body` | standards/governance owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `trustai-own-compliance:customer` | customer success/account owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `vertical-packs:regulator` | legal/compliance owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `vertical-packs:insurer` | risk/insurance owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
@@ -43,9 +42,9 @@
 
 ## Blockers
 
-- 27 reviewed tasks still use placeholder source_uri values
-- 27 reviewed tasks do not have intake receipts
-- 27 reviewed tasks are not covered by the rebuilt manifest
+- 26 reviewed tasks still use placeholder source_uri values
+- 26 reviewed tasks do not have intake receipts
+- 26 reviewed tasks are not covered by the rebuilt manifest
 
 ## Next Actions
 

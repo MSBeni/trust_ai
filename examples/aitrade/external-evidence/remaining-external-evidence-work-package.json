@@ -2419,26 +2419,24 @@
       "group_by": "owner_hint",
       "group_key": "standards/governance owner",
       "live_source_uri_count": 0,
-      "missing_task_count": 3,
+      "missing_task_count": 2,
       "owner_hint": "standards/governance owner",
-      "package_id": "70fcec31af879e7921c27b4897a86a99d59404e1b239e5eab9181fcc1f72283f",
+      "package_id": "16a9c153460006b972fad1bb4d357a6ba384857774ebc60806d530a07aff01b2",
       "package_ref": "owner_hint:standards-governance-owner",
       "phases": [
         "P1-P4",
-        "P2",
         "P3"
       ],
-      "placeholder_source_uri_count": 3,
+      "placeholder_source_uri_count": 2,
       "priorities": [
         "P0",
         "P1"
       ],
       "requirement_ids": [
         "roadmap-phase-scoreboard",
-        "standards-track-and-auditor-ecosystem",
-        "trustai-own-compliance"
+        "standards-track-and-auditor-ecosystem"
       ],
-      "task_count": 3,
+      "task_count": 2,
       "tasks": [
         {
           "acceptance_criteria": [
@@ -2516,83 +2514,6 @@
           "title": "Roadmap phase exit-criteria business scoreboard",
           "unit_id": "b00aa9b180b2499b90745635648055df97c47e914a3d5e952218ae20a4da7bec",
           "unit_ref": "roadmap-phase-scoreboard:standards-body"
-        },
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be standards-body and accepted for trustai-own-compliance.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "standards-body",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/trustai-own-compliance/standards-body",
-              "--root",
-              ".",
-              "--task",
-              "trustai-own-compliance:standards-body",
-              "--description",
-              "standards-body evidence for trustai-own-compliance",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/trustai-own-compliance/standards-body.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/trustai-own-compliance/standards-body.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/trustai-own-compliance/standards-body --root . --task trustai-own-compliance:standards-body --description 'standards-body evidence for trustai-own-compliance' --snapshot-out artifacts/external-evidence-sources/trustai-own-compliance/standards-body.json --intake-out artifacts/external-evidence-intakes/trustai-own-compliance/standards-body.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/trustai-own-compliance/standards-body.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/trustai-own-compliance/standards-body.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "standards-body evidence for trustai-own-compliance",
-          "evidence_argument_template": "trustai-own-compliance,standards-body,external-evidence/trustai-own-compliance/standards-body.json,standards-body evidence for trustai-own-compliance;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "TrustAI own compliance dossiers cover local/reference readiness and external-certification schemas for SOC 2 Type II and ISO/IEC 42001; actual SOC 2 Type II audit reports, ISO/IEC 42001 certificates, auditor bridge letters, management-system scope approvals, continuous control operation evidence, and board/customer acceptance remain external compliance evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/trustai-own-compliance/standards-body.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "standards/governance owner",
-          "phase": "P2",
-          "priority": "P0",
-          "requirement_id": "trustai-own-compliance",
-          "snapshot_out": "artifacts/external-evidence-sources/trustai-own-compliance/standards-body.json",
-          "source_uri": "TODO://authority/trustai-own-compliance/standards-body",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/trustai-own-compliance/standards-body.json",
-          "suggested_evidence_sources": [
-            "standards-body submission receipt",
-            "working-group status record",
-            "ballot or docket export"
-          ],
-          "task_id": "d9c2a5f823eab100329838a4c9fa0f9bac697f4ae4d5612faf55c31b0a6277f4",
-          "task_ref": "external-evidence:trustai-own-compliance:standards-body",
-          "title": "TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance proof",
-          "unit_id": "49736e67d3741ae33d3b5b762fb01b09f4fc037bf25c27e9133eb84df23c6db0",
-          "unit_ref": "trustai-own-compliance:standards-body"
         },
         {
           "acceptance_criteria": [
@@ -2678,20 +2599,20 @@
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "56dc295e4a25aa376644f80cd21416a9d6134a37fea0a80dbddadaa351180b83",
-      "plan_id": "4ff1320b3411851dc19565cfc1aa1e58f139374151fb3e1db835746356b8d427",
+      "plan_hash": "a3e70c67377ddb6034c24afa9a50c498af171ed0e03267add9eece4194293359",
+      "plan_id": "0f5edc4986ca4d3ed7bf8b19cf0994790e0823d6eddb02c5b017aedea5889c73",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "gap_report": {
-      "gap_report_hash": "faf13ffecff000dbc6b40e181f01940dcea2bfde085d21d93a3a49a6396c5b9d",
-      "gap_report_id": "c3cece6d387f89ec689d86a6d6bc791327c7177cd8e5e73ef24b3d7c0f10adb4",
+      "gap_report_hash": "224cdd0412f183672d315b45d3ae80b8166dfcd649d4c0fd93081ff0f53ccd02",
+      "gap_report_id": "0ff3fa98f49099730f9ba0fa771c353b0b46cfc678d87f7ba25c24db4d0b4cba",
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-gap-report/0.1"
     },
     "manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "b9cc3685a43a3a26dcd3c68347f0ef1c7170ef0b022cedf785761a6db3126cdc",
-      "manifest_id": "8e251716ce2a122460a6dea5c406f716b57c172cbe26b8ca5759feaece771a00",
+      "manifest_hash": "36b6eef891c17c09a48974a9f6ef98e5c97d8cff5b54f1b41372c57b7862dea6",
+      "manifest_id": "143bef485356cadf9eac31762313be1d79bd4793be957999e0eb42e45578ff8f",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
@@ -2703,18 +2624,18 @@
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "7109ce1b6c5df275cd98457da8e665984ef6da184c1201bd677c6cdf158f23ba",
-      "source_map_id": "9395fdd48de04a18bc74cdad1762c27c72b6fd012a8bce70393e563c1acb3372"
+      "source_map_hash": "ffa6d0ba2fb31268ad695b21aab600abfd942e0c621fd810441a64602d087584",
+      "source_map_id": "b99444070edd9b272552a51e838ed1162e4b84520d5a7e60b78eb973d171d8e8"
     }
   },
   "summary": {
     "covered_task_count": 0,
     "live_source_uri_count": 0,
-    "missing_task_count": 27,
+    "missing_task_count": 26,
     "package_count": 9,
-    "placeholder_source_uri_count": 27,
+    "placeholder_source_uri_count": 26,
     "source_status": "partial",
-    "task_count": 27,
+    "task_count": 26,
     "task_count_by_authority_kind": {
       "ci-run": 4,
       "customer": 7,
@@ -2724,7 +2645,7 @@
       "kms-hsm": 2,
       "provider-api": 2,
       "regulator": 2,
-      "standards-body": 3
+      "standards-body": 2
     },
     "task_count_by_owner_hint": {
       "IAM/identity owner": 2,
@@ -2735,7 +2656,7 @@
       "risk/insurance owner": 3,
       "security/platform KMS owner": 2,
       "service owner": 2,
-      "standards/governance owner": 3
+      "standards/governance owner": 2
     },
     "task_count_by_package": {
       "owner_hint:IAM-identity-owner": 2,
@@ -2746,18 +2667,18 @@
       "owner_hint:risk-insurance-owner": 3,
       "owner_hint:security-platform-KMS-owner": 2,
       "owner_hint:service-owner": 2,
-      "owner_hint:standards-governance-owner": 3
+      "owner_hint:standards-governance-owner": 2
     },
     "task_count_by_phase": {
       "P0-P4": 2,
       "P1-P4": 5,
-      "P2": 3,
+      "P2": 2,
       "P2-P4": 8,
       "P3": 5,
       "P4": 4
     },
     "task_count_by_priority": {
-      "P0": 16,
+      "P0": 15,
       "P1": 11
     },
     "task_count_by_requirement": {
@@ -2768,9 +2689,9 @@
       "standards-track-and-auditor-ecosystem": 2,
       "state-of-agent-reliability-report": 1,
       "trust-network-procurement-and-marketplace": 4,
-      "trustai-own-compliance": 2,
+      "trustai-own-compliance": 1,
       "vertical-packs": 3
     }
   },
-  "work_package_id": "5bb50cac07b336c80cff845561badad6eae585fb3365174492576bc35f1f538a"
+  "work_package_id": "d2fc99a44f394f5cdb54ce515580f40a559d0dcb2730e2285c6d025e712bc66a"
 }

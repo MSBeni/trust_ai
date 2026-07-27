@@ -1,0 +1,206 @@
+{
+  "authority_evidence": {
+    "authority_kind": "standards-body",
+    "evidence_ref": "standards-body:lf-trustai/own-compliance/soc2-iso42001-dossier/2026-07-12",
+    "requirement_id": "trustai-own-compliance",
+    "source_uri": "https://standards.example/lf-trustai/own-compliance/soc2-iso42001/2026-07-12"
+  },
+  "compliance_scope": {
+    "dossier_ref": "dossier:trustai/own-compliance-readiness",
+    "framework_targets": [
+      "SOC 2 Type II",
+      "ISO/IEC 42001"
+    ],
+    "mode": "readiness-and-external-certification-schema-review",
+    "scope_ref": "scope:trustai/company"
+  },
+  "environment": "trustai-company",
+  "evidence": {
+    "docs_architecture_roadmap_coverage_md": {
+      "path": "docs/architecture/roadmap-coverage.md",
+      "sha256": "sha256:e238899dcd27ae9212347e8e17c2c8b5db35266c2172428c4fa90bc5120abd77"
+    },
+    "docs_specs_compliance_production_authority_v0_1_md": {
+      "path": "docs/specs/compliance-production-authority-v0.1.md",
+      "sha256": "sha256:190840b93b9a2cbd17dd210f4215c504938e320d3d1b43a9ac542adba33c9594"
+    },
+    "docs_specs_own_compliance_dossier_v0_1_md": {
+      "path": "docs/specs/own-compliance-dossier-v0.1.md",
+      "sha256": "sha256:1b9c415357bad998fb162fcc93926b8eb5e01271067eee98b6b4fb89d66b008d"
+    },
+    "docs_specs_proof_pack_v0_1_md": {
+      "path": "docs/specs/proof-pack-v0.1.md",
+      "sha256": "sha256:9bfe0b9dd85fef1ccaffd944bc0fa807814e0aba2da6370d82c8059b4b6ee79e"
+    },
+    "docs_specs_roadmap_audit_v0_1_md": {
+      "path": "docs/specs/roadmap-audit-v0.1.md",
+      "sha256": "sha256:a233335ddab7045ca8c45ee68e32963ba4c3498ba95207840409c60f4d3399d9"
+    },
+    "docs_specs_standards_body_ballot_system_v0_1_md": {
+      "path": "docs/specs/standards-body-ballot-system-v0.1.md",
+      "sha256": "sha256:1b7cd56747cba9d18dc4abcc54d56469f0655773395fb0baa97181f6fdf47022"
+    },
+    "docs_specs_standards_body_ballot_v0_1_md": {
+      "path": "docs/specs/standards-body-ballot-v0.1.md",
+      "sha256": "sha256:241fce5481d98a7bb66602202c0806ec92b0ace85eccfdbaeecdbf55785d6565"
+    },
+    "docs_specs_standards_body_provider_posting_v0_1_md": {
+      "path": "docs/specs/standards-body-provider-posting-v0.1.md",
+      "sha256": "sha256:7944347991b6cd88d97c74d90abf2634bc89757b56e51f7411551fafdf15f019"
+    },
+    "docs_specs_standards_body_status_v0_1_md": {
+      "path": "docs/specs/standards-body-status-v0.1.md",
+      "sha256": "sha256:13401609eb7847de8de36ba1c64156c867f0afb27bb5946baa2fbbbe9e9bbf07"
+    },
+    "docs_specs_standards_body_submission_v0_1_md": {
+      "path": "docs/specs/standards-body-submission-v0.1.md",
+      "sha256": "sha256:660390ed4499f060e6ab52ad3be6306236263dac082e67913b611b994d5c725d"
+    },
+    "docs_specs_standards_submission_v0_1_md": {
+      "path": "docs/specs/standards-submission-v0.1.md",
+      "sha256": "sha256:f5b94745f26cf47f4ac9548032132cae0a13b55e9fb0101683fb639843832538"
+    },
+    "docs_specs_trust_authority_kms_enforcement_v0_1_md": {
+      "path": "docs/specs/trust-authority-kms-enforcement-v0.1.md",
+      "sha256": "sha256:84e8545ea45033999c17ff1d67599a4fc261859b06ac79fb3f8e89c650330e4f"
+    },
+    "docs_specs_trust_authority_receipt_v0_1_md": {
+      "path": "docs/specs/trust-authority-receipt-v0.1.md",
+      "sha256": "sha256:38e8b941fb554a836f53695b1d661fad151e00bcd027d300a0a32ffd25a81682"
+    },
+    "docs_specs_verifier_conformance_v0_1_md": {
+      "path": "docs/specs/verifier-conformance-v0.1.md",
+      "sha256": "sha256:c94ff5cc2f419a2d12eb97e770dd8cb82f71df2494434112c5deceb284bca878"
+    },
+    "docs_specs_worm_object_store_v0_1_md": {
+      "path": "docs/specs/worm-object-store-v0.1.md",
+      "sha256": "sha256:f0765146203f18ce916356eba0dbb72bb790f1521fcee8a01da5d13131796532"
+    },
+    "examples_aitrade_standards_ballot_system_response_json": {
+      "path": "examples/aitrade/standards-ballot-system-response.json",
+      "sha256": "sha256:63736dd6a55278122c6ccc073d90210feae442bef2d00edf3bae98c5f24876a6"
+    },
+    "src_trustai_compliance_authority_py": {
+      "path": "src/trustai/compliance_authority.py",
+      "sha256": "sha256:db459112978417fab5e932c1e8658d24484a3200d6d717788264853364d4238c"
+    },
+    "src_trustai_compliance_py": {
+      "path": "src/trustai/compliance.py",
+      "sha256": "sha256:559e3194ee2dbedea859c1c11453877fb803301c4eda6a315488af4d513e80e5"
+    },
+    "src_trustai_keyring_py": {
+      "path": "src/trustai/keyring.py",
+      "sha256": "sha256:00842a50d1133a485f2224950aacafd54a42bcd3aac7cb4fe1c6acba4ce73fc5"
+    },
+    "src_trustai_object_store_py": {
+      "path": "src/trustai/object_store.py",
+      "sha256": "sha256:373f8d865880b96535f388840755314d4bac0cb2274ba1a4c71eb522e1f4b669"
+    },
+    "src_trustai_own_compliance_py": {
+      "path": "src/trustai/own_compliance.py",
+      "sha256": "sha256:ca708f87814fc3ccab496050768d1d74fe1bc19d99af9d8fe99d62668ff2dbfe"
+    },
+    "src_trustai_proofpack_py": {
+      "path": "src/trustai/proofpack.py",
+      "sha256": "sha256:dcbcf7252e3723e61e12ac288c96e7c89c9b160d17c063074a01aa04a6986c87"
+    },
+    "src_trustai_roadmap_audit_py": {
+      "path": "src/trustai/roadmap_audit.py",
+      "sha256": "sha256:430785a7c4cf190e8d19607d62953b62482953fc3db44ae31317aa14a840df07"
+    },
+    "src_trustai_standards_body_ballot_py": {
+      "path": "src/trustai/standards_body_ballot.py",
+      "sha256": "sha256:88a0ff244e838511330d1f904771ddba030960bfc835f8d7e7299a334c4d541b"
+    },
+    "src_trustai_standards_body_ballot_system_py": {
+      "path": "src/trustai/standards_body_ballot_system.py",
+      "sha256": "sha256:be6738e77075c0244718467ca2b27f1a2b40586f9c3b1fe4b2486752e376692a"
+    },
+    "src_trustai_standards_body_provider_posting_py": {
+      "path": "src/trustai/standards_body_provider_posting.py",
+      "sha256": "sha256:7af250cf229ca468555a62116e7df336a0c461e199566266032b664059427ee9"
+    },
+    "src_trustai_standards_body_status_py": {
+      "path": "src/trustai/standards_body_status.py",
+      "sha256": "sha256:45e67431937ce305e01f049a5536d5d675d0f650bb47e631e6fdd3155a314fac"
+    },
+    "src_trustai_standards_body_submission_py": {
+      "path": "src/trustai/standards_body_submission.py",
+      "sha256": "sha256:ed80042b82a0ea3d88c6f56804b3d74639f10dc90179bacb88cd082474634ba5"
+    },
+    "src_trustai_standards_py": {
+      "path": "src/trustai/standards.py",
+      "sha256": "sha256:02ded53eb8435e68f4a34d5563fe2f05e0b61b10bbad8d38e65753a84c01995a"
+    },
+    "src_trustai_trust_authority_kms_enforcement_py": {
+      "path": "src/trustai/trust_authority_kms_enforcement.py",
+      "sha256": "sha256:4a0396927d5a03cb239086909b2522cd42f31f43eb2e4927e9a86b4189c3d376"
+    },
+    "src_trustai_trust_authority_py": {
+      "path": "src/trustai/trust_authority.py",
+      "sha256": "sha256:d7288df1c6aa6f8798b44d0bb7471525ee4520004e2235d016d876de9a84e3ae"
+    },
+    "src_trustai_verifier_py": {
+      "path": "src/trustai/verifier.py",
+      "sha256": "sha256:39c53b7e65aba6cf0645ebc5fc4b0f1095d17b52c74f262ea786e852d0ce55c4"
+    },
+    "tests_test_own_compliance_py": {
+      "path": "tests/test_own_compliance.py",
+      "sha256": "sha256:a0f5e19b44e8dc838dadae60a464ee76a165a6a7b67fc3e7d63fa43ac59d5ee6"
+    },
+    "tests_test_standards_body_ballot_py": {
+      "path": "tests/test_standards_body_ballot.py",
+      "sha256": "sha256:0e589e9fe8a0c393be667de88f204b5985142b92093709c02ce546b18203aca4"
+    },
+    "tests_test_standards_body_ballot_system_py": {
+      "path": "tests/test_standards_body_ballot_system.py",
+      "sha256": "sha256:14db15d64a06f88c6fc88cf58f4a448c0c17c5a45031d0ed7e2178bdbfe13ab7"
+    },
+    "tests_test_standards_body_provider_posting_py": {
+      "path": "tests/test_standards_body_provider_posting.py",
+      "sha256": "sha256:e321be630e252d0d8a6bb1fe021f2a145fa915d5ca0281eaf7eea71f691fb833"
+    },
+    "tests_test_standards_body_status_py": {
+      "path": "tests/test_standards_body_status.py",
+      "sha256": "sha256:636b30f95ad74d9e46d27540c723c732c5a3f3d658c4cbe75a9c83e236146dc5"
+    },
+    "tests_test_standards_body_submission_py": {
+      "path": "tests/test_standards_body_submission.py",
+      "sha256": "sha256:c7871f142c0ec5a09e832a163130725429af2f1e37a1edd4ee48cba747ecaa3f"
+    },
+    "tests_test_standards_py": {
+      "path": "tests/test_standards.py",
+      "sha256": "sha256:231b574ee1a7b153c9becf77777c472d3340b4652da28520a92791e71b77e805"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "issued_at": "2026-07-12T00:00:00Z",
+  "issuer": "LF TrustAI Ballot System",
+  "schema": "trustai.own-compliance-standards-body-authority-export/0.1",
+  "source_binding": {
+    "ballot_system_export_ref": "LF-TRUSTAI-BALLOT-2026-001:export",
+    "own_compliance_dossier_ref": "dossier:trustai/own-compliance-readiness",
+    "own_compliance_schema_ref": "trustai.own-compliance-dossier/0.1",
+    "proof_pack_spec_track_ref": "LF-TRUSTAI-PROOF-PACKS",
+    "standards_submission_ref": "standards-submission:trustai/own-compliance-soc2-iso42001/2026-07-12"
+  },
+  "standards_body": {
+    "ballot_ref": "LF-TRUSTAI-BALLOT-2026-003",
+    "docket_ref": "LF-TRUSTAI-DKT-2026-003",
+    "export_url": "https://standards.example/lf-trustai/own-compliance/soc2-iso42001/2026-07-12",
+    "profile_status": "working-group-docketed",
+    "program_ref": "LF-TRUSTAI-PROOF-PACKS",
+    "submission_ref": "standards-submission:trustai/own-compliance-soc2-iso42001/2026-07-12",
+    "system": "LF TrustAI Ballot System",
+    "target_track": "draft-specification",
+    "working_group_ref": "wg:agent-behavioral-evidence/compliance-and-assurance"
+  },
+  "subject": "TrustAI own SOC 2 Type II and ISO/IEC 42001 standards-body dossier review",
+  "verified_controls": [
+    "standards-body docket binds the TrustAI own-compliance dossier schema to SOC 2 Type II and ISO/IEC 42001 target evidence kinds",
+    "working-group review preserves the distinction between local readiness evidence and external certification claims",
+    "docket export retains source hashes for proof-pack, compliance, standards, trust authority, WORM retention, and roadmap audit machinery",
+    "standards-body review links own-compliance evidence to the public proof-pack standards track without embedding raw audit workpapers",
+    "customer and external certification acceptance remain separate authority gaps for TrustAI own compliance"
+  ]
+}

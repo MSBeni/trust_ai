@@ -1142,6 +1142,36 @@
       "unit_ref": "compliance-mapper-and-eu-ai-act:standards-body"
     },
     {
+      "authority_kind": "standards-body",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained standards-body docket export for TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "TrustAI own compliance dossiers cover local/reference readiness and external-certification schemas for SOC 2 Type II and ISO/IEC 42001; actual SOC 2 Type II audit reports, ISO/IEC 42001 certificates, auditor bridge letters, management-system scope approvals, continuous control operation evidence, and board/customer acceptance remain external compliance evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/trustai-own-compliance-standards-body.json",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "LF TrustAI Ballot System",
+      "owner_hint": "standards/governance owner",
+      "requirement_id": "trustai-own-compliance",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/trustai-own-compliance-standards-body-source-snapshot.json",
+      "source_uri": "https://standards.example/lf-trustai/own-compliance/soc2-iso42001/2026-07-12",
+      "subject": "TrustAI own SOC 2 Type II and ISO/IEC 42001 standards-body dossier review",
+      "suggested_evidence_sources": [
+        "standards-body submission receipt",
+        "working-group status record",
+        "ballot or docket export"
+      ],
+      "task": "trustai-own-compliance:standards-body",
+      "task_id": "d9c2a5f823eab100329838a4c9fa0f9bac697f4ae4d5612faf55c31b0a6277f4",
+      "task_ref": "external-evidence:trustai-own-compliance:standards-body",
+      "title": "TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance proof",
+      "unit_id": "49736e67d3741ae33d3b5b762fb01b09f4fc037bf25c27e9133eb84df23c6db0",
+      "unit_ref": "trustai-own-compliance:standards-body"
+    },
+    {
       "authority_kind": "kms-hsm",
       "content_type": "application/json",
       "coverage_status": "missing",
@@ -1329,7 +1359,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "1eb3c9b18e9283825584dbd488075c5086ca9d91a369f08ae3d7a6c315b06ca0",
+  "source_map_id": "7641dfd1f8705cfd2e39097936debecf79310c8fab645713892ec6b8ae4ede9e",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -1344,9 +1374,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 44,
+    "entry_count": 45,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 44,
+    "live_source_uri_count": 45,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

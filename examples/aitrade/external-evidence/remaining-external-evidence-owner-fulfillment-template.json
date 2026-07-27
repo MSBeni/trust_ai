@@ -363,20 +363,6 @@
       "source_uri_status": "placeholder",
       "task": "standards-track-and-auditor-ecosystem:standards-body",
       "task_status": "blocked"
-    },
-    {
-      "authority_kind": "standards-body",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/trustai-own-compliance/standards-body.json",
-      "owner_hint": "standards/governance owner",
-      "requirement_id": "trustai-own-compliance",
-      "snapshot_out": "artifacts/external-evidence-sources/trustai-own-compliance/standards-body.json",
-      "source_uri_status": "placeholder",
-      "task": "trustai-own-compliance:standards-body",
-      "task_status": "blocked"
     }
   ],
   "commands": {
@@ -518,11 +504,6 @@
       "description": "standards-body evidence for standards-track-and-auditor-ecosystem",
       "source_uri": "TODO://authority/standards-track-and-auditor-ecosystem/standards-body",
       "task": "standards-track-and-auditor-ecosystem:standards-body"
-    },
-    {
-      "description": "standards-body evidence for trustai-own-compliance",
-      "source_uri": "TODO://authority/trustai-own-compliance/standards-body",
-      "task": "trustai-own-compliance:standards-body"
     }
   ],
   "generated_at": "2026-07-12T00:01:00Z",
@@ -535,21 +516,21 @@
     "This template is a handoff artifact; it does not satisfy missing external authority evidence by itself.",
     "Placeholder source URIs intentionally keep readiness blocked until owners replace them with live authority sources."
   ],
-  "owner_fulfillment_template_id": "7e098cfa38c2b85894dda9a5fe88037939fb58e1337395516e70903b835706ea",
+  "owner_fulfillment_template_id": "548513a68ce2aa50377bd0c0f17bdaf8a326cc5817ed18437351f8c575d8b9a0",
   "schema": "trustai.external-evidence-owner-fulfillment-template/0.1",
   "source_owner_packet_status": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "owner_packet_status_hash": "929a4ddd9bb6ea8bab8b33d7551e99afff33475e8eebaeef6e3478526add264d",
-    "owner_packet_status_id": "e8ff51aa6823266feb11968896bd477960b770f9add0814c8a938a47b344e88d",
+    "owner_packet_status_hash": "2b274fa3f563910b55df7f120f458eaa74ced91ac55fe508adf404a6d4fa8d9b",
+    "owner_packet_status_id": "e70a5fe63c6ca51a4aa5e5bde248c7e2b8d0dd4cdba11f0ad7cf4b22aeae71d8",
     "schema": "trustai.external-evidence-owner-packet-status/0.1"
   },
   "summary": {
-    "assignment_count": 27,
-    "blocked_task_count": 27,
+    "assignment_count": 26,
+    "blocked_task_count": 26,
     "closed_task_count": 0,
-    "fulfillment_count": 27,
+    "fulfillment_count": 26,
     "live_source_uri_count": 0,
-    "missing_intake_count": 27,
+    "missing_intake_count": 26,
     "open_task_count": 0,
     "owner_count": 9,
     "owners": [
@@ -563,6 +544,6 @@
       "service owner",
       "standards/governance owner"
     ],
-    "placeholder_source_uri_count": 27
+    "placeholder_source_uri_count": 26
   }
 }

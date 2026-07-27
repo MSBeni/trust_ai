@@ -5,12 +5,12 @@
     "A task is covered only after a matching evidence artifact is supplied to an external evidence manifest and verified.",
     "Freshness and issuer authority remain bounded by the supplied evidence artifact and manifest verification options."
   ],
-  "plan_id": "4ff1320b3411851dc19565cfc1aa1e58f139374151fb3e1db835746356b8d427",
+  "plan_id": "0f5edc4986ca4d3ed7bf8b19cf0994790e0823d6eddb02c5b017aedea5889c73",
   "schema": "trustai.external-evidence-collection-plan/0.1",
   "source_manifest": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "manifest_hash": "b9cc3685a43a3a26dcd3c68347f0ef1c7170ef0b022cedf785761a6db3126cdc",
-    "manifest_id": "8e251716ce2a122460a6dea5c406f716b57c172cbe26b8ca5759feaece771a00",
+    "manifest_hash": "36b6eef891c17c09a48974a9f6ef98e5c97d8cff5b54f1b41372c57b7862dea6",
+    "manifest_id": "143bef485356cadf9eac31762313be1d79bd4793be957999e0eb42e45578ff8f",
     "manifest_ref": "production-external-evidence",
     "status": "partial"
   },
@@ -21,8 +21,8 @@
   },
   "status_filter": "missing",
   "summary": {
-    "covered_authority_kind_count": 44,
-    "missing_authority_kind_count": 27,
+    "covered_authority_kind_count": 45,
+    "missing_authority_kind_count": 26,
     "missing_task_count_by_authority_kind": {
       "ci-run": 4,
       "customer": 7,
@@ -32,12 +32,12 @@
       "kms-hsm": 2,
       "provider-api": 2,
       "regulator": 2,
-      "standards-body": 3
+      "standards-body": 2
     },
     "required_authority_kind_count": 71,
     "selected_covered_task_count": 0,
-    "selected_missing_task_count": 27,
-    "selected_task_count": 27,
+    "selected_missing_task_count": 26,
+    "selected_task_count": 26,
     "source_manifest_status": "partial",
     "task_count_by_authority_kind": {
       "ci-run": 4,
@@ -48,12 +48,12 @@
       "kms-hsm": 2,
       "provider-api": 2,
       "regulator": 2,
-      "standards-body": 3
+      "standards-body": 2
     },
     "task_count_by_phase": {
       "P0-P4": 2,
       "P1-P4": 5,
-      "P2": 3,
+      "P2": 2,
       "P2-P4": 8,
       "P3": 5,
       "P4": 4
@@ -61,35 +61,6 @@
     "total_authority_unit_count": 71
   },
   "tasks": [
-    {
-      "acceptance_criteria": [
-        "Artifact path must be repository-relative and hashable before manifest verification.",
-        "Evidence item authority_kind must be standards-body and accepted for trustai-own-compliance.",
-        "Use issued_at and expires_at metadata when strict freshness verification is required.",
-        "Rebuild and verify the external evidence manifest after adding the artifact."
-      ],
-      "authority_kind": "standards-body",
-      "coverage_status": "missing",
-      "evidence_argument_template": "trustai-own-compliance,standards-body,external-evidence/trustai-own-compliance/standards-body.json,standards-body evidence for trustai-own-compliance;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-      "external_authority_required": [
-        "TrustAI own compliance dossiers cover local/reference readiness and external-certification schemas for SOC 2 Type II and ISO/IEC 42001; actual SOC 2 Type II audit reports, ISO/IEC 42001 certificates, auditor bridge letters, management-system scope approvals, continuous control operation evidence, and board/customer acceptance remain external compliance evidence."
-      ],
-      "owner_hint": "standards/governance owner",
-      "phase": "P2",
-      "priority": "P0",
-      "requirement_id": "trustai-own-compliance",
-      "suggested_artifact_path": "external-evidence/trustai-own-compliance/standards-body.json",
-      "suggested_evidence_sources": [
-        "standards-body submission receipt",
-        "working-group status record",
-        "ballot or docket export"
-      ],
-      "task_id": "d9c2a5f823eab100329838a4c9fa0f9bac697f4ae4d5612faf55c31b0a6277f4",
-      "task_ref": "external-evidence:trustai-own-compliance:standards-body",
-      "title": "TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance proof",
-      "unit_id": "49736e67d3741ae33d3b5b762fb01b09f4fc037bf25c27e9133eb84df23c6db0",
-      "unit_ref": "trustai-own-compliance:standards-body"
-    },
     {
       "acceptance_criteria": [
         "Artifact path must be repository-relative and hashable before manifest verification.",
