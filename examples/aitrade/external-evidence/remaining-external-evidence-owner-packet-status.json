@@ -5,7 +5,7 @@
     "A closed task still requires rebuilt manifest verification and readiness verification before external authority coverage is accepted.",
     "Placeholder source URIs keep tasks blocked even when a local intake artifact is present."
   ],
-  "owner_packet_status_id": "4309b5526ced3e430bc28811507266f5ff9d68484d31ede9e9286e74fb0ff587",
+  "owner_packet_status_id": "2c70baefd5bfde5b7eb535730f8e58e4b4c6bfa164fe825604b54346c88aea49",
   "packets": [
     {
       "blocked_task_count": 8,
@@ -38,14 +38,14 @@
       "task_count": 9
     },
     {
-      "blocked_task_count": 12,
+      "blocked_task_count": 11,
       "closed_task_count": 0,
       "open_task_count": 0,
       "owner_hint": "integration/platform owner",
-      "packet_id": "6f26f1f1047c439d730798aa49195348973b6ed753cab7320a9bd8178ceab482",
+      "packet_id": "ff05d63f23fab193f42a1b27657794b96e7c551efb5e6448df99137808ee706c",
       "packet_ref": "owner-packet:owner_hint:integration-platform-owner",
       "packet_status": "blocked",
-      "task_count": 12
+      "task_count": 11
     },
     {
       "blocked_task_count": 5,
@@ -113,41 +113,41 @@
     "intake_hashes": [],
     "owner_packet_bundle": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_bundle_hash": "65963e3871db5cb63afc8f2e1a28ea92c54d13740d20ca559428396e80b03d33",
-      "owner_packet_bundle_id": "6fb0cbd91c56388e13ab14a480c8a28d6a3ac8a580cf4f97b3713854257d42d7",
+      "owner_packet_bundle_hash": "e8d06aa1bdbc25135dbba382d2b20c96e45d181527b2398bbff910ec35f2bcec",
+      "owner_packet_bundle_id": "87a40f7da85fcc9fb05019b977fa1a8a52b33db037f88b4e66552f7a4765d43b",
       "schema": "trustai.external-evidence-owner-packet-bundle/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "5a23022ad2d0908fa1311f0bf8543d3c0fc339ab948ccda21ceac8a061b52dce",
-      "source_map_id": "3feeee9a2e4890c375e3e0da3e696b13d45673b6764907da88159326f8ce09a3"
+      "source_map_hash": "9cfae07e6f70f0a4c3690ffdd38b1852506edd8504a67fe1ea3caa2681023c16",
+      "source_map_id": "64dd7f85c8bd76336090445fcc369e606c1a775dee42c697a566531b4db428a3"
     },
     "work_package": {
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-work-package/0.1",
-      "work_package_hash": "bff8db44464557f33a57ebcca1879dbb621379869d8019aa5078776dd26b650c",
-      "work_package_id": "937a7c7f889fa00362621fd12a1aac421a2fc5b6cfa3788ae5d3bd81b36b4a1f"
+      "work_package_hash": "79dc806e6295727c209669cdfcdefd0c06784e57e4f1c3c7a7596a5ece655584",
+      "work_package_id": "34205940c907e24ae6e2e66b2b66a082d8c94d0ac88229fba05496905f40b37f"
     }
   },
   "summary": {
     "blocked_packet_count": 10,
-    "blocked_task_count": 67,
+    "blocked_task_count": 66,
     "closed_packet_count": 0,
     "closed_task_count": 0,
     "invalid_intake_count": 0,
     "live_source_uri_count": 0,
-    "missing_intake_count": 67,
+    "missing_intake_count": 66,
     "open_packet_count": 0,
     "open_task_count": 0,
     "packet_count": 10,
     "packet_status_counts": {
       "blocked": 10
     },
-    "placeholder_source_uri_count": 67,
-    "task_count": 67,
+    "placeholder_source_uri_count": 66,
+    "task_count": 66,
     "task_status_counts": {
-      "blocked": 67
+      "blocked": 66
     }
   },
   "tasks": [
@@ -456,23 +456,6 @@
       "task_ref": "external-evidence:trust-network-procurement-and-marketplace:customer",
       "task_status": "blocked",
       "unit_ref": "trust-network-procurement-and-marketplace:customer"
-    },
-    {
-      "authority_kind": "provider-api",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake": null,
-      "intake_out": "artifacts/external-evidence-intakes/cicd-provider-approvals/provider-api.json",
-      "owner_hint": "integration/platform owner",
-      "requirement_id": "cicd-provider-approvals",
-      "snapshot_out": "artifacts/external-evidence-sources/cicd-provider-approvals/provider-api.json",
-      "source_uri": "TODO://authority/cicd-provider-approvals/provider-api",
-      "source_uri_status": "placeholder",
-      "task_ref": "external-evidence:cicd-provider-approvals:provider-api",
-      "task_status": "blocked",
-      "unit_ref": "cicd-provider-approvals:provider-api"
     },
     {
       "authority_kind": "provider-api",

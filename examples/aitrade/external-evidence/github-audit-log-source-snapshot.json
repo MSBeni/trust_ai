@@ -1,0 +1,22 @@
+{
+  "body_base64": "ewogICJldmVudHMiOiBbCiAgICB7CiAgICAgICJhY3RvciI6ICJnaXRodWItYWN0aW9ucyIsCiAgICAgICJkZWxpdmVyeV9pZCI6ICJkZWxpdmVyeS0xMjMiLAogICAgICAiZXZlbnQiOiAiY2hlY2tfc3VpdGUiLAogICAgICAib2NjdXJyZWRfYXQiOiAiMjAyNi0wNy0wOFQwMjowMDowMVoiLAogICAgICAicGF5bG9hZF9zaGEyNTYiOiAiNjQ3ZTRjZjJjZWYwMGEzZDk4MjMyZjIwY2JhY2FiZDdlMDkyY2Y5OTFhNDMxMTEwNGZiZjAzNTRmZTRkMWJiMyIsCiAgICAgICJwcm92aWRlciI6ICJnaXRodWIiLAogICAgICAicmVwb3NpdG9yeSI6ICJ2b2xlbGFicy90cnVzdF9haSIKICAgIH0KICBdLAogICJleHBvcnRlZF9hdCI6ICIyMDI2LTA3LTA4VDAyOjA1OjAwWiIsCiAgInByb3ZpZGVyIjogImdpdGh1YiIsCiAgInNjaGVtYSI6ICJnaXRodWIuYXVkaXQtbG9nLWV4cG9ydC8yMDI2LTA3Igp9Cg==",
+  "body_sha256": "sha256:de0bbf5d8c7b2273a9a5fc19652f143f9a4739a06ed9c38cfdf16ce566fb682f",
+  "body_size_bytes": 451,
+  "content_type": "application/json",
+  "expires_at": "2026-12-31T00:00:00Z",
+  "generated_at": "2026-07-12T00:01:00Z",
+  "issued_at": "2026-07-08T00:00:00Z",
+  "issuer": "GitHub Audit Log",
+  "limitations": [
+    "This source snapshot preserves one collected authority response as a hashable artifact; it does not prove that the authority will return the same response later.",
+    "Verifier checks cover snapshot integrity, body hash, optional HTTP metadata, and optional freshness metadata.",
+    "Use this snapshot as the artifact supplied to external-evidence-intake for the matching collection-plan task."
+  ],
+  "response_headers": {},
+  "retrieval_method": "file-copy",
+  "schema": "trustai.external-evidence-source-snapshot/0.1",
+  "snapshot_id": "de8ada3479ba892a8ed62b8f5e05e3e27ac2a71924a5865f6a0d9f05c7b1bf62",
+  "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/actions/runs",
+  "status_code": null,
+  "subject": "trustai GitHub provider audit-log export"
+}

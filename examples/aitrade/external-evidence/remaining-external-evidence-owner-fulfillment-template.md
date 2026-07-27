@@ -1,14 +1,14 @@
 # External Evidence Owner Fulfillment Template
 
-- Template ID: `e6fbae9ed4af5e3c39194e9dd79acfeef7c60c46219a3f12c1850a302f2435fc`
+- Template ID: `784680f59e3831b96c4ded623b5407947f12ffd2b434aa29b3f76e53fe1d7334`
 - Generated at: `2026-07-12T00:01:00Z`
-- Fulfillments: 67
+- Fulfillments: 66
 - Owners: 10
-- Blocked tasks: 67
+- Blocked tasks: 66
 - Open tasks: 0
 - Closed tasks: 0
-- Placeholder source URIs: 67
-- Missing intakes: 67
+- Placeholder source URIs: 66
+- Missing intakes: 66
 
 ## Fulfillments
 
@@ -35,7 +35,6 @@
 | `agent-inventory-and-identity:provider-api` | TODO://authority/agent-inventory-and-identity/provider-api | provider-api evidence for agent-inventory-and-identity |
 | `auditor-and-review-portal:provider-api` | TODO://authority/auditor-and-review-portal/provider-api | provider-api evidence for auditor-and-review-portal |
 | `byoc-self-hosted:provider-api` | TODO://authority/byoc-self-hosted/provider-api | provider-api evidence for byoc-self-hosted |
-| `cicd-provider-approvals:provider-api` | TODO://authority/cicd-provider-approvals/provider-api | provider-api evidence for cicd-provider-approvals |
 | `compliance-mapper-and-eu-ai-act:provider-api` | TODO://authority/compliance-mapper-and-eu-ai-act/provider-api | provider-api evidence for compliance-mapper-and-eu-ai-act |
 | `framework-adapters:provider-api` | TODO://authority/framework-adapters/provider-api | provider-api evidence for framework-adapters |
 | `insurer-api-and-actuarial-products:provider-api` | TODO://authority/insurer-api-and-actuarial-products/provider-api | provider-api evidence for insurer-api-and-actuarial-products |
@@ -107,7 +106,6 @@
 | `agent-inventory-and-identity:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/agent-inventory-and-identity/provider-api.json | artifacts/external-evidence-intakes/agent-inventory-and-identity/provider-api.json |
 | `auditor-and-review-portal:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/auditor-and-review-portal/provider-api.json | artifacts/external-evidence-intakes/auditor-and-review-portal/provider-api.json |
 | `byoc-self-hosted:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/byoc-self-hosted/provider-api.json | artifacts/external-evidence-intakes/byoc-self-hosted/provider-api.json |
-| `cicd-provider-approvals:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/cicd-provider-approvals/provider-api.json | artifacts/external-evidence-intakes/cicd-provider-approvals/provider-api.json |
 | `compliance-mapper-and-eu-ai-act:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/provider-api.json | artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/provider-api.json |
 | `framework-adapters:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/framework-adapters/provider-api.json | artifacts/external-evidence-intakes/framework-adapters/provider-api.json |
 | `insurer-api-and-actuarial-products:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/provider-api.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/provider-api.json |

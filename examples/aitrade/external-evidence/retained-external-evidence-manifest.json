@@ -72,6 +72,25 @@
       "sha256": "sha256:76e98b50e81b31f06e1495f04fbed2f5bc85be6c54d0a3c605f0c4beaae2b8c7",
       "source_uri": "https://github.com/MSBeni/trust_ai/actions",
       "subject": "trustai GitHub check-suite promotion callback"
+    },
+    {
+      "accepted_authority_kinds": [
+        "ci-run",
+        "provider-api",
+        "hosted-service",
+        "identity-provider"
+      ],
+      "authority_kind": "provider-api",
+      "description": "Retained GitHub audit-log export for CI/CD promotion provider API evidence",
+      "evidence_id": "e4dac64768d98038bcaf75caa8b524efa5b3cb2e6e3394cf03bd057d1cf7a5cf",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-08T00:00:00Z",
+      "issuer": "GitHub Audit Log",
+      "path": "examples/aitrade/external-evidence/github-audit-log-source-snapshot.json",
+      "requirement_id": "cicd-provider-approvals",
+      "sha256": "sha256:eadabf67ffa526d2e290511d0ba6149f1ea335ed5bd9e145f45645fc6392acad",
+      "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/actions/runs",
+      "subject": "trustai GitHub provider audit-log export"
     }
   ],
   "generated_at": "2026-07-12T00:01:00Z",
@@ -80,7 +99,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "e1fa845eb298791fbba72644442560ad75a7f8fc7d151b6b668d7871b17d7f09",
+  "manifest_id": "876050e0b2ef47153aaf656b4b44a3abda0b017227a0e5b7a1d13ff411278b61",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -280,7 +299,7 @@
     },
     {
       "authority_kind": "provider-api",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Provider delivery receipts cover retained provider delivery payload artifact replay and retained provider response artifact byte replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs, provider-native status shape, and replayed retained provider delivery payload/response artifacts before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
       ],
@@ -1307,10 +1326,11 @@
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {
-    "covered_authority_kind_count": 4,
+    "covered_authority_kind_count": 5,
     "covered_authority_kinds_by_requirement": {
       "cicd-provider-approvals": [
-        "ci-run"
+        "ci-run",
+        "provider-api"
       ],
       "oss-verifier-and-public-spec": [
         "ci-run",
@@ -1323,11 +1343,11 @@
       "cicd-provider-approvals",
       "oss-verifier-and-public-spec"
     ],
-    "evidence_count": 4,
-    "expires_at_count": 4,
-    "freshness_window_count": 4,
-    "issued_at_count": 4,
-    "missing_authority_kind_count": 67,
+    "evidence_count": 5,
+    "expires_at_count": 5,
+    "freshness_window_count": 5,
+    "issued_at_count": 5,
+    "missing_authority_kind_count": 66,
     "missing_authority_kinds_by_requirement": {
       "agent-inventory-and-identity": [
         "provider-api",
@@ -1349,7 +1369,6 @@
         "customer"
       ],
       "cicd-provider-approvals": [
-        "provider-api",
         "hosted-service",
         "identity-provider"
       ],

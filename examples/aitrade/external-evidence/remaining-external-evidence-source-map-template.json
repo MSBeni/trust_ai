@@ -266,30 +266,6 @@
       "unit_ref": "shadow-replay-temporal-holdout:standards-body"
     },
     {
-      "authority_kind": "provider-api",
-      "coverage_status": "missing",
-      "description": "provider-api evidence for cicd-provider-approvals",
-      "external_authority_required": [
-        "Provider delivery receipts cover retained provider delivery payload artifact replay and retained provider response artifact byte replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs, provider-native status shape, and replayed retained provider delivery payload/response artifacts before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/cicd-provider-approvals/provider-api.json",
-      "owner_hint": "integration/platform owner",
-      "requirement_id": "cicd-provider-approvals",
-      "snapshot_out": "artifacts/external-evidence-sources/cicd-provider-approvals/provider-api.json",
-      "source_uri": "TODO://authority/cicd-provider-approvals/provider-api",
-      "suggested_evidence_sources": [
-        "provider API response export",
-        "request/response transcript",
-        "provider-owned audit event"
-      ],
-      "task": "cicd-provider-approvals:provider-api",
-      "task_id": "1613dfe0c10d959894e11bafc9cc330e543123bba2f797865c8138e5f0d962f0",
-      "task_ref": "external-evidence:cicd-provider-approvals:provider-api",
-      "title": "CI/CD promotion gates, provider callbacks, and Slack approvals",
-      "unit_id": "31e8e21963fde1bef9b47458dc8af2b4f52a423d4563d25da09321b39474aeda",
-      "unit_ref": "cicd-provider-approvals:provider-api"
-    },
-    {
       "authority_kind": "hosted-service",
       "coverage_status": "missing",
       "description": "hosted-service evidence for cicd-provider-approvals",
@@ -1617,14 +1593,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "3feeee9a2e4890c375e3e0da3e696b13d45673b6764907da88159326f8ce09a3",
+  "source_map_id": "64dd7f85c8bd76336090445fcc369e606c1a775dee42c697a566531b4db428a3",
   "source_plan": {
-    "plan_hash": "08d09ea9373b537ae4e84844a9a7e74be159c20cdfa93be76995a93639feed44",
-    "plan_id": "cfd60aaf6d9d8b4f82cc87306086b7924313092fb429bddac91af2ae4a79ec0a",
+    "plan_hash": "968e12331ccb10d541a82d6d3e8bd06aa8310ebba64edefc95f4ba0dbd790670",
+    "plan_id": "be55cbd2c290e098cdcf77256cbd2177b3fb60c4a1fed0ce17c270483a14dfe1",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "d20d48a06fd79f00b524f78ac80bf46aa9506deaac5076290c4b45d461f4662f",
-      "manifest_id": "e1fa845eb298791fbba72644442560ad75a7f8fc7d151b6b668d7871b17d7f09",
+      "manifest_hash": "14bda9a5e62b79c101d2203b32e5302451f044bdaccb63527399e3f50fa697fd",
+      "manifest_id": "876050e0b2ef47153aaf656b4b44a3abda0b017227a0e5b7a1d13ff411278b61",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },
@@ -1632,12 +1608,12 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 67,
+    "entry_count": 66,
     "intake_dir": "artifacts/external-evidence-intakes",
     "live_source_uri_count": 0,
-    "placeholder_source_uri_count": 67,
+    "placeholder_source_uri_count": 66,
     "snapshot_dir": "artifacts/external-evidence-sources",
-    "source_plan_task_count": 67,
+    "source_plan_task_count": 66,
     "status_filter": "missing"
   }
 }

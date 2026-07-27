@@ -94,6 +94,20 @@ RETAINED_SOURCES: dict[str, dict[str, str]] = {
         "snapshot_out": "examples/aitrade/external-evidence/github-check-suite-source-snapshot.json",
         "intake_out": "examples/aitrade/external-evidence/intakes/cicd-provider-approvals-ci-run.json",
     },
+    "cicd-provider-approvals:provider-api": {
+        "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/actions/runs",
+        "description": "Retained GitHub audit-log export for CI/CD promotion provider API evidence",
+        "artifact": "examples/aitrade/external-evidence/github-audit-log-source-snapshot.json",
+        "source_file": "examples/webhooks/github-audit-log.json",
+        "retrieval_method": "file-copy",
+        "content_type": "application/json",
+        "issuer": "GitHub Audit Log",
+        "subject": "trustai GitHub provider audit-log export",
+        "issued_at": "2026-07-08T00:00:00Z",
+        "expires_at": "2026-12-31T00:00:00Z",
+        "snapshot_out": "examples/aitrade/external-evidence/github-audit-log-source-snapshot.json",
+        "intake_out": "examples/aitrade/external-evidence/intakes/cicd-provider-approvals-provider-api.json",
+    },
 }
 
 

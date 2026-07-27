@@ -1,13 +1,13 @@
 # External Evidence Gap Report
 
-- Gap report ID: `2670927d72ce25b6fc1ea705934dfb20d31e801692f7bad4ca308d9ccc965db3`
+- Gap report ID: `3ddde2b9905a6999fba16ae9bcd087fd7358ee1fd9e390e3f4b662bfc7ccc613`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 4/71
-- Missing authority kinds: 67
-- Remaining collection tasks: 67
-- Source-map entries: 67
-- Placeholder source URIs: 67
+- Covered authority kinds: 5/71
+- Missing authority kinds: 66
+- Remaining collection tasks: 66
+- Source-map entries: 66
+- Placeholder source URIs: 66
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
@@ -19,7 +19,7 @@
 - `identity-provider`: 8
 - `insurer`: 4
 - `kms-hsm`: 7
-- `provider-api`: 12
+- `provider-api`: 11
 - `regulator`: 5
 - `standards-body`: 6
 
@@ -28,7 +28,7 @@
 - `agent-inventory-and-identity`: 2
 - `auditor-and-review-portal`: 5
 - `byoc-self-hosted`: 6
-- `cicd-provider-approvals`: 3
+- `cicd-provider-approvals`: 2
 - `compliance-mapper-and-eu-ai-act`: 3
 - `design-partner-pilot-exit-criteria`: 3
 - `framework-adapters`: 3
@@ -167,17 +167,6 @@
 - Snapshot output: `artifacts/external-evidence-sources/shadow-replay-temporal-holdout/standards-body.json`
 - Intake output: `artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/standards-body.json`
 - Suggested evidence sources: standards-body submission receipt; working-group status record; ballot or docket export
-
-### cicd-provider-approvals:provider-api
-
-- Title: CI/CD promotion gates, provider callbacks, and Slack approvals
-- Authority kind: `provider-api`
-- Owner hint: integration/platform owner
-- Description: provider-api evidence for cicd-provider-approvals
-- Source URI: `TODO://authority/cicd-provider-approvals/provider-api`
-- Snapshot output: `artifacts/external-evidence-sources/cicd-provider-approvals/provider-api.json`
-- Intake output: `artifacts/external-evidence-intakes/cicd-provider-approvals/provider-api.json`
-- Suggested evidence sources: provider API response export; request/response transcript; provider-owned audit event
 
 ### cicd-provider-approvals:hosted-service
 

@@ -1,14 +1,14 @@
 # External Evidence Owner Packet Status
 
-- Status ID: `4309b5526ced3e430bc28811507266f5ff9d68484d31ede9e9286e74fb0ff587`
+- Status ID: `2c70baefd5bfde5b7eb535730f8e58e4b4c6bfa164fe825604b54346c88aea49`
 - Generated at: `2026-07-12T00:01:00Z`
 - Packets: 10
-- Tasks: 67
+- Tasks: 66
 - Closed tasks: 0
 - Open tasks: 0
-- Blocked tasks: 67
-- Placeholder source URIs: 67
-- Missing intakes: 67
+- Blocked tasks: 66
+- Placeholder source URIs: 66
+- Missing intakes: 66
 
 ## Packets
 
@@ -17,7 +17,7 @@
 | IAM/identity owner | `owner-packet:owner_hint:IAM-identity-owner` | blocked | 8 | 0 | 0 | 8 |
 | cloud storage owner | `owner-packet:owner_hint:cloud-storage-owner` | blocked | 1 | 0 | 0 | 1 |
 | customer success/account owner | `owner-packet:owner_hint:customer-success-account-owner` | blocked | 9 | 0 | 0 | 9 |
-| integration/platform owner | `owner-packet:owner_hint:integration-platform-owner` | blocked | 12 | 0 | 0 | 12 |
+| integration/platform owner | `owner-packet:owner_hint:integration-platform-owner` | blocked | 11 | 0 | 0 | 11 |
 | legal/compliance owner | `owner-packet:owner_hint:legal-compliance-owner` | blocked | 5 | 0 | 0 | 5 |
 | release engineering | `owner-packet:owner_hint:release-engineering` | blocked | 7 | 0 | 0 | 7 |
 | risk/insurance owner | `owner-packet:owner_hint:risk-insurance-owner` | blocked | 4 | 0 | 0 | 4 |
@@ -47,7 +47,6 @@
 | `state-of-agent-reliability-report:customer` | customer success/account owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `vertical-packs:customer` | customer success/account owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `trust-network-procurement-and-marketplace:customer` | customer success/account owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
-| `cicd-provider-approvals:provider-api` | integration/platform owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `mcp-gateway:provider-api` | integration/platform owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `shadow-replay-temporal-holdout:provider-api` | integration/platform owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `framework-adapters:provider-api` | integration/platform owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |

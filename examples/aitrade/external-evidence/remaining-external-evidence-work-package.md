@@ -1,12 +1,12 @@
 # External Evidence Work Packages
 
-- Work package ID: `937a7c7f889fa00362621fd12a1aac421a2fc5b6cfa3788ae5d3bd81b36b4a1f`
+- Work package ID: `34205940c907e24ae6e2e66b2b66a082d8c94d0ac88229fba05496905f40b37f`
 - Generated at: `2026-07-12T00:01:00Z`
 - Grouped by: `owner_hint`
 - Packages: 10
-- Tasks: 67
-- Missing tasks: 67
-- Placeholder source URIs: 67
+- Tasks: 66
+- Missing tasks: 66
+- Placeholder source URIs: 66
 - Live source URIs: 0
 
 ## Tasks By Owner
@@ -14,7 +14,7 @@
 - IAM/identity owner: 8
 - cloud storage owner: 1
 - customer success/account owner: 9
-- integration/platform owner: 12
+- integration/platform owner: 11
 - legal/compliance owner: 5
 - release engineering: 7
 - risk/insurance owner: 4
@@ -132,17 +132,16 @@
 ### integration/platform owner
 
 - Package ref: `owner_hint:integration-platform-owner`
-- Package ID: `06b160f10993bc896de479efc2e5119ee984e4520d21714ae81dcfbd07e63125`
+- Package ID: `95e199132866cead0aaafd85111abed2a6a83a0b95f413909705b8603a802034`
 - Owner Hint: `integration/platform owner`
-- Tasks: 12
+- Tasks: 11
 - Authority kinds: `provider-api`
-- Requirements: `agent-inventory-and-identity`, `auditor-and-review-portal`, `byoc-self-hosted`, `cicd-provider-approvals`, `compliance-mapper-and-eu-ai-act`, `framework-adapters`, `insurer-api-and-actuarial-products`, `mcp-gateway`, `runtime-policy-and-attestation`, `self-serve-onboarding`, `shadow-replay-temporal-holdout`, `trust-network-procurement-and-marketplace`
+- Requirements: `agent-inventory-and-identity`, `auditor-and-review-portal`, `byoc-self-hosted`, `compliance-mapper-and-eu-ai-act`, `framework-adapters`, `insurer-api-and-actuarial-products`, `mcp-gateway`, `runtime-policy-and-attestation`, `self-serve-onboarding`, `shadow-replay-temporal-holdout`, `trust-network-procurement-and-marketplace`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
 
 | Task | Phase | Priority | Authority | Source URI Status | Intake |
 |---|---|---|---|---|---|
-| `cicd-provider-approvals:provider-api` | P1 | P0 | `provider-api` | placeholder | `artifacts/external-evidence-intakes/cicd-provider-approvals/provider-api.json` |
 | `mcp-gateway:provider-api` | P1 | P0 | `provider-api` | placeholder | `artifacts/external-evidence-intakes/mcp-gateway/provider-api.json` |
 | `shadow-replay-temporal-holdout:provider-api` | P1 | P0 | `provider-api` | placeholder | `artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/provider-api.json` |
 | `framework-adapters:provider-api` | P1 | P1 | `provider-api` | placeholder | `artifacts/external-evidence-intakes/framework-adapters/provider-api.json` |
@@ -157,8 +156,6 @@
 
 #### Task Commands
 
-- `cicd-provider-approvals:provider-api` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/cicd-provider-approvals/provider-api --root . --task cicd-provider-approvals:provider-api --description 'provider-api evidence for cicd-provider-approvals' --snapshot-out artifacts/external-evidence-sources/cicd-provider-approvals/provider-api.json --intake-out artifacts/external-evidence-intakes/cicd-provider-approvals/provider-api.json`
-- `cicd-provider-approvals:provider-api` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/cicd-provider-approvals/provider-api.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `mcp-gateway:provider-api` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/mcp-gateway/provider-api --root . --task mcp-gateway:provider-api --description 'provider-api evidence for mcp-gateway' --snapshot-out artifacts/external-evidence-sources/mcp-gateway/provider-api.json --intake-out artifacts/external-evidence-intakes/mcp-gateway/provider-api.json`
 - `mcp-gateway:provider-api` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/mcp-gateway/provider-api.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `shadow-replay-temporal-holdout:provider-api` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/shadow-replay-temporal-holdout/provider-api --root . --task shadow-replay-temporal-holdout:provider-api --description 'provider-api evidence for shadow-replay-temporal-holdout' --snapshot-out artifacts/external-evidence-sources/shadow-replay-temporal-holdout/provider-api.json --intake-out artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/provider-api.json`

@@ -1,7 +1,7 @@
 {
   "blockers": [
-    "owner fulfillment review contains 67 placeholder source_uri values",
-    "fulfilled source map: source map contains 67 placeholder source_uri values but live source URIs are required"
+    "owner fulfillment review contains 66 placeholder source_uri values",
+    "fulfilled source map: source map contains 66 placeholder source_uri values but live source URIs are required"
   ],
   "commands": {
     "collect_after_ready_review": "python -m trustai external-evidence-collect-batch <fulfilled-source-map.json> <manifest.json> <roadmap-audit.json> --root . --require-live-source-uris",
@@ -274,30 +274,6 @@
         "title": "Shadow replay, temporal holdout, soak reports, and distributional re-execution",
         "unit_id": "15afd330474ec578f826292afa08c9726a1d3219d1dfc6b4a35fdf93597aa2cb",
         "unit_ref": "shadow-replay-temporal-holdout:standards-body"
-      },
-      {
-        "authority_kind": "provider-api",
-        "coverage_status": "missing",
-        "description": "provider-api evidence for cicd-provider-approvals",
-        "external_authority_required": [
-          "Provider delivery receipts cover retained provider delivery payload artifact replay and retained provider response artifact byte replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs, provider-native status shape, and replayed retained provider delivery payload/response artifacts before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/cicd-provider-approvals/provider-api.json",
-        "owner_hint": "integration/platform owner",
-        "requirement_id": "cicd-provider-approvals",
-        "snapshot_out": "artifacts/external-evidence-sources/cicd-provider-approvals/provider-api.json",
-        "source_uri": "TODO://authority/cicd-provider-approvals/provider-api",
-        "suggested_evidence_sources": [
-          "provider API response export",
-          "request/response transcript",
-          "provider-owned audit event"
-        ],
-        "task": "cicd-provider-approvals:provider-api",
-        "task_id": "1613dfe0c10d959894e11bafc9cc330e543123bba2f797865c8138e5f0d962f0",
-        "task_ref": "external-evidence:cicd-provider-approvals:provider-api",
-        "title": "CI/CD promotion gates, provider callbacks, and Slack approvals",
-        "unit_id": "31e8e21963fde1bef9b47458dc8af2b4f52a423d4563d25da09321b39474aeda",
-        "unit_ref": "cicd-provider-approvals:provider-api"
       },
       {
         "authority_kind": "hosted-service",
@@ -1627,14 +1603,14 @@
       "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
     ],
     "schema": "trustai.external-evidence-source-map/0.1",
-    "source_map_id": "1d39e5db1e079513d27b4df9bf421791847a07e474f4f089389c7f78c81d49c9",
+    "source_map_id": "fcdddd7a67a50c5cdea1b32980cb9fee313a7776315960d63ebd1ebc446ea25a",
     "source_plan": {
-      "plan_hash": "08d09ea9373b537ae4e84844a9a7e74be159c20cdfa93be76995a93639feed44",
-      "plan_id": "cfd60aaf6d9d8b4f82cc87306086b7924313092fb429bddac91af2ae4a79ec0a",
+      "plan_hash": "968e12331ccb10d541a82d6d3e8bd06aa8310ebba64edefc95f4ba0dbd790670",
+      "plan_id": "be55cbd2c290e098cdcf77256cbd2177b3fb60c4a1fed0ce17c270483a14dfe1",
       "source_manifest": {
         "generated_at": "2026-07-12T00:01:00Z",
-        "manifest_hash": "d20d48a06fd79f00b524f78ac80bf46aa9506deaac5076290c4b45d461f4662f",
-        "manifest_id": "e1fa845eb298791fbba72644442560ad75a7f8fc7d151b6b668d7871b17d7f09",
+        "manifest_hash": "14bda9a5e62b79c101d2203b32e5302451f044bdaccb63527399e3f50fa697fd",
+        "manifest_id": "876050e0b2ef47153aaf656b4b44a3abda0b017227a0e5b7a1d13ff411278b61",
         "manifest_ref": "production-external-evidence",
         "status": "partial"
       },
@@ -1642,12 +1618,12 @@
     },
     "summary": {
       "authority_kinds": [],
-      "entry_count": 67,
+      "entry_count": 66,
       "intake_dir": "artifacts/external-evidence-intakes",
       "live_source_uri_count": 0,
-      "placeholder_source_uri_count": 67,
+      "placeholder_source_uri_count": 66,
       "snapshot_dir": "artifacts/external-evidence-sources",
-      "source_plan_task_count": 67,
+      "source_plan_task_count": 66,
       "status_filter": "missing"
     }
   },
@@ -1662,45 +1638,45 @@
     "Regenerate this review with --require-live-source-uris before collecting source snapshots.",
     "After the fulfilled source map is ready, run external-evidence-collect-batch and rebuild the retained manifest from intake receipts."
   ],
-  "owner_fulfillment_review_id": "cc4d58f3035fe16c6ebf863bb109baea68ca8f6c1e06caa040183c52da66f145",
+  "owner_fulfillment_review_id": "d8a78ab2dcbcc874b1feafb53fdd796b82e33791f3930857bd9ce91f66e2b4f9",
   "schema": "trustai.external-evidence-owner-fulfillment-review/0.1",
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "08d09ea9373b537ae4e84844a9a7e74be159c20cdfa93be76995a93639feed44",
-      "plan_id": "cfd60aaf6d9d8b4f82cc87306086b7924313092fb429bddac91af2ae4a79ec0a",
+      "plan_hash": "968e12331ccb10d541a82d6d3e8bd06aa8310ebba64edefc95f4ba0dbd790670",
+      "plan_id": "be55cbd2c290e098cdcf77256cbd2177b3fb60c4a1fed0ce17c270483a14dfe1",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "owner_fulfillment_template": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_fulfillment_template_hash": "31f6995d396462bd653f953ca5d2349544ace7a88b14a90391f97d9f5ed2dcfd",
-      "owner_fulfillment_template_id": "e6fbae9ed4af5e3c39194e9dd79acfeef7c60c46219a3f12c1850a302f2435fc",
+      "owner_fulfillment_template_hash": "45e8a12979da5d9b330cbc3f6e28b57795496699544fc9966fce118981cf1e1f",
+      "owner_fulfillment_template_id": "784680f59e3831b96c4ded623b5407947f12ffd2b434aa29b3f76e53fe1d7334",
       "schema": "trustai.external-evidence-owner-fulfillment-template/0.1"
     },
     "owner_packet_status": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_status_hash": "fcc4c21696201f802a7369f56c0a6ff0f094dae9c8c9063b16127f5f258e1557",
-      "owner_packet_status_id": "4309b5526ced3e430bc28811507266f5ff9d68484d31ede9e9286e74fb0ff587",
+      "owner_packet_status_hash": "a1054e51893d5543a72bf0cb9859ed86ee3dee68e12376398809db651dd1517c",
+      "owner_packet_status_id": "2c70baefd5bfde5b7eb535730f8e58e4b4c6bfa164fe825604b54346c88aea49",
       "schema": "trustai.external-evidence-owner-packet-status/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "5a23022ad2d0908fa1311f0bf8543d3c0fc339ab948ccda21ceac8a061b52dce",
-      "source_map_id": "3feeee9a2e4890c375e3e0da3e696b13d45673b6764907da88159326f8ce09a3"
+      "source_map_hash": "9cfae07e6f70f0a4c3690ffdd38b1852506edd8504a67fe1ea3caa2681023c16",
+      "source_map_id": "64dd7f85c8bd76336090445fcc369e606c1a775dee42c697a566531b4db428a3"
     }
   },
   "summary": {
-    "blocked_task_count": 67,
+    "blocked_task_count": 66,
     "error_count": 1,
     "fulfilled_source_map_verification_ok": false,
-    "fulfillment_count": 67,
+    "fulfillment_count": 66,
     "live_source_uri_count": 0,
     "owner_count": 10,
-    "placeholder_source_uri_count": 67,
+    "placeholder_source_uri_count": 66,
     "ready_task_count": 0,
     "review_status": "blocked",
-    "source_map_entry_count": 67,
+    "source_map_entry_count": 66,
     "template_verification_ok": true,
     "warning_count": 3
   },
@@ -1858,20 +1834,6 @@
       "source_uri": "TODO://authority/shadow-replay-temporal-holdout/standards-body",
       "source_uri_status": "placeholder",
       "task": "shadow-replay-temporal-holdout:standards-body"
-    },
-    {
-      "authority_kind": "provider-api",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/cicd-provider-approvals/provider-api.json",
-      "owner_hint": "integration/platform owner",
-      "requirement_id": "cicd-provider-approvals",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/cicd-provider-approvals/provider-api.json",
-      "source_uri": "TODO://authority/cicd-provider-approvals/provider-api",
-      "source_uri_status": "placeholder",
-      "task": "cicd-provider-approvals:provider-api"
     },
     {
       "authority_kind": "hosted-service",
@@ -2646,14 +2608,14 @@
   ],
   "verification": {
     "fulfilled_source_map_errors": [
-      "source map contains 67 placeholder source_uri values but live source URIs are required"
+      "source map contains 66 placeholder source_uri values but live source URIs are required"
     ],
     "fulfilled_source_map_warnings": [
-      "source map contains 67 placeholder source_uri values"
+      "source map contains 66 placeholder source_uri values"
     ],
     "template_warnings": [
-      "owner fulfillment template summary contains 67 placeholder source_uri values",
-      "owner fulfillment template summary contains 67 tasks without intake receipts"
+      "owner fulfillment template summary contains 66 placeholder source_uri values",
+      "owner fulfillment template summary contains 66 tasks without intake receipts"
     ]
   },
   "verification_options": {

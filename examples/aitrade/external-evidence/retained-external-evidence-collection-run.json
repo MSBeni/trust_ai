@@ -43,18 +43,29 @@
       "source_uri": "https://github.com/MSBeni/trust_ai/actions",
       "task": "cicd-provider-approvals:ci-run",
       "warnings": []
+    },
+    {
+      "evidence_argument": "cicd-provider-approvals,provider-api,examples/aitrade/external-evidence/github-audit-log-source-snapshot.json,Retained GitHub audit-log export for CI/CD promotion provider API evidence;issuer=GitHub Audit Log;subject=trustai GitHub provider audit-log export;source_uri=https://api.github.com/repos/MSBeni/trust_ai/actions/runs;issued_at=2026-07-08T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
+      "intake_id": "46a14749f727067c242c47fa8211b517e78ef2075c5719a3fdfe7138e0907e11",
+      "intake_path": "examples/aitrade/external-evidence/intakes/cicd-provider-approvals-provider-api.json",
+      "snapshot_artifact_path": "examples/aitrade/external-evidence/github-audit-log-source-snapshot.json",
+      "snapshot_id": "de8ada3479ba892a8ed62b8f5e05e3e27ac2a71924a5865f6a0d9f05c7b1bf62",
+      "snapshot_path": "examples/aitrade/external-evidence/github-audit-log-source-snapshot.json",
+      "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/actions/runs",
+      "task": "cicd-provider-approvals:provider-api",
+      "warnings": []
     }
   ],
   "generated_at": "2026-07-12T00:01:00Z",
-  "run_id": "935abb4e69a9794169ed006f53c04afa1e6b94a3fa5e44d2b834646f1d371ee0",
+  "run_id": "c52aeaf0054da45e3538e5b1c31f2d4531914c5c538f5368e3b73265f6f6f7ec",
   "schema": "trustai.external-evidence-collection-run/0.1",
   "source_map": {
     "path": "examples/aitrade/external-evidence/retained-external-evidence-collected-source-map.json",
-    "source_map_hash": "6eef1062b2389092f4a9a0896e7d8b6b0deed786e4330aa2ee705689e2ec131e"
+    "source_map_hash": "fd7ab83ed075f171ed51d76c3437852b09856e0b1b966f26fa8d938b55ba3ffc"
   },
   "summary": {
-    "collected_count": 4,
+    "collected_count": 5,
     "require_fresh": true,
-    "task_count": 4
+    "task_count": 5
   }
 }

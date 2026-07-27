@@ -1,13 +1,13 @@
 # External Evidence Owner Fulfillment Review
 
-- Review ID: `cc4d58f3035fe16c6ebf863bb109baea68ca8f6c1e06caa040183c52da66f145`
+- Review ID: `d8a78ab2dcbcc874b1feafb53fdd796b82e33791f3930857bd9ce91f66e2b4f9`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Fulfillments: 67
+- Fulfillments: 66
 - Owners: 10
 - Ready tasks: 0
-- Blocked tasks: 67
-- Placeholder source URIs: 67
+- Blocked tasks: 66
+- Placeholder source URIs: 66
 - Live source URIs: 0
 
 ## Task Review
@@ -25,7 +25,6 @@
 | `shadow-replay-temporal-holdout:provider-api` | integration/platform owner | blocked | TODO://authority/shadow-replay-temporal-holdout/provider-api | `placeholder-source-uri` |
 | `shadow-replay-temporal-holdout:identity-provider` | IAM/identity owner | blocked | TODO://authority/shadow-replay-temporal-holdout/identity-provider | `placeholder-source-uri` |
 | `shadow-replay-temporal-holdout:standards-body` | standards/governance owner | blocked | TODO://authority/shadow-replay-temporal-holdout/standards-body | `placeholder-source-uri` |
-| `cicd-provider-approvals:provider-api` | integration/platform owner | blocked | TODO://authority/cicd-provider-approvals/provider-api | `placeholder-source-uri` |
 | `cicd-provider-approvals:hosted-service` | service owner | blocked | TODO://authority/cicd-provider-approvals/hosted-service | `placeholder-source-uri` |
 | `cicd-provider-approvals:identity-provider` | IAM/identity owner | blocked | TODO://authority/cicd-provider-approvals/identity-provider | `placeholder-source-uri` |
 | `design-partner-pilot-exit-criteria:regulator` | legal/compliance owner | blocked | TODO://authority/design-partner-pilot-exit-criteria/regulator | `placeholder-source-uri` |
@@ -86,12 +85,12 @@
 
 - Fulfilled source map errors: 1
 - Fulfilled source map warnings: 1
-  - source map contains 67 placeholder source_uri values but live source URIs are required
+  - source map contains 66 placeholder source_uri values but live source URIs are required
 
 ## Blockers
 
-- owner fulfillment review contains 67 placeholder source_uri values
-- fulfilled source map: source map contains 67 placeholder source_uri values but live source URIs are required
+- owner fulfillment review contains 66 placeholder source_uri values
+- fulfilled source map: source map contains 66 placeholder source_uri values but live source URIs are required
 
 ## Next Actions
 
