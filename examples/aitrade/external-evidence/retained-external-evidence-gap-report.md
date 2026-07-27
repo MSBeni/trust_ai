@@ -1,13 +1,13 @@
 # External Evidence Gap Report
 
-- Gap report ID: `9cc502e8e080c5a47325c73d9dc2ef3591937682b1629327864e43c6dc6a3381`
+- Gap report ID: `a1d65358d0b0afffea9cfa8c449b56dd0c712133609469df914e3b5d56745a6b`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 42/71
-- Missing authority kinds: 29
-- Remaining collection tasks: 29
-- Source-map entries: 29
-- Placeholder source URIs: 29
+- Covered authority kinds: 43/71
+- Missing authority kinds: 28
+- Remaining collection tasks: 28
+- Source-map entries: 28
+- Placeholder source URIs: 28
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
@@ -19,12 +19,12 @@
 - `insurer`: 3
 - `kms-hsm`: 2
 - `provider-api`: 2
-- `regulator`: 3
+- `regulator`: 2
 - `standards-body`: 4
 
 ## Gaps By Requirement
 
-- `compliance-mapper-and-eu-ai-act`: 2
+- `compliance-mapper-and-eu-ai-act`: 1
 - `insurer-api-and-actuarial-products`: 7
 - `product-scope-discipline`: 2
 - `roadmap-phase-scoreboard`: 5
@@ -36,17 +36,6 @@
 - `vertical-packs`: 3
 
 ## Collection Worklist
-
-### compliance-mapper-and-eu-ai-act:regulator
-
-- Title: Compliance framework mapper and EU AI Act technical documentation
-- Authority kind: `regulator`
-- Owner hint: legal/compliance owner
-- Description: regulator evidence for compliance-mapper-and-eu-ai-act
-- Source URI: `TODO://authority/compliance-mapper-and-eu-ai-act/regulator`
-- Snapshot output: `artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/regulator.json`
-- Intake output: `artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/regulator.json`
-- Suggested evidence sources: regulator acknowledgement; supervisor portal receipt; conformity-assessment record
 
 ### compliance-mapper-and-eu-ai-act:standards-body
 

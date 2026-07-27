@@ -1,0 +1,127 @@
+{
+  "authority_evidence": {
+    "authority_kind": "regulator",
+    "evidence_ref": "regulator:example-supervisor/compliance/eu-ai-act-conformity-acknowledgement",
+    "requirement_id": "compliance-mapper-and-eu-ai-act",
+    "source_uri": "https://regulator.example/exports/aitrade/compliance/eu-ai-act-supervisory-acknowledgement"
+  },
+  "conformity_assessment": {
+    "assessment_ref": "conformity-assessment:example-supervisor/aitrade-annex-iii/2026-07-12",
+    "decision": "accepted_with_observations",
+    "document_ref": "eu-ai-act-document:aitrade-annex-iii",
+    "framework": "EU AI Act Annex III technical documentation",
+    "observation_refs": [
+      "observation:retain-grc-platform-acceptance",
+      "observation:retain-standards-body-review"
+    ],
+    "review_period": {
+      "end": "2026-07-12T00:00:00Z",
+      "start": "2026-07-08T00:00:00Z"
+    }
+  },
+  "environment": "aitrade-prod",
+  "evidence": {
+    "compliance_authority_source": {
+      "path": "src/trustai/compliance_authority.py",
+      "sha256": "sha256:db459112978417fab5e932c1e8658d24484a3200d6d717788264853364d4238c"
+    },
+    "compliance_authority_spec": {
+      "path": "docs/specs/compliance-production-authority-v0.1.md",
+      "sha256": "sha256:190840b93b9a2cbd17dd210f4215c504938e320d3d1b43a9ac542adba33c9594"
+    },
+    "compliance_authority_tests": {
+      "path": "tests/test_compliance_authority.py",
+      "sha256": "sha256:a2e211432b201bb2feb835a716094f6e35cbc6a2932bd737c314f445f4a7fd37"
+    },
+    "compliance_provider_api_export": {
+      "path": "examples/aitrade/compliance-provider-api-authority-export.json",
+      "sha256": "sha256:c8a6e8b9361ced1fd8a4a766a3d79aa4cb79c2bfd10e60fb68d354fd28e46aa9"
+    },
+    "compliance_source": {
+      "path": "src/trustai/compliance.py",
+      "sha256": "sha256:559e3194ee2dbedea859c1c11453877fb803301c4eda6a315488af4d513e80e5"
+    },
+    "eu_ai_act_source": {
+      "path": "src/trustai/eu_ai_act.py",
+      "sha256": "sha256:e7b424356b0a1037caf3542725446a463771f9e18ebaa67a15a89352946f7723"
+    },
+    "eu_ai_act_spec": {
+      "path": "docs/specs/eu-ai-act-technical-documentation-v0.1.md",
+      "sha256": "sha256:e1841abbe657fb3c9e96463683b637c9f2b1c1998a05240c82baa8a4c5c452c4"
+    },
+    "eu_ai_act_tests": {
+      "path": "tests/test_eu_ai_act.py",
+      "sha256": "sha256:279104cfa286887e18e45a33063c0b3bc1891062195a3e02e7599b9001b4d6c7"
+    },
+    "eu_data_plane_source": {
+      "path": "src/trustai/eu_data_plane.py",
+      "sha256": "sha256:2433c1145f3a1aa3d1b58dcfd1bc67d1ad76915edb358e4093812b72b525b46b"
+    },
+    "regulator_acceptance_source": {
+      "path": "src/trustai/regulator_acceptance.py",
+      "sha256": "sha256:6aa521d0436f6b1fda596664c70455ba55a61fedb8620578d15a05b33e1ba312"
+    },
+    "regulator_acceptance_spec": {
+      "path": "docs/specs/regulator-acceptance-v0.1.md",
+      "sha256": "sha256:99ecf4e60cf072f421795c715ada7a059cf2fefa02f7e8939ffadfbb7fb8dfb0"
+    },
+    "regulator_acceptance_tests": {
+      "path": "tests/test_regulator_acceptance.py",
+      "sha256": "sha256:9e3be4dc0315b89c1ccb26fced14f915584f6682ccc43c49209159603c4439a8"
+    },
+    "regulator_disclosure_source": {
+      "path": "src/trustai/regulator.py",
+      "sha256": "sha256:359913b137c37c0f099dca9a12f4c0d4b167ffb399465fc586d100e2930f513f"
+    },
+    "regulator_disclosure_spec": {
+      "path": "docs/specs/regulator-disclosure-v0.1.md",
+      "sha256": "sha256:23bd31c0fe202d488c15abed338b3d4c933e9f8276788138750ee61a1683369f"
+    },
+    "regulator_disclosure_tests": {
+      "path": "tests/test_regulator.py",
+      "sha256": "sha256:9f9ec3877015f082b1462887a78bed94620f9ac22ee60d18105d743d7fcea1ef"
+    },
+    "supervised_access_source": {
+      "path": "src/trustai/supervised_access.py",
+      "sha256": "sha256:345a108b22b0e3ea9e249a2633173fd2f882690f574922c6539f7b57a0840c59"
+    },
+    "supervised_access_spec": {
+      "path": "docs/specs/supervised-access-v0.1.md",
+      "sha256": "sha256:2a0f165893d6306bc7ba1bee65b5654b0678990b2e3b2b83f60fc32bd1efdd78"
+    },
+    "supervised_access_tests": {
+      "path": "tests/test_supervised_access.py",
+      "sha256": "sha256:64e216fe86e1de30a83bcfd9da33c4275f6b10ef5c18f787048b769bb66f00aa"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "issued_at": "2026-07-12T00:00:00Z",
+  "issuer": "Example Regulator",
+  "regulator_acceptance": {
+    "acceptance_ref": "regulator-acceptance:example-supervisor/aitrade/compliance/2026-07-12",
+    "accepted_disclosure_ref": "regulator-disclosure:aitrade-prod/eu-ai-act-selective-disclosure",
+    "accepted_document_ref": "eu-ai-act-document:aitrade-annex-iii",
+    "accepted_pack_ref": "proof-pack:aitrade-prod/canary-promotion",
+    "conformity_assessment_ref": "conformity-assessment:example-supervisor/aitrade-annex-iii/2026-07-12",
+    "reviewer_subject_ref": "regulator:example-supervisor/reviewer-compliance-001",
+    "supervisor_case_ref": "case:example-supervisor/aitrade-eu-ai-act-technical-documentation-2026-07",
+    "supervisor_receipt_root": "sha256:compliance-regulator-acceptance-root-20260712"
+  },
+  "schema": "trustai.compliance-regulator-authority-export/0.1",
+  "source_binding": {
+    "compliance_authority_ref": "dossier:compliance-authority/aitrade-prod",
+    "compliance_provider_api_export_ref": "provider-api-export:aitrade/compliance-evidence/2026-07-12",
+    "eu_ai_act_document_ref": "eu-ai-act-document:aitrade-annex-iii",
+    "eu_data_plane_ref": "eu-data-plane:aitrade-eu-central-1",
+    "regulator_disclosure_ref": "regulator-disclosure:aitrade-prod/eu-ai-act-selective-disclosure",
+    "supervised_access_ref": "supervised-access:regulator/aitrade-prod"
+  },
+  "subject": "aitrade compliance mapper and EU AI Act regulator acceptance export",
+  "verified_controls": [
+    "regulator accepted EU AI Act technical documentation package for supervised review",
+    "conformity-assessment review is bound to compliance authority and EU AI Act source artifacts",
+    "selective regulator disclosure reference is linked to the compliance source binding",
+    "supervisor receipt root is retained for replay against signed source hashes",
+    "review observations preserve remaining GRC and standards-body evidence gaps"
+  ]
+}

@@ -5,7 +5,7 @@
     "A closed task still requires rebuilt manifest verification and readiness verification before external authority coverage is accepted.",
     "Placeholder source URIs keep tasks blocked even when a local intake artifact is present."
   ],
-  "owner_packet_status_id": "826eec333de6db11682f14c53f5ba7dac6d5168826feb4b557a08fd09b776f7a",
+  "owner_packet_status_id": "e286e4afe1b41893fae9cb149474ab82923c04c9f5d770f3e169c9c520829f70",
   "packets": [
     {
       "blocked_task_count": 2,
@@ -38,14 +38,14 @@
       "task_count": 2
     },
     {
-      "blocked_task_count": 3,
+      "blocked_task_count": 2,
       "closed_task_count": 0,
       "open_task_count": 0,
       "owner_hint": "legal/compliance owner",
-      "packet_id": "93ba55578d15160d25874965c6a833a3695042a0fce0596609168f1c3f7d6546",
+      "packet_id": "8f1652ae3ca84ee785a75cab454bb5e4f91e31a0b107717b83dcbe5c2ed605e9",
       "packet_ref": "owner-packet:owner_hint:legal-compliance-owner",
       "packet_status": "blocked",
-      "task_count": 3
+      "task_count": 2
     },
     {
       "blocked_task_count": 4,
@@ -103,41 +103,41 @@
     "intake_hashes": [],
     "owner_packet_bundle": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_bundle_hash": "1b203dd1a1f8eaf277e40ecf5f2d6af712cbc8bd646d83a35c9690e842b6fa3b",
-      "owner_packet_bundle_id": "df1ec828b9df59b6890070280aee73776d6aba3b7d859e624ba8edea0280a775",
+      "owner_packet_bundle_hash": "3b0e109f0b5e698fe713a57372ea8c120d5165ed0a40abb22a74135539baa4ad",
+      "owner_packet_bundle_id": "28f0748e092bf1add2dd57be3bb71d47b061c38263ed5a3e76a4484ff7a9cae1",
       "schema": "trustai.external-evidence-owner-packet-bundle/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "907f6c8d8a5eb1c813eb92524c28190f0b181a8f4932f8d668293fd4d0519d62",
-      "source_map_id": "7748ea57c8f1d7ebff04f5ff541eebb99a471fa6349630809f8bb77361a4e335"
+      "source_map_hash": "4b74a150f6c4550962693a04f0282177b136bcfb55d140f687d280533769d96b",
+      "source_map_id": "6d7dcd95a9568e6839a4126b67f91cfe26f78eeaa72a70f42a16bfa9b42579b5"
     },
     "work_package": {
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-work-package/0.1",
-      "work_package_hash": "9ec67b9f36648999063e6280fc32581e04f64fb1b034ee2f675bacf7e7e55537",
-      "work_package_id": "0f56999ea27850c1d777274739a07bedb854006bd7b2460a8fdaad8d79a8e7b2"
+      "work_package_hash": "b7105095aad6274543452786463e0e0322ad75fb40e3b19190d01e115b8ecdd6",
+      "work_package_id": "1abe854dbd28b5b9ad9276a4fe10d157b1323e5d0a2ec1268b1c977e38a356a0"
     }
   },
   "summary": {
     "blocked_packet_count": 9,
-    "blocked_task_count": 29,
+    "blocked_task_count": 28,
     "closed_packet_count": 0,
     "closed_task_count": 0,
     "invalid_intake_count": 0,
     "live_source_uri_count": 0,
-    "missing_intake_count": 29,
+    "missing_intake_count": 28,
     "open_packet_count": 0,
     "open_task_count": 0,
     "packet_count": 9,
     "packet_status_counts": {
       "blocked": 9
     },
-    "placeholder_source_uri_count": 29,
-    "task_count": 29,
+    "placeholder_source_uri_count": 28,
+    "task_count": 28,
     "task_status_counts": {
-      "blocked": 29
+      "blocked": 28
     }
   },
   "tasks": [
@@ -344,23 +344,6 @@
       "task_ref": "external-evidence:roadmap-phase-scoreboard:regulator",
       "task_status": "blocked",
       "unit_ref": "roadmap-phase-scoreboard:regulator"
-    },
-    {
-      "authority_kind": "regulator",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake": null,
-      "intake_out": "artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/regulator.json",
-      "owner_hint": "legal/compliance owner",
-      "requirement_id": "compliance-mapper-and-eu-ai-act",
-      "snapshot_out": "artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/regulator.json",
-      "source_uri": "TODO://authority/compliance-mapper-and-eu-ai-act/regulator",
-      "source_uri_status": "placeholder",
-      "task_ref": "external-evidence:compliance-mapper-and-eu-ai-act:regulator",
-      "task_status": "blocked",
-      "unit_ref": "compliance-mapper-and-eu-ai-act:regulator"
     },
     {
       "authority_kind": "regulator",

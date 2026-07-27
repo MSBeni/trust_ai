@@ -26,7 +26,8 @@
       "identity-provider"
     ],
     "compliance-mapper-and-eu-ai-act": [
-      "provider-api"
+      "provider-api",
+      "regulator"
     ],
     "design-partner-pilot-exit-criteria": [
       "regulator",
@@ -67,31 +68,8 @@
       "standards-body"
     ]
   },
-  "gap_report_id": "9cc502e8e080c5a47325c73d9dc2ef3591937682b1629327864e43c6dc6a3381",
+  "gap_report_id": "a1d65358d0b0afffea9cfa8c449b56dd0c712133609469df914e3b5d56745a6b",
   "gaps": [
-    {
-      "authority_kind": "regulator",
-      "description": "regulator evidence for compliance-mapper-and-eu-ai-act",
-      "external_authority_required": [
-        "Compliance production authority dossiers cover the local/reference authority checklist for framework-control ontology, ISO 42001, NIST AI RMF, EU AI Act, SR 11-7, SOC 2, proof-pack source replay, selective regulator disclosure, GRC exports, EU data-plane sovereignty, conformity-assessment review, and per-evidence source_context bound to the signed compliance source binding; actual fresh GRC-platform acceptance, regulator/supervisor acceptance, conformity-assessment review, and continuously operated EU data-plane provider exports remain external deployment evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/regulator.json",
-      "owner_hint": "legal/compliance owner",
-      "requirement_id": "compliance-mapper-and-eu-ai-act",
-      "snapshot_out": "artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/regulator.json",
-      "source_uri": "TODO://authority/compliance-mapper-and-eu-ai-act/regulator",
-      "suggested_evidence_sources": [
-        "regulator acknowledgement",
-        "supervisor portal receipt",
-        "conformity-assessment record"
-      ],
-      "task": "compliance-mapper-and-eu-ai-act:regulator",
-      "task_id": "efdd0185105add24a52759ee29be077818128afc6c5bcfd98fb7ce260eff6203",
-      "task_ref": "external-evidence:compliance-mapper-and-eu-ai-act:regulator",
-      "title": "Compliance framework mapper and EU AI Act technical documentation",
-      "unit_id": "0b3f64f4ef452edb07353ea70520838eff57187ae2e51e48a8b98bfedc099d43",
-      "unit_ref": "compliance-mapper-and-eu-ai-act:regulator"
-    },
     {
       "authority_kind": "standards-body",
       "description": "standards-body evidence for compliance-mapper-and-eu-ai-act",
@@ -745,7 +723,6 @@
   ],
   "missing_authority_kinds_by_requirement": {
     "compliance-mapper-and-eu-ai-act": [
-      "regulator",
       "standards-body"
     ],
     "insurer-api-and-actuarial-products": [
@@ -798,14 +775,14 @@
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "783db881e226a4912f0bc15032fb0248c7827b1c547a4d1a6e8331158970abe2",
-      "plan_id": "66b5e3ad2989fb417c78aef5c584813b8e10f209b68fa1cd9d05aa2459ccd141",
+      "plan_hash": "c160479afe4206f9fa20dcc5452a753d316ce069875798470f2f33621e5c9762",
+      "plan_id": "76ac7de49fee61e585fd41f7be9f576c3cf1c97810fdc670a6c02bd3ae7aad72",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "914f4e249ff1e1b88d97d8e02e56c633d516ee055258660c12a6d38b6066b35d",
-      "manifest_id": "4f42dca507923dfc233ab3f4a9fd720ba8a4cd3bdda742e246c2924e603fff28",
+      "manifest_hash": "e4b02177d23b19a60130733752f450304cfab2ed42779e59e25f23b2d37b6c35",
+      "manifest_id": "7dec35ade69dc7ba6727a707d3c71dc4cc2a35da50e5a9fd166c150427a1eb57",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
@@ -817,12 +794,12 @@
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "907f6c8d8a5eb1c813eb92524c28190f0b181a8f4932f8d668293fd4d0519d62",
-      "source_map_id": "7748ea57c8f1d7ebff04f5ff541eebb99a471fa6349630809f8bb77361a4e335"
+      "source_map_hash": "4b74a150f6c4550962693a04f0282177b136bcfb55d140f687d280533769d96b",
+      "source_map_id": "6d7dcd95a9568e6839a4126b67f91cfe26f78eeaa72a70f42a16bfa9b42579b5"
     }
   },
   "summary": {
-    "covered_authority_kind_count": 42,
+    "covered_authority_kind_count": 43,
     "covered_requirement_count": 12,
     "gap_count_by_authority_kind": {
       "ci-run": 4,
@@ -832,11 +809,11 @@
       "insurer": 3,
       "kms-hsm": 2,
       "provider-api": 2,
-      "regulator": 3,
+      "regulator": 2,
       "standards-body": 4
     },
     "gap_count_by_requirement": {
-      "compliance-mapper-and-eu-ai-act": 2,
+      "compliance-mapper-and-eu-ai-act": 1,
       "insurer-api-and-actuarial-products": 7,
       "product-scope-discipline": 2,
       "roadmap-phase-scoreboard": 5,
@@ -848,27 +825,27 @@
       "vertical-packs": 3
     },
     "live_source_uri_count": 0,
-    "missing_authority_kind_count": 29,
+    "missing_authority_kind_count": 28,
     "missing_requirement_count": 8,
-    "placeholder_source_uri_count": 29,
-    "remaining_missing_task_count": 29,
-    "remaining_task_count": 29,
+    "placeholder_source_uri_count": 28,
+    "remaining_missing_task_count": 28,
+    "remaining_task_count": 28,
     "required_authority_kind_count": 71,
     "required_requirement_count": 20,
-    "source_map_entry_count": 29,
+    "source_map_entry_count": 28,
     "status": "partial"
   },
   "verification": {
     "manifest_warnings": [
       "external evidence missing for: trustai-own-compliance, vertical-packs, insurer-api-and-actuarial-products, state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
-      "external evidence authority kinds missing for: compliance-mapper-and-eu-ai-act: regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
+      "external evidence authority kinds missing for: compliance-mapper-and-eu-ai-act: standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
     ],
     "plan_warnings": [
       "external evidence missing for: trustai-own-compliance, vertical-packs, insurer-api-and-actuarial-products, state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
-      "external evidence authority kinds missing for: compliance-mapper-and-eu-ai-act: regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
+      "external evidence authority kinds missing for: compliance-mapper-and-eu-ai-act: standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
     ],
     "source_map_warnings": [
-      "source map contains 29 placeholder source_uri values"
+      "source map contains 28 placeholder source_uri values"
     ]
   },
   "verification_options": {

@@ -1,7 +1,7 @@
 {
   "blockers": [
-    "owner fulfillment review contains 29 placeholder source_uri values",
-    "fulfilled source map: source map contains 29 placeholder source_uri values but live source URIs are required"
+    "owner fulfillment review contains 28 placeholder source_uri values",
+    "fulfilled source map: source map contains 28 placeholder source_uri values but live source URIs are required"
   ],
   "commands": {
     "collect_after_ready_review": "python -m trustai external-evidence-collect-batch <fulfilled-source-map.json> <manifest.json> <roadmap-audit.json> --root . --require-live-source-uris",
@@ -11,30 +11,6 @@
   "fulfilled_source_map": {
     "defaults": {},
     "entries": [
-      {
-        "authority_kind": "regulator",
-        "coverage_status": "missing",
-        "description": "regulator evidence for compliance-mapper-and-eu-ai-act",
-        "external_authority_required": [
-          "Compliance production authority dossiers cover the local/reference authority checklist for framework-control ontology, ISO 42001, NIST AI RMF, EU AI Act, SR 11-7, SOC 2, proof-pack source replay, selective regulator disclosure, GRC exports, EU data-plane sovereignty, conformity-assessment review, and per-evidence source_context bound to the signed compliance source binding; actual fresh GRC-platform acceptance, regulator/supervisor acceptance, conformity-assessment review, and continuously operated EU data-plane provider exports remain external deployment evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/regulator.json",
-        "owner_hint": "legal/compliance owner",
-        "requirement_id": "compliance-mapper-and-eu-ai-act",
-        "snapshot_out": "artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/regulator.json",
-        "source_uri": "TODO://authority/compliance-mapper-and-eu-ai-act/regulator",
-        "suggested_evidence_sources": [
-          "regulator acknowledgement",
-          "supervisor portal receipt",
-          "conformity-assessment record"
-        ],
-        "task": "compliance-mapper-and-eu-ai-act:regulator",
-        "task_id": "efdd0185105add24a52759ee29be077818128afc6c5bcfd98fb7ce260eff6203",
-        "task_ref": "external-evidence:compliance-mapper-and-eu-ai-act:regulator",
-        "title": "Compliance framework mapper and EU AI Act technical documentation",
-        "unit_id": "0b3f64f4ef452edb07353ea70520838eff57187ae2e51e48a8b98bfedc099d43",
-        "unit_ref": "compliance-mapper-and-eu-ai-act:regulator"
-      },
       {
         "authority_kind": "standards-body",
         "coverage_status": "missing",
@@ -715,14 +691,14 @@
       "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
     ],
     "schema": "trustai.external-evidence-source-map/0.1",
-    "source_map_id": "c5899ef84192512690811280dc120d2250ad17659aff8ffa197bf7f308d56124",
+    "source_map_id": "9828b099996dd4568ce66ce0455c46140a248699164af62c8516ca0b7359704c",
     "source_plan": {
-      "plan_hash": "783db881e226a4912f0bc15032fb0248c7827b1c547a4d1a6e8331158970abe2",
-      "plan_id": "66b5e3ad2989fb417c78aef5c584813b8e10f209b68fa1cd9d05aa2459ccd141",
+      "plan_hash": "c160479afe4206f9fa20dcc5452a753d316ce069875798470f2f33621e5c9762",
+      "plan_id": "76ac7de49fee61e585fd41f7be9f576c3cf1c97810fdc670a6c02bd3ae7aad72",
       "source_manifest": {
         "generated_at": "2026-07-12T00:01:00Z",
-        "manifest_hash": "914f4e249ff1e1b88d97d8e02e56c633d516ee055258660c12a6d38b6066b35d",
-        "manifest_id": "4f42dca507923dfc233ab3f4a9fd720ba8a4cd3bdda742e246c2924e603fff28",
+        "manifest_hash": "e4b02177d23b19a60130733752f450304cfab2ed42779e59e25f23b2d37b6c35",
+        "manifest_id": "7dec35ade69dc7ba6727a707d3c71dc4cc2a35da50e5a9fd166c150427a1eb57",
         "manifest_ref": "production-external-evidence",
         "status": "partial"
       },
@@ -730,12 +706,12 @@
     },
     "summary": {
       "authority_kinds": [],
-      "entry_count": 29,
+      "entry_count": 28,
       "intake_dir": "artifacts/external-evidence-intakes",
       "live_source_uri_count": 0,
-      "placeholder_source_uri_count": 29,
+      "placeholder_source_uri_count": 28,
       "snapshot_dir": "artifacts/external-evidence-sources",
-      "source_plan_task_count": 29,
+      "source_plan_task_count": 28,
       "status_filter": "missing"
     }
   },
@@ -750,63 +726,49 @@
     "Regenerate this review with --require-live-source-uris before collecting source snapshots.",
     "After the fulfilled source map is ready, run external-evidence-collect-batch and rebuild the retained manifest from intake receipts."
   ],
-  "owner_fulfillment_review_id": "8fcca3d79dc384ccd3cd143145aad5289b3c37a044eba1eeed4c377588f81d76",
+  "owner_fulfillment_review_id": "de049804cdb50ae02b78814d5bc55b31baf2abed282233719bd3db5681ead1f6",
   "schema": "trustai.external-evidence-owner-fulfillment-review/0.1",
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "783db881e226a4912f0bc15032fb0248c7827b1c547a4d1a6e8331158970abe2",
-      "plan_id": "66b5e3ad2989fb417c78aef5c584813b8e10f209b68fa1cd9d05aa2459ccd141",
+      "plan_hash": "c160479afe4206f9fa20dcc5452a753d316ce069875798470f2f33621e5c9762",
+      "plan_id": "76ac7de49fee61e585fd41f7be9f576c3cf1c97810fdc670a6c02bd3ae7aad72",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "owner_fulfillment_template": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_fulfillment_template_hash": "76a6d0d6ccb425c68326a2e9db0770bf48e0cb0bb239e290dd8cb2b032ebef9d",
-      "owner_fulfillment_template_id": "84097e21c36ed7e1e8450b6c9b9c6cfe537f69531bbe825feaf4653ea7e31081",
+      "owner_fulfillment_template_hash": "52ed1059296fda8db92f689e1aebef6edcba46ed6e6786995c8e97c381248bab",
+      "owner_fulfillment_template_id": "035d330569457408124c3f8e43d9f8cb7d79f327d52224c2e716b2ec0c7b052f",
       "schema": "trustai.external-evidence-owner-fulfillment-template/0.1"
     },
     "owner_packet_status": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_status_hash": "d018e5b54f949570bec15ae667f6290c31e9d7bdb9e974f39e19a14790a41ef4",
-      "owner_packet_status_id": "826eec333de6db11682f14c53f5ba7dac6d5168826feb4b557a08fd09b776f7a",
+      "owner_packet_status_hash": "0b340e9ab96466ae6954e62182fd363565df3c3a439d35dc63cefd3c1b091402",
+      "owner_packet_status_id": "e286e4afe1b41893fae9cb149474ab82923c04c9f5d770f3e169c9c520829f70",
       "schema": "trustai.external-evidence-owner-packet-status/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "907f6c8d8a5eb1c813eb92524c28190f0b181a8f4932f8d668293fd4d0519d62",
-      "source_map_id": "7748ea57c8f1d7ebff04f5ff541eebb99a471fa6349630809f8bb77361a4e335"
+      "source_map_hash": "4b74a150f6c4550962693a04f0282177b136bcfb55d140f687d280533769d96b",
+      "source_map_id": "6d7dcd95a9568e6839a4126b67f91cfe26f78eeaa72a70f42a16bfa9b42579b5"
     }
   },
   "summary": {
-    "blocked_task_count": 29,
+    "blocked_task_count": 28,
     "error_count": 1,
     "fulfilled_source_map_verification_ok": false,
-    "fulfillment_count": 29,
+    "fulfillment_count": 28,
     "live_source_uri_count": 0,
     "owner_count": 9,
-    "placeholder_source_uri_count": 29,
+    "placeholder_source_uri_count": 28,
     "ready_task_count": 0,
     "review_status": "blocked",
-    "source_map_entry_count": 29,
+    "source_map_entry_count": 28,
     "template_verification_ok": true,
     "warning_count": 3
   },
   "task_reviews": [
-    {
-      "authority_kind": "regulator",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/regulator.json",
-      "owner_hint": "legal/compliance owner",
-      "requirement_id": "compliance-mapper-and-eu-ai-act",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/regulator.json",
-      "source_uri": "TODO://authority/compliance-mapper-and-eu-ai-act/regulator",
-      "source_uri_status": "placeholder",
-      "task": "compliance-mapper-and-eu-ai-act:regulator"
-    },
     {
       "authority_kind": "standards-body",
       "blocking_reasons": [
@@ -1202,14 +1164,14 @@
   ],
   "verification": {
     "fulfilled_source_map_errors": [
-      "source map contains 29 placeholder source_uri values but live source URIs are required"
+      "source map contains 28 placeholder source_uri values but live source URIs are required"
     ],
     "fulfilled_source_map_warnings": [
-      "source map contains 29 placeholder source_uri values"
+      "source map contains 28 placeholder source_uri values"
     ],
     "template_warnings": [
-      "owner fulfillment template summary contains 29 placeholder source_uri values",
-      "owner fulfillment template summary contains 29 tasks without intake receipts"
+      "owner fulfillment template summary contains 28 placeholder source_uri values",
+      "owner fulfillment template summary contains 28 tasks without intake receipts"
     ]
   },
   "verification_options": {

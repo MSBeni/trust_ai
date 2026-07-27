@@ -1082,6 +1082,36 @@
       "unit_ref": "compliance-mapper-and-eu-ai-act:provider-api"
     },
     {
+      "authority_kind": "regulator",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained regulator acknowledgement export for compliance mapper and EU AI Act evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Compliance production authority dossiers cover the local/reference authority checklist for framework-control ontology, ISO 42001, NIST AI RMF, EU AI Act, SR 11-7, SOC 2, proof-pack source replay, selective regulator disclosure, GRC exports, EU data-plane sovereignty, conformity-assessment review, and per-evidence source_context bound to the signed compliance source binding; actual fresh GRC-platform acceptance, regulator/supervisor acceptance, conformity-assessment review, and continuously operated EU data-plane provider exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/compliance-mapper-and-eu-ai-act-regulator.json",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "Example Regulator",
+      "owner_hint": "legal/compliance owner",
+      "requirement_id": "compliance-mapper-and-eu-ai-act",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/compliance-regulator-source-snapshot.json",
+      "source_uri": "https://regulator.example/exports/aitrade/compliance/eu-ai-act-supervisory-acknowledgement",
+      "subject": "aitrade compliance mapper and EU AI Act regulator acceptance export",
+      "suggested_evidence_sources": [
+        "regulator acknowledgement",
+        "supervisor portal receipt",
+        "conformity-assessment record"
+      ],
+      "task": "compliance-mapper-and-eu-ai-act:regulator",
+      "task_id": "efdd0185105add24a52759ee29be077818128afc6c5bcfd98fb7ce260eff6203",
+      "task_ref": "external-evidence:compliance-mapper-and-eu-ai-act:regulator",
+      "title": "Compliance framework mapper and EU AI Act technical documentation",
+      "unit_id": "0b3f64f4ef452edb07353ea70520838eff57187ae2e51e48a8b98bfedc099d43",
+      "unit_ref": "compliance-mapper-and-eu-ai-act:regulator"
+    },
+    {
       "authority_kind": "kms-hsm",
       "content_type": "application/json",
       "coverage_status": "missing",
@@ -1269,7 +1299,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "78ae6740ee893a79ddff8b40cd4adb7425d8649d4b2e6017c6674d0af0bd7b2e",
+  "source_map_id": "18293504b3ea37df2e7bae1ad5dfe637cfaccbb79ff4550f862acda7034bf059",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -1284,9 +1314,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 42,
+    "entry_count": 43,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 42,
+    "live_source_uri_count": 43,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

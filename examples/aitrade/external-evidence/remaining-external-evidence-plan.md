@@ -1,8 +1,8 @@
 # TrustAI External Evidence Collection Plan
 
-Plan ID: `66b5e3ad2989fb417c78aef5c584813b8e10f209b68fa1cd9d05aa2459ccd141`
+Plan ID: `76ac7de49fee61e585fd41f7be9f576c3cf1c97810fdc670a6c02bd3ae7aad72`
 
-Source manifest: `4f42dca507923dfc233ab3f4a9fd720ba8a4cd3bdda742e246c2924e603fff28`
+Source manifest: `7dec35ade69dc7ba6727a707d3c71dc4cc2a35da50e5a9fd166c150427a1eb57`
 
 Status filter: missing
 
@@ -10,16 +10,15 @@ Status filter: missing
 
 - Source manifest status: partial
 - Total authority units: 71
-- Selected tasks: 29
-- Selected missing tasks: 29
+- Selected tasks: 28
+- Selected missing tasks: 28
 - Selected covered tasks: 0
-- Missing authority kinds overall: 29
+- Missing authority kinds overall: 28
 
 ## Collection Tasks
 
 | Task ID | Unit Ref | Requirement | Authority | Status | Owner Hint | Suggested Artifact | Evidence Argument Template |
 |---|---|---|---|---|---|---|---|
-| `efdd0185105add24a52759ee29be077818128afc6c5bcfd98fb7ce260eff6203` | `compliance-mapper-and-eu-ai-act:regulator` | `compliance-mapper-and-eu-ai-act` | regulator | missing | legal/compliance owner | `external-evidence/compliance-mapper-and-eu-ai-act/regulator.json` | `compliance-mapper-and-eu-ai-act,regulator,external-evidence/compliance-mapper-and-eu-ai-act/regulator.json,regulator evidence for compliance-mapper-and-eu-ai-act;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `b923ba4be3220b26b60462e2e4f7eb1fd045ecf460283a55747d16b47a7efbce` | `compliance-mapper-and-eu-ai-act:standards-body` | `compliance-mapper-and-eu-ai-act` | standards-body | missing | standards/governance owner | `external-evidence/compliance-mapper-and-eu-ai-act/standards-body.json` | `compliance-mapper-and-eu-ai-act,standards-body,external-evidence/compliance-mapper-and-eu-ai-act/standards-body.json,standards-body evidence for compliance-mapper-and-eu-ai-act;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `d9c2a5f823eab100329838a4c9fa0f9bac697f4ae4d5612faf55c31b0a6277f4` | `trustai-own-compliance:standards-body` | `trustai-own-compliance` | standards-body | missing | standards/governance owner | `external-evidence/trustai-own-compliance/standards-body.json` | `trustai-own-compliance,standards-body,external-evidence/trustai-own-compliance/standards-body.json,standards-body evidence for trustai-own-compliance;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `8664c070d85fa3d19f3b7a29d9c3f50ca11f01535a8e0098514f6a9075ab24e9` | `trustai-own-compliance:customer` | `trustai-own-compliance` | customer | missing | customer success/account owner | `external-evidence/trustai-own-compliance/customer.json` | `trustai-own-compliance,customer,external-evidence/trustai-own-compliance/customer.json,customer evidence for trustai-own-compliance;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |

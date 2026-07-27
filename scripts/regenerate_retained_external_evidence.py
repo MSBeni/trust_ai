@@ -626,6 +626,20 @@ RETAINED_SOURCES: dict[str, dict[str, str]] = {
         "snapshot_out": "examples/aitrade/external-evidence/compliance-provider-api-source-snapshot.json",
         "intake_out": "examples/aitrade/external-evidence/intakes/compliance-mapper-and-eu-ai-act-provider-api.json",
     },
+    "compliance-mapper-and-eu-ai-act:regulator": {
+        "source_uri": "https://regulator.example/exports/aitrade/compliance/eu-ai-act-supervisory-acknowledgement",
+        "description": "Retained regulator acknowledgement export for compliance mapper and EU AI Act evidence",
+        "artifact": "examples/aitrade/external-evidence/compliance-regulator-source-snapshot.json",
+        "source_file": "examples/aitrade/compliance-regulator-authority-export.json",
+        "retrieval_method": "file-copy",
+        "content_type": "application/json",
+        "issuer": "Example Regulator",
+        "subject": "aitrade compliance mapper and EU AI Act regulator acceptance export",
+        "issued_at": "2026-07-12T00:00:00Z",
+        "expires_at": "2026-12-31T00:00:00Z",
+        "snapshot_out": "examples/aitrade/external-evidence/compliance-regulator-source-snapshot.json",
+        "intake_out": "examples/aitrade/external-evidence/intakes/compliance-mapper-and-eu-ai-act-regulator.json",
+    },
 }
 
 
