@@ -558,7 +558,9 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
         "roadmap_ref": "Definition of done per phase; Unicorn logic; GTM pricing and market adoption milestones",
         "evidence_paths": [
             "docs/specs/roadmap-phase-scoreboard-v0.1.md",
+            "docs/specs/roadmap-phase-scoreboard-authority-v0.1.md",
             "src/trustai/phase_scoreboard.py",
+            "src/trustai/phase_scoreboard_authority.py",
             "docs/specs/design-partner-pilot-v0.1.md",
             "docs/specs/own-compliance-dossier-v0.1.md",
             "docs/specs/underwriting-quote-v0.1.md",
@@ -577,6 +579,7 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "src/trustai/reliability_report.py",
             "src/trustai/roadmap_audit.py",
             "tests/test_phase_scoreboard.py",
+            "tests/test_phase_scoreboard_authority.py",
         ],
         "external_authority": [
             "Roadmap phase scoreboards cover local/reference schemas for P1-P4 business milestones and can bind external evidence references and hashes; actual paying customers, signed contracts, ARR, Series A financing, live insurer integrations, SOC 2/ISO certificates, named regulator acceptance, standards-body progress, third-party procurement clauses, data-product revenue, and generic market usage remain external business evidence.",

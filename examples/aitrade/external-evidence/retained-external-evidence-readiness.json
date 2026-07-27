@@ -37,7 +37,7 @@
       "summary": "The work package covers the current remaining task set."
     }
   ],
-  "generated_at": "2026-07-27T05:11:07Z",
+  "generated_at": "2026-07-27T05:29:41Z",
   "limitations": [
     "This readiness report proves production external-evidence completeness; it does not collect missing authority evidence by itself.",
     "A not-ready status is expected until every roadmap authority unit has live source evidence, source snapshots, intake receipts, and a rebuilt manifest."
@@ -49,7 +49,7 @@
     {
       "items": [
         {
-          "evidence_id": "73d13de037ff720e97bf904e23dcb769545d543c4d04c8284c591518d9d75d21",
+          "evidence_id": "4f520ae0301b6a003e0fa8a1b3ffca420aa5732723c49b9af75dc665d86f0642",
           "path": "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json",
           "reasons": [
             "checked-in fixture",
@@ -63,45 +63,45 @@
       "unit_ref": "oss-verifier-and-public-spec:ci-run"
     }
   ],
-  "readiness_id": "683cacba5c2d177351bda32acfad47cc5ee5f2c1834d0139997a21479f3af947",
+  "readiness_id": "a6c6b7138f1697d480fd781f338250e9f3fe669f3724f841ae77ff8a53a91f80",
   "readiness_status": "not-ready",
   "schema": "trustai.external-evidence-readiness/0.1",
   "sources": {
     "collection_plan": {
-      "generated_at": "2026-07-27T05:11:05Z",
-      "plan_hash": "8ea0fe880f5b4c181d931ce13272d7f528e8a84b1b0ad040bc15ccc28faf331c",
-      "plan_id": "225355d20f696aae590fda9aef22d82ba54e9472287d6fad9ab5ae15b6dc036d",
+      "generated_at": "2026-07-27T05:29:38Z",
+      "plan_hash": "e1fe38af70b76815a8bd005d9441c6a433298136055efeb79b24379cc4a76ebf",
+      "plan_id": "4f83bbbc99779fffb5c6101d64e065a327038f3ba9e19117c0f4c680dc0de0e4",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "gap_report": {
-      "gap_report_hash": "dd9dd703ead1edd08ef63fa38726f2a351b77d6726305e62ebab9979f366a800",
-      "gap_report_id": "1acb269b68c3fa7333eb859a7de8faac4043b3307e44dff1420d37cd079aa2b7",
-      "generated_at": "2026-07-27T05:11:06Z",
+      "gap_report_hash": "b38217488db0552975b0ce020763e0bef6a48366f54f5bf86f41464d86dfb658",
+      "gap_report_id": "3e9b8e3d39ffeb623138af7aa2f7e395d3f35e427cd72a79f76f016970d12d71",
+      "generated_at": "2026-07-27T05:29:39Z",
       "schema": "trustai.external-evidence-gap-report/0.1"
     },
     "manifest": {
-      "generated_at": "2026-07-27T05:11:05Z",
-      "manifest_hash": "5521d200ef22ce68d588e5fbe8b4131648d4d9a30dee7e4ca4c4b6eadaa73e08",
-      "manifest_id": "8355c12110805694c37509f4844272bd99f73064f17ad926fb62749f96146eb4",
+      "generated_at": "2026-07-27T05:29:38Z",
+      "manifest_hash": "5ed74fcbd30f84301933bc500b1299d0953b7b4a6ac5d9f9c202809500a59f25",
+      "manifest_id": "ceef9c33f08904ea83e3135e7bbc089945f7c1a6e6d5630e55e5f95e76e9404f",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
-      "audit_hash": "8b85791a0f8ae2fba7fbba15f8115fd39916d857cb1dd4e292aa091a710ffad1",
-      "audit_id": "f775ba31006756fb8290f59da9008d7fa66d5759eb2474a4023f0ff58452bb38",
-      "generated_at": "2026-07-27T05:11:01Z",
+      "audit_hash": "eb9058f991d00cfed2ee970e90cf19c509e4b175a7a85e2cbf6e4f0d7466ce0a",
+      "audit_id": "95d76b3893e61daeb5880e6c8446ddf865d1603c5121eca19fbbde6ac9b04ec8",
+      "generated_at": "2026-07-27T05:29:34Z",
       "schema": "trustai.roadmap-audit/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "204ccd5e75b9805fb14591d5e688c8f549b050bdfdc3ad0b091b3bd1beeb0f90",
-      "source_map_id": "8e12edad38299d016b66fa2dc746f784ae30c80745d2539d61ef5b2283c54ddc"
+      "source_map_hash": "bf35080fecb80ae4fd0f8af6e980d08c5c8d8c5ec097f565bd1ed560ea1ed2ee",
+      "source_map_id": "bf6309a09d650e2765363912a68e111aed3a2115a06d8ccbae54fdc6492bd6c5"
     },
     "work_package": {
-      "generated_at": "2026-07-27T05:11:06Z",
+      "generated_at": "2026-07-27T05:29:40Z",
       "schema": "trustai.external-evidence-work-package/0.1",
-      "work_package_hash": "7eaea33385ac747e6b0907f15f35865af760cc29c589f493d461a3cfa7947a9d",
-      "work_package_id": "253f3e8be49fc042f918fc72596b5de1d80c915f97fd95ba98291e4074cb5cad"
+      "work_package_hash": "fba7c1c76d27c06cf44dd3bb40a7c02d3e51e62766a8abf4e2ce3de014d2f7d4",
+      "work_package_id": "32bf32824d692718771ae89fe893d5068f4f9404b4143c3f3aa33e3a765bbab0"
     }
   },
   "summary": {

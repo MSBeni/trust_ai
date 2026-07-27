@@ -313,6 +313,15 @@ from .phase_scoreboard import (
     verify_phase_scoreboard,
     write_phase_scoreboard,
 )
+from .phase_scoreboard_authority import (
+    PHASE_SCOREBOARD_AUTHORITY_MODES,
+    append_phase_scoreboard_authority_dossier,
+    build_phase_scoreboard_authority_dossier,
+    load_phase_scoreboard_authority_dossier,
+    parse_phase_scoreboard_authority_evidence_arg,
+    verify_phase_scoreboard_authority_dossier,
+    write_phase_scoreboard_authority_dossier,
+)
 from .product_scope import (
     ANTI_FOCUS_FLAGS,
     DECISIONS,
@@ -1919,6 +1928,108 @@ def cmd_phase_scoreboard_append(args: argparse.Namespace) -> int:
         print(f"roadmap phase scoreboard entry: {args.out}")
     print(f"roadmap phase scoreboard entry id: {entry['entry_id']}")
     print(f"scoreboard id: {scoreboard['scoreboard_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_phase_scoreboard_authority(args: argparse.Namespace) -> int:
+    try:
+        scoreboard = load_phase_scoreboard(args.scoreboard)
+        evidence = [parse_phase_scoreboard_authority_evidence_arg(value) for value in args.authority_evidence]
+        dossier = build_phase_scoreboard_authority_dossier(
+            scoreboard,
+            root=args.root,
+            authority_evidence=evidence,
+            mode=args.mode,
+            environment=args.environment,
+            dossier_ref=args.dossier_ref,
+            authority_ref=args.authority_ref,
+            producer_ref=args.producer_ref,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_phase_scoreboard_authority_dossier(
+            dossier,
+            scoreboard=scoreboard,
+            root=args.root,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"roadmap phase scoreboard authority dossier failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("roadmap phase scoreboard authority dossier verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_phase_scoreboard_authority_dossier(args.out, dossier)
+    print(f"roadmap phase scoreboard authority dossier: {args.out}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"covered requirements: {result.covered_count}/{result.required_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_phase_scoreboard_authority_verify(args: argparse.Namespace) -> int:
+    try:
+        dossier = load_phase_scoreboard_authority_dossier(args.dossier)
+        scoreboard = load_phase_scoreboard(args.scoreboard)
+        result = verify_phase_scoreboard_authority_dossier(
+            dossier,
+            scoreboard=scoreboard,
+            root=args.root,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"roadmap phase scoreboard authority dossier verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        print(f"verified roadmap phase scoreboard authority dossier: {args.dossier}")
+        print(f"covered requirements: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"roadmap phase scoreboard authority dossier verification failed: {args.dossier}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_phase_scoreboard_authority_append(args: argparse.Namespace) -> int:
+    try:
+        dossier = load_phase_scoreboard_authority_dossier(args.dossier)
+        scoreboard = load_phase_scoreboard(args.scoreboard)
+    except (OSError, ValueError) as exc:
+        print(f"roadmap phase scoreboard authority append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_phase_scoreboard_authority_dossier(
+            chain,
+            dossier,
+            scoreboard=scoreboard,
+            root=args.root,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"roadmap phase scoreboard authority append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"roadmap phase scoreboard authority entry: {args.out}")
+    print(f"roadmap phase scoreboard authority entry id: {entry['entry_id']}")
+    print(f"dossier id: {dossier['dossier_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
@@ -21038,6 +21149,45 @@ def build_parser() -> argparse.ArgumentParser:
     phase_scoreboard_append.add_argument("--key")
     _add_state_args(phase_scoreboard_append)
     phase_scoreboard_append.set_defaults(func=cmd_phase_scoreboard_append)
+
+    phase_scoreboard_authority = subparsers.add_parser("phase-scoreboard-authority", help="write a signed roadmap phase scoreboard production authority dossier")
+    phase_scoreboard_authority.add_argument("scoreboard")
+    phase_scoreboard_authority.add_argument("--root", default=".")
+    phase_scoreboard_authority.add_argument("--mode", choices=sorted(PHASE_SCOREBOARD_AUTHORITY_MODES), default="scoreboard-dossier")
+    phase_scoreboard_authority.add_argument("--environment", default="local")
+    phase_scoreboard_authority.add_argument("--dossier-ref", required=True)
+    phase_scoreboard_authority.add_argument("--authority-ref", required=True)
+    phase_scoreboard_authority.add_argument("--producer-ref", required=True)
+    phase_scoreboard_authority.add_argument("--authority-evidence", action="append", default=[], help="repeatable authority evidence row")
+    phase_scoreboard_authority.add_argument("--generated-at")
+    phase_scoreboard_authority.add_argument("--require-complete", action="store_true")
+    phase_scoreboard_authority.add_argument("--require-fresh", action="store_true")
+    phase_scoreboard_authority.add_argument("--now")
+    phase_scoreboard_authority.add_argument("--out", default="artifacts/phase-scoreboard-authority.json")
+    phase_scoreboard_authority.add_argument("--key")
+    phase_scoreboard_authority.set_defaults(func=cmd_phase_scoreboard_authority)
+
+    phase_scoreboard_authority_verify = subparsers.add_parser("phase-scoreboard-authority-verify", help="verify a signed roadmap phase scoreboard production authority dossier")
+    phase_scoreboard_authority_verify.add_argument("dossier")
+    phase_scoreboard_authority_verify.add_argument("scoreboard")
+    phase_scoreboard_authority_verify.add_argument("--root", default=".")
+    phase_scoreboard_authority_verify.add_argument("--require-complete", action="store_true")
+    phase_scoreboard_authority_verify.add_argument("--require-fresh", action="store_true")
+    phase_scoreboard_authority_verify.add_argument("--now")
+    phase_scoreboard_authority_verify.add_argument("--key")
+    phase_scoreboard_authority_verify.set_defaults(func=cmd_phase_scoreboard_authority_verify)
+
+    phase_scoreboard_authority_append = subparsers.add_parser("phase-scoreboard-authority-append", help="append a verified roadmap phase scoreboard production authority dossier")
+    phase_scoreboard_authority_append.add_argument("dossier")
+    phase_scoreboard_authority_append.add_argument("scoreboard")
+    phase_scoreboard_authority_append.add_argument("--root", default=".")
+    phase_scoreboard_authority_append.add_argument("--require-complete", action="store_true")
+    phase_scoreboard_authority_append.add_argument("--require-fresh", action="store_true")
+    phase_scoreboard_authority_append.add_argument("--now")
+    phase_scoreboard_authority_append.add_argument("--out", default="artifacts/phase-scoreboard-authority-entry.json")
+    phase_scoreboard_authority_append.add_argument("--key")
+    _add_state_args(phase_scoreboard_authority_append)
+    phase_scoreboard_authority_append.set_defaults(func=cmd_phase_scoreboard_authority_append)
 
     product_scope = subparsers.add_parser("product-scope-decision", help="write a signed product scope discipline decision")
     product_scope.add_argument("--root", default=".")
