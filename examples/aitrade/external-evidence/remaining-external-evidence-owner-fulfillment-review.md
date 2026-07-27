@@ -1,20 +1,19 @@
 # External Evidence Owner Fulfillment Review
 
-- Review ID: `de049804cdb50ae02b78814d5bc55b31baf2abed282233719bd3db5681ead1f6`
+- Review ID: `07d89854a79aceab6a98920047f4668778cebe01e5a7ed1be28e1634c6451856`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Fulfillments: 28
+- Fulfillments: 27
 - Owners: 9
 - Ready tasks: 0
-- Blocked tasks: 28
-- Placeholder source URIs: 28
+- Blocked tasks: 27
+- Placeholder source URIs: 27
 - Live source URIs: 0
 
 ## Task Review
 
 | Task | Owner | Status | Source URI | Blocking Reasons |
 |---|---|---|---|---|
-| `compliance-mapper-and-eu-ai-act:standards-body` | standards/governance owner | blocked | TODO://authority/compliance-mapper-and-eu-ai-act/standards-body | `placeholder-source-uri` |
 | `trustai-own-compliance:standards-body` | standards/governance owner | blocked | TODO://authority/trustai-own-compliance/standards-body | `placeholder-source-uri` |
 | `trustai-own-compliance:customer` | customer success/account owner | blocked | TODO://authority/trustai-own-compliance/customer | `placeholder-source-uri` |
 | `vertical-packs:regulator` | legal/compliance owner | blocked | TODO://authority/vertical-packs/regulator | `placeholder-source-uri` |
@@ -47,12 +46,12 @@
 
 - Fulfilled source map errors: 1
 - Fulfilled source map warnings: 1
-  - source map contains 28 placeholder source_uri values but live source URIs are required
+  - source map contains 27 placeholder source_uri values but live source URIs are required
 
 ## Blockers
 
-- owner fulfillment review contains 28 placeholder source_uri values
-- fulfilled source map: source map contains 28 placeholder source_uri values but live source URIs are required
+- owner fulfillment review contains 27 placeholder source_uri values
+- fulfilled source map: source map contains 27 placeholder source_uri values but live source URIs are required
 
 ## Next Actions
 

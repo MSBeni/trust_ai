@@ -342,20 +342,6 @@
         "placeholder-source-uri",
         "missing-intake"
       ],
-      "intake_out": "artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/standards-body.json",
-      "owner_hint": "standards/governance owner",
-      "requirement_id": "compliance-mapper-and-eu-ai-act",
-      "snapshot_out": "artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/standards-body.json",
-      "source_uri_status": "placeholder",
-      "task": "compliance-mapper-and-eu-ai-act:standards-body",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "standards-body",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
       "intake_out": "artifacts/external-evidence-intakes/roadmap-phase-scoreboard/standards-body.json",
       "owner_hint": "standards/governance owner",
       "requirement_id": "roadmap-phase-scoreboard",
@@ -524,11 +510,6 @@
       "task": "trust-network-procurement-and-marketplace:hosted-service"
     },
     {
-      "description": "standards-body evidence for compliance-mapper-and-eu-ai-act",
-      "source_uri": "TODO://authority/compliance-mapper-and-eu-ai-act/standards-body",
-      "task": "compliance-mapper-and-eu-ai-act:standards-body"
-    },
-    {
       "description": "standards-body evidence for roadmap-phase-scoreboard",
       "source_uri": "TODO://authority/roadmap-phase-scoreboard/standards-body",
       "task": "roadmap-phase-scoreboard:standards-body"
@@ -554,21 +535,21 @@
     "This template is a handoff artifact; it does not satisfy missing external authority evidence by itself.",
     "Placeholder source URIs intentionally keep readiness blocked until owners replace them with live authority sources."
   ],
-  "owner_fulfillment_template_id": "035d330569457408124c3f8e43d9f8cb7d79f327d52224c2e716b2ec0c7b052f",
+  "owner_fulfillment_template_id": "7e098cfa38c2b85894dda9a5fe88037939fb58e1337395516e70903b835706ea",
   "schema": "trustai.external-evidence-owner-fulfillment-template/0.1",
   "source_owner_packet_status": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "owner_packet_status_hash": "0b340e9ab96466ae6954e62182fd363565df3c3a439d35dc63cefd3c1b091402",
-    "owner_packet_status_id": "e286e4afe1b41893fae9cb149474ab82923c04c9f5d770f3e169c9c520829f70",
+    "owner_packet_status_hash": "929a4ddd9bb6ea8bab8b33d7551e99afff33475e8eebaeef6e3478526add264d",
+    "owner_packet_status_id": "e8ff51aa6823266feb11968896bd477960b770f9add0814c8a938a47b344e88d",
     "schema": "trustai.external-evidence-owner-packet-status/0.1"
   },
   "summary": {
-    "assignment_count": 28,
-    "blocked_task_count": 28,
+    "assignment_count": 27,
+    "blocked_task_count": 27,
     "closed_task_count": 0,
-    "fulfillment_count": 28,
+    "fulfillment_count": 27,
     "live_source_uri_count": 0,
-    "missing_intake_count": 28,
+    "missing_intake_count": 27,
     "open_task_count": 0,
     "owner_count": 9,
     "owners": [
@@ -582,6 +563,6 @@
       "service owner",
       "standards/governance owner"
     ],
-    "placeholder_source_uri_count": 28
+    "placeholder_source_uri_count": 27
   }
 }

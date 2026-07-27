@@ -1,13 +1,13 @@
 # External Evidence Gap Report
 
-- Gap report ID: `a1d65358d0b0afffea9cfa8c449b56dd0c712133609469df914e3b5d56745a6b`
+- Gap report ID: `c3cece6d387f89ec689d86a6d6bc791327c7177cd8e5e73ef24b3d7c0f10adb4`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 43/71
-- Missing authority kinds: 28
-- Remaining collection tasks: 28
-- Source-map entries: 28
-- Placeholder source URIs: 28
+- Covered authority kinds: 44/71
+- Missing authority kinds: 27
+- Remaining collection tasks: 27
+- Source-map entries: 27
+- Placeholder source URIs: 27
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
@@ -20,11 +20,10 @@
 - `kms-hsm`: 2
 - `provider-api`: 2
 - `regulator`: 2
-- `standards-body`: 4
+- `standards-body`: 3
 
 ## Gaps By Requirement
 
-- `compliance-mapper-and-eu-ai-act`: 1
 - `insurer-api-and-actuarial-products`: 7
 - `product-scope-discipline`: 2
 - `roadmap-phase-scoreboard`: 5
@@ -36,17 +35,6 @@
 - `vertical-packs`: 3
 
 ## Collection Worklist
-
-### compliance-mapper-and-eu-ai-act:standards-body
-
-- Title: Compliance framework mapper and EU AI Act technical documentation
-- Authority kind: `standards-body`
-- Owner hint: standards/governance owner
-- Description: standards-body evidence for compliance-mapper-and-eu-ai-act
-- Source URI: `TODO://authority/compliance-mapper-and-eu-ai-act/standards-body`
-- Snapshot output: `artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/standards-body.json`
-- Intake output: `artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/standards-body.json`
-- Suggested evidence sources: standards-body submission receipt; working-group status record; ballot or docket export
 
 ### trustai-own-compliance:standards-body
 

@@ -5,7 +5,7 @@
     "Source URIs marked TODO or placeholder must be replaced with authority-owned source exports before collection.",
     "Packet completion is proven only by verified source snapshots, intake receipts, rebuilt manifests, and readiness reports."
   ],
-  "owner_packet_bundle_id": "28f0748e092bf1add2dd57be3bb71d47b061c38263ed5a3e76a4484ff7a9cae1",
+  "owner_packet_bundle_id": "a9c8171f271da0438a00bdd57fa17434ec3869425a77e5e25efc697aa42b10e4",
   "packets": [
     {
       "authority_kinds": [
@@ -2188,31 +2188,29 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 4,
+      "missing_task_count": 3,
       "owner_hint": "standards/governance owner",
-      "package_hash": "04c9ea4172504027c9e92ef97d6ed4cccd769936cdd12d982091d164d20e9f4c",
-      "package_id": "728cb70a2f57fb4df9fdfcf09add1691f3d48fe8698550c6df06882ef199fd30",
+      "package_hash": "d0a78c1665029396108e5cabcf0420c870c3a0b07f30fc536c729291e8be6db6",
+      "package_id": "70fcec31af879e7921c27b4897a86a99d59404e1b239e5eab9181fcc1f72283f",
       "package_ref": "owner_hint:standards-governance-owner",
-      "packet_id": "f2aaa98d309608d2960b70acb064b00f23a1d3c3ea1b8b6bc51d6e2d2d81ac70",
+      "packet_id": "838d085ee812c50bf0c19a889eaafb6f36ada00802725f343aa3f5e00020337d",
       "packet_ref": "owner-packet:owner_hint:standards-governance-owner",
       "phases": [
         "P1-P4",
         "P2",
-        "P2-P3",
         "P3"
       ],
-      "placeholder_source_uri_count": 4,
+      "placeholder_source_uri_count": 3,
       "priorities": [
         "P0",
         "P1"
       ],
       "requirement_ids": [
-        "compliance-mapper-and-eu-ai-act",
         "roadmap-phase-scoreboard",
         "standards-track-and-auditor-ecosystem",
         "trustai-own-compliance"
       ],
-      "task_count": 4,
+      "task_count": 3,
       "tasks": [
         {
           "acceptance_criteria": [
@@ -2371,83 +2369,6 @@
         {
           "acceptance_criteria": [
             "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be standards-body and accepted for compliance-mapper-and-eu-ai-act.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "standards-body",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/compliance-mapper-and-eu-ai-act/standards-body",
-              "--root",
-              ".",
-              "--task",
-              "compliance-mapper-and-eu-ai-act:standards-body",
-              "--description",
-              "standards-body evidence for compliance-mapper-and-eu-ai-act",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/standards-body.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/standards-body.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/compliance-mapper-and-eu-ai-act/standards-body --root . --task compliance-mapper-and-eu-ai-act:standards-body --description 'standards-body evidence for compliance-mapper-and-eu-ai-act' --snapshot-out artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/standards-body.json --intake-out artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/standards-body.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/standards-body.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/standards-body.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "standards-body evidence for compliance-mapper-and-eu-ai-act",
-          "evidence_argument_template": "compliance-mapper-and-eu-ai-act,standards-body,external-evidence/compliance-mapper-and-eu-ai-act/standards-body.json,standards-body evidence for compliance-mapper-and-eu-ai-act;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Compliance production authority dossiers cover the local/reference authority checklist for framework-control ontology, ISO 42001, NIST AI RMF, EU AI Act, SR 11-7, SOC 2, proof-pack source replay, selective regulator disclosure, GRC exports, EU data-plane sovereignty, conformity-assessment review, and per-evidence source_context bound to the signed compliance source binding; actual fresh GRC-platform acceptance, regulator/supervisor acceptance, conformity-assessment review, and continuously operated EU data-plane provider exports remain external deployment evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/standards-body.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "standards/governance owner",
-          "phase": "P2-P3",
-          "priority": "P0",
-          "requirement_id": "compliance-mapper-and-eu-ai-act",
-          "snapshot_out": "artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/standards-body.json",
-          "source_uri": "TODO://authority/compliance-mapper-and-eu-ai-act/standards-body",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/compliance-mapper-and-eu-ai-act/standards-body.json",
-          "suggested_evidence_sources": [
-            "standards-body submission receipt",
-            "working-group status record",
-            "ballot or docket export"
-          ],
-          "task_id": "b923ba4be3220b26b60462e2e4f7eb1fd045ecf460283a55747d16b47a7efbce",
-          "task_ref": "external-evidence:compliance-mapper-and-eu-ai-act:standards-body",
-          "title": "Compliance framework mapper and EU AI Act technical documentation",
-          "unit_id": "1368ada925aab817480082f48d64bd4df1719ce87b96f409e195d96d2a8a462c",
-          "unit_ref": "compliance-mapper-and-eu-ai-act:standards-body"
-        },
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
             "Evidence item authority_kind must be standards-body and accepted for standards-track-and-auditor-ecosystem.",
             "Use issued_at and expires_at metadata when strict freshness verification is required.",
             "Rebuild and verify the external evidence manifest after adding the artifact."
@@ -2529,17 +2450,17 @@
   "source_work_package": {
     "generated_at": "2026-07-12T00:01:00Z",
     "group_by": "owner_hint",
-    "work_package_hash": "b7105095aad6274543452786463e0e0322ad75fb40e3b19190d01e115b8ecdd6",
-    "work_package_id": "1abe854dbd28b5b9ad9276a4fe10d157b1323e5d0a2ec1268b1c977e38a356a0"
+    "work_package_hash": "097f77a484a3411518d22df3b516af46a0fd02a183ebe34feb3c2a0d871ac5a7",
+    "work_package_id": "5bb50cac07b336c80cff845561badad6eae585fb3365174492576bc35f1f538a"
   },
   "summary": {
     "covered_task_count": 0,
     "live_source_uri_count": 0,
-    "missing_task_count": 28,
+    "missing_task_count": 27,
     "packet_count": 9,
-    "placeholder_source_uri_count": 28,
-    "source_work_package_task_count": 28,
-    "task_count": 28,
+    "placeholder_source_uri_count": 27,
+    "source_work_package_task_count": 27,
+    "task_count": 27,
     "task_count_by_authority_kind": {
       "ci-run": 4,
       "customer": 7,
@@ -2549,7 +2470,7 @@
       "kms-hsm": 2,
       "provider-api": 2,
       "regulator": 2,
-      "standards-body": 4
+      "standards-body": 3
     },
     "task_count_by_owner_hint": {
       "IAM/identity owner": 2,
@@ -2560,7 +2481,7 @@
       "risk/insurance owner": 3,
       "security/platform KMS owner": 2,
       "service owner": 2,
-      "standards/governance owner": 4
+      "standards/governance owner": 3
     }
   }
 }

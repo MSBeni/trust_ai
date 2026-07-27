@@ -1,0 +1,65 @@
+{
+  "evidence_argument": "compliance-mapper-and-eu-ai-act,standards-body,examples/aitrade/external-evidence/compliance-standards-body-source-snapshot.json,Retained standards-body submission export for compliance mapper and EU AI Act evidence;issuer=LF TrustAI Ballot System;subject=aitrade compliance mapper and EU AI Act standards-body submission export;source_uri=https://standards.example/lf-trustai/compliance-mapper/eu-ai-act/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
+  "evidence_item": {
+    "accepted_authority_kinds": [
+      "provider-api",
+      "regulator",
+      "standards-body"
+    ],
+    "authority_kind": "standards-body",
+    "description": "Retained standards-body submission export for compliance mapper and EU AI Act evidence",
+    "evidence_id": "efca36eb2498858ddaf83920ba73ec598abbf4530682f99156b58e2fc57d3302",
+    "expires_at": "2026-12-31T00:00:00Z",
+    "issued_at": "2026-07-12T00:00:00Z",
+    "issuer": "LF TrustAI Ballot System",
+    "path": "examples/aitrade/external-evidence/compliance-standards-body-source-snapshot.json",
+    "requirement_id": "compliance-mapper-and-eu-ai-act",
+    "sha256": "sha256:3054549d402050d060adffb17b0a51ad4f25bff27928b5ac0ed5085fe9a3ad74",
+    "source_uri": "https://standards.example/lf-trustai/compliance-mapper/eu-ai-act/2026-07-12",
+    "subject": "aitrade compliance mapper and EU AI Act standards-body submission export"
+  },
+  "generated_at": "2026-07-12T00:01:00Z",
+  "intake_id": "66c68a05722e7b765db4a5dc44bd3a56b86c77e84d6457ab677a57a5b733cfb9",
+  "limitations": [
+    "This intake receipt hashes and maps one collected artifact to a collection-plan task; it does not itself satisfy roadmap completion.",
+    "Coverage is updated only after rebuilding and verifying an external evidence manifest with the emitted evidence argument.",
+    "Issuer authority and freshness remain bounded by the collected artifact and manifest verification options."
+  ],
+  "schema": "trustai.external-evidence-intake/0.1",
+  "source_manifest": {
+    "covered_authority_kind_count": 1,
+    "manifest_hash": "614aed31f3e3791640f3192624fab080815440210b65341fb4a2121ed84db717",
+    "manifest_id": "9364d02d07c6d4002372ad45c4017ee3b7a6c6ffd8dc91c46fb9fac9c84f7586",
+    "manifest_ref": "production-external-evidence",
+    "missing_authority_kind_count": 70,
+    "required_authority_kind_count": 71,
+    "status": "partial"
+  },
+  "source_plan": {
+    "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
+    "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
+    "source_manifest": {
+      "generated_at": "2026-07-12T00:01:00Z",
+      "manifest_hash": "614aed31f3e3791640f3192624fab080815440210b65341fb4a2121ed84db717",
+      "manifest_id": "9364d02d07c6d4002372ad45c4017ee3b7a6c6ffd8dc91c46fb9fac9c84f7586",
+      "manifest_ref": "production-external-evidence",
+      "status": "partial"
+    },
+    "status_filter": "all"
+  },
+  "source_roadmap_audit": {
+    "audit_hash": "86cfd25ee3bed75b75604091d3fca2daec16da708498209193e84226bd29816e",
+    "audit_id": "08f9ff68d1301a7891428145af040a68839468931a42dea27e80a0e0ad3bf7f2",
+    "completion_position": "local-reference-complete-with-external-authority-deferred"
+  },
+  "task": {
+    "authority_kind": "standards-body",
+    "coverage_status": "missing",
+    "requirement_id": "compliance-mapper-and-eu-ai-act",
+    "suggested_artifact_path": "external-evidence/compliance-mapper-and-eu-ai-act/standards-body.json",
+    "task_id": "b923ba4be3220b26b60462e2e4f7eb1fd045ecf460283a55747d16b47a7efbce",
+    "task_ref": "external-evidence:compliance-mapper-and-eu-ai-act:standards-body",
+    "unit_id": "1368ada925aab817480082f48d64bd4df1719ce87b96f409e195d96d2a8a462c",
+    "unit_ref": "compliance-mapper-and-eu-ai-act:standards-body"
+  }
+}

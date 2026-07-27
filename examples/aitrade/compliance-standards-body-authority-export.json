@@ -1,0 +1,159 @@
+{
+  "authority_evidence": {
+    "authority_kind": "standards-body",
+    "evidence_ref": "standards-body:lf-trustai/compliance-mapper-eu-ai-act/submission-2026-07-12",
+    "requirement_id": "compliance-mapper-and-eu-ai-act",
+    "source_uri": "https://standards.example/lf-trustai/compliance-mapper/eu-ai-act/2026-07-12"
+  },
+  "environment": "aitrade-prod",
+  "evidence": {
+    "compliance_authority_source": {
+      "path": "src/trustai/compliance_authority.py",
+      "sha256": "sha256:db459112978417fab5e932c1e8658d24484a3200d6d717788264853364d4238c"
+    },
+    "compliance_authority_spec": {
+      "path": "docs/specs/compliance-production-authority-v0.1.md",
+      "sha256": "sha256:190840b93b9a2cbd17dd210f4215c504938e320d3d1b43a9ac542adba33c9594"
+    },
+    "compliance_authority_tests": {
+      "path": "tests/test_compliance_authority.py",
+      "sha256": "sha256:a2e211432b201bb2feb835a716094f6e35cbc6a2932bd737c314f445f4a7fd37"
+    },
+    "compliance_provider_api_export": {
+      "path": "examples/aitrade/compliance-provider-api-authority-export.json",
+      "sha256": "sha256:c8a6e8b9361ced1fd8a4a766a3d79aa4cb79c2bfd10e60fb68d354fd28e46aa9"
+    },
+    "compliance_regulator_export": {
+      "path": "examples/aitrade/compliance-regulator-authority-export.json",
+      "sha256": "sha256:dbc439dfa44a0a0ed1967579a16bf0cae0aec0a09019256d383877aea38469f5"
+    },
+    "compliance_source": {
+      "path": "src/trustai/compliance.py",
+      "sha256": "sha256:559e3194ee2dbedea859c1c11453877fb803301c4eda6a315488af4d513e80e5"
+    },
+    "eu_ai_act_source": {
+      "path": "src/trustai/eu_ai_act.py",
+      "sha256": "sha256:e7b424356b0a1037caf3542725446a463771f9e18ebaa67a15a89352946f7723"
+    },
+    "eu_ai_act_spec": {
+      "path": "docs/specs/eu-ai-act-technical-documentation-v0.1.md",
+      "sha256": "sha256:e1841abbe657fb3c9e96463683b637c9f2b1c1998a05240c82baa8a4c5c452c4"
+    },
+    "eu_ai_act_tests": {
+      "path": "tests/test_eu_ai_act.py",
+      "sha256": "sha256:279104cfa286887e18e45a33063c0b3bc1891062195a3e02e7599b9001b4d6c7"
+    },
+    "regulator_acceptance_source": {
+      "path": "src/trustai/regulator_acceptance.py",
+      "sha256": "sha256:6aa521d0436f6b1fda596664c70455ba55a61fedb8620578d15a05b33e1ba312"
+    },
+    "standards_ballot_system_response": {
+      "path": "examples/aitrade/standards-ballot-system-response.json",
+      "sha256": "sha256:63736dd6a55278122c6ccc073d90210feae442bef2d00edf3bae98c5f24876a6"
+    },
+    "standards_body_ballot_source": {
+      "path": "src/trustai/standards_body_ballot.py",
+      "sha256": "sha256:88a0ff244e838511330d1f904771ddba030960bfc835f8d7e7299a334c4d541b"
+    },
+    "standards_body_ballot_spec": {
+      "path": "docs/specs/standards-body-ballot-v0.1.md",
+      "sha256": "sha256:241fce5481d98a7bb66602202c0806ec92b0ace85eccfdbaeecdbf55785d6565"
+    },
+    "standards_body_ballot_system_source": {
+      "path": "src/trustai/standards_body_ballot_system.py",
+      "sha256": "sha256:be6738e77075c0244718467ca2b27f1a2b40586f9c3b1fe4b2486752e376692a"
+    },
+    "standards_body_ballot_system_spec": {
+      "path": "docs/specs/standards-body-ballot-system-v0.1.md",
+      "sha256": "sha256:1b7cd56747cba9d18dc4abcc54d56469f0655773395fb0baa97181f6fdf47022"
+    },
+    "standards_body_ballot_system_tests": {
+      "path": "tests/test_standards_body_ballot_system.py",
+      "sha256": "sha256:14db15d64a06f88c6fc88cf58f4a448c0c17c5a45031d0ed7e2178bdbfe13ab7"
+    },
+    "standards_body_ballot_tests": {
+      "path": "tests/test_standards_body_ballot.py",
+      "sha256": "sha256:0e589e9fe8a0c393be667de88f204b5985142b92093709c02ce546b18203aca4"
+    },
+    "standards_body_provider_posting_source": {
+      "path": "src/trustai/standards_body_provider_posting.py",
+      "sha256": "sha256:7af250cf229ca468555a62116e7df336a0c461e199566266032b664059427ee9"
+    },
+    "standards_body_provider_posting_spec": {
+      "path": "docs/specs/standards-body-provider-posting-v0.1.md",
+      "sha256": "sha256:7944347991b6cd88d97c74d90abf2634bc89757b56e51f7411551fafdf15f019"
+    },
+    "standards_body_provider_posting_tests": {
+      "path": "tests/test_standards_body_provider_posting.py",
+      "sha256": "sha256:e321be630e252d0d8a6bb1fe021f2a145fa915d5ca0281eaf7eea71f691fb833"
+    },
+    "standards_body_status_source": {
+      "path": "src/trustai/standards_body_status.py",
+      "sha256": "sha256:45e67431937ce305e01f049a5536d5d675d0f650bb47e631e6fdd3155a314fac"
+    },
+    "standards_body_status_spec": {
+      "path": "docs/specs/standards-body-status-v0.1.md",
+      "sha256": "sha256:13401609eb7847de8de36ba1c64156c867f0afb27bb5946baa2fbbbe9e9bbf07"
+    },
+    "standards_body_status_tests": {
+      "path": "tests/test_standards_body_status.py",
+      "sha256": "sha256:636b30f95ad74d9e46d27540c723c732c5a3f3d658c4cbe75a9c83e236146dc5"
+    },
+    "standards_body_submission_source": {
+      "path": "src/trustai/standards_body_submission.py",
+      "sha256": "sha256:ed80042b82a0ea3d88c6f56804b3d74639f10dc90179bacb88cd082474634ba5"
+    },
+    "standards_body_submission_spec": {
+      "path": "docs/specs/standards-body-submission-v0.1.md",
+      "sha256": "sha256:660390ed4499f060e6ab52ad3be6306236263dac082e67913b611b994d5c725d"
+    },
+    "standards_body_submission_tests": {
+      "path": "tests/test_standards_body_submission.py",
+      "sha256": "sha256:c7871f142c0ec5a09e832a163130725429af2f1e37a1edd4ee48cba747ecaa3f"
+    },
+    "standards_source": {
+      "path": "src/trustai/standards.py",
+      "sha256": "sha256:02ded53eb8435e68f4a34d5563fe2f05e0b61b10bbad8d38e65753a84c01995a"
+    },
+    "standards_submission_spec": {
+      "path": "docs/specs/standards-submission-v0.1.md",
+      "sha256": "sha256:f5b94745f26cf47f4ac9548032132cae0a13b55e9fb0101683fb639843832538"
+    },
+    "standards_tests": {
+      "path": "tests/test_standards.py",
+      "sha256": "sha256:231b574ee1a7b153c9becf77777c472d3340b4652da28520a92791e71b77e805"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "issued_at": "2026-07-12T00:00:00Z",
+  "issuer": "LF TrustAI Ballot System",
+  "schema": "trustai.compliance-standards-body-authority-export/0.1",
+  "source_binding": {
+    "ballot_system_export_ref": "LF-TRUSTAI-BALLOT-2026-001:export",
+    "compliance_authority_ref": "dossier:compliance-authority/aitrade-prod",
+    "compliance_provider_api_export_ref": "provider-api-export:aitrade/compliance-evidence/2026-07-12",
+    "compliance_regulator_export_ref": "regulator-acceptance:example-supervisor/aitrade/compliance/2026-07-12",
+    "eu_ai_act_document_ref": "eu-ai-act-document:aitrade-annex-iii",
+    "proof_pack_spec_track_ref": "LF-TRUSTAI-PROOF-PACKS",
+    "standards_submission_ref": "standards-submission:aitrade/compliance-mapper-eu-ai-act/2026-07-12"
+  },
+  "standards_body": {
+    "ballot_ref": "LF-TRUSTAI-BALLOT-2026-002",
+    "docket_ref": "LF-TRUSTAI-DKT-2026-002",
+    "export_url": "https://standards.example/lf-trustai/compliance-mapper/eu-ai-act/2026-07-12",
+    "profile_status": "submitted-for-working-group-review",
+    "program_ref": "LF-TRUSTAI-PROOF-PACKS",
+    "submission_ref": "standards-submission:aitrade/compliance-mapper-eu-ai-act/2026-07-12",
+    "system": "LF TrustAI Ballot System",
+    "target_track": "draft-specification",
+    "working_group_ref": "wg:agent-behavioral-evidence/compliance-mapping"
+  },
+  "subject": "aitrade compliance mapper and EU AI Act standards-body submission export",
+  "verified_controls": [
+    "standards-body submission binds compliance mapper, EU AI Act technical documentation, and proof-pack control mapping ontology",
+    "working-group docket includes retained source hashes for compliance authority, EU AI Act, and standards-body receipt modules",
+    "ballot system export retains replayable evidence for ISO 42001, NIST AI RMF, EU AI Act, SR 11-7, and SOC 2 mappings",
+    "standards-body review links provider API and regulator exports as prior authority evidence",
+    "submission status preserves remaining TrustAI own-compliance authority gaps separately from compliance mapper evidence"
+  ]
+}

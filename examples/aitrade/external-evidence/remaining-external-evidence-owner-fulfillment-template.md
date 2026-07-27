@@ -1,14 +1,14 @@
 # External Evidence Owner Fulfillment Template
 
-- Template ID: `035d330569457408124c3f8e43d9f8cb7d79f327d52224c2e716b2ec0c7b052f`
+- Template ID: `7e098cfa38c2b85894dda9a5fe88037939fb58e1337395516e70903b835706ea`
 - Generated at: `2026-07-12T00:01:00Z`
-- Fulfillments: 28
+- Fulfillments: 27
 - Owners: 9
-- Blocked tasks: 28
+- Blocked tasks: 27
 - Open tasks: 0
 - Closed tasks: 0
-- Placeholder source URIs: 28
-- Missing intakes: 28
+- Placeholder source URIs: 27
+- Missing intakes: 27
 
 ## Fulfillments
 
@@ -38,7 +38,6 @@
 | `standards-track-and-auditor-ecosystem:kms-hsm` | TODO://authority/standards-track-and-auditor-ecosystem/kms-hsm | kms-hsm evidence for standards-track-and-auditor-ecosystem |
 | `insurer-api-and-actuarial-products:hosted-service` | TODO://authority/insurer-api-and-actuarial-products/hosted-service | hosted-service evidence for insurer-api-and-actuarial-products |
 | `trust-network-procurement-and-marketplace:hosted-service` | TODO://authority/trust-network-procurement-and-marketplace/hosted-service | hosted-service evidence for trust-network-procurement-and-marketplace |
-| `compliance-mapper-and-eu-ai-act:standards-body` | TODO://authority/compliance-mapper-and-eu-ai-act/standards-body | standards-body evidence for compliance-mapper-and-eu-ai-act |
 | `roadmap-phase-scoreboard:standards-body` | TODO://authority/roadmap-phase-scoreboard/standards-body | standards-body evidence for roadmap-phase-scoreboard |
 | `standards-track-and-auditor-ecosystem:standards-body` | TODO://authority/standards-track-and-auditor-ecosystem/standards-body | standards-body evidence for standards-track-and-auditor-ecosystem |
 | `trustai-own-compliance:standards-body` | TODO://authority/trustai-own-compliance/standards-body | standards-body evidence for trustai-own-compliance |
@@ -71,7 +70,6 @@
 | `standards-track-and-auditor-ecosystem:kms-hsm` | security/platform KMS owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/kms-hsm.json | artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/kms-hsm.json |
 | `insurer-api-and-actuarial-products:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/hosted-service.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/hosted-service.json |
 | `trust-network-procurement-and-marketplace:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/hosted-service.json | artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/hosted-service.json |
-| `compliance-mapper-and-eu-ai-act:standards-body` | standards/governance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/standards-body.json | artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/standards-body.json |
 | `roadmap-phase-scoreboard:standards-body` | standards/governance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/roadmap-phase-scoreboard/standards-body.json | artifacts/external-evidence-intakes/roadmap-phase-scoreboard/standards-body.json |
 | `standards-track-and-auditor-ecosystem:standards-body` | standards/governance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/standards-body.json | artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/standards-body.json |
 | `trustai-own-compliance:standards-body` | standards/governance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trustai-own-compliance/standards-body.json | artifacts/external-evidence-intakes/trustai-own-compliance/standards-body.json |

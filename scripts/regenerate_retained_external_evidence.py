@@ -640,6 +640,20 @@ RETAINED_SOURCES: dict[str, dict[str, str]] = {
         "snapshot_out": "examples/aitrade/external-evidence/compliance-regulator-source-snapshot.json",
         "intake_out": "examples/aitrade/external-evidence/intakes/compliance-mapper-and-eu-ai-act-regulator.json",
     },
+    "compliance-mapper-and-eu-ai-act:standards-body": {
+        "source_uri": "https://standards.example/lf-trustai/compliance-mapper/eu-ai-act/2026-07-12",
+        "description": "Retained standards-body submission export for compliance mapper and EU AI Act evidence",
+        "artifact": "examples/aitrade/external-evidence/compliance-standards-body-source-snapshot.json",
+        "source_file": "examples/aitrade/compliance-standards-body-authority-export.json",
+        "retrieval_method": "file-copy",
+        "content_type": "application/json",
+        "issuer": "LF TrustAI Ballot System",
+        "subject": "aitrade compliance mapper and EU AI Act standards-body submission export",
+        "issued_at": "2026-07-12T00:00:00Z",
+        "expires_at": "2026-12-31T00:00:00Z",
+        "snapshot_out": "examples/aitrade/external-evidence/compliance-standards-body-source-snapshot.json",
+        "intake_out": "examples/aitrade/external-evidence/intakes/compliance-mapper-and-eu-ai-act-standards-body.json",
+    },
 }
 
 

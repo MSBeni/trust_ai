@@ -708,6 +708,24 @@
     },
     {
       "accepted_authority_kinds": [
+        "provider-api",
+        "regulator",
+        "standards-body"
+      ],
+      "authority_kind": "standards-body",
+      "description": "Retained standards-body submission export for compliance mapper and EU AI Act evidence",
+      "evidence_id": "efca36eb2498858ddaf83920ba73ec598abbf4530682f99156b58e2fc57d3302",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "LF TrustAI Ballot System",
+      "path": "examples/aitrade/external-evidence/compliance-standards-body-source-snapshot.json",
+      "requirement_id": "compliance-mapper-and-eu-ai-act",
+      "sha256": "sha256:3054549d402050d060adffb17b0a51ad4f25bff27928b5ac0ed5085fe9a3ad74",
+      "source_uri": "https://standards.example/lf-trustai/compliance-mapper/eu-ai-act/2026-07-12",
+      "subject": "aitrade compliance mapper and EU AI Act standards-body submission export"
+    },
+    {
+      "accepted_authority_kinds": [
         "ci-run",
         "kms-hsm",
         "provider-api",
@@ -827,7 +845,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "7dec35ade69dc7ba6727a707d3c71dc4cc2a35da50e5a9fd166c150427a1eb57",
+  "manifest_id": "8e251716ce2a122460a6dea5c406f716b57c172cbe26b8ca5759feaece771a00",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -1313,7 +1331,7 @@
     },
     {
       "authority_kind": "standards-body",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Compliance production authority dossiers cover the local/reference authority checklist for framework-control ontology, ISO 42001, NIST AI RMF, EU AI Act, SR 11-7, SOC 2, proof-pack source replay, selective regulator disclosure, GRC exports, EU data-plane sovereignty, conformity-assessment review, and per-evidence source_context bound to the signed compliance source binding; actual fresh GRC-platform acceptance, regulator/supervisor acceptance, conformity-assessment review, and continuously operated EU data-plane provider exports remain external deployment evidence."
       ],
@@ -2054,7 +2072,7 @@
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {
-    "covered_authority_kind_count": 43,
+    "covered_authority_kind_count": 44,
     "covered_authority_kinds_by_requirement": {
       "agent-inventory-and-identity": [
         "provider-api",
@@ -2083,7 +2101,8 @@
       ],
       "compliance-mapper-and-eu-ai-act": [
         "provider-api",
-        "regulator"
+        "regulator",
+        "standards-body"
       ],
       "design-partner-pilot-exit-criteria": [
         "regulator",
@@ -2139,15 +2158,12 @@
       "self-serve-onboarding",
       "shadow-replay-temporal-holdout"
     ],
-    "evidence_count": 43,
-    "expires_at_count": 43,
-    "freshness_window_count": 43,
-    "issued_at_count": 43,
-    "missing_authority_kind_count": 28,
+    "evidence_count": 44,
+    "expires_at_count": 44,
+    "freshness_window_count": 44,
+    "issued_at_count": 44,
+    "missing_authority_kind_count": 27,
     "missing_authority_kinds_by_requirement": {
-      "compliance-mapper-and-eu-ai-act": [
-        "standards-body"
-      ],
       "insurer-api-and-actuarial-products": [
         "ci-run",
         "kms-hsm",
