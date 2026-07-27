@@ -23,6 +23,7 @@ from trustai.external_evidence import (
     EXTERNAL_EVIDENCE_GAP_REPORT_SCHEMA,
     EXTERNAL_EVIDENCE_WORK_PACKAGE_SCHEMA,
     EXTERNAL_EVIDENCE_OWNER_PACKET_SCHEMA,
+    EXTERNAL_EVIDENCE_OWNER_PACKET_STATUS_SCHEMA,
     EXTERNAL_EVIDENCE_READINESS_SCHEMA,
     EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA,
     ROADMAP_EVIDENCE_REPORT_SCHEMA,
@@ -37,6 +38,7 @@ from trustai.external_evidence import (
     build_external_evidence_gap_report,
     build_external_evidence_work_package,
     build_external_evidence_owner_packets,
+    build_external_evidence_owner_packet_status,
     build_external_evidence_readiness_report,
     build_external_evidence_intake,
     build_external_evidence_source_snapshot,
@@ -52,6 +54,7 @@ from trustai.external_evidence import (
     load_external_evidence_gap_report,
     load_external_evidence_work_package,
     load_external_evidence_owner_packets,
+    load_external_evidence_owner_packet_status,
     load_external_evidence_readiness_report,
     load_external_evidence_intake,
     load_external_evidence_intakes,
@@ -64,6 +67,7 @@ from trustai.external_evidence import (
     render_external_evidence_collection_plan_markdown,
     render_external_evidence_work_package_markdown,
     render_external_evidence_owner_packets_markdown,
+    render_external_evidence_owner_packet_status_markdown,
     render_external_evidence_readiness_markdown,
     render_roadmap_evidence_markdown,
     render_roadmap_evidence_bundle_markdown,
@@ -71,6 +75,7 @@ from trustai.external_evidence import (
     verify_external_evidence_gap_report,
     verify_external_evidence_work_package,
     verify_external_evidence_owner_packets,
+    verify_external_evidence_owner_packet_status,
     verify_external_evidence_readiness_report,
     verify_external_evidence_collection_plan,
     verify_external_evidence_source_map_template,
@@ -769,6 +774,47 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertIn("Completion gate", markdown)
         self.assertIn("Task Commands", markdown)
 
+        status_report = build_external_evidence_owner_packet_status(
+            packet_bundle,
+            work_package,
+            source_map,
+            [],
+            root=ROOT,
+            generated_at="2026-07-09T00:05:00Z",
+        )
+        status_result = verify_external_evidence_owner_packet_status(
+            status_report,
+            packet_bundle,
+            work_package,
+            source_map,
+            [],
+            root=ROOT,
+        )
+        status_markdown = render_external_evidence_owner_packet_status_markdown(status_report)
+        self.assertEqual(EXTERNAL_EVIDENCE_OWNER_PACKET_STATUS_SCHEMA, status_report["schema"])
+        self.assertTrue(status_result.ok, status_result.errors)
+        self.assertEqual(packet_bundle["summary"]["packet_count"], status_report["summary"]["packet_count"])
+        self.assertEqual(packet_bundle["summary"]["task_count"], status_report["summary"]["task_count"])
+        self.assertEqual(0, status_report["summary"]["closed_task_count"])
+        self.assertEqual(packet_bundle["summary"]["task_count"], status_report["summary"]["blocked_task_count"])
+        self.assertEqual(packet_bundle["summary"]["placeholder_source_uri_count"], status_report["summary"]["placeholder_source_uri_count"])
+        self.assertIn("External Evidence Owner Packet Status", status_markdown)
+        self.assertIn("Open And Blocked Tasks", status_markdown)
+
+        tampered_status = copy.deepcopy(status_report)
+        tampered_status["tasks"][0]["task_status"] = "closed"
+        tampered_status["owner_packet_status_id"] = content_hash(without_keys(tampered_status, "owner_packet_status_id"))
+        tampered_status_result = verify_external_evidence_owner_packet_status(
+            tampered_status,
+            packet_bundle,
+            work_package,
+            source_map,
+            [],
+            root=ROOT,
+        )
+        self.assertFalse(tampered_status_result.ok)
+        self.assertTrue(any("owner packet status body" in error for error in tampered_status_result.errors), tampered_status_result.errors)
+
         tampered = copy.deepcopy(packet_bundle)
         tampered["packets"][0]["tasks"][0]["source_uri_status"] = "live"
         tampered["owner_packet_bundle_id"] = content_hash(without_keys(tampered, "owner_packet_bundle_id"))
@@ -779,9 +825,13 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_path = Path(tmp_dir)
             work_package_path = tmp_path / "work-package.json"
+            source_map_path = tmp_path / "source-map.json"
             packet_path = tmp_path / "owner-packets.json"
             markdown_path = tmp_path / "owner-packets.md"
+            status_path = tmp_path / "owner-packet-status.json"
+            status_markdown_path = tmp_path / "owner-packet-status.md"
             work_package_path.write_text(json.dumps(work_package, indent=2, sort_keys=True), encoding="utf-8")
+            source_map_path.write_text(json.dumps(source_map, indent=2, sort_keys=True), encoding="utf-8")
             subprocess.run(
                 [
                     sys.executable,
@@ -810,6 +860,46 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     "external-evidence-owner-packets-verify",
                     str(packet_path),
                     str(work_package_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-owner-packet-status",
+                    str(packet_path),
+                    str(work_package_path),
+                    str(source_map_path),
+                    "--root",
+                    str(ROOT),
+                    "--generated-at",
+                    "2026-07-09T00:05:00Z",
+                    "--out",
+                    str(status_path),
+                    "--markdown",
+                    str(status_markdown_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            cli_status_report = load_external_evidence_owner_packet_status(status_path)
+            self.assertEqual(status_report, cli_status_report)
+            self.assertTrue(status_markdown_path.exists())
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-owner-packet-status-verify",
+                    str(status_path),
+                    str(packet_path),
+                    str(work_package_path),
+                    str(source_map_path),
+                    "--root",
+                    str(ROOT),
                 ],
                 cwd=ROOT,
                 check=True,

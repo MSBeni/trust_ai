@@ -211,6 +211,20 @@ def refresh_retained_artifacts() -> None:
         path("remaining-external-evidence-owner-packets.md"),
     )
     run(
+        "external-evidence-owner-packet-status",
+        path("remaining-external-evidence-owner-packets.json"),
+        path("remaining-external-evidence-work-package.json"),
+        path("remaining-external-evidence-source-map-template.json"),
+        "--root",
+        ".",
+        "--generated-at",
+        COLLECTION_TIME,
+        "--out",
+        path("remaining-external-evidence-owner-packet-status.json"),
+        "--markdown",
+        path("remaining-external-evidence-owner-packet-status.md"),
+    )
+    run(
         "external-evidence-readiness",
         path("retained-external-evidence-gap-report.json"),
         path("retained-external-evidence-manifest.json"),
@@ -460,6 +474,15 @@ def verify_retained_artifacts() -> None:
         path("remaining-external-evidence-work-package.json"),
     )
     run(
+        "external-evidence-owner-packet-status-verify",
+        path("remaining-external-evidence-owner-packet-status.json"),
+        path("remaining-external-evidence-owner-packets.json"),
+        path("remaining-external-evidence-work-package.json"),
+        path("remaining-external-evidence-source-map-template.json"),
+        "--root",
+        ".",
+    )
+    run(
         "external-evidence-readiness-verify",
         path("retained-external-evidence-readiness.json"),
         path("retained-external-evidence-gap-report.json"),
@@ -483,6 +506,7 @@ def assert_retained_counts() -> None:
     gap_report = json_load(DIR / "retained-external-evidence-gap-report.json")
     work_package = json_load(DIR / "remaining-external-evidence-work-package.json")
     owner_packets = json_load(DIR / "remaining-external-evidence-owner-packets.json")
+    owner_packet_status = json_load(DIR / "remaining-external-evidence-owner-packet-status.json")
     readiness = json_load(DIR / "retained-external-evidence-readiness.json")
     checks = [
         (manifest["summary"]["covered_authority_kind_count"], 3, "manifest covered authority kind count"),
@@ -495,6 +519,10 @@ def assert_retained_counts() -> None:
         (work_package["summary"]["package_count"], 10, "work-package package count"),
         (owner_packets["summary"]["packet_count"], 10, "owner packet count"),
         (owner_packets["summary"]["task_count"], 68, "owner packet task count"),
+        (owner_packet_status["summary"]["packet_count"], 10, "owner packet status packet count"),
+        (owner_packet_status["summary"]["task_count"], 68, "owner packet status task count"),
+        (owner_packet_status["summary"]["closed_task_count"], 0, "owner packet status closed task count"),
+        (owner_packet_status["summary"]["blocked_task_count"], 68, "owner packet status blocked task count"),
         (readiness["summary"]["readiness_status"], "not-ready", "readiness status"),
     ]
     for actual, expected, label in checks:

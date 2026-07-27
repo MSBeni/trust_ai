@@ -1155,6 +1155,7 @@ from .external_evidence import (
     build_external_evidence_gap_report,
     build_external_evidence_work_package,
     build_external_evidence_owner_packets,
+    build_external_evidence_owner_packet_status,
     build_external_evidence_readiness_report,
     build_external_evidence_source_map_template,
     fulfill_external_evidence_source_map,
@@ -1171,12 +1172,14 @@ from .external_evidence import (
     load_external_evidence_gap_report,
     load_external_evidence_work_package,
     load_external_evidence_owner_packets,
+    load_external_evidence_owner_packet_status,
     load_external_evidence_readiness_report,
     load_external_evidence_collection_plan,
     load_external_evidence_source_map,
     load_external_evidence_collection_run,
     load_external_evidence_intake,
     load_external_evidence_intakes,
+    discover_external_evidence_intake_paths,
     load_external_evidence_source_snapshot,
     load_roadmap_evidence_bundle,
     load_roadmap_evidence_report,
@@ -1187,6 +1190,7 @@ from .external_evidence import (
     verify_external_evidence_gap_report,
     verify_external_evidence_work_package,
     verify_external_evidence_owner_packets,
+    verify_external_evidence_owner_packet_status,
     verify_external_evidence_readiness_report,
     verify_external_evidence_collection_plan,
     verify_external_evidence_source_map_template,
@@ -1203,6 +1207,8 @@ from .external_evidence import (
     write_external_evidence_work_package_markdown,
     write_external_evidence_owner_packets,
     write_external_evidence_owner_packets_markdown,
+    write_external_evidence_owner_packet_status,
+    write_external_evidence_owner_packet_status_markdown,
     write_external_evidence_readiness_report,
     write_external_evidence_readiness_markdown,
     write_external_evidence_collection_plan,
@@ -15835,6 +15841,92 @@ def cmd_external_evidence_owner_packets_verify(args: argparse.Namespace) -> int:
         print(f"- {error}", file=sys.stderr)
     return 1
 
+
+def _load_external_evidence_intakes_optional(paths: list[str] | None, directories: list[str] | None) -> list[dict[str, Any]]:
+    intake_paths = discover_external_evidence_intake_paths(paths, directories)
+    return [load_external_evidence_intake(path) for path in intake_paths]
+
+
+def cmd_external_evidence_owner_packet_status(args: argparse.Namespace) -> int:
+    try:
+        packet_bundle = load_external_evidence_owner_packets(args.packet_bundle)
+        work_package = load_external_evidence_work_package(args.work_package)
+        source_map = load_external_evidence_source_map(args.source_map)
+        intakes = _load_external_evidence_intakes_optional(args.intake, args.intake_dir)
+        status_report = build_external_evidence_owner_packet_status(
+            packet_bundle,
+            work_package,
+            source_map,
+            intakes,
+            root=args.root,
+            generated_at=args.generated_at,
+        )
+        result = verify_external_evidence_owner_packet_status(
+            status_report,
+            packet_bundle,
+            work_package,
+            source_map,
+            intakes,
+            root=args.root,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence owner packet status failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("external evidence owner packet status verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_external_evidence_owner_packet_status(args.out, status_report)
+    if args.markdown:
+        write_external_evidence_owner_packet_status_markdown(args.markdown, status_report)
+        print(f"external evidence owner packet status markdown: {args.markdown}")
+    summary = status_report["summary"]
+    print(f"external evidence owner packet status: {args.out}")
+    print(f"owner packet status id: {status_report['owner_packet_status_id']}")
+    print(f"owner packets: {summary['packet_count']}")
+    print(f"tasks: {summary['task_count']}")
+    print(f"closed tasks: {summary['closed_task_count']}")
+    print(f"open tasks: {summary['open_task_count']}")
+    print(f"blocked tasks: {summary['blocked_task_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_external_evidence_owner_packet_status_verify(args: argparse.Namespace) -> int:
+    try:
+        status_report = load_external_evidence_owner_packet_status(args.status_report)
+        packet_bundle = load_external_evidence_owner_packets(args.packet_bundle)
+        work_package = load_external_evidence_work_package(args.work_package)
+        source_map = load_external_evidence_source_map(args.source_map)
+        intakes = _load_external_evidence_intakes_optional(args.intake, args.intake_dir)
+        result = verify_external_evidence_owner_packet_status(
+            status_report,
+            packet_bundle,
+            work_package,
+            source_map,
+            intakes,
+            root=args.root,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence owner packet status verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        summary = status_report.get("summary", {})
+        print(f"verified external evidence owner packet status: {args.status_report}")
+        print(f"owner packet status id: {status_report.get('owner_packet_status_id')}")
+        print(f"owner packets: {summary.get('packet_count', 0)}")
+        print(f"tasks: {summary.get('task_count', 0)}")
+        print(f"closed tasks: {summary.get('closed_task_count', 0)}")
+        print(f"blocked tasks: {summary.get('blocked_task_count', 0)}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"external evidence owner packet status verification failed: {args.status_report}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
 def cmd_external_evidence_readiness(args: argparse.Namespace) -> int:
     try:
         roadmap_audit = load_roadmap_audit(args.roadmap_audit)
@@ -27086,6 +27178,28 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_owner_packets_verify.add_argument("packet_bundle")
     external_evidence_owner_packets_verify.add_argument("work_package")
     external_evidence_owner_packets_verify.set_defaults(func=cmd_external_evidence_owner_packets_verify)
+
+    external_evidence_owner_packet_status = subparsers.add_parser("external-evidence-owner-packet-status", help="write collection status for owner-facing external-evidence packets")
+    external_evidence_owner_packet_status.add_argument("packet_bundle")
+    external_evidence_owner_packet_status.add_argument("work_package")
+    external_evidence_owner_packet_status.add_argument("source_map")
+    external_evidence_owner_packet_status.add_argument("--intake", action="append", default=[])
+    external_evidence_owner_packet_status.add_argument("--intake-dir", action="append", default=[])
+    external_evidence_owner_packet_status.add_argument("--root", default=".")
+    external_evidence_owner_packet_status.add_argument("--generated-at")
+    external_evidence_owner_packet_status.add_argument("--out", default="artifacts/external-evidence-owner-packet-status.json")
+    external_evidence_owner_packet_status.add_argument("--markdown", default="artifacts/external-evidence-owner-packet-status.md")
+    external_evidence_owner_packet_status.set_defaults(func=cmd_external_evidence_owner_packet_status)
+
+    external_evidence_owner_packet_status_verify = subparsers.add_parser("external-evidence-owner-packet-status-verify", help="verify collection status for owner-facing external-evidence packets")
+    external_evidence_owner_packet_status_verify.add_argument("status_report")
+    external_evidence_owner_packet_status_verify.add_argument("packet_bundle")
+    external_evidence_owner_packet_status_verify.add_argument("work_package")
+    external_evidence_owner_packet_status_verify.add_argument("source_map")
+    external_evidence_owner_packet_status_verify.add_argument("--intake", action="append", default=[])
+    external_evidence_owner_packet_status_verify.add_argument("--intake-dir", action="append", default=[])
+    external_evidence_owner_packet_status_verify.add_argument("--root", default=".")
+    external_evidence_owner_packet_status_verify.set_defaults(func=cmd_external_evidence_owner_packet_status_verify)
     external_evidence_readiness = subparsers.add_parser("external-evidence-readiness", help="write a production-readiness report for retained external-evidence artifacts")
     external_evidence_readiness.add_argument("gap_report")
     external_evidence_readiness.add_argument("manifest")

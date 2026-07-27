@@ -27,6 +27,7 @@ EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA = "trustai.external-evidence-collection-
 EXTERNAL_EVIDENCE_GAP_REPORT_SCHEMA = "trustai.external-evidence-gap-report/0.1"
 EXTERNAL_EVIDENCE_WORK_PACKAGE_SCHEMA = "trustai.external-evidence-work-package/0.1"
 EXTERNAL_EVIDENCE_OWNER_PACKET_SCHEMA = "trustai.external-evidence-owner-packet-bundle/0.1"
+EXTERNAL_EVIDENCE_OWNER_PACKET_STATUS_SCHEMA = "trustai.external-evidence-owner-packet-status/0.1"
 EXTERNAL_EVIDENCE_READINESS_SCHEMA = "trustai.external-evidence-readiness/0.1"
 EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA = "trustai.external-evidence-git-remote-ref-export/0.1"
 
@@ -219,6 +220,13 @@ class ExternalEvidenceWorkPackageVerification:
 
 @dataclass
 class ExternalEvidenceOwnerPacketVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class ExternalEvidenceOwnerPacketStatusVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -1729,6 +1737,278 @@ def verify_external_evidence_owner_packets(
             warnings.append("owner packet task count does not match recorded source work package task count")
     return ExternalEvidenceOwnerPacketVerification(ok=not errors, errors=errors, warnings=warnings)
 
+
+def _external_evidence_owner_packet_source_entries(source_map: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    entries = source_map.get("entries", [])
+    if not isinstance(entries, list):
+        return {}
+    result: dict[str, dict[str, Any]] = {}
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        for ref in (entry.get("unit_ref"), entry.get("task"), entry.get("task_ref"), entry.get("task_id")):
+            if ref:
+                result[str(ref)] = entry
+    return result
+
+
+def _external_evidence_owner_packet_intakes(intakes: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
+    by_ref: dict[str, list[dict[str, Any]]] = {}
+    for intake in intakes:
+        if not isinstance(intake, dict):
+            continue
+        task = intake.get("task") if isinstance(intake.get("task"), dict) else {}
+        for ref in (task.get("unit_ref"), task.get("task_ref"), task.get("task_id")):
+            if ref:
+                by_ref.setdefault(str(ref), []).append(intake)
+    return by_ref
+
+
+def _external_evidence_owner_packet_task_refs(task: dict[str, Any]) -> list[str]:
+    return [str(ref) for ref in (task.get("unit_ref"), task.get("task_ref"), task.get("task_id")) if ref]
+
+
+def _external_evidence_owner_packet_path(value: Any) -> str:
+    return str(value or "").replace("\\", "/")
+
+
+def _external_evidence_owner_packet_artifact_status(root: str | Path, evidence_item: dict[str, Any]) -> tuple[bool, str | None]:
+    artifact_path = str(evidence_item.get("path") or "")
+    if not artifact_path:
+        return False, None
+    try:
+        resolved = _resolve_evidence_item_artifact_path(root, artifact_path)
+    except ValueError:
+        return False, None
+    if not resolved.is_file():
+        return False, None
+    return True, file_sha256_ref(resolved)
+
+
+def _external_evidence_owner_packet_task_status(
+    task: dict[str, Any],
+    *,
+    source_entries: dict[str, dict[str, Any]],
+    intakes_by_ref: dict[str, list[dict[str, Any]]],
+    root: str | Path,
+) -> dict[str, Any]:
+    refs = _external_evidence_owner_packet_task_refs(task)
+    source_entry = next((source_entries[ref] for ref in refs if ref in source_entries), None)
+    intake = next((intakes_by_ref[ref][0] for ref in refs if ref in intakes_by_ref and intakes_by_ref[ref]), None)
+    source_uri = source_entry.get("source_uri") if isinstance(source_entry, dict) else task.get("source_uri")
+    snapshot_out = source_entry.get("snapshot_out") if isinstance(source_entry, dict) else task.get("snapshot_out")
+    intake_out = source_entry.get("intake_out") if isinstance(source_entry, dict) else task.get("intake_out")
+    source_uri_status = "placeholder" if _source_map_is_placeholder_uri(str(source_uri or "")) else "live"
+    blocking_reasons: list[str] = []
+    if source_entry is None:
+        blocking_reasons.append("missing-source-map-entry")
+    if source_uri_status != "live":
+        blocking_reasons.append("placeholder-source-uri")
+    intake_record: dict[str, Any] | None = None
+    if intake is None:
+        blocking_reasons.append("missing-intake")
+    else:
+        intake_hash = content_hash(intake)
+        intake_id_ok = intake.get("intake_id") == content_hash(without_keys(intake, "intake_id"))
+        if not intake_id_ok:
+            blocking_reasons.append("invalid-intake-id")
+        intake_task = intake.get("task") if isinstance(intake.get("task"), dict) else {}
+        evidence_item = intake.get("evidence_item") if isinstance(intake.get("evidence_item"), dict) else {}
+        for key in ("requirement_id", "authority_kind"):
+            if str(intake_task.get(key) or evidence_item.get(key) or "") != str(task.get(key) or ""):
+                blocking_reasons.append(f"intake-{key}-mismatch")
+        if str(evidence_item.get("source_uri") or "") != str(source_uri or ""):
+            blocking_reasons.append("intake-source-uri-mismatch")
+        if _external_evidence_owner_packet_path(evidence_item.get("path")) != _external_evidence_owner_packet_path(snapshot_out):
+            blocking_reasons.append("intake-artifact-path-mismatch")
+        artifact_present, artifact_sha256 = _external_evidence_owner_packet_artifact_status(root, evidence_item)
+        if not artifact_present:
+            blocking_reasons.append("intake-artifact-missing")
+        elif artifact_sha256 != evidence_item.get("sha256"):
+            blocking_reasons.append("intake-artifact-hash-mismatch")
+        intake_record = {
+            "intake_id": intake.get("intake_id"),
+            "intake_hash": intake_hash,
+            "intake_id_ok": intake_id_ok,
+            "artifact_path": evidence_item.get("path"),
+            "artifact_present": artifact_present,
+            "artifact_sha256": artifact_sha256,
+        }
+    closed = not blocking_reasons
+    if closed:
+        task_status = "closed"
+    elif "placeholder-source-uri" in blocking_reasons or "missing-source-map-entry" in blocking_reasons:
+        task_status = "blocked"
+    else:
+        task_status = "open"
+    return {
+        "unit_ref": task.get("unit_ref"),
+        "task_ref": task.get("task_ref"),
+        "requirement_id": task.get("requirement_id"),
+        "authority_kind": task.get("authority_kind"),
+        "owner_hint": task.get("owner_hint"),
+        "source_uri": source_uri,
+        "source_uri_status": source_uri_status,
+        "snapshot_out": snapshot_out,
+        "intake_out": intake_out,
+        "task_status": task_status,
+        "blocking_reasons": blocking_reasons,
+        "intake": intake_record,
+    }
+
+
+def _external_evidence_owner_packet_status_counts(records: list[dict[str, Any]], key: str) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for record in records:
+        value = str(record.get(key) or "unknown")
+        counts[value] = counts.get(value, 0) + 1
+    return {name: counts[name] for name in sorted(counts)}
+
+
+def build_external_evidence_owner_packet_status(
+    packet_bundle: dict[str, Any],
+    work_package: dict[str, Any],
+    source_map: dict[str, Any],
+    intakes: list[dict[str, Any]] | None = None,
+    *,
+    root: str | Path = ".",
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    packet_result = verify_external_evidence_owner_packets(packet_bundle, work_package)
+    if not packet_result.ok:
+        raise ValueError("external evidence owner packets are not valid for status: " + "; ".join(packet_result.errors))
+    if source_map.get("schema") != EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA:
+        raise ValueError(f"unsupported external evidence source map schema: {source_map.get('schema')}")
+    if source_map.get("source_map_id") != content_hash(without_keys(source_map, "source_map_id")):
+        raise ValueError("source_map_id does not match canonical source map body")
+    source_entries = _external_evidence_owner_packet_source_entries(source_map)
+    supplied_intakes = [intake for intake in (intakes or []) if isinstance(intake, dict)]
+    intakes_by_ref = _external_evidence_owner_packet_intakes(supplied_intakes)
+    packet_statuses: list[dict[str, Any]] = []
+    task_statuses: list[dict[str, Any]] = []
+    for packet in packet_bundle.get("packets", []):
+        if not isinstance(packet, dict):
+            continue
+        packet_tasks = packet.get("tasks", []) if isinstance(packet.get("tasks"), list) else []
+        statuses = [
+            _external_evidence_owner_packet_task_status(task, source_entries=source_entries, intakes_by_ref=intakes_by_ref, root=root)
+            for task in packet_tasks
+            if isinstance(task, dict)
+        ]
+        closed_count = sum(1 for status in statuses if status.get("task_status") == "closed")
+        blocked_count = sum(1 for status in statuses if status.get("task_status") == "blocked")
+        open_count = len(statuses) - closed_count - blocked_count
+        if statuses and closed_count == len(statuses):
+            packet_status = "closed"
+        elif blocked_count:
+            packet_status = "blocked"
+        else:
+            packet_status = "open"
+        packet_statuses.append(
+            {
+                "packet_ref": packet.get("packet_ref"),
+                "packet_id": packet.get("packet_id"),
+                "owner_hint": packet.get("owner_hint"),
+                "task_count": len(statuses),
+                "closed_task_count": closed_count,
+                "open_task_count": open_count,
+                "blocked_task_count": blocked_count,
+                "packet_status": packet_status,
+            }
+        )
+        task_statuses.extend(statuses)
+    closed_task_count = sum(1 for status in task_statuses if status.get("task_status") == "closed")
+    blocked_task_count = sum(1 for status in task_statuses if status.get("task_status") == "blocked")
+    open_task_count = len(task_statuses) - closed_task_count - blocked_task_count
+    placeholder_source_uri_count = sum(1 for status in task_statuses if status.get("source_uri_status") == "placeholder")
+    missing_intake_count = sum(1 for status in task_statuses if "missing-intake" in status.get("blocking_reasons", []))
+    invalid_intake_count = sum(1 for status in task_statuses if any(str(reason).startswith("invalid-intake") for reason in status.get("blocking_reasons", [])))
+    body = {
+        "schema": EXTERNAL_EVIDENCE_OWNER_PACKET_STATUS_SCHEMA,
+        "generated_at": generated_at or utc_now(),
+        "sources": {
+            "owner_packet_bundle": {
+                "owner_packet_bundle_id": packet_bundle.get("owner_packet_bundle_id"),
+                "owner_packet_bundle_hash": content_hash(packet_bundle),
+                "schema": packet_bundle.get("schema"),
+                "generated_at": packet_bundle.get("generated_at"),
+            },
+            "work_package": {
+                "work_package_id": work_package.get("work_package_id"),
+                "work_package_hash": content_hash(work_package),
+                "schema": work_package.get("schema"),
+                "generated_at": work_package.get("generated_at"),
+            },
+            "source_map": {
+                "source_map_id": source_map.get("source_map_id"),
+                "source_map_hash": content_hash(source_map),
+                "schema": source_map.get("schema"),
+                "generated_at": source_map.get("generated_at"),
+            },
+            "intake_hashes": [content_hash(intake) for intake in supplied_intakes],
+        },
+        "summary": {
+            "packet_count": len(packet_statuses),
+            "task_count": len(task_statuses),
+            "closed_packet_count": sum(1 for packet in packet_statuses if packet.get("packet_status") == "closed"),
+            "open_packet_count": sum(1 for packet in packet_statuses if packet.get("packet_status") == "open"),
+            "blocked_packet_count": sum(1 for packet in packet_statuses if packet.get("packet_status") == "blocked"),
+            "closed_task_count": closed_task_count,
+            "open_task_count": open_task_count,
+            "blocked_task_count": blocked_task_count,
+            "placeholder_source_uri_count": placeholder_source_uri_count,
+            "live_source_uri_count": len(task_statuses) - placeholder_source_uri_count,
+            "missing_intake_count": missing_intake_count,
+            "invalid_intake_count": invalid_intake_count,
+            "packet_status_counts": _external_evidence_owner_packet_status_counts(packet_statuses, "packet_status"),
+            "task_status_counts": _external_evidence_owner_packet_status_counts(task_statuses, "task_status"),
+        },
+        "packets": packet_statuses,
+        "tasks": task_statuses,
+        "limitations": [
+            "Owner packet status tracks collection progress only; it does not prove production readiness.",
+            "A closed task still requires rebuilt manifest verification and readiness verification before external authority coverage is accepted.",
+            "Placeholder source URIs keep tasks blocked even when a local intake artifact is present.",
+        ],
+    }
+    return {**body, "owner_packet_status_id": content_hash(body)}
+
+
+def verify_external_evidence_owner_packet_status(
+    status_report: dict[str, Any],
+    packet_bundle: dict[str, Any],
+    work_package: dict[str, Any],
+    source_map: dict[str, Any],
+    intakes: list[dict[str, Any]] | None = None,
+    *,
+    root: str | Path = ".",
+) -> ExternalEvidenceOwnerPacketStatusVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if status_report.get("schema") != EXTERNAL_EVIDENCE_OWNER_PACKET_STATUS_SCHEMA:
+        errors.append(f"unsupported external evidence owner packet status schema: {status_report.get('schema')}")
+    if status_report.get("owner_packet_status_id") != content_hash(without_keys(status_report, "owner_packet_status_id")):
+        errors.append("owner_packet_status_id does not match canonical owner packet status body")
+    try:
+        expected = build_external_evidence_owner_packet_status(
+            packet_bundle,
+            work_package,
+            source_map,
+            intakes or [],
+            root=root,
+            generated_at=str(status_report.get("generated_at") or ""),
+        )
+    except ValueError as exc:
+        errors.append(str(exc))
+    else:
+        if without_keys(status_report, "owner_packet_status_id") != without_keys(expected, "owner_packet_status_id"):
+            errors.append("owner packet status body does not match supplied packet bundle, work package, source map, and intakes")
+        summary = status_report.get("summary", {}) if isinstance(status_report.get("summary"), dict) else {}
+        if summary.get("placeholder_source_uri_count"):
+            warnings.append(f"owner packet status contains {summary.get('placeholder_source_uri_count')} placeholder source_uri values")
+        if summary.get("missing_intake_count"):
+            warnings.append(f"owner packet status contains {summary.get('missing_intake_count')} tasks without intake receipts")
+    return ExternalEvidenceOwnerPacketStatusVerification(ok=not errors, errors=errors, warnings=warnings)
 def _external_evidence_readiness_check(check_id: str, ok: bool, summary: str) -> dict[str, Any]:
     return {"id": check_id, "status": "passed" if ok else "failed", "summary": summary}
 
@@ -3266,6 +3546,21 @@ def write_external_evidence_owner_packets_markdown(path: str | Path, packet_bund
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(render_external_evidence_owner_packets_markdown(packet_bundle), encoding="utf-8")
 
+
+def write_external_evidence_owner_packet_status(path: str | Path, status_report: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(status_report, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_external_evidence_owner_packet_status(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def write_external_evidence_owner_packet_status_markdown(path: str | Path, status_report: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_external_evidence_owner_packet_status_markdown(status_report), encoding="utf-8")
 def write_external_evidence_readiness_report(path: str | Path, report: dict[str, Any]) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -3505,6 +3800,74 @@ def render_external_evidence_owner_packets_markdown(packet_bundle: dict[str, Any
         lines.append("- None")
     return "\n".join(lines).rstrip() + "\n"
 
+
+def render_external_evidence_owner_packet_status_markdown(status_report: dict[str, Any]) -> str:
+    summary = status_report.get("summary", {}) if isinstance(status_report.get("summary"), dict) else {}
+    lines = [
+        "# External Evidence Owner Packet Status",
+        "",
+        f"- Status ID: `{status_report.get('owner_packet_status_id')}`",
+        f"- Generated at: `{status_report.get('generated_at')}`",
+        f"- Packets: {summary.get('packet_count', 0)}",
+        f"- Tasks: {summary.get('task_count', 0)}",
+        f"- Closed tasks: {summary.get('closed_task_count', 0)}",
+        f"- Open tasks: {summary.get('open_task_count', 0)}",
+        f"- Blocked tasks: {summary.get('blocked_task_count', 0)}",
+        f"- Placeholder source URIs: {summary.get('placeholder_source_uri_count', 0)}",
+        f"- Missing intakes: {summary.get('missing_intake_count', 0)}",
+        "",
+        "## Packets",
+        "",
+        "| Owner | Packet | Status | Tasks | Closed | Open | Blocked |",
+        "|---|---|---|---:|---:|---:|---:|",
+    ]
+    packets = status_report.get("packets", [])
+    if isinstance(packets, list):
+        for packet in packets:
+            if not isinstance(packet, dict):
+                continue
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        _markdown_cell(packet.get("owner_hint")),
+                        f"`{_markdown_cell(packet.get('packet_ref'))}`",
+                        _markdown_cell(packet.get("packet_status")),
+                        str(packet.get("task_count", 0)),
+                        str(packet.get("closed_task_count", 0)),
+                        str(packet.get("open_task_count", 0)),
+                        str(packet.get("blocked_task_count", 0)),
+                    ]
+                )
+                + " |"
+            )
+    lines.extend(["", "## Open And Blocked Tasks", "", "| Task | Owner | Status | Source URI | Blocking Reasons |", "|---|---|---|---|---|"])
+    tasks = status_report.get("tasks", [])
+    if isinstance(tasks, list):
+        for task in tasks:
+            if not isinstance(task, dict) or task.get("task_status") == "closed":
+                continue
+            reasons = task.get("blocking_reasons", []) if isinstance(task.get("blocking_reasons"), list) else []
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        f"`{_markdown_cell(task.get('unit_ref'))}`",
+                        _markdown_cell(task.get("owner_hint")),
+                        _markdown_cell(task.get("task_status")),
+                        _markdown_cell(task.get("source_uri_status")),
+                        _markdown_code_list(reasons),
+                    ]
+                )
+                + " |"
+            )
+    limitations = status_report.get("limitations", [])
+    lines.extend(["", "## Limitations", ""])
+    if isinstance(limitations, list) and limitations:
+        lines.extend(f"- {_markdown_cell(item)}" for item in limitations)
+    else:
+        lines.append("- None")
+    return "\n".join(lines).rstrip() + "\n"
 def render_external_evidence_readiness_markdown(report: dict[str, Any]) -> str:
     summary = report.get("summary", {}) if isinstance(report.get("summary"), dict) else {}
     lines = [
