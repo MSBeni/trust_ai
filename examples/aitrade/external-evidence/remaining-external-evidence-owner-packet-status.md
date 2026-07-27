@@ -1,14 +1,14 @@
 # External Evidence Owner Packet Status
 
-- Status ID: `08c03203ebab89be6459c4529480cd761db98b20e8129ad7a7f91622fd26e120`
+- Status ID: `6bb55fdfce5009c16549c7a97f3bc7983acbde7e3ca1253bbdf6f59afa017323`
 - Generated at: `2026-07-12T00:01:00Z`
 - Packets: 9
-- Tasks: 32
+- Tasks: 31
 - Closed tasks: 0
 - Open tasks: 0
-- Blocked tasks: 32
-- Placeholder source URIs: 32
-- Missing intakes: 32
+- Blocked tasks: 31
+- Placeholder source URIs: 31
+- Missing intakes: 31
 
 ## Packets
 
@@ -22,7 +22,7 @@
 | risk/insurance owner | `owner-packet:owner_hint:risk-insurance-owner` | blocked | 3 | 0 | 0 | 3 |
 | security/platform KMS owner | `owner-packet:owner_hint:security-platform-KMS-owner` | blocked | 2 | 0 | 0 | 2 |
 | service owner | `owner-packet:owner_hint:service-owner` | blocked | 2 | 0 | 0 | 2 |
-| standards/governance owner | `owner-packet:owner_hint:standards-governance-owner` | blocked | 5 | 0 | 0 | 5 |
+| standards/governance owner | `owner-packet:owner_hint:standards-governance-owner` | blocked | 4 | 0 | 0 | 4 |
 
 ## Open And Blocked Tasks
 
@@ -55,7 +55,6 @@
 | `standards-track-and-auditor-ecosystem:kms-hsm` | security/platform KMS owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `insurer-api-and-actuarial-products:hosted-service` | service owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `trust-network-procurement-and-marketplace:hosted-service` | service owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
-| `byoc-self-hosted:standards-body` | standards/governance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `roadmap-phase-scoreboard:standards-body` | standards/governance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `trustai-own-compliance:standards-body` | standards/governance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `compliance-mapper-and-eu-ai-act:standards-body` | standards/governance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |

@@ -2,30 +2,6 @@
   "defaults": {},
   "entries": [
     {
-      "authority_kind": "standards-body",
-      "coverage_status": "missing",
-      "description": "standards-body evidence for byoc-self-hosted",
-      "external_authority_required": [
-        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/standards-body.json",
-      "owner_hint": "standards/governance owner",
-      "requirement_id": "byoc-self-hosted",
-      "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/standards-body.json",
-      "source_uri": "TODO://authority/byoc-self-hosted/standards-body",
-      "suggested_evidence_sources": [
-        "standards-body submission receipt",
-        "working-group status record",
-        "ballot or docket export"
-      ],
-      "task": "byoc-self-hosted:standards-body",
-      "task_id": "09a6381d810ea0bc6732d04d967db1b8032a8bb71972d1910eed26868700c179",
-      "task_ref": "external-evidence:byoc-self-hosted:standards-body",
-      "title": "BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations",
-      "unit_id": "23db7466b75b02375e66e230fdc6f7c8e7c43b3e6b8522424e6075e65df0cf92",
-      "unit_ref": "byoc-self-hosted:standards-body"
-    },
-    {
       "authority_kind": "customer",
       "coverage_status": "missing",
       "description": "customer evidence for byoc-self-hosted",
@@ -777,14 +753,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "6fb4d10fec6c8db1f76c6db153284a8083f62d51a671b67aa91a4dc179896a96",
+  "source_map_id": "9149bb917c6ab107ddf235b0f3eb1ab68e50b721413613c44bef735c47039928",
   "source_plan": {
-    "plan_hash": "63681b73c85c54b539c72231eaa567428aa14f9e8c23604a838393c267e5c05e",
-    "plan_id": "d3f4d938b0a6eefeac930bb083331048d1a135e352631724c489b86ce702e317",
+    "plan_hash": "7f0523f0e4b99d22de747aefc15c808273c994c2a01bc860bc646cd3bcdc0eb4",
+    "plan_id": "5d3b353beb6e89604a1cc8503ee714e70bfa0b990dbcc64b643ef5710df02a9d",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "2fcab90291bd9cf8371ed97e329c8abf1665f11f0cd4c23d29ff1eac18f2d163",
-      "manifest_id": "a5a294322e3bac3cb0ef18e4121683870c03d0c6463023316253c789f478dddc",
+      "manifest_hash": "ca2356a05c6d1e1ca18b94f85c11885a4013cda9a0873d9b4194d6c5499ef3e6",
+      "manifest_id": "82e414eaf0dc0711b734b4f9e7f0817109c1e158eb58fa86ec5175c4eb3c23b5",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },
@@ -792,12 +768,12 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 32,
+    "entry_count": 31,
     "intake_dir": "artifacts/external-evidence-intakes",
     "live_source_uri_count": 0,
-    "placeholder_source_uri_count": 32,
+    "placeholder_source_uri_count": 31,
     "snapshot_dir": "artifacts/external-evidence-sources",
-    "source_plan_task_count": 32,
+    "source_plan_task_count": 31,
     "status_filter": "missing"
   }
 }

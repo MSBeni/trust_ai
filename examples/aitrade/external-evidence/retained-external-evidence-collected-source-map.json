@@ -992,6 +992,36 @@
       "unit_ref": "byoc-self-hosted:provider-api"
     },
     {
+      "authority_kind": "standards-body",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained standards-body profile export for BYOC/self-hosted deployment evidence semantics",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/byoc-self-hosted-standards-body.json",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "LF TrustAI Ballot System",
+      "owner_hint": "standards/governance owner",
+      "requirement_id": "byoc-self-hosted",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/byoc-standards-body-source-snapshot.json",
+      "source_uri": "https://standards.example/lf-trustai/profiles/byoc-self-hosted/LF-TRUSTAI-BYOC-SELF-HOSTED-0.1",
+      "subject": "trustai BYOC/self-hosted standards profile acceptance",
+      "suggested_evidence_sources": [
+        "standards-body submission receipt",
+        "working-group status record",
+        "ballot or docket export"
+      ],
+      "task": "byoc-self-hosted:standards-body",
+      "task_id": "09a6381d810ea0bc6732d04d967db1b8032a8bb71972d1910eed26868700c179",
+      "task_ref": "external-evidence:byoc-self-hosted:standards-body",
+      "title": "BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations",
+      "unit_id": "23db7466b75b02375e66e230fdc6f7c8e7c43b3e6b8522424e6075e65df0cf92",
+      "unit_ref": "byoc-self-hosted:standards-body"
+    },
+    {
       "authority_kind": "kms-hsm",
       "content_type": "application/json",
       "coverage_status": "missing",
@@ -1179,7 +1209,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "068b428c44046d2e445d8e2eb751365e5bcc192acc5e1490c38c8d7e33005ce2",
+  "source_map_id": "58cf0afddfe34c34b307823d61b3f4dfc536b406e0e80d16b7fbaa66e51a9fc3",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -1194,9 +1224,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 39,
+    "entry_count": 40,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 39,
+    "live_source_uri_count": 40,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

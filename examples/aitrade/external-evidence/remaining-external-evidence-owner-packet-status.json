@@ -5,7 +5,7 @@
     "A closed task still requires rebuilt manifest verification and readiness verification before external authority coverage is accepted.",
     "Placeholder source URIs keep tasks blocked even when a local intake artifact is present."
   ],
-  "owner_packet_status_id": "08c03203ebab89be6459c4529480cd761db98b20e8129ad7a7f91622fd26e120",
+  "owner_packet_status_id": "6bb55fdfce5009c16549c7a97f3bc7983acbde7e3ca1253bbdf6f59afa017323",
   "packets": [
     {
       "blocked_task_count": 2,
@@ -88,14 +88,14 @@
       "task_count": 2
     },
     {
-      "blocked_task_count": 5,
+      "blocked_task_count": 4,
       "closed_task_count": 0,
       "open_task_count": 0,
       "owner_hint": "standards/governance owner",
-      "packet_id": "717b6057158c76906ee8eb8aea64892e1c55db2e5a1d08db8d5611f88a769b1e",
+      "packet_id": "f2aaa98d309608d2960b70acb064b00f23a1d3c3ea1b8b6bc51d6e2d2d81ac70",
       "packet_ref": "owner-packet:owner_hint:standards-governance-owner",
       "packet_status": "blocked",
-      "task_count": 5
+      "task_count": 4
     }
   ],
   "schema": "trustai.external-evidence-owner-packet-status/0.1",
@@ -103,41 +103,41 @@
     "intake_hashes": [],
     "owner_packet_bundle": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_bundle_hash": "aee7f3342eb5ec04b0b0ae2cd6b1b97f11aeb0e6122a04952b6fbdb76017fe19",
-      "owner_packet_bundle_id": "b9bcfb16cec384f1d1c5d46be20e02f9c134c0eaee6c4b3bcd174524c200cd5d",
+      "owner_packet_bundle_hash": "ad46ffab06cb3190a94f8e85dd0ff84730aa172c6b171b99c817ef8e9271dcd5",
+      "owner_packet_bundle_id": "f2d15d0a56f0a0ee20243764a1628c3cf766a4a60a9a6e6cb0f398b3af1fe655",
       "schema": "trustai.external-evidence-owner-packet-bundle/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "d075a0dc0fd053892e6ee9e02d8ec8c5da151c50951ad97a00ad166e60c2d99d",
-      "source_map_id": "b2d26e9182bfdf5c88a0ba09e2479557db648313276998e3a3462720196cee47"
+      "source_map_hash": "03ca09360d307bf26df0c615337117813110cbf03852704f762cfbee4f4d577b",
+      "source_map_id": "974c07947ab3cfc0e13bcbabb71318abeafbaf8c13b11afdcaa87c7bca46d418"
     },
     "work_package": {
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-work-package/0.1",
-      "work_package_hash": "57f1e84ffb96f902f1de2bd3ba2d482c7b616723cfa23f9109e259ac07972738",
-      "work_package_id": "64bace84b52c289e7e45ce7ff7b890dd39d7240fd29c779b38da814b063315cf"
+      "work_package_hash": "0628a83feb2f826bb1587870d18d55ca1c0cb690a48ca183ea5759b21a5ffe4b",
+      "work_package_id": "39189cb1fd84eecfe4f58e506f97430d1907b75abb37c5eedd7dce04b6a85466"
     }
   },
   "summary": {
     "blocked_packet_count": 9,
-    "blocked_task_count": 32,
+    "blocked_task_count": 31,
     "closed_packet_count": 0,
     "closed_task_count": 0,
     "invalid_intake_count": 0,
     "live_source_uri_count": 0,
-    "missing_intake_count": 32,
+    "missing_intake_count": 31,
     "open_packet_count": 0,
     "open_task_count": 0,
     "packet_count": 9,
     "packet_status_counts": {
       "blocked": 9
     },
-    "placeholder_source_uri_count": 32,
-    "task_count": 32,
+    "placeholder_source_uri_count": 31,
+    "task_count": 31,
     "task_status_counts": {
-      "blocked": 32
+      "blocked": 31
     }
   },
   "tasks": [
@@ -599,23 +599,6 @@
       "task_ref": "external-evidence:trust-network-procurement-and-marketplace:hosted-service",
       "task_status": "blocked",
       "unit_ref": "trust-network-procurement-and-marketplace:hosted-service"
-    },
-    {
-      "authority_kind": "standards-body",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake": null,
-      "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/standards-body.json",
-      "owner_hint": "standards/governance owner",
-      "requirement_id": "byoc-self-hosted",
-      "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/standards-body.json",
-      "source_uri": "TODO://authority/byoc-self-hosted/standards-body",
-      "source_uri_status": "placeholder",
-      "task_ref": "external-evidence:byoc-self-hosted:standards-body",
-      "task_status": "blocked",
-      "unit_ref": "byoc-self-hosted:standards-body"
     },
     {
       "authority_kind": "standards-body",

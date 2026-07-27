@@ -1,20 +1,19 @@
 # External Evidence Owner Fulfillment Review
 
-- Review ID: `7ae8d667d32cb4660ca5ca2ce129ea82451973bc698507c804cec8b8e4e6b7fb`
+- Review ID: `0f07aa7cfaac508584d2aae6f9c9674553ae347b213d9a4047ba7382ad949dc8`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Fulfillments: 32
+- Fulfillments: 31
 - Owners: 9
 - Ready tasks: 0
-- Blocked tasks: 32
-- Placeholder source URIs: 32
+- Blocked tasks: 31
+- Placeholder source URIs: 31
 - Live source URIs: 0
 
 ## Task Review
 
 | Task | Owner | Status | Source URI | Blocking Reasons |
 |---|---|---|---|---|
-| `byoc-self-hosted:standards-body` | standards/governance owner | blocked | TODO://authority/byoc-self-hosted/standards-body | `placeholder-source-uri` |
 | `byoc-self-hosted:customer` | customer success/account owner | blocked | TODO://authority/byoc-self-hosted/customer | `placeholder-source-uri` |
 | `compliance-mapper-and-eu-ai-act:provider-api` | integration/platform owner | blocked | TODO://authority/compliance-mapper-and-eu-ai-act/provider-api | `placeholder-source-uri` |
 | `compliance-mapper-and-eu-ai-act:regulator` | legal/compliance owner | blocked | TODO://authority/compliance-mapper-and-eu-ai-act/regulator | `placeholder-source-uri` |
@@ -51,12 +50,12 @@
 
 - Fulfilled source map errors: 1
 - Fulfilled source map warnings: 1
-  - source map contains 32 placeholder source_uri values but live source URIs are required
+  - source map contains 31 placeholder source_uri values but live source URIs are required
 
 ## Blockers
 
-- owner fulfillment review contains 32 placeholder source_uri values
-- fulfilled source map: source map contains 32 placeholder source_uri values but live source URIs are required
+- owner fulfillment review contains 31 placeholder source_uri values
+- fulfilled source map: source map contains 31 placeholder source_uri values but live source URIs are required
 
 ## Next Actions
 

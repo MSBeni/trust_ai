@@ -1,13 +1,13 @@
 # External Evidence Gap Report
 
-- Gap report ID: `d0305f3517a6c66f9f0410455662b52b9ff17df2a3d2ff8d9db896ed0b28229c`
+- Gap report ID: `54a59a20b5daa51616bff0e73f17c8d16c12119a0305f100f7d17f2660472855`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 39/71
-- Missing authority kinds: 32
-- Remaining collection tasks: 32
-- Source-map entries: 32
-- Placeholder source URIs: 32
+- Covered authority kinds: 40/71
+- Missing authority kinds: 31
+- Remaining collection tasks: 31
+- Source-map entries: 31
+- Placeholder source URIs: 31
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
@@ -20,11 +20,11 @@
 - `kms-hsm`: 2
 - `provider-api`: 3
 - `regulator`: 3
-- `standards-body`: 5
+- `standards-body`: 4
 
 ## Gaps By Requirement
 
-- `byoc-self-hosted`: 2
+- `byoc-self-hosted`: 1
 - `compliance-mapper-and-eu-ai-act`: 3
 - `insurer-api-and-actuarial-products`: 7
 - `product-scope-discipline`: 2
@@ -37,17 +37,6 @@
 - `vertical-packs`: 3
 
 ## Collection Worklist
-
-### byoc-self-hosted:standards-body
-
-- Title: BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations
-- Authority kind: `standards-body`
-- Owner hint: standards/governance owner
-- Description: standards-body evidence for byoc-self-hosted
-- Source URI: `TODO://authority/byoc-self-hosted/standards-body`
-- Snapshot output: `artifacts/external-evidence-sources/byoc-self-hosted/standards-body.json`
-- Intake output: `artifacts/external-evidence-intakes/byoc-self-hosted/standards-body.json`
-- Suggested evidence sources: standards-body submission receipt; working-group status record; ballot or docket export
 
 ### byoc-self-hosted:customer
 

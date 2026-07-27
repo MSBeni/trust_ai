@@ -1,12 +1,12 @@
 # External Evidence Work Packages
 
-- Work package ID: `64bace84b52c289e7e45ce7ff7b890dd39d7240fd29c779b38da814b063315cf`
+- Work package ID: `39189cb1fd84eecfe4f58e506f97430d1907b75abb37c5eedd7dce04b6a85466`
 - Generated at: `2026-07-12T00:01:00Z`
 - Grouped by: `owner_hint`
 - Packages: 9
-- Tasks: 32
-- Missing tasks: 32
-- Placeholder source URIs: 32
+- Tasks: 31
+- Missing tasks: 31
+- Placeholder source URIs: 31
 - Live source URIs: 0
 
 ## Tasks By Owner
@@ -19,7 +19,7 @@
 - risk/insurance owner: 3
 - security/platform KMS owner: 2
 - service owner: 2
-- standards/governance owner: 5
+- standards/governance owner: 4
 
 ## Packages
 
@@ -243,17 +243,16 @@
 ### standards/governance owner
 
 - Package ref: `owner_hint:standards-governance-owner`
-- Package ID: `96c90200c8c4b1844ee79604a51e4dce17bf1caf11868b750d0ab837b5b08b2f`
+- Package ID: `728cb70a2f57fb4df9fdfcf09add1691f3d48fe8698550c6df06882ef199fd30`
 - Owner Hint: `standards/governance owner`
-- Tasks: 5
+- Tasks: 4
 - Authority kinds: `standards-body`
-- Requirements: `byoc-self-hosted`, `compliance-mapper-and-eu-ai-act`, `roadmap-phase-scoreboard`, `standards-track-and-auditor-ecosystem`, `trustai-own-compliance`
+- Requirements: `compliance-mapper-and-eu-ai-act`, `roadmap-phase-scoreboard`, `standards-track-and-auditor-ecosystem`, `trustai-own-compliance`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
 
 | Task | Phase | Priority | Authority | Source URI Status | Intake |
 |---|---|---|---|---|---|
-| `byoc-self-hosted:standards-body` | P1-P2 | P0 | `standards-body` | placeholder | `artifacts/external-evidence-intakes/byoc-self-hosted/standards-body.json` |
 | `roadmap-phase-scoreboard:standards-body` | P1-P4 | P0 | `standards-body` | placeholder | `artifacts/external-evidence-intakes/roadmap-phase-scoreboard/standards-body.json` |
 | `trustai-own-compliance:standards-body` | P2 | P0 | `standards-body` | placeholder | `artifacts/external-evidence-intakes/trustai-own-compliance/standards-body.json` |
 | `compliance-mapper-and-eu-ai-act:standards-body` | P2-P3 | P0 | `standards-body` | placeholder | `artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/standards-body.json` |
@@ -261,8 +260,6 @@
 
 #### Task Commands
 
-- `byoc-self-hosted:standards-body` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/byoc-self-hosted/standards-body --root . --task byoc-self-hosted:standards-body --description 'standards-body evidence for byoc-self-hosted' --snapshot-out artifacts/external-evidence-sources/byoc-self-hosted/standards-body.json --intake-out artifacts/external-evidence-intakes/byoc-self-hosted/standards-body.json`
-- `byoc-self-hosted:standards-body` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/byoc-self-hosted/standards-body.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `roadmap-phase-scoreboard:standards-body` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/roadmap-phase-scoreboard/standards-body --root . --task roadmap-phase-scoreboard:standards-body --description 'standards-body evidence for roadmap-phase-scoreboard' --snapshot-out artifacts/external-evidence-sources/roadmap-phase-scoreboard/standards-body.json --intake-out artifacts/external-evidence-intakes/roadmap-phase-scoreboard/standards-body.json`
 - `roadmap-phase-scoreboard:standards-body` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/roadmap-phase-scoreboard/standards-body.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `trustai-own-compliance:standards-body` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/trustai-own-compliance/standards-body --root . --task trustai-own-compliance:standards-body --description 'standards-body evidence for trustai-own-compliance' --snapshot-out artifacts/external-evidence-sources/trustai-own-compliance/standards-body.json --intake-out artifacts/external-evidence-intakes/trustai-own-compliance/standards-body.json`

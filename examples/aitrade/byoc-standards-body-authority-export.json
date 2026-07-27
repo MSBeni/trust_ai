@@ -1,0 +1,145 @@
+{
+  "byoc_scope": {
+    "authority_kind": "standards-body",
+    "deployment_mode": "BYOC/self-hosted reference deployment",
+    "environment": "aitrade-byoc",
+    "helm_chart_ref": "deploy/helm/trustai",
+    "operator_ref": "operator:trustai/byoc",
+    "profile_ref": "LF-TRUSTAI-BYOC-SELF-HOSTED-0.1",
+    "requirement_id": "byoc-self-hosted"
+  },
+  "covered_controls": [
+    "customer-cloud data plane deployment is described by a portable Helm profile",
+    "control-plane and data-plane evidence are bound through retained source hashes",
+    "NetworkPolicy admission and release-state receipts are required for self-hosted installs",
+    "customer-managed KMS/HSM signing and immutable Object Lock storage are required evidence controls",
+    "BYOC operator attestations bind retention, legal hold, backup/restore, tenant, keyring, and audit-log references",
+    "the public verifier and standards-body receipt family remain usable without trusting the producer account"
+  ],
+  "environment": "aitrade-byoc",
+  "evidence": {
+    "byoc_authority_source": {
+      "path": "src/trustai/byoc_authority.py",
+      "sha256": "sha256:526b23562cf55e9c93d9d1b0026a88444f919bf1790b9fd00542fbdf2029c45c"
+    },
+    "byoc_authority_spec": {
+      "path": "docs/specs/byoc-production-authority-v0.1.md",
+      "sha256": "sha256:83e1961f68d203ee78640289104dbf97ceddfd4690689c0f997fd7cf4682a586"
+    },
+    "byoc_deployment_guide": {
+      "path": "docs/deployment/byoc.md",
+      "sha256": "sha256:bddc07c94a312a8d2384baea4a0e4de324ea93e31c42a04253eb5edfc2ccb010"
+    },
+    "byoc_operator_source": {
+      "path": "src/trustai/byoc_operator.py",
+      "sha256": "sha256:64657b200dc34ebe555bbc9bcf273229bb36981709fe7da45bf3240d40e37f34"
+    },
+    "byoc_operator_spec": {
+      "path": "docs/specs/byoc-operator-attestation-v0.1.md",
+      "sha256": "sha256:59bcc86f84a9ea6bcf97e7b6ac869115d28b0ba224ac2374ff961b70404658a4"
+    },
+    "deployment_image_integrity_spec": {
+      "path": "docs/specs/deployment-image-integrity-v0.1.md",
+      "sha256": "sha256:bd1f92e1d119a8e81f4440bceb56aaddec41784f42e6ef8832cd5601e99c08e3"
+    },
+    "deployment_manifest_spec": {
+      "path": "docs/specs/deployment-manifest-v0.1.md",
+      "sha256": "sha256:1cb85c79d888ca3a45b5338422572529a5a163a44f758fc39a0a2ec40ce9b481"
+    },
+    "deployment_source": {
+      "path": "src/trustai/deployment.py",
+      "sha256": "sha256:33a2427c7f98d63abf489973e73b27b4ff1f76458a4023c32b7ee0993822d1de"
+    },
+    "helm_chart": {
+      "path": "deploy/helm/trustai/Chart.yaml",
+      "sha256": "sha256:6a52b3fabdc4b73983e82c22b090945df8829c378e731cecc63513129a24829f"
+    },
+    "helm_deployment_template": {
+      "path": "deploy/helm/trustai/templates/deployment.yaml",
+      "sha256": "sha256:9dc7b3b64bf3b74eab65dc8217d2edc268d9c5278faca101ac513e902f88afa6"
+    },
+    "helm_network_policy_template": {
+      "path": "deploy/helm/trustai/templates/networkpolicy.yaml",
+      "sha256": "sha256:0f9e47d5722864e5ca9a9c6f0d9a8e5b3ec62d35f53f736812351c797139cac4"
+    },
+    "helm_service_template": {
+      "path": "deploy/helm/trustai/templates/service.yaml",
+      "sha256": "sha256:fe0c12323c6807d1f3404dd2cd0bc09e0c7d0aee9e8e1bdffbc46c1b5e47d61b"
+    },
+    "helm_validation_spec": {
+      "path": "docs/specs/helm-chart-validation-v0.1.md",
+      "sha256": "sha256:9869ffa5f0a1c0e6597fc40b009b9d7af8fa8c6a7d6f23de43b4eb21a3f3809b"
+    },
+    "helm_values": {
+      "path": "deploy/helm/trustai/values.yaml",
+      "sha256": "sha256:3def30166ed7cf7391b914866442ecd5bd2e4576cfb3b5ebe73b658dad41ba64"
+    },
+    "kubernetes_release_state_spec": {
+      "path": "docs/specs/kubernetes-release-state-v0.1.md",
+      "sha256": "sha256:74dbddefa93acdce77a1ea489d30fed8397849946c62016faab4a29cf67379f7"
+    },
+    "standards_body_ballot_source": {
+      "path": "src/trustai/standards_body_ballot.py",
+      "sha256": "sha256:88a0ff244e838511330d1f904771ddba030960bfc835f8d7e7299a334c4d541b"
+    },
+    "standards_body_ballot_spec": {
+      "path": "docs/specs/standards-body-ballot-v0.1.md",
+      "sha256": "sha256:241fce5481d98a7bb66602202c0806ec92b0ace85eccfdbaeecdbf55785d6565"
+    },
+    "standards_body_ballot_system_source": {
+      "path": "src/trustai/standards_body_ballot_system.py",
+      "sha256": "sha256:be6738e77075c0244718467ca2b27f1a2b40586f9c3b1fe4b2486752e376692a"
+    },
+    "standards_body_ballot_system_spec": {
+      "path": "docs/specs/standards-body-ballot-system-v0.1.md",
+      "sha256": "sha256:1b7cd56747cba9d18dc4abcc54d56469f0655773395fb0baa97181f6fdf47022"
+    },
+    "standards_body_provider_posting_source": {
+      "path": "src/trustai/standards_body_provider_posting.py",
+      "sha256": "sha256:7af250cf229ca468555a62116e7df336a0c461e199566266032b664059427ee9"
+    },
+    "standards_body_provider_posting_spec": {
+      "path": "docs/specs/standards-body-provider-posting-v0.1.md",
+      "sha256": "sha256:7944347991b6cd88d97c74d90abf2634bc89757b56e51f7411551fafdf15f019"
+    },
+    "standards_body_status_source": {
+      "path": "src/trustai/standards_body_status.py",
+      "sha256": "sha256:45e67431937ce305e01f049a5536d5d675d0f650bb47e631e6fdd3155a314fac"
+    },
+    "standards_body_status_spec": {
+      "path": "docs/specs/standards-body-status-v0.1.md",
+      "sha256": "sha256:13401609eb7847de8de36ba1c64156c867f0afb27bb5946baa2fbbbe9e9bbf07"
+    },
+    "standards_body_submission_source": {
+      "path": "src/trustai/standards_body_submission.py",
+      "sha256": "sha256:ed80042b82a0ea3d88c6f56804b3d74639f10dc90179bacb88cd082474634ba5"
+    },
+    "standards_body_submission_spec": {
+      "path": "docs/specs/standards-body-submission-v0.1.md",
+      "sha256": "sha256:660390ed4499f060e6ab52ad3be6306236263dac082e67913b611b994d5c725d"
+    },
+    "standards_submission_spec": {
+      "path": "docs/specs/standards-submission-v0.1.md",
+      "sha256": "sha256:f5b94745f26cf47f4ac9548032132cae0a13b55e9fb0101683fb639843832538"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "export_ref": "standards-body-export:aitrade/byoc-self-hosted/deployment-profile/2026-07-12",
+  "issued_at": "2026-07-12T00:00:00Z",
+  "issuer": "LF TrustAI Ballot System",
+  "limitations": [
+    "This retained export records standards-body profile acceptance for the BYOC/self-hosted reference deployment controls; it is not a named customer acceptance record.",
+    "Customer authority evidence remains a separate BYOC/self-hosted requirement."
+  ],
+  "schema": "trustai.byoc-standards-body-authority-export/0.1",
+  "standards_body": {
+    "ballot_ref": "LF-TRUSTAI-BALLOT-2026-001",
+    "docket_ref": "LF-TRUSTAI-DKT-2026-001",
+    "export_url": "https://standards.example/lf-trustai/profiles/byoc-self-hosted/LF-TRUSTAI-BYOC-SELF-HOSTED-0.1",
+    "profile_status": "accepted-reference-profile",
+    "program_ref": "LF-TRUSTAI-PROOF-PACKS",
+    "system": "LF TrustAI Ballot System",
+    "target_track": "draft-specification"
+  },
+  "subject": "trustai BYOC/self-hosted standards profile acceptance"
+}
