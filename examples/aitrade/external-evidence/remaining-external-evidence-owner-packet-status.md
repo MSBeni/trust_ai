@@ -1,14 +1,14 @@
 # External Evidence Owner Packet Status
 
-- Status ID: `4318ac50855053ed7bac8b1df55fb620a883d988e5e080772c20a4baf208ff47`
+- Status ID: `08c03203ebab89be6459c4529480cd761db98b20e8129ad7a7f91622fd26e120`
 - Generated at: `2026-07-12T00:01:00Z`
 - Packets: 9
-- Tasks: 33
+- Tasks: 32
 - Closed tasks: 0
 - Open tasks: 0
-- Blocked tasks: 33
-- Placeholder source URIs: 33
-- Missing intakes: 33
+- Blocked tasks: 32
+- Placeholder source URIs: 32
+- Missing intakes: 32
 
 ## Packets
 
@@ -18,7 +18,7 @@
 | customer success/account owner | `owner-packet:owner_hint:customer-success-account-owner` | blocked | 8 | 0 | 0 | 8 |
 | integration/platform owner | `owner-packet:owner_hint:integration-platform-owner` | blocked | 3 | 0 | 0 | 3 |
 | legal/compliance owner | `owner-packet:owner_hint:legal-compliance-owner` | blocked | 3 | 0 | 0 | 3 |
-| release engineering | `owner-packet:owner_hint:release-engineering` | blocked | 5 | 0 | 0 | 5 |
+| release engineering | `owner-packet:owner_hint:release-engineering` | blocked | 4 | 0 | 0 | 4 |
 | risk/insurance owner | `owner-packet:owner_hint:risk-insurance-owner` | blocked | 3 | 0 | 0 | 3 |
 | security/platform KMS owner | `owner-packet:owner_hint:security-platform-KMS-owner` | blocked | 2 | 0 | 0 | 2 |
 | service owner | `owner-packet:owner_hint:service-owner` | blocked | 2 | 0 | 0 | 2 |
@@ -45,7 +45,6 @@
 | `compliance-mapper-and-eu-ai-act:regulator` | legal/compliance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `vertical-packs:regulator` | legal/compliance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `product-scope-discipline:ci-run` | release engineering | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
-| `byoc-self-hosted:ci-run` | release engineering | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `roadmap-phase-scoreboard:ci-run` | release engineering | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `runtime-policy-and-attestation:ci-run` | release engineering | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `insurer-api-and-actuarial-products:ci-run` | release engineering | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |

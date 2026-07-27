@@ -1,0 +1,157 @@
+{
+  "byoc_scope": {
+    "authority_kind": "ci-run",
+    "deployment_mode": "BYOC/self-hosted reference deployment",
+    "environment": "aitrade-byoc",
+    "evidence_chain_entries": [
+      "deployment.manifest.published",
+      "deployment.helm_chart.validated",
+      "deployment.kubernetes_release_state.recorded",
+      "deployment.image.integrity_attested",
+      "deployment.byoc_operator_attested",
+      "deployment.byoc_production_authority_recorded"
+    ],
+    "helm_chart_ref": "deploy/helm/trustai",
+    "operator_ref": "operator:trustai/byoc",
+    "requirement_id": "byoc-self-hosted"
+  },
+  "ci_run": {
+    "branch": "main",
+    "checks": [
+      "python -m compileall -q src tests",
+      "python -m unittest -v tests.test_deployment",
+      "python -m unittest -v tests.test_byoc_operator",
+      "python -m unittest -v tests.test_byoc_authority",
+      "deployment manifest hash replay",
+      "Helm chart validation receipt replay",
+      "Kubernetes release-state receipt replay",
+      "deployment image integrity receipt replay",
+      "BYOC operator WORM/Object Lock attestation replay",
+      "BYOC production authority dossier replay"
+    ],
+    "event": "push",
+    "job": "Demo proof-pack smoke test",
+    "repository": "MSBeni/trust_ai",
+    "retained_status": "passed-reference-export",
+    "workflow": "Python CI",
+    "workflow_ref": ".github/workflows/python-ci.yml"
+  },
+  "environment": "aitrade-byoc",
+  "evidence": {
+    "byoc_authority_source": {
+      "path": "src/trustai/byoc_authority.py",
+      "sha256": "sha256:526b23562cf55e9c93d9d1b0026a88444f919bf1790b9fd00542fbdf2029c45c"
+    },
+    "byoc_authority_spec": {
+      "path": "docs/specs/byoc-production-authority-v0.1.md",
+      "sha256": "sha256:83e1961f68d203ee78640289104dbf97ceddfd4690689c0f997fd7cf4682a586"
+    },
+    "byoc_authority_tests": {
+      "path": "tests/test_byoc_authority.py",
+      "sha256": "sha256:14a8479c51d81b9612f3be566a92155a1d5db5a9371e47dfbc692b83cf962625"
+    },
+    "byoc_deployment_guide": {
+      "path": "docs/deployment/byoc.md",
+      "sha256": "sha256:bddc07c94a312a8d2384baea4a0e4de324ea93e31c42a04253eb5edfc2ccb010"
+    },
+    "byoc_network_policy_export": {
+      "path": "examples/aitrade/byoc-network-policy-authority-export.json",
+      "sha256": "sha256:7bcb09931523c21eb03e449ff620bae9241902f6fcd650050e52ead5d2eefab3"
+    },
+    "byoc_object_lock_export": {
+      "path": "examples/aitrade/byoc-object-lock-provider-export.json",
+      "sha256": "sha256:31c6e2333ea1da0dc4880c93e907f19024f05a11e9aaea7c1596dc075a8243e4"
+    },
+    "byoc_operator_source": {
+      "path": "src/trustai/byoc_operator.py",
+      "sha256": "sha256:64657b200dc34ebe555bbc9bcf273229bb36981709fe7da45bf3240d40e37f34"
+    },
+    "byoc_operator_spec": {
+      "path": "docs/specs/byoc-operator-attestation-v0.1.md",
+      "sha256": "sha256:59bcc86f84a9ea6bcf97e7b6ac869115d28b0ba224ac2374ff961b70404658a4"
+    },
+    "byoc_operator_tests": {
+      "path": "tests/test_byoc_operator.py",
+      "sha256": "sha256:c5b6f2cdb3f2d7a8e002dfca77d76618ffe16f103821b1477ac045c84ab9fac7"
+    },
+    "deployment_image_integrity_spec": {
+      "path": "docs/specs/deployment-image-integrity-v0.1.md",
+      "sha256": "sha256:bd1f92e1d119a8e81f4440bceb56aaddec41784f42e6ef8832cd5601e99c08e3"
+    },
+    "deployment_manifest_spec": {
+      "path": "docs/specs/deployment-manifest-v0.1.md",
+      "sha256": "sha256:1cb85c79d888ca3a45b5338422572529a5a163a44f758fc39a0a2ec40ce9b481"
+    },
+    "deployment_source": {
+      "path": "src/trustai/deployment.py",
+      "sha256": "sha256:33a2427c7f98d63abf489973e73b27b4ff1f76458a4023c32b7ee0993822d1de"
+    },
+    "deployment_tests": {
+      "path": "tests/test_deployment.py",
+      "sha256": "sha256:8a06d497d201bffa45f88a73ad539f5fc29951c1884a644c70f70565c2e298bd"
+    },
+    "dockerfile": {
+      "path": "deploy/docker/Dockerfile",
+      "sha256": "sha256:49189e5cb57f3d74d5e7378058b91b253db9632640e1ddd607499e382bc19017"
+    },
+    "go_verifier_workflow": {
+      "path": ".github/workflows/go-verifier.yml",
+      "sha256": "sha256:0d9caca7caa933bca6a8245a55e1a1d97277e70cfd7c69cc6b60796ede03052d"
+    },
+    "helm_chart": {
+      "path": "deploy/helm/trustai/Chart.yaml",
+      "sha256": "sha256:6a52b3fabdc4b73983e82c22b090945df8829c378e731cecc63513129a24829f"
+    },
+    "helm_deployment_template": {
+      "path": "deploy/helm/trustai/templates/deployment.yaml",
+      "sha256": "sha256:9dc7b3b64bf3b74eab65dc8217d2edc268d9c5278faca101ac513e902f88afa6"
+    },
+    "helm_network_policy_template": {
+      "path": "deploy/helm/trustai/templates/networkpolicy.yaml",
+      "sha256": "sha256:0f9e47d5722864e5ca9a9c6f0d9a8e5b3ec62d35f53f736812351c797139cac4"
+    },
+    "helm_service_template": {
+      "path": "deploy/helm/trustai/templates/service.yaml",
+      "sha256": "sha256:fe0c12323c6807d1f3404dd2cd0bc09e0c7d0aee9e8e1bdffbc46c1b5e47d61b"
+    },
+    "helm_validation_spec": {
+      "path": "docs/specs/helm-chart-validation-v0.1.md",
+      "sha256": "sha256:9869ffa5f0a1c0e6597fc40b009b9d7af8fa8c6a7d6f23de43b4eb21a3f3809b"
+    },
+    "helm_values": {
+      "path": "deploy/helm/trustai/values.yaml",
+      "sha256": "sha256:3def30166ed7cf7391b914866442ecd5bd2e4576cfb3b5ebe73b658dad41ba64"
+    },
+    "kubernetes_release_state_spec": {
+      "path": "docs/specs/kubernetes-release-state-v0.1.md",
+      "sha256": "sha256:74dbddefa93acdce77a1ea489d30fed8397849946c62016faab4a29cf67379f7"
+    },
+    "python_ci_workflow": {
+      "path": ".github/workflows/python-ci.yml",
+      "sha256": "sha256:a29b763364e37f69095690e4632c516c39b9dd10b6fe02dd867668e728e818b6"
+    },
+    "repository_ci_tests": {
+      "path": "tests/test_repository_ci.py",
+      "sha256": "sha256:c821cca7a4034a44dbea1d2f3b93ebec3088697eb852b69661312dc5f7a34ce2"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "export_ref": "ci-run-export:aitrade/byoc-self-hosted/deployment-validation/2026-07-12",
+  "issued_at": "2026-07-12T00:00:00Z",
+  "issuer": "GitHub Actions",
+  "limitations": [
+    "This retained export records the CI validation surface for the BYOC/self-hosted reference deployment; it is not a live customer acceptance record.",
+    "Standards-body and customer authority evidence remain separate BYOC/self-hosted requirements."
+  ],
+  "schema": "trustai.byoc-ci-run-authority-export/0.1",
+  "subject": "trustai BYOC/self-hosted deployment validation CI",
+  "verified_controls": [
+    "self-hosted deployment manifest verifies chart, API, service, PVC, secret, and NetworkPolicy sources",
+    "Helm validation receipt rejects malformed Kubernetes chart controls",
+    "Kubernetes release-state receipt binds namespace, service account, workload, service, NetworkPolicy, and audit-log refs",
+    "deployment image integrity receipt binds image digest, SBOM, provenance, and signature artifacts",
+    "BYOC operator attestation binds deployment manifest to WORM retention, Object Lock, legal hold, backup/restore, tenant, keyring, and audit-log evidence",
+    "BYOC authority dossier binds provider API, Object Lock, and retained NetworkPolicy authority artifacts with freshness metadata",
+    "GitHub Actions smoke list includes BYOC deployment, operator, and authority test modules"
+  ]
+}

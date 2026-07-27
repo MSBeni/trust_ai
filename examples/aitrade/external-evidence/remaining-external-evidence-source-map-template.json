@@ -2,30 +2,6 @@
   "defaults": {},
   "entries": [
     {
-      "authority_kind": "ci-run",
-      "coverage_status": "missing",
-      "description": "ci-run evidence for byoc-self-hosted",
-      "external_authority_required": [
-        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/ci-run.json",
-      "owner_hint": "release engineering",
-      "requirement_id": "byoc-self-hosted",
-      "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/ci-run.json",
-      "source_uri": "TODO://authority/byoc-self-hosted/ci-run",
-      "suggested_evidence_sources": [
-        "completed CI workflow export",
-        "release run URL or provider-native run record",
-        "artifact/check provenance"
-      ],
-      "task": "byoc-self-hosted:ci-run",
-      "task_id": "4d92ba8183803168ec0e515166b6dded4b68ce807a0af3f3e938f3f26d84a6bb",
-      "task_ref": "external-evidence:byoc-self-hosted:ci-run",
-      "title": "BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations",
-      "unit_id": "258ddae8b0d2abfcfe94f2af5f499c3d166afafdac4ac60e547854652b124283",
-      "unit_ref": "byoc-self-hosted:ci-run"
-    },
-    {
       "authority_kind": "standards-body",
       "coverage_status": "missing",
       "description": "standards-body evidence for byoc-self-hosted",
@@ -801,14 +777,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "a4dd15f9d79ce2d58e98e9ee25051446ddbbcdb5c4727b2ca7db6a9d56231152",
+  "source_map_id": "b2d26e9182bfdf5c88a0ba09e2479557db648313276998e3a3462720196cee47",
   "source_plan": {
-    "plan_hash": "49be603f6c7f15685e012ee29bf4f1e513d8d1894a3939b7801212cecc040001",
-    "plan_id": "3383d36acec3468ed0b8b6b6bafc4dcf3149e98568cc7b3f1cdab300d2d34572",
+    "plan_hash": "63681b73c85c54b539c72231eaa567428aa14f9e8c23604a838393c267e5c05e",
+    "plan_id": "d3f4d938b0a6eefeac930bb083331048d1a135e352631724c489b86ce702e317",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "756c4337fac16014a6f07761831299c9bfc6a1d1e1692dd6bce9db6500879b0f",
-      "manifest_id": "7088d943067e14728a203a60698e85c3e676d33b75a54845d493a9f2070ce424",
+      "manifest_hash": "2fcab90291bd9cf8371ed97e329c8abf1665f11f0cd4c23d29ff1eac18f2d163",
+      "manifest_id": "a5a294322e3bac3cb0ef18e4121683870c03d0c6463023316253c789f478dddc",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },
@@ -816,12 +792,12 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 33,
+    "entry_count": 32,
     "intake_dir": "artifacts/external-evidence-intakes",
     "live_source_uri_count": 0,
-    "placeholder_source_uri_count": 33,
+    "placeholder_source_uri_count": 32,
     "snapshot_dir": "artifacts/external-evidence-sources",
-    "source_plan_task_count": 33,
+    "source_plan_task_count": 32,
     "status_filter": "missing"
   }
 }

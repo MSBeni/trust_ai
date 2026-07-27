@@ -5,12 +5,12 @@
     "A task is covered only after a matching evidence artifact is supplied to an external evidence manifest and verified.",
     "Freshness and issuer authority remain bounded by the supplied evidence artifact and manifest verification options."
   ],
-  "plan_id": "3383d36acec3468ed0b8b6b6bafc4dcf3149e98568cc7b3f1cdab300d2d34572",
+  "plan_id": "d3f4d938b0a6eefeac930bb083331048d1a135e352631724c489b86ce702e317",
   "schema": "trustai.external-evidence-collection-plan/0.1",
   "source_manifest": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "manifest_hash": "756c4337fac16014a6f07761831299c9bfc6a1d1e1692dd6bce9db6500879b0f",
-    "manifest_id": "7088d943067e14728a203a60698e85c3e676d33b75a54845d493a9f2070ce424",
+    "manifest_hash": "2fcab90291bd9cf8371ed97e329c8abf1665f11f0cd4c23d29ff1eac18f2d163",
+    "manifest_id": "a5a294322e3bac3cb0ef18e4121683870c03d0c6463023316253c789f478dddc",
     "manifest_ref": "production-external-evidence",
     "status": "partial"
   },
@@ -21,10 +21,10 @@
   },
   "status_filter": "missing",
   "summary": {
-    "covered_authority_kind_count": 38,
-    "missing_authority_kind_count": 33,
+    "covered_authority_kind_count": 39,
+    "missing_authority_kind_count": 32,
     "missing_task_count_by_authority_kind": {
-      "ci-run": 5,
+      "ci-run": 4,
       "customer": 8,
       "hosted-service": 2,
       "identity-provider": 2,
@@ -36,11 +36,11 @@
     },
     "required_authority_kind_count": 71,
     "selected_covered_task_count": 0,
-    "selected_missing_task_count": 33,
-    "selected_task_count": 33,
+    "selected_missing_task_count": 32,
+    "selected_task_count": 32,
     "source_manifest_status": "partial",
     "task_count_by_authority_kind": {
-      "ci-run": 5,
+      "ci-run": 4,
       "customer": 8,
       "hosted-service": 2,
       "identity-provider": 2,
@@ -52,7 +52,7 @@
     },
     "task_count_by_phase": {
       "P0-P4": 2,
-      "P1-P2": 3,
+      "P1-P2": 2,
       "P1-P4": 5,
       "P2": 3,
       "P2-P3": 3,
@@ -63,35 +63,6 @@
     "total_authority_unit_count": 71
   },
   "tasks": [
-    {
-      "acceptance_criteria": [
-        "Artifact path must be repository-relative and hashable before manifest verification.",
-        "Evidence item authority_kind must be ci-run and accepted for byoc-self-hosted.",
-        "Use issued_at and expires_at metadata when strict freshness verification is required.",
-        "Rebuild and verify the external evidence manifest after adding the artifact."
-      ],
-      "authority_kind": "ci-run",
-      "coverage_status": "missing",
-      "evidence_argument_template": "byoc-self-hosted,ci-run,external-evidence/byoc-self-hosted/ci-run.json,ci-run evidence for byoc-self-hosted;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-      "external_authority_required": [
-        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
-      ],
-      "owner_hint": "release engineering",
-      "phase": "P1-P2",
-      "priority": "P0",
-      "requirement_id": "byoc-self-hosted",
-      "suggested_artifact_path": "external-evidence/byoc-self-hosted/ci-run.json",
-      "suggested_evidence_sources": [
-        "completed CI workflow export",
-        "release run URL or provider-native run record",
-        "artifact/check provenance"
-      ],
-      "task_id": "4d92ba8183803168ec0e515166b6dded4b68ce807a0af3f3e938f3f26d84a6bb",
-      "task_ref": "external-evidence:byoc-self-hosted:ci-run",
-      "title": "BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations",
-      "unit_id": "258ddae8b0d2abfcfe94f2af5f499c3d166afafdac4ac60e547854652b124283",
-      "unit_ref": "byoc-self-hosted:ci-run"
-    },
     {
       "acceptance_criteria": [
         "Artifact path must be repository-relative and hashable before manifest verification.",

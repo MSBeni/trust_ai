@@ -1,18 +1,18 @@
 # External Evidence Gap Report
 
-- Gap report ID: `0eaf876ddd1191f0040511756a39d0bc18f483b853712c03e18ad8ebb73b641d`
+- Gap report ID: `d0305f3517a6c66f9f0410455662b52b9ff17df2a3d2ff8d9db896ed0b28229c`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 38/71
-- Missing authority kinds: 33
-- Remaining collection tasks: 33
-- Source-map entries: 33
-- Placeholder source URIs: 33
+- Covered authority kinds: 39/71
+- Missing authority kinds: 32
+- Remaining collection tasks: 32
+- Source-map entries: 32
+- Placeholder source URIs: 32
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
 
-- `ci-run`: 5
+- `ci-run`: 4
 - `customer`: 8
 - `hosted-service`: 2
 - `identity-provider`: 2
@@ -24,7 +24,7 @@
 
 ## Gaps By Requirement
 
-- `byoc-self-hosted`: 3
+- `byoc-self-hosted`: 2
 - `compliance-mapper-and-eu-ai-act`: 3
 - `insurer-api-and-actuarial-products`: 7
 - `product-scope-discipline`: 2
@@ -37,17 +37,6 @@
 - `vertical-packs`: 3
 
 ## Collection Worklist
-
-### byoc-self-hosted:ci-run
-
-- Title: BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations
-- Authority kind: `ci-run`
-- Owner hint: release engineering
-- Description: ci-run evidence for byoc-self-hosted
-- Source URI: `TODO://authority/byoc-self-hosted/ci-run`
-- Snapshot output: `artifacts/external-evidence-sources/byoc-self-hosted/ci-run.json`
-- Intake output: `artifacts/external-evidence-intakes/byoc-self-hosted/ci-run.json`
-- Suggested evidence sources: completed CI workflow export; release run URL or provider-native run record; artifact/check provenance
 
 ### byoc-self-hosted:standards-body
 

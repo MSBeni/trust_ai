@@ -872,6 +872,36 @@
       "unit_ref": "auditor-and-review-portal:regulator"
     },
     {
+      "authority_kind": "ci-run",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained GitHub Actions export for BYOC deployment, operator, and authority validation CI evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/byoc-self-hosted-ci-run.json",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "GitHub Actions",
+      "owner_hint": "release engineering",
+      "requirement_id": "byoc-self-hosted",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/byoc-ci-run-source-snapshot.json",
+      "source_uri": "https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml",
+      "subject": "trustai BYOC/self-hosted deployment validation CI",
+      "suggested_evidence_sources": [
+        "completed CI workflow export",
+        "release run URL or provider-native run record",
+        "artifact/check provenance"
+      ],
+      "task": "byoc-self-hosted:ci-run",
+      "task_id": "4d92ba8183803168ec0e515166b6dded4b68ce807a0af3f3e938f3f26d84a6bb",
+      "task_ref": "external-evidence:byoc-self-hosted:ci-run",
+      "title": "BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations",
+      "unit_id": "258ddae8b0d2abfcfe94f2af5f499c3d166afafdac4ac60e547854652b124283",
+      "unit_ref": "byoc-self-hosted:ci-run"
+    },
+    {
       "authority_kind": "kms-hsm",
       "content_type": "application/json",
       "coverage_status": "missing",
@@ -1149,7 +1179,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "4a79e7a030b8893485fb7d1c5a9daf75fc6497f657897b24a9925e249acc3374",
+  "source_map_id": "068b428c44046d2e445d8e2eb751365e5bcc192acc5e1490c38c8d7e33005ce2",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -1164,9 +1194,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 38,
+    "entry_count": 39,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 38,
+    "live_source_uri_count": 39,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

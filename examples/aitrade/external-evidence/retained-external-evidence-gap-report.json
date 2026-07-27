@@ -12,6 +12,7 @@
       "regulator"
     ],
     "byoc-self-hosted": [
+      "ci-run",
       "kms-hsm",
       "cloud-object-lock",
       "provider-api"
@@ -61,31 +62,8 @@
       "standards-body"
     ]
   },
-  "gap_report_id": "0eaf876ddd1191f0040511756a39d0bc18f483b853712c03e18ad8ebb73b641d",
+  "gap_report_id": "d0305f3517a6c66f9f0410455662b52b9ff17df2a3d2ff8d9db896ed0b28229c",
   "gaps": [
-    {
-      "authority_kind": "ci-run",
-      "description": "ci-run evidence for byoc-self-hosted",
-      "external_authority_required": [
-        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/ci-run.json",
-      "owner_hint": "release engineering",
-      "requirement_id": "byoc-self-hosted",
-      "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/ci-run.json",
-      "source_uri": "TODO://authority/byoc-self-hosted/ci-run",
-      "suggested_evidence_sources": [
-        "completed CI workflow export",
-        "release run URL or provider-native run record",
-        "artifact/check provenance"
-      ],
-      "task": "byoc-self-hosted:ci-run",
-      "task_id": "4d92ba8183803168ec0e515166b6dded4b68ce807a0af3f3e938f3f26d84a6bb",
-      "task_ref": "external-evidence:byoc-self-hosted:ci-run",
-      "title": "BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations",
-      "unit_id": "258ddae8b0d2abfcfe94f2af5f499c3d166afafdac4ac60e547854652b124283",
-      "unit_ref": "byoc-self-hosted:ci-run"
-    },
     {
       "authority_kind": "standards-body",
       "description": "standards-body evidence for byoc-self-hosted",
@@ -831,7 +809,6 @@
   ],
   "missing_authority_kinds_by_requirement": {
     "byoc-self-hosted": [
-      "ci-run",
       "standards-body",
       "customer"
     ],
@@ -890,14 +867,14 @@
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "49be603f6c7f15685e012ee29bf4f1e513d8d1894a3939b7801212cecc040001",
-      "plan_id": "3383d36acec3468ed0b8b6b6bafc4dcf3149e98568cc7b3f1cdab300d2d34572",
+      "plan_hash": "63681b73c85c54b539c72231eaa567428aa14f9e8c23604a838393c267e5c05e",
+      "plan_id": "d3f4d938b0a6eefeac930bb083331048d1a135e352631724c489b86ce702e317",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "756c4337fac16014a6f07761831299c9bfc6a1d1e1692dd6bce9db6500879b0f",
-      "manifest_id": "7088d943067e14728a203a60698e85c3e676d33b75a54845d493a9f2070ce424",
+      "manifest_hash": "2fcab90291bd9cf8371ed97e329c8abf1665f11f0cd4c23d29ff1eac18f2d163",
+      "manifest_id": "a5a294322e3bac3cb0ef18e4121683870c03d0c6463023316253c789f478dddc",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
@@ -909,15 +886,15 @@
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "84d9ed86f7c56bc0f0013a393d5e1ca9eff8335bc649a3384fae667c82eb246c",
-      "source_map_id": "a4dd15f9d79ce2d58e98e9ee25051446ddbbcdb5c4727b2ca7db6a9d56231152"
+      "source_map_hash": "d075a0dc0fd053892e6ee9e02d8ec8c5da151c50951ad97a00ad166e60c2d99d",
+      "source_map_id": "b2d26e9182bfdf5c88a0ba09e2479557db648313276998e3a3462720196cee47"
     }
   },
   "summary": {
-    "covered_authority_kind_count": 38,
+    "covered_authority_kind_count": 39,
     "covered_requirement_count": 11,
     "gap_count_by_authority_kind": {
-      "ci-run": 5,
+      "ci-run": 4,
       "customer": 8,
       "hosted-service": 2,
       "identity-provider": 2,
@@ -928,7 +905,7 @@
       "standards-body": 5
     },
     "gap_count_by_requirement": {
-      "byoc-self-hosted": 3,
+      "byoc-self-hosted": 2,
       "compliance-mapper-and-eu-ai-act": 3,
       "insurer-api-and-actuarial-products": 7,
       "product-scope-discipline": 2,
@@ -941,27 +918,27 @@
       "vertical-packs": 3
     },
     "live_source_uri_count": 0,
-    "missing_authority_kind_count": 33,
+    "missing_authority_kind_count": 32,
     "missing_requirement_count": 9,
-    "placeholder_source_uri_count": 33,
-    "remaining_missing_task_count": 33,
-    "remaining_task_count": 33,
+    "placeholder_source_uri_count": 32,
+    "remaining_missing_task_count": 32,
+    "remaining_task_count": 32,
     "required_authority_kind_count": 71,
     "required_requirement_count": 20,
-    "source_map_entry_count": 33,
+    "source_map_entry_count": 32,
     "status": "partial"
   },
   "verification": {
     "manifest_warnings": [
       "external evidence missing for: compliance-mapper-and-eu-ai-act, trustai-own-compliance, vertical-packs, insurer-api-and-actuarial-products, state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
-      "external evidence authority kinds missing for: byoc-self-hosted: ci-run, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
+      "external evidence authority kinds missing for: byoc-self-hosted: standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
     ],
     "plan_warnings": [
       "external evidence missing for: compliance-mapper-and-eu-ai-act, trustai-own-compliance, vertical-packs, insurer-api-and-actuarial-products, state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
-      "external evidence authority kinds missing for: byoc-self-hosted: ci-run, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
+      "external evidence authority kinds missing for: byoc-self-hosted: standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
     ],
     "source_map_warnings": [
-      "source map contains 33 placeholder source_uri values"
+      "source map contains 32 placeholder source_uri values"
     ]
   },
   "verification_options": {
