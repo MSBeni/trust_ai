@@ -1,8 +1,8 @@
 # TrustAI External Evidence Collection Plan
 
-Plan ID: `7d60b5e2563d50f0ea9d22af7ca23f5e20429022a612f1d3816c6b325e6a5ff8`
+Plan ID: `dfcbb09a2763eedca175c073e36a1ab043b0165a4b516b2fd9e78863b80732f6`
 
-Source manifest: `04e0cde18bc2077bbc9eb57c5e8382c1c0b0148bba1cf7c1b05c186ca11de670`
+Source manifest: `c027bf18b6e0f457c27bcaa91afe1693e85543330162de949f9a01c8a8e8d6f2`
 
 Status filter: missing
 
@@ -10,10 +10,10 @@ Status filter: missing
 
 - Source manifest status: partial
 - Total authority units: 71
-- Selected tasks: 52
-- Selected missing tasks: 52
+- Selected tasks: 49
+- Selected missing tasks: 49
 - Selected covered tasks: 0
-- Missing authority kinds overall: 52
+- Missing authority kinds overall: 49
 
 ## Collection Tasks
 
@@ -36,9 +36,6 @@ Status filter: missing
 | `a5df2131c85c2fc3035d01e886ed613d473d2494e864149834b747d7f38f533b` | `auditor-and-review-portal:identity-provider` | `auditor-and-review-portal` | identity-provider | missing | IAM/identity owner | `external-evidence/auditor-and-review-portal/identity-provider.json` | `auditor-and-review-portal,identity-provider,external-evidence/auditor-and-review-portal/identity-provider.json,identity-provider evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `5587a2f2cd16dbff0317d1329cb227cf9a44a025d41f1cde680f23d8872f6d1c` | `auditor-and-review-portal:regulator` | `auditor-and-review-portal` | regulator | missing | legal/compliance owner | `external-evidence/auditor-and-review-portal/regulator.json` | `auditor-and-review-portal,regulator,external-evidence/auditor-and-review-portal/regulator.json,regulator evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `4d92ba8183803168ec0e515166b6dded4b68ce807a0af3f3e938f3f26d84a6bb` | `byoc-self-hosted:ci-run` | `byoc-self-hosted` | ci-run | missing | release engineering | `external-evidence/byoc-self-hosted/ci-run.json` | `byoc-self-hosted,ci-run,external-evidence/byoc-self-hosted/ci-run.json,ci-run evidence for byoc-self-hosted;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
-| `acee8369547848548e2f0a6cb4c8041fdb299be36c604a0ea878cc0aea1f09c7` | `byoc-self-hosted:kms-hsm` | `byoc-self-hosted` | kms-hsm | missing | security/platform KMS owner | `external-evidence/byoc-self-hosted/kms-hsm.json` | `byoc-self-hosted,kms-hsm,external-evidence/byoc-self-hosted/kms-hsm.json,kms-hsm evidence for byoc-self-hosted;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
-| `6c2e1a289a57e6763bc1da0f5b1595f2292aebd6b55b5ff9317976ab1562affb` | `byoc-self-hosted:cloud-object-lock` | `byoc-self-hosted` | cloud-object-lock | missing | cloud storage owner | `external-evidence/byoc-self-hosted/cloud-object-lock.json` | `byoc-self-hosted,cloud-object-lock,external-evidence/byoc-self-hosted/cloud-object-lock.json,cloud-object-lock evidence for byoc-self-hosted;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
-| `797f7917c38f899d5ab17ed1413c25d567b11336d6539f023de5fe16083a542f` | `byoc-self-hosted:provider-api` | `byoc-self-hosted` | provider-api | missing | integration/platform owner | `external-evidence/byoc-self-hosted/provider-api.json` | `byoc-self-hosted,provider-api,external-evidence/byoc-self-hosted/provider-api.json,provider-api evidence for byoc-self-hosted;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `09a6381d810ea0bc6732d04d967db1b8032a8bb71972d1910eed26868700c179` | `byoc-self-hosted:standards-body` | `byoc-self-hosted` | standards-body | missing | standards/governance owner | `external-evidence/byoc-self-hosted/standards-body.json` | `byoc-self-hosted,standards-body,external-evidence/byoc-self-hosted/standards-body.json,standards-body evidence for byoc-self-hosted;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `af50b681baa31018d24096abc1a794738c8a80afce398c4557fbc08f8ace0bd3` | `byoc-self-hosted:customer` | `byoc-self-hosted` | customer | missing | customer success/account owner | `external-evidence/byoc-self-hosted/customer.json` | `byoc-self-hosted,customer,external-evidence/byoc-self-hosted/customer.json,customer evidence for byoc-self-hosted;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `484c9782666dd0087b90aaf9a4c972b8034610dda1313a7c3e0a1099c0d79800` | `compliance-mapper-and-eu-ai-act:provider-api` | `compliance-mapper-and-eu-ai-act` | provider-api | missing | integration/platform owner | `external-evidence/compliance-mapper-and-eu-ai-act/provider-api.json` | `compliance-mapper-and-eu-ai-act,provider-api,external-evidence/compliance-mapper-and-eu-ai-act/provider-api.json,provider-api evidence for compliance-mapper-and-eu-ai-act;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |

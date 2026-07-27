@@ -1,13 +1,13 @@
 # External Evidence Owner Fulfillment Closure
 
-- Closure ID: `c1fd2e6ce266883ce4521302205616713d1c27f8771432b121ecb764cd9540ed`
+- Closure ID: `af3d4ffb8deaa699ef3534dc4700f50dd8899d3051e353c0e6c382e96e8200ce`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Closed tasks: 0/52
-- Missing intakes: 52
+- Closed tasks: 0/49
+- Missing intakes: 49
 - Invalid intake tasks: 0
-- Missing manifest coverage: 52
-- Placeholder source URIs: 52
+- Missing manifest coverage: 49
+- Placeholder source URIs: 49
 
 ## Task Closure
 
@@ -30,9 +30,6 @@
 | `auditor-and-review-portal:identity-provider` | IAM/identity owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `auditor-and-review-portal:regulator` | legal/compliance owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `byoc-self-hosted:ci-run` | release engineering | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
-| `byoc-self-hosted:kms-hsm` | security/platform KMS owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
-| `byoc-self-hosted:cloud-object-lock` | cloud storage owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
-| `byoc-self-hosted:provider-api` | integration/platform owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `byoc-self-hosted:standards-body` | standards/governance owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `byoc-self-hosted:customer` | customer success/account owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `compliance-mapper-and-eu-ai-act:provider-api` | integration/platform owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
@@ -68,9 +65,9 @@
 
 ## Blockers
 
-- 52 reviewed tasks still use placeholder source_uri values
-- 52 reviewed tasks do not have intake receipts
-- 52 reviewed tasks are not covered by the rebuilt manifest
+- 49 reviewed tasks still use placeholder source_uri values
+- 49 reviewed tasks do not have intake receipts
+- 49 reviewed tasks are not covered by the rebuilt manifest
 
 ## Next Actions
 

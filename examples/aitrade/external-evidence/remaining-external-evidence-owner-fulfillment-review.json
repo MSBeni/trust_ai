@@ -1,7 +1,7 @@
 {
   "blockers": [
-    "owner fulfillment review contains 52 placeholder source_uri values",
-    "fulfilled source map: source map contains 52 placeholder source_uri values but live source URIs are required"
+    "owner fulfillment review contains 49 placeholder source_uri values",
+    "fulfilled source map: source map contains 49 placeholder source_uri values but live source URIs are required"
   ],
   "commands": {
     "collect_after_ready_review": "python -m trustai external-evidence-collect-batch <fulfilled-source-map.json> <manifest.json> <roadmap-audit.json> --root . --require-live-source-uris",
@@ -418,78 +418,6 @@
         "title": "BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations",
         "unit_id": "258ddae8b0d2abfcfe94f2af5f499c3d166afafdac4ac60e547854652b124283",
         "unit_ref": "byoc-self-hosted:ci-run"
-      },
-      {
-        "authority_kind": "kms-hsm",
-        "coverage_status": "missing",
-        "description": "kms-hsm evidence for byoc-self-hosted",
-        "external_authority_required": [
-          "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/kms-hsm.json",
-        "owner_hint": "security/platform KMS owner",
-        "requirement_id": "byoc-self-hosted",
-        "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/kms-hsm.json",
-        "source_uri": "TODO://authority/byoc-self-hosted/kms-hsm",
-        "suggested_evidence_sources": [
-          "KMS/HSM key policy export",
-          "signing operation receipt",
-          "custody or audit-log root"
-        ],
-        "task": "byoc-self-hosted:kms-hsm",
-        "task_id": "acee8369547848548e2f0a6cb4c8041fdb299be36c604a0ea878cc0aea1f09c7",
-        "task_ref": "external-evidence:byoc-self-hosted:kms-hsm",
-        "title": "BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations",
-        "unit_id": "2bcd0837822dd6f900c5af6c143f127ab8ac19389f33240f12ad65d748039f7f",
-        "unit_ref": "byoc-self-hosted:kms-hsm"
-      },
-      {
-        "authority_kind": "cloud-object-lock",
-        "coverage_status": "missing",
-        "description": "cloud-object-lock evidence for byoc-self-hosted",
-        "external_authority_required": [
-          "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/cloud-object-lock.json",
-        "owner_hint": "cloud storage owner",
-        "requirement_id": "byoc-self-hosted",
-        "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/cloud-object-lock.json",
-        "source_uri": "TODO://authority/byoc-self-hosted/cloud-object-lock",
-        "suggested_evidence_sources": [
-          "Object Lock retention export",
-          "legal-hold report",
-          "bucket/versioning policy evidence"
-        ],
-        "task": "byoc-self-hosted:cloud-object-lock",
-        "task_id": "6c2e1a289a57e6763bc1da0f5b1595f2292aebd6b55b5ff9317976ab1562affb",
-        "task_ref": "external-evidence:byoc-self-hosted:cloud-object-lock",
-        "title": "BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations",
-        "unit_id": "fd68b54a87d92370973d95e70de86f09c347fa118a1fbac2c00288b6432556dc",
-        "unit_ref": "byoc-self-hosted:cloud-object-lock"
-      },
-      {
-        "authority_kind": "provider-api",
-        "coverage_status": "missing",
-        "description": "provider-api evidence for byoc-self-hosted",
-        "external_authority_required": [
-          "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/provider-api.json",
-        "owner_hint": "integration/platform owner",
-        "requirement_id": "byoc-self-hosted",
-        "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/provider-api.json",
-        "source_uri": "TODO://authority/byoc-self-hosted/provider-api",
-        "suggested_evidence_sources": [
-          "provider API response export",
-          "request/response transcript",
-          "provider-owned audit event"
-        ],
-        "task": "byoc-self-hosted:provider-api",
-        "task_id": "797f7917c38f899d5ab17ed1413c25d567b11336d6539f023de5fe16083a542f",
-        "task_ref": "external-evidence:byoc-self-hosted:provider-api",
-        "title": "BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations",
-        "unit_id": "64d4667c99729b35f69640585f1edc1ff182b4d937c9158f6324966f61b617fb",
-        "unit_ref": "byoc-self-hosted:provider-api"
       },
       {
         "authority_kind": "standards-body",
@@ -1267,14 +1195,14 @@
       "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
     ],
     "schema": "trustai.external-evidence-source-map/0.1",
-    "source_map_id": "81dea9f2e6157d9e446fd5b77b67036f796f5a8930b1e13d55866ca941b03549",
+    "source_map_id": "d4fd7996590c3871644e00b5af15e5f69b00c125618a73d24c7a43ecccc09bde",
     "source_plan": {
-      "plan_hash": "9c4962321d5978bd5cd4fcf870c3c9b84280e9dc836d98f39aae524ae7ba24fe",
-      "plan_id": "7d60b5e2563d50f0ea9d22af7ca23f5e20429022a612f1d3816c6b325e6a5ff8",
+      "plan_hash": "a1dc0ec6d50bd12be2c0d09b3eede9d964ac9ad55e9bbcb1e76d9a6cbff58c31",
+      "plan_id": "dfcbb09a2763eedca175c073e36a1ab043b0165a4b516b2fd9e78863b80732f6",
       "source_manifest": {
         "generated_at": "2026-07-12T00:01:00Z",
-        "manifest_hash": "b3b153a11041adb4640d735faa815b638ee3022931c2e37f2d20113fde0ba021",
-        "manifest_id": "04e0cde18bc2077bbc9eb57c5e8382c1c0b0148bba1cf7c1b05c186ca11de670",
+        "manifest_hash": "23fb3a4df3bcd86d731d4b13e33c1bb8df2df3c1b6bb56197dd7dbf344fb5fe8",
+        "manifest_id": "c027bf18b6e0f457c27bcaa91afe1693e85543330162de949f9a01c8a8e8d6f2",
         "manifest_ref": "production-external-evidence",
         "status": "partial"
       },
@@ -1282,12 +1210,12 @@
     },
     "summary": {
       "authority_kinds": [],
-      "entry_count": 52,
+      "entry_count": 49,
       "intake_dir": "artifacts/external-evidence-intakes",
       "live_source_uri_count": 0,
-      "placeholder_source_uri_count": 52,
+      "placeholder_source_uri_count": 49,
       "snapshot_dir": "artifacts/external-evidence-sources",
-      "source_plan_task_count": 52,
+      "source_plan_task_count": 49,
       "status_filter": "missing"
     }
   },
@@ -1302,45 +1230,45 @@
     "Regenerate this review with --require-live-source-uris before collecting source snapshots.",
     "After the fulfilled source map is ready, run external-evidence-collect-batch and rebuild the retained manifest from intake receipts."
   ],
-  "owner_fulfillment_review_id": "d40957c73e42446ccf97b50b5e5a95db29b0b88164c6a681c1079cb7e87213da",
+  "owner_fulfillment_review_id": "1008533dd0ee224919188287272e81b51b7d1036aba33c0391dfd0294e9df199",
   "schema": "trustai.external-evidence-owner-fulfillment-review/0.1",
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "9c4962321d5978bd5cd4fcf870c3c9b84280e9dc836d98f39aae524ae7ba24fe",
-      "plan_id": "7d60b5e2563d50f0ea9d22af7ca23f5e20429022a612f1d3816c6b325e6a5ff8",
+      "plan_hash": "a1dc0ec6d50bd12be2c0d09b3eede9d964ac9ad55e9bbcb1e76d9a6cbff58c31",
+      "plan_id": "dfcbb09a2763eedca175c073e36a1ab043b0165a4b516b2fd9e78863b80732f6",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "owner_fulfillment_template": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_fulfillment_template_hash": "c559f704ec3bf05c952882feff4ff897632e1f45da211e89687a65764ac6ba9b",
-      "owner_fulfillment_template_id": "5a25b30ba6edd6b218d28ebadc402fdc965b1dcfbed21ff002fde8e79e9ddd2a",
+      "owner_fulfillment_template_hash": "56d4472517e7d8e0def2db93b8acac9ce1b1c00b240d1cfd47e57d0e7aac777a",
+      "owner_fulfillment_template_id": "d0ed44b9a781555be880495d480ea0afa9a61cc487871c935bfbd6f8da989cca",
       "schema": "trustai.external-evidence-owner-fulfillment-template/0.1"
     },
     "owner_packet_status": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_status_hash": "7874e73bffbba293ca409c258da9e91e907a68b664df09eb747f302230bac906",
-      "owner_packet_status_id": "7dc6dd2c90cd02869ebd3087a22078dce39fb160a591ad6826a9529ba92e1be1",
+      "owner_packet_status_hash": "76fce608173b3e2d11b64315a0f0ae29accb7dc61ff46c7372a3f9943ad51fe3",
+      "owner_packet_status_id": "c417133659cee23ef3d22d5b861a32cb966ebc5be9fe05a82e54e49e4899d6f0",
       "schema": "trustai.external-evidence-owner-packet-status/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "ba5dc3452025bfc4ee90dc6896ad1dd4a4d05ac57acccfb533be041d8e8bfd8e",
-      "source_map_id": "9f43e7ef1aba08708d6829aa1f677d3722b6e197bd86422de9b8166ec2348b32"
+      "source_map_hash": "4ddb0e9c600a2153de229a7cd4288daabdb2b9e7e2279df6ec3aa7f1554b1036",
+      "source_map_id": "b461ea631ab9883539642c638b9ada3e696774bffe110bdfe1d1c4d003850314"
     }
   },
   "summary": {
-    "blocked_task_count": 52,
+    "blocked_task_count": 49,
     "error_count": 1,
     "fulfilled_source_map_verification_ok": false,
-    "fulfillment_count": 52,
+    "fulfillment_count": 49,
     "live_source_uri_count": 0,
-    "owner_count": 10,
-    "placeholder_source_uri_count": 52,
+    "owner_count": 9,
+    "placeholder_source_uri_count": 49,
     "ready_task_count": 0,
     "review_status": "blocked",
-    "source_map_entry_count": 52,
+    "source_map_entry_count": 49,
     "template_verification_ok": true,
     "warning_count": 3
   },
@@ -1582,48 +1510,6 @@
       "source_uri": "TODO://authority/byoc-self-hosted/ci-run",
       "source_uri_status": "placeholder",
       "task": "byoc-self-hosted:ci-run"
-    },
-    {
-      "authority_kind": "kms-hsm",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/kms-hsm.json",
-      "owner_hint": "security/platform KMS owner",
-      "requirement_id": "byoc-self-hosted",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/kms-hsm.json",
-      "source_uri": "TODO://authority/byoc-self-hosted/kms-hsm",
-      "source_uri_status": "placeholder",
-      "task": "byoc-self-hosted:kms-hsm"
-    },
-    {
-      "authority_kind": "cloud-object-lock",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/cloud-object-lock.json",
-      "owner_hint": "cloud storage owner",
-      "requirement_id": "byoc-self-hosted",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/cloud-object-lock.json",
-      "source_uri": "TODO://authority/byoc-self-hosted/cloud-object-lock",
-      "source_uri_status": "placeholder",
-      "task": "byoc-self-hosted:cloud-object-lock"
-    },
-    {
-      "authority_kind": "provider-api",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/provider-api.json",
-      "owner_hint": "integration/platform owner",
-      "requirement_id": "byoc-self-hosted",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/provider-api.json",
-      "source_uri": "TODO://authority/byoc-self-hosted/provider-api",
-      "source_uri_status": "placeholder",
-      "task": "byoc-self-hosted:provider-api"
     },
     {
       "authority_kind": "standards-body",
@@ -2076,14 +1962,14 @@
   ],
   "verification": {
     "fulfilled_source_map_errors": [
-      "source map contains 52 placeholder source_uri values but live source URIs are required"
+      "source map contains 49 placeholder source_uri values but live source URIs are required"
     ],
     "fulfilled_source_map_warnings": [
-      "source map contains 52 placeholder source_uri values"
+      "source map contains 49 placeholder source_uri values"
     ],
     "template_warnings": [
-      "owner fulfillment template summary contains 52 placeholder source_uri values",
-      "owner fulfillment template summary contains 52 tasks without intake receipts"
+      "owner fulfillment template summary contains 49 placeholder source_uri values",
+      "owner fulfillment template summary contains 49 tasks without intake receipts"
     ]
   },
   "verification_options": {

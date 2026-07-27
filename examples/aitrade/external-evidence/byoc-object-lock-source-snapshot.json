@@ -1,0 +1,22 @@
+{
+  "body_base64": "ewogICJhY2NvdW50X3JlZiI6ICJhd3M6YWNjb3VudC8xMjM0NTY3ODkwMTIiLAogICJhdWRpdCI6IHsKICAgICJhdWRpdF9sb2dfcmVmIjogImF1ZGl0LWxvZzpzMy90cnVzdGFpLWFpdHJhZGUtZXZpZGVuY2Uvb2JqZWN0LWxvY2siLAogICAgImF1ZGl0X2xvZ19yb290IjogInNoYTI1Njo5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5OTk5IiwKICAgICJldmVudF9jb3VudCI6IDQKICB9LAogICJidWNrZXRfcmVmIjogImFybjphd3M6czM6Ojp0cnVzdGFpLWFpdHJhZGUtZXZpZGVuY2UiLAogICJleHBvcnRfcmVmIjogInByb3ZpZGVyLWV4cG9ydDphaXRyYWRlL2J5b2Mtb2JqZWN0LWxvY2svMjAyNi0wNy0wNCIsCiAgImV4cGlyZXNfYXQiOiAiMjAyNi0xMi0zMVQwMDowMDowMFoiLAogICJpc3N1ZXIiOiAiRXhhbXBsZSBTMyBPYmplY3QgTG9jayIsCiAgImlzc3VlZF9hdCI6ICIyMDI2LTA3LTA0VDAzOjA2OjAwWiIsCiAgImxlZ2FsX2hvbGQiOiB7CiAgICAicmVxdWlyZWQiOiB0cnVlLAogICAgInJldGVudGlvbl91bnRpbCI6ICIyMDMzLTA3LTA0VDAwOjAwOjAwWiIsCiAgICAic3RhdHVzIjogImVuYWJsZWQiCiAgfSwKICAib2JqZWN0X2xvY2siOiB7CiAgICAiZGVmYXVsdF9yZXRlbnRpb24iOiAiUDdZIiwKICAgICJkZWxldGVfZGVuaWFsX3BvbGljeV9oYXNoIjogInNoYTI1Njo4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4ODg4IiwKICAgICJlbmFibGVkIjogdHJ1ZSwKICAgICJtb2RlIjogIkNPTVBMSUFOQ0UiLAogICAgInZlcnNpb25pbmdfZW5hYmxlZCI6IHRydWUKICB9LAogICJyZWdpb24iOiAidXMtZWFzdC0xIiwKICAic2NoZW1hIjogInRydXN0YWkuYnlvYy1vYmplY3QtbG9jay1wcm92aWRlci1leHBvcnQvMC4xIiwKICAic3ViamVjdCI6ICJ0cnVzdGFpLWFpdHJhZGUtZXZpZGVuY2UiCn0K",
+  "body_sha256": "sha256:31c6e2333ea1da0dc4880c93e907f19024f05a11e9aaea7c1596dc075a8243e4",
+  "body_size_bytes": 987,
+  "content_type": "application/json",
+  "expires_at": "2026-12-31T00:00:00Z",
+  "generated_at": "2026-07-12T00:01:00Z",
+  "issued_at": "2026-07-04T03:06:00Z",
+  "issuer": "Example S3 Object Lock",
+  "limitations": [
+    "This source snapshot preserves one collected authority response as a hashable artifact; it does not prove that the authority will return the same response later.",
+    "Verifier checks cover snapshot integrity, body hash, optional HTTP metadata, and optional freshness metadata.",
+    "Use this snapshot as the artifact supplied to external-evidence-intake for the matching collection-plan task."
+  ],
+  "response_headers": {},
+  "retrieval_method": "file-copy",
+  "schema": "trustai.external-evidence-source-snapshot/0.1",
+  "snapshot_id": "92dfd5e25d9ad85244dc396862c0caba101e216f73b6b43ae3bb5dfbd9d9829c",
+  "source_uri": "https://cloud.example/s3/trustai-aitrade-evidence/object-lock",
+  "status_code": null,
+  "subject": "trustai-aitrade-evidence BYOC Object Lock configuration"
+}

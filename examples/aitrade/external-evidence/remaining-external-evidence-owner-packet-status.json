@@ -5,7 +5,7 @@
     "A closed task still requires rebuilt manifest verification and readiness verification before external authority coverage is accepted.",
     "Placeholder source URIs keep tasks blocked even when a local intake artifact is present."
   ],
-  "owner_packet_status_id": "7dc6dd2c90cd02869ebd3087a22078dce39fb160a591ad6826a9529ba92e1be1",
+  "owner_packet_status_id": "c417133659cee23ef3d22d5b861a32cb966ebc5be9fe05a82e54e49e4899d6f0",
   "packets": [
     {
       "blocked_task_count": 5,
@@ -18,16 +18,6 @@
       "task_count": 5
     },
     {
-      "blocked_task_count": 1,
-      "closed_task_count": 0,
-      "open_task_count": 0,
-      "owner_hint": "cloud storage owner",
-      "packet_id": "16de102d1189d8b04d6e6c85342dbcb311b1b907519f405ee9d0515c13e29a36",
-      "packet_ref": "owner-packet:owner_hint:cloud-storage-owner",
-      "packet_status": "blocked",
-      "task_count": 1
-    },
-    {
       "blocked_task_count": 9,
       "closed_task_count": 0,
       "open_task_count": 0,
@@ -38,14 +28,14 @@
       "task_count": 9
     },
     {
-      "blocked_task_count": 6,
+      "blocked_task_count": 5,
       "closed_task_count": 0,
       "open_task_count": 0,
       "owner_hint": "integration/platform owner",
-      "packet_id": "4233ba222ffae8b5f08846e0df5d581b05c58b78c00627de04b14041f600c3e6",
+      "packet_id": "ecf67ac4cfd8356ca4be734d4d45749091fecf07ee738c3bdb98e70dc02ca8b7",
       "packet_ref": "owner-packet:owner_hint:integration-platform-owner",
       "packet_status": "blocked",
-      "task_count": 6
+      "task_count": 5
     },
     {
       "blocked_task_count": 5,
@@ -78,14 +68,14 @@
       "task_count": 4
     },
     {
-      "blocked_task_count": 5,
+      "blocked_task_count": 4,
       "closed_task_count": 0,
       "open_task_count": 0,
       "owner_hint": "security/platform KMS owner",
-      "packet_id": "e40e5fd2141a9cff0b461b948f35549b4805d22a626658a0808302967e099caf",
+      "packet_id": "7cb218a90fe08df8e005fcc84993d112150ecae4cd2b5d19c535bd60a7b5618f",
       "packet_ref": "owner-packet:owner_hint:security-platform-KMS-owner",
       "packet_status": "blocked",
-      "task_count": 5
+      "task_count": 4
     },
     {
       "blocked_task_count": 5,
@@ -113,41 +103,41 @@
     "intake_hashes": [],
     "owner_packet_bundle": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_bundle_hash": "79bf93a936ce6ca4d73738a8a23596003ab2d8cf8482a6b39c787d0d11f8633f",
-      "owner_packet_bundle_id": "35529219c8223ddf276b0ce84b52346afd9887af26e9342945f0fa26bda03d83",
+      "owner_packet_bundle_hash": "fc1a910a3857c4091190424dd7abe291da68775622b3ddf6352262b205f3f4d4",
+      "owner_packet_bundle_id": "b74a1b6cab2e9799a6e191bd02b38096114afea09476826faadae2e9742d5a4b",
       "schema": "trustai.external-evidence-owner-packet-bundle/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "ba5dc3452025bfc4ee90dc6896ad1dd4a4d05ac57acccfb533be041d8e8bfd8e",
-      "source_map_id": "9f43e7ef1aba08708d6829aa1f677d3722b6e197bd86422de9b8166ec2348b32"
+      "source_map_hash": "4ddb0e9c600a2153de229a7cd4288daabdb2b9e7e2279df6ec3aa7f1554b1036",
+      "source_map_id": "b461ea631ab9883539642c638b9ada3e696774bffe110bdfe1d1c4d003850314"
     },
     "work_package": {
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-work-package/0.1",
-      "work_package_hash": "b5b97885c2d147ccd7426056fbf1cf6056f7f3b2c3a77eb865a2e8af9a3533ac",
-      "work_package_id": "182b1557c7eb5e7a7f1409703605efd00146d03debcf2c6acf8ea2262f302430"
+      "work_package_hash": "e257d382d953335d289ead02dfdeba890801b9af2d38359e90a51f50ff1f2375",
+      "work_package_id": "01c2a39900b70158a6daca37673393d09aff168f58dba1d4584c62bbdbdcb293"
     }
   },
   "summary": {
-    "blocked_packet_count": 10,
-    "blocked_task_count": 52,
+    "blocked_packet_count": 9,
+    "blocked_task_count": 49,
     "closed_packet_count": 0,
     "closed_task_count": 0,
     "invalid_intake_count": 0,
     "live_source_uri_count": 0,
-    "missing_intake_count": 52,
+    "missing_intake_count": 49,
     "open_packet_count": 0,
     "open_task_count": 0,
-    "packet_count": 10,
+    "packet_count": 9,
     "packet_status_counts": {
-      "blocked": 10
+      "blocked": 9
     },
-    "placeholder_source_uri_count": 52,
-    "task_count": 52,
+    "placeholder_source_uri_count": 49,
+    "task_count": 49,
     "task_status_counts": {
-      "blocked": 52
+      "blocked": 49
     }
   },
   "tasks": [
@@ -235,23 +225,6 @@
       "task_ref": "external-evidence:trust-network-procurement-and-marketplace:identity-provider",
       "task_status": "blocked",
       "unit_ref": "trust-network-procurement-and-marketplace:identity-provider"
-    },
-    {
-      "authority_kind": "cloud-object-lock",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake": null,
-      "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/cloud-object-lock.json",
-      "owner_hint": "cloud storage owner",
-      "requirement_id": "byoc-self-hosted",
-      "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/cloud-object-lock.json",
-      "source_uri": "TODO://authority/byoc-self-hosted/cloud-object-lock",
-      "source_uri_status": "placeholder",
-      "task_ref": "external-evidence:byoc-self-hosted:cloud-object-lock",
-      "task_status": "blocked",
-      "unit_ref": "byoc-self-hosted:cloud-object-lock"
     },
     {
       "authority_kind": "customer",
@@ -405,23 +378,6 @@
       "task_ref": "external-evidence:trust-network-procurement-and-marketplace:customer",
       "task_status": "blocked",
       "unit_ref": "trust-network-procurement-and-marketplace:customer"
-    },
-    {
-      "authority_kind": "provider-api",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake": null,
-      "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/provider-api.json",
-      "owner_hint": "integration/platform owner",
-      "requirement_id": "byoc-self-hosted",
-      "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/provider-api.json",
-      "source_uri": "TODO://authority/byoc-self-hosted/provider-api",
-      "source_uri_status": "placeholder",
-      "task_ref": "external-evidence:byoc-self-hosted:provider-api",
-      "task_status": "blocked",
-      "unit_ref": "byoc-self-hosted:provider-api"
     },
     {
       "authority_kind": "provider-api",
@@ -796,23 +752,6 @@
       "task_ref": "external-evidence:mcp-gateway:kms-hsm",
       "task_status": "blocked",
       "unit_ref": "mcp-gateway:kms-hsm"
-    },
-    {
-      "authority_kind": "kms-hsm",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake": null,
-      "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/kms-hsm.json",
-      "owner_hint": "security/platform KMS owner",
-      "requirement_id": "byoc-self-hosted",
-      "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/kms-hsm.json",
-      "source_uri": "TODO://authority/byoc-self-hosted/kms-hsm",
-      "source_uri_status": "placeholder",
-      "task_ref": "external-evidence:byoc-self-hosted:kms-hsm",
-      "task_status": "blocked",
-      "unit_ref": "byoc-self-hosted:kms-hsm"
     },
     {
       "authority_kind": "kms-hsm",

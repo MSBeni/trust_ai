@@ -1,14 +1,14 @@
 # External Evidence Owner Fulfillment Template
 
-- Template ID: `5a25b30ba6edd6b218d28ebadc402fdc965b1dcfbed21ff002fde8e79e9ddd2a`
+- Template ID: `d0ed44b9a781555be880495d480ea0afa9a61cc487871c935bfbd6f8da989cca`
 - Generated at: `2026-07-12T00:01:00Z`
-- Fulfillments: 52
-- Owners: 10
-- Blocked tasks: 52
+- Fulfillments: 49
+- Owners: 9
+- Blocked tasks: 49
 - Open tasks: 0
 - Closed tasks: 0
-- Placeholder source URIs: 52
-- Missing intakes: 52
+- Placeholder source URIs: 49
+- Missing intakes: 49
 
 ## Fulfillments
 
@@ -19,7 +19,6 @@
 | `insurer-api-and-actuarial-products:identity-provider` | TODO://authority/insurer-api-and-actuarial-products/identity-provider | identity-provider evidence for insurer-api-and-actuarial-products |
 | `self-serve-onboarding:identity-provider` | TODO://authority/self-serve-onboarding/identity-provider | identity-provider evidence for self-serve-onboarding |
 | `trust-network-procurement-and-marketplace:identity-provider` | TODO://authority/trust-network-procurement-and-marketplace/identity-provider | identity-provider evidence for trust-network-procurement-and-marketplace |
-| `byoc-self-hosted:cloud-object-lock` | TODO://authority/byoc-self-hosted/cloud-object-lock | cloud-object-lock evidence for byoc-self-hosted |
 | `byoc-self-hosted:customer` | TODO://authority/byoc-self-hosted/customer | customer evidence for byoc-self-hosted |
 | `design-partner-pilot-exit-criteria:customer` | TODO://authority/design-partner-pilot-exit-criteria/customer | customer evidence for design-partner-pilot-exit-criteria |
 | `insurer-api-and-actuarial-products:customer` | TODO://authority/insurer-api-and-actuarial-products/customer | customer evidence for insurer-api-and-actuarial-products |
@@ -30,7 +29,6 @@
 | `trustai-own-compliance:customer` | TODO://authority/trustai-own-compliance/customer | customer evidence for trustai-own-compliance |
 | `vertical-packs:customer` | TODO://authority/vertical-packs/customer | customer evidence for vertical-packs |
 | `auditor-and-review-portal:provider-api` | TODO://authority/auditor-and-review-portal/provider-api | provider-api evidence for auditor-and-review-portal |
-| `byoc-self-hosted:provider-api` | TODO://authority/byoc-self-hosted/provider-api | provider-api evidence for byoc-self-hosted |
 | `compliance-mapper-and-eu-ai-act:provider-api` | TODO://authority/compliance-mapper-and-eu-ai-act/provider-api | provider-api evidence for compliance-mapper-and-eu-ai-act |
 | `insurer-api-and-actuarial-products:provider-api` | TODO://authority/insurer-api-and-actuarial-products/provider-api | provider-api evidence for insurer-api-and-actuarial-products |
 | `self-serve-onboarding:provider-api` | TODO://authority/self-serve-onboarding/provider-api | provider-api evidence for self-serve-onboarding |
@@ -52,7 +50,6 @@
 | `roadmap-phase-scoreboard:insurer` | TODO://authority/roadmap-phase-scoreboard/insurer | insurer evidence for roadmap-phase-scoreboard |
 | `vertical-packs:insurer` | TODO://authority/vertical-packs/insurer | insurer evidence for vertical-packs |
 | `auditor-and-review-portal:kms-hsm` | TODO://authority/auditor-and-review-portal/kms-hsm | kms-hsm evidence for auditor-and-review-portal |
-| `byoc-self-hosted:kms-hsm` | TODO://authority/byoc-self-hosted/kms-hsm | kms-hsm evidence for byoc-self-hosted |
 | `insurer-api-and-actuarial-products:kms-hsm` | TODO://authority/insurer-api-and-actuarial-products/kms-hsm | kms-hsm evidence for insurer-api-and-actuarial-products |
 | `mcp-gateway:kms-hsm` | TODO://authority/mcp-gateway/kms-hsm | kms-hsm evidence for mcp-gateway |
 | `standards-track-and-auditor-ecosystem:kms-hsm` | TODO://authority/standards-track-and-auditor-ecosystem/kms-hsm | kms-hsm evidence for standards-track-and-auditor-ecosystem |
@@ -76,7 +73,6 @@
 | `insurer-api-and-actuarial-products:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/identity-provider.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/identity-provider.json |
 | `self-serve-onboarding:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/self-serve-onboarding/identity-provider.json | artifacts/external-evidence-intakes/self-serve-onboarding/identity-provider.json |
 | `trust-network-procurement-and-marketplace:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/identity-provider.json | artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/identity-provider.json |
-| `byoc-self-hosted:cloud-object-lock` | cloud storage owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/byoc-self-hosted/cloud-object-lock.json | artifacts/external-evidence-intakes/byoc-self-hosted/cloud-object-lock.json |
 | `byoc-self-hosted:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/byoc-self-hosted/customer.json | artifacts/external-evidence-intakes/byoc-self-hosted/customer.json |
 | `design-partner-pilot-exit-criteria:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/customer.json | artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/customer.json |
 | `insurer-api-and-actuarial-products:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/customer.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/customer.json |
@@ -87,7 +83,6 @@
 | `trustai-own-compliance:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trustai-own-compliance/customer.json | artifacts/external-evidence-intakes/trustai-own-compliance/customer.json |
 | `vertical-packs:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/vertical-packs/customer.json | artifacts/external-evidence-intakes/vertical-packs/customer.json |
 | `auditor-and-review-portal:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/auditor-and-review-portal/provider-api.json | artifacts/external-evidence-intakes/auditor-and-review-portal/provider-api.json |
-| `byoc-self-hosted:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/byoc-self-hosted/provider-api.json | artifacts/external-evidence-intakes/byoc-self-hosted/provider-api.json |
 | `compliance-mapper-and-eu-ai-act:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/provider-api.json | artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/provider-api.json |
 | `insurer-api-and-actuarial-products:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/provider-api.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/provider-api.json |
 | `self-serve-onboarding:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/self-serve-onboarding/provider-api.json | artifacts/external-evidence-intakes/self-serve-onboarding/provider-api.json |
@@ -109,7 +104,6 @@
 | `roadmap-phase-scoreboard:insurer` | risk/insurance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/roadmap-phase-scoreboard/insurer.json | artifacts/external-evidence-intakes/roadmap-phase-scoreboard/insurer.json |
 | `vertical-packs:insurer` | risk/insurance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/vertical-packs/insurer.json | artifacts/external-evidence-intakes/vertical-packs/insurer.json |
 | `auditor-and-review-portal:kms-hsm` | security/platform KMS owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/auditor-and-review-portal/kms-hsm.json | artifacts/external-evidence-intakes/auditor-and-review-portal/kms-hsm.json |
-| `byoc-self-hosted:kms-hsm` | security/platform KMS owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/byoc-self-hosted/kms-hsm.json | artifacts/external-evidence-intakes/byoc-self-hosted/kms-hsm.json |
 | `insurer-api-and-actuarial-products:kms-hsm` | security/platform KMS owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/kms-hsm.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/kms-hsm.json |
 | `mcp-gateway:kms-hsm` | security/platform KMS owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/mcp-gateway/kms-hsm.json | artifacts/external-evidence-intakes/mcp-gateway/kms-hsm.json |
 | `standards-track-and-auditor-ecosystem:kms-hsm` | security/platform KMS owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/kms-hsm.json | artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/kms-hsm.json |

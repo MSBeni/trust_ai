@@ -304,6 +304,48 @@ RETAINED_SOURCES: dict[str, dict[str, str]] = {
         "snapshot_out": "examples/aitrade/external-evidence/shadow-holdout-standards-body-source-snapshot.json",
         "intake_out": "examples/aitrade/external-evidence/intakes/shadow-replay-temporal-holdout-standards-body.json",
     },
+    "byoc-self-hosted:provider-api": {
+        "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/byoc-network-policy-authority-export.json?ref=main",
+        "description": "Retained provider API export for BYOC NetworkPolicy admission and audit evidence",
+        "artifact": "examples/aitrade/external-evidence/byoc-provider-api-source-snapshot.json",
+        "source_file": "examples/aitrade/byoc-network-policy-authority-export.json",
+        "retrieval_method": "file-copy",
+        "content_type": "application/json",
+        "issuer": "Example Kubernetes API",
+        "subject": "aitrade BYOC NetworkPolicy admission export",
+        "issued_at": "2026-07-04T03:07:00Z",
+        "expires_at": "2026-12-31T00:00:00Z",
+        "snapshot_out": "examples/aitrade/external-evidence/byoc-provider-api-source-snapshot.json",
+        "intake_out": "examples/aitrade/external-evidence/intakes/byoc-self-hosted-provider-api.json",
+    },
+    "byoc-self-hosted:kms-hsm": {
+        "source_uri": "https://kms.example/attestations/trustai/byoc/evidence-signing",
+        "description": "Retained KMS/HSM enforcement export for BYOC evidence signing",
+        "artifact": "examples/aitrade/external-evidence/byoc-kms-hsm-source-snapshot.json",
+        "source_file": "examples/aitrade/trust-authority-kms-response.json",
+        "retrieval_method": "file-copy",
+        "content_type": "application/json",
+        "issuer": "Example KMS/HSM",
+        "subject": "trustai BYOC evidence-signing enforcement",
+        "issued_at": "2026-07-03T12:03:00Z",
+        "expires_at": "2026-12-31T00:00:00Z",
+        "snapshot_out": "examples/aitrade/external-evidence/byoc-kms-hsm-source-snapshot.json",
+        "intake_out": "examples/aitrade/external-evidence/intakes/byoc-self-hosted-kms-hsm.json",
+    },
+    "byoc-self-hosted:cloud-object-lock": {
+        "source_uri": "https://cloud.example/s3/trustai-aitrade-evidence/object-lock",
+        "description": "Retained cloud Object Lock export for BYOC immutable evidence storage",
+        "artifact": "examples/aitrade/external-evidence/byoc-object-lock-source-snapshot.json",
+        "source_file": "examples/aitrade/byoc-object-lock-provider-export.json",
+        "retrieval_method": "file-copy",
+        "content_type": "application/json",
+        "issuer": "Example S3 Object Lock",
+        "subject": "trustai-aitrade-evidence BYOC Object Lock configuration",
+        "issued_at": "2026-07-04T03:06:00Z",
+        "expires_at": "2026-12-31T00:00:00Z",
+        "snapshot_out": "examples/aitrade/external-evidence/byoc-object-lock-source-snapshot.json",
+        "intake_out": "examples/aitrade/external-evidence/intakes/byoc-self-hosted-cloud-object-lock.json",
+    },
 }
 
 
@@ -854,6 +896,7 @@ def assert_retained_counts() -> None:
     owner_fulfillment_closure = json_load(DIR / "remaining-external-evidence-owner-fulfillment-closure.json")
     owner_fulfilled_source_map = json_load(DIR / "remaining-external-evidence-owner-fulfilled-source-map.json")
     readiness = json_load(DIR / "retained-external-evidence-readiness.json")
+    remaining_package_count = len(work_package.get("packages", []))
     checks = [
         (manifest["summary"]["covered_authority_kind_count"], retained_count, "manifest covered authority kind count"),
         (manifest["summary"]["missing_authority_kind_count"], remaining_count, "manifest missing authority kind count"),
@@ -862,10 +905,10 @@ def assert_retained_counts() -> None:
         (source_map["summary"]["placeholder_source_uri_count"], remaining_count, "source-map placeholder URI count"),
         (gap_report["summary"]["remaining_task_count"], remaining_count, "gap remaining task count"),
         (work_package["summary"]["task_count"], remaining_count, "work-package task count"),
-        (work_package["summary"]["package_count"], 10, "work-package package count"),
-        (owner_packets["summary"]["packet_count"], 10, "owner packet count"),
+        (work_package["summary"]["package_count"], remaining_package_count, "work-package package count"),
+        (owner_packets["summary"]["packet_count"], remaining_package_count, "owner packet count"),
         (owner_packets["summary"]["task_count"], remaining_count, "owner packet task count"),
-        (owner_packet_status["summary"]["packet_count"], 10, "owner packet status packet count"),
+        (owner_packet_status["summary"]["packet_count"], remaining_package_count, "owner packet status packet count"),
         (owner_packet_status["summary"]["task_count"], remaining_count, "owner packet status task count"),
         (owner_packet_status["summary"]["closed_task_count"], 0, "owner packet status closed task count"),
         (owner_packet_status["summary"]["blocked_task_count"], remaining_count, "owner packet status blocked task count"),

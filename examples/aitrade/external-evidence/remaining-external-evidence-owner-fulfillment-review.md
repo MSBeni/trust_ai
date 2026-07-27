@@ -1,13 +1,13 @@
 # External Evidence Owner Fulfillment Review
 
-- Review ID: `d40957c73e42446ccf97b50b5e5a95db29b0b88164c6a681c1079cb7e87213da`
+- Review ID: `1008533dd0ee224919188287272e81b51b7d1036aba33c0391dfd0294e9df199`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Fulfillments: 52
-- Owners: 10
+- Fulfillments: 49
+- Owners: 9
 - Ready tasks: 0
-- Blocked tasks: 52
-- Placeholder source URIs: 52
+- Blocked tasks: 49
+- Placeholder source URIs: 49
 - Live source URIs: 0
 
 ## Task Review
@@ -31,9 +31,6 @@
 | `auditor-and-review-portal:identity-provider` | IAM/identity owner | blocked | TODO://authority/auditor-and-review-portal/identity-provider | `placeholder-source-uri` |
 | `auditor-and-review-portal:regulator` | legal/compliance owner | blocked | TODO://authority/auditor-and-review-portal/regulator | `placeholder-source-uri` |
 | `byoc-self-hosted:ci-run` | release engineering | blocked | TODO://authority/byoc-self-hosted/ci-run | `placeholder-source-uri` |
-| `byoc-self-hosted:kms-hsm` | security/platform KMS owner | blocked | TODO://authority/byoc-self-hosted/kms-hsm | `placeholder-source-uri` |
-| `byoc-self-hosted:cloud-object-lock` | cloud storage owner | blocked | TODO://authority/byoc-self-hosted/cloud-object-lock | `placeholder-source-uri` |
-| `byoc-self-hosted:provider-api` | integration/platform owner | blocked | TODO://authority/byoc-self-hosted/provider-api | `placeholder-source-uri` |
 | `byoc-self-hosted:standards-body` | standards/governance owner | blocked | TODO://authority/byoc-self-hosted/standards-body | `placeholder-source-uri` |
 | `byoc-self-hosted:customer` | customer success/account owner | blocked | TODO://authority/byoc-self-hosted/customer | `placeholder-source-uri` |
 | `compliance-mapper-and-eu-ai-act:provider-api` | integration/platform owner | blocked | TODO://authority/compliance-mapper-and-eu-ai-act/provider-api | `placeholder-source-uri` |
@@ -71,12 +68,12 @@
 
 - Fulfilled source map errors: 1
 - Fulfilled source map warnings: 1
-  - source map contains 52 placeholder source_uri values but live source URIs are required
+  - source map contains 49 placeholder source_uri values but live source URIs are required
 
 ## Blockers
 
-- owner fulfillment review contains 52 placeholder source_uri values
-- fulfilled source map: source map contains 52 placeholder source_uri values but live source URIs are required
+- owner fulfillment review contains 49 placeholder source_uri values
+- fulfilled source map: source map contains 49 placeholder source_uri values but live source URIs are required
 
 ## Next Actions
 

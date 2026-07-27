@@ -1,0 +1,28 @@
+{
+  "account_ref": "aws:account/123456789012",
+  "audit": {
+    "audit_log_ref": "audit-log:s3/trustai-aitrade-evidence/object-lock",
+    "audit_log_root": "sha256:9999999999999999999999999999999999999999999999999999999999999999",
+    "event_count": 4
+  },
+  "bucket_ref": "arn:aws:s3:::trustai-aitrade-evidence",
+  "export_ref": "provider-export:aitrade/byoc-object-lock/2026-07-04",
+  "expires_at": "2026-12-31T00:00:00Z",
+  "issuer": "Example S3 Object Lock",
+  "issued_at": "2026-07-04T03:06:00Z",
+  "legal_hold": {
+    "required": true,
+    "retention_until": "2033-07-04T00:00:00Z",
+    "status": "enabled"
+  },
+  "object_lock": {
+    "default_retention": "P7Y",
+    "delete_denial_policy_hash": "sha256:8888888888888888888888888888888888888888888888888888888888888888",
+    "enabled": true,
+    "mode": "COMPLIANCE",
+    "versioning_enabled": true
+  },
+  "region": "us-east-1",
+  "schema": "trustai.byoc-object-lock-provider-export/0.1",
+  "subject": "trustai-aitrade-evidence"
+}

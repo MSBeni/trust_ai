@@ -1,32 +1,31 @@
 # External Evidence Gap Report
 
-- Gap report ID: `f3cb7de75e6c829f1767e91819b4fdf61efe41e46ee2f77fa3c584fb52e071e2`
+- Gap report ID: `de24784ba45361059117cab4924aa15ef381a95f261c5d39eab82f9bedeb7a9d`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 19/71
-- Missing authority kinds: 52
-- Remaining collection tasks: 52
-- Source-map entries: 52
-- Placeholder source URIs: 52
+- Covered authority kinds: 22/71
+- Missing authority kinds: 49
+- Remaining collection tasks: 49
+- Source-map entries: 49
+- Placeholder source URIs: 49
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
 
 - `ci-run`: 7
-- `cloud-object-lock`: 1
 - `customer`: 9
 - `hosted-service`: 5
 - `identity-provider`: 5
 - `insurer`: 4
-- `kms-hsm`: 5
-- `provider-api`: 6
+- `kms-hsm`: 4
+- `provider-api`: 5
 - `regulator`: 5
 - `standards-body`: 5
 
 ## Gaps By Requirement
 
 - `auditor-and-review-portal`: 5
-- `byoc-self-hosted`: 6
+- `byoc-self-hosted`: 3
 - `cicd-provider-approvals`: 2
 - `compliance-mapper-and-eu-ai-act`: 3
 - `design-partner-pilot-exit-criteria`: 3
@@ -231,39 +230,6 @@
 - Snapshot output: `artifacts/external-evidence-sources/byoc-self-hosted/ci-run.json`
 - Intake output: `artifacts/external-evidence-intakes/byoc-self-hosted/ci-run.json`
 - Suggested evidence sources: completed CI workflow export; release run URL or provider-native run record; artifact/check provenance
-
-### byoc-self-hosted:kms-hsm
-
-- Title: BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations
-- Authority kind: `kms-hsm`
-- Owner hint: security/platform KMS owner
-- Description: kms-hsm evidence for byoc-self-hosted
-- Source URI: `TODO://authority/byoc-self-hosted/kms-hsm`
-- Snapshot output: `artifacts/external-evidence-sources/byoc-self-hosted/kms-hsm.json`
-- Intake output: `artifacts/external-evidence-intakes/byoc-self-hosted/kms-hsm.json`
-- Suggested evidence sources: KMS/HSM key policy export; signing operation receipt; custody or audit-log root
-
-### byoc-self-hosted:cloud-object-lock
-
-- Title: BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations
-- Authority kind: `cloud-object-lock`
-- Owner hint: cloud storage owner
-- Description: cloud-object-lock evidence for byoc-self-hosted
-- Source URI: `TODO://authority/byoc-self-hosted/cloud-object-lock`
-- Snapshot output: `artifacts/external-evidence-sources/byoc-self-hosted/cloud-object-lock.json`
-- Intake output: `artifacts/external-evidence-intakes/byoc-self-hosted/cloud-object-lock.json`
-- Suggested evidence sources: Object Lock retention export; legal-hold report; bucket/versioning policy evidence
-
-### byoc-self-hosted:provider-api
-
-- Title: BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations
-- Authority kind: `provider-api`
-- Owner hint: integration/platform owner
-- Description: provider-api evidence for byoc-self-hosted
-- Source URI: `TODO://authority/byoc-self-hosted/provider-api`
-- Snapshot output: `artifacts/external-evidence-sources/byoc-self-hosted/provider-api.json`
-- Intake output: `artifacts/external-evidence-intakes/byoc-self-hosted/provider-api.json`
-- Suggested evidence sources: provider API response export; request/response transcript; provider-owned audit event
 
 ### byoc-self-hosted:standards-body
 

@@ -1,0 +1,22 @@
+{
+  "body_base64": "ewogICJzY2hlbWEiOiAidHJ1c3RhaS5ieW9jLW5ldHdvcmstcG9saWN5LWF1dGhvcml0eS1leHBvcnQvMC4xIiwKICAiZXhwb3J0X3JlZiI6ICJwcm92aWRlci1leHBvcnQ6YWl0cmFkZS9ieW9jLW5ldHdvcmstcG9saWN5LzIwMjYtMDctMDQiLAogICJpc3N1ZXIiOiAiRXhhbXBsZSBLdWJlcm5ldGVzIEFQSSIsCiAgImVudmlyb25tZW50IjogImFpdHJhZGUtYnlvYyIsCiAgImNsdXN0ZXJfcmVmIjogIms4czpjbHVzdGVyL2FpdHJhZGUtcHJvZCIsCiAgIm5hbWVzcGFjZSI6ICJ0cnVzdGFpIiwKICAibmV0d29ya19wb2xpY3lfcmVmIjogIms4czpuZXR3b3JrcG9saWN5L3RydXN0YWkvdHJ1c3RhaS1hcGkiLAogICJhZG1pc3Npb24iOiB7CiAgICAiYWRtaXR0ZWQiOiB0cnVlLAogICAgInJlc291cmNlX3ZlcnNpb24iOiAicnYtMjAyNjA3MDQtMDAwNyIsCiAgICAib2JzZXJ2ZWRfZ2VuZXJhdGlvbiI6IDcsCiAgICAicG9kX3NlbGVjdG9yX2hhc2giOiAic2hhMjU2OmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmIiLAogICAgImluZ3Jlc3NfcG9saWN5X2hhc2giOiAic2hhMjU2OmNjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2MiLAogICAgImVncmVzc19wb2xpY3lfaGFzaCI6ICJzaGEyNTY6ZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZCIKICB9LAogICJhdWRpdCI6IHsKICAgICJhdWRpdF9sb2dfcmVmIjogImF1ZGl0LWxvZzprdWJlcm5ldGVzL2FpdHJhZGUtcHJvZC9uZXR3b3JrLXBvbGljeS1hZG1pc3Npb24iLAogICAgImF1ZGl0X2xvZ19yb290IjogInNoYTI1NjplZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlIiwKICAgICJldmVudF9jb3VudCI6IDMKICB9LAogICJpc3N1ZWRfYXQiOiAiMjAyNi0wNy0wNFQwMzowNzowMFoiLAogICJleHBpcmVzX2F0IjogIjIwMjYtMTItMzFUMDA6MDA6MDBaIgp9",
+  "body_sha256": "sha256:7bcb09931523c21eb03e449ff620bae9241902f6fcd650050e52ead5d2eefab3",
+  "body_size_bytes": 1065,
+  "content_type": "application/json",
+  "expires_at": "2026-12-31T00:00:00Z",
+  "generated_at": "2026-07-12T00:01:00Z",
+  "issued_at": "2026-07-04T03:07:00Z",
+  "issuer": "Example Kubernetes API",
+  "limitations": [
+    "This source snapshot preserves one collected authority response as a hashable artifact; it does not prove that the authority will return the same response later.",
+    "Verifier checks cover snapshot integrity, body hash, optional HTTP metadata, and optional freshness metadata.",
+    "Use this snapshot as the artifact supplied to external-evidence-intake for the matching collection-plan task."
+  ],
+  "response_headers": {},
+  "retrieval_method": "file-copy",
+  "schema": "trustai.external-evidence-source-snapshot/0.1",
+  "snapshot_id": "9e144e8871608819af2741be1a4190c2472216f966c884b27a2ecd99a23dbb4c",
+  "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/byoc-network-policy-authority-export.json?ref=main",
+  "status_code": null,
+  "subject": "aitrade BYOC NetworkPolicy admission export"
+}

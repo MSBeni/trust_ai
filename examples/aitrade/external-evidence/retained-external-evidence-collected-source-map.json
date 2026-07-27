@@ -395,6 +395,96 @@
       "authority_kind": "kms-hsm",
       "content_type": "application/json",
       "coverage_status": "missing",
+      "description": "Retained KMS/HSM enforcement export for BYOC evidence signing",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/byoc-self-hosted-kms-hsm.json",
+      "issued_at": "2026-07-03T12:03:00Z",
+      "issuer": "Example KMS/HSM",
+      "owner_hint": "security/platform KMS owner",
+      "requirement_id": "byoc-self-hosted",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/byoc-kms-hsm-source-snapshot.json",
+      "source_uri": "https://kms.example/attestations/trustai/byoc/evidence-signing",
+      "subject": "trustai BYOC evidence-signing enforcement",
+      "suggested_evidence_sources": [
+        "KMS/HSM key policy export",
+        "signing operation receipt",
+        "custody or audit-log root"
+      ],
+      "task": "byoc-self-hosted:kms-hsm",
+      "task_id": "acee8369547848548e2f0a6cb4c8041fdb299be36c604a0ea878cc0aea1f09c7",
+      "task_ref": "external-evidence:byoc-self-hosted:kms-hsm",
+      "title": "BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations",
+      "unit_id": "2bcd0837822dd6f900c5af6c143f127ab8ac19389f33240f12ad65d748039f7f",
+      "unit_ref": "byoc-self-hosted:kms-hsm"
+    },
+    {
+      "authority_kind": "cloud-object-lock",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained cloud Object Lock export for BYOC immutable evidence storage",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/byoc-self-hosted-cloud-object-lock.json",
+      "issued_at": "2026-07-04T03:06:00Z",
+      "issuer": "Example S3 Object Lock",
+      "owner_hint": "cloud storage owner",
+      "requirement_id": "byoc-self-hosted",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/byoc-object-lock-source-snapshot.json",
+      "source_uri": "https://cloud.example/s3/trustai-aitrade-evidence/object-lock",
+      "subject": "trustai-aitrade-evidence BYOC Object Lock configuration",
+      "suggested_evidence_sources": [
+        "Object Lock retention export",
+        "legal-hold report",
+        "bucket/versioning policy evidence"
+      ],
+      "task": "byoc-self-hosted:cloud-object-lock",
+      "task_id": "6c2e1a289a57e6763bc1da0f5b1595f2292aebd6b55b5ff9317976ab1562affb",
+      "task_ref": "external-evidence:byoc-self-hosted:cloud-object-lock",
+      "title": "BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations",
+      "unit_id": "fd68b54a87d92370973d95e70de86f09c347fa118a1fbac2c00288b6432556dc",
+      "unit_ref": "byoc-self-hosted:cloud-object-lock"
+    },
+    {
+      "authority_kind": "provider-api",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained provider API export for BYOC NetworkPolicy admission and audit evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/byoc-self-hosted-provider-api.json",
+      "issued_at": "2026-07-04T03:07:00Z",
+      "issuer": "Example Kubernetes API",
+      "owner_hint": "integration/platform owner",
+      "requirement_id": "byoc-self-hosted",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/byoc-provider-api-source-snapshot.json",
+      "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/byoc-network-policy-authority-export.json?ref=main",
+      "subject": "aitrade BYOC NetworkPolicy admission export",
+      "suggested_evidence_sources": [
+        "provider API response export",
+        "request/response transcript",
+        "provider-owned audit event"
+      ],
+      "task": "byoc-self-hosted:provider-api",
+      "task_id": "797f7917c38f899d5ab17ed1413c25d567b11336d6539f023de5fe16083a542f",
+      "task_ref": "external-evidence:byoc-self-hosted:provider-api",
+      "title": "BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations",
+      "unit_id": "64d4667c99729b35f69640585f1edc1ff182b4d937c9158f6324966f61b617fb",
+      "unit_ref": "byoc-self-hosted:provider-api"
+    },
+    {
+      "authority_kind": "kms-hsm",
+      "content_type": "application/json",
+      "coverage_status": "missing",
       "description": "Retained KMS/HSM enforcement export for runtime policy evidence signing",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
@@ -579,7 +669,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "a0a6500fecc3232cc751a574a718aac7f8e7b3bc4caf42f3954abe191e4bf8eb",
+  "source_map_id": "7f4460c17f1d1cb918afe646bef0235b3fee6dc80f2f3d3acd57ac99874fc014",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -594,9 +684,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 19,
+    "entry_count": 22,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 19,
+    "live_source_uri_count": 22,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

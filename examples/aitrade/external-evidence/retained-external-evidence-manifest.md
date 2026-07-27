@@ -1,20 +1,20 @@
 # TrustAI External Evidence Manifest
 
-Manifest ID: `04e0cde18bc2077bbc9eb57c5e8382c1c0b0148bba1cf7c1b05c186ca11de670`
+Manifest ID: `c027bf18b6e0f457c27bcaa91afe1693e85543330162de949f9a01c8a8e8d6f2`
 
 Status: partial
 
 ## Coverage
 
 - Required external requirements: 20
-- Covered requirements: 7
+- Covered requirements: 8
 - Required authority kinds: 71
-- Covered authority kinds: 19
-- Missing authority kinds: 52
-- Evidence items: 19
-- Evidence with issued_at: 19
-- Evidence with expires_at: 19
-- Evidence with freshness windows: 19
+- Covered authority kinds: 22
+- Missing authority kinds: 49
+- Evidence items: 22
+- Evidence with issued_at: 22
+- Evidence with expires_at: 22
+- Evidence with freshness windows: 22
 
 ## Required External Evidence
 
@@ -28,7 +28,7 @@ Status: partial
 | `design-partner-pilot-exit-criteria` | P1 | P0 | missing | `regulator`, `insurer`, `customer` |  | `regulator`, `insurer`, `customer` | Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, hash-bound contract/payment evidence, and hash-bound external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence. |
 | `framework-adapters` | P1 | P1 | missing | `ci-run`, `provider-api`, `hosted-service` | `provider-api`, `hosted-service` | `ci-run` | Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence. |
 | `auditor-and-review-portal` | P1-P3 | P1 | missing | `kms-hsm`, `provider-api`, `hosted-service`, `identity-provider`, `regulator` |  | `kms-hsm`, `provider-api`, `hosted-service`, `identity-provider`, `regulator` | Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence. |
-| `byoc-self-hosted` | P1-P2 | P0 | missing | `ci-run`, `kms-hsm`, `cloud-object-lock`, `provider-api`, `standards-body`, `customer` |  | `ci-run`, `kms-hsm`, `cloud-object-lock`, `provider-api`, `standards-body`, `customer` | BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence. |
+| `byoc-self-hosted` | P1-P2 | P0 | missing | `ci-run`, `kms-hsm`, `cloud-object-lock`, `provider-api`, `standards-body`, `customer` | `kms-hsm`, `cloud-object-lock`, `provider-api` | `ci-run`, `standards-body`, `customer` | BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence. |
 | `compliance-mapper-and-eu-ai-act` | P2-P3 | P0 | missing | `provider-api`, `regulator`, `standards-body` |  | `provider-api`, `regulator`, `standards-body` | Compliance production authority dossiers cover the local/reference authority checklist for framework-control ontology, ISO 42001, NIST AI RMF, EU AI Act, SR 11-7, SOC 2, proof-pack source replay, selective regulator disclosure, GRC exports, EU data-plane sovereignty, conformity-assessment review, and per-evidence source_context bound to the signed compliance source binding; actual fresh GRC-platform acceptance, regulator/supervisor acceptance, conformity-assessment review, and continuously operated EU data-plane provider exports remain external deployment evidence. |
 | `trustai-own-compliance` | P2 | P0 | missing | `standards-body`, `customer` |  | `standards-body`, `customer` | TrustAI own compliance dossiers cover local/reference readiness and external-certification schemas for SOC 2 Type II and ISO/IEC 42001; actual SOC 2 Type II audit reports, ISO/IEC 42001 certificates, auditor bridge letters, management-system scope approvals, continuous control operation evidence, and board/customer acceptance remain external compliance evidence. |
 | `vertical-packs` | P3 | P1 | missing | `regulator`, `insurer`, `customer` |  | `regulator`, `insurer`, `customer` | Vertical pack receipts cover local/reference templates, source bindings, control mappings, and production-claim limits for trading/treasury, insurance claims, healthcare RCM, and public sector packs; live SR 11-7 owner signoff, NAIC/state insurance legal review, HIPAA/BAA posture, FDA SaMD classification, FedRAMP boundary/ATO evidence, customer deployments, and external regulator/insurer/auditor acceptance remain external evidence. |
@@ -75,9 +75,9 @@ Status: partial
 | `e751495f6bd0337a851b9cf8192967544a97538cca79641c714107ddf77b25fb` | `auditor-and-review-portal:identity-provider` | `auditor-and-review-portal` | identity-provider | missing | Auditor view, supervised access, regulator view, and review portal attestations |
 | `cd15f092fb1c9a822cec2283efb08d822b5ff05589d858414daf4b0f487d3d5a` | `auditor-and-review-portal:regulator` | `auditor-and-review-portal` | regulator | missing | Auditor view, supervised access, regulator view, and review portal attestations |
 | `258ddae8b0d2abfcfe94f2af5f499c3d166afafdac4ac60e547854652b124283` | `byoc-self-hosted:ci-run` | `byoc-self-hosted` | ci-run | missing | BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations |
-| `2bcd0837822dd6f900c5af6c143f127ab8ac19389f33240f12ad65d748039f7f` | `byoc-self-hosted:kms-hsm` | `byoc-self-hosted` | kms-hsm | missing | BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations |
-| `fd68b54a87d92370973d95e70de86f09c347fa118a1fbac2c00288b6432556dc` | `byoc-self-hosted:cloud-object-lock` | `byoc-self-hosted` | cloud-object-lock | missing | BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations |
-| `64d4667c99729b35f69640585f1edc1ff182b4d937c9158f6324966f61b617fb` | `byoc-self-hosted:provider-api` | `byoc-self-hosted` | provider-api | missing | BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations |
+| `2bcd0837822dd6f900c5af6c143f127ab8ac19389f33240f12ad65d748039f7f` | `byoc-self-hosted:kms-hsm` | `byoc-self-hosted` | kms-hsm | covered | BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations |
+| `fd68b54a87d92370973d95e70de86f09c347fa118a1fbac2c00288b6432556dc` | `byoc-self-hosted:cloud-object-lock` | `byoc-self-hosted` | cloud-object-lock | covered | BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations |
+| `64d4667c99729b35f69640585f1edc1ff182b4d937c9158f6324966f61b617fb` | `byoc-self-hosted:provider-api` | `byoc-self-hosted` | provider-api | covered | BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations |
 | `23db7466b75b02375e66e230fdc6f7c8e7c43b3e6b8522424e6075e65df0cf92` | `byoc-self-hosted:standards-body` | `byoc-self-hosted` | standards-body | missing | BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations |
 | `9297fdb1f50d33b4eba4fed3e17c0e75f331d198336a8614cef909311c42eb6f` | `byoc-self-hosted:customer` | `byoc-self-hosted` | customer | missing | BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations |
 | `36ac9829ac984b1f249d4e1ea9930f20f4c0c61096fad3c3952daf78a5564d20` | `compliance-mapper-and-eu-ai-act:provider-api` | `compliance-mapper-and-eu-ai-act` | provider-api | missing | Compliance framework mapper and EU AI Act technical documentation |
@@ -134,6 +134,9 @@ Status: partial
 | `cicd-provider-approvals` | provider-api | `ci-run`, `provider-api`, `hosted-service`, `identity-provider` | `examples/aitrade/external-evidence/github-audit-log-source-snapshot.json` | 2026-07-08T00:00:00Z to 2026-12-31T00:00:00Z | Retained GitHub audit-log export for CI/CD promotion provider API evidence |
 | `framework-adapters` | provider-api | `ci-run`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/framework-hook-release-provider-api-source-snapshot.json` | 2026-07-09T00:30:00Z to 2026-12-31T00:00:00Z | Retained GitHub contents API export for framework adapter hook release evidence |
 | `framework-adapters` | hosted-service | `ci-run`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/framework-hook-release-hosted-service-source-snapshot.json` | 2026-07-09T00:30:00Z to 2026-12-31T00:00:00Z | Retained GitHub hosted file export for framework adapter hook release evidence |
+| `byoc-self-hosted` | kms-hsm | `ci-run`, `kms-hsm`, `cloud-object-lock`, `provider-api`, `standards-body`, `customer` | `examples/aitrade/external-evidence/byoc-kms-hsm-source-snapshot.json` | 2026-07-03T12:03:00Z to 2026-12-31T00:00:00Z | Retained KMS/HSM enforcement export for BYOC evidence signing |
+| `byoc-self-hosted` | cloud-object-lock | `ci-run`, `kms-hsm`, `cloud-object-lock`, `provider-api`, `standards-body`, `customer` | `examples/aitrade/external-evidence/byoc-object-lock-source-snapshot.json` | 2026-07-04T03:06:00Z to 2026-12-31T00:00:00Z | Retained cloud Object Lock export for BYOC immutable evidence storage |
+| `byoc-self-hosted` | provider-api | `ci-run`, `kms-hsm`, `cloud-object-lock`, `provider-api`, `standards-body`, `customer` | `examples/aitrade/external-evidence/byoc-provider-api-source-snapshot.json` | 2026-07-04T03:07:00Z to 2026-12-31T00:00:00Z | Retained provider API export for BYOC NetworkPolicy admission and audit evidence |
 | `runtime-policy-and-attestation` | kms-hsm | `ci-run`, `kms-hsm`, `provider-api`, `hosted-service`, `identity-provider` | `examples/aitrade/external-evidence/runtime-policy-kms-hsm-source-snapshot.json` | 2026-07-03T12:03:00Z to 2026-12-31T00:00:00Z | Retained KMS/HSM enforcement export for runtime policy evidence signing |
 | `runtime-policy-and-attestation` | provider-api | `ci-run`, `kms-hsm`, `provider-api`, `hosted-service`, `identity-provider` | `examples/aitrade/external-evidence/runtime-policy-provider-api-source-snapshot.json` | 2026-07-03T12:02:00Z to 2026-12-31T00:00:00Z | Retained GitHub contents API export for runtime policy pack evidence |
 | `runtime-policy-and-attestation` | hosted-service | `ci-run`, `kms-hsm`, `provider-api`, `hosted-service`, `identity-provider` | `examples/aitrade/external-evidence/runtime-action-hosted-service-source-snapshot.json` | 2026-07-03T12:00:12Z to 2026-12-31T00:00:00Z | Retained GitHub hosted file export for runtime action attestation evidence |
@@ -146,7 +149,6 @@ Status: partial
 - `self-serve-onboarding`
 - `design-partner-pilot-exit-criteria`
 - `auditor-and-review-portal`
-- `byoc-self-hosted`
 - `compliance-mapper-and-eu-ai-act`
 - `trustai-own-compliance`
 - `vertical-packs`
