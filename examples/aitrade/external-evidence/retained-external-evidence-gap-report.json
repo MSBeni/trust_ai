@@ -32,6 +32,11 @@
       "hosted-service",
       "identity-provider"
     ],
+    "self-serve-onboarding": [
+      "provider-api",
+      "hosted-service",
+      "identity-provider"
+    ],
     "shadow-replay-temporal-holdout": [
       "kms-hsm",
       "provider-api",
@@ -39,77 +44,8 @@
       "standards-body"
     ]
   },
-  "gap_report_id": "de24784ba45361059117cab4924aa15ef381a95f261c5d39eab82f9bedeb7a9d",
+  "gap_report_id": "b62e0d34b431d722d0df986cf9c3339859167073de5b63bbec9217db37349c62",
   "gaps": [
-    {
-      "authority_kind": "provider-api",
-      "description": "provider-api evidence for self-serve-onboarding",
-      "external_authority_required": [
-        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; self-serve onboarding production authority dossiers bind hosted account-creation, identity-federation, billing, metering, support, quota, and audit-log authority rows to the verified local onboarding receipt. Actual fresh hosted PLG service, identity-provider, billing, usage metering, support operations, and onboarding SLO exports remain external service evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/self-serve-onboarding/provider-api.json",
-      "owner_hint": "integration/platform owner",
-      "requirement_id": "self-serve-onboarding",
-      "snapshot_out": "artifacts/external-evidence-sources/self-serve-onboarding/provider-api.json",
-      "source_uri": "TODO://authority/self-serve-onboarding/provider-api",
-      "suggested_evidence_sources": [
-        "provider API response export",
-        "request/response transcript",
-        "provider-owned audit event"
-      ],
-      "task": "self-serve-onboarding:provider-api",
-      "task_id": "fb7a028bc892d55abbf9f179f729ae0a91aba04a98b36d8e30113840c04aa8e2",
-      "task_ref": "external-evidence:self-serve-onboarding:provider-api",
-      "title": "Self-serve SDK and MCP gateway onboarding",
-      "unit_id": "f19a0ac30a8063414c235820dfdd20ce6a053bf183116ff96175c5f3b885c670",
-      "unit_ref": "self-serve-onboarding:provider-api"
-    },
-    {
-      "authority_kind": "hosted-service",
-      "description": "hosted-service evidence for self-serve-onboarding",
-      "external_authority_required": [
-        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; self-serve onboarding production authority dossiers bind hosted account-creation, identity-federation, billing, metering, support, quota, and audit-log authority rows to the verified local onboarding receipt. Actual fresh hosted PLG service, identity-provider, billing, usage metering, support operations, and onboarding SLO exports remain external service evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/self-serve-onboarding/hosted-service.json",
-      "owner_hint": "service owner",
-      "requirement_id": "self-serve-onboarding",
-      "snapshot_out": "artifacts/external-evidence-sources/self-serve-onboarding/hosted-service.json",
-      "source_uri": "TODO://authority/self-serve-onboarding/hosted-service",
-      "suggested_evidence_sources": [
-        "hosted service health or deployment export",
-        "service audit root",
-        "operational SLO/status evidence"
-      ],
-      "task": "self-serve-onboarding:hosted-service",
-      "task_id": "1fa1a8cea6e5c45b6c7c6b0c5cae7bdb8cd9830071617da44eb808463ac44ed2",
-      "task_ref": "external-evidence:self-serve-onboarding:hosted-service",
-      "title": "Self-serve SDK and MCP gateway onboarding",
-      "unit_id": "b99727e2b8a71b61ea2303a0ebf484b85996c716e0729a296e3057cf63b396c6",
-      "unit_ref": "self-serve-onboarding:hosted-service"
-    },
-    {
-      "authority_kind": "identity-provider",
-      "description": "identity-provider evidence for self-serve-onboarding",
-      "external_authority_required": [
-        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; self-serve onboarding production authority dossiers bind hosted account-creation, identity-federation, billing, metering, support, quota, and audit-log authority rows to the verified local onboarding receipt. Actual fresh hosted PLG service, identity-provider, billing, usage metering, support operations, and onboarding SLO exports remain external service evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/self-serve-onboarding/identity-provider.json",
-      "owner_hint": "IAM/identity owner",
-      "requirement_id": "self-serve-onboarding",
-      "snapshot_out": "artifacts/external-evidence-sources/self-serve-onboarding/identity-provider.json",
-      "source_uri": "TODO://authority/self-serve-onboarding/identity-provider",
-      "suggested_evidence_sources": [
-        "identity-provider event export",
-        "OIDC/session/lifecycle evidence",
-        "RBAC or account-state report"
-      ],
-      "task": "self-serve-onboarding:identity-provider",
-      "task_id": "e4776c238bf7deaa482f7e908897fbbc7b86e75ec7da8bd956155fa15b675472",
-      "task_ref": "external-evidence:self-serve-onboarding:identity-provider",
-      "title": "Self-serve SDK and MCP gateway onboarding",
-      "unit_id": "048ce4ad141c77f48a321bc4f61b09d2b2a58ea8500164d40e192bb3c8405364",
-      "unit_ref": "self-serve-onboarding:identity-provider"
-    },
     {
       "authority_kind": "ci-run",
       "description": "ci-run evidence for mcp-gateway",
@@ -1232,11 +1168,6 @@
     "runtime-policy-and-attestation": [
       "ci-run"
     ],
-    "self-serve-onboarding": [
-      "provider-api",
-      "hosted-service",
-      "identity-provider"
-    ],
     "standards-track-and-auditor-ecosystem": [
       "kms-hsm",
       "standards-body"
@@ -1264,14 +1195,14 @@
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "a1dc0ec6d50bd12be2c0d09b3eede9d964ac9ad55e9bbcb1e76d9a6cbff58c31",
-      "plan_id": "dfcbb09a2763eedca175c073e36a1ab043b0165a4b516b2fd9e78863b80732f6",
+      "plan_hash": "c59995fffb054fab2e403f4427bed12c37673fa735fe124ed748881380460d01",
+      "plan_id": "9a9a8ca0e578b9e66e940866c2d46c1092a1b8d44e2ac1e6579422a16d45dc06",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "23fb3a4df3bcd86d731d4b13e33c1bb8df2df3c1b6bb56197dd7dbf344fb5fe8",
-      "manifest_id": "c027bf18b6e0f457c27bcaa91afe1693e85543330162de949f9a01c8a8e8d6f2",
+      "manifest_hash": "7b4af507fca5369bd074822d19132e01c9e2ad0e5a30c83763cbf3779eb097ee",
+      "manifest_id": "9482ab1f8e7a1a0058cc2c4c0332f6a6e2fc6c9a30c467d1b59b782f0f1d4e2c",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
@@ -1283,21 +1214,21 @@
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "4ddb0e9c600a2153de229a7cd4288daabdb2b9e7e2279df6ec3aa7f1554b1036",
-      "source_map_id": "b461ea631ab9883539642c638b9ada3e696774bffe110bdfe1d1c4d003850314"
+      "source_map_hash": "e9b4e25767141b90286ebef34db0bca4d44d340efa9e739d3293989a7fe52046",
+      "source_map_id": "138190dcd15dcc513b62730eae4cb198c9428345dc06d7e57f3dac577a91432b"
     }
   },
   "summary": {
-    "covered_authority_kind_count": 22,
-    "covered_requirement_count": 8,
+    "covered_authority_kind_count": 25,
+    "covered_requirement_count": 9,
     "gap_count_by_authority_kind": {
       "ci-run": 7,
       "customer": 9,
-      "hosted-service": 5,
-      "identity-provider": 5,
+      "hosted-service": 4,
+      "identity-provider": 4,
       "insurer": 4,
       "kms-hsm": 4,
-      "provider-api": 5,
+      "provider-api": 4,
       "regulator": 5,
       "standards-body": 5
     },
@@ -1313,7 +1244,6 @@
       "product-scope-discipline": 2,
       "roadmap-phase-scoreboard": 5,
       "runtime-policy-and-attestation": 1,
-      "self-serve-onboarding": 3,
       "standards-track-and-auditor-ecosystem": 2,
       "state-of-agent-reliability-report": 1,
       "trust-network-procurement-and-marketplace": 4,
@@ -1321,27 +1251,27 @@
       "vertical-packs": 3
     },
     "live_source_uri_count": 0,
-    "missing_authority_kind_count": 49,
-    "missing_requirement_count": 12,
-    "placeholder_source_uri_count": 49,
-    "remaining_missing_task_count": 49,
-    "remaining_task_count": 49,
+    "missing_authority_kind_count": 46,
+    "missing_requirement_count": 11,
+    "placeholder_source_uri_count": 46,
+    "remaining_missing_task_count": 46,
+    "remaining_task_count": 46,
     "required_authority_kind_count": 71,
     "required_requirement_count": 20,
-    "source_map_entry_count": 49,
+    "source_map_entry_count": 46,
     "status": "partial"
   },
   "verification": {
     "manifest_warnings": [
-      "external evidence missing for: self-serve-onboarding, design-partner-pilot-exit-criteria, auditor-and-review-portal, compliance-mapper-and-eu-ai-act, trustai-own-compliance, vertical-packs, insurer-api-and-actuarial-products, state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
-      "external evidence authority kinds missing for: self-serve-onboarding: provider-api, hosted-service, identity-provider; mcp-gateway: ci-run, kms-hsm; cicd-provider-approvals: hosted-service, identity-provider; design-partner-pilot-exit-criteria: regulator, insurer, customer; framework-adapters: ci-run; auditor-and-review-portal: kms-hsm, provider-api, hosted-service, identity-provider, regulator; byoc-self-hosted: ci-run, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
+      "external evidence missing for: design-partner-pilot-exit-criteria, auditor-and-review-portal, compliance-mapper-and-eu-ai-act, trustai-own-compliance, vertical-packs, insurer-api-and-actuarial-products, state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
+      "external evidence authority kinds missing for: mcp-gateway: ci-run, kms-hsm; cicd-provider-approvals: hosted-service, identity-provider; design-partner-pilot-exit-criteria: regulator, insurer, customer; framework-adapters: ci-run; auditor-and-review-portal: kms-hsm, provider-api, hosted-service, identity-provider, regulator; byoc-self-hosted: ci-run, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
     ],
     "plan_warnings": [
-      "external evidence missing for: self-serve-onboarding, design-partner-pilot-exit-criteria, auditor-and-review-portal, compliance-mapper-and-eu-ai-act, trustai-own-compliance, vertical-packs, insurer-api-and-actuarial-products, state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
-      "external evidence authority kinds missing for: self-serve-onboarding: provider-api, hosted-service, identity-provider; mcp-gateway: ci-run, kms-hsm; cicd-provider-approvals: hosted-service, identity-provider; design-partner-pilot-exit-criteria: regulator, insurer, customer; framework-adapters: ci-run; auditor-and-review-portal: kms-hsm, provider-api, hosted-service, identity-provider, regulator; byoc-self-hosted: ci-run, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
+      "external evidence missing for: design-partner-pilot-exit-criteria, auditor-and-review-portal, compliance-mapper-and-eu-ai-act, trustai-own-compliance, vertical-packs, insurer-api-and-actuarial-products, state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
+      "external evidence authority kinds missing for: mcp-gateway: ci-run, kms-hsm; cicd-provider-approvals: hosted-service, identity-provider; design-partner-pilot-exit-criteria: regulator, insurer, customer; framework-adapters: ci-run; auditor-and-review-portal: kms-hsm, provider-api, hosted-service, identity-provider, regulator; byoc-self-hosted: ci-run, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
     ],
     "source_map_warnings": [
-      "source map contains 49 placeholder source_uri values"
+      "source map contains 46 placeholder source_uri values"
     ]
   },
   "verification_options": {

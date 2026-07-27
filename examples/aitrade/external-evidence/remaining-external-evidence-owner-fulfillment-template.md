@@ -1,14 +1,14 @@
 # External Evidence Owner Fulfillment Template
 
-- Template ID: `d0ed44b9a781555be880495d480ea0afa9a61cc487871c935bfbd6f8da989cca`
+- Template ID: `1c229c32dca5af2f7cb5cef71d29bf546d297a2f7991033f58b230633e2a844f`
 - Generated at: `2026-07-12T00:01:00Z`
-- Fulfillments: 49
+- Fulfillments: 46
 - Owners: 9
-- Blocked tasks: 49
+- Blocked tasks: 46
 - Open tasks: 0
 - Closed tasks: 0
-- Placeholder source URIs: 49
-- Missing intakes: 49
+- Placeholder source URIs: 46
+- Missing intakes: 46
 
 ## Fulfillments
 
@@ -17,7 +17,6 @@
 | `auditor-and-review-portal:identity-provider` | TODO://authority/auditor-and-review-portal/identity-provider | identity-provider evidence for auditor-and-review-portal |
 | `cicd-provider-approvals:identity-provider` | TODO://authority/cicd-provider-approvals/identity-provider | identity-provider evidence for cicd-provider-approvals |
 | `insurer-api-and-actuarial-products:identity-provider` | TODO://authority/insurer-api-and-actuarial-products/identity-provider | identity-provider evidence for insurer-api-and-actuarial-products |
-| `self-serve-onboarding:identity-provider` | TODO://authority/self-serve-onboarding/identity-provider | identity-provider evidence for self-serve-onboarding |
 | `trust-network-procurement-and-marketplace:identity-provider` | TODO://authority/trust-network-procurement-and-marketplace/identity-provider | identity-provider evidence for trust-network-procurement-and-marketplace |
 | `byoc-self-hosted:customer` | TODO://authority/byoc-self-hosted/customer | customer evidence for byoc-self-hosted |
 | `design-partner-pilot-exit-criteria:customer` | TODO://authority/design-partner-pilot-exit-criteria/customer | customer evidence for design-partner-pilot-exit-criteria |
@@ -31,7 +30,6 @@
 | `auditor-and-review-portal:provider-api` | TODO://authority/auditor-and-review-portal/provider-api | provider-api evidence for auditor-and-review-portal |
 | `compliance-mapper-and-eu-ai-act:provider-api` | TODO://authority/compliance-mapper-and-eu-ai-act/provider-api | provider-api evidence for compliance-mapper-and-eu-ai-act |
 | `insurer-api-and-actuarial-products:provider-api` | TODO://authority/insurer-api-and-actuarial-products/provider-api | provider-api evidence for insurer-api-and-actuarial-products |
-| `self-serve-onboarding:provider-api` | TODO://authority/self-serve-onboarding/provider-api | provider-api evidence for self-serve-onboarding |
 | `trust-network-procurement-and-marketplace:provider-api` | TODO://authority/trust-network-procurement-and-marketplace/provider-api | provider-api evidence for trust-network-procurement-and-marketplace |
 | `auditor-and-review-portal:regulator` | TODO://authority/auditor-and-review-portal/regulator | regulator evidence for auditor-and-review-portal |
 | `compliance-mapper-and-eu-ai-act:regulator` | TODO://authority/compliance-mapper-and-eu-ai-act/regulator | regulator evidence for compliance-mapper-and-eu-ai-act |
@@ -56,7 +54,6 @@
 | `auditor-and-review-portal:hosted-service` | TODO://authority/auditor-and-review-portal/hosted-service | hosted-service evidence for auditor-and-review-portal |
 | `cicd-provider-approvals:hosted-service` | TODO://authority/cicd-provider-approvals/hosted-service | hosted-service evidence for cicd-provider-approvals |
 | `insurer-api-and-actuarial-products:hosted-service` | TODO://authority/insurer-api-and-actuarial-products/hosted-service | hosted-service evidence for insurer-api-and-actuarial-products |
-| `self-serve-onboarding:hosted-service` | TODO://authority/self-serve-onboarding/hosted-service | hosted-service evidence for self-serve-onboarding |
 | `trust-network-procurement-and-marketplace:hosted-service` | TODO://authority/trust-network-procurement-and-marketplace/hosted-service | hosted-service evidence for trust-network-procurement-and-marketplace |
 | `byoc-self-hosted:standards-body` | TODO://authority/byoc-self-hosted/standards-body | standards-body evidence for byoc-self-hosted |
 | `compliance-mapper-and-eu-ai-act:standards-body` | TODO://authority/compliance-mapper-and-eu-ai-act/standards-body | standards-body evidence for compliance-mapper-and-eu-ai-act |
@@ -71,7 +68,6 @@
 | `auditor-and-review-portal:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/auditor-and-review-portal/identity-provider.json | artifacts/external-evidence-intakes/auditor-and-review-portal/identity-provider.json |
 | `cicd-provider-approvals:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/cicd-provider-approvals/identity-provider.json | artifacts/external-evidence-intakes/cicd-provider-approvals/identity-provider.json |
 | `insurer-api-and-actuarial-products:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/identity-provider.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/identity-provider.json |
-| `self-serve-onboarding:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/self-serve-onboarding/identity-provider.json | artifacts/external-evidence-intakes/self-serve-onboarding/identity-provider.json |
 | `trust-network-procurement-and-marketplace:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/identity-provider.json | artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/identity-provider.json |
 | `byoc-self-hosted:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/byoc-self-hosted/customer.json | artifacts/external-evidence-intakes/byoc-self-hosted/customer.json |
 | `design-partner-pilot-exit-criteria:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/customer.json | artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/customer.json |
@@ -85,7 +81,6 @@
 | `auditor-and-review-portal:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/auditor-and-review-portal/provider-api.json | artifacts/external-evidence-intakes/auditor-and-review-portal/provider-api.json |
 | `compliance-mapper-and-eu-ai-act:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/provider-api.json | artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/provider-api.json |
 | `insurer-api-and-actuarial-products:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/provider-api.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/provider-api.json |
-| `self-serve-onboarding:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/self-serve-onboarding/provider-api.json | artifacts/external-evidence-intakes/self-serve-onboarding/provider-api.json |
 | `trust-network-procurement-and-marketplace:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/provider-api.json | artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/provider-api.json |
 | `auditor-and-review-portal:regulator` | legal/compliance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/auditor-and-review-portal/regulator.json | artifacts/external-evidence-intakes/auditor-and-review-portal/regulator.json |
 | `compliance-mapper-and-eu-ai-act:regulator` | legal/compliance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/regulator.json | artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/regulator.json |
@@ -110,7 +105,6 @@
 | `auditor-and-review-portal:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/auditor-and-review-portal/hosted-service.json | artifacts/external-evidence-intakes/auditor-and-review-portal/hosted-service.json |
 | `cicd-provider-approvals:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/cicd-provider-approvals/hosted-service.json | artifacts/external-evidence-intakes/cicd-provider-approvals/hosted-service.json |
 | `insurer-api-and-actuarial-products:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/hosted-service.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/hosted-service.json |
-| `self-serve-onboarding:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/self-serve-onboarding/hosted-service.json | artifacts/external-evidence-intakes/self-serve-onboarding/hosted-service.json |
 | `trust-network-procurement-and-marketplace:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/hosted-service.json | artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/hosted-service.json |
 | `byoc-self-hosted:standards-body` | standards/governance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/byoc-self-hosted/standards-body.json | artifacts/external-evidence-intakes/byoc-self-hosted/standards-body.json |
 | `compliance-mapper-and-eu-ai-act:standards-body` | standards/governance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/standards-body.json | artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/standards-body.json |

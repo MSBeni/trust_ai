@@ -1,22 +1,19 @@
 # External Evidence Owner Fulfillment Review
 
-- Review ID: `1008533dd0ee224919188287272e81b51b7d1036aba33c0391dfd0294e9df199`
+- Review ID: `36f05abc47f1f81a47d973ab080df3790dfcfd96c03412dc8f4b8ace2cfa3a61`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Fulfillments: 49
+- Fulfillments: 46
 - Owners: 9
 - Ready tasks: 0
-- Blocked tasks: 49
-- Placeholder source URIs: 49
+- Blocked tasks: 46
+- Placeholder source URIs: 46
 - Live source URIs: 0
 
 ## Task Review
 
 | Task | Owner | Status | Source URI | Blocking Reasons |
 |---|---|---|---|---|
-| `self-serve-onboarding:provider-api` | integration/platform owner | blocked | TODO://authority/self-serve-onboarding/provider-api | `placeholder-source-uri` |
-| `self-serve-onboarding:hosted-service` | service owner | blocked | TODO://authority/self-serve-onboarding/hosted-service | `placeholder-source-uri` |
-| `self-serve-onboarding:identity-provider` | IAM/identity owner | blocked | TODO://authority/self-serve-onboarding/identity-provider | `placeholder-source-uri` |
 | `mcp-gateway:ci-run` | release engineering | blocked | TODO://authority/mcp-gateway/ci-run | `placeholder-source-uri` |
 | `mcp-gateway:kms-hsm` | security/platform KMS owner | blocked | TODO://authority/mcp-gateway/kms-hsm | `placeholder-source-uri` |
 | `cicd-provider-approvals:hosted-service` | service owner | blocked | TODO://authority/cicd-provider-approvals/hosted-service | `placeholder-source-uri` |
@@ -68,12 +65,12 @@
 
 - Fulfilled source map errors: 1
 - Fulfilled source map warnings: 1
-  - source map contains 49 placeholder source_uri values but live source URIs are required
+  - source map contains 46 placeholder source_uri values but live source URIs are required
 
 ## Blockers
 
-- owner fulfillment review contains 49 placeholder source_uri values
-- fulfilled source map: source map contains 49 placeholder source_uri values but live source URIs are required
+- owner fulfillment review contains 46 placeholder source_uri values
+- fulfilled source map: source map contains 46 placeholder source_uri values but live source URIs are required
 
 ## Next Actions
 

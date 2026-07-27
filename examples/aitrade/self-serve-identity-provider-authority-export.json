@@ -1,0 +1,28 @@
+{
+  "environment": "aitrade-prod",
+  "expires_at": "2026-12-31T00:00:00Z",
+  "export_ref": "idp-export:aitrade/self-serve/signup-prod/2026-07-11",
+  "federation": {
+    "issuer_ref": "https://idp.example/aitrade",
+    "mfa_required": true,
+    "oidc_client_ref": "oidc:trustai-self-serve-prod",
+    "scopes": [
+      "openid",
+      "profile",
+      "email"
+    ]
+  },
+  "issuer": "Example IdP",
+  "issued_at": "2026-07-11T20:12:00Z",
+  "schema": "trustai.self-serve-identity-provider-authority-export/0.1",
+  "sessions": {
+    "audit_log_ref": "idp-audit:self-serve/signup-prod",
+    "signup_session_count": 4,
+    "tenant_admin_subjects": [
+      "oidc:customer.example/admin-1",
+      "oidc:customer.example/model-risk-1"
+    ]
+  },
+  "subject": "aitrade self-serve onboarding identity federation",
+  "tenant_ref": "tenant:aitrade-local"
+}

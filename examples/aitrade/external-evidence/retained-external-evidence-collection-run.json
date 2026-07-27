@@ -34,6 +34,39 @@
       "warnings": []
     },
     {
+      "evidence_argument": "self-serve-onboarding,provider-api,examples/aitrade/external-evidence/self-serve-provider-api-source-snapshot.json,Retained provider API export for self-serve tenant and SDK provisioning evidence;issuer=TrustAI Cloud Provider API;subject=aitrade self-serve onboarding provider API;source_uri=https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/self-serve-provider-api-authority-export.json?ref=main;issued_at=2026-07-11T20:11:00Z;expires_at=2026-12-31T00:00:00Z",
+      "intake_id": "df269e38f64af3d6dac45e2691c9e7daa85fc343fa53fb46880af39e10081773",
+      "intake_path": "examples/aitrade/external-evidence/intakes/self-serve-onboarding-provider-api.json",
+      "snapshot_artifact_path": "examples/aitrade/external-evidence/self-serve-provider-api-source-snapshot.json",
+      "snapshot_id": "ddacb8aebcf38240793ba3db30a04702f570d2ba659345236a8018bf6bb7979c",
+      "snapshot_path": "examples/aitrade/external-evidence/self-serve-provider-api-source-snapshot.json",
+      "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/self-serve-provider-api-authority-export.json?ref=main",
+      "task": "self-serve-onboarding:provider-api",
+      "warnings": []
+    },
+    {
+      "evidence_argument": "self-serve-onboarding,hosted-service,examples/aitrade/external-evidence/self-serve-hosted-service-source-snapshot.json,Retained hosted service export for self-serve signup and quickstart completion evidence;issuer=TrustAI Cloud;subject=aitrade self-serve onboarding hosted service;source_uri=https://status.trustai.example/self-serve/aitrade/signup-prod;issued_at=2026-07-11T20:10:00Z;expires_at=2026-12-31T00:00:00Z",
+      "intake_id": "ae50743c6d5ce2ad5c7dc07b1ca1351be20a98be7a7d15d6d587c50d05c63a63",
+      "intake_path": "examples/aitrade/external-evidence/intakes/self-serve-onboarding-hosted-service.json",
+      "snapshot_artifact_path": "examples/aitrade/external-evidence/self-serve-hosted-service-source-snapshot.json",
+      "snapshot_id": "27fbaae16c32c788c3709cfffe4b14d00b7bd59bb2407fb0723b972cc79d2f17",
+      "snapshot_path": "examples/aitrade/external-evidence/self-serve-hosted-service-source-snapshot.json",
+      "source_uri": "https://status.trustai.example/self-serve/aitrade/signup-prod",
+      "task": "self-serve-onboarding:hosted-service",
+      "warnings": []
+    },
+    {
+      "evidence_argument": "self-serve-onboarding,identity-provider,examples/aitrade/external-evidence/self-serve-identity-provider-source-snapshot.json,Retained identity-provider export for self-serve OIDC, MFA, and tenant-admin sessions;issuer=Example IdP;subject=aitrade self-serve onboarding identity federation;source_uri=https://idp.example/exports/aitrade/self-serve/signup-prod;issued_at=2026-07-11T20:12:00Z;expires_at=2026-12-31T00:00:00Z",
+      "intake_id": "2644f20a3d083954c7e907bdb6eed531808b1967fa3db11866b57fa91f02a442",
+      "intake_path": "examples/aitrade/external-evidence/intakes/self-serve-onboarding-identity-provider.json",
+      "snapshot_artifact_path": "examples/aitrade/external-evidence/self-serve-identity-provider-source-snapshot.json",
+      "snapshot_id": "3dbdc22d8219a6f192ab848e0c43a7b0f0a62fdd58f7b51ad274ca3e3a8ed4bd",
+      "snapshot_path": "examples/aitrade/external-evidence/self-serve-identity-provider-source-snapshot.json",
+      "source_uri": "https://idp.example/exports/aitrade/self-serve/signup-prod",
+      "task": "self-serve-onboarding:identity-provider",
+      "warnings": []
+    },
+    {
       "evidence_argument": "mcp-gateway,provider-api,examples/aitrade/external-evidence/mcp-proxy-events-provider-api-source-snapshot.json,Retained GitHub contents API export for MCP gateway proxy event evidence;issuer=GitHub Contents API;subject=trustai MCP proxy event export;source_uri=https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/mcp-proxy-events.json?ref=main;issued_at=2026-07-03T12:05:00Z;expires_at=2026-12-31T00:00:00Z",
       "intake_id": "3b842bfea5149dfb4b551b4b155e46eef18b10ee6b1efd2ceba1865f88d5d6fd",
       "intake_path": "examples/aitrade/external-evidence/intakes/mcp-gateway-provider-api.json",
@@ -244,15 +277,15 @@
     }
   ],
   "generated_at": "2026-07-12T00:01:00Z",
-  "run_id": "5e66e982d6283e7405623bb33fc6c29d0053f665d408a277bcd434fe21d497fd",
+  "run_id": "e33179509ed1b07a4426801478197fe8497ea092423bf5a5af12e7c7cfb484b7",
   "schema": "trustai.external-evidence-collection-run/0.1",
   "source_map": {
     "path": "examples/aitrade/external-evidence/retained-external-evidence-collected-source-map.json",
-    "source_map_hash": "f79e1708335ef860f2be2180a37a6029f87b6c9ea14012d97a38f69a463c1bd6"
+    "source_map_hash": "d43d029a30985e43d7be5bdff3dcc3e22fe8bb632a67513b1286c6ca073e8559"
   },
   "summary": {
-    "collected_count": 22,
+    "collected_count": 25,
     "require_fresh": true,
-    "task_count": 22
+    "task_count": 25
   }
 }

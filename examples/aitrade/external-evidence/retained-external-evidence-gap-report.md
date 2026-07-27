@@ -1,24 +1,24 @@
 # External Evidence Gap Report
 
-- Gap report ID: `de24784ba45361059117cab4924aa15ef381a95f261c5d39eab82f9bedeb7a9d`
+- Gap report ID: `b62e0d34b431d722d0df986cf9c3339859167073de5b63bbec9217db37349c62`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 22/71
-- Missing authority kinds: 49
-- Remaining collection tasks: 49
-- Source-map entries: 49
-- Placeholder source URIs: 49
+- Covered authority kinds: 25/71
+- Missing authority kinds: 46
+- Remaining collection tasks: 46
+- Source-map entries: 46
+- Placeholder source URIs: 46
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
 
 - `ci-run`: 7
 - `customer`: 9
-- `hosted-service`: 5
-- `identity-provider`: 5
+- `hosted-service`: 4
+- `identity-provider`: 4
 - `insurer`: 4
 - `kms-hsm`: 4
-- `provider-api`: 5
+- `provider-api`: 4
 - `regulator`: 5
 - `standards-body`: 5
 
@@ -35,7 +35,6 @@
 - `product-scope-discipline`: 2
 - `roadmap-phase-scoreboard`: 5
 - `runtime-policy-and-attestation`: 1
-- `self-serve-onboarding`: 3
 - `standards-track-and-auditor-ecosystem`: 2
 - `state-of-agent-reliability-report`: 1
 - `trust-network-procurement-and-marketplace`: 4
@@ -43,39 +42,6 @@
 - `vertical-packs`: 3
 
 ## Collection Worklist
-
-### self-serve-onboarding:provider-api
-
-- Title: Self-serve SDK and MCP gateway onboarding
-- Authority kind: `provider-api`
-- Owner hint: integration/platform owner
-- Description: provider-api evidence for self-serve-onboarding
-- Source URI: `TODO://authority/self-serve-onboarding/provider-api`
-- Snapshot output: `artifacts/external-evidence-sources/self-serve-onboarding/provider-api.json`
-- Intake output: `artifacts/external-evidence-intakes/self-serve-onboarding/provider-api.json`
-- Suggested evidence sources: provider API response export; request/response transcript; provider-owned audit event
-
-### self-serve-onboarding:hosted-service
-
-- Title: Self-serve SDK and MCP gateway onboarding
-- Authority kind: `hosted-service`
-- Owner hint: service owner
-- Description: hosted-service evidence for self-serve-onboarding
-- Source URI: `TODO://authority/self-serve-onboarding/hosted-service`
-- Snapshot output: `artifacts/external-evidence-sources/self-serve-onboarding/hosted-service.json`
-- Intake output: `artifacts/external-evidence-intakes/self-serve-onboarding/hosted-service.json`
-- Suggested evidence sources: hosted service health or deployment export; service audit root; operational SLO/status evidence
-
-### self-serve-onboarding:identity-provider
-
-- Title: Self-serve SDK and MCP gateway onboarding
-- Authority kind: `identity-provider`
-- Owner hint: IAM/identity owner
-- Description: identity-provider evidence for self-serve-onboarding
-- Source URI: `TODO://authority/self-serve-onboarding/identity-provider`
-- Snapshot output: `artifacts/external-evidence-sources/self-serve-onboarding/identity-provider.json`
-- Intake output: `artifacts/external-evidence-intakes/self-serve-onboarding/identity-provider.json`
-- Suggested evidence sources: identity-provider event export; OIDC/session/lifecycle evidence; RBAC or account-state report
 
 ### mcp-gateway:ci-run
 

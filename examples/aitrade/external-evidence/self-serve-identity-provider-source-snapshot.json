@@ -1,0 +1,22 @@
+{
+  "body_base64": "ewogICJlbnZpcm9ubWVudCI6ICJhaXRyYWRlLXByb2QiLAogICJleHBpcmVzX2F0IjogIjIwMjYtMTItMzFUMDA6MDA6MDBaIiwKICAiZXhwb3J0X3JlZiI6ICJpZHAtZXhwb3J0OmFpdHJhZGUvc2VsZi1zZXJ2ZS9zaWdudXAtcHJvZC8yMDI2LTA3LTExIiwKICAiZmVkZXJhdGlvbiI6IHsKICAgICJpc3N1ZXJfcmVmIjogImh0dHBzOi8vaWRwLmV4YW1wbGUvYWl0cmFkZSIsCiAgICAibWZhX3JlcXVpcmVkIjogdHJ1ZSwKICAgICJvaWRjX2NsaWVudF9yZWYiOiAib2lkYzp0cnVzdGFpLXNlbGYtc2VydmUtcHJvZCIsCiAgICAic2NvcGVzIjogWwogICAgICAib3BlbmlkIiwKICAgICAgInByb2ZpbGUiLAogICAgICAiZW1haWwiCiAgICBdCiAgfSwKICAiaXNzdWVyIjogIkV4YW1wbGUgSWRQIiwKICAiaXNzdWVkX2F0IjogIjIwMjYtMDctMTFUMjA6MTI6MDBaIiwKICAic2NoZW1hIjogInRydXN0YWkuc2VsZi1zZXJ2ZS1pZGVudGl0eS1wcm92aWRlci1hdXRob3JpdHktZXhwb3J0LzAuMSIsCiAgInNlc3Npb25zIjogewogICAgImF1ZGl0X2xvZ19yZWYiOiAiaWRwLWF1ZGl0OnNlbGYtc2VydmUvc2lnbnVwLXByb2QiLAogICAgInNpZ251cF9zZXNzaW9uX2NvdW50IjogNCwKICAgICJ0ZW5hbnRfYWRtaW5fc3ViamVjdHMiOiBbCiAgICAgICJvaWRjOmN1c3RvbWVyLmV4YW1wbGUvYWRtaW4tMSIsCiAgICAgICJvaWRjOmN1c3RvbWVyLmV4YW1wbGUvbW9kZWwtcmlzay0xIgogICAgXQogIH0sCiAgInN1YmplY3QiOiAiYWl0cmFkZSBzZWxmLXNlcnZlIG9uYm9hcmRpbmcgaWRlbnRpdHkgZmVkZXJhdGlvbiIsCiAgInRlbmFudF9yZWYiOiAidGVuYW50OmFpdHJhZGUtbG9jYWwiCn0K",
+  "body_sha256": "sha256:74d8220223c006f10b6db2646762210c3bdc868281fd40a14f2126af7fde8866",
+  "body_size_bytes": 843,
+  "content_type": "application/json",
+  "expires_at": "2026-12-31T00:00:00Z",
+  "generated_at": "2026-07-12T00:01:00Z",
+  "issued_at": "2026-07-11T20:12:00Z",
+  "issuer": "Example IdP",
+  "limitations": [
+    "This source snapshot preserves one collected authority response as a hashable artifact; it does not prove that the authority will return the same response later.",
+    "Verifier checks cover snapshot integrity, body hash, optional HTTP metadata, and optional freshness metadata.",
+    "Use this snapshot as the artifact supplied to external-evidence-intake for the matching collection-plan task."
+  ],
+  "response_headers": {},
+  "retrieval_method": "file-copy",
+  "schema": "trustai.external-evidence-source-snapshot/0.1",
+  "snapshot_id": "3dbdc22d8219a6f192ab848e0c43a7b0f0a62fdd58f7b51ad274ca3e3a8ed4bd",
+  "source_uri": "https://idp.example/exports/aitrade/self-serve/signup-prod",
+  "status_code": null,
+  "subject": "aitrade self-serve onboarding identity federation"
+}

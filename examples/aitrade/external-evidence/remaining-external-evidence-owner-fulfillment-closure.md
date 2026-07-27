@@ -1,21 +1,18 @@
 # External Evidence Owner Fulfillment Closure
 
-- Closure ID: `af3d4ffb8deaa699ef3534dc4700f50dd8899d3051e353c0e6c382e96e8200ce`
+- Closure ID: `17195fde847ad39fff56f163ad5dcbf881eb81b44d15bb5647532ee897e4a916`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Closed tasks: 0/49
-- Missing intakes: 49
+- Closed tasks: 0/46
+- Missing intakes: 46
 - Invalid intake tasks: 0
-- Missing manifest coverage: 49
-- Placeholder source URIs: 49
+- Missing manifest coverage: 46
+- Placeholder source URIs: 46
 
 ## Task Closure
 
 | Task | Owner | Status | Intake | Manifest Evidence | Blocking Reasons |
 |---|---|---|---|---|---|
-| `self-serve-onboarding:provider-api` | integration/platform owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
-| `self-serve-onboarding:hosted-service` | service owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
-| `self-serve-onboarding:identity-provider` | IAM/identity owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `mcp-gateway:ci-run` | release engineering | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `mcp-gateway:kms-hsm` | security/platform KMS owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `cicd-provider-approvals:hosted-service` | service owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
@@ -65,9 +62,9 @@
 
 ## Blockers
 
-- 49 reviewed tasks still use placeholder source_uri values
-- 49 reviewed tasks do not have intake receipts
-- 49 reviewed tasks are not covered by the rebuilt manifest
+- 46 reviewed tasks still use placeholder source_uri values
+- 46 reviewed tasks do not have intake receipts
+- 46 reviewed tasks are not covered by the rebuilt manifest
 
 ## Next Actions
 

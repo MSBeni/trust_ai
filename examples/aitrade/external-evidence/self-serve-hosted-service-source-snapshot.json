@@ -1,0 +1,22 @@
+{
+  "body_base64": "ewogICJkZXBsb3ltZW50IjogewogICAgImF2YWlsYWJpbGl0eV96b25lcyI6IFsKICAgICAgInVzLWVhc3QtMWEiLAogICAgICAidXMtZWFzdC0xYiIsCiAgICAgICJ1cy1lYXN0LTFjIgogICAgXSwKICAgICJpbWFnZV9kaWdlc3QiOiAic2hhMjU2OjExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTExMTEiLAogICAgInJlcGxpY2FzX3JlYWR5IjogMywKICAgICJzZXJ2aWNlX3JlZiI6ICJzZXJ2aWNlOnNlbGYtc2VydmUvc2lnbnVwLXByb2QiLAogICAgInZlcnNpb24iOiAiMC4xLjAiCiAgfSwKICAiZW52aXJvbm1lbnQiOiAiYWl0cmFkZS1wcm9kIiwKICAiZXhwaXJlc19hdCI6ICIyMDI2LTEyLTMxVDAwOjAwOjAwWiIsCiAgImV4cG9ydF9yZWYiOiAiaG9zdGVkLWV4cG9ydDphaXRyYWRlL3NlbGYtc2VydmUvc2lnbnVwLXByb2QvMjAyNi0wNy0xMSIsCiAgImlzc3VlciI6ICJUcnVzdEFJIENsb3VkIiwKICAiaXNzdWVkX2F0IjogIjIwMjYtMDctMTFUMjA6MTA6MDBaIiwKICAib25ib2FyZGluZyI6IHsKICAgICJjb21wbGV0ZWRfcXVpY2tzdGFydF9jb3VudCI6IDcsCiAgICAiZ2VuZXJhdGVkX3Byb29mX3BhY2tfcmVmIjogImFydGlmYWN0cy9haXRyYWRlLXByb29mLXBhY2suanNvbiIsCiAgICAibWNwX2dhdGV3YXlfbW9kZSI6ICJzdGRpby1wcm94eSIsCiAgICAidGVuYW50X3JlZiI6ICJ0ZW5hbnQ6YWl0cmFkZS1sb2NhbCIKICB9LAogICJzY2hlbWEiOiAidHJ1c3RhaS5zZWxmLXNlcnZlLWhvc3RlZC1zZXJ2aWNlLWF1dGhvcml0eS1leHBvcnQvMC4xIiwKICAic3ViamVjdCI6ICJhaXRyYWRlIHNlbGYtc2VydmUgb25ib2FyZGluZyBob3N0ZWQgc2VydmljZSIsCiAgInN1cHBvcnQiOiB7CiAgICAiZXNjYWxhdGlvbl9wb2xpY3lfcmVmIjogInBhZ2VyZHV0eTpzZWxmLXNlcnZlLW9uYm9hcmRpbmciLAogICAgInNsbyI6ICJQMUQiLAogICAgInN0YXR1c19wYWdlX3JlZiI6ICJzdGF0dXM6c2VsZi1zZXJ2ZS9zaWdudXAtcHJvZCIKICB9Cn0K",
+  "body_sha256": "sha256:50e113d78e042ef07ecba7443d03def7c860e7c711dcfb3ae68aa47e50307280",
+  "body_size_bytes": 1029,
+  "content_type": "application/json",
+  "expires_at": "2026-12-31T00:00:00Z",
+  "generated_at": "2026-07-12T00:01:00Z",
+  "issued_at": "2026-07-11T20:10:00Z",
+  "issuer": "TrustAI Cloud",
+  "limitations": [
+    "This source snapshot preserves one collected authority response as a hashable artifact; it does not prove that the authority will return the same response later.",
+    "Verifier checks cover snapshot integrity, body hash, optional HTTP metadata, and optional freshness metadata.",
+    "Use this snapshot as the artifact supplied to external-evidence-intake for the matching collection-plan task."
+  ],
+  "response_headers": {},
+  "retrieval_method": "file-copy",
+  "schema": "trustai.external-evidence-source-snapshot/0.1",
+  "snapshot_id": "27fbaae16c32c788c3709cfffe4b14d00b7bd59bb2407fb0723b972cc79d2f17",
+  "source_uri": "https://status.trustai.example/self-serve/aitrade/signup-prod",
+  "status_code": null,
+  "subject": "aitrade self-serve onboarding hosted service"
+}

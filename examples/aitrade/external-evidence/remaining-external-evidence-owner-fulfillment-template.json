@@ -48,20 +48,6 @@
         "placeholder-source-uri",
         "missing-intake"
       ],
-      "intake_out": "artifacts/external-evidence-intakes/self-serve-onboarding/identity-provider.json",
-      "owner_hint": "IAM/identity owner",
-      "requirement_id": "self-serve-onboarding",
-      "snapshot_out": "artifacts/external-evidence-sources/self-serve-onboarding/identity-provider.json",
-      "source_uri_status": "placeholder",
-      "task": "self-serve-onboarding:identity-provider",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "identity-provider",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
       "intake_out": "artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/identity-provider.json",
       "owner_hint": "IAM/identity owner",
       "requirement_id": "trust-network-procurement-and-marketplace",
@@ -236,20 +222,6 @@
       "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/provider-api.json",
       "source_uri_status": "placeholder",
       "task": "insurer-api-and-actuarial-products:provider-api",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "provider-api",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/self-serve-onboarding/provider-api.json",
-      "owner_hint": "integration/platform owner",
-      "requirement_id": "self-serve-onboarding",
-      "snapshot_out": "artifacts/external-evidence-sources/self-serve-onboarding/provider-api.json",
-      "source_uri_status": "placeholder",
-      "task": "self-serve-onboarding:provider-api",
       "task_status": "blocked"
     },
     {
@@ -594,20 +566,6 @@
         "placeholder-source-uri",
         "missing-intake"
       ],
-      "intake_out": "artifacts/external-evidence-intakes/self-serve-onboarding/hosted-service.json",
-      "owner_hint": "service owner",
-      "requirement_id": "self-serve-onboarding",
-      "snapshot_out": "artifacts/external-evidence-sources/self-serve-onboarding/hosted-service.json",
-      "source_uri_status": "placeholder",
-      "task": "self-serve-onboarding:hosted-service",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "hosted-service",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
       "intake_out": "artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/hosted-service.json",
       "owner_hint": "service owner",
       "requirement_id": "trust-network-procurement-and-marketplace",
@@ -713,11 +671,6 @@
       "task": "insurer-api-and-actuarial-products:identity-provider"
     },
     {
-      "description": "identity-provider evidence for self-serve-onboarding",
-      "source_uri": "TODO://authority/self-serve-onboarding/identity-provider",
-      "task": "self-serve-onboarding:identity-provider"
-    },
-    {
       "description": "identity-provider evidence for trust-network-procurement-and-marketplace",
       "source_uri": "TODO://authority/trust-network-procurement-and-marketplace/identity-provider",
       "task": "trust-network-procurement-and-marketplace:identity-provider"
@@ -781,11 +734,6 @@
       "description": "provider-api evidence for insurer-api-and-actuarial-products",
       "source_uri": "TODO://authority/insurer-api-and-actuarial-products/provider-api",
       "task": "insurer-api-and-actuarial-products:provider-api"
-    },
-    {
-      "description": "provider-api evidence for self-serve-onboarding",
-      "source_uri": "TODO://authority/self-serve-onboarding/provider-api",
-      "task": "self-serve-onboarding:provider-api"
     },
     {
       "description": "provider-api evidence for trust-network-procurement-and-marketplace",
@@ -908,11 +856,6 @@
       "task": "insurer-api-and-actuarial-products:hosted-service"
     },
     {
-      "description": "hosted-service evidence for self-serve-onboarding",
-      "source_uri": "TODO://authority/self-serve-onboarding/hosted-service",
-      "task": "self-serve-onboarding:hosted-service"
-    },
-    {
       "description": "hosted-service evidence for trust-network-procurement-and-marketplace",
       "source_uri": "TODO://authority/trust-network-procurement-and-marketplace/hosted-service",
       "task": "trust-network-procurement-and-marketplace:hosted-service"
@@ -953,21 +896,21 @@
     "This template is a handoff artifact; it does not satisfy missing external authority evidence by itself.",
     "Placeholder source URIs intentionally keep readiness blocked until owners replace them with live authority sources."
   ],
-  "owner_fulfillment_template_id": "d0ed44b9a781555be880495d480ea0afa9a61cc487871c935bfbd6f8da989cca",
+  "owner_fulfillment_template_id": "1c229c32dca5af2f7cb5cef71d29bf546d297a2f7991033f58b230633e2a844f",
   "schema": "trustai.external-evidence-owner-fulfillment-template/0.1",
   "source_owner_packet_status": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "owner_packet_status_hash": "76fce608173b3e2d11b64315a0f0ae29accb7dc61ff46c7372a3f9943ad51fe3",
-    "owner_packet_status_id": "c417133659cee23ef3d22d5b861a32cb966ebc5be9fe05a82e54e49e4899d6f0",
+    "owner_packet_status_hash": "7f09ec3d70f8489b68166af5c4dfce87621358eb0a51a30833d01870832584ff",
+    "owner_packet_status_id": "b50d24ad1175b976e49a7bd4c8982ec3321ee43f0b80e60610b69ddc7e094ab9",
     "schema": "trustai.external-evidence-owner-packet-status/0.1"
   },
   "summary": {
-    "assignment_count": 49,
-    "blocked_task_count": 49,
+    "assignment_count": 46,
+    "blocked_task_count": 46,
     "closed_task_count": 0,
-    "fulfillment_count": 49,
+    "fulfillment_count": 46,
     "live_source_uri_count": 0,
-    "missing_intake_count": 49,
+    "missing_intake_count": 46,
     "open_task_count": 0,
     "owner_count": 9,
     "owners": [
@@ -981,6 +924,6 @@
       "service owner",
       "standards/governance owner"
     ],
-    "placeholder_source_uri_count": 49
+    "placeholder_source_uri_count": 46
   }
 }

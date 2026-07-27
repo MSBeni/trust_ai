@@ -95,6 +95,96 @@
       "authority_kind": "provider-api",
       "content_type": "application/json",
       "coverage_status": "missing",
+      "description": "Retained provider API export for self-serve tenant and SDK provisioning evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; self-serve onboarding production authority dossiers bind hosted account-creation, identity-federation, billing, metering, support, quota, and audit-log authority rows to the verified local onboarding receipt. Actual fresh hosted PLG service, identity-provider, billing, usage metering, support operations, and onboarding SLO exports remain external service evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/self-serve-onboarding-provider-api.json",
+      "issued_at": "2026-07-11T20:11:00Z",
+      "issuer": "TrustAI Cloud Provider API",
+      "owner_hint": "integration/platform owner",
+      "requirement_id": "self-serve-onboarding",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/self-serve-provider-api-source-snapshot.json",
+      "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/self-serve-provider-api-authority-export.json?ref=main",
+      "subject": "aitrade self-serve onboarding provider API",
+      "suggested_evidence_sources": [
+        "provider API response export",
+        "request/response transcript",
+        "provider-owned audit event"
+      ],
+      "task": "self-serve-onboarding:provider-api",
+      "task_id": "fb7a028bc892d55abbf9f179f729ae0a91aba04a98b36d8e30113840c04aa8e2",
+      "task_ref": "external-evidence:self-serve-onboarding:provider-api",
+      "title": "Self-serve SDK and MCP gateway onboarding",
+      "unit_id": "f19a0ac30a8063414c235820dfdd20ce6a053bf183116ff96175c5f3b885c670",
+      "unit_ref": "self-serve-onboarding:provider-api"
+    },
+    {
+      "authority_kind": "hosted-service",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained hosted service export for self-serve signup and quickstart completion evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; self-serve onboarding production authority dossiers bind hosted account-creation, identity-federation, billing, metering, support, quota, and audit-log authority rows to the verified local onboarding receipt. Actual fresh hosted PLG service, identity-provider, billing, usage metering, support operations, and onboarding SLO exports remain external service evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/self-serve-onboarding-hosted-service.json",
+      "issued_at": "2026-07-11T20:10:00Z",
+      "issuer": "TrustAI Cloud",
+      "owner_hint": "service owner",
+      "requirement_id": "self-serve-onboarding",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/self-serve-hosted-service-source-snapshot.json",
+      "source_uri": "https://status.trustai.example/self-serve/aitrade/signup-prod",
+      "subject": "aitrade self-serve onboarding hosted service",
+      "suggested_evidence_sources": [
+        "hosted service health or deployment export",
+        "service audit root",
+        "operational SLO/status evidence"
+      ],
+      "task": "self-serve-onboarding:hosted-service",
+      "task_id": "1fa1a8cea6e5c45b6c7c6b0c5cae7bdb8cd9830071617da44eb808463ac44ed2",
+      "task_ref": "external-evidence:self-serve-onboarding:hosted-service",
+      "title": "Self-serve SDK and MCP gateway onboarding",
+      "unit_id": "b99727e2b8a71b61ea2303a0ebf484b85996c716e0729a296e3057cf63b396c6",
+      "unit_ref": "self-serve-onboarding:hosted-service"
+    },
+    {
+      "authority_kind": "identity-provider",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained identity-provider export for self-serve OIDC, MFA, and tenant-admin sessions",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; self-serve onboarding production authority dossiers bind hosted account-creation, identity-federation, billing, metering, support, quota, and audit-log authority rows to the verified local onboarding receipt. Actual fresh hosted PLG service, identity-provider, billing, usage metering, support operations, and onboarding SLO exports remain external service evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/self-serve-onboarding-identity-provider.json",
+      "issued_at": "2026-07-11T20:12:00Z",
+      "issuer": "Example IdP",
+      "owner_hint": "IAM/identity owner",
+      "requirement_id": "self-serve-onboarding",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/self-serve-identity-provider-source-snapshot.json",
+      "source_uri": "https://idp.example/exports/aitrade/self-serve/signup-prod",
+      "subject": "aitrade self-serve onboarding identity federation",
+      "suggested_evidence_sources": [
+        "identity-provider event export",
+        "OIDC/session/lifecycle evidence",
+        "RBAC or account-state report"
+      ],
+      "task": "self-serve-onboarding:identity-provider",
+      "task_id": "e4776c238bf7deaa482f7e908897fbbc7b86e75ec7da8bd956155fa15b675472",
+      "task_ref": "external-evidence:self-serve-onboarding:identity-provider",
+      "title": "Self-serve SDK and MCP gateway onboarding",
+      "unit_id": "048ce4ad141c77f48a321bc4f61b09d2b2a58ea8500164d40e192bb3c8405364",
+      "unit_ref": "self-serve-onboarding:identity-provider"
+    },
+    {
+      "authority_kind": "provider-api",
+      "content_type": "application/json",
+      "coverage_status": "missing",
       "description": "Retained GitHub contents API export for MCP gateway proxy event evidence",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
@@ -669,7 +759,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "7f4460c17f1d1cb918afe646bef0235b3fee6dc80f2f3d3acd57ac99874fc014",
+  "source_map_id": "a3608ae4b71ce415d1dac56f2fcb941a853a5b449d6eaf667213520b2924779e",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -684,9 +774,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 22,
+    "entry_count": 25,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 22,
+    "live_source_uri_count": 25,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

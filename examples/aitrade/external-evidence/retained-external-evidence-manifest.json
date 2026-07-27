@@ -56,6 +56,60 @@
     },
     {
       "accepted_authority_kinds": [
+        "provider-api",
+        "hosted-service",
+        "identity-provider"
+      ],
+      "authority_kind": "provider-api",
+      "description": "Retained provider API export for self-serve tenant and SDK provisioning evidence",
+      "evidence_id": "f691d82a388adf51b7bae8b4c948e06572aaa9ffd4dc7ba87239c0ca02b7743b",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-11T20:11:00Z",
+      "issuer": "TrustAI Cloud Provider API",
+      "path": "examples/aitrade/external-evidence/self-serve-provider-api-source-snapshot.json",
+      "requirement_id": "self-serve-onboarding",
+      "sha256": "sha256:78a970100688abcf2e81a65bda1c132d731530709974cd15bf30c5d4f2c12b20",
+      "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/self-serve-provider-api-authority-export.json?ref=main",
+      "subject": "aitrade self-serve onboarding provider API"
+    },
+    {
+      "accepted_authority_kinds": [
+        "provider-api",
+        "hosted-service",
+        "identity-provider"
+      ],
+      "authority_kind": "hosted-service",
+      "description": "Retained hosted service export for self-serve signup and quickstart completion evidence",
+      "evidence_id": "01c87d42a388678fbdead75596a6691d969490ca3acedc8bdc9680bd8a1d481a",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-11T20:10:00Z",
+      "issuer": "TrustAI Cloud",
+      "path": "examples/aitrade/external-evidence/self-serve-hosted-service-source-snapshot.json",
+      "requirement_id": "self-serve-onboarding",
+      "sha256": "sha256:2f780180e84ac58e8eb77d5c52616df40925badc4203be9767e28b9ce3509415",
+      "source_uri": "https://status.trustai.example/self-serve/aitrade/signup-prod",
+      "subject": "aitrade self-serve onboarding hosted service"
+    },
+    {
+      "accepted_authority_kinds": [
+        "provider-api",
+        "hosted-service",
+        "identity-provider"
+      ],
+      "authority_kind": "identity-provider",
+      "description": "Retained identity-provider export for self-serve OIDC, MFA, and tenant-admin sessions",
+      "evidence_id": "fa5761aa553b86c9486d59d0275636eff636f4bcc046010b0e9f9582c7404848",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-11T20:12:00Z",
+      "issuer": "Example IdP",
+      "path": "examples/aitrade/external-evidence/self-serve-identity-provider-source-snapshot.json",
+      "requirement_id": "self-serve-onboarding",
+      "sha256": "sha256:200e82691106f878282d571ef6927f05ac3e6ae09cf727abfb06f567069bd6fb",
+      "source_uri": "https://idp.example/exports/aitrade/self-serve/signup-prod",
+      "subject": "aitrade self-serve onboarding identity federation"
+    },
+    {
+      "accepted_authority_kinds": [
         "ci-run",
         "kms-hsm",
         "provider-api",
@@ -426,7 +480,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "c027bf18b6e0f457c27bcaa91afe1693e85543330162de949f9a01c8a8e8d6f2",
+  "manifest_id": "9482ab1f8e7a1a0058cc2c4c0332f6a6e2fc6c9a30c467d1b59b782f0f1d4e2c",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -470,7 +524,7 @@
     },
     {
       "authority_kind": "provider-api",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; self-serve onboarding production authority dossiers bind hosted account-creation, identity-federation, billing, metering, support, quota, and audit-log authority rows to the verified local onboarding receipt. Actual fresh hosted PLG service, identity-provider, billing, usage metering, support operations, and onboarding SLO exports remain external service evidence."
       ],
@@ -483,7 +537,7 @@
     },
     {
       "authority_kind": "hosted-service",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; self-serve onboarding production authority dossiers bind hosted account-creation, identity-federation, billing, metering, support, quota, and audit-log authority rows to the verified local onboarding receipt. Actual fresh hosted PLG service, identity-provider, billing, usage metering, support operations, and onboarding SLO exports remain external service evidence."
       ],
@@ -496,7 +550,7 @@
     },
     {
       "authority_kind": "identity-provider",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; self-serve onboarding production authority dossiers bind hosted account-creation, identity-federation, billing, metering, support, quota, and audit-log authority rows to the verified local onboarding receipt. Actual fresh hosted PLG service, identity-provider, billing, usage metering, support operations, and onboarding SLO exports remain external service evidence."
       ],
@@ -1653,7 +1707,7 @@
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {
-    "covered_authority_kind_count": 22,
+    "covered_authority_kind_count": 25,
     "covered_authority_kinds_by_requirement": {
       "agent-inventory-and-identity": [
         "provider-api",
@@ -1687,6 +1741,11 @@
         "hosted-service",
         "identity-provider"
       ],
+      "self-serve-onboarding": [
+        "provider-api",
+        "hosted-service",
+        "identity-provider"
+      ],
       "shadow-replay-temporal-holdout": [
         "kms-hsm",
         "provider-api",
@@ -1694,7 +1753,7 @@
         "standards-body"
       ]
     },
-    "covered_requirement_count": 8,
+    "covered_requirement_count": 9,
     "covered_requirement_ids": [
       "agent-inventory-and-identity",
       "byoc-self-hosted",
@@ -1703,13 +1762,14 @@
       "mcp-gateway",
       "oss-verifier-and-public-spec",
       "runtime-policy-and-attestation",
+      "self-serve-onboarding",
       "shadow-replay-temporal-holdout"
     ],
-    "evidence_count": 22,
-    "expires_at_count": 22,
-    "freshness_window_count": 22,
-    "issued_at_count": 22,
-    "missing_authority_kind_count": 49,
+    "evidence_count": 25,
+    "expires_at_count": 25,
+    "freshness_window_count": 25,
+    "issued_at_count": 25,
+    "missing_authority_kind_count": 46,
     "missing_authority_kinds_by_requirement": {
       "auditor-and-review-portal": [
         "kms-hsm",
@@ -1767,11 +1827,6 @@
       "runtime-policy-and-attestation": [
         "ci-run"
       ],
-      "self-serve-onboarding": [
-        "provider-api",
-        "hosted-service",
-        "identity-provider"
-      ],
       "standards-track-and-auditor-ecosystem": [
         "kms-hsm",
         "standards-body"
@@ -1795,9 +1850,8 @@
         "customer"
       ]
     },
-    "missing_requirement_count": 12,
+    "missing_requirement_count": 11,
     "missing_requirement_ids": [
-      "self-serve-onboarding",
       "design-partner-pilot-exit-criteria",
       "auditor-and-review-portal",
       "compliance-mapper-and-eu-ai-act",

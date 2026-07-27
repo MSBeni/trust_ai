@@ -1,0 +1,29 @@
+{
+  "api": {
+    "audit_log_root": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+    "endpoint_ref": "api:self-serve/v0",
+    "request_count": 12,
+    "tenant_create_operation_ref": "operation:self-serve/tenant-create/aitrade-local"
+  },
+  "environment": "aitrade-prod",
+  "expires_at": "2026-12-31T00:00:00Z",
+  "export_ref": "provider-export:aitrade/self-serve/provider-api/2026-07-11",
+  "issuer": "TrustAI Cloud Provider API",
+  "issued_at": "2026-07-11T20:11:00Z",
+  "provisioning": {
+    "agent_ref": "agent:aitrade-risk",
+    "sdk_key_ref": "kms:self-serve/sdk-key/aitrade-local",
+    "sdk_scopes": [
+      "proofpack:write",
+      "mcp:capture",
+      "contract:register"
+    ],
+    "tenant_ref": "tenant:aitrade-local"
+  },
+  "schema": "trustai.self-serve-provider-api-authority-export/0.1",
+  "subject": "aitrade self-serve onboarding provider API",
+  "verification": {
+    "contract_ref": "examples/aitrade/verification-contract.yaml",
+    "quickstart_receipt_ref": "onboarding:self-serve/aitrade"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "body_base64": "ewogICJhcGkiOiB7CiAgICAiYXVkaXRfbG9nX3Jvb3QiOiAic2hhMjU2OjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIiLAogICAgImVuZHBvaW50X3JlZiI6ICJhcGk6c2VsZi1zZXJ2ZS92MCIsCiAgICAicmVxdWVzdF9jb3VudCI6IDEyLAogICAgInRlbmFudF9jcmVhdGVfb3BlcmF0aW9uX3JlZiI6ICJvcGVyYXRpb246c2VsZi1zZXJ2ZS90ZW5hbnQtY3JlYXRlL2FpdHJhZGUtbG9jYWwiCiAgfSwKICAiZW52aXJvbm1lbnQiOiAiYWl0cmFkZS1wcm9kIiwKICAiZXhwaXJlc19hdCI6ICIyMDI2LTEyLTMxVDAwOjAwOjAwWiIsCiAgImV4cG9ydF9yZWYiOiAicHJvdmlkZXItZXhwb3J0OmFpdHJhZGUvc2VsZi1zZXJ2ZS9wcm92aWRlci1hcGkvMjAyNi0wNy0xMSIsCiAgImlzc3VlciI6ICJUcnVzdEFJIENsb3VkIFByb3ZpZGVyIEFQSSIsCiAgImlzc3VlZF9hdCI6ICIyMDI2LTA3LTExVDIwOjExOjAwWiIsCiAgInByb3Zpc2lvbmluZyI6IHsKICAgICJhZ2VudF9yZWYiOiAiYWdlbnQ6YWl0cmFkZS1yaXNrIiwKICAgICJzZGtfa2V5X3JlZiI6ICJrbXM6c2VsZi1zZXJ2ZS9zZGsta2V5L2FpdHJhZGUtbG9jYWwiLAogICAgInNka19zY29wZXMiOiBbCiAgICAgICJwcm9vZnBhY2s6d3JpdGUiLAogICAgICAibWNwOmNhcHR1cmUiLAogICAgICAiY29udHJhY3Q6cmVnaXN0ZXIiCiAgICBdLAogICAgInRlbmFudF9yZWYiOiAidGVuYW50OmFpdHJhZGUtbG9jYWwiCiAgfSwKICAic2NoZW1hIjogInRydXN0YWkuc2VsZi1zZXJ2ZS1wcm92aWRlci1hcGktYXV0aG9yaXR5LWV4cG9ydC8wLjEiLAogICJzdWJqZWN0IjogImFpdHJhZGUgc2VsZi1zZXJ2ZSBvbmJvYXJkaW5nIHByb3ZpZGVyIEFQSSIsCiAgInZlcmlmaWNhdGlvbiI6IHsKICAgICJjb250cmFjdF9yZWYiOiAiZXhhbXBsZXMvYWl0cmFkZS92ZXJpZmljYXRpb24tY29udHJhY3QueWFtbCIsCiAgICAicXVpY2tzdGFydF9yZWNlaXB0X3JlZiI6ICJvbmJvYXJkaW5nOnNlbGYtc2VydmUvYWl0cmFkZSIKICB9Cn0K",
+  "body_sha256": "sha256:2fd6ed0bb37322c75fad1254bf9183e2c06186444c9b80401481729e8e99bd25",
+  "body_size_bytes": 1044,
+  "content_type": "application/json",
+  "expires_at": "2026-12-31T00:00:00Z",
+  "generated_at": "2026-07-12T00:01:00Z",
+  "issued_at": "2026-07-11T20:11:00Z",
+  "issuer": "TrustAI Cloud Provider API",
+  "limitations": [
+    "This source snapshot preserves one collected authority response as a hashable artifact; it does not prove that the authority will return the same response later.",
+    "Verifier checks cover snapshot integrity, body hash, optional HTTP metadata, and optional freshness metadata.",
+    "Use this snapshot as the artifact supplied to external-evidence-intake for the matching collection-plan task."
+  ],
+  "response_headers": {},
+  "retrieval_method": "file-copy",
+  "schema": "trustai.external-evidence-source-snapshot/0.1",
+  "snapshot_id": "ddacb8aebcf38240793ba3db30a04702f570d2ba659345236a8018bf6bb7979c",
+  "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/self-serve-provider-api-authority-export.json?ref=main",
+  "status_code": null,
+  "subject": "aitrade self-serve onboarding provider API"
+}

@@ -1,0 +1,31 @@
+{
+  "deployment": {
+    "availability_zones": [
+      "us-east-1a",
+      "us-east-1b",
+      "us-east-1c"
+    ],
+    "image_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "replicas_ready": 3,
+    "service_ref": "service:self-serve/signup-prod",
+    "version": "0.1.0"
+  },
+  "environment": "aitrade-prod",
+  "expires_at": "2026-12-31T00:00:00Z",
+  "export_ref": "hosted-export:aitrade/self-serve/signup-prod/2026-07-11",
+  "issuer": "TrustAI Cloud",
+  "issued_at": "2026-07-11T20:10:00Z",
+  "onboarding": {
+    "completed_quickstart_count": 7,
+    "generated_proof_pack_ref": "artifacts/aitrade-proof-pack.json",
+    "mcp_gateway_mode": "stdio-proxy",
+    "tenant_ref": "tenant:aitrade-local"
+  },
+  "schema": "trustai.self-serve-hosted-service-authority-export/0.1",
+  "subject": "aitrade self-serve onboarding hosted service",
+  "support": {
+    "escalation_policy_ref": "pagerduty:self-serve-onboarding",
+    "slo": "P1D",
+    "status_page_ref": "status:self-serve/signup-prod"
+  }
+}
