@@ -5,7 +5,7 @@
     "A closed task still requires rebuilt manifest verification and readiness verification before external authority coverage is accepted.",
     "Placeholder source URIs keep tasks blocked even when a local intake artifact is present."
   ],
-  "owner_packet_status_id": "d615c89430dcec759d716ae5328c8a5c4d5a80a115811e7d5cb947a9421d1f1a",
+  "owner_packet_status_id": "04cb4fc0a192f10967fa7f1384895aea326f3806a03f8c98d9b7be1da33af7f9",
   "packets": [
     {
       "blocked_task_count": 2,
@@ -18,14 +18,14 @@
       "task_count": 2
     },
     {
-      "blocked_task_count": 6,
+      "blocked_task_count": 5,
       "closed_task_count": 0,
       "open_task_count": 0,
       "owner_hint": "customer success/account owner",
-      "packet_id": "e3ff00eb7e8192027d9b8ce56bca7ec03e99ed3965d65381019ff2ac72943ecb",
+      "packet_id": "b9bd3fd75009e84aeb2b1caf756759583f44ecba443475c56f1359edd142439c",
       "packet_ref": "owner-packet:owner_hint:customer-success-account-owner",
       "packet_status": "blocked",
-      "task_count": 6
+      "task_count": 5
     },
     {
       "blocked_task_count": 2,
@@ -103,41 +103,41 @@
     "intake_hashes": [],
     "owner_packet_bundle": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_bundle_hash": "e3392d77d2d31950808de839158cda79bec500f47bbeb316e9192aa0c51e30a8",
-      "owner_packet_bundle_id": "63dc196155fcb17690c2b96aea149bacd45feb07432c4d1737c6d61cc03dfb32",
+      "owner_packet_bundle_hash": "db58f4074648b91d60663b871f5a2f2047ec425cb581e2bf7085445317da7473",
+      "owner_packet_bundle_id": "5415fe357d9132de7a40fba3885fc216d736be0fe6913bb38b5d249a92ebbcf7",
       "schema": "trustai.external-evidence-owner-packet-bundle/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "c1c67f6a27818c5ae8bbe9357756f9cdbf1b4d7143c3ff51d1b8ff0367af5dff",
-      "source_map_id": "651a5ed35a95a2b440259db7b803b44aca9bc5716b41faf4e797b7fa30c0e13c"
+      "source_map_hash": "4cbf5ea03769d680fb4f48bd162a7cb39edb4f688374860f047594c7dbd04bd8",
+      "source_map_id": "707bce95daa9c90ec2dfe8fb1853eaac068b967b21267b410bab19a42a795968"
     },
     "work_package": {
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-work-package/0.1",
-      "work_package_hash": "2aeb83653873a9c88e1ca1006d2343b3a025d2645dc7fec887b85ab72a7931de",
-      "work_package_id": "f84c30b2ca9105d37fc6afac5b580a3b6b934a25decd925462e91c3d0e6f92b2"
+      "work_package_hash": "ac7a9cb585153035aa0ce3063e0408721f6969bfabd9fbf879209c7282940e0e",
+      "work_package_id": "9030f1a178f76e43adc2f2ccbabad7ae44962662909bb747f23f880e7a97d2e4"
     }
   },
   "summary": {
     "blocked_packet_count": 9,
-    "blocked_task_count": 23,
+    "blocked_task_count": 22,
     "closed_packet_count": 0,
     "closed_task_count": 0,
     "invalid_intake_count": 0,
     "live_source_uri_count": 0,
-    "missing_intake_count": 23,
+    "missing_intake_count": 22,
     "open_packet_count": 0,
     "open_task_count": 0,
     "packet_count": 9,
     "packet_status_counts": {
       "blocked": 9
     },
-    "placeholder_source_uri_count": 23,
-    "task_count": 23,
+    "placeholder_source_uri_count": 22,
+    "task_count": 22,
     "task_status_counts": {
-      "blocked": 23
+      "blocked": 22
     }
   },
   "tasks": [
@@ -242,23 +242,6 @@
       "task_ref": "external-evidence:state-of-agent-reliability-report:customer",
       "task_status": "blocked",
       "unit_ref": "state-of-agent-reliability-report:customer"
-    },
-    {
-      "authority_kind": "customer",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake": null,
-      "intake_out": "artifacts/external-evidence-intakes/vertical-packs/customer.json",
-      "owner_hint": "customer success/account owner",
-      "requirement_id": "vertical-packs",
-      "snapshot_out": "artifacts/external-evidence-sources/vertical-packs/customer.json",
-      "source_uri": "TODO://authority/vertical-packs/customer",
-      "source_uri_status": "placeholder",
-      "task_ref": "external-evidence:vertical-packs:customer",
-      "task_status": "blocked",
-      "unit_ref": "vertical-packs:customer"
     },
     {
       "authority_kind": "customer",

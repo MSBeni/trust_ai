@@ -1,7 +1,7 @@
 {
   "blockers": [
-    "owner fulfillment review contains 23 placeholder source_uri values",
-    "fulfilled source map: source map contains 23 placeholder source_uri values but live source URIs are required"
+    "owner fulfillment review contains 22 placeholder source_uri values",
+    "fulfilled source map: source map contains 22 placeholder source_uri values but live source URIs are required"
   ],
   "commands": {
     "collect_after_ready_review": "python -m trustai external-evidence-collect-batch <fulfilled-source-map.json> <manifest.json> <roadmap-audit.json> --root . --require-live-source-uris",
@@ -11,30 +11,6 @@
   "fulfilled_source_map": {
     "defaults": {},
     "entries": [
-      {
-        "authority_kind": "customer",
-        "coverage_status": "missing",
-        "description": "customer evidence for vertical-packs",
-        "external_authority_required": [
-          "Vertical pack receipts cover local/reference templates, source bindings, control mappings, and production-claim limits for trading/treasury, insurance claims, healthcare RCM, and public sector packs; live SR 11-7 owner signoff, NAIC/state insurance legal review, HIPAA/BAA posture, FDA SaMD classification, FedRAMP boundary/ATO evidence, customer deployments, and external regulator/insurer/auditor acceptance remain external evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/vertical-packs/customer.json",
-        "owner_hint": "customer success/account owner",
-        "requirement_id": "vertical-packs",
-        "snapshot_out": "artifacts/external-evidence-sources/vertical-packs/customer.json",
-        "source_uri": "TODO://authority/vertical-packs/customer",
-        "suggested_evidence_sources": [
-          "customer acceptance artifact",
-          "contract/payment/procurement evidence",
-          "deployment or signoff record"
-        ],
-        "task": "vertical-packs:customer",
-        "task_id": "ae2ff75742f182d47963b6ceb336038330944042cb4f326c3d45ed9b9467ce68",
-        "task_ref": "external-evidence:vertical-packs:customer",
-        "title": "Vertical packs for trading, insurance claims, healthcare, and public sector",
-        "unit_id": "7de2b92bf19642ca938cd04c8188773c255a627b13a2f5e512939b807c17e851",
-        "unit_ref": "vertical-packs:customer"
-      },
       {
         "authority_kind": "ci-run",
         "coverage_status": "missing",
@@ -571,14 +547,14 @@
       "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
     ],
     "schema": "trustai.external-evidence-source-map/0.1",
-    "source_map_id": "c2cd0f60336de58382941c7958e6a42d22fa49b03b7ac87b715f88d024d94455",
+    "source_map_id": "4ebef30328aa5f7bb7d8ccc7644e7012992abe56306763f0a9aa168a9244fa3d",
     "source_plan": {
-      "plan_hash": "d2ea5297d16681496bfe2b557fdb425374e59abf91ddd3f3c13aa5eeab24aa9a",
-      "plan_id": "b929cfe075ed480a26e06ff966162654c099d347cb4b6bd5ddd49817d6762849",
+      "plan_hash": "5ce2e071a2a29aeddf031a5c541d8418e1d87dff9a682a68be10f41bead9def5",
+      "plan_id": "3480d49f7a99c6c4a2dc10a67c8d08b1eebd35ac6552559535ebb38786b2863e",
       "source_manifest": {
         "generated_at": "2026-07-12T00:01:00Z",
-        "manifest_hash": "a1717b1b86349e4f136da4a131be49bc008138ae7d7afc00e9462a0a8c91aeec",
-        "manifest_id": "5a9b974694e8acce34a5a7c5cb81ca7e8ec0c5c2e956e7135e4c0af32601f579",
+        "manifest_hash": "fd885486162576bba558ddf118526e1eaa3f4d6154c01a0c9fe872f24335405c",
+        "manifest_id": "f71164de4e7d4d0f8b6ab11f5e3651e45ae8865628facc66f5ebce5e5b27ce46",
         "manifest_ref": "production-external-evidence",
         "status": "partial"
       },
@@ -586,12 +562,12 @@
     },
     "summary": {
       "authority_kinds": [],
-      "entry_count": 23,
+      "entry_count": 22,
       "intake_dir": "artifacts/external-evidence-intakes",
       "live_source_uri_count": 0,
-      "placeholder_source_uri_count": 23,
+      "placeholder_source_uri_count": 22,
       "snapshot_dir": "artifacts/external-evidence-sources",
-      "source_plan_task_count": 23,
+      "source_plan_task_count": 22,
       "status_filter": "missing"
     }
   },
@@ -606,63 +582,49 @@
     "Regenerate this review with --require-live-source-uris before collecting source snapshots.",
     "After the fulfilled source map is ready, run external-evidence-collect-batch and rebuild the retained manifest from intake receipts."
   ],
-  "owner_fulfillment_review_id": "d6bac457e1209589b6844c4a3072cb6a44e368106310e3b0d30d3a66fed614ec",
+  "owner_fulfillment_review_id": "64501fbd839bf19ddfb78ea831a032d2f910cb1803a0629a45aae431531e5edf",
   "schema": "trustai.external-evidence-owner-fulfillment-review/0.1",
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "d2ea5297d16681496bfe2b557fdb425374e59abf91ddd3f3c13aa5eeab24aa9a",
-      "plan_id": "b929cfe075ed480a26e06ff966162654c099d347cb4b6bd5ddd49817d6762849",
+      "plan_hash": "5ce2e071a2a29aeddf031a5c541d8418e1d87dff9a682a68be10f41bead9def5",
+      "plan_id": "3480d49f7a99c6c4a2dc10a67c8d08b1eebd35ac6552559535ebb38786b2863e",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "owner_fulfillment_template": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_fulfillment_template_hash": "40404b760ef2103c1eadb966fb3fd61f2b383f5b790fcaf0c85af2d38c3ad030",
-      "owner_fulfillment_template_id": "e81bd761cded8ce0d72bec935b8f91fce17bb3689e182b3e21a6f07846e8990f",
+      "owner_fulfillment_template_hash": "9739cde34d98238a862f4f8b07f9cb922db8456d870bc04d0f142691a22e01eb",
+      "owner_fulfillment_template_id": "57a0b82d14a235ec59ad9302186859d66ec7d13a070fea0af2312c54ec08e780",
       "schema": "trustai.external-evidence-owner-fulfillment-template/0.1"
     },
     "owner_packet_status": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_status_hash": "8ee6b7802226d568e97df5c9b555bdfbfeffaf4a876e2c65977c35338e07b652",
-      "owner_packet_status_id": "d615c89430dcec759d716ae5328c8a5c4d5a80a115811e7d5cb947a9421d1f1a",
+      "owner_packet_status_hash": "ff978062283103286b1c13fe4758888231bb87673dd784eff9f702ad0fac0a2d",
+      "owner_packet_status_id": "04cb4fc0a192f10967fa7f1384895aea326f3806a03f8c98d9b7be1da33af7f9",
       "schema": "trustai.external-evidence-owner-packet-status/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "c1c67f6a27818c5ae8bbe9357756f9cdbf1b4d7143c3ff51d1b8ff0367af5dff",
-      "source_map_id": "651a5ed35a95a2b440259db7b803b44aca9bc5716b41faf4e797b7fa30c0e13c"
+      "source_map_hash": "4cbf5ea03769d680fb4f48bd162a7cb39edb4f688374860f047594c7dbd04bd8",
+      "source_map_id": "707bce95daa9c90ec2dfe8fb1853eaac068b967b21267b410bab19a42a795968"
     }
   },
   "summary": {
-    "blocked_task_count": 23,
+    "blocked_task_count": 22,
     "error_count": 1,
     "fulfilled_source_map_verification_ok": false,
-    "fulfillment_count": 23,
+    "fulfillment_count": 22,
     "live_source_uri_count": 0,
     "owner_count": 9,
-    "placeholder_source_uri_count": 23,
+    "placeholder_source_uri_count": 22,
     "ready_task_count": 0,
     "review_status": "blocked",
-    "source_map_entry_count": 23,
+    "source_map_entry_count": 22,
     "template_verification_ok": true,
     "warning_count": 3
   },
   "task_reviews": [
-    {
-      "authority_kind": "customer",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/vertical-packs/customer.json",
-      "owner_hint": "customer success/account owner",
-      "requirement_id": "vertical-packs",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/vertical-packs/customer.json",
-      "source_uri": "TODO://authority/vertical-packs/customer",
-      "source_uri_status": "placeholder",
-      "task": "vertical-packs:customer"
-    },
     {
       "authority_kind": "ci-run",
       "blocking_reasons": [
@@ -974,14 +936,14 @@
   ],
   "verification": {
     "fulfilled_source_map_errors": [
-      "source map contains 23 placeholder source_uri values but live source URIs are required"
+      "source map contains 22 placeholder source_uri values but live source URIs are required"
     ],
     "fulfilled_source_map_warnings": [
-      "source map contains 23 placeholder source_uri values"
+      "source map contains 22 placeholder source_uri values"
     ],
     "template_warnings": [
-      "owner fulfillment template summary contains 23 placeholder source_uri values",
-      "owner fulfillment template summary contains 23 tasks without intake receipts"
+      "owner fulfillment template summary contains 22 placeholder source_uri values",
+      "owner fulfillment template summary contains 22 tasks without intake receipts"
     ]
   },
   "verification_options": {

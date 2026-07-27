@@ -1,20 +1,19 @@
 # External Evidence Owner Fulfillment Review
 
-- Review ID: `d6bac457e1209589b6844c4a3072cb6a44e368106310e3b0d30d3a66fed614ec`
+- Review ID: `64501fbd839bf19ddfb78ea831a032d2f910cb1803a0629a45aae431531e5edf`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Fulfillments: 23
+- Fulfillments: 22
 - Owners: 9
 - Ready tasks: 0
-- Blocked tasks: 23
-- Placeholder source URIs: 23
+- Blocked tasks: 22
+- Placeholder source URIs: 22
 - Live source URIs: 0
 
 ## Task Review
 
 | Task | Owner | Status | Source URI | Blocking Reasons |
 |---|---|---|---|---|
-| `vertical-packs:customer` | customer success/account owner | blocked | TODO://authority/vertical-packs/customer | `placeholder-source-uri` |
 | `insurer-api-and-actuarial-products:ci-run` | release engineering | blocked | TODO://authority/insurer-api-and-actuarial-products/ci-run | `placeholder-source-uri` |
 | `insurer-api-and-actuarial-products:kms-hsm` | security/platform KMS owner | blocked | TODO://authority/insurer-api-and-actuarial-products/kms-hsm | `placeholder-source-uri` |
 | `insurer-api-and-actuarial-products:provider-api` | integration/platform owner | blocked | TODO://authority/insurer-api-and-actuarial-products/provider-api | `placeholder-source-uri` |
@@ -42,12 +41,12 @@
 
 - Fulfilled source map errors: 1
 - Fulfilled source map warnings: 1
-  - source map contains 23 placeholder source_uri values but live source URIs are required
+  - source map contains 22 placeholder source_uri values but live source URIs are required
 
 ## Blockers
 
-- owner fulfillment review contains 23 placeholder source_uri values
-- fulfilled source map: source map contains 23 placeholder source_uri values but live source URIs are required
+- owner fulfillment review contains 22 placeholder source_uri values
+- fulfilled source map: source map contains 22 placeholder source_uri values but live source URIs are required
 
 ## Next Actions
 

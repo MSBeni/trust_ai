@@ -276,18 +276,17 @@
       "group_by": "owner_hint",
       "group_key": "customer success/account owner",
       "live_source_uri_count": 0,
-      "missing_task_count": 6,
+      "missing_task_count": 5,
       "owner_hint": "customer success/account owner",
-      "package_id": "63dc4cc2a4e8f1ef42a0f12b8555d093d62c7469e409bc75506b65a6c929dce2",
+      "package_id": "89bf96f3d861fc68083d7b422eaafb9edd4bd1dbfb9f76fd8c49c40efbbb7528",
       "package_ref": "owner_hint:customer-success-account-owner",
       "phases": [
         "P0-P4",
         "P1-P4",
         "P2-P4",
-        "P3",
         "P4"
       ],
-      "placeholder_source_uri_count": 6,
+      "placeholder_source_uri_count": 5,
       "priorities": [
         "P0",
         "P1"
@@ -297,10 +296,9 @@
         "product-scope-discipline",
         "roadmap-phase-scoreboard",
         "state-of-agent-reliability-report",
-        "trust-network-procurement-and-marketplace",
-        "vertical-packs"
+        "trust-network-procurement-and-marketplace"
       ],
-      "task_count": 6,
+      "task_count": 5,
       "tasks": [
         {
           "acceptance_criteria": [
@@ -609,83 +607,6 @@
           "title": "State of Agent Reliability aggregate publication",
           "unit_id": "6be96948315c92280d1ac4b07366f82d4f503162640a4f33536b568087d9043e",
           "unit_ref": "state-of-agent-reliability-report:customer"
-        },
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be customer and accepted for vertical-packs.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "customer",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/vertical-packs/customer",
-              "--root",
-              ".",
-              "--task",
-              "vertical-packs:customer",
-              "--description",
-              "customer evidence for vertical-packs",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/vertical-packs/customer.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/vertical-packs/customer.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/vertical-packs/customer --root . --task vertical-packs:customer --description 'customer evidence for vertical-packs' --snapshot-out artifacts/external-evidence-sources/vertical-packs/customer.json --intake-out artifacts/external-evidence-intakes/vertical-packs/customer.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/vertical-packs/customer.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/vertical-packs/customer.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "customer evidence for vertical-packs",
-          "evidence_argument_template": "vertical-packs,customer,external-evidence/vertical-packs/customer.json,customer evidence for vertical-packs;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Vertical pack receipts cover local/reference templates, source bindings, control mappings, and production-claim limits for trading/treasury, insurance claims, healthcare RCM, and public sector packs; live SR 11-7 owner signoff, NAIC/state insurance legal review, HIPAA/BAA posture, FDA SaMD classification, FedRAMP boundary/ATO evidence, customer deployments, and external regulator/insurer/auditor acceptance remain external evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/vertical-packs/customer.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "customer success/account owner",
-          "phase": "P3",
-          "priority": "P1",
-          "requirement_id": "vertical-packs",
-          "snapshot_out": "artifacts/external-evidence-sources/vertical-packs/customer.json",
-          "source_uri": "TODO://authority/vertical-packs/customer",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/vertical-packs/customer.json",
-          "suggested_evidence_sources": [
-            "customer acceptance artifact",
-            "contract/payment/procurement evidence",
-            "deployment or signoff record"
-          ],
-          "task_id": "ae2ff75742f182d47963b6ceb336038330944042cb4f326c3d45ed9b9467ce68",
-          "task_ref": "external-evidence:vertical-packs:customer",
-          "title": "Vertical packs for trading, insurance claims, healthcare, and public sector",
-          "unit_id": "7de2b92bf19642ca938cd04c8188773c255a627b13a2f5e512939b807c17e851",
-          "unit_ref": "vertical-packs:customer"
         },
         {
           "acceptance_criteria": [
@@ -2360,20 +2281,20 @@
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "d2ea5297d16681496bfe2b557fdb425374e59abf91ddd3f3c13aa5eeab24aa9a",
-      "plan_id": "b929cfe075ed480a26e06ff966162654c099d347cb4b6bd5ddd49817d6762849",
+      "plan_hash": "5ce2e071a2a29aeddf031a5c541d8418e1d87dff9a682a68be10f41bead9def5",
+      "plan_id": "3480d49f7a99c6c4a2dc10a67c8d08b1eebd35ac6552559535ebb38786b2863e",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "gap_report": {
-      "gap_report_hash": "5f10a2c3a2b8139b2650d67c35466cfc561e1cc70d5226abd0072d4cb1c285f1",
-      "gap_report_id": "eafc601e6c1dc4fa2f37dc8a9b15026137586db18f4a969475485215d9ee100b",
+      "gap_report_hash": "ba3b5d4b76a188760bd6d07861c555bc5c59a0d17bc039db2437b8ef43c310e8",
+      "gap_report_id": "2f2cd1d7cd653ba5fde60c0c471406f007cf4daf6ee220870b41e5c5547eb318",
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-gap-report/0.1"
     },
     "manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "a1717b1b86349e4f136da4a131be49bc008138ae7d7afc00e9462a0a8c91aeec",
-      "manifest_id": "5a9b974694e8acce34a5a7c5cb81ca7e8ec0c5c2e956e7135e4c0af32601f579",
+      "manifest_hash": "fd885486162576bba558ddf118526e1eaa3f4d6154c01a0c9fe872f24335405c",
+      "manifest_id": "f71164de4e7d4d0f8b6ab11f5e3651e45ae8865628facc66f5ebce5e5b27ce46",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
@@ -2385,21 +2306,21 @@
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "c1c67f6a27818c5ae8bbe9357756f9cdbf1b4d7143c3ff51d1b8ff0367af5dff",
-      "source_map_id": "651a5ed35a95a2b440259db7b803b44aca9bc5716b41faf4e797b7fa30c0e13c"
+      "source_map_hash": "4cbf5ea03769d680fb4f48bd162a7cb39edb4f688374860f047594c7dbd04bd8",
+      "source_map_id": "707bce95daa9c90ec2dfe8fb1853eaac068b967b21267b410bab19a42a795968"
     }
   },
   "summary": {
     "covered_task_count": 0,
     "live_source_uri_count": 0,
-    "missing_task_count": 23,
+    "missing_task_count": 22,
     "package_count": 9,
-    "placeholder_source_uri_count": 23,
+    "placeholder_source_uri_count": 22,
     "source_status": "partial",
-    "task_count": 23,
+    "task_count": 22,
     "task_count_by_authority_kind": {
       "ci-run": 4,
-      "customer": 6,
+      "customer": 5,
       "hosted-service": 2,
       "identity-provider": 2,
       "insurer": 2,
@@ -2410,7 +2331,7 @@
     },
     "task_count_by_owner_hint": {
       "IAM/identity owner": 2,
-      "customer success/account owner": 6,
+      "customer success/account owner": 5,
       "integration/platform owner": 2,
       "legal/compliance owner": 1,
       "release engineering": 4,
@@ -2421,7 +2342,7 @@
     },
     "task_count_by_package": {
       "owner_hint:IAM-identity-owner": 2,
-      "owner_hint:customer-success-account-owner": 6,
+      "owner_hint:customer-success-account-owner": 5,
       "owner_hint:integration-platform-owner": 2,
       "owner_hint:legal-compliance-owner": 1,
       "owner_hint:release-engineering": 4,
@@ -2435,12 +2356,12 @@
       "P1-P4": 5,
       "P2": 1,
       "P2-P4": 8,
-      "P3": 3,
+      "P3": 2,
       "P4": 4
     },
     "task_count_by_priority": {
       "P0": 14,
-      "P1": 9
+      "P1": 8
     },
     "task_count_by_requirement": {
       "insurer-api-and-actuarial-products": 7,
@@ -2449,9 +2370,8 @@
       "runtime-policy-and-attestation": 1,
       "standards-track-and-auditor-ecosystem": 2,
       "state-of-agent-reliability-report": 1,
-      "trust-network-procurement-and-marketplace": 4,
-      "vertical-packs": 1
+      "trust-network-procurement-and-marketplace": 4
     }
   },
-  "work_package_id": "f84c30b2ca9105d37fc6afac5b580a3b6b934a25decd925462e91c3d0e6f92b2"
+  "work_package_id": "9030f1a178f76e43adc2f2ccbabad7ae44962662909bb747f23f880e7a97d2e4"
 }

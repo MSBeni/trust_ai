@@ -710,6 +710,20 @@ RETAINED_SOURCES: dict[str, dict[str, str]] = {
         "snapshot_out": "examples/aitrade/external-evidence/vertical-packs-insurer-source-snapshot.json",
         "intake_out": "examples/aitrade/external-evidence/intakes/vertical-packs-insurer.json",
     },
+    "vertical-packs:customer": {
+        "source_uri": "https://customers.example/aitrade/model-risk/vertical-packs/reference-acceptance/2026-07-12",
+        "description": "Retained customer acceptance export for TrustAI vertical-pack reference evidence",
+        "artifact": "examples/aitrade/external-evidence/vertical-packs-customer-source-snapshot.json",
+        "source_file": "examples/aitrade/vertical-packs-customer-authority-export.json",
+        "retrieval_method": "file-copy",
+        "content_type": "application/json",
+        "issuer": "Aitrade Model Risk Committee",
+        "subject": "TrustAI vertical-pack customer reference acceptance export",
+        "issued_at": "2026-07-12T00:00:00Z",
+        "expires_at": "2026-12-31T00:00:00Z",
+        "snapshot_out": "examples/aitrade/external-evidence/vertical-packs-customer-source-snapshot.json",
+        "intake_out": "examples/aitrade/external-evidence/intakes/vertical-packs-customer.json",
+    },
 }
 
 

@@ -796,6 +796,24 @@
     },
     {
       "accepted_authority_kinds": [
+        "regulator",
+        "insurer",
+        "customer"
+      ],
+      "authority_kind": "customer",
+      "description": "Retained customer acceptance export for TrustAI vertical-pack reference evidence",
+      "evidence_id": "87094259e89e5f38518c67718cb60960abcf5db53069de4d15fb26f679c4ee9f",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "Aitrade Model Risk Committee",
+      "path": "examples/aitrade/external-evidence/vertical-packs-customer-source-snapshot.json",
+      "requirement_id": "vertical-packs",
+      "sha256": "sha256:6d67e7058340781a359e6769f936cb2204105058e43969c1fed080abbddbdacf",
+      "source_uri": "https://customers.example/aitrade/model-risk/vertical-packs/reference-acceptance/2026-07-12",
+      "subject": "TrustAI vertical-pack customer reference acceptance export"
+    },
+    {
+      "accepted_authority_kinds": [
         "ci-run",
         "kms-hsm",
         "provider-api",
@@ -915,7 +933,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "5a9b974694e8acce34a5a7c5cb81ca7e8ec0c5c2e956e7135e4c0af32601f579",
+  "manifest_id": "f71164de4e7d4d0f8b6ab11f5e3651e45ae8865628facc66f5ebce5e5b27ce46",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -1466,7 +1484,7 @@
     },
     {
       "authority_kind": "customer",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Vertical pack receipts cover local/reference templates, source bindings, control mappings, and production-claim limits for trading/treasury, insurance claims, healthcare RCM, and public sector packs; live SR 11-7 owner signoff, NAIC/state insurance legal review, HIPAA/BAA posture, FDA SaMD classification, FedRAMP boundary/ATO evidence, customer deployments, and external regulator/insurer/auditor acceptance remain external evidence."
       ],
@@ -2142,7 +2160,7 @@
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {
-    "covered_authority_kind_count": 48,
+    "covered_authority_kind_count": 49,
     "covered_authority_kinds_by_requirement": {
       "agent-inventory-and-identity": [
         "provider-api",
@@ -2218,7 +2236,8 @@
       ],
       "vertical-packs": [
         "regulator",
-        "insurer"
+        "insurer",
+        "customer"
       ]
     },
     "covered_requirement_count": 14,
@@ -2238,11 +2257,11 @@
       "trustai-own-compliance",
       "vertical-packs"
     ],
-    "evidence_count": 48,
-    "expires_at_count": 48,
-    "freshness_window_count": 48,
-    "issued_at_count": 48,
-    "missing_authority_kind_count": 23,
+    "evidence_count": 49,
+    "expires_at_count": 49,
+    "freshness_window_count": 49,
+    "issued_at_count": 49,
+    "missing_authority_kind_count": 22,
     "missing_authority_kinds_by_requirement": {
       "insurer-api-and-actuarial-products": [
         "ci-run",
@@ -2278,9 +2297,6 @@
         "provider-api",
         "hosted-service",
         "identity-provider",
-        "customer"
-      ],
-      "vertical-packs": [
         "customer"
       ]
     },

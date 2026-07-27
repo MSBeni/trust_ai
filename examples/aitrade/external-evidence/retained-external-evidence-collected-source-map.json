@@ -1262,6 +1262,36 @@
       "unit_ref": "vertical-packs:insurer"
     },
     {
+      "authority_kind": "customer",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained customer acceptance export for TrustAI vertical-pack reference evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Vertical pack receipts cover local/reference templates, source bindings, control mappings, and production-claim limits for trading/treasury, insurance claims, healthcare RCM, and public sector packs; live SR 11-7 owner signoff, NAIC/state insurance legal review, HIPAA/BAA posture, FDA SaMD classification, FedRAMP boundary/ATO evidence, customer deployments, and external regulator/insurer/auditor acceptance remain external evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/vertical-packs-customer.json",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "Aitrade Model Risk Committee",
+      "owner_hint": "customer success/account owner",
+      "requirement_id": "vertical-packs",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/vertical-packs-customer-source-snapshot.json",
+      "source_uri": "https://customers.example/aitrade/model-risk/vertical-packs/reference-acceptance/2026-07-12",
+      "subject": "TrustAI vertical-pack customer reference acceptance export",
+      "suggested_evidence_sources": [
+        "customer acceptance artifact",
+        "contract/payment/procurement evidence",
+        "deployment or signoff record"
+      ],
+      "task": "vertical-packs:customer",
+      "task_id": "ae2ff75742f182d47963b6ceb336038330944042cb4f326c3d45ed9b9467ce68",
+      "task_ref": "external-evidence:vertical-packs:customer",
+      "title": "Vertical packs for trading, insurance claims, healthcare, and public sector",
+      "unit_id": "7de2b92bf19642ca938cd04c8188773c255a627b13a2f5e512939b807c17e851",
+      "unit_ref": "vertical-packs:customer"
+    },
+    {
       "authority_kind": "kms-hsm",
       "content_type": "application/json",
       "coverage_status": "missing",
@@ -1449,7 +1479,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "45bc1327cfb4883bb69988c5de15ab7563dcb2ad95debe8282602df4a9e87e7b",
+  "source_map_id": "33318716430609063dfa672c1647568ce324e8dffed51e93a57e49472b33fc5d",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -1464,9 +1494,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 48,
+    "entry_count": 49,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 48,
+    "live_source_uri_count": 49,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

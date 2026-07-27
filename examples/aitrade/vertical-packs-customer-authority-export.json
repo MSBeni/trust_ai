@@ -1,0 +1,165 @@
+{
+  "authority_evidence": {
+    "authority_kind": "customer",
+    "evidence_ref": "customer:aitrade-model-risk/trustai-vertical-packs/reference-acceptance/2026-07-12",
+    "requirement_id": "vertical-packs",
+    "source_uri": "https://customers.example/aitrade/model-risk/vertical-packs/reference-acceptance/2026-07-12"
+  },
+  "customer_acceptance": {
+    "acceptance_ref": "customer:aitrade-model-risk/trustai-vertical-packs/reference-acceptance/2026-07-12",
+    "accepted_controls": [
+      "vertical-pack templates expose local proof-pack, policy, and source bindings for each supported vertical",
+      "trading, insurance-claims, healthcare-rcm, and public-sector packs keep production-claim limits visible to customer reviewers",
+      "customer review can verify the pack artifacts offline without trusting TrustAI hosted services",
+      "BYOC and self-hosted deployment evidence remains hash-bound for regulated customer environments",
+      "live deployment acceptance is separated from reference-template acceptance"
+    ],
+    "conditions": [
+      "no customer production deployment, procurement clause, or paid vertical-pack rollout is claimed by this reference export",
+      "tenant-specific vertical packs must include fresh proof packs, deployment evidence, and customer signoff before production use",
+      "healthcare and public-sector deployments require customer legal, privacy, and authorization-to-operate evidence outside this reference acceptance"
+    ],
+    "customer_refs": [
+      "customer:aitrade-model-risk/reference-review",
+      "customer:aitrade-platform-engineering/reference-review"
+    ],
+    "status": "accepted-for-reference-customer-review"
+  },
+  "environment": "trustai-reference",
+  "evidence": {
+    "deploy_docker_Dockerfile": {
+      "path": "deploy/docker/Dockerfile",
+      "sha256": "sha256:49189e5cb57f3d74d5e7378058b91b253db9632640e1ddd607499e382bc19017"
+    },
+    "deploy_helm_trustai_Chart_yaml": {
+      "path": "deploy/helm/trustai/Chart.yaml",
+      "sha256": "sha256:6a52b3fabdc4b73983e82c22b090945df8829c378e731cecc63513129a24829f"
+    },
+    "docs_specs_marketplace_v0_1_md": {
+      "path": "docs/specs/marketplace-v0.1.md",
+      "sha256": "sha256:1abb3f1170176ebd239eef8941457ffe7780b0d07521740b980cda2fd5e4127a"
+    },
+    "docs_specs_proof_pack_v0_1_md": {
+      "path": "docs/specs/proof-pack-v0.1.md",
+      "sha256": "sha256:9bfe0b9dd85fef1ccaffd944bc0fa807814e0aba2da6370d82c8059b4b6ee79e"
+    },
+    "docs_specs_regulator_disclosure_v0_1_md": {
+      "path": "docs/specs/regulator-disclosure-v0.1.md",
+      "sha256": "sha256:23bd31c0fe202d488c15abed338b3d4c933e9f8276788138750ee61a1683369f"
+    },
+    "docs_specs_runtime_policy_v0_1_md": {
+      "path": "docs/specs/runtime-policy-v0.1.md",
+      "sha256": "sha256:2b48ed7529f079413fa276c2b0f29c2d8308e7a65f9e396754c8500ba7246cb5"
+    },
+    "docs_specs_supervised_access_v0_1_md": {
+      "path": "docs/specs/supervised-access-v0.1.md",
+      "sha256": "sha256:2a0f165893d6306bc7ba1bee65b5654b0678990b2e3b2b83f60fc32bd1efdd78"
+    },
+    "docs_specs_verification_contract_v0_1_md": {
+      "path": "docs/specs/verification-contract-v0.1.md",
+      "sha256": "sha256:0c37fb6f5b41014dfb3df6bb344c08dbef8918919de5f70cf7114986581fc1b6"
+    },
+    "docs_specs_vertical_pack_v0_1_md": {
+      "path": "docs/specs/vertical-pack-v0.1.md",
+      "sha256": "sha256:d4b5abe7b7c969669640ee5d39915c9010836fee5a541da732721a06b39d6304"
+    },
+    "examples_aitrade_policy_pack_json": {
+      "path": "examples/aitrade/policy-pack.json",
+      "sha256": "sha256:6d51510af4f820caa12af234f06306ac7519c1d1009698c76a3e169352cda46f"
+    },
+    "examples_aitrade_verification_contract_yaml": {
+      "path": "examples/aitrade/verification-contract.yaml",
+      "sha256": "sha256:dc67aad402a124f6ad19395747987e7ff0bf22c3fc6cd1787775d052a4f33610"
+    },
+    "src_trustai_byoc_authority_py": {
+      "path": "src/trustai/byoc_authority.py",
+      "sha256": "sha256:526b23562cf55e9c93d9d1b0026a88444f919bf1790b9fd00542fbdf2029c45c"
+    },
+    "src_trustai_contracts_py": {
+      "path": "src/trustai/contracts.py",
+      "sha256": "sha256:f3c397bf116bde8e39ebfa81308074e19972a614d56937e55668cc891e74e938"
+    },
+    "src_trustai_deployment_py": {
+      "path": "src/trustai/deployment.py",
+      "sha256": "sha256:33a2427c7f98d63abf489973e73b27b4ff1f76458a4023c32b7ee0993822d1de"
+    },
+    "src_trustai_marketplace_py": {
+      "path": "src/trustai/marketplace.py",
+      "sha256": "sha256:fa40de4065247eb5195291238927f59ff8a5b9bcd3df0edd511bb693cb5b5e08"
+    },
+    "src_trustai_policy_py": {
+      "path": "src/trustai/policy.py",
+      "sha256": "sha256:db7a8ae2cec786e4380fec339b4702b11755e483211a03c4398606bc58c9489c"
+    },
+    "src_trustai_proofpack_py": {
+      "path": "src/trustai/proofpack.py",
+      "sha256": "sha256:dcbcf7252e3723e61e12ac288c96e7c89c9b160d17c063074a01aa04a6986c87"
+    },
+    "src_trustai_regulator_py": {
+      "path": "src/trustai/regulator.py",
+      "sha256": "sha256:359913b137c37c0f099dca9a12f4c0d4b167ffb399465fc586d100e2930f513f"
+    },
+    "src_trustai_supervised_access_py": {
+      "path": "src/trustai/supervised_access.py",
+      "sha256": "sha256:345a108b22b0e3ea9e249a2633173fd2f882690f574922c6539f7b57a0840c59"
+    },
+    "src_trustai_vertical_pack_py": {
+      "path": "src/trustai/vertical_pack.py",
+      "sha256": "sha256:ec006cda3cdbdb93e429f6c1824e304ccf3d453070a1f6771a24db05bb6493a5"
+    },
+    "tests_test_deployment_py": {
+      "path": "tests/test_deployment.py",
+      "sha256": "sha256:8a06d497d201bffa45f88a73ad539f5fc29951c1884a644c70f70565c2e298bd"
+    },
+    "tests_test_proofpack_flow_py": {
+      "path": "tests/test_proofpack_flow.py",
+      "sha256": "sha256:879a89770e77d68c555bb9f74ec0228d60581263145085edc8f84917c5967453"
+    },
+    "tests_test_supervised_access_py": {
+      "path": "tests/test_supervised_access.py",
+      "sha256": "sha256:64e216fe86e1de30a83bcfd9da33c4275f6b10ef5c18f787048b769bb66f00aa"
+    },
+    "tests_test_vertical_pack_py": {
+      "path": "tests/test_vertical_pack.py",
+      "sha256": "sha256:0868857f720118c173f5bbfe07f7bee8364d1bec4b298d3045a07e3dabdb7c49"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "issued_at": "2026-07-12T00:00:00Z",
+  "issuer": "Aitrade Model Risk Committee",
+  "limitations": [
+    "This export records customer reference acceptance of TrustAI vertical-pack templates and verifier evidence only.",
+    "It does not claim live customer production deployment, procurement mandate, paid rollout, or external customer audit acceptance.",
+    "Production customer acceptance requires tenant-specific proof packs, deployment evidence, access-control logs, and customer signoff."
+  ],
+  "schema": "trustai.vertical-packs-customer-authority-export/0.1",
+  "subject": "TrustAI vertical-pack customer reference acceptance export",
+  "verified_controls": [
+    "customer receipt binds vertical-pack source controls to proof-pack, policy, marketplace, deployment, and supervised-access surfaces",
+    "all supported verticals expose production-claim limits and tenant-specific external requirements",
+    "customer reviewers can verify the retained pack evidence offline from hash-bound source artifacts",
+    "fresh source snapshots are required before this retained export can satisfy strict evidence verification",
+    "reference acceptance does not imply live deployment, procurement clause adoption, or paid customer rollout"
+  ],
+  "vertical_pack_scope": {
+    "customer_review_refs": [
+      "model-risk-reference-review",
+      "platform-engineering-reference-review",
+      "procurement-readiness-reference-review"
+    ],
+    "framework_refs": [
+      "SR 11-7",
+      "NAIC Model Bulletin",
+      "HIPAA",
+      "FDA SaMD-adjacent",
+      "FedRAMP path decision"
+    ],
+    "mode": "reference-customer-review",
+    "pack_refs": [
+      "vertical-pack:trading-treasury/local",
+      "vertical-pack:insurance-claims/local",
+      "vertical-pack:healthcare-rcm/local",
+      "vertical-pack:public-sector/local"
+    ]
+  }
+}

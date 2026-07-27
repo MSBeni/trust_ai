@@ -1,19 +1,19 @@
 # External Evidence Gap Report
 
-- Gap report ID: `eafc601e6c1dc4fa2f37dc8a9b15026137586db18f4a969475485215d9ee100b`
+- Gap report ID: `2f2cd1d7cd653ba5fde60c0c471406f007cf4daf6ee220870b41e5c5547eb318`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 48/71
-- Missing authority kinds: 23
-- Remaining collection tasks: 23
-- Source-map entries: 23
-- Placeholder source URIs: 23
+- Covered authority kinds: 49/71
+- Missing authority kinds: 22
+- Remaining collection tasks: 22
+- Source-map entries: 22
+- Placeholder source URIs: 22
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
 
 - `ci-run`: 4
-- `customer`: 6
+- `customer`: 5
 - `hosted-service`: 2
 - `identity-provider`: 2
 - `insurer`: 2
@@ -31,20 +31,8 @@
 - `standards-track-and-auditor-ecosystem`: 2
 - `state-of-agent-reliability-report`: 1
 - `trust-network-procurement-and-marketplace`: 4
-- `vertical-packs`: 1
 
 ## Collection Worklist
-
-### vertical-packs:customer
-
-- Title: Vertical packs for trading, insurance claims, healthcare, and public sector
-- Authority kind: `customer`
-- Owner hint: customer success/account owner
-- Description: customer evidence for vertical-packs
-- Source URI: `TODO://authority/vertical-packs/customer`
-- Snapshot output: `artifacts/external-evidence-sources/vertical-packs/customer.json`
-- Intake output: `artifacts/external-evidence-intakes/vertical-packs/customer.json`
-- Suggested evidence sources: customer acceptance artifact; contract/payment/procurement evidence; deployment or signoff record
 
 ### insurer-api-and-actuarial-products:ci-run
 
