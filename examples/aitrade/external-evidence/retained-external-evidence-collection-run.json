@@ -287,6 +287,39 @@
       "warnings": []
     },
     {
+      "evidence_argument": "auditor-and-review-portal,hosted-service,examples/aitrade/external-evidence/review-portal-hosted-service-source-snapshot.json,Retained hosted service export for review portal worker fleet and service health evidence;issuer=TrustAI Cloud;subject=aitrade review portal hosted service authority export;source_uri=https://review.trustai.example/aitrade/regulator/.well-known/trustai-authority;issued_at=2026-07-08T06:14:00Z;expires_at=2026-12-31T00:00:00Z",
+      "intake_id": "03325c2de69988c2e4d28cb5268f6f8fd298bca097c6e2668a132e9fb4b22353",
+      "intake_path": "examples/aitrade/external-evidence/intakes/auditor-and-review-portal-hosted-service.json",
+      "snapshot_artifact_path": "examples/aitrade/external-evidence/review-portal-hosted-service-source-snapshot.json",
+      "snapshot_id": "00c0c9abaf80dfd75d510901635f773ac528a7a0954d7d90cdd0a1ec1a195a5d",
+      "snapshot_path": "examples/aitrade/external-evidence/review-portal-hosted-service-source-snapshot.json",
+      "source_uri": "https://review.trustai.example/aitrade/regulator/.well-known/trustai-authority",
+      "task": "auditor-and-review-portal:hosted-service",
+      "warnings": []
+    },
+    {
+      "evidence_argument": "auditor-and-review-portal,identity-provider,examples/aitrade/external-evidence/review-portal-identity-provider-source-snapshot.json,Retained identity-provider export for review portal reviewer sessions and account lifecycle evidence;issuer=Example IdP;subject=aitrade review portal reviewer identity-provider authority export;source_uri=https://idp.example/exports/aitrade/review-portal/reviewer-sessions;issued_at=2026-07-08T06:15:00Z;expires_at=2026-12-31T00:00:00Z",
+      "intake_id": "5823329e974a6514217d7e028dfb4f93e1021a23cd3e46ee55d9edfb23031575",
+      "intake_path": "examples/aitrade/external-evidence/intakes/auditor-and-review-portal-identity-provider.json",
+      "snapshot_artifact_path": "examples/aitrade/external-evidence/review-portal-identity-provider-source-snapshot.json",
+      "snapshot_id": "1375c02d8bb8b83ede2f6dc3f7bc30511b709a2670888ea5a49909d9b4342760",
+      "snapshot_path": "examples/aitrade/external-evidence/review-portal-identity-provider-source-snapshot.json",
+      "source_uri": "https://idp.example/exports/aitrade/review-portal/reviewer-sessions",
+      "task": "auditor-and-review-portal:identity-provider",
+      "warnings": []
+    },
+    {
+      "evidence_argument": "auditor-and-review-portal,regulator,examples/aitrade/external-evidence/review-portal-regulator-source-snapshot.json,Retained regulator export for review portal supervised-access acceptance evidence;issuer=Example Regulator;subject=aitrade review portal regulator supervised-access acceptance export;source_uri=https://regulator.example/exports/aitrade/review-portal/supervised-access-acceptance;issued_at=2026-07-08T06:16:00Z;expires_at=2026-12-31T00:00:00Z",
+      "intake_id": "4ec1b7aff8e511724d234004a80adc99482884111d6a98645e1a822cbb4e8509",
+      "intake_path": "examples/aitrade/external-evidence/intakes/auditor-and-review-portal-regulator.json",
+      "snapshot_artifact_path": "examples/aitrade/external-evidence/review-portal-regulator-source-snapshot.json",
+      "snapshot_id": "30b818f3ad90b2ca9f5f6f7c4f15a63db9e552b89bd4e7062de7790674edda57",
+      "snapshot_path": "examples/aitrade/external-evidence/review-portal-regulator-source-snapshot.json",
+      "source_uri": "https://regulator.example/exports/aitrade/review-portal/supervised-access-acceptance",
+      "task": "auditor-and-review-portal:regulator",
+      "warnings": []
+    },
+    {
       "evidence_argument": "byoc-self-hosted,kms-hsm,examples/aitrade/external-evidence/byoc-kms-hsm-source-snapshot.json,Retained KMS/HSM enforcement export for BYOC evidence signing;issuer=Example KMS/HSM;subject=trustai BYOC evidence-signing enforcement;source_uri=https://kms.example/attestations/trustai/byoc/evidence-signing;issued_at=2026-07-03T12:03:00Z;expires_at=2026-12-31T00:00:00Z",
       "intake_id": "fa02e8863837599519d7d63752c447e92ac2af5bac9fb1a80d7c7190c8ccf2ed",
       "intake_path": "examples/aitrade/external-evidence/intakes/byoc-self-hosted-kms-hsm.json",
@@ -387,15 +420,15 @@
     }
   ],
   "generated_at": "2026-07-12T00:01:00Z",
-  "run_id": "e7093ae50b477322d882f8d0c983b3ab9c484f5307913c5e0296d8ecaf3fffc4",
+  "run_id": "2444344bcda052d74f48f298c3ab11ca50d4401cbc67706e14cf6944a6b51e05",
   "schema": "trustai.external-evidence-collection-run/0.1",
   "source_map": {
     "path": "examples/aitrade/external-evidence/retained-external-evidence-collected-source-map.json",
-    "source_map_hash": "173a0d1dbde0cc24391c395fd9389b459d5aff85e852a623206a341e86628a69"
+    "source_map_hash": "c75881310abb2a8eb1782bc242f5c769953ccf00131907366e09d29f5e2d7f7d"
   },
   "summary": {
-    "collected_count": 35,
+    "collected_count": 38,
     "require_fresh": true,
-    "task_count": 35
+    "task_count": 38
   }
 }

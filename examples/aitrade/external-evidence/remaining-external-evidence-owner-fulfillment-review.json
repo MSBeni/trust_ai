@@ -1,7 +1,7 @@
 {
   "blockers": [
-    "owner fulfillment review contains 36 placeholder source_uri values",
-    "fulfilled source map: source map contains 36 placeholder source_uri values but live source URIs are required"
+    "owner fulfillment review contains 33 placeholder source_uri values",
+    "fulfilled source map: source map contains 33 placeholder source_uri values but live source URIs are required"
   ],
   "commands": {
     "collect_after_ready_review": "python -m trustai external-evidence-collect-batch <fulfilled-source-map.json> <manifest.json> <roadmap-audit.json> --root . --require-live-source-uris",
@@ -11,78 +11,6 @@
   "fulfilled_source_map": {
     "defaults": {},
     "entries": [
-      {
-        "authority_kind": "hosted-service",
-        "coverage_status": "missing",
-        "description": "hosted-service evidence for auditor-and-review-portal",
-        "external_authority_required": [
-          "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/hosted-service.json",
-        "owner_hint": "service owner",
-        "requirement_id": "auditor-and-review-portal",
-        "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/hosted-service.json",
-        "source_uri": "TODO://authority/auditor-and-review-portal/hosted-service",
-        "suggested_evidence_sources": [
-          "hosted service health or deployment export",
-          "service audit root",
-          "operational SLO/status evidence"
-        ],
-        "task": "auditor-and-review-portal:hosted-service",
-        "task_id": "4a20afe57cc9f2971078547577b16f64216382a3ce57613712a53d233e191ce4",
-        "task_ref": "external-evidence:auditor-and-review-portal:hosted-service",
-        "title": "Auditor view, supervised access, regulator view, and review portal attestations",
-        "unit_id": "dc3dc8fc4c61aa25bafced7670bea6e23899a911be0bb3e56028576312c58f5b",
-        "unit_ref": "auditor-and-review-portal:hosted-service"
-      },
-      {
-        "authority_kind": "identity-provider",
-        "coverage_status": "missing",
-        "description": "identity-provider evidence for auditor-and-review-portal",
-        "external_authority_required": [
-          "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/identity-provider.json",
-        "owner_hint": "IAM/identity owner",
-        "requirement_id": "auditor-and-review-portal",
-        "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/identity-provider.json",
-        "source_uri": "TODO://authority/auditor-and-review-portal/identity-provider",
-        "suggested_evidence_sources": [
-          "identity-provider event export",
-          "OIDC/session/lifecycle evidence",
-          "RBAC or account-state report"
-        ],
-        "task": "auditor-and-review-portal:identity-provider",
-        "task_id": "a5df2131c85c2fc3035d01e886ed613d473d2494e864149834b747d7f38f533b",
-        "task_ref": "external-evidence:auditor-and-review-portal:identity-provider",
-        "title": "Auditor view, supervised access, regulator view, and review portal attestations",
-        "unit_id": "e751495f6bd0337a851b9cf8192967544a97538cca79641c714107ddf77b25fb",
-        "unit_ref": "auditor-and-review-portal:identity-provider"
-      },
-      {
-        "authority_kind": "regulator",
-        "coverage_status": "missing",
-        "description": "regulator evidence for auditor-and-review-portal",
-        "external_authority_required": [
-          "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/regulator.json",
-        "owner_hint": "legal/compliance owner",
-        "requirement_id": "auditor-and-review-portal",
-        "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/regulator.json",
-        "source_uri": "TODO://authority/auditor-and-review-portal/regulator",
-        "suggested_evidence_sources": [
-          "regulator acknowledgement",
-          "supervisor portal receipt",
-          "conformity-assessment record"
-        ],
-        "task": "auditor-and-review-portal:regulator",
-        "task_id": "5587a2f2cd16dbff0317d1329cb227cf9a44a025d41f1cde680f23d8872f6d1c",
-        "task_ref": "external-evidence:auditor-and-review-portal:regulator",
-        "title": "Auditor view, supervised access, regulator view, and review portal attestations",
-        "unit_id": "cd15f092fb1c9a822cec2283efb08d822b5ff05589d858414daf4b0f487d3d5a",
-        "unit_ref": "auditor-and-review-portal:regulator"
-      },
       {
         "authority_kind": "ci-run",
         "coverage_status": "missing",
@@ -883,14 +811,14 @@
       "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
     ],
     "schema": "trustai.external-evidence-source-map/0.1",
-    "source_map_id": "8607f257e1014e5685b7b1ef52ca1eff606361aa2dd8fd4e610682067dac9c49",
+    "source_map_id": "bcfa3c158c3f2ef00a271109e5e55a073238af9a9a6ca50d535c6d0a027425a8",
     "source_plan": {
-      "plan_hash": "5ba5068964f09ffc24713aad1b513d825ddb85afce3f84384a66e1047300a0ba",
-      "plan_id": "9bc568c80bdb2cfdd47dbc3322fe6645a65d2a712baada9064d4e5d910d6cf5b",
+      "plan_hash": "49be603f6c7f15685e012ee29bf4f1e513d8d1894a3939b7801212cecc040001",
+      "plan_id": "3383d36acec3468ed0b8b6b6bafc4dcf3149e98568cc7b3f1cdab300d2d34572",
       "source_manifest": {
         "generated_at": "2026-07-12T00:01:00Z",
-        "manifest_hash": "f547fb7ec4181ae49d38674d905eb350cec33c9baf8efed035378722a91ec486",
-        "manifest_id": "d3b97aa0f40db01d7147a146b3d225f290c2d8f3dfacd41b801a4151a98cd145",
+        "manifest_hash": "756c4337fac16014a6f07761831299c9bfc6a1d1e1692dd6bce9db6500879b0f",
+        "manifest_id": "7088d943067e14728a203a60698e85c3e676d33b75a54845d493a9f2070ce424",
         "manifest_ref": "production-external-evidence",
         "status": "partial"
       },
@@ -898,12 +826,12 @@
     },
     "summary": {
       "authority_kinds": [],
-      "entry_count": 36,
+      "entry_count": 33,
       "intake_dir": "artifacts/external-evidence-intakes",
       "live_source_uri_count": 0,
-      "placeholder_source_uri_count": 36,
+      "placeholder_source_uri_count": 33,
       "snapshot_dir": "artifacts/external-evidence-sources",
-      "source_plan_task_count": 36,
+      "source_plan_task_count": 33,
       "status_filter": "missing"
     }
   },
@@ -918,91 +846,49 @@
     "Regenerate this review with --require-live-source-uris before collecting source snapshots.",
     "After the fulfilled source map is ready, run external-evidence-collect-batch and rebuild the retained manifest from intake receipts."
   ],
-  "owner_fulfillment_review_id": "4f61b1ba65fbaffb36e9c72dfb575731e8b594b1a8dec074f90fb45a77ea887b",
+  "owner_fulfillment_review_id": "72793eb501f910debc7c404cca586271727798c7c3bf8422f778709874f9a2bb",
   "schema": "trustai.external-evidence-owner-fulfillment-review/0.1",
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "5ba5068964f09ffc24713aad1b513d825ddb85afce3f84384a66e1047300a0ba",
-      "plan_id": "9bc568c80bdb2cfdd47dbc3322fe6645a65d2a712baada9064d4e5d910d6cf5b",
+      "plan_hash": "49be603f6c7f15685e012ee29bf4f1e513d8d1894a3939b7801212cecc040001",
+      "plan_id": "3383d36acec3468ed0b8b6b6bafc4dcf3149e98568cc7b3f1cdab300d2d34572",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "owner_fulfillment_template": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_fulfillment_template_hash": "8a6f8ba96406b77453d6b087623b70a349001d8a8ed2a54e18f8b0649d948e3b",
-      "owner_fulfillment_template_id": "523654504d4f85da2b3051a1fc30b9fe402c9c2c1badba0ba09fc29b26e8936a",
+      "owner_fulfillment_template_hash": "9459d609fc11d88047b3f96e1bca8e5ca7517f93c27b7641aed5705456d7a63d",
+      "owner_fulfillment_template_id": "e38d83ad6bde6c4ab329c9afc8a095cf3db0bd61c62e7b4676acc615b13d11e4",
       "schema": "trustai.external-evidence-owner-fulfillment-template/0.1"
     },
     "owner_packet_status": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_status_hash": "5986c18f9f6119ff3201e0fe98063b61f88b9561d6c96652c2c450e175101cc2",
-      "owner_packet_status_id": "c68b73826bee1d8ef1461753093c795c6cbdf430b3a7baa781d793cc7f49c257",
+      "owner_packet_status_hash": "ef39d88f65fa8e4af7daab81ce7b7bece8df2d420ca8891f144ae52622aae9fd",
+      "owner_packet_status_id": "4318ac50855053ed7bac8b1df55fb620a883d988e5e080772c20a4baf208ff47",
       "schema": "trustai.external-evidence-owner-packet-status/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "53fa55661b77a60736a46d6c2922771d0638beb1a69a7247923ad40ba5f5f26c",
-      "source_map_id": "fa14d6e25d4104b2d7a5a38041e3f5f76f2b4bead346d11ea90cd852cf9a94a4"
+      "source_map_hash": "84d9ed86f7c56bc0f0013a393d5e1ca9eff8335bc649a3384fae667c82eb246c",
+      "source_map_id": "a4dd15f9d79ce2d58e98e9ee25051446ddbbcdb5c4727b2ca7db6a9d56231152"
     }
   },
   "summary": {
-    "blocked_task_count": 36,
+    "blocked_task_count": 33,
     "error_count": 1,
     "fulfilled_source_map_verification_ok": false,
-    "fulfillment_count": 36,
+    "fulfillment_count": 33,
     "live_source_uri_count": 0,
     "owner_count": 9,
-    "placeholder_source_uri_count": 36,
+    "placeholder_source_uri_count": 33,
     "ready_task_count": 0,
     "review_status": "blocked",
-    "source_map_entry_count": 36,
+    "source_map_entry_count": 33,
     "template_verification_ok": true,
     "warning_count": 3
   },
   "task_reviews": [
-    {
-      "authority_kind": "hosted-service",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/hosted-service.json",
-      "owner_hint": "service owner",
-      "requirement_id": "auditor-and-review-portal",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/hosted-service.json",
-      "source_uri": "TODO://authority/auditor-and-review-portal/hosted-service",
-      "source_uri_status": "placeholder",
-      "task": "auditor-and-review-portal:hosted-service"
-    },
-    {
-      "authority_kind": "identity-provider",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/identity-provider.json",
-      "owner_hint": "IAM/identity owner",
-      "requirement_id": "auditor-and-review-portal",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/identity-provider.json",
-      "source_uri": "TODO://authority/auditor-and-review-portal/identity-provider",
-      "source_uri_status": "placeholder",
-      "task": "auditor-and-review-portal:identity-provider"
-    },
-    {
-      "authority_kind": "regulator",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/regulator.json",
-      "owner_hint": "legal/compliance owner",
-      "requirement_id": "auditor-and-review-portal",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/regulator.json",
-      "source_uri": "TODO://authority/auditor-and-review-portal/regulator",
-      "source_uri_status": "placeholder",
-      "task": "auditor-and-review-portal:regulator"
-    },
     {
       "authority_kind": "ci-run",
       "blocking_reasons": [
@@ -1468,14 +1354,14 @@
   ],
   "verification": {
     "fulfilled_source_map_errors": [
-      "source map contains 36 placeholder source_uri values but live source URIs are required"
+      "source map contains 33 placeholder source_uri values but live source URIs are required"
     ],
     "fulfilled_source_map_warnings": [
-      "source map contains 36 placeholder source_uri values"
+      "source map contains 33 placeholder source_uri values"
     ],
     "template_warnings": [
-      "owner fulfillment template summary contains 36 placeholder source_uri values",
-      "owner fulfillment template summary contains 36 tasks without intake receipts"
+      "owner fulfillment template summary contains 33 placeholder source_uri values",
+      "owner fulfillment template summary contains 33 tasks without intake receipts"
     ]
   },
   "verification_options": {

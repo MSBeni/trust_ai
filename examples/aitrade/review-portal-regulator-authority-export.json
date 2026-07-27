@@ -1,0 +1,65 @@
+{
+  "authority_evidence": {
+    "authority_kind": "regulator",
+    "evidence_ref": "regulator:example-supervisor/review-portal/supervised-access-acceptance",
+    "requirement_id": "auditor-and-review-portal",
+    "source_uri": "https://regulator.example/exports/aitrade/review-portal/supervised-access-acceptance"
+  },
+  "environment": "aitrade-prod",
+  "evidence": {
+    "production_authority_spec": {
+      "path": "docs/specs/review-portal-production-authority-v0.1.md",
+      "sha256": "sha256:14561ec859d3fb15833e6364a80e4352e6920bfac771324c0972c65df8e5e010"
+    },
+    "provider_api_export": {
+      "path": "examples/aitrade/review-portal-provider-api-authority-export.json",
+      "sha256": "sha256:c516f6c471e93ed2be705d3f22cd061af171ed326b61ca7d18a614daf32dabc9"
+    },
+    "regulator_acceptance_source": {
+      "path": "src/trustai/regulator_acceptance.py",
+      "sha256": "sha256:6aa521d0436f6b1fda596664c70455ba55a61fedb8620578d15a05b33e1ba312"
+    },
+    "regulator_acceptance_spec": {
+      "path": "docs/specs/regulator-acceptance-v0.1.md",
+      "sha256": "sha256:99ecf4e60cf072f421795c715ada7a059cf2fefa02f7e8939ffadfbb7fb8dfb0"
+    },
+    "regulator_acceptance_tests": {
+      "path": "tests/test_regulator_acceptance.py",
+      "sha256": "sha256:9e3be4dc0315b89c1ccb26fced14f915584f6682ccc43c49209159603c4439a8"
+    },
+    "review_portal_authority_source": {
+      "path": "src/trustai/review_portal_authority.py",
+      "sha256": "sha256:65c1eb2291c26550abe88f7be25f4ed728b31f5c7bd960031ca67f968d01a496"
+    },
+    "supervised_access_source": {
+      "path": "src/trustai/supervised_access.py",
+      "sha256": "sha256:345a108b22b0e3ea9e249a2633173fd2f882690f574922c6539f7b57a0840c59"
+    },
+    "supervised_access_spec": {
+      "path": "docs/specs/supervised-access-v0.1.md",
+      "sha256": "sha256:2a0f165893d6306bc7ba1bee65b5654b0678990b2e3b2b83f60fc32bd1efdd78"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "issued_at": "2026-07-08T06:16:00Z",
+  "issuer": "Example Regulator",
+  "regulator_acceptance": {
+    "accepted_disclosure_ref": "disclosure:aitrade-prod/proof-pack/selective-regulator-view",
+    "accepted_pack_ref": "proof-pack:aitrade-prod/canary-promotion",
+    "acceptance_ref": "regulator-acceptance:example-supervisor/aitrade/review-portal/2026-07-08",
+    "review_session_ref": "supervised-access:regulator/aitrade-prod",
+    "reviewer_subject_ref": "regulator:example-supervisor/reviewer-001",
+    "selective_disclosure_policy_ref": "policy:selective-disclosure/review-portal-v0.1",
+    "supervisor_case_ref": "case:example-supervisor/aitrade-agent-review-2026-07",
+    "supervisor_receipt_root": "sha256:review-portal-regulator-acceptance-root-20260708"
+  },
+  "schema": "trustai.review-portal-regulator-authority-export/0.1",
+  "subject": "aitrade review portal regulator supervised-access acceptance export",
+  "verified_controls": [
+    "regulator accepted selective proof-pack disclosure",
+    "supervised access session replay was available to external reviewer",
+    "regulator reviewer identity is bound to portal session",
+    "accepted disclosure is linked to review portal authority evidence",
+    "supervisor receipt root is retained for replay"
+  ]
+}

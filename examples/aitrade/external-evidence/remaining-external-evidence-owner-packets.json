@@ -5,7 +5,7 @@
     "Source URIs marked TODO or placeholder must be replaced with authority-owned source exports before collection.",
     "Packet completion is proven only by verified source snapshots, intake receipts, rebuilt manifests, and readiness reports."
   ],
-  "owner_packet_bundle_id": "38dd99424c9ce45c83ee12c8c6062619d3a3483618f96c5a14dd4004fa4963ba",
+  "owner_packet_bundle_id": "e1a50744308839723131d89733cc8b55883556d6d93b59741511229560e3564c",
   "packets": [
     {
       "authority_kinds": [
@@ -21,107 +21,28 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 3,
+      "missing_task_count": 2,
       "owner_hint": "IAM/identity owner",
-      "package_hash": "ad22968329eb730dedd1e362113e9dea9aee3142d47358ff2c6b6f1121218809",
-      "package_id": "d38011eb0314df6d537bb0627fa9fce6f5e1fd645cb063f3c0c1b96941156f38",
+      "package_hash": "997f8db2463c3455853f177a5ea40a2bc40678f093ea759b45e7cb7ab95f9451",
+      "package_id": "2d1cb6e52a1ec656c4a2de161dbbe8b1758554616a7f23ec5ee6ecb3c0df57fe",
       "package_ref": "owner_hint:IAM-identity-owner",
-      "packet_id": "3887128f93226c4495584df8fceb2e99b21055095b00ddeed98eaf2e7b8f0979",
+      "packet_id": "e55fc2f56440e6c4905b575522d26dcb8f246132a61b353a232899b630c311cc",
       "packet_ref": "owner-packet:owner_hint:IAM-identity-owner",
       "phases": [
-        "P1-P3",
         "P2-P4",
         "P4"
       ],
-      "placeholder_source_uri_count": 3,
+      "placeholder_source_uri_count": 2,
       "priorities": [
         "P0",
         "P1"
       ],
       "requirement_ids": [
-        "auditor-and-review-portal",
         "insurer-api-and-actuarial-products",
         "trust-network-procurement-and-marketplace"
       ],
-      "task_count": 3,
+      "task_count": 2,
       "tasks": [
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be identity-provider and accepted for auditor-and-review-portal.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "identity-provider",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/auditor-and-review-portal/identity-provider",
-              "--root",
-              ".",
-              "--task",
-              "auditor-and-review-portal:identity-provider",
-              "--description",
-              "identity-provider evidence for auditor-and-review-portal",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/auditor-and-review-portal/identity-provider.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/auditor-and-review-portal/identity-provider.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/auditor-and-review-portal/identity-provider --root . --task auditor-and-review-portal:identity-provider --description 'identity-provider evidence for auditor-and-review-portal' --snapshot-out artifacts/external-evidence-sources/auditor-and-review-portal/identity-provider.json --intake-out artifacts/external-evidence-intakes/auditor-and-review-portal/identity-provider.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/auditor-and-review-portal/identity-provider.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/auditor-and-review-portal/identity-provider.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "identity-provider evidence for auditor-and-review-portal",
-          "evidence_argument_template": "auditor-and-review-portal,identity-provider,external-evidence/auditor-and-review-portal/identity-provider.json,identity-provider evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/identity-provider.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "IAM/identity owner",
-          "phase": "P1-P3",
-          "priority": "P1",
-          "requirement_id": "auditor-and-review-portal",
-          "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/identity-provider.json",
-          "source_uri": "TODO://authority/auditor-and-review-portal/identity-provider",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/auditor-and-review-portal/identity-provider.json",
-          "suggested_evidence_sources": [
-            "identity-provider event export",
-            "OIDC/session/lifecycle evidence",
-            "RBAC or account-state report"
-          ],
-          "task_id": "a5df2131c85c2fc3035d01e886ed613d473d2494e864149834b747d7f38f533b",
-          "task_ref": "external-evidence:auditor-and-review-portal:identity-provider",
-          "title": "Auditor view, supervised access, regulator view, and review portal attestations",
-          "unit_id": "e751495f6bd0337a851b9cf8192967544a97538cca79641c714107ddf77b25fb",
-          "unit_ref": "auditor-and-review-portal:identity-provider"
-        },
         {
           "acceptance_criteria": [
             "Artifact path must be repository-relative and hashable before manifest verification.",
@@ -1228,109 +1149,30 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 4,
+      "missing_task_count": 3,
       "owner_hint": "legal/compliance owner",
-      "package_hash": "9d0582f2add29ab94b0ab5444dd827d09a1a680437a3cea177572df1b6b48da3",
-      "package_id": "92cba2bab95eaa9adfe67e73bb1626d82e8c3326ab0145701334cb62ed42c229",
+      "package_hash": "53c1ed6bec615dcb3b4012c22a14bcd3ab5f94a3599ec5e6665e54c3856ec1f5",
+      "package_id": "5e6da67d5dd555392f6178a7bbe1d56dfd810c33ba443f74384b50a00829da15",
       "package_ref": "owner_hint:legal-compliance-owner",
-      "packet_id": "e22d57fe22460d3903650e15cc62d9711e90398a068013b4bd64c583eb7688b2",
+      "packet_id": "93ba55578d15160d25874965c6a833a3695042a0fce0596609168f1c3f7d6546",
       "packet_ref": "owner-packet:owner_hint:legal-compliance-owner",
       "phases": [
-        "P1-P3",
         "P1-P4",
         "P2-P3",
         "P3"
       ],
-      "placeholder_source_uri_count": 4,
+      "placeholder_source_uri_count": 3,
       "priorities": [
         "P0",
         "P1"
       ],
       "requirement_ids": [
-        "auditor-and-review-portal",
         "compliance-mapper-and-eu-ai-act",
         "roadmap-phase-scoreboard",
         "vertical-packs"
       ],
-      "task_count": 4,
+      "task_count": 3,
       "tasks": [
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be regulator and accepted for auditor-and-review-portal.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "regulator",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/auditor-and-review-portal/regulator",
-              "--root",
-              ".",
-              "--task",
-              "auditor-and-review-portal:regulator",
-              "--description",
-              "regulator evidence for auditor-and-review-portal",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/auditor-and-review-portal/regulator.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/auditor-and-review-portal/regulator.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/auditor-and-review-portal/regulator --root . --task auditor-and-review-portal:regulator --description 'regulator evidence for auditor-and-review-portal' --snapshot-out artifacts/external-evidence-sources/auditor-and-review-portal/regulator.json --intake-out artifacts/external-evidence-intakes/auditor-and-review-portal/regulator.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/auditor-and-review-portal/regulator.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/auditor-and-review-portal/regulator.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "regulator evidence for auditor-and-review-portal",
-          "evidence_argument_template": "auditor-and-review-portal,regulator,external-evidence/auditor-and-review-portal/regulator.json,regulator evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/regulator.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "legal/compliance owner",
-          "phase": "P1-P3",
-          "priority": "P1",
-          "requirement_id": "auditor-and-review-portal",
-          "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/regulator.json",
-          "source_uri": "TODO://authority/auditor-and-review-portal/regulator",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/auditor-and-review-portal/regulator.json",
-          "suggested_evidence_sources": [
-            "regulator acknowledgement",
-            "supervisor portal receipt",
-            "conformity-assessment record"
-          ],
-          "task_id": "5587a2f2cd16dbff0317d1329cb227cf9a44a025d41f1cde680f23d8872f6d1c",
-          "task_ref": "external-evidence:auditor-and-review-portal:regulator",
-          "title": "Auditor view, supervised access, regulator view, and review portal attestations",
-          "unit_id": "cd15f092fb1c9a822cec2283efb08d822b5ff05589d858414daf4b0f487d3d5a",
-          "unit_ref": "auditor-and-review-portal:regulator"
-        },
         {
           "acceptance_criteria": [
             "Artifact path must be repository-relative and hashable before manifest verification.",
@@ -2470,107 +2312,28 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 3,
+      "missing_task_count": 2,
       "owner_hint": "service owner",
-      "package_hash": "33879c2bda4a6df008c3211ab5bdd8d084f8cac6740733776c13d80edd2c1103",
-      "package_id": "9721f35bc5e14c4d70cab6db79add301a10da8b8acaf1755b6ce33e05fc7c11c",
+      "package_hash": "6a683171144ff1816334267ac2dfa7139dfec34a02ec2dd52b2ec4fb824619d5",
+      "package_id": "45400e51f2d0df4e403178f1d6affb71b03f1c90378c4715c7367a53c5172a2d",
       "package_ref": "owner_hint:service-owner",
-      "packet_id": "48f580f81c7ed017aa2feabd9d2b6887a3641e228d784e017768fd4fa8d93727",
+      "packet_id": "6b9bf39cc7fc0daf80fae3de35ece909cc1511d0155261ca7606c7f1828612a0",
       "packet_ref": "owner-packet:owner_hint:service-owner",
       "phases": [
-        "P1-P3",
         "P2-P4",
         "P4"
       ],
-      "placeholder_source_uri_count": 3,
+      "placeholder_source_uri_count": 2,
       "priorities": [
         "P0",
         "P1"
       ],
       "requirement_ids": [
-        "auditor-and-review-portal",
         "insurer-api-and-actuarial-products",
         "trust-network-procurement-and-marketplace"
       ],
-      "task_count": 3,
+      "task_count": 2,
       "tasks": [
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be hosted-service and accepted for auditor-and-review-portal.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "hosted-service",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/auditor-and-review-portal/hosted-service",
-              "--root",
-              ".",
-              "--task",
-              "auditor-and-review-portal:hosted-service",
-              "--description",
-              "hosted-service evidence for auditor-and-review-portal",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/auditor-and-review-portal/hosted-service.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/auditor-and-review-portal/hosted-service.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/auditor-and-review-portal/hosted-service --root . --task auditor-and-review-portal:hosted-service --description 'hosted-service evidence for auditor-and-review-portal' --snapshot-out artifacts/external-evidence-sources/auditor-and-review-portal/hosted-service.json --intake-out artifacts/external-evidence-intakes/auditor-and-review-portal/hosted-service.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/auditor-and-review-portal/hosted-service.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/auditor-and-review-portal/hosted-service.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "hosted-service evidence for auditor-and-review-portal",
-          "evidence_argument_template": "auditor-and-review-portal,hosted-service,external-evidence/auditor-and-review-portal/hosted-service.json,hosted-service evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/hosted-service.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "service owner",
-          "phase": "P1-P3",
-          "priority": "P1",
-          "requirement_id": "auditor-and-review-portal",
-          "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/hosted-service.json",
-          "source_uri": "TODO://authority/auditor-and-review-portal/hosted-service",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/auditor-and-review-portal/hosted-service.json",
-          "suggested_evidence_sources": [
-            "hosted service health or deployment export",
-            "service audit root",
-            "operational SLO/status evidence"
-          ],
-          "task_id": "4a20afe57cc9f2971078547577b16f64216382a3ce57613712a53d233e191ce4",
-          "task_ref": "external-evidence:auditor-and-review-portal:hosted-service",
-          "title": "Auditor view, supervised access, regulator view, and review portal attestations",
-          "unit_id": "dc3dc8fc4c61aa25bafced7670bea6e23899a911be0bb3e56028576312c58f5b",
-          "unit_ref": "auditor-and-review-portal:hosted-service"
-        },
         {
           "acceptance_criteria": [
             "Artifact path must be repository-relative and hashable before manifest verification.",
@@ -3161,37 +2924,37 @@
   "source_work_package": {
     "generated_at": "2026-07-12T00:01:00Z",
     "group_by": "owner_hint",
-    "work_package_hash": "6491a79b744e5478e03ccecb931c3ab83b797b6a1a4a3510c2e6695e4434db35",
-    "work_package_id": "36f667d5cbaa55e4ef81a723cc08d6013ca6904699388c138c042790c83ff485"
+    "work_package_hash": "dbbc21cfadae3074dd1aaed13120cfaa1f1225cc5dbe87dc52628726359efe8d",
+    "work_package_id": "9ddb5e03257e1d2f236796ab8604db7e07ceea44ee0af8162c6ff59b2082b940"
   },
   "summary": {
     "covered_task_count": 0,
     "live_source_uri_count": 0,
-    "missing_task_count": 36,
+    "missing_task_count": 33,
     "packet_count": 9,
-    "placeholder_source_uri_count": 36,
-    "source_work_package_task_count": 36,
-    "task_count": 36,
+    "placeholder_source_uri_count": 33,
+    "source_work_package_task_count": 33,
+    "task_count": 33,
     "task_count_by_authority_kind": {
       "ci-run": 5,
       "customer": 8,
-      "hosted-service": 3,
-      "identity-provider": 3,
+      "hosted-service": 2,
+      "identity-provider": 2,
       "insurer": 3,
       "kms-hsm": 2,
       "provider-api": 3,
-      "regulator": 4,
+      "regulator": 3,
       "standards-body": 5
     },
     "task_count_by_owner_hint": {
-      "IAM/identity owner": 3,
+      "IAM/identity owner": 2,
       "customer success/account owner": 8,
       "integration/platform owner": 3,
-      "legal/compliance owner": 4,
+      "legal/compliance owner": 3,
       "release engineering": 5,
       "risk/insurance owner": 3,
       "security/platform KMS owner": 2,
-      "service owner": 3,
+      "service owner": 2,
       "standards/governance owner": 5
     }
   }

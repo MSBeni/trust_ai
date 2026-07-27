@@ -1,21 +1,18 @@
 # External Evidence Owner Fulfillment Closure
 
-- Closure ID: `07f1e0c01844f4a1065646fc50c0575209f7a7a4e9791be030438656a8a04539`
+- Closure ID: `1227f05f7c3d4e304213aae59805b58ffeddb99ebf03fb032a831b5cb5d7b25c`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Closed tasks: 0/36
-- Missing intakes: 36
+- Closed tasks: 0/33
+- Missing intakes: 33
 - Invalid intake tasks: 0
-- Missing manifest coverage: 36
-- Placeholder source URIs: 36
+- Missing manifest coverage: 33
+- Placeholder source URIs: 33
 
 ## Task Closure
 
 | Task | Owner | Status | Intake | Manifest Evidence | Blocking Reasons |
 |---|---|---|---|---|---|
-| `auditor-and-review-portal:hosted-service` | service owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
-| `auditor-and-review-portal:identity-provider` | IAM/identity owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
-| `auditor-and-review-portal:regulator` | legal/compliance owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `byoc-self-hosted:ci-run` | release engineering | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `byoc-self-hosted:standards-body` | standards/governance owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `byoc-self-hosted:customer` | customer success/account owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
@@ -52,9 +49,9 @@
 
 ## Blockers
 
-- 36 reviewed tasks still use placeholder source_uri values
-- 36 reviewed tasks do not have intake receipts
-- 36 reviewed tasks are not covered by the rebuilt manifest
+- 33 reviewed tasks still use placeholder source_uri values
+- 33 reviewed tasks do not have intake receipts
+- 33 reviewed tasks are not covered by the rebuilt manifest
 
 ## Next Actions
 

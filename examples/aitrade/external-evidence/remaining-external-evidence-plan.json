@@ -5,12 +5,12 @@
     "A task is covered only after a matching evidence artifact is supplied to an external evidence manifest and verified.",
     "Freshness and issuer authority remain bounded by the supplied evidence artifact and manifest verification options."
   ],
-  "plan_id": "9bc568c80bdb2cfdd47dbc3322fe6645a65d2a712baada9064d4e5d910d6cf5b",
+  "plan_id": "3383d36acec3468ed0b8b6b6bafc4dcf3149e98568cc7b3f1cdab300d2d34572",
   "schema": "trustai.external-evidence-collection-plan/0.1",
   "source_manifest": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "manifest_hash": "f547fb7ec4181ae49d38674d905eb350cec33c9baf8efed035378722a91ec486",
-    "manifest_id": "d3b97aa0f40db01d7147a146b3d225f290c2d8f3dfacd41b801a4151a98cd145",
+    "manifest_hash": "756c4337fac16014a6f07761831299c9bfc6a1d1e1692dd6bce9db6500879b0f",
+    "manifest_id": "7088d943067e14728a203a60698e85c3e676d33b75a54845d493a9f2070ce424",
     "manifest_ref": "production-external-evidence",
     "status": "partial"
   },
@@ -21,39 +21,38 @@
   },
   "status_filter": "missing",
   "summary": {
-    "covered_authority_kind_count": 35,
-    "missing_authority_kind_count": 36,
+    "covered_authority_kind_count": 38,
+    "missing_authority_kind_count": 33,
     "missing_task_count_by_authority_kind": {
       "ci-run": 5,
       "customer": 8,
-      "hosted-service": 3,
-      "identity-provider": 3,
+      "hosted-service": 2,
+      "identity-provider": 2,
       "insurer": 3,
       "kms-hsm": 2,
       "provider-api": 3,
-      "regulator": 4,
+      "regulator": 3,
       "standards-body": 5
     },
     "required_authority_kind_count": 71,
     "selected_covered_task_count": 0,
-    "selected_missing_task_count": 36,
-    "selected_task_count": 36,
+    "selected_missing_task_count": 33,
+    "selected_task_count": 33,
     "source_manifest_status": "partial",
     "task_count_by_authority_kind": {
       "ci-run": 5,
       "customer": 8,
-      "hosted-service": 3,
-      "identity-provider": 3,
+      "hosted-service": 2,
+      "identity-provider": 2,
       "insurer": 3,
       "kms-hsm": 2,
       "provider-api": 3,
-      "regulator": 4,
+      "regulator": 3,
       "standards-body": 5
     },
     "task_count_by_phase": {
       "P0-P4": 2,
       "P1-P2": 3,
-      "P1-P3": 3,
       "P1-P4": 5,
       "P2": 3,
       "P2-P3": 3,
@@ -64,93 +63,6 @@
     "total_authority_unit_count": 71
   },
   "tasks": [
-    {
-      "acceptance_criteria": [
-        "Artifact path must be repository-relative and hashable before manifest verification.",
-        "Evidence item authority_kind must be hosted-service and accepted for auditor-and-review-portal.",
-        "Use issued_at and expires_at metadata when strict freshness verification is required.",
-        "Rebuild and verify the external evidence manifest after adding the artifact."
-      ],
-      "authority_kind": "hosted-service",
-      "coverage_status": "missing",
-      "evidence_argument_template": "auditor-and-review-portal,hosted-service,external-evidence/auditor-and-review-portal/hosted-service.json,hosted-service evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-      "external_authority_required": [
-        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
-      ],
-      "owner_hint": "service owner",
-      "phase": "P1-P3",
-      "priority": "P1",
-      "requirement_id": "auditor-and-review-portal",
-      "suggested_artifact_path": "external-evidence/auditor-and-review-portal/hosted-service.json",
-      "suggested_evidence_sources": [
-        "hosted service health or deployment export",
-        "service audit root",
-        "operational SLO/status evidence"
-      ],
-      "task_id": "4a20afe57cc9f2971078547577b16f64216382a3ce57613712a53d233e191ce4",
-      "task_ref": "external-evidence:auditor-and-review-portal:hosted-service",
-      "title": "Auditor view, supervised access, regulator view, and review portal attestations",
-      "unit_id": "dc3dc8fc4c61aa25bafced7670bea6e23899a911be0bb3e56028576312c58f5b",
-      "unit_ref": "auditor-and-review-portal:hosted-service"
-    },
-    {
-      "acceptance_criteria": [
-        "Artifact path must be repository-relative and hashable before manifest verification.",
-        "Evidence item authority_kind must be identity-provider and accepted for auditor-and-review-portal.",
-        "Use issued_at and expires_at metadata when strict freshness verification is required.",
-        "Rebuild and verify the external evidence manifest after adding the artifact."
-      ],
-      "authority_kind": "identity-provider",
-      "coverage_status": "missing",
-      "evidence_argument_template": "auditor-and-review-portal,identity-provider,external-evidence/auditor-and-review-portal/identity-provider.json,identity-provider evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-      "external_authority_required": [
-        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
-      ],
-      "owner_hint": "IAM/identity owner",
-      "phase": "P1-P3",
-      "priority": "P1",
-      "requirement_id": "auditor-and-review-portal",
-      "suggested_artifact_path": "external-evidence/auditor-and-review-portal/identity-provider.json",
-      "suggested_evidence_sources": [
-        "identity-provider event export",
-        "OIDC/session/lifecycle evidence",
-        "RBAC or account-state report"
-      ],
-      "task_id": "a5df2131c85c2fc3035d01e886ed613d473d2494e864149834b747d7f38f533b",
-      "task_ref": "external-evidence:auditor-and-review-portal:identity-provider",
-      "title": "Auditor view, supervised access, regulator view, and review portal attestations",
-      "unit_id": "e751495f6bd0337a851b9cf8192967544a97538cca79641c714107ddf77b25fb",
-      "unit_ref": "auditor-and-review-portal:identity-provider"
-    },
-    {
-      "acceptance_criteria": [
-        "Artifact path must be repository-relative and hashable before manifest verification.",
-        "Evidence item authority_kind must be regulator and accepted for auditor-and-review-portal.",
-        "Use issued_at and expires_at metadata when strict freshness verification is required.",
-        "Rebuild and verify the external evidence manifest after adding the artifact."
-      ],
-      "authority_kind": "regulator",
-      "coverage_status": "missing",
-      "evidence_argument_template": "auditor-and-review-portal,regulator,external-evidence/auditor-and-review-portal/regulator.json,regulator evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-      "external_authority_required": [
-        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
-      ],
-      "owner_hint": "legal/compliance owner",
-      "phase": "P1-P3",
-      "priority": "P1",
-      "requirement_id": "auditor-and-review-portal",
-      "suggested_artifact_path": "external-evidence/auditor-and-review-portal/regulator.json",
-      "suggested_evidence_sources": [
-        "regulator acknowledgement",
-        "supervisor portal receipt",
-        "conformity-assessment record"
-      ],
-      "task_id": "5587a2f2cd16dbff0317d1329cb227cf9a44a025d41f1cde680f23d8872f6d1c",
-      "task_ref": "external-evidence:auditor-and-review-portal:regulator",
-      "title": "Auditor view, supervised access, regulator view, and review portal attestations",
-      "unit_id": "cd15f092fb1c9a822cec2283efb08d822b5ff05589d858414daf4b0f487d3d5a",
-      "unit_ref": "auditor-and-review-portal:regulator"
-    },
     {
       "acceptance_criteria": [
         "Artifact path must be repository-relative and hashable before manifest verification.",

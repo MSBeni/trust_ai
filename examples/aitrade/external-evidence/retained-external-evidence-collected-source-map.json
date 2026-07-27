@@ -782,6 +782,96 @@
       "unit_ref": "auditor-and-review-portal:provider-api"
     },
     {
+      "authority_kind": "hosted-service",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained hosted service export for review portal worker fleet and service health evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/auditor-and-review-portal-hosted-service.json",
+      "issued_at": "2026-07-08T06:14:00Z",
+      "issuer": "TrustAI Cloud",
+      "owner_hint": "service owner",
+      "requirement_id": "auditor-and-review-portal",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/review-portal-hosted-service-source-snapshot.json",
+      "source_uri": "https://review.trustai.example/aitrade/regulator/.well-known/trustai-authority",
+      "subject": "aitrade review portal hosted service authority export",
+      "suggested_evidence_sources": [
+        "hosted service health or deployment export",
+        "service audit root",
+        "operational SLO/status evidence"
+      ],
+      "task": "auditor-and-review-portal:hosted-service",
+      "task_id": "4a20afe57cc9f2971078547577b16f64216382a3ce57613712a53d233e191ce4",
+      "task_ref": "external-evidence:auditor-and-review-portal:hosted-service",
+      "title": "Auditor view, supervised access, regulator view, and review portal attestations",
+      "unit_id": "dc3dc8fc4c61aa25bafced7670bea6e23899a911be0bb3e56028576312c58f5b",
+      "unit_ref": "auditor-and-review-portal:hosted-service"
+    },
+    {
+      "authority_kind": "identity-provider",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained identity-provider export for review portal reviewer sessions and account lifecycle evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/auditor-and-review-portal-identity-provider.json",
+      "issued_at": "2026-07-08T06:15:00Z",
+      "issuer": "Example IdP",
+      "owner_hint": "IAM/identity owner",
+      "requirement_id": "auditor-and-review-portal",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/review-portal-identity-provider-source-snapshot.json",
+      "source_uri": "https://idp.example/exports/aitrade/review-portal/reviewer-sessions",
+      "subject": "aitrade review portal reviewer identity-provider authority export",
+      "suggested_evidence_sources": [
+        "identity-provider event export",
+        "OIDC/session/lifecycle evidence",
+        "RBAC or account-state report"
+      ],
+      "task": "auditor-and-review-portal:identity-provider",
+      "task_id": "a5df2131c85c2fc3035d01e886ed613d473d2494e864149834b747d7f38f533b",
+      "task_ref": "external-evidence:auditor-and-review-portal:identity-provider",
+      "title": "Auditor view, supervised access, regulator view, and review portal attestations",
+      "unit_id": "e751495f6bd0337a851b9cf8192967544a97538cca79641c714107ddf77b25fb",
+      "unit_ref": "auditor-and-review-portal:identity-provider"
+    },
+    {
+      "authority_kind": "regulator",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained regulator export for review portal supervised-access acceptance evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/auditor-and-review-portal-regulator.json",
+      "issued_at": "2026-07-08T06:16:00Z",
+      "issuer": "Example Regulator",
+      "owner_hint": "legal/compliance owner",
+      "requirement_id": "auditor-and-review-portal",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/review-portal-regulator-source-snapshot.json",
+      "source_uri": "https://regulator.example/exports/aitrade/review-portal/supervised-access-acceptance",
+      "subject": "aitrade review portal regulator supervised-access acceptance export",
+      "suggested_evidence_sources": [
+        "regulator acknowledgement",
+        "supervisor portal receipt",
+        "conformity-assessment record"
+      ],
+      "task": "auditor-and-review-portal:regulator",
+      "task_id": "5587a2f2cd16dbff0317d1329cb227cf9a44a025d41f1cde680f23d8872f6d1c",
+      "task_ref": "external-evidence:auditor-and-review-portal:regulator",
+      "title": "Auditor view, supervised access, regulator view, and review portal attestations",
+      "unit_id": "cd15f092fb1c9a822cec2283efb08d822b5ff05589d858414daf4b0f487d3d5a",
+      "unit_ref": "auditor-and-review-portal:regulator"
+    },
+    {
       "authority_kind": "kms-hsm",
       "content_type": "application/json",
       "coverage_status": "missing",
@@ -1059,7 +1149,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "877ddb399e1cb17e743c6d2c373072448565dd67400fa24b20cd4f80a6eaf54e",
+  "source_map_id": "4a79e7a030b8893485fb7d1c5a9daf75fc6497f657897b24a9925e249acc3374",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -1074,9 +1164,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 35,
+    "entry_count": 38,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 35,
+    "live_source_uri_count": 38,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

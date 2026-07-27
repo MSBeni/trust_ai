@@ -1,8 +1,8 @@
 # TrustAI External Evidence Collection Plan
 
-Plan ID: `9bc568c80bdb2cfdd47dbc3322fe6645a65d2a712baada9064d4e5d910d6cf5b`
+Plan ID: `3383d36acec3468ed0b8b6b6bafc4dcf3149e98568cc7b3f1cdab300d2d34572`
 
-Source manifest: `d3b97aa0f40db01d7147a146b3d225f290c2d8f3dfacd41b801a4151a98cd145`
+Source manifest: `7088d943067e14728a203a60698e85c3e676d33b75a54845d493a9f2070ce424`
 
 Status filter: missing
 
@@ -10,18 +10,15 @@ Status filter: missing
 
 - Source manifest status: partial
 - Total authority units: 71
-- Selected tasks: 36
-- Selected missing tasks: 36
+- Selected tasks: 33
+- Selected missing tasks: 33
 - Selected covered tasks: 0
-- Missing authority kinds overall: 36
+- Missing authority kinds overall: 33
 
 ## Collection Tasks
 
 | Task ID | Unit Ref | Requirement | Authority | Status | Owner Hint | Suggested Artifact | Evidence Argument Template |
 |---|---|---|---|---|---|---|---|
-| `4a20afe57cc9f2971078547577b16f64216382a3ce57613712a53d233e191ce4` | `auditor-and-review-portal:hosted-service` | `auditor-and-review-portal` | hosted-service | missing | service owner | `external-evidence/auditor-and-review-portal/hosted-service.json` | `auditor-and-review-portal,hosted-service,external-evidence/auditor-and-review-portal/hosted-service.json,hosted-service evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
-| `a5df2131c85c2fc3035d01e886ed613d473d2494e864149834b747d7f38f533b` | `auditor-and-review-portal:identity-provider` | `auditor-and-review-portal` | identity-provider | missing | IAM/identity owner | `external-evidence/auditor-and-review-portal/identity-provider.json` | `auditor-and-review-portal,identity-provider,external-evidence/auditor-and-review-portal/identity-provider.json,identity-provider evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
-| `5587a2f2cd16dbff0317d1329cb227cf9a44a025d41f1cde680f23d8872f6d1c` | `auditor-and-review-portal:regulator` | `auditor-and-review-portal` | regulator | missing | legal/compliance owner | `external-evidence/auditor-and-review-portal/regulator.json` | `auditor-and-review-portal,regulator,external-evidence/auditor-and-review-portal/regulator.json,regulator evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `4d92ba8183803168ec0e515166b6dded4b68ce807a0af3f3e938f3f26d84a6bb` | `byoc-self-hosted:ci-run` | `byoc-self-hosted` | ci-run | missing | release engineering | `external-evidence/byoc-self-hosted/ci-run.json` | `byoc-self-hosted,ci-run,external-evidence/byoc-self-hosted/ci-run.json,ci-run evidence for byoc-self-hosted;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `09a6381d810ea0bc6732d04d967db1b8032a8bb71972d1910eed26868700c179` | `byoc-self-hosted:standards-body` | `byoc-self-hosted` | standards-body | missing | standards/governance owner | `external-evidence/byoc-self-hosted/standards-body.json` | `byoc-self-hosted,standards-body,external-evidence/byoc-self-hosted/standards-body.json,standards-body evidence for byoc-self-hosted;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `af50b681baa31018d24096abc1a794738c8a80afce398c4557fbc08f8ace0bd3` | `byoc-self-hosted:customer` | `byoc-self-hosted` | customer | missing | customer success/account owner | `external-evidence/byoc-self-hosted/customer.json` | `byoc-self-hosted,customer,external-evidence/byoc-self-hosted/customer.json,customer evidence for byoc-self-hosted;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |

@@ -1,0 +1,75 @@
+{
+  "authority_evidence": {
+    "authority_kind": "hosted-service",
+    "evidence_ref": "hosted-service:trustai/review-portal/regulator-prod",
+    "requirement_id": "auditor-and-review-portal",
+    "source_uri": "https://review.trustai.example/aitrade/regulator/.well-known/trustai-authority"
+  },
+  "environment": "aitrade-prod",
+  "evidence": {
+    "kms_authority_export": {
+      "path": "examples/aitrade/review-portal-kms-hsm-authority-export.json",
+      "sha256": "sha256:1a4f17ae4a72fab4ce77ddf1abaeebb59f7df0db70b759aae03ae402066a88b6"
+    },
+    "production_authority_spec": {
+      "path": "docs/specs/review-portal-production-authority-v0.1.md",
+      "sha256": "sha256:14561ec859d3fb15833e6364a80e4352e6920bfac771324c0972c65df8e5e010"
+    },
+    "provider_api_export": {
+      "path": "examples/aitrade/review-portal-provider-api-authority-export.json",
+      "sha256": "sha256:c516f6c471e93ed2be705d3f22cd061af171ed326b61ca7d18a614daf32dabc9"
+    },
+    "review_portal_authority_source": {
+      "path": "src/trustai/review_portal_authority.py",
+      "sha256": "sha256:65c1eb2291c26550abe88f7be25f4ed728b31f5c7bd960031ca67f968d01a496"
+    },
+    "review_portal_authority_tests": {
+      "path": "tests/test_review_portal_authority.py",
+      "sha256": "sha256:32ba79573208967b88100ba88032b1c6e0c675dc25db74c7a884da1134335bd9"
+    },
+    "review_portal_service_source": {
+      "path": "src/trustai/review_portal_service.py",
+      "sha256": "sha256:8e9d04210279941efab3f0a7d310a9191bff1ad88a85819214952c9c9502ba61"
+    },
+    "review_portal_service_spec": {
+      "path": "docs/specs/review-portal-service-attestation-v0.1.md",
+      "sha256": "sha256:f342023f52f9f1ddfbf06b2bc0f39591c71752e641e92907aa3bc669d582d15f"
+    },
+    "review_portal_service_tests": {
+      "path": "tests/test_review_portal_service.py",
+      "sha256": "sha256:bb1ada9f056672932cdb5de6bfb929f35361a98d16945654a421892e1aee4cf0"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "hosted_service": {
+    "access_log_ref": "access-log:review-portal/regulator-prod",
+    "alert_policy_ref": "alert-policy:review-portal/regulator-prod",
+    "api_ref": "api:trustai/review-portal/regulator-prod/v0.1",
+    "availability_zones": [
+      "use1-az1",
+      "use1-az2",
+      "use1-az3"
+    ],
+    "deployment_ref": "deploy:review-portal/regulator-prod/2026-07-08",
+    "endpoint_url": "https://review.trustai.example/aitrade/regulator",
+    "frontend_bundle_ref": "bundle:review-portal/regulator-prod",
+    "health_check_ref": "health:review-portal/regulator-prod/2026-07-08T06:14:00Z",
+    "metrics_ref": "metrics:review-portal/regulator-prod",
+    "portal_ref": "service:review-portal/regulator-prod",
+    "replicas_max": 6,
+    "replicas_min": 3,
+    "service_image_digest": "sha256:reviewportalserviceimage000000000000000000000000000000000000000000000001",
+    "slo_ref": "slo:review-portal/regulator-prod/availability-99.9"
+  },
+  "issued_at": "2026-07-08T06:14:00Z",
+  "issuer": "TrustAI Cloud",
+  "schema": "trustai.review-portal-hosted-service-authority-export/0.1",
+  "subject": "aitrade review portal hosted service authority export",
+  "verified_controls": [
+    "hosted review portal worker fleet health export",
+    "portal API and frontend release binding",
+    "multi-zone service availability evidence",
+    "immutable access-log and metrics references",
+    "hosted service links to KMS and provider API authority exports"
+  ]
+}

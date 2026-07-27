@@ -1,22 +1,19 @@
 # External Evidence Owner Fulfillment Review
 
-- Review ID: `4f61b1ba65fbaffb36e9c72dfb575731e8b594b1a8dec074f90fb45a77ea887b`
+- Review ID: `72793eb501f910debc7c404cca586271727798c7c3bf8422f778709874f9a2bb`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Fulfillments: 36
+- Fulfillments: 33
 - Owners: 9
 - Ready tasks: 0
-- Blocked tasks: 36
-- Placeholder source URIs: 36
+- Blocked tasks: 33
+- Placeholder source URIs: 33
 - Live source URIs: 0
 
 ## Task Review
 
 | Task | Owner | Status | Source URI | Blocking Reasons |
 |---|---|---|---|---|
-| `auditor-and-review-portal:hosted-service` | service owner | blocked | TODO://authority/auditor-and-review-portal/hosted-service | `placeholder-source-uri` |
-| `auditor-and-review-portal:identity-provider` | IAM/identity owner | blocked | TODO://authority/auditor-and-review-portal/identity-provider | `placeholder-source-uri` |
-| `auditor-and-review-portal:regulator` | legal/compliance owner | blocked | TODO://authority/auditor-and-review-portal/regulator | `placeholder-source-uri` |
 | `byoc-self-hosted:ci-run` | release engineering | blocked | TODO://authority/byoc-self-hosted/ci-run | `placeholder-source-uri` |
 | `byoc-self-hosted:standards-body` | standards/governance owner | blocked | TODO://authority/byoc-self-hosted/standards-body | `placeholder-source-uri` |
 | `byoc-self-hosted:customer` | customer success/account owner | blocked | TODO://authority/byoc-self-hosted/customer | `placeholder-source-uri` |
@@ -55,12 +52,12 @@
 
 - Fulfilled source map errors: 1
 - Fulfilled source map warnings: 1
-  - source map contains 36 placeholder source_uri values but live source URIs are required
+  - source map contains 33 placeholder source_uri values but live source URIs are required
 
 ## Blockers
 
-- owner fulfillment review contains 36 placeholder source_uri values
-- fulfilled source map: source map contains 36 placeholder source_uri values but live source URIs are required
+- owner fulfillment review contains 33 placeholder source_uri values
+- fulfilled source map: source map contains 33 placeholder source_uri values but live source URIs are required
 
 ## Next Actions
 

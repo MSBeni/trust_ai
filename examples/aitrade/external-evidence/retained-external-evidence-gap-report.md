@@ -1,30 +1,29 @@
 # External Evidence Gap Report
 
-- Gap report ID: `c91ac2c0d063aa2945697ed5922d778e5b863e62ba34a37f08ca668333dc187e`
+- Gap report ID: `0eaf876ddd1191f0040511756a39d0bc18f483b853712c03e18ad8ebb73b641d`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 35/71
-- Missing authority kinds: 36
-- Remaining collection tasks: 36
-- Source-map entries: 36
-- Placeholder source URIs: 36
+- Covered authority kinds: 38/71
+- Missing authority kinds: 33
+- Remaining collection tasks: 33
+- Source-map entries: 33
+- Placeholder source URIs: 33
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
 
 - `ci-run`: 5
 - `customer`: 8
-- `hosted-service`: 3
-- `identity-provider`: 3
+- `hosted-service`: 2
+- `identity-provider`: 2
 - `insurer`: 3
 - `kms-hsm`: 2
 - `provider-api`: 3
-- `regulator`: 4
+- `regulator`: 3
 - `standards-body`: 5
 
 ## Gaps By Requirement
 
-- `auditor-and-review-portal`: 3
 - `byoc-self-hosted`: 3
 - `compliance-mapper-and-eu-ai-act`: 3
 - `insurer-api-and-actuarial-products`: 7
@@ -38,39 +37,6 @@
 - `vertical-packs`: 3
 
 ## Collection Worklist
-
-### auditor-and-review-portal:hosted-service
-
-- Title: Auditor view, supervised access, regulator view, and review portal attestations
-- Authority kind: `hosted-service`
-- Owner hint: service owner
-- Description: hosted-service evidence for auditor-and-review-portal
-- Source URI: `TODO://authority/auditor-and-review-portal/hosted-service`
-- Snapshot output: `artifacts/external-evidence-sources/auditor-and-review-portal/hosted-service.json`
-- Intake output: `artifacts/external-evidence-intakes/auditor-and-review-portal/hosted-service.json`
-- Suggested evidence sources: hosted service health or deployment export; service audit root; operational SLO/status evidence
-
-### auditor-and-review-portal:identity-provider
-
-- Title: Auditor view, supervised access, regulator view, and review portal attestations
-- Authority kind: `identity-provider`
-- Owner hint: IAM/identity owner
-- Description: identity-provider evidence for auditor-and-review-portal
-- Source URI: `TODO://authority/auditor-and-review-portal/identity-provider`
-- Snapshot output: `artifacts/external-evidence-sources/auditor-and-review-portal/identity-provider.json`
-- Intake output: `artifacts/external-evidence-intakes/auditor-and-review-portal/identity-provider.json`
-- Suggested evidence sources: identity-provider event export; OIDC/session/lifecycle evidence; RBAC or account-state report
-
-### auditor-and-review-portal:regulator
-
-- Title: Auditor view, supervised access, regulator view, and review portal attestations
-- Authority kind: `regulator`
-- Owner hint: legal/compliance owner
-- Description: regulator evidence for auditor-and-review-portal
-- Source URI: `TODO://authority/auditor-and-review-portal/regulator`
-- Snapshot output: `artifacts/external-evidence-sources/auditor-and-review-portal/regulator.json`
-- Intake output: `artifacts/external-evidence-intakes/auditor-and-review-portal/regulator.json`
-- Suggested evidence sources: regulator acknowledgement; supervisor portal receipt; conformity-assessment record
 
 ### byoc-self-hosted:ci-run
 
