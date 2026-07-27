@@ -55,13 +55,13 @@
       "subject": "MSBeni/trust_ai hosted repository service"
     }
   ],
-  "generated_at": "2026-07-27T05:29:38Z",
+  "generated_at": "2026-07-12T00:01:00Z",
   "limitations": [
     "This manifest verifies supplied external evidence artifacts by hash; it does not fetch live provider state.",
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "ceef9c33f08904ea83e3135e7bbc089945f7c1a6e6d5630e55e5f95e76e9404f",
+  "manifest_id": "0ee903cbd513e2616527018c0b37f3386d686c42d27a1c1dbdd5fc2ecfca24c7",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -1283,8 +1283,8 @@
   ],
   "schema": "trustai.external-evidence-manifest/0.1",
   "source_roadmap_audit": {
-    "audit_hash": "eb9058f991d00cfed2ee970e90cf19c509e4b175a7a85e2cbf6e4f0d7466ce0a",
-    "audit_id": "95d76b3893e61daeb5880e6c8446ddf865d1603c5121eca19fbbde6ac9b04ec8",
+    "audit_hash": "1cca64c077fe803195aa392a17d9f6e067ebba221879d9cd3dec014a4dadaf35",
+    "audit_id": "7de4c3b53abf7a8df37d6c1d8e2b66fcdb4740864b6b224e3e62327896e53b3a",
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {

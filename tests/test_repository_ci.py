@@ -5,6 +5,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PYTHON_CI = ROOT / ".github" / "workflows" / "python-ci.yml"
 GO_CI = ROOT / ".github" / "workflows" / "go-verifier.yml"
+RETAINED_EVIDENCE_SCRIPT = ROOT / "scripts" / "regenerate_retained_external_evidence.py"
 TESTS_INIT = ROOT / "tests" / "__init__.py"
 
 
@@ -59,6 +60,7 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("trustai.external-evidence-work-package/0.1", workflow)
         self.assertIn("package_count", workflow)
         self.assertIn("require_live_source_uris", workflow)
+        self.assertIn("python scripts/regenerate_retained_external_evidence.py --verify-only", workflow)
         self.assertIn("python -m trustai external-evidence-append artifacts/external-evidence-manifest-from-intakes.json", workflow)
         self.assertIn("external-evidence-append artifacts/external-evidence-manifest-from-intakes.json artifacts/roadmap-audit.json --require-fresh --require-live-source-uris --require-source-snapshot-artifacts --require-fresh-source-snapshot-artifacts", workflow)
         self.assertIn("--require-fresh --now 2026-07-12T00:00:00Z", workflow)
@@ -84,6 +86,10 @@ class RepositoryCiTests(unittest.TestCase):
     def test_public_repo_has_python_and_go_ci_workflows(self):
         self.assertTrue(PYTHON_CI.exists())
         self.assertTrue(GO_CI.exists())
+        self.assertTrue(RETAINED_EVIDENCE_SCRIPT.exists())
+        script = RETAINED_EVIDENCE_SCRIPT.read_text(encoding="utf-8")
+        self.assertIn("--verify-only", script)
+        self.assertIn("retained-external-evidence-manifest.json", script)
         self.assertTrue(TESTS_INIT.exists())
 
 
