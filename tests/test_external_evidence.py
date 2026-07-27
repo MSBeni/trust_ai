@@ -26,6 +26,7 @@ from trustai.external_evidence import (
     EXTERNAL_EVIDENCE_OWNER_PACKET_STATUS_SCHEMA,
     EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_TEMPLATE_SCHEMA,
     EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_REVIEW_SCHEMA,
+    EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_CLOSURE_SCHEMA,
     EXTERNAL_EVIDENCE_READINESS_SCHEMA,
     EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA,
     ROADMAP_EVIDENCE_REPORT_SCHEMA,
@@ -43,6 +44,7 @@ from trustai.external_evidence import (
     build_external_evidence_owner_packet_status,
     build_external_evidence_owner_fulfillment_template,
     build_external_evidence_owner_fulfillment_review,
+    build_external_evidence_owner_fulfillment_closure,
     build_external_evidence_readiness_report,
     build_external_evidence_intake,
     build_external_evidence_source_snapshot,
@@ -61,6 +63,7 @@ from trustai.external_evidence import (
     load_external_evidence_owner_packet_status,
     load_external_evidence_owner_fulfillment_template,
     load_external_evidence_owner_fulfillment_review,
+    load_external_evidence_owner_fulfillment_closure,
     load_external_evidence_readiness_report,
     load_external_evidence_intake,
     load_external_evidence_intakes,
@@ -76,6 +79,7 @@ from trustai.external_evidence import (
     render_external_evidence_owner_packet_status_markdown,
     render_external_evidence_owner_fulfillment_template_markdown,
     render_external_evidence_owner_fulfillment_review_markdown,
+    render_external_evidence_owner_fulfillment_closure_markdown,
     render_external_evidence_readiness_markdown,
     render_roadmap_evidence_markdown,
     render_roadmap_evidence_bundle_markdown,
@@ -86,6 +90,7 @@ from trustai.external_evidence import (
     verify_external_evidence_owner_packet_status,
     verify_external_evidence_owner_fulfillment_template,
     verify_external_evidence_owner_fulfillment_review,
+    verify_external_evidence_owner_fulfillment_closure,
     verify_external_evidence_readiness_report,
     verify_external_evidence_collection_plan,
     verify_external_evidence_source_map_template,
@@ -885,6 +890,54 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         )
         self.assertFalse(strict_fulfillment_review_result.ok)
 
+        fulfillment_closure = build_external_evidence_owner_fulfillment_closure(
+            fulfillment_review,
+            status_report,
+            manifest,
+            manifest,
+            plan,
+            audit,
+            root=ROOT,
+            intakes=[],
+            require_live_source_uris=True,
+            generated_at="2026-07-09T00:08:30Z",
+        )
+        fulfillment_closure_result = verify_external_evidence_owner_fulfillment_closure(
+            fulfillment_closure,
+            fulfillment_review,
+            status_report,
+            manifest,
+            manifest,
+            plan,
+            audit,
+            root=ROOT,
+            intakes=[],
+            require_live_source_uris=True,
+        )
+        fulfillment_closure_markdown = render_external_evidence_owner_fulfillment_closure_markdown(fulfillment_closure)
+        self.assertEqual(EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_CLOSURE_SCHEMA, fulfillment_closure["schema"])
+        self.assertTrue(fulfillment_closure_result.ok, fulfillment_closure_result.errors)
+        self.assertEqual("blocked", fulfillment_closure["summary"]["closure_status"])
+        self.assertEqual(0, fulfillment_closure["summary"]["closed_task_count"])
+        self.assertEqual(fulfillment_review["summary"]["blocked_task_count"], fulfillment_closure["summary"]["missing_intake_count"])
+        self.assertEqual(fulfillment_review["summary"]["blocked_task_count"], fulfillment_closure["summary"]["missing_manifest_coverage_count"])
+        self.assertEqual(fulfillment_review["summary"]["placeholder_source_uri_count"], fulfillment_closure["summary"]["placeholder_source_uri_count"])
+        self.assertIn("External Evidence Owner Fulfillment Closure", fulfillment_closure_markdown)
+        strict_fulfillment_closure_result = verify_external_evidence_owner_fulfillment_closure(
+            fulfillment_closure,
+            fulfillment_review,
+            status_report,
+            manifest,
+            manifest,
+            plan,
+            audit,
+            root=ROOT,
+            intakes=[],
+            require_live_source_uris=True,
+            require_closed=True,
+        )
+        self.assertFalse(strict_fulfillment_closure_result.ok)
+
         filled_template = copy.deepcopy(fulfillment_template)
         for item in filled_template["fulfillments"]:
             task_slug = str(item["task"]).replace(":", "/")
@@ -915,6 +968,65 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual(fulfillment_template["summary"]["fulfillment_count"], filled_review["summary"]["ready_task_count"])
         self.assertTrue(any("stale" in warning for warning in filled_review["verification"]["template_warnings"]), filled_review["verification"])
 
+        filled_intakes = []
+        for index, task in enumerate(filled_review["task_reviews"]):
+            filled_intakes.append(
+                build_external_evidence_intake(
+                    plan,
+                    manifest,
+                    audit,
+                    root=ROOT,
+                    task_ref=task["task"],
+                    artifact_path=FIXTURE,
+                    description=f"Authority export for {task['task']}",
+                    issuer="TrustAI test authority",
+                    subject=task["task"],
+                    source_uri=task["source_uri"],
+                    issued_at="2026-07-09T00:10:00Z",
+                    expires_at="2026-12-31T00:00:00Z",
+                    generated_at=f"2026-07-09T00:10:{index:02d}Z",
+                )
+            )
+        rebuilt_manifest = build_external_evidence_manifest_from_intakes(
+            plan,
+            manifest,
+            audit,
+            root=ROOT,
+            intakes=filled_intakes,
+            require_live_source_uris=True,
+            generated_at="2026-07-09T00:11:00Z",
+        )
+        closed_fulfillment_closure = build_external_evidence_owner_fulfillment_closure(
+            filled_review,
+            status_report,
+            rebuilt_manifest,
+            manifest,
+            plan,
+            audit,
+            root=ROOT,
+            intakes=filled_intakes,
+            require_live_source_uris=True,
+            generated_at="2026-07-09T00:12:00Z",
+        )
+        closed_fulfillment_closure_result = verify_external_evidence_owner_fulfillment_closure(
+            closed_fulfillment_closure,
+            filled_review,
+            status_report,
+            rebuilt_manifest,
+            manifest,
+            plan,
+            audit,
+            root=ROOT,
+            intakes=filled_intakes,
+            require_live_source_uris=True,
+            require_closed=True,
+        )
+        self.assertTrue(closed_fulfillment_closure_result.ok, closed_fulfillment_closure_result.errors)
+        self.assertEqual("closed", closed_fulfillment_closure["summary"]["closure_status"])
+        self.assertEqual(filled_review["summary"]["ready_task_count"], closed_fulfillment_closure["summary"]["closed_task_count"])
+        self.assertEqual(0, closed_fulfillment_closure["summary"]["missing_intake_count"])
+        self.assertEqual(0, closed_fulfillment_closure["summary"]["missing_manifest_coverage_count"])
+
         filtered_template = build_external_evidence_owner_fulfillment_template(
             status_report,
             owner_hint=fulfillment_template["summary"]["owners"][0],
@@ -940,6 +1052,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_path = Path(tmp_dir)
             work_package_path = tmp_path / "work-package.json"
+            manifest_path = tmp_path / "manifest.json"
+            audit_path = tmp_path / "roadmap-audit.json"
             plan_path = tmp_path / "plan.json"
             source_map_path = tmp_path / "source-map.json"
             packet_path = tmp_path / "owner-packets.json"
@@ -950,9 +1064,13 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             fulfillment_markdown_path = tmp_path / "owner-fulfillment-template.md"
             fulfillment_review_path = tmp_path / "owner-fulfillment-review.json"
             fulfillment_review_markdown_path = tmp_path / "owner-fulfillment-review.md"
+            fulfillment_closure_path = tmp_path / "owner-fulfillment-closure.json"
+            fulfillment_closure_markdown_path = tmp_path / "owner-fulfillment-closure.md"
             reviewed_source_map_path = tmp_path / "source-map-reviewed.json"
             fulfilled_source_map_path = tmp_path / "source-map-fulfilled.json"
             work_package_path.write_text(json.dumps(work_package, indent=2, sort_keys=True), encoding="utf-8")
+            manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
+            audit_path.write_text(json.dumps(audit, indent=2, sort_keys=True), encoding="utf-8")
             plan_path.write_text(json.dumps(plan, indent=2, sort_keys=True), encoding="utf-8")
             source_map_path.write_text(json.dumps(source_map, indent=2, sort_keys=True), encoding="utf-8")
             subprocess.run(
@@ -1126,6 +1244,78 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 cwd=ROOT,
                 check=True,
             )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-owner-fulfillment-closure",
+                    str(fulfillment_review_path),
+                    str(status_path),
+                    str(manifest_path),
+                    str(manifest_path),
+                    str(plan_path),
+                    str(audit_path),
+                    "--root",
+                    str(ROOT),
+                    "--require-live-source-uris",
+                    "--generated-at",
+                    "2026-07-09T00:08:30Z",
+                    "--out",
+                    str(fulfillment_closure_path),
+                    "--markdown",
+                    str(fulfillment_closure_markdown_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            cli_fulfillment_closure = load_external_evidence_owner_fulfillment_closure(fulfillment_closure_path)
+            self.assertEqual(fulfillment_closure, cli_fulfillment_closure)
+            self.assertTrue(fulfillment_closure_markdown_path.exists())
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-owner-fulfillment-closure-verify",
+                    str(fulfillment_closure_path),
+                    str(fulfillment_review_path),
+                    str(status_path),
+                    str(manifest_path),
+                    str(manifest_path),
+                    str(plan_path),
+                    str(audit_path),
+                    "--root",
+                    str(ROOT),
+                    "--require-live-source-uris",
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            strict_closure = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-owner-fulfillment-closure-verify",
+                    str(fulfillment_closure_path),
+                    str(fulfillment_review_path),
+                    str(status_path),
+                    str(manifest_path),
+                    str(manifest_path),
+                    str(plan_path),
+                    str(audit_path),
+                    "--root",
+                    str(ROOT),
+                    "--require-live-source-uris",
+                    "--require-closed",
+                ],
+                cwd=ROOT,
+                check=False,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            self.assertNotEqual(0, strict_closure.returncode)
             strict_review = subprocess.run(
                 [
                     sys.executable,

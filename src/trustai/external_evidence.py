@@ -30,6 +30,7 @@ EXTERNAL_EVIDENCE_OWNER_PACKET_SCHEMA = "trustai.external-evidence-owner-packet-
 EXTERNAL_EVIDENCE_OWNER_PACKET_STATUS_SCHEMA = "trustai.external-evidence-owner-packet-status/0.1"
 EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_TEMPLATE_SCHEMA = "trustai.external-evidence-owner-fulfillment-template/0.1"
 EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_REVIEW_SCHEMA = "trustai.external-evidence-owner-fulfillment-review/0.1"
+EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_CLOSURE_SCHEMA = "trustai.external-evidence-owner-fulfillment-closure/0.1"
 EXTERNAL_EVIDENCE_READINESS_SCHEMA = "trustai.external-evidence-readiness/0.1"
 EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA = "trustai.external-evidence-git-remote-ref-export/0.1"
 
@@ -243,6 +244,13 @@ class ExternalEvidenceOwnerFulfillmentTemplateVerification:
 
 @dataclass
 class ExternalEvidenceOwnerFulfillmentReviewVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class ExternalEvidenceOwnerFulfillmentClosureVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -2475,6 +2483,440 @@ def verify_external_evidence_owner_fulfillment_review(
     return ExternalEvidenceOwnerFulfillmentReviewVerification(ok=not errors, errors=errors, warnings=warnings)
 
 
+def _external_evidence_owner_fulfillment_closure_source_errors(
+    review: dict[str, Any],
+    status_report: dict[str, Any],
+) -> tuple[list[str], list[str]]:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if review.get("schema") != EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_REVIEW_SCHEMA:
+        errors.append(f"unsupported external evidence owner fulfillment review schema: {review.get('schema')}")
+    if review.get("owner_fulfillment_review_id") != content_hash(without_keys(review, "owner_fulfillment_review_id")):
+        errors.append("owner_fulfillment_review_id does not match canonical owner fulfillment review body")
+    if status_report.get("schema") != EXTERNAL_EVIDENCE_OWNER_PACKET_STATUS_SCHEMA:
+        errors.append(f"unsupported external evidence owner packet status schema: {status_report.get('schema')}")
+    if status_report.get("owner_packet_status_id") != content_hash(without_keys(status_report, "owner_packet_status_id")):
+        errors.append("owner_packet_status_id does not match canonical owner packet status body")
+    sources = review.get("sources") if isinstance(review.get("sources"), dict) else {}
+    status_source = sources.get("owner_packet_status") if isinstance(sources.get("owner_packet_status"), dict) else {}
+    if status_source.get("owner_packet_status_id") != status_report.get("owner_packet_status_id"):
+        errors.append("owner fulfillment review source owner_packet_status_id does not match supplied status report")
+    if status_source.get("owner_packet_status_hash") != content_hash(status_report):
+        errors.append("owner fulfillment review source owner_packet_status_hash does not match supplied status report")
+    summary = review.get("summary", {}) if isinstance(review.get("summary"), dict) else {}
+    if summary.get("review_status") != "ready-to-collect":
+        warnings.append("owner fulfillment review is not ready to collect")
+    return errors, warnings
+
+
+def _external_evidence_owner_fulfillment_closure_manifest_units(manifest: dict[str, Any]) -> dict[tuple[str, str], list[dict[str, Any]]]:
+    units: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    evidence = manifest.get("evidence", [])
+    if not isinstance(evidence, list):
+        return units
+    for item in evidence:
+        if isinstance(item, dict):
+            key = _evidence_unit_key(item)
+            if key[0] and key[1]:
+                units.setdefault(key, []).append(item)
+    return units
+
+
+def _external_evidence_owner_fulfillment_closure_intake_records(
+    intakes: list[dict[str, Any]],
+    plan: dict[str, Any],
+    source_manifest: dict[str, Any],
+    roadmap_audit: dict[str, Any],
+    *,
+    root: str | Path,
+    require_fresh: bool,
+    require_live_source_uris: bool,
+    require_source_snapshot_artifacts: bool,
+    require_fresh_source_snapshot_artifacts: bool,
+    now: str | None,
+) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for index, intake in enumerate(intakes):
+        result = verify_external_evidence_intake(
+            intake,
+            plan,
+            source_manifest,
+            roadmap_audit,
+            root=root,
+            require_fresh=require_fresh,
+            require_live_source_uris=require_live_source_uris,
+            require_source_snapshot_artifacts=require_source_snapshot_artifacts,
+            require_fresh_source_snapshot_artifacts=require_fresh_source_snapshot_artifacts,
+            now=now,
+        )
+        evidence_item = intake.get("evidence_item") if isinstance(intake, dict) and isinstance(intake.get("evidence_item"), dict) else {}
+        task = intake.get("task") if isinstance(intake, dict) and isinstance(intake.get("task"), dict) else {}
+        unit_key = _evidence_unit_key(evidence_item)
+        records.append(
+            {
+                "intake_index": index,
+                "intake_id": intake.get("intake_id") if isinstance(intake, dict) else None,
+                "task": task.get("unit_ref") or task.get("task_ref") or task.get("task_id"),
+                "unit_ref": f"{unit_key[0]}:{unit_key[1]}" if unit_key[0] and unit_key[1] else None,
+                "requirement_id": unit_key[0] or None,
+                "authority_kind": unit_key[1] or None,
+                "evidence_hash": content_hash(evidence_item) if unit_key[0] and unit_key[1] else None,
+                "verification_ok": result.ok,
+                "errors": result.errors,
+                "warnings": result.warnings,
+            }
+        )
+    return records
+
+
+def _external_evidence_owner_fulfillment_closure_task_status(blockers: list[str]) -> str:
+    if not blockers:
+        return "closed"
+    if "missing-intake" in blockers:
+        return "missing-intake"
+    if "invalid-intake" in blockers:
+        return "invalid-intake"
+    if "missing-manifest-coverage" in blockers:
+        return "missing-manifest-coverage"
+    if "manifest-intake-mismatch" in blockers:
+        return "manifest-intake-mismatch"
+    return "blocked"
+
+
+def _external_evidence_owner_fulfillment_closure_next_actions(summary: dict[str, Any]) -> list[str]:
+    if summary.get("closure_status") == "closed":
+        return [
+            "Regenerate production readiness with the rebuilt manifest and require-ready gate.",
+            "Append the complete external-evidence manifest to the roadmap evidence chain.",
+        ]
+    actions: list[str] = []
+    if summary.get("placeholder_source_uri_count"):
+        actions.append("Replace placeholder owner source URIs with live authority-owned source URIs and rerun the fulfillment review.")
+    if summary.get("missing_intake_count") or summary.get("invalid_intake_task_count"):
+        actions.append("Collect and verify source snapshots and intake receipts for every reviewed owner task.")
+    if summary.get("missing_manifest_coverage_count") or summary.get("manifest_intake_mismatch_count"):
+        actions.append("Rebuild the external-evidence manifest from the verified intake receipts and rerun closure verification.")
+    if summary.get("source_error_count"):
+        actions.append("Fix source artifact verification errors before accepting any owner fulfillment as closed.")
+    if not actions:
+        actions.append("Resolve the closure blockers and rerun this report before claiming external authority coverage.")
+    return actions
+
+
+def build_external_evidence_owner_fulfillment_closure(
+    review: dict[str, Any],
+    status_report: dict[str, Any],
+    rebuilt_manifest: dict[str, Any],
+    source_manifest: dict[str, Any],
+    plan: dict[str, Any],
+    roadmap_audit: dict[str, Any],
+    *,
+    root: str | Path = ".",
+    intakes: list[dict[str, Any]] | None = None,
+    require_fresh: bool = False,
+    require_live_source_uris: bool = False,
+    require_source_snapshot_artifacts: bool = False,
+    require_fresh_source_snapshot_artifacts: bool = False,
+    now: str | None = None,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    intake_list = list(intakes or [])
+    review_errors, review_warnings = _external_evidence_owner_fulfillment_closure_source_errors(review, status_report)
+    roadmap_result = verify_roadmap_audit(roadmap_audit, root=root)
+    source_manifest_result = verify_external_evidence_manifest(
+        source_manifest,
+        roadmap_audit,
+        root=root,
+        require_fresh=require_fresh,
+        require_live_source_uris=require_live_source_uris,
+        require_source_snapshot_artifacts=require_source_snapshot_artifacts,
+        require_fresh_source_snapshot_artifacts=require_fresh_source_snapshot_artifacts,
+        now=now,
+    )
+    plan_result = verify_external_evidence_collection_plan(plan, source_manifest, roadmap_audit, root=root)
+    rebuilt_manifest_result = verify_external_evidence_manifest(
+        rebuilt_manifest,
+        roadmap_audit,
+        root=root,
+        require_fresh=require_fresh,
+        require_live_source_uris=require_live_source_uris,
+        require_source_snapshot_artifacts=require_source_snapshot_artifacts,
+        require_fresh_source_snapshot_artifacts=require_fresh_source_snapshot_artifacts,
+        now=now,
+    )
+    intake_records = _external_evidence_owner_fulfillment_closure_intake_records(
+        intake_list,
+        plan,
+        source_manifest,
+        roadmap_audit,
+        root=root,
+        require_fresh=require_fresh,
+        require_live_source_uris=require_live_source_uris,
+        require_source_snapshot_artifacts=require_source_snapshot_artifacts,
+        require_fresh_source_snapshot_artifacts=require_fresh_source_snapshot_artifacts,
+        now=now,
+    )
+
+    verification_errors: list[str] = []
+    verification_warnings: list[str] = []
+    verification_errors.extend(f"owner fulfillment review: {error}" for error in review_errors)
+    verification_warnings.extend(f"owner fulfillment review: {warning}" for warning in review_warnings)
+    for label, result in (
+        ("roadmap audit", roadmap_result),
+        ("source manifest", source_manifest_result),
+        ("collection plan", plan_result),
+        ("rebuilt manifest", rebuilt_manifest_result),
+    ):
+        verification_errors.extend(f"{label}: {error}" for error in result.errors)
+        verification_warnings.extend(f"{label}: {warning}" for warning in result.warnings)
+
+    valid_intakes_by_unit: dict[tuple[str, str], dict[str, Any]] = {}
+    duplicate_valid_units: set[tuple[str, str]] = set()
+    invalid_intakes_by_unit: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    for record in intake_records:
+        unit_key = (str(record.get("requirement_id") or ""), str(record.get("authority_kind") or ""))
+        if not unit_key[0] or not unit_key[1]:
+            continue
+        if record.get("verification_ok"):
+            if unit_key in valid_intakes_by_unit:
+                duplicate_valid_units.add(unit_key)
+            else:
+                valid_intakes_by_unit[unit_key] = record
+        else:
+            invalid_intakes_by_unit.setdefault(unit_key, []).append(record)
+
+    rebuilt_units = _external_evidence_owner_fulfillment_closure_manifest_units(rebuilt_manifest)
+    reviewed_units: set[tuple[str, str]] = set()
+    task_closures: list[dict[str, Any]] = []
+    tasks = review.get("task_reviews", [])
+    if not isinstance(tasks, list):
+        tasks = []
+    for task in tasks:
+        if not isinstance(task, dict):
+            continue
+        unit_key = (str(task.get("requirement_id") or ""), str(task.get("authority_kind") or ""))
+        if unit_key[0] and unit_key[1]:
+            reviewed_units.add(unit_key)
+        blockers: list[str] = []
+        source_uri = str(task.get("source_uri") or "")
+        if task.get("source_uri_status") != "live" or _source_map_is_placeholder_uri(source_uri):
+            blockers.append("placeholder-source-uri")
+        valid_intake = valid_intakes_by_unit.get(unit_key)
+        if unit_key in duplicate_valid_units:
+            blockers.append("duplicate-intake")
+        if valid_intake is None:
+            if invalid_intakes_by_unit.get(unit_key):
+                blockers.append("invalid-intake")
+            else:
+                blockers.append("missing-intake")
+        manifest_items = rebuilt_units.get(unit_key, [])
+        if not manifest_items:
+            blockers.append("missing-manifest-coverage")
+        elif valid_intake is not None:
+            intake_hash = valid_intake.get("evidence_hash")
+            manifest_hashes = {content_hash(item) for item in manifest_items if isinstance(item, dict)}
+            if intake_hash not in manifest_hashes:
+                blockers.append("manifest-intake-mismatch")
+        task_closures.append(
+            {
+                "task": task.get("task"),
+                "owner_hint": task.get("owner_hint"),
+                "requirement_id": unit_key[0] or None,
+                "authority_kind": unit_key[1] or None,
+                "source_uri": source_uri,
+                "source_uri_status": "live" if task.get("source_uri_status") == "live" and not _source_map_is_placeholder_uri(source_uri) else "placeholder",
+                "intake_id": valid_intake.get("intake_id") if valid_intake else None,
+                "intake_evidence_hash": valid_intake.get("evidence_hash") if valid_intake else None,
+                "manifest_evidence_count": len(manifest_items),
+                "closure_status": _external_evidence_owner_fulfillment_closure_task_status(blockers),
+                "blocking_reasons": blockers,
+            }
+        )
+
+    unmatched_intakes: list[dict[str, Any]] = []
+    for record in intake_records:
+        unit_key = (str(record.get("requirement_id") or ""), str(record.get("authority_kind") or ""))
+        if unit_key[0] and unit_key[1] and unit_key not in reviewed_units:
+            unmatched_intakes.append(
+                {
+                    "intake_id": record.get("intake_id"),
+                    "unit_ref": record.get("unit_ref"),
+                    "verification_ok": record.get("verification_ok"),
+                }
+            )
+
+    closed_task_count = sum(1 for task in task_closures if task.get("closure_status") == "closed")
+    task_count = len(task_closures)
+    placeholder_count = sum(1 for task in task_closures if "placeholder-source-uri" in task.get("blocking_reasons", []))
+    missing_intake_count = sum(1 for task in task_closures if "missing-intake" in task.get("blocking_reasons", []))
+    invalid_intake_task_count = sum(1 for task in task_closures if "invalid-intake" in task.get("blocking_reasons", []))
+    duplicate_intake_task_count = sum(1 for task in task_closures if "duplicate-intake" in task.get("blocking_reasons", []))
+    missing_manifest_count = sum(1 for task in task_closures if "missing-manifest-coverage" in task.get("blocking_reasons", []))
+    manifest_mismatch_count = sum(1 for task in task_closures if "manifest-intake-mismatch" in task.get("blocking_reasons", []))
+    invalid_intake_receipt_count = sum(1 for record in intake_records if not record.get("verification_ok"))
+    source_error_count = len(verification_errors) + sum(len(record.get("errors", [])) for record in intake_records)
+    if task_count and closed_task_count == task_count and source_error_count == 0:
+        closure_status = "closed"
+    elif closed_task_count:
+        closure_status = "partial"
+    else:
+        closure_status = "blocked"
+
+    summary = {
+        "closure_status": closure_status,
+        "task_count": task_count,
+        "closed_task_count": closed_task_count,
+        "blocked_task_count": task_count - closed_task_count,
+        "placeholder_source_uri_count": placeholder_count,
+        "live_source_uri_count": task_count - placeholder_count,
+        "intake_receipt_count": len(intake_records),
+        "valid_intake_receipt_count": len([record for record in intake_records if record.get("verification_ok")]),
+        "invalid_intake_receipt_count": invalid_intake_receipt_count,
+        "missing_intake_count": missing_intake_count,
+        "invalid_intake_task_count": invalid_intake_task_count,
+        "duplicate_intake_task_count": duplicate_intake_task_count,
+        "missing_manifest_coverage_count": missing_manifest_count,
+        "manifest_intake_mismatch_count": manifest_mismatch_count,
+        "unmatched_intake_count": len(unmatched_intakes),
+        "source_error_count": source_error_count,
+        "source_warning_count": len(verification_warnings) + sum(len(record.get("warnings", [])) for record in intake_records),
+    }
+    blockers: list[str] = []
+    if source_error_count:
+        blockers.append("source artifacts or intake receipts do not verify")
+    if placeholder_count:
+        blockers.append(f"{placeholder_count} reviewed tasks still use placeholder source_uri values")
+    if missing_intake_count:
+        blockers.append(f"{missing_intake_count} reviewed tasks do not have intake receipts")
+    if invalid_intake_task_count:
+        blockers.append(f"{invalid_intake_task_count} reviewed tasks have invalid intake receipts")
+    if duplicate_intake_task_count:
+        blockers.append(f"{duplicate_intake_task_count} reviewed tasks have duplicate valid intake receipts")
+    if missing_manifest_count:
+        blockers.append(f"{missing_manifest_count} reviewed tasks are not covered by the rebuilt manifest")
+    if manifest_mismatch_count:
+        blockers.append(f"{manifest_mismatch_count} reviewed tasks have rebuilt manifest evidence that does not match the intake receipt")
+    if unmatched_intakes:
+        blockers.append(f"{len(unmatched_intakes)} intake receipts are outside the reviewed owner task set")
+
+    body = {
+        "schema": EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_CLOSURE_SCHEMA,
+        "generated_at": generated_at or utc_now(),
+        "verification_options": {
+            "require_fresh": require_fresh,
+            "require_live_source_uris": require_live_source_uris,
+            "require_source_snapshot_artifacts": require_source_snapshot_artifacts,
+            "require_fresh_source_snapshot_artifacts": require_fresh_source_snapshot_artifacts,
+            "now": now,
+        },
+        "sources": {
+            "owner_fulfillment_review": _external_evidence_review_source_record(review, "owner_fulfillment_review_id", "owner_fulfillment_review_hash"),
+            "owner_packet_status": _external_evidence_review_source_record(status_report, "owner_packet_status_id", "owner_packet_status_hash"),
+            "rebuilt_manifest": _external_evidence_review_source_record(rebuilt_manifest, "manifest_id", "manifest_hash"),
+            "source_manifest": _external_evidence_review_source_record(source_manifest, "manifest_id", "manifest_hash"),
+            "collection_plan": _external_evidence_review_source_record(plan, "plan_id", "plan_hash"),
+            "roadmap_audit": _external_evidence_review_source_record(roadmap_audit, "audit_id", "audit_hash"),
+        },
+        "summary": summary,
+        "task_closures": task_closures,
+        "intake_receipts": intake_records,
+        "unmatched_intakes": unmatched_intakes,
+        "verification": {
+            "ok": source_error_count == 0,
+            "errors": verification_errors,
+            "warnings": verification_warnings,
+            "error_count": len(verification_errors),
+            "warning_count": len(verification_warnings),
+        },
+        "blockers": blockers,
+        "next_actions": _external_evidence_owner_fulfillment_closure_next_actions(summary),
+        "commands": {
+            "collect_after_ready_review": "python -m trustai external-evidence-collect-batch <fulfilled-source-map.json> <manifest.json> <roadmap-audit.json> --root . --require-live-source-uris",
+            "rebuild_manifest_after_intakes": "python -m trustai external-evidence-manifest-from-intakes <plan.json> <source-manifest.json> <roadmap-audit.json> --intake-dir <intake-dir> --require-live-source-uris --require-source-snapshot-artifacts --out <rebuilt-manifest.json>",
+            "verify_closure": "python -m trustai external-evidence-owner-fulfillment-closure-verify <closure.json> <review.json> <status-report.json> <rebuilt-manifest.json> <source-manifest.json> <plan.json> <roadmap-audit.json> --require-closed",
+        },
+        "limitations": [
+            "This closure report proves whether owner-reviewed evidence tasks are closed by verified intake receipts and rebuilt manifest coverage; it does not collect missing authority evidence by itself.",
+            "A closed owner fulfillment still requires production readiness verification before external authority coverage can be claimed for the roadmap.",
+            "Placeholder source URIs, missing intakes, invalid intakes, or missing rebuilt manifest coverage keep reviewed tasks blocked.",
+        ],
+    }
+    return {**body, "owner_fulfillment_closure_id": content_hash(body)}
+
+
+def verify_external_evidence_owner_fulfillment_closure(
+    closure: dict[str, Any],
+    review: dict[str, Any],
+    status_report: dict[str, Any],
+    rebuilt_manifest: dict[str, Any],
+    source_manifest: dict[str, Any],
+    plan: dict[str, Any],
+    roadmap_audit: dict[str, Any],
+    *,
+    root: str | Path = ".",
+    intakes: list[dict[str, Any]] | None = None,
+    require_fresh: bool = False,
+    require_live_source_uris: bool = False,
+    require_source_snapshot_artifacts: bool = False,
+    require_fresh_source_snapshot_artifacts: bool = False,
+    now: str | None = None,
+    require_closed: bool = False,
+) -> ExternalEvidenceOwnerFulfillmentClosureVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if closure.get("schema") != EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_CLOSURE_SCHEMA:
+        errors.append(f"unsupported external evidence owner fulfillment closure schema: {closure.get('schema')}")
+    if closure.get("owner_fulfillment_closure_id") != content_hash(without_keys(closure, "owner_fulfillment_closure_id")):
+        errors.append("owner_fulfillment_closure_id does not match canonical owner fulfillment closure body")
+    expected_options = {
+        "require_fresh": require_fresh,
+        "require_live_source_uris": require_live_source_uris,
+        "require_source_snapshot_artifacts": require_source_snapshot_artifacts,
+        "require_fresh_source_snapshot_artifacts": require_fresh_source_snapshot_artifacts,
+        "now": now,
+    }
+    if closure.get("verification_options") != expected_options:
+        errors.append("verification_options do not match verifier options")
+    expected = build_external_evidence_owner_fulfillment_closure(
+        review,
+        status_report,
+        rebuilt_manifest,
+        source_manifest,
+        plan,
+        roadmap_audit,
+        root=root,
+        intakes=intakes or [],
+        require_fresh=require_fresh,
+        require_live_source_uris=require_live_source_uris,
+        require_source_snapshot_artifacts=require_source_snapshot_artifacts,
+        require_fresh_source_snapshot_artifacts=require_fresh_source_snapshot_artifacts,
+        now=now,
+        generated_at=str(closure.get("generated_at") or ""),
+    )
+    if without_keys(closure, "owner_fulfillment_closure_id") != without_keys(expected, "owner_fulfillment_closure_id"):
+        errors.append("owner fulfillment closure body does not match supplied review, status report, manifests, plan, roadmap audit, and intakes")
+    expected_warnings = expected.get("verification", {}).get("warnings", [])
+    if isinstance(expected_warnings, list):
+        warnings.extend(str(warning) for warning in expected_warnings)
+    for record in expected.get("intake_receipts", []):
+        if isinstance(record, dict):
+            record_warnings = record.get("warnings", [])
+            if isinstance(record_warnings, list):
+                warnings.extend(str(warning) for warning in record_warnings)
+    summary = closure.get("summary", {}) if isinstance(closure.get("summary"), dict) else {}
+    if summary.get("placeholder_source_uri_count"):
+        warnings.append(f"owner fulfillment closure contains {summary.get('placeholder_source_uri_count')} placeholder source_uri values")
+    if require_closed and summary.get("closure_status") != "closed":
+        errors.append(
+            "owner fulfillment is not closed: "
+            f"closed_tasks={summary.get('closed_task_count', 0)}, "
+            f"blocked_tasks={summary.get('blocked_task_count', 0)}, "
+            f"missing_intakes={summary.get('missing_intake_count', 0)}, "
+            f"missing_manifest_coverage={summary.get('missing_manifest_coverage_count', 0)}"
+        )
+    return ExternalEvidenceOwnerFulfillmentClosureVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
 def _external_evidence_readiness_check(check_id: str, ok: bool, summary: str) -> dict[str, Any]:
     return {"id": check_id, "status": "passed" if ok else "failed", "summary": summary}
 
@@ -4060,6 +4502,22 @@ def write_external_evidence_owner_fulfillment_review_markdown(path: str | Path, 
     target.write_text(render_external_evidence_owner_fulfillment_review_markdown(review), encoding="utf-8")
 
 
+def write_external_evidence_owner_fulfillment_closure(path: str | Path, closure: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(closure, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_external_evidence_owner_fulfillment_closure(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def write_external_evidence_owner_fulfillment_closure_markdown(path: str | Path, closure: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_external_evidence_owner_fulfillment_closure_markdown(closure), encoding="utf-8")
+
+
 def write_external_evidence_readiness_report(path: str | Path, report: dict[str, Any]) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -4508,6 +4966,72 @@ def render_external_evidence_owner_fulfillment_review_markdown(review: dict[str,
     else:
         lines.append("- None")
     limitations = review.get("limitations", [])
+    lines.extend(["", "## Limitations", ""])
+    if isinstance(limitations, list) and limitations:
+        lines.extend(f"- {_markdown_cell(item)}" for item in limitations)
+    else:
+        lines.append("- None")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_external_evidence_owner_fulfillment_closure_markdown(closure: dict[str, Any]) -> str:
+    summary = closure.get("summary", {}) if isinstance(closure.get("summary"), dict) else {}
+    lines = [
+        "# External Evidence Owner Fulfillment Closure",
+        "",
+        f"- Closure ID: `{closure.get('owner_fulfillment_closure_id')}`",
+        f"- Generated at: `{closure.get('generated_at')}`",
+        f"- Status: `{summary.get('closure_status')}`",
+        f"- Closed tasks: {summary.get('closed_task_count', 0)}/{summary.get('task_count', 0)}",
+        f"- Missing intakes: {summary.get('missing_intake_count', 0)}",
+        f"- Invalid intake tasks: {summary.get('invalid_intake_task_count', 0)}",
+        f"- Missing manifest coverage: {summary.get('missing_manifest_coverage_count', 0)}",
+        f"- Placeholder source URIs: {summary.get('placeholder_source_uri_count', 0)}",
+        "",
+        "## Task Closure",
+        "",
+        "| Task | Owner | Status | Intake | Manifest Evidence | Blocking Reasons |",
+        "|---|---|---|---|---|---|",
+    ]
+    tasks = closure.get("task_closures", [])
+    if isinstance(tasks, list):
+        for task in tasks:
+            if not isinstance(task, dict):
+                continue
+            reasons = task.get("blocking_reasons", []) if isinstance(task.get("blocking_reasons"), list) else []
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        f"`{_markdown_cell(task.get('task'))}`",
+                        _markdown_cell(task.get("owner_hint")),
+                        _markdown_cell(task.get("closure_status")),
+                        _markdown_cell(task.get("intake_id")),
+                        str(task.get("manifest_evidence_count", 0)),
+                        _markdown_code_list(reasons),
+                    ]
+                )
+                + " |"
+            )
+    blockers = closure.get("blockers", [])
+    lines.extend(["", "## Blockers", ""])
+    if isinstance(blockers, list) and blockers:
+        lines.extend(f"- {_markdown_cell(blocker)}" for blocker in blockers)
+    else:
+        lines.append("- None")
+    next_actions = closure.get("next_actions", [])
+    lines.extend(["", "## Next Actions", ""])
+    if isinstance(next_actions, list) and next_actions:
+        lines.extend(f"- {_markdown_cell(action)}" for action in next_actions)
+    else:
+        lines.append("- None")
+    verification = closure.get("verification", {}) if isinstance(closure.get("verification"), dict) else {}
+    lines.extend(["", "## Verification", ""])
+    lines.append(f"- Source errors: {verification.get('error_count', 0)}")
+    lines.append(f"- Source warnings: {verification.get('warning_count', 0)}")
+    unmatched = closure.get("unmatched_intakes", [])
+    lines.append(f"- Unmatched intakes: {len(unmatched) if isinstance(unmatched, list) else 0}")
+    limitations = closure.get("limitations", [])
     lines.extend(["", "## Limitations", ""])
     if isinstance(limitations, list) and limitations:
         lines.extend(f"- {_markdown_cell(item)}" for item in limitations)

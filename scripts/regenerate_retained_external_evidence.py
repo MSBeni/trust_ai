@@ -253,6 +253,29 @@ def refresh_retained_artifacts() -> None:
         path("remaining-external-evidence-owner-fulfilled-source-map.json"),
     )
     run(
+        "external-evidence-owner-fulfillment-closure",
+        path("remaining-external-evidence-owner-fulfillment-review.json"),
+        path("remaining-external-evidence-owner-packet-status.json"),
+        path("retained-external-evidence-manifest.json"),
+        path("retained-external-evidence-manifest.json"),
+        path("remaining-external-evidence-plan.json"),
+        path("source-roadmap-audit.json"),
+        "--root",
+        ".",
+        "--require-fresh",
+        "--require-live-source-uris",
+        "--require-source-snapshot-artifacts",
+        "--require-fresh-source-snapshot-artifacts",
+        "--now",
+        NOW,
+        "--generated-at",
+        COLLECTION_TIME,
+        "--out",
+        path("remaining-external-evidence-owner-fulfillment-closure.json"),
+        "--markdown",
+        path("remaining-external-evidence-owner-fulfillment-closure.md"),
+    )
+    run(
         "external-evidence-readiness",
         path("retained-external-evidence-gap-report.json"),
         path("retained-external-evidence-manifest.json"),
@@ -527,6 +550,24 @@ def verify_retained_artifacts() -> None:
         "--require-live-source-uris",
     )
     run(
+        "external-evidence-owner-fulfillment-closure-verify",
+        path("remaining-external-evidence-owner-fulfillment-closure.json"),
+        path("remaining-external-evidence-owner-fulfillment-review.json"),
+        path("remaining-external-evidence-owner-packet-status.json"),
+        path("retained-external-evidence-manifest.json"),
+        path("retained-external-evidence-manifest.json"),
+        path("remaining-external-evidence-plan.json"),
+        path("source-roadmap-audit.json"),
+        "--root",
+        ".",
+        "--require-fresh",
+        "--require-live-source-uris",
+        "--require-source-snapshot-artifacts",
+        "--require-fresh-source-snapshot-artifacts",
+        "--now",
+        NOW,
+    )
+    run(
         "external-evidence-readiness-verify",
         path("retained-external-evidence-readiness.json"),
         path("retained-external-evidence-gap-report.json"),
@@ -553,6 +594,7 @@ def assert_retained_counts() -> None:
     owner_packet_status = json_load(DIR / "remaining-external-evidence-owner-packet-status.json")
     owner_fulfillment_template = json_load(DIR / "remaining-external-evidence-owner-fulfillment-template.json")
     owner_fulfillment_review = json_load(DIR / "remaining-external-evidence-owner-fulfillment-review.json")
+    owner_fulfillment_closure = json_load(DIR / "remaining-external-evidence-owner-fulfillment-closure.json")
     owner_fulfilled_source_map = json_load(DIR / "remaining-external-evidence-owner-fulfilled-source-map.json")
     readiness = json_load(DIR / "retained-external-evidence-readiness.json")
     checks = [
@@ -577,6 +619,12 @@ def assert_retained_counts() -> None:
         (owner_fulfillment_review["summary"]["placeholder_source_uri_count"], 68, "owner fulfillment review placeholder URI count"),
         (owner_fulfillment_review["summary"]["fulfilled_source_map_verification_ok"], False, "owner fulfillment review source-map verification status"),
         (owner_fulfilled_source_map["summary"]["placeholder_source_uri_count"], 68, "owner fulfilled source-map placeholder URI count"),
+        (owner_fulfillment_closure["summary"]["closure_status"], "blocked", "owner fulfillment closure status"),
+        (owner_fulfillment_closure["summary"]["task_count"], 68, "owner fulfillment closure task count"),
+        (owner_fulfillment_closure["summary"]["closed_task_count"], 0, "owner fulfillment closure closed task count"),
+        (owner_fulfillment_closure["summary"]["missing_intake_count"], 68, "owner fulfillment closure missing intake count"),
+        (owner_fulfillment_closure["summary"]["missing_manifest_coverage_count"], 68, "owner fulfillment closure missing manifest coverage count"),
+        (owner_fulfillment_closure["summary"]["placeholder_source_uri_count"], 68, "owner fulfillment closure placeholder URI count"),
         (readiness["summary"]["readiness_status"], "not-ready", "readiness status"),
     ]
     for actual, expected, label in checks:
