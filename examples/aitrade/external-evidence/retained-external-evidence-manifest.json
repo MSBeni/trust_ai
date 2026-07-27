@@ -8,13 +8,13 @@
       ],
       "authority_kind": "ci-run",
       "description": "Snapshot of recorded verifier workflow run export",
-      "evidence_id": "9da77b651f183b9a3579f93e4c71d7f2ab25159a30c1e22042503210b9d344d5",
+      "evidence_id": "7ff5b555c1aad3de673d12e14d56f08daabe1e63af71b376c7846b3bfc30104b",
       "expires_at": "2026-12-31T00:00:00Z",
       "issued_at": "2026-07-08T00:00:00Z",
       "issuer": "GitHub Actions",
       "path": "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json",
       "requirement_id": "oss-verifier-and-public-spec",
-      "sha256": "sha256:403f9fcba9e3086b455eb2dbfda1f7bf38edcf87c88416bee007c88018ff992f",
+      "sha256": "sha256:f6e441fca49bee36be16546a38a69a6db99e3e0d081ffaf161a29954f68f3af2",
       "source_uri": "https://github.com/MSBeni/trust_ai/actions",
       "subject": "trustai go verifier release workflow"
     },
@@ -55,13 +55,13 @@
       "subject": "MSBeni/trust_ai hosted repository service"
     }
   ],
-  "generated_at": "2026-07-27T03:11:13Z",
+  "generated_at": "2026-07-27T03:46:41Z",
   "limitations": [
     "This manifest verifies supplied external evidence artifacts by hash; it does not fetch live provider state.",
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "1521a5cd0e38ac509f6e882f9ad6989057b96c604a04b98c734d5401689d2068",
+  "manifest_id": "fc14988044c0d711d31453053e7eeb179bc3daea3654c579ada8c7daab9754a1",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -104,10 +104,23 @@
       "unit_ref": "oss-verifier-and-public-spec:hosted-service"
     },
     {
+      "authority_kind": "provider-api",
+      "coverage_status": "missing",
+      "external_authority_required": [
+        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; self-serve onboarding production authority dossiers bind hosted account-creation, identity-federation, billing, metering, support, quota, and audit-log authority rows to the verified local onboarding receipt. Actual fresh hosted PLG service, identity-provider, billing, usage metering, support operations, and onboarding SLO exports remain external service evidence."
+      ],
+      "phase": "P2",
+      "priority": "P1",
+      "requirement_id": "self-serve-onboarding",
+      "title": "Self-serve SDK and MCP gateway onboarding",
+      "unit_id": "f19a0ac30a8063414c235820dfdd20ce6a053bf183116ff96175c5f3b885c670",
+      "unit_ref": "self-serve-onboarding:provider-api"
+    },
+    {
       "authority_kind": "hosted-service",
       "coverage_status": "missing",
       "external_authority_required": [
-        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence."
+        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; self-serve onboarding production authority dossiers bind hosted account-creation, identity-federation, billing, metering, support, quota, and audit-log authority rows to the verified local onboarding receipt. Actual fresh hosted PLG service, identity-provider, billing, usage metering, support operations, and onboarding SLO exports remain external service evidence."
       ],
       "phase": "P2",
       "priority": "P1",
@@ -120,7 +133,7 @@
       "authority_kind": "identity-provider",
       "coverage_status": "missing",
       "external_authority_required": [
-        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence."
+        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; self-serve onboarding production authority dossiers bind hosted account-creation, identity-federation, billing, metering, support, quota, and audit-log authority rows to the verified local onboarding receipt. Actual fresh hosted PLG service, identity-provider, billing, usage metering, support operations, and onboarding SLO exports remain external service evidence."
       ],
       "phase": "P2",
       "priority": "P1",
@@ -992,11 +1005,12 @@
     },
     {
       "allowed_authority_kinds": [
+        "provider-api",
         "hosted-service",
         "identity-provider"
       ],
       "external_authority_required": [
-        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence."
+        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; self-serve onboarding production authority dossiers bind hosted account-creation, identity-federation, billing, metering, support, quota, and audit-log authority rows to the verified local onboarding receipt. Actual fresh hosted PLG service, identity-provider, billing, usage metering, support operations, and onboarding SLO exports remain external service evidence."
       ],
       "id": "self-serve-onboarding",
       "phase": "P2",
@@ -1269,8 +1283,8 @@
   ],
   "schema": "trustai.external-evidence-manifest/0.1",
   "source_roadmap_audit": {
-    "audit_hash": "98e7b4633052ae959aea5593164da322dddcc2072740b44f73ab6ee54df26a7f",
-    "audit_id": "bc6893d985a9c61161812c17979f2e9afdb36d5a72dcd033eaf86663d3233d89",
+    "audit_hash": "5ef4e0a911c3d8e0ea61606314a5751d424f186ee07ece856b7b586fde189e88",
+    "audit_id": "bc884270a97fe3197010e36dd8c5201439314499a7b37f3c25643902ce08457b",
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {
@@ -1290,7 +1304,7 @@
     "expires_at_count": 3,
     "freshness_window_count": 3,
     "issued_at_count": 3,
-    "missing_authority_kind_count": 67,
+    "missing_authority_kind_count": 68,
     "missing_authority_kinds_by_requirement": {
       "agent-inventory-and-identity": [
         "provider-api",
@@ -1366,6 +1380,7 @@
         "identity-provider"
       ],
       "self-serve-onboarding": [
+        "provider-api",
         "hosted-service",
         "identity-provider"
       ],
@@ -1420,7 +1435,7 @@
       "standards-track-and-auditor-ecosystem",
       "trust-network-procurement-and-marketplace"
     ],
-    "required_authority_kind_count": 70,
+    "required_authority_kind_count": 71,
     "required_requirement_count": 20,
     "status": "partial"
   }

@@ -2,11 +2,35 @@
   "defaults": {},
   "entries": [
     {
+      "authority_kind": "provider-api",
+      "coverage_status": "missing",
+      "description": "provider-api evidence for self-serve-onboarding",
+      "external_authority_required": [
+        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; self-serve onboarding production authority dossiers bind hosted account-creation, identity-federation, billing, metering, support, quota, and audit-log authority rows to the verified local onboarding receipt. Actual fresh hosted PLG service, identity-provider, billing, usage metering, support operations, and onboarding SLO exports remain external service evidence."
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/self-serve-onboarding/provider-api.json",
+      "owner_hint": "integration/platform owner",
+      "requirement_id": "self-serve-onboarding",
+      "snapshot_out": "artifacts/external-evidence-sources/self-serve-onboarding/provider-api.json",
+      "source_uri": "TODO://authority/self-serve-onboarding/provider-api",
+      "suggested_evidence_sources": [
+        "provider API response export",
+        "request/response transcript",
+        "provider-owned audit event"
+      ],
+      "task": "self-serve-onboarding:provider-api",
+      "task_id": "fb7a028bc892d55abbf9f179f729ae0a91aba04a98b36d8e30113840c04aa8e2",
+      "task_ref": "external-evidence:self-serve-onboarding:provider-api",
+      "title": "Self-serve SDK and MCP gateway onboarding",
+      "unit_id": "f19a0ac30a8063414c235820dfdd20ce6a053bf183116ff96175c5f3b885c670",
+      "unit_ref": "self-serve-onboarding:provider-api"
+    },
+    {
       "authority_kind": "hosted-service",
       "coverage_status": "missing",
       "description": "hosted-service evidence for self-serve-onboarding",
       "external_authority_required": [
-        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence."
+        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; self-serve onboarding production authority dossiers bind hosted account-creation, identity-federation, billing, metering, support, quota, and audit-log authority rows to the verified local onboarding receipt. Actual fresh hosted PLG service, identity-provider, billing, usage metering, support operations, and onboarding SLO exports remain external service evidence."
       ],
       "intake_out": "artifacts/external-evidence-intakes/self-serve-onboarding/hosted-service.json",
       "owner_hint": "service owner",
@@ -30,7 +54,7 @@
       "coverage_status": "missing",
       "description": "identity-provider evidence for self-serve-onboarding",
       "external_authority_required": [
-        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence."
+        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; self-serve onboarding production authority dossiers bind hosted account-creation, identity-federation, billing, metering, support, quota, and audit-log authority rows to the verified local onboarding receipt. Actual fresh hosted PLG service, identity-provider, billing, usage metering, support operations, and onboarding SLO exports remain external service evidence."
       ],
       "intake_out": "artifacts/external-evidence-intakes/self-serve-onboarding/identity-provider.json",
       "owner_hint": "IAM/identity owner",
@@ -1617,14 +1641,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "e6e8fb294a3fa39042077942f3a06301c50e25cddfa095aeaf5ac021908c329d",
+  "source_map_id": "824bcc08d3fe11d101f7bf0e303584c7b3fbfba48604f45edc219c0c2df6e042",
   "source_plan": {
-    "plan_hash": "ece71d79d4dec54a81f67284e6a69a1cebc210bb4fc9a7bf2daf895d17ae29d2",
-    "plan_id": "d0ad2359381546887fe066bb44f8ced54ce4bac859d6e00080f2008bb832f402",
+    "plan_hash": "c3f6108c91ae783305943ab9a2503277436c2a6b9905e8e68899bb5401947ce4",
+    "plan_id": "b5ec02ba7022b06a3f7c4047c6a10eed312e7e58510c1808c220a0e7bf287de8",
     "source_manifest": {
-      "generated_at": "2026-07-27T03:11:13Z",
-      "manifest_hash": "0f5456e7f5d0066733fefe71326e3e68b98548077552f78f5d75fa766ee7af19",
-      "manifest_id": "1521a5cd0e38ac509f6e882f9ad6989057b96c604a04b98c734d5401689d2068",
+      "generated_at": "2026-07-27T03:46:41Z",
+      "manifest_hash": "ec4deeb1041f087f948b491d66f16274c2ff6b67b803191ef10c89a630dd1996",
+      "manifest_id": "fc14988044c0d711d31453053e7eeb179bc3daea3654c579ada8c7daab9754a1",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },
@@ -1632,12 +1656,12 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 67,
+    "entry_count": 68,
     "intake_dir": "artifacts/external-evidence-intakes",
     "live_source_uri_count": 0,
-    "placeholder_source_uri_count": 67,
+    "placeholder_source_uri_count": 68,
     "snapshot_dir": "artifacts/external-evidence-sources",
-    "source_plan_task_count": 67,
+    "source_plan_task_count": 68,
     "status_filter": "missing"
   }
 }

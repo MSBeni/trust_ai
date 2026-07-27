@@ -137,11 +137,13 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
         "roadmap_ref": "Phase 2 feature 6; GTM self-serve gateway tier",
         "evidence_paths": [
             "docs/specs/self-serve-onboarding-v0.1.md",
+            "docs/specs/self-serve-onboarding-production-authority-v0.1.md",
             "docs/specs/python-sdk-v0.1.md",
             "docs/specs/typescript-sdk-v0.1.md",
             "docs/specs/otel-ingest-v0.1.md",
             "docs/specs/mcp-gateway-v0.1.md",
             "src/trustai/onboarding.py",
+            "src/trustai/self_serve_authority.py",
             "src/trustai/control_plane.py",
             "src/trustai/server.py",
             "src/trustai/cli.py",
@@ -165,12 +167,13 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "tests/test_control_plane.py",
             "tests/test_production_primitives.py",
             "tests/test_self_serve_onboarding.py",
+            "tests/test_self_serve_authority.py",
             "tests/test_ingest_runtime.py",
             "tests/test_typescript_sdk.py",
             "tests/test_mcp_gateway.py",
         ],
         "external_authority": [
-            "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence.",
+            "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; self-serve onboarding production authority dossiers bind hosted account-creation, identity-federation, billing, metering, support, quota, and audit-log authority rows to the verified local onboarding receipt. Actual fresh hosted PLG service, identity-provider, billing, usage metering, support operations, and onboarding SLO exports remain external service evidence.",
         ],
     },
     {

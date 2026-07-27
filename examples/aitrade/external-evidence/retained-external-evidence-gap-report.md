@@ -1,13 +1,13 @@
 # External Evidence Gap Report
 
-- Gap report ID: `b0cee12bf1a0dbfd729f2444e115aabcb83f1c8525b163adbcac2fc95ba8cc4a`
+- Gap report ID: `a25681a218cbcebcb3340728bcc667b9687322d32deb641aacf4ad16df2cdea6`
 - Generated at: `2026-07-12T01:29:00Z`
 - Status: `partial`
-- Covered authority kinds: 3/70
-- Missing authority kinds: 67
-- Remaining collection tasks: 67
-- Source-map entries: 67
-- Placeholder source URIs: 67
+- Covered authority kinds: 3/71
+- Missing authority kinds: 68
+- Remaining collection tasks: 68
+- Source-map entries: 68
+- Placeholder source URIs: 68
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
@@ -19,7 +19,7 @@
 - `identity-provider`: 8
 - `insurer`: 4
 - `kms-hsm`: 7
-- `provider-api`: 11
+- `provider-api`: 12
 - `regulator`: 5
 - `standards-body`: 6
 
@@ -37,7 +37,7 @@
 - `product-scope-discipline`: 2
 - `roadmap-phase-scoreboard`: 5
 - `runtime-policy-and-attestation`: 5
-- `self-serve-onboarding`: 2
+- `self-serve-onboarding`: 3
 - `shadow-replay-temporal-holdout`: 4
 - `standards-track-and-auditor-ecosystem`: 2
 - `state-of-agent-reliability-report`: 1
@@ -46,6 +46,17 @@
 - `vertical-packs`: 3
 
 ## Collection Worklist
+
+### self-serve-onboarding:provider-api
+
+- Title: Self-serve SDK and MCP gateway onboarding
+- Authority kind: `provider-api`
+- Owner hint: integration/platform owner
+- Description: provider-api evidence for self-serve-onboarding
+- Source URI: `TODO://authority/self-serve-onboarding/provider-api`
+- Snapshot output: `artifacts/external-evidence-sources/self-serve-onboarding/provider-api.json`
+- Intake output: `artifacts/external-evidence-intakes/self-serve-onboarding/provider-api.json`
+- Suggested evidence sources: provider API response export; request/response transcript; provider-owned audit event
 
 ### self-serve-onboarding:hosted-service
 

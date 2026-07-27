@@ -1,6 +1,6 @@
 # TrustAI External Evidence Manifest
 
-Manifest ID: `74ddbe57c950b2eb9888baa3630fadb0bcc0f48914c4fbd655b42a6c60a1163c`
+Manifest ID: `bef49fc66bbc0b3845fdaddf6b2c4e1e3747110959d26b8ad5de5c2b860f03f1`
 
 Status: partial
 
@@ -8,9 +8,9 @@ Status: partial
 
 - Required external requirements: 20
 - Covered requirements: 1
-- Required authority kinds: 70
+- Required authority kinds: 71
 - Covered authority kinds: 1
-- Missing authority kinds: 69
+- Missing authority kinds: 70
 - Evidence items: 1
 - Evidence with issued_at: 1
 - Evidence with expires_at: 1
@@ -21,7 +21,7 @@ Status: partial
 | Requirement | Phase | Priority | Coverage | Accepted Authorities | Covered Authorities | Missing Authorities | Authority Evidence Needed |
 |---|---|---|---|---|---|---|---|
 | `oss-verifier-and-public-spec` | P0 | P0 | missing | `ci-run`, `provider-api`, `hosted-service` | `ci-run` | `provider-api`, `hosted-service` | Verifier release authority dossiers cover the local/reference public release authority checklist and retained provider workflow export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence. |
-| `self-serve-onboarding` | P2 | P1 | missing | `hosted-service`, `identity-provider` |  | `hosted-service`, `identity-provider` | Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence. |
+| `self-serve-onboarding` | P2 | P1 | missing | `provider-api`, `hosted-service`, `identity-provider` |  | `provider-api`, `hosted-service`, `identity-provider` | Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; self-serve onboarding production authority dossiers bind hosted account-creation, identity-federation, billing, metering, support, quota, and audit-log authority rows to the verified local onboarding receipt. Actual fresh hosted PLG service, identity-provider, billing, usage metering, support operations, and onboarding SLO exports remain external service evidence. |
 | `mcp-gateway` | P1 | P0 | missing | `ci-run`, `kms-hsm`, `provider-api`, `hosted-service` |  | `ci-run`, `kms-hsm`, `provider-api`, `hosted-service` | MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence. |
 | `shadow-replay-temporal-holdout` | P1 | P0 | missing | `kms-hsm`, `provider-api`, `identity-provider`, `standards-body` |  | `kms-hsm`, `provider-api`, `identity-provider`, `standards-body` | Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence. |
 | `cicd-provider-approvals` | P1 | P0 | missing | `ci-run`, `provider-api`, `hosted-service`, `identity-provider` |  | `ci-run`, `provider-api`, `hosted-service`, `identity-provider` | Provider delivery receipts cover retained provider delivery payload artifact replay and retained provider response artifact byte replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs, provider-native status shape, and replayed retained provider delivery payload/response artifacts before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence. |
@@ -48,6 +48,7 @@ Status: partial
 | `e5d2eb86fc1a22a4ca8fa6d150608ee18c7cc632e416491e780495135cf9d1ed` | `oss-verifier-and-public-spec:ci-run` | `oss-verifier-and-public-spec` | ci-run | covered | Open verifier, public specs, source distribution, and release workflow |
 | `ac8364a8724ad16a070fd2dea4fba6539859dc539695c9605babeb00cbdc6383` | `oss-verifier-and-public-spec:provider-api` | `oss-verifier-and-public-spec` | provider-api | missing | Open verifier, public specs, source distribution, and release workflow |
 | `466978af8ab034b01871214eab0240941581edb4cfe22965eb298df3c7847552` | `oss-verifier-and-public-spec:hosted-service` | `oss-verifier-and-public-spec` | hosted-service | missing | Open verifier, public specs, source distribution, and release workflow |
+| `f19a0ac30a8063414c235820dfdd20ce6a053bf183116ff96175c5f3b885c670` | `self-serve-onboarding:provider-api` | `self-serve-onboarding` | provider-api | missing | Self-serve SDK and MCP gateway onboarding |
 | `b99727e2b8a71b61ea2303a0ebf484b85996c716e0729a296e3057cf63b396c6` | `self-serve-onboarding:hosted-service` | `self-serve-onboarding` | hosted-service | missing | Self-serve SDK and MCP gateway onboarding |
 | `048ce4ad141c77f48a321bc4f61b09d2b2a58ea8500164d40e192bb3c8405364` | `self-serve-onboarding:identity-provider` | `self-serve-onboarding` | identity-provider | missing | Self-serve SDK and MCP gateway onboarding |
 | `192e8c60958d436e54ccf727609f72edb9a581776a8d80f731eef32c1bd62725` | `mcp-gateway:ci-run` | `mcp-gateway` | ci-run | missing | MCP evidence gateway reference capture |
@@ -120,7 +121,7 @@ Status: partial
 
 | Requirement | Authority | Accepted Authorities | Artifact | Freshness Window | Description |
 |---|---|---|---|---|---|
-| `oss-verifier-and-public-spec` | ci-run | `ci-run`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/go-verifier-workflow-run.json` | 2026-07-08T00:00:00Z to 2026-12-31T00:00:00Z | Recorded verifier workflow run export |
+| `oss-verifier-and-public-spec` | ci-run | `ci-run`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/go-verifier-workflow-run.json` | 2026-07-08T00:00:00Z to 2026-12-31T00:00:00Z | Recorded Go verifier workflow export |
 
 ## Missing Requirements
 

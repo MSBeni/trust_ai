@@ -323,6 +323,15 @@ from .onboarding import (
     verify_self_serve_onboarding_receipt,
     write_self_serve_onboarding_receipt,
 )
+from .self_serve_authority import (
+    SELF_SERVE_AUTHORITY_MODES,
+    append_self_serve_authority_dossier,
+    build_self_serve_authority_dossier,
+    load_self_serve_authority_dossier,
+    parse_self_serve_authority_evidence_arg,
+    verify_self_serve_authority_dossier,
+    write_self_serve_authority_dossier,
+)
 from .vertical_pack import (
     SUPPORTED_VERTICAL_PACKS,
     append_vertical_pack,
@@ -1462,6 +1471,108 @@ def cmd_self_serve_onboarding_append(args: argparse.Namespace) -> int:
         print(f"self-serve onboarding entry: {args.out}")
     print(f"self-serve onboarding entry id: {entry['entry_id']}")
     print(f"receipt id: {receipt['receipt_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_self_serve_authority(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_self_serve_onboarding_receipt(args.receipt)
+        evidence = [parse_self_serve_authority_evidence_arg(value) for value in args.authority_evidence]
+        dossier = build_self_serve_authority_dossier(
+            receipt,
+            root=args.root,
+            authority_evidence=evidence,
+            mode=args.mode,
+            environment=args.environment,
+            dossier_ref=args.dossier_ref,
+            authority_ref=args.authority_ref,
+            producer_ref=args.producer_ref,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_self_serve_authority_dossier(
+            dossier,
+            onboarding_receipt=receipt,
+            root=args.root,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"self-serve onboarding authority dossier failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("self-serve onboarding authority dossier verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_self_serve_authority_dossier(args.out, dossier)
+    print(f"self-serve onboarding authority dossier: {args.out}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"covered requirements: {result.covered_count}/{result.required_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_self_serve_authority_verify(args: argparse.Namespace) -> int:
+    try:
+        dossier = load_self_serve_authority_dossier(args.dossier)
+        receipt = load_self_serve_onboarding_receipt(args.receipt)
+        result = verify_self_serve_authority_dossier(
+            dossier,
+            onboarding_receipt=receipt,
+            root=args.root,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"self-serve onboarding authority dossier verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        print(f"verified self-serve onboarding authority dossier: {args.dossier}")
+        print(f"covered requirements: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"self-serve onboarding authority dossier verification failed: {args.dossier}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_self_serve_authority_append(args: argparse.Namespace) -> int:
+    try:
+        dossier = load_self_serve_authority_dossier(args.dossier)
+        receipt = load_self_serve_onboarding_receipt(args.receipt)
+    except (OSError, ValueError) as exc:
+        print(f"self-serve onboarding authority append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_self_serve_authority_dossier(
+            chain,
+            dossier,
+            onboarding_receipt=receipt,
+            root=args.root,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"self-serve onboarding authority append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"self-serve onboarding authority entry: {args.out}")
+    print(f"self-serve onboarding authority entry id: {entry['entry_id']}")
+    print(f"dossier id: {dossier['dossier_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
@@ -20549,6 +20660,45 @@ def build_parser() -> argparse.ArgumentParser:
     self_serve_onboarding_append.add_argument("--key")
     _add_state_args(self_serve_onboarding_append)
     self_serve_onboarding_append.set_defaults(func=cmd_self_serve_onboarding_append)
+
+    self_serve_authority = subparsers.add_parser("self-serve-onboarding-authority", help="write a signed self-serve onboarding production authority dossier")
+    self_serve_authority.add_argument("receipt")
+    self_serve_authority.add_argument("--root", default=".")
+    self_serve_authority.add_argument("--mode", choices=sorted(SELF_SERVE_AUTHORITY_MODES), default="provider-dossier")
+    self_serve_authority.add_argument("--environment", default="local")
+    self_serve_authority.add_argument("--dossier-ref", required=True)
+    self_serve_authority.add_argument("--authority-ref", required=True)
+    self_serve_authority.add_argument("--producer-ref", required=True)
+    self_serve_authority.add_argument("--authority-evidence", action="append", default=[], help="requirement_id,authority_kind,evidence_ref,evidence_hash,description[;issuer=...;subject=...;source_uri=...;issued_at=...;expires_at=...]")
+    self_serve_authority.add_argument("--generated-at")
+    self_serve_authority.add_argument("--require-complete", action="store_true")
+    self_serve_authority.add_argument("--require-fresh", action="store_true")
+    self_serve_authority.add_argument("--now")
+    self_serve_authority.add_argument("--out", default="artifacts/self-serve-onboarding-authority.json")
+    self_serve_authority.add_argument("--key")
+    self_serve_authority.set_defaults(func=cmd_self_serve_authority)
+
+    self_serve_authority_verify = subparsers.add_parser("self-serve-onboarding-authority-verify", help="verify a signed self-serve onboarding production authority dossier")
+    self_serve_authority_verify.add_argument("dossier")
+    self_serve_authority_verify.add_argument("receipt")
+    self_serve_authority_verify.add_argument("--root", default=".")
+    self_serve_authority_verify.add_argument("--require-complete", action="store_true")
+    self_serve_authority_verify.add_argument("--require-fresh", action="store_true")
+    self_serve_authority_verify.add_argument("--now")
+    self_serve_authority_verify.add_argument("--key")
+    self_serve_authority_verify.set_defaults(func=cmd_self_serve_authority_verify)
+
+    self_serve_authority_append = subparsers.add_parser("self-serve-onboarding-authority-append", help="append a verified self-serve onboarding production authority dossier")
+    self_serve_authority_append.add_argument("dossier")
+    self_serve_authority_append.add_argument("receipt")
+    self_serve_authority_append.add_argument("--root", default=".")
+    self_serve_authority_append.add_argument("--require-complete", action="store_true")
+    self_serve_authority_append.add_argument("--require-fresh", action="store_true")
+    self_serve_authority_append.add_argument("--now")
+    self_serve_authority_append.add_argument("--out", default="artifacts/self-serve-onboarding-authority-entry.json")
+    self_serve_authority_append.add_argument("--key")
+    _add_state_args(self_serve_authority_append)
+    self_serve_authority_append.set_defaults(func=cmd_self_serve_authority_append)
 
     design_partner = subparsers.add_parser("design-partner-dossier", help="write a signed Phase 1 design-partner pilot dossier")
     design_partner.add_argument("--root", default=".")

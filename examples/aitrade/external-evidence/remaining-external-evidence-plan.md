@@ -1,24 +1,25 @@
 # TrustAI External Evidence Collection Plan
 
-Plan ID: `d0ad2359381546887fe066bb44f8ced54ce4bac859d6e00080f2008bb832f402`
+Plan ID: `b5ec02ba7022b06a3f7c4047c6a10eed312e7e58510c1808c220a0e7bf287de8`
 
-Source manifest: `1521a5cd0e38ac509f6e882f9ad6989057b96c604a04b98c734d5401689d2068`
+Source manifest: `fc14988044c0d711d31453053e7eeb179bc3daea3654c579ada8c7daab9754a1`
 
 Status filter: missing
 
 ## Summary
 
 - Source manifest status: partial
-- Total authority units: 70
-- Selected tasks: 67
-- Selected missing tasks: 67
+- Total authority units: 71
+- Selected tasks: 68
+- Selected missing tasks: 68
 - Selected covered tasks: 0
-- Missing authority kinds overall: 67
+- Missing authority kinds overall: 68
 
 ## Collection Tasks
 
 | Task ID | Unit Ref | Requirement | Authority | Status | Owner Hint | Suggested Artifact | Evidence Argument Template |
 |---|---|---|---|---|---|---|---|
+| `fb7a028bc892d55abbf9f179f729ae0a91aba04a98b36d8e30113840c04aa8e2` | `self-serve-onboarding:provider-api` | `self-serve-onboarding` | provider-api | missing | integration/platform owner | `external-evidence/self-serve-onboarding/provider-api.json` | `self-serve-onboarding,provider-api,external-evidence/self-serve-onboarding/provider-api.json,provider-api evidence for self-serve-onboarding;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `1fa1a8cea6e5c45b6c7c6b0c5cae7bdb8cd9830071617da44eb808463ac44ed2` | `self-serve-onboarding:hosted-service` | `self-serve-onboarding` | hosted-service | missing | service owner | `external-evidence/self-serve-onboarding/hosted-service.json` | `self-serve-onboarding,hosted-service,external-evidence/self-serve-onboarding/hosted-service.json,hosted-service evidence for self-serve-onboarding;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `e4776c238bf7deaa482f7e908897fbbc7b86e75ec7da8bd956155fa15b675472` | `self-serve-onboarding:identity-provider` | `self-serve-onboarding` | identity-provider | missing | IAM/identity owner | `external-evidence/self-serve-onboarding/identity-provider.json` | `self-serve-onboarding,identity-provider,external-evidence/self-serve-onboarding/identity-provider.json,identity-provider evidence for self-serve-onboarding;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `8c5543b564326dfe798955c6c0be0376ef1d80413df723bdf5f83d882238aa4c` | `mcp-gateway:ci-run` | `mcp-gateway` | ci-run | missing | release engineering | `external-evidence/mcp-gateway/ci-run.json` | `mcp-gateway,ci-run,external-evidence/mcp-gateway/ci-run.json,ci-run evidence for mcp-gateway;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |

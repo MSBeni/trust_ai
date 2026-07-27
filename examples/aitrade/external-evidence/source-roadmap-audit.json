@@ -1,7 +1,7 @@
 {
-  "audit_id": "bc6893d985a9c61161812c17979f2e9afdb36d5a72dcd033eaf86663d3233d89",
+  "audit_id": "bc884270a97fe3197010e36dd8c5201439314499a7b37f3c25643902ce08457b",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
-  "generated_at": "2026-07-27T03:04:10Z",
+  "generated_at": "2026-07-27T03:44:05Z",
   "limitations": [
     "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
     "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",
@@ -357,6 +357,11 @@
           "sha256": "sha256:b6a16bd8a4d95e94b0ebe69dc1bb96176ff7e9d5c93f1f40cc8b569cf9ff901a"
         },
         {
+          "path": "docs/specs/self-serve-onboarding-production-authority-v0.1.md",
+          "present": true,
+          "sha256": "sha256:055e48f2997d916bc6f63a7009df21e4e3752685c58bb81bc7a9c5d0b8364471"
+        },
+        {
           "path": "docs/specs/python-sdk-v0.1.md",
           "present": true,
           "sha256": "sha256:b2fe600829c1a70ad6b1bcc818020e21496c4f6621ecf563e23127f3929a16bb"
@@ -382,6 +387,11 @@
           "sha256": "sha256:ff3bf16d48b9ff029a1e7415a15bf6339d0a7b3998e9b97209242bbfa3dd94fd"
         },
         {
+          "path": "src/trustai/self_serve_authority.py",
+          "present": true,
+          "sha256": "sha256:919672d52f5acf6472df093ba2b0c999d1d2e485ecdfa4006d4f0bca79aefc76"
+        },
+        {
           "path": "src/trustai/control_plane.py",
           "present": true,
           "sha256": "sha256:9a139b7381f55eda5ba86c1a23c30269eb511939f03bf6d434654b61f0d8298e"
@@ -394,7 +404,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:cf6900644112c2d0df36f89a39eb7c273e69935aec501fe19f512801ab531cef"
+          "sha256": "sha256:fa6ab09dee8d5336854c3c8b63c28783ea61b455c1f514c2ddff317464d0e8fe"
         },
         {
           "path": "src/trustai/sdk.py",
@@ -497,6 +507,11 @@
           "sha256": "sha256:4fa80fecb07c9997485036e50c5e8d49f181391233ab9ea88f4e3a03f8a67410"
         },
         {
+          "path": "tests/test_self_serve_authority.py",
+          "present": true,
+          "sha256": "sha256:be8c86fd9efef9b0dce16a5be567f263dd4d8eb8f58ee2a4a951f9ffb36b5cab"
+        },
+        {
           "path": "tests/test_ingest_runtime.py",
           "present": true,
           "sha256": "sha256:8411d117ad46a784530a648e3fef8e82a21d9e7d2dd8babc04464a122a9484de"
@@ -512,14 +527,14 @@
           "sha256": "sha256:99b57137dc93fe9837a29ff649a844d58bbb77524b83da5a47fe32e90eeba8cc"
         }
       ],
-      "evidence_count": 32,
+      "evidence_count": 35,
       "external_authority_required": [
-        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; hosted PLG account creation, identity federation, billing, usage metering, support operations, and onboarding SLOs remain external service evidence."
+        "Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; self-serve onboarding production authority dossiers bind hosted account-creation, identity-federation, billing, metering, support, quota, and audit-log authority rows to the verified local onboarding receipt. Actual fresh hosted PLG service, identity-provider, billing, usage metering, support operations, and onboarding SLO exports remain external service evidence."
       ],
       "id": "self-serve-onboarding",
       "missing_evidence_count": 0,
       "phase": "P2",
-      "present_evidence_count": 32,
+      "present_evidence_count": 35,
       "priority": "P1",
       "roadmap_ref": "Phase 2 feature 6; GTM self-serve gateway tier",
       "status": "reference-attested",
@@ -1186,7 +1201,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:cf6900644112c2d0df36f89a39eb7c273e69935aec501fe19f512801ab531cef"
+          "sha256": "sha256:fa6ab09dee8d5336854c3c8b63c28783ea61b455c1f514c2ddff317464d0e8fe"
         },
         {
           "path": "src/trustai/object_store.py",
@@ -1292,7 +1307,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:cf6900644112c2d0df36f89a39eb7c273e69935aec501fe19f512801ab531cef"
+          "sha256": "sha256:fa6ab09dee8d5336854c3c8b63c28783ea61b455c1f514c2ddff317464d0e8fe"
         },
         {
           "path": "docs/specs/compliance-production-authority-v0.1.md",
@@ -1428,7 +1443,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:f081b26a03685cc286d74117c3763ce5d9e544534084753f18acae111d29fadc"
+          "sha256": "sha256:b705ef34f5aebcceab16306cde17b091ac3c4c7780280f29bc666760161e65f6"
         },
         {
           "path": "src/trustai/trust_authority.py",
@@ -1640,7 +1655,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:cf6900644112c2d0df36f89a39eb7c273e69935aec501fe19f512801ab531cef"
+          "sha256": "sha256:fa6ab09dee8d5336854c3c8b63c28783ea61b455c1f514c2ddff317464d0e8fe"
         },
         {
           "path": "src/trustai/underwriting_quote.py",
@@ -1831,7 +1846,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:f081b26a03685cc286d74117c3763ce5d9e544534084753f18acae111d29fadc"
+          "sha256": "sha256:b705ef34f5aebcceab16306cde17b091ac3c4c7780280f29bc666760161e65f6"
         },
         {
           "path": "tests/test_reliability_report.py",
@@ -1947,7 +1962,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:f081b26a03685cc286d74117c3763ce5d9e544534084753f18acae111d29fadc"
+          "sha256": "sha256:b705ef34f5aebcceab16306cde17b091ac3c4c7780280f29bc666760161e65f6"
         },
         {
           "path": "tests/test_phase_scoreboard.py",
@@ -1998,7 +2013,7 @@
         {
           "path": "docs/architecture/roadmap-coverage.md",
           "present": true,
-          "sha256": "sha256:a6b4575cf713a949757be2016291898ec90ca0a340bfccfa4f6cf99ae96c7881"
+          "sha256": "sha256:e238899dcd27ae9212347e8e17c2c8b5db35266c2172428c4fa90bc5120abd77"
         },
         {
           "path": "src/trustai/proofpack.py",
@@ -2018,7 +2033,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:f081b26a03685cc286d74117c3763ce5d9e544534084753f18acae111d29fadc"
+          "sha256": "sha256:b705ef34f5aebcceab16306cde17b091ac3c4c7780280f29bc666760161e65f6"
         },
         {
           "path": "tests/test_product_scope.py",
@@ -2195,7 +2210,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:cf6900644112c2d0df36f89a39eb7c273e69935aec501fe19f512801ab531cef"
+          "sha256": "sha256:fa6ab09dee8d5336854c3c8b63c28783ea61b455c1f514c2ddff317464d0e8fe"
         },
         {
           "path": "docs/specs/identity-provider-attestation-v0.1.md",
@@ -2306,7 +2321,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:cf6900644112c2d0df36f89a39eb7c273e69935aec501fe19f512801ab531cef"
+          "sha256": "sha256:fa6ab09dee8d5336854c3c8b63c28783ea61b455c1f514c2ddff317464d0e8fe"
         },
         {
           "path": "examples/aitrade/delegation.json",
@@ -2563,7 +2578,7 @@
     "coverage": {
       "path": "docs/architecture/roadmap-coverage.md",
       "present": true,
-      "sha256": "sha256:a6b4575cf713a949757be2016291898ec90ca0a340bfccfa4f6cf99ae96c7881"
+      "sha256": "sha256:e238899dcd27ae9212347e8e17c2c8b5db35266c2172428c4fa90bc5120abd77"
     },
     "requirement_count": 26,
     "roadmap": {
