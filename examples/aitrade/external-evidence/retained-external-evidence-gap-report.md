@@ -1,13 +1,13 @@
 # External Evidence Gap Report
 
-- Gap report ID: `aa8c9afb6ef8060d323f7e9c8258680ddb40435723ac6f8d8367edf28ae795ed`
+- Gap report ID: `c600d607c1b659cf4192609af2ea9e555203fe7c458930af032e173def6df972`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 46/71
-- Missing authority kinds: 25
-- Remaining collection tasks: 25
-- Source-map entries: 25
-- Placeholder source URIs: 25
+- Covered authority kinds: 47/71
+- Missing authority kinds: 24
+- Remaining collection tasks: 24
+- Source-map entries: 24
+- Placeholder source URIs: 24
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
@@ -19,7 +19,7 @@
 - `insurer`: 3
 - `kms-hsm`: 2
 - `provider-api`: 2
-- `regulator`: 2
+- `regulator`: 1
 - `standards-body`: 2
 
 ## Gaps By Requirement
@@ -31,20 +31,9 @@
 - `standards-track-and-auditor-ecosystem`: 2
 - `state-of-agent-reliability-report`: 1
 - `trust-network-procurement-and-marketplace`: 4
-- `vertical-packs`: 3
+- `vertical-packs`: 2
 
 ## Collection Worklist
-
-### vertical-packs:regulator
-
-- Title: Vertical packs for trading, insurance claims, healthcare, and public sector
-- Authority kind: `regulator`
-- Owner hint: legal/compliance owner
-- Description: regulator evidence for vertical-packs
-- Source URI: `TODO://authority/vertical-packs/regulator`
-- Snapshot output: `artifacts/external-evidence-sources/vertical-packs/regulator.json`
-- Intake output: `artifacts/external-evidence-intakes/vertical-packs/regulator.json`
-- Suggested evidence sources: regulator acknowledgement; supervisor portal receipt; conformity-assessment record
 
 ### vertical-packs:insurer
 

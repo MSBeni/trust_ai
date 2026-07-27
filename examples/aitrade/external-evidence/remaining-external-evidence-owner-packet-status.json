@@ -5,7 +5,7 @@
     "A closed task still requires rebuilt manifest verification and readiness verification before external authority coverage is accepted.",
     "Placeholder source URIs keep tasks blocked even when a local intake artifact is present."
   ],
-  "owner_packet_status_id": "73804962050f2973266fb5e8b41fc183ca9896cd66502c6911deedaf0224b949",
+  "owner_packet_status_id": "d5bf797d780889433fcefc8782a16c1b87e59ee7675d32aeb0e7d2d03f8a9ddf",
   "packets": [
     {
       "blocked_task_count": 2,
@@ -38,14 +38,14 @@
       "task_count": 2
     },
     {
-      "blocked_task_count": 2,
+      "blocked_task_count": 1,
       "closed_task_count": 0,
       "open_task_count": 0,
       "owner_hint": "legal/compliance owner",
-      "packet_id": "8f1652ae3ca84ee785a75cab454bb5e4f91e31a0b107717b83dcbe5c2ed605e9",
+      "packet_id": "37e1261d09d55a02bda8eb23092922efc512f324e8d6a2a60fb9f1f47ec3c7f1",
       "packet_ref": "owner-packet:owner_hint:legal-compliance-owner",
       "packet_status": "blocked",
-      "task_count": 2
+      "task_count": 1
     },
     {
       "blocked_task_count": 4,
@@ -103,41 +103,41 @@
     "intake_hashes": [],
     "owner_packet_bundle": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_bundle_hash": "daea27332ed1db8767c5e5c5410b9b409189004749bd165f474d34a6f11fcf04",
-      "owner_packet_bundle_id": "c61fcb920b1fad85aeacaac3ae5d69b617968517864d84f967ad5d5857a55440",
+      "owner_packet_bundle_hash": "ddc262e5637263a999316877018e3e49d432a9a3e9ea907d2942cdf2a827c081",
+      "owner_packet_bundle_id": "07239bdfec7966232b8d77f2bebe1dcb2f6d19e21781be16e2345adf5d5b7e82",
       "schema": "trustai.external-evidence-owner-packet-bundle/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "e0d5668cf3ca02395ab2f31a4ab373676239208d278e4be97b497ec75742a88e",
-      "source_map_id": "cf94042603c86b56881144ae8b9c2d3de6e7a40f19912cda07d78eb4c8bdaece"
+      "source_map_hash": "5c0d34a8ff0c44ccbd7b4bf9e9d560d7c5c958fcef14a39d77adec0879e61480",
+      "source_map_id": "5c9602d9b40c64f9577263bc1d5d8e5e2b6cfd1e9c97b4d8cb2527aa4b4b98fe"
     },
     "work_package": {
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-work-package/0.1",
-      "work_package_hash": "b166e977164503a6277079121b3cc5cf67faa08059400480bbc2113b0acdd79b",
-      "work_package_id": "a9309e42fe399b1ae2f35f3902690e0f867bdf751519c93f8f87e5aac4682131"
+      "work_package_hash": "00655f1b4b9683a0cf3b5607775ca52b7d992a9fb08c3e500fffc44a7f4513dd",
+      "work_package_id": "424531794b170d43feec847259e4168dca9fbda389537728f5aaaa10d59a19ff"
     }
   },
   "summary": {
     "blocked_packet_count": 9,
-    "blocked_task_count": 25,
+    "blocked_task_count": 24,
     "closed_packet_count": 0,
     "closed_task_count": 0,
     "invalid_intake_count": 0,
     "live_source_uri_count": 0,
-    "missing_intake_count": 25,
+    "missing_intake_count": 24,
     "open_packet_count": 0,
     "open_task_count": 0,
     "packet_count": 9,
     "packet_status_counts": {
       "blocked": 9
     },
-    "placeholder_source_uri_count": 25,
-    "task_count": 25,
+    "placeholder_source_uri_count": 24,
+    "task_count": 24,
     "task_status_counts": {
-      "blocked": 25
+      "blocked": 24
     }
   },
   "tasks": [
@@ -327,23 +327,6 @@
       "task_ref": "external-evidence:roadmap-phase-scoreboard:regulator",
       "task_status": "blocked",
       "unit_ref": "roadmap-phase-scoreboard:regulator"
-    },
-    {
-      "authority_kind": "regulator",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake": null,
-      "intake_out": "artifacts/external-evidence-intakes/vertical-packs/regulator.json",
-      "owner_hint": "legal/compliance owner",
-      "requirement_id": "vertical-packs",
-      "snapshot_out": "artifacts/external-evidence-sources/vertical-packs/regulator.json",
-      "source_uri": "TODO://authority/vertical-packs/regulator",
-      "source_uri_status": "placeholder",
-      "task_ref": "external-evidence:vertical-packs:regulator",
-      "task_status": "blocked",
-      "unit_ref": "vertical-packs:regulator"
     },
     {
       "authority_kind": "ci-run",

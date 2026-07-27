@@ -1,14 +1,14 @@
 # External Evidence Owner Fulfillment Template
 
-- Template ID: `70211f49909a92d3b7c93b3d4cc5b7132c45f90f401e89912e862f1d1176dfa0`
+- Template ID: `06544d24e80c0288dc5a80e5f2a4a73445da5c1c6974a4cb4dc9e2bbdb62d0ab`
 - Generated at: `2026-07-12T00:01:00Z`
-- Fulfillments: 25
+- Fulfillments: 24
 - Owners: 9
-- Blocked tasks: 25
+- Blocked tasks: 24
 - Open tasks: 0
 - Closed tasks: 0
-- Placeholder source URIs: 25
-- Missing intakes: 25
+- Placeholder source URIs: 24
+- Missing intakes: 24
 
 ## Fulfillments
 
@@ -25,7 +25,6 @@
 | `insurer-api-and-actuarial-products:provider-api` | TODO://authority/insurer-api-and-actuarial-products/provider-api | provider-api evidence for insurer-api-and-actuarial-products |
 | `trust-network-procurement-and-marketplace:provider-api` | TODO://authority/trust-network-procurement-and-marketplace/provider-api | provider-api evidence for trust-network-procurement-and-marketplace |
 | `roadmap-phase-scoreboard:regulator` | TODO://authority/roadmap-phase-scoreboard/regulator | regulator evidence for roadmap-phase-scoreboard |
-| `vertical-packs:regulator` | TODO://authority/vertical-packs/regulator | regulator evidence for vertical-packs |
 | `insurer-api-and-actuarial-products:ci-run` | TODO://authority/insurer-api-and-actuarial-products/ci-run | ci-run evidence for insurer-api-and-actuarial-products |
 | `product-scope-discipline:ci-run` | TODO://authority/product-scope-discipline/ci-run | ci-run evidence for product-scope-discipline |
 | `roadmap-phase-scoreboard:ci-run` | TODO://authority/roadmap-phase-scoreboard/ci-run | ci-run evidence for roadmap-phase-scoreboard |
@@ -55,7 +54,6 @@
 | `insurer-api-and-actuarial-products:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/provider-api.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/provider-api.json |
 | `trust-network-procurement-and-marketplace:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/provider-api.json | artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/provider-api.json |
 | `roadmap-phase-scoreboard:regulator` | legal/compliance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/roadmap-phase-scoreboard/regulator.json | artifacts/external-evidence-intakes/roadmap-phase-scoreboard/regulator.json |
-| `vertical-packs:regulator` | legal/compliance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/vertical-packs/regulator.json | artifacts/external-evidence-intakes/vertical-packs/regulator.json |
 | `insurer-api-and-actuarial-products:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/ci-run.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/ci-run.json |
 | `product-scope-discipline:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/product-scope-discipline/ci-run.json | artifacts/external-evidence-intakes/product-scope-discipline/ci-run.json |
 | `roadmap-phase-scoreboard:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/roadmap-phase-scoreboard/ci-run.json | artifacts/external-evidence-intakes/roadmap-phase-scoreboard/ci-run.json |

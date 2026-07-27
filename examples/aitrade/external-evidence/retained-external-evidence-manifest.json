@@ -760,6 +760,24 @@
     },
     {
       "accepted_authority_kinds": [
+        "regulator",
+        "insurer",
+        "customer"
+      ],
+      "authority_kind": "regulator",
+      "description": "Retained regulator acknowledgement export for TrustAI vertical-pack reference review evidence",
+      "evidence_id": "ff7a692362945c0c86a0ab430f9f32db95389e12857029ded4b805e96dab1481",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "Example Regulator",
+      "path": "examples/aitrade/external-evidence/vertical-packs-regulator-source-snapshot.json",
+      "requirement_id": "vertical-packs",
+      "sha256": "sha256:4069dd913f4e358a0ba74842453c35ac711956933d24a17002100bf511584476",
+      "source_uri": "https://regulator.example/exports/trustai/vertical-packs/reference-supervisory-review/2026-07-12",
+      "subject": "TrustAI vertical-pack supervisory reference review export"
+    },
+    {
+      "accepted_authority_kinds": [
         "ci-run",
         "kms-hsm",
         "provider-api",
@@ -879,7 +897,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "00a7aa09d9d50ba6d9ef8b8f7fcb5e177ee238e90b41866a82dab29871210771",
+  "manifest_id": "d5e03ff10c4d39e29b0a10a4b258f236086bd65ed75331d22ac723ec90fc855a",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -1404,7 +1422,7 @@
     },
     {
       "authority_kind": "regulator",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Vertical pack receipts cover local/reference templates, source bindings, control mappings, and production-claim limits for trading/treasury, insurance claims, healthcare RCM, and public sector packs; live SR 11-7 owner signoff, NAIC/state insurance legal review, HIPAA/BAA posture, FDA SaMD classification, FedRAMP boundary/ATO evidence, customer deployments, and external regulator/insurer/auditor acceptance remain external evidence."
       ],
@@ -2106,7 +2124,7 @@
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {
-    "covered_authority_kind_count": 46,
+    "covered_authority_kind_count": 47,
     "covered_authority_kinds_by_requirement": {
       "agent-inventory-and-identity": [
         "provider-api",
@@ -2179,9 +2197,12 @@
       "trustai-own-compliance": [
         "standards-body",
         "customer"
+      ],
+      "vertical-packs": [
+        "regulator"
       ]
     },
-    "covered_requirement_count": 13,
+    "covered_requirement_count": 14,
     "covered_requirement_ids": [
       "agent-inventory-and-identity",
       "auditor-and-review-portal",
@@ -2195,13 +2216,14 @@
       "runtime-policy-and-attestation",
       "self-serve-onboarding",
       "shadow-replay-temporal-holdout",
-      "trustai-own-compliance"
+      "trustai-own-compliance",
+      "vertical-packs"
     ],
-    "evidence_count": 46,
-    "expires_at_count": 46,
-    "freshness_window_count": 46,
-    "issued_at_count": 46,
-    "missing_authority_kind_count": 25,
+    "evidence_count": 47,
+    "expires_at_count": 47,
+    "freshness_window_count": 47,
+    "issued_at_count": 47,
+    "missing_authority_kind_count": 24,
     "missing_authority_kinds_by_requirement": {
       "insurer-api-and-actuarial-products": [
         "ci-run",
@@ -2240,14 +2262,12 @@
         "customer"
       ],
       "vertical-packs": [
-        "regulator",
         "insurer",
         "customer"
       ]
     },
-    "missing_requirement_count": 7,
+    "missing_requirement_count": 6,
     "missing_requirement_ids": [
-      "vertical-packs",
       "insurer-api-and-actuarial-products",
       "state-of-agent-reliability-report",
       "roadmap-phase-scoreboard",

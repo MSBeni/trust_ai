@@ -682,6 +682,20 @@ RETAINED_SOURCES: dict[str, dict[str, str]] = {
         "snapshot_out": "examples/aitrade/external-evidence/trustai-own-compliance-customer-source-snapshot.json",
         "intake_out": "examples/aitrade/external-evidence/intakes/trustai-own-compliance-customer.json",
     },
+    "vertical-packs:regulator": {
+        "source_uri": "https://regulator.example/exports/trustai/vertical-packs/reference-supervisory-review/2026-07-12",
+        "description": "Retained regulator acknowledgement export for TrustAI vertical-pack reference review evidence",
+        "artifact": "examples/aitrade/external-evidence/vertical-packs-regulator-source-snapshot.json",
+        "source_file": "examples/aitrade/vertical-packs-regulator-authority-export.json",
+        "retrieval_method": "file-copy",
+        "content_type": "application/json",
+        "issuer": "Example Regulator",
+        "subject": "TrustAI vertical-pack supervisory reference review export",
+        "issued_at": "2026-07-12T00:00:00Z",
+        "expires_at": "2026-12-31T00:00:00Z",
+        "snapshot_out": "examples/aitrade/external-evidence/vertical-packs-regulator-source-snapshot.json",
+        "intake_out": "examples/aitrade/external-evidence/intakes/vertical-packs-regulator.json",
+    },
 }
 
 

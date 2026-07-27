@@ -441,6 +441,17 @@
       "warnings": []
     },
     {
+      "evidence_argument": "vertical-packs,regulator,examples/aitrade/external-evidence/vertical-packs-regulator-source-snapshot.json,Retained regulator acknowledgement export for TrustAI vertical-pack reference review evidence;issuer=Example Regulator;subject=TrustAI vertical-pack supervisory reference review export;source_uri=https://regulator.example/exports/trustai/vertical-packs/reference-supervisory-review/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
+      "intake_id": "319b4646ae7026a06f02f4c6d64f2fdddf75ece5ef4e3f8e79585d4e146f07fa",
+      "intake_path": "examples/aitrade/external-evidence/intakes/vertical-packs-regulator.json",
+      "snapshot_artifact_path": "examples/aitrade/external-evidence/vertical-packs-regulator-source-snapshot.json",
+      "snapshot_id": "1245bdc0c6ec788876ae9d58a1d940241378c26fec8b3555e10d66d9e25174db",
+      "snapshot_path": "examples/aitrade/external-evidence/vertical-packs-regulator-source-snapshot.json",
+      "source_uri": "https://regulator.example/exports/trustai/vertical-packs/reference-supervisory-review/2026-07-12",
+      "task": "vertical-packs:regulator",
+      "warnings": []
+    },
+    {
       "evidence_argument": "runtime-policy-and-attestation,kms-hsm,examples/aitrade/external-evidence/runtime-policy-kms-hsm-source-snapshot.json,Retained KMS/HSM enforcement export for runtime policy evidence signing;issuer=Example KMS/HSM;subject=trustai runtime policy evidence-signing enforcement;source_uri=https://kms.example/attestations/trustai/runtime-policy/evidence-signing;issued_at=2026-07-03T12:03:00Z;expires_at=2026-12-31T00:00:00Z",
       "intake_id": "0657efbfed5c33ef032882c57f701fe2a451c724f63e2c96798e90bd10dedfdc",
       "intake_path": "examples/aitrade/external-evidence/intakes/runtime-policy-and-attestation-kms-hsm.json",
@@ -508,15 +519,15 @@
     }
   ],
   "generated_at": "2026-07-12T00:01:00Z",
-  "run_id": "0f24d79d2673a00fce8ece40789b05951d65fd0e403df5011987e44bb2f3f5f7",
+  "run_id": "116e5626d495436220d8b0e8556b462b432742da3d4724b898cdf3925693afc9",
   "schema": "trustai.external-evidence-collection-run/0.1",
   "source_map": {
     "path": "examples/aitrade/external-evidence/retained-external-evidence-collected-source-map.json",
-    "source_map_hash": "9d35968fedfa6005da35614b30036e86cb804998c4c025f095233a05778ee900"
+    "source_map_hash": "0314c71fd81eb7e6a6022af512062d51e44442dd150ec0146dee641f577bab09"
   },
   "summary": {
-    "collected_count": 46,
+    "collected_count": 47,
     "require_fresh": true,
-    "task_count": 46
+    "task_count": 47
   }
 }

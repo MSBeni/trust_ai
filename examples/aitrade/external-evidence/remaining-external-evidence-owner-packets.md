@@ -1,13 +1,13 @@
 # External Evidence Owner Packets
 
-- Owner packet bundle ID: `c61fcb920b1fad85aeacaac3ae5d69b617968517864d84f967ad5d5857a55440`
+- Owner packet bundle ID: `07239bdfec7966232b8d77f2bebe1dcb2f6d19e21781be16e2345adf5d5b7e82`
 - Generated at: `2026-07-12T00:01:00Z`
-- Source work package ID: `a9309e42fe399b1ae2f35f3902690e0f867bdf751519c93f8f87e5aac4682131`
-- Source work package hash: `b166e977164503a6277079121b3cc5cf67faa08059400480bbc2113b0acdd79b`
+- Source work package ID: `424531794b170d43feec847259e4168dca9fbda389537728f5aaaa10d59a19ff`
+- Source work package hash: `00655f1b4b9683a0cf3b5607775ca52b7d992a9fb08c3e500fffc44a7f4513dd`
 - Packets: 9
-- Tasks: 25
-- Missing tasks: 25
-- Placeholder source URIs: 25
+- Tasks: 24
+- Missing tasks: 24
+- Placeholder source URIs: 24
 
 ## Packets
 
@@ -101,12 +101,12 @@
 ### legal/compliance owner
 
 - Packet ref: `owner-packet:owner_hint:legal-compliance-owner`
-- Packet ID: `8f1652ae3ca84ee785a75cab454bb5e4f91e31a0b107717b83dcbe5c2ed605e9`
+- Packet ID: `37e1261d09d55a02bda8eb23092922efc512f324e8d6a2a60fb9f1f47ec3c7f1`
 - Package ref: `owner_hint:legal-compliance-owner`
-- Tasks: 2
-- Missing tasks: 2
+- Tasks: 1
+- Missing tasks: 1
 - Authority kinds: `regulator`
-- Requirements: `roadmap-phase-scoreboard`, `vertical-packs`
+- Requirements: `roadmap-phase-scoreboard`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
 - Completion gate: Every task must have a live authority source URI, a verified source snapshot, a verified intake receipt, and a rebuilt external-evidence manifest before readiness can pass.
@@ -114,14 +114,11 @@
 | Task | Phase | Priority | Authority | Source URI Status | Intake |
 |---|---|---|---|---|---|
 | `roadmap-phase-scoreboard:regulator` | P1-P4 | P0 | `regulator` | placeholder | `artifacts/external-evidence-intakes/roadmap-phase-scoreboard/regulator.json` |
-| `vertical-packs:regulator` | P3 | P1 | `regulator` | placeholder | `artifacts/external-evidence-intakes/vertical-packs/regulator.json` |
 
 #### Task Commands
 
 - `roadmap-phase-scoreboard:regulator` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/roadmap-phase-scoreboard/regulator --root . --task roadmap-phase-scoreboard:regulator --description 'regulator evidence for roadmap-phase-scoreboard' --snapshot-out artifacts/external-evidence-sources/roadmap-phase-scoreboard/regulator.json --intake-out artifacts/external-evidence-intakes/roadmap-phase-scoreboard/regulator.json`
 - `roadmap-phase-scoreboard:regulator` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/roadmap-phase-scoreboard/regulator.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
-- `vertical-packs:regulator` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/vertical-packs/regulator --root . --task vertical-packs:regulator --description 'regulator evidence for vertical-packs' --snapshot-out artifacts/external-evidence-sources/vertical-packs/regulator.json --intake-out artifacts/external-evidence-intakes/vertical-packs/regulator.json`
-- `vertical-packs:regulator` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/vertical-packs/regulator.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 
 ### release engineering
 

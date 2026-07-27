@@ -1925,6 +1925,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         compliance_standards_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/compliance-standards-body-source-snapshot.json")
         own_compliance_standards_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/trustai-own-compliance-standards-body-source-snapshot.json")
         own_compliance_customer_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/trustai-own-compliance-customer-source-snapshot.json")
+        vertical_packs_regulator_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/vertical-packs-regulator-source-snapshot.json")
         ci_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/oss-verifier-ci-run.json")
         provider_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/oss-verifier-provider-api.json")
         hosted_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/oss-verifier-hosted-service.json")
@@ -1971,6 +1972,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         compliance_standards_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/compliance-mapper-and-eu-ai-act-standards-body.json")
         own_compliance_standards_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/trustai-own-compliance-standards-body.json")
         own_compliance_customer_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/trustai-own-compliance-customer.json")
+        vertical_packs_regulator_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/vertical-packs-regulator.json")
 
         audit_result = verify_roadmap_audit(audit, root=ROOT)
         manifest_result = verify_external_evidence_manifest(
@@ -2056,6 +2058,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 compliance_standards_snapshot,
                 own_compliance_standards_snapshot,
                 own_compliance_customer_snapshot,
+                vertical_packs_regulator_snapshot,
             )
         ]
         intake_results = [
@@ -2117,6 +2120,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 compliance_standards_intake,
                 own_compliance_standards_intake,
                 own_compliance_customer_intake,
+                vertical_packs_regulator_intake,
             )
         ]
         rebuilt = build_external_evidence_manifest_from_intakes(
@@ -2171,6 +2175,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 compliance_standards_intake,
                 own_compliance_standards_intake,
                 own_compliance_customer_intake,
+                vertical_packs_regulator_intake,
             ],
             require_fresh=True,
             require_source_snapshot_artifacts=True,
@@ -2407,31 +2412,36 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual("customer", own_compliance_customer_intake["task"]["authority_kind"])
         self.assertEqual("file-copy", own_compliance_customer_snapshot["retrieval_method"])
         self.assertEqual("sha256:" + sha256((ROOT / "examples/aitrade/trustai-own-compliance-customer-authority-export.json").read_bytes()).hexdigest(), own_compliance_customer_snapshot["body_sha256"])
+        self.assertEqual("examples/aitrade/external-evidence/vertical-packs-regulator-source-snapshot.json", vertical_packs_regulator_intake["evidence_item"]["path"])
+        self.assertEqual("vertical-packs", vertical_packs_regulator_intake["task"]["requirement_id"])
+        self.assertEqual("regulator", vertical_packs_regulator_intake["task"]["authority_kind"])
+        self.assertEqual("file-copy", vertical_packs_regulator_snapshot["retrieval_method"])
+        self.assertEqual("sha256:" + sha256((ROOT / "examples/aitrade/vertical-packs-regulator-authority-export.json").read_bytes()).hexdigest(), vertical_packs_regulator_snapshot["body_sha256"])
         for snapshot in (provider_snapshot, hosted_snapshot):
             self.assertEqual("git-ls-remote", snapshot["retrieval_method"])
             export = json.loads(base64.b64decode(snapshot["body_base64"]).decode("utf-8"))
             self.assertEqual("trustai.external-evidence-git-remote-ref-export/0.1", export["schema"])
         self.assertEqual(71, rebuilt["summary"]["required_authority_kind_count"])
-        self.assertEqual(46, rebuilt["summary"]["covered_authority_kind_count"])
-        self.assertEqual(25, rebuilt["summary"]["missing_authority_kind_count"])
+        self.assertEqual(47, rebuilt["summary"]["covered_authority_kind_count"])
+        self.assertEqual(24, rebuilt["summary"]["missing_authority_kind_count"])
         self.assertEqual(retained_manifest["summary"], rebuilt["summary"])
-        self.assertEqual(25, remaining_plan["summary"]["selected_task_count"])
-        self.assertEqual(25, remaining_plan["summary"]["selected_missing_task_count"])
+        self.assertEqual(24, remaining_plan["summary"]["selected_task_count"])
+        self.assertEqual(24, remaining_plan["summary"]["selected_missing_task_count"])
         self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA, source_map["schema"])
         self.assertEqual(content_hash(without_keys(source_map, "source_map_id")), source_map["source_map_id"])
-        self.assertEqual(25, source_map["summary"]["entry_count"])
-        self.assertEqual(25, source_map["summary"]["placeholder_source_uri_count"])
+        self.assertEqual(24, source_map["summary"]["entry_count"])
+        self.assertEqual(24, source_map["summary"]["placeholder_source_uri_count"])
         self.assertEqual(0, source_map["summary"]["live_source_uri_count"])
         self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA, collected_source_map["schema"])
         self.assertEqual(content_hash(without_keys(collected_source_map, "source_map_id")), collected_source_map["source_map_id"])
-        self.assertEqual(46, collected_source_map["summary"]["entry_count"])
+        self.assertEqual(47, collected_source_map["summary"]["entry_count"])
         self.assertEqual(0, collected_source_map["summary"]["placeholder_source_uri_count"])
-        self.assertEqual(46, collected_source_map["summary"]["live_source_uri_count"])
+        self.assertEqual(47, collected_source_map["summary"]["live_source_uri_count"])
         self.assertEqual(EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA, collection_run["schema"])
         self.assertEqual(content_hash(without_keys(collection_run, "run_id")), collection_run["run_id"])
         self.assertEqual(content_hash(collected_source_map), collection_run["source_map"]["source_map_hash"])
-        self.assertEqual(46, collection_run["summary"]["collected_count"])
-        self.assertEqual(46, collection_run_result.collected_count)
+        self.assertEqual(47, collection_run["summary"]["collected_count"])
+        self.assertEqual(47, collection_run_result.collected_count)
         self.assertEqual(
             ["ci-run", "provider-api", "hosted-service"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["oss-verifier-and-public-spec"],
@@ -2484,6 +2494,10 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             ["standards-body", "customer"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["trustai-own-compliance"],
         )
+        self.assertEqual(
+            ["regulator"],
+            rebuilt["summary"]["covered_authority_kinds_by_requirement"]["vertical-packs"],
+        )
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_path = Path(tmp_dir)
             chain = EvidenceChain.load(tmp_path / "chain.json", tenant_id="retained-external-evidence-strict")
@@ -2523,8 +2537,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertEqual(collection_run["run_id"], collection_payload["run_id"])
             self.assertEqual(content_hash(collection_run), collection_payload["run_hash"])
             self.assertEqual(content_hash(collected_source_map), collection_payload["source_map_hash"])
-            self.assertEqual(46, collection_payload["collected_count"])
-            self.assertEqual(46, collection_payload["task_count"])
+            self.assertEqual(47, collection_payload["collected_count"])
+            self.assertEqual(47, collection_payload["task_count"])
             self.assertTrue(collection_payload["require_live_source_uris"])
             self.assertTrue(collection_payload["require_source_snapshot_artifacts"])
             self.assertTrue(collection_payload["require_fresh_source_snapshot_artifacts"])
@@ -2726,22 +2740,22 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             )
             self.assertFalse(strict_report_result.ok)
             self.assertTrue(any("live source URIs" in error for error in strict_report_result.errors), strict_report_result.errors)
-            self.assertEqual(46, report["summary"]["covered_authority_kind_count"])
-            self.assertEqual(25, report["summary"]["missing_authority_kind_count"])
-            self.assertEqual(25, report["summary"]["remaining_task_count"])
-            self.assertEqual(25, report["summary"]["source_map_entry_count"])
-            self.assertEqual(25, report["summary"]["placeholder_source_uri_count"])
+            self.assertEqual(47, report["summary"]["covered_authority_kind_count"])
+            self.assertEqual(24, report["summary"]["missing_authority_kind_count"])
+            self.assertEqual(24, report["summary"]["remaining_task_count"])
+            self.assertEqual(24, report["summary"]["source_map_entry_count"])
+            self.assertEqual(24, report["summary"]["placeholder_source_uri_count"])
             self.assertEqual(0, report["summary"]["live_source_uri_count"])
             first_gap = report["gaps"][0]
-            self.assertEqual("vertical-packs:regulator", first_gap["unit_ref"])
-            self.assertEqual("regulator evidence for vertical-packs", first_gap["description"])
+            self.assertEqual("vertical-packs:insurer", first_gap["unit_ref"])
+            self.assertEqual("insurer evidence for vertical-packs", first_gap["description"])
             self.assertNotIn("source_file", first_gap)
-            self.assertEqual("artifacts/external-evidence-sources/vertical-packs/regulator.json", first_gap["snapshot_out"])
-            self.assertEqual("artifacts/external-evidence-intakes/vertical-packs/regulator.json", first_gap["intake_out"])
+            self.assertEqual("artifacts/external-evidence-sources/vertical-packs/insurer.json", first_gap["snapshot_out"])
+            self.assertEqual("artifacts/external-evidence-intakes/vertical-packs/insurer.json", first_gap["intake_out"])
             markdown = markdown_path.read_text(encoding="utf-8")
             self.assertIn("# External Evidence Gap Report", markdown)
-            self.assertIn("Placeholder source URIs: 25", markdown)
-            self.assertIn("- Description: regulator evidence for vertical-packs", markdown)
+            self.assertIn("Placeholder source URIs: 24", markdown)
+            self.assertIn("- Description: insurer evidence for vertical-packs", markdown)
 
             tampered = copy.deepcopy(report)
             tampered["summary"]["remaining_task_count"] = 51

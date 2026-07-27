@@ -1202,6 +1202,36 @@
       "unit_ref": "trustai-own-compliance:customer"
     },
     {
+      "authority_kind": "regulator",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained regulator acknowledgement export for TrustAI vertical-pack reference review evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Vertical pack receipts cover local/reference templates, source bindings, control mappings, and production-claim limits for trading/treasury, insurance claims, healthcare RCM, and public sector packs; live SR 11-7 owner signoff, NAIC/state insurance legal review, HIPAA/BAA posture, FDA SaMD classification, FedRAMP boundary/ATO evidence, customer deployments, and external regulator/insurer/auditor acceptance remain external evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/vertical-packs-regulator.json",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "Example Regulator",
+      "owner_hint": "legal/compliance owner",
+      "requirement_id": "vertical-packs",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/vertical-packs-regulator-source-snapshot.json",
+      "source_uri": "https://regulator.example/exports/trustai/vertical-packs/reference-supervisory-review/2026-07-12",
+      "subject": "TrustAI vertical-pack supervisory reference review export",
+      "suggested_evidence_sources": [
+        "regulator acknowledgement",
+        "supervisor portal receipt",
+        "conformity-assessment record"
+      ],
+      "task": "vertical-packs:regulator",
+      "task_id": "60540fdb77545787cb7866c1378dca24cc318e459d744a71667331266c72d2a2",
+      "task_ref": "external-evidence:vertical-packs:regulator",
+      "title": "Vertical packs for trading, insurance claims, healthcare, and public sector",
+      "unit_id": "e78020bae7fc082f74b07cb761b3762f734f20e5fe1764e02487419cc0a6cca6",
+      "unit_ref": "vertical-packs:regulator"
+    },
+    {
       "authority_kind": "kms-hsm",
       "content_type": "application/json",
       "coverage_status": "missing",
@@ -1389,7 +1419,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "bbe0484eaea54695c99281c3fa2e80e31c4801f47198629ac03d54193f39ae7b",
+  "source_map_id": "e2a104e0d903bdcfe0b0db049971287290a486fc6d23d518bf8c7d79a92af9c6",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -1404,9 +1434,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 46,
+    "entry_count": 47,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 46,
+    "live_source_uri_count": 47,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

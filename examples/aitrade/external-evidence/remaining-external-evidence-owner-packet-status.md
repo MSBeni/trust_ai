@@ -1,14 +1,14 @@
 # External Evidence Owner Packet Status
 
-- Status ID: `73804962050f2973266fb5e8b41fc183ca9896cd66502c6911deedaf0224b949`
+- Status ID: `d5bf797d780889433fcefc8782a16c1b87e59ee7675d32aeb0e7d2d03f8a9ddf`
 - Generated at: `2026-07-12T00:01:00Z`
 - Packets: 9
-- Tasks: 25
+- Tasks: 24
 - Closed tasks: 0
 - Open tasks: 0
-- Blocked tasks: 25
-- Placeholder source URIs: 25
-- Missing intakes: 25
+- Blocked tasks: 24
+- Placeholder source URIs: 24
+- Missing intakes: 24
 
 ## Packets
 
@@ -17,7 +17,7 @@
 | IAM/identity owner | `owner-packet:owner_hint:IAM-identity-owner` | blocked | 2 | 0 | 0 | 2 |
 | customer success/account owner | `owner-packet:owner_hint:customer-success-account-owner` | blocked | 6 | 0 | 0 | 6 |
 | integration/platform owner | `owner-packet:owner_hint:integration-platform-owner` | blocked | 2 | 0 | 0 | 2 |
-| legal/compliance owner | `owner-packet:owner_hint:legal-compliance-owner` | blocked | 2 | 0 | 0 | 2 |
+| legal/compliance owner | `owner-packet:owner_hint:legal-compliance-owner` | blocked | 1 | 0 | 0 | 1 |
 | release engineering | `owner-packet:owner_hint:release-engineering` | blocked | 4 | 0 | 0 | 4 |
 | risk/insurance owner | `owner-packet:owner_hint:risk-insurance-owner` | blocked | 3 | 0 | 0 | 3 |
 | security/platform KMS owner | `owner-packet:owner_hint:security-platform-KMS-owner` | blocked | 2 | 0 | 0 | 2 |
@@ -39,7 +39,6 @@
 | `insurer-api-and-actuarial-products:provider-api` | integration/platform owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `trust-network-procurement-and-marketplace:provider-api` | integration/platform owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `roadmap-phase-scoreboard:regulator` | legal/compliance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
-| `vertical-packs:regulator` | legal/compliance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `product-scope-discipline:ci-run` | release engineering | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `roadmap-phase-scoreboard:ci-run` | release engineering | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `runtime-policy-and-attestation:ci-run` | release engineering | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |

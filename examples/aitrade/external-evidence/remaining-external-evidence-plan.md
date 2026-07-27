@@ -1,8 +1,8 @@
 # TrustAI External Evidence Collection Plan
 
-Plan ID: `8c679519df0739649d83358b28bebfe33881d350d5a1713c6fdcf4f99f3992c4`
+Plan ID: `6023c1ee30a264f68839dd3c1762eb791d049db33e81feef5fd6bd99f6a4c99a`
 
-Source manifest: `00a7aa09d9d50ba6d9ef8b8f7fcb5e177ee238e90b41866a82dab29871210771`
+Source manifest: `d5e03ff10c4d39e29b0a10a4b258f236086bd65ed75331d22ac723ec90fc855a`
 
 Status filter: missing
 
@@ -10,16 +10,15 @@ Status filter: missing
 
 - Source manifest status: partial
 - Total authority units: 71
-- Selected tasks: 25
-- Selected missing tasks: 25
+- Selected tasks: 24
+- Selected missing tasks: 24
 - Selected covered tasks: 0
-- Missing authority kinds overall: 25
+- Missing authority kinds overall: 24
 
 ## Collection Tasks
 
 | Task ID | Unit Ref | Requirement | Authority | Status | Owner Hint | Suggested Artifact | Evidence Argument Template |
 |---|---|---|---|---|---|---|---|
-| `60540fdb77545787cb7866c1378dca24cc318e459d744a71667331266c72d2a2` | `vertical-packs:regulator` | `vertical-packs` | regulator | missing | legal/compliance owner | `external-evidence/vertical-packs/regulator.json` | `vertical-packs,regulator,external-evidence/vertical-packs/regulator.json,regulator evidence for vertical-packs;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `9cd53ad47435b80a6de93611fa9813c703575346a6e0d6640747d0d411835410` | `vertical-packs:insurer` | `vertical-packs` | insurer | missing | risk/insurance owner | `external-evidence/vertical-packs/insurer.json` | `vertical-packs,insurer,external-evidence/vertical-packs/insurer.json,insurer evidence for vertical-packs;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `ae2ff75742f182d47963b6ceb336038330944042cb4f326c3d45ed9b9467ce68` | `vertical-packs:customer` | `vertical-packs` | customer | missing | customer success/account owner | `external-evidence/vertical-packs/customer.json` | `vertical-packs,customer,external-evidence/vertical-packs/customer.json,customer evidence for vertical-packs;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `ea9fb5aa2b064a81cad7ef59ae24d745831dae9a1f0ed3f5188901ae7c2dbb6d` | `insurer-api-and-actuarial-products:ci-run` | `insurer-api-and-actuarial-products` | ci-run | missing | release engineering | `external-evidence/insurer-api-and-actuarial-products/ci-run.json` | `insurer-api-and-actuarial-products,ci-run,external-evidence/insurer-api-and-actuarial-products/ci-run.json,ci-run evidence for insurer-api-and-actuarial-products;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
