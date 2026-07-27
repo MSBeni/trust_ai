@@ -177,6 +177,28 @@
       "warnings": []
     },
     {
+      "evidence_argument": "cicd-provider-approvals,hosted-service,examples/aitrade/external-evidence/cicd-provider-approvals-hosted-service-source-snapshot.json,Retained GitHub hosted checks export for CI/CD promotion approval service evidence;issuer=GitHub Hosted Checks;subject=trustai CI/CD promotion approval hosted service;source_uri=https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml;issued_at=2026-07-08T00:02:00Z;expires_at=2026-12-31T00:00:00Z",
+      "intake_id": "1559ad1adf04b7ca20cb89067b95ae33b1d5b8a9272643dfc5f810b059f5d296",
+      "intake_path": "examples/aitrade/external-evidence/intakes/cicd-provider-approvals-hosted-service.json",
+      "snapshot_artifact_path": "examples/aitrade/external-evidence/cicd-provider-approvals-hosted-service-source-snapshot.json",
+      "snapshot_id": "988333b47c41889d7306f2f58e9affcacaf3d8691a58422f45969b307d7bd39b",
+      "snapshot_path": "examples/aitrade/external-evidence/cicd-provider-approvals-hosted-service-source-snapshot.json",
+      "source_uri": "https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml",
+      "task": "cicd-provider-approvals:hosted-service",
+      "warnings": []
+    },
+    {
+      "evidence_argument": "cicd-provider-approvals,identity-provider,examples/aitrade/external-evidence/cicd-provider-approvals-identity-provider-source-snapshot.json,Retained identity-provider export for CI/CD promotion reviewer approval sessions;issuer=Example IdP;subject=aitrade CI/CD promotion reviewer identity federation;source_uri=https://idp.example/exports/aitrade/cicd-approvals/reviewer-sessions;issued_at=2026-07-08T00:03:00Z;expires_at=2026-12-31T00:00:00Z",
+      "intake_id": "ab478927912dd2083fcf9cee623acd1bda0c23105c47d6a69316fa00e928dbb3",
+      "intake_path": "examples/aitrade/external-evidence/intakes/cicd-provider-approvals-identity-provider.json",
+      "snapshot_artifact_path": "examples/aitrade/external-evidence/cicd-provider-approvals-identity-provider-source-snapshot.json",
+      "snapshot_id": "59600c6a1a7d23b478124932216810b16a45822feae0b571dd8ac59ad185aefd",
+      "snapshot_path": "examples/aitrade/external-evidence/cicd-provider-approvals-identity-provider-source-snapshot.json",
+      "source_uri": "https://idp.example/exports/aitrade/cicd-approvals/reviewer-sessions",
+      "task": "cicd-provider-approvals:identity-provider",
+      "warnings": []
+    },
+    {
       "evidence_argument": "framework-adapters,provider-api,examples/aitrade/external-evidence/framework-hook-release-provider-api-source-snapshot.json,Retained GitHub contents API export for framework adapter hook release evidence;issuer=GitHub Contents API;subject=trustai framework hook release export;source_uri=https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/framework-hook-release.json?ref=main;issued_at=2026-07-09T00:30:00Z;expires_at=2026-12-31T00:00:00Z",
       "intake_id": "1c78eb10012929e989fecedb3207b49d9575b2f9444f0e26873e1551f75962cd",
       "intake_path": "examples/aitrade/external-evidence/intakes/framework-adapters-provider-api.json",
@@ -299,15 +321,15 @@
     }
   ],
   "generated_at": "2026-07-12T00:01:00Z",
-  "run_id": "4f4d2460e85619ea495cec8f72cfe1c313d888fb1c67c0f1494c2026247cc4cd",
+  "run_id": "5eae9468c382a404be123c17dc2251f6ff3016f794a8dbdd34cb3659f2af39cc",
   "schema": "trustai.external-evidence-collection-run/0.1",
   "source_map": {
     "path": "examples/aitrade/external-evidence/retained-external-evidence-collected-source-map.json",
-    "source_map_hash": "a67ff85fc8fbb7dbcae240fc0a07c3891bb7607ddc638bf132587c5f8b76fb72"
+    "source_map_hash": "054bae12d4a160d62d3381c90a193f76d56f6d97445c3279e8e00bf8d9273c7d"
   },
   "summary": {
-    "collected_count": 27,
+    "collected_count": 29,
     "require_fresh": true,
-    "task_count": 27
+    "task_count": 29
   }
 }

@@ -5,17 +5,17 @@
     "A closed task still requires rebuilt manifest verification and readiness verification before external authority coverage is accepted.",
     "Placeholder source URIs keep tasks blocked even when a local intake artifact is present."
   ],
-  "owner_packet_status_id": "9812be990eeda5d57993d2a66717420cc16c26f74ef21cc5f2dd596864dae388",
+  "owner_packet_status_id": "16962aa76afae85636d08f66c226604d0825164dba80567bc9e86697a059fc8f",
   "packets": [
     {
-      "blocked_task_count": 4,
+      "blocked_task_count": 3,
       "closed_task_count": 0,
       "open_task_count": 0,
       "owner_hint": "IAM/identity owner",
-      "packet_id": "2fe0ad7bbb488c68be94e5e4121e830905a332342fa983caefed5dd6c8e3b9c6",
+      "packet_id": "3887128f93226c4495584df8fceb2e99b21055095b00ddeed98eaf2e7b8f0979",
       "packet_ref": "owner-packet:owner_hint:IAM-identity-owner",
       "packet_status": "blocked",
-      "task_count": 4
+      "task_count": 3
     },
     {
       "blocked_task_count": 9,
@@ -78,14 +78,14 @@
       "task_count": 3
     },
     {
-      "blocked_task_count": 4,
+      "blocked_task_count": 3,
       "closed_task_count": 0,
       "open_task_count": 0,
       "owner_hint": "service owner",
-      "packet_id": "72c9a76e9db9a74fa6d78b6922dbeeb1b27bc05e9055a3f495ecbb8d4a7c38fd",
+      "packet_id": "48f580f81c7ed017aa2feabd9d2b6887a3641e228d784e017768fd4fa8d93727",
       "packet_ref": "owner-packet:owner_hint:service-owner",
       "packet_status": "blocked",
-      "task_count": 4
+      "task_count": 3
     },
     {
       "blocked_task_count": 5,
@@ -103,61 +103,44 @@
     "intake_hashes": [],
     "owner_packet_bundle": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_bundle_hash": "ca1c90a0601e4c0675188275185666c7c3cd193dc5d7446bf55ad65015b258fa",
-      "owner_packet_bundle_id": "153add64359e8539890a40c06d98da5b96b7d9fba42d1c6b68ba84e9aefce59a",
+      "owner_packet_bundle_hash": "bee6c6082bdda5dcb0a8f5447634a643d20b76cfc6c2da167bdf2f51dc987459",
+      "owner_packet_bundle_id": "a7cba02902091b620f434c00f9209fd0eebfd5da72dd7e40cf221a6721172eac",
       "schema": "trustai.external-evidence-owner-packet-bundle/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "941a5140d2097c3b093df7531e9fe8f0ea4e12c93b0c02b66ab723b3172f40d0",
-      "source_map_id": "aeb9ef13f9c63249001375b07a8683cfdb3b6c016eae8672305d36b8106de6f3"
+      "source_map_hash": "9048b7ab0645dff1099d9bea8237ded6c77479420107e70c02cc5238be737672",
+      "source_map_id": "10f8c388573262d4f29d250ab195a4afbe7522e8f82a6d37e851ac38186ecd5d"
     },
     "work_package": {
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-work-package/0.1",
-      "work_package_hash": "c7686e64f5c66c5ad4b88f1090db1ac3b3aa76d5a5cb379320b1473974b4779c",
-      "work_package_id": "b7a0a536ff360560f2e261ccb711e4f40294d2dd06675699904b02350ec5c22c"
+      "work_package_hash": "ca166a2a03466430168b50a171ed619d5a5974e07920ec53500f2d7a5b82cea7",
+      "work_package_id": "d6204a9e3573b614a0c45accc7ca6c25466e9ddf352b50645dbed073fb36e171"
     }
   },
   "summary": {
     "blocked_packet_count": 9,
-    "blocked_task_count": 44,
+    "blocked_task_count": 42,
     "closed_packet_count": 0,
     "closed_task_count": 0,
     "invalid_intake_count": 0,
     "live_source_uri_count": 0,
-    "missing_intake_count": 44,
+    "missing_intake_count": 42,
     "open_packet_count": 0,
     "open_task_count": 0,
     "packet_count": 9,
     "packet_status_counts": {
       "blocked": 9
     },
-    "placeholder_source_uri_count": 44,
-    "task_count": 44,
+    "placeholder_source_uri_count": 42,
+    "task_count": 42,
     "task_status_counts": {
-      "blocked": 44
+      "blocked": 42
     }
   },
   "tasks": [
-    {
-      "authority_kind": "identity-provider",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake": null,
-      "intake_out": "artifacts/external-evidence-intakes/cicd-provider-approvals/identity-provider.json",
-      "owner_hint": "IAM/identity owner",
-      "requirement_id": "cicd-provider-approvals",
-      "snapshot_out": "artifacts/external-evidence-sources/cicd-provider-approvals/identity-provider.json",
-      "source_uri": "TODO://authority/cicd-provider-approvals/identity-provider",
-      "source_uri_status": "placeholder",
-      "task_ref": "external-evidence:cicd-provider-approvals:identity-provider",
-      "task_status": "blocked",
-      "unit_ref": "cicd-provider-approvals:identity-provider"
-    },
     {
       "authority_kind": "identity-provider",
       "blocking_reasons": [
@@ -735,23 +718,6 @@
       "task_ref": "external-evidence:standards-track-and-auditor-ecosystem:kms-hsm",
       "task_status": "blocked",
       "unit_ref": "standards-track-and-auditor-ecosystem:kms-hsm"
-    },
-    {
-      "authority_kind": "hosted-service",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake": null,
-      "intake_out": "artifacts/external-evidence-intakes/cicd-provider-approvals/hosted-service.json",
-      "owner_hint": "service owner",
-      "requirement_id": "cicd-provider-approvals",
-      "snapshot_out": "artifacts/external-evidence-sources/cicd-provider-approvals/hosted-service.json",
-      "source_uri": "TODO://authority/cicd-provider-approvals/hosted-service",
-      "source_uri_status": "placeholder",
-      "task_ref": "external-evidence:cicd-provider-approvals:hosted-service",
-      "task_status": "blocked",
-      "unit_ref": "cicd-provider-approvals:hosted-service"
     },
     {
       "authority_kind": "hosted-service",

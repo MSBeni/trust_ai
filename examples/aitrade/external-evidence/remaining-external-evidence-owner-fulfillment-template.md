@@ -1,21 +1,20 @@
 # External Evidence Owner Fulfillment Template
 
-- Template ID: `8dedd88f95ef6afc65e8c82ad4ec0541e36b67d0af4981a62cc45a6cc55d0747`
+- Template ID: `1188952637c8bc43f4dfdd40f9f681c362c25eb967f9685d56df73ec50395d99`
 - Generated at: `2026-07-12T00:01:00Z`
-- Fulfillments: 44
+- Fulfillments: 42
 - Owners: 9
-- Blocked tasks: 44
+- Blocked tasks: 42
 - Open tasks: 0
 - Closed tasks: 0
-- Placeholder source URIs: 44
-- Missing intakes: 44
+- Placeholder source URIs: 42
+- Missing intakes: 42
 
 ## Fulfillments
 
 | Task | Source URI | Description |
 |---|---|---|
 | `auditor-and-review-portal:identity-provider` | TODO://authority/auditor-and-review-portal/identity-provider | identity-provider evidence for auditor-and-review-portal |
-| `cicd-provider-approvals:identity-provider` | TODO://authority/cicd-provider-approvals/identity-provider | identity-provider evidence for cicd-provider-approvals |
 | `insurer-api-and-actuarial-products:identity-provider` | TODO://authority/insurer-api-and-actuarial-products/identity-provider | identity-provider evidence for insurer-api-and-actuarial-products |
 | `trust-network-procurement-and-marketplace:identity-provider` | TODO://authority/trust-network-procurement-and-marketplace/identity-provider | identity-provider evidence for trust-network-procurement-and-marketplace |
 | `byoc-self-hosted:customer` | TODO://authority/byoc-self-hosted/customer | customer evidence for byoc-self-hosted |
@@ -50,7 +49,6 @@
 | `insurer-api-and-actuarial-products:kms-hsm` | TODO://authority/insurer-api-and-actuarial-products/kms-hsm | kms-hsm evidence for insurer-api-and-actuarial-products |
 | `standards-track-and-auditor-ecosystem:kms-hsm` | TODO://authority/standards-track-and-auditor-ecosystem/kms-hsm | kms-hsm evidence for standards-track-and-auditor-ecosystem |
 | `auditor-and-review-portal:hosted-service` | TODO://authority/auditor-and-review-portal/hosted-service | hosted-service evidence for auditor-and-review-portal |
-| `cicd-provider-approvals:hosted-service` | TODO://authority/cicd-provider-approvals/hosted-service | hosted-service evidence for cicd-provider-approvals |
 | `insurer-api-and-actuarial-products:hosted-service` | TODO://authority/insurer-api-and-actuarial-products/hosted-service | hosted-service evidence for insurer-api-and-actuarial-products |
 | `trust-network-procurement-and-marketplace:hosted-service` | TODO://authority/trust-network-procurement-and-marketplace/hosted-service | hosted-service evidence for trust-network-procurement-and-marketplace |
 | `byoc-self-hosted:standards-body` | TODO://authority/byoc-self-hosted/standards-body | standards-body evidence for byoc-self-hosted |
@@ -64,7 +62,6 @@
 | Task | Owner | Status | Blocking Reasons | Snapshot | Intake |
 |---|---|---|---|---|---|
 | `auditor-and-review-portal:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/auditor-and-review-portal/identity-provider.json | artifacts/external-evidence-intakes/auditor-and-review-portal/identity-provider.json |
-| `cicd-provider-approvals:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/cicd-provider-approvals/identity-provider.json | artifacts/external-evidence-intakes/cicd-provider-approvals/identity-provider.json |
 | `insurer-api-and-actuarial-products:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/identity-provider.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/identity-provider.json |
 | `trust-network-procurement-and-marketplace:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/identity-provider.json | artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/identity-provider.json |
 | `byoc-self-hosted:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/byoc-self-hosted/customer.json | artifacts/external-evidence-intakes/byoc-self-hosted/customer.json |
@@ -99,7 +96,6 @@
 | `insurer-api-and-actuarial-products:kms-hsm` | security/platform KMS owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/kms-hsm.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/kms-hsm.json |
 | `standards-track-and-auditor-ecosystem:kms-hsm` | security/platform KMS owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/kms-hsm.json | artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/kms-hsm.json |
 | `auditor-and-review-portal:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/auditor-and-review-portal/hosted-service.json | artifacts/external-evidence-intakes/auditor-and-review-portal/hosted-service.json |
-| `cicd-provider-approvals:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/cicd-provider-approvals/hosted-service.json | artifacts/external-evidence-intakes/cicd-provider-approvals/hosted-service.json |
 | `insurer-api-and-actuarial-products:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/hosted-service.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/hosted-service.json |
 | `trust-network-procurement-and-marketplace:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/hosted-service.json | artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/hosted-service.json |
 | `byoc-self-hosted:standards-body` | standards/governance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/byoc-self-hosted/standards-body.json | artifacts/external-evidence-intakes/byoc-self-hosted/standards-body.json |

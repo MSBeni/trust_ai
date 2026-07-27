@@ -1,8 +1,8 @@
 # TrustAI External Evidence Collection Plan
 
-Plan ID: `fa76572f201bf98614bb9ff14e00e43c965854e2b6e7a7800d4e6d9d610f86fd`
+Plan ID: `b8164fef72e2eca9e875e10e9cda7b65d6801d2515e61c2d52f3d820d2a335b6`
 
-Source manifest: `b44b4c35a06da6d582c61715d5ee5a458230a1c255f504b23f08610a06dc247c`
+Source manifest: `79e3f92d99b9931c3c0e947efc56dd97636a936b86cd65cd68d36bb2d7520b52`
 
 Status filter: missing
 
@@ -10,17 +10,15 @@ Status filter: missing
 
 - Source manifest status: partial
 - Total authority units: 71
-- Selected tasks: 44
-- Selected missing tasks: 44
+- Selected tasks: 42
+- Selected missing tasks: 42
 - Selected covered tasks: 0
-- Missing authority kinds overall: 44
+- Missing authority kinds overall: 42
 
 ## Collection Tasks
 
 | Task ID | Unit Ref | Requirement | Authority | Status | Owner Hint | Suggested Artifact | Evidence Argument Template |
 |---|---|---|---|---|---|---|---|
-| `4cdba0f0aca03393de0cfa02487a21059b395c42c829951cf738fb9889e6b586` | `cicd-provider-approvals:hosted-service` | `cicd-provider-approvals` | hosted-service | missing | service owner | `external-evidence/cicd-provider-approvals/hosted-service.json` | `cicd-provider-approvals,hosted-service,external-evidence/cicd-provider-approvals/hosted-service.json,hosted-service evidence for cicd-provider-approvals;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
-| `c6285514734f63d79d421e20f98b98f657d40d7192dfb60958d104bc649495fa` | `cicd-provider-approvals:identity-provider` | `cicd-provider-approvals` | identity-provider | missing | IAM/identity owner | `external-evidence/cicd-provider-approvals/identity-provider.json` | `cicd-provider-approvals,identity-provider,external-evidence/cicd-provider-approvals/identity-provider.json,identity-provider evidence for cicd-provider-approvals;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `8beb464dea5f99349b68fac304cdbfe073de0b3d8f0d3871a3c552b611e5fe57` | `design-partner-pilot-exit-criteria:regulator` | `design-partner-pilot-exit-criteria` | regulator | missing | legal/compliance owner | `external-evidence/design-partner-pilot-exit-criteria/regulator.json` | `design-partner-pilot-exit-criteria,regulator,external-evidence/design-partner-pilot-exit-criteria/regulator.json,regulator evidence for design-partner-pilot-exit-criteria;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `f89ead8e5b1ef2df684cdafe8b68cc53afc9a520feb84ac4cf8a2372f4b9d833` | `design-partner-pilot-exit-criteria:insurer` | `design-partner-pilot-exit-criteria` | insurer | missing | risk/insurance owner | `external-evidence/design-partner-pilot-exit-criteria/insurer.json` | `design-partner-pilot-exit-criteria,insurer,external-evidence/design-partner-pilot-exit-criteria/insurer.json,insurer evidence for design-partner-pilot-exit-criteria;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `3b433a43be3da2c0e04eb8936dac0b61ec81ee1421fb95fe1c400b8a58f0e6b3` | `design-partner-pilot-exit-criteria:customer` | `design-partner-pilot-exit-criteria` | customer | missing | customer success/account owner | `external-evidence/design-partner-pilot-exit-criteria/customer.json` | `design-partner-pilot-exit-criteria,customer,external-evidence/design-partner-pilot-exit-criteria/customer.json,customer evidence for design-partner-pilot-exit-criteria;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |

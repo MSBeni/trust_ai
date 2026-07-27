@@ -1,0 +1,73 @@
+{
+  "environment": "aitrade-prod",
+  "evidence": {
+    "approval_callback_source": {
+      "path": "src/trustai/approval_callback.py",
+      "sha256": "sha256:9d6a42719c2e24f1a3773deb68b811b739997e6ad9a31a810a48516f205b8212"
+    },
+    "approval_callback_spec": {
+      "path": "docs/specs/approval-callback-v0.1.md",
+      "sha256": "sha256:bf1fe7d8e83490242f8e4cdcf3eb8e85d02b1ab67d4381853a9a815c7f5812ad"
+    },
+    "approval_callback_tests": {
+      "path": "tests/test_approval_callback.py",
+      "sha256": "sha256:ef4460839ff36e3d526a882b409c5ae5cd89b23a6d9fd14df94c23e08308d524"
+    },
+    "github_audit_log_export": {
+      "path": "examples/webhooks/github-audit-log.json",
+      "sha256": "sha256:de0bbf5d8c7b2273a9a5fc19652f143f9a4739a06ed9c38cfdf16ce566fb682f"
+    },
+    "github_check_suite_export": {
+      "path": "examples/webhooks/github-check-suite.json",
+      "sha256": "sha256:647e4cf2cef00a3d98232f20cbacabd7e092cf991a4311104fbf0354fe4d1bb3"
+    },
+    "provider_approval_authority_source": {
+      "path": "src/trustai/provider_approval_authority.py",
+      "sha256": "sha256:eae271f9aad7e8f3de8fd5b428bd789dd3d2fb9a8ac8cf4303b6b54f70fa02b5"
+    },
+    "provider_approval_authority_spec": {
+      "path": "docs/specs/provider-approval-production-authority-v0.1.md",
+      "sha256": "sha256:ffb7be039b034b38c31afc3ef2298028d8449e43cd8e50ddaa9c6f0e5d3f495c"
+    },
+    "provider_approval_authority_tests": {
+      "path": "tests/test_provider_approval_authority.py",
+      "sha256": "sha256:c7be840e580578b863436bf51151f64d7363a7186453fc9b60039d0f7d39e8e3"
+    },
+    "provider_delivery_service_source": {
+      "path": "src/trustai/provider_delivery_service.py",
+      "sha256": "sha256:8ef38f7efd1a11a4f1d3996d0e358144f9eac3d2478b885c59ab9a95e8c2eeb4"
+    },
+    "provider_delivery_service_tests": {
+      "path": "tests/test_provider_delivery_service.py",
+      "sha256": "sha256:c296b92f1fe863de13dd771bcfb5b3a1ffe649b9174e1a2082e8022aefea654b"
+    },
+    "provider_webhook_source": {
+      "path": "src/trustai/provider_webhook.py",
+      "sha256": "sha256:834d1e54ad45d77733bf4d24f93d269a1fa9a9e533713c58bcad3f0ae717e19f"
+    },
+    "provider_webhook_tests": {
+      "path": "tests/test_provider_webhook.py",
+      "sha256": "sha256:55a5724b4b5d7f8374eca4b6b5799c740aa56a0bcd975ae4b8ca2a33373c74d0"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "export_ref": "hosted-service-export:aitrade/cicd-provider-approvals/github-checks/2026-07-08",
+  "hosted_service": {
+    "app_installation_ref": "github-app:trustai-promotion-gate/aitrade-prod",
+    "check_name": "TrustAI promotion gate",
+    "provider": "github-checks",
+    "repository": "MSBeni/trust_ai",
+    "workflow_ref": ".github/workflows/python-ci.yml"
+  },
+  "issued_at": "2026-07-08T00:02:00Z",
+  "issuer": "GitHub Hosted Checks",
+  "schema": "trustai.cicd-provider-approvals-hosted-service-authority-export/0.1",
+  "subject": "trustai CI/CD promotion approval hosted service",
+  "verified_controls": [
+    "provider callback ingress receipt replay",
+    "GitHub check-suite export byte replay",
+    "provider delivery payload custody",
+    "approval authority source-context binding",
+    "offline verifier acceptance for promotion status receipts"
+  ]
+}

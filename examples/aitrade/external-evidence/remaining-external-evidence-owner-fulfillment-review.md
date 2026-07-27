@@ -1,21 +1,19 @@
 # External Evidence Owner Fulfillment Review
 
-- Review ID: `2fc5ae5c8b0180bad188853527322ac72ff0ea94094864f9de99c59b2a8bd565`
+- Review ID: `7f2cccb3f65b87ad7bd95a30fa3da76894835f89d08ca778394ff4d29f70129a`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Fulfillments: 44
+- Fulfillments: 42
 - Owners: 9
 - Ready tasks: 0
-- Blocked tasks: 44
-- Placeholder source URIs: 44
+- Blocked tasks: 42
+- Placeholder source URIs: 42
 - Live source URIs: 0
 
 ## Task Review
 
 | Task | Owner | Status | Source URI | Blocking Reasons |
 |---|---|---|---|---|
-| `cicd-provider-approvals:hosted-service` | service owner | blocked | TODO://authority/cicd-provider-approvals/hosted-service | `placeholder-source-uri` |
-| `cicd-provider-approvals:identity-provider` | IAM/identity owner | blocked | TODO://authority/cicd-provider-approvals/identity-provider | `placeholder-source-uri` |
 | `design-partner-pilot-exit-criteria:regulator` | legal/compliance owner | blocked | TODO://authority/design-partner-pilot-exit-criteria/regulator | `placeholder-source-uri` |
 | `design-partner-pilot-exit-criteria:insurer` | risk/insurance owner | blocked | TODO://authority/design-partner-pilot-exit-criteria/insurer | `placeholder-source-uri` |
 | `design-partner-pilot-exit-criteria:customer` | customer success/account owner | blocked | TODO://authority/design-partner-pilot-exit-criteria/customer | `placeholder-source-uri` |
@@ -63,12 +61,12 @@
 
 - Fulfilled source map errors: 1
 - Fulfilled source map warnings: 1
-  - source map contains 44 placeholder source_uri values but live source URIs are required
+  - source map contains 42 placeholder source_uri values but live source URIs are required
 
 ## Blockers
 
-- owner fulfillment review contains 44 placeholder source_uri values
-- fulfilled source map: source map contains 44 placeholder source_uri values but live source URIs are required
+- owner fulfillment review contains 42 placeholder source_uri values
+- fulfilled source map: source map contains 42 placeholder source_uri values but live source URIs are required
 
 ## Next Actions
 

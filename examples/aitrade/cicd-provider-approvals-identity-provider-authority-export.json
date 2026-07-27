@@ -1,0 +1,79 @@
+{
+  "environment": "aitrade-prod",
+  "evidence": {
+    "approval_callback_source": {
+      "path": "src/trustai/approval_callback.py",
+      "sha256": "sha256:9d6a42719c2e24f1a3773deb68b811b739997e6ad9a31a810a48516f205b8212"
+    },
+    "approval_model_risk_export": {
+      "path": "examples/aitrade/approval-model-risk.json",
+      "sha256": "sha256:9a5d0de34ea584a48aad5619278e3b4890b05c06fc739b1bdba26eb408aa2a14"
+    },
+    "approval_trading_ops_export": {
+      "path": "examples/aitrade/approval-trading-ops.json",
+      "sha256": "sha256:c30d4725135d18588752244867b4d45e61e8fe0e40bb9a72a679d73cf90195cc"
+    },
+    "identity_provider_authority_source": {
+      "path": "src/trustai/identity_provider_authority.py",
+      "sha256": "sha256:0066e9c36a15934729d74d959d79e03a51385f443dc1fe4b2a3d6f0998af1e91"
+    },
+    "identity_provider_authority_spec": {
+      "path": "docs/specs/identity-provider-production-authority-v0.1.md",
+      "sha256": "sha256:f5d438fc5bb049a120862d7a13d4c0dc277fd62893abca27152f3cfdf3506308"
+    },
+    "identity_provider_authority_tests": {
+      "path": "tests/test_identity_provider_authority.py",
+      "sha256": "sha256:e7f5a94e1c88f847f60bb0c199141050e47d6e0ec96751ca18a457c83677caad"
+    },
+    "identity_provider_session_source": {
+      "path": "src/trustai/identity_provider_session.py",
+      "sha256": "sha256:3380a224a2452dcbec3e400a4f15c3c8f7745ce62f011e1c99b8f3ad5e9af3a3"
+    },
+    "identity_provider_session_spec": {
+      "path": "docs/specs/identity-provider-session-v0.1.md",
+      "sha256": "sha256:fc0cd887c407e58f0267aa1b11b68293d081a7d9b1bebd9994e856b09f426470"
+    },
+    "identity_provider_session_tests": {
+      "path": "tests/test_identity_provider_session.py",
+      "sha256": "sha256:856f92340a56a9556a1db6f1ae8d0d282e92a90906c35f2c4226865ff79565a2"
+    },
+    "provider_approval_authority_source": {
+      "path": "src/trustai/provider_approval_authority.py",
+      "sha256": "sha256:eae271f9aad7e8f3de8fd5b428bd789dd3d2fb9a8ac8cf4303b6b54f70fa02b5"
+    },
+    "provider_approval_authority_tests": {
+      "path": "tests/test_provider_approval_authority.py",
+      "sha256": "sha256:c7be840e580578b863436bf51151f64d7363a7186453fc9b60039d0f7d39e8e3"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "export_ref": "idp-export:aitrade/cicd-provider-approvals/reviewer-sessions/2026-07-08",
+  "federation": {
+    "issuer_ref": "https://idp.example/aitrade",
+    "mfa_required": true,
+    "oidc_client_ref": "oidc:trustai-cicd-approvals-prod",
+    "reviewer_groups": [
+      "model-risk-approvers",
+      "trading-ops-approvers"
+    ],
+    "scopes": [
+      "openid",
+      "profile",
+      "email",
+      "groups"
+    ]
+  },
+  "issued_at": "2026-07-08T00:03:00Z",
+  "issuer": "Example IdP",
+  "schema": "trustai.cicd-provider-approvals-identity-provider-authority-export/0.1",
+  "sessions": {
+    "approval_session_count": 2,
+    "audit_log_ref": "idp-audit:cicd-provider-approvals/reviewer-sessions",
+    "reviewer_subjects": [
+      "oidc:aitrade/model-risk-lead",
+      "oidc:aitrade/trading-ops-lead"
+    ]
+  },
+  "subject": "aitrade CI/CD promotion reviewer identity federation",
+  "tenant_ref": "tenant:aitrade-local"
+}

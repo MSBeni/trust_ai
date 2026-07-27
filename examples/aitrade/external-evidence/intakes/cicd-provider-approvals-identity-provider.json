@@ -1,0 +1,66 @@
+{
+  "evidence_argument": "cicd-provider-approvals,identity-provider,examples/aitrade/external-evidence/cicd-provider-approvals-identity-provider-source-snapshot.json,Retained identity-provider export for CI/CD promotion reviewer approval sessions;issuer=Example IdP;subject=aitrade CI/CD promotion reviewer identity federation;source_uri=https://idp.example/exports/aitrade/cicd-approvals/reviewer-sessions;issued_at=2026-07-08T00:03:00Z;expires_at=2026-12-31T00:00:00Z",
+  "evidence_item": {
+    "accepted_authority_kinds": [
+      "ci-run",
+      "provider-api",
+      "hosted-service",
+      "identity-provider"
+    ],
+    "authority_kind": "identity-provider",
+    "description": "Retained identity-provider export for CI/CD promotion reviewer approval sessions",
+    "evidence_id": "a14d01087f2943bdee895cb133f03b7940f3c84fcc6ba63c25ed0322b9f18427",
+    "expires_at": "2026-12-31T00:00:00Z",
+    "issued_at": "2026-07-08T00:03:00Z",
+    "issuer": "Example IdP",
+    "path": "examples/aitrade/external-evidence/cicd-provider-approvals-identity-provider-source-snapshot.json",
+    "requirement_id": "cicd-provider-approvals",
+    "sha256": "sha256:6e5f95c26ffb1af2684b3b500edc78f29f8883d920147b728362dd7e093f2c85",
+    "source_uri": "https://idp.example/exports/aitrade/cicd-approvals/reviewer-sessions",
+    "subject": "aitrade CI/CD promotion reviewer identity federation"
+  },
+  "generated_at": "2026-07-12T00:01:00Z",
+  "intake_id": "ab478927912dd2083fcf9cee623acd1bda0c23105c47d6a69316fa00e928dbb3",
+  "limitations": [
+    "This intake receipt hashes and maps one collected artifact to a collection-plan task; it does not itself satisfy roadmap completion.",
+    "Coverage is updated only after rebuilding and verifying an external evidence manifest with the emitted evidence argument.",
+    "Issuer authority and freshness remain bounded by the collected artifact and manifest verification options."
+  ],
+  "schema": "trustai.external-evidence-intake/0.1",
+  "source_manifest": {
+    "covered_authority_kind_count": 1,
+    "manifest_hash": "614aed31f3e3791640f3192624fab080815440210b65341fb4a2121ed84db717",
+    "manifest_id": "9364d02d07c6d4002372ad45c4017ee3b7a6c6ffd8dc91c46fb9fac9c84f7586",
+    "manifest_ref": "production-external-evidence",
+    "missing_authority_kind_count": 70,
+    "required_authority_kind_count": 71,
+    "status": "partial"
+  },
+  "source_plan": {
+    "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
+    "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
+    "source_manifest": {
+      "generated_at": "2026-07-12T00:01:00Z",
+      "manifest_hash": "614aed31f3e3791640f3192624fab080815440210b65341fb4a2121ed84db717",
+      "manifest_id": "9364d02d07c6d4002372ad45c4017ee3b7a6c6ffd8dc91c46fb9fac9c84f7586",
+      "manifest_ref": "production-external-evidence",
+      "status": "partial"
+    },
+    "status_filter": "all"
+  },
+  "source_roadmap_audit": {
+    "audit_hash": "86cfd25ee3bed75b75604091d3fca2daec16da708498209193e84226bd29816e",
+    "audit_id": "08f9ff68d1301a7891428145af040a68839468931a42dea27e80a0e0ad3bf7f2",
+    "completion_position": "local-reference-complete-with-external-authority-deferred"
+  },
+  "task": {
+    "authority_kind": "identity-provider",
+    "coverage_status": "missing",
+    "requirement_id": "cicd-provider-approvals",
+    "suggested_artifact_path": "external-evidence/cicd-provider-approvals/identity-provider.json",
+    "task_id": "c6285514734f63d79d421e20f98b98f657d40d7192dfb60958d104bc649495fa",
+    "task_ref": "external-evidence:cicd-provider-approvals:identity-provider",
+    "unit_id": "91813bff0d72214132e2e8fe3c142e5c096ec7a8db1723c9e67213e757f6c901",
+    "unit_ref": "cicd-provider-approvals:identity-provider"
+  }
+}

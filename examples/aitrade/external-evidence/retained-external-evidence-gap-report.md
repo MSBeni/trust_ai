@@ -1,21 +1,21 @@
 # External Evidence Gap Report
 
-- Gap report ID: `7b8ec5b980d497f9a3308f30595b3480900c54305f8238d09f49d66e770c3e79`
+- Gap report ID: `5d8711a2432645e0a21020a6026f457cfc919c99987d81d7d424941d8005f26f`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 27/71
-- Missing authority kinds: 44
-- Remaining collection tasks: 44
-- Source-map entries: 44
-- Placeholder source URIs: 44
+- Covered authority kinds: 29/71
+- Missing authority kinds: 42
+- Remaining collection tasks: 42
+- Source-map entries: 42
+- Placeholder source URIs: 42
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
 
 - `ci-run`: 6
 - `customer`: 9
-- `hosted-service`: 4
-- `identity-provider`: 4
+- `hosted-service`: 3
+- `identity-provider`: 3
 - `insurer`: 4
 - `kms-hsm`: 3
 - `provider-api`: 4
@@ -26,7 +26,6 @@
 
 - `auditor-and-review-portal`: 5
 - `byoc-self-hosted`: 3
-- `cicd-provider-approvals`: 2
 - `compliance-mapper-and-eu-ai-act`: 3
 - `design-partner-pilot-exit-criteria`: 3
 - `framework-adapters`: 1
@@ -41,28 +40,6 @@
 - `vertical-packs`: 3
 
 ## Collection Worklist
-
-### cicd-provider-approvals:hosted-service
-
-- Title: CI/CD promotion gates, provider callbacks, and Slack approvals
-- Authority kind: `hosted-service`
-- Owner hint: service owner
-- Description: hosted-service evidence for cicd-provider-approvals
-- Source URI: `TODO://authority/cicd-provider-approvals/hosted-service`
-- Snapshot output: `artifacts/external-evidence-sources/cicd-provider-approvals/hosted-service.json`
-- Intake output: `artifacts/external-evidence-intakes/cicd-provider-approvals/hosted-service.json`
-- Suggested evidence sources: hosted service health or deployment export; service audit root; operational SLO/status evidence
-
-### cicd-provider-approvals:identity-provider
-
-- Title: CI/CD promotion gates, provider callbacks, and Slack approvals
-- Authority kind: `identity-provider`
-- Owner hint: IAM/identity owner
-- Description: identity-provider evidence for cicd-provider-approvals
-- Source URI: `TODO://authority/cicd-provider-approvals/identity-provider`
-- Snapshot output: `artifacts/external-evidence-sources/cicd-provider-approvals/identity-provider.json`
-- Intake output: `artifacts/external-evidence-intakes/cicd-provider-approvals/identity-provider.json`
-- Suggested evidence sources: identity-provider event export; OIDC/session/lifecycle evidence; RBAC or account-state report
 
 ### design-partner-pilot-exit-criteria:regulator
 

@@ -1,20 +1,18 @@
 # External Evidence Owner Fulfillment Closure
 
-- Closure ID: `aceb1a68f65c15711334d5a59673bf2e730ae62b7504d8477013c733db44d83e`
+- Closure ID: `216392d5c5d61760e5e754d85be5e4f68767cc8a589ab9d4057c719caf9a2432`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Closed tasks: 0/44
-- Missing intakes: 44
+- Closed tasks: 0/42
+- Missing intakes: 42
 - Invalid intake tasks: 0
-- Missing manifest coverage: 44
-- Placeholder source URIs: 44
+- Missing manifest coverage: 42
+- Placeholder source URIs: 42
 
 ## Task Closure
 
 | Task | Owner | Status | Intake | Manifest Evidence | Blocking Reasons |
 |---|---|---|---|---|---|
-| `cicd-provider-approvals:hosted-service` | service owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
-| `cicd-provider-approvals:identity-provider` | IAM/identity owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `design-partner-pilot-exit-criteria:regulator` | legal/compliance owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `design-partner-pilot-exit-criteria:insurer` | risk/insurance owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `design-partner-pilot-exit-criteria:customer` | customer success/account owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
@@ -60,9 +58,9 @@
 
 ## Blockers
 
-- 44 reviewed tasks still use placeholder source_uri values
-- 44 reviewed tasks do not have intake receipts
-- 44 reviewed tasks are not covered by the rebuilt manifest
+- 42 reviewed tasks still use placeholder source_uri values
+- 42 reviewed tasks do not have intake receipts
+- 42 reviewed tasks are not covered by the rebuilt manifest
 
 ## Next Actions
 

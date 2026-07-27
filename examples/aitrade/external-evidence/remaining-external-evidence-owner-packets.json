@@ -5,7 +5,7 @@
     "Source URIs marked TODO or placeholder must be replaced with authority-owned source exports before collection.",
     "Packet completion is proven only by verified source snapshots, intake receipts, rebuilt manifests, and readiness reports."
   ],
-  "owner_packet_bundle_id": "153add64359e8539890a40c06d98da5b96b7d9fba42d1c6b68ba84e9aefce59a",
+  "owner_packet_bundle_id": "a7cba02902091b620f434c00f9209fd0eebfd5da72dd7e40cf221a6721172eac",
   "packets": [
     {
       "authority_kinds": [
@@ -21,109 +21,30 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 4,
+      "missing_task_count": 3,
       "owner_hint": "IAM/identity owner",
-      "package_hash": "ccacf9ac42c375d9cbe7911f411cfaa3be0c64aea3357f34a198cef62edfc24d",
-      "package_id": "8233003e06ca30042a23aa5fd33c1b374dd925c6c5110c30d3310863867b2e44",
+      "package_hash": "ad22968329eb730dedd1e362113e9dea9aee3142d47358ff2c6b6f1121218809",
+      "package_id": "d38011eb0314df6d537bb0627fa9fce6f5e1fd645cb063f3c0c1b96941156f38",
       "package_ref": "owner_hint:IAM-identity-owner",
-      "packet_id": "2fe0ad7bbb488c68be94e5e4121e830905a332342fa983caefed5dd6c8e3b9c6",
+      "packet_id": "3887128f93226c4495584df8fceb2e99b21055095b00ddeed98eaf2e7b8f0979",
       "packet_ref": "owner-packet:owner_hint:IAM-identity-owner",
       "phases": [
-        "P1",
         "P1-P3",
         "P2-P4",
         "P4"
       ],
-      "placeholder_source_uri_count": 4,
+      "placeholder_source_uri_count": 3,
       "priorities": [
         "P0",
         "P1"
       ],
       "requirement_ids": [
         "auditor-and-review-portal",
-        "cicd-provider-approvals",
         "insurer-api-and-actuarial-products",
         "trust-network-procurement-and-marketplace"
       ],
-      "task_count": 4,
+      "task_count": 3,
       "tasks": [
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be identity-provider and accepted for cicd-provider-approvals.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "identity-provider",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/cicd-provider-approvals/identity-provider",
-              "--root",
-              ".",
-              "--task",
-              "cicd-provider-approvals:identity-provider",
-              "--description",
-              "identity-provider evidence for cicd-provider-approvals",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/cicd-provider-approvals/identity-provider.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/cicd-provider-approvals/identity-provider.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/cicd-provider-approvals/identity-provider --root . --task cicd-provider-approvals:identity-provider --description 'identity-provider evidence for cicd-provider-approvals' --snapshot-out artifacts/external-evidence-sources/cicd-provider-approvals/identity-provider.json --intake-out artifacts/external-evidence-intakes/cicd-provider-approvals/identity-provider.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/cicd-provider-approvals/identity-provider.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/cicd-provider-approvals/identity-provider.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "identity-provider evidence for cicd-provider-approvals",
-          "evidence_argument_template": "cicd-provider-approvals,identity-provider,external-evidence/cicd-provider-approvals/identity-provider.json,identity-provider evidence for cicd-provider-approvals;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Provider delivery receipts cover retained provider delivery payload artifact replay and retained provider response artifact byte replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs, provider-native status shape, and replayed retained provider delivery payload/response artifacts before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/cicd-provider-approvals/identity-provider.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "IAM/identity owner",
-          "phase": "P1",
-          "priority": "P0",
-          "requirement_id": "cicd-provider-approvals",
-          "snapshot_out": "artifacts/external-evidence-sources/cicd-provider-approvals/identity-provider.json",
-          "source_uri": "TODO://authority/cicd-provider-approvals/identity-provider",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/cicd-provider-approvals/identity-provider.json",
-          "suggested_evidence_sources": [
-            "identity-provider event export",
-            "OIDC/session/lifecycle evidence",
-            "RBAC or account-state report"
-          ],
-          "task_id": "c6285514734f63d79d421e20f98b98f657d40d7192dfb60958d104bc649495fa",
-          "task_ref": "external-evidence:cicd-provider-approvals:identity-provider",
-          "title": "CI/CD promotion gates, provider callbacks, and Slack approvals",
-          "unit_id": "91813bff0d72214132e2e8fe3c142e5c096ec7a8db1723c9e67213e757f6c901",
-          "unit_ref": "cicd-provider-approvals:identity-provider"
-        },
         {
           "acceptance_criteria": [
             "Artifact path must be repository-relative and hashable before manifest verification.",
@@ -3023,109 +2944,30 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 4,
+      "missing_task_count": 3,
       "owner_hint": "service owner",
-      "package_hash": "53fde82a6fa92c291166d634a16c6b2d4ceed22e583ca80051758b1d28972917",
-      "package_id": "fa061e431ca3c1b7109f6d645c1e66b3c046e67b76c8103a310e5a063153c47b",
+      "package_hash": "33879c2bda4a6df008c3211ab5bdd8d084f8cac6740733776c13d80edd2c1103",
+      "package_id": "9721f35bc5e14c4d70cab6db79add301a10da8b8acaf1755b6ce33e05fc7c11c",
       "package_ref": "owner_hint:service-owner",
-      "packet_id": "72c9a76e9db9a74fa6d78b6922dbeeb1b27bc05e9055a3f495ecbb8d4a7c38fd",
+      "packet_id": "48f580f81c7ed017aa2feabd9d2b6887a3641e228d784e017768fd4fa8d93727",
       "packet_ref": "owner-packet:owner_hint:service-owner",
       "phases": [
-        "P1",
         "P1-P3",
         "P2-P4",
         "P4"
       ],
-      "placeholder_source_uri_count": 4,
+      "placeholder_source_uri_count": 3,
       "priorities": [
         "P0",
         "P1"
       ],
       "requirement_ids": [
         "auditor-and-review-portal",
-        "cicd-provider-approvals",
         "insurer-api-and-actuarial-products",
         "trust-network-procurement-and-marketplace"
       ],
-      "task_count": 4,
+      "task_count": 3,
       "tasks": [
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be hosted-service and accepted for cicd-provider-approvals.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "hosted-service",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/cicd-provider-approvals/hosted-service",
-              "--root",
-              ".",
-              "--task",
-              "cicd-provider-approvals:hosted-service",
-              "--description",
-              "hosted-service evidence for cicd-provider-approvals",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/cicd-provider-approvals/hosted-service.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/cicd-provider-approvals/hosted-service.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/cicd-provider-approvals/hosted-service --root . --task cicd-provider-approvals:hosted-service --description 'hosted-service evidence for cicd-provider-approvals' --snapshot-out artifacts/external-evidence-sources/cicd-provider-approvals/hosted-service.json --intake-out artifacts/external-evidence-intakes/cicd-provider-approvals/hosted-service.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/cicd-provider-approvals/hosted-service.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/cicd-provider-approvals/hosted-service.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "hosted-service evidence for cicd-provider-approvals",
-          "evidence_argument_template": "cicd-provider-approvals,hosted-service,external-evidence/cicd-provider-approvals/hosted-service.json,hosted-service evidence for cicd-provider-approvals;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Provider delivery receipts cover retained provider delivery payload artifact replay and retained provider response artifact byte replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs, provider-native status shape, and replayed retained provider delivery payload/response artifacts before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/cicd-provider-approvals/hosted-service.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "service owner",
-          "phase": "P1",
-          "priority": "P0",
-          "requirement_id": "cicd-provider-approvals",
-          "snapshot_out": "artifacts/external-evidence-sources/cicd-provider-approvals/hosted-service.json",
-          "source_uri": "TODO://authority/cicd-provider-approvals/hosted-service",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/cicd-provider-approvals/hosted-service.json",
-          "suggested_evidence_sources": [
-            "hosted service health or deployment export",
-            "service audit root",
-            "operational SLO/status evidence"
-          ],
-          "task_id": "4cdba0f0aca03393de0cfa02487a21059b395c42c829951cf738fb9889e6b586",
-          "task_ref": "external-evidence:cicd-provider-approvals:hosted-service",
-          "title": "CI/CD promotion gates, provider callbacks, and Slack approvals",
-          "unit_id": "bd40c9ffec33f3e3d54eedb4dcfd520d69fdba4cf91bc83ea579b015d63ec7e0",
-          "unit_ref": "cicd-provider-approvals:hosted-service"
-        },
         {
           "acceptance_criteria": [
             "Artifact path must be repository-relative and hashable before manifest verification.",
@@ -3793,22 +3635,22 @@
   "source_work_package": {
     "generated_at": "2026-07-12T00:01:00Z",
     "group_by": "owner_hint",
-    "work_package_hash": "c7686e64f5c66c5ad4b88f1090db1ac3b3aa76d5a5cb379320b1473974b4779c",
-    "work_package_id": "b7a0a536ff360560f2e261ccb711e4f40294d2dd06675699904b02350ec5c22c"
+    "work_package_hash": "ca166a2a03466430168b50a171ed619d5a5974e07920ec53500f2d7a5b82cea7",
+    "work_package_id": "d6204a9e3573b614a0c45accc7ca6c25466e9ddf352b50645dbed073fb36e171"
   },
   "summary": {
     "covered_task_count": 0,
     "live_source_uri_count": 0,
-    "missing_task_count": 44,
+    "missing_task_count": 42,
     "packet_count": 9,
-    "placeholder_source_uri_count": 44,
-    "source_work_package_task_count": 44,
-    "task_count": 44,
+    "placeholder_source_uri_count": 42,
+    "source_work_package_task_count": 42,
+    "task_count": 42,
     "task_count_by_authority_kind": {
       "ci-run": 6,
       "customer": 9,
-      "hosted-service": 4,
-      "identity-provider": 4,
+      "hosted-service": 3,
+      "identity-provider": 3,
       "insurer": 4,
       "kms-hsm": 3,
       "provider-api": 4,
@@ -3816,14 +3658,14 @@
       "standards-body": 5
     },
     "task_count_by_owner_hint": {
-      "IAM/identity owner": 4,
+      "IAM/identity owner": 3,
       "customer success/account owner": 9,
       "integration/platform owner": 4,
       "legal/compliance owner": 5,
       "release engineering": 6,
       "risk/insurance owner": 4,
       "security/platform KMS owner": 3,
-      "service owner": 4,
+      "service owner": 3,
       "standards/governance owner": 5
     }
   }
