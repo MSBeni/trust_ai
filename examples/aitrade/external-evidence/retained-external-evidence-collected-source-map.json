@@ -725,6 +725,36 @@
       "authority_kind": "kms-hsm",
       "content_type": "application/json",
       "coverage_status": "missing",
+      "description": "Retained KMS/HSM export for review portal session and disclosed artifact encryption evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/auditor-and-review-portal-kms-hsm.json",
+      "issued_at": "2026-07-08T06:12:00Z",
+      "issuer": "Example KMS/HSM",
+      "owner_hint": "security/platform KMS owner",
+      "requirement_id": "auditor-and-review-portal",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/review-portal-kms-hsm-source-snapshot.json",
+      "source_uri": "https://kms.example/attestations/trustai/review-portal/session-data-encryption",
+      "subject": "aitrade review portal KMS-backed session encryption",
+      "suggested_evidence_sources": [
+        "KMS/HSM key policy export",
+        "signing operation receipt",
+        "custody or audit-log root"
+      ],
+      "task": "auditor-and-review-portal:kms-hsm",
+      "task_id": "0b35d2f033f96f6bd1373d1d28cc0ff5b3e53a6f39da2e7691cfdaf27df40f31",
+      "task_ref": "external-evidence:auditor-and-review-portal:kms-hsm",
+      "title": "Auditor view, supervised access, regulator view, and review portal attestations",
+      "unit_id": "aed4464e8ca3f3876b3d0d61b0581228cf84688f6e293a0fddb5e31b9ef9e574",
+      "unit_ref": "auditor-and-review-portal:kms-hsm"
+    },
+    {
+      "authority_kind": "kms-hsm",
+      "content_type": "application/json",
+      "coverage_status": "missing",
       "description": "Retained KMS/HSM enforcement export for BYOC evidence signing",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
@@ -999,7 +1029,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "eff9c03eed9559f9b79a875b0abeea4f77785206adcd97c2c55408cf719c6d8b",
+  "source_map_id": "4676325a949cdff4802b44c2d3a33eaf98581a8a14fbf3471eb618351b473d08",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -1014,9 +1044,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 33,
+    "entry_count": 34,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 33,
+    "live_source_uri_count": 34,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

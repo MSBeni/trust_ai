@@ -265,6 +265,17 @@
       "warnings": []
     },
     {
+      "evidence_argument": "auditor-and-review-portal,kms-hsm,examples/aitrade/external-evidence/review-portal-kms-hsm-source-snapshot.json,Retained KMS/HSM export for review portal session and disclosed artifact encryption evidence;issuer=Example KMS/HSM;subject=aitrade review portal KMS-backed session encryption;source_uri=https://kms.example/attestations/trustai/review-portal/session-data-encryption;issued_at=2026-07-08T06:12:00Z;expires_at=2026-12-31T00:00:00Z",
+      "intake_id": "1172803d68707215f3949ce4f905c74b92ba0222b078a4e77cc44a25f36d2989",
+      "intake_path": "examples/aitrade/external-evidence/intakes/auditor-and-review-portal-kms-hsm.json",
+      "snapshot_artifact_path": "examples/aitrade/external-evidence/review-portal-kms-hsm-source-snapshot.json",
+      "snapshot_id": "d9b2b1d885f77295d91b208f99d74b4fd82d10e5d42f8adfd80c2555deb58525",
+      "snapshot_path": "examples/aitrade/external-evidence/review-portal-kms-hsm-source-snapshot.json",
+      "source_uri": "https://kms.example/attestations/trustai/review-portal/session-data-encryption",
+      "task": "auditor-and-review-portal:kms-hsm",
+      "warnings": []
+    },
+    {
       "evidence_argument": "byoc-self-hosted,kms-hsm,examples/aitrade/external-evidence/byoc-kms-hsm-source-snapshot.json,Retained KMS/HSM enforcement export for BYOC evidence signing;issuer=Example KMS/HSM;subject=trustai BYOC evidence-signing enforcement;source_uri=https://kms.example/attestations/trustai/byoc/evidence-signing;issued_at=2026-07-03T12:03:00Z;expires_at=2026-12-31T00:00:00Z",
       "intake_id": "fa02e8863837599519d7d63752c447e92ac2af5bac9fb1a80d7c7190c8ccf2ed",
       "intake_path": "examples/aitrade/external-evidence/intakes/byoc-self-hosted-kms-hsm.json",
@@ -365,15 +376,15 @@
     }
   ],
   "generated_at": "2026-07-12T00:01:00Z",
-  "run_id": "31cdde6a5b4db5823f3698ef9268ab5e96203188bbeed2d8d737221beb464074",
+  "run_id": "ec59d2f0ddc5b3e90d4895d00c527bd07daa75916ab6d66829df3af10dd99e8c",
   "schema": "trustai.external-evidence-collection-run/0.1",
   "source_map": {
     "path": "examples/aitrade/external-evidence/retained-external-evidence-collected-source-map.json",
-    "source_map_hash": "19f44005851e6cd860fde6a395f6216436f56a6b97c53f2b22d6dafe6bacbbdd"
+    "source_map_hash": "10e16a29a3b5b55a2bffca7cac8dfe86f12d7f2a5e6fddf487c92a707071aca8"
   },
   "summary": {
-    "collected_count": 33,
+    "collected_count": 34,
     "require_fresh": true,
-    "task_count": 33
+    "task_count": 34
   }
 }

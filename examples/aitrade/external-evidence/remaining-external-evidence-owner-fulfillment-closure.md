@@ -1,19 +1,18 @@
 # External Evidence Owner Fulfillment Closure
 
-- Closure ID: `abe3a1fd5590ae1be855494f914fb1637a1d6a3a97689eff499af89e0362289a`
+- Closure ID: `96e3ae2901ed9c207158f97197a9ab3845d3555318a8957b469549aea2898a83`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Closed tasks: 0/38
-- Missing intakes: 38
+- Closed tasks: 0/37
+- Missing intakes: 37
 - Invalid intake tasks: 0
-- Missing manifest coverage: 38
-- Placeholder source URIs: 38
+- Missing manifest coverage: 37
+- Placeholder source URIs: 37
 
 ## Task Closure
 
 | Task | Owner | Status | Intake | Manifest Evidence | Blocking Reasons |
 |---|---|---|---|---|---|
-| `auditor-and-review-portal:kms-hsm` | security/platform KMS owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `auditor-and-review-portal:provider-api` | integration/platform owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `auditor-and-review-portal:hosted-service` | service owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `auditor-and-review-portal:identity-provider` | IAM/identity owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
@@ -54,9 +53,9 @@
 
 ## Blockers
 
-- 38 reviewed tasks still use placeholder source_uri values
-- 38 reviewed tasks do not have intake receipts
-- 38 reviewed tasks are not covered by the rebuilt manifest
+- 37 reviewed tasks still use placeholder source_uri values
+- 37 reviewed tasks do not have intake receipts
+- 37 reviewed tasks are not covered by the rebuilt manifest
 
 ## Next Actions
 

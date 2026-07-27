@@ -384,20 +384,6 @@
         "placeholder-source-uri",
         "missing-intake"
       ],
-      "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/kms-hsm.json",
-      "owner_hint": "security/platform KMS owner",
-      "requirement_id": "auditor-and-review-portal",
-      "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/kms-hsm.json",
-      "source_uri_status": "placeholder",
-      "task": "auditor-and-review-portal:kms-hsm",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "kms-hsm",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
       "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/kms-hsm.json",
       "owner_hint": "security/platform KMS owner",
       "requirement_id": "insurer-api-and-actuarial-products",
@@ -679,11 +665,6 @@
       "task": "vertical-packs:insurer"
     },
     {
-      "description": "kms-hsm evidence for auditor-and-review-portal",
-      "source_uri": "TODO://authority/auditor-and-review-portal/kms-hsm",
-      "task": "auditor-and-review-portal:kms-hsm"
-    },
-    {
       "description": "kms-hsm evidence for insurer-api-and-actuarial-products",
       "source_uri": "TODO://authority/insurer-api-and-actuarial-products/kms-hsm",
       "task": "insurer-api-and-actuarial-products:kms-hsm"
@@ -744,21 +725,21 @@
     "This template is a handoff artifact; it does not satisfy missing external authority evidence by itself.",
     "Placeholder source URIs intentionally keep readiness blocked until owners replace them with live authority sources."
   ],
-  "owner_fulfillment_template_id": "13602315d0162026a5f35b71a688657dfe197adb963869f30e1bb145f1b014b8",
+  "owner_fulfillment_template_id": "e049a76fbf027083cf38c061e9bcf1c055486483a9f7559ddd8cb30a07a30f44",
   "schema": "trustai.external-evidence-owner-fulfillment-template/0.1",
   "source_owner_packet_status": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "owner_packet_status_hash": "901d0b64171b3611440bfa474f5985a8a519650675ef8de47db2c003e78740c4",
-    "owner_packet_status_id": "24bb1e4cb7dd55077e4ee7fe2ca009111e91e373e015e6f237bc1095192dd269",
+    "owner_packet_status_hash": "c013513edebb40bf745826dacde6fcc48b1289a3ac720336746d7a8afdb60dd3",
+    "owner_packet_status_id": "892ecc76cf167d84f07ca413eb0443ac7dbc043b91360679ebec5a4a5b4dab39",
     "schema": "trustai.external-evidence-owner-packet-status/0.1"
   },
   "summary": {
-    "assignment_count": 38,
-    "blocked_task_count": 38,
+    "assignment_count": 37,
+    "blocked_task_count": 37,
     "closed_task_count": 0,
-    "fulfillment_count": 38,
+    "fulfillment_count": 37,
     "live_source_uri_count": 0,
-    "missing_intake_count": 38,
+    "missing_intake_count": 37,
     "open_task_count": 0,
     "owner_count": 9,
     "owners": [
@@ -772,6 +753,6 @@
       "service owner",
       "standards/governance owner"
     ],
-    "placeholder_source_uri_count": 38
+    "placeholder_source_uri_count": 37
   }
 }

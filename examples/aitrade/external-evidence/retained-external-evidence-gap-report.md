@@ -1,13 +1,13 @@
 # External Evidence Gap Report
 
-- Gap report ID: `b8b2ee22b3cb8978d8b2bf665e287bf9168e27d6e3d80a6373f895d2988eda00`
+- Gap report ID: `c5ce2d5bcf64c1dc1caa24c7961290980390da7a6160c7e93c7dd7c71018367f`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 33/71
-- Missing authority kinds: 38
-- Remaining collection tasks: 38
-- Source-map entries: 38
-- Placeholder source URIs: 38
+- Covered authority kinds: 34/71
+- Missing authority kinds: 37
+- Remaining collection tasks: 37
+- Source-map entries: 37
+- Placeholder source URIs: 37
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
@@ -17,14 +17,14 @@
 - `hosted-service`: 3
 - `identity-provider`: 3
 - `insurer`: 3
-- `kms-hsm`: 3
+- `kms-hsm`: 2
 - `provider-api`: 4
 - `regulator`: 4
 - `standards-body`: 5
 
 ## Gaps By Requirement
 
-- `auditor-and-review-portal`: 5
+- `auditor-and-review-portal`: 4
 - `byoc-self-hosted`: 3
 - `compliance-mapper-and-eu-ai-act`: 3
 - `insurer-api-and-actuarial-products`: 7
@@ -38,17 +38,6 @@
 - `vertical-packs`: 3
 
 ## Collection Worklist
-
-### auditor-and-review-portal:kms-hsm
-
-- Title: Auditor view, supervised access, regulator view, and review portal attestations
-- Authority kind: `kms-hsm`
-- Owner hint: security/platform KMS owner
-- Description: kms-hsm evidence for auditor-and-review-portal
-- Source URI: `TODO://authority/auditor-and-review-portal/kms-hsm`
-- Snapshot output: `artifacts/external-evidence-sources/auditor-and-review-portal/kms-hsm.json`
-- Intake output: `artifacts/external-evidence-intakes/auditor-and-review-portal/kms-hsm.json`
-- Suggested evidence sources: KMS/HSM key policy export; signing operation receipt; custody or audit-log root
 
 ### auditor-and-review-portal:provider-api
 

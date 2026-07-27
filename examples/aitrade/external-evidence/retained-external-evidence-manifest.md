@@ -1,20 +1,20 @@
 # TrustAI External Evidence Manifest
 
-Manifest ID: `062789b97e1c5b24f7cf1427abaa29e2306a7e0cff404bcbee7115895acc33f1`
+Manifest ID: `83312292ac9c9e9f2ef13ad523dcb5e557b1a94fc14c753760b60252ea8fabe4`
 
 Status: partial
 
 ## Coverage
 
 - Required external requirements: 20
-- Covered requirements: 10
+- Covered requirements: 11
 - Required authority kinds: 71
-- Covered authority kinds: 33
-- Missing authority kinds: 38
-- Evidence items: 33
-- Evidence with issued_at: 33
-- Evidence with expires_at: 33
-- Evidence with freshness windows: 33
+- Covered authority kinds: 34
+- Missing authority kinds: 37
+- Evidence items: 34
+- Evidence with issued_at: 34
+- Evidence with expires_at: 34
+- Evidence with freshness windows: 34
 
 ## Required External Evidence
 
@@ -27,7 +27,7 @@ Status: partial
 | `cicd-provider-approvals` | P1 | P0 | covered | `ci-run`, `provider-api`, `hosted-service`, `identity-provider` | `ci-run`, `provider-api`, `hosted-service`, `identity-provider` |  | Provider delivery receipts cover retained provider delivery payload artifact replay and retained provider response artifact byte replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs, provider-native status shape, and replayed retained provider delivery payload/response artifacts before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence. |
 | `design-partner-pilot-exit-criteria` | P1 | P0 | covered | `regulator`, `insurer`, `customer` | `regulator`, `insurer`, `customer` |  | Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, hash-bound contract/payment evidence, and hash-bound external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence. |
 | `framework-adapters` | P1 | P1 | covered | `ci-run`, `provider-api`, `hosted-service` | `ci-run`, `provider-api`, `hosted-service` |  | Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence. |
-| `auditor-and-review-portal` | P1-P3 | P1 | missing | `kms-hsm`, `provider-api`, `hosted-service`, `identity-provider`, `regulator` |  | `kms-hsm`, `provider-api`, `hosted-service`, `identity-provider`, `regulator` | Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence. |
+| `auditor-and-review-portal` | P1-P3 | P1 | missing | `kms-hsm`, `provider-api`, `hosted-service`, `identity-provider`, `regulator` | `kms-hsm` | `provider-api`, `hosted-service`, `identity-provider`, `regulator` | Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence. |
 | `byoc-self-hosted` | P1-P2 | P0 | missing | `ci-run`, `kms-hsm`, `cloud-object-lock`, `provider-api`, `standards-body`, `customer` | `kms-hsm`, `cloud-object-lock`, `provider-api` | `ci-run`, `standards-body`, `customer` | BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence. |
 | `compliance-mapper-and-eu-ai-act` | P2-P3 | P0 | missing | `provider-api`, `regulator`, `standards-body` |  | `provider-api`, `regulator`, `standards-body` | Compliance production authority dossiers cover the local/reference authority checklist for framework-control ontology, ISO 42001, NIST AI RMF, EU AI Act, SR 11-7, SOC 2, proof-pack source replay, selective regulator disclosure, GRC exports, EU data-plane sovereignty, conformity-assessment review, and per-evidence source_context bound to the signed compliance source binding; actual fresh GRC-platform acceptance, regulator/supervisor acceptance, conformity-assessment review, and continuously operated EU data-plane provider exports remain external deployment evidence. |
 | `trustai-own-compliance` | P2 | P0 | missing | `standards-body`, `customer` |  | `standards-body`, `customer` | TrustAI own compliance dossiers cover local/reference readiness and external-certification schemas for SOC 2 Type II and ISO/IEC 42001; actual SOC 2 Type II audit reports, ISO/IEC 42001 certificates, auditor bridge letters, management-system scope approvals, continuous control operation evidence, and board/customer acceptance remain external compliance evidence. |
@@ -69,7 +69,7 @@ Status: partial
 | `296efe1c318d771e413fcdcd87e51d2005055054e50a06f26580db00eefed0d0` | `framework-adapters:ci-run` | `framework-adapters` | ci-run | covered | Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex |
 | `2535596ebea2fa0ea008bafb1b71f80fde51939a25399cb76f40582f920e5acb` | `framework-adapters:provider-api` | `framework-adapters` | provider-api | covered | Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex |
 | `8563dcf215b5ef63455bca12f81e4fb2d7e98b515192ee839340c62b8332ca82` | `framework-adapters:hosted-service` | `framework-adapters` | hosted-service | covered | Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex |
-| `aed4464e8ca3f3876b3d0d61b0581228cf84688f6e293a0fddb5e31b9ef9e574` | `auditor-and-review-portal:kms-hsm` | `auditor-and-review-portal` | kms-hsm | missing | Auditor view, supervised access, regulator view, and review portal attestations |
+| `aed4464e8ca3f3876b3d0d61b0581228cf84688f6e293a0fddb5e31b9ef9e574` | `auditor-and-review-portal:kms-hsm` | `auditor-and-review-portal` | kms-hsm | covered | Auditor view, supervised access, regulator view, and review portal attestations |
 | `248848c8b3fa34f616469d68be67714e13edfe6ba6707a55d6d646b69329ba60` | `auditor-and-review-portal:provider-api` | `auditor-and-review-portal` | provider-api | missing | Auditor view, supervised access, regulator view, and review portal attestations |
 | `dc3dc8fc4c61aa25bafced7670bea6e23899a911be0bb3e56028576312c58f5b` | `auditor-and-review-portal:hosted-service` | `auditor-and-review-portal` | hosted-service | missing | Auditor view, supervised access, regulator view, and review portal attestations |
 | `e751495f6bd0337a851b9cf8192967544a97538cca79641c714107ddf77b25fb` | `auditor-and-review-portal:identity-provider` | `auditor-and-review-portal` | identity-provider | missing | Auditor view, supervised access, regulator view, and review portal attestations |
@@ -145,6 +145,7 @@ Status: partial
 | `framework-adapters` | ci-run | `ci-run`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/framework-adapters-ci-run-source-snapshot.json` | 2026-07-09T00:35:00Z to 2026-12-31T00:00:00Z | Retained GitHub Actions export for framework adapter hook release CI evidence |
 | `framework-adapters` | provider-api | `ci-run`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/framework-hook-release-provider-api-source-snapshot.json` | 2026-07-09T00:30:00Z to 2026-12-31T00:00:00Z | Retained GitHub contents API export for framework adapter hook release evidence |
 | `framework-adapters` | hosted-service | `ci-run`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/framework-hook-release-hosted-service-source-snapshot.json` | 2026-07-09T00:30:00Z to 2026-12-31T00:00:00Z | Retained GitHub hosted file export for framework adapter hook release evidence |
+| `auditor-and-review-portal` | kms-hsm | `kms-hsm`, `provider-api`, `hosted-service`, `identity-provider`, `regulator` | `examples/aitrade/external-evidence/review-portal-kms-hsm-source-snapshot.json` | 2026-07-08T06:12:00Z to 2026-12-31T00:00:00Z | Retained KMS/HSM export for review portal session and disclosed artifact encryption evidence |
 | `byoc-self-hosted` | kms-hsm | `ci-run`, `kms-hsm`, `cloud-object-lock`, `provider-api`, `standards-body`, `customer` | `examples/aitrade/external-evidence/byoc-kms-hsm-source-snapshot.json` | 2026-07-03T12:03:00Z to 2026-12-31T00:00:00Z | Retained KMS/HSM enforcement export for BYOC evidence signing |
 | `byoc-self-hosted` | cloud-object-lock | `ci-run`, `kms-hsm`, `cloud-object-lock`, `provider-api`, `standards-body`, `customer` | `examples/aitrade/external-evidence/byoc-object-lock-source-snapshot.json` | 2026-07-04T03:06:00Z to 2026-12-31T00:00:00Z | Retained cloud Object Lock export for BYOC immutable evidence storage |
 | `byoc-self-hosted` | provider-api | `ci-run`, `kms-hsm`, `cloud-object-lock`, `provider-api`, `standards-body`, `customer` | `examples/aitrade/external-evidence/byoc-provider-api-source-snapshot.json` | 2026-07-04T03:07:00Z to 2026-12-31T00:00:00Z | Retained provider API export for BYOC NetworkPolicy admission and audit evidence |
@@ -157,7 +158,6 @@ Status: partial
 
 ## Missing Requirements
 
-- `auditor-and-review-portal`
 - `compliance-mapper-and-eu-ai-act`
 - `trustai-own-compliance`
 - `vertical-packs`

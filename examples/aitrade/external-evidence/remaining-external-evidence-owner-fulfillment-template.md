@@ -1,14 +1,14 @@
 # External Evidence Owner Fulfillment Template
 
-- Template ID: `13602315d0162026a5f35b71a688657dfe197adb963869f30e1bb145f1b014b8`
+- Template ID: `e049a76fbf027083cf38c061e9bcf1c055486483a9f7559ddd8cb30a07a30f44`
 - Generated at: `2026-07-12T00:01:00Z`
-- Fulfillments: 38
+- Fulfillments: 37
 - Owners: 9
-- Blocked tasks: 38
+- Blocked tasks: 37
 - Open tasks: 0
 - Closed tasks: 0
-- Placeholder source URIs: 38
-- Missing intakes: 38
+- Placeholder source URIs: 37
+- Missing intakes: 37
 
 ## Fulfillments
 
@@ -41,7 +41,6 @@
 | `insurer-api-and-actuarial-products:insurer` | TODO://authority/insurer-api-and-actuarial-products/insurer | insurer evidence for insurer-api-and-actuarial-products |
 | `roadmap-phase-scoreboard:insurer` | TODO://authority/roadmap-phase-scoreboard/insurer | insurer evidence for roadmap-phase-scoreboard |
 | `vertical-packs:insurer` | TODO://authority/vertical-packs/insurer | insurer evidence for vertical-packs |
-| `auditor-and-review-portal:kms-hsm` | TODO://authority/auditor-and-review-portal/kms-hsm | kms-hsm evidence for auditor-and-review-portal |
 | `insurer-api-and-actuarial-products:kms-hsm` | TODO://authority/insurer-api-and-actuarial-products/kms-hsm | kms-hsm evidence for insurer-api-and-actuarial-products |
 | `standards-track-and-auditor-ecosystem:kms-hsm` | TODO://authority/standards-track-and-auditor-ecosystem/kms-hsm | kms-hsm evidence for standards-track-and-auditor-ecosystem |
 | `auditor-and-review-portal:hosted-service` | TODO://authority/auditor-and-review-portal/hosted-service | hosted-service evidence for auditor-and-review-portal |
@@ -84,7 +83,6 @@
 | `insurer-api-and-actuarial-products:insurer` | risk/insurance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/insurer.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/insurer.json |
 | `roadmap-phase-scoreboard:insurer` | risk/insurance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/roadmap-phase-scoreboard/insurer.json | artifacts/external-evidence-intakes/roadmap-phase-scoreboard/insurer.json |
 | `vertical-packs:insurer` | risk/insurance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/vertical-packs/insurer.json | artifacts/external-evidence-intakes/vertical-packs/insurer.json |
-| `auditor-and-review-portal:kms-hsm` | security/platform KMS owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/auditor-and-review-portal/kms-hsm.json | artifacts/external-evidence-intakes/auditor-and-review-portal/kms-hsm.json |
 | `insurer-api-and-actuarial-products:kms-hsm` | security/platform KMS owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/kms-hsm.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/kms-hsm.json |
 | `standards-track-and-auditor-ecosystem:kms-hsm` | security/platform KMS owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/kms-hsm.json | artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/kms-hsm.json |
 | `auditor-and-review-portal:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/auditor-and-review-portal/hosted-service.json | artifacts/external-evidence-intakes/auditor-and-review-portal/hosted-service.json |

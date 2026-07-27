@@ -1,14 +1,14 @@
 # External Evidence Owner Packet Status
 
-- Status ID: `24bb1e4cb7dd55077e4ee7fe2ca009111e91e373e015e6f237bc1095192dd269`
+- Status ID: `892ecc76cf167d84f07ca413eb0443ac7dbc043b91360679ebec5a4a5b4dab39`
 - Generated at: `2026-07-12T00:01:00Z`
 - Packets: 9
-- Tasks: 38
+- Tasks: 37
 - Closed tasks: 0
 - Open tasks: 0
-- Blocked tasks: 38
-- Placeholder source URIs: 38
-- Missing intakes: 38
+- Blocked tasks: 37
+- Placeholder source URIs: 37
+- Missing intakes: 37
 
 ## Packets
 
@@ -20,7 +20,7 @@
 | legal/compliance owner | `owner-packet:owner_hint:legal-compliance-owner` | blocked | 4 | 0 | 0 | 4 |
 | release engineering | `owner-packet:owner_hint:release-engineering` | blocked | 5 | 0 | 0 | 5 |
 | risk/insurance owner | `owner-packet:owner_hint:risk-insurance-owner` | blocked | 3 | 0 | 0 | 3 |
-| security/platform KMS owner | `owner-packet:owner_hint:security-platform-KMS-owner` | blocked | 3 | 0 | 0 | 3 |
+| security/platform KMS owner | `owner-packet:owner_hint:security-platform-KMS-owner` | blocked | 2 | 0 | 0 | 2 |
 | service owner | `owner-packet:owner_hint:service-owner` | blocked | 3 | 0 | 0 | 3 |
 | standards/governance owner | `owner-packet:owner_hint:standards-governance-owner` | blocked | 5 | 0 | 0 | 5 |
 
@@ -55,7 +55,6 @@
 | `roadmap-phase-scoreboard:insurer` | risk/insurance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `insurer-api-and-actuarial-products:insurer` | risk/insurance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `vertical-packs:insurer` | risk/insurance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
-| `auditor-and-review-portal:kms-hsm` | security/platform KMS owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `insurer-api-and-actuarial-products:kms-hsm` | security/platform KMS owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `standards-track-and-auditor-ecosystem:kms-hsm` | security/platform KMS owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `auditor-and-review-portal:hosted-service` | service owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |

@@ -2,30 +2,6 @@
   "defaults": {},
   "entries": [
     {
-      "authority_kind": "kms-hsm",
-      "coverage_status": "missing",
-      "description": "kms-hsm evidence for auditor-and-review-portal",
-      "external_authority_required": [
-        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/kms-hsm.json",
-      "owner_hint": "security/platform KMS owner",
-      "requirement_id": "auditor-and-review-portal",
-      "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/kms-hsm.json",
-      "source_uri": "TODO://authority/auditor-and-review-portal/kms-hsm",
-      "suggested_evidence_sources": [
-        "KMS/HSM key policy export",
-        "signing operation receipt",
-        "custody or audit-log root"
-      ],
-      "task": "auditor-and-review-portal:kms-hsm",
-      "task_id": "0b35d2f033f96f6bd1373d1d28cc0ff5b3e53a6f39da2e7691cfdaf27df40f31",
-      "task_ref": "external-evidence:auditor-and-review-portal:kms-hsm",
-      "title": "Auditor view, supervised access, regulator view, and review portal attestations",
-      "unit_id": "aed4464e8ca3f3876b3d0d61b0581228cf84688f6e293a0fddb5e31b9ef9e574",
-      "unit_ref": "auditor-and-review-portal:kms-hsm"
-    },
-    {
       "authority_kind": "provider-api",
       "coverage_status": "missing",
       "description": "provider-api evidence for auditor-and-review-portal",
@@ -921,14 +897,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "0617b06a507f8d7cee4a90a8ec6e7de0baab6a58fed53936561bba12a6bf3d93",
+  "source_map_id": "bfbedd9110297ad67bac5cf1292d53b4e29bc15ef17efcef19e42551d7a11789",
   "source_plan": {
-    "plan_hash": "dab2b7c2e038ecffb7e0f250397f77f68b9e5b4ae630d2fcb3cc012163e24c6e",
-    "plan_id": "10d8cfcb73d6499d1710fbd4f0bdd187adeb141c57731b55c0ca4013c3c5b950",
+    "plan_hash": "98f98ff35c5a9ac81422a4848c8d00d29fc1d52bbc34294a27bd16065c0482ae",
+    "plan_id": "f431d38004d299a9b3efa8e6c832196a6c74396c4763f875387fb31f6c643403",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "d22b0c7885999b1a706a8e542f3eee7c9d28c138ea045b13316d03fac520b0c4",
-      "manifest_id": "062789b97e1c5b24f7cf1427abaa29e2306a7e0cff404bcbee7115895acc33f1",
+      "manifest_hash": "cb663fa4c523e88f43ec5e42727bcabcdf648bb9fd4120551cab199f4745842a",
+      "manifest_id": "83312292ac9c9e9f2ef13ad523dcb5e557b1a94fc14c753760b60252ea8fabe4",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },
@@ -936,12 +912,12 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 38,
+    "entry_count": 37,
     "intake_dir": "artifacts/external-evidence-intakes",
     "live_source_uri_count": 0,
-    "placeholder_source_uri_count": 38,
+    "placeholder_source_uri_count": 37,
     "snapshot_dir": "artifacts/external-evidence-sources",
-    "source_plan_task_count": 38,
+    "source_plan_task_count": 37,
     "status_filter": "missing"
   }
 }

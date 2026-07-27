@@ -5,12 +5,12 @@
     "A task is covered only after a matching evidence artifact is supplied to an external evidence manifest and verified.",
     "Freshness and issuer authority remain bounded by the supplied evidence artifact and manifest verification options."
   ],
-  "plan_id": "10d8cfcb73d6499d1710fbd4f0bdd187adeb141c57731b55c0ca4013c3c5b950",
+  "plan_id": "f431d38004d299a9b3efa8e6c832196a6c74396c4763f875387fb31f6c643403",
   "schema": "trustai.external-evidence-collection-plan/0.1",
   "source_manifest": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "manifest_hash": "d22b0c7885999b1a706a8e542f3eee7c9d28c138ea045b13316d03fac520b0c4",
-    "manifest_id": "062789b97e1c5b24f7cf1427abaa29e2306a7e0cff404bcbee7115895acc33f1",
+    "manifest_hash": "cb663fa4c523e88f43ec5e42727bcabcdf648bb9fd4120551cab199f4745842a",
+    "manifest_id": "83312292ac9c9e9f2ef13ad523dcb5e557b1a94fc14c753760b60252ea8fabe4",
     "manifest_ref": "production-external-evidence",
     "status": "partial"
   },
@@ -21,23 +21,23 @@
   },
   "status_filter": "missing",
   "summary": {
-    "covered_authority_kind_count": 33,
-    "missing_authority_kind_count": 38,
+    "covered_authority_kind_count": 34,
+    "missing_authority_kind_count": 37,
     "missing_task_count_by_authority_kind": {
       "ci-run": 5,
       "customer": 8,
       "hosted-service": 3,
       "identity-provider": 3,
       "insurer": 3,
-      "kms-hsm": 3,
+      "kms-hsm": 2,
       "provider-api": 4,
       "regulator": 4,
       "standards-body": 5
     },
     "required_authority_kind_count": 71,
     "selected_covered_task_count": 0,
-    "selected_missing_task_count": 38,
-    "selected_task_count": 38,
+    "selected_missing_task_count": 37,
+    "selected_task_count": 37,
     "source_manifest_status": "partial",
     "task_count_by_authority_kind": {
       "ci-run": 5,
@@ -45,7 +45,7 @@
       "hosted-service": 3,
       "identity-provider": 3,
       "insurer": 3,
-      "kms-hsm": 3,
+      "kms-hsm": 2,
       "provider-api": 4,
       "regulator": 4,
       "standards-body": 5
@@ -53,7 +53,7 @@
     "task_count_by_phase": {
       "P0-P4": 2,
       "P1-P2": 3,
-      "P1-P3": 5,
+      "P1-P3": 4,
       "P1-P4": 5,
       "P2": 3,
       "P2-P3": 3,
@@ -64,35 +64,6 @@
     "total_authority_unit_count": 71
   },
   "tasks": [
-    {
-      "acceptance_criteria": [
-        "Artifact path must be repository-relative and hashable before manifest verification.",
-        "Evidence item authority_kind must be kms-hsm and accepted for auditor-and-review-portal.",
-        "Use issued_at and expires_at metadata when strict freshness verification is required.",
-        "Rebuild and verify the external evidence manifest after adding the artifact."
-      ],
-      "authority_kind": "kms-hsm",
-      "coverage_status": "missing",
-      "evidence_argument_template": "auditor-and-review-portal,kms-hsm,external-evidence/auditor-and-review-portal/kms-hsm.json,kms-hsm evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-      "external_authority_required": [
-        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
-      ],
-      "owner_hint": "security/platform KMS owner",
-      "phase": "P1-P3",
-      "priority": "P1",
-      "requirement_id": "auditor-and-review-portal",
-      "suggested_artifact_path": "external-evidence/auditor-and-review-portal/kms-hsm.json",
-      "suggested_evidence_sources": [
-        "KMS/HSM key policy export",
-        "signing operation receipt",
-        "custody or audit-log root"
-      ],
-      "task_id": "0b35d2f033f96f6bd1373d1d28cc0ff5b3e53a6f39da2e7691cfdaf27df40f31",
-      "task_ref": "external-evidence:auditor-and-review-portal:kms-hsm",
-      "title": "Auditor view, supervised access, regulator view, and review portal attestations",
-      "unit_id": "aed4464e8ca3f3876b3d0d61b0581228cf84688f6e293a0fddb5e31b9ef9e574",
-      "unit_ref": "auditor-and-review-portal:kms-hsm"
-    },
     {
       "acceptance_criteria": [
         "Artifact path must be repository-relative and hashable before manifest verification.",

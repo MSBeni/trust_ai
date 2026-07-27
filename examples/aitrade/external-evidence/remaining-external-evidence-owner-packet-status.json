@@ -5,7 +5,7 @@
     "A closed task still requires rebuilt manifest verification and readiness verification before external authority coverage is accepted.",
     "Placeholder source URIs keep tasks blocked even when a local intake artifact is present."
   ],
-  "owner_packet_status_id": "24bb1e4cb7dd55077e4ee7fe2ca009111e91e373e015e6f237bc1095192dd269",
+  "owner_packet_status_id": "892ecc76cf167d84f07ca413eb0443ac7dbc043b91360679ebec5a4a5b4dab39",
   "packets": [
     {
       "blocked_task_count": 3,
@@ -68,14 +68,14 @@
       "task_count": 3
     },
     {
-      "blocked_task_count": 3,
+      "blocked_task_count": 2,
       "closed_task_count": 0,
       "open_task_count": 0,
       "owner_hint": "security/platform KMS owner",
-      "packet_id": "c9ec2062d7662ccc07694f4522b46f7ad7dc682d7d7bbe5f3a2e7a81db1c6880",
+      "packet_id": "06e78b0ed0578bee00b1903d8cc2c624fbf2980be434184e94190ac4f6b2f9a0",
       "packet_ref": "owner-packet:owner_hint:security-platform-KMS-owner",
       "packet_status": "blocked",
-      "task_count": 3
+      "task_count": 2
     },
     {
       "blocked_task_count": 3,
@@ -103,41 +103,41 @@
     "intake_hashes": [],
     "owner_packet_bundle": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_bundle_hash": "028820a0f87bb961a9771485d866250b5fb6eebe7b72ee6e4229c8513b34fde0",
-      "owner_packet_bundle_id": "321c671f54b0d6f1d968028b82a5e408eafc5b30534a9db27afedc4b416a2048",
+      "owner_packet_bundle_hash": "ca6098aa328c0b544b0a138c234f268bb5df00f8176ec84cbcaa35d30f792879",
+      "owner_packet_bundle_id": "775b83e6c45a7a1303b4d9bb0550dc20638c67e6ca26da845275097e609d8ac1",
       "schema": "trustai.external-evidence-owner-packet-bundle/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "6f77bf17db985a4e8bbb6433cecedf75a158fe4ec64bd539a171e0901cc48f72",
-      "source_map_id": "0617b06a507f8d7cee4a90a8ec6e7de0baab6a58fed53936561bba12a6bf3d93"
+      "source_map_hash": "92c184c097552d87f413fc87d15ef5504bc34dfe7517060d028251a4760b01fe",
+      "source_map_id": "bfbedd9110297ad67bac5cf1292d53b4e29bc15ef17efcef19e42551d7a11789"
     },
     "work_package": {
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-work-package/0.1",
-      "work_package_hash": "d77a69d2d21717d4f6306614a6e5e6745c6ae60866fde22f405ea6ea1d1f1a71",
-      "work_package_id": "2cd9249dfd7f8222ae6202b1fd479f47c8ece9df5a974bd357d7b5c6f8875d4a"
+      "work_package_hash": "bb132bdf866316c7b87e2e58ed7430a8a0c92aa19556a7f8c45312c22400f43c",
+      "work_package_id": "2673a1d5ee5ae80dc65700dff11404dd44c0dab56e125f5a2568b1e77b3a5442"
     }
   },
   "summary": {
     "blocked_packet_count": 9,
-    "blocked_task_count": 38,
+    "blocked_task_count": 37,
     "closed_packet_count": 0,
     "closed_task_count": 0,
     "invalid_intake_count": 0,
     "live_source_uri_count": 0,
-    "missing_intake_count": 38,
+    "missing_intake_count": 37,
     "open_packet_count": 0,
     "open_task_count": 0,
     "packet_count": 9,
     "packet_status_counts": {
       "blocked": 9
     },
-    "placeholder_source_uri_count": 38,
-    "task_count": 38,
+    "placeholder_source_uri_count": 37,
+    "task_count": 37,
     "task_status_counts": {
-      "blocked": 38
+      "blocked": 37
     }
   },
   "tasks": [
@@ -599,23 +599,6 @@
       "task_ref": "external-evidence:vertical-packs:insurer",
       "task_status": "blocked",
       "unit_ref": "vertical-packs:insurer"
-    },
-    {
-      "authority_kind": "kms-hsm",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake": null,
-      "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/kms-hsm.json",
-      "owner_hint": "security/platform KMS owner",
-      "requirement_id": "auditor-and-review-portal",
-      "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/kms-hsm.json",
-      "source_uri": "TODO://authority/auditor-and-review-portal/kms-hsm",
-      "source_uri_status": "placeholder",
-      "task_ref": "external-evidence:auditor-and-review-portal:kms-hsm",
-      "task_status": "blocked",
-      "unit_ref": "auditor-and-review-portal:kms-hsm"
     },
     {
       "authority_kind": "kms-hsm",
