@@ -5,7 +5,7 @@
     "Source URIs marked TODO or placeholder must be replaced with authority-owned source exports before collection.",
     "Packet completion is proven only by verified source snapshots, intake receipts, rebuilt manifests, and readiness reports."
   ],
-  "owner_packet_bundle_id": "07239bdfec7966232b8d77f2bebe1dcb2f6d19e21781be16e2345adf5d5b7e82",
+  "owner_packet_bundle_id": "63dc196155fcb17690c2b96aea149bacd45feb07432c4d1737c6d61cc03dfb32",
   "packets": [
     {
       "authority_kinds": [
@@ -1374,29 +1374,26 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 3,
+      "missing_task_count": 2,
       "owner_hint": "risk/insurance owner",
-      "package_hash": "9d5016dfbd115740b35055214ec517077af2d7eff4c7b7fcedf3b3cad073aade",
-      "package_id": "e3cfe80dd86841fba5e8da22ab8afdd1a30befa5474e40b2fb087b69418df27c",
+      "package_hash": "ffae41e996b950f99c168a13531d0c7a20287806d42321659e5726c6439c53ec",
+      "package_id": "8817058d3c7ee61e246e8f1859af539435aabdb452c13ee1ab1d46dbb6d8649b",
       "package_ref": "owner_hint:risk-insurance-owner",
-      "packet_id": "694680aa2bbf1b45c8bef8f737fced0b3f9a67164d45795e9998eb5e4823e6fa",
+      "packet_id": "e2f85708de14f2bf028cfcd34ad793cb93cbde355d0fd804e6b3bf2223f0a07f",
       "packet_ref": "owner-packet:owner_hint:risk-insurance-owner",
       "phases": [
         "P1-P4",
-        "P2-P4",
-        "P3"
+        "P2-P4"
       ],
-      "placeholder_source_uri_count": 3,
+      "placeholder_source_uri_count": 2,
       "priorities": [
-        "P0",
-        "P1"
+        "P0"
       ],
       "requirement_ids": [
         "insurer-api-and-actuarial-products",
-        "roadmap-phase-scoreboard",
-        "vertical-packs"
+        "roadmap-phase-scoreboard"
       ],
-      "task_count": 3,
+      "task_count": 2,
       "tasks": [
         {
           "acceptance_criteria": [
@@ -1551,83 +1548,6 @@
           "title": "Consent-gated insurer telemetry, underwriting quotes, and actuarial products",
           "unit_id": "1c0b31031e056c43886090c6fbdea435d1df355188edf7ab14155de604dda823",
           "unit_ref": "insurer-api-and-actuarial-products:insurer"
-        },
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be insurer and accepted for vertical-packs.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "insurer",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/vertical-packs/insurer",
-              "--root",
-              ".",
-              "--task",
-              "vertical-packs:insurer",
-              "--description",
-              "insurer evidence for vertical-packs",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/vertical-packs/insurer.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/vertical-packs/insurer.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/vertical-packs/insurer --root . --task vertical-packs:insurer --description 'insurer evidence for vertical-packs' --snapshot-out artifacts/external-evidence-sources/vertical-packs/insurer.json --intake-out artifacts/external-evidence-intakes/vertical-packs/insurer.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/vertical-packs/insurer.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/vertical-packs/insurer.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "insurer evidence for vertical-packs",
-          "evidence_argument_template": "vertical-packs,insurer,external-evidence/vertical-packs/insurer.json,insurer evidence for vertical-packs;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Vertical pack receipts cover local/reference templates, source bindings, control mappings, and production-claim limits for trading/treasury, insurance claims, healthcare RCM, and public sector packs; live SR 11-7 owner signoff, NAIC/state insurance legal review, HIPAA/BAA posture, FDA SaMD classification, FedRAMP boundary/ATO evidence, customer deployments, and external regulator/insurer/auditor acceptance remain external evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/vertical-packs/insurer.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "risk/insurance owner",
-          "phase": "P3",
-          "priority": "P1",
-          "requirement_id": "vertical-packs",
-          "snapshot_out": "artifacts/external-evidence-sources/vertical-packs/insurer.json",
-          "source_uri": "TODO://authority/vertical-packs/insurer",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/vertical-packs/insurer.json",
-          "suggested_evidence_sources": [
-            "underwriter response",
-            "premium or policy-system quote",
-            "insurer API response export"
-          ],
-          "task_id": "9cd53ad47435b80a6de93611fa9813c703575346a6e0d6640747d0d411835410",
-          "task_ref": "external-evidence:vertical-packs:insurer",
-          "title": "Vertical packs for trading, insurance claims, healthcare, and public sector",
-          "unit_id": "3a7cfb04dda73fb1c524d89bb531334e6812d8f082e81c450cf7d19b2f70d62b",
-          "unit_ref": "vertical-packs:insurer"
         }
       ]
     },
@@ -2212,23 +2132,23 @@
   "source_work_package": {
     "generated_at": "2026-07-12T00:01:00Z",
     "group_by": "owner_hint",
-    "work_package_hash": "00655f1b4b9683a0cf3b5607775ca52b7d992a9fb08c3e500fffc44a7f4513dd",
-    "work_package_id": "424531794b170d43feec847259e4168dca9fbda389537728f5aaaa10d59a19ff"
+    "work_package_hash": "2aeb83653873a9c88e1ca1006d2343b3a025d2645dc7fec887b85ab72a7931de",
+    "work_package_id": "f84c30b2ca9105d37fc6afac5b580a3b6b934a25decd925462e91c3d0e6f92b2"
   },
   "summary": {
     "covered_task_count": 0,
     "live_source_uri_count": 0,
-    "missing_task_count": 24,
+    "missing_task_count": 23,
     "packet_count": 9,
-    "placeholder_source_uri_count": 24,
-    "source_work_package_task_count": 24,
-    "task_count": 24,
+    "placeholder_source_uri_count": 23,
+    "source_work_package_task_count": 23,
+    "task_count": 23,
     "task_count_by_authority_kind": {
       "ci-run": 4,
       "customer": 6,
       "hosted-service": 2,
       "identity-provider": 2,
-      "insurer": 3,
+      "insurer": 2,
       "kms-hsm": 2,
       "provider-api": 2,
       "regulator": 1,
@@ -2240,7 +2160,7 @@
       "integration/platform owner": 2,
       "legal/compliance owner": 1,
       "release engineering": 4,
-      "risk/insurance owner": 3,
+      "risk/insurance owner": 2,
       "security/platform KMS owner": 2,
       "service owner": 2,
       "standards/governance owner": 2

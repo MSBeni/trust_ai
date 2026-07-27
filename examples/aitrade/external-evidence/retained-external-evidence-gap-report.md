@@ -1,13 +1,13 @@
 # External Evidence Gap Report
 
-- Gap report ID: `c600d607c1b659cf4192609af2ea9e555203fe7c458930af032e173def6df972`
+- Gap report ID: `eafc601e6c1dc4fa2f37dc8a9b15026137586db18f4a969475485215d9ee100b`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 47/71
-- Missing authority kinds: 24
-- Remaining collection tasks: 24
-- Source-map entries: 24
-- Placeholder source URIs: 24
+- Covered authority kinds: 48/71
+- Missing authority kinds: 23
+- Remaining collection tasks: 23
+- Source-map entries: 23
+- Placeholder source URIs: 23
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
@@ -16,7 +16,7 @@
 - `customer`: 6
 - `hosted-service`: 2
 - `identity-provider`: 2
-- `insurer`: 3
+- `insurer`: 2
 - `kms-hsm`: 2
 - `provider-api`: 2
 - `regulator`: 1
@@ -31,20 +31,9 @@
 - `standards-track-and-auditor-ecosystem`: 2
 - `state-of-agent-reliability-report`: 1
 - `trust-network-procurement-and-marketplace`: 4
-- `vertical-packs`: 2
+- `vertical-packs`: 1
 
 ## Collection Worklist
-
-### vertical-packs:insurer
-
-- Title: Vertical packs for trading, insurance claims, healthcare, and public sector
-- Authority kind: `insurer`
-- Owner hint: risk/insurance owner
-- Description: insurer evidence for vertical-packs
-- Source URI: `TODO://authority/vertical-packs/insurer`
-- Snapshot output: `artifacts/external-evidence-sources/vertical-packs/insurer.json`
-- Intake output: `artifacts/external-evidence-intakes/vertical-packs/insurer.json`
-- Suggested evidence sources: underwriter response; premium or policy-system quote; insurer API response export
 
 ### vertical-packs:customer
 

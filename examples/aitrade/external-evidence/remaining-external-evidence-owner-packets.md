@@ -1,13 +1,13 @@
 # External Evidence Owner Packets
 
-- Owner packet bundle ID: `07239bdfec7966232b8d77f2bebe1dcb2f6d19e21781be16e2345adf5d5b7e82`
+- Owner packet bundle ID: `63dc196155fcb17690c2b96aea149bacd45feb07432c4d1737c6d61cc03dfb32`
 - Generated at: `2026-07-12T00:01:00Z`
-- Source work package ID: `424531794b170d43feec847259e4168dca9fbda389537728f5aaaa10d59a19ff`
-- Source work package hash: `00655f1b4b9683a0cf3b5607775ca52b7d992a9fb08c3e500fffc44a7f4513dd`
+- Source work package ID: `f84c30b2ca9105d37fc6afac5b580a3b6b934a25decd925462e91c3d0e6f92b2`
+- Source work package hash: `2aeb83653873a9c88e1ca1006d2343b3a025d2645dc7fec887b85ab72a7931de`
 - Packets: 9
-- Tasks: 24
-- Missing tasks: 24
-- Placeholder source URIs: 24
+- Tasks: 23
+- Missing tasks: 23
+- Placeholder source URIs: 23
 
 ## Packets
 
@@ -154,12 +154,12 @@
 ### risk/insurance owner
 
 - Packet ref: `owner-packet:owner_hint:risk-insurance-owner`
-- Packet ID: `694680aa2bbf1b45c8bef8f737fced0b3f9a67164d45795e9998eb5e4823e6fa`
+- Packet ID: `e2f85708de14f2bf028cfcd34ad793cb93cbde355d0fd804e6b3bf2223f0a07f`
 - Package ref: `owner_hint:risk-insurance-owner`
-- Tasks: 3
-- Missing tasks: 3
+- Tasks: 2
+- Missing tasks: 2
 - Authority kinds: `insurer`
-- Requirements: `insurer-api-and-actuarial-products`, `roadmap-phase-scoreboard`, `vertical-packs`
+- Requirements: `insurer-api-and-actuarial-products`, `roadmap-phase-scoreboard`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
 - Completion gate: Every task must have a live authority source URI, a verified source snapshot, a verified intake receipt, and a rebuilt external-evidence manifest before readiness can pass.
@@ -168,7 +168,6 @@
 |---|---|---|---|---|---|
 | `roadmap-phase-scoreboard:insurer` | P1-P4 | P0 | `insurer` | placeholder | `artifacts/external-evidence-intakes/roadmap-phase-scoreboard/insurer.json` |
 | `insurer-api-and-actuarial-products:insurer` | P2-P4 | P0 | `insurer` | placeholder | `artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/insurer.json` |
-| `vertical-packs:insurer` | P3 | P1 | `insurer` | placeholder | `artifacts/external-evidence-intakes/vertical-packs/insurer.json` |
 
 #### Task Commands
 
@@ -176,8 +175,6 @@
 - `roadmap-phase-scoreboard:insurer` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/roadmap-phase-scoreboard/insurer.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `insurer-api-and-actuarial-products:insurer` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/insurer-api-and-actuarial-products/insurer --root . --task insurer-api-and-actuarial-products:insurer --description 'insurer evidence for insurer-api-and-actuarial-products' --snapshot-out artifacts/external-evidence-sources/insurer-api-and-actuarial-products/insurer.json --intake-out artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/insurer.json`
 - `insurer-api-and-actuarial-products:insurer` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/insurer.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
-- `vertical-packs:insurer` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/vertical-packs/insurer --root . --task vertical-packs:insurer --description 'insurer evidence for vertical-packs' --snapshot-out artifacts/external-evidence-sources/vertical-packs/insurer.json --intake-out artifacts/external-evidence-intakes/vertical-packs/insurer.json`
-- `vertical-packs:insurer` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/vertical-packs/insurer.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 
 ### security/platform KMS owner
 

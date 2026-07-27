@@ -5,12 +5,12 @@
     "A task is covered only after a matching evidence artifact is supplied to an external evidence manifest and verified.",
     "Freshness and issuer authority remain bounded by the supplied evidence artifact and manifest verification options."
   ],
-  "plan_id": "6023c1ee30a264f68839dd3c1762eb791d049db33e81feef5fd6bd99f6a4c99a",
+  "plan_id": "b929cfe075ed480a26e06ff966162654c099d347cb4b6bd5ddd49817d6762849",
   "schema": "trustai.external-evidence-collection-plan/0.1",
   "source_manifest": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "manifest_hash": "64022eababe3023188ec21f28fcbc0f77051fd9f8496544409aab98cb7d35abe",
-    "manifest_id": "d5e03ff10c4d39e29b0a10a4b258f236086bd65ed75331d22ac723ec90fc855a",
+    "manifest_hash": "a1717b1b86349e4f136da4a131be49bc008138ae7d7afc00e9462a0a8c91aeec",
+    "manifest_id": "5a9b974694e8acce34a5a7c5cb81ca7e8ec0c5c2e956e7135e4c0af32601f579",
     "manifest_ref": "production-external-evidence",
     "status": "partial"
   },
@@ -21,14 +21,14 @@
   },
   "status_filter": "missing",
   "summary": {
-    "covered_authority_kind_count": 47,
-    "missing_authority_kind_count": 24,
+    "covered_authority_kind_count": 48,
+    "missing_authority_kind_count": 23,
     "missing_task_count_by_authority_kind": {
       "ci-run": 4,
       "customer": 6,
       "hosted-service": 2,
       "identity-provider": 2,
-      "insurer": 3,
+      "insurer": 2,
       "kms-hsm": 2,
       "provider-api": 2,
       "regulator": 1,
@@ -36,15 +36,15 @@
     },
     "required_authority_kind_count": 71,
     "selected_covered_task_count": 0,
-    "selected_missing_task_count": 24,
-    "selected_task_count": 24,
+    "selected_missing_task_count": 23,
+    "selected_task_count": 23,
     "source_manifest_status": "partial",
     "task_count_by_authority_kind": {
       "ci-run": 4,
       "customer": 6,
       "hosted-service": 2,
       "identity-provider": 2,
-      "insurer": 3,
+      "insurer": 2,
       "kms-hsm": 2,
       "provider-api": 2,
       "regulator": 1,
@@ -55,41 +55,12 @@
       "P1-P4": 5,
       "P2": 1,
       "P2-P4": 8,
-      "P3": 4,
+      "P3": 3,
       "P4": 4
     },
     "total_authority_unit_count": 71
   },
   "tasks": [
-    {
-      "acceptance_criteria": [
-        "Artifact path must be repository-relative and hashable before manifest verification.",
-        "Evidence item authority_kind must be insurer and accepted for vertical-packs.",
-        "Use issued_at and expires_at metadata when strict freshness verification is required.",
-        "Rebuild and verify the external evidence manifest after adding the artifact."
-      ],
-      "authority_kind": "insurer",
-      "coverage_status": "missing",
-      "evidence_argument_template": "vertical-packs,insurer,external-evidence/vertical-packs/insurer.json,insurer evidence for vertical-packs;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-      "external_authority_required": [
-        "Vertical pack receipts cover local/reference templates, source bindings, control mappings, and production-claim limits for trading/treasury, insurance claims, healthcare RCM, and public sector packs; live SR 11-7 owner signoff, NAIC/state insurance legal review, HIPAA/BAA posture, FDA SaMD classification, FedRAMP boundary/ATO evidence, customer deployments, and external regulator/insurer/auditor acceptance remain external evidence."
-      ],
-      "owner_hint": "risk/insurance owner",
-      "phase": "P3",
-      "priority": "P1",
-      "requirement_id": "vertical-packs",
-      "suggested_artifact_path": "external-evidence/vertical-packs/insurer.json",
-      "suggested_evidence_sources": [
-        "underwriter response",
-        "premium or policy-system quote",
-        "insurer API response export"
-      ],
-      "task_id": "9cd53ad47435b80a6de93611fa9813c703575346a6e0d6640747d0d411835410",
-      "task_ref": "external-evidence:vertical-packs:insurer",
-      "title": "Vertical packs for trading, insurance claims, healthcare, and public sector",
-      "unit_id": "3a7cfb04dda73fb1c524d89bb531334e6812d8f082e81c450cf7d19b2f70d62b",
-      "unit_ref": "vertical-packs:insurer"
-    },
     {
       "acceptance_criteria": [
         "Artifact path must be repository-relative and hashable before manifest verification.",

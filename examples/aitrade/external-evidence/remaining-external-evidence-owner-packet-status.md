@@ -1,14 +1,14 @@
 # External Evidence Owner Packet Status
 
-- Status ID: `d5bf797d780889433fcefc8782a16c1b87e59ee7675d32aeb0e7d2d03f8a9ddf`
+- Status ID: `d615c89430dcec759d716ae5328c8a5c4d5a80a115811e7d5cb947a9421d1f1a`
 - Generated at: `2026-07-12T00:01:00Z`
 - Packets: 9
-- Tasks: 24
+- Tasks: 23
 - Closed tasks: 0
 - Open tasks: 0
-- Blocked tasks: 24
-- Placeholder source URIs: 24
-- Missing intakes: 24
+- Blocked tasks: 23
+- Placeholder source URIs: 23
+- Missing intakes: 23
 
 ## Packets
 
@@ -19,7 +19,7 @@
 | integration/platform owner | `owner-packet:owner_hint:integration-platform-owner` | blocked | 2 | 0 | 0 | 2 |
 | legal/compliance owner | `owner-packet:owner_hint:legal-compliance-owner` | blocked | 1 | 0 | 0 | 1 |
 | release engineering | `owner-packet:owner_hint:release-engineering` | blocked | 4 | 0 | 0 | 4 |
-| risk/insurance owner | `owner-packet:owner_hint:risk-insurance-owner` | blocked | 3 | 0 | 0 | 3 |
+| risk/insurance owner | `owner-packet:owner_hint:risk-insurance-owner` | blocked | 2 | 0 | 0 | 2 |
 | security/platform KMS owner | `owner-packet:owner_hint:security-platform-KMS-owner` | blocked | 2 | 0 | 0 | 2 |
 | service owner | `owner-packet:owner_hint:service-owner` | blocked | 2 | 0 | 0 | 2 |
 | standards/governance owner | `owner-packet:owner_hint:standards-governance-owner` | blocked | 2 | 0 | 0 | 2 |
@@ -45,7 +45,6 @@
 | `insurer-api-and-actuarial-products:ci-run` | release engineering | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `roadmap-phase-scoreboard:insurer` | risk/insurance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `insurer-api-and-actuarial-products:insurer` | risk/insurance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
-| `vertical-packs:insurer` | risk/insurance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `insurer-api-and-actuarial-products:kms-hsm` | security/platform KMS owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `standards-track-and-auditor-ecosystem:kms-hsm` | security/platform KMS owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `insurer-api-and-actuarial-products:hosted-service` | service owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |

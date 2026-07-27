@@ -1,0 +1,166 @@
+{
+  "authority_evidence": {
+    "authority_kind": "insurer",
+    "evidence_ref": "insurer:example-ai-liability/trustai-vertical-packs/reference-underwriting/2026-07-12",
+    "requirement_id": "vertical-packs",
+    "source_uri": "https://insurer.example/exports/trustai/vertical-packs/reference-underwriting-review/2026-07-12"
+  },
+  "environment": "trustai-reference",
+  "evidence": {
+    "docs_specs_actuarial_corpus_v0_1_md": {
+      "path": "docs/specs/actuarial-corpus-v0.1.md",
+      "sha256": "sha256:2739060ddf87b4cf13f923eee86ce642caf2c4be7ccf47680cf2b918fd041d0b"
+    },
+    "docs_specs_actuarial_product_v0_1_md": {
+      "path": "docs/specs/actuarial-product-v0.1.md",
+      "sha256": "sha256:d038f6066ecac2699d2b537d2d44aa01bbc218681e98d8b51699761b44ead5db"
+    },
+    "docs_specs_insurer_consent_v0_1_md": {
+      "path": "docs/specs/insurer-consent-v0.1.md",
+      "sha256": "sha256:76b2f24d0b22855230f25b45e8abe572d6f156a66ec7b1494d76a8f838ad90f2"
+    },
+    "docs_specs_insurer_partner_production_authority_v0_1_md": {
+      "path": "docs/specs/insurer-partner-production-authority-v0.1.md",
+      "sha256": "sha256:0105c9860643099753feb92c1c9d7df6987943dfd7f7a6c43c0dd3e3778f48eb"
+    },
+    "docs_specs_insurer_partner_service_attestation_v0_1_md": {
+      "path": "docs/specs/insurer-partner-service-attestation-v0.1.md",
+      "sha256": "sha256:121aa9f8fbc609aba42054e2f6d5bc8c4946a2c2d7259b5d5b72851022ea419e"
+    },
+    "docs_specs_insurer_partner_worker_v0_1_md": {
+      "path": "docs/specs/insurer-partner-worker-v0.1.md",
+      "sha256": "sha256:99a2e181ad9fca0efa18c9a9a6bcf86cecd2c1123f85819103faed3d2895736b"
+    },
+    "docs_specs_underwriting_quote_v0_1_md": {
+      "path": "docs/specs/underwriting-quote-v0.1.md",
+      "sha256": "sha256:7dfcf89f3e38c64120b740a7b58f8ebc57ab35b1d9b6c4897275451141fe58ca"
+    },
+    "docs_specs_vertical_pack_v0_1_md": {
+      "path": "docs/specs/vertical-pack-v0.1.md",
+      "sha256": "sha256:d4b5abe7b7c969669640ee5d39915c9010836fee5a541da732721a06b39d6304"
+    },
+    "examples_aitrade_insurer_consent_json": {
+      "path": "examples/aitrade/insurer-consent.json",
+      "sha256": "sha256:e3af0da4eb4d15c34e5dce52c45c79a1d9bca891efce17216696cf44221f84f9"
+    },
+    "examples_aitrade_policy_pack_json": {
+      "path": "examples/aitrade/policy-pack.json",
+      "sha256": "sha256:6d51510af4f820caa12af234f06306ac7519c1d1009698c76a3e169352cda46f"
+    },
+    "src_trustai_actuarial_py": {
+      "path": "src/trustai/actuarial.py",
+      "sha256": "sha256:1121d760fbeac797593fbf9822bab547ca90a9b519218c806310a7743726a0b4"
+    },
+    "src_trustai_insurer_partner_authority_py": {
+      "path": "src/trustai/insurer_partner_authority.py",
+      "sha256": "sha256:c7969f9ac0ea746ea5f37252dd5738971c0a64d57b45c9b1f9ca82e403d65577"
+    },
+    "src_trustai_insurer_partner_service_py": {
+      "path": "src/trustai/insurer_partner_service.py",
+      "sha256": "sha256:be15fc7705e1007229ea60d4f602c5f741f1f7777450be487aeaa37f9df85bd4"
+    },
+    "src_trustai_insurer_partner_worker_py": {
+      "path": "src/trustai/insurer_partner_worker.py",
+      "sha256": "sha256:2d337567cac79163dd696413604c5fe878c54b999f6bde516d702648905619f5"
+    },
+    "src_trustai_insurer_py": {
+      "path": "src/trustai/insurer.py",
+      "sha256": "sha256:c3016d2490f7df6c9f429bf0e3f48a8f2a4805173b683ebbb06ab53725b3f8f1"
+    },
+    "src_trustai_underwriting_quote_py": {
+      "path": "src/trustai/underwriting_quote.py",
+      "sha256": "sha256:efb95f75de0eae14cc963832dd04f6d1a9cbed35f06d1e76f18afd9fd771e2f0"
+    },
+    "src_trustai_vertical_pack_py": {
+      "path": "src/trustai/vertical_pack.py",
+      "sha256": "sha256:ec006cda3cdbdb93e429f6c1824e304ccf3d453070a1f6771a24db05bb6493a5"
+    },
+    "tests_test_actuarial_product_py": {
+      "path": "tests/test_actuarial_product.py",
+      "sha256": "sha256:d807bb4549b790b28ac493364fecf5c6aa8453c734e5173f31d4693397ffd867"
+    },
+    "tests_test_consent_insurer_py": {
+      "path": "tests/test_consent_insurer.py",
+      "sha256": "sha256:fd815e98545100aa50104d35acec23ddda3443c783043f74a3a81d2b590a9047"
+    },
+    "tests_test_insurer_partner_authority_py": {
+      "path": "tests/test_insurer_partner_authority.py",
+      "sha256": "sha256:7b1f2a5b4c71156bb0e69cdf4896600f7cc4eee49a6a2e8047e3e8e176492e5a"
+    },
+    "tests_test_insurer_partner_service_py": {
+      "path": "tests/test_insurer_partner_service.py",
+      "sha256": "sha256:ab5e24a64f681ca45b9ca431b474de6fecac4752b6c2a8eaf5fccec4db40c803"
+    },
+    "tests_test_insurer_partner_worker_py": {
+      "path": "tests/test_insurer_partner_worker.py",
+      "sha256": "sha256:41f2460ba8750d1303262615ce33690d96407b714a2744d7a051902fb37548b0"
+    },
+    "tests_test_underwriting_quote_py": {
+      "path": "tests/test_underwriting_quote.py",
+      "sha256": "sha256:69e81648c5fb706441d91a441d5676fe4c13e1df86192baabd8ca17f964f706f"
+    },
+    "tests_test_vertical_pack_py": {
+      "path": "tests/test_vertical_pack.py",
+      "sha256": "sha256:0868857f720118c173f5bbfe07f7bee8364d1bec4b298d3045a07e3dabdb7c49"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "insurer_review": {
+    "accepted_controls": [
+      "vertical-pack templates disclose production-claim limits and required external evidence",
+      "insurance-claims pack binds consent, underwriting quote, and actuarial-product source artifacts",
+      "proof-pack telemetry can be used as underwriting evidence only with customer consent",
+      "coverage decisions require tenant-specific production proof packs and live incident telemetry",
+      "insurer review is represented as external authority evidence, not self-attestation"
+    ],
+    "actuarial_model_ref": "actuarial:model/agent-proof-pack-vertical-risk-v0.1",
+    "conditions": [
+      "no binding premium discount or policy coverage is claimed by this reference export",
+      "live policy issuance requires customer consent, underwriter quote approval, and deployment-specific loss controls",
+      "claims and healthcare verticals require regulator/legal review before production underwriting reliance"
+    ],
+    "quote_ref": "quote:example-ai-liability/trustai-vertical-pack-reference/2026-07-12",
+    "review_ref": "insurer:example-ai-liability/trustai-vertical-packs/2026-07-12",
+    "status": "accepted-for-reference-underwriting"
+  },
+  "issued_at": "2026-07-12T00:00:00Z",
+  "issuer": "Example AI Liability Underwriter",
+  "limitations": [
+    "This export records reference underwriting acceptance for TrustAI vertical-pack evidence only.",
+    "It does not claim live insurer pricing, premium discount, policy issuance, claims handling approval, or risk transfer.",
+    "Production underwriting requires customer-specific consent, fresh proof packs, live loss-control evidence, and external legal/regulatory review."
+  ],
+  "schema": "trustai.vertical-packs-insurer-authority-export/0.1",
+  "subject": "TrustAI vertical-pack underwriting reference review export",
+  "verified_controls": [
+    "insurer receipt binds vertical-pack source controls to underwriting and actuarial evidence surfaces",
+    "insurance claims vertical references consent, underwriting quote, actuarial product, and insurer authority implementations",
+    "risk classes remain separated by vertical and production-claim limits remain visible",
+    "fresh source snapshots are required before this retained export can satisfy strict evidence verification",
+    "reference acceptance does not imply live coverage, premium discount, or policy issuance"
+  ],
+  "vertical_pack_scope": {
+    "framework_refs": [
+      "SR 11-7",
+      "NAIC Model Bulletin",
+      "HIPAA",
+      "FDA SaMD-adjacent",
+      "FedRAMP path decision"
+    ],
+    "insured_risk_classes": [
+      "trading-prod-write",
+      "treasury-prod-write",
+      "claims-prod-write",
+      "underwriting-prod-write",
+      "healthcare-rcm-prod-write",
+      "public-sector-prod-write"
+    ],
+    "mode": "reference-underwriting-review",
+    "pack_refs": [
+      "vertical-pack:trading-treasury/local",
+      "vertical-pack:insurance-claims/local",
+      "vertical-pack:healthcare-rcm/local",
+      "vertical-pack:public-sector/local"
+    ]
+  }
+}
