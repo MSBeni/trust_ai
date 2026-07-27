@@ -29,6 +29,7 @@ EXTERNAL_EVIDENCE_WORK_PACKAGE_SCHEMA = "trustai.external-evidence-work-package/
 EXTERNAL_EVIDENCE_OWNER_PACKET_SCHEMA = "trustai.external-evidence-owner-packet-bundle/0.1"
 EXTERNAL_EVIDENCE_OWNER_PACKET_STATUS_SCHEMA = "trustai.external-evidence-owner-packet-status/0.1"
 EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_TEMPLATE_SCHEMA = "trustai.external-evidence-owner-fulfillment-template/0.1"
+EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_REVIEW_SCHEMA = "trustai.external-evidence-owner-fulfillment-review/0.1"
 EXTERNAL_EVIDENCE_READINESS_SCHEMA = "trustai.external-evidence-readiness/0.1"
 EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA = "trustai.external-evidence-git-remote-ref-export/0.1"
 
@@ -235,6 +236,13 @@ class ExternalEvidenceOwnerPacketStatusVerification:
 
 @dataclass
 class ExternalEvidenceOwnerFulfillmentTemplateVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class ExternalEvidenceOwnerFulfillmentReviewVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -2178,6 +2186,295 @@ def verify_external_evidence_owner_fulfillment_template(
     if summary.get("missing_intake_count"):
         warnings.append(f"owner fulfillment template contains {summary.get('missing_intake_count')} tasks without intake receipts")
     return ExternalEvidenceOwnerFulfillmentTemplateVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
+def _external_evidence_review_source_record(document: dict[str, Any], id_key: str, hash_key: str) -> dict[str, Any]:
+    return {
+        id_key: document.get(id_key),
+        hash_key: content_hash(document),
+        "schema": document.get("schema"),
+        "generated_at": document.get("generated_at"),
+    }
+
+
+def _verify_external_evidence_owner_fulfillment_submission(
+    template: dict[str, Any],
+    status_report: dict[str, Any],
+) -> ExternalEvidenceOwnerFulfillmentTemplateVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if template.get("schema") != EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_TEMPLATE_SCHEMA:
+        errors.append(f"unsupported external evidence owner fulfillment template schema: {template.get('schema')}")
+    if template.get("owner_fulfillment_template_id") != content_hash(without_keys(template, "owner_fulfillment_template_id")):
+        warnings.append("owner fulfillment template id is stale after owner edits; review records the submitted content hash")
+    source = template.get("source_owner_packet_status") if isinstance(template.get("source_owner_packet_status"), dict) else {}
+    if source.get("owner_packet_status_id") != status_report.get("owner_packet_status_id"):
+        errors.append("owner fulfillment template source owner_packet_status_id does not match supplied status report")
+    if source.get("owner_packet_status_hash") != content_hash(status_report):
+        errors.append("owner fulfillment template source owner_packet_status_hash does not match supplied status report")
+    filters = template.get("filters") if isinstance(template.get("filters"), dict) else {}
+    try:
+        expected = build_external_evidence_owner_fulfillment_template(
+            status_report,
+            owner_hint=filters.get("owner_hint"),
+            include_closed=bool(filters.get("include_closed")),
+            generated_at=str(template.get("generated_at") or ""),
+        )
+    except ValueError as exc:
+        errors.append(str(exc))
+        expected = None
+    if expected is not None:
+        stable_keys = ("owner_fulfillment_template_id", "summary", "fulfillments")
+        if without_keys(template, *stable_keys) != without_keys(expected, *stable_keys):
+            errors.append("owner fulfillment submission metadata does not match supplied owner packet status report")
+        expected_tasks = [str(item.get("task") or "") for item in expected.get("fulfillments", []) if isinstance(item, dict)]
+        actual_tasks = [str(item.get("task") or "") for item in template.get("fulfillments", []) if isinstance(item, dict)]
+        if sorted(actual_tasks) != sorted(expected_tasks):
+            errors.append("owner fulfillment submission tasks do not match supplied owner packet status report")
+    summary = template.get("summary", {}) if isinstance(template.get("summary"), dict) else {}
+    if summary.get("placeholder_source_uri_count"):
+        warnings.append(f"owner fulfillment template summary contains {summary.get('placeholder_source_uri_count')} placeholder source_uri values")
+    if summary.get("missing_intake_count"):
+        warnings.append(f"owner fulfillment template summary contains {summary.get('missing_intake_count')} tasks without intake receipts")
+    return ExternalEvidenceOwnerFulfillmentTemplateVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
+def _external_evidence_owner_fulfillment_review_task_records(
+    template: dict[str, Any],
+    fulfilled_source_map: dict[str, Any],
+) -> list[dict[str, Any]]:
+    assignments = template.get("assignments", [])
+    assignment_by_task: dict[str, dict[str, Any]] = {}
+    if isinstance(assignments, list):
+        for assignment in assignments:
+            if isinstance(assignment, dict):
+                task_ref = str(assignment.get("task") or "")
+                if task_ref:
+                    assignment_by_task[task_ref] = assignment
+
+    defaults = fulfilled_source_map.get("defaults", {})
+    if not isinstance(defaults, dict):
+        defaults = {}
+    records: list[dict[str, Any]] = []
+    entries = fulfilled_source_map.get("entries", [])
+    if not isinstance(entries, list):
+        return records
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        task_ref = str(entry.get("unit_ref") or entry.get("task") or "")
+        assignment = assignment_by_task.get(task_ref) or assignment_by_task.get(str(entry.get("task") or "")) or {}
+        source_uri = str(_source_map_effective_value(entry, defaults, "source_uri") or "")
+        is_placeholder = _source_map_is_placeholder_uri(source_uri)
+        blocking_reasons: list[str] = []
+        if is_placeholder:
+            blocking_reasons.append("placeholder-source-uri")
+        records.append(
+            {
+                "task": task_ref,
+                "owner_hint": assignment.get("owner_hint") or entry.get("owner_hint"),
+                "requirement_id": entry.get("requirement_id"),
+                "authority_kind": entry.get("authority_kind"),
+                "source_uri": source_uri,
+                "source_uri_status": "placeholder" if is_placeholder else "live",
+                "review_status": "blocked" if blocking_reasons else "ready-to-collect",
+                "blocking_reasons": blocking_reasons,
+                "snapshot_out": entry.get("snapshot_out"),
+                "intake_out": entry.get("intake_out"),
+            }
+        )
+    return records
+
+
+def _external_evidence_owner_fulfillment_review_blockers(
+    template_result: ExternalEvidenceOwnerFulfillmentTemplateVerification,
+    source_map_result: ExternalEvidenceSourceMapVerification,
+    placeholder_count: int,
+) -> list[str]:
+    blockers: list[str] = []
+    if not template_result.ok:
+        blockers.extend(f"owner fulfillment template: {error}" for error in template_result.errors)
+    if placeholder_count:
+        blockers.append(f"owner fulfillment review contains {placeholder_count} placeholder source_uri values")
+    if not source_map_result.ok:
+        blockers.extend(f"fulfilled source map: {error}" for error in source_map_result.errors)
+    return blockers
+
+
+def _external_evidence_owner_fulfillment_review_next_actions(review_status: str, placeholder_count: int) -> list[str]:
+    if placeholder_count:
+        return [
+            "Replace every placeholder source_uri in the owner fulfillment template with a live authority-owned URI.",
+            "Regenerate this review with --require-live-source-uris before collecting source snapshots.",
+            "After the fulfilled source map is ready, run external-evidence-collect-batch and rebuild the retained manifest from intake receipts.",
+        ]
+    if review_status == "ready-to-collect":
+        return [
+            "Run external-evidence-collect-batch with the reviewed fulfilled source map.",
+            "Verify source snapshots and intake receipts, then rebuild the external evidence manifest from intakes.",
+            "Regenerate external-evidence-readiness with --require-ready before claiming production authority coverage.",
+        ]
+    return [
+        "Resolve the fulfilled source-map verification errors in this review.",
+        "Regenerate this review after the owner fulfillment template and source map verify cleanly.",
+    ]
+
+
+def build_external_evidence_owner_fulfillment_review(
+    template: dict[str, Any],
+    status_report: dict[str, Any],
+    source_map: dict[str, Any],
+    plan: dict[str, Any],
+    *,
+    root: str | Path = ".",
+    require_live_source_uris: bool = False,
+    require_source_snapshots: bool = False,
+    require_fresh_source_snapshots: bool = False,
+    now: str | None = None,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    template_result = _verify_external_evidence_owner_fulfillment_submission(template, status_report)
+    if not template_result.ok:
+        raise ValueError("external evidence owner fulfillment submission is not valid for review: " + "; ".join(template_result.errors))
+    fulfilled_source_map = fulfill_external_evidence_source_map(
+        source_map,
+        template.get("fulfillments", []),
+        generated_at=generated_at,
+    )
+    source_map_result = verify_external_evidence_source_map_template(
+        fulfilled_source_map,
+        plan,
+        root=root,
+        require_live_source_uris=require_live_source_uris,
+        require_source_snapshots=require_source_snapshots,
+        require_fresh_source_snapshots=require_fresh_source_snapshots,
+        now=now,
+    )
+    fulfilled_summary = fulfilled_source_map.get("summary", {}) if isinstance(fulfilled_source_map.get("summary"), dict) else {}
+    template_summary = template.get("summary", {}) if isinstance(template.get("summary"), dict) else {}
+    task_reviews = _external_evidence_owner_fulfillment_review_task_records(template, fulfilled_source_map)
+    ready_task_count = sum(1 for task in task_reviews if task.get("review_status") == "ready-to-collect")
+    blocked_task_count = sum(1 for task in task_reviews if task.get("review_status") == "blocked")
+    placeholder_count = int(fulfilled_summary.get("placeholder_source_uri_count") or 0)
+    review_status = "ready-to-collect" if source_map_result.ok and blocked_task_count == 0 and placeholder_count == 0 else "blocked"
+    blockers = _external_evidence_owner_fulfillment_review_blockers(template_result, source_map_result, placeholder_count)
+    body = {
+        "schema": EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_REVIEW_SCHEMA,
+        "generated_at": generated_at or utc_now(),
+        "verification_options": {
+            "require_live_source_uris": require_live_source_uris,
+            "require_source_snapshots": require_source_snapshots,
+            "require_fresh_source_snapshots": require_fresh_source_snapshots,
+            "now": now,
+        },
+        "sources": {
+            "owner_fulfillment_template": _external_evidence_review_source_record(
+                template,
+                "owner_fulfillment_template_id",
+                "owner_fulfillment_template_hash",
+            ),
+            "owner_packet_status": _external_evidence_review_source_record(
+                status_report,
+                "owner_packet_status_id",
+                "owner_packet_status_hash",
+            ),
+            "source_map": _external_evidence_review_source_record(source_map, "source_map_id", "source_map_hash"),
+            "collection_plan": _external_evidence_review_source_record(plan, "plan_id", "plan_hash"),
+        },
+        "summary": {
+            "review_status": review_status,
+            "fulfillment_count": int(template_summary.get("fulfillment_count") or len(template.get("fulfillments", []))),
+            "owner_count": int(template_summary.get("owner_count") or 0),
+            "ready_task_count": ready_task_count,
+            "blocked_task_count": blocked_task_count,
+            "placeholder_source_uri_count": placeholder_count,
+            "live_source_uri_count": int(fulfilled_summary.get("live_source_uri_count") or 0),
+            "source_map_entry_count": int(fulfilled_summary.get("entry_count") or len(task_reviews)),
+            "template_verification_ok": template_result.ok,
+            "fulfilled_source_map_verification_ok": source_map_result.ok,
+            "error_count": len(source_map_result.errors),
+            "warning_count": len(template_result.warnings) + len(source_map_result.warnings),
+        },
+        "fulfilled_source_map": fulfilled_source_map,
+        "task_reviews": task_reviews,
+        "verification": {
+            "template_warnings": template_result.warnings,
+            "fulfilled_source_map_errors": source_map_result.errors,
+            "fulfilled_source_map_warnings": source_map_result.warnings,
+        },
+        "blockers": blockers,
+        "next_actions": _external_evidence_owner_fulfillment_review_next_actions(review_status, placeholder_count),
+        "commands": {
+            "review_fulfillment": "python -m trustai external-evidence-owner-fulfillment-review <template.json> <status-report.json> <source-map.json> <plan.json> --require-live-source-uris --out <review.json> --fulfilled-source-map-out <fulfilled-source-map.json>",
+            "collect_after_ready_review": "python -m trustai external-evidence-collect-batch <fulfilled-source-map.json> <manifest.json> <roadmap-audit.json> --root . --require-live-source-uris",
+            "verify_ready_review": "python -m trustai external-evidence-owner-fulfillment-review-verify <review.json> <template.json> <status-report.json> <source-map.json> <plan.json> --require-ready",
+        },
+        "limitations": [
+            "This review proves owner fulfillment readiness for collection only; it does not prove authority evidence has been collected.",
+            "A ready review still requires source snapshot collection, intake verification, manifest rebuild, and production readiness verification.",
+            "Placeholder source URIs intentionally keep the review blocked until owners supply live authority sources.",
+        ],
+    }
+    return {**body, "owner_fulfillment_review_id": content_hash(body)}
+
+
+def verify_external_evidence_owner_fulfillment_review(
+    review: dict[str, Any],
+    template: dict[str, Any],
+    status_report: dict[str, Any],
+    source_map: dict[str, Any],
+    plan: dict[str, Any],
+    *,
+    root: str | Path = ".",
+    require_live_source_uris: bool = False,
+    require_source_snapshots: bool = False,
+    require_fresh_source_snapshots: bool = False,
+    now: str | None = None,
+    require_ready: bool = False,
+) -> ExternalEvidenceOwnerFulfillmentReviewVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if review.get("schema") != EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_REVIEW_SCHEMA:
+        errors.append(f"unsupported external evidence owner fulfillment review schema: {review.get('schema')}")
+    if review.get("owner_fulfillment_review_id") != content_hash(without_keys(review, "owner_fulfillment_review_id")):
+        errors.append("owner_fulfillment_review_id does not match canonical owner fulfillment review body")
+    expected_options = {
+        "require_live_source_uris": require_live_source_uris,
+        "require_source_snapshots": require_source_snapshots,
+        "require_fresh_source_snapshots": require_fresh_source_snapshots,
+        "now": now,
+    }
+    if review.get("verification_options") != expected_options:
+        errors.append("verification_options do not match verifier options")
+    try:
+        expected = build_external_evidence_owner_fulfillment_review(
+            template,
+            status_report,
+            source_map,
+            plan,
+            root=root,
+            require_live_source_uris=require_live_source_uris,
+            require_source_snapshots=require_source_snapshots,
+            require_fresh_source_snapshots=require_fresh_source_snapshots,
+            now=now,
+            generated_at=str(review.get("generated_at") or ""),
+        )
+    except ValueError as exc:
+        errors.append(str(exc))
+    else:
+        if without_keys(review, "owner_fulfillment_review_id") != without_keys(expected, "owner_fulfillment_review_id"):
+            errors.append("owner fulfillment review body does not match supplied template, status report, source map, and plan")
+    summary = review.get("summary", {}) if isinstance(review.get("summary"), dict) else {}
+    verification = review.get("verification", {}) if isinstance(review.get("verification"), dict) else {}
+    warnings.extend(verification.get("template_warnings", []) if isinstance(verification.get("template_warnings"), list) else [])
+    warnings.extend(verification.get("fulfilled_source_map_warnings", []) if isinstance(verification.get("fulfilled_source_map_warnings"), list) else [])
+    if summary.get("placeholder_source_uri_count"):
+        warnings.append(f"owner fulfillment review contains {summary.get('placeholder_source_uri_count')} placeholder source_uri values")
+    if require_ready and summary.get("review_status") != "ready-to-collect":
+        errors.append("owner fulfillment review is not ready to collect")
+    return ExternalEvidenceOwnerFulfillmentReviewVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
 def _external_evidence_readiness_check(check_id: str, ok: bool, summary: str) -> dict[str, Any]:
     return {"id": check_id, "status": "passed" if ok else "failed", "summary": summary}
 
@@ -3745,6 +4042,24 @@ def write_external_evidence_owner_fulfillment_template_markdown(path: str | Path
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(render_external_evidence_owner_fulfillment_template_markdown(template), encoding="utf-8")
+
+
+def write_external_evidence_owner_fulfillment_review(path: str | Path, review: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(review, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_external_evidence_owner_fulfillment_review(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def write_external_evidence_owner_fulfillment_review_markdown(path: str | Path, review: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_external_evidence_owner_fulfillment_review_markdown(review), encoding="utf-8")
+
+
 def write_external_evidence_readiness_report(path: str | Path, report: dict[str, Any]) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -4124,6 +4439,83 @@ def render_external_evidence_owner_fulfillment_template_markdown(template: dict[
     else:
         lines.append("- None")
     return "\n".join(lines).rstrip() + "\n"
+
+
+def render_external_evidence_owner_fulfillment_review_markdown(review: dict[str, Any]) -> str:
+    summary = review.get("summary", {}) if isinstance(review.get("summary"), dict) else {}
+    lines = [
+        "# External Evidence Owner Fulfillment Review",
+        "",
+        f"- Review ID: `{review.get('owner_fulfillment_review_id')}`",
+        f"- Generated at: `{review.get('generated_at')}`",
+        f"- Status: `{summary.get('review_status')}`",
+        f"- Fulfillments: {summary.get('fulfillment_count', 0)}",
+        f"- Owners: {summary.get('owner_count', 0)}",
+        f"- Ready tasks: {summary.get('ready_task_count', 0)}",
+        f"- Blocked tasks: {summary.get('blocked_task_count', 0)}",
+        f"- Placeholder source URIs: {summary.get('placeholder_source_uri_count', 0)}",
+        f"- Live source URIs: {summary.get('live_source_uri_count', 0)}",
+        "",
+        "## Task Review",
+        "",
+        "| Task | Owner | Status | Source URI | Blocking Reasons |",
+        "|---|---|---|---|---|",
+    ]
+    tasks = review.get("task_reviews", [])
+    if isinstance(tasks, list):
+        for task in tasks:
+            if not isinstance(task, dict):
+                continue
+            reasons = task.get("blocking_reasons", []) if isinstance(task.get("blocking_reasons"), list) else []
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        f"`{_markdown_cell(task.get('task'))}`",
+                        _markdown_cell(task.get("owner_hint")),
+                        _markdown_cell(task.get("review_status")),
+                        _markdown_cell(task.get("source_uri")),
+                        _markdown_code_list(reasons),
+                    ]
+                )
+                + " |"
+            )
+    verification = review.get("verification", {}) if isinstance(review.get("verification"), dict) else {}
+    lines.extend(["", "## Verification", ""])
+    errors = verification.get("fulfilled_source_map_errors", []) if isinstance(verification.get("fulfilled_source_map_errors"), list) else []
+    warnings = verification.get("fulfilled_source_map_warnings", []) if isinstance(verification.get("fulfilled_source_map_warnings"), list) else []
+    lines.append(f"- Fulfilled source map errors: {len(errors)}")
+    lines.append(f"- Fulfilled source map warnings: {len(warnings)}")
+    if errors:
+        lines.extend(f"  - {_markdown_cell(error)}" for error in errors)
+    blockers = review.get("blockers", [])
+    lines.extend(["", "## Blockers", ""])
+    if isinstance(blockers, list) and blockers:
+        lines.extend(f"- {_markdown_cell(blocker)}" for blocker in blockers)
+    else:
+        lines.append("- None")
+    next_actions = review.get("next_actions", [])
+    lines.extend(["", "## Next Actions", ""])
+    if isinstance(next_actions, list) and next_actions:
+        lines.extend(f"- {_markdown_cell(action)}" for action in next_actions)
+    else:
+        lines.append("- None")
+    commands = review.get("commands", {}) if isinstance(review.get("commands"), dict) else {}
+    lines.extend(["", "## Commands", ""])
+    if commands:
+        for key, command in commands.items():
+            lines.append(f"- {key}: `{_markdown_cell(command)}`")
+    else:
+        lines.append("- None")
+    limitations = review.get("limitations", [])
+    lines.extend(["", "## Limitations", ""])
+    if isinstance(limitations, list) and limitations:
+        lines.extend(f"- {_markdown_cell(item)}" for item in limitations)
+    else:
+        lines.append("- None")
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def render_external_evidence_readiness_markdown(report: dict[str, Any]) -> str:
     summary = report.get("summary", {}) if isinstance(report.get("summary"), dict) else {}
     lines = [

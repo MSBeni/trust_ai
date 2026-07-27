@@ -5,7 +5,7 @@
     "Source URIs marked TODO or placeholder must be replaced with authority-owned source exports before collection.",
     "Packet completion is proven only by verified source snapshots, intake receipts, rebuilt manifests, and readiness reports."
   ],
-  "owner_packet_bundle_id": "4cea59055abf5e1581c75af762116b3ca78edd76f6c875319afb2169ea03530e",
+  "owner_packet_bundle_id": "b0dd0fe5c53973a7bebf8900fa65869f469df483d24a291c8600f332d9c33aea",
   "packets": [
     {
       "authority_kinds": [
@@ -5708,8 +5708,8 @@
   "source_work_package": {
     "generated_at": "2026-07-12T00:01:00Z",
     "group_by": "owner_hint",
-    "work_package_hash": "92d40cf7ac6011f7838c53dd765303a5fb05f396e2efd8deb3438bda54879c07",
-    "work_package_id": "c9c0d38c85e35c1bcedf713fdb072a38e27b3ace46007325584c3588af5f45c6"
+    "work_package_hash": "90532579ca11679309da6702a6517f50231e70c00eb2ede3c80c57bbbc32a738",
+    "work_package_id": "ac5fceae39c763ec5ec25ee3c861f9e7b779e0e4df8a3d9be551b6a5052bb129"
   },
   "summary": {
     "covered_task_count": 0,

@@ -25,6 +25,7 @@ from trustai.external_evidence import (
     EXTERNAL_EVIDENCE_OWNER_PACKET_SCHEMA,
     EXTERNAL_EVIDENCE_OWNER_PACKET_STATUS_SCHEMA,
     EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_TEMPLATE_SCHEMA,
+    EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_REVIEW_SCHEMA,
     EXTERNAL_EVIDENCE_READINESS_SCHEMA,
     EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA,
     ROADMAP_EVIDENCE_REPORT_SCHEMA,
@@ -41,6 +42,7 @@ from trustai.external_evidence import (
     build_external_evidence_owner_packets,
     build_external_evidence_owner_packet_status,
     build_external_evidence_owner_fulfillment_template,
+    build_external_evidence_owner_fulfillment_review,
     build_external_evidence_readiness_report,
     build_external_evidence_intake,
     build_external_evidence_source_snapshot,
@@ -58,6 +60,7 @@ from trustai.external_evidence import (
     load_external_evidence_owner_packets,
     load_external_evidence_owner_packet_status,
     load_external_evidence_owner_fulfillment_template,
+    load_external_evidence_owner_fulfillment_review,
     load_external_evidence_readiness_report,
     load_external_evidence_intake,
     load_external_evidence_intakes,
@@ -72,6 +75,7 @@ from trustai.external_evidence import (
     render_external_evidence_owner_packets_markdown,
     render_external_evidence_owner_packet_status_markdown,
     render_external_evidence_owner_fulfillment_template_markdown,
+    render_external_evidence_owner_fulfillment_review_markdown,
     render_external_evidence_readiness_markdown,
     render_roadmap_evidence_markdown,
     render_roadmap_evidence_bundle_markdown,
@@ -81,6 +85,7 @@ from trustai.external_evidence import (
     verify_external_evidence_owner_packets,
     verify_external_evidence_owner_packet_status,
     verify_external_evidence_owner_fulfillment_template,
+    verify_external_evidence_owner_fulfillment_review,
     verify_external_evidence_readiness_report,
     verify_external_evidence_collection_plan,
     verify_external_evidence_source_map_template,
@@ -841,6 +846,75 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         )
         self.assertTrue(verify_external_evidence_source_map_template(fulfilled_from_template, plan).ok)
 
+        fulfillment_review = build_external_evidence_owner_fulfillment_review(
+            fulfillment_template,
+            status_report,
+            source_map,
+            plan,
+            root=ROOT,
+            require_live_source_uris=True,
+            generated_at="2026-07-09T00:08:00Z",
+        )
+        fulfillment_review_result = verify_external_evidence_owner_fulfillment_review(
+            fulfillment_review,
+            fulfillment_template,
+            status_report,
+            source_map,
+            plan,
+            root=ROOT,
+            require_live_source_uris=True,
+        )
+        fulfillment_review_markdown = render_external_evidence_owner_fulfillment_review_markdown(fulfillment_review)
+        self.assertEqual(EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_REVIEW_SCHEMA, fulfillment_review["schema"])
+        self.assertTrue(fulfillment_review_result.ok, fulfillment_review_result.errors)
+        self.assertEqual("blocked", fulfillment_review["summary"]["review_status"])
+        self.assertFalse(fulfillment_review["summary"]["fulfilled_source_map_verification_ok"])
+        self.assertEqual(fulfillment_template["summary"]["fulfillment_count"], fulfillment_review["summary"]["blocked_task_count"])
+        self.assertEqual(fulfillment_template["summary"]["fulfillment_count"], fulfillment_review["summary"]["placeholder_source_uri_count"])
+        self.assertIn("External Evidence Owner Fulfillment Review", fulfillment_review_markdown)
+        self.assertTrue(any("placeholder" in blocker for blocker in fulfillment_review["blockers"]), fulfillment_review["blockers"])
+        strict_fulfillment_review_result = verify_external_evidence_owner_fulfillment_review(
+            fulfillment_review,
+            fulfillment_template,
+            status_report,
+            source_map,
+            plan,
+            root=ROOT,
+            require_live_source_uris=True,
+            require_ready=True,
+        )
+        self.assertFalse(strict_fulfillment_review_result.ok)
+
+        filled_template = copy.deepcopy(fulfillment_template)
+        for item in filled_template["fulfillments"]:
+            task_slug = str(item["task"]).replace(":", "/")
+            item["source_uri"] = f"https://authority.trustai.local/live/{task_slug}.json"
+        filled_review = build_external_evidence_owner_fulfillment_review(
+            filled_template,
+            status_report,
+            source_map,
+            plan,
+            root=ROOT,
+            require_live_source_uris=True,
+            generated_at="2026-07-09T00:09:00Z",
+        )
+        filled_review_result = verify_external_evidence_owner_fulfillment_review(
+            filled_review,
+            filled_template,
+            status_report,
+            source_map,
+            plan,
+            root=ROOT,
+            require_live_source_uris=True,
+            require_ready=True,
+        )
+        self.assertTrue(filled_review_result.ok, filled_review_result.errors)
+        self.assertEqual("ready-to-collect", filled_review["summary"]["review_status"])
+        self.assertTrue(filled_review["summary"]["fulfilled_source_map_verification_ok"])
+        self.assertEqual(0, filled_review["summary"]["placeholder_source_uri_count"])
+        self.assertEqual(fulfillment_template["summary"]["fulfillment_count"], filled_review["summary"]["ready_task_count"])
+        self.assertTrue(any("stale" in warning for warning in filled_review["verification"]["template_warnings"]), filled_review["verification"])
+
         filtered_template = build_external_evidence_owner_fulfillment_template(
             status_report,
             owner_hint=fulfillment_template["summary"]["owners"][0],
@@ -874,6 +948,9 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             status_markdown_path = tmp_path / "owner-packet-status.md"
             fulfillment_template_path = tmp_path / "owner-fulfillment-template.json"
             fulfillment_markdown_path = tmp_path / "owner-fulfillment-template.md"
+            fulfillment_review_path = tmp_path / "owner-fulfillment-review.json"
+            fulfillment_review_markdown_path = tmp_path / "owner-fulfillment-review.md"
+            reviewed_source_map_path = tmp_path / "source-map-reviewed.json"
             fulfilled_source_map_path = tmp_path / "source-map-fulfilled.json"
             work_package_path.write_text(json.dumps(work_package, indent=2, sort_keys=True), encoding="utf-8")
             plan_path.write_text(json.dumps(plan, indent=2, sort_keys=True), encoding="utf-8")
@@ -1002,6 +1079,75 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             )
             cli_fulfilled_source_map = json.loads(fulfilled_source_map_path.read_text(encoding="utf-8"))
             self.assertTrue(verify_external_evidence_source_map_template(cli_fulfilled_source_map, plan).ok)
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-owner-fulfillment-review",
+                    str(fulfillment_template_path),
+                    str(status_path),
+                    str(source_map_path),
+                    str(plan_path),
+                    "--root",
+                    str(ROOT),
+                    "--require-live-source-uris",
+                    "--generated-at",
+                    "2026-07-09T00:08:00Z",
+                    "--out",
+                    str(fulfillment_review_path),
+                    "--markdown",
+                    str(fulfillment_review_markdown_path),
+                    "--fulfilled-source-map-out",
+                    str(reviewed_source_map_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            cli_fulfillment_review = load_external_evidence_owner_fulfillment_review(fulfillment_review_path)
+            self.assertEqual(fulfillment_review, cli_fulfillment_review)
+            self.assertTrue(fulfillment_review_markdown_path.exists())
+            self.assertEqual(fulfillment_review["fulfilled_source_map"], json.loads(reviewed_source_map_path.read_text(encoding="utf-8")))
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-owner-fulfillment-review-verify",
+                    str(fulfillment_review_path),
+                    str(fulfillment_template_path),
+                    str(status_path),
+                    str(source_map_path),
+                    str(plan_path),
+                    "--root",
+                    str(ROOT),
+                    "--require-live-source-uris",
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            strict_review = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-owner-fulfillment-review-verify",
+                    str(fulfillment_review_path),
+                    str(fulfillment_template_path),
+                    str(status_path),
+                    str(source_map_path),
+                    str(plan_path),
+                    "--root",
+                    str(ROOT),
+                    "--require-live-source-uris",
+                    "--require-ready",
+                ],
+                cwd=ROOT,
+                check=False,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            self.assertNotEqual(0, strict_review.returncode)
 
     def test_external_evidence_readiness_reports_not_ready_and_strict_cli_fails(self):
         audit = build_roadmap_audit(ROOT)

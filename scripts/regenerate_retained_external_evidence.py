@@ -235,6 +235,24 @@ def refresh_retained_artifacts() -> None:
         path("remaining-external-evidence-owner-fulfillment-template.md"),
     )
     run(
+        "external-evidence-owner-fulfillment-review",
+        path("remaining-external-evidence-owner-fulfillment-template.json"),
+        path("remaining-external-evidence-owner-packet-status.json"),
+        path("remaining-external-evidence-source-map-template.json"),
+        path("remaining-external-evidence-plan.json"),
+        "--root",
+        ".",
+        "--require-live-source-uris",
+        "--generated-at",
+        COLLECTION_TIME,
+        "--out",
+        path("remaining-external-evidence-owner-fulfillment-review.json"),
+        "--markdown",
+        path("remaining-external-evidence-owner-fulfillment-review.md"),
+        "--fulfilled-source-map-out",
+        path("remaining-external-evidence-owner-fulfilled-source-map.json"),
+    )
+    run(
         "external-evidence-readiness",
         path("retained-external-evidence-gap-report.json"),
         path("retained-external-evidence-manifest.json"),
@@ -498,6 +516,17 @@ def verify_retained_artifacts() -> None:
         path("remaining-external-evidence-owner-packet-status.json"),
     )
     run(
+        "external-evidence-owner-fulfillment-review-verify",
+        path("remaining-external-evidence-owner-fulfillment-review.json"),
+        path("remaining-external-evidence-owner-fulfillment-template.json"),
+        path("remaining-external-evidence-owner-packet-status.json"),
+        path("remaining-external-evidence-source-map-template.json"),
+        path("remaining-external-evidence-plan.json"),
+        "--root",
+        ".",
+        "--require-live-source-uris",
+    )
+    run(
         "external-evidence-readiness-verify",
         path("retained-external-evidence-readiness.json"),
         path("retained-external-evidence-gap-report.json"),
@@ -523,6 +552,8 @@ def assert_retained_counts() -> None:
     owner_packets = json_load(DIR / "remaining-external-evidence-owner-packets.json")
     owner_packet_status = json_load(DIR / "remaining-external-evidence-owner-packet-status.json")
     owner_fulfillment_template = json_load(DIR / "remaining-external-evidence-owner-fulfillment-template.json")
+    owner_fulfillment_review = json_load(DIR / "remaining-external-evidence-owner-fulfillment-review.json")
+    owner_fulfilled_source_map = json_load(DIR / "remaining-external-evidence-owner-fulfilled-source-map.json")
     readiness = json_load(DIR / "retained-external-evidence-readiness.json")
     checks = [
         (manifest["summary"]["covered_authority_kind_count"], 3, "manifest covered authority kind count"),
@@ -541,6 +572,11 @@ def assert_retained_counts() -> None:
         (owner_packet_status["summary"]["blocked_task_count"], 68, "owner packet status blocked task count"),
         (owner_fulfillment_template["summary"]["fulfillment_count"], 68, "owner fulfillment template count"),
         (owner_fulfillment_template["summary"]["placeholder_source_uri_count"], 68, "owner fulfillment template placeholder URI count"),
+        (owner_fulfillment_review["summary"]["review_status"], "blocked", "owner fulfillment review status"),
+        (owner_fulfillment_review["summary"]["blocked_task_count"], 68, "owner fulfillment review blocked task count"),
+        (owner_fulfillment_review["summary"]["placeholder_source_uri_count"], 68, "owner fulfillment review placeholder URI count"),
+        (owner_fulfillment_review["summary"]["fulfilled_source_map_verification_ok"], False, "owner fulfillment review source-map verification status"),
+        (owner_fulfilled_source_map["summary"]["placeholder_source_uri_count"], 68, "owner fulfilled source-map placeholder URI count"),
         (readiness["summary"]["readiness_status"], "not-ready", "readiness status"),
     ]
     for actual, expected, label in checks:
