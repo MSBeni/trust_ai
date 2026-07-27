@@ -1,13 +1,13 @@
 # External Evidence Owner Fulfillment Closure
 
-- Closure ID: `5a8bc2cd7977c8c05ca2f45186edad0452cf746ffa6597675188b151be1dddcb`
+- Closure ID: `7ba35286688b583b4c72c796f2b8fa22eff429fa6dbe469194138ebd940d18f7`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Closed tasks: 0/66
-- Missing intakes: 66
+- Closed tasks: 0/64
+- Missing intakes: 64
 - Invalid intake tasks: 0
-- Missing manifest coverage: 66
-- Placeholder source URIs: 66
+- Missing manifest coverage: 64
+- Placeholder source URIs: 64
 
 ## Task Closure
 
@@ -30,8 +30,6 @@
 | `design-partner-pilot-exit-criteria:insurer` | risk/insurance owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `design-partner-pilot-exit-criteria:customer` | customer success/account owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `framework-adapters:ci-run` | release engineering | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
-| `framework-adapters:provider-api` | integration/platform owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
-| `framework-adapters:hosted-service` | service owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `auditor-and-review-portal:kms-hsm` | security/platform KMS owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `auditor-and-review-portal:provider-api` | integration/platform owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `auditor-and-review-portal:hosted-service` | service owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
@@ -82,9 +80,9 @@
 
 ## Blockers
 
-- 66 reviewed tasks still use placeholder source_uri values
-- 66 reviewed tasks do not have intake receipts
-- 66 reviewed tasks are not covered by the rebuilt manifest
+- 64 reviewed tasks still use placeholder source_uri values
+- 64 reviewed tasks do not have intake receipts
+- 64 reviewed tasks are not covered by the rebuilt manifest
 
 ## Next Actions
 

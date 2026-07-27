@@ -1884,11 +1884,15 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         hosted_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/github-hosted-service-source-snapshot.json")
         cicd_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/github-check-suite-source-snapshot.json")
         cicd_provider_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/github-audit-log-source-snapshot.json")
+        framework_provider_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/framework-hook-release-provider-api-source-snapshot.json")
+        framework_hosted_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/framework-hook-release-hosted-service-source-snapshot.json")
         ci_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/oss-verifier-ci-run.json")
         provider_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/oss-verifier-provider-api.json")
         hosted_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/oss-verifier-hosted-service.json")
         cicd_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/cicd-provider-approvals-ci-run.json")
         cicd_provider_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/cicd-provider-approvals-provider-api.json")
+        framework_provider_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/framework-adapters-provider-api.json")
+        framework_hosted_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/framework-adapters-hosted-service.json")
 
         audit_result = verify_roadmap_audit(audit, root=ROOT)
         manifest_result = verify_external_evidence_manifest(
@@ -1927,7 +1931,15 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 require_fresh=True,
                 now="2026-07-12T00:00:00Z",
             )
-            for snapshot in (ci_snapshot, provider_snapshot, hosted_snapshot, cicd_snapshot, cicd_provider_snapshot)
+            for snapshot in (
+                ci_snapshot,
+                provider_snapshot,
+                hosted_snapshot,
+                cicd_snapshot,
+                cicd_provider_snapshot,
+                framework_provider_snapshot,
+                framework_hosted_snapshot,
+            )
         ]
         intake_results = [
             verify_external_evidence_intake(
@@ -1941,14 +1953,30 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 require_fresh_source_snapshot_artifacts=True,
                 now="2026-07-12T00:00:00Z",
             )
-            for intake in (ci_intake, provider_intake, hosted_intake, cicd_intake, cicd_provider_intake)
+            for intake in (
+                ci_intake,
+                provider_intake,
+                hosted_intake,
+                cicd_intake,
+                cicd_provider_intake,
+                framework_provider_intake,
+                framework_hosted_intake,
+            )
         ]
         rebuilt = build_external_evidence_manifest_from_intakes(
             plan,
             manifest,
             audit,
             root=ROOT,
-            intakes=[ci_intake, provider_intake, hosted_intake, cicd_intake, cicd_provider_intake],
+            intakes=[
+                ci_intake,
+                provider_intake,
+                hosted_intake,
+                cicd_intake,
+                cicd_provider_intake,
+                framework_provider_intake,
+                framework_hosted_intake,
+            ],
             require_fresh=True,
             require_source_snapshot_artifacts=True,
             require_fresh_source_snapshot_artifacts=True,
@@ -1979,31 +2007,41 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual("provider-api", cicd_provider_intake["task"]["authority_kind"])
         self.assertEqual("file-copy", cicd_provider_snapshot["retrieval_method"])
         self.assertEqual("sha256:" + sha256((ROOT / "examples/webhooks/github-audit-log.json").read_bytes()).hexdigest(), cicd_provider_snapshot["body_sha256"])
+        self.assertEqual("examples/aitrade/external-evidence/framework-hook-release-provider-api-source-snapshot.json", framework_provider_intake["evidence_item"]["path"])
+        self.assertEqual("framework-adapters", framework_provider_intake["task"]["requirement_id"])
+        self.assertEqual("provider-api", framework_provider_intake["task"]["authority_kind"])
+        self.assertEqual("file-copy", framework_provider_snapshot["retrieval_method"])
+        self.assertEqual("sha256:" + sha256((ROOT / "examples/aitrade/framework-hook-release.json").read_bytes()).hexdigest(), framework_provider_snapshot["body_sha256"])
+        self.assertEqual("examples/aitrade/external-evidence/framework-hook-release-hosted-service-source-snapshot.json", framework_hosted_intake["evidence_item"]["path"])
+        self.assertEqual("framework-adapters", framework_hosted_intake["task"]["requirement_id"])
+        self.assertEqual("hosted-service", framework_hosted_intake["task"]["authority_kind"])
+        self.assertEqual("file-copy", framework_hosted_snapshot["retrieval_method"])
+        self.assertEqual("sha256:" + sha256((ROOT / "examples/aitrade/framework-hook-release.json").read_bytes()).hexdigest(), framework_hosted_snapshot["body_sha256"])
         for snapshot in (provider_snapshot, hosted_snapshot):
             self.assertEqual("git-ls-remote", snapshot["retrieval_method"])
             export = json.loads(base64.b64decode(snapshot["body_base64"]).decode("utf-8"))
             self.assertEqual("trustai.external-evidence-git-remote-ref-export/0.1", export["schema"])
         self.assertEqual(71, rebuilt["summary"]["required_authority_kind_count"])
-        self.assertEqual(5, rebuilt["summary"]["covered_authority_kind_count"])
-        self.assertEqual(66, rebuilt["summary"]["missing_authority_kind_count"])
+        self.assertEqual(7, rebuilt["summary"]["covered_authority_kind_count"])
+        self.assertEqual(64, rebuilt["summary"]["missing_authority_kind_count"])
         self.assertEqual(retained_manifest["summary"], rebuilt["summary"])
-        self.assertEqual(66, remaining_plan["summary"]["selected_task_count"])
-        self.assertEqual(66, remaining_plan["summary"]["selected_missing_task_count"])
+        self.assertEqual(64, remaining_plan["summary"]["selected_task_count"])
+        self.assertEqual(64, remaining_plan["summary"]["selected_missing_task_count"])
         self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA, source_map["schema"])
         self.assertEqual(content_hash(without_keys(source_map, "source_map_id")), source_map["source_map_id"])
-        self.assertEqual(66, source_map["summary"]["entry_count"])
-        self.assertEqual(66, source_map["summary"]["placeholder_source_uri_count"])
+        self.assertEqual(64, source_map["summary"]["entry_count"])
+        self.assertEqual(64, source_map["summary"]["placeholder_source_uri_count"])
         self.assertEqual(0, source_map["summary"]["live_source_uri_count"])
         self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA, collected_source_map["schema"])
         self.assertEqual(content_hash(without_keys(collected_source_map, "source_map_id")), collected_source_map["source_map_id"])
-        self.assertEqual(5, collected_source_map["summary"]["entry_count"])
+        self.assertEqual(7, collected_source_map["summary"]["entry_count"])
         self.assertEqual(0, collected_source_map["summary"]["placeholder_source_uri_count"])
-        self.assertEqual(5, collected_source_map["summary"]["live_source_uri_count"])
+        self.assertEqual(7, collected_source_map["summary"]["live_source_uri_count"])
         self.assertEqual(EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA, collection_run["schema"])
         self.assertEqual(content_hash(without_keys(collection_run, "run_id")), collection_run["run_id"])
         self.assertEqual(content_hash(collected_source_map), collection_run["source_map"]["source_map_hash"])
-        self.assertEqual(5, collection_run["summary"]["collected_count"])
-        self.assertEqual(5, collection_run_result.collected_count)
+        self.assertEqual(7, collection_run["summary"]["collected_count"])
+        self.assertEqual(7, collection_run_result.collected_count)
         self.assertEqual(
             ["ci-run", "provider-api", "hosted-service"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["oss-verifier-and-public-spec"],
@@ -2011,6 +2049,10 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual(
             ["ci-run", "provider-api"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["cicd-provider-approvals"],
+        )
+        self.assertEqual(
+            ["provider-api", "hosted-service"],
+            rebuilt["summary"]["covered_authority_kinds_by_requirement"]["framework-adapters"],
         )
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_path = Path(tmp_dir)
@@ -2051,8 +2093,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertEqual(collection_run["run_id"], collection_payload["run_id"])
             self.assertEqual(content_hash(collection_run), collection_payload["run_hash"])
             self.assertEqual(content_hash(collected_source_map), collection_payload["source_map_hash"])
-            self.assertEqual(5, collection_payload["collected_count"])
-            self.assertEqual(5, collection_payload["task_count"])
+            self.assertEqual(7, collection_payload["collected_count"])
+            self.assertEqual(7, collection_payload["task_count"])
             self.assertTrue(collection_payload["require_live_source_uris"])
             self.assertTrue(collection_payload["require_source_snapshot_artifacts"])
             self.assertTrue(collection_payload["require_fresh_source_snapshot_artifacts"])
@@ -2125,6 +2167,16 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     "description": "Retained CI/CD provider API audit-log source snapshot",
                 },
                 {
+                    "kind": "external-evidence-source-snapshot",
+                    "path": "examples/aitrade/external-evidence/framework-hook-release-provider-api-source-snapshot.json",
+                    "description": "Retained framework adapter provider API source snapshot",
+                },
+                {
+                    "kind": "external-evidence-source-snapshot",
+                    "path": "examples/aitrade/external-evidence/framework-hook-release-hosted-service-source-snapshot.json",
+                    "description": "Retained framework adapter hosted-service source snapshot",
+                },
+                {
                     "kind": "external-evidence-intake",
                     "path": "examples/aitrade/external-evidence/intakes/oss-verifier-ci-run.json",
                     "description": "Retained CI intake receipt",
@@ -2149,6 +2201,16 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     "path": "examples/aitrade/external-evidence/intakes/cicd-provider-approvals-provider-api.json",
                     "description": "Retained CI/CD provider API audit-log intake receipt",
                 },
+                {
+                    "kind": "external-evidence-intake",
+                    "path": "examples/aitrade/external-evidence/intakes/framework-adapters-provider-api.json",
+                    "description": "Retained framework adapter provider API intake receipt",
+                },
+                {
+                    "kind": "external-evidence-intake",
+                    "path": "examples/aitrade/external-evidence/intakes/framework-adapters-hosted-service.json",
+                    "description": "Retained framework adapter hosted-service intake receipt",
+                },
             ]
             collection_bundle = build_roadmap_evidence_bundle(
                 collection_chain,
@@ -2163,9 +2225,9 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 require_source_artifacts=True,
             )
             self.assertTrue(collection_bundle_result.ok, collection_bundle_result.errors)
-            self.assertEqual(13, collection_bundle["summary"]["source_artifact_count"])
+            self.assertEqual(17, collection_bundle["summary"]["source_artifact_count"])
             self.assertEqual(1, collection_bundle["summary"]["external_evidence_collection_run_entry_count"])
-            self.assertEqual(13, len(extracted))
+            self.assertEqual(17, len(extracted))
             self.assertEqual(
                 [
                     "roadmap-audit",
@@ -2176,6 +2238,10 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     "external-evidence-source-snapshot",
                     "external-evidence-source-snapshot",
                     "external-evidence-source-snapshot",
+                    "external-evidence-source-snapshot",
+                    "external-evidence-source-snapshot",
+                    "external-evidence-intake",
+                    "external-evidence-intake",
                     "external-evidence-intake",
                     "external-evidence-intake",
                     "external-evidence-intake",
@@ -2189,7 +2255,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             missing_source_map_bundle["source_artifacts"] = [
                 artifact for artifact in missing_source_map_bundle["source_artifacts"] if artifact["kind"] != "external-evidence-source-map"
             ]
-            missing_source_map_bundle["summary"]["source_artifact_count"] = 12
+            missing_source_map_bundle["summary"]["source_artifact_count"] = 16
             missing_source_map_bundle["bundle_id"] = content_hash(without_keys(missing_source_map_bundle, "bundle_id"))
             nonstrict_missing_source_map = verify_roadmap_evidence_bundle(missing_source_map_bundle)
             strict_missing_source_map = verify_roadmap_evidence_bundle(missing_source_map_bundle, require_source_artifacts=True)
@@ -2202,7 +2268,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             missing_collection_run_bundle["source_artifacts"] = [
                 artifact for artifact in missing_collection_run_bundle["source_artifacts"] if artifact["kind"] != "external-evidence-collection-run"
             ]
-            missing_collection_run_bundle["summary"]["source_artifact_count"] = 12
+            missing_collection_run_bundle["summary"]["source_artifact_count"] = 16
             missing_collection_run_bundle["bundle_id"] = content_hash(without_keys(missing_collection_run_bundle, "bundle_id"))
             strict_missing_collection_run = verify_roadmap_evidence_bundle(missing_collection_run_bundle, require_source_artifacts=True)
             self.assertFalse(strict_missing_collection_run.ok)
@@ -2300,11 +2366,11 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             )
             self.assertFalse(strict_report_result.ok)
             self.assertTrue(any("live source URIs" in error for error in strict_report_result.errors), strict_report_result.errors)
-            self.assertEqual(5, report["summary"]["covered_authority_kind_count"])
-            self.assertEqual(66, report["summary"]["missing_authority_kind_count"])
-            self.assertEqual(66, report["summary"]["remaining_task_count"])
-            self.assertEqual(66, report["summary"]["source_map_entry_count"])
-            self.assertEqual(66, report["summary"]["placeholder_source_uri_count"])
+            self.assertEqual(7, report["summary"]["covered_authority_kind_count"])
+            self.assertEqual(64, report["summary"]["missing_authority_kind_count"])
+            self.assertEqual(64, report["summary"]["remaining_task_count"])
+            self.assertEqual(64, report["summary"]["source_map_entry_count"])
+            self.assertEqual(64, report["summary"]["placeholder_source_uri_count"])
             self.assertEqual(0, report["summary"]["live_source_uri_count"])
             first_gap = report["gaps"][0]
             self.assertEqual("self-serve-onboarding:provider-api", first_gap["unit_ref"])
@@ -2314,11 +2380,11 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertEqual("artifacts/external-evidence-intakes/self-serve-onboarding/provider-api.json", first_gap["intake_out"])
             markdown = markdown_path.read_text(encoding="utf-8")
             self.assertIn("# External Evidence Gap Report", markdown)
-            self.assertIn("Placeholder source URIs: 66", markdown)
+            self.assertIn("Placeholder source URIs: 64", markdown)
             self.assertIn("- Description: provider-api evidence for self-serve-onboarding", markdown)
 
             tampered = copy.deepcopy(report)
-            tampered["summary"]["remaining_task_count"] = 65
+            tampered["summary"]["remaining_task_count"] = 63
             tampered["gap_report_id"] = content_hash(without_keys(tampered, "gap_report_id"))
             tampered_result = verify_external_evidence_gap_report(
                 tampered,

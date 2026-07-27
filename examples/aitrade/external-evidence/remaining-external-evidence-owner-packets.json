@@ -5,7 +5,7 @@
     "Source URIs marked TODO or placeholder must be replaced with authority-owned source exports before collection.",
     "Packet completion is proven only by verified source snapshots, intake receipts, rebuilt manifests, and readiness reports."
   ],
-  "owner_packet_bundle_id": "87a40f7da85fcc9fb05019b977fa1a8a52b33db037f88b4e66552f7a4765d43b",
+  "owner_packet_bundle_id": "b4852cb56e6e7b584409a73f238989b23c89bc3d52c6fef238418efc44cb2dee",
   "packets": [
     {
       "authority_kinds": [
@@ -1540,12 +1540,12 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 11,
+      "missing_task_count": 10,
       "owner_hint": "integration/platform owner",
-      "package_hash": "ac0050e30b79c801030e177bdd3023ebdf231b898c78ee5f7ef64c7f1a391a9e",
-      "package_id": "95e199132866cead0aaafd85111abed2a6a83a0b95f413909705b8603a802034",
+      "package_hash": "5d45879caa60927976e7ceb78291fc495b777f38111145916c07bf3ef80f3bd3",
+      "package_id": "6054435e90033f562b2fd9b6b3798282897fd59ea2e9136e026a8081a70084de",
       "package_ref": "owner_hint:integration-platform-owner",
-      "packet_id": "ff05d63f23fab193f42a1b27657794b96e7c551efb5e6448df99137808ee706c",
+      "packet_id": "10c942e76ddf0484341eadc86561f3f346d6bce7e7a8ed82ab5b432d30d6b843",
       "packet_ref": "owner-packet:owner_hint:integration-platform-owner",
       "phases": [
         "P1",
@@ -1556,7 +1556,7 @@
         "P2-P4",
         "P4"
       ],
-      "placeholder_source_uri_count": 11,
+      "placeholder_source_uri_count": 10,
       "priorities": [
         "P0",
         "P1"
@@ -1566,7 +1566,6 @@
         "auditor-and-review-portal",
         "byoc-self-hosted",
         "compliance-mapper-and-eu-ai-act",
-        "framework-adapters",
         "insurer-api-and-actuarial-products",
         "mcp-gateway",
         "runtime-policy-and-attestation",
@@ -1574,7 +1573,7 @@
         "shadow-replay-temporal-holdout",
         "trust-network-procurement-and-marketplace"
       ],
-      "task_count": 11,
+      "task_count": 10,
       "tasks": [
         {
           "acceptance_criteria": [
@@ -1729,83 +1728,6 @@
           "title": "Shadow replay, temporal holdout, soak reports, and distributional re-execution",
           "unit_id": "e0f691dce6a7859dec40b0439af39824bbe030c9eb08662294e3aaaef3695b39",
           "unit_ref": "shadow-replay-temporal-holdout:provider-api"
-        },
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be provider-api and accepted for framework-adapters.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "provider-api",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/framework-adapters/provider-api",
-              "--root",
-              ".",
-              "--task",
-              "framework-adapters:provider-api",
-              "--description",
-              "provider-api evidence for framework-adapters",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/framework-adapters/provider-api.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/framework-adapters/provider-api.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/framework-adapters/provider-api --root . --task framework-adapters:provider-api --description 'provider-api evidence for framework-adapters' --snapshot-out artifacts/external-evidence-sources/framework-adapters/provider-api.json --intake-out artifacts/external-evidence-intakes/framework-adapters/provider-api.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/framework-adapters/provider-api.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/framework-adapters/provider-api.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "provider-api evidence for framework-adapters",
-          "evidence_argument_template": "framework-adapters,provider-api,external-evidence/framework-adapters/provider-api.json,provider-api evidence for framework-adapters;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/framework-adapters/provider-api.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "integration/platform owner",
-          "phase": "P1",
-          "priority": "P1",
-          "requirement_id": "framework-adapters",
-          "snapshot_out": "artifacts/external-evidence-sources/framework-adapters/provider-api.json",
-          "source_uri": "TODO://authority/framework-adapters/provider-api",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/framework-adapters/provider-api.json",
-          "suggested_evidence_sources": [
-            "provider API response export",
-            "request/response transcript",
-            "provider-owned audit event"
-          ],
-          "task_id": "51819e7ba85f3a34a8b43c2d8ffbfa42795c75f94b7502ccb16ce7e5581f30c7",
-          "task_ref": "external-evidence:framework-adapters:provider-api",
-          "title": "Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex",
-          "unit_id": "2535596ebea2fa0ea008bafb1b71f80fde51939a25399cb76f40582f920e5acb",
-          "unit_ref": "framework-adapters:provider-api"
         },
         {
           "acceptance_criteria": [
@@ -4390,12 +4312,12 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 8,
+      "missing_task_count": 7,
       "owner_hint": "service owner",
-      "package_hash": "c96a53b5029e2375e2e892745dd473c2d3f48dd5ddeb2ceebeeac1c2a2ff91cd",
-      "package_id": "43acdef2390f292ba70878c1531f878a3bbabf453d9c643f9b9a236f9533488d",
+      "package_hash": "4f2e53620837529894d4c0db5cde6800d17571bba4d151d0cbc1cce3e6d21693",
+      "package_id": "339113de789fe5f5438665ecaf639b99ed22a1abb9c3b071b50854b79be43a82",
       "package_ref": "owner_hint:service-owner",
-      "packet_id": "aaecedbdb8263224b1843d3ba8acad8d078eb7d977dc92a07e2a253ce1dc9310",
+      "packet_id": "7e7767656d8b63a6ed10c6ce84378b030a1a58e6b846a6ada15b94f5460d8b10",
       "packet_ref": "owner-packet:owner_hint:service-owner",
       "phases": [
         "P1",
@@ -4404,7 +4326,7 @@
         "P2-P4",
         "P4"
       ],
-      "placeholder_source_uri_count": 8,
+      "placeholder_source_uri_count": 7,
       "priorities": [
         "P0",
         "P1"
@@ -4412,14 +4334,13 @@
       "requirement_ids": [
         "auditor-and-review-portal",
         "cicd-provider-approvals",
-        "framework-adapters",
         "insurer-api-and-actuarial-products",
         "mcp-gateway",
         "runtime-policy-and-attestation",
         "self-serve-onboarding",
         "trust-network-procurement-and-marketplace"
       ],
-      "task_count": 8,
+      "task_count": 7,
       "tasks": [
         {
           "acceptance_criteria": [
@@ -4574,83 +4495,6 @@
           "title": "MCP evidence gateway reference capture",
           "unit_id": "8766be3ea5e06276839b71f9e28a0032782143df739db18f6b58dcc76e899249",
           "unit_ref": "mcp-gateway:hosted-service"
-        },
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be hosted-service and accepted for framework-adapters.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "hosted-service",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/framework-adapters/hosted-service",
-              "--root",
-              ".",
-              "--task",
-              "framework-adapters:hosted-service",
-              "--description",
-              "hosted-service evidence for framework-adapters",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/framework-adapters/hosted-service.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/framework-adapters/hosted-service.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/framework-adapters/hosted-service --root . --task framework-adapters:hosted-service --description 'hosted-service evidence for framework-adapters' --snapshot-out artifacts/external-evidence-sources/framework-adapters/hosted-service.json --intake-out artifacts/external-evidence-intakes/framework-adapters/hosted-service.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/framework-adapters/hosted-service.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/framework-adapters/hosted-service.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "hosted-service evidence for framework-adapters",
-          "evidence_argument_template": "framework-adapters,hosted-service,external-evidence/framework-adapters/hosted-service.json,hosted-service evidence for framework-adapters;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/framework-adapters/hosted-service.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "service owner",
-          "phase": "P1",
-          "priority": "P1",
-          "requirement_id": "framework-adapters",
-          "snapshot_out": "artifacts/external-evidence-sources/framework-adapters/hosted-service.json",
-          "source_uri": "TODO://authority/framework-adapters/hosted-service",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/framework-adapters/hosted-service.json",
-          "suggested_evidence_sources": [
-            "hosted service health or deployment export",
-            "service audit root",
-            "operational SLO/status evidence"
-          ],
-          "task_id": "e27eb6adfc3eea49f178660893ced3d9f7ff54e45675d1ef258678a2d0596267",
-          "task_ref": "external-evidence:framework-adapters:hosted-service",
-          "title": "Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex",
-          "unit_id": "8563dcf215b5ef63455bca12f81e4fb2d7e98b515192ee839340c62b8332ca82",
-          "unit_ref": "framework-adapters:hosted-service"
         },
         {
           "acceptance_criteria": [
@@ -5552,26 +5396,26 @@
   "source_work_package": {
     "generated_at": "2026-07-12T00:01:00Z",
     "group_by": "owner_hint",
-    "work_package_hash": "79dc806e6295727c209669cdfcdefd0c06784e57e4f1c3c7a7596a5ece655584",
-    "work_package_id": "34205940c907e24ae6e2e66b2b66a082d8c94d0ac88229fba05496905f40b37f"
+    "work_package_hash": "6f9d6ac232b981d06867af49322e037a6bdfdbfa4a98a4bb9d974d2fd397ffb1",
+    "work_package_id": "09c94a3488982f95c6fd2e845062bf715844a541065c81c609e1d939c91a4ff1"
   },
   "summary": {
     "covered_task_count": 0,
     "live_source_uri_count": 0,
-    "missing_task_count": 66,
+    "missing_task_count": 64,
     "packet_count": 10,
-    "placeholder_source_uri_count": 66,
-    "source_work_package_task_count": 66,
-    "task_count": 66,
+    "placeholder_source_uri_count": 64,
+    "source_work_package_task_count": 64,
+    "task_count": 64,
     "task_count_by_authority_kind": {
       "ci-run": 7,
       "cloud-object-lock": 1,
       "customer": 9,
-      "hosted-service": 8,
+      "hosted-service": 7,
       "identity-provider": 8,
       "insurer": 4,
       "kms-hsm": 7,
-      "provider-api": 11,
+      "provider-api": 10,
       "regulator": 5,
       "standards-body": 6
     },
@@ -5579,12 +5423,12 @@
       "IAM/identity owner": 8,
       "cloud storage owner": 1,
       "customer success/account owner": 9,
-      "integration/platform owner": 11,
+      "integration/platform owner": 10,
       "legal/compliance owner": 5,
       "release engineering": 7,
       "risk/insurance owner": 4,
       "security/platform KMS owner": 7,
-      "service owner": 8,
+      "service owner": 7,
       "standards/governance owner": 6
     }
   }

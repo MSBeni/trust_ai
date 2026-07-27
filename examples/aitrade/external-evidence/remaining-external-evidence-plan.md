@@ -1,8 +1,8 @@
 # TrustAI External Evidence Collection Plan
 
-Plan ID: `be55cbd2c290e098cdcf77256cbd2177b3fb60c4a1fed0ce17c270483a14dfe1`
+Plan ID: `2310fcd34419b5b78ad0cdab924f799c2a984bdd4195633081f3aac4bdf31ac2`
 
-Source manifest: `876050e0b2ef47153aaf656b4b44a3abda0b017227a0e5b7a1d13ff411278b61`
+Source manifest: `da1839a025798bd08745c84c5a8207dc35a44d574ec24a8cedfe55ec36b84620`
 
 Status filter: missing
 
@@ -10,10 +10,10 @@ Status filter: missing
 
 - Source manifest status: partial
 - Total authority units: 71
-- Selected tasks: 66
-- Selected missing tasks: 66
+- Selected tasks: 64
+- Selected missing tasks: 64
 - Selected covered tasks: 0
-- Missing authority kinds overall: 66
+- Missing authority kinds overall: 64
 
 ## Collection Tasks
 
@@ -36,8 +36,6 @@ Status filter: missing
 | `f89ead8e5b1ef2df684cdafe8b68cc53afc9a520feb84ac4cf8a2372f4b9d833` | `design-partner-pilot-exit-criteria:insurer` | `design-partner-pilot-exit-criteria` | insurer | missing | risk/insurance owner | `external-evidence/design-partner-pilot-exit-criteria/insurer.json` | `design-partner-pilot-exit-criteria,insurer,external-evidence/design-partner-pilot-exit-criteria/insurer.json,insurer evidence for design-partner-pilot-exit-criteria;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `3b433a43be3da2c0e04eb8936dac0b61ec81ee1421fb95fe1c400b8a58f0e6b3` | `design-partner-pilot-exit-criteria:customer` | `design-partner-pilot-exit-criteria` | customer | missing | customer success/account owner | `external-evidence/design-partner-pilot-exit-criteria/customer.json` | `design-partner-pilot-exit-criteria,customer,external-evidence/design-partner-pilot-exit-criteria/customer.json,customer evidence for design-partner-pilot-exit-criteria;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `ab8887f1051e79a457ce56e289a9f4ad3306687a8df45f30c0ed0217570eb002` | `framework-adapters:ci-run` | `framework-adapters` | ci-run | missing | release engineering | `external-evidence/framework-adapters/ci-run.json` | `framework-adapters,ci-run,external-evidence/framework-adapters/ci-run.json,ci-run evidence for framework-adapters;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
-| `51819e7ba85f3a34a8b43c2d8ffbfa42795c75f94b7502ccb16ce7e5581f30c7` | `framework-adapters:provider-api` | `framework-adapters` | provider-api | missing | integration/platform owner | `external-evidence/framework-adapters/provider-api.json` | `framework-adapters,provider-api,external-evidence/framework-adapters/provider-api.json,provider-api evidence for framework-adapters;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
-| `e27eb6adfc3eea49f178660893ced3d9f7ff54e45675d1ef258678a2d0596267` | `framework-adapters:hosted-service` | `framework-adapters` | hosted-service | missing | service owner | `external-evidence/framework-adapters/hosted-service.json` | `framework-adapters,hosted-service,external-evidence/framework-adapters/hosted-service.json,hosted-service evidence for framework-adapters;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `0b35d2f033f96f6bd1373d1d28cc0ff5b3e53a6f39da2e7691cfdaf27df40f31` | `auditor-and-review-portal:kms-hsm` | `auditor-and-review-portal` | kms-hsm | missing | security/platform KMS owner | `external-evidence/auditor-and-review-portal/kms-hsm.json` | `auditor-and-review-portal,kms-hsm,external-evidence/auditor-and-review-portal/kms-hsm.json,kms-hsm evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `699e8d3307be54666ad631cdf7fb69f8177fcb9f54115c67c83b917bca3dea7b` | `auditor-and-review-portal:provider-api` | `auditor-and-review-portal` | provider-api | missing | integration/platform owner | `external-evidence/auditor-and-review-portal/provider-api.json` | `auditor-and-review-portal,provider-api,external-evidence/auditor-and-review-portal/provider-api.json,provider-api evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `4a20afe57cc9f2971078547577b16f64216382a3ce57613712a53d233e191ce4` | `auditor-and-review-portal:hosted-service` | `auditor-and-review-portal` | hosted-service | missing | service owner | `external-evidence/auditor-and-review-portal/hosted-service.json` | `auditor-and-review-portal,hosted-service,external-evidence/auditor-and-review-portal/hosted-service.json,hosted-service evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |

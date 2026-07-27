@@ -1,14 +1,14 @@
 # External Evidence Owner Fulfillment Template
 
-- Template ID: `784680f59e3831b96c4ded623b5407947f12ffd2b434aa29b3f76e53fe1d7334`
+- Template ID: `31f1a6f1b63524f757b3e08d07a1cdb3de72f46e44f92d3d9ab87ad893c9b7a3`
 - Generated at: `2026-07-12T00:01:00Z`
-- Fulfillments: 66
+- Fulfillments: 64
 - Owners: 10
-- Blocked tasks: 66
+- Blocked tasks: 64
 - Open tasks: 0
 - Closed tasks: 0
-- Placeholder source URIs: 66
-- Missing intakes: 66
+- Placeholder source URIs: 64
+- Missing intakes: 64
 
 ## Fulfillments
 
@@ -36,7 +36,6 @@
 | `auditor-and-review-portal:provider-api` | TODO://authority/auditor-and-review-portal/provider-api | provider-api evidence for auditor-and-review-portal |
 | `byoc-self-hosted:provider-api` | TODO://authority/byoc-self-hosted/provider-api | provider-api evidence for byoc-self-hosted |
 | `compliance-mapper-and-eu-ai-act:provider-api` | TODO://authority/compliance-mapper-and-eu-ai-act/provider-api | provider-api evidence for compliance-mapper-and-eu-ai-act |
-| `framework-adapters:provider-api` | TODO://authority/framework-adapters/provider-api | provider-api evidence for framework-adapters |
 | `insurer-api-and-actuarial-products:provider-api` | TODO://authority/insurer-api-and-actuarial-products/provider-api | provider-api evidence for insurer-api-and-actuarial-products |
 | `mcp-gateway:provider-api` | TODO://authority/mcp-gateway/provider-api | provider-api evidence for mcp-gateway |
 | `runtime-policy-and-attestation:provider-api` | TODO://authority/runtime-policy-and-attestation/provider-api | provider-api evidence for runtime-policy-and-attestation |
@@ -68,7 +67,6 @@
 | `standards-track-and-auditor-ecosystem:kms-hsm` | TODO://authority/standards-track-and-auditor-ecosystem/kms-hsm | kms-hsm evidence for standards-track-and-auditor-ecosystem |
 | `auditor-and-review-portal:hosted-service` | TODO://authority/auditor-and-review-portal/hosted-service | hosted-service evidence for auditor-and-review-portal |
 | `cicd-provider-approvals:hosted-service` | TODO://authority/cicd-provider-approvals/hosted-service | hosted-service evidence for cicd-provider-approvals |
-| `framework-adapters:hosted-service` | TODO://authority/framework-adapters/hosted-service | hosted-service evidence for framework-adapters |
 | `insurer-api-and-actuarial-products:hosted-service` | TODO://authority/insurer-api-and-actuarial-products/hosted-service | hosted-service evidence for insurer-api-and-actuarial-products |
 | `mcp-gateway:hosted-service` | TODO://authority/mcp-gateway/hosted-service | hosted-service evidence for mcp-gateway |
 | `runtime-policy-and-attestation:hosted-service` | TODO://authority/runtime-policy-and-attestation/hosted-service | hosted-service evidence for runtime-policy-and-attestation |
@@ -107,7 +105,6 @@
 | `auditor-and-review-portal:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/auditor-and-review-portal/provider-api.json | artifacts/external-evidence-intakes/auditor-and-review-portal/provider-api.json |
 | `byoc-self-hosted:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/byoc-self-hosted/provider-api.json | artifacts/external-evidence-intakes/byoc-self-hosted/provider-api.json |
 | `compliance-mapper-and-eu-ai-act:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/provider-api.json | artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/provider-api.json |
-| `framework-adapters:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/framework-adapters/provider-api.json | artifacts/external-evidence-intakes/framework-adapters/provider-api.json |
 | `insurer-api-and-actuarial-products:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/provider-api.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/provider-api.json |
 | `mcp-gateway:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/mcp-gateway/provider-api.json | artifacts/external-evidence-intakes/mcp-gateway/provider-api.json |
 | `runtime-policy-and-attestation:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/runtime-policy-and-attestation/provider-api.json | artifacts/external-evidence-intakes/runtime-policy-and-attestation/provider-api.json |
@@ -139,7 +136,6 @@
 | `standards-track-and-auditor-ecosystem:kms-hsm` | security/platform KMS owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/kms-hsm.json | artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/kms-hsm.json |
 | `auditor-and-review-portal:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/auditor-and-review-portal/hosted-service.json | artifacts/external-evidence-intakes/auditor-and-review-portal/hosted-service.json |
 | `cicd-provider-approvals:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/cicd-provider-approvals/hosted-service.json | artifacts/external-evidence-intakes/cicd-provider-approvals/hosted-service.json |
-| `framework-adapters:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/framework-adapters/hosted-service.json | artifacts/external-evidence-intakes/framework-adapters/hosted-service.json |
 | `insurer-api-and-actuarial-products:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/hosted-service.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/hosted-service.json |
 | `mcp-gateway:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/mcp-gateway/hosted-service.json | artifacts/external-evidence-intakes/mcp-gateway/hosted-service.json |
 | `runtime-policy-and-attestation:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/runtime-policy-and-attestation/hosted-service.json | artifacts/external-evidence-intakes/runtime-policy-and-attestation/hosted-service.json |

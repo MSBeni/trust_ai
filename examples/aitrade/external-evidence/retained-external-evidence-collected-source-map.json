@@ -150,6 +150,66 @@
       "title": "CI/CD promotion gates, provider callbacks, and Slack approvals",
       "unit_id": "31e8e21963fde1bef9b47458dc8af2b4f52a423d4563d25da09321b39474aeda",
       "unit_ref": "cicd-provider-approvals:provider-api"
+    },
+    {
+      "authority_kind": "provider-api",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained GitHub contents API export for framework adapter hook release evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/framework-adapters-provider-api.json",
+      "issued_at": "2026-07-09T00:30:00Z",
+      "issuer": "GitHub Contents API",
+      "owner_hint": "integration/platform owner",
+      "requirement_id": "framework-adapters",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/framework-hook-release-provider-api-source-snapshot.json",
+      "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/framework-hook-release.json?ref=main",
+      "subject": "trustai framework hook release export",
+      "suggested_evidence_sources": [
+        "provider API response export",
+        "request/response transcript",
+        "provider-owned audit event"
+      ],
+      "task": "framework-adapters:provider-api",
+      "task_id": "51819e7ba85f3a34a8b43c2d8ffbfa42795c75f94b7502ccb16ce7e5581f30c7",
+      "task_ref": "external-evidence:framework-adapters:provider-api",
+      "title": "Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex",
+      "unit_id": "2535596ebea2fa0ea008bafb1b71f80fde51939a25399cb76f40582f920e5acb",
+      "unit_ref": "framework-adapters:provider-api"
+    },
+    {
+      "authority_kind": "hosted-service",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained GitHub hosted file export for framework adapter hook release evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/framework-adapters-hosted-service.json",
+      "issued_at": "2026-07-09T00:30:00Z",
+      "issuer": "GitHub Hosted Repository",
+      "owner_hint": "service owner",
+      "requirement_id": "framework-adapters",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/framework-hook-release-hosted-service-source-snapshot.json",
+      "source_uri": "https://github.com/MSBeni/trust_ai/blob/main/examples/aitrade/framework-hook-release.json",
+      "subject": "trustai framework hook release export",
+      "suggested_evidence_sources": [
+        "hosted service health or deployment export",
+        "service audit root",
+        "operational SLO/status evidence"
+      ],
+      "task": "framework-adapters:hosted-service",
+      "task_id": "e27eb6adfc3eea49f178660893ced3d9f7ff54e45675d1ef258678a2d0596267",
+      "task_ref": "external-evidence:framework-adapters:hosted-service",
+      "title": "Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex",
+      "unit_id": "8563dcf215b5ef63455bca12f81e4fb2d7e98b515192ee839340c62b8332ca82",
+      "unit_ref": "framework-adapters:hosted-service"
     }
   ],
   "generated_at": "2026-07-12T01:00:00Z",
@@ -159,7 +219,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "248a6e6de915f34ea3179fac28ab67ea22916be3eb19b89d7abf8bf60f94f0fc",
+  "source_map_id": "65cbfcc2750c4e351038cf1e534a378505a5fc0ec6ae5a4698c4894532a52900",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -174,9 +234,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 5,
+    "entry_count": 7,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 5,
+    "live_source_uri_count": 7,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

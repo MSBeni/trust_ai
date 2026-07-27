@@ -5,12 +5,12 @@
     "A task is covered only after a matching evidence artifact is supplied to an external evidence manifest and verified.",
     "Freshness and issuer authority remain bounded by the supplied evidence artifact and manifest verification options."
   ],
-  "plan_id": "be55cbd2c290e098cdcf77256cbd2177b3fb60c4a1fed0ce17c270483a14dfe1",
+  "plan_id": "2310fcd34419b5b78ad0cdab924f799c2a984bdd4195633081f3aac4bdf31ac2",
   "schema": "trustai.external-evidence-collection-plan/0.1",
   "source_manifest": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "manifest_hash": "14bda9a5e62b79c101d2203b32e5302451f044bdaccb63527399e3f50fa697fd",
-    "manifest_id": "876050e0b2ef47153aaf656b4b44a3abda0b017227a0e5b7a1d13ff411278b61",
+    "manifest_hash": "b59f20633fadc6aa0fc32b842b54901b2c64b2aa6e43e6c5a5030b501e700d59",
+    "manifest_id": "da1839a025798bd08745c84c5a8207dc35a44d574ec24a8cedfe55ec36b84620",
     "manifest_ref": "production-external-evidence",
     "status": "partial"
   },
@@ -21,40 +21,40 @@
   },
   "status_filter": "missing",
   "summary": {
-    "covered_authority_kind_count": 5,
-    "missing_authority_kind_count": 66,
+    "covered_authority_kind_count": 7,
+    "missing_authority_kind_count": 64,
     "missing_task_count_by_authority_kind": {
       "ci-run": 7,
       "cloud-object-lock": 1,
       "customer": 9,
-      "hosted-service": 8,
+      "hosted-service": 7,
       "identity-provider": 8,
       "insurer": 4,
       "kms-hsm": 7,
-      "provider-api": 11,
+      "provider-api": 10,
       "regulator": 5,
       "standards-body": 6
     },
     "required_authority_kind_count": 71,
     "selected_covered_task_count": 0,
-    "selected_missing_task_count": 66,
-    "selected_task_count": 66,
+    "selected_missing_task_count": 64,
+    "selected_task_count": 64,
     "source_manifest_status": "partial",
     "task_count_by_authority_kind": {
       "ci-run": 7,
       "cloud-object-lock": 1,
       "customer": 9,
-      "hosted-service": 8,
+      "hosted-service": 7,
       "identity-provider": 8,
       "insurer": 4,
       "kms-hsm": 7,
-      "provider-api": 11,
+      "provider-api": 10,
       "regulator": 5,
       "standards-body": 6
     },
     "task_count_by_phase": {
       "P0-P4": 2,
-      "P1": 16,
+      "P1": 14,
       "P1-P2": 6,
       "P1-P3": 5,
       "P1-P4": 5,
@@ -559,64 +559,6 @@
       "title": "Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex",
       "unit_id": "296efe1c318d771e413fcdcd87e51d2005055054e50a06f26580db00eefed0d0",
       "unit_ref": "framework-adapters:ci-run"
-    },
-    {
-      "acceptance_criteria": [
-        "Artifact path must be repository-relative and hashable before manifest verification.",
-        "Evidence item authority_kind must be provider-api and accepted for framework-adapters.",
-        "Use issued_at and expires_at metadata when strict freshness verification is required.",
-        "Rebuild and verify the external evidence manifest after adding the artifact."
-      ],
-      "authority_kind": "provider-api",
-      "coverage_status": "missing",
-      "evidence_argument_template": "framework-adapters,provider-api,external-evidence/framework-adapters/provider-api.json,provider-api evidence for framework-adapters;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-      "external_authority_required": [
-        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
-      ],
-      "owner_hint": "integration/platform owner",
-      "phase": "P1",
-      "priority": "P1",
-      "requirement_id": "framework-adapters",
-      "suggested_artifact_path": "external-evidence/framework-adapters/provider-api.json",
-      "suggested_evidence_sources": [
-        "provider API response export",
-        "request/response transcript",
-        "provider-owned audit event"
-      ],
-      "task_id": "51819e7ba85f3a34a8b43c2d8ffbfa42795c75f94b7502ccb16ce7e5581f30c7",
-      "task_ref": "external-evidence:framework-adapters:provider-api",
-      "title": "Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex",
-      "unit_id": "2535596ebea2fa0ea008bafb1b71f80fde51939a25399cb76f40582f920e5acb",
-      "unit_ref": "framework-adapters:provider-api"
-    },
-    {
-      "acceptance_criteria": [
-        "Artifact path must be repository-relative and hashable before manifest verification.",
-        "Evidence item authority_kind must be hosted-service and accepted for framework-adapters.",
-        "Use issued_at and expires_at metadata when strict freshness verification is required.",
-        "Rebuild and verify the external evidence manifest after adding the artifact."
-      ],
-      "authority_kind": "hosted-service",
-      "coverage_status": "missing",
-      "evidence_argument_template": "framework-adapters,hosted-service,external-evidence/framework-adapters/hosted-service.json,hosted-service evidence for framework-adapters;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-      "external_authority_required": [
-        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
-      ],
-      "owner_hint": "service owner",
-      "phase": "P1",
-      "priority": "P1",
-      "requirement_id": "framework-adapters",
-      "suggested_artifact_path": "external-evidence/framework-adapters/hosted-service.json",
-      "suggested_evidence_sources": [
-        "hosted service health or deployment export",
-        "service audit root",
-        "operational SLO/status evidence"
-      ],
-      "task_id": "e27eb6adfc3eea49f178660893ced3d9f7ff54e45675d1ef258678a2d0596267",
-      "task_ref": "external-evidence:framework-adapters:hosted-service",
-      "title": "Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex",
-      "unit_id": "8563dcf215b5ef63455bca12f81e4fb2d7e98b515192ee839340c62b8332ca82",
-      "unit_ref": "framework-adapters:hosted-service"
     },
     {
       "acceptance_criteria": [

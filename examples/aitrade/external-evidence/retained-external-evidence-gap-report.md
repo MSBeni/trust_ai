@@ -1,13 +1,13 @@
 # External Evidence Gap Report
 
-- Gap report ID: `3ddde2b9905a6999fba16ae9bcd087fd7358ee1fd9e390e3f4b662bfc7ccc613`
+- Gap report ID: `f45dccd0825065953186ae0f9156cd648d7669d9bf63dcbce447c378dbb7b8d0`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 5/71
-- Missing authority kinds: 66
-- Remaining collection tasks: 66
-- Source-map entries: 66
-- Placeholder source URIs: 66
+- Covered authority kinds: 7/71
+- Missing authority kinds: 64
+- Remaining collection tasks: 64
+- Source-map entries: 64
+- Placeholder source URIs: 64
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
@@ -15,11 +15,11 @@
 - `ci-run`: 7
 - `cloud-object-lock`: 1
 - `customer`: 9
-- `hosted-service`: 8
+- `hosted-service`: 7
 - `identity-provider`: 8
 - `insurer`: 4
 - `kms-hsm`: 7
-- `provider-api`: 11
+- `provider-api`: 10
 - `regulator`: 5
 - `standards-body`: 6
 
@@ -31,7 +31,7 @@
 - `cicd-provider-approvals`: 2
 - `compliance-mapper-and-eu-ai-act`: 3
 - `design-partner-pilot-exit-criteria`: 3
-- `framework-adapters`: 3
+- `framework-adapters`: 1
 - `insurer-api-and-actuarial-products`: 7
 - `mcp-gateway`: 4
 - `product-scope-discipline`: 2
@@ -233,28 +233,6 @@
 - Snapshot output: `artifacts/external-evidence-sources/framework-adapters/ci-run.json`
 - Intake output: `artifacts/external-evidence-intakes/framework-adapters/ci-run.json`
 - Suggested evidence sources: completed CI workflow export; release run URL or provider-native run record; artifact/check provenance
-
-### framework-adapters:provider-api
-
-- Title: Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex
-- Authority kind: `provider-api`
-- Owner hint: integration/platform owner
-- Description: provider-api evidence for framework-adapters
-- Source URI: `TODO://authority/framework-adapters/provider-api`
-- Snapshot output: `artifacts/external-evidence-sources/framework-adapters/provider-api.json`
-- Intake output: `artifacts/external-evidence-intakes/framework-adapters/provider-api.json`
-- Suggested evidence sources: provider API response export; request/response transcript; provider-owned audit event
-
-### framework-adapters:hosted-service
-
-- Title: Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex
-- Authority kind: `hosted-service`
-- Owner hint: service owner
-- Description: hosted-service evidence for framework-adapters
-- Source URI: `TODO://authority/framework-adapters/hosted-service`
-- Snapshot output: `artifacts/external-evidence-sources/framework-adapters/hosted-service.json`
-- Intake output: `artifacts/external-evidence-intakes/framework-adapters/hosted-service.json`
-- Suggested evidence sources: hosted service health or deployment export; service audit root; operational SLO/status evidence
 
 ### auditor-and-review-portal:kms-hsm
 

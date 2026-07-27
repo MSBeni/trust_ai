@@ -410,54 +410,6 @@
       "unit_ref": "framework-adapters:ci-run"
     },
     {
-      "authority_kind": "provider-api",
-      "coverage_status": "missing",
-      "description": "provider-api evidence for framework-adapters",
-      "external_authority_required": [
-        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/framework-adapters/provider-api.json",
-      "owner_hint": "integration/platform owner",
-      "requirement_id": "framework-adapters",
-      "snapshot_out": "artifacts/external-evidence-sources/framework-adapters/provider-api.json",
-      "source_uri": "TODO://authority/framework-adapters/provider-api",
-      "suggested_evidence_sources": [
-        "provider API response export",
-        "request/response transcript",
-        "provider-owned audit event"
-      ],
-      "task": "framework-adapters:provider-api",
-      "task_id": "51819e7ba85f3a34a8b43c2d8ffbfa42795c75f94b7502ccb16ce7e5581f30c7",
-      "task_ref": "external-evidence:framework-adapters:provider-api",
-      "title": "Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex",
-      "unit_id": "2535596ebea2fa0ea008bafb1b71f80fde51939a25399cb76f40582f920e5acb",
-      "unit_ref": "framework-adapters:provider-api"
-    },
-    {
-      "authority_kind": "hosted-service",
-      "coverage_status": "missing",
-      "description": "hosted-service evidence for framework-adapters",
-      "external_authority_required": [
-        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/framework-adapters/hosted-service.json",
-      "owner_hint": "service owner",
-      "requirement_id": "framework-adapters",
-      "snapshot_out": "artifacts/external-evidence-sources/framework-adapters/hosted-service.json",
-      "source_uri": "TODO://authority/framework-adapters/hosted-service",
-      "suggested_evidence_sources": [
-        "hosted service health or deployment export",
-        "service audit root",
-        "operational SLO/status evidence"
-      ],
-      "task": "framework-adapters:hosted-service",
-      "task_id": "e27eb6adfc3eea49f178660893ced3d9f7ff54e45675d1ef258678a2d0596267",
-      "task_ref": "external-evidence:framework-adapters:hosted-service",
-      "title": "Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex",
-      "unit_id": "8563dcf215b5ef63455bca12f81e4fb2d7e98b515192ee839340c62b8332ca82",
-      "unit_ref": "framework-adapters:hosted-service"
-    },
-    {
       "authority_kind": "kms-hsm",
       "coverage_status": "missing",
       "description": "kms-hsm evidence for auditor-and-review-portal",
@@ -1593,14 +1545,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "64dd7f85c8bd76336090445fcc369e606c1a775dee42c697a566531b4db428a3",
+  "source_map_id": "701fb4d0e2b253531b2434d0fe04775b91639fb5fe6e4a3488f098d059a1d05e",
   "source_plan": {
-    "plan_hash": "968e12331ccb10d541a82d6d3e8bd06aa8310ebba64edefc95f4ba0dbd790670",
-    "plan_id": "be55cbd2c290e098cdcf77256cbd2177b3fb60c4a1fed0ce17c270483a14dfe1",
+    "plan_hash": "f1dbe0ac0afa1b6828bc79aa8e8a14ebc8d476fe802bffee7134d7514e5c38dd",
+    "plan_id": "2310fcd34419b5b78ad0cdab924f799c2a984bdd4195633081f3aac4bdf31ac2",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "14bda9a5e62b79c101d2203b32e5302451f044bdaccb63527399e3f50fa697fd",
-      "manifest_id": "876050e0b2ef47153aaf656b4b44a3abda0b017227a0e5b7a1d13ff411278b61",
+      "manifest_hash": "b59f20633fadc6aa0fc32b842b54901b2c64b2aa6e43e6c5a5030b501e700d59",
+      "manifest_id": "da1839a025798bd08745c84c5a8207dc35a44d574ec24a8cedfe55ec36b84620",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },
@@ -1608,12 +1560,12 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 66,
+    "entry_count": 64,
     "intake_dir": "artifacts/external-evidence-intakes",
     "live_source_uri_count": 0,
-    "placeholder_source_uri_count": 66,
+    "placeholder_source_uri_count": 64,
     "snapshot_dir": "artifacts/external-evidence-sources",
-    "source_plan_task_count": 66,
+    "source_plan_task_count": 64,
     "status_filter": "missing"
   }
 }

@@ -91,6 +91,42 @@
       "sha256": "sha256:eadabf67ffa526d2e290511d0ba6149f1ea335ed5bd9e145f45645fc6392acad",
       "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/actions/runs",
       "subject": "trustai GitHub provider audit-log export"
+    },
+    {
+      "accepted_authority_kinds": [
+        "ci-run",
+        "provider-api",
+        "hosted-service"
+      ],
+      "authority_kind": "provider-api",
+      "description": "Retained GitHub contents API export for framework adapter hook release evidence",
+      "evidence_id": "9538b7db9f260a65c81532a50111b58fccd995124b08e2a1807d6710e6b90cef",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-09T00:30:00Z",
+      "issuer": "GitHub Contents API",
+      "path": "examples/aitrade/external-evidence/framework-hook-release-provider-api-source-snapshot.json",
+      "requirement_id": "framework-adapters",
+      "sha256": "sha256:87f529a10f009594e7e2950f87906d0f10a24445731528232ab97c7a375ce8cf",
+      "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/framework-hook-release.json?ref=main",
+      "subject": "trustai framework hook release export"
+    },
+    {
+      "accepted_authority_kinds": [
+        "ci-run",
+        "provider-api",
+        "hosted-service"
+      ],
+      "authority_kind": "hosted-service",
+      "description": "Retained GitHub hosted file export for framework adapter hook release evidence",
+      "evidence_id": "a95d7ff14ba17dd3309403eb75e1e9f54025c8c70f89f05ca6496f5c267aa14f",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-09T00:30:00Z",
+      "issuer": "GitHub Hosted Repository",
+      "path": "examples/aitrade/external-evidence/framework-hook-release-hosted-service-source-snapshot.json",
+      "requirement_id": "framework-adapters",
+      "sha256": "sha256:f19afc13ed2e41ac020a3d940e0807c7a26b7cf2856d11a6c470490af0628020",
+      "source_uri": "https://github.com/MSBeni/trust_ai/blob/main/examples/aitrade/framework-hook-release.json",
+      "subject": "trustai framework hook release export"
     }
   ],
   "generated_at": "2026-07-12T00:01:00Z",
@@ -99,7 +135,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "876050e0b2ef47153aaf656b4b44a3abda0b017227a0e5b7a1d13ff411278b61",
+  "manifest_id": "da1839a025798bd08745c84c5a8207dc35a44d574ec24a8cedfe55ec36b84620",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -390,7 +426,7 @@
     },
     {
       "authority_kind": "provider-api",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
       ],
@@ -403,7 +439,7 @@
     },
     {
       "authority_kind": "hosted-service",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
       ],
@@ -1326,11 +1362,15 @@
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {
-    "covered_authority_kind_count": 5,
+    "covered_authority_kind_count": 7,
     "covered_authority_kinds_by_requirement": {
       "cicd-provider-approvals": [
         "ci-run",
         "provider-api"
+      ],
+      "framework-adapters": [
+        "provider-api",
+        "hosted-service"
       ],
       "oss-verifier-and-public-spec": [
         "ci-run",
@@ -1338,16 +1378,17 @@
         "hosted-service"
       ]
     },
-    "covered_requirement_count": 2,
+    "covered_requirement_count": 3,
     "covered_requirement_ids": [
       "cicd-provider-approvals",
+      "framework-adapters",
       "oss-verifier-and-public-spec"
     ],
-    "evidence_count": 5,
-    "expires_at_count": 5,
-    "freshness_window_count": 5,
-    "issued_at_count": 5,
-    "missing_authority_kind_count": 66,
+    "evidence_count": 7,
+    "expires_at_count": 7,
+    "freshness_window_count": 7,
+    "issued_at_count": 7,
+    "missing_authority_kind_count": 64,
     "missing_authority_kinds_by_requirement": {
       "agent-inventory-and-identity": [
         "provider-api",
@@ -1383,9 +1424,7 @@
         "customer"
       ],
       "framework-adapters": [
-        "ci-run",
-        "provider-api",
-        "hosted-service"
+        "ci-run"
       ],
       "insurer-api-and-actuarial-products": [
         "ci-run",
@@ -1454,13 +1493,12 @@
         "customer"
       ]
     },
-    "missing_requirement_count": 18,
+    "missing_requirement_count": 17,
     "missing_requirement_ids": [
       "self-serve-onboarding",
       "mcp-gateway",
       "shadow-replay-temporal-holdout",
       "design-partner-pilot-exit-criteria",
-      "framework-adapters",
       "auditor-and-review-portal",
       "byoc-self-hosted",
       "compliance-mapper-and-eu-ai-act",

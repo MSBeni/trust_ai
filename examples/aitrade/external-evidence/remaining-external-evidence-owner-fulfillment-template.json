@@ -314,20 +314,6 @@
         "placeholder-source-uri",
         "missing-intake"
       ],
-      "intake_out": "artifacts/external-evidence-intakes/framework-adapters/provider-api.json",
-      "owner_hint": "integration/platform owner",
-      "requirement_id": "framework-adapters",
-      "snapshot_out": "artifacts/external-evidence-sources/framework-adapters/provider-api.json",
-      "source_uri_status": "placeholder",
-      "task": "framework-adapters:provider-api",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "provider-api",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
       "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/provider-api.json",
       "owner_hint": "integration/platform owner",
       "requirement_id": "insurer-api-and-actuarial-products",
@@ -762,20 +748,6 @@
         "placeholder-source-uri",
         "missing-intake"
       ],
-      "intake_out": "artifacts/external-evidence-intakes/framework-adapters/hosted-service.json",
-      "owner_hint": "service owner",
-      "requirement_id": "framework-adapters",
-      "snapshot_out": "artifacts/external-evidence-sources/framework-adapters/hosted-service.json",
-      "source_uri_status": "placeholder",
-      "task": "framework-adapters:hosted-service",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "hosted-service",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
       "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/hosted-service.json",
       "owner_hint": "service owner",
       "requirement_id": "insurer-api-and-actuarial-products",
@@ -1046,11 +1018,6 @@
       "task": "compliance-mapper-and-eu-ai-act:provider-api"
     },
     {
-      "description": "provider-api evidence for framework-adapters",
-      "source_uri": "TODO://authority/framework-adapters/provider-api",
-      "task": "framework-adapters:provider-api"
-    },
-    {
       "description": "provider-api evidence for insurer-api-and-actuarial-products",
       "source_uri": "TODO://authority/insurer-api-and-actuarial-products/provider-api",
       "task": "insurer-api-and-actuarial-products:provider-api"
@@ -1206,11 +1173,6 @@
       "task": "cicd-provider-approvals:hosted-service"
     },
     {
-      "description": "hosted-service evidence for framework-adapters",
-      "source_uri": "TODO://authority/framework-adapters/hosted-service",
-      "task": "framework-adapters:hosted-service"
-    },
-    {
       "description": "hosted-service evidence for insurer-api-and-actuarial-products",
       "source_uri": "TODO://authority/insurer-api-and-actuarial-products/hosted-service",
       "task": "insurer-api-and-actuarial-products:hosted-service"
@@ -1276,21 +1238,21 @@
     "This template is a handoff artifact; it does not satisfy missing external authority evidence by itself.",
     "Placeholder source URIs intentionally keep readiness blocked until owners replace them with live authority sources."
   ],
-  "owner_fulfillment_template_id": "784680f59e3831b96c4ded623b5407947f12ffd2b434aa29b3f76e53fe1d7334",
+  "owner_fulfillment_template_id": "31f1a6f1b63524f757b3e08d07a1cdb3de72f46e44f92d3d9ab87ad893c9b7a3",
   "schema": "trustai.external-evidence-owner-fulfillment-template/0.1",
   "source_owner_packet_status": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "owner_packet_status_hash": "a1054e51893d5543a72bf0cb9859ed86ee3dee68e12376398809db651dd1517c",
-    "owner_packet_status_id": "2c70baefd5bfde5b7eb535730f8e58e4b4c6bfa164fe825604b54346c88aea49",
+    "owner_packet_status_hash": "8b7a34cd31f11524a705cc3f3706b889e633c980cb7e28908d4d5c8c88f91cee",
+    "owner_packet_status_id": "8482dac1db0ed2cd95cdfb30dd99c3e30b64dba96768db510f7cd407440b632f",
     "schema": "trustai.external-evidence-owner-packet-status/0.1"
   },
   "summary": {
-    "assignment_count": 66,
-    "blocked_task_count": 66,
+    "assignment_count": 64,
+    "blocked_task_count": 64,
     "closed_task_count": 0,
-    "fulfillment_count": 66,
+    "fulfillment_count": 64,
     "live_source_uri_count": 0,
-    "missing_intake_count": 66,
+    "missing_intake_count": 64,
     "open_task_count": 0,
     "owner_count": 10,
     "owners": [
@@ -1305,6 +1267,6 @@
       "service owner",
       "standards/governance owner"
     ],
-    "placeholder_source_uri_count": 66
+    "placeholder_source_uri_count": 64
   }
 }

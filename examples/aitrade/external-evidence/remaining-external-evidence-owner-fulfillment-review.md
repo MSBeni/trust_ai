@@ -1,13 +1,13 @@
 # External Evidence Owner Fulfillment Review
 
-- Review ID: `d8a78ab2dcbcc874b1feafb53fdd796b82e33791f3930857bd9ce91f66e2b4f9`
+- Review ID: `057ed02e934ffb9221ffb84894eae321c2400253b1ae2e049de738237cc514a1`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Fulfillments: 66
+- Fulfillments: 64
 - Owners: 10
 - Ready tasks: 0
-- Blocked tasks: 66
-- Placeholder source URIs: 66
+- Blocked tasks: 64
+- Placeholder source URIs: 64
 - Live source URIs: 0
 
 ## Task Review
@@ -31,8 +31,6 @@
 | `design-partner-pilot-exit-criteria:insurer` | risk/insurance owner | blocked | TODO://authority/design-partner-pilot-exit-criteria/insurer | `placeholder-source-uri` |
 | `design-partner-pilot-exit-criteria:customer` | customer success/account owner | blocked | TODO://authority/design-partner-pilot-exit-criteria/customer | `placeholder-source-uri` |
 | `framework-adapters:ci-run` | release engineering | blocked | TODO://authority/framework-adapters/ci-run | `placeholder-source-uri` |
-| `framework-adapters:provider-api` | integration/platform owner | blocked | TODO://authority/framework-adapters/provider-api | `placeholder-source-uri` |
-| `framework-adapters:hosted-service` | service owner | blocked | TODO://authority/framework-adapters/hosted-service | `placeholder-source-uri` |
 | `auditor-and-review-portal:kms-hsm` | security/platform KMS owner | blocked | TODO://authority/auditor-and-review-portal/kms-hsm | `placeholder-source-uri` |
 | `auditor-and-review-portal:provider-api` | integration/platform owner | blocked | TODO://authority/auditor-and-review-portal/provider-api | `placeholder-source-uri` |
 | `auditor-and-review-portal:hosted-service` | service owner | blocked | TODO://authority/auditor-and-review-portal/hosted-service | `placeholder-source-uri` |
@@ -85,12 +83,12 @@
 
 - Fulfilled source map errors: 1
 - Fulfilled source map warnings: 1
-  - source map contains 66 placeholder source_uri values but live source URIs are required
+  - source map contains 64 placeholder source_uri values but live source URIs are required
 
 ## Blockers
 
-- owner fulfillment review contains 66 placeholder source_uri values
-- fulfilled source map: source map contains 66 placeholder source_uri values but live source URIs are required
+- owner fulfillment review contains 64 placeholder source_uri values
+- fulfilled source map: source map contains 64 placeholder source_uri values but live source URIs are required
 
 ## Next Actions
 

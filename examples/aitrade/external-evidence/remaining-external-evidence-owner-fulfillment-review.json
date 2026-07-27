@@ -1,7 +1,7 @@
 {
   "blockers": [
-    "owner fulfillment review contains 66 placeholder source_uri values",
-    "fulfilled source map: source map contains 66 placeholder source_uri values but live source URIs are required"
+    "owner fulfillment review contains 64 placeholder source_uri values",
+    "fulfilled source map: source map contains 64 placeholder source_uri values but live source URIs are required"
   ],
   "commands": {
     "collect_after_ready_review": "python -m trustai external-evidence-collect-batch <fulfilled-source-map.json> <manifest.json> <roadmap-audit.json> --root . --require-live-source-uris",
@@ -418,54 +418,6 @@
         "title": "Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex",
         "unit_id": "296efe1c318d771e413fcdcd87e51d2005055054e50a06f26580db00eefed0d0",
         "unit_ref": "framework-adapters:ci-run"
-      },
-      {
-        "authority_kind": "provider-api",
-        "coverage_status": "missing",
-        "description": "provider-api evidence for framework-adapters",
-        "external_authority_required": [
-          "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/framework-adapters/provider-api.json",
-        "owner_hint": "integration/platform owner",
-        "requirement_id": "framework-adapters",
-        "snapshot_out": "artifacts/external-evidence-sources/framework-adapters/provider-api.json",
-        "source_uri": "TODO://authority/framework-adapters/provider-api",
-        "suggested_evidence_sources": [
-          "provider API response export",
-          "request/response transcript",
-          "provider-owned audit event"
-        ],
-        "task": "framework-adapters:provider-api",
-        "task_id": "51819e7ba85f3a34a8b43c2d8ffbfa42795c75f94b7502ccb16ce7e5581f30c7",
-        "task_ref": "external-evidence:framework-adapters:provider-api",
-        "title": "Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex",
-        "unit_id": "2535596ebea2fa0ea008bafb1b71f80fde51939a25399cb76f40582f920e5acb",
-        "unit_ref": "framework-adapters:provider-api"
-      },
-      {
-        "authority_kind": "hosted-service",
-        "coverage_status": "missing",
-        "description": "hosted-service evidence for framework-adapters",
-        "external_authority_required": [
-          "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/framework-adapters/hosted-service.json",
-        "owner_hint": "service owner",
-        "requirement_id": "framework-adapters",
-        "snapshot_out": "artifacts/external-evidence-sources/framework-adapters/hosted-service.json",
-        "source_uri": "TODO://authority/framework-adapters/hosted-service",
-        "suggested_evidence_sources": [
-          "hosted service health or deployment export",
-          "service audit root",
-          "operational SLO/status evidence"
-        ],
-        "task": "framework-adapters:hosted-service",
-        "task_id": "e27eb6adfc3eea49f178660893ced3d9f7ff54e45675d1ef258678a2d0596267",
-        "task_ref": "external-evidence:framework-adapters:hosted-service",
-        "title": "Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex",
-        "unit_id": "8563dcf215b5ef63455bca12f81e4fb2d7e98b515192ee839340c62b8332ca82",
-        "unit_ref": "framework-adapters:hosted-service"
       },
       {
         "authority_kind": "kms-hsm",
@@ -1603,14 +1555,14 @@
       "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
     ],
     "schema": "trustai.external-evidence-source-map/0.1",
-    "source_map_id": "fcdddd7a67a50c5cdea1b32980cb9fee313a7776315960d63ebd1ebc446ea25a",
+    "source_map_id": "3df345911e92736f2cb035676e83c489dabe5a5eafb2e4caf0c7c8d41900885a",
     "source_plan": {
-      "plan_hash": "968e12331ccb10d541a82d6d3e8bd06aa8310ebba64edefc95f4ba0dbd790670",
-      "plan_id": "be55cbd2c290e098cdcf77256cbd2177b3fb60c4a1fed0ce17c270483a14dfe1",
+      "plan_hash": "f1dbe0ac0afa1b6828bc79aa8e8a14ebc8d476fe802bffee7134d7514e5c38dd",
+      "plan_id": "2310fcd34419b5b78ad0cdab924f799c2a984bdd4195633081f3aac4bdf31ac2",
       "source_manifest": {
         "generated_at": "2026-07-12T00:01:00Z",
-        "manifest_hash": "14bda9a5e62b79c101d2203b32e5302451f044bdaccb63527399e3f50fa697fd",
-        "manifest_id": "876050e0b2ef47153aaf656b4b44a3abda0b017227a0e5b7a1d13ff411278b61",
+        "manifest_hash": "b59f20633fadc6aa0fc32b842b54901b2c64b2aa6e43e6c5a5030b501e700d59",
+        "manifest_id": "da1839a025798bd08745c84c5a8207dc35a44d574ec24a8cedfe55ec36b84620",
         "manifest_ref": "production-external-evidence",
         "status": "partial"
       },
@@ -1618,12 +1570,12 @@
     },
     "summary": {
       "authority_kinds": [],
-      "entry_count": 66,
+      "entry_count": 64,
       "intake_dir": "artifacts/external-evidence-intakes",
       "live_source_uri_count": 0,
-      "placeholder_source_uri_count": 66,
+      "placeholder_source_uri_count": 64,
       "snapshot_dir": "artifacts/external-evidence-sources",
-      "source_plan_task_count": 66,
+      "source_plan_task_count": 64,
       "status_filter": "missing"
     }
   },
@@ -1638,45 +1590,45 @@
     "Regenerate this review with --require-live-source-uris before collecting source snapshots.",
     "After the fulfilled source map is ready, run external-evidence-collect-batch and rebuild the retained manifest from intake receipts."
   ],
-  "owner_fulfillment_review_id": "d8a78ab2dcbcc874b1feafb53fdd796b82e33791f3930857bd9ce91f66e2b4f9",
+  "owner_fulfillment_review_id": "057ed02e934ffb9221ffb84894eae321c2400253b1ae2e049de738237cc514a1",
   "schema": "trustai.external-evidence-owner-fulfillment-review/0.1",
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "968e12331ccb10d541a82d6d3e8bd06aa8310ebba64edefc95f4ba0dbd790670",
-      "plan_id": "be55cbd2c290e098cdcf77256cbd2177b3fb60c4a1fed0ce17c270483a14dfe1",
+      "plan_hash": "f1dbe0ac0afa1b6828bc79aa8e8a14ebc8d476fe802bffee7134d7514e5c38dd",
+      "plan_id": "2310fcd34419b5b78ad0cdab924f799c2a984bdd4195633081f3aac4bdf31ac2",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "owner_fulfillment_template": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_fulfillment_template_hash": "45e8a12979da5d9b330cbc3f6e28b57795496699544fc9966fce118981cf1e1f",
-      "owner_fulfillment_template_id": "784680f59e3831b96c4ded623b5407947f12ffd2b434aa29b3f76e53fe1d7334",
+      "owner_fulfillment_template_hash": "1761e53bcf1df421332f3d9b75808f1d96d0dfbedbe3124347f67ad653d8b000",
+      "owner_fulfillment_template_id": "31f1a6f1b63524f757b3e08d07a1cdb3de72f46e44f92d3d9ab87ad893c9b7a3",
       "schema": "trustai.external-evidence-owner-fulfillment-template/0.1"
     },
     "owner_packet_status": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_status_hash": "a1054e51893d5543a72bf0cb9859ed86ee3dee68e12376398809db651dd1517c",
-      "owner_packet_status_id": "2c70baefd5bfde5b7eb535730f8e58e4b4c6bfa164fe825604b54346c88aea49",
+      "owner_packet_status_hash": "8b7a34cd31f11524a705cc3f3706b889e633c980cb7e28908d4d5c8c88f91cee",
+      "owner_packet_status_id": "8482dac1db0ed2cd95cdfb30dd99c3e30b64dba96768db510f7cd407440b632f",
       "schema": "trustai.external-evidence-owner-packet-status/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "9cfae07e6f70f0a4c3690ffdd38b1852506edd8504a67fe1ea3caa2681023c16",
-      "source_map_id": "64dd7f85c8bd76336090445fcc369e606c1a775dee42c697a566531b4db428a3"
+      "source_map_hash": "fb94d1480af30195812ac281c1390b9e3e28c45e022feafa73770ac6789ff19c",
+      "source_map_id": "701fb4d0e2b253531b2434d0fe04775b91639fb5fe6e4a3488f098d059a1d05e"
     }
   },
   "summary": {
-    "blocked_task_count": 66,
+    "blocked_task_count": 64,
     "error_count": 1,
     "fulfilled_source_map_verification_ok": false,
-    "fulfillment_count": 66,
+    "fulfillment_count": 64,
     "live_source_uri_count": 0,
     "owner_count": 10,
-    "placeholder_source_uri_count": 66,
+    "placeholder_source_uri_count": 64,
     "ready_task_count": 0,
     "review_status": "blocked",
-    "source_map_entry_count": 66,
+    "source_map_entry_count": 64,
     "template_verification_ok": true,
     "warning_count": 3
   },
@@ -1918,34 +1870,6 @@
       "source_uri": "TODO://authority/framework-adapters/ci-run",
       "source_uri_status": "placeholder",
       "task": "framework-adapters:ci-run"
-    },
-    {
-      "authority_kind": "provider-api",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/framework-adapters/provider-api.json",
-      "owner_hint": "integration/platform owner",
-      "requirement_id": "framework-adapters",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/framework-adapters/provider-api.json",
-      "source_uri": "TODO://authority/framework-adapters/provider-api",
-      "source_uri_status": "placeholder",
-      "task": "framework-adapters:provider-api"
-    },
-    {
-      "authority_kind": "hosted-service",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/framework-adapters/hosted-service.json",
-      "owner_hint": "service owner",
-      "requirement_id": "framework-adapters",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/framework-adapters/hosted-service.json",
-      "source_uri": "TODO://authority/framework-adapters/hosted-service",
-      "source_uri_status": "placeholder",
-      "task": "framework-adapters:hosted-service"
     },
     {
       "authority_kind": "kms-hsm",
@@ -2608,14 +2532,14 @@
   ],
   "verification": {
     "fulfilled_source_map_errors": [
-      "source map contains 66 placeholder source_uri values but live source URIs are required"
+      "source map contains 64 placeholder source_uri values but live source URIs are required"
     ],
     "fulfilled_source_map_warnings": [
-      "source map contains 66 placeholder source_uri values"
+      "source map contains 64 placeholder source_uri values"
     ],
     "template_warnings": [
-      "owner fulfillment template summary contains 66 placeholder source_uri values",
-      "owner fulfillment template summary contains 66 tasks without intake receipts"
+      "owner fulfillment template summary contains 64 placeholder source_uri values",
+      "owner fulfillment template summary contains 64 tasks without intake receipts"
     ]
   },
   "verification_options": {
