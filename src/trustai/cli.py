@@ -314,6 +314,15 @@ from .product_scope import (
     verify_product_scope_decision,
     write_product_scope_decision,
 )
+from .product_scope_authority import (
+    PRODUCT_SCOPE_AUTHORITY_MODES,
+    append_product_scope_authority_dossier,
+    build_product_scope_authority_dossier,
+    load_product_scope_authority_dossier,
+    parse_product_scope_authority_evidence_arg,
+    verify_product_scope_authority_dossier,
+    write_product_scope_authority_dossier,
+)
 from .onboarding import (
     GATEWAY_MODES,
     SDK_SCOPES,
@@ -1878,6 +1887,107 @@ def cmd_product_scope_decision_append(args: argparse.Namespace) -> int:
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
+
+def cmd_product_scope_authority(args: argparse.Namespace) -> int:
+    try:
+        decision = load_product_scope_decision(args.decision_receipt)
+        evidence = [parse_product_scope_authority_evidence_arg(value) for value in args.authority_evidence]
+        dossier = build_product_scope_authority_dossier(
+            decision,
+            root=args.root,
+            authority_evidence=evidence,
+            mode=args.mode,
+            environment=args.environment,
+            dossier_ref=args.dossier_ref,
+            authority_ref=args.authority_ref,
+            producer_ref=args.producer_ref,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_product_scope_authority_dossier(
+            dossier,
+            decision_receipt=decision,
+            root=args.root,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"product scope authority dossier failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("product scope authority dossier verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_product_scope_authority_dossier(args.out, dossier)
+    print(f"product scope authority dossier: {args.out}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"covered requirements: {result.covered_count}/{result.required_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_product_scope_authority_verify(args: argparse.Namespace) -> int:
+    try:
+        dossier = load_product_scope_authority_dossier(args.dossier)
+        decision = load_product_scope_decision(args.decision_receipt)
+        result = verify_product_scope_authority_dossier(
+            dossier,
+            decision_receipt=decision,
+            root=args.root,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"product scope authority dossier verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        print(f"verified product scope authority dossier: {args.dossier}")
+        print(f"covered requirements: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"product scope authority dossier verification failed: {args.dossier}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_product_scope_authority_append(args: argparse.Namespace) -> int:
+    try:
+        dossier = load_product_scope_authority_dossier(args.dossier)
+        decision = load_product_scope_decision(args.decision_receipt)
+    except (OSError, ValueError) as exc:
+        print(f"product scope authority append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_product_scope_authority_dossier(
+            chain,
+            dossier,
+            decision_receipt=decision,
+            root=args.root,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"product scope authority append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"product scope authority entry: {args.out}")
+    print(f"product scope authority entry id: {entry['entry_id']}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
 
 def cmd_vertical_pack(args: argparse.Namespace) -> int:
     try:
@@ -20808,6 +20918,45 @@ def build_parser() -> argparse.ArgumentParser:
     product_scope_append.add_argument("--key")
     _add_state_args(product_scope_append)
     product_scope_append.set_defaults(func=cmd_product_scope_decision_append)
+
+    product_scope_authority = subparsers.add_parser("product-scope-authority", help="write a signed product scope production authority dossier")
+    product_scope_authority.add_argument("decision_receipt")
+    product_scope_authority.add_argument("--root", default=".")
+    product_scope_authority.add_argument("--mode", choices=sorted(PRODUCT_SCOPE_AUTHORITY_MODES), default="governance-dossier")
+    product_scope_authority.add_argument("--environment", default="local")
+    product_scope_authority.add_argument("--dossier-ref", required=True)
+    product_scope_authority.add_argument("--authority-ref", required=True)
+    product_scope_authority.add_argument("--producer-ref", required=True)
+    product_scope_authority.add_argument("--authority-evidence", action="append", default=[], help="requirement_id,authority_kind,evidence_ref,evidence_hash,description[;issuer=...;subject=...;source_uri=...;issued_at=...;expires_at=...]")
+    product_scope_authority.add_argument("--generated-at")
+    product_scope_authority.add_argument("--require-complete", action="store_true")
+    product_scope_authority.add_argument("--require-fresh", action="store_true")
+    product_scope_authority.add_argument("--now")
+    product_scope_authority.add_argument("--out", default="artifacts/product-scope-authority.json")
+    product_scope_authority.add_argument("--key")
+    product_scope_authority.set_defaults(func=cmd_product_scope_authority)
+
+    product_scope_authority_verify = subparsers.add_parser("product-scope-authority-verify", help="verify a signed product scope production authority dossier")
+    product_scope_authority_verify.add_argument("dossier")
+    product_scope_authority_verify.add_argument("decision_receipt")
+    product_scope_authority_verify.add_argument("--root", default=".")
+    product_scope_authority_verify.add_argument("--require-complete", action="store_true")
+    product_scope_authority_verify.add_argument("--require-fresh", action="store_true")
+    product_scope_authority_verify.add_argument("--now")
+    product_scope_authority_verify.add_argument("--key")
+    product_scope_authority_verify.set_defaults(func=cmd_product_scope_authority_verify)
+
+    product_scope_authority_append = subparsers.add_parser("product-scope-authority-append", help="append a verified product scope production authority dossier")
+    product_scope_authority_append.add_argument("dossier")
+    product_scope_authority_append.add_argument("decision_receipt")
+    product_scope_authority_append.add_argument("--root", default=".")
+    product_scope_authority_append.add_argument("--require-complete", action="store_true")
+    product_scope_authority_append.add_argument("--require-fresh", action="store_true")
+    product_scope_authority_append.add_argument("--now")
+    product_scope_authority_append.add_argument("--out", default="artifacts/product-scope-authority-entry.json")
+    product_scope_authority_append.add_argument("--key")
+    _add_state_args(product_scope_authority_append)
+    product_scope_authority_append.set_defaults(func=cmd_product_scope_authority_append)
 
     vertical_pack = subparsers.add_parser("vertical-pack", help="write a signed vertical pack receipt")
     vertical_pack.add_argument("--root", default=".")

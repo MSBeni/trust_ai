@@ -587,7 +587,9 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
         "roadmap_ref": "What we build vs. what we refuse to build; discipline test for feature requests",
         "evidence_paths": [
             "docs/specs/product-scope-decision-v0.1.md",
+            "docs/specs/product-scope-authority-v0.1.md",
             "src/trustai/product_scope.py",
+            "src/trustai/product_scope_authority.py",
             "docs/specs/proof-pack-v0.1.md",
             "docs/specs/verification-contract-v0.1.md",
             "docs/specs/roadmap-audit-v0.1.md",
@@ -597,6 +599,7 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "src/trustai/gate.py",
             "src/trustai/roadmap_audit.py",
             "tests/test_product_scope.py",
+            "tests/test_product_scope_authority.py",
         ],
         "external_authority": [
             "Product scope decisions cover local/reference checks for proof-strength, cheaper-production, wider-acceptance, and anti-focus decline controls; actual company governance adoption, product-council enforcement, customer-pressure evidence, and ongoing roadmap discipline remain external operating evidence.",

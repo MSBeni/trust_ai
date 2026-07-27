@@ -1,7 +1,7 @@
 {
-  "audit_id": "dab45b3a72377ad2996d4bef90802496de70cf0147687f36fb2acfcc285c28f5",
+  "audit_id": "f671add75f5de92403c55968d3f1bcf707daa162ad328023a0fb42ab1c7d50ba",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
-  "generated_at": "2026-07-27T04:21:51Z",
+  "generated_at": "2026-07-27T04:44:45Z",
   "limitations": [
     "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
     "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",
@@ -404,7 +404,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:fa6ab09dee8d5336854c3c8b63c28783ea61b455c1f514c2ddff317464d0e8fe"
+          "sha256": "sha256:255651a9bfee4aaea652494b41cf5207f9a8f6b2be53e38f6fbfa9a9de317727"
         },
         {
           "path": "src/trustai/sdk.py",
@@ -1201,7 +1201,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:fa6ab09dee8d5336854c3c8b63c28783ea61b455c1f514c2ddff317464d0e8fe"
+          "sha256": "sha256:255651a9bfee4aaea652494b41cf5207f9a8f6b2be53e38f6fbfa9a9de317727"
         },
         {
           "path": "src/trustai/object_store.py",
@@ -1307,7 +1307,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:fa6ab09dee8d5336854c3c8b63c28783ea61b455c1f514c2ddff317464d0e8fe"
+          "sha256": "sha256:255651a9bfee4aaea652494b41cf5207f9a8f6b2be53e38f6fbfa9a9de317727"
         },
         {
           "path": "docs/specs/compliance-production-authority-v0.1.md",
@@ -1443,7 +1443,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:b705ef34f5aebcceab16306cde17b091ac3c4c7780280f29bc666760161e65f6"
+          "sha256": "sha256:c0dee418195251c514fdc82ed267f1ce81528f027167f46415277d3771a3ca51"
         },
         {
           "path": "src/trustai/trust_authority.py",
@@ -1655,7 +1655,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:fa6ab09dee8d5336854c3c8b63c28783ea61b455c1f514c2ddff317464d0e8fe"
+          "sha256": "sha256:255651a9bfee4aaea652494b41cf5207f9a8f6b2be53e38f6fbfa9a9de317727"
         },
         {
           "path": "src/trustai/underwriting_quote.py",
@@ -1846,7 +1846,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:b705ef34f5aebcceab16306cde17b091ac3c4c7780280f29bc666760161e65f6"
+          "sha256": "sha256:c0dee418195251c514fdc82ed267f1ce81528f027167f46415277d3771a3ca51"
         },
         {
           "path": "tests/test_reliability_report.py",
@@ -1962,7 +1962,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:b705ef34f5aebcceab16306cde17b091ac3c4c7780280f29bc666760161e65f6"
+          "sha256": "sha256:c0dee418195251c514fdc82ed267f1ce81528f027167f46415277d3771a3ca51"
         },
         {
           "path": "tests/test_phase_scoreboard.py",
@@ -1991,9 +1991,19 @@
           "sha256": "sha256:2636bf581a4e79becd6016e7fd82564982d61345175dd4eb1c4e1dc0eb8a4340"
         },
         {
+          "path": "docs/specs/product-scope-authority-v0.1.md",
+          "present": true,
+          "sha256": "sha256:1052bc9a303091886ad090fc054045d90e1e177039601e3801a0cfbc0dfbb3e4"
+        },
+        {
           "path": "src/trustai/product_scope.py",
           "present": true,
           "sha256": "sha256:af69657443dd0c6244cfe2d85b5854a5c98d786f8b926dff7414c8c026b98bb5"
+        },
+        {
+          "path": "src/trustai/product_scope_authority.py",
+          "present": true,
+          "sha256": "sha256:a1bfac52b3416dec3dcf8dd106d19b21f057908724f3c39134473d18f7e90dac"
         },
         {
           "path": "docs/specs/proof-pack-v0.1.md",
@@ -2033,22 +2043,27 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:b705ef34f5aebcceab16306cde17b091ac3c4c7780280f29bc666760161e65f6"
+          "sha256": "sha256:c0dee418195251c514fdc82ed267f1ce81528f027167f46415277d3771a3ca51"
         },
         {
           "path": "tests/test_product_scope.py",
           "present": true,
           "sha256": "sha256:3ae2631f3c3f11e8f1addc01b496103a77c0b122f2b01c77326183b490127130"
+        },
+        {
+          "path": "tests/test_product_scope_authority.py",
+          "present": true,
+          "sha256": "sha256:1cc8ae01ff7a135793a3934af0cdf9cce6d3e082bd2b3e4012f1fafc78819b7b"
         }
       ],
-      "evidence_count": 11,
+      "evidence_count": 14,
       "external_authority_required": [
         "Product scope decisions cover local/reference checks for proof-strength, cheaper-production, wider-acceptance, and anti-focus decline controls; actual company governance adoption, product-council enforcement, customer-pressure evidence, and ongoing roadmap discipline remain external operating evidence."
       ],
       "id": "product-scope-discipline",
       "missing_evidence_count": 0,
       "phase": "P0-P4",
-      "present_evidence_count": 11,
+      "present_evidence_count": 14,
       "priority": "P0",
       "roadmap_ref": "What we build vs. what we refuse to build; discipline test for feature requests",
       "status": "reference-attested",
@@ -2210,7 +2225,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:fa6ab09dee8d5336854c3c8b63c28783ea61b455c1f514c2ddff317464d0e8fe"
+          "sha256": "sha256:255651a9bfee4aaea652494b41cf5207f9a8f6b2be53e38f6fbfa9a9de317727"
         },
         {
           "path": "docs/specs/identity-provider-attestation-v0.1.md",
@@ -2321,7 +2336,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:fa6ab09dee8d5336854c3c8b63c28783ea61b455c1f514c2ddff317464d0e8fe"
+          "sha256": "sha256:255651a9bfee4aaea652494b41cf5207f9a8f6b2be53e38f6fbfa9a9de317727"
         },
         {
           "path": "examples/aitrade/delegation.json",
