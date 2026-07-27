@@ -1,0 +1,22 @@
+{
+  "body_base64": "ewogICJldmVudHMiOiBbCiAgICB7CiAgICAgICJzZXNzaW9uX2lkIjogIm1jcC1zZXNzaW9uLTIwMjYwNzAzIiwKICAgICAgInRpbWVzdGFtcCI6ICIyMDI2LTA3LTAzVDEyOjAwOjEwWiIsCiAgICAgICJkaXJlY3Rpb24iOiAiY2xpZW50X3RvX3NlcnZlciIsCiAgICAgICJtZXNzYWdlIjogewogICAgICAgICJqc29ucnBjIjogIjIuMCIsCiAgICAgICAgImlkIjogInRvb2wtY2FsbC0wMDEiLAogICAgICAgICJtZXRob2QiOiAidG9vbHMvY2FsbCIsCiAgICAgICAgImF1dGhvcml6YXRpb24iOiAiQmVhcmVyIHJhdy10b29sLXRva2VuIiwKICAgICAgICAicGFyYW1zIjogewogICAgICAgICAgIm5hbWUiOiAicGxhY2Vfc2hhZG93X29yZGVyIiwKICAgICAgICAgICJhcmd1bWVudHMiOiB7CiAgICAgICAgICAgICJzeW1ib2wiOiAiQlRDVVNEVCIsCiAgICAgICAgICAgICJzaWRlIjogImJ1eSIsCiAgICAgICAgICAgICJub3Rpb25hbF91c2QiOiA3NTAwLAogICAgICAgICAgICAibW9kZSI6ICJzaGFkb3ciCiAgICAgICAgICB9CiAgICAgICAgfQogICAgICB9CiAgICB9LAogICAgewogICAgICAic2Vzc2lvbl9pZCI6ICJtY3Atc2Vzc2lvbi0yMDI2MDcwMyIsCiAgICAgICJ0aW1lc3RhbXAiOiAiMjAyNi0wNy0wM1QxMjowMDoxMVoiLAogICAgICAiZGlyZWN0aW9uIjogInNlcnZlcl90b19jbGllbnQiLAogICAgICAibWVzc2FnZSI6IHsKICAgICAgICAianNvbnJwYyI6ICIyLjAiLAogICAgICAgICJpZCI6ICJ0b29sLWNhbGwtMDAxIiwKICAgICAgICAicmVzdWx0IjogewogICAgICAgICAgInN0YXR1cyI6ICJhY2NlcHRlZCIsCiAgICAgICAgICAib3JkZXJfaWQiOiAic2hhZG93LW9yZGVyLTIwMjYwNzAzLTAwMSIKICAgICAgICB9CiAgICAgIH0KICAgIH0KICBdCn0K",
+  "body_sha256": "sha256:24488d5a40815e53618137da83685f927cc2073af74a6128752f01612cf42502",
+  "body_size_bytes": 891,
+  "content_type": "application/json",
+  "expires_at": "2026-12-31T00:00:00Z",
+  "generated_at": "2026-07-12T00:01:00Z",
+  "issued_at": "2026-07-03T12:05:00Z",
+  "issuer": "GitHub Hosted Repository",
+  "limitations": [
+    "This source snapshot preserves one collected authority response as a hashable artifact; it does not prove that the authority will return the same response later.",
+    "Verifier checks cover snapshot integrity, body hash, optional HTTP metadata, and optional freshness metadata.",
+    "Use this snapshot as the artifact supplied to external-evidence-intake for the matching collection-plan task."
+  ],
+  "response_headers": {},
+  "retrieval_method": "file-copy",
+  "schema": "trustai.external-evidence-source-snapshot/0.1",
+  "snapshot_id": "ce94704e20020569d3d93cb05f3310adb047a563839333daf4e3a8b631efd9e3",
+  "source_uri": "https://github.com/MSBeni/trust_ai/blob/main/examples/aitrade/mcp-proxy-events.json",
+  "status_code": null,
+  "subject": "trustai MCP proxy event export"
+}

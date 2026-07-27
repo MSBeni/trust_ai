@@ -1,7 +1,7 @@
 {
   "blockers": [
-    "owner fulfillment review contains 62 placeholder source_uri values",
-    "fulfilled source map: source map contains 62 placeholder source_uri values but live source URIs are required"
+    "owner fulfillment review contains 60 placeholder source_uri values",
+    "fulfilled source map: source map contains 60 placeholder source_uri values but live source URIs are required"
   ],
   "commands": {
     "collect_after_ready_review": "python -m trustai external-evidence-collect-batch <fulfilled-source-map.json> <manifest.json> <roadmap-audit.json> --root . --require-live-source-uris",
@@ -130,54 +130,6 @@
         "title": "MCP evidence gateway reference capture",
         "unit_id": "b6bff59993928600d982fe3a58ffd8124707f853906888cab9ca1024a7a15840",
         "unit_ref": "mcp-gateway:kms-hsm"
-      },
-      {
-        "authority_kind": "provider-api",
-        "coverage_status": "missing",
-        "description": "provider-api evidence for mcp-gateway",
-        "external_authority_required": [
-          "MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/provider-api.json",
-        "owner_hint": "integration/platform owner",
-        "requirement_id": "mcp-gateway",
-        "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/provider-api.json",
-        "source_uri": "TODO://authority/mcp-gateway/provider-api",
-        "suggested_evidence_sources": [
-          "provider API response export",
-          "request/response transcript",
-          "provider-owned audit event"
-        ],
-        "task": "mcp-gateway:provider-api",
-        "task_id": "74f73767f9ec7e8f759c6b2135fab1c24fd052424c78eceae7d4a820b5fe41b6",
-        "task_ref": "external-evidence:mcp-gateway:provider-api",
-        "title": "MCP evidence gateway reference capture",
-        "unit_id": "f113eea739eb3d407bee25f22f68afebda945e20ff27f75406db56edb016892c",
-        "unit_ref": "mcp-gateway:provider-api"
-      },
-      {
-        "authority_kind": "hosted-service",
-        "coverage_status": "missing",
-        "description": "hosted-service evidence for mcp-gateway",
-        "external_authority_required": [
-          "MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/hosted-service.json",
-        "owner_hint": "service owner",
-        "requirement_id": "mcp-gateway",
-        "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/hosted-service.json",
-        "source_uri": "TODO://authority/mcp-gateway/hosted-service",
-        "suggested_evidence_sources": [
-          "hosted service health or deployment export",
-          "service audit root",
-          "operational SLO/status evidence"
-        ],
-        "task": "mcp-gateway:hosted-service",
-        "task_id": "2f7cb1b22473df0f0dcca97d28b1184fb4831eb54b9b3f5408866e2d10d5e6df",
-        "task_ref": "external-evidence:mcp-gateway:hosted-service",
-        "title": "MCP evidence gateway reference capture",
-        "unit_id": "8766be3ea5e06276839b71f9e28a0032782143df739db18f6b58dcc76e899249",
-        "unit_ref": "mcp-gateway:hosted-service"
       },
       {
         "authority_kind": "kms-hsm",
@@ -1507,14 +1459,14 @@
       "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
     ],
     "schema": "trustai.external-evidence-source-map/0.1",
-    "source_map_id": "250a4dc744d84bdaa09c251d28af668005a6fead05efcc2fe04772800fdc4944",
+    "source_map_id": "37a6799143d1ce4eb56b6ec7ef402f6f69a6fb452d38aac97623e890c3d5b1c9",
     "source_plan": {
-      "plan_hash": "0de2fd2ac37d32de11b1908e7b1879ce3f2e91296ec7cbc40c2a826c2564c896",
-      "plan_id": "6190407de0c9ff6397e13a9bba70640897a592970e338134ab0868ac1cd612ef",
+      "plan_hash": "a7221785d608173f67dc7e26d8cb4881acdbfd0f0dd3fbd31a786e010d772675",
+      "plan_id": "ae37345ce52960c691fd568d844bd44407d5d23f69efd29bac87e789fb15957a",
       "source_manifest": {
         "generated_at": "2026-07-12T00:01:00Z",
-        "manifest_hash": "9a5492b9701e70ba488d82f51caf513d6936134962342e2d7b58155e52d378c2",
-        "manifest_id": "aeff1ad249f16d018b89eec85bf9322db6e31b2861cd90a1bc181af190b46cd4",
+        "manifest_hash": "06e5a5bbd9c45c8d9e929ea6cc20ed2630b74c41491966cba66b12b83629ed20",
+        "manifest_id": "eaf64e35c913bb926b61439015d04f8091473cbbe9df659291b9e6ba69c7ee20",
         "manifest_ref": "production-external-evidence",
         "status": "partial"
       },
@@ -1522,12 +1474,12 @@
     },
     "summary": {
       "authority_kinds": [],
-      "entry_count": 62,
+      "entry_count": 60,
       "intake_dir": "artifacts/external-evidence-intakes",
       "live_source_uri_count": 0,
-      "placeholder_source_uri_count": 62,
+      "placeholder_source_uri_count": 60,
       "snapshot_dir": "artifacts/external-evidence-sources",
-      "source_plan_task_count": 62,
+      "source_plan_task_count": 60,
       "status_filter": "missing"
     }
   },
@@ -1542,45 +1494,45 @@
     "Regenerate this review with --require-live-source-uris before collecting source snapshots.",
     "After the fulfilled source map is ready, run external-evidence-collect-batch and rebuild the retained manifest from intake receipts."
   ],
-  "owner_fulfillment_review_id": "bd95b75b03b6260025557565e406b193e02c157bb050c2daef24976add238800",
+  "owner_fulfillment_review_id": "5283fc50c51f38b5a27401adbedddf1385f332635f1a202de4968586c97932a1",
   "schema": "trustai.external-evidence-owner-fulfillment-review/0.1",
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "0de2fd2ac37d32de11b1908e7b1879ce3f2e91296ec7cbc40c2a826c2564c896",
-      "plan_id": "6190407de0c9ff6397e13a9bba70640897a592970e338134ab0868ac1cd612ef",
+      "plan_hash": "a7221785d608173f67dc7e26d8cb4881acdbfd0f0dd3fbd31a786e010d772675",
+      "plan_id": "ae37345ce52960c691fd568d844bd44407d5d23f69efd29bac87e789fb15957a",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "owner_fulfillment_template": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_fulfillment_template_hash": "21fafb57ee3593d485e06fde011fd6e222d8a008ff25f828d325d61ee465f515",
-      "owner_fulfillment_template_id": "83ae2815bc4b3c41b58316c5bc3b66556042a59d757588f8a7d6d6e3b705ea9c",
+      "owner_fulfillment_template_hash": "b696327496b0550e83742948496ddeeaba51955bea21795ba05f22e7f337e554",
+      "owner_fulfillment_template_id": "1705f87361ee9df895975f7972e290d9e35b997579e1ca5785a4de746ac37e2c",
       "schema": "trustai.external-evidence-owner-fulfillment-template/0.1"
     },
     "owner_packet_status": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_status_hash": "c3d0cc54289d317592af3ef9b7b1ecd6e5e68b2745d39f93e2e4c1bc501755a8",
-      "owner_packet_status_id": "e55e06e65a65b452be683b1d7f0c1bf2b2a9a8a27356b0a4d0ea369e89d76c59",
+      "owner_packet_status_hash": "cfbfb0bf0dc5f0400cdc5149d0f8cb30921fe43658b82fec5fcd106d32b85058",
+      "owner_packet_status_id": "da99840d6a0a49f2a17341e66c6ab2a14957aa4c7cd73f1ee4d422dff4a21cf9",
       "schema": "trustai.external-evidence-owner-packet-status/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "1a2bb997ce30c2c16aa2ac1ef0e32ffadd2540019112f6cca4e12b2fe8670bfc",
-      "source_map_id": "98eba14dfaccf0efe71a34f5c137eaf7020a7cf8a4b0a8c6057d2a90900c58b0"
+      "source_map_hash": "db8817d96ef20e47c04fc1484df072b6edb266bdec914e49b4e9239061bf88de",
+      "source_map_id": "8604c16ae1b5aa19bc2f40099e4414721228aec8ae935788675e6d49ff154d4f"
     }
   },
   "summary": {
-    "blocked_task_count": 62,
+    "blocked_task_count": 60,
     "error_count": 1,
     "fulfilled_source_map_verification_ok": false,
-    "fulfillment_count": 62,
+    "fulfillment_count": 60,
     "live_source_uri_count": 0,
     "owner_count": 10,
-    "placeholder_source_uri_count": 62,
+    "placeholder_source_uri_count": 60,
     "ready_task_count": 0,
     "review_status": "blocked",
-    "source_map_entry_count": 62,
+    "source_map_entry_count": 60,
     "template_verification_ok": true,
     "warning_count": 3
   },
@@ -1654,34 +1606,6 @@
       "source_uri": "TODO://authority/mcp-gateway/kms-hsm",
       "source_uri_status": "placeholder",
       "task": "mcp-gateway:kms-hsm"
-    },
-    {
-      "authority_kind": "provider-api",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/provider-api.json",
-      "owner_hint": "integration/platform owner",
-      "requirement_id": "mcp-gateway",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/provider-api.json",
-      "source_uri": "TODO://authority/mcp-gateway/provider-api",
-      "source_uri_status": "placeholder",
-      "task": "mcp-gateway:provider-api"
-    },
-    {
-      "authority_kind": "hosted-service",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/hosted-service.json",
-      "owner_hint": "service owner",
-      "requirement_id": "mcp-gateway",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/hosted-service.json",
-      "source_uri": "TODO://authority/mcp-gateway/hosted-service",
-      "source_uri_status": "placeholder",
-      "task": "mcp-gateway:hosted-service"
     },
     {
       "authority_kind": "kms-hsm",
@@ -2456,14 +2380,14 @@
   ],
   "verification": {
     "fulfilled_source_map_errors": [
-      "source map contains 62 placeholder source_uri values but live source URIs are required"
+      "source map contains 60 placeholder source_uri values but live source URIs are required"
     ],
     "fulfilled_source_map_warnings": [
-      "source map contains 62 placeholder source_uri values"
+      "source map contains 60 placeholder source_uri values"
     ],
     "template_warnings": [
-      "owner fulfillment template summary contains 62 placeholder source_uri values",
-      "owner fulfillment template summary contains 62 tasks without intake receipts"
+      "owner fulfillment template summary contains 60 placeholder source_uri values",
+      "owner fulfillment template summary contains 60 tasks without intake receipts"
     ]
   },
   "verification_options": {

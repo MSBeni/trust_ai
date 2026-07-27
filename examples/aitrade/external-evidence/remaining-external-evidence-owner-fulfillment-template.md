@@ -1,14 +1,14 @@
 # External Evidence Owner Fulfillment Template
 
-- Template ID: `83ae2815bc4b3c41b58316c5bc3b66556042a59d757588f8a7d6d6e3b705ea9c`
+- Template ID: `1705f87361ee9df895975f7972e290d9e35b997579e1ca5785a4de746ac37e2c`
 - Generated at: `2026-07-12T00:01:00Z`
-- Fulfillments: 62
+- Fulfillments: 60
 - Owners: 10
-- Blocked tasks: 62
+- Blocked tasks: 60
 - Open tasks: 0
 - Closed tasks: 0
-- Placeholder source URIs: 62
-- Missing intakes: 62
+- Placeholder source URIs: 60
+- Missing intakes: 60
 
 ## Fulfillments
 
@@ -35,7 +35,6 @@
 | `byoc-self-hosted:provider-api` | TODO://authority/byoc-self-hosted/provider-api | provider-api evidence for byoc-self-hosted |
 | `compliance-mapper-and-eu-ai-act:provider-api` | TODO://authority/compliance-mapper-and-eu-ai-act/provider-api | provider-api evidence for compliance-mapper-and-eu-ai-act |
 | `insurer-api-and-actuarial-products:provider-api` | TODO://authority/insurer-api-and-actuarial-products/provider-api | provider-api evidence for insurer-api-and-actuarial-products |
-| `mcp-gateway:provider-api` | TODO://authority/mcp-gateway/provider-api | provider-api evidence for mcp-gateway |
 | `runtime-policy-and-attestation:provider-api` | TODO://authority/runtime-policy-and-attestation/provider-api | provider-api evidence for runtime-policy-and-attestation |
 | `self-serve-onboarding:provider-api` | TODO://authority/self-serve-onboarding/provider-api | provider-api evidence for self-serve-onboarding |
 | `shadow-replay-temporal-holdout:provider-api` | TODO://authority/shadow-replay-temporal-holdout/provider-api | provider-api evidence for shadow-replay-temporal-holdout |
@@ -66,7 +65,6 @@
 | `auditor-and-review-portal:hosted-service` | TODO://authority/auditor-and-review-portal/hosted-service | hosted-service evidence for auditor-and-review-portal |
 | `cicd-provider-approvals:hosted-service` | TODO://authority/cicd-provider-approvals/hosted-service | hosted-service evidence for cicd-provider-approvals |
 | `insurer-api-and-actuarial-products:hosted-service` | TODO://authority/insurer-api-and-actuarial-products/hosted-service | hosted-service evidence for insurer-api-and-actuarial-products |
-| `mcp-gateway:hosted-service` | TODO://authority/mcp-gateway/hosted-service | hosted-service evidence for mcp-gateway |
 | `runtime-policy-and-attestation:hosted-service` | TODO://authority/runtime-policy-and-attestation/hosted-service | hosted-service evidence for runtime-policy-and-attestation |
 | `self-serve-onboarding:hosted-service` | TODO://authority/self-serve-onboarding/hosted-service | hosted-service evidence for self-serve-onboarding |
 | `trust-network-procurement-and-marketplace:hosted-service` | TODO://authority/trust-network-procurement-and-marketplace/hosted-service | hosted-service evidence for trust-network-procurement-and-marketplace |
@@ -102,7 +100,6 @@
 | `byoc-self-hosted:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/byoc-self-hosted/provider-api.json | artifacts/external-evidence-intakes/byoc-self-hosted/provider-api.json |
 | `compliance-mapper-and-eu-ai-act:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/provider-api.json | artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/provider-api.json |
 | `insurer-api-and-actuarial-products:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/provider-api.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/provider-api.json |
-| `mcp-gateway:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/mcp-gateway/provider-api.json | artifacts/external-evidence-intakes/mcp-gateway/provider-api.json |
 | `runtime-policy-and-attestation:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/runtime-policy-and-attestation/provider-api.json | artifacts/external-evidence-intakes/runtime-policy-and-attestation/provider-api.json |
 | `self-serve-onboarding:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/self-serve-onboarding/provider-api.json | artifacts/external-evidence-intakes/self-serve-onboarding/provider-api.json |
 | `shadow-replay-temporal-holdout:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/shadow-replay-temporal-holdout/provider-api.json | artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/provider-api.json |
@@ -133,7 +130,6 @@
 | `auditor-and-review-portal:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/auditor-and-review-portal/hosted-service.json | artifacts/external-evidence-intakes/auditor-and-review-portal/hosted-service.json |
 | `cicd-provider-approvals:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/cicd-provider-approvals/hosted-service.json | artifacts/external-evidence-intakes/cicd-provider-approvals/hosted-service.json |
 | `insurer-api-and-actuarial-products:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/hosted-service.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/hosted-service.json |
-| `mcp-gateway:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/mcp-gateway/hosted-service.json | artifacts/external-evidence-intakes/mcp-gateway/hosted-service.json |
 | `runtime-policy-and-attestation:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/runtime-policy-and-attestation/hosted-service.json | artifacts/external-evidence-intakes/runtime-policy-and-attestation/hosted-service.json |
 | `self-serve-onboarding:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/self-serve-onboarding/hosted-service.json | artifacts/external-evidence-intakes/self-serve-onboarding/hosted-service.json |
 | `trust-network-procurement-and-marketplace:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/hosted-service.json | artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/hosted-service.json |

@@ -1,14 +1,14 @@
 # External Evidence Owner Packet Status
 
-- Status ID: `e55e06e65a65b452be683b1d7f0c1bf2b2a9a8a27356b0a4d0ea369e89d76c59`
+- Status ID: `da99840d6a0a49f2a17341e66c6ab2a14957aa4c7cd73f1ee4d422dff4a21cf9`
 - Generated at: `2026-07-12T00:01:00Z`
 - Packets: 10
-- Tasks: 62
+- Tasks: 60
 - Closed tasks: 0
 - Open tasks: 0
-- Blocked tasks: 62
-- Placeholder source URIs: 62
-- Missing intakes: 62
+- Blocked tasks: 60
+- Placeholder source URIs: 60
+- Missing intakes: 60
 
 ## Packets
 
@@ -17,12 +17,12 @@
 | IAM/identity owner | `owner-packet:owner_hint:IAM-identity-owner` | blocked | 7 | 0 | 0 | 7 |
 | cloud storage owner | `owner-packet:owner_hint:cloud-storage-owner` | blocked | 1 | 0 | 0 | 1 |
 | customer success/account owner | `owner-packet:owner_hint:customer-success-account-owner` | blocked | 9 | 0 | 0 | 9 |
-| integration/platform owner | `owner-packet:owner_hint:integration-platform-owner` | blocked | 9 | 0 | 0 | 9 |
+| integration/platform owner | `owner-packet:owner_hint:integration-platform-owner` | blocked | 8 | 0 | 0 | 8 |
 | legal/compliance owner | `owner-packet:owner_hint:legal-compliance-owner` | blocked | 5 | 0 | 0 | 5 |
 | release engineering | `owner-packet:owner_hint:release-engineering` | blocked | 7 | 0 | 0 | 7 |
 | risk/insurance owner | `owner-packet:owner_hint:risk-insurance-owner` | blocked | 4 | 0 | 0 | 4 |
 | security/platform KMS owner | `owner-packet:owner_hint:security-platform-KMS-owner` | blocked | 7 | 0 | 0 | 7 |
-| service owner | `owner-packet:owner_hint:service-owner` | blocked | 7 | 0 | 0 | 7 |
+| service owner | `owner-packet:owner_hint:service-owner` | blocked | 6 | 0 | 0 | 6 |
 | standards/governance owner | `owner-packet:owner_hint:standards-governance-owner` | blocked | 6 | 0 | 0 | 6 |
 
 ## Open And Blocked Tasks
@@ -46,7 +46,6 @@
 | `state-of-agent-reliability-report:customer` | customer success/account owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `vertical-packs:customer` | customer success/account owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `trust-network-procurement-and-marketplace:customer` | customer success/account owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
-| `mcp-gateway:provider-api` | integration/platform owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `shadow-replay-temporal-holdout:provider-api` | integration/platform owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `byoc-self-hosted:provider-api` | integration/platform owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `auditor-and-review-portal:provider-api` | integration/platform owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
@@ -79,7 +78,6 @@
 | `insurer-api-and-actuarial-products:kms-hsm` | security/platform KMS owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `standards-track-and-auditor-ecosystem:kms-hsm` | security/platform KMS owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `cicd-provider-approvals:hosted-service` | service owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
-| `mcp-gateway:hosted-service` | service owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `auditor-and-review-portal:hosted-service` | service owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `runtime-policy-and-attestation:hosted-service` | service owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `self-serve-onboarding:hosted-service` | service owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |

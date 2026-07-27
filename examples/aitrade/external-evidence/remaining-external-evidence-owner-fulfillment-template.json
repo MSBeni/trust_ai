@@ -300,20 +300,6 @@
         "placeholder-source-uri",
         "missing-intake"
       ],
-      "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/provider-api.json",
-      "owner_hint": "integration/platform owner",
-      "requirement_id": "mcp-gateway",
-      "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/provider-api.json",
-      "source_uri_status": "placeholder",
-      "task": "mcp-gateway:provider-api",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "provider-api",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
       "intake_out": "artifacts/external-evidence-intakes/runtime-policy-and-attestation/provider-api.json",
       "owner_hint": "integration/platform owner",
       "requirement_id": "runtime-policy-and-attestation",
@@ -734,20 +720,6 @@
         "placeholder-source-uri",
         "missing-intake"
       ],
-      "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/hosted-service.json",
-      "owner_hint": "service owner",
-      "requirement_id": "mcp-gateway",
-      "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/hosted-service.json",
-      "source_uri_status": "placeholder",
-      "task": "mcp-gateway:hosted-service",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "hosted-service",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
       "intake_out": "artifacts/external-evidence-intakes/runtime-policy-and-attestation/hosted-service.json",
       "owner_hint": "service owner",
       "requirement_id": "runtime-policy-and-attestation",
@@ -985,11 +957,6 @@
       "task": "insurer-api-and-actuarial-products:provider-api"
     },
     {
-      "description": "provider-api evidence for mcp-gateway",
-      "source_uri": "TODO://authority/mcp-gateway/provider-api",
-      "task": "mcp-gateway:provider-api"
-    },
-    {
       "description": "provider-api evidence for runtime-policy-and-attestation",
       "source_uri": "TODO://authority/runtime-policy-and-attestation/provider-api",
       "task": "runtime-policy-and-attestation:provider-api"
@@ -1140,11 +1107,6 @@
       "task": "insurer-api-and-actuarial-products:hosted-service"
     },
     {
-      "description": "hosted-service evidence for mcp-gateway",
-      "source_uri": "TODO://authority/mcp-gateway/hosted-service",
-      "task": "mcp-gateway:hosted-service"
-    },
-    {
       "description": "hosted-service evidence for runtime-policy-and-attestation",
       "source_uri": "TODO://authority/runtime-policy-and-attestation/hosted-service",
       "task": "runtime-policy-and-attestation:hosted-service"
@@ -1200,21 +1162,21 @@
     "This template is a handoff artifact; it does not satisfy missing external authority evidence by itself.",
     "Placeholder source URIs intentionally keep readiness blocked until owners replace them with live authority sources."
   ],
-  "owner_fulfillment_template_id": "83ae2815bc4b3c41b58316c5bc3b66556042a59d757588f8a7d6d6e3b705ea9c",
+  "owner_fulfillment_template_id": "1705f87361ee9df895975f7972e290d9e35b997579e1ca5785a4de746ac37e2c",
   "schema": "trustai.external-evidence-owner-fulfillment-template/0.1",
   "source_owner_packet_status": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "owner_packet_status_hash": "c3d0cc54289d317592af3ef9b7b1ecd6e5e68b2745d39f93e2e4c1bc501755a8",
-    "owner_packet_status_id": "e55e06e65a65b452be683b1d7f0c1bf2b2a9a8a27356b0a4d0ea369e89d76c59",
+    "owner_packet_status_hash": "cfbfb0bf0dc5f0400cdc5149d0f8cb30921fe43658b82fec5fcd106d32b85058",
+    "owner_packet_status_id": "da99840d6a0a49f2a17341e66c6ab2a14957aa4c7cd73f1ee4d422dff4a21cf9",
     "schema": "trustai.external-evidence-owner-packet-status/0.1"
   },
   "summary": {
-    "assignment_count": 62,
-    "blocked_task_count": 62,
+    "assignment_count": 60,
+    "blocked_task_count": 60,
     "closed_task_count": 0,
-    "fulfillment_count": 62,
+    "fulfillment_count": 60,
     "live_source_uri_count": 0,
-    "missing_intake_count": 62,
+    "missing_intake_count": 60,
     "open_task_count": 0,
     "owner_count": 10,
     "owners": [
@@ -1229,6 +1191,6 @@
       "service owner",
       "standards/governance owner"
     ],
-    "placeholder_source_uri_count": 62
+    "placeholder_source_uri_count": 60
   }
 }

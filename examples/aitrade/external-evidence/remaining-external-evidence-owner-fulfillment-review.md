@@ -1,13 +1,13 @@
 # External Evidence Owner Fulfillment Review
 
-- Review ID: `bd95b75b03b6260025557565e406b193e02c157bb050c2daef24976add238800`
+- Review ID: `5283fc50c51f38b5a27401adbedddf1385f332635f1a202de4968586c97932a1`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Fulfillments: 62
+- Fulfillments: 60
 - Owners: 10
 - Ready tasks: 0
-- Blocked tasks: 62
-- Placeholder source URIs: 62
+- Blocked tasks: 60
+- Placeholder source URIs: 60
 - Live source URIs: 0
 
 ## Task Review
@@ -19,8 +19,6 @@
 | `self-serve-onboarding:identity-provider` | IAM/identity owner | blocked | TODO://authority/self-serve-onboarding/identity-provider | `placeholder-source-uri` |
 | `mcp-gateway:ci-run` | release engineering | blocked | TODO://authority/mcp-gateway/ci-run | `placeholder-source-uri` |
 | `mcp-gateway:kms-hsm` | security/platform KMS owner | blocked | TODO://authority/mcp-gateway/kms-hsm | `placeholder-source-uri` |
-| `mcp-gateway:provider-api` | integration/platform owner | blocked | TODO://authority/mcp-gateway/provider-api | `placeholder-source-uri` |
-| `mcp-gateway:hosted-service` | service owner | blocked | TODO://authority/mcp-gateway/hosted-service | `placeholder-source-uri` |
 | `shadow-replay-temporal-holdout:kms-hsm` | security/platform KMS owner | blocked | TODO://authority/shadow-replay-temporal-holdout/kms-hsm | `placeholder-source-uri` |
 | `shadow-replay-temporal-holdout:provider-api` | integration/platform owner | blocked | TODO://authority/shadow-replay-temporal-holdout/provider-api | `placeholder-source-uri` |
 | `shadow-replay-temporal-holdout:identity-provider` | IAM/identity owner | blocked | TODO://authority/shadow-replay-temporal-holdout/identity-provider | `placeholder-source-uri` |
@@ -81,12 +79,12 @@
 
 - Fulfilled source map errors: 1
 - Fulfilled source map warnings: 1
-  - source map contains 62 placeholder source_uri values but live source URIs are required
+  - source map contains 60 placeholder source_uri values but live source URIs are required
 
 ## Blockers
 
-- owner fulfillment review contains 62 placeholder source_uri values
-- fulfilled source map: source map contains 62 placeholder source_uri values but live source URIs are required
+- owner fulfillment review contains 60 placeholder source_uri values
+- fulfilled source map: source map contains 60 placeholder source_uri values but live source URIs are required
 
 ## Next Actions
 

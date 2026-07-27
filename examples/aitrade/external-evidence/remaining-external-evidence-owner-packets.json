@@ -5,7 +5,7 @@
     "Source URIs marked TODO or placeholder must be replaced with authority-owned source exports before collection.",
     "Packet completion is proven only by verified source snapshots, intake receipts, rebuilt manifests, and readiness reports."
   ],
-  "owner_packet_bundle_id": "5194734d8a853fa925aae7d2897b04d456ed2d4c6c31ea2b72d8fe51f3186b55",
+  "owner_packet_bundle_id": "afb9f637d479630daed1954888a61f62c9d269df32c11260eaba41086eb56ae9",
   "packets": [
     {
       "authority_kinds": [
@@ -1462,12 +1462,12 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 9,
+      "missing_task_count": 8,
       "owner_hint": "integration/platform owner",
-      "package_hash": "4f612fc70fc540871e6a90f56cb1f677ae2439744f9797f1e3bffa1ffb070e91",
-      "package_id": "26ba64cc0b964e2160d4e2ceefd2227c72a1f4d393797eabaa5b83d48a094690",
+      "package_hash": "ac96f025cb0c5c8860b28b6b0f8466e8c48349f70df6b5cdb77787a9a7faa2da",
+      "package_id": "d6653c9ca83d608fa06c54b935467f1fc84639f426836d6ec743ead55084e9ec",
       "package_ref": "owner_hint:integration-platform-owner",
-      "packet_id": "a79f90d15dfa7444d9d87b51547cdd915f4c6729a4e91121c7a0863985b4ac3a",
+      "packet_id": "19118e16038afbe469a6f59aa35a0a5b1a3f2d161769533aca7999b30345fb88",
       "packet_ref": "owner-packet:owner_hint:integration-platform-owner",
       "phases": [
         "P1",
@@ -1478,7 +1478,7 @@
         "P2-P4",
         "P4"
       ],
-      "placeholder_source_uri_count": 9,
+      "placeholder_source_uri_count": 8,
       "priorities": [
         "P0",
         "P1"
@@ -1488,91 +1488,13 @@
         "byoc-self-hosted",
         "compliance-mapper-and-eu-ai-act",
         "insurer-api-and-actuarial-products",
-        "mcp-gateway",
         "runtime-policy-and-attestation",
         "self-serve-onboarding",
         "shadow-replay-temporal-holdout",
         "trust-network-procurement-and-marketplace"
       ],
-      "task_count": 9,
+      "task_count": 8,
       "tasks": [
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be provider-api and accepted for mcp-gateway.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "provider-api",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/mcp-gateway/provider-api",
-              "--root",
-              ".",
-              "--task",
-              "mcp-gateway:provider-api",
-              "--description",
-              "provider-api evidence for mcp-gateway",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/mcp-gateway/provider-api.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/mcp-gateway/provider-api.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/mcp-gateway/provider-api --root . --task mcp-gateway:provider-api --description 'provider-api evidence for mcp-gateway' --snapshot-out artifacts/external-evidence-sources/mcp-gateway/provider-api.json --intake-out artifacts/external-evidence-intakes/mcp-gateway/provider-api.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/mcp-gateway/provider-api.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/mcp-gateway/provider-api.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "provider-api evidence for mcp-gateway",
-          "evidence_argument_template": "mcp-gateway,provider-api,external-evidence/mcp-gateway/provider-api.json,provider-api evidence for mcp-gateway;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/provider-api.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "integration/platform owner",
-          "phase": "P1",
-          "priority": "P0",
-          "requirement_id": "mcp-gateway",
-          "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/provider-api.json",
-          "source_uri": "TODO://authority/mcp-gateway/provider-api",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/mcp-gateway/provider-api.json",
-          "suggested_evidence_sources": [
-            "provider API response export",
-            "request/response transcript",
-            "provider-owned audit event"
-          ],
-          "task_id": "74f73767f9ec7e8f759c6b2135fab1c24fd052424c78eceae7d4a820b5fe41b6",
-          "task_ref": "external-evidence:mcp-gateway:provider-api",
-          "title": "MCP evidence gateway reference capture",
-          "unit_id": "f113eea739eb3d407bee25f22f68afebda945e20ff27f75406db56edb016892c",
-          "unit_ref": "mcp-gateway:provider-api"
-        },
         {
           "acceptance_criteria": [
             "Artifact path must be repository-relative and hashable before manifest verification.",
@@ -4156,12 +4078,12 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 7,
+      "missing_task_count": 6,
       "owner_hint": "service owner",
-      "package_hash": "4f2e53620837529894d4c0db5cde6800d17571bba4d151d0cbc1cce3e6d21693",
-      "package_id": "339113de789fe5f5438665ecaf639b99ed22a1abb9c3b071b50854b79be43a82",
+      "package_hash": "729eea98cb93628c1e138125fd28b0b74bd6d45d05eebf8c4b7a41d864ba764d",
+      "package_id": "d3aaf05c7972ec7e5d1299b704658bcb2d5bb096fb468c88aede3b24eb3e7e31",
       "package_ref": "owner_hint:service-owner",
-      "packet_id": "7e7767656d8b63a6ed10c6ce84378b030a1a58e6b846a6ada15b94f5460d8b10",
+      "packet_id": "3832e4472b9394e97c1ce347a4d0b8a2e7bfee1036089fa3b62f07adcf1e5ac9",
       "packet_ref": "owner-packet:owner_hint:service-owner",
       "phases": [
         "P1",
@@ -4170,7 +4092,7 @@
         "P2-P4",
         "P4"
       ],
-      "placeholder_source_uri_count": 7,
+      "placeholder_source_uri_count": 6,
       "priorities": [
         "P0",
         "P1"
@@ -4179,12 +4101,11 @@
         "auditor-and-review-portal",
         "cicd-provider-approvals",
         "insurer-api-and-actuarial-products",
-        "mcp-gateway",
         "runtime-policy-and-attestation",
         "self-serve-onboarding",
         "trust-network-procurement-and-marketplace"
       ],
-      "task_count": 7,
+      "task_count": 6,
       "tasks": [
         {
           "acceptance_criteria": [
@@ -4262,83 +4183,6 @@
           "title": "CI/CD promotion gates, provider callbacks, and Slack approvals",
           "unit_id": "bd40c9ffec33f3e3d54eedb4dcfd520d69fdba4cf91bc83ea579b015d63ec7e0",
           "unit_ref": "cicd-provider-approvals:hosted-service"
-        },
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be hosted-service and accepted for mcp-gateway.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "hosted-service",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/mcp-gateway/hosted-service",
-              "--root",
-              ".",
-              "--task",
-              "mcp-gateway:hosted-service",
-              "--description",
-              "hosted-service evidence for mcp-gateway",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/mcp-gateway/hosted-service.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/mcp-gateway/hosted-service.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/mcp-gateway/hosted-service --root . --task mcp-gateway:hosted-service --description 'hosted-service evidence for mcp-gateway' --snapshot-out artifacts/external-evidence-sources/mcp-gateway/hosted-service.json --intake-out artifacts/external-evidence-intakes/mcp-gateway/hosted-service.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/mcp-gateway/hosted-service.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/mcp-gateway/hosted-service.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "hosted-service evidence for mcp-gateway",
-          "evidence_argument_template": "mcp-gateway,hosted-service,external-evidence/mcp-gateway/hosted-service.json,hosted-service evidence for mcp-gateway;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/hosted-service.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "service owner",
-          "phase": "P1",
-          "priority": "P0",
-          "requirement_id": "mcp-gateway",
-          "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/hosted-service.json",
-          "source_uri": "TODO://authority/mcp-gateway/hosted-service",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/mcp-gateway/hosted-service.json",
-          "suggested_evidence_sources": [
-            "hosted service health or deployment export",
-            "service audit root",
-            "operational SLO/status evidence"
-          ],
-          "task_id": "2f7cb1b22473df0f0dcca97d28b1184fb4831eb54b9b3f5408866e2d10d5e6df",
-          "task_ref": "external-evidence:mcp-gateway:hosted-service",
-          "title": "MCP evidence gateway reference capture",
-          "unit_id": "8766be3ea5e06276839b71f9e28a0032782143df739db18f6b58dcc76e899249",
-          "unit_ref": "mcp-gateway:hosted-service"
         },
         {
           "acceptance_criteria": [
@@ -5240,26 +5084,26 @@
   "source_work_package": {
     "generated_at": "2026-07-12T00:01:00Z",
     "group_by": "owner_hint",
-    "work_package_hash": "6aae376852038105c33a9aca6220d67dfd62bc9f262ccbb2a64f2de538f026b6",
-    "work_package_id": "deb14a1f0f7e7c5070995339c05f5523713e0f14499e9c3dcec92df31a314530"
+    "work_package_hash": "3132b3b4dfb35c7578ae02a862a11dd7a559bcf4660b73273211a08e78a2017a",
+    "work_package_id": "591a8c833ec2117dc0966be6241b809218881dbb306f148b172066d9864e4515"
   },
   "summary": {
     "covered_task_count": 0,
     "live_source_uri_count": 0,
-    "missing_task_count": 62,
+    "missing_task_count": 60,
     "packet_count": 10,
-    "placeholder_source_uri_count": 62,
-    "source_work_package_task_count": 62,
-    "task_count": 62,
+    "placeholder_source_uri_count": 60,
+    "source_work_package_task_count": 60,
+    "task_count": 60,
     "task_count_by_authority_kind": {
       "ci-run": 7,
       "cloud-object-lock": 1,
       "customer": 9,
-      "hosted-service": 7,
+      "hosted-service": 6,
       "identity-provider": 7,
       "insurer": 4,
       "kms-hsm": 7,
-      "provider-api": 9,
+      "provider-api": 8,
       "regulator": 5,
       "standards-body": 6
     },
@@ -5267,12 +5111,12 @@
       "IAM/identity owner": 7,
       "cloud storage owner": 1,
       "customer success/account owner": 9,
-      "integration/platform owner": 9,
+      "integration/platform owner": 8,
       "legal/compliance owner": 5,
       "release engineering": 7,
       "risk/insurance owner": 4,
       "security/platform KMS owner": 7,
-      "service owner": 7,
+      "service owner": 6,
       "standards/governance owner": 6
     }
   }

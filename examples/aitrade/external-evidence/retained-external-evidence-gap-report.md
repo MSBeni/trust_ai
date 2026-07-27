@@ -1,13 +1,13 @@
 # External Evidence Gap Report
 
-- Gap report ID: `30be30a5abc54833c23c2120b66364c3484867cf98b3e826f8a22a1ddca9d03a`
+- Gap report ID: `cca8023e8854306df58ce598cea8d79e424e463f7fb145fbdc5f763860c46c1b`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 9/71
-- Missing authority kinds: 62
-- Remaining collection tasks: 62
-- Source-map entries: 62
-- Placeholder source URIs: 62
+- Covered authority kinds: 11/71
+- Missing authority kinds: 60
+- Remaining collection tasks: 60
+- Source-map entries: 60
+- Placeholder source URIs: 60
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
@@ -15,11 +15,11 @@
 - `ci-run`: 7
 - `cloud-object-lock`: 1
 - `customer`: 9
-- `hosted-service`: 7
+- `hosted-service`: 6
 - `identity-provider`: 7
 - `insurer`: 4
 - `kms-hsm`: 7
-- `provider-api`: 9
+- `provider-api`: 8
 - `regulator`: 5
 - `standards-body`: 6
 
@@ -32,7 +32,7 @@
 - `design-partner-pilot-exit-criteria`: 3
 - `framework-adapters`: 1
 - `insurer-api-and-actuarial-products`: 7
-- `mcp-gateway`: 4
+- `mcp-gateway`: 2
 - `product-scope-discipline`: 2
 - `roadmap-phase-scoreboard`: 5
 - `runtime-policy-and-attestation`: 5
@@ -100,28 +100,6 @@
 - Snapshot output: `artifacts/external-evidence-sources/mcp-gateway/kms-hsm.json`
 - Intake output: `artifacts/external-evidence-intakes/mcp-gateway/kms-hsm.json`
 - Suggested evidence sources: KMS/HSM key policy export; signing operation receipt; custody or audit-log root
-
-### mcp-gateway:provider-api
-
-- Title: MCP evidence gateway reference capture
-- Authority kind: `provider-api`
-- Owner hint: integration/platform owner
-- Description: provider-api evidence for mcp-gateway
-- Source URI: `TODO://authority/mcp-gateway/provider-api`
-- Snapshot output: `artifacts/external-evidence-sources/mcp-gateway/provider-api.json`
-- Intake output: `artifacts/external-evidence-intakes/mcp-gateway/provider-api.json`
-- Suggested evidence sources: provider API response export; request/response transcript; provider-owned audit event
-
-### mcp-gateway:hosted-service
-
-- Title: MCP evidence gateway reference capture
-- Authority kind: `hosted-service`
-- Owner hint: service owner
-- Description: hosted-service evidence for mcp-gateway
-- Source URI: `TODO://authority/mcp-gateway/hosted-service`
-- Snapshot output: `artifacts/external-evidence-sources/mcp-gateway/hosted-service.json`
-- Intake output: `artifacts/external-evidence-intakes/mcp-gateway/hosted-service.json`
-- Suggested evidence sources: hosted service health or deployment export; service audit root; operational SLO/status evidence
 
 ### shadow-replay-temporal-holdout:kms-hsm
 

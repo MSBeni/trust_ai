@@ -1,20 +1,20 @@
 # TrustAI External Evidence Manifest
 
-Manifest ID: `aeff1ad249f16d018b89eec85bf9322db6e31b2861cd90a1bc181af190b46cd4`
+Manifest ID: `eaf64e35c913bb926b61439015d04f8091473cbbe9df659291b9e6ba69c7ee20`
 
 Status: partial
 
 ## Coverage
 
 - Required external requirements: 20
-- Covered requirements: 4
+- Covered requirements: 5
 - Required authority kinds: 71
-- Covered authority kinds: 9
-- Missing authority kinds: 62
-- Evidence items: 9
-- Evidence with issued_at: 9
-- Evidence with expires_at: 9
-- Evidence with freshness windows: 9
+- Covered authority kinds: 11
+- Missing authority kinds: 60
+- Evidence items: 11
+- Evidence with issued_at: 11
+- Evidence with expires_at: 11
+- Evidence with freshness windows: 11
 
 ## Required External Evidence
 
@@ -22,7 +22,7 @@ Status: partial
 |---|---|---|---|---|---|---|---|
 | `oss-verifier-and-public-spec` | P0 | P0 | covered | `ci-run`, `provider-api`, `hosted-service` | `ci-run`, `provider-api`, `hosted-service` |  | Verifier release authority dossiers cover the local/reference public release authority checklist and retained provider workflow export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence. |
 | `self-serve-onboarding` | P2 | P1 | missing | `provider-api`, `hosted-service`, `identity-provider` |  | `provider-api`, `hosted-service`, `identity-provider` | Self-serve onboarding receipts cover the local/reference SDK, OTel ingest, bundled aitrade proof-pack generation before offline verification, MCP gateway transcript capture, runnable MCP stdio proxy examples, hash-bound CLI source, OTel event example replay, quickstart command replay against registered TrustAI CLI subcommands, and production-claim limits; self-serve onboarding production authority dossiers bind hosted account-creation, identity-federation, billing, metering, support, quota, and audit-log authority rows to the verified local onboarding receipt. Actual fresh hosted PLG service, identity-provider, billing, usage metering, support operations, and onboarding SLO exports remain external service evidence. |
-| `mcp-gateway` | P1 | P0 | missing | `ci-run`, `kms-hsm`, `provider-api`, `hosted-service` |  | `ci-run`, `kms-hsm`, `provider-api`, `hosted-service` | MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence. |
+| `mcp-gateway` | P1 | P0 | missing | `ci-run`, `kms-hsm`, `provider-api`, `hosted-service` | `provider-api`, `hosted-service` | `ci-run`, `kms-hsm` | MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence. |
 | `shadow-replay-temporal-holdout` | P1 | P0 | missing | `kms-hsm`, `provider-api`, `identity-provider`, `standards-body` |  | `kms-hsm`, `provider-api`, `identity-provider`, `standards-body` | Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence. |
 | `cicd-provider-approvals` | P1 | P0 | missing | `ci-run`, `provider-api`, `hosted-service`, `identity-provider` | `ci-run`, `provider-api` | `hosted-service`, `identity-provider` | Provider delivery receipts cover retained provider delivery payload artifact replay and retained provider response artifact byte replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs, provider-native status shape, and replayed retained provider delivery payload/response artifacts before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence. |
 | `design-partner-pilot-exit-criteria` | P1 | P0 | missing | `regulator`, `insurer`, `customer` |  | `regulator`, `insurer`, `customer` | Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, hash-bound contract/payment evidence, and hash-bound external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence. |
@@ -53,8 +53,8 @@ Status: partial
 | `048ce4ad141c77f48a321bc4f61b09d2b2a58ea8500164d40e192bb3c8405364` | `self-serve-onboarding:identity-provider` | `self-serve-onboarding` | identity-provider | missing | Self-serve SDK and MCP gateway onboarding |
 | `192e8c60958d436e54ccf727609f72edb9a581776a8d80f731eef32c1bd62725` | `mcp-gateway:ci-run` | `mcp-gateway` | ci-run | missing | MCP evidence gateway reference capture |
 | `b6bff59993928600d982fe3a58ffd8124707f853906888cab9ca1024a7a15840` | `mcp-gateway:kms-hsm` | `mcp-gateway` | kms-hsm | missing | MCP evidence gateway reference capture |
-| `f113eea739eb3d407bee25f22f68afebda945e20ff27f75406db56edb016892c` | `mcp-gateway:provider-api` | `mcp-gateway` | provider-api | missing | MCP evidence gateway reference capture |
-| `8766be3ea5e06276839b71f9e28a0032782143df739db18f6b58dcc76e899249` | `mcp-gateway:hosted-service` | `mcp-gateway` | hosted-service | missing | MCP evidence gateway reference capture |
+| `f113eea739eb3d407bee25f22f68afebda945e20ff27f75406db56edb016892c` | `mcp-gateway:provider-api` | `mcp-gateway` | provider-api | covered | MCP evidence gateway reference capture |
+| `8766be3ea5e06276839b71f9e28a0032782143df739db18f6b58dcc76e899249` | `mcp-gateway:hosted-service` | `mcp-gateway` | hosted-service | covered | MCP evidence gateway reference capture |
 | `b22b20e47680d557c73438b85016ce39e0b37d13afc0cf1bd5ebb7ad109e6e55` | `shadow-replay-temporal-holdout:kms-hsm` | `shadow-replay-temporal-holdout` | kms-hsm | missing | Shadow replay, temporal holdout, soak reports, and distributional re-execution |
 | `e0f691dce6a7859dec40b0439af39824bbe030c9eb08662294e3aaaef3695b39` | `shadow-replay-temporal-holdout:provider-api` | `shadow-replay-temporal-holdout` | provider-api | missing | Shadow replay, temporal holdout, soak reports, and distributional re-execution |
 | `19e307dd982131f9693256f22f8f05f0ea7a1af37e92c38556afabb57305c88c` | `shadow-replay-temporal-holdout:identity-provider` | `shadow-replay-temporal-holdout` | identity-provider | missing | Shadow replay, temporal holdout, soak reports, and distributional re-execution |
@@ -124,6 +124,8 @@ Status: partial
 | `oss-verifier-and-public-spec` | ci-run | `ci-run`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json` | 2026-07-08T00:00:00Z to 2026-12-31T00:00:00Z | Snapshot of recorded verifier workflow run export |
 | `oss-verifier-and-public-spec` | provider-api | `ci-run`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/github-main-ref-source-snapshot.json` | 2026-07-12T00:00:00Z to 2026-12-31T00:00:00Z | GitHub remote main ref advertisement for pushed TrustAI checkpoint |
 | `oss-verifier-and-public-spec` | hosted-service | `ci-run`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/github-hosted-service-source-snapshot.json` | 2026-07-12T00:00:00Z to 2026-12-31T00:00:00Z | GitHub hosted git service remote advertisement for TrustAI verifier and spec repository |
+| `mcp-gateway` | provider-api | `ci-run`, `kms-hsm`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/mcp-proxy-events-provider-api-source-snapshot.json` | 2026-07-03T12:05:00Z to 2026-12-31T00:00:00Z | Retained GitHub contents API export for MCP gateway proxy event evidence |
+| `mcp-gateway` | hosted-service | `ci-run`, `kms-hsm`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/mcp-proxy-events-hosted-service-source-snapshot.json` | 2026-07-03T12:05:00Z to 2026-12-31T00:00:00Z | Retained GitHub hosted file export for MCP gateway proxy event evidence |
 | `cicd-provider-approvals` | ci-run | `ci-run`, `provider-api`, `hosted-service`, `identity-provider` | `examples/aitrade/external-evidence/github-check-suite-source-snapshot.json` | 2026-07-08T00:00:00Z to 2026-12-31T00:00:00Z | Retained GitHub check-suite callback export for CI/CD promotion provider evidence |
 | `cicd-provider-approvals` | provider-api | `ci-run`, `provider-api`, `hosted-service`, `identity-provider` | `examples/aitrade/external-evidence/github-audit-log-source-snapshot.json` | 2026-07-08T00:00:00Z to 2026-12-31T00:00:00Z | Retained GitHub audit-log export for CI/CD promotion provider API evidence |
 | `framework-adapters` | provider-api | `ci-run`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/framework-hook-release-provider-api-source-snapshot.json` | 2026-07-09T00:30:00Z to 2026-12-31T00:00:00Z | Retained GitHub contents API export for framework adapter hook release evidence |
@@ -134,7 +136,6 @@ Status: partial
 ## Missing Requirements
 
 - `self-serve-onboarding`
-- `mcp-gateway`
 - `shadow-replay-temporal-holdout`
 - `design-partner-pilot-exit-criteria`
 - `auditor-and-review-portal`

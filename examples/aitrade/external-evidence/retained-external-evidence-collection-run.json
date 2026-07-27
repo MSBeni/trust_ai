@@ -34,6 +34,28 @@
       "warnings": []
     },
     {
+      "evidence_argument": "mcp-gateway,provider-api,examples/aitrade/external-evidence/mcp-proxy-events-provider-api-source-snapshot.json,Retained GitHub contents API export for MCP gateway proxy event evidence;issuer=GitHub Contents API;subject=trustai MCP proxy event export;source_uri=https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/mcp-proxy-events.json?ref=main;issued_at=2026-07-03T12:05:00Z;expires_at=2026-12-31T00:00:00Z",
+      "intake_id": "3b842bfea5149dfb4b551b4b155e46eef18b10ee6b1efd2ceba1865f88d5d6fd",
+      "intake_path": "examples/aitrade/external-evidence/intakes/mcp-gateway-provider-api.json",
+      "snapshot_artifact_path": "examples/aitrade/external-evidence/mcp-proxy-events-provider-api-source-snapshot.json",
+      "snapshot_id": "e8c52bc6b1bbc4d182c9a9a02b49414ea734283e4d8fea801dade7170d961bd8",
+      "snapshot_path": "examples/aitrade/external-evidence/mcp-proxy-events-provider-api-source-snapshot.json",
+      "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/mcp-proxy-events.json?ref=main",
+      "task": "mcp-gateway:provider-api",
+      "warnings": []
+    },
+    {
+      "evidence_argument": "mcp-gateway,hosted-service,examples/aitrade/external-evidence/mcp-proxy-events-hosted-service-source-snapshot.json,Retained GitHub hosted file export for MCP gateway proxy event evidence;issuer=GitHub Hosted Repository;subject=trustai MCP proxy event export;source_uri=https://github.com/MSBeni/trust_ai/blob/main/examples/aitrade/mcp-proxy-events.json;issued_at=2026-07-03T12:05:00Z;expires_at=2026-12-31T00:00:00Z",
+      "intake_id": "bd139c5241b1a52fca62ff5e05403e6a202895d2cb97b4c3a05abf9e62313a19",
+      "intake_path": "examples/aitrade/external-evidence/intakes/mcp-gateway-hosted-service.json",
+      "snapshot_artifact_path": "examples/aitrade/external-evidence/mcp-proxy-events-hosted-service-source-snapshot.json",
+      "snapshot_id": "ce94704e20020569d3d93cb05f3310adb047a563839333daf4e3a8b631efd9e3",
+      "snapshot_path": "examples/aitrade/external-evidence/mcp-proxy-events-hosted-service-source-snapshot.json",
+      "source_uri": "https://github.com/MSBeni/trust_ai/blob/main/examples/aitrade/mcp-proxy-events.json",
+      "task": "mcp-gateway:hosted-service",
+      "warnings": []
+    },
+    {
       "evidence_argument": "cicd-provider-approvals,ci-run,examples/aitrade/external-evidence/github-check-suite-source-snapshot.json,Retained GitHub check-suite callback export for CI/CD promotion provider evidence;issuer=GitHub Checks;subject=trustai GitHub check-suite promotion callback;source_uri=https://github.com/MSBeni/trust_ai/actions;issued_at=2026-07-08T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
       "intake_id": "5b76aec251d4a228d19f964b241dcead2ea89f5f7a78dad17ccb0304c193205d",
       "intake_path": "examples/aitrade/external-evidence/intakes/cicd-provider-approvals-ci-run.json",
@@ -101,15 +123,15 @@
     }
   ],
   "generated_at": "2026-07-12T00:01:00Z",
-  "run_id": "4373faae1d59f9c4b0752e35c98ebaed98b3ec33eee642e5b59b4667206cc135",
+  "run_id": "a5a419f9c5e7f825f97d09b3009538971697e66982900c6c06b5b6f87a7fabd3",
   "schema": "trustai.external-evidence-collection-run/0.1",
   "source_map": {
     "path": "examples/aitrade/external-evidence/retained-external-evidence-collected-source-map.json",
-    "source_map_hash": "3209b8b9d3cfc4fcfb451e4d1c008aaa9c9b8919d53d0720579974f77d8603b6"
+    "source_map_hash": "c5c9fe382b30947349de4f0f74b07da0bfbb31055d5d3ac84baa7dbe7288a882"
   },
   "summary": {
-    "collected_count": 9,
+    "collected_count": 11,
     "require_fresh": true,
-    "task_count": 9
+    "task_count": 11
   }
 }

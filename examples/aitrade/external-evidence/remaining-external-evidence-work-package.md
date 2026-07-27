@@ -1,12 +1,12 @@
 # External Evidence Work Packages
 
-- Work package ID: `deb14a1f0f7e7c5070995339c05f5523713e0f14499e9c3dcec92df31a314530`
+- Work package ID: `591a8c833ec2117dc0966be6241b809218881dbb306f148b172066d9864e4515`
 - Generated at: `2026-07-12T00:01:00Z`
 - Grouped by: `owner_hint`
 - Packages: 10
-- Tasks: 62
-- Missing tasks: 62
-- Placeholder source URIs: 62
+- Tasks: 60
+- Missing tasks: 60
+- Placeholder source URIs: 60
 - Live source URIs: 0
 
 ## Tasks By Owner
@@ -14,12 +14,12 @@
 - IAM/identity owner: 7
 - cloud storage owner: 1
 - customer success/account owner: 9
-- integration/platform owner: 9
+- integration/platform owner: 8
 - legal/compliance owner: 5
 - release engineering: 7
 - risk/insurance owner: 4
 - security/platform KMS owner: 7
-- service owner: 7
+- service owner: 6
 - standards/governance owner: 6
 
 ## Packages
@@ -129,17 +129,16 @@
 ### integration/platform owner
 
 - Package ref: `owner_hint:integration-platform-owner`
-- Package ID: `26ba64cc0b964e2160d4e2ceefd2227c72a1f4d393797eabaa5b83d48a094690`
+- Package ID: `d6653c9ca83d608fa06c54b935467f1fc84639f426836d6ec743ead55084e9ec`
 - Owner Hint: `integration/platform owner`
-- Tasks: 9
+- Tasks: 8
 - Authority kinds: `provider-api`
-- Requirements: `auditor-and-review-portal`, `byoc-self-hosted`, `compliance-mapper-and-eu-ai-act`, `insurer-api-and-actuarial-products`, `mcp-gateway`, `runtime-policy-and-attestation`, `self-serve-onboarding`, `shadow-replay-temporal-holdout`, `trust-network-procurement-and-marketplace`
+- Requirements: `auditor-and-review-portal`, `byoc-self-hosted`, `compliance-mapper-and-eu-ai-act`, `insurer-api-and-actuarial-products`, `runtime-policy-and-attestation`, `self-serve-onboarding`, `shadow-replay-temporal-holdout`, `trust-network-procurement-and-marketplace`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
 
 | Task | Phase | Priority | Authority | Source URI Status | Intake |
 |---|---|---|---|---|---|
-| `mcp-gateway:provider-api` | P1 | P0 | `provider-api` | placeholder | `artifacts/external-evidence-intakes/mcp-gateway/provider-api.json` |
 | `shadow-replay-temporal-holdout:provider-api` | P1 | P0 | `provider-api` | placeholder | `artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/provider-api.json` |
 | `byoc-self-hosted:provider-api` | P1-P2 | P0 | `provider-api` | placeholder | `artifacts/external-evidence-intakes/byoc-self-hosted/provider-api.json` |
 | `auditor-and-review-portal:provider-api` | P1-P3 | P1 | `provider-api` | placeholder | `artifacts/external-evidence-intakes/auditor-and-review-portal/provider-api.json` |
@@ -151,8 +150,6 @@
 
 #### Task Commands
 
-- `mcp-gateway:provider-api` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/mcp-gateway/provider-api --root . --task mcp-gateway:provider-api --description 'provider-api evidence for mcp-gateway' --snapshot-out artifacts/external-evidence-sources/mcp-gateway/provider-api.json --intake-out artifacts/external-evidence-intakes/mcp-gateway/provider-api.json`
-- `mcp-gateway:provider-api` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/mcp-gateway/provider-api.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `shadow-replay-temporal-holdout:provider-api` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/shadow-replay-temporal-holdout/provider-api --root . --task shadow-replay-temporal-holdout:provider-api --description 'provider-api evidence for shadow-replay-temporal-holdout' --snapshot-out artifacts/external-evidence-sources/shadow-replay-temporal-holdout/provider-api.json --intake-out artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/provider-api.json`
 - `shadow-replay-temporal-holdout:provider-api` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/provider-api.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `byoc-self-hosted:provider-api` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/byoc-self-hosted/provider-api --root . --task byoc-self-hosted:provider-api --description 'provider-api evidence for byoc-self-hosted' --snapshot-out artifacts/external-evidence-sources/byoc-self-hosted/provider-api.json --intake-out artifacts/external-evidence-intakes/byoc-self-hosted/provider-api.json`
@@ -310,18 +307,17 @@
 ### service owner
 
 - Package ref: `owner_hint:service-owner`
-- Package ID: `339113de789fe5f5438665ecaf639b99ed22a1abb9c3b071b50854b79be43a82`
+- Package ID: `d3aaf05c7972ec7e5d1299b704658bcb2d5bb096fb468c88aede3b24eb3e7e31`
 - Owner Hint: `service owner`
-- Tasks: 7
+- Tasks: 6
 - Authority kinds: `hosted-service`
-- Requirements: `auditor-and-review-portal`, `cicd-provider-approvals`, `insurer-api-and-actuarial-products`, `mcp-gateway`, `runtime-policy-and-attestation`, `self-serve-onboarding`, `trust-network-procurement-and-marketplace`
+- Requirements: `auditor-and-review-portal`, `cicd-provider-approvals`, `insurer-api-and-actuarial-products`, `runtime-policy-and-attestation`, `self-serve-onboarding`, `trust-network-procurement-and-marketplace`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
 
 | Task | Phase | Priority | Authority | Source URI Status | Intake |
 |---|---|---|---|---|---|
 | `cicd-provider-approvals:hosted-service` | P1 | P0 | `hosted-service` | placeholder | `artifacts/external-evidence-intakes/cicd-provider-approvals/hosted-service.json` |
-| `mcp-gateway:hosted-service` | P1 | P0 | `hosted-service` | placeholder | `artifacts/external-evidence-intakes/mcp-gateway/hosted-service.json` |
 | `auditor-and-review-portal:hosted-service` | P1-P3 | P1 | `hosted-service` | placeholder | `artifacts/external-evidence-intakes/auditor-and-review-portal/hosted-service.json` |
 | `runtime-policy-and-attestation:hosted-service` | P2 | P1 | `hosted-service` | placeholder | `artifacts/external-evidence-intakes/runtime-policy-and-attestation/hosted-service.json` |
 | `self-serve-onboarding:hosted-service` | P2 | P1 | `hosted-service` | placeholder | `artifacts/external-evidence-intakes/self-serve-onboarding/hosted-service.json` |
@@ -332,8 +328,6 @@
 
 - `cicd-provider-approvals:hosted-service` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/cicd-provider-approvals/hosted-service --root . --task cicd-provider-approvals:hosted-service --description 'hosted-service evidence for cicd-provider-approvals' --snapshot-out artifacts/external-evidence-sources/cicd-provider-approvals/hosted-service.json --intake-out artifacts/external-evidence-intakes/cicd-provider-approvals/hosted-service.json`
 - `cicd-provider-approvals:hosted-service` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/cicd-provider-approvals/hosted-service.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
-- `mcp-gateway:hosted-service` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/mcp-gateway/hosted-service --root . --task mcp-gateway:hosted-service --description 'hosted-service evidence for mcp-gateway' --snapshot-out artifacts/external-evidence-sources/mcp-gateway/hosted-service.json --intake-out artifacts/external-evidence-intakes/mcp-gateway/hosted-service.json`
-- `mcp-gateway:hosted-service` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/mcp-gateway/hosted-service.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `auditor-and-review-portal:hosted-service` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/auditor-and-review-portal/hosted-service --root . --task auditor-and-review-portal:hosted-service --description 'hosted-service evidence for auditor-and-review-portal' --snapshot-out artifacts/external-evidence-sources/auditor-and-review-portal/hosted-service.json --intake-out artifacts/external-evidence-intakes/auditor-and-review-portal/hosted-service.json`
 - `auditor-and-review-portal:hosted-service` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/auditor-and-review-portal/hosted-service.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `runtime-policy-and-attestation:hosted-service` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/runtime-policy-and-attestation/hosted-service --root . --task runtime-policy-and-attestation:hosted-service --description 'hosted-service evidence for runtime-policy-and-attestation' --snapshot-out artifacts/external-evidence-sources/runtime-policy-and-attestation/hosted-service.json --intake-out artifacts/external-evidence-intakes/runtime-policy-and-attestation/hosted-service.json`

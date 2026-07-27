@@ -92,6 +92,66 @@
       "unit_ref": "oss-verifier-and-public-spec:hosted-service"
     },
     {
+      "authority_kind": "provider-api",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained GitHub contents API export for MCP gateway proxy event evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/mcp-gateway-provider-api.json",
+      "issued_at": "2026-07-03T12:05:00Z",
+      "issuer": "GitHub Contents API",
+      "owner_hint": "integration/platform owner",
+      "requirement_id": "mcp-gateway",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/mcp-proxy-events-provider-api-source-snapshot.json",
+      "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/mcp-proxy-events.json?ref=main",
+      "subject": "trustai MCP proxy event export",
+      "suggested_evidence_sources": [
+        "provider API response export",
+        "request/response transcript",
+        "provider-owned audit event"
+      ],
+      "task": "mcp-gateway:provider-api",
+      "task_id": "74f73767f9ec7e8f759c6b2135fab1c24fd052424c78eceae7d4a820b5fe41b6",
+      "task_ref": "external-evidence:mcp-gateway:provider-api",
+      "title": "MCP evidence gateway reference capture",
+      "unit_id": "f113eea739eb3d407bee25f22f68afebda945e20ff27f75406db56edb016892c",
+      "unit_ref": "mcp-gateway:provider-api"
+    },
+    {
+      "authority_kind": "hosted-service",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained GitHub hosted file export for MCP gateway proxy event evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/mcp-gateway-hosted-service.json",
+      "issued_at": "2026-07-03T12:05:00Z",
+      "issuer": "GitHub Hosted Repository",
+      "owner_hint": "service owner",
+      "requirement_id": "mcp-gateway",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/mcp-proxy-events-hosted-service-source-snapshot.json",
+      "source_uri": "https://github.com/MSBeni/trust_ai/blob/main/examples/aitrade/mcp-proxy-events.json",
+      "subject": "trustai MCP proxy event export",
+      "suggested_evidence_sources": [
+        "hosted service health or deployment export",
+        "service audit root",
+        "operational SLO/status evidence"
+      ],
+      "task": "mcp-gateway:hosted-service",
+      "task_id": "2f7cb1b22473df0f0dcca97d28b1184fb4831eb54b9b3f5408866e2d10d5e6df",
+      "task_ref": "external-evidence:mcp-gateway:hosted-service",
+      "title": "MCP evidence gateway reference capture",
+      "unit_id": "8766be3ea5e06276839b71f9e28a0032782143df739db18f6b58dcc76e899249",
+      "unit_ref": "mcp-gateway:hosted-service"
+    },
+    {
       "authority_kind": "ci-run",
       "content_type": "application/json",
       "coverage_status": "missing",
@@ -279,7 +339,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "2b82fa1aa947bce629ad7d10e833bde97e4a0ea8f981174aaae9e9f5df96d5d0",
+  "source_map_id": "5a0d2654da8bd667c3fe27deaad7cafbd8fc27cea5a46b92fc688bee0afd9ba3",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -294,9 +354,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 9,
+    "entry_count": 11,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 9,
+    "live_source_uri_count": 11,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

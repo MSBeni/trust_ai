@@ -1,13 +1,13 @@
 # External Evidence Owner Fulfillment Closure
 
-- Closure ID: `c9ac1d7cd37168bc0e10a39ac2983da42e3ee498806551e848449439ea59cdc5`
+- Closure ID: `537e8c993cbbd79f1c0ef64cdb9a2bf79f8a04e14e3c85e8078752a2c6b36d1a`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Closed tasks: 0/62
-- Missing intakes: 62
+- Closed tasks: 0/60
+- Missing intakes: 60
 - Invalid intake tasks: 0
-- Missing manifest coverage: 62
-- Placeholder source URIs: 62
+- Missing manifest coverage: 60
+- Placeholder source URIs: 60
 
 ## Task Closure
 
@@ -18,8 +18,6 @@
 | `self-serve-onboarding:identity-provider` | IAM/identity owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `mcp-gateway:ci-run` | release engineering | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `mcp-gateway:kms-hsm` | security/platform KMS owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
-| `mcp-gateway:provider-api` | integration/platform owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
-| `mcp-gateway:hosted-service` | service owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `shadow-replay-temporal-holdout:kms-hsm` | security/platform KMS owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `shadow-replay-temporal-holdout:provider-api` | integration/platform owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `shadow-replay-temporal-holdout:identity-provider` | IAM/identity owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
@@ -78,9 +76,9 @@
 
 ## Blockers
 
-- 62 reviewed tasks still use placeholder source_uri values
-- 62 reviewed tasks do not have intake receipts
-- 62 reviewed tasks are not covered by the rebuilt manifest
+- 60 reviewed tasks still use placeholder source_uri values
+- 60 reviewed tasks do not have intake receipts
+- 60 reviewed tasks are not covered by the rebuilt manifest
 
 ## Next Actions
 

@@ -1,8 +1,8 @@
 # TrustAI External Evidence Collection Plan
 
-Plan ID: `6190407de0c9ff6397e13a9bba70640897a592970e338134ab0868ac1cd612ef`
+Plan ID: `ae37345ce52960c691fd568d844bd44407d5d23f69efd29bac87e789fb15957a`
 
-Source manifest: `aeff1ad249f16d018b89eec85bf9322db6e31b2861cd90a1bc181af190b46cd4`
+Source manifest: `eaf64e35c913bb926b61439015d04f8091473cbbe9df659291b9e6ba69c7ee20`
 
 Status filter: missing
 
@@ -10,10 +10,10 @@ Status filter: missing
 
 - Source manifest status: partial
 - Total authority units: 71
-- Selected tasks: 62
-- Selected missing tasks: 62
+- Selected tasks: 60
+- Selected missing tasks: 60
 - Selected covered tasks: 0
-- Missing authority kinds overall: 62
+- Missing authority kinds overall: 60
 
 ## Collection Tasks
 
@@ -24,8 +24,6 @@ Status filter: missing
 | `e4776c238bf7deaa482f7e908897fbbc7b86e75ec7da8bd956155fa15b675472` | `self-serve-onboarding:identity-provider` | `self-serve-onboarding` | identity-provider | missing | IAM/identity owner | `external-evidence/self-serve-onboarding/identity-provider.json` | `self-serve-onboarding,identity-provider,external-evidence/self-serve-onboarding/identity-provider.json,identity-provider evidence for self-serve-onboarding;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `8c5543b564326dfe798955c6c0be0376ef1d80413df723bdf5f83d882238aa4c` | `mcp-gateway:ci-run` | `mcp-gateway` | ci-run | missing | release engineering | `external-evidence/mcp-gateway/ci-run.json` | `mcp-gateway,ci-run,external-evidence/mcp-gateway/ci-run.json,ci-run evidence for mcp-gateway;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `a6cb67e23bea269fb4ef1abdaa7fd77c9a57bfc611c02c09a1efd19d90a6c737` | `mcp-gateway:kms-hsm` | `mcp-gateway` | kms-hsm | missing | security/platform KMS owner | `external-evidence/mcp-gateway/kms-hsm.json` | `mcp-gateway,kms-hsm,external-evidence/mcp-gateway/kms-hsm.json,kms-hsm evidence for mcp-gateway;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
-| `74f73767f9ec7e8f759c6b2135fab1c24fd052424c78eceae7d4a820b5fe41b6` | `mcp-gateway:provider-api` | `mcp-gateway` | provider-api | missing | integration/platform owner | `external-evidence/mcp-gateway/provider-api.json` | `mcp-gateway,provider-api,external-evidence/mcp-gateway/provider-api.json,provider-api evidence for mcp-gateway;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
-| `2f7cb1b22473df0f0dcca97d28b1184fb4831eb54b9b3f5408866e2d10d5e6df` | `mcp-gateway:hosted-service` | `mcp-gateway` | hosted-service | missing | service owner | `external-evidence/mcp-gateway/hosted-service.json` | `mcp-gateway,hosted-service,external-evidence/mcp-gateway/hosted-service.json,hosted-service evidence for mcp-gateway;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `d3017ae6fcc7d06172506074706607049c15814f54655245f15c15a500693204` | `shadow-replay-temporal-holdout:kms-hsm` | `shadow-replay-temporal-holdout` | kms-hsm | missing | security/platform KMS owner | `external-evidence/shadow-replay-temporal-holdout/kms-hsm.json` | `shadow-replay-temporal-holdout,kms-hsm,external-evidence/shadow-replay-temporal-holdout/kms-hsm.json,kms-hsm evidence for shadow-replay-temporal-holdout;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `d80551bd511665073ae5004725f7a510593a7f944c11d3350a3af384c10d57f5` | `shadow-replay-temporal-holdout:provider-api` | `shadow-replay-temporal-holdout` | provider-api | missing | integration/platform owner | `external-evidence/shadow-replay-temporal-holdout/provider-api.json` | `shadow-replay-temporal-holdout,provider-api,external-evidence/shadow-replay-temporal-holdout/provider-api.json,provider-api evidence for shadow-replay-temporal-holdout;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `4ab97d4e2347b46aff33524c887d3a6651588edbce84a753d5ef2b6fa905c84e` | `shadow-replay-temporal-holdout:identity-provider` | `shadow-replay-temporal-holdout` | identity-provider | missing | IAM/identity owner | `external-evidence/shadow-replay-temporal-holdout/identity-provider.json` | `shadow-replay-temporal-holdout,identity-provider,external-evidence/shadow-replay-temporal-holdout/identity-provider.json,identity-provider evidence for shadow-replay-temporal-holdout;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
