@@ -90,6 +90,8 @@ class RepositoryCiTests(unittest.TestCase):
         script = RETAINED_EVIDENCE_SCRIPT.read_text(encoding="utf-8")
         self.assertIn("--verify-only", script)
         self.assertIn("retained-external-evidence-manifest.json", script)
+        self.assertIn("external-evidence-owner-packets", script)
+        self.assertIn("remaining-external-evidence-owner-packets.json", script)
         self.assertTrue(TESTS_INIT.exists())
 
 

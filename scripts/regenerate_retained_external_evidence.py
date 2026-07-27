@@ -201,6 +201,16 @@ def refresh_retained_artifacts() -> None:
         path("remaining-external-evidence-work-package.md"),
     )
     run(
+        "external-evidence-owner-packets",
+        path("remaining-external-evidence-work-package.json"),
+        "--generated-at",
+        COLLECTION_TIME,
+        "--out",
+        path("remaining-external-evidence-owner-packets.json"),
+        "--markdown",
+        path("remaining-external-evidence-owner-packets.md"),
+    )
+    run(
         "external-evidence-readiness",
         path("retained-external-evidence-gap-report.json"),
         path("retained-external-evidence-manifest.json"),
@@ -445,6 +455,11 @@ def verify_retained_artifacts() -> None:
         ".",
     )
     run(
+        "external-evidence-owner-packets-verify",
+        path("remaining-external-evidence-owner-packets.json"),
+        path("remaining-external-evidence-work-package.json"),
+    )
+    run(
         "external-evidence-readiness-verify",
         path("retained-external-evidence-readiness.json"),
         path("retained-external-evidence-gap-report.json"),
@@ -467,6 +482,7 @@ def assert_retained_counts() -> None:
     source_map = json_load(DIR / "remaining-external-evidence-source-map-template.json")
     gap_report = json_load(DIR / "retained-external-evidence-gap-report.json")
     work_package = json_load(DIR / "remaining-external-evidence-work-package.json")
+    owner_packets = json_load(DIR / "remaining-external-evidence-owner-packets.json")
     readiness = json_load(DIR / "retained-external-evidence-readiness.json")
     checks = [
         (manifest["summary"]["covered_authority_kind_count"], 3, "manifest covered authority kind count"),
@@ -477,6 +493,8 @@ def assert_retained_counts() -> None:
         (gap_report["summary"]["remaining_task_count"], 68, "gap remaining task count"),
         (work_package["summary"]["task_count"], 68, "work-package task count"),
         (work_package["summary"]["package_count"], 10, "work-package package count"),
+        (owner_packets["summary"]["packet_count"], 10, "owner packet count"),
+        (owner_packets["summary"]["task_count"], 68, "owner packet task count"),
         (readiness["summary"]["readiness_status"], "not-ready", "readiness status"),
     ]
     for actual, expected, label in checks:

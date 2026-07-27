@@ -22,6 +22,7 @@ from trustai.external_evidence import (
     EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA,
     EXTERNAL_EVIDENCE_GAP_REPORT_SCHEMA,
     EXTERNAL_EVIDENCE_WORK_PACKAGE_SCHEMA,
+    EXTERNAL_EVIDENCE_OWNER_PACKET_SCHEMA,
     EXTERNAL_EVIDENCE_READINESS_SCHEMA,
     EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA,
     ROADMAP_EVIDENCE_REPORT_SCHEMA,
@@ -35,6 +36,7 @@ from trustai.external_evidence import (
     build_external_evidence_collection_plan,
     build_external_evidence_gap_report,
     build_external_evidence_work_package,
+    build_external_evidence_owner_packets,
     build_external_evidence_readiness_report,
     build_external_evidence_intake,
     build_external_evidence_source_snapshot,
@@ -49,6 +51,7 @@ from trustai.external_evidence import (
     load_external_evidence_collection_run,
     load_external_evidence_gap_report,
     load_external_evidence_work_package,
+    load_external_evidence_owner_packets,
     load_external_evidence_readiness_report,
     load_external_evidence_intake,
     load_external_evidence_intakes,
@@ -60,12 +63,14 @@ from trustai.external_evidence import (
     render_external_evidence_markdown,
     render_external_evidence_collection_plan_markdown,
     render_external_evidence_work_package_markdown,
+    render_external_evidence_owner_packets_markdown,
     render_external_evidence_readiness_markdown,
     render_roadmap_evidence_markdown,
     render_roadmap_evidence_bundle_markdown,
     verify_external_evidence_manifest,
     verify_external_evidence_gap_report,
     verify_external_evidence_work_package,
+    verify_external_evidence_owner_packets,
     verify_external_evidence_readiness_report,
     verify_external_evidence_collection_plan,
     verify_external_evidence_source_map_template,
@@ -699,6 +704,112 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     str(audit_path),
                     "--root",
                     str(ROOT),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+
+    def test_external_evidence_owner_packets_bind_work_package_assignments(self):
+        audit = build_roadmap_audit(ROOT)
+        manifest = build_external_evidence_manifest(
+            audit,
+            root=ROOT,
+            evidence=[{
+                "requirement_id": "oss-verifier-and-public-spec",
+                "authority_kind": "ci-run",
+                "path": FIXTURE,
+                "description": "Recorded verifier workflow run export.",
+                "issuer": "GitHub Actions",
+                "subject": "trustai go verifier release workflow",
+                "source_uri": "https://github.com/MSBeni/trust_ai/actions",
+                "issued_at": "2026-07-08T00:00:00Z",
+                "expires_at": "2026-12-31T00:00:00Z",
+            }],
+            generated_at="2026-07-09T00:00:00Z",
+        )
+        plan = build_external_evidence_collection_plan(manifest, audit, root=ROOT, status_filter="missing", generated_at="2026-07-09T00:00:00Z")
+        source_map = build_external_evidence_source_map_template(
+            plan,
+            status_filter="missing",
+            authority_kinds=["provider-api", "identity-provider"],
+            source_uri_template="TODO://authority/{requirement_id}/{authority_kind}",
+            description_template="{authority_kind} evidence for {requirement_id}",
+            limit=3,
+            generated_at="2026-07-09T00:01:00Z",
+        )
+        gap_report = build_external_evidence_gap_report(
+            manifest,
+            plan,
+            source_map,
+            audit,
+            root=ROOT,
+            generated_at="2026-07-09T00:02:00Z",
+        )
+        work_package = build_external_evidence_work_package(
+            gap_report,
+            manifest,
+            plan,
+            source_map,
+            audit,
+            root=ROOT,
+            generated_at="2026-07-09T00:03:00Z",
+        )
+        packet_bundle = build_external_evidence_owner_packets(work_package, generated_at="2026-07-09T00:04:00Z")
+        result = verify_external_evidence_owner_packets(packet_bundle, work_package)
+        markdown = render_external_evidence_owner_packets_markdown(packet_bundle)
+
+        self.assertEqual(EXTERNAL_EVIDENCE_OWNER_PACKET_SCHEMA, packet_bundle["schema"])
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(work_package["summary"]["package_count"], packet_bundle["summary"]["packet_count"])
+        self.assertEqual(work_package["summary"]["task_count"], packet_bundle["summary"]["task_count"])
+        self.assertEqual(content_hash(work_package), packet_bundle["source_work_package"]["work_package_hash"])
+        self.assertTrue(all(packet["packet_ref"].startswith("owner-packet:") for packet in packet_bundle["packets"]))
+        self.assertTrue(any(packet["handoff"]["collect_batch_command"] for packet in packet_bundle["packets"]))
+        self.assertIn("External Evidence Owner Packets", markdown)
+        self.assertIn("Completion gate", markdown)
+        self.assertIn("Task Commands", markdown)
+
+        tampered = copy.deepcopy(packet_bundle)
+        tampered["packets"][0]["tasks"][0]["source_uri_status"] = "live"
+        tampered["owner_packet_bundle_id"] = content_hash(without_keys(tampered, "owner_packet_bundle_id"))
+        tampered_result = verify_external_evidence_owner_packets(tampered, work_package)
+        self.assertFalse(tampered_result.ok)
+        self.assertTrue(any("owner packet bundle body" in error for error in tampered_result.errors), tampered_result.errors)
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_path = Path(tmp_dir)
+            work_package_path = tmp_path / "work-package.json"
+            packet_path = tmp_path / "owner-packets.json"
+            markdown_path = tmp_path / "owner-packets.md"
+            work_package_path.write_text(json.dumps(work_package, indent=2, sort_keys=True), encoding="utf-8")
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-owner-packets",
+                    str(work_package_path),
+                    "--generated-at",
+                    "2026-07-09T00:04:00Z",
+                    "--out",
+                    str(packet_path),
+                    "--markdown",
+                    str(markdown_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            cli_packet_bundle = load_external_evidence_owner_packets(packet_path)
+            self.assertEqual(packet_bundle, cli_packet_bundle)
+            self.assertTrue(markdown_path.exists())
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-owner-packets-verify",
+                    str(packet_path),
+                    str(work_package_path),
                 ],
                 cwd=ROOT,
                 check=True,

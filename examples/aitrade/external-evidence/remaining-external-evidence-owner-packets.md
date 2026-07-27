@@ -1,39 +1,28 @@
-# External Evidence Work Packages
+# External Evidence Owner Packets
 
-- Work package ID: `7cca5f64a6dcb8020b6f70898e517b5725a3df8be7f81932d6528489670dc461`
+- Owner packet bundle ID: `1275bf163f40e6fa3711bdadb255b3087357f8cd20b795a1477299015714cc7e`
 - Generated at: `2026-07-12T00:01:00Z`
-- Grouped by: `owner_hint`
-- Packages: 10
+- Source work package ID: `7cca5f64a6dcb8020b6f70898e517b5725a3df8be7f81932d6528489670dc461`
+- Source work package hash: `64e73fb7424516e511c44359d6379bd9fda8109c525a79a089d72444371dec16`
+- Packets: 10
 - Tasks: 68
 - Missing tasks: 68
 - Placeholder source URIs: 68
-- Live source URIs: 0
 
-## Tasks By Owner
-
-- IAM/identity owner: 8
-- cloud storage owner: 1
-- customer success/account owner: 9
-- integration/platform owner: 12
-- legal/compliance owner: 5
-- release engineering: 8
-- risk/insurance owner: 4
-- security/platform KMS owner: 7
-- service owner: 8
-- standards/governance owner: 6
-
-## Packages
+## Packets
 
 ### IAM/identity owner
 
+- Packet ref: `owner-packet:owner_hint:IAM-identity-owner`
+- Packet ID: `1ca549666047a2f91599081507365b25072f572ad5dd8a31b749fd01010e0de0`
 - Package ref: `owner_hint:IAM-identity-owner`
-- Package ID: `5c7883e3a722c18406107720c68b962cc2b79c3257021385549ae31911372be8`
-- Owner Hint: `IAM/identity owner`
 - Tasks: 8
+- Missing tasks: 8
 - Authority kinds: `identity-provider`
 - Requirements: `agent-inventory-and-identity`, `auditor-and-review-portal`, `cicd-provider-approvals`, `insurer-api-and-actuarial-products`, `runtime-policy-and-attestation`, `self-serve-onboarding`, `shadow-replay-temporal-holdout`, `trust-network-procurement-and-marketplace`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
+- Completion gate: Every task must have a live authority source URI, a verified source snapshot, a verified intake receipt, and a rebuilt external-evidence manifest before readiness can pass.
 
 | Task | Phase | Priority | Authority | Source URI Status | Intake |
 |---|---|---|---|---|---|
@@ -67,14 +56,16 @@
 
 ### cloud storage owner
 
+- Packet ref: `owner-packet:owner_hint:cloud-storage-owner`
+- Packet ID: `16de102d1189d8b04d6e6c85342dbcb311b1b907519f405ee9d0515c13e29a36`
 - Package ref: `owner_hint:cloud-storage-owner`
-- Package ID: `f976ff97e618a9fce1d9d9e7045832ed202195e92415c72ac1e4f44945725ab3`
-- Owner Hint: `cloud storage owner`
 - Tasks: 1
+- Missing tasks: 1
 - Authority kinds: `cloud-object-lock`
 - Requirements: `byoc-self-hosted`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
+- Completion gate: Every task must have a live authority source URI, a verified source snapshot, a verified intake receipt, and a rebuilt external-evidence manifest before readiness can pass.
 
 | Task | Phase | Priority | Authority | Source URI Status | Intake |
 |---|---|---|---|---|---|
@@ -87,14 +78,16 @@
 
 ### customer success/account owner
 
+- Packet ref: `owner-packet:owner_hint:customer-success-account-owner`
+- Packet ID: `b6c51823b2158f7a36a336b736f16b90bbf598454e0141f5296495a1834006bf`
 - Package ref: `owner_hint:customer-success-account-owner`
-- Package ID: `c989f4ba44c4c7912f648f0328d7ef720aefd49553f291f977c6058edc28d566`
-- Owner Hint: `customer success/account owner`
 - Tasks: 9
+- Missing tasks: 9
 - Authority kinds: `customer`
 - Requirements: `byoc-self-hosted`, `design-partner-pilot-exit-criteria`, `insurer-api-and-actuarial-products`, `product-scope-discipline`, `roadmap-phase-scoreboard`, `state-of-agent-reliability-report`, `trust-network-procurement-and-marketplace`, `trustai-own-compliance`, `vertical-packs`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
+- Completion gate: Every task must have a live authority source URI, a verified source snapshot, a verified intake receipt, and a rebuilt external-evidence manifest before readiness can pass.
 
 | Task | Phase | Priority | Authority | Source URI Status | Intake |
 |---|---|---|---|---|---|
@@ -131,14 +124,16 @@
 
 ### integration/platform owner
 
+- Packet ref: `owner-packet:owner_hint:integration-platform-owner`
+- Packet ID: `6f26f1f1047c439d730798aa49195348973b6ed753cab7320a9bd8178ceab482`
 - Package ref: `owner_hint:integration-platform-owner`
-- Package ID: `06b160f10993bc896de479efc2e5119ee984e4520d21714ae81dcfbd07e63125`
-- Owner Hint: `integration/platform owner`
 - Tasks: 12
+- Missing tasks: 12
 - Authority kinds: `provider-api`
 - Requirements: `agent-inventory-and-identity`, `auditor-and-review-portal`, `byoc-self-hosted`, `cicd-provider-approvals`, `compliance-mapper-and-eu-ai-act`, `framework-adapters`, `insurer-api-and-actuarial-products`, `mcp-gateway`, `runtime-policy-and-attestation`, `self-serve-onboarding`, `shadow-replay-temporal-holdout`, `trust-network-procurement-and-marketplace`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
+- Completion gate: Every task must have a live authority source URI, a verified source snapshot, a verified intake receipt, and a rebuilt external-evidence manifest before readiness can pass.
 
 | Task | Phase | Priority | Authority | Source URI Status | Intake |
 |---|---|---|---|---|---|
@@ -184,14 +179,16 @@
 
 ### legal/compliance owner
 
+- Packet ref: `owner-packet:owner_hint:legal-compliance-owner`
+- Packet ID: `de70e9621ef7a3afb73cdb7e977758214ec6e8a82d3cf5d9b40f1c39099481ee`
 - Package ref: `owner_hint:legal-compliance-owner`
-- Package ID: `41375da159f353cbbf6f0d6084bfdcbde9252e92be8b8ec46c08de75c215d82c`
-- Owner Hint: `legal/compliance owner`
 - Tasks: 5
+- Missing tasks: 5
 - Authority kinds: `regulator`
 - Requirements: `auditor-and-review-portal`, `compliance-mapper-and-eu-ai-act`, `design-partner-pilot-exit-criteria`, `roadmap-phase-scoreboard`, `vertical-packs`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
+- Completion gate: Every task must have a live authority source URI, a verified source snapshot, a verified intake receipt, and a rebuilt external-evidence manifest before readiness can pass.
 
 | Task | Phase | Priority | Authority | Source URI Status | Intake |
 |---|---|---|---|---|---|
@@ -216,14 +213,16 @@
 
 ### release engineering
 
+- Packet ref: `owner-packet:owner_hint:release-engineering`
+- Packet ID: `bee4fe87ae9b9063391bd1c6ab75bbc5fd87d097660328a0f7cdb2fd978f8529`
 - Package ref: `owner_hint:release-engineering`
-- Package ID: `35b6df0afdc2b805a0274e63d9bb6f6288d28ec7fa3bca07236260fe8c7c4c0e`
-- Owner Hint: `release engineering`
 - Tasks: 8
+- Missing tasks: 8
 - Authority kinds: `ci-run`
 - Requirements: `byoc-self-hosted`, `cicd-provider-approvals`, `framework-adapters`, `insurer-api-and-actuarial-products`, `mcp-gateway`, `product-scope-discipline`, `roadmap-phase-scoreboard`, `runtime-policy-and-attestation`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
+- Completion gate: Every task must have a live authority source URI, a verified source snapshot, a verified intake receipt, and a rebuilt external-evidence manifest before readiness can pass.
 
 | Task | Phase | Priority | Authority | Source URI Status | Intake |
 |---|---|---|---|---|---|
@@ -257,14 +256,16 @@
 
 ### risk/insurance owner
 
+- Packet ref: `owner-packet:owner_hint:risk-insurance-owner`
+- Packet ID: `df229181c03b4dcb7032ca43f6b9fed7703fac1c258d0e29b1b6fdbff00a520f`
 - Package ref: `owner_hint:risk-insurance-owner`
-- Package ID: `4e8c4ea0c1485a4f74d654c6751a3fe1ce50686a434841596b6f8b0325dbcfb3`
-- Owner Hint: `risk/insurance owner`
 - Tasks: 4
+- Missing tasks: 4
 - Authority kinds: `insurer`
 - Requirements: `design-partner-pilot-exit-criteria`, `insurer-api-and-actuarial-products`, `roadmap-phase-scoreboard`, `vertical-packs`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
+- Completion gate: Every task must have a live authority source URI, a verified source snapshot, a verified intake receipt, and a rebuilt external-evidence manifest before readiness can pass.
 
 | Task | Phase | Priority | Authority | Source URI Status | Intake |
 |---|---|---|---|---|---|
@@ -286,14 +287,16 @@
 
 ### security/platform KMS owner
 
+- Packet ref: `owner-packet:owner_hint:security-platform-KMS-owner`
+- Packet ID: `8964f8f304a053c4023640ba81958bc8a506679a5f23d44895860f9e45d60d80`
 - Package ref: `owner_hint:security-platform-KMS-owner`
-- Package ID: `cbbff6fc9625af1c6cbdb1a85bd46a732c8cf11128b4b6bf6b95e2747716dbc1`
-- Owner Hint: `security/platform KMS owner`
 - Tasks: 7
+- Missing tasks: 7
 - Authority kinds: `kms-hsm`
 - Requirements: `auditor-and-review-portal`, `byoc-self-hosted`, `insurer-api-and-actuarial-products`, `mcp-gateway`, `runtime-policy-and-attestation`, `shadow-replay-temporal-holdout`, `standards-track-and-auditor-ecosystem`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
+- Completion gate: Every task must have a live authority source URI, a verified source snapshot, a verified intake receipt, and a rebuilt external-evidence manifest before readiness can pass.
 
 | Task | Phase | Priority | Authority | Source URI Status | Intake |
 |---|---|---|---|---|---|
@@ -324,14 +327,16 @@
 
 ### service owner
 
+- Packet ref: `owner-packet:owner_hint:service-owner`
+- Packet ID: `aaecedbdb8263224b1843d3ba8acad8d078eb7d977dc92a07e2a253ce1dc9310`
 - Package ref: `owner_hint:service-owner`
-- Package ID: `43acdef2390f292ba70878c1531f878a3bbabf453d9c643f9b9a236f9533488d`
-- Owner Hint: `service owner`
 - Tasks: 8
+- Missing tasks: 8
 - Authority kinds: `hosted-service`
 - Requirements: `auditor-and-review-portal`, `cicd-provider-approvals`, `framework-adapters`, `insurer-api-and-actuarial-products`, `mcp-gateway`, `runtime-policy-and-attestation`, `self-serve-onboarding`, `trust-network-procurement-and-marketplace`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
+- Completion gate: Every task must have a live authority source URI, a verified source snapshot, a verified intake receipt, and a rebuilt external-evidence manifest before readiness can pass.
 
 | Task | Phase | Priority | Authority | Source URI Status | Intake |
 |---|---|---|---|---|---|
@@ -365,14 +370,16 @@
 
 ### standards/governance owner
 
+- Packet ref: `owner-packet:owner_hint:standards-governance-owner`
+- Packet ID: `5de448069b7c66596b724a5aa36a626dcd50fdb9104771656a6fc12953b9d62d`
 - Package ref: `owner_hint:standards-governance-owner`
-- Package ID: `1774db5a51ba83f55d2139304cfc9ac99768af376032ca1ea23352ae7b6d3d97`
-- Owner Hint: `standards/governance owner`
 - Tasks: 6
+- Missing tasks: 6
 - Authority kinds: `standards-body`
 - Requirements: `byoc-self-hosted`, `compliance-mapper-and-eu-ai-act`, `roadmap-phase-scoreboard`, `shadow-replay-temporal-holdout`, `standards-track-and-auditor-ecosystem`, `trustai-own-compliance`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
+- Completion gate: Every task must have a live authority source URI, a verified source snapshot, a verified intake receipt, and a rebuilt external-evidence manifest before readiness can pass.
 
 | Task | Phase | Priority | Authority | Source URI Status | Intake |
 |---|---|---|---|---|---|
@@ -397,3 +404,10 @@
 - `compliance-mapper-and-eu-ai-act:standards-body` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/standards-body.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `standards-track-and-auditor-ecosystem:standards-body` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/standards-track-and-auditor-ecosystem/standards-body --root . --task standards-track-and-auditor-ecosystem:standards-body --description 'standards-body evidence for standards-track-and-auditor-ecosystem' --snapshot-out artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/standards-body.json --intake-out artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/standards-body.json`
 - `standards-track-and-auditor-ecosystem:standards-body` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/standards-body.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
+
+
+## Limitations
+
+- Owner packets assign collection work; they do not satisfy missing external authority evidence by themselves.
+- Source URIs marked TODO or placeholder must be replaced with authority-owned source exports before collection.
+- Packet completion is proven only by verified source snapshots, intake receipts, rebuilt manifests, and readiness reports.

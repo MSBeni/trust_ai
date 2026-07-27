@@ -26,6 +26,7 @@ EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA = "trustai.external-evidence-source-map/0.1"
 EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA = "trustai.external-evidence-collection-run/0.1"
 EXTERNAL_EVIDENCE_GAP_REPORT_SCHEMA = "trustai.external-evidence-gap-report/0.1"
 EXTERNAL_EVIDENCE_WORK_PACKAGE_SCHEMA = "trustai.external-evidence-work-package/0.1"
+EXTERNAL_EVIDENCE_OWNER_PACKET_SCHEMA = "trustai.external-evidence-owner-packet-bundle/0.1"
 EXTERNAL_EVIDENCE_READINESS_SCHEMA = "trustai.external-evidence-readiness/0.1"
 EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA = "trustai.external-evidence-git-remote-ref-export/0.1"
 
@@ -211,6 +212,13 @@ class ExternalEvidenceGapReportVerification:
 
 @dataclass
 class ExternalEvidenceWorkPackageVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class ExternalEvidenceOwnerPacketVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -1573,6 +1581,153 @@ def verify_external_evidence_work_package(
     return ExternalEvidenceWorkPackageVerification(ok=not errors, errors=errors, warnings=warnings)
 
 
+
+def _external_evidence_owner_packet_task(task: dict[str, Any]) -> dict[str, Any]:
+    keys = (
+        "task_id",
+        "task_ref",
+        "unit_id",
+        "unit_ref",
+        "requirement_id",
+        "phase",
+        "priority",
+        "title",
+        "authority_kind",
+        "coverage_status",
+        "owner_hint",
+        "suggested_artifact_path",
+        "source_uri",
+        "source_uri_status",
+        "snapshot_out",
+        "intake_out",
+        "description",
+        "evidence_argument_template",
+        "suggested_evidence_sources",
+        "acceptance_criteria",
+        "external_authority_required",
+        "next_actions",
+    )
+    packet_task = {key: task.get(key) for key in keys if key in task}
+    commands = task.get("commands")
+    if isinstance(commands, dict):
+        packet_task["commands"] = {
+            key: commands.get(key)
+            for key in ("collect_args", "collect_command", "verify_intake_args", "verify_intake_command")
+            if key in commands
+        }
+    return packet_task
+
+
+def build_external_evidence_owner_packets(
+    work_package: dict[str, Any],
+    *,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    if work_package.get("schema") != EXTERNAL_EVIDENCE_WORK_PACKAGE_SCHEMA:
+        raise ValueError(f"unsupported external evidence work package schema: {work_package.get('schema')}")
+    if work_package.get("work_package_id") != content_hash(without_keys(work_package, "work_package_id")):
+        raise ValueError("work_package_id does not match canonical work package body")
+    packages = work_package.get("packages")
+    if not isinstance(packages, list):
+        raise ValueError("external evidence work package packages must be a list")
+
+    packet_records: list[dict[str, Any]] = []
+    for index, package in enumerate(packages):
+        if not isinstance(package, dict):
+            raise ValueError(f"external evidence work package package {index} must be an object")
+        tasks = package.get("tasks")
+        if not isinstance(tasks, list):
+            raise ValueError(f"external evidence work package package {index} tasks must be a list")
+        commands = package.get("commands") if isinstance(package.get("commands"), dict) else {}
+        package_ref = str(package.get("package_ref") or f"package:{index}")
+        packet_body = {
+            "packet_ref": f"owner-packet:{package_ref}",
+            "package_ref": package_ref,
+            "package_id": package.get("package_id"),
+            "package_hash": content_hash(package),
+            "group_by": package.get("group_by"),
+            "group_key": package.get("group_key"),
+            "owner_hint": package.get("owner_hint") or package.get("group_key"),
+            "task_count": package.get("task_count", len(tasks)),
+            "missing_task_count": package.get("missing_task_count", 0),
+            "covered_task_count": package.get("covered_task_count", 0),
+            "placeholder_source_uri_count": package.get("placeholder_source_uri_count", 0),
+            "live_source_uri_count": package.get("live_source_uri_count", 0),
+            "authority_kinds": package.get("authority_kinds", []),
+            "requirement_ids": package.get("requirement_ids", []),
+            "phases": package.get("phases", []),
+            "priorities": package.get("priorities", []),
+            "handoff": {
+                "collect_batch_command": commands.get("collect_batch_command"),
+                "rebuild_manifest_command": commands.get("rebuild_manifest_command"),
+                "completion_gate": "Every task must have a live authority source URI, a verified source snapshot, a verified intake receipt, and a rebuilt external-evidence manifest before readiness can pass.",
+                "requires_placeholder_replacement": bool(package.get("placeholder_source_uri_count", 0)),
+            },
+            "tasks": [_external_evidence_owner_packet_task(task) for task in tasks if isinstance(task, dict)],
+        }
+        packet_records.append({**packet_body, "packet_id": content_hash(packet_body)})
+
+    packet_records.sort(key=lambda packet: str(packet.get("packet_ref") or ""))
+    work_summary = work_package.get("summary", {}) if isinstance(work_package.get("summary"), dict) else {}
+    body = {
+        "schema": EXTERNAL_EVIDENCE_OWNER_PACKET_SCHEMA,
+        "generated_at": generated_at or utc_now(),
+        "source_work_package": {
+            "work_package_id": work_package.get("work_package_id"),
+            "work_package_hash": content_hash(work_package),
+            "group_by": work_package.get("group_by"),
+            "generated_at": work_package.get("generated_at"),
+        },
+        "summary": {
+            "packet_count": len(packet_records),
+            "task_count": sum(int(packet.get("task_count") or 0) for packet in packet_records),
+            "missing_task_count": sum(int(packet.get("missing_task_count") or 0) for packet in packet_records),
+            "covered_task_count": sum(int(packet.get("covered_task_count") or 0) for packet in packet_records),
+            "placeholder_source_uri_count": sum(int(packet.get("placeholder_source_uri_count") or 0) for packet in packet_records),
+            "live_source_uri_count": sum(int(packet.get("live_source_uri_count") or 0) for packet in packet_records),
+            "source_work_package_task_count": work_summary.get("task_count", 0),
+            "task_count_by_authority_kind": work_summary.get("task_count_by_authority_kind", {}),
+            "task_count_by_owner_hint": work_summary.get("task_count_by_owner_hint", {}),
+        },
+        "packets": packet_records,
+        "limitations": [
+            "Owner packets assign collection work; they do not satisfy missing external authority evidence by themselves.",
+            "Source URIs marked TODO or placeholder must be replaced with authority-owned source exports before collection.",
+            "Packet completion is proven only by verified source snapshots, intake receipts, rebuilt manifests, and readiness reports.",
+        ],
+    }
+    return {**body, "owner_packet_bundle_id": content_hash(body)}
+
+
+def verify_external_evidence_owner_packets(
+    packet_bundle: dict[str, Any],
+    work_package: dict[str, Any],
+) -> ExternalEvidenceOwnerPacketVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if packet_bundle.get("schema") != EXTERNAL_EVIDENCE_OWNER_PACKET_SCHEMA:
+        errors.append(f"unsupported external evidence owner packet schema: {packet_bundle.get('schema')}")
+    if packet_bundle.get("owner_packet_bundle_id") != content_hash(without_keys(packet_bundle, "owner_packet_bundle_id")):
+        errors.append("owner_packet_bundle_id does not match canonical owner packet bundle body")
+    source = packet_bundle.get("source_work_package") if isinstance(packet_bundle.get("source_work_package"), dict) else {}
+    if source.get("work_package_id") != work_package.get("work_package_id"):
+        errors.append("owner packet bundle source work_package_id does not match supplied work package")
+    if source.get("work_package_hash") != content_hash(work_package):
+        errors.append("owner packet bundle source work_package_hash does not match supplied work package")
+    try:
+        expected = build_external_evidence_owner_packets(
+            work_package,
+            generated_at=str(packet_bundle.get("generated_at") or ""),
+        )
+    except ValueError as exc:
+        errors.append(str(exc))
+    else:
+        if without_keys(packet_bundle, "owner_packet_bundle_id") != without_keys(expected, "owner_packet_bundle_id"):
+            errors.append("owner packet bundle body does not match supplied work package")
+        summary = packet_bundle.get("summary", {}) if isinstance(packet_bundle.get("summary"), dict) else {}
+        if summary.get("task_count") != summary.get("source_work_package_task_count"):
+            warnings.append("owner packet task count does not match recorded source work package task count")
+    return ExternalEvidenceOwnerPacketVerification(ok=not errors, errors=errors, warnings=warnings)
 
 def _external_evidence_readiness_check(check_id: str, ok: bool, summary: str) -> dict[str, Any]:
     return {"id": check_id, "status": "passed" if ok else "failed", "summary": summary}
@@ -3096,6 +3251,21 @@ def write_external_evidence_work_package_markdown(path: str | Path, work_package
     target.write_text(render_external_evidence_work_package_markdown(work_package), encoding="utf-8")
 
 
+def write_external_evidence_owner_packets(path: str | Path, packet_bundle: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(packet_bundle, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_external_evidence_owner_packets(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def write_external_evidence_owner_packets_markdown(path: str | Path, packet_bundle: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_external_evidence_owner_packets_markdown(packet_bundle), encoding="utf-8")
+
 def write_external_evidence_readiness_report(path: str | Path, report: dict[str, Any]) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -3256,6 +3426,84 @@ def render_external_evidence_work_package_markdown(work_package: dict[str, Any])
     return "\n".join(lines).rstrip() + "\n"
 
 
+
+def render_external_evidence_owner_packets_markdown(packet_bundle: dict[str, Any]) -> str:
+    summary = packet_bundle.get("summary", {}) if isinstance(packet_bundle.get("summary"), dict) else {}
+    source = packet_bundle.get("source_work_package", {}) if isinstance(packet_bundle.get("source_work_package"), dict) else {}
+    lines = [
+        "# External Evidence Owner Packets",
+        "",
+        f"- Owner packet bundle ID: `{packet_bundle.get('owner_packet_bundle_id')}`",
+        f"- Generated at: `{packet_bundle.get('generated_at')}`",
+        f"- Source work package ID: `{source.get('work_package_id')}`",
+        f"- Source work package hash: `{source.get('work_package_hash')}`",
+        f"- Packets: {summary.get('packet_count', 0)}",
+        f"- Tasks: {summary.get('task_count', 0)}",
+        f"- Missing tasks: {summary.get('missing_task_count', 0)}",
+        f"- Placeholder source URIs: {summary.get('placeholder_source_uri_count', 0)}",
+        "",
+        "## Packets",
+        "",
+    ]
+    packets = packet_bundle.get("packets", [])
+    if isinstance(packets, list) and packets:
+        for packet in packets:
+            if not isinstance(packet, dict):
+                continue
+            lines.append(f"### {_markdown_cell(packet.get('owner_hint'))}")
+            lines.append("")
+            lines.append(f"- Packet ref: `{_markdown_cell(packet.get('packet_ref'))}`")
+            lines.append(f"- Packet ID: `{_markdown_cell(packet.get('packet_id'))}`")
+            lines.append(f"- Package ref: `{_markdown_cell(packet.get('package_ref'))}`")
+            lines.append(f"- Tasks: {packet.get('task_count', 0)}")
+            lines.append(f"- Missing tasks: {packet.get('missing_task_count', 0)}")
+            lines.append(f"- Authority kinds: {_markdown_code_list(packet.get('authority_kinds', []))}")
+            lines.append(f"- Requirements: {_markdown_code_list(packet.get('requirement_ids', []))}")
+            handoff = packet.get("handoff", {}) if isinstance(packet.get("handoff"), dict) else {}
+            if handoff.get("collect_batch_command"):
+                lines.append(f"- Batch collect command: `{_markdown_cell(handoff.get('collect_batch_command'))}`")
+            if handoff.get("rebuild_manifest_command"):
+                lines.append(f"- Rebuild manifest command: `{_markdown_cell(handoff.get('rebuild_manifest_command'))}`")
+            if handoff.get("completion_gate"):
+                lines.append(f"- Completion gate: {_markdown_cell(handoff.get('completion_gate'))}")
+            lines.extend(["", "| Task | Phase | Priority | Authority | Source URI Status | Intake |", "|---|---|---|---|---|---|"])
+            tasks = packet.get("tasks", [])
+            if isinstance(tasks, list):
+                for task in tasks:
+                    if not isinstance(task, dict):
+                        continue
+                    lines.append(
+                        "| "
+                        + " | ".join(
+                            [
+                                f"`{_markdown_cell(task.get('unit_ref'))}`",
+                                _markdown_cell(task.get("phase")),
+                                _markdown_cell(task.get("priority")),
+                                f"`{_markdown_cell(task.get('authority_kind'))}`",
+                                _markdown_cell(task.get("source_uri_status")),
+                                f"`{_markdown_cell(task.get('intake_out'))}`",
+                            ]
+                        )
+                        + " |"
+                    )
+            lines.extend(["", "#### Task Commands", ""])
+            if isinstance(tasks, list):
+                for task in tasks:
+                    if not isinstance(task, dict):
+                        continue
+                    commands = task.get("commands", {}) if isinstance(task.get("commands"), dict) else {}
+                    lines.append(f"- `{_markdown_cell(task.get('unit_ref'))}` collect: `{_markdown_cell(commands.get('collect_command'))}`")
+                    lines.append(f"- `{_markdown_cell(task.get('unit_ref'))}` verify intake: `{_markdown_cell(commands.get('verify_intake_command'))}`")
+            lines.append("")
+    else:
+        lines.append("No owner packets.")
+    limitations = packet_bundle.get("limitations", [])
+    lines.extend(["", "## Limitations", ""])
+    if isinstance(limitations, list) and limitations:
+        lines.extend(f"- {_markdown_cell(item)}" for item in limitations)
+    else:
+        lines.append("- None")
+    return "\n".join(lines).rstrip() + "\n"
 
 def render_external_evidence_readiness_markdown(report: dict[str, Any]) -> str:
     summary = report.get("summary", {}) if isinstance(report.get("summary"), dict) else {}
