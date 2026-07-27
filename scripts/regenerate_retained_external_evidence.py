@@ -668,6 +668,20 @@ RETAINED_SOURCES: dict[str, dict[str, str]] = {
         "snapshot_out": "examples/aitrade/external-evidence/trustai-own-compliance-standards-body-source-snapshot.json",
         "intake_out": "examples/aitrade/external-evidence/intakes/trustai-own-compliance-standards-body.json",
     },
+    "trustai-own-compliance:customer": {
+        "source_uri": "https://customers.example/aitrade/model-risk/trustai-own-compliance/soc2-iso42001/2026-07-12",
+        "description": "Retained customer acceptance export for TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance evidence",
+        "artifact": "examples/aitrade/external-evidence/trustai-own-compliance-customer-source-snapshot.json",
+        "source_file": "examples/aitrade/trustai-own-compliance-customer-authority-export.json",
+        "retrieval_method": "file-copy",
+        "content_type": "application/json",
+        "issuer": "Aitrade Model Risk Committee",
+        "subject": "TrustAI own SOC 2 Type II and ISO/IEC 42001 customer due-diligence acceptance",
+        "issued_at": "2026-07-12T00:00:00Z",
+        "expires_at": "2026-12-31T00:00:00Z",
+        "snapshot_out": "examples/aitrade/external-evidence/trustai-own-compliance-customer-source-snapshot.json",
+        "intake_out": "examples/aitrade/external-evidence/intakes/trustai-own-compliance-customer.json",
+    },
 }
 
 

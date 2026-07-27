@@ -1,14 +1,14 @@
 # External Evidence Owner Fulfillment Template
 
-- Template ID: `548513a68ce2aa50377bd0c0f17bdaf8a326cc5817ed18437351f8c575d8b9a0`
+- Template ID: `70211f49909a92d3b7c93b3d4cc5b7132c45f90f401e89912e862f1d1176dfa0`
 - Generated at: `2026-07-12T00:01:00Z`
-- Fulfillments: 26
+- Fulfillments: 25
 - Owners: 9
-- Blocked tasks: 26
+- Blocked tasks: 25
 - Open tasks: 0
 - Closed tasks: 0
-- Placeholder source URIs: 26
-- Missing intakes: 26
+- Placeholder source URIs: 25
+- Missing intakes: 25
 
 ## Fulfillments
 
@@ -21,7 +21,6 @@
 | `roadmap-phase-scoreboard:customer` | TODO://authority/roadmap-phase-scoreboard/customer | customer evidence for roadmap-phase-scoreboard |
 | `state-of-agent-reliability-report:customer` | TODO://authority/state-of-agent-reliability-report/customer | customer evidence for state-of-agent-reliability-report |
 | `trust-network-procurement-and-marketplace:customer` | TODO://authority/trust-network-procurement-and-marketplace/customer | customer evidence for trust-network-procurement-and-marketplace |
-| `trustai-own-compliance:customer` | TODO://authority/trustai-own-compliance/customer | customer evidence for trustai-own-compliance |
 | `vertical-packs:customer` | TODO://authority/vertical-packs/customer | customer evidence for vertical-packs |
 | `insurer-api-and-actuarial-products:provider-api` | TODO://authority/insurer-api-and-actuarial-products/provider-api | provider-api evidence for insurer-api-and-actuarial-products |
 | `trust-network-procurement-and-marketplace:provider-api` | TODO://authority/trust-network-procurement-and-marketplace/provider-api | provider-api evidence for trust-network-procurement-and-marketplace |
@@ -52,7 +51,6 @@
 | `roadmap-phase-scoreboard:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/roadmap-phase-scoreboard/customer.json | artifacts/external-evidence-intakes/roadmap-phase-scoreboard/customer.json |
 | `state-of-agent-reliability-report:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/state-of-agent-reliability-report/customer.json | artifacts/external-evidence-intakes/state-of-agent-reliability-report/customer.json |
 | `trust-network-procurement-and-marketplace:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/customer.json | artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/customer.json |
-| `trustai-own-compliance:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trustai-own-compliance/customer.json | artifacts/external-evidence-intakes/trustai-own-compliance/customer.json |
 | `vertical-packs:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/vertical-packs/customer.json | artifacts/external-evidence-intakes/vertical-packs/customer.json |
 | `insurer-api-and-actuarial-products:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/provider-api.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/provider-api.json |
 | `trust-network-procurement-and-marketplace:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/provider-api.json | artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/provider-api.json |

@@ -1,19 +1,19 @@
 # External Evidence Gap Report
 
-- Gap report ID: `0ff3fa98f49099730f9ba0fa771c353b0b46cfc678d87f7ba25c24db4d0b4cba`
+- Gap report ID: `aa8c9afb6ef8060d323f7e9c8258680ddb40435723ac6f8d8367edf28ae795ed`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 45/71
-- Missing authority kinds: 26
-- Remaining collection tasks: 26
-- Source-map entries: 26
-- Placeholder source URIs: 26
+- Covered authority kinds: 46/71
+- Missing authority kinds: 25
+- Remaining collection tasks: 25
+- Source-map entries: 25
+- Placeholder source URIs: 25
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
 
 - `ci-run`: 4
-- `customer`: 7
+- `customer`: 6
 - `hosted-service`: 2
 - `identity-provider`: 2
 - `insurer`: 3
@@ -31,21 +31,9 @@
 - `standards-track-and-auditor-ecosystem`: 2
 - `state-of-agent-reliability-report`: 1
 - `trust-network-procurement-and-marketplace`: 4
-- `trustai-own-compliance`: 1
 - `vertical-packs`: 3
 
 ## Collection Worklist
-
-### trustai-own-compliance:customer
-
-- Title: TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance proof
-- Authority kind: `customer`
-- Owner hint: customer success/account owner
-- Description: customer evidence for trustai-own-compliance
-- Source URI: `TODO://authority/trustai-own-compliance/customer`
-- Snapshot output: `artifacts/external-evidence-sources/trustai-own-compliance/customer.json`
-- Intake output: `artifacts/external-evidence-intakes/trustai-own-compliance/customer.json`
-- Suggested evidence sources: customer acceptance artifact; contract/payment/procurement evidence; deployment or signoff record
 
 ### vertical-packs:regulator
 

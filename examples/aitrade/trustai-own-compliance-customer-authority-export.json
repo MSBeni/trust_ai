@@ -1,0 +1,159 @@
+{
+  "authority_evidence": {
+    "authority_kind": "customer",
+    "evidence_ref": "customer:aitrade/model-risk/trustai-own-compliance/2026-07-12",
+    "requirement_id": "trustai-own-compliance",
+    "source_uri": "https://customers.example/aitrade/model-risk/trustai-own-compliance/soc2-iso42001/2026-07-12"
+  },
+  "compliance_scope": {
+    "dossier_ref": "dossier:trustai/own-compliance-readiness",
+    "framework_targets": [
+      "SOC 2 Type II",
+      "ISO/IEC 42001"
+    ],
+    "mode": "customer-due-diligence-acceptance",
+    "scope_ref": "scope:trustai/company"
+  },
+  "customer_acceptance": {
+    "accepted_controls": [
+      "TrustAI own-compliance dossier schema separates readiness from external-certification claims",
+      "SOC 2 Type II and ISO/IEC 42001 evidence is represented by external references and hashes",
+      "raw audit reports, customer data, secrets, and compliance workpapers are excluded from proof packs",
+      "source-bound proof-pack, compliance mapper, standards, trust authority, and WORM retention controls are inspectable offline",
+      "customer procurement can require fresh external certification evidence before production contract renewal"
+    ],
+    "approver_refs": [
+      "customer:model-risk-lead",
+      "customer:security-assurance-owner",
+      "customer:procurement-owner"
+    ],
+    "conditions": [
+      "customer acceptance does not replace independent SOC 2 Type II auditor reporting or ISO/IEC 42001 certification",
+      "production procurement requires fresh report and certificate references before the external-certification mode is claimed",
+      "TrustAI must retain hash-bound evidence and verifier output for customer audit replay"
+    ],
+    "customer_refs": [
+      "customer:aitrade",
+      "customer:model-risk-committee"
+    ],
+    "decision_ref": "aitrade-mrmc-trustai-own-compliance-acceptance-2026-07-12",
+    "procurement_evidence_refs": [
+      "procurement:aitrade/vendor-risk/trustai-own-compliance-review-2026",
+      "questionnaire:aitrade/security-and-ai-management-system/2026",
+      "diligence:aitrade/offline-proof-pack-verifier-session/2026-07-12"
+    ],
+    "status": "accepted-for-procurement-due-diligence"
+  },
+  "environment": "trustai-company",
+  "evidence": {
+    "docs_architecture_roadmap_coverage_md": {
+      "path": "docs/architecture/roadmap-coverage.md",
+      "sha256": "sha256:e238899dcd27ae9212347e8e17c2c8b5db35266c2172428c4fa90bc5120abd77"
+    },
+    "docs_specs_compliance_production_authority_v0_1_md": {
+      "path": "docs/specs/compliance-production-authority-v0.1.md",
+      "sha256": "sha256:190840b93b9a2cbd17dd210f4215c504938e320d3d1b43a9ac542adba33c9594"
+    },
+    "docs_specs_own_compliance_dossier_v0_1_md": {
+      "path": "docs/specs/own-compliance-dossier-v0.1.md",
+      "sha256": "sha256:1b9c415357bad998fb162fcc93926b8eb5e01271067eee98b6b4fb89d66b008d"
+    },
+    "docs_specs_proof_pack_v0_1_md": {
+      "path": "docs/specs/proof-pack-v0.1.md",
+      "sha256": "sha256:9bfe0b9dd85fef1ccaffd944bc0fa807814e0aba2da6370d82c8059b4b6ee79e"
+    },
+    "docs_specs_roadmap_audit_v0_1_md": {
+      "path": "docs/specs/roadmap-audit-v0.1.md",
+      "sha256": "sha256:a233335ddab7045ca8c45ee68e32963ba4c3498ba95207840409c60f4d3399d9"
+    },
+    "docs_specs_standards_submission_v0_1_md": {
+      "path": "docs/specs/standards-submission-v0.1.md",
+      "sha256": "sha256:f5b94745f26cf47f4ac9548032132cae0a13b55e9fb0101683fb639843832538"
+    },
+    "docs_specs_trust_authority_kms_enforcement_v0_1_md": {
+      "path": "docs/specs/trust-authority-kms-enforcement-v0.1.md",
+      "sha256": "sha256:84e8545ea45033999c17ff1d67599a4fc261859b06ac79fb3f8e89c650330e4f"
+    },
+    "docs_specs_trust_authority_receipt_v0_1_md": {
+      "path": "docs/specs/trust-authority-receipt-v0.1.md",
+      "sha256": "sha256:38e8b941fb554a836f53695b1d661fad151e00bcd027d300a0a32ffd25a81682"
+    },
+    "docs_specs_verifier_conformance_v0_1_md": {
+      "path": "docs/specs/verifier-conformance-v0.1.md",
+      "sha256": "sha256:c94ff5cc2f419a2d12eb97e770dd8cb82f71df2494434112c5deceb284bca878"
+    },
+    "docs_specs_worm_object_store_v0_1_md": {
+      "path": "docs/specs/worm-object-store-v0.1.md",
+      "sha256": "sha256:f0765146203f18ce916356eba0dbb72bb790f1521fcee8a01da5d13131796532"
+    },
+    "examples_aitrade_trustai_own_compliance_standards_body_authority_export_json": {
+      "path": "examples/aitrade/trustai-own-compliance-standards-body-authority-export.json",
+      "sha256": "sha256:fd84392dc27398db0f025f8aca03d9778283a4e0e044f27e6b671167cc43a4d2"
+    },
+    "src_trustai_compliance_authority_py": {
+      "path": "src/trustai/compliance_authority.py",
+      "sha256": "sha256:db459112978417fab5e932c1e8658d24484a3200d6d717788264853364d4238c"
+    },
+    "src_trustai_compliance_py": {
+      "path": "src/trustai/compliance.py",
+      "sha256": "sha256:559e3194ee2dbedea859c1c11453877fb803301c4eda6a315488af4d513e80e5"
+    },
+    "src_trustai_keyring_py": {
+      "path": "src/trustai/keyring.py",
+      "sha256": "sha256:00842a50d1133a485f2224950aacafd54a42bcd3aac7cb4fe1c6acba4ce73fc5"
+    },
+    "src_trustai_object_store_py": {
+      "path": "src/trustai/object_store.py",
+      "sha256": "sha256:373f8d865880b96535f388840755314d4bac0cb2274ba1a4c71eb522e1f4b669"
+    },
+    "src_trustai_own_compliance_py": {
+      "path": "src/trustai/own_compliance.py",
+      "sha256": "sha256:ca708f87814fc3ccab496050768d1d74fe1bc19d99af9d8fe99d62668ff2dbfe"
+    },
+    "src_trustai_proofpack_py": {
+      "path": "src/trustai/proofpack.py",
+      "sha256": "sha256:dcbcf7252e3723e61e12ac288c96e7c89c9b160d17c063074a01aa04a6986c87"
+    },
+    "src_trustai_roadmap_audit_py": {
+      "path": "src/trustai/roadmap_audit.py",
+      "sha256": "sha256:430785a7c4cf190e8d19607d62953b62482953fc3db44ae31317aa14a840df07"
+    },
+    "src_trustai_standards_py": {
+      "path": "src/trustai/standards.py",
+      "sha256": "sha256:02ded53eb8435e68f4a34d5563fe2f05e0b61b10bbad8d38e65753a84c01995a"
+    },
+    "src_trustai_trust_authority_kms_enforcement_py": {
+      "path": "src/trustai/trust_authority_kms_enforcement.py",
+      "sha256": "sha256:4a0396927d5a03cb239086909b2522cd42f31f43eb2e4927e9a86b4189c3d376"
+    },
+    "src_trustai_trust_authority_py": {
+      "path": "src/trustai/trust_authority.py",
+      "sha256": "sha256:d7288df1c6aa6f8798b44d0bb7471525ee4520004e2235d016d876de9a84e3ae"
+    },
+    "src_trustai_verifier_py": {
+      "path": "src/trustai/verifier.py",
+      "sha256": "sha256:39c53b7e65aba6cf0645ebc5fc4b0f1095d17b52c74f262ea786e852d0ce55c4"
+    },
+    "tests_test_own_compliance_py": {
+      "path": "tests/test_own_compliance.py",
+      "sha256": "sha256:a0f5e19b44e8dc838dadae60a464ee76a165a6a7b67fc3e7d63fa43ac59d5ee6"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "issued_at": "2026-07-12T00:00:00Z",
+  "issuer": "Aitrade Model Risk Committee",
+  "limitations": [
+    "Customer acceptance proves due-diligence acceptance of the TrustAI own-compliance evidence process; it does not claim SOC 2 Type II or ISO/IEC 42001 certification by itself.",
+    "External audit report bodies, customer data, secrets, and compliance workpapers are not embedded in this export.",
+    "Fresh external certification evidence remains required before the dossier can be represented as external-certification mode."
+  ],
+  "schema": "trustai.own-compliance-customer-authority-export/0.1",
+  "subject": "TrustAI own SOC 2 Type II and ISO/IEC 42001 customer due-diligence acceptance",
+  "verified_controls": [
+    "customer signoff references the TrustAI own-compliance dossier and company scope",
+    "customer due-diligence acceptance binds proof-pack verification to SOC 2 Type II and ISO/IEC 42001 target evidence kinds",
+    "procurement conditions preserve independent external audit and certification requirements",
+    "customer acceptance retains source hashes for proof-pack, compliance, standards, trust authority, WORM retention, and roadmap audit machinery",
+    "raw sensitive evidence remains excluded and represented only by external references and hashes"
+  ]
+}

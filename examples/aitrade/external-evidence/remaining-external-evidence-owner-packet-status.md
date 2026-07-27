@@ -1,21 +1,21 @@
 # External Evidence Owner Packet Status
 
-- Status ID: `e70a5fe63c6ca51a4aa5e5bde248c7e2b8d0dd4cdba11f0ad7cf4b22aeae71d8`
+- Status ID: `73804962050f2973266fb5e8b41fc183ca9896cd66502c6911deedaf0224b949`
 - Generated at: `2026-07-12T00:01:00Z`
 - Packets: 9
-- Tasks: 26
+- Tasks: 25
 - Closed tasks: 0
 - Open tasks: 0
-- Blocked tasks: 26
-- Placeholder source URIs: 26
-- Missing intakes: 26
+- Blocked tasks: 25
+- Placeholder source URIs: 25
+- Missing intakes: 25
 
 ## Packets
 
 | Owner | Packet | Status | Tasks | Closed | Open | Blocked |
 |---|---|---|---:|---:|---:|---:|
 | IAM/identity owner | `owner-packet:owner_hint:IAM-identity-owner` | blocked | 2 | 0 | 0 | 2 |
-| customer success/account owner | `owner-packet:owner_hint:customer-success-account-owner` | blocked | 7 | 0 | 0 | 7 |
+| customer success/account owner | `owner-packet:owner_hint:customer-success-account-owner` | blocked | 6 | 0 | 0 | 6 |
 | integration/platform owner | `owner-packet:owner_hint:integration-platform-owner` | blocked | 2 | 0 | 0 | 2 |
 | legal/compliance owner | `owner-packet:owner_hint:legal-compliance-owner` | blocked | 2 | 0 | 0 | 2 |
 | release engineering | `owner-packet:owner_hint:release-engineering` | blocked | 4 | 0 | 0 | 4 |
@@ -32,7 +32,6 @@
 | `trust-network-procurement-and-marketplace:identity-provider` | IAM/identity owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `product-scope-discipline:customer` | customer success/account owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `roadmap-phase-scoreboard:customer` | customer success/account owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
-| `trustai-own-compliance:customer` | customer success/account owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `insurer-api-and-actuarial-products:customer` | customer success/account owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `state-of-agent-reliability-report:customer` | customer success/account owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `vertical-packs:customer` | customer success/account owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |

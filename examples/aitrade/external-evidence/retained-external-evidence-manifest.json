@@ -743,6 +743,23 @@
     },
     {
       "accepted_authority_kinds": [
+        "standards-body",
+        "customer"
+      ],
+      "authority_kind": "customer",
+      "description": "Retained customer acceptance export for TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance evidence",
+      "evidence_id": "60e592a467bd5eecaffafb7b2c43bcf0538e769ecb471836b1af7fd15d58a56e",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "Aitrade Model Risk Committee",
+      "path": "examples/aitrade/external-evidence/trustai-own-compliance-customer-source-snapshot.json",
+      "requirement_id": "trustai-own-compliance",
+      "sha256": "sha256:cea17c49ee4d39d904c2cb68b3d25242b094cbe01b417d5c4d1a30ac71e7e257",
+      "source_uri": "https://customers.example/aitrade/model-risk/trustai-own-compliance/soc2-iso42001/2026-07-12",
+      "subject": "TrustAI own SOC 2 Type II and ISO/IEC 42001 customer due-diligence acceptance"
+    },
+    {
+      "accepted_authority_kinds": [
         "ci-run",
         "kms-hsm",
         "provider-api",
@@ -862,7 +879,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "143bef485356cadf9eac31762313be1d79bd4793be957999e0eb42e45578ff8f",
+  "manifest_id": "00a7aa09d9d50ba6d9ef8b8f7fcb5e177ee238e90b41866a82dab29871210771",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -1374,7 +1391,7 @@
     },
     {
       "authority_kind": "customer",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "TrustAI own compliance dossiers cover local/reference readiness and external-certification schemas for SOC 2 Type II and ISO/IEC 42001; actual SOC 2 Type II audit reports, ISO/IEC 42001 certificates, auditor bridge letters, management-system scope approvals, continuous control operation evidence, and board/customer acceptance remain external compliance evidence."
       ],
@@ -2089,7 +2106,7 @@
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {
-    "covered_authority_kind_count": 45,
+    "covered_authority_kind_count": 46,
     "covered_authority_kinds_by_requirement": {
       "agent-inventory-and-identity": [
         "provider-api",
@@ -2160,7 +2177,8 @@
         "standards-body"
       ],
       "trustai-own-compliance": [
-        "standards-body"
+        "standards-body",
+        "customer"
       ]
     },
     "covered_requirement_count": 13,
@@ -2179,11 +2197,11 @@
       "shadow-replay-temporal-holdout",
       "trustai-own-compliance"
     ],
-    "evidence_count": 45,
-    "expires_at_count": 45,
-    "freshness_window_count": 45,
-    "issued_at_count": 45,
-    "missing_authority_kind_count": 26,
+    "evidence_count": 46,
+    "expires_at_count": 46,
+    "freshness_window_count": 46,
+    "issued_at_count": 46,
+    "missing_authority_kind_count": 25,
     "missing_authority_kinds_by_requirement": {
       "insurer-api-and-actuarial-products": [
         "ci-run",
@@ -2219,9 +2237,6 @@
         "provider-api",
         "hosted-service",
         "identity-provider",
-        "customer"
-      ],
-      "trustai-own-compliance": [
         "customer"
       ],
       "vertical-packs": [

@@ -1,6 +1,6 @@
 # TrustAI External Evidence Manifest
 
-Manifest ID: `143bef485356cadf9eac31762313be1d79bd4793be957999e0eb42e45578ff8f`
+Manifest ID: `00a7aa09d9d50ba6d9ef8b8f7fcb5e177ee238e90b41866a82dab29871210771`
 
 Status: partial
 
@@ -9,12 +9,12 @@ Status: partial
 - Required external requirements: 20
 - Covered requirements: 13
 - Required authority kinds: 71
-- Covered authority kinds: 45
-- Missing authority kinds: 26
-- Evidence items: 45
-- Evidence with issued_at: 45
-- Evidence with expires_at: 45
-- Evidence with freshness windows: 45
+- Covered authority kinds: 46
+- Missing authority kinds: 25
+- Evidence items: 46
+- Evidence with issued_at: 46
+- Evidence with expires_at: 46
+- Evidence with freshness windows: 46
 
 ## Required External Evidence
 
@@ -30,7 +30,7 @@ Status: partial
 | `auditor-and-review-portal` | P1-P3 | P1 | covered | `kms-hsm`, `provider-api`, `hosted-service`, `identity-provider`, `regulator` | `kms-hsm`, `provider-api`, `hosted-service`, `identity-provider`, `regulator` |  | Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence. |
 | `byoc-self-hosted` | P1-P2 | P0 | covered | `ci-run`, `kms-hsm`, `cloud-object-lock`, `provider-api`, `standards-body`, `customer` | `ci-run`, `kms-hsm`, `cloud-object-lock`, `provider-api`, `standards-body`, `customer` |  | BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence. |
 | `compliance-mapper-and-eu-ai-act` | P2-P3 | P0 | covered | `provider-api`, `regulator`, `standards-body` | `provider-api`, `regulator`, `standards-body` |  | Compliance production authority dossiers cover the local/reference authority checklist for framework-control ontology, ISO 42001, NIST AI RMF, EU AI Act, SR 11-7, SOC 2, proof-pack source replay, selective regulator disclosure, GRC exports, EU data-plane sovereignty, conformity-assessment review, and per-evidence source_context bound to the signed compliance source binding; actual fresh GRC-platform acceptance, regulator/supervisor acceptance, conformity-assessment review, and continuously operated EU data-plane provider exports remain external deployment evidence. |
-| `trustai-own-compliance` | P2 | P0 | missing | `standards-body`, `customer` | `standards-body` | `customer` | TrustAI own compliance dossiers cover local/reference readiness and external-certification schemas for SOC 2 Type II and ISO/IEC 42001; actual SOC 2 Type II audit reports, ISO/IEC 42001 certificates, auditor bridge letters, management-system scope approvals, continuous control operation evidence, and board/customer acceptance remain external compliance evidence. |
+| `trustai-own-compliance` | P2 | P0 | covered | `standards-body`, `customer` | `standards-body`, `customer` |  | TrustAI own compliance dossiers cover local/reference readiness and external-certification schemas for SOC 2 Type II and ISO/IEC 42001; actual SOC 2 Type II audit reports, ISO/IEC 42001 certificates, auditor bridge letters, management-system scope approvals, continuous control operation evidence, and board/customer acceptance remain external compliance evidence. |
 | `vertical-packs` | P3 | P1 | missing | `regulator`, `insurer`, `customer` |  | `regulator`, `insurer`, `customer` | Vertical pack receipts cover local/reference templates, source bindings, control mappings, and production-claim limits for trading/treasury, insurance claims, healthcare RCM, and public sector packs; live SR 11-7 owner signoff, NAIC/state insurance legal review, HIPAA/BAA posture, FDA SaMD classification, FedRAMP boundary/ATO evidence, customer deployments, and external regulator/insurer/auditor acceptance remain external evidence. |
 | `insurer-api-and-actuarial-products` | P2-P4 | P0 | missing | `ci-run`, `kms-hsm`, `provider-api`, `hosted-service`, `identity-provider`, `insurer`, `customer` |  | `ci-run`, `kms-hsm`, `provider-api`, `hosted-service`, `identity-provider`, `insurer`, `customer` | Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence. |
 | `state-of-agent-reliability-report` | P2-P4 | P1 | missing | `customer` |  | `customer` | State of Agent Reliability reports cover local/reference aggregate report generation, privacy thresholds, actuarial source-product bindings, and publication-evidence schemas; actual public publication, independent review, partner/customer permission, market acceptance, external distribution metrics, and continuously refreshed longitudinal data remain external GTM evidence. |
@@ -84,7 +84,7 @@ Status: partial
 | `0b3f64f4ef452edb07353ea70520838eff57187ae2e51e48a8b98bfedc099d43` | `compliance-mapper-and-eu-ai-act:regulator` | `compliance-mapper-and-eu-ai-act` | regulator | covered | Compliance framework mapper and EU AI Act technical documentation |
 | `1368ada925aab817480082f48d64bd4df1719ce87b96f409e195d96d2a8a462c` | `compliance-mapper-and-eu-ai-act:standards-body` | `compliance-mapper-and-eu-ai-act` | standards-body | covered | Compliance framework mapper and EU AI Act technical documentation |
 | `49736e67d3741ae33d3b5b762fb01b09f4fc037bf25c27e9133eb84df23c6db0` | `trustai-own-compliance:standards-body` | `trustai-own-compliance` | standards-body | covered | TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance proof |
-| `0b0685688ff5c43969ac273e7d922987929297f3b65444e891466a290afe346a` | `trustai-own-compliance:customer` | `trustai-own-compliance` | customer | missing | TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance proof |
+| `0b0685688ff5c43969ac273e7d922987929297f3b65444e891466a290afe346a` | `trustai-own-compliance:customer` | `trustai-own-compliance` | customer | covered | TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance proof |
 | `e78020bae7fc082f74b07cb761b3762f734f20e5fe1764e02487419cc0a6cca6` | `vertical-packs:regulator` | `vertical-packs` | regulator | missing | Vertical packs for trading, insurance claims, healthcare, and public sector |
 | `3a7cfb04dda73fb1c524d89bb531334e6812d8f082e81c450cf7d19b2f70d62b` | `vertical-packs:insurer` | `vertical-packs` | insurer | missing | Vertical packs for trading, insurance claims, healthcare, and public sector |
 | `7de2b92bf19642ca938cd04c8188773c255a627b13a2f5e512939b807c17e851` | `vertical-packs:customer` | `vertical-packs` | customer | missing | Vertical packs for trading, insurance claims, healthcare, and public sector |
@@ -160,6 +160,7 @@ Status: partial
 | `compliance-mapper-and-eu-ai-act` | regulator | `provider-api`, `regulator`, `standards-body` | `examples/aitrade/external-evidence/compliance-regulator-source-snapshot.json` | 2026-07-12T00:00:00Z to 2026-12-31T00:00:00Z | Retained regulator acknowledgement export for compliance mapper and EU AI Act evidence |
 | `compliance-mapper-and-eu-ai-act` | standards-body | `provider-api`, `regulator`, `standards-body` | `examples/aitrade/external-evidence/compliance-standards-body-source-snapshot.json` | 2026-07-12T00:00:00Z to 2026-12-31T00:00:00Z | Retained standards-body submission export for compliance mapper and EU AI Act evidence |
 | `trustai-own-compliance` | standards-body | `standards-body`, `customer` | `examples/aitrade/external-evidence/trustai-own-compliance-standards-body-source-snapshot.json` | 2026-07-12T00:00:00Z to 2026-12-31T00:00:00Z | Retained standards-body docket export for TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance evidence |
+| `trustai-own-compliance` | customer | `standards-body`, `customer` | `examples/aitrade/external-evidence/trustai-own-compliance-customer-source-snapshot.json` | 2026-07-12T00:00:00Z to 2026-12-31T00:00:00Z | Retained customer acceptance export for TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance evidence |
 | `runtime-policy-and-attestation` | kms-hsm | `ci-run`, `kms-hsm`, `provider-api`, `hosted-service`, `identity-provider` | `examples/aitrade/external-evidence/runtime-policy-kms-hsm-source-snapshot.json` | 2026-07-03T12:03:00Z to 2026-12-31T00:00:00Z | Retained KMS/HSM enforcement export for runtime policy evidence signing |
 | `runtime-policy-and-attestation` | provider-api | `ci-run`, `kms-hsm`, `provider-api`, `hosted-service`, `identity-provider` | `examples/aitrade/external-evidence/runtime-policy-provider-api-source-snapshot.json` | 2026-07-03T12:02:00Z to 2026-12-31T00:00:00Z | Retained GitHub contents API export for runtime policy pack evidence |
 | `runtime-policy-and-attestation` | hosted-service | `ci-run`, `kms-hsm`, `provider-api`, `hosted-service`, `identity-provider` | `examples/aitrade/external-evidence/runtime-action-hosted-service-source-snapshot.json` | 2026-07-03T12:00:12Z to 2026-12-31T00:00:00Z | Retained GitHub hosted file export for runtime action attestation evidence |

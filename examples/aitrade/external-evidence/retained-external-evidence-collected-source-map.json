@@ -1172,6 +1172,36 @@
       "unit_ref": "trustai-own-compliance:standards-body"
     },
     {
+      "authority_kind": "customer",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained customer acceptance export for TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "TrustAI own compliance dossiers cover local/reference readiness and external-certification schemas for SOC 2 Type II and ISO/IEC 42001; actual SOC 2 Type II audit reports, ISO/IEC 42001 certificates, auditor bridge letters, management-system scope approvals, continuous control operation evidence, and board/customer acceptance remain external compliance evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/trustai-own-compliance-customer.json",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "Aitrade Model Risk Committee",
+      "owner_hint": "customer success/account owner",
+      "requirement_id": "trustai-own-compliance",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/trustai-own-compliance-customer-source-snapshot.json",
+      "source_uri": "https://customers.example/aitrade/model-risk/trustai-own-compliance/soc2-iso42001/2026-07-12",
+      "subject": "TrustAI own SOC 2 Type II and ISO/IEC 42001 customer due-diligence acceptance",
+      "suggested_evidence_sources": [
+        "customer acceptance artifact",
+        "contract/payment/procurement evidence",
+        "deployment or signoff record"
+      ],
+      "task": "trustai-own-compliance:customer",
+      "task_id": "8664c070d85fa3d19f3b7a29d9c3f50ca11f01535a8e0098514f6a9075ab24e9",
+      "task_ref": "external-evidence:trustai-own-compliance:customer",
+      "title": "TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance proof",
+      "unit_id": "0b0685688ff5c43969ac273e7d922987929297f3b65444e891466a290afe346a",
+      "unit_ref": "trustai-own-compliance:customer"
+    },
+    {
       "authority_kind": "kms-hsm",
       "content_type": "application/json",
       "coverage_status": "missing",
@@ -1359,7 +1389,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "7641dfd1f8705cfd2e39097936debecf79310c8fab645713892ec6b8ae4ede9e",
+  "source_map_id": "bbe0484eaea54695c99281c3fa2e80e31c4801f47198629ac03d54193f39ae7b",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -1374,9 +1404,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 45,
+    "entry_count": 46,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 45,
+    "live_source_uri_count": 46,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

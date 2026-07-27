@@ -1,8 +1,8 @@
 # TrustAI External Evidence Collection Plan
 
-Plan ID: `0f5edc4986ca4d3ed7bf8b19cf0994790e0823d6eddb02c5b017aedea5889c73`
+Plan ID: `8c679519df0739649d83358b28bebfe33881d350d5a1713c6fdcf4f99f3992c4`
 
-Source manifest: `143bef485356cadf9eac31762313be1d79bd4793be957999e0eb42e45578ff8f`
+Source manifest: `00a7aa09d9d50ba6d9ef8b8f7fcb5e177ee238e90b41866a82dab29871210771`
 
 Status filter: missing
 
@@ -10,16 +10,15 @@ Status filter: missing
 
 - Source manifest status: partial
 - Total authority units: 71
-- Selected tasks: 26
-- Selected missing tasks: 26
+- Selected tasks: 25
+- Selected missing tasks: 25
 - Selected covered tasks: 0
-- Missing authority kinds overall: 26
+- Missing authority kinds overall: 25
 
 ## Collection Tasks
 
 | Task ID | Unit Ref | Requirement | Authority | Status | Owner Hint | Suggested Artifact | Evidence Argument Template |
 |---|---|---|---|---|---|---|---|
-| `8664c070d85fa3d19f3b7a29d9c3f50ca11f01535a8e0098514f6a9075ab24e9` | `trustai-own-compliance:customer` | `trustai-own-compliance` | customer | missing | customer success/account owner | `external-evidence/trustai-own-compliance/customer.json` | `trustai-own-compliance,customer,external-evidence/trustai-own-compliance/customer.json,customer evidence for trustai-own-compliance;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `60540fdb77545787cb7866c1378dca24cc318e459d744a71667331266c72d2a2` | `vertical-packs:regulator` | `vertical-packs` | regulator | missing | legal/compliance owner | `external-evidence/vertical-packs/regulator.json` | `vertical-packs,regulator,external-evidence/vertical-packs/regulator.json,regulator evidence for vertical-packs;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `9cd53ad47435b80a6de93611fa9813c703575346a6e0d6640747d0d411835410` | `vertical-packs:insurer` | `vertical-packs` | insurer | missing | risk/insurance owner | `external-evidence/vertical-packs/insurer.json` | `vertical-packs,insurer,external-evidence/vertical-packs/insurer.json,insurer evidence for vertical-packs;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `ae2ff75742f182d47963b6ceb336038330944042cb4f326c3d45ed9b9467ce68` | `vertical-packs:customer` | `vertical-packs` | customer | missing | customer success/account owner | `external-evidence/vertical-packs/customer.json` | `vertical-packs,customer,external-evidence/vertical-packs/customer.json,customer evidence for vertical-packs;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |

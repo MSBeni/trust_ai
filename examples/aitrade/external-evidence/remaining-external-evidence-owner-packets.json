@@ -5,7 +5,7 @@
     "Source URIs marked TODO or placeholder must be replaced with authority-owned source exports before collection.",
     "Packet completion is proven only by verified source snapshots, intake receipts, rebuilt manifests, and readiness reports."
   ],
-  "owner_packet_bundle_id": "d3cbd3f67bf76588235f51758eadce7c3d81d6266cde040f54d83bdc26a80d71",
+  "owner_packet_bundle_id": "c61fcb920b1fad85aeacaac3ae5d69b617968517864d84f967ad5d5857a55440",
   "packets": [
     {
       "authority_kinds": [
@@ -213,22 +213,21 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 7,
+      "missing_task_count": 6,
       "owner_hint": "customer success/account owner",
-      "package_hash": "89ed67e2e03df1910554d3682597f1166dbb2181563d4f3609ca9b3b95d3c6be",
-      "package_id": "777e9bae4219ce2e3553f3092a28d4ea8412b02e3bd79968c2ebbc74747c08c4",
+      "package_hash": "dd73434de9c15ebb7d7b56c946b3bc47ad7983f6aeb716770e0487a6e964375a",
+      "package_id": "63dc4cc2a4e8f1ef42a0f12b8555d093d62c7469e409bc75506b65a6c929dce2",
       "package_ref": "owner_hint:customer-success-account-owner",
-      "packet_id": "6b4bf83f36c3cd91d030801e75a094ec8149c42370feba8c461a01f327b7d6f0",
+      "packet_id": "e3ff00eb7e8192027d9b8ce56bca7ec03e99ed3965d65381019ff2ac72943ecb",
       "packet_ref": "owner-packet:owner_hint:customer-success-account-owner",
       "phases": [
         "P0-P4",
         "P1-P4",
-        "P2",
         "P2-P4",
         "P3",
         "P4"
       ],
-      "placeholder_source_uri_count": 7,
+      "placeholder_source_uri_count": 6,
       "priorities": [
         "P0",
         "P1"
@@ -239,10 +238,9 @@
         "roadmap-phase-scoreboard",
         "state-of-agent-reliability-report",
         "trust-network-procurement-and-marketplace",
-        "trustai-own-compliance",
         "vertical-packs"
       ],
-      "task_count": 7,
+      "task_count": 6,
       "tasks": [
         {
           "acceptance_criteria": [
@@ -397,83 +395,6 @@
           "title": "Roadmap phase exit-criteria business scoreboard",
           "unit_id": "dfd8d820f52d475a756ebba3046042653b0c1936d5256c032c008009a6484b81",
           "unit_ref": "roadmap-phase-scoreboard:customer"
-        },
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be customer and accepted for trustai-own-compliance.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "customer",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/trustai-own-compliance/customer",
-              "--root",
-              ".",
-              "--task",
-              "trustai-own-compliance:customer",
-              "--description",
-              "customer evidence for trustai-own-compliance",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/trustai-own-compliance/customer.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/trustai-own-compliance/customer.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/trustai-own-compliance/customer --root . --task trustai-own-compliance:customer --description 'customer evidence for trustai-own-compliance' --snapshot-out artifacts/external-evidence-sources/trustai-own-compliance/customer.json --intake-out artifacts/external-evidence-intakes/trustai-own-compliance/customer.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/trustai-own-compliance/customer.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/trustai-own-compliance/customer.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "customer evidence for trustai-own-compliance",
-          "evidence_argument_template": "trustai-own-compliance,customer,external-evidence/trustai-own-compliance/customer.json,customer evidence for trustai-own-compliance;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "TrustAI own compliance dossiers cover local/reference readiness and external-certification schemas for SOC 2 Type II and ISO/IEC 42001; actual SOC 2 Type II audit reports, ISO/IEC 42001 certificates, auditor bridge letters, management-system scope approvals, continuous control operation evidence, and board/customer acceptance remain external compliance evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/trustai-own-compliance/customer.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "customer success/account owner",
-          "phase": "P2",
-          "priority": "P0",
-          "requirement_id": "trustai-own-compliance",
-          "snapshot_out": "artifacts/external-evidence-sources/trustai-own-compliance/customer.json",
-          "source_uri": "TODO://authority/trustai-own-compliance/customer",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/trustai-own-compliance/customer.json",
-          "suggested_evidence_sources": [
-            "customer acceptance artifact",
-            "contract/payment/procurement evidence",
-            "deployment or signoff record"
-          ],
-          "task_id": "8664c070d85fa3d19f3b7a29d9c3f50ca11f01535a8e0098514f6a9075ab24e9",
-          "task_ref": "external-evidence:trustai-own-compliance:customer",
-          "title": "TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance proof",
-          "unit_id": "0b0685688ff5c43969ac273e7d922987929297f3b65444e891466a290afe346a",
-          "unit_ref": "trustai-own-compliance:customer"
         },
         {
           "acceptance_criteria": [
@@ -2371,20 +2292,20 @@
   "source_work_package": {
     "generated_at": "2026-07-12T00:01:00Z",
     "group_by": "owner_hint",
-    "work_package_hash": "2ad9d74aa871d553ae24b1ddc888853db5824203e5e882ddb9e4da67f3dc8f61",
-    "work_package_id": "d2fc99a44f394f5cdb54ce515580f40a559d0dcb2730e2285c6d025e712bc66a"
+    "work_package_hash": "b166e977164503a6277079121b3cc5cf67faa08059400480bbc2113b0acdd79b",
+    "work_package_id": "a9309e42fe399b1ae2f35f3902690e0f867bdf751519c93f8f87e5aac4682131"
   },
   "summary": {
     "covered_task_count": 0,
     "live_source_uri_count": 0,
-    "missing_task_count": 26,
+    "missing_task_count": 25,
     "packet_count": 9,
-    "placeholder_source_uri_count": 26,
-    "source_work_package_task_count": 26,
-    "task_count": 26,
+    "placeholder_source_uri_count": 25,
+    "source_work_package_task_count": 25,
+    "task_count": 25,
     "task_count_by_authority_kind": {
       "ci-run": 4,
-      "customer": 7,
+      "customer": 6,
       "hosted-service": 2,
       "identity-provider": 2,
       "insurer": 3,
@@ -2395,7 +2316,7 @@
     },
     "task_count_by_owner_hint": {
       "IAM/identity owner": 2,
-      "customer success/account owner": 7,
+      "customer success/account owner": 6,
       "integration/platform owner": 2,
       "legal/compliance owner": 2,
       "release engineering": 4,
