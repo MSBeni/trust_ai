@@ -1,23 +1,23 @@
 # External Evidence Gap Report
 
-- Gap report ID: `b62e0d34b431d722d0df986cf9c3339859167073de5b63bbec9217db37349c62`
+- Gap report ID: `7b8ec5b980d497f9a3308f30595b3480900c54305f8238d09f49d66e770c3e79`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 25/71
-- Missing authority kinds: 46
-- Remaining collection tasks: 46
-- Source-map entries: 46
-- Placeholder source URIs: 46
+- Covered authority kinds: 27/71
+- Missing authority kinds: 44
+- Remaining collection tasks: 44
+- Source-map entries: 44
+- Placeholder source URIs: 44
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
 
-- `ci-run`: 7
+- `ci-run`: 6
 - `customer`: 9
 - `hosted-service`: 4
 - `identity-provider`: 4
 - `insurer`: 4
-- `kms-hsm`: 4
+- `kms-hsm`: 3
 - `provider-api`: 4
 - `regulator`: 5
 - `standards-body`: 5
@@ -31,7 +31,6 @@
 - `design-partner-pilot-exit-criteria`: 3
 - `framework-adapters`: 1
 - `insurer-api-and-actuarial-products`: 7
-- `mcp-gateway`: 2
 - `product-scope-discipline`: 2
 - `roadmap-phase-scoreboard`: 5
 - `runtime-policy-and-attestation`: 1
@@ -42,28 +41,6 @@
 - `vertical-packs`: 3
 
 ## Collection Worklist
-
-### mcp-gateway:ci-run
-
-- Title: MCP evidence gateway reference capture
-- Authority kind: `ci-run`
-- Owner hint: release engineering
-- Description: ci-run evidence for mcp-gateway
-- Source URI: `TODO://authority/mcp-gateway/ci-run`
-- Snapshot output: `artifacts/external-evidence-sources/mcp-gateway/ci-run.json`
-- Intake output: `artifacts/external-evidence-intakes/mcp-gateway/ci-run.json`
-- Suggested evidence sources: completed CI workflow export; release run URL or provider-native run record; artifact/check provenance
-
-### mcp-gateway:kms-hsm
-
-- Title: MCP evidence gateway reference capture
-- Authority kind: `kms-hsm`
-- Owner hint: security/platform KMS owner
-- Description: kms-hsm evidence for mcp-gateway
-- Source URI: `TODO://authority/mcp-gateway/kms-hsm`
-- Snapshot output: `artifacts/external-evidence-sources/mcp-gateway/kms-hsm.json`
-- Intake output: `artifacts/external-evidence-intakes/mcp-gateway/kms-hsm.json`
-- Suggested evidence sources: KMS/HSM key policy export; signing operation receipt; custody or audit-log root
 
 ### cicd-provider-approvals:hosted-service
 

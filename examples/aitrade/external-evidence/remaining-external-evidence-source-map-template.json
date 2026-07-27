@@ -2,54 +2,6 @@
   "defaults": {},
   "entries": [
     {
-      "authority_kind": "ci-run",
-      "coverage_status": "missing",
-      "description": "ci-run evidence for mcp-gateway",
-      "external_authority_required": [
-        "MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/ci-run.json",
-      "owner_hint": "release engineering",
-      "requirement_id": "mcp-gateway",
-      "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/ci-run.json",
-      "source_uri": "TODO://authority/mcp-gateway/ci-run",
-      "suggested_evidence_sources": [
-        "completed CI workflow export",
-        "release run URL or provider-native run record",
-        "artifact/check provenance"
-      ],
-      "task": "mcp-gateway:ci-run",
-      "task_id": "8c5543b564326dfe798955c6c0be0376ef1d80413df723bdf5f83d882238aa4c",
-      "task_ref": "external-evidence:mcp-gateway:ci-run",
-      "title": "MCP evidence gateway reference capture",
-      "unit_id": "192e8c60958d436e54ccf727609f72edb9a581776a8d80f731eef32c1bd62725",
-      "unit_ref": "mcp-gateway:ci-run"
-    },
-    {
-      "authority_kind": "kms-hsm",
-      "coverage_status": "missing",
-      "description": "kms-hsm evidence for mcp-gateway",
-      "external_authority_required": [
-        "MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/kms-hsm.json",
-      "owner_hint": "security/platform KMS owner",
-      "requirement_id": "mcp-gateway",
-      "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/kms-hsm.json",
-      "source_uri": "TODO://authority/mcp-gateway/kms-hsm",
-      "suggested_evidence_sources": [
-        "KMS/HSM key policy export",
-        "signing operation receipt",
-        "custody or audit-log root"
-      ],
-      "task": "mcp-gateway:kms-hsm",
-      "task_id": "a6cb67e23bea269fb4ef1abdaa7fd77c9a57bfc611c02c09a1efd19d90a6c737",
-      "task_ref": "external-evidence:mcp-gateway:kms-hsm",
-      "title": "MCP evidence gateway reference capture",
-      "unit_id": "b6bff59993928600d982fe3a58ffd8124707f853906888cab9ca1024a7a15840",
-      "unit_ref": "mcp-gateway:kms-hsm"
-    },
-    {
       "authority_kind": "hosted-service",
       "coverage_status": "missing",
       "description": "hosted-service evidence for cicd-provider-approvals",
@@ -1113,14 +1065,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "138190dcd15dcc513b62730eae4cb198c9428345dc06d7e57f3dac577a91432b",
+  "source_map_id": "aeb9ef13f9c63249001375b07a8683cfdb3b6c016eae8672305d36b8106de6f3",
   "source_plan": {
-    "plan_hash": "c59995fffb054fab2e403f4427bed12c37673fa735fe124ed748881380460d01",
-    "plan_id": "9a9a8ca0e578b9e66e940866c2d46c1092a1b8d44e2ac1e6579422a16d45dc06",
+    "plan_hash": "73903c8bdebeff13efc1afb1090dcfe0f516fd44e846fc96858ab8b3b4e4f393",
+    "plan_id": "fa76572f201bf98614bb9ff14e00e43c965854e2b6e7a7800d4e6d9d610f86fd",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "7b4af507fca5369bd074822d19132e01c9e2ad0e5a30c83763cbf3779eb097ee",
-      "manifest_id": "9482ab1f8e7a1a0058cc2c4c0332f6a6e2fc6c9a30c467d1b59b782f0f1d4e2c",
+      "manifest_hash": "8441ef1dba3b3e0bd12d1227c9e77a7f13283dd899a0a9283899e940e9f84667",
+      "manifest_id": "b44b4c35a06da6d582c61715d5ee5a458230a1c255f504b23f08610a06dc247c",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },
@@ -1128,12 +1080,12 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 46,
+    "entry_count": 44,
     "intake_dir": "artifacts/external-evidence-intakes",
     "live_source_uri_count": 0,
-    "placeholder_source_uri_count": 46,
+    "placeholder_source_uri_count": 44,
     "snapshot_dir": "artifacts/external-evidence-sources",
-    "source_plan_task_count": 46,
+    "source_plan_task_count": 44,
     "status_filter": "missing"
   }
 }

@@ -1891,6 +1891,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         framework_hosted_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/framework-hook-release-hosted-service-source-snapshot.json")
         agent_inventory_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/agent-inventory-provider-api-source-snapshot.json")
         identity_inventory_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/identity-inventory-provider-source-snapshot.json")
+        mcp_ci_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/mcp-gateway-ci-run-source-snapshot.json")
+        mcp_kms_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/mcp-gateway-kms-hsm-source-snapshot.json")
         mcp_provider_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/mcp-proxy-events-provider-api-source-snapshot.json")
         mcp_hosted_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/mcp-proxy-events-hosted-service-source-snapshot.json")
         runtime_policy_kms_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/runtime-policy-kms-hsm-source-snapshot.json")
@@ -1916,6 +1918,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         framework_hosted_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/framework-adapters-hosted-service.json")
         agent_inventory_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/agent-inventory-and-identity-provider-api.json")
         identity_inventory_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/agent-inventory-and-identity-identity-provider.json")
+        mcp_ci_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/mcp-gateway-ci-run.json")
+        mcp_kms_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/mcp-gateway-kms-hsm.json")
         mcp_provider_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/mcp-gateway-provider-api.json")
         mcp_hosted_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/mcp-gateway-hosted-service.json")
         runtime_policy_kms_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/runtime-policy-and-attestation-kms-hsm.json")
@@ -1980,6 +1984,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 framework_hosted_snapshot,
                 agent_inventory_snapshot,
                 identity_inventory_snapshot,
+                mcp_ci_snapshot,
+                mcp_kms_snapshot,
                 mcp_provider_snapshot,
                 mcp_hosted_snapshot,
                 runtime_policy_kms_snapshot,
@@ -2020,6 +2026,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 framework_hosted_intake,
                 agent_inventory_intake,
                 identity_inventory_intake,
+                mcp_ci_intake,
+                mcp_kms_intake,
                 mcp_provider_intake,
                 mcp_hosted_intake,
                 runtime_policy_kms_intake,
@@ -2053,6 +2061,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 framework_hosted_intake,
                 agent_inventory_intake,
                 identity_inventory_intake,
+                mcp_ci_intake,
+                mcp_kms_intake,
                 mcp_provider_intake,
                 mcp_hosted_intake,
                 runtime_policy_kms_intake,
@@ -2132,6 +2142,16 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual("identity-provider", identity_inventory_intake["task"]["authority_kind"])
         self.assertEqual("file-copy", identity_inventory_snapshot["retrieval_method"])
         self.assertEqual("sha256:" + sha256((ROOT / "examples/aitrade/identity-inventory.json").read_bytes()).hexdigest(), identity_inventory_snapshot["body_sha256"])
+        self.assertEqual("examples/aitrade/external-evidence/mcp-gateway-ci-run-source-snapshot.json", mcp_ci_intake["evidence_item"]["path"])
+        self.assertEqual("mcp-gateway", mcp_ci_intake["task"]["requirement_id"])
+        self.assertEqual("ci-run", mcp_ci_intake["task"]["authority_kind"])
+        self.assertEqual("file-copy", mcp_ci_snapshot["retrieval_method"])
+        self.assertEqual("sha256:" + sha256((ROOT / "examples/aitrade/mcp-gateway-ci-run-authority-export.json").read_bytes()).hexdigest(), mcp_ci_snapshot["body_sha256"])
+        self.assertEqual("examples/aitrade/external-evidence/mcp-gateway-kms-hsm-source-snapshot.json", mcp_kms_intake["evidence_item"]["path"])
+        self.assertEqual("mcp-gateway", mcp_kms_intake["task"]["requirement_id"])
+        self.assertEqual("kms-hsm", mcp_kms_intake["task"]["authority_kind"])
+        self.assertEqual("file-copy", mcp_kms_snapshot["retrieval_method"])
+        self.assertEqual("sha256:" + sha256((ROOT / "examples/aitrade/mcp-gateway-kms-hsm-authority-export.json").read_bytes()).hexdigest(), mcp_kms_snapshot["body_sha256"])
         self.assertEqual("examples/aitrade/external-evidence/mcp-proxy-events-provider-api-source-snapshot.json", mcp_provider_intake["evidence_item"]["path"])
         self.assertEqual("mcp-gateway", mcp_provider_intake["task"]["requirement_id"])
         self.assertEqual("provider-api", mcp_provider_intake["task"]["authority_kind"])
@@ -2202,26 +2222,26 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             export = json.loads(base64.b64decode(snapshot["body_base64"]).decode("utf-8"))
             self.assertEqual("trustai.external-evidence-git-remote-ref-export/0.1", export["schema"])
         self.assertEqual(71, rebuilt["summary"]["required_authority_kind_count"])
-        self.assertEqual(25, rebuilt["summary"]["covered_authority_kind_count"])
-        self.assertEqual(46, rebuilt["summary"]["missing_authority_kind_count"])
+        self.assertEqual(27, rebuilt["summary"]["covered_authority_kind_count"])
+        self.assertEqual(44, rebuilt["summary"]["missing_authority_kind_count"])
         self.assertEqual(retained_manifest["summary"], rebuilt["summary"])
-        self.assertEqual(46, remaining_plan["summary"]["selected_task_count"])
-        self.assertEqual(46, remaining_plan["summary"]["selected_missing_task_count"])
+        self.assertEqual(44, remaining_plan["summary"]["selected_task_count"])
+        self.assertEqual(44, remaining_plan["summary"]["selected_missing_task_count"])
         self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA, source_map["schema"])
         self.assertEqual(content_hash(without_keys(source_map, "source_map_id")), source_map["source_map_id"])
-        self.assertEqual(46, source_map["summary"]["entry_count"])
-        self.assertEqual(46, source_map["summary"]["placeholder_source_uri_count"])
+        self.assertEqual(44, source_map["summary"]["entry_count"])
+        self.assertEqual(44, source_map["summary"]["placeholder_source_uri_count"])
         self.assertEqual(0, source_map["summary"]["live_source_uri_count"])
         self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA, collected_source_map["schema"])
         self.assertEqual(content_hash(without_keys(collected_source_map, "source_map_id")), collected_source_map["source_map_id"])
-        self.assertEqual(25, collected_source_map["summary"]["entry_count"])
+        self.assertEqual(27, collected_source_map["summary"]["entry_count"])
         self.assertEqual(0, collected_source_map["summary"]["placeholder_source_uri_count"])
-        self.assertEqual(25, collected_source_map["summary"]["live_source_uri_count"])
+        self.assertEqual(27, collected_source_map["summary"]["live_source_uri_count"])
         self.assertEqual(EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA, collection_run["schema"])
         self.assertEqual(content_hash(without_keys(collection_run, "run_id")), collection_run["run_id"])
         self.assertEqual(content_hash(collected_source_map), collection_run["source_map"]["source_map_hash"])
-        self.assertEqual(25, collection_run["summary"]["collected_count"])
-        self.assertEqual(25, collection_run_result.collected_count)
+        self.assertEqual(27, collection_run["summary"]["collected_count"])
+        self.assertEqual(27, collection_run_result.collected_count)
         self.assertEqual(
             ["ci-run", "provider-api", "hosted-service"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["oss-verifier-and-public-spec"],
@@ -2243,7 +2263,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["agent-inventory-and-identity"],
         )
         self.assertEqual(
-            ["provider-api", "hosted-service"],
+            ["ci-run", "kms-hsm", "provider-api", "hosted-service"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["mcp-gateway"],
         )
         self.assertEqual(
@@ -2297,8 +2317,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertEqual(collection_run["run_id"], collection_payload["run_id"])
             self.assertEqual(content_hash(collection_run), collection_payload["run_hash"])
             self.assertEqual(content_hash(collected_source_map), collection_payload["source_map_hash"])
-            self.assertEqual(25, collection_payload["collected_count"])
-            self.assertEqual(25, collection_payload["task_count"])
+            self.assertEqual(27, collection_payload["collected_count"])
+            self.assertEqual(27, collection_payload["task_count"])
             self.assertTrue(collection_payload["require_live_source_uris"])
             self.assertTrue(collection_payload["require_source_snapshot_artifacts"])
             self.assertTrue(collection_payload["require_fresh_source_snapshot_artifacts"])
@@ -2500,22 +2520,22 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             )
             self.assertFalse(strict_report_result.ok)
             self.assertTrue(any("live source URIs" in error for error in strict_report_result.errors), strict_report_result.errors)
-            self.assertEqual(25, report["summary"]["covered_authority_kind_count"])
-            self.assertEqual(46, report["summary"]["missing_authority_kind_count"])
-            self.assertEqual(46, report["summary"]["remaining_task_count"])
-            self.assertEqual(46, report["summary"]["source_map_entry_count"])
-            self.assertEqual(46, report["summary"]["placeholder_source_uri_count"])
+            self.assertEqual(27, report["summary"]["covered_authority_kind_count"])
+            self.assertEqual(44, report["summary"]["missing_authority_kind_count"])
+            self.assertEqual(44, report["summary"]["remaining_task_count"])
+            self.assertEqual(44, report["summary"]["source_map_entry_count"])
+            self.assertEqual(44, report["summary"]["placeholder_source_uri_count"])
             self.assertEqual(0, report["summary"]["live_source_uri_count"])
             first_gap = report["gaps"][0]
-            self.assertEqual("mcp-gateway:ci-run", first_gap["unit_ref"])
-            self.assertEqual("ci-run evidence for mcp-gateway", first_gap["description"])
+            self.assertEqual("cicd-provider-approvals:hosted-service", first_gap["unit_ref"])
+            self.assertEqual("hosted-service evidence for cicd-provider-approvals", first_gap["description"])
             self.assertNotIn("source_file", first_gap)
-            self.assertEqual("artifacts/external-evidence-sources/mcp-gateway/ci-run.json", first_gap["snapshot_out"])
-            self.assertEqual("artifacts/external-evidence-intakes/mcp-gateway/ci-run.json", first_gap["intake_out"])
+            self.assertEqual("artifacts/external-evidence-sources/cicd-provider-approvals/hosted-service.json", first_gap["snapshot_out"])
+            self.assertEqual("artifacts/external-evidence-intakes/cicd-provider-approvals/hosted-service.json", first_gap["intake_out"])
             markdown = markdown_path.read_text(encoding="utf-8")
             self.assertIn("# External Evidence Gap Report", markdown)
-            self.assertIn("Placeholder source URIs: 46", markdown)
-            self.assertIn("- Description: ci-run evidence for mcp-gateway", markdown)
+            self.assertIn("Placeholder source URIs: 44", markdown)
+            self.assertIn("- Description: hosted-service evidence for cicd-provider-approvals", markdown)
 
             tampered = copy.deepcopy(report)
             tampered["summary"]["remaining_task_count"] = 51

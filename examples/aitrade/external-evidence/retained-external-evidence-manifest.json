@@ -115,6 +115,44 @@
         "provider-api",
         "hosted-service"
       ],
+      "authority_kind": "ci-run",
+      "description": "Retained GitHub Actions export for MCP gateway proxy capture and authority test evidence",
+      "evidence_id": "e935805f041bf2edd46c29a2c73e22815860c05ac15fd2ffdac7dcadf84777a7",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-03T12:06:00Z",
+      "issuer": "GitHub Actions",
+      "path": "examples/aitrade/external-evidence/mcp-gateway-ci-run-source-snapshot.json",
+      "requirement_id": "mcp-gateway",
+      "sha256": "sha256:566440ee9cc2e9a418bb045330790f71f53acea31278ad52a68c99a570879007",
+      "source_uri": "https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml",
+      "subject": "trustai MCP gateway reference capture CI"
+    },
+    {
+      "accepted_authority_kinds": [
+        "ci-run",
+        "kms-hsm",
+        "provider-api",
+        "hosted-service"
+      ],
+      "authority_kind": "kms-hsm",
+      "description": "Retained KMS/HSM export for MCP gateway evidence-signing enforcement",
+      "evidence_id": "3506ff0c10de1c82c35c78acda167e647b81b76ddb6ef9f9dbe43ed0c28bb55c",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-03T12:07:00Z",
+      "issuer": "Example KMS/HSM",
+      "path": "examples/aitrade/external-evidence/mcp-gateway-kms-hsm-source-snapshot.json",
+      "requirement_id": "mcp-gateway",
+      "sha256": "sha256:771f2f54e1bf06baf94e618821e347bccca3bcd8f0a899e083886d07de934fc3",
+      "source_uri": "https://kms.example/attestations/trustai/mcp-gateway/evidence-signing",
+      "subject": "trustai MCP gateway evidence-signing enforcement"
+    },
+    {
+      "accepted_authority_kinds": [
+        "ci-run",
+        "kms-hsm",
+        "provider-api",
+        "hosted-service"
+      ],
       "authority_kind": "provider-api",
       "description": "Retained GitHub contents API export for MCP gateway proxy event evidence",
       "evidence_id": "549683ae41e990528a4926b23f8f9f2cebb1b9ad5af5cdc9027c7f76127faf67",
@@ -480,7 +518,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "9482ab1f8e7a1a0058cc2c4c0332f6a6e2fc6c9a30c467d1b59b782f0f1d4e2c",
+  "manifest_id": "b44b4c35a06da6d582c61715d5ee5a458230a1c255f504b23f08610a06dc247c",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -563,7 +601,7 @@
     },
     {
       "authority_kind": "ci-run",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
       ],
@@ -576,7 +614,7 @@
     },
     {
       "authority_kind": "kms-hsm",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
       ],
@@ -1707,7 +1745,7 @@
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {
-    "covered_authority_kind_count": 25,
+    "covered_authority_kind_count": 27,
     "covered_authority_kinds_by_requirement": {
       "agent-inventory-and-identity": [
         "provider-api",
@@ -1727,6 +1765,8 @@
         "hosted-service"
       ],
       "mcp-gateway": [
+        "ci-run",
+        "kms-hsm",
         "provider-api",
         "hosted-service"
       ],
@@ -1765,11 +1805,11 @@
       "self-serve-onboarding",
       "shadow-replay-temporal-holdout"
     ],
-    "evidence_count": 25,
-    "expires_at_count": 25,
-    "freshness_window_count": 25,
-    "issued_at_count": 25,
-    "missing_authority_kind_count": 46,
+    "evidence_count": 27,
+    "expires_at_count": 27,
+    "freshness_window_count": 27,
+    "issued_at_count": 27,
+    "missing_authority_kind_count": 44,
     "missing_authority_kinds_by_requirement": {
       "auditor-and-review-portal": [
         "kms-hsm",
@@ -1808,10 +1848,6 @@
         "identity-provider",
         "insurer",
         "customer"
-      ],
-      "mcp-gateway": [
-        "ci-run",
-        "kms-hsm"
       ],
       "product-scope-discipline": [
         "ci-run",

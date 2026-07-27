@@ -1,0 +1,38 @@
+{
+  "environment": "aitrade-prod",
+  "evidence": {
+    "authority_module": {
+      "path": "src/trustai/mcp_gateway_authority.py",
+      "sha256": "sha256:5a07013e1ec0dc29e8b11aeb8096574473d1b1c699d81775ace715096c83bb9d"
+    },
+    "gateway_module": {
+      "path": "src/trustai/mcp_gateway.py",
+      "sha256": "sha256:7e1a5a69d7ba626775741432c80905892b6e39ff515e32e154d5648d7ead4d79"
+    },
+    "kms_response": {
+      "path": "examples/aitrade/trust-authority-kms-response.json",
+      "sha256": "sha256:1f67d6b3b286b0d7cc16044c43d9ba5dec6065797906caf0d97e4fa3e870ff21"
+    },
+    "production_authority_spec": {
+      "path": "docs/specs/mcp-gateway-production-authority-v0.1.md",
+      "sha256": "sha256:49630c17b8caa65edbaa32c72213733774f4f8f0ca5f3a6ec8e631c4b93462f9"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "export_ref": "kms-export:aitrade/mcp-gateway/evidence-signing/2026-07-03",
+  "issued_at": "2026-07-03T12:07:00Z",
+  "issuer": "Example KMS/HSM",
+  "key_policy": {
+    "key_ref": "kms:example/trustai/mcp-gateway/evidence-signing",
+    "operation": "sign",
+    "timestamp_policy": "policy:tsa/trustai-timestamping-v0.1"
+  },
+  "schema": "trustai.mcp-gateway-kms-hsm-authority-export/0.1",
+  "subject": "trustai MCP gateway evidence-signing enforcement",
+  "verified_controls": [
+    "mcp transcript entry signing",
+    "authority evidence bundle signing",
+    "detached signature verification",
+    "freshness-window verification"
+  ]
+}

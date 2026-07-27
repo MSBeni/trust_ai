@@ -1,8 +1,8 @@
 # TrustAI External Evidence Collection Plan
 
-Plan ID: `9a9a8ca0e578b9e66e940866c2d46c1092a1b8d44e2ac1e6579422a16d45dc06`
+Plan ID: `fa76572f201bf98614bb9ff14e00e43c965854e2b6e7a7800d4e6d9d610f86fd`
 
-Source manifest: `9482ab1f8e7a1a0058cc2c4c0332f6a6e2fc6c9a30c467d1b59b782f0f1d4e2c`
+Source manifest: `b44b4c35a06da6d582c61715d5ee5a458230a1c255f504b23f08610a06dc247c`
 
 Status filter: missing
 
@@ -10,17 +10,15 @@ Status filter: missing
 
 - Source manifest status: partial
 - Total authority units: 71
-- Selected tasks: 46
-- Selected missing tasks: 46
+- Selected tasks: 44
+- Selected missing tasks: 44
 - Selected covered tasks: 0
-- Missing authority kinds overall: 46
+- Missing authority kinds overall: 44
 
 ## Collection Tasks
 
 | Task ID | Unit Ref | Requirement | Authority | Status | Owner Hint | Suggested Artifact | Evidence Argument Template |
 |---|---|---|---|---|---|---|---|
-| `8c5543b564326dfe798955c6c0be0376ef1d80413df723bdf5f83d882238aa4c` | `mcp-gateway:ci-run` | `mcp-gateway` | ci-run | missing | release engineering | `external-evidence/mcp-gateway/ci-run.json` | `mcp-gateway,ci-run,external-evidence/mcp-gateway/ci-run.json,ci-run evidence for mcp-gateway;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
-| `a6cb67e23bea269fb4ef1abdaa7fd77c9a57bfc611c02c09a1efd19d90a6c737` | `mcp-gateway:kms-hsm` | `mcp-gateway` | kms-hsm | missing | security/platform KMS owner | `external-evidence/mcp-gateway/kms-hsm.json` | `mcp-gateway,kms-hsm,external-evidence/mcp-gateway/kms-hsm.json,kms-hsm evidence for mcp-gateway;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `4cdba0f0aca03393de0cfa02487a21059b395c42c829951cf738fb9889e6b586` | `cicd-provider-approvals:hosted-service` | `cicd-provider-approvals` | hosted-service | missing | service owner | `external-evidence/cicd-provider-approvals/hosted-service.json` | `cicd-provider-approvals,hosted-service,external-evidence/cicd-provider-approvals/hosted-service.json,hosted-service evidence for cicd-provider-approvals;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `c6285514734f63d79d421e20f98b98f657d40d7192dfb60958d104bc649495fa` | `cicd-provider-approvals:identity-provider` | `cicd-provider-approvals` | identity-provider | missing | IAM/identity owner | `external-evidence/cicd-provider-approvals/identity-provider.json` | `cicd-provider-approvals,identity-provider,external-evidence/cicd-provider-approvals/identity-provider.json,identity-provider evidence for cicd-provider-approvals;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `8beb464dea5f99349b68fac304cdbfe073de0b3d8f0d3871a3c552b611e5fe57` | `design-partner-pilot-exit-criteria:regulator` | `design-partner-pilot-exit-criteria` | regulator | missing | legal/compliance owner | `external-evidence/design-partner-pilot-exit-criteria/regulator.json` | `design-partner-pilot-exit-criteria,regulator,external-evidence/design-partner-pilot-exit-criteria/regulator.json,regulator evidence for design-partner-pilot-exit-criteria;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |

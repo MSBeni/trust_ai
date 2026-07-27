@@ -5,12 +5,12 @@
     "A task is covered only after a matching evidence artifact is supplied to an external evidence manifest and verified.",
     "Freshness and issuer authority remain bounded by the supplied evidence artifact and manifest verification options."
   ],
-  "plan_id": "9a9a8ca0e578b9e66e940866c2d46c1092a1b8d44e2ac1e6579422a16d45dc06",
+  "plan_id": "fa76572f201bf98614bb9ff14e00e43c965854e2b6e7a7800d4e6d9d610f86fd",
   "schema": "trustai.external-evidence-collection-plan/0.1",
   "source_manifest": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "manifest_hash": "7b4af507fca5369bd074822d19132e01c9e2ad0e5a30c83763cbf3779eb097ee",
-    "manifest_id": "9482ab1f8e7a1a0058cc2c4c0332f6a6e2fc6c9a30c467d1b59b782f0f1d4e2c",
+    "manifest_hash": "8441ef1dba3b3e0bd12d1227c9e77a7f13283dd899a0a9283899e940e9f84667",
+    "manifest_id": "b44b4c35a06da6d582c61715d5ee5a458230a1c255f504b23f08610a06dc247c",
     "manifest_ref": "production-external-evidence",
     "status": "partial"
   },
@@ -21,38 +21,38 @@
   },
   "status_filter": "missing",
   "summary": {
-    "covered_authority_kind_count": 25,
-    "missing_authority_kind_count": 46,
+    "covered_authority_kind_count": 27,
+    "missing_authority_kind_count": 44,
     "missing_task_count_by_authority_kind": {
-      "ci-run": 7,
+      "ci-run": 6,
       "customer": 9,
       "hosted-service": 4,
       "identity-provider": 4,
       "insurer": 4,
-      "kms-hsm": 4,
+      "kms-hsm": 3,
       "provider-api": 4,
       "regulator": 5,
       "standards-body": 5
     },
     "required_authority_kind_count": 71,
     "selected_covered_task_count": 0,
-    "selected_missing_task_count": 46,
-    "selected_task_count": 46,
+    "selected_missing_task_count": 44,
+    "selected_task_count": 44,
     "source_manifest_status": "partial",
     "task_count_by_authority_kind": {
-      "ci-run": 7,
+      "ci-run": 6,
       "customer": 9,
       "hosted-service": 4,
       "identity-provider": 4,
       "insurer": 4,
-      "kms-hsm": 4,
+      "kms-hsm": 3,
       "provider-api": 4,
       "regulator": 5,
       "standards-body": 5
     },
     "task_count_by_phase": {
       "P0-P4": 2,
-      "P1": 8,
+      "P1": 6,
       "P1-P2": 3,
       "P1-P3": 5,
       "P1-P4": 5,
@@ -65,64 +65,6 @@
     "total_authority_unit_count": 71
   },
   "tasks": [
-    {
-      "acceptance_criteria": [
-        "Artifact path must be repository-relative and hashable before manifest verification.",
-        "Evidence item authority_kind must be ci-run and accepted for mcp-gateway.",
-        "Use issued_at and expires_at metadata when strict freshness verification is required.",
-        "Rebuild and verify the external evidence manifest after adding the artifact."
-      ],
-      "authority_kind": "ci-run",
-      "coverage_status": "missing",
-      "evidence_argument_template": "mcp-gateway,ci-run,external-evidence/mcp-gateway/ci-run.json,ci-run evidence for mcp-gateway;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-      "external_authority_required": [
-        "MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
-      ],
-      "owner_hint": "release engineering",
-      "phase": "P1",
-      "priority": "P0",
-      "requirement_id": "mcp-gateway",
-      "suggested_artifact_path": "external-evidence/mcp-gateway/ci-run.json",
-      "suggested_evidence_sources": [
-        "completed CI workflow export",
-        "release run URL or provider-native run record",
-        "artifact/check provenance"
-      ],
-      "task_id": "8c5543b564326dfe798955c6c0be0376ef1d80413df723bdf5f83d882238aa4c",
-      "task_ref": "external-evidence:mcp-gateway:ci-run",
-      "title": "MCP evidence gateway reference capture",
-      "unit_id": "192e8c60958d436e54ccf727609f72edb9a581776a8d80f731eef32c1bd62725",
-      "unit_ref": "mcp-gateway:ci-run"
-    },
-    {
-      "acceptance_criteria": [
-        "Artifact path must be repository-relative and hashable before manifest verification.",
-        "Evidence item authority_kind must be kms-hsm and accepted for mcp-gateway.",
-        "Use issued_at and expires_at metadata when strict freshness verification is required.",
-        "Rebuild and verify the external evidence manifest after adding the artifact."
-      ],
-      "authority_kind": "kms-hsm",
-      "coverage_status": "missing",
-      "evidence_argument_template": "mcp-gateway,kms-hsm,external-evidence/mcp-gateway/kms-hsm.json,kms-hsm evidence for mcp-gateway;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-      "external_authority_required": [
-        "MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
-      ],
-      "owner_hint": "security/platform KMS owner",
-      "phase": "P1",
-      "priority": "P0",
-      "requirement_id": "mcp-gateway",
-      "suggested_artifact_path": "external-evidence/mcp-gateway/kms-hsm.json",
-      "suggested_evidence_sources": [
-        "KMS/HSM key policy export",
-        "signing operation receipt",
-        "custody or audit-log root"
-      ],
-      "task_id": "a6cb67e23bea269fb4ef1abdaa7fd77c9a57bfc611c02c09a1efd19d90a6c737",
-      "task_ref": "external-evidence:mcp-gateway:kms-hsm",
-      "title": "MCP evidence gateway reference capture",
-      "unit_id": "b6bff59993928600d982fe3a58ffd8124707f853906888cab9ca1024a7a15840",
-      "unit_ref": "mcp-gateway:kms-hsm"
-    },
     {
       "acceptance_criteria": [
         "Artifact path must be repository-relative and hashable before manifest verification.",

@@ -1,14 +1,14 @@
 # External Evidence Owner Fulfillment Template
 
-- Template ID: `1c229c32dca5af2f7cb5cef71d29bf546d297a2f7991033f58b230633e2a844f`
+- Template ID: `8dedd88f95ef6afc65e8c82ad4ec0541e36b67d0af4981a62cc45a6cc55d0747`
 - Generated at: `2026-07-12T00:01:00Z`
-- Fulfillments: 46
+- Fulfillments: 44
 - Owners: 9
-- Blocked tasks: 46
+- Blocked tasks: 44
 - Open tasks: 0
 - Closed tasks: 0
-- Placeholder source URIs: 46
-- Missing intakes: 46
+- Placeholder source URIs: 44
+- Missing intakes: 44
 
 ## Fulfillments
 
@@ -39,7 +39,6 @@
 | `byoc-self-hosted:ci-run` | TODO://authority/byoc-self-hosted/ci-run | ci-run evidence for byoc-self-hosted |
 | `framework-adapters:ci-run` | TODO://authority/framework-adapters/ci-run | ci-run evidence for framework-adapters |
 | `insurer-api-and-actuarial-products:ci-run` | TODO://authority/insurer-api-and-actuarial-products/ci-run | ci-run evidence for insurer-api-and-actuarial-products |
-| `mcp-gateway:ci-run` | TODO://authority/mcp-gateway/ci-run | ci-run evidence for mcp-gateway |
 | `product-scope-discipline:ci-run` | TODO://authority/product-scope-discipline/ci-run | ci-run evidence for product-scope-discipline |
 | `roadmap-phase-scoreboard:ci-run` | TODO://authority/roadmap-phase-scoreboard/ci-run | ci-run evidence for roadmap-phase-scoreboard |
 | `runtime-policy-and-attestation:ci-run` | TODO://authority/runtime-policy-and-attestation/ci-run | ci-run evidence for runtime-policy-and-attestation |
@@ -49,7 +48,6 @@
 | `vertical-packs:insurer` | TODO://authority/vertical-packs/insurer | insurer evidence for vertical-packs |
 | `auditor-and-review-portal:kms-hsm` | TODO://authority/auditor-and-review-portal/kms-hsm | kms-hsm evidence for auditor-and-review-portal |
 | `insurer-api-and-actuarial-products:kms-hsm` | TODO://authority/insurer-api-and-actuarial-products/kms-hsm | kms-hsm evidence for insurer-api-and-actuarial-products |
-| `mcp-gateway:kms-hsm` | TODO://authority/mcp-gateway/kms-hsm | kms-hsm evidence for mcp-gateway |
 | `standards-track-and-auditor-ecosystem:kms-hsm` | TODO://authority/standards-track-and-auditor-ecosystem/kms-hsm | kms-hsm evidence for standards-track-and-auditor-ecosystem |
 | `auditor-and-review-portal:hosted-service` | TODO://authority/auditor-and-review-portal/hosted-service | hosted-service evidence for auditor-and-review-portal |
 | `cicd-provider-approvals:hosted-service` | TODO://authority/cicd-provider-approvals/hosted-service | hosted-service evidence for cicd-provider-approvals |
@@ -90,7 +88,6 @@
 | `byoc-self-hosted:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/byoc-self-hosted/ci-run.json | artifacts/external-evidence-intakes/byoc-self-hosted/ci-run.json |
 | `framework-adapters:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/framework-adapters/ci-run.json | artifacts/external-evidence-intakes/framework-adapters/ci-run.json |
 | `insurer-api-and-actuarial-products:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/ci-run.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/ci-run.json |
-| `mcp-gateway:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/mcp-gateway/ci-run.json | artifacts/external-evidence-intakes/mcp-gateway/ci-run.json |
 | `product-scope-discipline:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/product-scope-discipline/ci-run.json | artifacts/external-evidence-intakes/product-scope-discipline/ci-run.json |
 | `roadmap-phase-scoreboard:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/roadmap-phase-scoreboard/ci-run.json | artifacts/external-evidence-intakes/roadmap-phase-scoreboard/ci-run.json |
 | `runtime-policy-and-attestation:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/runtime-policy-and-attestation/ci-run.json | artifacts/external-evidence-intakes/runtime-policy-and-attestation/ci-run.json |
@@ -100,7 +97,6 @@
 | `vertical-packs:insurer` | risk/insurance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/vertical-packs/insurer.json | artifacts/external-evidence-intakes/vertical-packs/insurer.json |
 | `auditor-and-review-portal:kms-hsm` | security/platform KMS owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/auditor-and-review-portal/kms-hsm.json | artifacts/external-evidence-intakes/auditor-and-review-portal/kms-hsm.json |
 | `insurer-api-and-actuarial-products:kms-hsm` | security/platform KMS owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/kms-hsm.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/kms-hsm.json |
-| `mcp-gateway:kms-hsm` | security/platform KMS owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/mcp-gateway/kms-hsm.json | artifacts/external-evidence-intakes/mcp-gateway/kms-hsm.json |
 | `standards-track-and-auditor-ecosystem:kms-hsm` | security/platform KMS owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/kms-hsm.json | artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/kms-hsm.json |
 | `auditor-and-review-portal:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/auditor-and-review-portal/hosted-service.json | artifacts/external-evidence-intakes/auditor-and-review-portal/hosted-service.json |
 | `cicd-provider-approvals:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/cicd-provider-approvals/hosted-service.json | artifacts/external-evidence-intakes/cicd-provider-approvals/hosted-service.json |

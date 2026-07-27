@@ -182,6 +182,66 @@
       "unit_ref": "self-serve-onboarding:identity-provider"
     },
     {
+      "authority_kind": "ci-run",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained GitHub Actions export for MCP gateway proxy capture and authority test evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/mcp-gateway-ci-run.json",
+      "issued_at": "2026-07-03T12:06:00Z",
+      "issuer": "GitHub Actions",
+      "owner_hint": "release engineering",
+      "requirement_id": "mcp-gateway",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/mcp-gateway-ci-run-source-snapshot.json",
+      "source_uri": "https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml",
+      "subject": "trustai MCP gateway reference capture CI",
+      "suggested_evidence_sources": [
+        "completed CI workflow export",
+        "release run URL or provider-native run record",
+        "artifact/check provenance"
+      ],
+      "task": "mcp-gateway:ci-run",
+      "task_id": "8c5543b564326dfe798955c6c0be0376ef1d80413df723bdf5f83d882238aa4c",
+      "task_ref": "external-evidence:mcp-gateway:ci-run",
+      "title": "MCP evidence gateway reference capture",
+      "unit_id": "192e8c60958d436e54ccf727609f72edb9a581776a8d80f731eef32c1bd62725",
+      "unit_ref": "mcp-gateway:ci-run"
+    },
+    {
+      "authority_kind": "kms-hsm",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained KMS/HSM export for MCP gateway evidence-signing enforcement",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/mcp-gateway-kms-hsm.json",
+      "issued_at": "2026-07-03T12:07:00Z",
+      "issuer": "Example KMS/HSM",
+      "owner_hint": "security/platform KMS owner",
+      "requirement_id": "mcp-gateway",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/mcp-gateway-kms-hsm-source-snapshot.json",
+      "source_uri": "https://kms.example/attestations/trustai/mcp-gateway/evidence-signing",
+      "subject": "trustai MCP gateway evidence-signing enforcement",
+      "suggested_evidence_sources": [
+        "KMS/HSM key policy export",
+        "signing operation receipt",
+        "custody or audit-log root"
+      ],
+      "task": "mcp-gateway:kms-hsm",
+      "task_id": "a6cb67e23bea269fb4ef1abdaa7fd77c9a57bfc611c02c09a1efd19d90a6c737",
+      "task_ref": "external-evidence:mcp-gateway:kms-hsm",
+      "title": "MCP evidence gateway reference capture",
+      "unit_id": "b6bff59993928600d982fe3a58ffd8124707f853906888cab9ca1024a7a15840",
+      "unit_ref": "mcp-gateway:kms-hsm"
+    },
+    {
       "authority_kind": "provider-api",
       "content_type": "application/json",
       "coverage_status": "missing",
@@ -759,7 +819,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "a3608ae4b71ce415d1dac56f2fcb941a853a5b449d6eaf667213520b2924779e",
+  "source_map_id": "b8d825cc19cf038397dab6db4293d1d5b9fec49ebb3945516c9ce19ec2bb0762",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -774,9 +834,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 25,
+    "entry_count": 27,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 25,
+    "live_source_uri_count": 27,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

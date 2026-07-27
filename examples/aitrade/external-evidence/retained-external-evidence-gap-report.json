@@ -18,6 +18,8 @@
       "hosted-service"
     ],
     "mcp-gateway": [
+      "ci-run",
+      "kms-hsm",
       "provider-api",
       "hosted-service"
     ],
@@ -44,54 +46,8 @@
       "standards-body"
     ]
   },
-  "gap_report_id": "b62e0d34b431d722d0df986cf9c3339859167073de5b63bbec9217db37349c62",
+  "gap_report_id": "7b8ec5b980d497f9a3308f30595b3480900c54305f8238d09f49d66e770c3e79",
   "gaps": [
-    {
-      "authority_kind": "ci-run",
-      "description": "ci-run evidence for mcp-gateway",
-      "external_authority_required": [
-        "MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/ci-run.json",
-      "owner_hint": "release engineering",
-      "requirement_id": "mcp-gateway",
-      "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/ci-run.json",
-      "source_uri": "TODO://authority/mcp-gateway/ci-run",
-      "suggested_evidence_sources": [
-        "completed CI workflow export",
-        "release run URL or provider-native run record",
-        "artifact/check provenance"
-      ],
-      "task": "mcp-gateway:ci-run",
-      "task_id": "8c5543b564326dfe798955c6c0be0376ef1d80413df723bdf5f83d882238aa4c",
-      "task_ref": "external-evidence:mcp-gateway:ci-run",
-      "title": "MCP evidence gateway reference capture",
-      "unit_id": "192e8c60958d436e54ccf727609f72edb9a581776a8d80f731eef32c1bd62725",
-      "unit_ref": "mcp-gateway:ci-run"
-    },
-    {
-      "authority_kind": "kms-hsm",
-      "description": "kms-hsm evidence for mcp-gateway",
-      "external_authority_required": [
-        "MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/kms-hsm.json",
-      "owner_hint": "security/platform KMS owner",
-      "requirement_id": "mcp-gateway",
-      "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/kms-hsm.json",
-      "source_uri": "TODO://authority/mcp-gateway/kms-hsm",
-      "suggested_evidence_sources": [
-        "KMS/HSM key policy export",
-        "signing operation receipt",
-        "custody or audit-log root"
-      ],
-      "task": "mcp-gateway:kms-hsm",
-      "task_id": "a6cb67e23bea269fb4ef1abdaa7fd77c9a57bfc611c02c09a1efd19d90a6c737",
-      "task_ref": "external-evidence:mcp-gateway:kms-hsm",
-      "title": "MCP evidence gateway reference capture",
-      "unit_id": "b6bff59993928600d982fe3a58ffd8124707f853906888cab9ca1024a7a15840",
-      "unit_ref": "mcp-gateway:kms-hsm"
-    },
     {
       "authority_kind": "hosted-service",
       "description": "hosted-service evidence for cicd-provider-approvals",
@@ -1150,10 +1106,6 @@
       "insurer",
       "customer"
     ],
-    "mcp-gateway": [
-      "ci-run",
-      "kms-hsm"
-    ],
     "product-scope-discipline": [
       "ci-run",
       "customer"
@@ -1195,14 +1147,14 @@
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "c59995fffb054fab2e403f4427bed12c37673fa735fe124ed748881380460d01",
-      "plan_id": "9a9a8ca0e578b9e66e940866c2d46c1092a1b8d44e2ac1e6579422a16d45dc06",
+      "plan_hash": "73903c8bdebeff13efc1afb1090dcfe0f516fd44e846fc96858ab8b3b4e4f393",
+      "plan_id": "fa76572f201bf98614bb9ff14e00e43c965854e2b6e7a7800d4e6d9d610f86fd",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "7b4af507fca5369bd074822d19132e01c9e2ad0e5a30c83763cbf3779eb097ee",
-      "manifest_id": "9482ab1f8e7a1a0058cc2c4c0332f6a6e2fc6c9a30c467d1b59b782f0f1d4e2c",
+      "manifest_hash": "8441ef1dba3b3e0bd12d1227c9e77a7f13283dd899a0a9283899e940e9f84667",
+      "manifest_id": "b44b4c35a06da6d582c61715d5ee5a458230a1c255f504b23f08610a06dc247c",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
@@ -1214,20 +1166,20 @@
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "e9b4e25767141b90286ebef34db0bca4d44d340efa9e739d3293989a7fe52046",
-      "source_map_id": "138190dcd15dcc513b62730eae4cb198c9428345dc06d7e57f3dac577a91432b"
+      "source_map_hash": "941a5140d2097c3b093df7531e9fe8f0ea4e12c93b0c02b66ab723b3172f40d0",
+      "source_map_id": "aeb9ef13f9c63249001375b07a8683cfdb3b6c016eae8672305d36b8106de6f3"
     }
   },
   "summary": {
-    "covered_authority_kind_count": 25,
+    "covered_authority_kind_count": 27,
     "covered_requirement_count": 9,
     "gap_count_by_authority_kind": {
-      "ci-run": 7,
+      "ci-run": 6,
       "customer": 9,
       "hosted-service": 4,
       "identity-provider": 4,
       "insurer": 4,
-      "kms-hsm": 4,
+      "kms-hsm": 3,
       "provider-api": 4,
       "regulator": 5,
       "standards-body": 5
@@ -1240,7 +1192,6 @@
       "design-partner-pilot-exit-criteria": 3,
       "framework-adapters": 1,
       "insurer-api-and-actuarial-products": 7,
-      "mcp-gateway": 2,
       "product-scope-discipline": 2,
       "roadmap-phase-scoreboard": 5,
       "runtime-policy-and-attestation": 1,
@@ -1251,27 +1202,27 @@
       "vertical-packs": 3
     },
     "live_source_uri_count": 0,
-    "missing_authority_kind_count": 46,
+    "missing_authority_kind_count": 44,
     "missing_requirement_count": 11,
-    "placeholder_source_uri_count": 46,
-    "remaining_missing_task_count": 46,
-    "remaining_task_count": 46,
+    "placeholder_source_uri_count": 44,
+    "remaining_missing_task_count": 44,
+    "remaining_task_count": 44,
     "required_authority_kind_count": 71,
     "required_requirement_count": 20,
-    "source_map_entry_count": 46,
+    "source_map_entry_count": 44,
     "status": "partial"
   },
   "verification": {
     "manifest_warnings": [
       "external evidence missing for: design-partner-pilot-exit-criteria, auditor-and-review-portal, compliance-mapper-and-eu-ai-act, trustai-own-compliance, vertical-packs, insurer-api-and-actuarial-products, state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
-      "external evidence authority kinds missing for: mcp-gateway: ci-run, kms-hsm; cicd-provider-approvals: hosted-service, identity-provider; design-partner-pilot-exit-criteria: regulator, insurer, customer; framework-adapters: ci-run; auditor-and-review-portal: kms-hsm, provider-api, hosted-service, identity-provider, regulator; byoc-self-hosted: ci-run, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
+      "external evidence authority kinds missing for: cicd-provider-approvals: hosted-service, identity-provider; design-partner-pilot-exit-criteria: regulator, insurer, customer; framework-adapters: ci-run; auditor-and-review-portal: kms-hsm, provider-api, hosted-service, identity-provider, regulator; byoc-self-hosted: ci-run, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
     ],
     "plan_warnings": [
       "external evidence missing for: design-partner-pilot-exit-criteria, auditor-and-review-portal, compliance-mapper-and-eu-ai-act, trustai-own-compliance, vertical-packs, insurer-api-and-actuarial-products, state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
-      "external evidence authority kinds missing for: mcp-gateway: ci-run, kms-hsm; cicd-provider-approvals: hosted-service, identity-provider; design-partner-pilot-exit-criteria: regulator, insurer, customer; framework-adapters: ci-run; auditor-and-review-portal: kms-hsm, provider-api, hosted-service, identity-provider, regulator; byoc-self-hosted: ci-run, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
+      "external evidence authority kinds missing for: cicd-provider-approvals: hosted-service, identity-provider; design-partner-pilot-exit-criteria: regulator, insurer, customer; framework-adapters: ci-run; auditor-and-review-portal: kms-hsm, provider-api, hosted-service, identity-provider, regulator; byoc-self-hosted: ci-run, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
     ],
     "source_map_warnings": [
-      "source map contains 46 placeholder source_uri values"
+      "source map contains 44 placeholder source_uri values"
     ]
   },
   "verification_options": {

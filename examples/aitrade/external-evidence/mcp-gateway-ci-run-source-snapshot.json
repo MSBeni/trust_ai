@@ -1,0 +1,22 @@
+{
+  "body_base64": "ewogICJlbnZpcm9ubWVudCI6ICJhaXRyYWRlLXByb2QiLAogICJldmlkZW5jZSI6IHsKICAgICJtY3BfZ2F0ZXdheV9hdXRob3JpdHlfdGVzdHMiOiB7CiAgICAgICJwYXRoIjogInRlc3RzL3Rlc3RfbWNwX2dhdGV3YXlfYXV0aG9yaXR5LnB5IiwKICAgICAgInNoYTI1NiI6ICJzaGEyNTY6MTAwZjcyMDBiZTQwYTJkN2JhMWQxZmQyZmJmNWFkNDFmZTBiYWNlMDQ1ZjMyNWM1OGY0MjJkMDUwMTJjM2ZiYiIKICAgIH0sCiAgICAibWNwX2dhdGV3YXlfdGVzdHMiOiB7CiAgICAgICJwYXRoIjogInRlc3RzL3Rlc3RfbWNwX2dhdGV3YXkucHkiLAogICAgICAic2hhMjU2IjogInNoYTI1Njo5OWI1NzEzN2RjOTNmZTk4MzdhMjlmZjY0OWE4NDRkNThiYmI3NzUyNGI4M2RhNWE0N2ZlMzJlOTBlZWJhOGNjIgogICAgfSwKICAgICJwcm94eV9ldmVudF9leHBvcnQiOiB7CiAgICAgICJwYXRoIjogImV4YW1wbGVzL2FpdHJhZGUvbWNwLXByb3h5LWV2ZW50cy5qc29uIiwKICAgICAgInNoYTI1NiI6ICJzaGEyNTY6MjQ0ODhkNWE0MDgxNWU1MzYxODEzN2RhODM2ODVmOTI3Y2MyMDczYWY3NGE2MTI4NzUyZjAxNjEyY2Y0MjUwMiIKICAgIH0sCiAgICAidHJhbnNjcmlwdCI6IHsKICAgICAgInBhdGgiOiAiZXhhbXBsZXMvYWl0cmFkZS9tY3AtdHJhbnNjcmlwdC5qc29uIiwKICAgICAgInNoYTI1NiI6ICJzaGEyNTY6ODg5Y2I3OTJmYTlkYTBkNGNjZDEwNmM1YTJiY2FmN2RhMjI2MDYyN2JiZWM3NTI0M2IxNDc2MDRiMDRiMGJiZiIKICAgIH0KICB9LAogICJleHBpcmVzX2F0IjogIjIwMjYtMTItMzFUMDA6MDA6MDBaIiwKICAiZXhwb3J0X3JlZiI6ICJjaS1ydW4tZXhwb3J0OmFpdHJhZGUvbWNwLWdhdGV3YXkvcmVmZXJlbmNlLWNhcHR1cmUvMjAyNi0wNy0wMyIsCiAgImlzc3VlZF9hdCI6ICIyMDI2LTA3LTAzVDEyOjA2OjAwWiIsCiAgImlzc3VlciI6ICJHaXRIdWIgQWN0aW9ucyIsCiAgInNjaGVtYSI6ICJ0cnVzdGFpLm1jcC1nYXRld2F5LWNpLXJ1bi1hdXRob3JpdHktZXhwb3J0LzAuMSIsCiAgInNvdXJjZSI6IHsKICAgICJyZXBvc2l0b3J5IjogIk1TQmVuaS90cnVzdF9haSIsCiAgICAid29ya2Zsb3ciOiAiUHl0aG9uIENJIiwKICAgICJ3b3JrZmxvd19yZWYiOiAiLmdpdGh1Yi93b3JrZmxvd3MvcHl0aG9uLWNpLnltbCIKICB9LAogICJzdWJqZWN0IjogInRydXN0YWkgTUNQIGdhdGV3YXkgcmVmZXJlbmNlIGNhcHR1cmUgQ0kiLAogICJ2ZXJpZmllZF9jaGVja3MiOiBbCiAgICAidGVzdHMudGVzdF9tY3BfZ2F0ZXdheSIsCiAgICAidGVzdHMudGVzdF9tY3BfZ2F0ZXdheV9hdXRob3JpdHkiLAogICAgInJldGFpbmVkIHByb3h5IGV2ZW50IGJ5dGUgcmVwbGF5IiwKICAgICJKU09OLVJQQyBlbnZlbG9wZSB2YWxpZGF0aW9uIiwKICAgICJyZXF1ZXN0IHJlc3BvbnNlIGhhc2gtY2hhaW4gcmVwbGF5IgogIF0KfQo=",
+  "body_sha256": "sha256:c88c1379264799ead3a67f2d0f96741d5650f240ee069aa6350f0439bb222df6",
+  "body_size_bytes": 1427,
+  "content_type": "application/json",
+  "expires_at": "2026-12-31T00:00:00Z",
+  "generated_at": "2026-07-12T00:01:00Z",
+  "issued_at": "2026-07-03T12:06:00Z",
+  "issuer": "GitHub Actions",
+  "limitations": [
+    "This source snapshot preserves one collected authority response as a hashable artifact; it does not prove that the authority will return the same response later.",
+    "Verifier checks cover snapshot integrity, body hash, optional HTTP metadata, and optional freshness metadata.",
+    "Use this snapshot as the artifact supplied to external-evidence-intake for the matching collection-plan task."
+  ],
+  "response_headers": {},
+  "retrieval_method": "file-copy",
+  "schema": "trustai.external-evidence-source-snapshot/0.1",
+  "snapshot_id": "8f5fcc299b711225dea318a10296644b3707157187d623be67d3a9bfe5e1a28a",
+  "source_uri": "https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml",
+  "status_code": null,
+  "subject": "trustai MCP gateway reference capture CI"
+}

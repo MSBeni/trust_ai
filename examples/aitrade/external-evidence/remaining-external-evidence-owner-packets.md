@@ -1,13 +1,13 @@
 # External Evidence Owner Packets
 
-- Owner packet bundle ID: `d00ae564a16c199e6200a22a069628d1db3b770d97a5207a227ea1cf992a8854`
+- Owner packet bundle ID: `153add64359e8539890a40c06d98da5b96b7d9fba42d1c6b68ba84e9aefce59a`
 - Generated at: `2026-07-12T00:01:00Z`
-- Source work package ID: `96894c47f05687b3fb2580723147eca420497c15f218ea6ced4b45ba52d6f18d`
-- Source work package hash: `7b691dd7b3e698783b13693805a2e8675cd2e5b8bcb9b548bbc6ea1d8cf42bfa`
+- Source work package ID: `b7a0a536ff360560f2e261ccb711e4f40294d2dd06675699904b02350ec5c22c`
+- Source work package hash: `c7686e64f5c66c5ad4b88f1090db1ac3b3aa76d5a5cb379320b1473974b4779c`
 - Packets: 9
-- Tasks: 46
-- Missing tasks: 46
-- Placeholder source URIs: 46
+- Tasks: 44
+- Missing tasks: 44
+- Placeholder source URIs: 44
 
 ## Packets
 
@@ -156,12 +156,12 @@
 ### release engineering
 
 - Packet ref: `owner-packet:owner_hint:release-engineering`
-- Packet ID: `8d741b076e652ebd7999955db73727f024bb88ece8136c493cf598d7887e3424`
+- Packet ID: `abfb8d6ddf062427e0a12b2e9df63cf7ff34ae4e1a51f49af79a1434b159bf18`
 - Package ref: `owner_hint:release-engineering`
-- Tasks: 7
-- Missing tasks: 7
+- Tasks: 6
+- Missing tasks: 6
 - Authority kinds: `ci-run`
-- Requirements: `byoc-self-hosted`, `framework-adapters`, `insurer-api-and-actuarial-products`, `mcp-gateway`, `product-scope-discipline`, `roadmap-phase-scoreboard`, `runtime-policy-and-attestation`
+- Requirements: `byoc-self-hosted`, `framework-adapters`, `insurer-api-and-actuarial-products`, `product-scope-discipline`, `roadmap-phase-scoreboard`, `runtime-policy-and-attestation`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
 - Completion gate: Every task must have a live authority source URI, a verified source snapshot, a verified intake receipt, and a rebuilt external-evidence manifest before readiness can pass.
@@ -169,7 +169,6 @@
 | Task | Phase | Priority | Authority | Source URI Status | Intake |
 |---|---|---|---|---|---|
 | `product-scope-discipline:ci-run` | P0-P4 | P0 | `ci-run` | placeholder | `artifacts/external-evidence-intakes/product-scope-discipline/ci-run.json` |
-| `mcp-gateway:ci-run` | P1 | P0 | `ci-run` | placeholder | `artifacts/external-evidence-intakes/mcp-gateway/ci-run.json` |
 | `framework-adapters:ci-run` | P1 | P1 | `ci-run` | placeholder | `artifacts/external-evidence-intakes/framework-adapters/ci-run.json` |
 | `byoc-self-hosted:ci-run` | P1-P2 | P0 | `ci-run` | placeholder | `artifacts/external-evidence-intakes/byoc-self-hosted/ci-run.json` |
 | `roadmap-phase-scoreboard:ci-run` | P1-P4 | P0 | `ci-run` | placeholder | `artifacts/external-evidence-intakes/roadmap-phase-scoreboard/ci-run.json` |
@@ -180,8 +179,6 @@
 
 - `product-scope-discipline:ci-run` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/product-scope-discipline/ci-run --root . --task product-scope-discipline:ci-run --description 'ci-run evidence for product-scope-discipline' --snapshot-out artifacts/external-evidence-sources/product-scope-discipline/ci-run.json --intake-out artifacts/external-evidence-intakes/product-scope-discipline/ci-run.json`
 - `product-scope-discipline:ci-run` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/product-scope-discipline/ci-run.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
-- `mcp-gateway:ci-run` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/mcp-gateway/ci-run --root . --task mcp-gateway:ci-run --description 'ci-run evidence for mcp-gateway' --snapshot-out artifacts/external-evidence-sources/mcp-gateway/ci-run.json --intake-out artifacts/external-evidence-intakes/mcp-gateway/ci-run.json`
-- `mcp-gateway:ci-run` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/mcp-gateway/ci-run.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `framework-adapters:ci-run` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/framework-adapters/ci-run --root . --task framework-adapters:ci-run --description 'ci-run evidence for framework-adapters' --snapshot-out artifacts/external-evidence-sources/framework-adapters/ci-run.json --intake-out artifacts/external-evidence-intakes/framework-adapters/ci-run.json`
 - `framework-adapters:ci-run` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/framework-adapters/ci-run.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `byoc-self-hosted:ci-run` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/byoc-self-hosted/ci-run --root . --task byoc-self-hosted:ci-run --description 'ci-run evidence for byoc-self-hosted' --snapshot-out artifacts/external-evidence-sources/byoc-self-hosted/ci-run.json --intake-out artifacts/external-evidence-intakes/byoc-self-hosted/ci-run.json`
@@ -227,27 +224,24 @@
 ### security/platform KMS owner
 
 - Packet ref: `owner-packet:owner_hint:security-platform-KMS-owner`
-- Packet ID: `7cb218a90fe08df8e005fcc84993d112150ecae4cd2b5d19c535bd60a7b5618f`
+- Packet ID: `c9ec2062d7662ccc07694f4522b46f7ad7dc682d7d7bbe5f3a2e7a81db1c6880`
 - Package ref: `owner_hint:security-platform-KMS-owner`
-- Tasks: 4
-- Missing tasks: 4
+- Tasks: 3
+- Missing tasks: 3
 - Authority kinds: `kms-hsm`
-- Requirements: `auditor-and-review-portal`, `insurer-api-and-actuarial-products`, `mcp-gateway`, `standards-track-and-auditor-ecosystem`
+- Requirements: `auditor-and-review-portal`, `insurer-api-and-actuarial-products`, `standards-track-and-auditor-ecosystem`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
 - Completion gate: Every task must have a live authority source URI, a verified source snapshot, a verified intake receipt, and a rebuilt external-evidence manifest before readiness can pass.
 
 | Task | Phase | Priority | Authority | Source URI Status | Intake |
 |---|---|---|---|---|---|
-| `mcp-gateway:kms-hsm` | P1 | P0 | `kms-hsm` | placeholder | `artifacts/external-evidence-intakes/mcp-gateway/kms-hsm.json` |
 | `auditor-and-review-portal:kms-hsm` | P1-P3 | P1 | `kms-hsm` | placeholder | `artifacts/external-evidence-intakes/auditor-and-review-portal/kms-hsm.json` |
 | `insurer-api-and-actuarial-products:kms-hsm` | P2-P4 | P0 | `kms-hsm` | placeholder | `artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/kms-hsm.json` |
 | `standards-track-and-auditor-ecosystem:kms-hsm` | P3 | P1 | `kms-hsm` | placeholder | `artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/kms-hsm.json` |
 
 #### Task Commands
 
-- `mcp-gateway:kms-hsm` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/mcp-gateway/kms-hsm --root . --task mcp-gateway:kms-hsm --description 'kms-hsm evidence for mcp-gateway' --snapshot-out artifacts/external-evidence-sources/mcp-gateway/kms-hsm.json --intake-out artifacts/external-evidence-intakes/mcp-gateway/kms-hsm.json`
-- `mcp-gateway:kms-hsm` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/mcp-gateway/kms-hsm.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `auditor-and-review-portal:kms-hsm` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/auditor-and-review-portal/kms-hsm --root . --task auditor-and-review-portal:kms-hsm --description 'kms-hsm evidence for auditor-and-review-portal' --snapshot-out artifacts/external-evidence-sources/auditor-and-review-portal/kms-hsm.json --intake-out artifacts/external-evidence-intakes/auditor-and-review-portal/kms-hsm.json`
 - `auditor-and-review-portal:kms-hsm` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/auditor-and-review-portal/kms-hsm.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `insurer-api-and-actuarial-products:kms-hsm` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/insurer-api-and-actuarial-products/kms-hsm --root . --task insurer-api-and-actuarial-products:kms-hsm --description 'kms-hsm evidence for insurer-api-and-actuarial-products' --snapshot-out artifacts/external-evidence-sources/insurer-api-and-actuarial-products/kms-hsm.json --intake-out artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/kms-hsm.json`

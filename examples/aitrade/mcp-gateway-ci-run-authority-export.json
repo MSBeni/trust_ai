@@ -1,0 +1,39 @@
+{
+  "environment": "aitrade-prod",
+  "evidence": {
+    "mcp_gateway_authority_tests": {
+      "path": "tests/test_mcp_gateway_authority.py",
+      "sha256": "sha256:100f7200be40a2d7ba1d1fd2fbf5ad41fe0bace045f325c58f422d05012c3fbb"
+    },
+    "mcp_gateway_tests": {
+      "path": "tests/test_mcp_gateway.py",
+      "sha256": "sha256:99b57137dc93fe9837a29ff649a844d58bbb77524b83da5a47fe32e90eeba8cc"
+    },
+    "proxy_event_export": {
+      "path": "examples/aitrade/mcp-proxy-events.json",
+      "sha256": "sha256:24488d5a40815e53618137da83685f927cc2073af74a6128752f01612cf42502"
+    },
+    "transcript": {
+      "path": "examples/aitrade/mcp-transcript.json",
+      "sha256": "sha256:889cb792fa9da0d4ccd106c5a2bcaf7da2260627bbec75243b147604b04b0bbf"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "export_ref": "ci-run-export:aitrade/mcp-gateway/reference-capture/2026-07-03",
+  "issued_at": "2026-07-03T12:06:00Z",
+  "issuer": "GitHub Actions",
+  "schema": "trustai.mcp-gateway-ci-run-authority-export/0.1",
+  "source": {
+    "repository": "MSBeni/trust_ai",
+    "workflow": "Python CI",
+    "workflow_ref": ".github/workflows/python-ci.yml"
+  },
+  "subject": "trustai MCP gateway reference capture CI",
+  "verified_checks": [
+    "tests.test_mcp_gateway",
+    "tests.test_mcp_gateway_authority",
+    "retained proxy event byte replay",
+    "JSON-RPC envelope validation",
+    "request response hash-chain replay"
+  ]
+}

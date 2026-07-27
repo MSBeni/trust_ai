@@ -67,6 +67,28 @@
       "warnings": []
     },
     {
+      "evidence_argument": "mcp-gateway,ci-run,examples/aitrade/external-evidence/mcp-gateway-ci-run-source-snapshot.json,Retained GitHub Actions export for MCP gateway proxy capture and authority test evidence;issuer=GitHub Actions;subject=trustai MCP gateway reference capture CI;source_uri=https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml;issued_at=2026-07-03T12:06:00Z;expires_at=2026-12-31T00:00:00Z",
+      "intake_id": "b68389f37907d420f7e6166530351c77793c26be58faaa9038d2e152c66932ea",
+      "intake_path": "examples/aitrade/external-evidence/intakes/mcp-gateway-ci-run.json",
+      "snapshot_artifact_path": "examples/aitrade/external-evidence/mcp-gateway-ci-run-source-snapshot.json",
+      "snapshot_id": "8f5fcc299b711225dea318a10296644b3707157187d623be67d3a9bfe5e1a28a",
+      "snapshot_path": "examples/aitrade/external-evidence/mcp-gateway-ci-run-source-snapshot.json",
+      "source_uri": "https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml",
+      "task": "mcp-gateway:ci-run",
+      "warnings": []
+    },
+    {
+      "evidence_argument": "mcp-gateway,kms-hsm,examples/aitrade/external-evidence/mcp-gateway-kms-hsm-source-snapshot.json,Retained KMS/HSM export for MCP gateway evidence-signing enforcement;issuer=Example KMS/HSM;subject=trustai MCP gateway evidence-signing enforcement;source_uri=https://kms.example/attestations/trustai/mcp-gateway/evidence-signing;issued_at=2026-07-03T12:07:00Z;expires_at=2026-12-31T00:00:00Z",
+      "intake_id": "6d0e17dbda36a52382c7967f07875cfc67e4874215ac33de796b3fffa3210fe1",
+      "intake_path": "examples/aitrade/external-evidence/intakes/mcp-gateway-kms-hsm.json",
+      "snapshot_artifact_path": "examples/aitrade/external-evidence/mcp-gateway-kms-hsm-source-snapshot.json",
+      "snapshot_id": "0bff857bfb86a4996847786b4482f8729f5fc61bd0f651b1213d076aca17a9db",
+      "snapshot_path": "examples/aitrade/external-evidence/mcp-gateway-kms-hsm-source-snapshot.json",
+      "source_uri": "https://kms.example/attestations/trustai/mcp-gateway/evidence-signing",
+      "task": "mcp-gateway:kms-hsm",
+      "warnings": []
+    },
+    {
       "evidence_argument": "mcp-gateway,provider-api,examples/aitrade/external-evidence/mcp-proxy-events-provider-api-source-snapshot.json,Retained GitHub contents API export for MCP gateway proxy event evidence;issuer=GitHub Contents API;subject=trustai MCP proxy event export;source_uri=https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/mcp-proxy-events.json?ref=main;issued_at=2026-07-03T12:05:00Z;expires_at=2026-12-31T00:00:00Z",
       "intake_id": "3b842bfea5149dfb4b551b4b155e46eef18b10ee6b1efd2ceba1865f88d5d6fd",
       "intake_path": "examples/aitrade/external-evidence/intakes/mcp-gateway-provider-api.json",
@@ -277,15 +299,15 @@
     }
   ],
   "generated_at": "2026-07-12T00:01:00Z",
-  "run_id": "e33179509ed1b07a4426801478197fe8497ea092423bf5a5af12e7c7cfb484b7",
+  "run_id": "4f4d2460e85619ea495cec8f72cfe1c313d888fb1c67c0f1494c2026247cc4cd",
   "schema": "trustai.external-evidence-collection-run/0.1",
   "source_map": {
     "path": "examples/aitrade/external-evidence/retained-external-evidence-collected-source-map.json",
-    "source_map_hash": "d43d029a30985e43d7be5bdff3dcc3e22fe8bb632a67513b1286c6ca073e8559"
+    "source_map_hash": "a67ff85fc8fbb7dbcae240fc0a07c3891bb7607ddc638bf132587c5f8b76fb72"
   },
   "summary": {
-    "collected_count": 25,
+    "collected_count": 27,
     "require_fresh": true,
-    "task_count": 25
+    "task_count": 27
   }
 }

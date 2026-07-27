@@ -1,0 +1,22 @@
+{
+  "body_base64": "ewogICJlbnZpcm9ubWVudCI6ICJhaXRyYWRlLXByb2QiLAogICJldmlkZW5jZSI6IHsKICAgICJhdXRob3JpdHlfbW9kdWxlIjogewogICAgICAicGF0aCI6ICJzcmMvdHJ1c3RhaS9tY3BfZ2F0ZXdheV9hdXRob3JpdHkucHkiLAogICAgICAic2hhMjU2IjogInNoYTI1Njo1YTA3MDEzZTFlYzBkYzI5ZThiMTFhZWI4MDk2NTc0NDczZDFiMWM2OTlkODE3NzVhY2U3MTUwOTZjODNiYjlkIgogICAgfSwKICAgICJnYXRld2F5X21vZHVsZSI6IHsKICAgICAgInBhdGgiOiAic3JjL3RydXN0YWkvbWNwX2dhdGV3YXkucHkiLAogICAgICAic2hhMjU2IjogInNoYTI1Njo3ZTFhNWE2OWQ3YmE2MjY3NzU3NDE0MzJjODA5MDU4OTJiNmUzOWZmNTE1ZTMyZTE1NGQ1NjQ4ZDdlYWQ0ZDc5IgogICAgfSwKICAgICJrbXNfcmVzcG9uc2UiOiB7CiAgICAgICJwYXRoIjogImV4YW1wbGVzL2FpdHJhZGUvdHJ1c3QtYXV0aG9yaXR5LWttcy1yZXNwb25zZS5qc29uIiwKICAgICAgInNoYTI1NiI6ICJzaGEyNTY6MWY2N2Q2YjNiMjg2YjBkN2NjMTYwNDRjNDNkOWJhNWRlYzYwNjU3OTc5MDZjYWYwZDk3ZTRmYTNlODcwZmYyMSIKICAgIH0sCiAgICAicHJvZHVjdGlvbl9hdXRob3JpdHlfc3BlYyI6IHsKICAgICAgInBhdGgiOiAiZG9jcy9zcGVjcy9tY3AtZ2F0ZXdheS1wcm9kdWN0aW9uLWF1dGhvcml0eS12MC4xLm1kIiwKICAgICAgInNoYTI1NiI6ICJzaGEyNTY6NDk2MzBjMTdiOGNhYTY1ZWRiYWEzMmM3MjIxMzczMzc3NGY0ZjhmMGNhNWYzYTZlYzhlNjMxYzRiOTM0NjJmOSIKICAgIH0KICB9LAogICJleHBpcmVzX2F0IjogIjIwMjYtMTItMzFUMDA6MDA6MDBaIiwKICAiZXhwb3J0X3JlZiI6ICJrbXMtZXhwb3J0OmFpdHJhZGUvbWNwLWdhdGV3YXkvZXZpZGVuY2Utc2lnbmluZy8yMDI2LTA3LTAzIiwKICAiaXNzdWVkX2F0IjogIjIwMjYtMDctMDNUMTI6MDc6MDBaIiwKICAiaXNzdWVyIjogIkV4YW1wbGUgS01TL0hTTSIsCiAgImtleV9wb2xpY3kiOiB7CiAgICAia2V5X3JlZiI6ICJrbXM6ZXhhbXBsZS90cnVzdGFpL21jcC1nYXRld2F5L2V2aWRlbmNlLXNpZ25pbmciLAogICAgIm9wZXJhdGlvbiI6ICJzaWduIiwKICAgICJ0aW1lc3RhbXBfcG9saWN5IjogInBvbGljeTp0c2EvdHJ1c3RhaS10aW1lc3RhbXBpbmctdjAuMSIKICB9LAogICJzY2hlbWEiOiAidHJ1c3RhaS5tY3AtZ2F0ZXdheS1rbXMtaHNtLWF1dGhvcml0eS1leHBvcnQvMC4xIiwKICAic3ViamVjdCI6ICJ0cnVzdGFpIE1DUCBnYXRld2F5IGV2aWRlbmNlLXNpZ25pbmcgZW5mb3JjZW1lbnQiLAogICJ2ZXJpZmllZF9jb250cm9scyI6IFsKICAgICJtY3AgdHJhbnNjcmlwdCBlbnRyeSBzaWduaW5nIiwKICAgICJhdXRob3JpdHkgZXZpZGVuY2UgYnVuZGxlIHNpZ25pbmciLAogICAgImRldGFjaGVkIHNpZ25hdHVyZSB2ZXJpZmljYXRpb24iLAogICAgImZyZXNobmVzcy13aW5kb3cgdmVyaWZpY2F0aW9uIgogIF0KfQo=",
+  "body_sha256": "sha256:4757d380e51764b68950ae7d4565d21228fa0e444e574e1dfca69d47eab94de3",
+  "body_size_bytes": 1463,
+  "content_type": "application/json",
+  "expires_at": "2026-12-31T00:00:00Z",
+  "generated_at": "2026-07-12T00:01:00Z",
+  "issued_at": "2026-07-03T12:07:00Z",
+  "issuer": "Example KMS/HSM",
+  "limitations": [
+    "This source snapshot preserves one collected authority response as a hashable artifact; it does not prove that the authority will return the same response later.",
+    "Verifier checks cover snapshot integrity, body hash, optional HTTP metadata, and optional freshness metadata.",
+    "Use this snapshot as the artifact supplied to external-evidence-intake for the matching collection-plan task."
+  ],
+  "response_headers": {},
+  "retrieval_method": "file-copy",
+  "schema": "trustai.external-evidence-source-snapshot/0.1",
+  "snapshot_id": "0bff857bfb86a4996847786b4482f8729f5fc61bd0f651b1213d076aca17a9db",
+  "source_uri": "https://kms.example/attestations/trustai/mcp-gateway/evidence-signing",
+  "status_code": null,
+  "subject": "trustai MCP gateway evidence-signing enforcement"
+}

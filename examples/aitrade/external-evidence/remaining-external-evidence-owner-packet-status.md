@@ -1,14 +1,14 @@
 # External Evidence Owner Packet Status
 
-- Status ID: `b50d24ad1175b976e49a7bd4c8982ec3321ee43f0b80e60610b69ddc7e094ab9`
+- Status ID: `9812be990eeda5d57993d2a66717420cc16c26f74ef21cc5f2dd596864dae388`
 - Generated at: `2026-07-12T00:01:00Z`
 - Packets: 9
-- Tasks: 46
+- Tasks: 44
 - Closed tasks: 0
 - Open tasks: 0
-- Blocked tasks: 46
-- Placeholder source URIs: 46
-- Missing intakes: 46
+- Blocked tasks: 44
+- Placeholder source URIs: 44
+- Missing intakes: 44
 
 ## Packets
 
@@ -18,9 +18,9 @@
 | customer success/account owner | `owner-packet:owner_hint:customer-success-account-owner` | blocked | 9 | 0 | 0 | 9 |
 | integration/platform owner | `owner-packet:owner_hint:integration-platform-owner` | blocked | 4 | 0 | 0 | 4 |
 | legal/compliance owner | `owner-packet:owner_hint:legal-compliance-owner` | blocked | 5 | 0 | 0 | 5 |
-| release engineering | `owner-packet:owner_hint:release-engineering` | blocked | 7 | 0 | 0 | 7 |
+| release engineering | `owner-packet:owner_hint:release-engineering` | blocked | 6 | 0 | 0 | 6 |
 | risk/insurance owner | `owner-packet:owner_hint:risk-insurance-owner` | blocked | 4 | 0 | 0 | 4 |
-| security/platform KMS owner | `owner-packet:owner_hint:security-platform-KMS-owner` | blocked | 4 | 0 | 0 | 4 |
+| security/platform KMS owner | `owner-packet:owner_hint:security-platform-KMS-owner` | blocked | 3 | 0 | 0 | 3 |
 | service owner | `owner-packet:owner_hint:service-owner` | blocked | 4 | 0 | 0 | 4 |
 | standards/governance owner | `owner-packet:owner_hint:standards-governance-owner` | blocked | 5 | 0 | 0 | 5 |
 
@@ -51,7 +51,6 @@
 | `compliance-mapper-and-eu-ai-act:regulator` | legal/compliance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `vertical-packs:regulator` | legal/compliance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `product-scope-discipline:ci-run` | release engineering | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
-| `mcp-gateway:ci-run` | release engineering | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `framework-adapters:ci-run` | release engineering | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `byoc-self-hosted:ci-run` | release engineering | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `roadmap-phase-scoreboard:ci-run` | release engineering | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
@@ -61,7 +60,6 @@
 | `roadmap-phase-scoreboard:insurer` | risk/insurance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `insurer-api-and-actuarial-products:insurer` | risk/insurance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `vertical-packs:insurer` | risk/insurance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
-| `mcp-gateway:kms-hsm` | security/platform KMS owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `auditor-and-review-portal:kms-hsm` | security/platform KMS owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `insurer-api-and-actuarial-products:kms-hsm` | security/platform KMS owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `standards-track-and-auditor-ecosystem:kms-hsm` | security/platform KMS owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |

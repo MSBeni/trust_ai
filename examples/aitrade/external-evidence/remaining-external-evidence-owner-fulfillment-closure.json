@@ -1,8 +1,8 @@
 {
   "blockers": [
-    "46 reviewed tasks still use placeholder source_uri values",
-    "46 reviewed tasks do not have intake receipts",
-    "46 reviewed tasks are not covered by the rebuilt manifest"
+    "44 reviewed tasks still use placeholder source_uri values",
+    "44 reviewed tasks do not have intake receipts",
+    "44 reviewed tasks are not covered by the rebuilt manifest"
   ],
   "commands": {
     "collect_after_ready_review": "python -m trustai external-evidence-collect-batch <fulfilled-source-map.json> <manifest.json> <roadmap-audit.json> --root . --require-live-source-uris",
@@ -21,31 +21,31 @@
     "Collect and verify source snapshots and intake receipts for every reviewed owner task.",
     "Rebuild the external-evidence manifest from the verified intake receipts and rerun closure verification."
   ],
-  "owner_fulfillment_closure_id": "17195fde847ad39fff56f163ad5dcbf881eb81b44d15bb5647532ee897e4a916",
+  "owner_fulfillment_closure_id": "aceb1a68f65c15711334d5a59673bf2e730ae62b7504d8477013c733db44d83e",
   "schema": "trustai.external-evidence-owner-fulfillment-closure/0.1",
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "c59995fffb054fab2e403f4427bed12c37673fa735fe124ed748881380460d01",
-      "plan_id": "9a9a8ca0e578b9e66e940866c2d46c1092a1b8d44e2ac1e6579422a16d45dc06",
+      "plan_hash": "73903c8bdebeff13efc1afb1090dcfe0f516fd44e846fc96858ab8b3b4e4f393",
+      "plan_id": "fa76572f201bf98614bb9ff14e00e43c965854e2b6e7a7800d4e6d9d610f86fd",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "owner_fulfillment_review": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_fulfillment_review_hash": "a8020e0f31fd72b79e14143544e691f8a62149315bd267b0ae9d14bd63e1a24f",
-      "owner_fulfillment_review_id": "36f05abc47f1f81a47d973ab080df3790dfcfd96c03412dc8f4b8ace2cfa3a61",
+      "owner_fulfillment_review_hash": "61a2181b13d6bef2402d921b35fbbb15a6722367099bb4247eba1a01f311b6e6",
+      "owner_fulfillment_review_id": "2fc5ae5c8b0180bad188853527322ac72ff0ea94094864f9de99c59b2a8bd565",
       "schema": "trustai.external-evidence-owner-fulfillment-review/0.1"
     },
     "owner_packet_status": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_status_hash": "7f09ec3d70f8489b68166af5c4dfce87621358eb0a51a30833d01870832584ff",
-      "owner_packet_status_id": "b50d24ad1175b976e49a7bd4c8982ec3321ee43f0b80e60610b69ddc7e094ab9",
+      "owner_packet_status_hash": "5284618be2d200243c5473e54cebd09c2095c306a1a59c7954ab75101e794357",
+      "owner_packet_status_id": "9812be990eeda5d57993d2a66717420cc16c26f74ef21cc5f2dd596864dae388",
       "schema": "trustai.external-evidence-owner-packet-status/0.1"
     },
     "rebuilt_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "7b4af507fca5369bd074822d19132e01c9e2ad0e5a30c83763cbf3779eb097ee",
-      "manifest_id": "9482ab1f8e7a1a0058cc2c4c0332f6a6e2fc6c9a30c467d1b59b782f0f1d4e2c",
+      "manifest_hash": "8441ef1dba3b3e0bd12d1227c9e77a7f13283dd899a0a9283899e940e9f84667",
+      "manifest_id": "b44b4c35a06da6d582c61715d5ee5a458230a1c255f504b23f08610a06dc247c",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
@@ -56,13 +56,13 @@
     },
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "7b4af507fca5369bd074822d19132e01c9e2ad0e5a30c83763cbf3779eb097ee",
-      "manifest_id": "9482ab1f8e7a1a0058cc2c4c0332f6a6e2fc6c9a30c467d1b59b782f0f1d4e2c",
+      "manifest_hash": "8441ef1dba3b3e0bd12d1227c9e77a7f13283dd899a0a9283899e940e9f84667",
+      "manifest_id": "b44b4c35a06da6d582c61715d5ee5a458230a1c255f504b23f08610a06dc247c",
       "schema": "trustai.external-evidence-manifest/0.1"
     }
   },
   "summary": {
-    "blocked_task_count": 46,
+    "blocked_task_count": 44,
     "closed_task_count": 0,
     "closure_status": "blocked",
     "duplicate_intake_task_count": 0,
@@ -71,50 +71,16 @@
     "invalid_intake_task_count": 0,
     "live_source_uri_count": 0,
     "manifest_intake_mismatch_count": 0,
-    "missing_intake_count": 46,
-    "missing_manifest_coverage_count": 46,
-    "placeholder_source_uri_count": 46,
+    "missing_intake_count": 44,
+    "missing_manifest_coverage_count": 44,
+    "placeholder_source_uri_count": 44,
     "source_error_count": 0,
     "source_warning_count": 7,
-    "task_count": 46,
+    "task_count": 44,
     "unmatched_intake_count": 0,
     "valid_intake_receipt_count": 0
   },
   "task_closures": [
-    {
-      "authority_kind": "ci-run",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake",
-        "missing-manifest-coverage"
-      ],
-      "closure_status": "missing-intake",
-      "intake_evidence_hash": null,
-      "intake_id": null,
-      "manifest_evidence_count": 0,
-      "owner_hint": "release engineering",
-      "requirement_id": "mcp-gateway",
-      "source_uri": "TODO://authority/mcp-gateway/ci-run",
-      "source_uri_status": "placeholder",
-      "task": "mcp-gateway:ci-run"
-    },
-    {
-      "authority_kind": "kms-hsm",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake",
-        "missing-manifest-coverage"
-      ],
-      "closure_status": "missing-intake",
-      "intake_evidence_hash": null,
-      "intake_id": null,
-      "manifest_evidence_count": 0,
-      "owner_hint": "security/platform KMS owner",
-      "requirement_id": "mcp-gateway",
-      "source_uri": "TODO://authority/mcp-gateway/kms-hsm",
-      "source_uri_status": "placeholder",
-      "task": "mcp-gateway:kms-hsm"
-    },
     {
       "authority_kind": "hosted-service",
       "blocking_reasons": [
@@ -873,11 +839,11 @@
     "warnings": [
       "owner fulfillment review: owner fulfillment review is not ready to collect",
       "source manifest: external evidence missing for: design-partner-pilot-exit-criteria, auditor-and-review-portal, compliance-mapper-and-eu-ai-act, trustai-own-compliance, vertical-packs, insurer-api-and-actuarial-products, state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
-      "source manifest: external evidence authority kinds missing for: mcp-gateway: ci-run, kms-hsm; cicd-provider-approvals: hosted-service, identity-provider; design-partner-pilot-exit-criteria: regulator, insurer, customer; framework-adapters: ci-run; auditor-and-review-portal: kms-hsm, provider-api, hosted-service, identity-provider, regulator; byoc-self-hosted: ci-run, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer",
+      "source manifest: external evidence authority kinds missing for: cicd-provider-approvals: hosted-service, identity-provider; design-partner-pilot-exit-criteria: regulator, insurer, customer; framework-adapters: ci-run; auditor-and-review-portal: kms-hsm, provider-api, hosted-service, identity-provider, regulator; byoc-self-hosted: ci-run, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer",
       "collection plan: external evidence missing for: design-partner-pilot-exit-criteria, auditor-and-review-portal, compliance-mapper-and-eu-ai-act, trustai-own-compliance, vertical-packs, insurer-api-and-actuarial-products, state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
-      "collection plan: external evidence authority kinds missing for: mcp-gateway: ci-run, kms-hsm; cicd-provider-approvals: hosted-service, identity-provider; design-partner-pilot-exit-criteria: regulator, insurer, customer; framework-adapters: ci-run; auditor-and-review-portal: kms-hsm, provider-api, hosted-service, identity-provider, regulator; byoc-self-hosted: ci-run, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer",
+      "collection plan: external evidence authority kinds missing for: cicd-provider-approvals: hosted-service, identity-provider; design-partner-pilot-exit-criteria: regulator, insurer, customer; framework-adapters: ci-run; auditor-and-review-portal: kms-hsm, provider-api, hosted-service, identity-provider, regulator; byoc-self-hosted: ci-run, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer",
       "rebuilt manifest: external evidence missing for: design-partner-pilot-exit-criteria, auditor-and-review-portal, compliance-mapper-and-eu-ai-act, trustai-own-compliance, vertical-packs, insurer-api-and-actuarial-products, state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
-      "rebuilt manifest: external evidence authority kinds missing for: mcp-gateway: ci-run, kms-hsm; cicd-provider-approvals: hosted-service, identity-provider; design-partner-pilot-exit-criteria: regulator, insurer, customer; framework-adapters: ci-run; auditor-and-review-portal: kms-hsm, provider-api, hosted-service, identity-provider, regulator; byoc-self-hosted: ci-run, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
+      "rebuilt manifest: external evidence authority kinds missing for: cicd-provider-approvals: hosted-service, identity-provider; design-partner-pilot-exit-criteria: regulator, insurer, customer; framework-adapters: ci-run; auditor-and-review-portal: kms-hsm, provider-api, hosted-service, identity-provider, regulator; byoc-self-hosted: ci-run, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
     ]
   },
   "verification_options": {

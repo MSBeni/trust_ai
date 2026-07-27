@@ -1,21 +1,19 @@
 # External Evidence Owner Fulfillment Review
 
-- Review ID: `36f05abc47f1f81a47d973ab080df3790dfcfd96c03412dc8f4b8ace2cfa3a61`
+- Review ID: `2fc5ae5c8b0180bad188853527322ac72ff0ea94094864f9de99c59b2a8bd565`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Fulfillments: 46
+- Fulfillments: 44
 - Owners: 9
 - Ready tasks: 0
-- Blocked tasks: 46
-- Placeholder source URIs: 46
+- Blocked tasks: 44
+- Placeholder source URIs: 44
 - Live source URIs: 0
 
 ## Task Review
 
 | Task | Owner | Status | Source URI | Blocking Reasons |
 |---|---|---|---|---|
-| `mcp-gateway:ci-run` | release engineering | blocked | TODO://authority/mcp-gateway/ci-run | `placeholder-source-uri` |
-| `mcp-gateway:kms-hsm` | security/platform KMS owner | blocked | TODO://authority/mcp-gateway/kms-hsm | `placeholder-source-uri` |
 | `cicd-provider-approvals:hosted-service` | service owner | blocked | TODO://authority/cicd-provider-approvals/hosted-service | `placeholder-source-uri` |
 | `cicd-provider-approvals:identity-provider` | IAM/identity owner | blocked | TODO://authority/cicd-provider-approvals/identity-provider | `placeholder-source-uri` |
 | `design-partner-pilot-exit-criteria:regulator` | legal/compliance owner | blocked | TODO://authority/design-partner-pilot-exit-criteria/regulator | `placeholder-source-uri` |
@@ -65,12 +63,12 @@
 
 - Fulfilled source map errors: 1
 - Fulfilled source map warnings: 1
-  - source map contains 46 placeholder source_uri values but live source URIs are required
+  - source map contains 44 placeholder source_uri values but live source URIs are required
 
 ## Blockers
 
-- owner fulfillment review contains 46 placeholder source_uri values
-- fulfilled source map: source map contains 46 placeholder source_uri values but live source URIs are required
+- owner fulfillment review contains 44 placeholder source_uri values
+- fulfilled source map: source map contains 44 placeholder source_uri values but live source URIs are required
 
 ## Next Actions
 
