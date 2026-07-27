@@ -1156,6 +1156,7 @@ from .external_evidence import (
     build_external_evidence_work_package,
     build_external_evidence_owner_packets,
     build_external_evidence_owner_packet_status,
+    build_external_evidence_owner_fulfillment_template,
     build_external_evidence_readiness_report,
     build_external_evidence_source_map_template,
     fulfill_external_evidence_source_map,
@@ -1173,6 +1174,7 @@ from .external_evidence import (
     load_external_evidence_work_package,
     load_external_evidence_owner_packets,
     load_external_evidence_owner_packet_status,
+    load_external_evidence_owner_fulfillment_template,
     load_external_evidence_readiness_report,
     load_external_evidence_collection_plan,
     load_external_evidence_source_map,
@@ -1191,6 +1193,7 @@ from .external_evidence import (
     verify_external_evidence_work_package,
     verify_external_evidence_owner_packets,
     verify_external_evidence_owner_packet_status,
+    verify_external_evidence_owner_fulfillment_template,
     verify_external_evidence_readiness_report,
     verify_external_evidence_collection_plan,
     verify_external_evidence_source_map_template,
@@ -1209,6 +1212,8 @@ from .external_evidence import (
     write_external_evidence_owner_packets_markdown,
     write_external_evidence_owner_packet_status,
     write_external_evidence_owner_packet_status_markdown,
+    write_external_evidence_owner_fulfillment_template,
+    write_external_evidence_owner_fulfillment_template_markdown,
     write_external_evidence_readiness_report,
     write_external_evidence_readiness_markdown,
     write_external_evidence_collection_plan,
@@ -15927,6 +15932,62 @@ def cmd_external_evidence_owner_packet_status_verify(args: argparse.Namespace) -
     for error in result.errors:
         print(f"- {error}", file=sys.stderr)
     return 1
+
+def cmd_external_evidence_owner_fulfillment_template(args: argparse.Namespace) -> int:
+    try:
+        status_report = load_external_evidence_owner_packet_status(args.status_report)
+        template = build_external_evidence_owner_fulfillment_template(
+            status_report,
+            owner_hint=args.owner_hint,
+            include_closed=args.include_closed,
+            generated_at=args.generated_at,
+        )
+        result = verify_external_evidence_owner_fulfillment_template(template, status_report)
+    except (OSError, ValueError) as exc:
+        print(f"external evidence owner fulfillment template failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("external evidence owner fulfillment template verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_external_evidence_owner_fulfillment_template(args.out, template)
+    if args.markdown:
+        write_external_evidence_owner_fulfillment_template_markdown(args.markdown, template)
+        print(f"external evidence owner fulfillment template markdown: {args.markdown}")
+    summary = template["summary"]
+    print(f"external evidence owner fulfillment template: {args.out}")
+    print(f"owner fulfillment template id: {template['owner_fulfillment_template_id']}")
+    print(f"fulfillments: {summary['fulfillment_count']}")
+    print(f"owners: {summary['owner_count']}")
+    print(f"blocked tasks: {summary['blocked_task_count']}")
+    print(f"placeholder source URIs: {summary['placeholder_source_uri_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_external_evidence_owner_fulfillment_template_verify(args: argparse.Namespace) -> int:
+    try:
+        template = load_external_evidence_owner_fulfillment_template(args.template)
+        status_report = load_external_evidence_owner_packet_status(args.status_report)
+        result = verify_external_evidence_owner_fulfillment_template(template, status_report)
+    except (OSError, ValueError) as exc:
+        print(f"external evidence owner fulfillment template verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        summary = template.get("summary", {})
+        print(f"verified external evidence owner fulfillment template: {args.template}")
+        print(f"owner fulfillment template id: {template.get('owner_fulfillment_template_id')}")
+        print(f"fulfillments: {summary.get('fulfillment_count', 0)}")
+        print(f"owners: {summary.get('owner_count', 0)}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"external evidence owner fulfillment template verification failed: {args.template}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
 def cmd_external_evidence_readiness(args: argparse.Namespace) -> int:
     try:
         roadmap_audit = load_roadmap_audit(args.roadmap_audit)
@@ -27200,6 +27261,20 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_owner_packet_status_verify.add_argument("--intake-dir", action="append", default=[])
     external_evidence_owner_packet_status_verify.add_argument("--root", default=".")
     external_evidence_owner_packet_status_verify.set_defaults(func=cmd_external_evidence_owner_packet_status_verify)
+
+    external_evidence_owner_fulfillment_template = subparsers.add_parser("external-evidence-owner-fulfillment-template", help="write a source-map fulfillment template from owner packet status")
+    external_evidence_owner_fulfillment_template.add_argument("status_report")
+    external_evidence_owner_fulfillment_template.add_argument("--owner-hint", help="limit template rows to one owner hint")
+    external_evidence_owner_fulfillment_template.add_argument("--include-closed", action="store_true", help="include closed tasks; defaults to open and blocked tasks only")
+    external_evidence_owner_fulfillment_template.add_argument("--generated-at")
+    external_evidence_owner_fulfillment_template.add_argument("--out", default="artifacts/external-evidence-owner-fulfillment-template.json")
+    external_evidence_owner_fulfillment_template.add_argument("--markdown", default="artifacts/external-evidence-owner-fulfillment-template.md")
+    external_evidence_owner_fulfillment_template.set_defaults(func=cmd_external_evidence_owner_fulfillment_template)
+
+    external_evidence_owner_fulfillment_template_verify = subparsers.add_parser("external-evidence-owner-fulfillment-template-verify", help="verify a source-map fulfillment template from owner packet status")
+    external_evidence_owner_fulfillment_template_verify.add_argument("template")
+    external_evidence_owner_fulfillment_template_verify.add_argument("status_report")
+    external_evidence_owner_fulfillment_template_verify.set_defaults(func=cmd_external_evidence_owner_fulfillment_template_verify)
     external_evidence_readiness = subparsers.add_parser("external-evidence-readiness", help="write a production-readiness report for retained external-evidence artifacts")
     external_evidence_readiness.add_argument("gap_report")
     external_evidence_readiness.add_argument("manifest")

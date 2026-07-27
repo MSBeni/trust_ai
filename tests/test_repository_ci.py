@@ -94,6 +94,8 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("remaining-external-evidence-owner-packets.json", script)
         self.assertIn("external-evidence-owner-packet-status", script)
         self.assertIn("remaining-external-evidence-owner-packet-status.json", script)
+        self.assertIn("external-evidence-owner-fulfillment-template", script)
+        self.assertIn("remaining-external-evidence-owner-fulfillment-template.json", script)
         self.assertTrue(TESTS_INIT.exists())
 
 

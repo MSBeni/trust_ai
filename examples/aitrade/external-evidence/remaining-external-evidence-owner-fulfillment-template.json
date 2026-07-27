@@ -1,0 +1,1348 @@
+{
+  "assignments": [
+    {
+      "authority_kind": "identity-provider",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/agent-inventory-and-identity/identity-provider.json",
+      "owner_hint": "IAM/identity owner",
+      "requirement_id": "agent-inventory-and-identity",
+      "snapshot_out": "artifacts/external-evidence-sources/agent-inventory-and-identity/identity-provider.json",
+      "source_uri_status": "placeholder",
+      "task": "agent-inventory-and-identity:identity-provider",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "identity-provider",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/identity-provider.json",
+      "owner_hint": "IAM/identity owner",
+      "requirement_id": "auditor-and-review-portal",
+      "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/identity-provider.json",
+      "source_uri_status": "placeholder",
+      "task": "auditor-and-review-portal:identity-provider",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "identity-provider",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/cicd-provider-approvals/identity-provider.json",
+      "owner_hint": "IAM/identity owner",
+      "requirement_id": "cicd-provider-approvals",
+      "snapshot_out": "artifacts/external-evidence-sources/cicd-provider-approvals/identity-provider.json",
+      "source_uri_status": "placeholder",
+      "task": "cicd-provider-approvals:identity-provider",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "identity-provider",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/identity-provider.json",
+      "owner_hint": "IAM/identity owner",
+      "requirement_id": "insurer-api-and-actuarial-products",
+      "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/identity-provider.json",
+      "source_uri_status": "placeholder",
+      "task": "insurer-api-and-actuarial-products:identity-provider",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "identity-provider",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/runtime-policy-and-attestation/identity-provider.json",
+      "owner_hint": "IAM/identity owner",
+      "requirement_id": "runtime-policy-and-attestation",
+      "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/identity-provider.json",
+      "source_uri_status": "placeholder",
+      "task": "runtime-policy-and-attestation:identity-provider",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "identity-provider",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/self-serve-onboarding/identity-provider.json",
+      "owner_hint": "IAM/identity owner",
+      "requirement_id": "self-serve-onboarding",
+      "snapshot_out": "artifacts/external-evidence-sources/self-serve-onboarding/identity-provider.json",
+      "source_uri_status": "placeholder",
+      "task": "self-serve-onboarding:identity-provider",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "identity-provider",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/identity-provider.json",
+      "owner_hint": "IAM/identity owner",
+      "requirement_id": "shadow-replay-temporal-holdout",
+      "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/identity-provider.json",
+      "source_uri_status": "placeholder",
+      "task": "shadow-replay-temporal-holdout:identity-provider",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "identity-provider",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/identity-provider.json",
+      "owner_hint": "IAM/identity owner",
+      "requirement_id": "trust-network-procurement-and-marketplace",
+      "snapshot_out": "artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/identity-provider.json",
+      "source_uri_status": "placeholder",
+      "task": "trust-network-procurement-and-marketplace:identity-provider",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "cloud-object-lock",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/cloud-object-lock.json",
+      "owner_hint": "cloud storage owner",
+      "requirement_id": "byoc-self-hosted",
+      "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/cloud-object-lock.json",
+      "source_uri_status": "placeholder",
+      "task": "byoc-self-hosted:cloud-object-lock",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "customer",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/customer.json",
+      "owner_hint": "customer success/account owner",
+      "requirement_id": "byoc-self-hosted",
+      "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/customer.json",
+      "source_uri_status": "placeholder",
+      "task": "byoc-self-hosted:customer",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "customer",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/customer.json",
+      "owner_hint": "customer success/account owner",
+      "requirement_id": "design-partner-pilot-exit-criteria",
+      "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/customer.json",
+      "source_uri_status": "placeholder",
+      "task": "design-partner-pilot-exit-criteria:customer",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "customer",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/customer.json",
+      "owner_hint": "customer success/account owner",
+      "requirement_id": "insurer-api-and-actuarial-products",
+      "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/customer.json",
+      "source_uri_status": "placeholder",
+      "task": "insurer-api-and-actuarial-products:customer",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "customer",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/product-scope-discipline/customer.json",
+      "owner_hint": "customer success/account owner",
+      "requirement_id": "product-scope-discipline",
+      "snapshot_out": "artifacts/external-evidence-sources/product-scope-discipline/customer.json",
+      "source_uri_status": "placeholder",
+      "task": "product-scope-discipline:customer",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "customer",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/roadmap-phase-scoreboard/customer.json",
+      "owner_hint": "customer success/account owner",
+      "requirement_id": "roadmap-phase-scoreboard",
+      "snapshot_out": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/customer.json",
+      "source_uri_status": "placeholder",
+      "task": "roadmap-phase-scoreboard:customer",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "customer",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/state-of-agent-reliability-report/customer.json",
+      "owner_hint": "customer success/account owner",
+      "requirement_id": "state-of-agent-reliability-report",
+      "snapshot_out": "artifacts/external-evidence-sources/state-of-agent-reliability-report/customer.json",
+      "source_uri_status": "placeholder",
+      "task": "state-of-agent-reliability-report:customer",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "customer",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/customer.json",
+      "owner_hint": "customer success/account owner",
+      "requirement_id": "trust-network-procurement-and-marketplace",
+      "snapshot_out": "artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/customer.json",
+      "source_uri_status": "placeholder",
+      "task": "trust-network-procurement-and-marketplace:customer",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "customer",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/trustai-own-compliance/customer.json",
+      "owner_hint": "customer success/account owner",
+      "requirement_id": "trustai-own-compliance",
+      "snapshot_out": "artifacts/external-evidence-sources/trustai-own-compliance/customer.json",
+      "source_uri_status": "placeholder",
+      "task": "trustai-own-compliance:customer",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "customer",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/vertical-packs/customer.json",
+      "owner_hint": "customer success/account owner",
+      "requirement_id": "vertical-packs",
+      "snapshot_out": "artifacts/external-evidence-sources/vertical-packs/customer.json",
+      "source_uri_status": "placeholder",
+      "task": "vertical-packs:customer",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "provider-api",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/agent-inventory-and-identity/provider-api.json",
+      "owner_hint": "integration/platform owner",
+      "requirement_id": "agent-inventory-and-identity",
+      "snapshot_out": "artifacts/external-evidence-sources/agent-inventory-and-identity/provider-api.json",
+      "source_uri_status": "placeholder",
+      "task": "agent-inventory-and-identity:provider-api",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "provider-api",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/provider-api.json",
+      "owner_hint": "integration/platform owner",
+      "requirement_id": "auditor-and-review-portal",
+      "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/provider-api.json",
+      "source_uri_status": "placeholder",
+      "task": "auditor-and-review-portal:provider-api",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "provider-api",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/provider-api.json",
+      "owner_hint": "integration/platform owner",
+      "requirement_id": "byoc-self-hosted",
+      "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/provider-api.json",
+      "source_uri_status": "placeholder",
+      "task": "byoc-self-hosted:provider-api",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "provider-api",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/cicd-provider-approvals/provider-api.json",
+      "owner_hint": "integration/platform owner",
+      "requirement_id": "cicd-provider-approvals",
+      "snapshot_out": "artifacts/external-evidence-sources/cicd-provider-approvals/provider-api.json",
+      "source_uri_status": "placeholder",
+      "task": "cicd-provider-approvals:provider-api",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "provider-api",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/provider-api.json",
+      "owner_hint": "integration/platform owner",
+      "requirement_id": "compliance-mapper-and-eu-ai-act",
+      "snapshot_out": "artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/provider-api.json",
+      "source_uri_status": "placeholder",
+      "task": "compliance-mapper-and-eu-ai-act:provider-api",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "provider-api",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/framework-adapters/provider-api.json",
+      "owner_hint": "integration/platform owner",
+      "requirement_id": "framework-adapters",
+      "snapshot_out": "artifacts/external-evidence-sources/framework-adapters/provider-api.json",
+      "source_uri_status": "placeholder",
+      "task": "framework-adapters:provider-api",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "provider-api",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/provider-api.json",
+      "owner_hint": "integration/platform owner",
+      "requirement_id": "insurer-api-and-actuarial-products",
+      "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/provider-api.json",
+      "source_uri_status": "placeholder",
+      "task": "insurer-api-and-actuarial-products:provider-api",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "provider-api",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/provider-api.json",
+      "owner_hint": "integration/platform owner",
+      "requirement_id": "mcp-gateway",
+      "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/provider-api.json",
+      "source_uri_status": "placeholder",
+      "task": "mcp-gateway:provider-api",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "provider-api",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/runtime-policy-and-attestation/provider-api.json",
+      "owner_hint": "integration/platform owner",
+      "requirement_id": "runtime-policy-and-attestation",
+      "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/provider-api.json",
+      "source_uri_status": "placeholder",
+      "task": "runtime-policy-and-attestation:provider-api",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "provider-api",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/self-serve-onboarding/provider-api.json",
+      "owner_hint": "integration/platform owner",
+      "requirement_id": "self-serve-onboarding",
+      "snapshot_out": "artifacts/external-evidence-sources/self-serve-onboarding/provider-api.json",
+      "source_uri_status": "placeholder",
+      "task": "self-serve-onboarding:provider-api",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "provider-api",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/provider-api.json",
+      "owner_hint": "integration/platform owner",
+      "requirement_id": "shadow-replay-temporal-holdout",
+      "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/provider-api.json",
+      "source_uri_status": "placeholder",
+      "task": "shadow-replay-temporal-holdout:provider-api",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "provider-api",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/provider-api.json",
+      "owner_hint": "integration/platform owner",
+      "requirement_id": "trust-network-procurement-and-marketplace",
+      "snapshot_out": "artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/provider-api.json",
+      "source_uri_status": "placeholder",
+      "task": "trust-network-procurement-and-marketplace:provider-api",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "regulator",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/regulator.json",
+      "owner_hint": "legal/compliance owner",
+      "requirement_id": "auditor-and-review-portal",
+      "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/regulator.json",
+      "source_uri_status": "placeholder",
+      "task": "auditor-and-review-portal:regulator",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "regulator",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/regulator.json",
+      "owner_hint": "legal/compliance owner",
+      "requirement_id": "compliance-mapper-and-eu-ai-act",
+      "snapshot_out": "artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/regulator.json",
+      "source_uri_status": "placeholder",
+      "task": "compliance-mapper-and-eu-ai-act:regulator",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "regulator",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/regulator.json",
+      "owner_hint": "legal/compliance owner",
+      "requirement_id": "design-partner-pilot-exit-criteria",
+      "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/regulator.json",
+      "source_uri_status": "placeholder",
+      "task": "design-partner-pilot-exit-criteria:regulator",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "regulator",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/roadmap-phase-scoreboard/regulator.json",
+      "owner_hint": "legal/compliance owner",
+      "requirement_id": "roadmap-phase-scoreboard",
+      "snapshot_out": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/regulator.json",
+      "source_uri_status": "placeholder",
+      "task": "roadmap-phase-scoreboard:regulator",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "regulator",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/vertical-packs/regulator.json",
+      "owner_hint": "legal/compliance owner",
+      "requirement_id": "vertical-packs",
+      "snapshot_out": "artifacts/external-evidence-sources/vertical-packs/regulator.json",
+      "source_uri_status": "placeholder",
+      "task": "vertical-packs:regulator",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "ci-run",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/ci-run.json",
+      "owner_hint": "release engineering",
+      "requirement_id": "byoc-self-hosted",
+      "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/ci-run.json",
+      "source_uri_status": "placeholder",
+      "task": "byoc-self-hosted:ci-run",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "ci-run",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/cicd-provider-approvals/ci-run.json",
+      "owner_hint": "release engineering",
+      "requirement_id": "cicd-provider-approvals",
+      "snapshot_out": "artifacts/external-evidence-sources/cicd-provider-approvals/ci-run.json",
+      "source_uri_status": "placeholder",
+      "task": "cicd-provider-approvals:ci-run",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "ci-run",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/framework-adapters/ci-run.json",
+      "owner_hint": "release engineering",
+      "requirement_id": "framework-adapters",
+      "snapshot_out": "artifacts/external-evidence-sources/framework-adapters/ci-run.json",
+      "source_uri_status": "placeholder",
+      "task": "framework-adapters:ci-run",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "ci-run",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/ci-run.json",
+      "owner_hint": "release engineering",
+      "requirement_id": "insurer-api-and-actuarial-products",
+      "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/ci-run.json",
+      "source_uri_status": "placeholder",
+      "task": "insurer-api-and-actuarial-products:ci-run",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "ci-run",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/ci-run.json",
+      "owner_hint": "release engineering",
+      "requirement_id": "mcp-gateway",
+      "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/ci-run.json",
+      "source_uri_status": "placeholder",
+      "task": "mcp-gateway:ci-run",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "ci-run",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/product-scope-discipline/ci-run.json",
+      "owner_hint": "release engineering",
+      "requirement_id": "product-scope-discipline",
+      "snapshot_out": "artifacts/external-evidence-sources/product-scope-discipline/ci-run.json",
+      "source_uri_status": "placeholder",
+      "task": "product-scope-discipline:ci-run",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "ci-run",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/roadmap-phase-scoreboard/ci-run.json",
+      "owner_hint": "release engineering",
+      "requirement_id": "roadmap-phase-scoreboard",
+      "snapshot_out": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/ci-run.json",
+      "source_uri_status": "placeholder",
+      "task": "roadmap-phase-scoreboard:ci-run",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "ci-run",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/runtime-policy-and-attestation/ci-run.json",
+      "owner_hint": "release engineering",
+      "requirement_id": "runtime-policy-and-attestation",
+      "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/ci-run.json",
+      "source_uri_status": "placeholder",
+      "task": "runtime-policy-and-attestation:ci-run",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "insurer",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/insurer.json",
+      "owner_hint": "risk/insurance owner",
+      "requirement_id": "design-partner-pilot-exit-criteria",
+      "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/insurer.json",
+      "source_uri_status": "placeholder",
+      "task": "design-partner-pilot-exit-criteria:insurer",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "insurer",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/insurer.json",
+      "owner_hint": "risk/insurance owner",
+      "requirement_id": "insurer-api-and-actuarial-products",
+      "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/insurer.json",
+      "source_uri_status": "placeholder",
+      "task": "insurer-api-and-actuarial-products:insurer",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "insurer",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/roadmap-phase-scoreboard/insurer.json",
+      "owner_hint": "risk/insurance owner",
+      "requirement_id": "roadmap-phase-scoreboard",
+      "snapshot_out": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/insurer.json",
+      "source_uri_status": "placeholder",
+      "task": "roadmap-phase-scoreboard:insurer",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "insurer",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/vertical-packs/insurer.json",
+      "owner_hint": "risk/insurance owner",
+      "requirement_id": "vertical-packs",
+      "snapshot_out": "artifacts/external-evidence-sources/vertical-packs/insurer.json",
+      "source_uri_status": "placeholder",
+      "task": "vertical-packs:insurer",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "kms-hsm",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/kms-hsm.json",
+      "owner_hint": "security/platform KMS owner",
+      "requirement_id": "auditor-and-review-portal",
+      "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/kms-hsm.json",
+      "source_uri_status": "placeholder",
+      "task": "auditor-and-review-portal:kms-hsm",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "kms-hsm",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/kms-hsm.json",
+      "owner_hint": "security/platform KMS owner",
+      "requirement_id": "byoc-self-hosted",
+      "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/kms-hsm.json",
+      "source_uri_status": "placeholder",
+      "task": "byoc-self-hosted:kms-hsm",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "kms-hsm",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/kms-hsm.json",
+      "owner_hint": "security/platform KMS owner",
+      "requirement_id": "insurer-api-and-actuarial-products",
+      "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/kms-hsm.json",
+      "source_uri_status": "placeholder",
+      "task": "insurer-api-and-actuarial-products:kms-hsm",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "kms-hsm",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/kms-hsm.json",
+      "owner_hint": "security/platform KMS owner",
+      "requirement_id": "mcp-gateway",
+      "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/kms-hsm.json",
+      "source_uri_status": "placeholder",
+      "task": "mcp-gateway:kms-hsm",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "kms-hsm",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/runtime-policy-and-attestation/kms-hsm.json",
+      "owner_hint": "security/platform KMS owner",
+      "requirement_id": "runtime-policy-and-attestation",
+      "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/kms-hsm.json",
+      "source_uri_status": "placeholder",
+      "task": "runtime-policy-and-attestation:kms-hsm",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "kms-hsm",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/kms-hsm.json",
+      "owner_hint": "security/platform KMS owner",
+      "requirement_id": "shadow-replay-temporal-holdout",
+      "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/kms-hsm.json",
+      "source_uri_status": "placeholder",
+      "task": "shadow-replay-temporal-holdout:kms-hsm",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "kms-hsm",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/kms-hsm.json",
+      "owner_hint": "security/platform KMS owner",
+      "requirement_id": "standards-track-and-auditor-ecosystem",
+      "snapshot_out": "artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/kms-hsm.json",
+      "source_uri_status": "placeholder",
+      "task": "standards-track-and-auditor-ecosystem:kms-hsm",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "hosted-service",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/hosted-service.json",
+      "owner_hint": "service owner",
+      "requirement_id": "auditor-and-review-portal",
+      "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/hosted-service.json",
+      "source_uri_status": "placeholder",
+      "task": "auditor-and-review-portal:hosted-service",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "hosted-service",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/cicd-provider-approvals/hosted-service.json",
+      "owner_hint": "service owner",
+      "requirement_id": "cicd-provider-approvals",
+      "snapshot_out": "artifacts/external-evidence-sources/cicd-provider-approvals/hosted-service.json",
+      "source_uri_status": "placeholder",
+      "task": "cicd-provider-approvals:hosted-service",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "hosted-service",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/framework-adapters/hosted-service.json",
+      "owner_hint": "service owner",
+      "requirement_id": "framework-adapters",
+      "snapshot_out": "artifacts/external-evidence-sources/framework-adapters/hosted-service.json",
+      "source_uri_status": "placeholder",
+      "task": "framework-adapters:hosted-service",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "hosted-service",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/hosted-service.json",
+      "owner_hint": "service owner",
+      "requirement_id": "insurer-api-and-actuarial-products",
+      "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/hosted-service.json",
+      "source_uri_status": "placeholder",
+      "task": "insurer-api-and-actuarial-products:hosted-service",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "hosted-service",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/hosted-service.json",
+      "owner_hint": "service owner",
+      "requirement_id": "mcp-gateway",
+      "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/hosted-service.json",
+      "source_uri_status": "placeholder",
+      "task": "mcp-gateway:hosted-service",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "hosted-service",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/runtime-policy-and-attestation/hosted-service.json",
+      "owner_hint": "service owner",
+      "requirement_id": "runtime-policy-and-attestation",
+      "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/hosted-service.json",
+      "source_uri_status": "placeholder",
+      "task": "runtime-policy-and-attestation:hosted-service",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "hosted-service",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/self-serve-onboarding/hosted-service.json",
+      "owner_hint": "service owner",
+      "requirement_id": "self-serve-onboarding",
+      "snapshot_out": "artifacts/external-evidence-sources/self-serve-onboarding/hosted-service.json",
+      "source_uri_status": "placeholder",
+      "task": "self-serve-onboarding:hosted-service",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "hosted-service",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/hosted-service.json",
+      "owner_hint": "service owner",
+      "requirement_id": "trust-network-procurement-and-marketplace",
+      "snapshot_out": "artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/hosted-service.json",
+      "source_uri_status": "placeholder",
+      "task": "trust-network-procurement-and-marketplace:hosted-service",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "standards-body",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/standards-body.json",
+      "owner_hint": "standards/governance owner",
+      "requirement_id": "byoc-self-hosted",
+      "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/standards-body.json",
+      "source_uri_status": "placeholder",
+      "task": "byoc-self-hosted:standards-body",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "standards-body",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/standards-body.json",
+      "owner_hint": "standards/governance owner",
+      "requirement_id": "compliance-mapper-and-eu-ai-act",
+      "snapshot_out": "artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/standards-body.json",
+      "source_uri_status": "placeholder",
+      "task": "compliance-mapper-and-eu-ai-act:standards-body",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "standards-body",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/roadmap-phase-scoreboard/standards-body.json",
+      "owner_hint": "standards/governance owner",
+      "requirement_id": "roadmap-phase-scoreboard",
+      "snapshot_out": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/standards-body.json",
+      "source_uri_status": "placeholder",
+      "task": "roadmap-phase-scoreboard:standards-body",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "standards-body",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/standards-body.json",
+      "owner_hint": "standards/governance owner",
+      "requirement_id": "shadow-replay-temporal-holdout",
+      "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/standards-body.json",
+      "source_uri_status": "placeholder",
+      "task": "shadow-replay-temporal-holdout:standards-body",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "standards-body",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/standards-body.json",
+      "owner_hint": "standards/governance owner",
+      "requirement_id": "standards-track-and-auditor-ecosystem",
+      "snapshot_out": "artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/standards-body.json",
+      "source_uri_status": "placeholder",
+      "task": "standards-track-and-auditor-ecosystem:standards-body",
+      "task_status": "blocked"
+    },
+    {
+      "authority_kind": "standards-body",
+      "blocking_reasons": [
+        "placeholder-source-uri",
+        "missing-intake"
+      ],
+      "intake_out": "artifacts/external-evidence-intakes/trustai-own-compliance/standards-body.json",
+      "owner_hint": "standards/governance owner",
+      "requirement_id": "trustai-own-compliance",
+      "snapshot_out": "artifacts/external-evidence-sources/trustai-own-compliance/standards-body.json",
+      "source_uri_status": "placeholder",
+      "task": "trustai-own-compliance:standards-body",
+      "task_status": "blocked"
+    }
+  ],
+  "commands": {
+    "collect_after_fulfillment": "python -m trustai external-evidence-collect-batch <fulfilled-source-map.json> <manifest.json> <roadmap-audit.json> --root . --require-live-source-uris",
+    "fill_then_fulfill_source_map": "python -m trustai external-evidence-source-map-fulfill <source-map.json> <plan.json> --fulfillment-file <this-template.json> --require-live-source-uris --out <fulfilled-source-map.json>",
+    "rebuild_manifest_after_intakes": "python -m trustai external-evidence-manifest-from-intakes <plan.json> <manifest.json> <roadmap-audit.json> --intake-dir <intake-dir> --require-live-source-uris --require-source-snapshot-artifacts"
+  },
+  "filters": {
+    "include_closed": false,
+    "owner_hint": null
+  },
+  "fulfillments": [
+    {
+      "description": "identity-provider evidence for agent-inventory-and-identity",
+      "source_uri": "TODO://authority/agent-inventory-and-identity/identity-provider",
+      "task": "agent-inventory-and-identity:identity-provider"
+    },
+    {
+      "description": "identity-provider evidence for auditor-and-review-portal",
+      "source_uri": "TODO://authority/auditor-and-review-portal/identity-provider",
+      "task": "auditor-and-review-portal:identity-provider"
+    },
+    {
+      "description": "identity-provider evidence for cicd-provider-approvals",
+      "source_uri": "TODO://authority/cicd-provider-approvals/identity-provider",
+      "task": "cicd-provider-approvals:identity-provider"
+    },
+    {
+      "description": "identity-provider evidence for insurer-api-and-actuarial-products",
+      "source_uri": "TODO://authority/insurer-api-and-actuarial-products/identity-provider",
+      "task": "insurer-api-and-actuarial-products:identity-provider"
+    },
+    {
+      "description": "identity-provider evidence for runtime-policy-and-attestation",
+      "source_uri": "TODO://authority/runtime-policy-and-attestation/identity-provider",
+      "task": "runtime-policy-and-attestation:identity-provider"
+    },
+    {
+      "description": "identity-provider evidence for self-serve-onboarding",
+      "source_uri": "TODO://authority/self-serve-onboarding/identity-provider",
+      "task": "self-serve-onboarding:identity-provider"
+    },
+    {
+      "description": "identity-provider evidence for shadow-replay-temporal-holdout",
+      "source_uri": "TODO://authority/shadow-replay-temporal-holdout/identity-provider",
+      "task": "shadow-replay-temporal-holdout:identity-provider"
+    },
+    {
+      "description": "identity-provider evidence for trust-network-procurement-and-marketplace",
+      "source_uri": "TODO://authority/trust-network-procurement-and-marketplace/identity-provider",
+      "task": "trust-network-procurement-and-marketplace:identity-provider"
+    },
+    {
+      "description": "cloud-object-lock evidence for byoc-self-hosted",
+      "source_uri": "TODO://authority/byoc-self-hosted/cloud-object-lock",
+      "task": "byoc-self-hosted:cloud-object-lock"
+    },
+    {
+      "description": "customer evidence for byoc-self-hosted",
+      "source_uri": "TODO://authority/byoc-self-hosted/customer",
+      "task": "byoc-self-hosted:customer"
+    },
+    {
+      "description": "customer evidence for design-partner-pilot-exit-criteria",
+      "source_uri": "TODO://authority/design-partner-pilot-exit-criteria/customer",
+      "task": "design-partner-pilot-exit-criteria:customer"
+    },
+    {
+      "description": "customer evidence for insurer-api-and-actuarial-products",
+      "source_uri": "TODO://authority/insurer-api-and-actuarial-products/customer",
+      "task": "insurer-api-and-actuarial-products:customer"
+    },
+    {
+      "description": "customer evidence for product-scope-discipline",
+      "source_uri": "TODO://authority/product-scope-discipline/customer",
+      "task": "product-scope-discipline:customer"
+    },
+    {
+      "description": "customer evidence for roadmap-phase-scoreboard",
+      "source_uri": "TODO://authority/roadmap-phase-scoreboard/customer",
+      "task": "roadmap-phase-scoreboard:customer"
+    },
+    {
+      "description": "customer evidence for state-of-agent-reliability-report",
+      "source_uri": "TODO://authority/state-of-agent-reliability-report/customer",
+      "task": "state-of-agent-reliability-report:customer"
+    },
+    {
+      "description": "customer evidence for trust-network-procurement-and-marketplace",
+      "source_uri": "TODO://authority/trust-network-procurement-and-marketplace/customer",
+      "task": "trust-network-procurement-and-marketplace:customer"
+    },
+    {
+      "description": "customer evidence for trustai-own-compliance",
+      "source_uri": "TODO://authority/trustai-own-compliance/customer",
+      "task": "trustai-own-compliance:customer"
+    },
+    {
+      "description": "customer evidence for vertical-packs",
+      "source_uri": "TODO://authority/vertical-packs/customer",
+      "task": "vertical-packs:customer"
+    },
+    {
+      "description": "provider-api evidence for agent-inventory-and-identity",
+      "source_uri": "TODO://authority/agent-inventory-and-identity/provider-api",
+      "task": "agent-inventory-and-identity:provider-api"
+    },
+    {
+      "description": "provider-api evidence for auditor-and-review-portal",
+      "source_uri": "TODO://authority/auditor-and-review-portal/provider-api",
+      "task": "auditor-and-review-portal:provider-api"
+    },
+    {
+      "description": "provider-api evidence for byoc-self-hosted",
+      "source_uri": "TODO://authority/byoc-self-hosted/provider-api",
+      "task": "byoc-self-hosted:provider-api"
+    },
+    {
+      "description": "provider-api evidence for cicd-provider-approvals",
+      "source_uri": "TODO://authority/cicd-provider-approvals/provider-api",
+      "task": "cicd-provider-approvals:provider-api"
+    },
+    {
+      "description": "provider-api evidence for compliance-mapper-and-eu-ai-act",
+      "source_uri": "TODO://authority/compliance-mapper-and-eu-ai-act/provider-api",
+      "task": "compliance-mapper-and-eu-ai-act:provider-api"
+    },
+    {
+      "description": "provider-api evidence for framework-adapters",
+      "source_uri": "TODO://authority/framework-adapters/provider-api",
+      "task": "framework-adapters:provider-api"
+    },
+    {
+      "description": "provider-api evidence for insurer-api-and-actuarial-products",
+      "source_uri": "TODO://authority/insurer-api-and-actuarial-products/provider-api",
+      "task": "insurer-api-and-actuarial-products:provider-api"
+    },
+    {
+      "description": "provider-api evidence for mcp-gateway",
+      "source_uri": "TODO://authority/mcp-gateway/provider-api",
+      "task": "mcp-gateway:provider-api"
+    },
+    {
+      "description": "provider-api evidence for runtime-policy-and-attestation",
+      "source_uri": "TODO://authority/runtime-policy-and-attestation/provider-api",
+      "task": "runtime-policy-and-attestation:provider-api"
+    },
+    {
+      "description": "provider-api evidence for self-serve-onboarding",
+      "source_uri": "TODO://authority/self-serve-onboarding/provider-api",
+      "task": "self-serve-onboarding:provider-api"
+    },
+    {
+      "description": "provider-api evidence for shadow-replay-temporal-holdout",
+      "source_uri": "TODO://authority/shadow-replay-temporal-holdout/provider-api",
+      "task": "shadow-replay-temporal-holdout:provider-api"
+    },
+    {
+      "description": "provider-api evidence for trust-network-procurement-and-marketplace",
+      "source_uri": "TODO://authority/trust-network-procurement-and-marketplace/provider-api",
+      "task": "trust-network-procurement-and-marketplace:provider-api"
+    },
+    {
+      "description": "regulator evidence for auditor-and-review-portal",
+      "source_uri": "TODO://authority/auditor-and-review-portal/regulator",
+      "task": "auditor-and-review-portal:regulator"
+    },
+    {
+      "description": "regulator evidence for compliance-mapper-and-eu-ai-act",
+      "source_uri": "TODO://authority/compliance-mapper-and-eu-ai-act/regulator",
+      "task": "compliance-mapper-and-eu-ai-act:regulator"
+    },
+    {
+      "description": "regulator evidence for design-partner-pilot-exit-criteria",
+      "source_uri": "TODO://authority/design-partner-pilot-exit-criteria/regulator",
+      "task": "design-partner-pilot-exit-criteria:regulator"
+    },
+    {
+      "description": "regulator evidence for roadmap-phase-scoreboard",
+      "source_uri": "TODO://authority/roadmap-phase-scoreboard/regulator",
+      "task": "roadmap-phase-scoreboard:regulator"
+    },
+    {
+      "description": "regulator evidence for vertical-packs",
+      "source_uri": "TODO://authority/vertical-packs/regulator",
+      "task": "vertical-packs:regulator"
+    },
+    {
+      "description": "ci-run evidence for byoc-self-hosted",
+      "source_uri": "TODO://authority/byoc-self-hosted/ci-run",
+      "task": "byoc-self-hosted:ci-run"
+    },
+    {
+      "description": "ci-run evidence for cicd-provider-approvals",
+      "source_uri": "TODO://authority/cicd-provider-approvals/ci-run",
+      "task": "cicd-provider-approvals:ci-run"
+    },
+    {
+      "description": "ci-run evidence for framework-adapters",
+      "source_uri": "TODO://authority/framework-adapters/ci-run",
+      "task": "framework-adapters:ci-run"
+    },
+    {
+      "description": "ci-run evidence for insurer-api-and-actuarial-products",
+      "source_uri": "TODO://authority/insurer-api-and-actuarial-products/ci-run",
+      "task": "insurer-api-and-actuarial-products:ci-run"
+    },
+    {
+      "description": "ci-run evidence for mcp-gateway",
+      "source_uri": "TODO://authority/mcp-gateway/ci-run",
+      "task": "mcp-gateway:ci-run"
+    },
+    {
+      "description": "ci-run evidence for product-scope-discipline",
+      "source_uri": "TODO://authority/product-scope-discipline/ci-run",
+      "task": "product-scope-discipline:ci-run"
+    },
+    {
+      "description": "ci-run evidence for roadmap-phase-scoreboard",
+      "source_uri": "TODO://authority/roadmap-phase-scoreboard/ci-run",
+      "task": "roadmap-phase-scoreboard:ci-run"
+    },
+    {
+      "description": "ci-run evidence for runtime-policy-and-attestation",
+      "source_uri": "TODO://authority/runtime-policy-and-attestation/ci-run",
+      "task": "runtime-policy-and-attestation:ci-run"
+    },
+    {
+      "description": "insurer evidence for design-partner-pilot-exit-criteria",
+      "source_uri": "TODO://authority/design-partner-pilot-exit-criteria/insurer",
+      "task": "design-partner-pilot-exit-criteria:insurer"
+    },
+    {
+      "description": "insurer evidence for insurer-api-and-actuarial-products",
+      "source_uri": "TODO://authority/insurer-api-and-actuarial-products/insurer",
+      "task": "insurer-api-and-actuarial-products:insurer"
+    },
+    {
+      "description": "insurer evidence for roadmap-phase-scoreboard",
+      "source_uri": "TODO://authority/roadmap-phase-scoreboard/insurer",
+      "task": "roadmap-phase-scoreboard:insurer"
+    },
+    {
+      "description": "insurer evidence for vertical-packs",
+      "source_uri": "TODO://authority/vertical-packs/insurer",
+      "task": "vertical-packs:insurer"
+    },
+    {
+      "description": "kms-hsm evidence for auditor-and-review-portal",
+      "source_uri": "TODO://authority/auditor-and-review-portal/kms-hsm",
+      "task": "auditor-and-review-portal:kms-hsm"
+    },
+    {
+      "description": "kms-hsm evidence for byoc-self-hosted",
+      "source_uri": "TODO://authority/byoc-self-hosted/kms-hsm",
+      "task": "byoc-self-hosted:kms-hsm"
+    },
+    {
+      "description": "kms-hsm evidence for insurer-api-and-actuarial-products",
+      "source_uri": "TODO://authority/insurer-api-and-actuarial-products/kms-hsm",
+      "task": "insurer-api-and-actuarial-products:kms-hsm"
+    },
+    {
+      "description": "kms-hsm evidence for mcp-gateway",
+      "source_uri": "TODO://authority/mcp-gateway/kms-hsm",
+      "task": "mcp-gateway:kms-hsm"
+    },
+    {
+      "description": "kms-hsm evidence for runtime-policy-and-attestation",
+      "source_uri": "TODO://authority/runtime-policy-and-attestation/kms-hsm",
+      "task": "runtime-policy-and-attestation:kms-hsm"
+    },
+    {
+      "description": "kms-hsm evidence for shadow-replay-temporal-holdout",
+      "source_uri": "TODO://authority/shadow-replay-temporal-holdout/kms-hsm",
+      "task": "shadow-replay-temporal-holdout:kms-hsm"
+    },
+    {
+      "description": "kms-hsm evidence for standards-track-and-auditor-ecosystem",
+      "source_uri": "TODO://authority/standards-track-and-auditor-ecosystem/kms-hsm",
+      "task": "standards-track-and-auditor-ecosystem:kms-hsm"
+    },
+    {
+      "description": "hosted-service evidence for auditor-and-review-portal",
+      "source_uri": "TODO://authority/auditor-and-review-portal/hosted-service",
+      "task": "auditor-and-review-portal:hosted-service"
+    },
+    {
+      "description": "hosted-service evidence for cicd-provider-approvals",
+      "source_uri": "TODO://authority/cicd-provider-approvals/hosted-service",
+      "task": "cicd-provider-approvals:hosted-service"
+    },
+    {
+      "description": "hosted-service evidence for framework-adapters",
+      "source_uri": "TODO://authority/framework-adapters/hosted-service",
+      "task": "framework-adapters:hosted-service"
+    },
+    {
+      "description": "hosted-service evidence for insurer-api-and-actuarial-products",
+      "source_uri": "TODO://authority/insurer-api-and-actuarial-products/hosted-service",
+      "task": "insurer-api-and-actuarial-products:hosted-service"
+    },
+    {
+      "description": "hosted-service evidence for mcp-gateway",
+      "source_uri": "TODO://authority/mcp-gateway/hosted-service",
+      "task": "mcp-gateway:hosted-service"
+    },
+    {
+      "description": "hosted-service evidence for runtime-policy-and-attestation",
+      "source_uri": "TODO://authority/runtime-policy-and-attestation/hosted-service",
+      "task": "runtime-policy-and-attestation:hosted-service"
+    },
+    {
+      "description": "hosted-service evidence for self-serve-onboarding",
+      "source_uri": "TODO://authority/self-serve-onboarding/hosted-service",
+      "task": "self-serve-onboarding:hosted-service"
+    },
+    {
+      "description": "hosted-service evidence for trust-network-procurement-and-marketplace",
+      "source_uri": "TODO://authority/trust-network-procurement-and-marketplace/hosted-service",
+      "task": "trust-network-procurement-and-marketplace:hosted-service"
+    },
+    {
+      "description": "standards-body evidence for byoc-self-hosted",
+      "source_uri": "TODO://authority/byoc-self-hosted/standards-body",
+      "task": "byoc-self-hosted:standards-body"
+    },
+    {
+      "description": "standards-body evidence for compliance-mapper-and-eu-ai-act",
+      "source_uri": "TODO://authority/compliance-mapper-and-eu-ai-act/standards-body",
+      "task": "compliance-mapper-and-eu-ai-act:standards-body"
+    },
+    {
+      "description": "standards-body evidence for roadmap-phase-scoreboard",
+      "source_uri": "TODO://authority/roadmap-phase-scoreboard/standards-body",
+      "task": "roadmap-phase-scoreboard:standards-body"
+    },
+    {
+      "description": "standards-body evidence for shadow-replay-temporal-holdout",
+      "source_uri": "TODO://authority/shadow-replay-temporal-holdout/standards-body",
+      "task": "shadow-replay-temporal-holdout:standards-body"
+    },
+    {
+      "description": "standards-body evidence for standards-track-and-auditor-ecosystem",
+      "source_uri": "TODO://authority/standards-track-and-auditor-ecosystem/standards-body",
+      "task": "standards-track-and-auditor-ecosystem:standards-body"
+    },
+    {
+      "description": "standards-body evidence for trustai-own-compliance",
+      "source_uri": "TODO://authority/trustai-own-compliance/standards-body",
+      "task": "trustai-own-compliance:standards-body"
+    }
+  ],
+  "generated_at": "2026-07-12T00:01:00Z",
+  "instructions": [
+    "Replace every TODO or placeholder fulfillments[*].source_uri with an authority-owned live source URI.",
+    "Keep fulfillments[*] restricted to fields accepted by external-evidence-source-map-fulfill; owner metadata is recorded under assignments.",
+    "Collect source snapshots and intake receipts after the fulfilled source map verifies with --require-live-source-uris."
+  ],
+  "limitations": [
+    "This template is a handoff artifact; it does not satisfy missing external authority evidence by itself.",
+    "Placeholder source URIs intentionally keep readiness blocked until owners replace them with live authority sources."
+  ],
+  "owner_fulfillment_template_id": "7d262e6618c4c0c11f9a69b4cf780f377174c60d7cb6d6f153f5b174093a11ac",
+  "schema": "trustai.external-evidence-owner-fulfillment-template/0.1",
+  "source_owner_packet_status": {
+    "generated_at": "2026-07-12T00:01:00Z",
+    "owner_packet_status_hash": "0cbd23ae3e845cfbfb93033e4dc0497e0c3cf748ab0287e79870431d092ad23b",
+    "owner_packet_status_id": "9e010f26d64c81f568f937a3f09229b1f64a42805a7d948d9e08b4db32634686",
+    "schema": "trustai.external-evidence-owner-packet-status/0.1"
+  },
+  "summary": {
+    "assignment_count": 68,
+    "blocked_task_count": 68,
+    "closed_task_count": 0,
+    "fulfillment_count": 68,
+    "live_source_uri_count": 0,
+    "missing_intake_count": 68,
+    "open_task_count": 0,
+    "owner_count": 10,
+    "owners": [
+      "IAM/identity owner",
+      "cloud storage owner",
+      "customer success/account owner",
+      "integration/platform owner",
+      "legal/compliance owner",
+      "release engineering",
+      "risk/insurance owner",
+      "security/platform KMS owner",
+      "service owner",
+      "standards/governance owner"
+    ],
+    "placeholder_source_uri_count": 68
+  }
+}

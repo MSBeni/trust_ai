@@ -225,6 +225,16 @@ def refresh_retained_artifacts() -> None:
         path("remaining-external-evidence-owner-packet-status.md"),
     )
     run(
+        "external-evidence-owner-fulfillment-template",
+        path("remaining-external-evidence-owner-packet-status.json"),
+        "--generated-at",
+        COLLECTION_TIME,
+        "--out",
+        path("remaining-external-evidence-owner-fulfillment-template.json"),
+        "--markdown",
+        path("remaining-external-evidence-owner-fulfillment-template.md"),
+    )
+    run(
         "external-evidence-readiness",
         path("retained-external-evidence-gap-report.json"),
         path("retained-external-evidence-manifest.json"),
@@ -483,6 +493,11 @@ def verify_retained_artifacts() -> None:
         ".",
     )
     run(
+        "external-evidence-owner-fulfillment-template-verify",
+        path("remaining-external-evidence-owner-fulfillment-template.json"),
+        path("remaining-external-evidence-owner-packet-status.json"),
+    )
+    run(
         "external-evidence-readiness-verify",
         path("retained-external-evidence-readiness.json"),
         path("retained-external-evidence-gap-report.json"),
@@ -507,6 +522,7 @@ def assert_retained_counts() -> None:
     work_package = json_load(DIR / "remaining-external-evidence-work-package.json")
     owner_packets = json_load(DIR / "remaining-external-evidence-owner-packets.json")
     owner_packet_status = json_load(DIR / "remaining-external-evidence-owner-packet-status.json")
+    owner_fulfillment_template = json_load(DIR / "remaining-external-evidence-owner-fulfillment-template.json")
     readiness = json_load(DIR / "retained-external-evidence-readiness.json")
     checks = [
         (manifest["summary"]["covered_authority_kind_count"], 3, "manifest covered authority kind count"),
@@ -523,6 +539,8 @@ def assert_retained_counts() -> None:
         (owner_packet_status["summary"]["task_count"], 68, "owner packet status task count"),
         (owner_packet_status["summary"]["closed_task_count"], 0, "owner packet status closed task count"),
         (owner_packet_status["summary"]["blocked_task_count"], 68, "owner packet status blocked task count"),
+        (owner_fulfillment_template["summary"]["fulfillment_count"], 68, "owner fulfillment template count"),
+        (owner_fulfillment_template["summary"]["placeholder_source_uri_count"], 68, "owner fulfillment template placeholder URI count"),
         (readiness["summary"]["readiness_status"], "not-ready", "readiness status"),
     ]
     for actual, expected, label in checks:

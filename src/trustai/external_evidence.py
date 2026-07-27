@@ -28,6 +28,7 @@ EXTERNAL_EVIDENCE_GAP_REPORT_SCHEMA = "trustai.external-evidence-gap-report/0.1"
 EXTERNAL_EVIDENCE_WORK_PACKAGE_SCHEMA = "trustai.external-evidence-work-package/0.1"
 EXTERNAL_EVIDENCE_OWNER_PACKET_SCHEMA = "trustai.external-evidence-owner-packet-bundle/0.1"
 EXTERNAL_EVIDENCE_OWNER_PACKET_STATUS_SCHEMA = "trustai.external-evidence-owner-packet-status/0.1"
+EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_TEMPLATE_SCHEMA = "trustai.external-evidence-owner-fulfillment-template/0.1"
 EXTERNAL_EVIDENCE_READINESS_SCHEMA = "trustai.external-evidence-readiness/0.1"
 EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA = "trustai.external-evidence-git-remote-ref-export/0.1"
 
@@ -227,6 +228,13 @@ class ExternalEvidenceOwnerPacketVerification:
 
 @dataclass
 class ExternalEvidenceOwnerPacketStatusVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class ExternalEvidenceOwnerFulfillmentTemplateVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -2009,6 +2017,167 @@ def verify_external_evidence_owner_packet_status(
         if summary.get("missing_intake_count"):
             warnings.append(f"owner packet status contains {summary.get('missing_intake_count')} tasks without intake receipts")
     return ExternalEvidenceOwnerPacketStatusVerification(ok=not errors, errors=errors, warnings=warnings)
+
+def _external_evidence_owner_fulfillment_selected_tasks(
+    status_report: dict[str, Any],
+    *,
+    owner_hint: str | None,
+    include_closed: bool,
+) -> list[dict[str, Any]]:
+    selected: list[dict[str, Any]] = []
+    tasks = status_report.get("tasks", [])
+    if not isinstance(tasks, list):
+        return selected
+    for task in tasks:
+        if not isinstance(task, dict):
+            continue
+        if owner_hint and str(task.get("owner_hint") or "") != owner_hint:
+            continue
+        if not include_closed and task.get("task_status") == "closed":
+            continue
+        selected.append(task)
+    selected.sort(key=lambda item: (str(item.get("owner_hint") or ""), str(item.get("unit_ref") or item.get("task_ref") or "")))
+    return selected
+
+
+def _external_evidence_owner_fulfillment_description(task: dict[str, Any]) -> str:
+    requirement_id = str(task.get("requirement_id") or "").strip()
+    authority_kind = str(task.get("authority_kind") or "").strip()
+    if requirement_id and authority_kind:
+        return f"{authority_kind} evidence for {requirement_id}"
+    return "External authority evidence"
+
+
+def _external_evidence_owner_fulfillment_placeholder(task: dict[str, Any]) -> str:
+    requirement_id = str(task.get("requirement_id") or "unknown-requirement").strip() or "unknown-requirement"
+    authority_kind = str(task.get("authority_kind") or "unknown-authority").strip() or "unknown-authority"
+    return f"TODO://authority/{requirement_id}/{authority_kind}"
+
+
+def _external_evidence_owner_fulfillment_record(task: dict[str, Any]) -> dict[str, Any]:
+    task_ref = str(task.get("unit_ref") or task.get("task_ref") or "").strip()
+    if not task_ref:
+        task_ref = _external_evidence_item_unit_ref(task)
+    source_uri = str(task.get("source_uri") or "").strip() or _external_evidence_owner_fulfillment_placeholder(task)
+    description = _external_evidence_owner_fulfillment_description(task)
+    return {"task": task_ref, "source_uri": source_uri, "description": description}
+
+
+def _external_evidence_owner_assignment_record(task: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "task": str(task.get("unit_ref") or task.get("task_ref") or ""),
+        "owner_hint": task.get("owner_hint"),
+        "requirement_id": task.get("requirement_id"),
+        "authority_kind": task.get("authority_kind"),
+        "task_status": task.get("task_status"),
+        "source_uri_status": task.get("source_uri_status"),
+        "blocking_reasons": list(task.get("blocking_reasons") or []),
+        "snapshot_out": task.get("snapshot_out"),
+        "intake_out": task.get("intake_out"),
+    }
+
+
+def build_external_evidence_owner_fulfillment_template(
+    status_report: dict[str, Any],
+    *,
+    owner_hint: str | None = None,
+    include_closed: bool = False,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    if status_report.get("schema") != EXTERNAL_EVIDENCE_OWNER_PACKET_STATUS_SCHEMA:
+        raise ValueError(f"unsupported external evidence owner packet status schema: {status_report.get('schema')}")
+    if status_report.get("owner_packet_status_id") != content_hash(without_keys(status_report, "owner_packet_status_id")):
+        raise ValueError("owner_packet_status_id does not match canonical owner packet status body")
+    owner_filter = str(owner_hint).strip() if owner_hint else None
+    selected_tasks = _external_evidence_owner_fulfillment_selected_tasks(
+        status_report,
+        owner_hint=owner_filter,
+        include_closed=include_closed,
+    )
+    fulfillments = [_external_evidence_owner_fulfillment_record(task) for task in selected_tasks]
+    assignments = [_external_evidence_owner_assignment_record(task) for task in selected_tasks]
+    owner_hints = sorted({str(task.get("owner_hint") or "unknown") for task in selected_tasks})
+    blocked_count = sum(1 for task in selected_tasks if task.get("task_status") == "blocked")
+    open_count = sum(1 for task in selected_tasks if task.get("task_status") == "open")
+    closed_count = sum(1 for task in selected_tasks if task.get("task_status") == "closed")
+    placeholder_count = sum(1 for task in selected_tasks if task.get("source_uri_status") == "placeholder")
+    missing_intake_count = sum(1 for task in selected_tasks if "missing-intake" in task.get("blocking_reasons", []))
+    body = {
+        "schema": EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_TEMPLATE_SCHEMA,
+        "generated_at": generated_at or utc_now(),
+        "source_owner_packet_status": {
+            "owner_packet_status_id": status_report.get("owner_packet_status_id"),
+            "owner_packet_status_hash": content_hash(status_report),
+            "schema": status_report.get("schema"),
+            "generated_at": status_report.get("generated_at"),
+        },
+        "filters": {"owner_hint": owner_filter, "include_closed": include_closed},
+        "summary": {
+            "fulfillment_count": len(fulfillments),
+            "assignment_count": len(assignments),
+            "owner_count": len(owner_hints),
+            "owners": owner_hints,
+            "blocked_task_count": blocked_count,
+            "open_task_count": open_count,
+            "closed_task_count": closed_count,
+            "placeholder_source_uri_count": placeholder_count,
+            "live_source_uri_count": len(selected_tasks) - placeholder_count,
+            "missing_intake_count": missing_intake_count,
+        },
+        "fulfillments": fulfillments,
+        "assignments": assignments,
+        "commands": {
+            "fill_then_fulfill_source_map": "python -m trustai external-evidence-source-map-fulfill <source-map.json> <plan.json> --fulfillment-file <this-template.json> --require-live-source-uris --out <fulfilled-source-map.json>",
+            "collect_after_fulfillment": "python -m trustai external-evidence-collect-batch <fulfilled-source-map.json> <manifest.json> <roadmap-audit.json> --root . --require-live-source-uris",
+            "rebuild_manifest_after_intakes": "python -m trustai external-evidence-manifest-from-intakes <plan.json> <manifest.json> <roadmap-audit.json> --intake-dir <intake-dir> --require-live-source-uris --require-source-snapshot-artifacts",
+        },
+        "instructions": [
+            "Replace every TODO or placeholder fulfillments[*].source_uri with an authority-owned live source URI.",
+            "Keep fulfillments[*] restricted to fields accepted by external-evidence-source-map-fulfill; owner metadata is recorded under assignments.",
+            "Collect source snapshots and intake receipts after the fulfilled source map verifies with --require-live-source-uris.",
+        ],
+        "limitations": [
+            "This template is a handoff artifact; it does not satisfy missing external authority evidence by itself.",
+            "Placeholder source URIs intentionally keep readiness blocked until owners replace them with live authority sources.",
+        ],
+    }
+    return {**body, "owner_fulfillment_template_id": content_hash(body)}
+
+
+def verify_external_evidence_owner_fulfillment_template(
+    template: dict[str, Any],
+    status_report: dict[str, Any],
+) -> ExternalEvidenceOwnerFulfillmentTemplateVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if template.get("schema") != EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_TEMPLATE_SCHEMA:
+        errors.append(f"unsupported external evidence owner fulfillment template schema: {template.get('schema')}")
+    if template.get("owner_fulfillment_template_id") != content_hash(without_keys(template, "owner_fulfillment_template_id")):
+        errors.append("owner_fulfillment_template_id does not match canonical owner fulfillment template body")
+    source = template.get("source_owner_packet_status") if isinstance(template.get("source_owner_packet_status"), dict) else {}
+    if source.get("owner_packet_status_id") != status_report.get("owner_packet_status_id"):
+        errors.append("owner fulfillment template source owner_packet_status_id does not match supplied status report")
+    if source.get("owner_packet_status_hash") != content_hash(status_report):
+        errors.append("owner fulfillment template source owner_packet_status_hash does not match supplied status report")
+    filters = template.get("filters") if isinstance(template.get("filters"), dict) else {}
+    try:
+        expected = build_external_evidence_owner_fulfillment_template(
+            status_report,
+            owner_hint=filters.get("owner_hint"),
+            include_closed=bool(filters.get("include_closed")),
+            generated_at=str(template.get("generated_at") or ""),
+        )
+    except ValueError as exc:
+        errors.append(str(exc))
+    else:
+        if without_keys(template, "owner_fulfillment_template_id") != without_keys(expected, "owner_fulfillment_template_id"):
+            errors.append("owner fulfillment template body does not match supplied owner packet status report")
+    summary = template.get("summary", {}) if isinstance(template.get("summary"), dict) else {}
+    if summary.get("placeholder_source_uri_count"):
+        warnings.append(f"owner fulfillment template contains {summary.get('placeholder_source_uri_count')} placeholder source_uri values")
+    if summary.get("missing_intake_count"):
+        warnings.append(f"owner fulfillment template contains {summary.get('missing_intake_count')} tasks without intake receipts")
+    return ExternalEvidenceOwnerFulfillmentTemplateVerification(ok=not errors, errors=errors, warnings=warnings)
 def _external_evidence_readiness_check(check_id: str, ok: bool, summary: str) -> dict[str, Any]:
     return {"id": check_id, "status": "passed" if ok else "failed", "summary": summary}
 
@@ -3561,6 +3730,21 @@ def write_external_evidence_owner_packet_status_markdown(path: str | Path, statu
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(render_external_evidence_owner_packet_status_markdown(status_report), encoding="utf-8")
+
+def write_external_evidence_owner_fulfillment_template(path: str | Path, template: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(template, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_external_evidence_owner_fulfillment_template(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def write_external_evidence_owner_fulfillment_template_markdown(path: str | Path, template: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_external_evidence_owner_fulfillment_template_markdown(template), encoding="utf-8")
 def write_external_evidence_readiness_report(path: str | Path, report: dict[str, Any]) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -3862,6 +4046,78 @@ def render_external_evidence_owner_packet_status_markdown(status_report: dict[st
                 + " |"
             )
     limitations = status_report.get("limitations", [])
+    lines.extend(["", "## Limitations", ""])
+    if isinstance(limitations, list) and limitations:
+        lines.extend(f"- {_markdown_cell(item)}" for item in limitations)
+    else:
+        lines.append("- None")
+    return "\n".join(lines).rstrip() + "\n"
+
+def render_external_evidence_owner_fulfillment_template_markdown(template: dict[str, Any]) -> str:
+    summary = template.get("summary", {}) if isinstance(template.get("summary"), dict) else {}
+    lines = [
+        "# External Evidence Owner Fulfillment Template",
+        "",
+        f"- Template ID: `{template.get('owner_fulfillment_template_id')}`",
+        f"- Generated at: `{template.get('generated_at')}`",
+        f"- Fulfillments: {summary.get('fulfillment_count', 0)}",
+        f"- Owners: {summary.get('owner_count', 0)}",
+        f"- Blocked tasks: {summary.get('blocked_task_count', 0)}",
+        f"- Open tasks: {summary.get('open_task_count', 0)}",
+        f"- Closed tasks: {summary.get('closed_task_count', 0)}",
+        f"- Placeholder source URIs: {summary.get('placeholder_source_uri_count', 0)}",
+        f"- Missing intakes: {summary.get('missing_intake_count', 0)}",
+        "",
+        "## Fulfillments",
+        "",
+        "| Task | Source URI | Description |",
+        "|---|---|---|",
+    ]
+    fulfillments = template.get("fulfillments", [])
+    if isinstance(fulfillments, list):
+        for item in fulfillments:
+            if not isinstance(item, dict):
+                continue
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        f"`{_markdown_cell(item.get('task'))}`",
+                        _markdown_cell(item.get("source_uri")),
+                        _markdown_cell(item.get("description")),
+                    ]
+                )
+                + " |"
+            )
+    lines.extend(["", "## Assignments", "", "| Task | Owner | Status | Blocking Reasons | Snapshot | Intake |", "|---|---|---|---|---|---|"])
+    assignments = template.get("assignments", [])
+    if isinstance(assignments, list):
+        for item in assignments:
+            if not isinstance(item, dict):
+                continue
+            reasons = item.get("blocking_reasons", []) if isinstance(item.get("blocking_reasons"), list) else []
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        f"`{_markdown_cell(item.get('task'))}`",
+                        _markdown_cell(item.get("owner_hint")),
+                        _markdown_cell(item.get("task_status")),
+                        _markdown_code_list(reasons),
+                        _markdown_cell(item.get("snapshot_out")),
+                        _markdown_cell(item.get("intake_out")),
+                    ]
+                )
+                + " |"
+            )
+    commands = template.get("commands", {}) if isinstance(template.get("commands"), dict) else {}
+    lines.extend(["", "## Commands", ""])
+    if commands:
+        for key, command in commands.items():
+            lines.append(f"- {key}: `{_markdown_cell(command)}`")
+    else:
+        lines.append("- None")
+    limitations = template.get("limitations", [])
     lines.extend(["", "## Limitations", ""])
     if isinstance(limitations, list) and limitations:
         lines.extend(f"- {_markdown_cell(item)}" for item in limitations)
