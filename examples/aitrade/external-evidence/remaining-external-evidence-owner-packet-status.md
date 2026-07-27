@@ -1,14 +1,14 @@
 # External Evidence Owner Packet Status
 
-- Status ID: `8fa04fdf02ed58c73da7cb73b86dc708ed0504435aa018e01681ddea392f5af2`
+- Status ID: `826eec333de6db11682f14c53f5ba7dac6d5168826feb4b557a08fd09b776f7a`
 - Generated at: `2026-07-12T00:01:00Z`
 - Packets: 9
-- Tasks: 30
+- Tasks: 29
 - Closed tasks: 0
 - Open tasks: 0
-- Blocked tasks: 30
-- Placeholder source URIs: 30
-- Missing intakes: 30
+- Blocked tasks: 29
+- Placeholder source URIs: 29
+- Missing intakes: 29
 
 ## Packets
 
@@ -16,7 +16,7 @@
 |---|---|---|---:|---:|---:|---:|
 | IAM/identity owner | `owner-packet:owner_hint:IAM-identity-owner` | blocked | 2 | 0 | 0 | 2 |
 | customer success/account owner | `owner-packet:owner_hint:customer-success-account-owner` | blocked | 7 | 0 | 0 | 7 |
-| integration/platform owner | `owner-packet:owner_hint:integration-platform-owner` | blocked | 3 | 0 | 0 | 3 |
+| integration/platform owner | `owner-packet:owner_hint:integration-platform-owner` | blocked | 2 | 0 | 0 | 2 |
 | legal/compliance owner | `owner-packet:owner_hint:legal-compliance-owner` | blocked | 3 | 0 | 0 | 3 |
 | release engineering | `owner-packet:owner_hint:release-engineering` | blocked | 4 | 0 | 0 | 4 |
 | risk/insurance owner | `owner-packet:owner_hint:risk-insurance-owner` | blocked | 3 | 0 | 0 | 3 |
@@ -37,7 +37,6 @@
 | `state-of-agent-reliability-report:customer` | customer success/account owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `vertical-packs:customer` | customer success/account owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `trust-network-procurement-and-marketplace:customer` | customer success/account owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
-| `compliance-mapper-and-eu-ai-act:provider-api` | integration/platform owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `insurer-api-and-actuarial-products:provider-api` | integration/platform owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `trust-network-procurement-and-marketplace:provider-api` | integration/platform owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `roadmap-phase-scoreboard:regulator` | legal/compliance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |

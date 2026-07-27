@@ -1,0 +1,168 @@
+{
+  "api_export": {
+    "api_ref": "api:trustai/compliance-evidence/v0.1",
+    "endpoint_urls": [
+      "https://api.trustai.example/v0/compliance-evidence",
+      "https://api.trustai.example/v0/control/compliance-evidence"
+    ],
+    "export_ref": "provider-api-export:aitrade/compliance-evidence/2026-07-12",
+    "exported_at": "2026-07-12T00:00:00Z",
+    "provider_account_ref": "provider-account:trustai-cloud/aitrade-prod",
+    "request_ref": "api-request:compliance-evidence/2026-07-12T00:00:00Z",
+    "response_ref": "api-response:compliance-evidence/2026-07-12T00:00:00Z",
+    "response_root": "sha256:compliance-provider-api-response-root-20260712",
+    "status": "available"
+  },
+  "authority_evidence": {
+    "authority_kind": "provider-api",
+    "evidence_ref": "provider-api:trustai/compliance-evidence/aitrade-prod",
+    "requirement_id": "compliance-mapper-and-eu-ai-act",
+    "source_uri": "https://api.trustai.example/v1/compliance/aitrade-prod/evidence"
+  },
+  "covered_provider_api_controls": [
+    {
+      "control_ref": "compliance-api:/v0/compliance-evidence",
+      "requirement_id": "compliance-evidence-api-route",
+      "status": "exported"
+    },
+    {
+      "control_ref": "control-plane:compliance_evidence",
+      "requirement_id": "control-plane-compliance-index",
+      "status": "exported"
+    },
+    {
+      "control_ref": "compliance:framework-control-mapping-ontology",
+      "requirement_id": "framework-control-mapping-ontology",
+      "status": "exported"
+    },
+    {
+      "control_ref": "eu-ai-act:technical-documentation",
+      "requirement_id": "eu-ai-act-technical-documentation",
+      "status": "exported"
+    },
+    {
+      "control_ref": "compliance:proof-pack-source-replay",
+      "requirement_id": "proof-pack-source-replay",
+      "status": "exported"
+    },
+    {
+      "control_ref": "regulator-disclosure:source-binding",
+      "requirement_id": "selective-regulator-disclosure-binding",
+      "status": "exported"
+    },
+    {
+      "control_ref": "eu-data-plane:sovereignty-binding",
+      "requirement_id": "eu-data-plane-sovereignty-binding",
+      "status": "exported"
+    },
+    {
+      "control_ref": "compliance:authority-evidence-summary",
+      "requirement_id": "authority-evidence-counts",
+      "status": "exported"
+    },
+    {
+      "control_ref": "compliance:source-context-hashes",
+      "requirement_id": "source-context-hash-binding",
+      "status": "exported"
+    },
+    {
+      "control_ref": "compliance:grc-export-readiness",
+      "requirement_id": "grc-export-readiness",
+      "status": "exported"
+    }
+  ],
+  "environment": "aitrade-prod",
+  "evidence": {
+    "cli_source": {
+      "path": "src/trustai/cli.py",
+      "sha256": "sha256:1b1e470b4fb02a443c4b486bb1d8b647f49af24f6773601ebee2f50bc2ab1200"
+    },
+    "compliance_authority_source": {
+      "path": "src/trustai/compliance_authority.py",
+      "sha256": "sha256:db459112978417fab5e932c1e8658d24484a3200d6d717788264853364d4238c"
+    },
+    "compliance_authority_spec": {
+      "path": "docs/specs/compliance-production-authority-v0.1.md",
+      "sha256": "sha256:190840b93b9a2cbd17dd210f4215c504938e320d3d1b43a9ac542adba33c9594"
+    },
+    "compliance_authority_tests": {
+      "path": "tests/test_compliance_authority.py",
+      "sha256": "sha256:a2e211432b201bb2feb835a716094f6e35cbc6a2932bd737c314f445f4a7fd37"
+    },
+    "compliance_source": {
+      "path": "src/trustai/compliance.py",
+      "sha256": "sha256:559e3194ee2dbedea859c1c11453877fb803301c4eda6a315488af4d513e80e5"
+    },
+    "control_plane_source": {
+      "path": "src/trustai/control_plane.py",
+      "sha256": "sha256:9a139b7381f55eda5ba86c1a23c30269eb511939f03bf6d434654b61f0d8298e"
+    },
+    "control_plane_spec": {
+      "path": "docs/specs/control-plane-v0.1.md",
+      "sha256": "sha256:64a8e2529d75118bec0691b732f21351a85cd702896072d70f8102b437ea27dd"
+    },
+    "control_plane_tests": {
+      "path": "tests/test_control_plane.py",
+      "sha256": "sha256:9dddd0be531dfbc4bc6f061c695a672b41c170a70ea0185dbe1e1bf7c181ceac"
+    },
+    "eu_ai_act_source": {
+      "path": "src/trustai/eu_ai_act.py",
+      "sha256": "sha256:e7b424356b0a1037caf3542725446a463771f9e18ebaa67a15a89352946f7723"
+    },
+    "eu_ai_act_spec": {
+      "path": "docs/specs/eu-ai-act-technical-documentation-v0.1.md",
+      "sha256": "sha256:e1841abbe657fb3c9e96463683b637c9f2b1c1998a05240c82baa8a4c5c452c4"
+    },
+    "eu_ai_act_tests": {
+      "path": "tests/test_eu_ai_act.py",
+      "sha256": "sha256:279104cfa286887e18e45a33063c0b3bc1891062195a3e02e7599b9001b4d6c7"
+    },
+    "eu_data_plane_source": {
+      "path": "src/trustai/eu_data_plane.py",
+      "sha256": "sha256:2433c1145f3a1aa3d1b58dcfd1bc67d1ad76915edb358e4093812b72b525b46b"
+    },
+    "eu_data_plane_spec": {
+      "path": "docs/specs/eu-data-plane-attestation-v0.1.md",
+      "sha256": "sha256:30739eb387f00328b2c3366aee33506096db31bd45296a8b8e58cdc491e24f94"
+    },
+    "eu_data_plane_tests": {
+      "path": "tests/test_eu_data_plane.py",
+      "sha256": "sha256:b37e12bc1b61d9c3ceb2313eddc789746d58f71c507b70fba9164df62d18da6c"
+    },
+    "production_primitives_tests": {
+      "path": "tests/test_production_primitives.py",
+      "sha256": "sha256:e480954dbb417ac388bf1d07b6ea3c43f163bae5a4e994d1ce4f38e392932c58"
+    },
+    "roadmap_coverage_doc": {
+      "path": "docs/architecture/roadmap-coverage.md",
+      "sha256": "sha256:e238899dcd27ae9212347e8e17c2c8b5db35266c2172428c4fa90bc5120abd77"
+    },
+    "server_source": {
+      "path": "src/trustai/server.py",
+      "sha256": "sha256:5ff9bdb9b3872289117d4c6f32a30dca00441fae4b9ac37da992661b17da5559"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "issued_at": "2026-07-12T00:00:00Z",
+  "issuer": "TrustAI Cloud Provider API",
+  "schema": "trustai.compliance-provider-api-authority-export/0.1",
+  "source_binding": {
+    "compliance_export_ref": "compliance-export:aitrade-proof-pack",
+    "control_plane_routes": [
+      "/v0/compliance-evidence",
+      "/v0/control/compliance-evidence"
+    ],
+    "eu_ai_act_document_ref": "eu-ai-act-document:aitrade-annex-iii",
+    "eu_data_plane_ref": "eu-data-plane:aitrade-eu-central-1",
+    "proof_pack_ref": "artifacts/aitrade-proof-pack.json",
+    "regulator_disclosure_ref": "artifacts/regulator-disclosure.json"
+  },
+  "subject": "aitrade compliance mapper and EU AI Act provider API evidence",
+  "verified_controls": [
+    "provider API exposes compliance evidence through public and control-plane routes",
+    "provider API indexes compliance authority and EU data-plane evidence entries",
+    "provider API binds compliance export, EU AI Act document, proof pack, and regulator disclosure source summaries",
+    "provider API exports framework-control, EU AI Act, SR 11-7, SOC 2, and GRC readiness metadata",
+    "provider API retains source-context hashes for third-party replay"
+  ]
+}

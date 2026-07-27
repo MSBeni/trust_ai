@@ -2,30 +2,6 @@
   "defaults": {},
   "entries": [
     {
-      "authority_kind": "provider-api",
-      "coverage_status": "missing",
-      "description": "provider-api evidence for compliance-mapper-and-eu-ai-act",
-      "external_authority_required": [
-        "Compliance production authority dossiers cover the local/reference authority checklist for framework-control ontology, ISO 42001, NIST AI RMF, EU AI Act, SR 11-7, SOC 2, proof-pack source replay, selective regulator disclosure, GRC exports, EU data-plane sovereignty, conformity-assessment review, and per-evidence source_context bound to the signed compliance source binding; actual fresh GRC-platform acceptance, regulator/supervisor acceptance, conformity-assessment review, and continuously operated EU data-plane provider exports remain external deployment evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/provider-api.json",
-      "owner_hint": "integration/platform owner",
-      "requirement_id": "compliance-mapper-and-eu-ai-act",
-      "snapshot_out": "artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/provider-api.json",
-      "source_uri": "TODO://authority/compliance-mapper-and-eu-ai-act/provider-api",
-      "suggested_evidence_sources": [
-        "provider API response export",
-        "request/response transcript",
-        "provider-owned audit event"
-      ],
-      "task": "compliance-mapper-and-eu-ai-act:provider-api",
-      "task_id": "484c9782666dd0087b90aaf9a4c972b8034610dda1313a7c3e0a1099c0d79800",
-      "task_ref": "external-evidence:compliance-mapper-and-eu-ai-act:provider-api",
-      "title": "Compliance framework mapper and EU AI Act technical documentation",
-      "unit_id": "36ac9829ac984b1f249d4e1ea9930f20f4c0c61096fad3c3952daf78a5564d20",
-      "unit_ref": "compliance-mapper-and-eu-ai-act:provider-api"
-    },
-    {
       "authority_kind": "regulator",
       "coverage_status": "missing",
       "description": "regulator evidence for compliance-mapper-and-eu-ai-act",
@@ -729,14 +705,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "b0907abc3cf12f1a2152f80c02b71e2152fce03b5e47b1f8841dd670c62c09f1",
+  "source_map_id": "c5899ef84192512690811280dc120d2250ad17659aff8ffa197bf7f308d56124",
   "source_plan": {
-    "plan_hash": "85090d6866ac9422f8221cb2b03e79efc7db3e14b6368f81fcfcd7e48964229e",
-    "plan_id": "ad52f84a386bae5f3c0136b2099c1689d56da9edc817ad11f36ea0c029a2733d",
+    "plan_hash": "783db881e226a4912f0bc15032fb0248c7827b1c547a4d1a6e8331158970abe2",
+    "plan_id": "66b5e3ad2989fb417c78aef5c584813b8e10f209b68fa1cd9d05aa2459ccd141",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "28807533bdbcaca370842aacc080eec43324dbc27c60a6cbec02cf7521ca50d4",
-      "manifest_id": "fd8324f98c26392585e0e756e64d6e722d6c346f78e5f3856f9484f8fca875eb",
+      "manifest_hash": "914f4e249ff1e1b88d97d8e02e56c633d516ee055258660c12a6d38b6066b35d",
+      "manifest_id": "4f42dca507923dfc233ab3f4a9fd720ba8a4cd3bdda742e246c2924e603fff28",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },
@@ -744,12 +720,12 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 30,
+    "entry_count": 29,
     "intake_dir": "artifacts/external-evidence-intakes",
     "live_source_uri_count": 0,
-    "placeholder_source_uri_count": 30,
+    "placeholder_source_uri_count": 29,
     "snapshot_dir": "artifacts/external-evidence-sources",
-    "source_plan_task_count": 30,
+    "source_plan_task_count": 29,
     "status_filter": "missing"
   }
 }

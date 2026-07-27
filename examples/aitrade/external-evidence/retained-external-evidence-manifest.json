@@ -672,6 +672,24 @@
     },
     {
       "accepted_authority_kinds": [
+        "provider-api",
+        "regulator",
+        "standards-body"
+      ],
+      "authority_kind": "provider-api",
+      "description": "Retained provider API export for compliance mapper and EU AI Act evidence",
+      "evidence_id": "e3940193b90ce521da641c60baa92b59a6b70e2fcd7dfc4901cc5ad253a767ae",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "TrustAI Cloud Provider API",
+      "path": "examples/aitrade/external-evidence/compliance-provider-api-source-snapshot.json",
+      "requirement_id": "compliance-mapper-and-eu-ai-act",
+      "sha256": "sha256:3d4c26098128ee57dc401eaa9a15888f3314ac8344da68b77399e7779498c937",
+      "source_uri": "https://api.trustai.example/v1/compliance/aitrade-prod/evidence",
+      "subject": "aitrade compliance mapper and EU AI Act provider API evidence"
+    },
+    {
+      "accepted_authority_kinds": [
         "ci-run",
         "kms-hsm",
         "provider-api",
@@ -791,7 +809,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "fd8324f98c26392585e0e756e64d6e722d6c346f78e5f3856f9484f8fca875eb",
+  "manifest_id": "4f42dca507923dfc233ab3f4a9fd720ba8a4cd3bdda742e246c2924e603fff28",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -1251,7 +1269,7 @@
     },
     {
       "authority_kind": "provider-api",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Compliance production authority dossiers cover the local/reference authority checklist for framework-control ontology, ISO 42001, NIST AI RMF, EU AI Act, SR 11-7, SOC 2, proof-pack source replay, selective regulator disclosure, GRC exports, EU data-plane sovereignty, conformity-assessment review, and per-evidence source_context bound to the signed compliance source binding; actual fresh GRC-platform acceptance, regulator/supervisor acceptance, conformity-assessment review, and continuously operated EU data-plane provider exports remain external deployment evidence."
       ],
@@ -2018,7 +2036,7 @@
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {
-    "covered_authority_kind_count": 41,
+    "covered_authority_kind_count": 42,
     "covered_authority_kinds_by_requirement": {
       "agent-inventory-and-identity": [
         "provider-api",
@@ -2044,6 +2062,9 @@
         "provider-api",
         "hosted-service",
         "identity-provider"
+      ],
+      "compliance-mapper-and-eu-ai-act": [
+        "provider-api"
       ],
       "design-partner-pilot-exit-criteria": [
         "regulator",
@@ -2084,12 +2105,13 @@
         "standards-body"
       ]
     },
-    "covered_requirement_count": 11,
+    "covered_requirement_count": 12,
     "covered_requirement_ids": [
       "agent-inventory-and-identity",
       "auditor-and-review-portal",
       "byoc-self-hosted",
       "cicd-provider-approvals",
+      "compliance-mapper-and-eu-ai-act",
       "design-partner-pilot-exit-criteria",
       "framework-adapters",
       "mcp-gateway",
@@ -2098,14 +2120,13 @@
       "self-serve-onboarding",
       "shadow-replay-temporal-holdout"
     ],
-    "evidence_count": 41,
-    "expires_at_count": 41,
-    "freshness_window_count": 41,
-    "issued_at_count": 41,
-    "missing_authority_kind_count": 30,
+    "evidence_count": 42,
+    "expires_at_count": 42,
+    "freshness_window_count": 42,
+    "issued_at_count": 42,
+    "missing_authority_kind_count": 29,
     "missing_authority_kinds_by_requirement": {
       "compliance-mapper-and-eu-ai-act": [
-        "provider-api",
         "regulator",
         "standards-body"
       ],
@@ -2155,9 +2176,8 @@
         "customer"
       ]
     },
-    "missing_requirement_count": 9,
+    "missing_requirement_count": 8,
     "missing_requirement_ids": [
-      "compliance-mapper-and-eu-ai-act",
       "trustai-own-compliance",
       "vertical-packs",
       "insurer-api-and-actuarial-products",

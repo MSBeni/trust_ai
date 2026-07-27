@@ -5,12 +5,12 @@
     "A task is covered only after a matching evidence artifact is supplied to an external evidence manifest and verified.",
     "Freshness and issuer authority remain bounded by the supplied evidence artifact and manifest verification options."
   ],
-  "plan_id": "ad52f84a386bae5f3c0136b2099c1689d56da9edc817ad11f36ea0c029a2733d",
+  "plan_id": "66b5e3ad2989fb417c78aef5c584813b8e10f209b68fa1cd9d05aa2459ccd141",
   "schema": "trustai.external-evidence-collection-plan/0.1",
   "source_manifest": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "manifest_hash": "28807533bdbcaca370842aacc080eec43324dbc27c60a6cbec02cf7521ca50d4",
-    "manifest_id": "fd8324f98c26392585e0e756e64d6e722d6c346f78e5f3856f9484f8fca875eb",
+    "manifest_hash": "914f4e249ff1e1b88d97d8e02e56c633d516ee055258660c12a6d38b6066b35d",
+    "manifest_id": "4f42dca507923dfc233ab3f4a9fd720ba8a4cd3bdda742e246c2924e603fff28",
     "manifest_ref": "production-external-evidence",
     "status": "partial"
   },
@@ -21,8 +21,8 @@
   },
   "status_filter": "missing",
   "summary": {
-    "covered_authority_kind_count": 41,
-    "missing_authority_kind_count": 30,
+    "covered_authority_kind_count": 42,
+    "missing_authority_kind_count": 29,
     "missing_task_count_by_authority_kind": {
       "ci-run": 4,
       "customer": 7,
@@ -30,14 +30,14 @@
       "identity-provider": 2,
       "insurer": 3,
       "kms-hsm": 2,
-      "provider-api": 3,
+      "provider-api": 2,
       "regulator": 3,
       "standards-body": 4
     },
     "required_authority_kind_count": 71,
     "selected_covered_task_count": 0,
-    "selected_missing_task_count": 30,
-    "selected_task_count": 30,
+    "selected_missing_task_count": 29,
+    "selected_task_count": 29,
     "source_manifest_status": "partial",
     "task_count_by_authority_kind": {
       "ci-run": 4,
@@ -46,7 +46,7 @@
       "identity-provider": 2,
       "insurer": 3,
       "kms-hsm": 2,
-      "provider-api": 3,
+      "provider-api": 2,
       "regulator": 3,
       "standards-body": 4
     },
@@ -54,7 +54,7 @@
       "P0-P4": 2,
       "P1-P4": 5,
       "P2": 3,
-      "P2-P3": 3,
+      "P2-P3": 2,
       "P2-P4": 8,
       "P3": 5,
       "P4": 4
@@ -62,35 +62,6 @@
     "total_authority_unit_count": 71
   },
   "tasks": [
-    {
-      "acceptance_criteria": [
-        "Artifact path must be repository-relative and hashable before manifest verification.",
-        "Evidence item authority_kind must be provider-api and accepted for compliance-mapper-and-eu-ai-act.",
-        "Use issued_at and expires_at metadata when strict freshness verification is required.",
-        "Rebuild and verify the external evidence manifest after adding the artifact."
-      ],
-      "authority_kind": "provider-api",
-      "coverage_status": "missing",
-      "evidence_argument_template": "compliance-mapper-and-eu-ai-act,provider-api,external-evidence/compliance-mapper-and-eu-ai-act/provider-api.json,provider-api evidence for compliance-mapper-and-eu-ai-act;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-      "external_authority_required": [
-        "Compliance production authority dossiers cover the local/reference authority checklist for framework-control ontology, ISO 42001, NIST AI RMF, EU AI Act, SR 11-7, SOC 2, proof-pack source replay, selective regulator disclosure, GRC exports, EU data-plane sovereignty, conformity-assessment review, and per-evidence source_context bound to the signed compliance source binding; actual fresh GRC-platform acceptance, regulator/supervisor acceptance, conformity-assessment review, and continuously operated EU data-plane provider exports remain external deployment evidence."
-      ],
-      "owner_hint": "integration/platform owner",
-      "phase": "P2-P3",
-      "priority": "P0",
-      "requirement_id": "compliance-mapper-and-eu-ai-act",
-      "suggested_artifact_path": "external-evidence/compliance-mapper-and-eu-ai-act/provider-api.json",
-      "suggested_evidence_sources": [
-        "provider API response export",
-        "request/response transcript",
-        "provider-owned audit event"
-      ],
-      "task_id": "484c9782666dd0087b90aaf9a4c972b8034610dda1313a7c3e0a1099c0d79800",
-      "task_ref": "external-evidence:compliance-mapper-and-eu-ai-act:provider-api",
-      "title": "Compliance framework mapper and EU AI Act technical documentation",
-      "unit_id": "36ac9829ac984b1f249d4e1ea9930f20f4c0c61096fad3c3952daf78a5564d20",
-      "unit_ref": "compliance-mapper-and-eu-ai-act:provider-api"
-    },
     {
       "acceptance_criteria": [
         "Artifact path must be repository-relative and hashable before manifest verification.",

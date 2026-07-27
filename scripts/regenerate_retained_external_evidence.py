@@ -612,6 +612,20 @@ RETAINED_SOURCES: dict[str, dict[str, str]] = {
         "snapshot_out": "examples/aitrade/external-evidence/byoc-object-lock-source-snapshot.json",
         "intake_out": "examples/aitrade/external-evidence/intakes/byoc-self-hosted-cloud-object-lock.json",
     },
+    "compliance-mapper-and-eu-ai-act:provider-api": {
+        "source_uri": "https://api.trustai.example/v1/compliance/aitrade-prod/evidence",
+        "description": "Retained provider API export for compliance mapper and EU AI Act evidence",
+        "artifact": "examples/aitrade/external-evidence/compliance-provider-api-source-snapshot.json",
+        "source_file": "examples/aitrade/compliance-provider-api-authority-export.json",
+        "retrieval_method": "file-copy",
+        "content_type": "application/json",
+        "issuer": "TrustAI Cloud Provider API",
+        "subject": "aitrade compliance mapper and EU AI Act provider API evidence",
+        "issued_at": "2026-07-12T00:00:00Z",
+        "expires_at": "2026-12-31T00:00:00Z",
+        "snapshot_out": "examples/aitrade/external-evidence/compliance-provider-api-source-snapshot.json",
+        "intake_out": "examples/aitrade/external-evidence/intakes/compliance-mapper-and-eu-ai-act-provider-api.json",
+    },
 }
 
 

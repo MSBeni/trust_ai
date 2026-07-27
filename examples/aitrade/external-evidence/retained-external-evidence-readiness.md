@@ -1,14 +1,14 @@
 # External Evidence Production Readiness
 
-- Readiness ID: `be7dac96f95b0ddd8f67a206a55b6fda61c738ebabde09d0af5a5413d18da5b7`
+- Readiness ID: `643a3f7237351b8b59870c97571ce39bd8f4839db48376d2f1a023f32c9aac81`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `not-ready`
-- Covered authority units: 41/71
-- Production-usable covered authority units: 40
+- Covered authority units: 42/71
+- Production-usable covered authority units: 41
 - Non-production covered authority units: 1
-- Missing authority units: 30
-- Remaining collection tasks: 30
-- Placeholder source URIs: 30
+- Missing authority units: 29
+- Remaining collection tasks: 29
+- Placeholder source URIs: 29
 - Work packages: 9
 
 ## Checks
@@ -25,9 +25,9 @@
 ## Blockers
 
 - 1 covered authority units use example or non-production evidence
-- 30 authority units still lack accepted evidence
-- 30 external evidence collection tasks remain open
-- 30 source-map entries still use placeholder source URIs
+- 29 authority units still lack accepted evidence
+- 29 external evidence collection tasks remain open
+- 29 source-map entries still use placeholder source URIs
 
 ## Next Actions
 
