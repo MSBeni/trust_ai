@@ -5,7 +5,7 @@
     "A closed task still requires rebuilt manifest verification and readiness verification before external authority coverage is accepted.",
     "Placeholder source URIs keep tasks blocked even when a local intake artifact is present."
   ],
-  "owner_packet_status_id": "04cb4fc0a192f10967fa7f1384895aea326f3806a03f8c98d9b7be1da33af7f9",
+  "owner_packet_status_id": "02857ad3784da808fbc765ad3d014274a0452b1ddbcc76c0ac60bc92a488baf5",
   "packets": [
     {
       "blocked_task_count": 2,
@@ -48,14 +48,14 @@
       "task_count": 1
     },
     {
-      "blocked_task_count": 4,
+      "blocked_task_count": 3,
       "closed_task_count": 0,
       "open_task_count": 0,
       "owner_hint": "release engineering",
-      "packet_id": "550ebd49510b9cd7c91bdd975d5cac50408aa5d9c18acc0c77ef0210ec1b898b",
+      "packet_id": "8b0fd05c14e2f3fb13b26441c507ee5ebbd516db0abf4e138b877df03cd006f2",
       "packet_ref": "owner-packet:owner_hint:release-engineering",
       "packet_status": "blocked",
-      "task_count": 4
+      "task_count": 3
     },
     {
       "blocked_task_count": 2,
@@ -103,41 +103,41 @@
     "intake_hashes": [],
     "owner_packet_bundle": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_bundle_hash": "db58f4074648b91d60663b871f5a2f2047ec425cb581e2bf7085445317da7473",
-      "owner_packet_bundle_id": "5415fe357d9132de7a40fba3885fc216d736be0fe6913bb38b5d249a92ebbcf7",
+      "owner_packet_bundle_hash": "0c0e685ae2f0866be7e6ecf6635f81fef422eebd51de9d9a210655c8fb52ee76",
+      "owner_packet_bundle_id": "487a32dc438b7553854d29a2a67e70153665beeb0ce159398fade5c6ca24c5dd",
       "schema": "trustai.external-evidence-owner-packet-bundle/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "4cbf5ea03769d680fb4f48bd162a7cb39edb4f688374860f047594c7dbd04bd8",
-      "source_map_id": "707bce95daa9c90ec2dfe8fb1853eaac068b967b21267b410bab19a42a795968"
+      "source_map_hash": "1cf55aafe518342208343b4e03cce7646c4485864c4e779e444088d38a84f5c7",
+      "source_map_id": "ec2181896352668e34d272ff353d034371284b5f8754ab286dfa4473348f104b"
     },
     "work_package": {
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-work-package/0.1",
-      "work_package_hash": "ac7a9cb585153035aa0ce3063e0408721f6969bfabd9fbf879209c7282940e0e",
-      "work_package_id": "9030f1a178f76e43adc2f2ccbabad7ae44962662909bb747f23f880e7a97d2e4"
+      "work_package_hash": "4f02025ca982e65dcd4934d1df36d331a670fb11c69a0e26c25ccad029e5a9c3",
+      "work_package_id": "9536772547ffde591898af66045a83ae8991d7f459c5e85b07f64e9757183e0e"
     }
   },
   "summary": {
     "blocked_packet_count": 9,
-    "blocked_task_count": 22,
+    "blocked_task_count": 21,
     "closed_packet_count": 0,
     "closed_task_count": 0,
     "invalid_intake_count": 0,
     "live_source_uri_count": 0,
-    "missing_intake_count": 22,
+    "missing_intake_count": 21,
     "open_packet_count": 0,
     "open_task_count": 0,
     "packet_count": 9,
     "packet_status_counts": {
       "blocked": 9
     },
-    "placeholder_source_uri_count": 22,
-    "task_count": 22,
+    "placeholder_source_uri_count": 21,
+    "task_count": 21,
     "task_status_counts": {
-      "blocked": 22
+      "blocked": 21
     }
   },
   "tasks": [
@@ -361,23 +361,6 @@
       "task_ref": "external-evidence:runtime-policy-and-attestation:ci-run",
       "task_status": "blocked",
       "unit_ref": "runtime-policy-and-attestation:ci-run"
-    },
-    {
-      "authority_kind": "ci-run",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake": null,
-      "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/ci-run.json",
-      "owner_hint": "release engineering",
-      "requirement_id": "insurer-api-and-actuarial-products",
-      "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/ci-run.json",
-      "source_uri": "TODO://authority/insurer-api-and-actuarial-products/ci-run",
-      "source_uri_status": "placeholder",
-      "task_ref": "external-evidence:insurer-api-and-actuarial-products:ci-run",
-      "task_status": "blocked",
-      "unit_ref": "insurer-api-and-actuarial-products:ci-run"
     },
     {
       "authority_kind": "insurer",

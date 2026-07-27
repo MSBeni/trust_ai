@@ -724,6 +724,20 @@ RETAINED_SOURCES: dict[str, dict[str, str]] = {
         "snapshot_out": "examples/aitrade/external-evidence/vertical-packs-customer-source-snapshot.json",
         "intake_out": "examples/aitrade/external-evidence/intakes/vertical-packs-customer.json",
     },
+    "insurer-api-and-actuarial-products:ci-run": {
+        "source_uri": "https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml",
+        "description": "Retained GitHub Actions export for insurer API and actuarial products CI evidence",
+        "artifact": "examples/aitrade/external-evidence/insurer-api-actuarial-ci-run-source-snapshot.json",
+        "source_file": "examples/aitrade/insurer-api-and-actuarial-products-ci-run-authority-export.json",
+        "retrieval_method": "file-copy",
+        "content_type": "application/json",
+        "issuer": "GitHub Actions",
+        "subject": "trustai insurer API and actuarial products CI",
+        "issued_at": "2026-07-12T00:00:00Z",
+        "expires_at": "2026-12-31T00:00:00Z",
+        "snapshot_out": "examples/aitrade/external-evidence/insurer-api-actuarial-ci-run-source-snapshot.json",
+        "intake_out": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-ci-run.json",
+    },
 }
 
 

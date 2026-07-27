@@ -1292,6 +1292,36 @@
       "unit_ref": "vertical-packs:customer"
     },
     {
+      "authority_kind": "ci-run",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained GitHub Actions export for insurer API and actuarial products CI evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-ci-run.json",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "GitHub Actions",
+      "owner_hint": "release engineering",
+      "requirement_id": "insurer-api-and-actuarial-products",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/insurer-api-actuarial-ci-run-source-snapshot.json",
+      "source_uri": "https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml",
+      "subject": "trustai insurer API and actuarial products CI",
+      "suggested_evidence_sources": [
+        "completed CI workflow export",
+        "release run URL or provider-native run record",
+        "artifact/check provenance"
+      ],
+      "task": "insurer-api-and-actuarial-products:ci-run",
+      "task_id": "ea9fb5aa2b064a81cad7ef59ae24d745831dae9a1f0ed3f5188901ae7c2dbb6d",
+      "task_ref": "external-evidence:insurer-api-and-actuarial-products:ci-run",
+      "title": "Consent-gated insurer telemetry, underwriting quotes, and actuarial products",
+      "unit_id": "979f4abe956ca3a60d9264d0f2c64ec6a80ee489f4e5cdea597883178b2d3d3d",
+      "unit_ref": "insurer-api-and-actuarial-products:ci-run"
+    },
+    {
       "authority_kind": "kms-hsm",
       "content_type": "application/json",
       "coverage_status": "missing",
@@ -1479,7 +1509,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "33318716430609063dfa672c1647568ce324e8dffed51e93a57e49472b33fc5d",
+  "source_map_id": "8d27e312120f22e9b76528ab4fbc7f8eee87c402f1ab8dcf366d3e935631a53e",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -1494,9 +1524,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 49,
+    "entry_count": 50,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 49,
+    "live_source_uri_count": 50,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

@@ -1,12 +1,12 @@
 # External Evidence Work Packages
 
-- Work package ID: `9030f1a178f76e43adc2f2ccbabad7ae44962662909bb747f23f880e7a97d2e4`
+- Work package ID: `9536772547ffde591898af66045a83ae8991d7f459c5e85b07f64e9757183e0e`
 - Generated at: `2026-07-12T00:01:00Z`
 - Grouped by: `owner_hint`
 - Packages: 9
-- Tasks: 22
-- Missing tasks: 22
-- Placeholder source URIs: 22
+- Tasks: 21
+- Missing tasks: 21
+- Placeholder source URIs: 21
 - Live source URIs: 0
 
 ## Tasks By Owner
@@ -15,7 +15,7 @@
 - customer success/account owner: 5
 - integration/platform owner: 2
 - legal/compliance owner: 1
-- release engineering: 4
+- release engineering: 3
 - risk/insurance owner: 2
 - security/platform KMS owner: 2
 - service owner: 2
@@ -124,11 +124,11 @@
 ### release engineering
 
 - Package ref: `owner_hint:release-engineering`
-- Package ID: `25f5c035e7f769203df0832bec73992c58b1920c712a6b8570107d32faba4096`
+- Package ID: `ebcb91eb3848bf19444bde463ada5610d0aa5ec36d6b2429386d2441c19c4d61`
 - Owner Hint: `release engineering`
-- Tasks: 4
+- Tasks: 3
 - Authority kinds: `ci-run`
-- Requirements: `insurer-api-and-actuarial-products`, `product-scope-discipline`, `roadmap-phase-scoreboard`, `runtime-policy-and-attestation`
+- Requirements: `product-scope-discipline`, `roadmap-phase-scoreboard`, `runtime-policy-and-attestation`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
 
@@ -137,7 +137,6 @@
 | `product-scope-discipline:ci-run` | P0-P4 | P0 | `ci-run` | placeholder | `artifacts/external-evidence-intakes/product-scope-discipline/ci-run.json` |
 | `roadmap-phase-scoreboard:ci-run` | P1-P4 | P0 | `ci-run` | placeholder | `artifacts/external-evidence-intakes/roadmap-phase-scoreboard/ci-run.json` |
 | `runtime-policy-and-attestation:ci-run` | P2 | P1 | `ci-run` | placeholder | `artifacts/external-evidence-intakes/runtime-policy-and-attestation/ci-run.json` |
-| `insurer-api-and-actuarial-products:ci-run` | P2-P4 | P0 | `ci-run` | placeholder | `artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/ci-run.json` |
 
 #### Task Commands
 
@@ -147,8 +146,6 @@
 - `roadmap-phase-scoreboard:ci-run` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/roadmap-phase-scoreboard/ci-run.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `runtime-policy-and-attestation:ci-run` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/runtime-policy-and-attestation/ci-run --root . --task runtime-policy-and-attestation:ci-run --description 'ci-run evidence for runtime-policy-and-attestation' --snapshot-out artifacts/external-evidence-sources/runtime-policy-and-attestation/ci-run.json --intake-out artifacts/external-evidence-intakes/runtime-policy-and-attestation/ci-run.json`
 - `runtime-policy-and-attestation:ci-run` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/runtime-policy-and-attestation/ci-run.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
-- `insurer-api-and-actuarial-products:ci-run` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/insurer-api-and-actuarial-products/ci-run --root . --task insurer-api-and-actuarial-products:ci-run --description 'ci-run evidence for insurer-api-and-actuarial-products' --snapshot-out artifacts/external-evidence-sources/insurer-api-and-actuarial-products/ci-run.json --intake-out artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/ci-run.json`
-- `insurer-api-and-actuarial-products:ci-run` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/ci-run.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 
 ### risk/insurance owner
 

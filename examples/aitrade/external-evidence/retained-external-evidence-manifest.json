@@ -818,6 +818,28 @@
         "kms-hsm",
         "provider-api",
         "hosted-service",
+        "identity-provider",
+        "insurer",
+        "customer"
+      ],
+      "authority_kind": "ci-run",
+      "description": "Retained GitHub Actions export for insurer API and actuarial products CI evidence",
+      "evidence_id": "2ba405e81db6d5837b479d843f01e1271182f47cf0d8c9f91880d406c17c5de1",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "GitHub Actions",
+      "path": "examples/aitrade/external-evidence/insurer-api-actuarial-ci-run-source-snapshot.json",
+      "requirement_id": "insurer-api-and-actuarial-products",
+      "sha256": "sha256:dfba944e720789a32c7306b0d08eb07e747d8e5f06936586c4828b7712ae8e66",
+      "source_uri": "https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml",
+      "subject": "trustai insurer API and actuarial products CI"
+    },
+    {
+      "accepted_authority_kinds": [
+        "ci-run",
+        "kms-hsm",
+        "provider-api",
+        "hosted-service",
         "identity-provider"
       ],
       "authority_kind": "kms-hsm",
@@ -933,7 +955,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "f71164de4e7d4d0f8b6ab11f5e3651e45ae8865628facc66f5ebce5e5b27ce46",
+  "manifest_id": "fab0e37126e7e2e9cddf5dae27abde3d20b46eb61fa9d656ef6e625784fa8687",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -1497,7 +1519,7 @@
     },
     {
       "authority_kind": "ci-run",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
       ],
@@ -2160,7 +2182,7 @@
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {
-    "covered_authority_kind_count": 49,
+    "covered_authority_kind_count": 50,
     "covered_authority_kinds_by_requirement": {
       "agent-inventory-and-identity": [
         "provider-api",
@@ -2202,6 +2224,9 @@
         "provider-api",
         "hosted-service"
       ],
+      "insurer-api-and-actuarial-products": [
+        "ci-run"
+      ],
       "mcp-gateway": [
         "ci-run",
         "kms-hsm",
@@ -2240,7 +2265,7 @@
         "customer"
       ]
     },
-    "covered_requirement_count": 14,
+    "covered_requirement_count": 15,
     "covered_requirement_ids": [
       "agent-inventory-and-identity",
       "auditor-and-review-portal",
@@ -2249,6 +2274,7 @@
       "compliance-mapper-and-eu-ai-act",
       "design-partner-pilot-exit-criteria",
       "framework-adapters",
+      "insurer-api-and-actuarial-products",
       "mcp-gateway",
       "oss-verifier-and-public-spec",
       "runtime-policy-and-attestation",
@@ -2257,14 +2283,13 @@
       "trustai-own-compliance",
       "vertical-packs"
     ],
-    "evidence_count": 49,
-    "expires_at_count": 49,
-    "freshness_window_count": 49,
-    "issued_at_count": 49,
-    "missing_authority_kind_count": 22,
+    "evidence_count": 50,
+    "expires_at_count": 50,
+    "freshness_window_count": 50,
+    "issued_at_count": 50,
+    "missing_authority_kind_count": 21,
     "missing_authority_kinds_by_requirement": {
       "insurer-api-and-actuarial-products": [
-        "ci-run",
         "kms-hsm",
         "provider-api",
         "hosted-service",
@@ -2300,9 +2325,8 @@
         "customer"
       ]
     },
-    "missing_requirement_count": 6,
+    "missing_requirement_count": 5,
     "missing_requirement_ids": [
-      "insurer-api-and-actuarial-products",
       "state-of-agent-reliability-report",
       "roadmap-phase-scoreboard",
       "product-scope-discipline",

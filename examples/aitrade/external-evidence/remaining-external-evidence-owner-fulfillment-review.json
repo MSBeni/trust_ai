@@ -1,7 +1,7 @@
 {
   "blockers": [
-    "owner fulfillment review contains 22 placeholder source_uri values",
-    "fulfilled source map: source map contains 22 placeholder source_uri values but live source URIs are required"
+    "owner fulfillment review contains 21 placeholder source_uri values",
+    "fulfilled source map: source map contains 21 placeholder source_uri values but live source URIs are required"
   ],
   "commands": {
     "collect_after_ready_review": "python -m trustai external-evidence-collect-batch <fulfilled-source-map.json> <manifest.json> <roadmap-audit.json> --root . --require-live-source-uris",
@@ -11,30 +11,6 @@
   "fulfilled_source_map": {
     "defaults": {},
     "entries": [
-      {
-        "authority_kind": "ci-run",
-        "coverage_status": "missing",
-        "description": "ci-run evidence for insurer-api-and-actuarial-products",
-        "external_authority_required": [
-          "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/ci-run.json",
-        "owner_hint": "release engineering",
-        "requirement_id": "insurer-api-and-actuarial-products",
-        "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/ci-run.json",
-        "source_uri": "TODO://authority/insurer-api-and-actuarial-products/ci-run",
-        "suggested_evidence_sources": [
-          "completed CI workflow export",
-          "release run URL or provider-native run record",
-          "artifact/check provenance"
-        ],
-        "task": "insurer-api-and-actuarial-products:ci-run",
-        "task_id": "ea9fb5aa2b064a81cad7ef59ae24d745831dae9a1f0ed3f5188901ae7c2dbb6d",
-        "task_ref": "external-evidence:insurer-api-and-actuarial-products:ci-run",
-        "title": "Consent-gated insurer telemetry, underwriting quotes, and actuarial products",
-        "unit_id": "979f4abe956ca3a60d9264d0f2c64ec6a80ee489f4e5cdea597883178b2d3d3d",
-        "unit_ref": "insurer-api-and-actuarial-products:ci-run"
-      },
       {
         "authority_kind": "kms-hsm",
         "coverage_status": "missing",
@@ -547,14 +523,14 @@
       "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
     ],
     "schema": "trustai.external-evidence-source-map/0.1",
-    "source_map_id": "4ebef30328aa5f7bb7d8ccc7644e7012992abe56306763f0a9aa168a9244fa3d",
+    "source_map_id": "86b83e57516e622130589f88f543339e6ff390ab40751fa41acd75b6b54c0ae9",
     "source_plan": {
-      "plan_hash": "5ce2e071a2a29aeddf031a5c541d8418e1d87dff9a682a68be10f41bead9def5",
-      "plan_id": "3480d49f7a99c6c4a2dc10a67c8d08b1eebd35ac6552559535ebb38786b2863e",
+      "plan_hash": "0c0824e171bead040d0a0436f0d179dffd073147f4acfefec3270f89b4ee1b7b",
+      "plan_id": "967fd94b49bd979de45b4ae08fcaeb031c026bf6678436fb7146c646ca7ac317",
       "source_manifest": {
         "generated_at": "2026-07-12T00:01:00Z",
-        "manifest_hash": "fd885486162576bba558ddf118526e1eaa3f4d6154c01a0c9fe872f24335405c",
-        "manifest_id": "f71164de4e7d4d0f8b6ab11f5e3651e45ae8865628facc66f5ebce5e5b27ce46",
+        "manifest_hash": "5e99aac8ba1e2bbfdb952cab411cfcae19359bc2a442f8ca3e6e32533692dd09",
+        "manifest_id": "fab0e37126e7e2e9cddf5dae27abde3d20b46eb61fa9d656ef6e625784fa8687",
         "manifest_ref": "production-external-evidence",
         "status": "partial"
       },
@@ -562,12 +538,12 @@
     },
     "summary": {
       "authority_kinds": [],
-      "entry_count": 22,
+      "entry_count": 21,
       "intake_dir": "artifacts/external-evidence-intakes",
       "live_source_uri_count": 0,
-      "placeholder_source_uri_count": 22,
+      "placeholder_source_uri_count": 21,
       "snapshot_dir": "artifacts/external-evidence-sources",
-      "source_plan_task_count": 22,
+      "source_plan_task_count": 21,
       "status_filter": "missing"
     }
   },
@@ -582,63 +558,49 @@
     "Regenerate this review with --require-live-source-uris before collecting source snapshots.",
     "After the fulfilled source map is ready, run external-evidence-collect-batch and rebuild the retained manifest from intake receipts."
   ],
-  "owner_fulfillment_review_id": "64501fbd839bf19ddfb78ea831a032d2f910cb1803a0629a45aae431531e5edf",
+  "owner_fulfillment_review_id": "bb3e0c5cfeaa7e10e45c1008c7bec39eb3dafe481e1a63f14cfd38c537933bf2",
   "schema": "trustai.external-evidence-owner-fulfillment-review/0.1",
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "5ce2e071a2a29aeddf031a5c541d8418e1d87dff9a682a68be10f41bead9def5",
-      "plan_id": "3480d49f7a99c6c4a2dc10a67c8d08b1eebd35ac6552559535ebb38786b2863e",
+      "plan_hash": "0c0824e171bead040d0a0436f0d179dffd073147f4acfefec3270f89b4ee1b7b",
+      "plan_id": "967fd94b49bd979de45b4ae08fcaeb031c026bf6678436fb7146c646ca7ac317",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "owner_fulfillment_template": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_fulfillment_template_hash": "9739cde34d98238a862f4f8b07f9cb922db8456d870bc04d0f142691a22e01eb",
-      "owner_fulfillment_template_id": "57a0b82d14a235ec59ad9302186859d66ec7d13a070fea0af2312c54ec08e780",
+      "owner_fulfillment_template_hash": "e3dd0c183801a12049c40d1826d21e0cd5d09144b0d68481244df49ed30dc1d1",
+      "owner_fulfillment_template_id": "797d7c2cd624f681628979f0a3203eba4206aa60277e38f5f2cd780514f6c326",
       "schema": "trustai.external-evidence-owner-fulfillment-template/0.1"
     },
     "owner_packet_status": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_status_hash": "ff978062283103286b1c13fe4758888231bb87673dd784eff9f702ad0fac0a2d",
-      "owner_packet_status_id": "04cb4fc0a192f10967fa7f1384895aea326f3806a03f8c98d9b7be1da33af7f9",
+      "owner_packet_status_hash": "31149f3a2a2cc0fde264558bbec7a8157946214d213fa58fa2180e053fd75ea8",
+      "owner_packet_status_id": "02857ad3784da808fbc765ad3d014274a0452b1ddbcc76c0ac60bc92a488baf5",
       "schema": "trustai.external-evidence-owner-packet-status/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "4cbf5ea03769d680fb4f48bd162a7cb39edb4f688374860f047594c7dbd04bd8",
-      "source_map_id": "707bce95daa9c90ec2dfe8fb1853eaac068b967b21267b410bab19a42a795968"
+      "source_map_hash": "1cf55aafe518342208343b4e03cce7646c4485864c4e779e444088d38a84f5c7",
+      "source_map_id": "ec2181896352668e34d272ff353d034371284b5f8754ab286dfa4473348f104b"
     }
   },
   "summary": {
-    "blocked_task_count": 22,
+    "blocked_task_count": 21,
     "error_count": 1,
     "fulfilled_source_map_verification_ok": false,
-    "fulfillment_count": 22,
+    "fulfillment_count": 21,
     "live_source_uri_count": 0,
     "owner_count": 9,
-    "placeholder_source_uri_count": 22,
+    "placeholder_source_uri_count": 21,
     "ready_task_count": 0,
     "review_status": "blocked",
-    "source_map_entry_count": 22,
+    "source_map_entry_count": 21,
     "template_verification_ok": true,
     "warning_count": 3
   },
   "task_reviews": [
-    {
-      "authority_kind": "ci-run",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/ci-run.json",
-      "owner_hint": "release engineering",
-      "requirement_id": "insurer-api-and-actuarial-products",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/ci-run.json",
-      "source_uri": "TODO://authority/insurer-api-and-actuarial-products/ci-run",
-      "source_uri_status": "placeholder",
-      "task": "insurer-api-and-actuarial-products:ci-run"
-    },
     {
       "authority_kind": "kms-hsm",
       "blocking_reasons": [
@@ -936,14 +898,14 @@
   ],
   "verification": {
     "fulfilled_source_map_errors": [
-      "source map contains 22 placeholder source_uri values but live source URIs are required"
+      "source map contains 21 placeholder source_uri values but live source URIs are required"
     ],
     "fulfilled_source_map_warnings": [
-      "source map contains 22 placeholder source_uri values"
+      "source map contains 21 placeholder source_uri values"
     ],
     "template_warnings": [
-      "owner fulfillment template summary contains 22 placeholder source_uri values",
-      "owner fulfillment template summary contains 22 tasks without intake receipts"
+      "owner fulfillment template summary contains 21 placeholder source_uri values",
+      "owner fulfillment template summary contains 21 tasks without intake receipts"
     ]
   },
   "verification_options": {

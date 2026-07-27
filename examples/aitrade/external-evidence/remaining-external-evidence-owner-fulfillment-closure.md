@@ -1,19 +1,18 @@
 # External Evidence Owner Fulfillment Closure
 
-- Closure ID: `290627b0e8ab117beb3ff28a1c36169fe708ce09d46e925652e12610f6387fdc`
+- Closure ID: `f93632f4b23c82f9be145b7c2a29c531ed6c21ecdaa61489c213b7f96d3cc153`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Closed tasks: 0/22
-- Missing intakes: 22
+- Closed tasks: 0/21
+- Missing intakes: 21
 - Invalid intake tasks: 0
-- Missing manifest coverage: 22
-- Placeholder source URIs: 22
+- Missing manifest coverage: 21
+- Placeholder source URIs: 21
 
 ## Task Closure
 
 | Task | Owner | Status | Intake | Manifest Evidence | Blocking Reasons |
 |---|---|---|---|---|---|
-| `insurer-api-and-actuarial-products:ci-run` | release engineering | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `insurer-api-and-actuarial-products:kms-hsm` | security/platform KMS owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `insurer-api-and-actuarial-products:provider-api` | integration/platform owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `insurer-api-and-actuarial-products:hosted-service` | service owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
@@ -38,9 +37,9 @@
 
 ## Blockers
 
-- 22 reviewed tasks still use placeholder source_uri values
-- 22 reviewed tasks do not have intake receipts
-- 22 reviewed tasks are not covered by the rebuilt manifest
+- 21 reviewed tasks still use placeholder source_uri values
+- 21 reviewed tasks do not have intake receipts
+- 21 reviewed tasks are not covered by the rebuilt manifest
 
 ## Next Actions
 

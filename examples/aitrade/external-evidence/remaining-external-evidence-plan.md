@@ -1,8 +1,8 @@
 # TrustAI External Evidence Collection Plan
 
-Plan ID: `3480d49f7a99c6c4a2dc10a67c8d08b1eebd35ac6552559535ebb38786b2863e`
+Plan ID: `967fd94b49bd979de45b4ae08fcaeb031c026bf6678436fb7146c646ca7ac317`
 
-Source manifest: `f71164de4e7d4d0f8b6ab11f5e3651e45ae8865628facc66f5ebce5e5b27ce46`
+Source manifest: `fab0e37126e7e2e9cddf5dae27abde3d20b46eb61fa9d656ef6e625784fa8687`
 
 Status filter: missing
 
@@ -10,16 +10,15 @@ Status filter: missing
 
 - Source manifest status: partial
 - Total authority units: 71
-- Selected tasks: 22
-- Selected missing tasks: 22
+- Selected tasks: 21
+- Selected missing tasks: 21
 - Selected covered tasks: 0
-- Missing authority kinds overall: 22
+- Missing authority kinds overall: 21
 
 ## Collection Tasks
 
 | Task ID | Unit Ref | Requirement | Authority | Status | Owner Hint | Suggested Artifact | Evidence Argument Template |
 |---|---|---|---|---|---|---|---|
-| `ea9fb5aa2b064a81cad7ef59ae24d745831dae9a1f0ed3f5188901ae7c2dbb6d` | `insurer-api-and-actuarial-products:ci-run` | `insurer-api-and-actuarial-products` | ci-run | missing | release engineering | `external-evidence/insurer-api-and-actuarial-products/ci-run.json` | `insurer-api-and-actuarial-products,ci-run,external-evidence/insurer-api-and-actuarial-products/ci-run.json,ci-run evidence for insurer-api-and-actuarial-products;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `4bc6c354d31aac131cd1f8fa9cb9451124c2231482600681d05ecf665cf12252` | `insurer-api-and-actuarial-products:kms-hsm` | `insurer-api-and-actuarial-products` | kms-hsm | missing | security/platform KMS owner | `external-evidence/insurer-api-and-actuarial-products/kms-hsm.json` | `insurer-api-and-actuarial-products,kms-hsm,external-evidence/insurer-api-and-actuarial-products/kms-hsm.json,kms-hsm evidence for insurer-api-and-actuarial-products;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `8a1c69e9de014653f116fbf20e000e659ce983679ddf2f2c48acb58c7dfdb0e3` | `insurer-api-and-actuarial-products:provider-api` | `insurer-api-and-actuarial-products` | provider-api | missing | integration/platform owner | `external-evidence/insurer-api-and-actuarial-products/provider-api.json` | `insurer-api-and-actuarial-products,provider-api,external-evidence/insurer-api-and-actuarial-products/provider-api.json,provider-api evidence for insurer-api-and-actuarial-products;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `eb8cf37d890a258e16d3af9df709c8b155f11a0fb0846a3731237c27961a1327` | `insurer-api-and-actuarial-products:hosted-service` | `insurer-api-and-actuarial-products` | hosted-service | missing | service owner | `external-evidence/insurer-api-and-actuarial-products/hosted-service.json` | `insurer-api-and-actuarial-products,hosted-service,external-evidence/insurer-api-and-actuarial-products/hosted-service.json,hosted-service evidence for insurer-api-and-actuarial-products;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |

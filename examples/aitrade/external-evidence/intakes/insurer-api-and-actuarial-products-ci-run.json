@@ -1,0 +1,69 @@
+{
+  "evidence_argument": "insurer-api-and-actuarial-products,ci-run,examples/aitrade/external-evidence/insurer-api-actuarial-ci-run-source-snapshot.json,Retained GitHub Actions export for insurer API and actuarial products CI evidence;issuer=GitHub Actions;subject=trustai insurer API and actuarial products CI;source_uri=https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
+  "evidence_item": {
+    "accepted_authority_kinds": [
+      "ci-run",
+      "kms-hsm",
+      "provider-api",
+      "hosted-service",
+      "identity-provider",
+      "insurer",
+      "customer"
+    ],
+    "authority_kind": "ci-run",
+    "description": "Retained GitHub Actions export for insurer API and actuarial products CI evidence",
+    "evidence_id": "2ba405e81db6d5837b479d843f01e1271182f47cf0d8c9f91880d406c17c5de1",
+    "expires_at": "2026-12-31T00:00:00Z",
+    "issued_at": "2026-07-12T00:00:00Z",
+    "issuer": "GitHub Actions",
+    "path": "examples/aitrade/external-evidence/insurer-api-actuarial-ci-run-source-snapshot.json",
+    "requirement_id": "insurer-api-and-actuarial-products",
+    "sha256": "sha256:dfba944e720789a32c7306b0d08eb07e747d8e5f06936586c4828b7712ae8e66",
+    "source_uri": "https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml",
+    "subject": "trustai insurer API and actuarial products CI"
+  },
+  "generated_at": "2026-07-12T00:01:00Z",
+  "intake_id": "98e2345d2dfb707f6adfb17839e4762ebfab22907313a130194e27f474516914",
+  "limitations": [
+    "This intake receipt hashes and maps one collected artifact to a collection-plan task; it does not itself satisfy roadmap completion.",
+    "Coverage is updated only after rebuilding and verifying an external evidence manifest with the emitted evidence argument.",
+    "Issuer authority and freshness remain bounded by the collected artifact and manifest verification options."
+  ],
+  "schema": "trustai.external-evidence-intake/0.1",
+  "source_manifest": {
+    "covered_authority_kind_count": 1,
+    "manifest_hash": "614aed31f3e3791640f3192624fab080815440210b65341fb4a2121ed84db717",
+    "manifest_id": "9364d02d07c6d4002372ad45c4017ee3b7a6c6ffd8dc91c46fb9fac9c84f7586",
+    "manifest_ref": "production-external-evidence",
+    "missing_authority_kind_count": 70,
+    "required_authority_kind_count": 71,
+    "status": "partial"
+  },
+  "source_plan": {
+    "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
+    "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
+    "source_manifest": {
+      "generated_at": "2026-07-12T00:01:00Z",
+      "manifest_hash": "614aed31f3e3791640f3192624fab080815440210b65341fb4a2121ed84db717",
+      "manifest_id": "9364d02d07c6d4002372ad45c4017ee3b7a6c6ffd8dc91c46fb9fac9c84f7586",
+      "manifest_ref": "production-external-evidence",
+      "status": "partial"
+    },
+    "status_filter": "all"
+  },
+  "source_roadmap_audit": {
+    "audit_hash": "86cfd25ee3bed75b75604091d3fca2daec16da708498209193e84226bd29816e",
+    "audit_id": "08f9ff68d1301a7891428145af040a68839468931a42dea27e80a0e0ad3bf7f2",
+    "completion_position": "local-reference-complete-with-external-authority-deferred"
+  },
+  "task": {
+    "authority_kind": "ci-run",
+    "coverage_status": "missing",
+    "requirement_id": "insurer-api-and-actuarial-products",
+    "suggested_artifact_path": "external-evidence/insurer-api-and-actuarial-products/ci-run.json",
+    "task_id": "ea9fb5aa2b064a81cad7ef59ae24d745831dae9a1f0ed3f5188901ae7c2dbb6d",
+    "task_ref": "external-evidence:insurer-api-and-actuarial-products:ci-run",
+    "unit_id": "979f4abe956ca3a60d9264d0f2c64ec6a80ee489f4e5cdea597883178b2d3d3d",
+    "unit_ref": "insurer-api-and-actuarial-products:ci-run"
+  }
+}

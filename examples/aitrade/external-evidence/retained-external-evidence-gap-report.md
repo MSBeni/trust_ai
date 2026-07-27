@@ -1,18 +1,18 @@
 # External Evidence Gap Report
 
-- Gap report ID: `2f2cd1d7cd653ba5fde60c0c471406f007cf4daf6ee220870b41e5c5547eb318`
+- Gap report ID: `e1e07ea41e15a279b2c51ef18fe2bd65f349eeeca095d1470f386b2f61a543e9`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 49/71
-- Missing authority kinds: 22
-- Remaining collection tasks: 22
-- Source-map entries: 22
-- Placeholder source URIs: 22
+- Covered authority kinds: 50/71
+- Missing authority kinds: 21
+- Remaining collection tasks: 21
+- Source-map entries: 21
+- Placeholder source URIs: 21
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
 
-- `ci-run`: 4
+- `ci-run`: 3
 - `customer`: 5
 - `hosted-service`: 2
 - `identity-provider`: 2
@@ -24,7 +24,7 @@
 
 ## Gaps By Requirement
 
-- `insurer-api-and-actuarial-products`: 7
+- `insurer-api-and-actuarial-products`: 6
 - `product-scope-discipline`: 2
 - `roadmap-phase-scoreboard`: 5
 - `runtime-policy-and-attestation`: 1
@@ -33,17 +33,6 @@
 - `trust-network-procurement-and-marketplace`: 4
 
 ## Collection Worklist
-
-### insurer-api-and-actuarial-products:ci-run
-
-- Title: Consent-gated insurer telemetry, underwriting quotes, and actuarial products
-- Authority kind: `ci-run`
-- Owner hint: release engineering
-- Description: ci-run evidence for insurer-api-and-actuarial-products
-- Source URI: `TODO://authority/insurer-api-and-actuarial-products/ci-run`
-- Snapshot output: `artifacts/external-evidence-sources/insurer-api-and-actuarial-products/ci-run.json`
-- Intake output: `artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/ci-run.json`
-- Suggested evidence sources: completed CI workflow export; release run URL or provider-native run record; artifact/check provenance
 
 ### insurer-api-and-actuarial-products:kms-hsm
 
