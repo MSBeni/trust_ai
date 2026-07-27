@@ -1,0 +1,22 @@
+{
+  "body_base64": "ewogICJzb3VyY2UiOiAiaWRlbnRpdHktcHJvdmlkZXItZGVtby1leHBvcnQiLAogICJvYnNlcnZlZF9hdCI6ICIyMDI2LTA3LTAzVDExOjU3OjAwWiIsCiAgInJlY29yZHMiOiBbCiAgICB7CiAgICAgICJwcm92aWRlciI6ICJva3RhIiwKICAgICAgImlkIjogIm9rdGEtYWdlbnQtYWl0cmFkZS1yaXNrIiwKICAgICAgInByb2ZpbGUiOiB7CiAgICAgICAgImRpc3BsYXlOYW1lIjogImFpdHJhZGUtcmlzay1hZ2VudCIsCiAgICAgICAgImFnZW50VmVyc2lvbiI6ICJzaGEyNTY6MGQ1YmJkOGQyMzU3YjdkMzZlMGYzZjdjNWU5YTBhM2UxZjViN2EwZDJjNGU2ZjhhOWIxYzNkNWU3ZjkwMTIzNCIsCiAgICAgICAgIm93bmVyIjogInRyYWRpbmctcGxhdGZvcm0iLAogICAgICAgICJyaXNrQ2xhc3MiOiAidHJhZGluZy1wcm9kLXdyaXRlIiwKICAgICAgICAiZW52aXJvbm1lbnQiOiAicHJvZCIsCiAgICAgICAgImNvbnRyYWN0SWQiOiAiYWl0cmFkZS1idGN1c2R0LWNhbmFyeSIsCiAgICAgICAgInRydXN0YWlHb3Zlcm5lZCI6IHRydWUKICAgICAgfQogICAgfSwKICAgIHsKICAgICAgInByb3ZpZGVyIjogImVudHJhIiwKICAgICAgImlkIjogIjliN2Q0YzhlLTZlMTAtNGYwMS1hNzc3LTAwMDAwMDAwMDExMSIsCiAgICAgICJhcHBJZCI6ICJlbnRyYS1hcHAtYWl0cmFkZS1yZXNlYXJjaCIsCiAgICAgICJkaXNwbGF5TmFtZSI6ICJhaXRyYWRlLW5ld3Mtc3VtbWFyaXplciIsCiAgICAgICJvd25lcnMiOiBbCiAgICAgICAgewogICAgICAgICAgImRpc3BsYXlOYW1lIjogInJlc2VhcmNoIgogICAgICAgIH0KICAgICAgXSwKICAgICAgInRhZ3MiOiBbCiAgICAgICAgInZlcnNpb246c2hhMjU2OjExMTEyMjIyMzMzMzQ0NDQ1NTU1NjY2Njc3Nzc4ODg4OTk5OWFhYWFiYmJiY2NjY2RkZGRlZWVlZmZmZjAwMDAiLAogICAgICAgICJyaXNrX2NsYXNzOnJlc2VhcmNoLXJlYWQtb25seSIsCiAgICAgICAgImVudmlyb25tZW50OmRldiIsCiAgICAgICAgImdvdmVybmVkOmZhbHNlIgogICAgICBdCiAgICB9LAogICAgewogICAgICAicHJvdmlkZXIiOiAic2VydmljZW5vdyIsCiAgICAgICJzeXNfaWQiOiAic24tYWdlbnQtY2xhaW1zLTAwMSIsCiAgICAgICJuYW1lIjogImFpdHJhZGUtY2xhaW1zLXRyaWFnZS1hZ2VudCIsCiAgICAgICJ2ZXJzaW9uIjogInNoYTI1NjoyMjIyMzMzMzQ0NDQ1NTU1NjY2Njc3Nzc4ODg4OTk5OWFhYWFiYmJiY2NjY2RkZGRlZWVlZmZmZjAwMDAxMTExIiwKICAgICAgIm93bmVkX2J5IjogewogICAgICAgICJuYW1lIjogImNsYWltcy1wbGF0Zm9ybSIKICAgICAgfSwKICAgICAgInJpc2tfY2xhc3MiOiAiY2xhaW1zLXByb2Qtd3JpdGUiLAogICAgICAiZW52aXJvbm1lbnQiOiAicHJvZCIsCiAgICAgICJnb3Zlcm5lZCI6IGZhbHNlCiAgICB9CiAgXQp9Cg==",
+  "body_sha256": "sha256:4fdba6bb18889d8175faa65f43e3aaf088401e99f22969ac88ad57cfdf9adb73",
+  "body_size_bytes": 1402,
+  "content_type": "application/json",
+  "expires_at": "2026-12-31T00:00:00Z",
+  "generated_at": "2026-07-12T00:01:00Z",
+  "issued_at": "2026-07-03T11:57:00Z",
+  "issuer": "Identity Provider Export",
+  "limitations": [
+    "This source snapshot preserves one collected authority response as a hashable artifact; it does not prove that the authority will return the same response later.",
+    "Verifier checks cover snapshot integrity, body hash, optional HTTP metadata, and optional freshness metadata.",
+    "Use this snapshot as the artifact supplied to external-evidence-intake for the matching collection-plan task."
+  ],
+  "response_headers": {},
+  "retrieval_method": "file-copy",
+  "schema": "trustai.external-evidence-source-snapshot/0.1",
+  "snapshot_id": "a4672e8e2c78423b500bf67037f06380806cdde626d9d9fb4f4469be25ba98f7",
+  "source_uri": "https://idp.example/exports/aitrade/shadow-holdout-agent-identity",
+  "status_code": null,
+  "subject": "aitrade shadow holdout governed agent identity binding"
+}

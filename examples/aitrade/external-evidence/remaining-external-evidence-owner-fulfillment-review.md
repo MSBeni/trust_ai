@@ -1,13 +1,13 @@
 # External Evidence Owner Fulfillment Review
 
-- Review ID: `d95836b3e80ab9d69dce18a575edd79b15c24332bf7e5fe0246b1adfad8ab220`
+- Review ID: `d40957c73e42446ccf97b50b5e5a95db29b0b88164c6a681c1079cb7e87213da`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Fulfillments: 56
+- Fulfillments: 52
 - Owners: 10
 - Ready tasks: 0
-- Blocked tasks: 56
-- Placeholder source URIs: 56
+- Blocked tasks: 52
+- Placeholder source URIs: 52
 - Live source URIs: 0
 
 ## Task Review
@@ -19,10 +19,6 @@
 | `self-serve-onboarding:identity-provider` | IAM/identity owner | blocked | TODO://authority/self-serve-onboarding/identity-provider | `placeholder-source-uri` |
 | `mcp-gateway:ci-run` | release engineering | blocked | TODO://authority/mcp-gateway/ci-run | `placeholder-source-uri` |
 | `mcp-gateway:kms-hsm` | security/platform KMS owner | blocked | TODO://authority/mcp-gateway/kms-hsm | `placeholder-source-uri` |
-| `shadow-replay-temporal-holdout:kms-hsm` | security/platform KMS owner | blocked | TODO://authority/shadow-replay-temporal-holdout/kms-hsm | `placeholder-source-uri` |
-| `shadow-replay-temporal-holdout:provider-api` | integration/platform owner | blocked | TODO://authority/shadow-replay-temporal-holdout/provider-api | `placeholder-source-uri` |
-| `shadow-replay-temporal-holdout:identity-provider` | IAM/identity owner | blocked | TODO://authority/shadow-replay-temporal-holdout/identity-provider | `placeholder-source-uri` |
-| `shadow-replay-temporal-holdout:standards-body` | standards/governance owner | blocked | TODO://authority/shadow-replay-temporal-holdout/standards-body | `placeholder-source-uri` |
 | `cicd-provider-approvals:hosted-service` | service owner | blocked | TODO://authority/cicd-provider-approvals/hosted-service | `placeholder-source-uri` |
 | `cicd-provider-approvals:identity-provider` | IAM/identity owner | blocked | TODO://authority/cicd-provider-approvals/identity-provider | `placeholder-source-uri` |
 | `design-partner-pilot-exit-criteria:regulator` | legal/compliance owner | blocked | TODO://authority/design-partner-pilot-exit-criteria/regulator | `placeholder-source-uri` |
@@ -75,12 +71,12 @@
 
 - Fulfilled source map errors: 1
 - Fulfilled source map warnings: 1
-  - source map contains 56 placeholder source_uri values but live source URIs are required
+  - source map contains 52 placeholder source_uri values but live source URIs are required
 
 ## Blockers
 
-- owner fulfillment review contains 56 placeholder source_uri values
-- fulfilled source map: source map contains 56 placeholder source_uri values but live source URIs are required
+- owner fulfillment review contains 52 placeholder source_uri values
+- fulfilled source map: source map contains 52 placeholder source_uri values but live source URIs are required
 
 ## Next Actions
 

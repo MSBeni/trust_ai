@@ -1,0 +1,66 @@
+{
+  "evidence_argument": "shadow-replay-temporal-holdout,standards-body,examples/aitrade/external-evidence/shadow-holdout-standards-body-source-snapshot.json,Retained standards-body ballot system response for temporal holdout evidence semantics;issuer=LF TrustAI Ballot System;subject=trustai temporal holdout standards ballot system response;source_uri=https://standards.example/lf-trustai/ballots/LF-TRUSTAI-BALLOT-2026-001;issued_at=2026-07-03T12:04:00Z;expires_at=2026-12-31T00:00:00Z",
+  "evidence_item": {
+    "accepted_authority_kinds": [
+      "kms-hsm",
+      "provider-api",
+      "identity-provider",
+      "standards-body"
+    ],
+    "authority_kind": "standards-body",
+    "description": "Retained standards-body ballot system response for temporal holdout evidence semantics",
+    "evidence_id": "686d9851ffcd464eb651ea5c741564e8f0f35347c61af51794e241f1c285266d",
+    "expires_at": "2026-12-31T00:00:00Z",
+    "issued_at": "2026-07-03T12:04:00Z",
+    "issuer": "LF TrustAI Ballot System",
+    "path": "examples/aitrade/external-evidence/shadow-holdout-standards-body-source-snapshot.json",
+    "requirement_id": "shadow-replay-temporal-holdout",
+    "sha256": "sha256:1f8deb1f18df77c26488c5f01e986fdfedfa5563ed644a60c79deb19ea31b91c",
+    "source_uri": "https://standards.example/lf-trustai/ballots/LF-TRUSTAI-BALLOT-2026-001",
+    "subject": "trustai temporal holdout standards ballot system response"
+  },
+  "generated_at": "2026-07-12T00:01:00Z",
+  "intake_id": "3237096eec02b2dfe43073dc891aa6d416e3371dce0d8ddf58413ae069548471",
+  "limitations": [
+    "This intake receipt hashes and maps one collected artifact to a collection-plan task; it does not itself satisfy roadmap completion.",
+    "Coverage is updated only after rebuilding and verifying an external evidence manifest with the emitted evidence argument.",
+    "Issuer authority and freshness remain bounded by the collected artifact and manifest verification options."
+  ],
+  "schema": "trustai.external-evidence-intake/0.1",
+  "source_manifest": {
+    "covered_authority_kind_count": 1,
+    "manifest_hash": "614aed31f3e3791640f3192624fab080815440210b65341fb4a2121ed84db717",
+    "manifest_id": "9364d02d07c6d4002372ad45c4017ee3b7a6c6ffd8dc91c46fb9fac9c84f7586",
+    "manifest_ref": "production-external-evidence",
+    "missing_authority_kind_count": 70,
+    "required_authority_kind_count": 71,
+    "status": "partial"
+  },
+  "source_plan": {
+    "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
+    "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
+    "source_manifest": {
+      "generated_at": "2026-07-12T00:01:00Z",
+      "manifest_hash": "614aed31f3e3791640f3192624fab080815440210b65341fb4a2121ed84db717",
+      "manifest_id": "9364d02d07c6d4002372ad45c4017ee3b7a6c6ffd8dc91c46fb9fac9c84f7586",
+      "manifest_ref": "production-external-evidence",
+      "status": "partial"
+    },
+    "status_filter": "all"
+  },
+  "source_roadmap_audit": {
+    "audit_hash": "86cfd25ee3bed75b75604091d3fca2daec16da708498209193e84226bd29816e",
+    "audit_id": "08f9ff68d1301a7891428145af040a68839468931a42dea27e80a0e0ad3bf7f2",
+    "completion_position": "local-reference-complete-with-external-authority-deferred"
+  },
+  "task": {
+    "authority_kind": "standards-body",
+    "coverage_status": "missing",
+    "requirement_id": "shadow-replay-temporal-holdout",
+    "suggested_artifact_path": "external-evidence/shadow-replay-temporal-holdout/standards-body.json",
+    "task_id": "ee6d57dfd25d9d2b65ee1976add9dbcf5a609b3959fb87167dfb38c75015ebeb",
+    "task_ref": "external-evidence:shadow-replay-temporal-holdout:standards-body",
+    "unit_id": "15afd330474ec578f826292afa08c9726a1d3219d1dfc6b4a35fdf93597aa2cb",
+    "unit_ref": "shadow-replay-temporal-holdout:standards-body"
+  }
+}

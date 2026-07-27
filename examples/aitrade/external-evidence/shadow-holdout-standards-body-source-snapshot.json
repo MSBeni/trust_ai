@@ -1,0 +1,22 @@
+{
+  "body_base64": "ewogICJleHBvcnRfcmVmIjogIkxGLVRSVVNUQUktQkFMTE9ULTIwMjYtMDAxOmV4cG9ydCIsCiAgInN0YXR1cyI6ICJwdWJsaXNoZWQiLAogICJzeXN0ZW0iOiAiTEYgVHJ1c3RBSSBCYWxsb3QgU3lzdGVtIgp9Cg==",
+  "body_sha256": "sha256:63736dd6a55278122c6ccc073d90210feae442bef2d00edf3bae98c5f24876a6",
+  "body_size_bytes": 121,
+  "content_type": "application/json",
+  "expires_at": "2026-12-31T00:00:00Z",
+  "generated_at": "2026-07-12T00:01:00Z",
+  "issued_at": "2026-07-03T12:04:00Z",
+  "issuer": "LF TrustAI Ballot System",
+  "limitations": [
+    "This source snapshot preserves one collected authority response as a hashable artifact; it does not prove that the authority will return the same response later.",
+    "Verifier checks cover snapshot integrity, body hash, optional HTTP metadata, and optional freshness metadata.",
+    "Use this snapshot as the artifact supplied to external-evidence-intake for the matching collection-plan task."
+  ],
+  "response_headers": {},
+  "retrieval_method": "file-copy",
+  "schema": "trustai.external-evidence-source-snapshot/0.1",
+  "snapshot_id": "ac6da630a27a20626554f45ea857df42b28b10ea157d0bb99b30fe69c25e01a1",
+  "source_uri": "https://standards.example/lf-trustai/ballots/LF-TRUSTAI-BALLOT-2026-001",
+  "status_code": null,
+  "subject": "trustai temporal holdout standards ballot system response"
+}

@@ -5,7 +5,7 @@
     "Source URIs marked TODO or placeholder must be replaced with authority-owned source exports before collection.",
     "Packet completion is proven only by verified source snapshots, intake receipts, rebuilt manifests, and readiness reports."
   ],
-  "owner_packet_bundle_id": "c7147b55e455d44757443e19014dcd741d79c5ca3db918935d07a79e77bf0d7d",
+  "owner_packet_bundle_id": "35529219c8223ddf276b0ce84b52346afd9887af26e9342945f0fa26bda03d83",
   "packets": [
     {
       "authority_kinds": [
@@ -21,12 +21,12 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 6,
+      "missing_task_count": 5,
       "owner_hint": "IAM/identity owner",
-      "package_hash": "1a8a7ca0e0966849a9b8228a8653a9792e25c28a90815ed150dd74d24ed02ada",
-      "package_id": "fd926abedc88c07df572b5153fedbf191abc73274b3358f28d2885181db4dc6c",
+      "package_hash": "b27b042307b1adcb7d4fda3744f1b5fccb4761a677f220ba3f2fad37e2c4b1fe",
+      "package_id": "94a58b6180d65c3aeaba559eb78d79cfbbb6bc3d9692239c3fe9c2a69af69647",
       "package_ref": "owner_hint:IAM-identity-owner",
-      "packet_id": "67852116f9147a9238aae2aa403a943d9227d3ab3d3ebabdd0760a2ff72ab071",
+      "packet_id": "b27d3a3fc82da0dc9cc971e5981c230b215454cb630b7eb1c871167d8cb16fc0",
       "packet_ref": "owner-packet:owner_hint:IAM-identity-owner",
       "phases": [
         "P1",
@@ -35,7 +35,7 @@
         "P2-P4",
         "P4"
       ],
-      "placeholder_source_uri_count": 6,
+      "placeholder_source_uri_count": 5,
       "priorities": [
         "P0",
         "P1"
@@ -45,10 +45,9 @@
         "cicd-provider-approvals",
         "insurer-api-and-actuarial-products",
         "self-serve-onboarding",
-        "shadow-replay-temporal-holdout",
         "trust-network-procurement-and-marketplace"
       ],
-      "task_count": 6,
+      "task_count": 5,
       "tasks": [
         {
           "acceptance_criteria": [
@@ -126,83 +125,6 @@
           "title": "CI/CD promotion gates, provider callbacks, and Slack approvals",
           "unit_id": "91813bff0d72214132e2e8fe3c142e5c096ec7a8db1723c9e67213e757f6c901",
           "unit_ref": "cicd-provider-approvals:identity-provider"
-        },
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be identity-provider and accepted for shadow-replay-temporal-holdout.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "identity-provider",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/shadow-replay-temporal-holdout/identity-provider",
-              "--root",
-              ".",
-              "--task",
-              "shadow-replay-temporal-holdout:identity-provider",
-              "--description",
-              "identity-provider evidence for shadow-replay-temporal-holdout",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/identity-provider.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/identity-provider.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/shadow-replay-temporal-holdout/identity-provider --root . --task shadow-replay-temporal-holdout:identity-provider --description 'identity-provider evidence for shadow-replay-temporal-holdout' --snapshot-out artifacts/external-evidence-sources/shadow-replay-temporal-holdout/identity-provider.json --intake-out artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/identity-provider.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/identity-provider.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/identity-provider.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "identity-provider evidence for shadow-replay-temporal-holdout",
-          "evidence_argument_template": "shadow-replay-temporal-holdout,identity-provider,external-evidence/shadow-replay-temporal-holdout/identity-provider.json,identity-provider evidence for shadow-replay-temporal-holdout;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/identity-provider.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "IAM/identity owner",
-          "phase": "P1",
-          "priority": "P0",
-          "requirement_id": "shadow-replay-temporal-holdout",
-          "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/identity-provider.json",
-          "source_uri": "TODO://authority/shadow-replay-temporal-holdout/identity-provider",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/shadow-replay-temporal-holdout/identity-provider.json",
-          "suggested_evidence_sources": [
-            "identity-provider event export",
-            "OIDC/session/lifecycle evidence",
-            "RBAC or account-state report"
-          ],
-          "task_id": "4ab97d4e2347b46aff33524c887d3a6651588edbce84a753d5ef2b6fa905c84e",
-          "task_ref": "external-evidence:shadow-replay-temporal-holdout:identity-provider",
-          "title": "Shadow replay, temporal holdout, soak reports, and distributional re-execution",
-          "unit_id": "19e307dd982131f9693256f22f8f05f0ea7a1af37e92c38556afabb57305c88c",
-          "unit_ref": "shadow-replay-temporal-holdout:identity-provider"
         },
         {
           "acceptance_criteria": [
@@ -1384,15 +1306,14 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 7,
+      "missing_task_count": 6,
       "owner_hint": "integration/platform owner",
-      "package_hash": "2a0f16142df7025749d01a7a040de9cffe52a73dc885655df1c4c74174e3d728",
-      "package_id": "954f3e0608bc80c7db0f1f87e8ed3ba6b4012cb986befe930456c230ba908293",
+      "package_hash": "19442fdb385e572ad90101e61a11ff894505f1f2999e2b91f25ac567815a025a",
+      "package_id": "f6fa200f83011b203bc4fd19159deffb0bd6d44797787bfe7d4ee246e0c57cd9",
       "package_ref": "owner_hint:integration-platform-owner",
-      "packet_id": "2cedea5ca596b66e2274f26c93396dcd0daccb63607968deed1ea6b944d673f1",
+      "packet_id": "4233ba222ffae8b5f08846e0df5d581b05c58b78c00627de04b14041f600c3e6",
       "packet_ref": "owner-packet:owner_hint:integration-platform-owner",
       "phases": [
-        "P1",
         "P1-P2",
         "P1-P3",
         "P2",
@@ -1400,7 +1321,7 @@
         "P2-P4",
         "P4"
       ],
-      "placeholder_source_uri_count": 7,
+      "placeholder_source_uri_count": 6,
       "priorities": [
         "P0",
         "P1"
@@ -1411,88 +1332,10 @@
         "compliance-mapper-and-eu-ai-act",
         "insurer-api-and-actuarial-products",
         "self-serve-onboarding",
-        "shadow-replay-temporal-holdout",
         "trust-network-procurement-and-marketplace"
       ],
-      "task_count": 7,
+      "task_count": 6,
       "tasks": [
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be provider-api and accepted for shadow-replay-temporal-holdout.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "provider-api",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/shadow-replay-temporal-holdout/provider-api",
-              "--root",
-              ".",
-              "--task",
-              "shadow-replay-temporal-holdout:provider-api",
-              "--description",
-              "provider-api evidence for shadow-replay-temporal-holdout",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/provider-api.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/provider-api.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/shadow-replay-temporal-holdout/provider-api --root . --task shadow-replay-temporal-holdout:provider-api --description 'provider-api evidence for shadow-replay-temporal-holdout' --snapshot-out artifacts/external-evidence-sources/shadow-replay-temporal-holdout/provider-api.json --intake-out artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/provider-api.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/provider-api.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/provider-api.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "provider-api evidence for shadow-replay-temporal-holdout",
-          "evidence_argument_template": "shadow-replay-temporal-holdout,provider-api,external-evidence/shadow-replay-temporal-holdout/provider-api.json,provider-api evidence for shadow-replay-temporal-holdout;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/provider-api.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "integration/platform owner",
-          "phase": "P1",
-          "priority": "P0",
-          "requirement_id": "shadow-replay-temporal-holdout",
-          "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/provider-api.json",
-          "source_uri": "TODO://authority/shadow-replay-temporal-holdout/provider-api",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/shadow-replay-temporal-holdout/provider-api.json",
-          "suggested_evidence_sources": [
-            "provider API response export",
-            "request/response transcript",
-            "provider-owned audit event"
-          ],
-          "task_id": "d80551bd511665073ae5004725f7a510593a7f944c11d3350a3af384c10d57f5",
-          "task_ref": "external-evidence:shadow-replay-temporal-holdout:provider-api",
-          "title": "Shadow replay, temporal holdout, soak reports, and distributional re-execution",
-          "unit_id": "e0f691dce6a7859dec40b0439af39824bbe030c9eb08662294e3aaaef3695b39",
-          "unit_ref": "shadow-replay-temporal-holdout:provider-api"
-        },
         {
           "acceptance_criteria": [
             "Artifact path must be repository-relative and hashable before manifest verification.",
@@ -3336,12 +3179,12 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 6,
+      "missing_task_count": 5,
       "owner_hint": "security/platform KMS owner",
-      "package_hash": "998d43ab0fa0754e199e067965961a6c2daf0fb93f3be21e86df36bfa88a7df3",
-      "package_id": "6cfb1482b55b96eb17ef1e321c37e6ca7eb675947ed4484ad9cf995614daeb77",
+      "package_hash": "8d22e02daf72d7e1c482e0610f13747cd23c9c47090b7ad723c8f05f4106d702",
+      "package_id": "c11e300392a76becdf19be98ee114fdba9e6bf212e2a2ba4ad6f04c8b870cd81",
       "package_ref": "owner_hint:security-platform-KMS-owner",
-      "packet_id": "720612159deba7ffdc7d000476bd69d6617e57b7fa38a84cba84e92cc9442796",
+      "packet_id": "e40e5fd2141a9cff0b461b948f35549b4805d22a626658a0808302967e099caf",
       "packet_ref": "owner-packet:owner_hint:security-platform-KMS-owner",
       "phases": [
         "P1",
@@ -3350,7 +3193,7 @@
         "P2-P4",
         "P3"
       ],
-      "placeholder_source_uri_count": 6,
+      "placeholder_source_uri_count": 5,
       "priorities": [
         "P0",
         "P1"
@@ -3360,10 +3203,9 @@
         "byoc-self-hosted",
         "insurer-api-and-actuarial-products",
         "mcp-gateway",
-        "shadow-replay-temporal-holdout",
         "standards-track-and-auditor-ecosystem"
       ],
-      "task_count": 6,
+      "task_count": 5,
       "tasks": [
         {
           "acceptance_criteria": [
@@ -3441,83 +3283,6 @@
           "title": "MCP evidence gateway reference capture",
           "unit_id": "b6bff59993928600d982fe3a58ffd8124707f853906888cab9ca1024a7a15840",
           "unit_ref": "mcp-gateway:kms-hsm"
-        },
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be kms-hsm and accepted for shadow-replay-temporal-holdout.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "kms-hsm",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/shadow-replay-temporal-holdout/kms-hsm",
-              "--root",
-              ".",
-              "--task",
-              "shadow-replay-temporal-holdout:kms-hsm",
-              "--description",
-              "kms-hsm evidence for shadow-replay-temporal-holdout",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/kms-hsm.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/kms-hsm.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/shadow-replay-temporal-holdout/kms-hsm --root . --task shadow-replay-temporal-holdout:kms-hsm --description 'kms-hsm evidence for shadow-replay-temporal-holdout' --snapshot-out artifacts/external-evidence-sources/shadow-replay-temporal-holdout/kms-hsm.json --intake-out artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/kms-hsm.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/kms-hsm.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/kms-hsm.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "kms-hsm evidence for shadow-replay-temporal-holdout",
-          "evidence_argument_template": "shadow-replay-temporal-holdout,kms-hsm,external-evidence/shadow-replay-temporal-holdout/kms-hsm.json,kms-hsm evidence for shadow-replay-temporal-holdout;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/kms-hsm.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "security/platform KMS owner",
-          "phase": "P1",
-          "priority": "P0",
-          "requirement_id": "shadow-replay-temporal-holdout",
-          "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/kms-hsm.json",
-          "source_uri": "TODO://authority/shadow-replay-temporal-holdout/kms-hsm",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/shadow-replay-temporal-holdout/kms-hsm.json",
-          "suggested_evidence_sources": [
-            "KMS/HSM key policy export",
-            "signing operation receipt",
-            "custody or audit-log root"
-          ],
-          "task_id": "d3017ae6fcc7d06172506074706607049c15814f54655245f15c15a500693204",
-          "task_ref": "external-evidence:shadow-replay-temporal-holdout:kms-hsm",
-          "title": "Shadow replay, temporal holdout, soak reports, and distributional re-execution",
-          "unit_id": "b22b20e47680d557c73438b85016ce39e0b37d13afc0cf1bd5ebb7ad109e6e55",
-          "unit_ref": "shadow-replay-temporal-holdout:kms-hsm"
         },
         {
           "acceptance_criteria": [
@@ -4272,22 +4037,21 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 6,
+      "missing_task_count": 5,
       "owner_hint": "standards/governance owner",
-      "package_hash": "d614859550afc053e86d99e2c532b016d918cbde320b133d2e7bae8a6a58d190",
-      "package_id": "1774db5a51ba83f55d2139304cfc9ac99768af376032ca1ea23352ae7b6d3d97",
+      "package_hash": "c0c97a428419fc3a1429c06ebdfc2d8d82a0db266587ce69b6e61fdd1c57b774",
+      "package_id": "96c90200c8c4b1844ee79604a51e4dce17bf1caf11868b750d0ab837b5b08b2f",
       "package_ref": "owner_hint:standards-governance-owner",
-      "packet_id": "5de448069b7c66596b724a5aa36a626dcd50fdb9104771656a6fc12953b9d62d",
+      "packet_id": "717b6057158c76906ee8eb8aea64892e1c55db2e5a1d08db8d5611f88a769b1e",
       "packet_ref": "owner-packet:owner_hint:standards-governance-owner",
       "phases": [
-        "P1",
         "P1-P2",
         "P1-P4",
         "P2",
         "P2-P3",
         "P3"
       ],
-      "placeholder_source_uri_count": 6,
+      "placeholder_source_uri_count": 5,
       "priorities": [
         "P0",
         "P1"
@@ -4296,89 +4060,11 @@
         "byoc-self-hosted",
         "compliance-mapper-and-eu-ai-act",
         "roadmap-phase-scoreboard",
-        "shadow-replay-temporal-holdout",
         "standards-track-and-auditor-ecosystem",
         "trustai-own-compliance"
       ],
-      "task_count": 6,
+      "task_count": 5,
       "tasks": [
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be standards-body and accepted for shadow-replay-temporal-holdout.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "standards-body",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/shadow-replay-temporal-holdout/standards-body",
-              "--root",
-              ".",
-              "--task",
-              "shadow-replay-temporal-holdout:standards-body",
-              "--description",
-              "standards-body evidence for shadow-replay-temporal-holdout",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/standards-body.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/standards-body.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/shadow-replay-temporal-holdout/standards-body --root . --task shadow-replay-temporal-holdout:standards-body --description 'standards-body evidence for shadow-replay-temporal-holdout' --snapshot-out artifacts/external-evidence-sources/shadow-replay-temporal-holdout/standards-body.json --intake-out artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/standards-body.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/standards-body.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/standards-body.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "standards-body evidence for shadow-replay-temporal-holdout",
-          "evidence_argument_template": "shadow-replay-temporal-holdout,standards-body,external-evidence/shadow-replay-temporal-holdout/standards-body.json,standards-body evidence for shadow-replay-temporal-holdout;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/standards-body.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "standards/governance owner",
-          "phase": "P1",
-          "priority": "P0",
-          "requirement_id": "shadow-replay-temporal-holdout",
-          "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/standards-body.json",
-          "source_uri": "TODO://authority/shadow-replay-temporal-holdout/standards-body",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/shadow-replay-temporal-holdout/standards-body.json",
-          "suggested_evidence_sources": [
-            "standards-body submission receipt",
-            "working-group status record",
-            "ballot or docket export"
-          ],
-          "task_id": "ee6d57dfd25d9d2b65ee1976add9dbcf5a609b3959fb87167dfb38c75015ebeb",
-          "task_ref": "external-evidence:shadow-replay-temporal-holdout:standards-body",
-          "title": "Shadow replay, temporal holdout, soak reports, and distributional re-execution",
-          "unit_id": "15afd330474ec578f826292afa08c9726a1d3219d1dfc6b4a35fdf93597aa2cb",
-          "unit_ref": "shadow-replay-temporal-holdout:standards-body"
-        },
         {
           "acceptance_criteria": [
             "Artifact path must be repository-relative and hashable before manifest verification.",
@@ -4771,40 +4457,40 @@
   "source_work_package": {
     "generated_at": "2026-07-12T00:01:00Z",
     "group_by": "owner_hint",
-    "work_package_hash": "2a3a35cf0a6dda85eea7b8c3283d9cd2cd43b5b8e04afb92f81b0867c8b01d1d",
-    "work_package_id": "4406b80c734446636cf22bdf922d5426430f9f865e0364fe441d110d4de9e9a8"
+    "work_package_hash": "b5b97885c2d147ccd7426056fbf1cf6056f7f3b2c3a77eb865a2e8af9a3533ac",
+    "work_package_id": "182b1557c7eb5e7a7f1409703605efd00146d03debcf2c6acf8ea2262f302430"
   },
   "summary": {
     "covered_task_count": 0,
     "live_source_uri_count": 0,
-    "missing_task_count": 56,
+    "missing_task_count": 52,
     "packet_count": 10,
-    "placeholder_source_uri_count": 56,
-    "source_work_package_task_count": 56,
-    "task_count": 56,
+    "placeholder_source_uri_count": 52,
+    "source_work_package_task_count": 52,
+    "task_count": 52,
     "task_count_by_authority_kind": {
       "ci-run": 7,
       "cloud-object-lock": 1,
       "customer": 9,
       "hosted-service": 5,
-      "identity-provider": 6,
+      "identity-provider": 5,
       "insurer": 4,
-      "kms-hsm": 6,
-      "provider-api": 7,
+      "kms-hsm": 5,
+      "provider-api": 6,
       "regulator": 5,
-      "standards-body": 6
+      "standards-body": 5
     },
     "task_count_by_owner_hint": {
-      "IAM/identity owner": 6,
+      "IAM/identity owner": 5,
       "cloud storage owner": 1,
       "customer success/account owner": 9,
-      "integration/platform owner": 7,
+      "integration/platform owner": 6,
       "legal/compliance owner": 5,
       "release engineering": 7,
       "risk/insurance owner": 4,
-      "security/platform KMS owner": 6,
+      "security/platform KMS owner": 5,
       "service owner": 5,
-      "standards/governance owner": 6
+      "standards/governance owner": 5
     }
   }
 }

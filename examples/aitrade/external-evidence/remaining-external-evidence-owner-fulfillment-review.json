@@ -1,7 +1,7 @@
 {
   "blockers": [
-    "owner fulfillment review contains 56 placeholder source_uri values",
-    "fulfilled source map: source map contains 56 placeholder source_uri values but live source URIs are required"
+    "owner fulfillment review contains 52 placeholder source_uri values",
+    "fulfilled source map: source map contains 52 placeholder source_uri values but live source URIs are required"
   ],
   "commands": {
     "collect_after_ready_review": "python -m trustai external-evidence-collect-batch <fulfilled-source-map.json> <manifest.json> <roadmap-audit.json> --root . --require-live-source-uris",
@@ -130,102 +130,6 @@
         "title": "MCP evidence gateway reference capture",
         "unit_id": "b6bff59993928600d982fe3a58ffd8124707f853906888cab9ca1024a7a15840",
         "unit_ref": "mcp-gateway:kms-hsm"
-      },
-      {
-        "authority_kind": "kms-hsm",
-        "coverage_status": "missing",
-        "description": "kms-hsm evidence for shadow-replay-temporal-holdout",
-        "external_authority_required": [
-          "Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/kms-hsm.json",
-        "owner_hint": "security/platform KMS owner",
-        "requirement_id": "shadow-replay-temporal-holdout",
-        "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/kms-hsm.json",
-        "source_uri": "TODO://authority/shadow-replay-temporal-holdout/kms-hsm",
-        "suggested_evidence_sources": [
-          "KMS/HSM key policy export",
-          "signing operation receipt",
-          "custody or audit-log root"
-        ],
-        "task": "shadow-replay-temporal-holdout:kms-hsm",
-        "task_id": "d3017ae6fcc7d06172506074706607049c15814f54655245f15c15a500693204",
-        "task_ref": "external-evidence:shadow-replay-temporal-holdout:kms-hsm",
-        "title": "Shadow replay, temporal holdout, soak reports, and distributional re-execution",
-        "unit_id": "b22b20e47680d557c73438b85016ce39e0b37d13afc0cf1bd5ebb7ad109e6e55",
-        "unit_ref": "shadow-replay-temporal-holdout:kms-hsm"
-      },
-      {
-        "authority_kind": "provider-api",
-        "coverage_status": "missing",
-        "description": "provider-api evidence for shadow-replay-temporal-holdout",
-        "external_authority_required": [
-          "Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/provider-api.json",
-        "owner_hint": "integration/platform owner",
-        "requirement_id": "shadow-replay-temporal-holdout",
-        "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/provider-api.json",
-        "source_uri": "TODO://authority/shadow-replay-temporal-holdout/provider-api",
-        "suggested_evidence_sources": [
-          "provider API response export",
-          "request/response transcript",
-          "provider-owned audit event"
-        ],
-        "task": "shadow-replay-temporal-holdout:provider-api",
-        "task_id": "d80551bd511665073ae5004725f7a510593a7f944c11d3350a3af384c10d57f5",
-        "task_ref": "external-evidence:shadow-replay-temporal-holdout:provider-api",
-        "title": "Shadow replay, temporal holdout, soak reports, and distributional re-execution",
-        "unit_id": "e0f691dce6a7859dec40b0439af39824bbe030c9eb08662294e3aaaef3695b39",
-        "unit_ref": "shadow-replay-temporal-holdout:provider-api"
-      },
-      {
-        "authority_kind": "identity-provider",
-        "coverage_status": "missing",
-        "description": "identity-provider evidence for shadow-replay-temporal-holdout",
-        "external_authority_required": [
-          "Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/identity-provider.json",
-        "owner_hint": "IAM/identity owner",
-        "requirement_id": "shadow-replay-temporal-holdout",
-        "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/identity-provider.json",
-        "source_uri": "TODO://authority/shadow-replay-temporal-holdout/identity-provider",
-        "suggested_evidence_sources": [
-          "identity-provider event export",
-          "OIDC/session/lifecycle evidence",
-          "RBAC or account-state report"
-        ],
-        "task": "shadow-replay-temporal-holdout:identity-provider",
-        "task_id": "4ab97d4e2347b46aff33524c887d3a6651588edbce84a753d5ef2b6fa905c84e",
-        "task_ref": "external-evidence:shadow-replay-temporal-holdout:identity-provider",
-        "title": "Shadow replay, temporal holdout, soak reports, and distributional re-execution",
-        "unit_id": "19e307dd982131f9693256f22f8f05f0ea7a1af37e92c38556afabb57305c88c",
-        "unit_ref": "shadow-replay-temporal-holdout:identity-provider"
-      },
-      {
-        "authority_kind": "standards-body",
-        "coverage_status": "missing",
-        "description": "standards-body evidence for shadow-replay-temporal-holdout",
-        "external_authority_required": [
-          "Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/standards-body.json",
-        "owner_hint": "standards/governance owner",
-        "requirement_id": "shadow-replay-temporal-holdout",
-        "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/standards-body.json",
-        "source_uri": "TODO://authority/shadow-replay-temporal-holdout/standards-body",
-        "suggested_evidence_sources": [
-          "standards-body submission receipt",
-          "working-group status record",
-          "ballot or docket export"
-        ],
-        "task": "shadow-replay-temporal-holdout:standards-body",
-        "task_id": "ee6d57dfd25d9d2b65ee1976add9dbcf5a609b3959fb87167dfb38c75015ebeb",
-        "task_ref": "external-evidence:shadow-replay-temporal-holdout:standards-body",
-        "title": "Shadow replay, temporal holdout, soak reports, and distributional re-execution",
-        "unit_id": "15afd330474ec578f826292afa08c9726a1d3219d1dfc6b4a35fdf93597aa2cb",
-        "unit_ref": "shadow-replay-temporal-holdout:standards-body"
       },
       {
         "authority_kind": "hosted-service",
@@ -1363,14 +1267,14 @@
       "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
     ],
     "schema": "trustai.external-evidence-source-map/0.1",
-    "source_map_id": "d4663cd04d1118f3bbc5e785422fa327ee9d8285d45a4662675ea1c03b4a57ab",
+    "source_map_id": "81dea9f2e6157d9e446fd5b77b67036f796f5a8930b1e13d55866ca941b03549",
     "source_plan": {
-      "plan_hash": "a92b68c10ade027d8d8e40789dddd5b96d5bf070101feadc243ed5f18b84306e",
-      "plan_id": "2fe688b9127b0bb62342712597fe5e6024b7b9abeb276aae183b474294c6f317",
+      "plan_hash": "9c4962321d5978bd5cd4fcf870c3c9b84280e9dc836d98f39aae524ae7ba24fe",
+      "plan_id": "7d60b5e2563d50f0ea9d22af7ca23f5e20429022a612f1d3816c6b325e6a5ff8",
       "source_manifest": {
         "generated_at": "2026-07-12T00:01:00Z",
-        "manifest_hash": "e70033561136d1fddff3d462df16dd33d7d04852a589990f6da37224d7328780",
-        "manifest_id": "e65a27825304642675dba11e28110d9cbcaa1910d4a8bb903f7ff156d3052ef9",
+        "manifest_hash": "b3b153a11041adb4640d735faa815b638ee3022931c2e37f2d20113fde0ba021",
+        "manifest_id": "04e0cde18bc2077bbc9eb57c5e8382c1c0b0148bba1cf7c1b05c186ca11de670",
         "manifest_ref": "production-external-evidence",
         "status": "partial"
       },
@@ -1378,12 +1282,12 @@
     },
     "summary": {
       "authority_kinds": [],
-      "entry_count": 56,
+      "entry_count": 52,
       "intake_dir": "artifacts/external-evidence-intakes",
       "live_source_uri_count": 0,
-      "placeholder_source_uri_count": 56,
+      "placeholder_source_uri_count": 52,
       "snapshot_dir": "artifacts/external-evidence-sources",
-      "source_plan_task_count": 56,
+      "source_plan_task_count": 52,
       "status_filter": "missing"
     }
   },
@@ -1398,45 +1302,45 @@
     "Regenerate this review with --require-live-source-uris before collecting source snapshots.",
     "After the fulfilled source map is ready, run external-evidence-collect-batch and rebuild the retained manifest from intake receipts."
   ],
-  "owner_fulfillment_review_id": "d95836b3e80ab9d69dce18a575edd79b15c24332bf7e5fe0246b1adfad8ab220",
+  "owner_fulfillment_review_id": "d40957c73e42446ccf97b50b5e5a95db29b0b88164c6a681c1079cb7e87213da",
   "schema": "trustai.external-evidence-owner-fulfillment-review/0.1",
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "a92b68c10ade027d8d8e40789dddd5b96d5bf070101feadc243ed5f18b84306e",
-      "plan_id": "2fe688b9127b0bb62342712597fe5e6024b7b9abeb276aae183b474294c6f317",
+      "plan_hash": "9c4962321d5978bd5cd4fcf870c3c9b84280e9dc836d98f39aae524ae7ba24fe",
+      "plan_id": "7d60b5e2563d50f0ea9d22af7ca23f5e20429022a612f1d3816c6b325e6a5ff8",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "owner_fulfillment_template": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_fulfillment_template_hash": "86b2ac9f7fa68714117a53c9273c0110f6fcce6f2a5dea8a566dbd9b46576e2e",
-      "owner_fulfillment_template_id": "ae9aa483b460e1e5eaa7b8c0f83af8c51254262a7debb7f5c9ebe066c074f4cc",
+      "owner_fulfillment_template_hash": "c559f704ec3bf05c952882feff4ff897632e1f45da211e89687a65764ac6ba9b",
+      "owner_fulfillment_template_id": "5a25b30ba6edd6b218d28ebadc402fdc965b1dcfbed21ff002fde8e79e9ddd2a",
       "schema": "trustai.external-evidence-owner-fulfillment-template/0.1"
     },
     "owner_packet_status": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_status_hash": "d445712b865458355aa9d39723c422045e572f8d6dd32a418cf272890a2a9cfe",
-      "owner_packet_status_id": "240a946987390c521833af7584120e449c0479e86a090006a70b58b3a13addc1",
+      "owner_packet_status_hash": "7874e73bffbba293ca409c258da9e91e907a68b664df09eb747f302230bac906",
+      "owner_packet_status_id": "7dc6dd2c90cd02869ebd3087a22078dce39fb160a591ad6826a9529ba92e1be1",
       "schema": "trustai.external-evidence-owner-packet-status/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "92cf664d963935aa092677d527de3cd3480160f0f2d80545d2147af145971ae6",
-      "source_map_id": "783a7f7d24084e52f33be433c122757f9263802a3d6903a40f4c82222c169c44"
+      "source_map_hash": "ba5dc3452025bfc4ee90dc6896ad1dd4a4d05ac57acccfb533be041d8e8bfd8e",
+      "source_map_id": "9f43e7ef1aba08708d6829aa1f677d3722b6e197bd86422de9b8166ec2348b32"
     }
   },
   "summary": {
-    "blocked_task_count": 56,
+    "blocked_task_count": 52,
     "error_count": 1,
     "fulfilled_source_map_verification_ok": false,
-    "fulfillment_count": 56,
+    "fulfillment_count": 52,
     "live_source_uri_count": 0,
     "owner_count": 10,
-    "placeholder_source_uri_count": 56,
+    "placeholder_source_uri_count": 52,
     "ready_task_count": 0,
     "review_status": "blocked",
-    "source_map_entry_count": 56,
+    "source_map_entry_count": 52,
     "template_verification_ok": true,
     "warning_count": 3
   },
@@ -1510,62 +1414,6 @@
       "source_uri": "TODO://authority/mcp-gateway/kms-hsm",
       "source_uri_status": "placeholder",
       "task": "mcp-gateway:kms-hsm"
-    },
-    {
-      "authority_kind": "kms-hsm",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/kms-hsm.json",
-      "owner_hint": "security/platform KMS owner",
-      "requirement_id": "shadow-replay-temporal-holdout",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/kms-hsm.json",
-      "source_uri": "TODO://authority/shadow-replay-temporal-holdout/kms-hsm",
-      "source_uri_status": "placeholder",
-      "task": "shadow-replay-temporal-holdout:kms-hsm"
-    },
-    {
-      "authority_kind": "provider-api",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/provider-api.json",
-      "owner_hint": "integration/platform owner",
-      "requirement_id": "shadow-replay-temporal-holdout",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/provider-api.json",
-      "source_uri": "TODO://authority/shadow-replay-temporal-holdout/provider-api",
-      "source_uri_status": "placeholder",
-      "task": "shadow-replay-temporal-holdout:provider-api"
-    },
-    {
-      "authority_kind": "identity-provider",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/identity-provider.json",
-      "owner_hint": "IAM/identity owner",
-      "requirement_id": "shadow-replay-temporal-holdout",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/identity-provider.json",
-      "source_uri": "TODO://authority/shadow-replay-temporal-holdout/identity-provider",
-      "source_uri_status": "placeholder",
-      "task": "shadow-replay-temporal-holdout:identity-provider"
-    },
-    {
-      "authority_kind": "standards-body",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/standards-body.json",
-      "owner_hint": "standards/governance owner",
-      "requirement_id": "shadow-replay-temporal-holdout",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/standards-body.json",
-      "source_uri": "TODO://authority/shadow-replay-temporal-holdout/standards-body",
-      "source_uri_status": "placeholder",
-      "task": "shadow-replay-temporal-holdout:standards-body"
     },
     {
       "authority_kind": "hosted-service",
@@ -2228,14 +2076,14 @@
   ],
   "verification": {
     "fulfilled_source_map_errors": [
-      "source map contains 56 placeholder source_uri values but live source URIs are required"
+      "source map contains 52 placeholder source_uri values but live source URIs are required"
     ],
     "fulfilled_source_map_warnings": [
-      "source map contains 56 placeholder source_uri values"
+      "source map contains 52 placeholder source_uri values"
     ],
     "template_warnings": [
-      "owner fulfillment template summary contains 56 placeholder source_uri values",
-      "owner fulfillment template summary contains 56 tasks without intake receipts"
+      "owner fulfillment template summary contains 52 placeholder source_uri values",
+      "owner fulfillment template summary contains 52 tasks without intake receipts"
     ]
   },
   "verification_options": {

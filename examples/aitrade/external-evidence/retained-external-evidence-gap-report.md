@@ -1,13 +1,13 @@
 # External Evidence Gap Report
 
-- Gap report ID: `dbfe0fa6bf388ad73e7451ea27c435b86605fffbd72d15e92480ecbea0cb9138`
+- Gap report ID: `f3cb7de75e6c829f1767e91819b4fdf61efe41e46ee2f77fa3c584fb52e071e2`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 15/71
-- Missing authority kinds: 56
-- Remaining collection tasks: 56
-- Source-map entries: 56
-- Placeholder source URIs: 56
+- Covered authority kinds: 19/71
+- Missing authority kinds: 52
+- Remaining collection tasks: 52
+- Source-map entries: 52
+- Placeholder source URIs: 52
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
@@ -16,12 +16,12 @@
 - `cloud-object-lock`: 1
 - `customer`: 9
 - `hosted-service`: 5
-- `identity-provider`: 6
+- `identity-provider`: 5
 - `insurer`: 4
-- `kms-hsm`: 6
-- `provider-api`: 7
+- `kms-hsm`: 5
+- `provider-api`: 6
 - `regulator`: 5
-- `standards-body`: 6
+- `standards-body`: 5
 
 ## Gaps By Requirement
 
@@ -37,7 +37,6 @@
 - `roadmap-phase-scoreboard`: 5
 - `runtime-policy-and-attestation`: 1
 - `self-serve-onboarding`: 3
-- `shadow-replay-temporal-holdout`: 4
 - `standards-track-and-auditor-ecosystem`: 2
 - `state-of-agent-reliability-report`: 1
 - `trust-network-procurement-and-marketplace`: 4
@@ -100,50 +99,6 @@
 - Snapshot output: `artifacts/external-evidence-sources/mcp-gateway/kms-hsm.json`
 - Intake output: `artifacts/external-evidence-intakes/mcp-gateway/kms-hsm.json`
 - Suggested evidence sources: KMS/HSM key policy export; signing operation receipt; custody or audit-log root
-
-### shadow-replay-temporal-holdout:kms-hsm
-
-- Title: Shadow replay, temporal holdout, soak reports, and distributional re-execution
-- Authority kind: `kms-hsm`
-- Owner hint: security/platform KMS owner
-- Description: kms-hsm evidence for shadow-replay-temporal-holdout
-- Source URI: `TODO://authority/shadow-replay-temporal-holdout/kms-hsm`
-- Snapshot output: `artifacts/external-evidence-sources/shadow-replay-temporal-holdout/kms-hsm.json`
-- Intake output: `artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/kms-hsm.json`
-- Suggested evidence sources: KMS/HSM key policy export; signing operation receipt; custody or audit-log root
-
-### shadow-replay-temporal-holdout:provider-api
-
-- Title: Shadow replay, temporal holdout, soak reports, and distributional re-execution
-- Authority kind: `provider-api`
-- Owner hint: integration/platform owner
-- Description: provider-api evidence for shadow-replay-temporal-holdout
-- Source URI: `TODO://authority/shadow-replay-temporal-holdout/provider-api`
-- Snapshot output: `artifacts/external-evidence-sources/shadow-replay-temporal-holdout/provider-api.json`
-- Intake output: `artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/provider-api.json`
-- Suggested evidence sources: provider API response export; request/response transcript; provider-owned audit event
-
-### shadow-replay-temporal-holdout:identity-provider
-
-- Title: Shadow replay, temporal holdout, soak reports, and distributional re-execution
-- Authority kind: `identity-provider`
-- Owner hint: IAM/identity owner
-- Description: identity-provider evidence for shadow-replay-temporal-holdout
-- Source URI: `TODO://authority/shadow-replay-temporal-holdout/identity-provider`
-- Snapshot output: `artifacts/external-evidence-sources/shadow-replay-temporal-holdout/identity-provider.json`
-- Intake output: `artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/identity-provider.json`
-- Suggested evidence sources: identity-provider event export; OIDC/session/lifecycle evidence; RBAC or account-state report
-
-### shadow-replay-temporal-holdout:standards-body
-
-- Title: Shadow replay, temporal holdout, soak reports, and distributional re-execution
-- Authority kind: `standards-body`
-- Owner hint: standards/governance owner
-- Description: standards-body evidence for shadow-replay-temporal-holdout
-- Source URI: `TODO://authority/shadow-replay-temporal-holdout/standards-body`
-- Snapshot output: `artifacts/external-evidence-sources/shadow-replay-temporal-holdout/standards-body.json`
-- Intake output: `artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/standards-body.json`
-- Suggested evidence sources: standards-body submission receipt; working-group status record; ballot or docket export
 
 ### cicd-provider-approvals:hosted-service
 

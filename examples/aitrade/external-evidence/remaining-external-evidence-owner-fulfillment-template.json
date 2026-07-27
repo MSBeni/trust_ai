@@ -62,20 +62,6 @@
         "placeholder-source-uri",
         "missing-intake"
       ],
-      "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/identity-provider.json",
-      "owner_hint": "IAM/identity owner",
-      "requirement_id": "shadow-replay-temporal-holdout",
-      "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/identity-provider.json",
-      "source_uri_status": "placeholder",
-      "task": "shadow-replay-temporal-holdout:identity-provider",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "identity-provider",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
       "intake_out": "artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/identity-provider.json",
       "owner_hint": "IAM/identity owner",
       "requirement_id": "trust-network-procurement-and-marketplace",
@@ -292,20 +278,6 @@
       "snapshot_out": "artifacts/external-evidence-sources/self-serve-onboarding/provider-api.json",
       "source_uri_status": "placeholder",
       "task": "self-serve-onboarding:provider-api",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "provider-api",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/provider-api.json",
-      "owner_hint": "integration/platform owner",
-      "requirement_id": "shadow-replay-temporal-holdout",
-      "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/provider-api.json",
-      "source_uri_status": "placeholder",
-      "task": "shadow-replay-temporal-holdout:provider-api",
       "task_status": "blocked"
     },
     {
@@ -608,20 +580,6 @@
         "placeholder-source-uri",
         "missing-intake"
       ],
-      "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/kms-hsm.json",
-      "owner_hint": "security/platform KMS owner",
-      "requirement_id": "shadow-replay-temporal-holdout",
-      "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/kms-hsm.json",
-      "source_uri_status": "placeholder",
-      "task": "shadow-replay-temporal-holdout:kms-hsm",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "kms-hsm",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
       "intake_out": "artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/kms-hsm.json",
       "owner_hint": "security/platform KMS owner",
       "requirement_id": "standards-track-and-auditor-ecosystem",
@@ -748,20 +706,6 @@
         "placeholder-source-uri",
         "missing-intake"
       ],
-      "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/standards-body.json",
-      "owner_hint": "standards/governance owner",
-      "requirement_id": "shadow-replay-temporal-holdout",
-      "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/standards-body.json",
-      "source_uri_status": "placeholder",
-      "task": "shadow-replay-temporal-holdout:standards-body",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "standards-body",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
       "intake_out": "artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/standards-body.json",
       "owner_hint": "standards/governance owner",
       "requirement_id": "standards-track-and-auditor-ecosystem",
@@ -814,11 +758,6 @@
       "description": "identity-provider evidence for self-serve-onboarding",
       "source_uri": "TODO://authority/self-serve-onboarding/identity-provider",
       "task": "self-serve-onboarding:identity-provider"
-    },
-    {
-      "description": "identity-provider evidence for shadow-replay-temporal-holdout",
-      "source_uri": "TODO://authority/shadow-replay-temporal-holdout/identity-provider",
-      "task": "shadow-replay-temporal-holdout:identity-provider"
     },
     {
       "description": "identity-provider evidence for trust-network-procurement-and-marketplace",
@@ -899,11 +838,6 @@
       "description": "provider-api evidence for self-serve-onboarding",
       "source_uri": "TODO://authority/self-serve-onboarding/provider-api",
       "task": "self-serve-onboarding:provider-api"
-    },
-    {
-      "description": "provider-api evidence for shadow-replay-temporal-holdout",
-      "source_uri": "TODO://authority/shadow-replay-temporal-holdout/provider-api",
-      "task": "shadow-replay-temporal-holdout:provider-api"
     },
     {
       "description": "provider-api evidence for trust-network-procurement-and-marketplace",
@@ -1011,11 +945,6 @@
       "task": "mcp-gateway:kms-hsm"
     },
     {
-      "description": "kms-hsm evidence for shadow-replay-temporal-holdout",
-      "source_uri": "TODO://authority/shadow-replay-temporal-holdout/kms-hsm",
-      "task": "shadow-replay-temporal-holdout:kms-hsm"
-    },
-    {
       "description": "kms-hsm evidence for standards-track-and-auditor-ecosystem",
       "source_uri": "TODO://authority/standards-track-and-auditor-ecosystem/kms-hsm",
       "task": "standards-track-and-auditor-ecosystem:kms-hsm"
@@ -1061,11 +990,6 @@
       "task": "roadmap-phase-scoreboard:standards-body"
     },
     {
-      "description": "standards-body evidence for shadow-replay-temporal-holdout",
-      "source_uri": "TODO://authority/shadow-replay-temporal-holdout/standards-body",
-      "task": "shadow-replay-temporal-holdout:standards-body"
-    },
-    {
       "description": "standards-body evidence for standards-track-and-auditor-ecosystem",
       "source_uri": "TODO://authority/standards-track-and-auditor-ecosystem/standards-body",
       "task": "standards-track-and-auditor-ecosystem:standards-body"
@@ -1086,21 +1010,21 @@
     "This template is a handoff artifact; it does not satisfy missing external authority evidence by itself.",
     "Placeholder source URIs intentionally keep readiness blocked until owners replace them with live authority sources."
   ],
-  "owner_fulfillment_template_id": "ae9aa483b460e1e5eaa7b8c0f83af8c51254262a7debb7f5c9ebe066c074f4cc",
+  "owner_fulfillment_template_id": "5a25b30ba6edd6b218d28ebadc402fdc965b1dcfbed21ff002fde8e79e9ddd2a",
   "schema": "trustai.external-evidence-owner-fulfillment-template/0.1",
   "source_owner_packet_status": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "owner_packet_status_hash": "d445712b865458355aa9d39723c422045e572f8d6dd32a418cf272890a2a9cfe",
-    "owner_packet_status_id": "240a946987390c521833af7584120e449c0479e86a090006a70b58b3a13addc1",
+    "owner_packet_status_hash": "7874e73bffbba293ca409c258da9e91e907a68b664df09eb747f302230bac906",
+    "owner_packet_status_id": "7dc6dd2c90cd02869ebd3087a22078dce39fb160a591ad6826a9529ba92e1be1",
     "schema": "trustai.external-evidence-owner-packet-status/0.1"
   },
   "summary": {
-    "assignment_count": 56,
-    "blocked_task_count": 56,
+    "assignment_count": 52,
+    "blocked_task_count": 52,
     "closed_task_count": 0,
-    "fulfillment_count": 56,
+    "fulfillment_count": 52,
     "live_source_uri_count": 0,
-    "missing_intake_count": 56,
+    "missing_intake_count": 52,
     "open_task_count": 0,
     "owner_count": 10,
     "owners": [
@@ -1115,6 +1039,6 @@
       "service owner",
       "standards/governance owner"
     ],
-    "placeholder_source_uri_count": 56
+    "placeholder_source_uri_count": 52
   }
 }

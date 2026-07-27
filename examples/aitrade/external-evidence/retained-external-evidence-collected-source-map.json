@@ -152,6 +152,126 @@
       "unit_ref": "mcp-gateway:hosted-service"
     },
     {
+      "authority_kind": "kms-hsm",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained KMS/HSM enforcement export for shadow replay temporal holdout evidence signing",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/shadow-replay-temporal-holdout-kms-hsm.json",
+      "issued_at": "2026-07-03T12:03:00Z",
+      "issuer": "Example KMS/HSM",
+      "owner_hint": "security/platform KMS owner",
+      "requirement_id": "shadow-replay-temporal-holdout",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/shadow-holdout-kms-hsm-source-snapshot.json",
+      "source_uri": "https://kms.example/attestations/trustai/shadow-holdout/evidence-signing",
+      "subject": "trustai shadow replay temporal holdout evidence-signing enforcement",
+      "suggested_evidence_sources": [
+        "KMS/HSM key policy export",
+        "signing operation receipt",
+        "custody or audit-log root"
+      ],
+      "task": "shadow-replay-temporal-holdout:kms-hsm",
+      "task_id": "d3017ae6fcc7d06172506074706607049c15814f54655245f15c15a500693204",
+      "task_ref": "external-evidence:shadow-replay-temporal-holdout:kms-hsm",
+      "title": "Shadow replay, temporal holdout, soak reports, and distributional re-execution",
+      "unit_id": "b22b20e47680d557c73438b85016ce39e0b37d13afc0cf1bd5ebb7ad109e6e55",
+      "unit_ref": "shadow-replay-temporal-holdout:kms-hsm"
+    },
+    {
+      "authority_kind": "provider-api",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained provider API export for traffic holdout completeness evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/shadow-replay-temporal-holdout-provider-api.json",
+      "issued_at": "2026-07-03T12:23:00Z",
+      "issuer": "Traffic Completeness Provider API",
+      "owner_hint": "integration/platform owner",
+      "requirement_id": "shadow-replay-temporal-holdout",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/traffic-completeness-provider-api-source-snapshot.json",
+      "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/traffic-completeness-provider-export.json?ref=main",
+      "subject": "aitrade production traffic holdout completeness export",
+      "suggested_evidence_sources": [
+        "provider API response export",
+        "request/response transcript",
+        "provider-owned audit event"
+      ],
+      "task": "shadow-replay-temporal-holdout:provider-api",
+      "task_id": "d80551bd511665073ae5004725f7a510593a7f944c11d3350a3af384c10d57f5",
+      "task_ref": "external-evidence:shadow-replay-temporal-holdout:provider-api",
+      "title": "Shadow replay, temporal holdout, soak reports, and distributional re-execution",
+      "unit_id": "e0f691dce6a7859dec40b0439af39824bbe030c9eb08662294e3aaaef3695b39",
+      "unit_ref": "shadow-replay-temporal-holdout:provider-api"
+    },
+    {
+      "authority_kind": "identity-provider",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained identity-provider export for shadow holdout agent identity binding evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/shadow-replay-temporal-holdout-identity-provider.json",
+      "issued_at": "2026-07-03T11:57:00Z",
+      "issuer": "Identity Provider Export",
+      "owner_hint": "IAM/identity owner",
+      "requirement_id": "shadow-replay-temporal-holdout",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/shadow-holdout-identity-provider-source-snapshot.json",
+      "source_uri": "https://idp.example/exports/aitrade/shadow-holdout-agent-identity",
+      "subject": "aitrade shadow holdout governed agent identity binding",
+      "suggested_evidence_sources": [
+        "identity-provider event export",
+        "OIDC/session/lifecycle evidence",
+        "RBAC or account-state report"
+      ],
+      "task": "shadow-replay-temporal-holdout:identity-provider",
+      "task_id": "4ab97d4e2347b46aff33524c887d3a6651588edbce84a753d5ef2b6fa905c84e",
+      "task_ref": "external-evidence:shadow-replay-temporal-holdout:identity-provider",
+      "title": "Shadow replay, temporal holdout, soak reports, and distributional re-execution",
+      "unit_id": "19e307dd982131f9693256f22f8f05f0ea7a1af37e92c38556afabb57305c88c",
+      "unit_ref": "shadow-replay-temporal-holdout:identity-provider"
+    },
+    {
+      "authority_kind": "standards-body",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained standards-body ballot system response for temporal holdout evidence semantics",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/shadow-replay-temporal-holdout-standards-body.json",
+      "issued_at": "2026-07-03T12:04:00Z",
+      "issuer": "LF TrustAI Ballot System",
+      "owner_hint": "standards/governance owner",
+      "requirement_id": "shadow-replay-temporal-holdout",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/shadow-holdout-standards-body-source-snapshot.json",
+      "source_uri": "https://standards.example/lf-trustai/ballots/LF-TRUSTAI-BALLOT-2026-001",
+      "subject": "trustai temporal holdout standards ballot system response",
+      "suggested_evidence_sources": [
+        "standards-body submission receipt",
+        "working-group status record",
+        "ballot or docket export"
+      ],
+      "task": "shadow-replay-temporal-holdout:standards-body",
+      "task_id": "ee6d57dfd25d9d2b65ee1976add9dbcf5a609b3959fb87167dfb38c75015ebeb",
+      "task_ref": "external-evidence:shadow-replay-temporal-holdout:standards-body",
+      "title": "Shadow replay, temporal holdout, soak reports, and distributional re-execution",
+      "unit_id": "15afd330474ec578f826292afa08c9726a1d3219d1dfc6b4a35fdf93597aa2cb",
+      "unit_ref": "shadow-replay-temporal-holdout:standards-body"
+    },
+    {
       "authority_kind": "ci-run",
       "content_type": "application/json",
       "coverage_status": "missing",
@@ -459,7 +579,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "5c46fc96d252de5c1df14a0e2e4b2424beff157ce31fc703311d6fb7f20eadcf",
+  "source_map_id": "a0a6500fecc3232cc751a574a718aac7f8e7b3bc4caf42f3954abe191e4bf8eb",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -474,9 +594,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 15,
+    "entry_count": 19,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 15,
+    "live_source_uri_count": 19,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

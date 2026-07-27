@@ -1,13 +1,13 @@
 # External Evidence Owner Fulfillment Closure
 
-- Closure ID: `9e418caf9a5b4f847e167a0d41840df62f49cfa326e1d7d908d386b16fb890ed`
+- Closure ID: `c1fd2e6ce266883ce4521302205616713d1c27f8771432b121ecb764cd9540ed`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Closed tasks: 0/56
-- Missing intakes: 56
+- Closed tasks: 0/52
+- Missing intakes: 52
 - Invalid intake tasks: 0
-- Missing manifest coverage: 56
-- Placeholder source URIs: 56
+- Missing manifest coverage: 52
+- Placeholder source URIs: 52
 
 ## Task Closure
 
@@ -18,10 +18,6 @@
 | `self-serve-onboarding:identity-provider` | IAM/identity owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `mcp-gateway:ci-run` | release engineering | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `mcp-gateway:kms-hsm` | security/platform KMS owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
-| `shadow-replay-temporal-holdout:kms-hsm` | security/platform KMS owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
-| `shadow-replay-temporal-holdout:provider-api` | integration/platform owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
-| `shadow-replay-temporal-holdout:identity-provider` | IAM/identity owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
-| `shadow-replay-temporal-holdout:standards-body` | standards/governance owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `cicd-provider-approvals:hosted-service` | service owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `cicd-provider-approvals:identity-provider` | IAM/identity owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `design-partner-pilot-exit-criteria:regulator` | legal/compliance owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
@@ -72,9 +68,9 @@
 
 ## Blockers
 
-- 56 reviewed tasks still use placeholder source_uri values
-- 56 reviewed tasks do not have intake receipts
-- 56 reviewed tasks are not covered by the rebuilt manifest
+- 52 reviewed tasks still use placeholder source_uri values
+- 52 reviewed tasks do not have intake receipts
+- 52 reviewed tasks are not covered by the rebuilt manifest
 
 ## Next Actions
 

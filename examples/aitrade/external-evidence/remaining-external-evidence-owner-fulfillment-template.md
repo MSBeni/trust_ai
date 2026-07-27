@@ -1,14 +1,14 @@
 # External Evidence Owner Fulfillment Template
 
-- Template ID: `ae9aa483b460e1e5eaa7b8c0f83af8c51254262a7debb7f5c9ebe066c074f4cc`
+- Template ID: `5a25b30ba6edd6b218d28ebadc402fdc965b1dcfbed21ff002fde8e79e9ddd2a`
 - Generated at: `2026-07-12T00:01:00Z`
-- Fulfillments: 56
+- Fulfillments: 52
 - Owners: 10
-- Blocked tasks: 56
+- Blocked tasks: 52
 - Open tasks: 0
 - Closed tasks: 0
-- Placeholder source URIs: 56
-- Missing intakes: 56
+- Placeholder source URIs: 52
+- Missing intakes: 52
 
 ## Fulfillments
 
@@ -18,7 +18,6 @@
 | `cicd-provider-approvals:identity-provider` | TODO://authority/cicd-provider-approvals/identity-provider | identity-provider evidence for cicd-provider-approvals |
 | `insurer-api-and-actuarial-products:identity-provider` | TODO://authority/insurer-api-and-actuarial-products/identity-provider | identity-provider evidence for insurer-api-and-actuarial-products |
 | `self-serve-onboarding:identity-provider` | TODO://authority/self-serve-onboarding/identity-provider | identity-provider evidence for self-serve-onboarding |
-| `shadow-replay-temporal-holdout:identity-provider` | TODO://authority/shadow-replay-temporal-holdout/identity-provider | identity-provider evidence for shadow-replay-temporal-holdout |
 | `trust-network-procurement-and-marketplace:identity-provider` | TODO://authority/trust-network-procurement-and-marketplace/identity-provider | identity-provider evidence for trust-network-procurement-and-marketplace |
 | `byoc-self-hosted:cloud-object-lock` | TODO://authority/byoc-self-hosted/cloud-object-lock | cloud-object-lock evidence for byoc-self-hosted |
 | `byoc-self-hosted:customer` | TODO://authority/byoc-self-hosted/customer | customer evidence for byoc-self-hosted |
@@ -35,7 +34,6 @@
 | `compliance-mapper-and-eu-ai-act:provider-api` | TODO://authority/compliance-mapper-and-eu-ai-act/provider-api | provider-api evidence for compliance-mapper-and-eu-ai-act |
 | `insurer-api-and-actuarial-products:provider-api` | TODO://authority/insurer-api-and-actuarial-products/provider-api | provider-api evidence for insurer-api-and-actuarial-products |
 | `self-serve-onboarding:provider-api` | TODO://authority/self-serve-onboarding/provider-api | provider-api evidence for self-serve-onboarding |
-| `shadow-replay-temporal-holdout:provider-api` | TODO://authority/shadow-replay-temporal-holdout/provider-api | provider-api evidence for shadow-replay-temporal-holdout |
 | `trust-network-procurement-and-marketplace:provider-api` | TODO://authority/trust-network-procurement-and-marketplace/provider-api | provider-api evidence for trust-network-procurement-and-marketplace |
 | `auditor-and-review-portal:regulator` | TODO://authority/auditor-and-review-portal/regulator | regulator evidence for auditor-and-review-portal |
 | `compliance-mapper-and-eu-ai-act:regulator` | TODO://authority/compliance-mapper-and-eu-ai-act/regulator | regulator evidence for compliance-mapper-and-eu-ai-act |
@@ -57,7 +55,6 @@
 | `byoc-self-hosted:kms-hsm` | TODO://authority/byoc-self-hosted/kms-hsm | kms-hsm evidence for byoc-self-hosted |
 | `insurer-api-and-actuarial-products:kms-hsm` | TODO://authority/insurer-api-and-actuarial-products/kms-hsm | kms-hsm evidence for insurer-api-and-actuarial-products |
 | `mcp-gateway:kms-hsm` | TODO://authority/mcp-gateway/kms-hsm | kms-hsm evidence for mcp-gateway |
-| `shadow-replay-temporal-holdout:kms-hsm` | TODO://authority/shadow-replay-temporal-holdout/kms-hsm | kms-hsm evidence for shadow-replay-temporal-holdout |
 | `standards-track-and-auditor-ecosystem:kms-hsm` | TODO://authority/standards-track-and-auditor-ecosystem/kms-hsm | kms-hsm evidence for standards-track-and-auditor-ecosystem |
 | `auditor-and-review-portal:hosted-service` | TODO://authority/auditor-and-review-portal/hosted-service | hosted-service evidence for auditor-and-review-portal |
 | `cicd-provider-approvals:hosted-service` | TODO://authority/cicd-provider-approvals/hosted-service | hosted-service evidence for cicd-provider-approvals |
@@ -67,7 +64,6 @@
 | `byoc-self-hosted:standards-body` | TODO://authority/byoc-self-hosted/standards-body | standards-body evidence for byoc-self-hosted |
 | `compliance-mapper-and-eu-ai-act:standards-body` | TODO://authority/compliance-mapper-and-eu-ai-act/standards-body | standards-body evidence for compliance-mapper-and-eu-ai-act |
 | `roadmap-phase-scoreboard:standards-body` | TODO://authority/roadmap-phase-scoreboard/standards-body | standards-body evidence for roadmap-phase-scoreboard |
-| `shadow-replay-temporal-holdout:standards-body` | TODO://authority/shadow-replay-temporal-holdout/standards-body | standards-body evidence for shadow-replay-temporal-holdout |
 | `standards-track-and-auditor-ecosystem:standards-body` | TODO://authority/standards-track-and-auditor-ecosystem/standards-body | standards-body evidence for standards-track-and-auditor-ecosystem |
 | `trustai-own-compliance:standards-body` | TODO://authority/trustai-own-compliance/standards-body | standards-body evidence for trustai-own-compliance |
 
@@ -79,7 +75,6 @@
 | `cicd-provider-approvals:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/cicd-provider-approvals/identity-provider.json | artifacts/external-evidence-intakes/cicd-provider-approvals/identity-provider.json |
 | `insurer-api-and-actuarial-products:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/identity-provider.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/identity-provider.json |
 | `self-serve-onboarding:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/self-serve-onboarding/identity-provider.json | artifacts/external-evidence-intakes/self-serve-onboarding/identity-provider.json |
-| `shadow-replay-temporal-holdout:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/shadow-replay-temporal-holdout/identity-provider.json | artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/identity-provider.json |
 | `trust-network-procurement-and-marketplace:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/identity-provider.json | artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/identity-provider.json |
 | `byoc-self-hosted:cloud-object-lock` | cloud storage owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/byoc-self-hosted/cloud-object-lock.json | artifacts/external-evidence-intakes/byoc-self-hosted/cloud-object-lock.json |
 | `byoc-self-hosted:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/byoc-self-hosted/customer.json | artifacts/external-evidence-intakes/byoc-self-hosted/customer.json |
@@ -96,7 +91,6 @@
 | `compliance-mapper-and-eu-ai-act:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/provider-api.json | artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/provider-api.json |
 | `insurer-api-and-actuarial-products:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/provider-api.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/provider-api.json |
 | `self-serve-onboarding:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/self-serve-onboarding/provider-api.json | artifacts/external-evidence-intakes/self-serve-onboarding/provider-api.json |
-| `shadow-replay-temporal-holdout:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/shadow-replay-temporal-holdout/provider-api.json | artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/provider-api.json |
 | `trust-network-procurement-and-marketplace:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/provider-api.json | artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/provider-api.json |
 | `auditor-and-review-portal:regulator` | legal/compliance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/auditor-and-review-portal/regulator.json | artifacts/external-evidence-intakes/auditor-and-review-portal/regulator.json |
 | `compliance-mapper-and-eu-ai-act:regulator` | legal/compliance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/regulator.json | artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/regulator.json |
@@ -118,7 +112,6 @@
 | `byoc-self-hosted:kms-hsm` | security/platform KMS owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/byoc-self-hosted/kms-hsm.json | artifacts/external-evidence-intakes/byoc-self-hosted/kms-hsm.json |
 | `insurer-api-and-actuarial-products:kms-hsm` | security/platform KMS owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/kms-hsm.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/kms-hsm.json |
 | `mcp-gateway:kms-hsm` | security/platform KMS owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/mcp-gateway/kms-hsm.json | artifacts/external-evidence-intakes/mcp-gateway/kms-hsm.json |
-| `shadow-replay-temporal-holdout:kms-hsm` | security/platform KMS owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/shadow-replay-temporal-holdout/kms-hsm.json | artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/kms-hsm.json |
 | `standards-track-and-auditor-ecosystem:kms-hsm` | security/platform KMS owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/kms-hsm.json | artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/kms-hsm.json |
 | `auditor-and-review-portal:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/auditor-and-review-portal/hosted-service.json | artifacts/external-evidence-intakes/auditor-and-review-portal/hosted-service.json |
 | `cicd-provider-approvals:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/cicd-provider-approvals/hosted-service.json | artifacts/external-evidence-intakes/cicd-provider-approvals/hosted-service.json |
@@ -128,7 +121,6 @@
 | `byoc-self-hosted:standards-body` | standards/governance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/byoc-self-hosted/standards-body.json | artifacts/external-evidence-intakes/byoc-self-hosted/standards-body.json |
 | `compliance-mapper-and-eu-ai-act:standards-body` | standards/governance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/standards-body.json | artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/standards-body.json |
 | `roadmap-phase-scoreboard:standards-body` | standards/governance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/roadmap-phase-scoreboard/standards-body.json | artifacts/external-evidence-intakes/roadmap-phase-scoreboard/standards-body.json |
-| `shadow-replay-temporal-holdout:standards-body` | standards/governance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/shadow-replay-temporal-holdout/standards-body.json | artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/standards-body.json |
 | `standards-track-and-auditor-ecosystem:standards-body` | standards/governance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/standards-body.json | artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/standards-body.json |
 | `trustai-own-compliance:standards-body` | standards/governance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trustai-own-compliance/standards-body.json | artifacts/external-evidence-intakes/trustai-own-compliance/standards-body.json |
 
