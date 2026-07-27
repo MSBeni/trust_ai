@@ -168,6 +168,86 @@
     },
     {
       "accepted_authority_kinds": [
+        "ci-run",
+        "kms-hsm",
+        "provider-api",
+        "hosted-service",
+        "identity-provider"
+      ],
+      "authority_kind": "kms-hsm",
+      "description": "Retained KMS/HSM enforcement export for runtime policy evidence signing",
+      "evidence_id": "6654026e409a757b071fff418b49791b4c746078be03019b926b07f368df8605",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-03T12:03:00Z",
+      "issuer": "Example KMS/HSM",
+      "path": "examples/aitrade/external-evidence/runtime-policy-kms-hsm-source-snapshot.json",
+      "requirement_id": "runtime-policy-and-attestation",
+      "sha256": "sha256:b638ac0a0a4dff3cf3b4e88e1055a6a63e02bcb510eb955e9b3e6924bfeb907c",
+      "source_uri": "https://kms.example/attestations/trustai/runtime-policy/evidence-signing",
+      "subject": "trustai runtime policy evidence-signing enforcement"
+    },
+    {
+      "accepted_authority_kinds": [
+        "ci-run",
+        "kms-hsm",
+        "provider-api",
+        "hosted-service",
+        "identity-provider"
+      ],
+      "authority_kind": "provider-api",
+      "description": "Retained GitHub contents API export for runtime policy pack evidence",
+      "evidence_id": "bae97d9f4c34d0db2c72f33aa552591e3e617e4ec8e3f48b914da8d602c8d40b",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-03T12:02:00Z",
+      "issuer": "GitHub Contents API",
+      "path": "examples/aitrade/external-evidence/runtime-policy-provider-api-source-snapshot.json",
+      "requirement_id": "runtime-policy-and-attestation",
+      "sha256": "sha256:91a101ac7c1e82f1af2e86324523991d0e3b03685f6cd5e1f1ed6bd520e7ab1f",
+      "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/policy-pack.json?ref=main",
+      "subject": "trustai runtime policy pack export"
+    },
+    {
+      "accepted_authority_kinds": [
+        "ci-run",
+        "kms-hsm",
+        "provider-api",
+        "hosted-service",
+        "identity-provider"
+      ],
+      "authority_kind": "hosted-service",
+      "description": "Retained GitHub hosted file export for runtime action attestation evidence",
+      "evidence_id": "9fc05978d2aea108dff2101f6373dd0544fcc8b4c1bbd5a57f78fc185a0b1ea7",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-03T12:00:12Z",
+      "issuer": "GitHub Hosted Repository",
+      "path": "examples/aitrade/external-evidence/runtime-action-hosted-service-source-snapshot.json",
+      "requirement_id": "runtime-policy-and-attestation",
+      "sha256": "sha256:e8bf9bc187f3ecc6aa19bc569750f2366138ee8a447ad49834388b3f8311aacd",
+      "source_uri": "https://github.com/MSBeni/trust_ai/blob/main/examples/aitrade/runtime-action.json",
+      "subject": "trustai runtime action attestation export"
+    },
+    {
+      "accepted_authority_kinds": [
+        "ci-run",
+        "kms-hsm",
+        "provider-api",
+        "hosted-service",
+        "identity-provider"
+      ],
+      "authority_kind": "identity-provider",
+      "description": "Retained identity-provider export for runtime policy agent identity binding evidence",
+      "evidence_id": "5c168102aa8a072797d3f6d120c199ee7628593a5f440e1aef2bb64eafbaee2c",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-03T11:57:00Z",
+      "issuer": "Identity Provider Export",
+      "path": "examples/aitrade/external-evidence/runtime-policy-identity-provider-source-snapshot.json",
+      "requirement_id": "runtime-policy-and-attestation",
+      "sha256": "sha256:2e76c628b8b495c5d073a5513947d062e1adab2a605f2e2deb5192625f2af4c9",
+      "source_uri": "https://idp.example/exports/aitrade/runtime-policy-agent-identity",
+      "subject": "aitrade runtime policy governed agent identity binding"
+    },
+    {
+      "accepted_authority_kinds": [
         "provider-api",
         "identity-provider"
       ],
@@ -207,7 +287,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "eaf64e35c913bb926b61439015d04f8091473cbbe9df659291b9e6ba69c7ee20",
+  "manifest_id": "e65a27825304642675dba11e28110d9cbcaa1910d4a8bb903f7ff156d3052ef9",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -979,7 +1059,7 @@
     },
     {
       "authority_kind": "kms-hsm",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
       ],
@@ -992,7 +1072,7 @@
     },
     {
       "authority_kind": "provider-api",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
       ],
@@ -1005,7 +1085,7 @@
     },
     {
       "authority_kind": "hosted-service",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
       ],
@@ -1018,7 +1098,7 @@
     },
     {
       "authority_kind": "identity-provider",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
       ],
@@ -1434,7 +1514,7 @@
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {
-    "covered_authority_kind_count": 11,
+    "covered_authority_kind_count": 15,
     "covered_authority_kinds_by_requirement": {
       "agent-inventory-and-identity": [
         "provider-api",
@@ -1456,21 +1536,28 @@
         "ci-run",
         "provider-api",
         "hosted-service"
+      ],
+      "runtime-policy-and-attestation": [
+        "kms-hsm",
+        "provider-api",
+        "hosted-service",
+        "identity-provider"
       ]
     },
-    "covered_requirement_count": 5,
+    "covered_requirement_count": 6,
     "covered_requirement_ids": [
       "agent-inventory-and-identity",
       "cicd-provider-approvals",
       "framework-adapters",
       "mcp-gateway",
-      "oss-verifier-and-public-spec"
+      "oss-verifier-and-public-spec",
+      "runtime-policy-and-attestation"
     ],
-    "evidence_count": 11,
-    "expires_at_count": 11,
-    "freshness_window_count": 11,
-    "issued_at_count": 11,
-    "missing_authority_kind_count": 60,
+    "evidence_count": 15,
+    "expires_at_count": 15,
+    "freshness_window_count": 15,
+    "issued_at_count": 15,
+    "missing_authority_kind_count": 56,
     "missing_authority_kinds_by_requirement": {
       "auditor-and-review-portal": [
         "kms-hsm",
@@ -1529,11 +1616,7 @@
         "customer"
       ],
       "runtime-policy-and-attestation": [
-        "ci-run",
-        "kms-hsm",
-        "provider-api",
-        "hosted-service",
-        "identity-provider"
+        "ci-run"
       ],
       "self-serve-onboarding": [
         "provider-api",
@@ -1569,7 +1652,7 @@
         "customer"
       ]
     },
-    "missing_requirement_count": 15,
+    "missing_requirement_count": 14,
     "missing_requirement_ids": [
       "self-serve-onboarding",
       "shadow-replay-temporal-holdout",
@@ -1583,7 +1666,6 @@
       "state-of-agent-reliability-report",
       "roadmap-phase-scoreboard",
       "product-scope-discipline",
-      "runtime-policy-and-attestation",
       "standards-track-and-auditor-ecosystem",
       "trust-network-procurement-and-marketplace"
     ],

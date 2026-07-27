@@ -1,13 +1,13 @@
 # External Evidence Owner Fulfillment Review
 
-- Review ID: `5283fc50c51f38b5a27401adbedddf1385f332635f1a202de4968586c97932a1`
+- Review ID: `d95836b3e80ab9d69dce18a575edd79b15c24332bf7e5fe0246b1adfad8ab220`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Fulfillments: 60
+- Fulfillments: 56
 - Owners: 10
 - Ready tasks: 0
-- Blocked tasks: 60
-- Placeholder source URIs: 60
+- Blocked tasks: 56
+- Placeholder source URIs: 56
 - Live source URIs: 0
 
 ## Task Review
@@ -64,10 +64,6 @@
 | `product-scope-discipline:ci-run` | release engineering | blocked | TODO://authority/product-scope-discipline/ci-run | `placeholder-source-uri` |
 | `product-scope-discipline:customer` | customer success/account owner | blocked | TODO://authority/product-scope-discipline/customer | `placeholder-source-uri` |
 | `runtime-policy-and-attestation:ci-run` | release engineering | blocked | TODO://authority/runtime-policy-and-attestation/ci-run | `placeholder-source-uri` |
-| `runtime-policy-and-attestation:kms-hsm` | security/platform KMS owner | blocked | TODO://authority/runtime-policy-and-attestation/kms-hsm | `placeholder-source-uri` |
-| `runtime-policy-and-attestation:provider-api` | integration/platform owner | blocked | TODO://authority/runtime-policy-and-attestation/provider-api | `placeholder-source-uri` |
-| `runtime-policy-and-attestation:hosted-service` | service owner | blocked | TODO://authority/runtime-policy-and-attestation/hosted-service | `placeholder-source-uri` |
-| `runtime-policy-and-attestation:identity-provider` | IAM/identity owner | blocked | TODO://authority/runtime-policy-and-attestation/identity-provider | `placeholder-source-uri` |
 | `standards-track-and-auditor-ecosystem:kms-hsm` | security/platform KMS owner | blocked | TODO://authority/standards-track-and-auditor-ecosystem/kms-hsm | `placeholder-source-uri` |
 | `standards-track-and-auditor-ecosystem:standards-body` | standards/governance owner | blocked | TODO://authority/standards-track-and-auditor-ecosystem/standards-body | `placeholder-source-uri` |
 | `trust-network-procurement-and-marketplace:provider-api` | integration/platform owner | blocked | TODO://authority/trust-network-procurement-and-marketplace/provider-api | `placeholder-source-uri` |
@@ -79,12 +75,12 @@
 
 - Fulfilled source map errors: 1
 - Fulfilled source map warnings: 1
-  - source map contains 60 placeholder source_uri values but live source URIs are required
+  - source map contains 56 placeholder source_uri values but live source URIs are required
 
 ## Blockers
 
-- owner fulfillment review contains 60 placeholder source_uri values
-- fulfilled source map: source map contains 60 placeholder source_uri values but live source URIs are required
+- owner fulfillment review contains 56 placeholder source_uri values
+- fulfilled source map: source map contains 56 placeholder source_uri values but live source URIs are required
 
 ## Next Actions
 

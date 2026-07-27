@@ -1,13 +1,13 @@
 # External Evidence Gap Report
 
-- Gap report ID: `cca8023e8854306df58ce598cea8d79e424e463f7fb145fbdc5f763860c46c1b`
+- Gap report ID: `dbfe0fa6bf388ad73e7451ea27c435b86605fffbd72d15e92480ecbea0cb9138`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 11/71
-- Missing authority kinds: 60
-- Remaining collection tasks: 60
-- Source-map entries: 60
-- Placeholder source URIs: 60
+- Covered authority kinds: 15/71
+- Missing authority kinds: 56
+- Remaining collection tasks: 56
+- Source-map entries: 56
+- Placeholder source URIs: 56
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
@@ -15,11 +15,11 @@
 - `ci-run`: 7
 - `cloud-object-lock`: 1
 - `customer`: 9
-- `hosted-service`: 6
-- `identity-provider`: 7
+- `hosted-service`: 5
+- `identity-provider`: 6
 - `insurer`: 4
-- `kms-hsm`: 7
-- `provider-api`: 8
+- `kms-hsm`: 6
+- `provider-api`: 7
 - `regulator`: 5
 - `standards-body`: 6
 
@@ -35,7 +35,7 @@
 - `mcp-gateway`: 2
 - `product-scope-discipline`: 2
 - `roadmap-phase-scoreboard`: 5
-- `runtime-policy-and-attestation`: 5
+- `runtime-policy-and-attestation`: 1
 - `self-serve-onboarding`: 3
 - `shadow-replay-temporal-holdout`: 4
 - `standards-track-and-auditor-ecosystem`: 2
@@ -595,50 +595,6 @@
 - Snapshot output: `artifacts/external-evidence-sources/runtime-policy-and-attestation/ci-run.json`
 - Intake output: `artifacts/external-evidence-intakes/runtime-policy-and-attestation/ci-run.json`
 - Suggested evidence sources: completed CI workflow export; release run URL or provider-native run record; artifact/check provenance
-
-### runtime-policy-and-attestation:kms-hsm
-
-- Title: Runtime attestation, policy engine receipts, and proof decay
-- Authority kind: `kms-hsm`
-- Owner hint: security/platform KMS owner
-- Description: kms-hsm evidence for runtime-policy-and-attestation
-- Source URI: `TODO://authority/runtime-policy-and-attestation/kms-hsm`
-- Snapshot output: `artifacts/external-evidence-sources/runtime-policy-and-attestation/kms-hsm.json`
-- Intake output: `artifacts/external-evidence-intakes/runtime-policy-and-attestation/kms-hsm.json`
-- Suggested evidence sources: KMS/HSM key policy export; signing operation receipt; custody or audit-log root
-
-### runtime-policy-and-attestation:provider-api
-
-- Title: Runtime attestation, policy engine receipts, and proof decay
-- Authority kind: `provider-api`
-- Owner hint: integration/platform owner
-- Description: provider-api evidence for runtime-policy-and-attestation
-- Source URI: `TODO://authority/runtime-policy-and-attestation/provider-api`
-- Snapshot output: `artifacts/external-evidence-sources/runtime-policy-and-attestation/provider-api.json`
-- Intake output: `artifacts/external-evidence-intakes/runtime-policy-and-attestation/provider-api.json`
-- Suggested evidence sources: provider API response export; request/response transcript; provider-owned audit event
-
-### runtime-policy-and-attestation:hosted-service
-
-- Title: Runtime attestation, policy engine receipts, and proof decay
-- Authority kind: `hosted-service`
-- Owner hint: service owner
-- Description: hosted-service evidence for runtime-policy-and-attestation
-- Source URI: `TODO://authority/runtime-policy-and-attestation/hosted-service`
-- Snapshot output: `artifacts/external-evidence-sources/runtime-policy-and-attestation/hosted-service.json`
-- Intake output: `artifacts/external-evidence-intakes/runtime-policy-and-attestation/hosted-service.json`
-- Suggested evidence sources: hosted service health or deployment export; service audit root; operational SLO/status evidence
-
-### runtime-policy-and-attestation:identity-provider
-
-- Title: Runtime attestation, policy engine receipts, and proof decay
-- Authority kind: `identity-provider`
-- Owner hint: IAM/identity owner
-- Description: identity-provider evidence for runtime-policy-and-attestation
-- Source URI: `TODO://authority/runtime-policy-and-attestation/identity-provider`
-- Snapshot output: `artifacts/external-evidence-sources/runtime-policy-and-attestation/identity-provider.json`
-- Intake output: `artifacts/external-evidence-intakes/runtime-policy-and-attestation/identity-provider.json`
-- Suggested evidence sources: identity-provider event export; OIDC/session/lifecycle evidence; RBAC or account-state report
 
 ### standards-track-and-auditor-ecosystem:kms-hsm
 

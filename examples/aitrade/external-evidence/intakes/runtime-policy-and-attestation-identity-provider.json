@@ -1,0 +1,67 @@
+{
+  "evidence_argument": "runtime-policy-and-attestation,identity-provider,examples/aitrade/external-evidence/runtime-policy-identity-provider-source-snapshot.json,Retained identity-provider export for runtime policy agent identity binding evidence;issuer=Identity Provider Export;subject=aitrade runtime policy governed agent identity binding;source_uri=https://idp.example/exports/aitrade/runtime-policy-agent-identity;issued_at=2026-07-03T11:57:00Z;expires_at=2026-12-31T00:00:00Z",
+  "evidence_item": {
+    "accepted_authority_kinds": [
+      "ci-run",
+      "kms-hsm",
+      "provider-api",
+      "hosted-service",
+      "identity-provider"
+    ],
+    "authority_kind": "identity-provider",
+    "description": "Retained identity-provider export for runtime policy agent identity binding evidence",
+    "evidence_id": "5c168102aa8a072797d3f6d120c199ee7628593a5f440e1aef2bb64eafbaee2c",
+    "expires_at": "2026-12-31T00:00:00Z",
+    "issued_at": "2026-07-03T11:57:00Z",
+    "issuer": "Identity Provider Export",
+    "path": "examples/aitrade/external-evidence/runtime-policy-identity-provider-source-snapshot.json",
+    "requirement_id": "runtime-policy-and-attestation",
+    "sha256": "sha256:2e76c628b8b495c5d073a5513947d062e1adab2a605f2e2deb5192625f2af4c9",
+    "source_uri": "https://idp.example/exports/aitrade/runtime-policy-agent-identity",
+    "subject": "aitrade runtime policy governed agent identity binding"
+  },
+  "generated_at": "2026-07-12T00:01:00Z",
+  "intake_id": "27c9776fe4bf972c844f7916a04fae492c239ce1ea7b16a1a2881b4f4deb03b6",
+  "limitations": [
+    "This intake receipt hashes and maps one collected artifact to a collection-plan task; it does not itself satisfy roadmap completion.",
+    "Coverage is updated only after rebuilding and verifying an external evidence manifest with the emitted evidence argument.",
+    "Issuer authority and freshness remain bounded by the collected artifact and manifest verification options."
+  ],
+  "schema": "trustai.external-evidence-intake/0.1",
+  "source_manifest": {
+    "covered_authority_kind_count": 1,
+    "manifest_hash": "614aed31f3e3791640f3192624fab080815440210b65341fb4a2121ed84db717",
+    "manifest_id": "9364d02d07c6d4002372ad45c4017ee3b7a6c6ffd8dc91c46fb9fac9c84f7586",
+    "manifest_ref": "production-external-evidence",
+    "missing_authority_kind_count": 70,
+    "required_authority_kind_count": 71,
+    "status": "partial"
+  },
+  "source_plan": {
+    "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
+    "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
+    "source_manifest": {
+      "generated_at": "2026-07-12T00:01:00Z",
+      "manifest_hash": "614aed31f3e3791640f3192624fab080815440210b65341fb4a2121ed84db717",
+      "manifest_id": "9364d02d07c6d4002372ad45c4017ee3b7a6c6ffd8dc91c46fb9fac9c84f7586",
+      "manifest_ref": "production-external-evidence",
+      "status": "partial"
+    },
+    "status_filter": "all"
+  },
+  "source_roadmap_audit": {
+    "audit_hash": "86cfd25ee3bed75b75604091d3fca2daec16da708498209193e84226bd29816e",
+    "audit_id": "08f9ff68d1301a7891428145af040a68839468931a42dea27e80a0e0ad3bf7f2",
+    "completion_position": "local-reference-complete-with-external-authority-deferred"
+  },
+  "task": {
+    "authority_kind": "identity-provider",
+    "coverage_status": "missing",
+    "requirement_id": "runtime-policy-and-attestation",
+    "suggested_artifact_path": "external-evidence/runtime-policy-and-attestation/identity-provider.json",
+    "task_id": "1d7cc30adc75215cfaa0833a1ea45ff5d0783def3982c7455a3e4d829d1c7bc6",
+    "task_ref": "external-evidence:runtime-policy-and-attestation:identity-provider",
+    "unit_id": "7615ae83cc0b5602b4eca58785051961e3f22104b5e761ff4de4428e37833221",
+    "unit_ref": "runtime-policy-and-attestation:identity-provider"
+  }
+}

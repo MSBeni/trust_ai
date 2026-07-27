@@ -1,0 +1,22 @@
+{
+  "body_base64": "ewogICJzcGVjX3ZlcnNpb24iOiAidHJ1c3RhaS5wb2xpY3ktcGFjay8wLjEiLAogICJpZCI6ICJ0cmFkaW5nLXJ1bnRpbWUtcG9saWN5LXYwIiwKICAidmVyc2lvbiI6ICIwLjEuMCIsCiAgImRlc2NyaXB0aW9uIjogIlJ1bnRpbWUgYXV0aG9yaXR5IHBvbGljeSBmb3IgdHJhZGluZyBhZ2VudHMgdG91Y2hpbmcgcHJvZHVjdGlvbi1saWtlIHN5c3RlbXMuIiwKICAicmlza19jbGFzcyI6ICJ0cmFkaW5nLXByb2Qtd3JpdGUiLAogICJwcm9vZl9kZWNheSI6IHsKICAgICJtYXhfZ2F0ZV9hZ2VfaG91cnMiOiA3MjAsCiAgICAibWF4X3NvYWtfYWdlX2hvdXJzIjogMTY4LAogICAgIm1heF9ydW50aW1lX2F0dGVzdGF0aW9uX2FnZV9ob3VycyI6IDE2OCwKICAgICJtYXhfc2hhZG93X3JlcGxheV9hZ2VfaG91cnMiOiAxNjgKICB9LAogICJydWxlcyI6IFsKICAgIHsKICAgICAgImlkIjogInJlcXVpcmUtdHJhZGluZy1vcHMtYXBwcm92YWwtZm9yLWxhcmdlLW5vdGlvbmFsIiwKICAgICAgImRlc2NyaXB0aW9uIjogIkxhcmdlIG5vdGlvbmFsIHRyYWRpbmcgYWN0aW9ucyByZXF1aXJlIHRyYWRpbmcgb3BlcmF0aW9ucyBhcHByb3ZhbC4iLAogICAgICAiZWZmZWN0IjogInJlcXVpcmVfYXBwcm92YWwiLAogICAgICAiYXBwcm92YWxfcm9sZSI6ICJ0cmFkaW5nX29wcyIsCiAgICAgICJjb25kaXRpb25zIjogWwogICAgICAgIHsKICAgICAgICAgICJmaWVsZCI6ICJhY3Rpb24ubm90aW9uYWxfdXNkIiwKICAgICAgICAgICJvcGVyYXRvciI6ICI+IiwKICAgICAgICAgICJ2YWx1ZSI6IDUwMDAKICAgICAgICB9CiAgICAgIF0KICAgIH0sCiAgICB7CiAgICAgICJpZCI6ICJkZW55LW5vbi1zaGFkb3ctYmVmb3JlLXByb2R1Y3Rpb24tcHJvbW90aW9uIiwKICAgICAgImRlc2NyaXB0aW9uIjogIlRoZSByZWZlcmVuY2UgcG9saWN5IG9ubHkgYWxsb3dzIHNoYWRvdy1tb2RlIGV4ZWN1dGlvbiBpbiB0aGUgZGVtbyBlbnZpcm9ubWVudC4iLAogICAgICAiZWZmZWN0IjogImRlbnkiLAogICAgICAiY29uZGl0aW9ucyI6IFsKICAgICAgICB7CiAgICAgICAgICAiZmllbGQiOiAiYWN0aW9uLm1vZGUiLAogICAgICAgICAgIm9wZXJhdG9yIjogIiE9IiwKICAgICAgICAgICJ2YWx1ZSI6ICJzaGFkb3ciCiAgICAgICAgfQogICAgICBdCiAgICB9CiAgXQp9Cg==",
+  "body_sha256": "sha256:6d51510af4f820caa12af234f06306ac7519c1d1009698c76a3e169352cda46f",
+  "body_size_bytes": 1156,
+  "content_type": "application/json",
+  "expires_at": "2026-12-31T00:00:00Z",
+  "generated_at": "2026-07-12T00:01:00Z",
+  "issued_at": "2026-07-03T12:02:00Z",
+  "issuer": "GitHub Contents API",
+  "limitations": [
+    "This source snapshot preserves one collected authority response as a hashable artifact; it does not prove that the authority will return the same response later.",
+    "Verifier checks cover snapshot integrity, body hash, optional HTTP metadata, and optional freshness metadata.",
+    "Use this snapshot as the artifact supplied to external-evidence-intake for the matching collection-plan task."
+  ],
+  "response_headers": {},
+  "retrieval_method": "file-copy",
+  "schema": "trustai.external-evidence-source-snapshot/0.1",
+  "snapshot_id": "a38dce7c970b9d591c5b204c6d97eee26248f7d934803a0dad253ca1ac1b2498",
+  "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/policy-pack.json?ref=main",
+  "status_code": null,
+  "subject": "trustai runtime policy pack export"
+}

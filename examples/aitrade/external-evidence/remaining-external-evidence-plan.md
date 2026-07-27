@@ -1,8 +1,8 @@
 # TrustAI External Evidence Collection Plan
 
-Plan ID: `ae37345ce52960c691fd568d844bd44407d5d23f69efd29bac87e789fb15957a`
+Plan ID: `2fe688b9127b0bb62342712597fe5e6024b7b9abeb276aae183b474294c6f317`
 
-Source manifest: `eaf64e35c913bb926b61439015d04f8091473cbbe9df659291b9e6ba69c7ee20`
+Source manifest: `e65a27825304642675dba11e28110d9cbcaa1910d4a8bb903f7ff156d3052ef9`
 
 Status filter: missing
 
@@ -10,10 +10,10 @@ Status filter: missing
 
 - Source manifest status: partial
 - Total authority units: 71
-- Selected tasks: 60
-- Selected missing tasks: 60
+- Selected tasks: 56
+- Selected missing tasks: 56
 - Selected covered tasks: 0
-- Missing authority kinds overall: 60
+- Missing authority kinds overall: 56
 
 ## Collection Tasks
 
@@ -69,10 +69,6 @@ Status filter: missing
 | `a552209d5d56a8570afb0c1f69bf832376060c409c3565202c90487344067ee8` | `product-scope-discipline:ci-run` | `product-scope-discipline` | ci-run | missing | release engineering | `external-evidence/product-scope-discipline/ci-run.json` | `product-scope-discipline,ci-run,external-evidence/product-scope-discipline/ci-run.json,ci-run evidence for product-scope-discipline;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `de36663b0c6886897d5b1610091571596f9e94d6197b528acd8fd26b50881155` | `product-scope-discipline:customer` | `product-scope-discipline` | customer | missing | customer success/account owner | `external-evidence/product-scope-discipline/customer.json` | `product-scope-discipline,customer,external-evidence/product-scope-discipline/customer.json,customer evidence for product-scope-discipline;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `4dce079c5847dc9216eb45678e8cef7e33045c3db8a23112c356d227847b44ee` | `runtime-policy-and-attestation:ci-run` | `runtime-policy-and-attestation` | ci-run | missing | release engineering | `external-evidence/runtime-policy-and-attestation/ci-run.json` | `runtime-policy-and-attestation,ci-run,external-evidence/runtime-policy-and-attestation/ci-run.json,ci-run evidence for runtime-policy-and-attestation;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
-| `4e0d673cdd3ff36ddfa687c79936b722ec9f5e3ac15fb54991405fffe22eabc5` | `runtime-policy-and-attestation:kms-hsm` | `runtime-policy-and-attestation` | kms-hsm | missing | security/platform KMS owner | `external-evidence/runtime-policy-and-attestation/kms-hsm.json` | `runtime-policy-and-attestation,kms-hsm,external-evidence/runtime-policy-and-attestation/kms-hsm.json,kms-hsm evidence for runtime-policy-and-attestation;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
-| `ce6621c5587c4344d9f3f8db1d509403fea5a8f1f8581fcaf3ebc375af999ec4` | `runtime-policy-and-attestation:provider-api` | `runtime-policy-and-attestation` | provider-api | missing | integration/platform owner | `external-evidence/runtime-policy-and-attestation/provider-api.json` | `runtime-policy-and-attestation,provider-api,external-evidence/runtime-policy-and-attestation/provider-api.json,provider-api evidence for runtime-policy-and-attestation;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
-| `51b061b63412d64ce0f2dc4744658708a50a3864bdb00e74f373a831d1ba7cb7` | `runtime-policy-and-attestation:hosted-service` | `runtime-policy-and-attestation` | hosted-service | missing | service owner | `external-evidence/runtime-policy-and-attestation/hosted-service.json` | `runtime-policy-and-attestation,hosted-service,external-evidence/runtime-policy-and-attestation/hosted-service.json,hosted-service evidence for runtime-policy-and-attestation;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
-| `1d7cc30adc75215cfaa0833a1ea45ff5d0783def3982c7455a3e4d829d1c7bc6` | `runtime-policy-and-attestation:identity-provider` | `runtime-policy-and-attestation` | identity-provider | missing | IAM/identity owner | `external-evidence/runtime-policy-and-attestation/identity-provider.json` | `runtime-policy-and-attestation,identity-provider,external-evidence/runtime-policy-and-attestation/identity-provider.json,identity-provider evidence for runtime-policy-and-attestation;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `b3ca77081443acdd89a265983844a03f8f085020279c8e272513548181dabcec` | `standards-track-and-auditor-ecosystem:kms-hsm` | `standards-track-and-auditor-ecosystem` | kms-hsm | missing | security/platform KMS owner | `external-evidence/standards-track-and-auditor-ecosystem/kms-hsm.json` | `standards-track-and-auditor-ecosystem,kms-hsm,external-evidence/standards-track-and-auditor-ecosystem/kms-hsm.json,kms-hsm evidence for standards-track-and-auditor-ecosystem;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `fd4c4a579fc40de146198260048ce339850dba546a8e83bea8c12c0726794622` | `standards-track-and-auditor-ecosystem:standards-body` | `standards-track-and-auditor-ecosystem` | standards-body | missing | standards/governance owner | `external-evidence/standards-track-and-auditor-ecosystem/standards-body.json` | `standards-track-and-auditor-ecosystem,standards-body,external-evidence/standards-track-and-auditor-ecosystem/standards-body.json,standards-body evidence for standards-track-and-auditor-ecosystem;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `eba08154dc6363b8818d68f122608804d9f93b54a94556768cb51d654975ed40` | `trust-network-procurement-and-marketplace:provider-api` | `trust-network-procurement-and-marketplace` | provider-api | missing | integration/platform owner | `external-evidence/trust-network-procurement-and-marketplace/provider-api.json` | `trust-network-procurement-and-marketplace,provider-api,external-evidence/trust-network-procurement-and-marketplace/provider-api.json,provider-api evidence for trust-network-procurement-and-marketplace;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |

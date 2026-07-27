@@ -5,12 +5,12 @@
     "A task is covered only after a matching evidence artifact is supplied to an external evidence manifest and verified.",
     "Freshness and issuer authority remain bounded by the supplied evidence artifact and manifest verification options."
   ],
-  "plan_id": "ae37345ce52960c691fd568d844bd44407d5d23f69efd29bac87e789fb15957a",
+  "plan_id": "2fe688b9127b0bb62342712597fe5e6024b7b9abeb276aae183b474294c6f317",
   "schema": "trustai.external-evidence-collection-plan/0.1",
   "source_manifest": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "manifest_hash": "06e5a5bbd9c45c8d9e929ea6cc20ed2630b74c41491966cba66b12b83629ed20",
-    "manifest_id": "eaf64e35c913bb926b61439015d04f8091473cbbe9df659291b9e6ba69c7ee20",
+    "manifest_hash": "e70033561136d1fddff3d462df16dd33d7d04852a589990f6da37224d7328780",
+    "manifest_id": "e65a27825304642675dba11e28110d9cbcaa1910d4a8bb903f7ff156d3052ef9",
     "manifest_ref": "production-external-evidence",
     "status": "partial"
   },
@@ -21,34 +21,34 @@
   },
   "status_filter": "missing",
   "summary": {
-    "covered_authority_kind_count": 11,
-    "missing_authority_kind_count": 60,
+    "covered_authority_kind_count": 15,
+    "missing_authority_kind_count": 56,
     "missing_task_count_by_authority_kind": {
       "ci-run": 7,
       "cloud-object-lock": 1,
       "customer": 9,
-      "hosted-service": 6,
-      "identity-provider": 7,
+      "hosted-service": 5,
+      "identity-provider": 6,
       "insurer": 4,
-      "kms-hsm": 7,
-      "provider-api": 8,
+      "kms-hsm": 6,
+      "provider-api": 7,
       "regulator": 5,
       "standards-body": 6
     },
     "required_authority_kind_count": 71,
     "selected_covered_task_count": 0,
-    "selected_missing_task_count": 60,
-    "selected_task_count": 60,
+    "selected_missing_task_count": 56,
+    "selected_task_count": 56,
     "source_manifest_status": "partial",
     "task_count_by_authority_kind": {
       "ci-run": 7,
       "cloud-object-lock": 1,
       "customer": 9,
-      "hosted-service": 6,
-      "identity-provider": 7,
+      "hosted-service": 5,
+      "identity-provider": 6,
       "insurer": 4,
-      "kms-hsm": 7,
-      "provider-api": 8,
+      "kms-hsm": 6,
+      "provider-api": 7,
       "regulator": 5,
       "standards-body": 6
     },
@@ -58,7 +58,7 @@
       "P1-P2": 6,
       "P1-P3": 5,
       "P1-P4": 5,
-      "P2": 10,
+      "P2": 6,
       "P2-P3": 3,
       "P2-P4": 8,
       "P3": 5,
@@ -1516,122 +1516,6 @@
       "title": "Runtime attestation, policy engine receipts, and proof decay",
       "unit_id": "0d128ea71cd5af5b6819a733b6f95e8eb1990db8a2bc68448474285b8790ff33",
       "unit_ref": "runtime-policy-and-attestation:ci-run"
-    },
-    {
-      "acceptance_criteria": [
-        "Artifact path must be repository-relative and hashable before manifest verification.",
-        "Evidence item authority_kind must be kms-hsm and accepted for runtime-policy-and-attestation.",
-        "Use issued_at and expires_at metadata when strict freshness verification is required.",
-        "Rebuild and verify the external evidence manifest after adding the artifact."
-      ],
-      "authority_kind": "kms-hsm",
-      "coverage_status": "missing",
-      "evidence_argument_template": "runtime-policy-and-attestation,kms-hsm,external-evidence/runtime-policy-and-attestation/kms-hsm.json,kms-hsm evidence for runtime-policy-and-attestation;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-      "external_authority_required": [
-        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
-      ],
-      "owner_hint": "security/platform KMS owner",
-      "phase": "P2",
-      "priority": "P1",
-      "requirement_id": "runtime-policy-and-attestation",
-      "suggested_artifact_path": "external-evidence/runtime-policy-and-attestation/kms-hsm.json",
-      "suggested_evidence_sources": [
-        "KMS/HSM key policy export",
-        "signing operation receipt",
-        "custody or audit-log root"
-      ],
-      "task_id": "4e0d673cdd3ff36ddfa687c79936b722ec9f5e3ac15fb54991405fffe22eabc5",
-      "task_ref": "external-evidence:runtime-policy-and-attestation:kms-hsm",
-      "title": "Runtime attestation, policy engine receipts, and proof decay",
-      "unit_id": "d65055f0aa100515422d3b946633ace686f8983617e778d7581b89f748fba7ec",
-      "unit_ref": "runtime-policy-and-attestation:kms-hsm"
-    },
-    {
-      "acceptance_criteria": [
-        "Artifact path must be repository-relative and hashable before manifest verification.",
-        "Evidence item authority_kind must be provider-api and accepted for runtime-policy-and-attestation.",
-        "Use issued_at and expires_at metadata when strict freshness verification is required.",
-        "Rebuild and verify the external evidence manifest after adding the artifact."
-      ],
-      "authority_kind": "provider-api",
-      "coverage_status": "missing",
-      "evidence_argument_template": "runtime-policy-and-attestation,provider-api,external-evidence/runtime-policy-and-attestation/provider-api.json,provider-api evidence for runtime-policy-and-attestation;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-      "external_authority_required": [
-        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
-      ],
-      "owner_hint": "integration/platform owner",
-      "phase": "P2",
-      "priority": "P1",
-      "requirement_id": "runtime-policy-and-attestation",
-      "suggested_artifact_path": "external-evidence/runtime-policy-and-attestation/provider-api.json",
-      "suggested_evidence_sources": [
-        "provider API response export",
-        "request/response transcript",
-        "provider-owned audit event"
-      ],
-      "task_id": "ce6621c5587c4344d9f3f8db1d509403fea5a8f1f8581fcaf3ebc375af999ec4",
-      "task_ref": "external-evidence:runtime-policy-and-attestation:provider-api",
-      "title": "Runtime attestation, policy engine receipts, and proof decay",
-      "unit_id": "ba43e60fcdba3109317a26d9426dabc58bd32dace07922c5a84df5e0aee2907f",
-      "unit_ref": "runtime-policy-and-attestation:provider-api"
-    },
-    {
-      "acceptance_criteria": [
-        "Artifact path must be repository-relative and hashable before manifest verification.",
-        "Evidence item authority_kind must be hosted-service and accepted for runtime-policy-and-attestation.",
-        "Use issued_at and expires_at metadata when strict freshness verification is required.",
-        "Rebuild and verify the external evidence manifest after adding the artifact."
-      ],
-      "authority_kind": "hosted-service",
-      "coverage_status": "missing",
-      "evidence_argument_template": "runtime-policy-and-attestation,hosted-service,external-evidence/runtime-policy-and-attestation/hosted-service.json,hosted-service evidence for runtime-policy-and-attestation;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-      "external_authority_required": [
-        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
-      ],
-      "owner_hint": "service owner",
-      "phase": "P2",
-      "priority": "P1",
-      "requirement_id": "runtime-policy-and-attestation",
-      "suggested_artifact_path": "external-evidence/runtime-policy-and-attestation/hosted-service.json",
-      "suggested_evidence_sources": [
-        "hosted service health or deployment export",
-        "service audit root",
-        "operational SLO/status evidence"
-      ],
-      "task_id": "51b061b63412d64ce0f2dc4744658708a50a3864bdb00e74f373a831d1ba7cb7",
-      "task_ref": "external-evidence:runtime-policy-and-attestation:hosted-service",
-      "title": "Runtime attestation, policy engine receipts, and proof decay",
-      "unit_id": "6029f74fe9ceff003106411ba51fa63253e190d1b7a74c5c65c86c165e8bd856",
-      "unit_ref": "runtime-policy-and-attestation:hosted-service"
-    },
-    {
-      "acceptance_criteria": [
-        "Artifact path must be repository-relative and hashable before manifest verification.",
-        "Evidence item authority_kind must be identity-provider and accepted for runtime-policy-and-attestation.",
-        "Use issued_at and expires_at metadata when strict freshness verification is required.",
-        "Rebuild and verify the external evidence manifest after adding the artifact."
-      ],
-      "authority_kind": "identity-provider",
-      "coverage_status": "missing",
-      "evidence_argument_template": "runtime-policy-and-attestation,identity-provider,external-evidence/runtime-policy-and-attestation/identity-provider.json,identity-provider evidence for runtime-policy-and-attestation;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-      "external_authority_required": [
-        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
-      ],
-      "owner_hint": "IAM/identity owner",
-      "phase": "P2",
-      "priority": "P1",
-      "requirement_id": "runtime-policy-and-attestation",
-      "suggested_artifact_path": "external-evidence/runtime-policy-and-attestation/identity-provider.json",
-      "suggested_evidence_sources": [
-        "identity-provider event export",
-        "OIDC/session/lifecycle evidence",
-        "RBAC or account-state report"
-      ],
-      "task_id": "1d7cc30adc75215cfaa0833a1ea45ff5d0783def3982c7455a3e4d829d1c7bc6",
-      "task_ref": "external-evidence:runtime-policy-and-attestation:identity-provider",
-      "title": "Runtime attestation, policy engine receipts, and proof decay",
-      "unit_id": "7615ae83cc0b5602b4eca58785051961e3f22104b5e761ff4de4428e37833221",
-      "unit_ref": "runtime-policy-and-attestation:identity-provider"
     },
     {
       "acceptance_criteria": [

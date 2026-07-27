@@ -1,13 +1,13 @@
 # External Evidence Owner Fulfillment Closure
 
-- Closure ID: `537e8c993cbbd79f1c0ef64cdb9a2bf79f8a04e14e3c85e8078752a2c6b36d1a`
+- Closure ID: `9e418caf9a5b4f847e167a0d41840df62f49cfa326e1d7d908d386b16fb890ed`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Closed tasks: 0/60
-- Missing intakes: 60
+- Closed tasks: 0/56
+- Missing intakes: 56
 - Invalid intake tasks: 0
-- Missing manifest coverage: 60
-- Placeholder source URIs: 60
+- Missing manifest coverage: 56
+- Placeholder source URIs: 56
 
 ## Task Closure
 
@@ -63,10 +63,6 @@
 | `product-scope-discipline:ci-run` | release engineering | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `product-scope-discipline:customer` | customer success/account owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `runtime-policy-and-attestation:ci-run` | release engineering | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
-| `runtime-policy-and-attestation:kms-hsm` | security/platform KMS owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
-| `runtime-policy-and-attestation:provider-api` | integration/platform owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
-| `runtime-policy-and-attestation:hosted-service` | service owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
-| `runtime-policy-and-attestation:identity-provider` | IAM/identity owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `standards-track-and-auditor-ecosystem:kms-hsm` | security/platform KMS owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `standards-track-and-auditor-ecosystem:standards-body` | standards/governance owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `trust-network-procurement-and-marketplace:provider-api` | integration/platform owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
@@ -76,9 +72,9 @@
 
 ## Blockers
 
-- 60 reviewed tasks still use placeholder source_uri values
-- 60 reviewed tasks do not have intake receipts
-- 60 reviewed tasks are not covered by the rebuilt manifest
+- 56 reviewed tasks still use placeholder source_uri values
+- 56 reviewed tasks do not have intake receipts
+- 56 reviewed tasks are not covered by the rebuilt manifest
 
 ## Next Actions
 

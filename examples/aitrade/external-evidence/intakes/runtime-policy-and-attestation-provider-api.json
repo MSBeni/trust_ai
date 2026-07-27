@@ -1,0 +1,67 @@
+{
+  "evidence_argument": "runtime-policy-and-attestation,provider-api,examples/aitrade/external-evidence/runtime-policy-provider-api-source-snapshot.json,Retained GitHub contents API export for runtime policy pack evidence;issuer=GitHub Contents API;subject=trustai runtime policy pack export;source_uri=https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/policy-pack.json?ref=main;issued_at=2026-07-03T12:02:00Z;expires_at=2026-12-31T00:00:00Z",
+  "evidence_item": {
+    "accepted_authority_kinds": [
+      "ci-run",
+      "kms-hsm",
+      "provider-api",
+      "hosted-service",
+      "identity-provider"
+    ],
+    "authority_kind": "provider-api",
+    "description": "Retained GitHub contents API export for runtime policy pack evidence",
+    "evidence_id": "bae97d9f4c34d0db2c72f33aa552591e3e617e4ec8e3f48b914da8d602c8d40b",
+    "expires_at": "2026-12-31T00:00:00Z",
+    "issued_at": "2026-07-03T12:02:00Z",
+    "issuer": "GitHub Contents API",
+    "path": "examples/aitrade/external-evidence/runtime-policy-provider-api-source-snapshot.json",
+    "requirement_id": "runtime-policy-and-attestation",
+    "sha256": "sha256:91a101ac7c1e82f1af2e86324523991d0e3b03685f6cd5e1f1ed6bd520e7ab1f",
+    "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/policy-pack.json?ref=main",
+    "subject": "trustai runtime policy pack export"
+  },
+  "generated_at": "2026-07-12T00:01:00Z",
+  "intake_id": "b52fb084e365830a6685e466effa65953e8c004a4c7ed380a47178b89f4dde93",
+  "limitations": [
+    "This intake receipt hashes and maps one collected artifact to a collection-plan task; it does not itself satisfy roadmap completion.",
+    "Coverage is updated only after rebuilding and verifying an external evidence manifest with the emitted evidence argument.",
+    "Issuer authority and freshness remain bounded by the collected artifact and manifest verification options."
+  ],
+  "schema": "trustai.external-evidence-intake/0.1",
+  "source_manifest": {
+    "covered_authority_kind_count": 1,
+    "manifest_hash": "614aed31f3e3791640f3192624fab080815440210b65341fb4a2121ed84db717",
+    "manifest_id": "9364d02d07c6d4002372ad45c4017ee3b7a6c6ffd8dc91c46fb9fac9c84f7586",
+    "manifest_ref": "production-external-evidence",
+    "missing_authority_kind_count": 70,
+    "required_authority_kind_count": 71,
+    "status": "partial"
+  },
+  "source_plan": {
+    "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
+    "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
+    "source_manifest": {
+      "generated_at": "2026-07-12T00:01:00Z",
+      "manifest_hash": "614aed31f3e3791640f3192624fab080815440210b65341fb4a2121ed84db717",
+      "manifest_id": "9364d02d07c6d4002372ad45c4017ee3b7a6c6ffd8dc91c46fb9fac9c84f7586",
+      "manifest_ref": "production-external-evidence",
+      "status": "partial"
+    },
+    "status_filter": "all"
+  },
+  "source_roadmap_audit": {
+    "audit_hash": "86cfd25ee3bed75b75604091d3fca2daec16da708498209193e84226bd29816e",
+    "audit_id": "08f9ff68d1301a7891428145af040a68839468931a42dea27e80a0e0ad3bf7f2",
+    "completion_position": "local-reference-complete-with-external-authority-deferred"
+  },
+  "task": {
+    "authority_kind": "provider-api",
+    "coverage_status": "missing",
+    "requirement_id": "runtime-policy-and-attestation",
+    "suggested_artifact_path": "external-evidence/runtime-policy-and-attestation/provider-api.json",
+    "task_id": "ce6621c5587c4344d9f3f8db1d509403fea5a8f1f8581fcaf3ebc375af999ec4",
+    "task_ref": "external-evidence:runtime-policy-and-attestation:provider-api",
+    "unit_id": "ba43e60fcdba3109317a26d9426dabc58bd32dace07922c5a84df5e0aee2907f",
+    "unit_ref": "runtime-policy-and-attestation:provider-api"
+  }
+}

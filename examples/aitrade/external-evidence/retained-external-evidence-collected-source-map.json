@@ -272,6 +272,126 @@
       "unit_ref": "framework-adapters:hosted-service"
     },
     {
+      "authority_kind": "kms-hsm",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained KMS/HSM enforcement export for runtime policy evidence signing",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/runtime-policy-and-attestation-kms-hsm.json",
+      "issued_at": "2026-07-03T12:03:00Z",
+      "issuer": "Example KMS/HSM",
+      "owner_hint": "security/platform KMS owner",
+      "requirement_id": "runtime-policy-and-attestation",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/runtime-policy-kms-hsm-source-snapshot.json",
+      "source_uri": "https://kms.example/attestations/trustai/runtime-policy/evidence-signing",
+      "subject": "trustai runtime policy evidence-signing enforcement",
+      "suggested_evidence_sources": [
+        "KMS/HSM key policy export",
+        "signing operation receipt",
+        "custody or audit-log root"
+      ],
+      "task": "runtime-policy-and-attestation:kms-hsm",
+      "task_id": "4e0d673cdd3ff36ddfa687c79936b722ec9f5e3ac15fb54991405fffe22eabc5",
+      "task_ref": "external-evidence:runtime-policy-and-attestation:kms-hsm",
+      "title": "Runtime attestation, policy engine receipts, and proof decay",
+      "unit_id": "d65055f0aa100515422d3b946633ace686f8983617e778d7581b89f748fba7ec",
+      "unit_ref": "runtime-policy-and-attestation:kms-hsm"
+    },
+    {
+      "authority_kind": "provider-api",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained GitHub contents API export for runtime policy pack evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/runtime-policy-and-attestation-provider-api.json",
+      "issued_at": "2026-07-03T12:02:00Z",
+      "issuer": "GitHub Contents API",
+      "owner_hint": "integration/platform owner",
+      "requirement_id": "runtime-policy-and-attestation",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/runtime-policy-provider-api-source-snapshot.json",
+      "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/policy-pack.json?ref=main",
+      "subject": "trustai runtime policy pack export",
+      "suggested_evidence_sources": [
+        "provider API response export",
+        "request/response transcript",
+        "provider-owned audit event"
+      ],
+      "task": "runtime-policy-and-attestation:provider-api",
+      "task_id": "ce6621c5587c4344d9f3f8db1d509403fea5a8f1f8581fcaf3ebc375af999ec4",
+      "task_ref": "external-evidence:runtime-policy-and-attestation:provider-api",
+      "title": "Runtime attestation, policy engine receipts, and proof decay",
+      "unit_id": "ba43e60fcdba3109317a26d9426dabc58bd32dace07922c5a84df5e0aee2907f",
+      "unit_ref": "runtime-policy-and-attestation:provider-api"
+    },
+    {
+      "authority_kind": "hosted-service",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained GitHub hosted file export for runtime action attestation evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/runtime-policy-and-attestation-hosted-service.json",
+      "issued_at": "2026-07-03T12:00:12Z",
+      "issuer": "GitHub Hosted Repository",
+      "owner_hint": "service owner",
+      "requirement_id": "runtime-policy-and-attestation",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/runtime-action-hosted-service-source-snapshot.json",
+      "source_uri": "https://github.com/MSBeni/trust_ai/blob/main/examples/aitrade/runtime-action.json",
+      "subject": "trustai runtime action attestation export",
+      "suggested_evidence_sources": [
+        "hosted service health or deployment export",
+        "service audit root",
+        "operational SLO/status evidence"
+      ],
+      "task": "runtime-policy-and-attestation:hosted-service",
+      "task_id": "51b061b63412d64ce0f2dc4744658708a50a3864bdb00e74f373a831d1ba7cb7",
+      "task_ref": "external-evidence:runtime-policy-and-attestation:hosted-service",
+      "title": "Runtime attestation, policy engine receipts, and proof decay",
+      "unit_id": "6029f74fe9ceff003106411ba51fa63253e190d1b7a74c5c65c86c165e8bd856",
+      "unit_ref": "runtime-policy-and-attestation:hosted-service"
+    },
+    {
+      "authority_kind": "identity-provider",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained identity-provider export for runtime policy agent identity binding evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/runtime-policy-and-attestation-identity-provider.json",
+      "issued_at": "2026-07-03T11:57:00Z",
+      "issuer": "Identity Provider Export",
+      "owner_hint": "IAM/identity owner",
+      "requirement_id": "runtime-policy-and-attestation",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/runtime-policy-identity-provider-source-snapshot.json",
+      "source_uri": "https://idp.example/exports/aitrade/runtime-policy-agent-identity",
+      "subject": "aitrade runtime policy governed agent identity binding",
+      "suggested_evidence_sources": [
+        "identity-provider event export",
+        "OIDC/session/lifecycle evidence",
+        "RBAC or account-state report"
+      ],
+      "task": "runtime-policy-and-attestation:identity-provider",
+      "task_id": "1d7cc30adc75215cfaa0833a1ea45ff5d0783def3982c7455a3e4d829d1c7bc6",
+      "task_ref": "external-evidence:runtime-policy-and-attestation:identity-provider",
+      "title": "Runtime attestation, policy engine receipts, and proof decay",
+      "unit_id": "7615ae83cc0b5602b4eca58785051961e3f22104b5e761ff4de4428e37833221",
+      "unit_ref": "runtime-policy-and-attestation:identity-provider"
+    },
+    {
       "authority_kind": "provider-api",
       "content_type": "application/json",
       "coverage_status": "missing",
@@ -339,7 +459,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "5a0d2654da8bd667c3fe27deaad7cafbd8fc27cea5a46b92fc688bee0afd9ba3",
+  "source_map_id": "5c46fc96d252de5c1df14a0e2e4b2424beff157ce31fc703311d6fb7f20eadcf",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -354,9 +474,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 11,
+    "entry_count": 15,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 11,
+    "live_source_uri_count": 15,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

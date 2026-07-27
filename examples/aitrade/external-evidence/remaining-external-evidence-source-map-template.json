@@ -1204,102 +1204,6 @@
     {
       "authority_kind": "kms-hsm",
       "coverage_status": "missing",
-      "description": "kms-hsm evidence for runtime-policy-and-attestation",
-      "external_authority_required": [
-        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/runtime-policy-and-attestation/kms-hsm.json",
-      "owner_hint": "security/platform KMS owner",
-      "requirement_id": "runtime-policy-and-attestation",
-      "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/kms-hsm.json",
-      "source_uri": "TODO://authority/runtime-policy-and-attestation/kms-hsm",
-      "suggested_evidence_sources": [
-        "KMS/HSM key policy export",
-        "signing operation receipt",
-        "custody or audit-log root"
-      ],
-      "task": "runtime-policy-and-attestation:kms-hsm",
-      "task_id": "4e0d673cdd3ff36ddfa687c79936b722ec9f5e3ac15fb54991405fffe22eabc5",
-      "task_ref": "external-evidence:runtime-policy-and-attestation:kms-hsm",
-      "title": "Runtime attestation, policy engine receipts, and proof decay",
-      "unit_id": "d65055f0aa100515422d3b946633ace686f8983617e778d7581b89f748fba7ec",
-      "unit_ref": "runtime-policy-and-attestation:kms-hsm"
-    },
-    {
-      "authority_kind": "provider-api",
-      "coverage_status": "missing",
-      "description": "provider-api evidence for runtime-policy-and-attestation",
-      "external_authority_required": [
-        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/runtime-policy-and-attestation/provider-api.json",
-      "owner_hint": "integration/platform owner",
-      "requirement_id": "runtime-policy-and-attestation",
-      "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/provider-api.json",
-      "source_uri": "TODO://authority/runtime-policy-and-attestation/provider-api",
-      "suggested_evidence_sources": [
-        "provider API response export",
-        "request/response transcript",
-        "provider-owned audit event"
-      ],
-      "task": "runtime-policy-and-attestation:provider-api",
-      "task_id": "ce6621c5587c4344d9f3f8db1d509403fea5a8f1f8581fcaf3ebc375af999ec4",
-      "task_ref": "external-evidence:runtime-policy-and-attestation:provider-api",
-      "title": "Runtime attestation, policy engine receipts, and proof decay",
-      "unit_id": "ba43e60fcdba3109317a26d9426dabc58bd32dace07922c5a84df5e0aee2907f",
-      "unit_ref": "runtime-policy-and-attestation:provider-api"
-    },
-    {
-      "authority_kind": "hosted-service",
-      "coverage_status": "missing",
-      "description": "hosted-service evidence for runtime-policy-and-attestation",
-      "external_authority_required": [
-        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/runtime-policy-and-attestation/hosted-service.json",
-      "owner_hint": "service owner",
-      "requirement_id": "runtime-policy-and-attestation",
-      "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/hosted-service.json",
-      "source_uri": "TODO://authority/runtime-policy-and-attestation/hosted-service",
-      "suggested_evidence_sources": [
-        "hosted service health or deployment export",
-        "service audit root",
-        "operational SLO/status evidence"
-      ],
-      "task": "runtime-policy-and-attestation:hosted-service",
-      "task_id": "51b061b63412d64ce0f2dc4744658708a50a3864bdb00e74f373a831d1ba7cb7",
-      "task_ref": "external-evidence:runtime-policy-and-attestation:hosted-service",
-      "title": "Runtime attestation, policy engine receipts, and proof decay",
-      "unit_id": "6029f74fe9ceff003106411ba51fa63253e190d1b7a74c5c65c86c165e8bd856",
-      "unit_ref": "runtime-policy-and-attestation:hosted-service"
-    },
-    {
-      "authority_kind": "identity-provider",
-      "coverage_status": "missing",
-      "description": "identity-provider evidence for runtime-policy-and-attestation",
-      "external_authority_required": [
-        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/runtime-policy-and-attestation/identity-provider.json",
-      "owner_hint": "IAM/identity owner",
-      "requirement_id": "runtime-policy-and-attestation",
-      "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/identity-provider.json",
-      "source_uri": "TODO://authority/runtime-policy-and-attestation/identity-provider",
-      "suggested_evidence_sources": [
-        "identity-provider event export",
-        "OIDC/session/lifecycle evidence",
-        "RBAC or account-state report"
-      ],
-      "task": "runtime-policy-and-attestation:identity-provider",
-      "task_id": "1d7cc30adc75215cfaa0833a1ea45ff5d0783def3982c7455a3e4d829d1c7bc6",
-      "task_ref": "external-evidence:runtime-policy-and-attestation:identity-provider",
-      "title": "Runtime attestation, policy engine receipts, and proof decay",
-      "unit_id": "7615ae83cc0b5602b4eca58785051961e3f22104b5e761ff4de4428e37833221",
-      "unit_ref": "runtime-policy-and-attestation:identity-provider"
-    },
-    {
-      "authority_kind": "kms-hsm",
-      "coverage_status": "missing",
       "description": "kms-hsm evidence for standards-track-and-auditor-ecosystem",
       "external_authority_required": [
         "Actual standards-body acceptance and sponsor-owned KMS/HSM enforcement require external governance events."
@@ -1449,14 +1353,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "8604c16ae1b5aa19bc2f40099e4414721228aec8ae935788675e6d49ff154d4f",
+  "source_map_id": "783a7f7d24084e52f33be433c122757f9263802a3d6903a40f4c82222c169c44",
   "source_plan": {
-    "plan_hash": "a7221785d608173f67dc7e26d8cb4881acdbfd0f0dd3fbd31a786e010d772675",
-    "plan_id": "ae37345ce52960c691fd568d844bd44407d5d23f69efd29bac87e789fb15957a",
+    "plan_hash": "a92b68c10ade027d8d8e40789dddd5b96d5bf070101feadc243ed5f18b84306e",
+    "plan_id": "2fe688b9127b0bb62342712597fe5e6024b7b9abeb276aae183b474294c6f317",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "06e5a5bbd9c45c8d9e929ea6cc20ed2630b74c41491966cba66b12b83629ed20",
-      "manifest_id": "eaf64e35c913bb926b61439015d04f8091473cbbe9df659291b9e6ba69c7ee20",
+      "manifest_hash": "e70033561136d1fddff3d462df16dd33d7d04852a589990f6da37224d7328780",
+      "manifest_id": "e65a27825304642675dba11e28110d9cbcaa1910d4a8bb903f7ff156d3052ef9",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },
@@ -1464,12 +1368,12 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 60,
+    "entry_count": 56,
     "intake_dir": "artifacts/external-evidence-intakes",
     "live_source_uri_count": 0,
-    "placeholder_source_uri_count": 60,
+    "placeholder_source_uri_count": 56,
     "snapshot_dir": "artifacts/external-evidence-sources",
-    "source_plan_task_count": 60,
+    "source_plan_task_count": 56,
     "status_filter": "missing"
   }
 }

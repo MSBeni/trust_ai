@@ -1,0 +1,22 @@
+{
+  "body_base64": "ewogICJhY3Rpb25faWQiOiAic2hhZG93LW9yZGVyLTIwMjYwNzAzLTAwMSIsCiAgInRpbWVzdGFtcCI6ICIyMDI2LTA3LTAzVDEyOjAwOjEyWiIsCiAgInJpc2tfY2xhc3MiOiAidHJhZGluZy1wcm9kLXdyaXRlIiwKICAibW9kZSI6ICJzaGFkb3ciLAogICJzeW1ib2wiOiAiQlRDVVNEVCIsCiAgIm5vdGlvbmFsX3VzZCI6IDc1MDAsCiAgImRhaWx5X29yZGVyX2NvdW50IjogMTIsCiAgInJlcXVpcmVzX2h1bWFuX2FwcHJvdmFsIjogdHJ1ZSwKICAiYXBwcm92YWwiOiB7CiAgICAicm9sZSI6ICJ0cmFkaW5nX29wcyIsCiAgICAiYXBwcm92ZXIiOiAidHJhZGluZy1vcHNAZXhhbXBsZS5jb20iLAogICAgImFwcHJvdmVkX2F0IjogIjIwMjYtMDctMDNUMTI6MDA6MDlaIgogIH0KfQ==",
+  "body_sha256": "sha256:e542a0d4768d1f920c432fe77004bd8ba614f7e46c5167c310a2c69b1c569b55",
+  "body_size_bytes": 385,
+  "content_type": "application/json",
+  "expires_at": "2026-12-31T00:00:00Z",
+  "generated_at": "2026-07-12T00:01:00Z",
+  "issued_at": "2026-07-03T12:00:12Z",
+  "issuer": "GitHub Hosted Repository",
+  "limitations": [
+    "This source snapshot preserves one collected authority response as a hashable artifact; it does not prove that the authority will return the same response later.",
+    "Verifier checks cover snapshot integrity, body hash, optional HTTP metadata, and optional freshness metadata.",
+    "Use this snapshot as the artifact supplied to external-evidence-intake for the matching collection-plan task."
+  ],
+  "response_headers": {},
+  "retrieval_method": "file-copy",
+  "schema": "trustai.external-evidence-source-snapshot/0.1",
+  "snapshot_id": "7dd49d48c853345be04ef37036ba3885cbaae58a96b4b369f6b05a855c6d31a7",
+  "source_uri": "https://github.com/MSBeni/trust_ai/blob/main/examples/aitrade/runtime-action.json",
+  "status_code": null,
+  "subject": "trustai runtime action attestation export"
+}

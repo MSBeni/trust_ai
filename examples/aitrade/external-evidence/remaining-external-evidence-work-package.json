@@ -60,9 +60,9 @@
       "group_by": "owner_hint",
       "group_key": "IAM/identity owner",
       "live_source_uri_count": 0,
-      "missing_task_count": 7,
+      "missing_task_count": 6,
       "owner_hint": "IAM/identity owner",
-      "package_id": "43b5242e67a5b4ad25894dac7cd5acc18945eb147aed167b634f9c92fdf286f9",
+      "package_id": "fd926abedc88c07df572b5153fedbf191abc73274b3358f28d2885181db4dc6c",
       "package_ref": "owner_hint:IAM-identity-owner",
       "phases": [
         "P1",
@@ -71,7 +71,7 @@
         "P2-P4",
         "P4"
       ],
-      "placeholder_source_uri_count": 7,
+      "placeholder_source_uri_count": 6,
       "priorities": [
         "P0",
         "P1"
@@ -80,12 +80,11 @@
         "auditor-and-review-portal",
         "cicd-provider-approvals",
         "insurer-api-and-actuarial-products",
-        "runtime-policy-and-attestation",
         "self-serve-onboarding",
         "shadow-replay-temporal-holdout",
         "trust-network-procurement-and-marketplace"
       ],
-      "task_count": 7,
+      "task_count": 6,
       "tasks": [
         {
           "acceptance_criteria": [
@@ -317,83 +316,6 @@
           "title": "Auditor view, supervised access, regulator view, and review portal attestations",
           "unit_id": "e751495f6bd0337a851b9cf8192967544a97538cca79641c714107ddf77b25fb",
           "unit_ref": "auditor-and-review-portal:identity-provider"
-        },
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be identity-provider and accepted for runtime-policy-and-attestation.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "identity-provider",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/runtime-policy-and-attestation/identity-provider",
-              "--root",
-              ".",
-              "--task",
-              "runtime-policy-and-attestation:identity-provider",
-              "--description",
-              "identity-provider evidence for runtime-policy-and-attestation",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/runtime-policy-and-attestation/identity-provider.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/runtime-policy-and-attestation/identity-provider.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/runtime-policy-and-attestation/identity-provider --root . --task runtime-policy-and-attestation:identity-provider --description 'identity-provider evidence for runtime-policy-and-attestation' --snapshot-out artifacts/external-evidence-sources/runtime-policy-and-attestation/identity-provider.json --intake-out artifacts/external-evidence-intakes/runtime-policy-and-attestation/identity-provider.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/runtime-policy-and-attestation/identity-provider.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/runtime-policy-and-attestation/identity-provider.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "identity-provider evidence for runtime-policy-and-attestation",
-          "evidence_argument_template": "runtime-policy-and-attestation,identity-provider,external-evidence/runtime-policy-and-attestation/identity-provider.json,identity-provider evidence for runtime-policy-and-attestation;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/runtime-policy-and-attestation/identity-provider.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "IAM/identity owner",
-          "phase": "P2",
-          "priority": "P1",
-          "requirement_id": "runtime-policy-and-attestation",
-          "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/identity-provider.json",
-          "source_uri": "TODO://authority/runtime-policy-and-attestation/identity-provider",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/runtime-policy-and-attestation/identity-provider.json",
-          "suggested_evidence_sources": [
-            "identity-provider event export",
-            "OIDC/session/lifecycle evidence",
-            "RBAC or account-state report"
-          ],
-          "task_id": "1d7cc30adc75215cfaa0833a1ea45ff5d0783def3982c7455a3e4d829d1c7bc6",
-          "task_ref": "external-evidence:runtime-policy-and-attestation:identity-provider",
-          "title": "Runtime attestation, policy engine receipts, and proof decay",
-          "unit_id": "7615ae83cc0b5602b4eca58785051961e3f22104b5e761ff4de4428e37833221",
-          "unit_ref": "runtime-policy-and-attestation:identity-provider"
         },
         {
           "acceptance_criteria": [
@@ -1573,9 +1495,9 @@
       "group_by": "owner_hint",
       "group_key": "integration/platform owner",
       "live_source_uri_count": 0,
-      "missing_task_count": 8,
+      "missing_task_count": 7,
       "owner_hint": "integration/platform owner",
-      "package_id": "d6653c9ca83d608fa06c54b935467f1fc84639f426836d6ec743ead55084e9ec",
+      "package_id": "954f3e0608bc80c7db0f1f87e8ed3ba6b4012cb986befe930456c230ba908293",
       "package_ref": "owner_hint:integration-platform-owner",
       "phases": [
         "P1",
@@ -1586,7 +1508,7 @@
         "P2-P4",
         "P4"
       ],
-      "placeholder_source_uri_count": 8,
+      "placeholder_source_uri_count": 7,
       "priorities": [
         "P0",
         "P1"
@@ -1596,12 +1518,11 @@
         "byoc-self-hosted",
         "compliance-mapper-and-eu-ai-act",
         "insurer-api-and-actuarial-products",
-        "runtime-policy-and-attestation",
         "self-serve-onboarding",
         "shadow-replay-temporal-holdout",
         "trust-network-procurement-and-marketplace"
       ],
-      "task_count": 8,
+      "task_count": 7,
       "tasks": [
         {
           "acceptance_criteria": [
@@ -1833,83 +1754,6 @@
           "title": "Auditor view, supervised access, regulator view, and review portal attestations",
           "unit_id": "248848c8b3fa34f616469d68be67714e13edfe6ba6707a55d6d646b69329ba60",
           "unit_ref": "auditor-and-review-portal:provider-api"
-        },
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be provider-api and accepted for runtime-policy-and-attestation.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "provider-api",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/runtime-policy-and-attestation/provider-api",
-              "--root",
-              ".",
-              "--task",
-              "runtime-policy-and-attestation:provider-api",
-              "--description",
-              "provider-api evidence for runtime-policy-and-attestation",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/runtime-policy-and-attestation/provider-api.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/runtime-policy-and-attestation/provider-api.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/runtime-policy-and-attestation/provider-api --root . --task runtime-policy-and-attestation:provider-api --description 'provider-api evidence for runtime-policy-and-attestation' --snapshot-out artifacts/external-evidence-sources/runtime-policy-and-attestation/provider-api.json --intake-out artifacts/external-evidence-intakes/runtime-policy-and-attestation/provider-api.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/runtime-policy-and-attestation/provider-api.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/runtime-policy-and-attestation/provider-api.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "provider-api evidence for runtime-policy-and-attestation",
-          "evidence_argument_template": "runtime-policy-and-attestation,provider-api,external-evidence/runtime-policy-and-attestation/provider-api.json,provider-api evidence for runtime-policy-and-attestation;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/runtime-policy-and-attestation/provider-api.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "integration/platform owner",
-          "phase": "P2",
-          "priority": "P1",
-          "requirement_id": "runtime-policy-and-attestation",
-          "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/provider-api.json",
-          "source_uri": "TODO://authority/runtime-policy-and-attestation/provider-api",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/runtime-policy-and-attestation/provider-api.json",
-          "suggested_evidence_sources": [
-            "provider API response export",
-            "request/response transcript",
-            "provider-owned audit event"
-          ],
-          "task_id": "ce6621c5587c4344d9f3f8db1d509403fea5a8f1f8581fcaf3ebc375af999ec4",
-          "task_ref": "external-evidence:runtime-policy-and-attestation:provider-api",
-          "title": "Runtime attestation, policy engine receipts, and proof decay",
-          "unit_id": "ba43e60fcdba3109317a26d9426dabc58bd32dace07922c5a84df5e0aee2907f",
-          "unit_ref": "runtime-policy-and-attestation:provider-api"
         },
         {
           "acceptance_criteria": [
@@ -3699,19 +3543,18 @@
       "group_by": "owner_hint",
       "group_key": "security/platform KMS owner",
       "live_source_uri_count": 0,
-      "missing_task_count": 7,
+      "missing_task_count": 6,
       "owner_hint": "security/platform KMS owner",
-      "package_id": "cbbff6fc9625af1c6cbdb1a85bd46a732c8cf11128b4b6bf6b95e2747716dbc1",
+      "package_id": "6cfb1482b55b96eb17ef1e321c37e6ca7eb675947ed4484ad9cf995614daeb77",
       "package_ref": "owner_hint:security-platform-KMS-owner",
       "phases": [
         "P1",
         "P1-P2",
         "P1-P3",
-        "P2",
         "P2-P4",
         "P3"
       ],
-      "placeholder_source_uri_count": 7,
+      "placeholder_source_uri_count": 6,
       "priorities": [
         "P0",
         "P1"
@@ -3721,11 +3564,10 @@
         "byoc-self-hosted",
         "insurer-api-and-actuarial-products",
         "mcp-gateway",
-        "runtime-policy-and-attestation",
         "shadow-replay-temporal-holdout",
         "standards-track-and-auditor-ecosystem"
       ],
-      "task_count": 7,
+      "task_count": 6,
       "tasks": [
         {
           "acceptance_criteria": [
@@ -4038,83 +3880,6 @@
         {
           "acceptance_criteria": [
             "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be kms-hsm and accepted for runtime-policy-and-attestation.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "kms-hsm",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/runtime-policy-and-attestation/kms-hsm",
-              "--root",
-              ".",
-              "--task",
-              "runtime-policy-and-attestation:kms-hsm",
-              "--description",
-              "kms-hsm evidence for runtime-policy-and-attestation",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/runtime-policy-and-attestation/kms-hsm.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/runtime-policy-and-attestation/kms-hsm.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/runtime-policy-and-attestation/kms-hsm --root . --task runtime-policy-and-attestation:kms-hsm --description 'kms-hsm evidence for runtime-policy-and-attestation' --snapshot-out artifacts/external-evidence-sources/runtime-policy-and-attestation/kms-hsm.json --intake-out artifacts/external-evidence-intakes/runtime-policy-and-attestation/kms-hsm.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/runtime-policy-and-attestation/kms-hsm.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/runtime-policy-and-attestation/kms-hsm.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "kms-hsm evidence for runtime-policy-and-attestation",
-          "evidence_argument_template": "runtime-policy-and-attestation,kms-hsm,external-evidence/runtime-policy-and-attestation/kms-hsm.json,kms-hsm evidence for runtime-policy-and-attestation;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/runtime-policy-and-attestation/kms-hsm.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "security/platform KMS owner",
-          "phase": "P2",
-          "priority": "P1",
-          "requirement_id": "runtime-policy-and-attestation",
-          "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/kms-hsm.json",
-          "source_uri": "TODO://authority/runtime-policy-and-attestation/kms-hsm",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/runtime-policy-and-attestation/kms-hsm.json",
-          "suggested_evidence_sources": [
-            "KMS/HSM key policy export",
-            "signing operation receipt",
-            "custody or audit-log root"
-          ],
-          "task_id": "4e0d673cdd3ff36ddfa687c79936b722ec9f5e3ac15fb54991405fffe22eabc5",
-          "task_ref": "external-evidence:runtime-policy-and-attestation:kms-hsm",
-          "title": "Runtime attestation, policy engine receipts, and proof decay",
-          "unit_id": "d65055f0aa100515422d3b946633ace686f8983617e778d7581b89f748fba7ec",
-          "unit_ref": "runtime-policy-and-attestation:kms-hsm"
-        },
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
             "Evidence item authority_kind must be kms-hsm and accepted for insurer-api-and-actuarial-products.",
             "Use issued_at and expires_at metadata when strict freshness verification is required.",
             "Rebuild and verify the external evidence manifest after adding the artifact."
@@ -4309,9 +4074,9 @@
       "group_by": "owner_hint",
       "group_key": "service owner",
       "live_source_uri_count": 0,
-      "missing_task_count": 6,
+      "missing_task_count": 5,
       "owner_hint": "service owner",
-      "package_id": "d3aaf05c7972ec7e5d1299b704658bcb2d5bb096fb468c88aede3b24eb3e7e31",
+      "package_id": "f39e9371046ee050ea8c275321147a599e553a63cbdebbb5426adabde4641d7a",
       "package_ref": "owner_hint:service-owner",
       "phases": [
         "P1",
@@ -4320,7 +4085,7 @@
         "P2-P4",
         "P4"
       ],
-      "placeholder_source_uri_count": 6,
+      "placeholder_source_uri_count": 5,
       "priorities": [
         "P0",
         "P1"
@@ -4329,11 +4094,10 @@
         "auditor-and-review-portal",
         "cicd-provider-approvals",
         "insurer-api-and-actuarial-products",
-        "runtime-policy-and-attestation",
         "self-serve-onboarding",
         "trust-network-procurement-and-marketplace"
       ],
-      "task_count": 6,
+      "task_count": 5,
       "tasks": [
         {
           "acceptance_criteria": [
@@ -4488,83 +4252,6 @@
           "title": "Auditor view, supervised access, regulator view, and review portal attestations",
           "unit_id": "dc3dc8fc4c61aa25bafced7670bea6e23899a911be0bb3e56028576312c58f5b",
           "unit_ref": "auditor-and-review-portal:hosted-service"
-        },
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be hosted-service and accepted for runtime-policy-and-attestation.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "hosted-service",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/runtime-policy-and-attestation/hosted-service",
-              "--root",
-              ".",
-              "--task",
-              "runtime-policy-and-attestation:hosted-service",
-              "--description",
-              "hosted-service evidence for runtime-policy-and-attestation",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/runtime-policy-and-attestation/hosted-service.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/runtime-policy-and-attestation/hosted-service.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/runtime-policy-and-attestation/hosted-service --root . --task runtime-policy-and-attestation:hosted-service --description 'hosted-service evidence for runtime-policy-and-attestation' --snapshot-out artifacts/external-evidence-sources/runtime-policy-and-attestation/hosted-service.json --intake-out artifacts/external-evidence-intakes/runtime-policy-and-attestation/hosted-service.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/runtime-policy-and-attestation/hosted-service.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/runtime-policy-and-attestation/hosted-service.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "hosted-service evidence for runtime-policy-and-attestation",
-          "evidence_argument_template": "runtime-policy-and-attestation,hosted-service,external-evidence/runtime-policy-and-attestation/hosted-service.json,hosted-service evidence for runtime-policy-and-attestation;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/runtime-policy-and-attestation/hosted-service.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "service owner",
-          "phase": "P2",
-          "priority": "P1",
-          "requirement_id": "runtime-policy-and-attestation",
-          "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/hosted-service.json",
-          "source_uri": "TODO://authority/runtime-policy-and-attestation/hosted-service",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/runtime-policy-and-attestation/hosted-service.json",
-          "suggested_evidence_sources": [
-            "hosted service health or deployment export",
-            "service audit root",
-            "operational SLO/status evidence"
-          ],
-          "task_id": "51b061b63412d64ce0f2dc4744658708a50a3864bdb00e74f373a831d1ba7cb7",
-          "task_ref": "external-evidence:runtime-policy-and-attestation:hosted-service",
-          "title": "Runtime attestation, policy engine receipts, and proof decay",
-          "unit_id": "6029f74fe9ceff003106411ba51fa63253e190d1b7a74c5c65c86c165e8bd856",
-          "unit_ref": "runtime-policy-and-attestation:hosted-service"
         },
         {
           "acceptance_criteria": [
@@ -5336,20 +5023,20 @@
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "a7221785d608173f67dc7e26d8cb4881acdbfd0f0dd3fbd31a786e010d772675",
-      "plan_id": "ae37345ce52960c691fd568d844bd44407d5d23f69efd29bac87e789fb15957a",
+      "plan_hash": "a92b68c10ade027d8d8e40789dddd5b96d5bf070101feadc243ed5f18b84306e",
+      "plan_id": "2fe688b9127b0bb62342712597fe5e6024b7b9abeb276aae183b474294c6f317",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "gap_report": {
-      "gap_report_hash": "80d032a4b6f5b774e8b4ccf746ba8ffe9bcc48d2a4ca9af62356ac192860ea39",
-      "gap_report_id": "cca8023e8854306df58ce598cea8d79e424e463f7fb145fbdc5f763860c46c1b",
+      "gap_report_hash": "2d1efdbcfddeb1711569ab924fcc17e6407a687e2ca4a21a230a4868cb23c3aa",
+      "gap_report_id": "dbfe0fa6bf388ad73e7451ea27c435b86605fffbd72d15e92480ecbea0cb9138",
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-gap-report/0.1"
     },
     "manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "06e5a5bbd9c45c8d9e929ea6cc20ed2630b74c41491966cba66b12b83629ed20",
-      "manifest_id": "eaf64e35c913bb926b61439015d04f8091473cbbe9df659291b9e6ba69c7ee20",
+      "manifest_hash": "e70033561136d1fddff3d462df16dd33d7d04852a589990f6da37224d7328780",
+      "manifest_id": "e65a27825304642675dba11e28110d9cbcaa1910d4a8bb903f7ff156d3052ef9",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
@@ -5361,52 +5048,52 @@
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "db8817d96ef20e47c04fc1484df072b6edb266bdec914e49b4e9239061bf88de",
-      "source_map_id": "8604c16ae1b5aa19bc2f40099e4414721228aec8ae935788675e6d49ff154d4f"
+      "source_map_hash": "92cf664d963935aa092677d527de3cd3480160f0f2d80545d2147af145971ae6",
+      "source_map_id": "783a7f7d24084e52f33be433c122757f9263802a3d6903a40f4c82222c169c44"
     }
   },
   "summary": {
     "covered_task_count": 0,
     "live_source_uri_count": 0,
-    "missing_task_count": 60,
+    "missing_task_count": 56,
     "package_count": 10,
-    "placeholder_source_uri_count": 60,
+    "placeholder_source_uri_count": 56,
     "source_status": "partial",
-    "task_count": 60,
+    "task_count": 56,
     "task_count_by_authority_kind": {
       "ci-run": 7,
       "cloud-object-lock": 1,
       "customer": 9,
-      "hosted-service": 6,
-      "identity-provider": 7,
+      "hosted-service": 5,
+      "identity-provider": 6,
       "insurer": 4,
-      "kms-hsm": 7,
-      "provider-api": 8,
+      "kms-hsm": 6,
+      "provider-api": 7,
       "regulator": 5,
       "standards-body": 6
     },
     "task_count_by_owner_hint": {
-      "IAM/identity owner": 7,
+      "IAM/identity owner": 6,
       "cloud storage owner": 1,
       "customer success/account owner": 9,
-      "integration/platform owner": 8,
+      "integration/platform owner": 7,
       "legal/compliance owner": 5,
       "release engineering": 7,
       "risk/insurance owner": 4,
-      "security/platform KMS owner": 7,
-      "service owner": 6,
+      "security/platform KMS owner": 6,
+      "service owner": 5,
       "standards/governance owner": 6
     },
     "task_count_by_package": {
-      "owner_hint:IAM-identity-owner": 7,
+      "owner_hint:IAM-identity-owner": 6,
       "owner_hint:cloud-storage-owner": 1,
       "owner_hint:customer-success-account-owner": 9,
-      "owner_hint:integration-platform-owner": 8,
+      "owner_hint:integration-platform-owner": 7,
       "owner_hint:legal-compliance-owner": 5,
       "owner_hint:release-engineering": 7,
       "owner_hint:risk-insurance-owner": 4,
-      "owner_hint:security-platform-KMS-owner": 7,
-      "owner_hint:service-owner": 6,
+      "owner_hint:security-platform-KMS-owner": 6,
+      "owner_hint:service-owner": 5,
       "owner_hint:standards-governance-owner": 6
     },
     "task_count_by_phase": {
@@ -5415,7 +5102,7 @@
       "P1-P2": 6,
       "P1-P3": 5,
       "P1-P4": 5,
-      "P2": 10,
+      "P2": 6,
       "P2-P3": 3,
       "P2-P4": 8,
       "P3": 5,
@@ -5423,7 +5110,7 @@
     },
     "task_count_by_priority": {
       "P0": 36,
-      "P1": 24
+      "P1": 20
     },
     "task_count_by_requirement": {
       "auditor-and-review-portal": 5,
@@ -5436,7 +5123,7 @@
       "mcp-gateway": 2,
       "product-scope-discipline": 2,
       "roadmap-phase-scoreboard": 5,
-      "runtime-policy-and-attestation": 5,
+      "runtime-policy-and-attestation": 1,
       "self-serve-onboarding": 3,
       "shadow-replay-temporal-holdout": 4,
       "standards-track-and-auditor-ecosystem": 2,
@@ -5446,5 +5133,5 @@
       "vertical-packs": 3
     }
   },
-  "work_package_id": "591a8c833ec2117dc0966be6241b809218881dbb306f148b172066d9864e4515"
+  "work_package_id": "4406b80c734446636cf22bdf922d5426430f9f865e0364fe441d110d4de9e9a8"
 }
