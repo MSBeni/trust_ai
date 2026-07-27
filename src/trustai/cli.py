@@ -286,6 +286,15 @@ from .design_partner import (
     verify_design_partner_dossier,
     write_design_partner_dossier,
 )
+from .design_partner_authority import (
+    DESIGN_PARTNER_AUTHORITY_MODES,
+    append_design_partner_authority_dossier,
+    build_design_partner_authority_dossier,
+    load_design_partner_authority_dossier,
+    parse_design_partner_authority_evidence_arg,
+    verify_design_partner_authority_dossier,
+    write_design_partner_authority_dossier,
+)
 from .own_compliance import (
     OWN_COMPLIANCE_MODES,
     append_own_compliance_dossier,
@@ -1658,6 +1667,108 @@ def cmd_design_partner_dossier_append(args: argparse.Namespace) -> int:
         _write_json(args.out, entry)
         print(f"design-partner pilot dossier entry: {args.out}")
     print(f"design-partner pilot dossier entry id: {entry['entry_id']}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+
+def cmd_design_partner_authority(args: argparse.Namespace) -> int:
+    try:
+        pilot = load_design_partner_dossier(args.pilot_dossier)
+        evidence = [parse_design_partner_authority_evidence_arg(value) for value in args.authority_evidence]
+        dossier = build_design_partner_authority_dossier(
+            pilot,
+            root=args.root,
+            authority_evidence=evidence,
+            mode=args.mode,
+            environment=args.environment,
+            dossier_ref=args.dossier_ref,
+            authority_ref=args.authority_ref,
+            producer_ref=args.producer_ref,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_design_partner_authority_dossier(
+            dossier,
+            pilot_dossier=pilot,
+            root=args.root,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"design partner authority dossier failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("design partner authority dossier verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_design_partner_authority_dossier(args.out, dossier)
+    print(f"design partner authority dossier: {args.out}")
+    print(f"dossier id: {dossier['dossier_id']}")
+    print(f"covered requirements: {result.covered_count}/{result.required_count}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_design_partner_authority_verify(args: argparse.Namespace) -> int:
+    try:
+        dossier = load_design_partner_authority_dossier(args.dossier)
+        pilot = load_design_partner_dossier(args.pilot_dossier)
+        result = verify_design_partner_authority_dossier(
+            dossier,
+            pilot_dossier=pilot,
+            root=args.root,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"design partner authority dossier verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        print(f"verified design partner authority dossier: {args.dossier}")
+        print(f"covered requirements: {result.covered_count}/{result.required_count}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"design partner authority dossier verification failed: {args.dossier}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_design_partner_authority_append(args: argparse.Namespace) -> int:
+    try:
+        dossier = load_design_partner_authority_dossier(args.dossier)
+        pilot = load_design_partner_dossier(args.pilot_dossier)
+    except (OSError, ValueError) as exc:
+        print(f"design partner authority append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_design_partner_authority_dossier(
+            chain,
+            dossier,
+            pilot_dossier=pilot,
+            root=args.root,
+            key=args.key,
+            require_complete=args.require_complete,
+            require_fresh=args.require_fresh,
+            now=args.now,
+        )
+    except ValueError as exc:
+        print(f"design partner authority append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"design partner authority entry: {args.out}")
+    print(f"design partner authority entry id: {entry['entry_id']}")
     print(f"dossier id: {dossier['dossier_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
@@ -20836,6 +20947,45 @@ def build_parser() -> argparse.ArgumentParser:
     design_partner_append.add_argument("--key")
     _add_state_args(design_partner_append)
     design_partner_append.set_defaults(func=cmd_design_partner_dossier_append)
+    design_partner_authority = subparsers.add_parser("design-partner-authority", help="write a signed design-partner production authority dossier")
+    design_partner_authority.add_argument("pilot_dossier")
+    design_partner_authority.add_argument("--root", default=".")
+    design_partner_authority.add_argument("--mode", choices=sorted(DESIGN_PARTNER_AUTHORITY_MODES), default="partner-dossier")
+    design_partner_authority.add_argument("--environment", default="local")
+    design_partner_authority.add_argument("--dossier-ref", required=True)
+    design_partner_authority.add_argument("--authority-ref", required=True)
+    design_partner_authority.add_argument("--producer-ref", required=True)
+    design_partner_authority.add_argument("--authority-evidence", action="append", default=[], help="repeatable authority evidence row")
+    design_partner_authority.add_argument("--generated-at")
+    design_partner_authority.add_argument("--require-complete", action="store_true")
+    design_partner_authority.add_argument("--require-fresh", action="store_true")
+    design_partner_authority.add_argument("--now")
+    design_partner_authority.add_argument("--out", default="artifacts/design-partner-authority.json")
+    design_partner_authority.add_argument("--key")
+    design_partner_authority.set_defaults(func=cmd_design_partner_authority)
+
+    design_partner_authority_verify = subparsers.add_parser("design-partner-authority-verify", help="verify a signed design-partner production authority dossier")
+    design_partner_authority_verify.add_argument("dossier")
+    design_partner_authority_verify.add_argument("pilot_dossier")
+    design_partner_authority_verify.add_argument("--root", default=".")
+    design_partner_authority_verify.add_argument("--require-complete", action="store_true")
+    design_partner_authority_verify.add_argument("--require-fresh", action="store_true")
+    design_partner_authority_verify.add_argument("--now")
+    design_partner_authority_verify.add_argument("--key")
+    design_partner_authority_verify.set_defaults(func=cmd_design_partner_authority_verify)
+
+    design_partner_authority_append = subparsers.add_parser("design-partner-authority-append", help="append a verified design-partner production authority dossier")
+    design_partner_authority_append.add_argument("dossier")
+    design_partner_authority_append.add_argument("pilot_dossier")
+    design_partner_authority_append.add_argument("--root", default=".")
+    design_partner_authority_append.add_argument("--require-complete", action="store_true")
+    design_partner_authority_append.add_argument("--require-fresh", action="store_true")
+    design_partner_authority_append.add_argument("--now")
+    design_partner_authority_append.add_argument("--out", default="artifacts/design-partner-authority-entry.json")
+    design_partner_authority_append.add_argument("--key")
+    _add_state_args(design_partner_authority_append)
+    design_partner_authority_append.set_defaults(func=cmd_design_partner_authority_append)
+
     own_compliance = subparsers.add_parser("own-compliance-dossier", help="write a signed TrustAI own SOC 2/ISO 42001 compliance dossier")
     own_compliance.add_argument("--root", default=".")
     own_compliance.add_argument("--dossier-ref", required=True)

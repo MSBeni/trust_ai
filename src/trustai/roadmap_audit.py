@@ -276,7 +276,9 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
         "roadmap_ref": "Phase 1 exit criteria; GTM beachhead and pricing",
         "evidence_paths": [
             "docs/specs/design-partner-pilot-v0.1.md",
+            "docs/specs/design-partner-authority-v0.1.md",
             "src/trustai/design_partner.py",
+            "src/trustai/design_partner_authority.py",
             "docs/specs/proof-pack-v0.1.md",
             "docs/specs/verification-contract-v0.1.md",
             "docs/specs/mcp-gateway-v0.1.md",
@@ -294,6 +296,7 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "src/trustai/byoc_authority.py",
             "examples/aitrade/verification-contract.yaml",
             "tests/test_design_partner.py",
+            "tests/test_design_partner_authority.py",
         ],
         "external_authority": [
             "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, hash-bound contract/payment evidence, and hash-bound external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence.",
