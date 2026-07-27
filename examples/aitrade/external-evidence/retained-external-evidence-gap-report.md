@@ -1,18 +1,18 @@
 # External Evidence Gap Report
 
-- Gap report ID: `7bbbba2a432432f57691e28b1c3ea8541c6eaa9f489001dd9811c07883a94879`
+- Gap report ID: `b8b2ee22b3cb8978d8b2bf665e287bf9168e27d6e3d80a6373f895d2988eda00`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 32/71
-- Missing authority kinds: 39
-- Remaining collection tasks: 39
-- Source-map entries: 39
-- Placeholder source URIs: 39
+- Covered authority kinds: 33/71
+- Missing authority kinds: 38
+- Remaining collection tasks: 38
+- Source-map entries: 38
+- Placeholder source URIs: 38
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
 
-- `ci-run`: 6
+- `ci-run`: 5
 - `customer`: 8
 - `hosted-service`: 3
 - `identity-provider`: 3
@@ -27,7 +27,6 @@
 - `auditor-and-review-portal`: 5
 - `byoc-self-hosted`: 3
 - `compliance-mapper-and-eu-ai-act`: 3
-- `framework-adapters`: 1
 - `insurer-api-and-actuarial-products`: 7
 - `product-scope-discipline`: 2
 - `roadmap-phase-scoreboard`: 5
@@ -39,17 +38,6 @@
 - `vertical-packs`: 3
 
 ## Collection Worklist
-
-### framework-adapters:ci-run
-
-- Title: Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex
-- Authority kind: `ci-run`
-- Owner hint: release engineering
-- Description: ci-run evidence for framework-adapters
-- Source URI: `TODO://authority/framework-adapters/ci-run`
-- Snapshot output: `artifacts/external-evidence-sources/framework-adapters/ci-run.json`
-- Intake output: `artifacts/external-evidence-intakes/framework-adapters/ci-run.json`
-- Suggested evidence sources: completed CI workflow export; release run URL or provider-native run record; artifact/check provenance
 
 ### auditor-and-review-portal:kms-hsm
 

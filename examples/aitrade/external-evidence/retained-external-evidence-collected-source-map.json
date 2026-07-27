@@ -632,6 +632,36 @@
       "unit_ref": "design-partner-pilot-exit-criteria:customer"
     },
     {
+      "authority_kind": "ci-run",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained GitHub Actions export for framework adapter hook release CI evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/framework-adapters-ci-run.json",
+      "issued_at": "2026-07-09T00:35:00Z",
+      "issuer": "GitHub Actions",
+      "owner_hint": "release engineering",
+      "requirement_id": "framework-adapters",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/framework-adapters-ci-run-source-snapshot.json",
+      "source_uri": "https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml",
+      "subject": "trustai framework adapter release CI",
+      "suggested_evidence_sources": [
+        "completed CI workflow export",
+        "release run URL or provider-native run record",
+        "artifact/check provenance"
+      ],
+      "task": "framework-adapters:ci-run",
+      "task_id": "ab8887f1051e79a457ce56e289a9f4ad3306687a8df45f30c0ed0217570eb002",
+      "task_ref": "external-evidence:framework-adapters:ci-run",
+      "title": "Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex",
+      "unit_id": "296efe1c318d771e413fcdcd87e51d2005055054e50a06f26580db00eefed0d0",
+      "unit_ref": "framework-adapters:ci-run"
+    },
+    {
       "authority_kind": "provider-api",
       "content_type": "application/json",
       "coverage_status": "missing",
@@ -969,7 +999,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "e2a52cebb05a8b08cb506d2be7ba127fe1e462387db14a543dc2e80b7c8c56ce",
+  "source_map_id": "eff9c03eed9559f9b79a875b0abeea4f77785206adcd97c2c55408cf719c6d8b",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -984,9 +1014,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 32,
+    "entry_count": 33,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 32,
+    "live_source_uri_count": 33,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

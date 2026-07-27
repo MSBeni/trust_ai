@@ -396,6 +396,24 @@
         "provider-api",
         "hosted-service"
       ],
+      "authority_kind": "ci-run",
+      "description": "Retained GitHub Actions export for framework adapter hook release CI evidence",
+      "evidence_id": "1f7ce0a6442f77c9c2cf5801496f02ad54489dd4d7568609e7874f3d6bfc1c5d",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-09T00:35:00Z",
+      "issuer": "GitHub Actions",
+      "path": "examples/aitrade/external-evidence/framework-adapters-ci-run-source-snapshot.json",
+      "requirement_id": "framework-adapters",
+      "sha256": "sha256:151127cf3fd7e188d2ac9c02341fa833280ca1e552985e72b633f798e7862849",
+      "source_uri": "https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml",
+      "subject": "trustai framework adapter release CI"
+    },
+    {
+      "accepted_authority_kinds": [
+        "ci-run",
+        "provider-api",
+        "hosted-service"
+      ],
       "authority_kind": "provider-api",
       "description": "Retained GitHub contents API export for framework adapter hook release evidence",
       "evidence_id": "9538b7db9f260a65c81532a50111b58fccd995124b08e2a1807d6710e6b90cef",
@@ -610,7 +628,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "400a4ac3ac138e7ffc1ce09dcc1b8e507f4de0c00d03629dd2a590fbe125572b",
+  "manifest_id": "062789b97e1c5b24f7cf1427abaa29e2306a7e0cff404bcbee7115895acc33f1",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -888,7 +906,7 @@
     },
     {
       "authority_kind": "ci-run",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
       ],
@@ -1837,7 +1855,7 @@
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {
-    "covered_authority_kind_count": 32,
+    "covered_authority_kind_count": 33,
     "covered_authority_kinds_by_requirement": {
       "agent-inventory-and-identity": [
         "provider-api",
@@ -1860,6 +1878,7 @@
         "customer"
       ],
       "framework-adapters": [
+        "ci-run",
         "provider-api",
         "hosted-service"
       ],
@@ -1905,11 +1924,11 @@
       "self-serve-onboarding",
       "shadow-replay-temporal-holdout"
     ],
-    "evidence_count": 32,
-    "expires_at_count": 32,
-    "freshness_window_count": 32,
-    "issued_at_count": 32,
-    "missing_authority_kind_count": 39,
+    "evidence_count": 33,
+    "expires_at_count": 33,
+    "freshness_window_count": 33,
+    "issued_at_count": 33,
+    "missing_authority_kind_count": 38,
     "missing_authority_kinds_by_requirement": {
       "auditor-and-review-portal": [
         "kms-hsm",
@@ -1927,9 +1946,6 @@
         "provider-api",
         "regulator",
         "standards-body"
-      ],
-      "framework-adapters": [
-        "ci-run"
       ],
       "insurer-api-and-actuarial-products": [
         "ci-run",

@@ -1,14 +1,14 @@
 # External Evidence Owner Fulfillment Template
 
-- Template ID: `4b230ee97c91873b68e64d92c37aae62811c42c71b1ffb23f6ce32bca5574a10`
+- Template ID: `13602315d0162026a5f35b71a688657dfe197adb963869f30e1bb145f1b014b8`
 - Generated at: `2026-07-12T00:01:00Z`
-- Fulfillments: 39
+- Fulfillments: 38
 - Owners: 9
-- Blocked tasks: 39
+- Blocked tasks: 38
 - Open tasks: 0
 - Closed tasks: 0
-- Placeholder source URIs: 39
-- Missing intakes: 39
+- Placeholder source URIs: 38
+- Missing intakes: 38
 
 ## Fulfillments
 
@@ -34,7 +34,6 @@
 | `roadmap-phase-scoreboard:regulator` | TODO://authority/roadmap-phase-scoreboard/regulator | regulator evidence for roadmap-phase-scoreboard |
 | `vertical-packs:regulator` | TODO://authority/vertical-packs/regulator | regulator evidence for vertical-packs |
 | `byoc-self-hosted:ci-run` | TODO://authority/byoc-self-hosted/ci-run | ci-run evidence for byoc-self-hosted |
-| `framework-adapters:ci-run` | TODO://authority/framework-adapters/ci-run | ci-run evidence for framework-adapters |
 | `insurer-api-and-actuarial-products:ci-run` | TODO://authority/insurer-api-and-actuarial-products/ci-run | ci-run evidence for insurer-api-and-actuarial-products |
 | `product-scope-discipline:ci-run` | TODO://authority/product-scope-discipline/ci-run | ci-run evidence for product-scope-discipline |
 | `roadmap-phase-scoreboard:ci-run` | TODO://authority/roadmap-phase-scoreboard/ci-run | ci-run evidence for roadmap-phase-scoreboard |
@@ -78,7 +77,6 @@
 | `roadmap-phase-scoreboard:regulator` | legal/compliance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/roadmap-phase-scoreboard/regulator.json | artifacts/external-evidence-intakes/roadmap-phase-scoreboard/regulator.json |
 | `vertical-packs:regulator` | legal/compliance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/vertical-packs/regulator.json | artifacts/external-evidence-intakes/vertical-packs/regulator.json |
 | `byoc-self-hosted:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/byoc-self-hosted/ci-run.json | artifacts/external-evidence-intakes/byoc-self-hosted/ci-run.json |
-| `framework-adapters:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/framework-adapters/ci-run.json | artifacts/external-evidence-intakes/framework-adapters/ci-run.json |
 | `insurer-api-and-actuarial-products:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/ci-run.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/ci-run.json |
 | `product-scope-discipline:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/product-scope-discipline/ci-run.json | artifacts/external-evidence-intakes/product-scope-discipline/ci-run.json |
 | `roadmap-phase-scoreboard:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/roadmap-phase-scoreboard/ci-run.json | artifacts/external-evidence-intakes/roadmap-phase-scoreboard/ci-run.json |

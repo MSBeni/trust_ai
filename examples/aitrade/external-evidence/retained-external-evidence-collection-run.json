@@ -232,6 +232,17 @@
       "warnings": []
     },
     {
+      "evidence_argument": "framework-adapters,ci-run,examples/aitrade/external-evidence/framework-adapters-ci-run-source-snapshot.json,Retained GitHub Actions export for framework adapter hook release CI evidence;issuer=GitHub Actions;subject=trustai framework adapter release CI;source_uri=https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml;issued_at=2026-07-09T00:35:00Z;expires_at=2026-12-31T00:00:00Z",
+      "intake_id": "bf6b67dc27b8878a2017b972cbc93a0178a34a0b96518a843536dd91e0670295",
+      "intake_path": "examples/aitrade/external-evidence/intakes/framework-adapters-ci-run.json",
+      "snapshot_artifact_path": "examples/aitrade/external-evidence/framework-adapters-ci-run-source-snapshot.json",
+      "snapshot_id": "33eac32824d0d76332919cdf448d3f198332aaa60e932fc67b38a1ac1e8a555a",
+      "snapshot_path": "examples/aitrade/external-evidence/framework-adapters-ci-run-source-snapshot.json",
+      "source_uri": "https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml",
+      "task": "framework-adapters:ci-run",
+      "warnings": []
+    },
+    {
       "evidence_argument": "framework-adapters,provider-api,examples/aitrade/external-evidence/framework-hook-release-provider-api-source-snapshot.json,Retained GitHub contents API export for framework adapter hook release evidence;issuer=GitHub Contents API;subject=trustai framework hook release export;source_uri=https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/framework-hook-release.json?ref=main;issued_at=2026-07-09T00:30:00Z;expires_at=2026-12-31T00:00:00Z",
       "intake_id": "1c78eb10012929e989fecedb3207b49d9575b2f9444f0e26873e1551f75962cd",
       "intake_path": "examples/aitrade/external-evidence/intakes/framework-adapters-provider-api.json",
@@ -354,15 +365,15 @@
     }
   ],
   "generated_at": "2026-07-12T00:01:00Z",
-  "run_id": "0250b7fc7d4a9fe6423ba2f4764d127d0451dea1cd9ebc6dfacd294f3aae63af",
+  "run_id": "31cdde6a5b4db5823f3698ef9268ab5e96203188bbeed2d8d737221beb464074",
   "schema": "trustai.external-evidence-collection-run/0.1",
   "source_map": {
     "path": "examples/aitrade/external-evidence/retained-external-evidence-collected-source-map.json",
-    "source_map_hash": "4921b1fad222e783af52f284db371ad24d2d5bf79bac6f9266dcf155a226872a"
+    "source_map_hash": "19f44005851e6cd860fde6a395f6216436f56a6b97c53f2b22d6dafe6bacbbdd"
   },
   "summary": {
-    "collected_count": 32,
+    "collected_count": 33,
     "require_fresh": true,
-    "task_count": 32
+    "task_count": 33
   }
 }

@@ -1,0 +1,97 @@
+{
+  "ci_run": {
+    "checks": [
+      "tests.test_framework_adapters",
+      "tests.test_framework_adapter_matrix",
+      "tests.test_framework_hook_release",
+      "framework hook release fixture replay",
+      "framework adapter event-chain replay",
+      "framework adapter matrix compatibility replay"
+    ],
+    "repository": "MSBeni/trust_ai",
+    "workflow": "Python CI",
+    "workflow_ref": ".github/workflows/python-ci.yml"
+  },
+  "environment": "aitrade-prod",
+  "evidence": {
+    "adapter_matrix_fixture": {
+      "path": "examples/aitrade/framework-adapter-matrix.json",
+      "sha256": "sha256:63682f72483fa9446d9930940ac434a311edc0cebbd96d96861998e1971dcd0e"
+    },
+    "adapter_matrix_source": {
+      "path": "src/trustai/framework_adapter_matrix.py",
+      "sha256": "sha256:d7a940cc95e9c31d4a4d2cd059b67c3fd8274cd1adb527ea79f02f5f17d7e791"
+    },
+    "adapter_matrix_spec": {
+      "path": "docs/specs/framework-adapter-matrix-v0.1.md",
+      "sha256": "sha256:6599622c3ea0a4acc7013215ee7c8ae7873327f61432994849209039f525776c"
+    },
+    "adapter_matrix_tests": {
+      "path": "tests/test_framework_adapter_matrix.py",
+      "sha256": "sha256:a820adfa2f4b99b939e5a1c4ec83b0a57b1633ed7275bd47a73eda47b5a8bb59"
+    },
+    "framework_adapter_source": {
+      "path": "src/trustai/adapters.py",
+      "sha256": "sha256:e78ad0d17c7bb86612f279c0e5ee85684b3699c2009e6ad813aeaccff8568ec3"
+    },
+    "framework_adapter_spec": {
+      "path": "docs/specs/framework-adapters-v0.1.md",
+      "sha256": "sha256:10f0ab2425a1d44f86a0803313b67185b0dc55be57e3aba7b8be3c06c36f643e"
+    },
+    "framework_adapter_tests": {
+      "path": "tests/test_framework_adapters.py",
+      "sha256": "sha256:5d9a2aaa3d5bdf2995d3235653e0d1feadc5433ccc084b80eb98436df58c2c80"
+    },
+    "framework_hook_release_fixture": {
+      "path": "examples/aitrade/framework-hook-release.json",
+      "sha256": "sha256:926b3658ffa3cbc0262afdea3d85bc7267258e195306c6ca4af87163b01428b8"
+    },
+    "framework_hook_release_source": {
+      "path": "src/trustai/framework_hook_release.py",
+      "sha256": "sha256:cc11e2882462e7cd8a614c5f73dc56a4b3c0cbd87201135973121b849ff7fbab"
+    },
+    "framework_hook_release_spec": {
+      "path": "docs/specs/framework-hook-release-v0.1.md",
+      "sha256": "sha256:0655895727005b79747e546c62384a9199e117bdd5c27e3ee33b0405ba016166"
+    },
+    "framework_hook_release_tests": {
+      "path": "tests/test_framework_hook_release.py",
+      "sha256": "sha256:ab0c785cb6c245e53ae3e39fcdbd5d89ab123ed906a07f1474434b6e206add09"
+    },
+    "framework_hooks_source": {
+      "path": "src/trustai/framework_hooks.py",
+      "sha256": "sha256:62b8dd27bef818256d308d3b4124a3d722a795bfc7f00d61503c7f1130887225"
+    },
+    "framework_trace_fixture": {
+      "path": "examples/aitrade/framework-traces.json",
+      "sha256": "sha256:32881248f3cb2ab4de356712f3854caa801cea2c9aadc1f560b8a9c3bcba87b0"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "export_ref": "ci-run-export:aitrade/framework-adapters/hook-release/2026-07-09",
+  "issued_at": "2026-07-09T00:35:00Z",
+  "issuer": "GitHub Actions",
+  "release": {
+    "covered_frameworks": [
+      "langgraph",
+      "openai_agents",
+      "claude_agent",
+      "crewai",
+      "bedrock",
+      "vertex"
+    ],
+    "hook_package": "trustai-framework-hooks",
+    "hook_version": "0.1.0",
+    "release_ref": "aitrade-framework-hooks-2026-07"
+  },
+  "schema": "trustai.framework-adapters-ci-run-authority-export/0.1",
+  "subject": "trustai framework adapter release CI",
+  "verified_controls": [
+    "dependency-free adapter event normalization",
+    "per-framework trace fixture replay",
+    "event-chain tamper rejection",
+    "hook release source artifact binding",
+    "adapter matrix compatibility replay",
+    "offline verifier acceptance for hook release receipts"
+  ]
+}

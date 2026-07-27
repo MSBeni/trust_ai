@@ -5,12 +5,12 @@
     "A task is covered only after a matching evidence artifact is supplied to an external evidence manifest and verified.",
     "Freshness and issuer authority remain bounded by the supplied evidence artifact and manifest verification options."
   ],
-  "plan_id": "b4ccd3558866e04e7a504e969610f7cca62b36d754813a5d8eebd6cb7c334c43",
+  "plan_id": "10d8cfcb73d6499d1710fbd4f0bdd187adeb141c57731b55c0ca4013c3c5b950",
   "schema": "trustai.external-evidence-collection-plan/0.1",
   "source_manifest": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "manifest_hash": "98ba337daf8dd4e8894097259a162a492f5373f31b0ea1edea0817e8e5438de6",
-    "manifest_id": "400a4ac3ac138e7ffc1ce09dcc1b8e507f4de0c00d03629dd2a590fbe125572b",
+    "manifest_hash": "d22b0c7885999b1a706a8e542f3eee7c9d28c138ea045b13316d03fac520b0c4",
+    "manifest_id": "062789b97e1c5b24f7cf1427abaa29e2306a7e0cff404bcbee7115895acc33f1",
     "manifest_ref": "production-external-evidence",
     "status": "partial"
   },
@@ -21,10 +21,10 @@
   },
   "status_filter": "missing",
   "summary": {
-    "covered_authority_kind_count": 32,
-    "missing_authority_kind_count": 39,
+    "covered_authority_kind_count": 33,
+    "missing_authority_kind_count": 38,
     "missing_task_count_by_authority_kind": {
-      "ci-run": 6,
+      "ci-run": 5,
       "customer": 8,
       "hosted-service": 3,
       "identity-provider": 3,
@@ -36,11 +36,11 @@
     },
     "required_authority_kind_count": 71,
     "selected_covered_task_count": 0,
-    "selected_missing_task_count": 39,
-    "selected_task_count": 39,
+    "selected_missing_task_count": 38,
+    "selected_task_count": 38,
     "source_manifest_status": "partial",
     "task_count_by_authority_kind": {
-      "ci-run": 6,
+      "ci-run": 5,
       "customer": 8,
       "hosted-service": 3,
       "identity-provider": 3,
@@ -52,7 +52,6 @@
     },
     "task_count_by_phase": {
       "P0-P4": 2,
-      "P1": 1,
       "P1-P2": 3,
       "P1-P3": 5,
       "P1-P4": 5,
@@ -65,35 +64,6 @@
     "total_authority_unit_count": 71
   },
   "tasks": [
-    {
-      "acceptance_criteria": [
-        "Artifact path must be repository-relative and hashable before manifest verification.",
-        "Evidence item authority_kind must be ci-run and accepted for framework-adapters.",
-        "Use issued_at and expires_at metadata when strict freshness verification is required.",
-        "Rebuild and verify the external evidence manifest after adding the artifact."
-      ],
-      "authority_kind": "ci-run",
-      "coverage_status": "missing",
-      "evidence_argument_template": "framework-adapters,ci-run,external-evidence/framework-adapters/ci-run.json,ci-run evidence for framework-adapters;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-      "external_authority_required": [
-        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
-      ],
-      "owner_hint": "release engineering",
-      "phase": "P1",
-      "priority": "P1",
-      "requirement_id": "framework-adapters",
-      "suggested_artifact_path": "external-evidence/framework-adapters/ci-run.json",
-      "suggested_evidence_sources": [
-        "completed CI workflow export",
-        "release run URL or provider-native run record",
-        "artifact/check provenance"
-      ],
-      "task_id": "ab8887f1051e79a457ce56e289a9f4ad3306687a8df45f30c0ed0217570eb002",
-      "task_ref": "external-evidence:framework-adapters:ci-run",
-      "title": "Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex",
-      "unit_id": "296efe1c318d771e413fcdcd87e51d2005055054e50a06f26580db00eefed0d0",
-      "unit_ref": "framework-adapters:ci-run"
-    },
     {
       "acceptance_criteria": [
         "Artifact path must be repository-relative and hashable before manifest verification.",

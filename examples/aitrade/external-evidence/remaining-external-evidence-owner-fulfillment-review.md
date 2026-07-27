@@ -1,20 +1,19 @@
 # External Evidence Owner Fulfillment Review
 
-- Review ID: `a74057fd91c401535b4721313072e5974b1bec0b970527cfdefd060d973649de`
+- Review ID: `e9cf010bfb7c66477973801d0fbcb5c4a3d421f5410e9b6a87e541625dad00b0`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Fulfillments: 39
+- Fulfillments: 38
 - Owners: 9
 - Ready tasks: 0
-- Blocked tasks: 39
-- Placeholder source URIs: 39
+- Blocked tasks: 38
+- Placeholder source URIs: 38
 - Live source URIs: 0
 
 ## Task Review
 
 | Task | Owner | Status | Source URI | Blocking Reasons |
 |---|---|---|---|---|
-| `framework-adapters:ci-run` | release engineering | blocked | TODO://authority/framework-adapters/ci-run | `placeholder-source-uri` |
 | `auditor-and-review-portal:kms-hsm` | security/platform KMS owner | blocked | TODO://authority/auditor-and-review-portal/kms-hsm | `placeholder-source-uri` |
 | `auditor-and-review-portal:provider-api` | integration/platform owner | blocked | TODO://authority/auditor-and-review-portal/provider-api | `placeholder-source-uri` |
 | `auditor-and-review-portal:hosted-service` | service owner | blocked | TODO://authority/auditor-and-review-portal/hosted-service | `placeholder-source-uri` |
@@ -58,12 +57,12 @@
 
 - Fulfilled source map errors: 1
 - Fulfilled source map warnings: 1
-  - source map contains 39 placeholder source_uri values but live source URIs are required
+  - source map contains 38 placeholder source_uri values but live source URIs are required
 
 ## Blockers
 
-- owner fulfillment review contains 39 placeholder source_uri values
-- fulfilled source map: source map contains 39 placeholder source_uri values but live source URIs are required
+- owner fulfillment review contains 38 placeholder source_uri values
+- fulfilled source map: source map contains 38 placeholder source_uri values but live source URIs are required
 
 ## Next Actions
 

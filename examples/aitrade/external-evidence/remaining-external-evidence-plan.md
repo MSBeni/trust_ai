@@ -1,8 +1,8 @@
 # TrustAI External Evidence Collection Plan
 
-Plan ID: `b4ccd3558866e04e7a504e969610f7cca62b36d754813a5d8eebd6cb7c334c43`
+Plan ID: `10d8cfcb73d6499d1710fbd4f0bdd187adeb141c57731b55c0ca4013c3c5b950`
 
-Source manifest: `400a4ac3ac138e7ffc1ce09dcc1b8e507f4de0c00d03629dd2a590fbe125572b`
+Source manifest: `062789b97e1c5b24f7cf1427abaa29e2306a7e0cff404bcbee7115895acc33f1`
 
 Status filter: missing
 
@@ -10,16 +10,15 @@ Status filter: missing
 
 - Source manifest status: partial
 - Total authority units: 71
-- Selected tasks: 39
-- Selected missing tasks: 39
+- Selected tasks: 38
+- Selected missing tasks: 38
 - Selected covered tasks: 0
-- Missing authority kinds overall: 39
+- Missing authority kinds overall: 38
 
 ## Collection Tasks
 
 | Task ID | Unit Ref | Requirement | Authority | Status | Owner Hint | Suggested Artifact | Evidence Argument Template |
 |---|---|---|---|---|---|---|---|
-| `ab8887f1051e79a457ce56e289a9f4ad3306687a8df45f30c0ed0217570eb002` | `framework-adapters:ci-run` | `framework-adapters` | ci-run | missing | release engineering | `external-evidence/framework-adapters/ci-run.json` | `framework-adapters,ci-run,external-evidence/framework-adapters/ci-run.json,ci-run evidence for framework-adapters;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `0b35d2f033f96f6bd1373d1d28cc0ff5b3e53a6f39da2e7691cfdaf27df40f31` | `auditor-and-review-portal:kms-hsm` | `auditor-and-review-portal` | kms-hsm | missing | security/platform KMS owner | `external-evidence/auditor-and-review-portal/kms-hsm.json` | `auditor-and-review-portal,kms-hsm,external-evidence/auditor-and-review-portal/kms-hsm.json,kms-hsm evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `699e8d3307be54666ad631cdf7fb69f8177fcb9f54115c67c83b917bca3dea7b` | `auditor-and-review-portal:provider-api` | `auditor-and-review-portal` | provider-api | missing | integration/platform owner | `external-evidence/auditor-and-review-portal/provider-api.json` | `auditor-and-review-portal,provider-api,external-evidence/auditor-and-review-portal/provider-api.json,provider-api evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `4a20afe57cc9f2971078547577b16f64216382a3ce57613712a53d233e191ce4` | `auditor-and-review-portal:hosted-service` | `auditor-and-review-portal` | hosted-service | missing | service owner | `external-evidence/auditor-and-review-portal/hosted-service.json` | `auditor-and-review-portal,hosted-service,external-evidence/auditor-and-review-portal/hosted-service.json,hosted-service evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |

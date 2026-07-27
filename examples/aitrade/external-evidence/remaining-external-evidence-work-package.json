@@ -1792,32 +1792,30 @@
       "group_by": "owner_hint",
       "group_key": "release engineering",
       "live_source_uri_count": 0,
-      "missing_task_count": 6,
+      "missing_task_count": 5,
       "owner_hint": "release engineering",
-      "package_id": "0f9565a33b9675969974b90a8acd4ee968a2a4a556cb07c210bdabf07b8db9e5",
+      "package_id": "2d66b908b1c514e9de2383639c4fd297c727de50301ed9975373e37019da76a1",
       "package_ref": "owner_hint:release-engineering",
       "phases": [
         "P0-P4",
-        "P1",
         "P1-P2",
         "P1-P4",
         "P2",
         "P2-P4"
       ],
-      "placeholder_source_uri_count": 6,
+      "placeholder_source_uri_count": 5,
       "priorities": [
         "P0",
         "P1"
       ],
       "requirement_ids": [
         "byoc-self-hosted",
-        "framework-adapters",
         "insurer-api-and-actuarial-products",
         "product-scope-discipline",
         "roadmap-phase-scoreboard",
         "runtime-policy-and-attestation"
       ],
-      "task_count": 6,
+      "task_count": 5,
       "tasks": [
         {
           "acceptance_criteria": [
@@ -1895,83 +1893,6 @@
           "title": "Product scope discipline and anti-focus decisions",
           "unit_id": "beeca7b595cedd378a2ecc5f6cf1174767c4e5d40c0e94e7ef728938d6c4cdae",
           "unit_ref": "product-scope-discipline:ci-run"
-        },
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be ci-run and accepted for framework-adapters.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "ci-run",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/framework-adapters/ci-run",
-              "--root",
-              ".",
-              "--task",
-              "framework-adapters:ci-run",
-              "--description",
-              "ci-run evidence for framework-adapters",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/framework-adapters/ci-run.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/framework-adapters/ci-run.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/framework-adapters/ci-run --root . --task framework-adapters:ci-run --description 'ci-run evidence for framework-adapters' --snapshot-out artifacts/external-evidence-sources/framework-adapters/ci-run.json --intake-out artifacts/external-evidence-intakes/framework-adapters/ci-run.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/framework-adapters/ci-run.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/framework-adapters/ci-run.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "ci-run evidence for framework-adapters",
-          "evidence_argument_template": "framework-adapters,ci-run,external-evidence/framework-adapters/ci-run.json,ci-run evidence for framework-adapters;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/framework-adapters/ci-run.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "release engineering",
-          "phase": "P1",
-          "priority": "P1",
-          "requirement_id": "framework-adapters",
-          "snapshot_out": "artifacts/external-evidence-sources/framework-adapters/ci-run.json",
-          "source_uri": "TODO://authority/framework-adapters/ci-run",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/framework-adapters/ci-run.json",
-          "suggested_evidence_sources": [
-            "completed CI workflow export",
-            "release run URL or provider-native run record",
-            "artifact/check provenance"
-          ],
-          "task_id": "ab8887f1051e79a457ce56e289a9f4ad3306687a8df45f30c0ed0217570eb002",
-          "task_ref": "external-evidence:framework-adapters:ci-run",
-          "title": "Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex",
-          "unit_id": "296efe1c318d771e413fcdcd87e51d2005055054e50a06f26580db00eefed0d0",
-          "unit_ref": "framework-adapters:ci-run"
         },
         {
           "acceptance_criteria": [
@@ -3626,20 +3547,20 @@
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "4050326aba3b16896896352546a9cd7f4f2203116c713df0f8b6833c9477aeff",
-      "plan_id": "b4ccd3558866e04e7a504e969610f7cca62b36d754813a5d8eebd6cb7c334c43",
+      "plan_hash": "dab2b7c2e038ecffb7e0f250397f77f68b9e5b4ae630d2fcb3cc012163e24c6e",
+      "plan_id": "10d8cfcb73d6499d1710fbd4f0bdd187adeb141c57731b55c0ca4013c3c5b950",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "gap_report": {
-      "gap_report_hash": "33a75946dcb8862badd74e269277d13a7d3208ef6217473f11dde39db7a56ffd",
-      "gap_report_id": "7bbbba2a432432f57691e28b1c3ea8541c6eaa9f489001dd9811c07883a94879",
+      "gap_report_hash": "29e4782b5ec3e55d262b4fe6b619d0ca7e11be2c401c4b41ee99224bcb5e4b35",
+      "gap_report_id": "b8b2ee22b3cb8978d8b2bf665e287bf9168e27d6e3d80a6373f895d2988eda00",
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-gap-report/0.1"
     },
     "manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "98ba337daf8dd4e8894097259a162a492f5373f31b0ea1edea0817e8e5438de6",
-      "manifest_id": "400a4ac3ac138e7ffc1ce09dcc1b8e507f4de0c00d03629dd2a590fbe125572b",
+      "manifest_hash": "d22b0c7885999b1a706a8e542f3eee7c9d28c138ea045b13316d03fac520b0c4",
+      "manifest_id": "062789b97e1c5b24f7cf1427abaa29e2306a7e0cff404bcbee7115895acc33f1",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
@@ -3651,20 +3572,20 @@
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "4f55d3283d0a449c4cca7787473727dde74d7281c3d740ca25482daaf386f00a",
-      "source_map_id": "1436a463f227095f3fd96a1c04a32b305e9bf383394df0f5dcd5863dab9e65d8"
+      "source_map_hash": "6f77bf17db985a4e8bbb6433cecedf75a158fe4ec64bd539a171e0901cc48f72",
+      "source_map_id": "0617b06a507f8d7cee4a90a8ec6e7de0baab6a58fed53936561bba12a6bf3d93"
     }
   },
   "summary": {
     "covered_task_count": 0,
     "live_source_uri_count": 0,
-    "missing_task_count": 39,
+    "missing_task_count": 38,
     "package_count": 9,
-    "placeholder_source_uri_count": 39,
+    "placeholder_source_uri_count": 38,
     "source_status": "partial",
-    "task_count": 39,
+    "task_count": 38,
     "task_count_by_authority_kind": {
-      "ci-run": 6,
+      "ci-run": 5,
       "customer": 8,
       "hosted-service": 3,
       "identity-provider": 3,
@@ -3679,7 +3600,7 @@
       "customer success/account owner": 8,
       "integration/platform owner": 4,
       "legal/compliance owner": 4,
-      "release engineering": 6,
+      "release engineering": 5,
       "risk/insurance owner": 3,
       "security/platform KMS owner": 3,
       "service owner": 3,
@@ -3690,7 +3611,7 @@
       "owner_hint:customer-success-account-owner": 8,
       "owner_hint:integration-platform-owner": 4,
       "owner_hint:legal-compliance-owner": 4,
-      "owner_hint:release-engineering": 6,
+      "owner_hint:release-engineering": 5,
       "owner_hint:risk-insurance-owner": 3,
       "owner_hint:security-platform-KMS-owner": 3,
       "owner_hint:service-owner": 3,
@@ -3698,7 +3619,6 @@
     },
     "task_count_by_phase": {
       "P0-P4": 2,
-      "P1": 1,
       "P1-P2": 3,
       "P1-P3": 5,
       "P1-P4": 5,
@@ -3710,13 +3630,12 @@
     },
     "task_count_by_priority": {
       "P0": 22,
-      "P1": 17
+      "P1": 16
     },
     "task_count_by_requirement": {
       "auditor-and-review-portal": 5,
       "byoc-self-hosted": 3,
       "compliance-mapper-and-eu-ai-act": 3,
-      "framework-adapters": 1,
       "insurer-api-and-actuarial-products": 7,
       "product-scope-discipline": 2,
       "roadmap-phase-scoreboard": 5,
@@ -3728,5 +3647,5 @@
       "vertical-packs": 3
     }
   },
-  "work_package_id": "7c62a00e43966c25b883696410abd4a8865616f2ecb8e574be48314607680612"
+  "work_package_id": "2cd9249dfd7f8222ae6202b1fd479f47c8ece9df5a974bd357d7b5c6f8875d4a"
 }
