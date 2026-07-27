@@ -1,14 +1,14 @@
 # External Evidence Owner Fulfillment Template
 
-- Template ID: `e631b0fe6b7712bd80b2628e4b2f009b08527217da4a99c3577b58f900c06e20`
+- Template ID: `e6fbae9ed4af5e3c39194e9dd79acfeef7c60c46219a3f12c1850a302f2435fc`
 - Generated at: `2026-07-12T00:01:00Z`
-- Fulfillments: 68
+- Fulfillments: 67
 - Owners: 10
-- Blocked tasks: 68
+- Blocked tasks: 67
 - Open tasks: 0
 - Closed tasks: 0
-- Placeholder source URIs: 68
-- Missing intakes: 68
+- Placeholder source URIs: 67
+- Missing intakes: 67
 
 ## Fulfillments
 
@@ -50,7 +50,6 @@
 | `roadmap-phase-scoreboard:regulator` | TODO://authority/roadmap-phase-scoreboard/regulator | regulator evidence for roadmap-phase-scoreboard |
 | `vertical-packs:regulator` | TODO://authority/vertical-packs/regulator | regulator evidence for vertical-packs |
 | `byoc-self-hosted:ci-run` | TODO://authority/byoc-self-hosted/ci-run | ci-run evidence for byoc-self-hosted |
-| `cicd-provider-approvals:ci-run` | TODO://authority/cicd-provider-approvals/ci-run | ci-run evidence for cicd-provider-approvals |
 | `framework-adapters:ci-run` | TODO://authority/framework-adapters/ci-run | ci-run evidence for framework-adapters |
 | `insurer-api-and-actuarial-products:ci-run` | TODO://authority/insurer-api-and-actuarial-products/ci-run | ci-run evidence for insurer-api-and-actuarial-products |
 | `mcp-gateway:ci-run` | TODO://authority/mcp-gateway/ci-run | ci-run evidence for mcp-gateway |
@@ -123,7 +122,6 @@
 | `roadmap-phase-scoreboard:regulator` | legal/compliance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/roadmap-phase-scoreboard/regulator.json | artifacts/external-evidence-intakes/roadmap-phase-scoreboard/regulator.json |
 | `vertical-packs:regulator` | legal/compliance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/vertical-packs/regulator.json | artifacts/external-evidence-intakes/vertical-packs/regulator.json |
 | `byoc-self-hosted:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/byoc-self-hosted/ci-run.json | artifacts/external-evidence-intakes/byoc-self-hosted/ci-run.json |
-| `cicd-provider-approvals:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/cicd-provider-approvals/ci-run.json | artifacts/external-evidence-intakes/cicd-provider-approvals/ci-run.json |
 | `framework-adapters:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/framework-adapters/ci-run.json | artifacts/external-evidence-intakes/framework-adapters/ci-run.json |
 | `insurer-api-and-actuarial-products:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/ci-run.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/ci-run.json |
 | `mcp-gateway:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/mcp-gateway/ci-run.json | artifacts/external-evidence-intakes/mcp-gateway/ci-run.json |

@@ -1,13 +1,13 @@
 # External Evidence Owner Fulfillment Closure
 
-- Closure ID: `cec6637b938e86e6aeba264ca2131dfa4b4878f42a158746f4c831c7139089e3`
+- Closure ID: `c01bc109ca35eac93e84148fcd5e1734b78f8185273d5b7cdffb613e27c0c96d`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Closed tasks: 0/68
-- Missing intakes: 68
+- Closed tasks: 0/67
+- Missing intakes: 67
 - Invalid intake tasks: 0
-- Missing manifest coverage: 68
-- Placeholder source URIs: 68
+- Missing manifest coverage: 67
+- Placeholder source URIs: 67
 
 ## Task Closure
 
@@ -24,7 +24,6 @@
 | `shadow-replay-temporal-holdout:provider-api` | integration/platform owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `shadow-replay-temporal-holdout:identity-provider` | IAM/identity owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `shadow-replay-temporal-holdout:standards-body` | standards/governance owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
-| `cicd-provider-approvals:ci-run` | release engineering | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `cicd-provider-approvals:provider-api` | integration/platform owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `cicd-provider-approvals:hosted-service` | service owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `cicd-provider-approvals:identity-provider` | IAM/identity owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
@@ -84,9 +83,9 @@
 
 ## Blockers
 
-- 68 reviewed tasks still use placeholder source_uri values
-- 68 reviewed tasks do not have intake receipts
-- 68 reviewed tasks are not covered by the rebuilt manifest
+- 67 reviewed tasks still use placeholder source_uri values
+- 67 reviewed tasks do not have intake receipts
+- 67 reviewed tasks are not covered by the rebuilt manifest
 
 ## Next Actions
 

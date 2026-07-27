@@ -90,6 +90,36 @@
       "title": "Open verifier, public specs, source distribution, and release workflow",
       "unit_id": "466978af8ab034b01871214eab0240941581edb4cfe22965eb298df3c7847552",
       "unit_ref": "oss-verifier-and-public-spec:hosted-service"
+    },
+    {
+      "authority_kind": "ci-run",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained GitHub check-suite callback export for CI/CD promotion provider evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Provider delivery receipts cover retained provider delivery payload artifact replay and retained provider response artifact byte replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs, provider-native status shape, and replayed retained provider delivery payload/response artifacts before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/cicd-provider-approvals-ci-run.json",
+      "issued_at": "2026-07-08T00:00:00Z",
+      "issuer": "GitHub Checks",
+      "owner_hint": "release engineering",
+      "requirement_id": "cicd-provider-approvals",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/github-check-suite-source-snapshot.json",
+      "source_uri": "https://github.com/MSBeni/trust_ai/actions",
+      "subject": "trustai GitHub check-suite promotion callback",
+      "suggested_evidence_sources": [
+        "completed CI workflow export",
+        "release run URL or provider-native run record",
+        "artifact/check provenance"
+      ],
+      "task": "cicd-provider-approvals:ci-run",
+      "task_id": "20b9c48e557203d954f30537eb494facce24e8bcb8209b1b2db872adabbdf886",
+      "task_ref": "external-evidence:cicd-provider-approvals:ci-run",
+      "title": "CI/CD promotion gates, provider callbacks, and Slack approvals",
+      "unit_id": "a2f5b5c8b59b829199e864beeadb0ec5df9ab9517725793a2b96f3dd9b40bafd",
+      "unit_ref": "cicd-provider-approvals:ci-run"
     }
   ],
   "generated_at": "2026-07-12T01:00:00Z",
@@ -99,7 +129,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "24520c1005d5f5d3441aaacfff603efdae0b7f9282162c527d71b102adf1609e",
+  "source_map_id": "4cb5fc2cf09d120f6f7016b4ea00addd38d4a93d135019cf7eb0f6ba63911d01",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -114,9 +144,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 3,
+    "entry_count": 4,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 3,
+    "live_source_uri_count": 4,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

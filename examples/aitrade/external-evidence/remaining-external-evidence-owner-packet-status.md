@@ -1,14 +1,14 @@
 # External Evidence Owner Packet Status
 
-- Status ID: `b628bbbf2c13f3db7f321dafd2109eb4d812b4a31a6ecb33f653b83d7c082e63`
+- Status ID: `4309b5526ced3e430bc28811507266f5ff9d68484d31ede9e9286e74fb0ff587`
 - Generated at: `2026-07-12T00:01:00Z`
 - Packets: 10
-- Tasks: 68
+- Tasks: 67
 - Closed tasks: 0
 - Open tasks: 0
-- Blocked tasks: 68
-- Placeholder source URIs: 68
-- Missing intakes: 68
+- Blocked tasks: 67
+- Placeholder source URIs: 67
+- Missing intakes: 67
 
 ## Packets
 
@@ -19,7 +19,7 @@
 | customer success/account owner | `owner-packet:owner_hint:customer-success-account-owner` | blocked | 9 | 0 | 0 | 9 |
 | integration/platform owner | `owner-packet:owner_hint:integration-platform-owner` | blocked | 12 | 0 | 0 | 12 |
 | legal/compliance owner | `owner-packet:owner_hint:legal-compliance-owner` | blocked | 5 | 0 | 0 | 5 |
-| release engineering | `owner-packet:owner_hint:release-engineering` | blocked | 8 | 0 | 0 | 8 |
+| release engineering | `owner-packet:owner_hint:release-engineering` | blocked | 7 | 0 | 0 | 7 |
 | risk/insurance owner | `owner-packet:owner_hint:risk-insurance-owner` | blocked | 4 | 0 | 0 | 4 |
 | security/platform KMS owner | `owner-packet:owner_hint:security-platform-KMS-owner` | blocked | 7 | 0 | 0 | 7 |
 | service owner | `owner-packet:owner_hint:service-owner` | blocked | 8 | 0 | 0 | 8 |
@@ -65,7 +65,6 @@
 | `compliance-mapper-and-eu-ai-act:regulator` | legal/compliance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `vertical-packs:regulator` | legal/compliance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `product-scope-discipline:ci-run` | release engineering | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
-| `cicd-provider-approvals:ci-run` | release engineering | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `mcp-gateway:ci-run` | release engineering | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `framework-adapters:ci-run` | release engineering | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `byoc-self-hosted:ci-run` | release engineering | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |

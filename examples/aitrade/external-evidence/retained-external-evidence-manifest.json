@@ -53,6 +53,25 @@
       "sha256": "sha256:8b4f426e04f28ef48969683fcd711983d325eb7ff736fc4cf17cb49c8a6d2385",
       "source_uri": "git+https://github.com/MSBeni/trust_ai.git#HEAD",
       "subject": "MSBeni/trust_ai hosted repository service"
+    },
+    {
+      "accepted_authority_kinds": [
+        "ci-run",
+        "provider-api",
+        "hosted-service",
+        "identity-provider"
+      ],
+      "authority_kind": "ci-run",
+      "description": "Retained GitHub check-suite callback export for CI/CD promotion provider evidence",
+      "evidence_id": "135447c661526da9744d2742adc31bb8d091c24082d4fa16d83994d0e00ef1f3",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-08T00:00:00Z",
+      "issuer": "GitHub Checks",
+      "path": "examples/aitrade/external-evidence/github-check-suite-source-snapshot.json",
+      "requirement_id": "cicd-provider-approvals",
+      "sha256": "sha256:76e98b50e81b31f06e1495f04fbed2f5bc85be6c54d0a3c605f0c4beaae2b8c7",
+      "source_uri": "https://github.com/MSBeni/trust_ai/actions",
+      "subject": "trustai GitHub check-suite promotion callback"
     }
   ],
   "generated_at": "2026-07-12T00:01:00Z",
@@ -61,7 +80,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "54e19ce0aba34d8a2255355ce00830853e27ea00280a748f0fdcb3fb08f85a8f",
+  "manifest_id": "e1fa845eb298791fbba72644442560ad75a7f8fc7d151b6b668d7871b17d7f09",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -248,7 +267,7 @@
     },
     {
       "authority_kind": "ci-run",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Provider delivery receipts cover retained provider delivery payload artifact replay and retained provider response artifact byte replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs, provider-native status shape, and replayed retained provider delivery payload/response artifacts before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
       ],
@@ -1288,23 +1307,27 @@
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {
-    "covered_authority_kind_count": 3,
+    "covered_authority_kind_count": 4,
     "covered_authority_kinds_by_requirement": {
+      "cicd-provider-approvals": [
+        "ci-run"
+      ],
       "oss-verifier-and-public-spec": [
         "ci-run",
         "provider-api",
         "hosted-service"
       ]
     },
-    "covered_requirement_count": 1,
+    "covered_requirement_count": 2,
     "covered_requirement_ids": [
+      "cicd-provider-approvals",
       "oss-verifier-and-public-spec"
     ],
-    "evidence_count": 3,
-    "expires_at_count": 3,
-    "freshness_window_count": 3,
-    "issued_at_count": 3,
-    "missing_authority_kind_count": 68,
+    "evidence_count": 4,
+    "expires_at_count": 4,
+    "freshness_window_count": 4,
+    "issued_at_count": 4,
+    "missing_authority_kind_count": 67,
     "missing_authority_kinds_by_requirement": {
       "agent-inventory-and-identity": [
         "provider-api",
@@ -1326,7 +1349,6 @@
         "customer"
       ],
       "cicd-provider-approvals": [
-        "ci-run",
         "provider-api",
         "hosted-service",
         "identity-provider"
@@ -1413,12 +1435,11 @@
         "customer"
       ]
     },
-    "missing_requirement_count": 19,
+    "missing_requirement_count": 18,
     "missing_requirement_ids": [
       "self-serve-onboarding",
       "mcp-gateway",
       "shadow-replay-temporal-holdout",
-      "cicd-provider-approvals",
       "design-partner-pilot-exit-criteria",
       "framework-adapters",
       "auditor-and-review-portal",

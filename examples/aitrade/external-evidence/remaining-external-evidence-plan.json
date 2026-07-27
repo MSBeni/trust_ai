@@ -5,12 +5,12 @@
     "A task is covered only after a matching evidence artifact is supplied to an external evidence manifest and verified.",
     "Freshness and issuer authority remain bounded by the supplied evidence artifact and manifest verification options."
   ],
-  "plan_id": "568d065607552a49d7f9adab7f96f3b31cb721bf2a1c7a1f12554bd30286145b",
+  "plan_id": "cfd60aaf6d9d8b4f82cc87306086b7924313092fb429bddac91af2ae4a79ec0a",
   "schema": "trustai.external-evidence-collection-plan/0.1",
   "source_manifest": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "manifest_hash": "107b59c50929b17fb0154a48fdcb8e3a7db25f787b992227876a3afe9674d292",
-    "manifest_id": "54e19ce0aba34d8a2255355ce00830853e27ea00280a748f0fdcb3fb08f85a8f",
+    "manifest_hash": "d20d48a06fd79f00b524f78ac80bf46aa9506deaac5076290c4b45d461f4662f",
+    "manifest_id": "e1fa845eb298791fbba72644442560ad75a7f8fc7d151b6b668d7871b17d7f09",
     "manifest_ref": "production-external-evidence",
     "status": "partial"
   },
@@ -21,10 +21,10 @@
   },
   "status_filter": "missing",
   "summary": {
-    "covered_authority_kind_count": 3,
-    "missing_authority_kind_count": 68,
+    "covered_authority_kind_count": 4,
+    "missing_authority_kind_count": 67,
     "missing_task_count_by_authority_kind": {
-      "ci-run": 8,
+      "ci-run": 7,
       "cloud-object-lock": 1,
       "customer": 9,
       "hosted-service": 8,
@@ -37,11 +37,11 @@
     },
     "required_authority_kind_count": 71,
     "selected_covered_task_count": 0,
-    "selected_missing_task_count": 68,
-    "selected_task_count": 68,
+    "selected_missing_task_count": 67,
+    "selected_task_count": 67,
     "source_manifest_status": "partial",
     "task_count_by_authority_kind": {
-      "ci-run": 8,
+      "ci-run": 7,
       "cloud-object-lock": 1,
       "customer": 9,
       "hosted-service": 8,
@@ -54,7 +54,7 @@
     },
     "task_count_by_phase": {
       "P0-P4": 2,
-      "P1": 18,
+      "P1": 17,
       "P1-P2": 6,
       "P1-P3": 5,
       "P1-P4": 5,
@@ -385,35 +385,6 @@
       "title": "Shadow replay, temporal holdout, soak reports, and distributional re-execution",
       "unit_id": "15afd330474ec578f826292afa08c9726a1d3219d1dfc6b4a35fdf93597aa2cb",
       "unit_ref": "shadow-replay-temporal-holdout:standards-body"
-    },
-    {
-      "acceptance_criteria": [
-        "Artifact path must be repository-relative and hashable before manifest verification.",
-        "Evidence item authority_kind must be ci-run and accepted for cicd-provider-approvals.",
-        "Use issued_at and expires_at metadata when strict freshness verification is required.",
-        "Rebuild and verify the external evidence manifest after adding the artifact."
-      ],
-      "authority_kind": "ci-run",
-      "coverage_status": "missing",
-      "evidence_argument_template": "cicd-provider-approvals,ci-run,external-evidence/cicd-provider-approvals/ci-run.json,ci-run evidence for cicd-provider-approvals;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-      "external_authority_required": [
-        "Provider delivery receipts cover retained provider delivery payload artifact replay and retained provider response artifact byte replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs, provider-native status shape, and replayed retained provider delivery payload/response artifacts before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
-      ],
-      "owner_hint": "release engineering",
-      "phase": "P1",
-      "priority": "P0",
-      "requirement_id": "cicd-provider-approvals",
-      "suggested_artifact_path": "external-evidence/cicd-provider-approvals/ci-run.json",
-      "suggested_evidence_sources": [
-        "completed CI workflow export",
-        "release run URL or provider-native run record",
-        "artifact/check provenance"
-      ],
-      "task_id": "20b9c48e557203d954f30537eb494facce24e8bcb8209b1b2db872adabbdf886",
-      "task_ref": "external-evidence:cicd-provider-approvals:ci-run",
-      "title": "CI/CD promotion gates, provider callbacks, and Slack approvals",
-      "unit_id": "a2f5b5c8b59b829199e864beeadb0ec5df9ab9517725793a2b96f3dd9b40bafd",
-      "unit_ref": "cicd-provider-approvals:ci-run"
     },
     {
       "acceptance_criteria": [

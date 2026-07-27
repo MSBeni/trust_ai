@@ -1,13 +1,13 @@
 # External Evidence Owner Fulfillment Review
 
-- Review ID: `a4cc99c1af01525e3b3ee9443a0ff8e1c991ef446ec8bfcf3483bac1ee7c2497`
+- Review ID: `cc4d58f3035fe16c6ebf863bb109baea68ca8f6c1e06caa040183c52da66f145`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Fulfillments: 68
+- Fulfillments: 67
 - Owners: 10
 - Ready tasks: 0
-- Blocked tasks: 68
-- Placeholder source URIs: 68
+- Blocked tasks: 67
+- Placeholder source URIs: 67
 - Live source URIs: 0
 
 ## Task Review
@@ -25,7 +25,6 @@
 | `shadow-replay-temporal-holdout:provider-api` | integration/platform owner | blocked | TODO://authority/shadow-replay-temporal-holdout/provider-api | `placeholder-source-uri` |
 | `shadow-replay-temporal-holdout:identity-provider` | IAM/identity owner | blocked | TODO://authority/shadow-replay-temporal-holdout/identity-provider | `placeholder-source-uri` |
 | `shadow-replay-temporal-holdout:standards-body` | standards/governance owner | blocked | TODO://authority/shadow-replay-temporal-holdout/standards-body | `placeholder-source-uri` |
-| `cicd-provider-approvals:ci-run` | release engineering | blocked | TODO://authority/cicd-provider-approvals/ci-run | `placeholder-source-uri` |
 | `cicd-provider-approvals:provider-api` | integration/platform owner | blocked | TODO://authority/cicd-provider-approvals/provider-api | `placeholder-source-uri` |
 | `cicd-provider-approvals:hosted-service` | service owner | blocked | TODO://authority/cicd-provider-approvals/hosted-service | `placeholder-source-uri` |
 | `cicd-provider-approvals:identity-provider` | IAM/identity owner | blocked | TODO://authority/cicd-provider-approvals/identity-provider | `placeholder-source-uri` |
@@ -87,12 +86,12 @@
 
 - Fulfilled source map errors: 1
 - Fulfilled source map warnings: 1
-  - source map contains 68 placeholder source_uri values but live source URIs are required
+  - source map contains 67 placeholder source_uri values but live source URIs are required
 
 ## Blockers
 
-- owner fulfillment review contains 68 placeholder source_uri values
-- fulfilled source map: source map contains 68 placeholder source_uri values but live source URIs are required
+- owner fulfillment review contains 67 placeholder source_uri values
+- fulfilled source map: source map contains 67 placeholder source_uri values but live source URIs are required
 
 ## Next Actions
 

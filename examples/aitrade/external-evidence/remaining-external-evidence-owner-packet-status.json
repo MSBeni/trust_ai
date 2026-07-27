@@ -5,7 +5,7 @@
     "A closed task still requires rebuilt manifest verification and readiness verification before external authority coverage is accepted.",
     "Placeholder source URIs keep tasks blocked even when a local intake artifact is present."
   ],
-  "owner_packet_status_id": "b628bbbf2c13f3db7f321dafd2109eb4d812b4a31a6ecb33f653b83d7c082e63",
+  "owner_packet_status_id": "4309b5526ced3e430bc28811507266f5ff9d68484d31ede9e9286e74fb0ff587",
   "packets": [
     {
       "blocked_task_count": 8,
@@ -58,14 +58,14 @@
       "task_count": 5
     },
     {
-      "blocked_task_count": 8,
+      "blocked_task_count": 7,
       "closed_task_count": 0,
       "open_task_count": 0,
       "owner_hint": "release engineering",
-      "packet_id": "bee4fe87ae9b9063391bd1c6ab75bbc5fd87d097660328a0f7cdb2fd978f8529",
+      "packet_id": "8d741b076e652ebd7999955db73727f024bb88ece8136c493cf598d7887e3424",
       "packet_ref": "owner-packet:owner_hint:release-engineering",
       "packet_status": "blocked",
-      "task_count": 8
+      "task_count": 7
     },
     {
       "blocked_task_count": 4,
@@ -113,41 +113,41 @@
     "intake_hashes": [],
     "owner_packet_bundle": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_bundle_hash": "958813cd8bdbf7b848a2f1301baa04637c3b69c7df2e749056ef78af63d49efb",
-      "owner_packet_bundle_id": "47a0cefae8cbe4a42cf9aaf354180b5fc95648e5d7eadb190d35995a1a434a19",
+      "owner_packet_bundle_hash": "65963e3871db5cb63afc8f2e1a28ea92c54d13740d20ca559428396e80b03d33",
+      "owner_packet_bundle_id": "6fb0cbd91c56388e13ab14a480c8a28d6a3ac8a580cf4f97b3713854257d42d7",
       "schema": "trustai.external-evidence-owner-packet-bundle/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "0aea8612a65c5f60e4e3eace769515aa20b42677efb877fd96d0e7bb69854214",
-      "source_map_id": "7d6734c03b4be007a1355793a7987bc16f462919b17ebef3e58a1a8129606ef8"
+      "source_map_hash": "5a23022ad2d0908fa1311f0bf8543d3c0fc339ab948ccda21ceac8a061b52dce",
+      "source_map_id": "3feeee9a2e4890c375e3e0da3e696b13d45673b6764907da88159326f8ce09a3"
     },
     "work_package": {
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-work-package/0.1",
-      "work_package_hash": "94d0bf65aecc4bb6a1468ebc78c73ab1287ea30d9f1e2ca913cad9817680cee6",
-      "work_package_id": "1b42dfb82afa1df6efd8873ff8f476a758a65d2d6d86de482842489f332b13f5"
+      "work_package_hash": "bff8db44464557f33a57ebcca1879dbb621379869d8019aa5078776dd26b650c",
+      "work_package_id": "937a7c7f889fa00362621fd12a1aac421a2fc5b6cfa3788ae5d3bd81b36b4a1f"
     }
   },
   "summary": {
     "blocked_packet_count": 10,
-    "blocked_task_count": 68,
+    "blocked_task_count": 67,
     "closed_packet_count": 0,
     "closed_task_count": 0,
     "invalid_intake_count": 0,
     "live_source_uri_count": 0,
-    "missing_intake_count": 68,
+    "missing_intake_count": 67,
     "open_packet_count": 0,
     "open_task_count": 0,
     "packet_count": 10,
     "packet_status_counts": {
       "blocked": 10
     },
-    "placeholder_source_uri_count": 68,
-    "task_count": 68,
+    "placeholder_source_uri_count": 67,
+    "task_count": 67,
     "task_status_counts": {
-      "blocked": 68
+      "blocked": 67
     }
   },
   "tasks": [
@@ -762,23 +762,6 @@
       "task_ref": "external-evidence:product-scope-discipline:ci-run",
       "task_status": "blocked",
       "unit_ref": "product-scope-discipline:ci-run"
-    },
-    {
-      "authority_kind": "ci-run",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake": null,
-      "intake_out": "artifacts/external-evidence-intakes/cicd-provider-approvals/ci-run.json",
-      "owner_hint": "release engineering",
-      "requirement_id": "cicd-provider-approvals",
-      "snapshot_out": "artifacts/external-evidence-sources/cicd-provider-approvals/ci-run.json",
-      "source_uri": "TODO://authority/cicd-provider-approvals/ci-run",
-      "source_uri_status": "placeholder",
-      "task_ref": "external-evidence:cicd-provider-approvals:ci-run",
-      "task_status": "blocked",
-      "unit_ref": "cicd-provider-approvals:ci-run"
     },
     {
       "authority_kind": "ci-run",

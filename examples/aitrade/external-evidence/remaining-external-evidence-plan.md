@@ -1,8 +1,8 @@
 # TrustAI External Evidence Collection Plan
 
-Plan ID: `568d065607552a49d7f9adab7f96f3b31cb721bf2a1c7a1f12554bd30286145b`
+Plan ID: `cfd60aaf6d9d8b4f82cc87306086b7924313092fb429bddac91af2ae4a79ec0a`
 
-Source manifest: `54e19ce0aba34d8a2255355ce00830853e27ea00280a748f0fdcb3fb08f85a8f`
+Source manifest: `e1fa845eb298791fbba72644442560ad75a7f8fc7d151b6b668d7871b17d7f09`
 
 Status filter: missing
 
@@ -10,10 +10,10 @@ Status filter: missing
 
 - Source manifest status: partial
 - Total authority units: 71
-- Selected tasks: 68
-- Selected missing tasks: 68
+- Selected tasks: 67
+- Selected missing tasks: 67
 - Selected covered tasks: 0
-- Missing authority kinds overall: 68
+- Missing authority kinds overall: 67
 
 ## Collection Tasks
 
@@ -30,7 +30,6 @@ Status filter: missing
 | `d80551bd511665073ae5004725f7a510593a7f944c11d3350a3af384c10d57f5` | `shadow-replay-temporal-holdout:provider-api` | `shadow-replay-temporal-holdout` | provider-api | missing | integration/platform owner | `external-evidence/shadow-replay-temporal-holdout/provider-api.json` | `shadow-replay-temporal-holdout,provider-api,external-evidence/shadow-replay-temporal-holdout/provider-api.json,provider-api evidence for shadow-replay-temporal-holdout;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `4ab97d4e2347b46aff33524c887d3a6651588edbce84a753d5ef2b6fa905c84e` | `shadow-replay-temporal-holdout:identity-provider` | `shadow-replay-temporal-holdout` | identity-provider | missing | IAM/identity owner | `external-evidence/shadow-replay-temporal-holdout/identity-provider.json` | `shadow-replay-temporal-holdout,identity-provider,external-evidence/shadow-replay-temporal-holdout/identity-provider.json,identity-provider evidence for shadow-replay-temporal-holdout;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `ee6d57dfd25d9d2b65ee1976add9dbcf5a609b3959fb87167dfb38c75015ebeb` | `shadow-replay-temporal-holdout:standards-body` | `shadow-replay-temporal-holdout` | standards-body | missing | standards/governance owner | `external-evidence/shadow-replay-temporal-holdout/standards-body.json` | `shadow-replay-temporal-holdout,standards-body,external-evidence/shadow-replay-temporal-holdout/standards-body.json,standards-body evidence for shadow-replay-temporal-holdout;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
-| `20b9c48e557203d954f30537eb494facce24e8bcb8209b1b2db872adabbdf886` | `cicd-provider-approvals:ci-run` | `cicd-provider-approvals` | ci-run | missing | release engineering | `external-evidence/cicd-provider-approvals/ci-run.json` | `cicd-provider-approvals,ci-run,external-evidence/cicd-provider-approvals/ci-run.json,ci-run evidence for cicd-provider-approvals;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `1613dfe0c10d959894e11bafc9cc330e543123bba2f797865c8138e5f0d962f0` | `cicd-provider-approvals:provider-api` | `cicd-provider-approvals` | provider-api | missing | integration/platform owner | `external-evidence/cicd-provider-approvals/provider-api.json` | `cicd-provider-approvals,provider-api,external-evidence/cicd-provider-approvals/provider-api.json,provider-api evidence for cicd-provider-approvals;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `4cdba0f0aca03393de0cfa02487a21059b395c42c829951cf738fb9889e6b586` | `cicd-provider-approvals:hosted-service` | `cicd-provider-approvals` | hosted-service | missing | service owner | `external-evidence/cicd-provider-approvals/hosted-service.json` | `cicd-provider-approvals,hosted-service,external-evidence/cicd-provider-approvals/hosted-service.json,hosted-service evidence for cicd-provider-approvals;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `c6285514734f63d79d421e20f98b98f657d40d7192dfb60958d104bc649495fa` | `cicd-provider-approvals:identity-provider` | `cicd-provider-approvals` | identity-provider | missing | IAM/identity owner | `external-evidence/cicd-provider-approvals/identity-provider.json` | `cicd-provider-approvals,identity-provider,external-evidence/cicd-provider-approvals/identity-provider.json,identity-provider evidence for cicd-provider-approvals;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |

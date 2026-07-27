@@ -19,11 +19,14 @@ from trustai.canonical import content_hash, without_keys
 from trustai.external_evidence import (
     build_external_evidence_manifest,
     build_external_evidence_source_map_template,
+    build_external_evidence_source_snapshot,
     load_external_evidence_collection_plan,
     parse_evidence_arg,
     verify_external_evidence_manifest,
+    verify_external_evidence_source_snapshot,
     write_external_evidence_markdown,
     write_external_evidence_manifest,
+    write_external_evidence_source_snapshot,
 )
 from trustai.roadmap_audit import (
     build_roadmap_audit,
@@ -77,6 +80,20 @@ RETAINED_SOURCES: dict[str, dict[str, str]] = {
         "snapshot_out": "examples/aitrade/external-evidence/github-hosted-service-source-snapshot.json",
         "intake_out": "examples/aitrade/external-evidence/intakes/oss-verifier-hosted-service.json",
     },
+    "cicd-provider-approvals:ci-run": {
+        "source_uri": "https://github.com/MSBeni/trust_ai/actions",
+        "description": "Retained GitHub check-suite callback export for CI/CD promotion provider evidence",
+        "artifact": "examples/aitrade/external-evidence/github-check-suite-source-snapshot.json",
+        "source_file": "examples/webhooks/github-check-suite.json",
+        "retrieval_method": "file-copy",
+        "content_type": "application/json",
+        "issuer": "GitHub Checks",
+        "subject": "trustai GitHub check-suite promotion callback",
+        "issued_at": "2026-07-08T00:00:00Z",
+        "expires_at": "2026-12-31T00:00:00Z",
+        "snapshot_out": "examples/aitrade/external-evidence/github-check-suite-source-snapshot.json",
+        "intake_out": "examples/aitrade/external-evidence/intakes/cicd-provider-approvals-ci-run.json",
+    },
 }
 
 
@@ -107,6 +124,7 @@ def refresh_retained_artifacts() -> None:
         path("source-external-evidence-plan-all.json"),
     )
     write_retained_source_map()
+    rebuild_retained_source_snapshots()
     rebuild_retained_intakes()
     write_collection_run_from_retained_intakes()
     run(
@@ -347,13 +365,16 @@ def write_retained_source_map() -> None:
     source_map = build_external_evidence_source_map_template(
         plan,
         status_filter="all",
-        limit=3,
+        limit=None,
         source_uri_template="TODO://authority/{requirement_id}/{authority_kind}",
         description_template="{authority_kind} evidence for {requirement_id}",
         snapshot_dir=str(DIR),
         intake_dir=str(DIR / "intakes"),
         generated_at=MAP_TIME,
     )
+    source_map["entries"] = [
+        entry for entry in source_map["entries"] if entry.get("unit_ref") in RETAINED_SOURCES
+    ]
     for entry in source_map["entries"]:
         unit_ref = entry["unit_ref"]
         retained = RETAINED_SOURCES[unit_ref]
@@ -373,10 +394,34 @@ def write_retained_source_map() -> None:
         )
     source_map["summary"]["snapshot_dir"] = str(DIR)
     source_map["summary"]["intake_dir"] = str(DIR / "intakes")
+    source_map["summary"]["entry_count"] = len(source_map["entries"])
     source_map["summary"]["placeholder_source_uri_count"] = 0
     source_map["summary"]["live_source_uri_count"] = len(source_map["entries"])
     source_map["source_map_id"] = content_hash(without_keys(source_map, "source_map_id"))
     json_write(DIR / "retained-external-evidence-collected-source-map.json", source_map)
+
+
+def rebuild_retained_source_snapshots() -> None:
+    for retained in RETAINED_SOURCES.values():
+        source_file = retained.get("source_file")
+        if not source_file:
+            continue
+        body = (ROOT / source_file).read_bytes()
+        snapshot = build_external_evidence_source_snapshot(
+            source_uri=retained["source_uri"],
+            body=body,
+            retrieval_method=retained["retrieval_method"],
+            issuer=retained["issuer"],
+            subject=retained["subject"],
+            content_type=retained["content_type"],
+            issued_at=retained["issued_at"],
+            expires_at=retained["expires_at"],
+            generated_at=COLLECTION_TIME,
+        )
+        result = verify_external_evidence_source_snapshot(snapshot, require_fresh=True, now=NOW)
+        if not result.ok:
+            raise SystemExit("invalid retained source snapshot: " + "; ".join(result.errors))
+        write_external_evidence_source_snapshot(ROOT / retained["snapshot_out"], snapshot)
 
 
 def rebuild_retained_intakes() -> None:
@@ -585,6 +630,8 @@ def verify_retained_artifacts() -> None:
 
 
 def assert_retained_counts() -> None:
+    retained_count = len(RETAINED_SOURCES)
+    remaining_count = 71 - retained_count
     manifest = json_load(DIR / "retained-external-evidence-manifest.json")
     plan = json_load(DIR / "remaining-external-evidence-plan.json")
     source_map = json_load(DIR / "remaining-external-evidence-source-map-template.json")
@@ -598,33 +645,33 @@ def assert_retained_counts() -> None:
     owner_fulfilled_source_map = json_load(DIR / "remaining-external-evidence-owner-fulfilled-source-map.json")
     readiness = json_load(DIR / "retained-external-evidence-readiness.json")
     checks = [
-        (manifest["summary"]["covered_authority_kind_count"], 3, "manifest covered authority kind count"),
-        (manifest["summary"]["missing_authority_kind_count"], 68, "manifest missing authority kind count"),
-        (plan["summary"]["selected_task_count"], 68, "remaining plan task count"),
-        (source_map["summary"]["entry_count"], 68, "source-map entry count"),
-        (source_map["summary"]["placeholder_source_uri_count"], 68, "source-map placeholder URI count"),
-        (gap_report["summary"]["remaining_task_count"], 68, "gap remaining task count"),
-        (work_package["summary"]["task_count"], 68, "work-package task count"),
+        (manifest["summary"]["covered_authority_kind_count"], retained_count, "manifest covered authority kind count"),
+        (manifest["summary"]["missing_authority_kind_count"], remaining_count, "manifest missing authority kind count"),
+        (plan["summary"]["selected_task_count"], remaining_count, "remaining plan task count"),
+        (source_map["summary"]["entry_count"], remaining_count, "source-map entry count"),
+        (source_map["summary"]["placeholder_source_uri_count"], remaining_count, "source-map placeholder URI count"),
+        (gap_report["summary"]["remaining_task_count"], remaining_count, "gap remaining task count"),
+        (work_package["summary"]["task_count"], remaining_count, "work-package task count"),
         (work_package["summary"]["package_count"], 10, "work-package package count"),
         (owner_packets["summary"]["packet_count"], 10, "owner packet count"),
-        (owner_packets["summary"]["task_count"], 68, "owner packet task count"),
+        (owner_packets["summary"]["task_count"], remaining_count, "owner packet task count"),
         (owner_packet_status["summary"]["packet_count"], 10, "owner packet status packet count"),
-        (owner_packet_status["summary"]["task_count"], 68, "owner packet status task count"),
+        (owner_packet_status["summary"]["task_count"], remaining_count, "owner packet status task count"),
         (owner_packet_status["summary"]["closed_task_count"], 0, "owner packet status closed task count"),
-        (owner_packet_status["summary"]["blocked_task_count"], 68, "owner packet status blocked task count"),
-        (owner_fulfillment_template["summary"]["fulfillment_count"], 68, "owner fulfillment template count"),
-        (owner_fulfillment_template["summary"]["placeholder_source_uri_count"], 68, "owner fulfillment template placeholder URI count"),
+        (owner_packet_status["summary"]["blocked_task_count"], remaining_count, "owner packet status blocked task count"),
+        (owner_fulfillment_template["summary"]["fulfillment_count"], remaining_count, "owner fulfillment template count"),
+        (owner_fulfillment_template["summary"]["placeholder_source_uri_count"], remaining_count, "owner fulfillment template placeholder URI count"),
         (owner_fulfillment_review["summary"]["review_status"], "blocked", "owner fulfillment review status"),
-        (owner_fulfillment_review["summary"]["blocked_task_count"], 68, "owner fulfillment review blocked task count"),
-        (owner_fulfillment_review["summary"]["placeholder_source_uri_count"], 68, "owner fulfillment review placeholder URI count"),
+        (owner_fulfillment_review["summary"]["blocked_task_count"], remaining_count, "owner fulfillment review blocked task count"),
+        (owner_fulfillment_review["summary"]["placeholder_source_uri_count"], remaining_count, "owner fulfillment review placeholder URI count"),
         (owner_fulfillment_review["summary"]["fulfilled_source_map_verification_ok"], False, "owner fulfillment review source-map verification status"),
-        (owner_fulfilled_source_map["summary"]["placeholder_source_uri_count"], 68, "owner fulfilled source-map placeholder URI count"),
+        (owner_fulfilled_source_map["summary"]["placeholder_source_uri_count"], remaining_count, "owner fulfilled source-map placeholder URI count"),
         (owner_fulfillment_closure["summary"]["closure_status"], "blocked", "owner fulfillment closure status"),
-        (owner_fulfillment_closure["summary"]["task_count"], 68, "owner fulfillment closure task count"),
+        (owner_fulfillment_closure["summary"]["task_count"], remaining_count, "owner fulfillment closure task count"),
         (owner_fulfillment_closure["summary"]["closed_task_count"], 0, "owner fulfillment closure closed task count"),
-        (owner_fulfillment_closure["summary"]["missing_intake_count"], 68, "owner fulfillment closure missing intake count"),
-        (owner_fulfillment_closure["summary"]["missing_manifest_coverage_count"], 68, "owner fulfillment closure missing manifest coverage count"),
-        (owner_fulfillment_closure["summary"]["placeholder_source_uri_count"], 68, "owner fulfillment closure placeholder URI count"),
+        (owner_fulfillment_closure["summary"]["missing_intake_count"], remaining_count, "owner fulfillment closure missing intake count"),
+        (owner_fulfillment_closure["summary"]["missing_manifest_coverage_count"], remaining_count, "owner fulfillment closure missing manifest coverage count"),
+        (owner_fulfillment_closure["summary"]["placeholder_source_uri_count"], remaining_count, "owner fulfillment closure placeholder URI count"),
         (readiness["summary"]["readiness_status"], "not-ready", "readiness status"),
     ]
     for actual, expected, label in checks:
@@ -708,10 +755,12 @@ def verify_retained_collection_chain() -> None:
         run("roadmap-evidence-bundle-verify", str(bundle), "--require-source-artifacts")
         entry = json_load(collection_entry)
         bundle_value = json_load(bundle)
-        if entry["payload"]["collected_count"] != 3:
-            raise SystemExit("retained collection-run chain entry did not record 3 collected receipts")
-        if bundle_value["summary"]["source_artifact_count"] != 9:
-            raise SystemExit("retained collection-run bundle did not include 9 source artifacts")
+        retained_count = len(RETAINED_SOURCES)
+        expected_source_artifacts = 3 + (2 * retained_count)
+        if entry["payload"]["collected_count"] != retained_count:
+            raise SystemExit(f"retained collection-run chain entry did not record {retained_count} collected receipts")
+        if bundle_value["summary"]["source_artifact_count"] != expected_source_artifacts:
+            raise SystemExit(f"retained collection-run bundle did not include {expected_source_artifacts} source artifacts")
 
 
 def run(*args: str) -> None:

@@ -1,18 +1,18 @@
 # External Evidence Gap Report
 
-- Gap report ID: `6fad64c932bd6351d7c9a5df0787af45dae7522a6e005127d8ec361677573150`
+- Gap report ID: `2670927d72ce25b6fc1ea705934dfb20d31e801692f7bad4ca308d9ccc965db3`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 3/71
-- Missing authority kinds: 68
-- Remaining collection tasks: 68
-- Source-map entries: 68
-- Placeholder source URIs: 68
+- Covered authority kinds: 4/71
+- Missing authority kinds: 67
+- Remaining collection tasks: 67
+- Source-map entries: 67
+- Placeholder source URIs: 67
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
 
-- `ci-run`: 8
+- `ci-run`: 7
 - `cloud-object-lock`: 1
 - `customer`: 9
 - `hosted-service`: 8
@@ -28,7 +28,7 @@
 - `agent-inventory-and-identity`: 2
 - `auditor-and-review-portal`: 5
 - `byoc-self-hosted`: 6
-- `cicd-provider-approvals`: 4
+- `cicd-provider-approvals`: 3
 - `compliance-mapper-and-eu-ai-act`: 3
 - `design-partner-pilot-exit-criteria`: 3
 - `framework-adapters`: 3
@@ -167,17 +167,6 @@
 - Snapshot output: `artifacts/external-evidence-sources/shadow-replay-temporal-holdout/standards-body.json`
 - Intake output: `artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/standards-body.json`
 - Suggested evidence sources: standards-body submission receipt; working-group status record; ballot or docket export
-
-### cicd-provider-approvals:ci-run
-
-- Title: CI/CD promotion gates, provider callbacks, and Slack approvals
-- Authority kind: `ci-run`
-- Owner hint: release engineering
-- Description: ci-run evidence for cicd-provider-approvals
-- Source URI: `TODO://authority/cicd-provider-approvals/ci-run`
-- Snapshot output: `artifacts/external-evidence-sources/cicd-provider-approvals/ci-run.json`
-- Intake output: `artifacts/external-evidence-intakes/cicd-provider-approvals/ci-run.json`
-- Suggested evidence sources: completed CI workflow export; release run URL or provider-native run record; artifact/check provenance
 
 ### cicd-provider-approvals:provider-api
 

@@ -5,7 +5,7 @@
     "Source URIs marked TODO or placeholder must be replaced with authority-owned source exports before collection.",
     "Packet completion is proven only by verified source snapshots, intake receipts, rebuilt manifests, and readiness reports."
   ],
-  "owner_packet_bundle_id": "47a0cefae8cbe4a42cf9aaf354180b5fc95648e5d7eadb190d35995a1a434a19",
+  "owner_packet_bundle_id": "6fb0cbd91c56388e13ab14a480c8a28d6a3ac8a580cf4f97b3713854257d42d7",
   "packets": [
     {
       "authority_kinds": [
@@ -2946,12 +2946,12 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 8,
+      "missing_task_count": 7,
       "owner_hint": "release engineering",
-      "package_hash": "4686819d12304ba0d81b378220ddc5a2acc363f26c565cfa5e25f40cf93a24c9",
-      "package_id": "35b6df0afdc2b805a0274e63d9bb6f6288d28ec7fa3bca07236260fe8c7c4c0e",
+      "package_hash": "a9e75edaf3c2bd7d8c6cf5c98639fbd18be90461443f462802196d225b64b76e",
+      "package_id": "764473cb71c22da3042934c1c393bc1d427a67a5ee59554c717afada6e060f26",
       "package_ref": "owner_hint:release-engineering",
-      "packet_id": "bee4fe87ae9b9063391bd1c6ab75bbc5fd87d097660328a0f7cdb2fd978f8529",
+      "packet_id": "8d741b076e652ebd7999955db73727f024bb88ece8136c493cf598d7887e3424",
       "packet_ref": "owner-packet:owner_hint:release-engineering",
       "phases": [
         "P0-P4",
@@ -2961,14 +2961,13 @@
         "P2",
         "P2-P4"
       ],
-      "placeholder_source_uri_count": 8,
+      "placeholder_source_uri_count": 7,
       "priorities": [
         "P0",
         "P1"
       ],
       "requirement_ids": [
         "byoc-self-hosted",
-        "cicd-provider-approvals",
         "framework-adapters",
         "insurer-api-and-actuarial-products",
         "mcp-gateway",
@@ -2976,7 +2975,7 @@
         "roadmap-phase-scoreboard",
         "runtime-policy-and-attestation"
       ],
-      "task_count": 8,
+      "task_count": 7,
       "tasks": [
         {
           "acceptance_criteria": [
@@ -3054,83 +3053,6 @@
           "title": "Product scope discipline and anti-focus decisions",
           "unit_id": "beeca7b595cedd378a2ecc5f6cf1174767c4e5d40c0e94e7ef728938d6c4cdae",
           "unit_ref": "product-scope-discipline:ci-run"
-        },
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be ci-run and accepted for cicd-provider-approvals.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "ci-run",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/cicd-provider-approvals/ci-run",
-              "--root",
-              ".",
-              "--task",
-              "cicd-provider-approvals:ci-run",
-              "--description",
-              "ci-run evidence for cicd-provider-approvals",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/cicd-provider-approvals/ci-run.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/cicd-provider-approvals/ci-run.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/cicd-provider-approvals/ci-run --root . --task cicd-provider-approvals:ci-run --description 'ci-run evidence for cicd-provider-approvals' --snapshot-out artifacts/external-evidence-sources/cicd-provider-approvals/ci-run.json --intake-out artifacts/external-evidence-intakes/cicd-provider-approvals/ci-run.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/cicd-provider-approvals/ci-run.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/cicd-provider-approvals/ci-run.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "ci-run evidence for cicd-provider-approvals",
-          "evidence_argument_template": "cicd-provider-approvals,ci-run,external-evidence/cicd-provider-approvals/ci-run.json,ci-run evidence for cicd-provider-approvals;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Provider delivery receipts cover retained provider delivery payload artifact replay and retained provider response artifact byte replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs, provider-native status shape, and replayed retained provider delivery payload/response artifacts before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/cicd-provider-approvals/ci-run.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "release engineering",
-          "phase": "P1",
-          "priority": "P0",
-          "requirement_id": "cicd-provider-approvals",
-          "snapshot_out": "artifacts/external-evidence-sources/cicd-provider-approvals/ci-run.json",
-          "source_uri": "TODO://authority/cicd-provider-approvals/ci-run",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/cicd-provider-approvals/ci-run.json",
-          "suggested_evidence_sources": [
-            "completed CI workflow export",
-            "release run URL or provider-native run record",
-            "artifact/check provenance"
-          ],
-          "task_id": "20b9c48e557203d954f30537eb494facce24e8bcb8209b1b2db872adabbdf886",
-          "task_ref": "external-evidence:cicd-provider-approvals:ci-run",
-          "title": "CI/CD promotion gates, provider callbacks, and Slack approvals",
-          "unit_id": "a2f5b5c8b59b829199e864beeadb0ec5df9ab9517725793a2b96f3dd9b40bafd",
-          "unit_ref": "cicd-provider-approvals:ci-run"
         },
         {
           "acceptance_criteria": [
@@ -5708,19 +5630,19 @@
   "source_work_package": {
     "generated_at": "2026-07-12T00:01:00Z",
     "group_by": "owner_hint",
-    "work_package_hash": "94d0bf65aecc4bb6a1468ebc78c73ab1287ea30d9f1e2ca913cad9817680cee6",
-    "work_package_id": "1b42dfb82afa1df6efd8873ff8f476a758a65d2d6d86de482842489f332b13f5"
+    "work_package_hash": "bff8db44464557f33a57ebcca1879dbb621379869d8019aa5078776dd26b650c",
+    "work_package_id": "937a7c7f889fa00362621fd12a1aac421a2fc5b6cfa3788ae5d3bd81b36b4a1f"
   },
   "summary": {
     "covered_task_count": 0,
     "live_source_uri_count": 0,
-    "missing_task_count": 68,
+    "missing_task_count": 67,
     "packet_count": 10,
-    "placeholder_source_uri_count": 68,
-    "source_work_package_task_count": 68,
-    "task_count": 68,
+    "placeholder_source_uri_count": 67,
+    "source_work_package_task_count": 67,
+    "task_count": 67,
     "task_count_by_authority_kind": {
-      "ci-run": 8,
+      "ci-run": 7,
       "cloud-object-lock": 1,
       "customer": 9,
       "hosted-service": 8,
@@ -5737,7 +5659,7 @@
       "customer success/account owner": 9,
       "integration/platform owner": 12,
       "legal/compliance owner": 5,
-      "release engineering": 8,
+      "release engineering": 7,
       "risk/insurance owner": 4,
       "security/platform KMS owner": 7,
       "service owner": 8,
