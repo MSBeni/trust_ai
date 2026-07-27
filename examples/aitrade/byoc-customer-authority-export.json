@@ -1,0 +1,125 @@
+{
+  "acceptance": {
+    "accepted_controls": [
+      "self-hosted Helm install in customer cloud account",
+      "customer-managed KMS/HSM evidence signing",
+      "S3 Object Lock immutable evidence retention",
+      "namespace-scoped service account and NetworkPolicy isolation",
+      "offline verifier proof-pack validation",
+      "rollback and demotion evidence path",
+      "customer-owned audit retention and data residency"
+    ],
+    "approver_refs": [
+      "customer:model-risk-lead",
+      "customer:platform-owner",
+      "customer:security-owner"
+    ],
+    "conditions": [
+      "regulated payloads remain inside the customer-controlled data plane",
+      "customer retains KMS, Object Lock, and cluster admission exports",
+      "production use requires a fresh proof pack and active runtime attestation"
+    ],
+    "decision_ref": "aitrade-mrmc-byoc-acceptance-2026-07-12",
+    "status": "accepted-for-pilot-production"
+  },
+  "byoc_scope": {
+    "authority_kind": "customer",
+    "deployment_mode": "BYOC/self-hosted reference deployment",
+    "evidence_profile": "trustai-byoc-self-hosted-0.1",
+    "helm_chart_ref": "deploy/helm/trustai",
+    "operator_ref": "trustai-byoc-operator",
+    "requirement_id": "byoc-self-hosted"
+  },
+  "environment": "aitrade-byoc",
+  "evidence": {
+    "byoc_ci_authority_export": {
+      "path": "examples/aitrade/byoc-ci-run-authority-export.json",
+      "sha256": "sha256:50dd583be54bbaf084e0d11bda21b0746de6e09413c0120e16f682fbb48eb2c1"
+    },
+    "byoc_deployment_doc": {
+      "path": "docs/deployment/byoc.md",
+      "sha256": "sha256:bddc07c94a312a8d2384baea4a0e4de324ea93e31c42a04253eb5edfc2ccb010"
+    },
+    "byoc_object_lock_provider_export": {
+      "path": "examples/aitrade/byoc-object-lock-provider-export.json",
+      "sha256": "sha256:31c6e2333ea1da0dc4880c93e907f19024f05a11e9aaea7c1596dc075a8243e4"
+    },
+    "byoc_operator_source": {
+      "path": "src/trustai/byoc_operator.py",
+      "sha256": "sha256:64657b200dc34ebe555bbc9bcf273229bb36981709fe7da45bf3240d40e37f34"
+    },
+    "byoc_production_authority_source": {
+      "path": "src/trustai/byoc_authority.py",
+      "sha256": "sha256:526b23562cf55e9c93d9d1b0026a88444f919bf1790b9fd00542fbdf2029c45c"
+    },
+    "byoc_standards_body_authority_export": {
+      "path": "examples/aitrade/byoc-standards-body-authority-export.json",
+      "sha256": "sha256:fb905f2255e6f0ef1e54601ded73aa205c9d3a3f3340cfd1b624ebb4bda0bc26"
+    },
+    "deployment_image_integrity_spec": {
+      "path": "docs/specs/deployment-image-integrity-v0.1.md",
+      "sha256": "sha256:bd1f92e1d119a8e81f4440bceb56aaddec41784f42e6ef8832cd5601e99c08e3"
+    },
+    "deployment_manifest_spec": {
+      "path": "docs/specs/deployment-manifest-v0.1.md",
+      "sha256": "sha256:1cb85c79d888ca3a45b5338422572529a5a163a44f758fc39a0a2ec40ce9b481"
+    },
+    "deployment_source": {
+      "path": "src/trustai/deployment.py",
+      "sha256": "sha256:33a2427c7f98d63abf489973e73b27b4ff1f76458a4023c32b7ee0993822d1de"
+    },
+    "helm_chart": {
+      "path": "deploy/helm/trustai/Chart.yaml",
+      "sha256": "sha256:6a52b3fabdc4b73983e82c22b090945df8829c378e731cecc63513129a24829f"
+    },
+    "helm_chart_validation_spec": {
+      "path": "docs/specs/helm-chart-validation-v0.1.md",
+      "sha256": "sha256:9869ffa5f0a1c0e6597fc40b009b9d7af8fa8c6a7d6f23de43b4eb21a3f3809b"
+    },
+    "helm_deployment_template": {
+      "path": "deploy/helm/trustai/templates/deployment.yaml",
+      "sha256": "sha256:9dc7b3b64bf3b74eab65dc8217d2edc268d9c5278faca101ac513e902f88afa6"
+    },
+    "helm_network_policy_template": {
+      "path": "deploy/helm/trustai/templates/networkpolicy.yaml",
+      "sha256": "sha256:0f9e47d5722864e5ca9a9c6f0d9a8e5b3ec62d35f53f736812351c797139cac4"
+    },
+    "helm_service_template": {
+      "path": "deploy/helm/trustai/templates/service.yaml",
+      "sha256": "sha256:fe0c12323c6807d1f3404dd2cd0bc09e0c7d0aee9e8e1bdffbc46c1b5e47d61b"
+    },
+    "helm_values": {
+      "path": "deploy/helm/trustai/values.yaml",
+      "sha256": "sha256:3def30166ed7cf7391b914866442ecd5bd2e4576cfb3b5ebe73b658dad41ba64"
+    },
+    "kms_hsm_authority_export": {
+      "path": "examples/aitrade/trust-authority-kms-response.json",
+      "sha256": "sha256:1f67d6b3b286b0d7cc16044c43d9ba5dec6065797906caf0d97e4fa3e870ff21"
+    },
+    "kubernetes_release_state_spec": {
+      "path": "docs/specs/kubernetes-release-state-v0.1.md",
+      "sha256": "sha256:74dbddefa93acdce77a1ea489d30fed8397849946c62016faab4a29cf67379f7"
+    },
+    "operator_attestation_spec": {
+      "path": "docs/specs/byoc-operator-attestation-v0.1.md",
+      "sha256": "sha256:59bcc86f84a9ea6bcf97e7b6ac869115d28b0ba224ac2374ff961b70404658a4"
+    },
+    "production_authority_spec": {
+      "path": "docs/specs/byoc-production-authority-v0.1.md",
+      "sha256": "sha256:83e1961f68d203ee78640289104dbf97ceddfd4690689c0f997fd7cf4682a586"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "export_ref": "customer-export:aitrade/byoc-self-hosted/acceptance/2026-07-12",
+  "issued_at": "2026-07-12T00:00:00Z",
+  "issuer": "Aitrade Model Risk Committee",
+  "schema": "trustai.byoc-customer-authority-export/0.1",
+  "subject": "aitrade BYOC/self-hosted TrustAI deployment acceptance",
+  "verified_controls": [
+    "customer-controlled data plane",
+    "customer-owned signing and retention authorities",
+    "offline proof-pack verifier acceptance",
+    "self-hosted deployment rollback evidence",
+    "BYOC evidence freshness window"
+  ]
+}

@@ -1,8 +1,8 @@
 # TrustAI External Evidence Collection Plan
 
-Plan ID: `5d3b353beb6e89604a1cc8503ee714e70bfa0b990dbcc64b643ef5710df02a9d`
+Plan ID: `ad52f84a386bae5f3c0136b2099c1689d56da9edc817ad11f36ea0c029a2733d`
 
-Source manifest: `82e414eaf0dc0711b734b4f9e7f0817109c1e158eb58fa86ec5175c4eb3c23b5`
+Source manifest: `fd8324f98c26392585e0e756e64d6e722d6c346f78e5f3856f9484f8fca875eb`
 
 Status filter: missing
 
@@ -10,16 +10,15 @@ Status filter: missing
 
 - Source manifest status: partial
 - Total authority units: 71
-- Selected tasks: 31
-- Selected missing tasks: 31
+- Selected tasks: 30
+- Selected missing tasks: 30
 - Selected covered tasks: 0
-- Missing authority kinds overall: 31
+- Missing authority kinds overall: 30
 
 ## Collection Tasks
 
 | Task ID | Unit Ref | Requirement | Authority | Status | Owner Hint | Suggested Artifact | Evidence Argument Template |
 |---|---|---|---|---|---|---|---|
-| `af50b681baa31018d24096abc1a794738c8a80afce398c4557fbc08f8ace0bd3` | `byoc-self-hosted:customer` | `byoc-self-hosted` | customer | missing | customer success/account owner | `external-evidence/byoc-self-hosted/customer.json` | `byoc-self-hosted,customer,external-evidence/byoc-self-hosted/customer.json,customer evidence for byoc-self-hosted;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `484c9782666dd0087b90aaf9a4c972b8034610dda1313a7c3e0a1099c0d79800` | `compliance-mapper-and-eu-ai-act:provider-api` | `compliance-mapper-and-eu-ai-act` | provider-api | missing | integration/platform owner | `external-evidence/compliance-mapper-and-eu-ai-act/provider-api.json` | `compliance-mapper-and-eu-ai-act,provider-api,external-evidence/compliance-mapper-and-eu-ai-act/provider-api.json,provider-api evidence for compliance-mapper-and-eu-ai-act;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `efdd0185105add24a52759ee29be077818128afc6c5bcfd98fb7ce260eff6203` | `compliance-mapper-and-eu-ai-act:regulator` | `compliance-mapper-and-eu-ai-act` | regulator | missing | legal/compliance owner | `external-evidence/compliance-mapper-and-eu-ai-act/regulator.json` | `compliance-mapper-and-eu-ai-act,regulator,external-evidence/compliance-mapper-and-eu-ai-act/regulator.json,regulator evidence for compliance-mapper-and-eu-ai-act;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `b923ba4be3220b26b60462e2e4f7eb1fd045ecf460283a55747d16b47a7efbce` | `compliance-mapper-and-eu-ai-act:standards-body` | `compliance-mapper-and-eu-ai-act` | standards-body | missing | standards/governance owner | `external-evidence/compliance-mapper-and-eu-ai-act/standards-body.json` | `compliance-mapper-and-eu-ai-act,standards-body,external-evidence/compliance-mapper-and-eu-ai-act/standards-body.json,standards-body evidence for compliance-mapper-and-eu-ai-act;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |

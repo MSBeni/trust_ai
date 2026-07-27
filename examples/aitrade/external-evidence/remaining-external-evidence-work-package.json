@@ -276,26 +276,24 @@
       "group_by": "owner_hint",
       "group_key": "customer success/account owner",
       "live_source_uri_count": 0,
-      "missing_task_count": 8,
+      "missing_task_count": 7,
       "owner_hint": "customer success/account owner",
-      "package_id": "985e925d5c4aecaa5b7c422b7ed885a21345ff389af65549004cacbfcc1ad0ee",
+      "package_id": "777e9bae4219ce2e3553f3092a28d4ea8412b02e3bd79968c2ebbc74747c08c4",
       "package_ref": "owner_hint:customer-success-account-owner",
       "phases": [
         "P0-P4",
-        "P1-P2",
         "P1-P4",
         "P2",
         "P2-P4",
         "P3",
         "P4"
       ],
-      "placeholder_source_uri_count": 8,
+      "placeholder_source_uri_count": 7,
       "priorities": [
         "P0",
         "P1"
       ],
       "requirement_ids": [
-        "byoc-self-hosted",
         "insurer-api-and-actuarial-products",
         "product-scope-discipline",
         "roadmap-phase-scoreboard",
@@ -304,7 +302,7 @@
         "trustai-own-compliance",
         "vertical-packs"
       ],
-      "task_count": 8,
+      "task_count": 7,
       "tasks": [
         {
           "acceptance_criteria": [
@@ -382,83 +380,6 @@
           "title": "Product scope discipline and anti-focus decisions",
           "unit_id": "b9bb5a1cee7e34da59216f2b3b2abdd9998507ec8b76789cffba6731a8a24544",
           "unit_ref": "product-scope-discipline:customer"
-        },
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be customer and accepted for byoc-self-hosted.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "customer",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/byoc-self-hosted/customer",
-              "--root",
-              ".",
-              "--task",
-              "byoc-self-hosted:customer",
-              "--description",
-              "customer evidence for byoc-self-hosted",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/byoc-self-hosted/customer.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/byoc-self-hosted/customer.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/byoc-self-hosted/customer --root . --task byoc-self-hosted:customer --description 'customer evidence for byoc-self-hosted' --snapshot-out artifacts/external-evidence-sources/byoc-self-hosted/customer.json --intake-out artifacts/external-evidence-intakes/byoc-self-hosted/customer.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/byoc-self-hosted/customer.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/byoc-self-hosted/customer.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "customer evidence for byoc-self-hosted",
-          "evidence_argument_template": "byoc-self-hosted,customer,external-evidence/byoc-self-hosted/customer.json,customer evidence for byoc-self-hosted;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/customer.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "customer success/account owner",
-          "phase": "P1-P2",
-          "priority": "P0",
-          "requirement_id": "byoc-self-hosted",
-          "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/customer.json",
-          "source_uri": "TODO://authority/byoc-self-hosted/customer",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/byoc-self-hosted/customer.json",
-          "suggested_evidence_sources": [
-            "customer acceptance artifact",
-            "contract/payment/procurement evidence",
-            "deployment or signoff record"
-          ],
-          "task_id": "af50b681baa31018d24096abc1a794738c8a80afce398c4557fbc08f8ace0bd3",
-          "task_ref": "external-evidence:byoc-self-hosted:customer",
-          "title": "BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations",
-          "unit_id": "9297fdb1f50d33b4eba4fed3e17c0e75f331d198336a8614cef909311c42eb6f",
-          "unit_ref": "byoc-self-hosted:customer"
         },
         {
           "acceptance_criteria": [
@@ -2994,20 +2915,20 @@
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "7f0523f0e4b99d22de747aefc15c808273c994c2a01bc860bc646cd3bcdc0eb4",
-      "plan_id": "5d3b353beb6e89604a1cc8503ee714e70bfa0b990dbcc64b643ef5710df02a9d",
+      "plan_hash": "85090d6866ac9422f8221cb2b03e79efc7db3e14b6368f81fcfcd7e48964229e",
+      "plan_id": "ad52f84a386bae5f3c0136b2099c1689d56da9edc817ad11f36ea0c029a2733d",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "gap_report": {
-      "gap_report_hash": "fd9c1a7d45c29b3f7c11e370074e115cc28ff1f721ee0d7c75416900c5cc654d",
-      "gap_report_id": "54a59a20b5daa51616bff0e73f17c8d16c12119a0305f100f7d17f2660472855",
+      "gap_report_hash": "6cbbbd30c673770ed6999e0ec206ce974f5f5d799fac1bb7b43a8a3cfaf22085",
+      "gap_report_id": "765d479d4864386a37f43592ee7a5de8e3984693445197c5140eff7e3cb531c9",
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-gap-report/0.1"
     },
     "manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "ca2356a05c6d1e1ca18b94f85c11885a4013cda9a0873d9b4194d6c5499ef3e6",
-      "manifest_id": "82e414eaf0dc0711b734b4f9e7f0817109c1e158eb58fa86ec5175c4eb3c23b5",
+      "manifest_hash": "28807533bdbcaca370842aacc080eec43324dbc27c60a6cbec02cf7521ca50d4",
+      "manifest_id": "fd8324f98c26392585e0e756e64d6e722d6c346f78e5f3856f9484f8fca875eb",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
@@ -3019,21 +2940,21 @@
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "03ca09360d307bf26df0c615337117813110cbf03852704f762cfbee4f4d577b",
-      "source_map_id": "974c07947ab3cfc0e13bcbabb71318abeafbaf8c13b11afdcaa87c7bca46d418"
+      "source_map_hash": "ac567269a10eda1aa26fd9e41ac184849a636574aec2a8e87ff006ca81da23c9",
+      "source_map_id": "29a24ef3283ac526b95a3835dab125c2a19156434bf20f09deb798e8dc6d1246"
     }
   },
   "summary": {
     "covered_task_count": 0,
     "live_source_uri_count": 0,
-    "missing_task_count": 31,
+    "missing_task_count": 30,
     "package_count": 9,
-    "placeholder_source_uri_count": 31,
+    "placeholder_source_uri_count": 30,
     "source_status": "partial",
-    "task_count": 31,
+    "task_count": 30,
     "task_count_by_authority_kind": {
       "ci-run": 4,
-      "customer": 8,
+      "customer": 7,
       "hosted-service": 2,
       "identity-provider": 2,
       "insurer": 3,
@@ -3044,7 +2965,7 @@
     },
     "task_count_by_owner_hint": {
       "IAM/identity owner": 2,
-      "customer success/account owner": 8,
+      "customer success/account owner": 7,
       "integration/platform owner": 3,
       "legal/compliance owner": 3,
       "release engineering": 4,
@@ -3055,7 +2976,7 @@
     },
     "task_count_by_package": {
       "owner_hint:IAM-identity-owner": 2,
-      "owner_hint:customer-success-account-owner": 8,
+      "owner_hint:customer-success-account-owner": 7,
       "owner_hint:integration-platform-owner": 3,
       "owner_hint:legal-compliance-owner": 3,
       "owner_hint:release-engineering": 4,
@@ -3066,7 +2987,6 @@
     },
     "task_count_by_phase": {
       "P0-P4": 2,
-      "P1-P2": 1,
       "P1-P4": 5,
       "P2": 3,
       "P2-P3": 3,
@@ -3075,11 +2995,10 @@
       "P4": 4
     },
     "task_count_by_priority": {
-      "P0": 20,
+      "P0": 19,
       "P1": 11
     },
     "task_count_by_requirement": {
-      "byoc-self-hosted": 1,
       "compliance-mapper-and-eu-ai-act": 3,
       "insurer-api-and-actuarial-products": 7,
       "product-scope-discipline": 2,
@@ -3092,5 +3011,5 @@
       "vertical-packs": 3
     }
   },
-  "work_package_id": "39189cb1fd84eecfe4f58e506f97430d1907b75abb37c5eedd7dce04b6a85466"
+  "work_package_id": "1c69012aa30110150b11f1518f0283865403f433dac758472eda2d557a01f3f1"
 }

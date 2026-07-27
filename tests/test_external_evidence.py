@@ -1916,6 +1916,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         shadow_holdout_standards_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/shadow-holdout-standards-body-source-snapshot.json")
         byoc_ci_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/byoc-ci-run-source-snapshot.json")
         byoc_standards_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/byoc-standards-body-source-snapshot.json")
+        byoc_customer_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/byoc-customer-source-snapshot.json")
         byoc_provider_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/byoc-provider-api-source-snapshot.json")
         byoc_kms_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/byoc-kms-hsm-source-snapshot.json")
         byoc_object_lock_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/byoc-object-lock-source-snapshot.json")
@@ -1956,6 +1957,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         shadow_holdout_standards_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/shadow-replay-temporal-holdout-standards-body.json")
         byoc_ci_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/byoc-self-hosted-ci-run.json")
         byoc_standards_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/byoc-self-hosted-standards-body.json")
+        byoc_customer_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/byoc-self-hosted-customer.json")
         byoc_provider_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/byoc-self-hosted-provider-api.json")
         byoc_kms_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/byoc-self-hosted-kms-hsm.json")
         byoc_object_lock_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/byoc-self-hosted-cloud-object-lock.json")
@@ -2035,6 +2037,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 shadow_holdout_standards_snapshot,
                 byoc_ci_snapshot,
                 byoc_standards_snapshot,
+                byoc_customer_snapshot,
                 byoc_provider_snapshot,
                 byoc_kms_snapshot,
                 byoc_object_lock_snapshot,
@@ -2090,6 +2093,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 shadow_holdout_standards_intake,
                 byoc_ci_intake,
                 byoc_standards_intake,
+                byoc_customer_intake,
                 byoc_provider_intake,
                 byoc_kms_intake,
                 byoc_object_lock_intake,
@@ -2138,6 +2142,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 shadow_holdout_standards_intake,
                 byoc_ci_intake,
                 byoc_standards_intake,
+                byoc_customer_intake,
                 byoc_provider_intake,
                 byoc_kms_intake,
                 byoc_object_lock_intake,
@@ -2332,6 +2337,11 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual("standards-body", byoc_standards_intake["task"]["authority_kind"])
         self.assertEqual("file-copy", byoc_standards_snapshot["retrieval_method"])
         self.assertEqual("sha256:" + sha256((ROOT / "examples/aitrade/byoc-standards-body-authority-export.json").read_bytes()).hexdigest(), byoc_standards_snapshot["body_sha256"])
+        self.assertEqual("examples/aitrade/external-evidence/byoc-customer-source-snapshot.json", byoc_customer_intake["evidence_item"]["path"])
+        self.assertEqual("byoc-self-hosted", byoc_customer_intake["task"]["requirement_id"])
+        self.assertEqual("customer", byoc_customer_intake["task"]["authority_kind"])
+        self.assertEqual("file-copy", byoc_customer_snapshot["retrieval_method"])
+        self.assertEqual("sha256:" + sha256((ROOT / "examples/aitrade/byoc-customer-authority-export.json").read_bytes()).hexdigest(), byoc_customer_snapshot["body_sha256"])
         self.assertEqual("examples/aitrade/external-evidence/byoc-provider-api-source-snapshot.json", byoc_provider_intake["evidence_item"]["path"])
         self.assertEqual("byoc-self-hosted", byoc_provider_intake["task"]["requirement_id"])
         self.assertEqual("provider-api", byoc_provider_intake["task"]["authority_kind"])
@@ -2352,26 +2362,26 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             export = json.loads(base64.b64decode(snapshot["body_base64"]).decode("utf-8"))
             self.assertEqual("trustai.external-evidence-git-remote-ref-export/0.1", export["schema"])
         self.assertEqual(71, rebuilt["summary"]["required_authority_kind_count"])
-        self.assertEqual(40, rebuilt["summary"]["covered_authority_kind_count"])
-        self.assertEqual(31, rebuilt["summary"]["missing_authority_kind_count"])
+        self.assertEqual(41, rebuilt["summary"]["covered_authority_kind_count"])
+        self.assertEqual(30, rebuilt["summary"]["missing_authority_kind_count"])
         self.assertEqual(retained_manifest["summary"], rebuilt["summary"])
-        self.assertEqual(31, remaining_plan["summary"]["selected_task_count"])
-        self.assertEqual(31, remaining_plan["summary"]["selected_missing_task_count"])
+        self.assertEqual(30, remaining_plan["summary"]["selected_task_count"])
+        self.assertEqual(30, remaining_plan["summary"]["selected_missing_task_count"])
         self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA, source_map["schema"])
         self.assertEqual(content_hash(without_keys(source_map, "source_map_id")), source_map["source_map_id"])
-        self.assertEqual(31, source_map["summary"]["entry_count"])
-        self.assertEqual(31, source_map["summary"]["placeholder_source_uri_count"])
+        self.assertEqual(30, source_map["summary"]["entry_count"])
+        self.assertEqual(30, source_map["summary"]["placeholder_source_uri_count"])
         self.assertEqual(0, source_map["summary"]["live_source_uri_count"])
         self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA, collected_source_map["schema"])
         self.assertEqual(content_hash(without_keys(collected_source_map, "source_map_id")), collected_source_map["source_map_id"])
-        self.assertEqual(40, collected_source_map["summary"]["entry_count"])
+        self.assertEqual(41, collected_source_map["summary"]["entry_count"])
         self.assertEqual(0, collected_source_map["summary"]["placeholder_source_uri_count"])
-        self.assertEqual(40, collected_source_map["summary"]["live_source_uri_count"])
+        self.assertEqual(41, collected_source_map["summary"]["live_source_uri_count"])
         self.assertEqual(EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA, collection_run["schema"])
         self.assertEqual(content_hash(without_keys(collection_run, "run_id")), collection_run["run_id"])
         self.assertEqual(content_hash(collected_source_map), collection_run["source_map"]["source_map_hash"])
-        self.assertEqual(40, collection_run["summary"]["collected_count"])
-        self.assertEqual(40, collection_run_result.collected_count)
+        self.assertEqual(41, collection_run["summary"]["collected_count"])
+        self.assertEqual(41, collection_run_result.collected_count)
         self.assertEqual(
             ["ci-run", "provider-api", "hosted-service"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["oss-verifier-and-public-spec"],
@@ -2413,7 +2423,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["shadow-replay-temporal-holdout"],
         )
         self.assertEqual(
-            ["ci-run", "kms-hsm", "cloud-object-lock", "provider-api", "standards-body"],
+            ["ci-run", "kms-hsm", "cloud-object-lock", "provider-api", "standards-body", "customer"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["byoc-self-hosted"],
         )
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -2455,8 +2465,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertEqual(collection_run["run_id"], collection_payload["run_id"])
             self.assertEqual(content_hash(collection_run), collection_payload["run_hash"])
             self.assertEqual(content_hash(collected_source_map), collection_payload["source_map_hash"])
-            self.assertEqual(40, collection_payload["collected_count"])
-            self.assertEqual(40, collection_payload["task_count"])
+            self.assertEqual(41, collection_payload["collected_count"])
+            self.assertEqual(41, collection_payload["task_count"])
             self.assertTrue(collection_payload["require_live_source_uris"])
             self.assertTrue(collection_payload["require_source_snapshot_artifacts"])
             self.assertTrue(collection_payload["require_fresh_source_snapshot_artifacts"])
@@ -2658,22 +2668,22 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             )
             self.assertFalse(strict_report_result.ok)
             self.assertTrue(any("live source URIs" in error for error in strict_report_result.errors), strict_report_result.errors)
-            self.assertEqual(40, report["summary"]["covered_authority_kind_count"])
-            self.assertEqual(31, report["summary"]["missing_authority_kind_count"])
-            self.assertEqual(31, report["summary"]["remaining_task_count"])
-            self.assertEqual(31, report["summary"]["source_map_entry_count"])
-            self.assertEqual(31, report["summary"]["placeholder_source_uri_count"])
+            self.assertEqual(41, report["summary"]["covered_authority_kind_count"])
+            self.assertEqual(30, report["summary"]["missing_authority_kind_count"])
+            self.assertEqual(30, report["summary"]["remaining_task_count"])
+            self.assertEqual(30, report["summary"]["source_map_entry_count"])
+            self.assertEqual(30, report["summary"]["placeholder_source_uri_count"])
             self.assertEqual(0, report["summary"]["live_source_uri_count"])
             first_gap = report["gaps"][0]
-            self.assertEqual("byoc-self-hosted:customer", first_gap["unit_ref"])
-            self.assertEqual("customer evidence for byoc-self-hosted", first_gap["description"])
+            self.assertEqual("compliance-mapper-and-eu-ai-act:provider-api", first_gap["unit_ref"])
+            self.assertEqual("provider-api evidence for compliance-mapper-and-eu-ai-act", first_gap["description"])
             self.assertNotIn("source_file", first_gap)
-            self.assertEqual("artifacts/external-evidence-sources/byoc-self-hosted/customer.json", first_gap["snapshot_out"])
-            self.assertEqual("artifacts/external-evidence-intakes/byoc-self-hosted/customer.json", first_gap["intake_out"])
+            self.assertEqual("artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/provider-api.json", first_gap["snapshot_out"])
+            self.assertEqual("artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/provider-api.json", first_gap["intake_out"])
             markdown = markdown_path.read_text(encoding="utf-8")
             self.assertIn("# External Evidence Gap Report", markdown)
-            self.assertIn("Placeholder source URIs: 31", markdown)
-            self.assertIn("- Description: customer evidence for byoc-self-hosted", markdown)
+            self.assertIn("Placeholder source URIs: 30", markdown)
+            self.assertIn("- Description: provider-api evidence for compliance-mapper-and-eu-ai-act", markdown)
 
             tampered = copy.deepcopy(report)
             tampered["summary"]["remaining_task_count"] = 51

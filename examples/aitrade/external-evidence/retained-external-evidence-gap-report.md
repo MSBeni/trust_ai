@@ -1,19 +1,19 @@
 # External Evidence Gap Report
 
-- Gap report ID: `54a59a20b5daa51616bff0e73f17c8d16c12119a0305f100f7d17f2660472855`
+- Gap report ID: `765d479d4864386a37f43592ee7a5de8e3984693445197c5140eff7e3cb531c9`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 40/71
-- Missing authority kinds: 31
-- Remaining collection tasks: 31
-- Source-map entries: 31
-- Placeholder source URIs: 31
+- Covered authority kinds: 41/71
+- Missing authority kinds: 30
+- Remaining collection tasks: 30
+- Source-map entries: 30
+- Placeholder source URIs: 30
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
 
 - `ci-run`: 4
-- `customer`: 8
+- `customer`: 7
 - `hosted-service`: 2
 - `identity-provider`: 2
 - `insurer`: 3
@@ -24,7 +24,6 @@
 
 ## Gaps By Requirement
 
-- `byoc-self-hosted`: 1
 - `compliance-mapper-and-eu-ai-act`: 3
 - `insurer-api-and-actuarial-products`: 7
 - `product-scope-discipline`: 2
@@ -37,17 +36,6 @@
 - `vertical-packs`: 3
 
 ## Collection Worklist
-
-### byoc-self-hosted:customer
-
-- Title: BYOC and self-hosted deployment scaffold with WORM/Object Lock attestations
-- Authority kind: `customer`
-- Owner hint: customer success/account owner
-- Description: customer evidence for byoc-self-hosted
-- Source URI: `TODO://authority/byoc-self-hosted/customer`
-- Snapshot output: `artifacts/external-evidence-sources/byoc-self-hosted/customer.json`
-- Intake output: `artifacts/external-evidence-intakes/byoc-self-hosted/customer.json`
-- Suggested evidence sources: customer acceptance artifact; contract/payment/procurement evidence; deployment or signoff record
 
 ### compliance-mapper-and-eu-ai-act:provider-api
 

@@ -1,19 +1,18 @@
 # External Evidence Owner Fulfillment Closure
 
-- Closure ID: `d2ebaa90b4cc39d3fb600d4b0c65475ba559af5e05093962b9f10b5130d536f8`
+- Closure ID: `137adb3aff9750cf13e4188c0e587b7bb0ad2fc4a7fc791fbfb3b63efa0c5870`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Closed tasks: 0/31
-- Missing intakes: 31
+- Closed tasks: 0/30
+- Missing intakes: 30
 - Invalid intake tasks: 0
-- Missing manifest coverage: 31
-- Placeholder source URIs: 31
+- Missing manifest coverage: 30
+- Placeholder source URIs: 30
 
 ## Task Closure
 
 | Task | Owner | Status | Intake | Manifest Evidence | Blocking Reasons |
 |---|---|---|---|---|---|
-| `byoc-self-hosted:customer` | customer success/account owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `compliance-mapper-and-eu-ai-act:provider-api` | integration/platform owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `compliance-mapper-and-eu-ai-act:regulator` | legal/compliance owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `compliance-mapper-and-eu-ai-act:standards-body` | standards/governance owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
@@ -47,9 +46,9 @@
 
 ## Blockers
 
-- 31 reviewed tasks still use placeholder source_uri values
-- 31 reviewed tasks do not have intake receipts
-- 31 reviewed tasks are not covered by the rebuilt manifest
+- 30 reviewed tasks still use placeholder source_uri values
+- 30 reviewed tasks do not have intake receipts
+- 30 reviewed tasks are not covered by the rebuilt manifest
 
 ## Next Actions
 

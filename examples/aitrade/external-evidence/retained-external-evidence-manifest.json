@@ -653,6 +653,27 @@
       "accepted_authority_kinds": [
         "ci-run",
         "kms-hsm",
+        "cloud-object-lock",
+        "provider-api",
+        "standards-body",
+        "customer"
+      ],
+      "authority_kind": "customer",
+      "description": "Retained customer acceptance export for aitrade BYOC/self-hosted deployment evidence",
+      "evidence_id": "7630f5961c9ea01fd1a201d72d4cc1be720771b21a309fb61a9247041b214bd9",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "Aitrade Model Risk Committee",
+      "path": "examples/aitrade/external-evidence/byoc-customer-source-snapshot.json",
+      "requirement_id": "byoc-self-hosted",
+      "sha256": "sha256:72caca2903a3d1c1abceb42359abe23485224f84ff19ee408af2928a3d26b215",
+      "source_uri": "https://customers.example/aitrade/model-risk/byoc-self-hosted/acceptance/2026-07-12",
+      "subject": "aitrade BYOC/self-hosted TrustAI deployment acceptance"
+    },
+    {
+      "accepted_authority_kinds": [
+        "ci-run",
+        "kms-hsm",
         "provider-api",
         "hosted-service",
         "identity-provider"
@@ -770,7 +791,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "82e414eaf0dc0711b734b4f9e7f0817109c1e158eb58fa86ec5175c4eb3c23b5",
+  "manifest_id": "fd8324f98c26392585e0e756e64d6e722d6c346f78e5f3856f9484f8fca875eb",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -1217,7 +1238,7 @@
     },
     {
       "authority_kind": "customer",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
       ],
@@ -1997,7 +2018,7 @@
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {
-    "covered_authority_kind_count": 40,
+    "covered_authority_kind_count": 41,
     "covered_authority_kinds_by_requirement": {
       "agent-inventory-and-identity": [
         "provider-api",
@@ -2015,7 +2036,8 @@
         "kms-hsm",
         "cloud-object-lock",
         "provider-api",
-        "standards-body"
+        "standards-body",
+        "customer"
       ],
       "cicd-provider-approvals": [
         "ci-run",
@@ -2076,15 +2098,12 @@
       "self-serve-onboarding",
       "shadow-replay-temporal-holdout"
     ],
-    "evidence_count": 40,
-    "expires_at_count": 40,
-    "freshness_window_count": 40,
-    "issued_at_count": 40,
-    "missing_authority_kind_count": 31,
+    "evidence_count": 41,
+    "expires_at_count": 41,
+    "freshness_window_count": 41,
+    "issued_at_count": 41,
+    "missing_authority_kind_count": 30,
     "missing_authority_kinds_by_requirement": {
-      "byoc-self-hosted": [
-        "customer"
-      ],
       "compliance-mapper-and-eu-ai-act": [
         "provider-api",
         "regulator",

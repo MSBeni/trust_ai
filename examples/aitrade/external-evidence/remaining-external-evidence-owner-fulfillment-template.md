@@ -1,14 +1,14 @@
 # External Evidence Owner Fulfillment Template
 
-- Template ID: `321f9e906e242a92da86b2f3312108b21def6054657fd6b0b942168cdc849d77`
+- Template ID: `e0a9a45b61400fab58cac3e92c41e23c08e255a8adb9c7fe97c31191fcfc6b90`
 - Generated at: `2026-07-12T00:01:00Z`
-- Fulfillments: 31
+- Fulfillments: 30
 - Owners: 9
-- Blocked tasks: 31
+- Blocked tasks: 30
 - Open tasks: 0
 - Closed tasks: 0
-- Placeholder source URIs: 31
-- Missing intakes: 31
+- Placeholder source URIs: 30
+- Missing intakes: 30
 
 ## Fulfillments
 
@@ -16,7 +16,6 @@
 |---|---|---|
 | `insurer-api-and-actuarial-products:identity-provider` | TODO://authority/insurer-api-and-actuarial-products/identity-provider | identity-provider evidence for insurer-api-and-actuarial-products |
 | `trust-network-procurement-and-marketplace:identity-provider` | TODO://authority/trust-network-procurement-and-marketplace/identity-provider | identity-provider evidence for trust-network-procurement-and-marketplace |
-| `byoc-self-hosted:customer` | TODO://authority/byoc-self-hosted/customer | customer evidence for byoc-self-hosted |
 | `insurer-api-and-actuarial-products:customer` | TODO://authority/insurer-api-and-actuarial-products/customer | customer evidence for insurer-api-and-actuarial-products |
 | `product-scope-discipline:customer` | TODO://authority/product-scope-discipline/customer | customer evidence for product-scope-discipline |
 | `roadmap-phase-scoreboard:customer` | TODO://authority/roadmap-phase-scoreboard/customer | customer evidence for roadmap-phase-scoreboard |
@@ -52,7 +51,6 @@
 |---|---|---|---|---|---|
 | `insurer-api-and-actuarial-products:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/identity-provider.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/identity-provider.json |
 | `trust-network-procurement-and-marketplace:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/identity-provider.json | artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/identity-provider.json |
-| `byoc-self-hosted:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/byoc-self-hosted/customer.json | artifacts/external-evidence-intakes/byoc-self-hosted/customer.json |
 | `insurer-api-and-actuarial-products:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/customer.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/customer.json |
 | `product-scope-discipline:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/product-scope-discipline/customer.json | artifacts/external-evidence-intakes/product-scope-discipline/customer.json |
 | `roadmap-phase-scoreboard:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/roadmap-phase-scoreboard/customer.json | artifacts/external-evidence-intakes/roadmap-phase-scoreboard/customer.json |

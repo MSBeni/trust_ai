@@ -1,0 +1,68 @@
+{
+  "evidence_argument": "byoc-self-hosted,customer,examples/aitrade/external-evidence/byoc-customer-source-snapshot.json,Retained customer acceptance export for aitrade BYOC/self-hosted deployment evidence;issuer=Aitrade Model Risk Committee;subject=aitrade BYOC/self-hosted TrustAI deployment acceptance;source_uri=https://customers.example/aitrade/model-risk/byoc-self-hosted/acceptance/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
+  "evidence_item": {
+    "accepted_authority_kinds": [
+      "ci-run",
+      "kms-hsm",
+      "cloud-object-lock",
+      "provider-api",
+      "standards-body",
+      "customer"
+    ],
+    "authority_kind": "customer",
+    "description": "Retained customer acceptance export for aitrade BYOC/self-hosted deployment evidence",
+    "evidence_id": "7630f5961c9ea01fd1a201d72d4cc1be720771b21a309fb61a9247041b214bd9",
+    "expires_at": "2026-12-31T00:00:00Z",
+    "issued_at": "2026-07-12T00:00:00Z",
+    "issuer": "Aitrade Model Risk Committee",
+    "path": "examples/aitrade/external-evidence/byoc-customer-source-snapshot.json",
+    "requirement_id": "byoc-self-hosted",
+    "sha256": "sha256:72caca2903a3d1c1abceb42359abe23485224f84ff19ee408af2928a3d26b215",
+    "source_uri": "https://customers.example/aitrade/model-risk/byoc-self-hosted/acceptance/2026-07-12",
+    "subject": "aitrade BYOC/self-hosted TrustAI deployment acceptance"
+  },
+  "generated_at": "2026-07-12T00:01:00Z",
+  "intake_id": "ca978ab9275171bf94c277f1da82bcd84a64c58eef6f3b9a5a66190e852363d2",
+  "limitations": [
+    "This intake receipt hashes and maps one collected artifact to a collection-plan task; it does not itself satisfy roadmap completion.",
+    "Coverage is updated only after rebuilding and verifying an external evidence manifest with the emitted evidence argument.",
+    "Issuer authority and freshness remain bounded by the collected artifact and manifest verification options."
+  ],
+  "schema": "trustai.external-evidence-intake/0.1",
+  "source_manifest": {
+    "covered_authority_kind_count": 1,
+    "manifest_hash": "614aed31f3e3791640f3192624fab080815440210b65341fb4a2121ed84db717",
+    "manifest_id": "9364d02d07c6d4002372ad45c4017ee3b7a6c6ffd8dc91c46fb9fac9c84f7586",
+    "manifest_ref": "production-external-evidence",
+    "missing_authority_kind_count": 70,
+    "required_authority_kind_count": 71,
+    "status": "partial"
+  },
+  "source_plan": {
+    "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
+    "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
+    "source_manifest": {
+      "generated_at": "2026-07-12T00:01:00Z",
+      "manifest_hash": "614aed31f3e3791640f3192624fab080815440210b65341fb4a2121ed84db717",
+      "manifest_id": "9364d02d07c6d4002372ad45c4017ee3b7a6c6ffd8dc91c46fb9fac9c84f7586",
+      "manifest_ref": "production-external-evidence",
+      "status": "partial"
+    },
+    "status_filter": "all"
+  },
+  "source_roadmap_audit": {
+    "audit_hash": "86cfd25ee3bed75b75604091d3fca2daec16da708498209193e84226bd29816e",
+    "audit_id": "08f9ff68d1301a7891428145af040a68839468931a42dea27e80a0e0ad3bf7f2",
+    "completion_position": "local-reference-complete-with-external-authority-deferred"
+  },
+  "task": {
+    "authority_kind": "customer",
+    "coverage_status": "missing",
+    "requirement_id": "byoc-self-hosted",
+    "suggested_artifact_path": "external-evidence/byoc-self-hosted/customer.json",
+    "task_id": "af50b681baa31018d24096abc1a794738c8a80afce398c4557fbc08f8ace0bd3",
+    "task_ref": "external-evidence:byoc-self-hosted:customer",
+    "unit_id": "9297fdb1f50d33b4eba4fed3e17c0e75f331d198336a8614cef909311c42eb6f",
+    "unit_ref": "byoc-self-hosted:customer"
+  }
+}
