@@ -1,14 +1,14 @@
 # External Evidence Owner Fulfillment Template
 
-- Template ID: `1188952637c8bc43f4dfdd40f9f681c362c25eb967f9685d56df73ec50395d99`
+- Template ID: `4b230ee97c91873b68e64d92c37aae62811c42c71b1ffb23f6ce32bca5574a10`
 - Generated at: `2026-07-12T00:01:00Z`
-- Fulfillments: 42
+- Fulfillments: 39
 - Owners: 9
-- Blocked tasks: 42
+- Blocked tasks: 39
 - Open tasks: 0
 - Closed tasks: 0
-- Placeholder source URIs: 42
-- Missing intakes: 42
+- Placeholder source URIs: 39
+- Missing intakes: 39
 
 ## Fulfillments
 
@@ -18,7 +18,6 @@
 | `insurer-api-and-actuarial-products:identity-provider` | TODO://authority/insurer-api-and-actuarial-products/identity-provider | identity-provider evidence for insurer-api-and-actuarial-products |
 | `trust-network-procurement-and-marketplace:identity-provider` | TODO://authority/trust-network-procurement-and-marketplace/identity-provider | identity-provider evidence for trust-network-procurement-and-marketplace |
 | `byoc-self-hosted:customer` | TODO://authority/byoc-self-hosted/customer | customer evidence for byoc-self-hosted |
-| `design-partner-pilot-exit-criteria:customer` | TODO://authority/design-partner-pilot-exit-criteria/customer | customer evidence for design-partner-pilot-exit-criteria |
 | `insurer-api-and-actuarial-products:customer` | TODO://authority/insurer-api-and-actuarial-products/customer | customer evidence for insurer-api-and-actuarial-products |
 | `product-scope-discipline:customer` | TODO://authority/product-scope-discipline/customer | customer evidence for product-scope-discipline |
 | `roadmap-phase-scoreboard:customer` | TODO://authority/roadmap-phase-scoreboard/customer | customer evidence for roadmap-phase-scoreboard |
@@ -32,7 +31,6 @@
 | `trust-network-procurement-and-marketplace:provider-api` | TODO://authority/trust-network-procurement-and-marketplace/provider-api | provider-api evidence for trust-network-procurement-and-marketplace |
 | `auditor-and-review-portal:regulator` | TODO://authority/auditor-and-review-portal/regulator | regulator evidence for auditor-and-review-portal |
 | `compliance-mapper-and-eu-ai-act:regulator` | TODO://authority/compliance-mapper-and-eu-ai-act/regulator | regulator evidence for compliance-mapper-and-eu-ai-act |
-| `design-partner-pilot-exit-criteria:regulator` | TODO://authority/design-partner-pilot-exit-criteria/regulator | regulator evidence for design-partner-pilot-exit-criteria |
 | `roadmap-phase-scoreboard:regulator` | TODO://authority/roadmap-phase-scoreboard/regulator | regulator evidence for roadmap-phase-scoreboard |
 | `vertical-packs:regulator` | TODO://authority/vertical-packs/regulator | regulator evidence for vertical-packs |
 | `byoc-self-hosted:ci-run` | TODO://authority/byoc-self-hosted/ci-run | ci-run evidence for byoc-self-hosted |
@@ -41,7 +39,6 @@
 | `product-scope-discipline:ci-run` | TODO://authority/product-scope-discipline/ci-run | ci-run evidence for product-scope-discipline |
 | `roadmap-phase-scoreboard:ci-run` | TODO://authority/roadmap-phase-scoreboard/ci-run | ci-run evidence for roadmap-phase-scoreboard |
 | `runtime-policy-and-attestation:ci-run` | TODO://authority/runtime-policy-and-attestation/ci-run | ci-run evidence for runtime-policy-and-attestation |
-| `design-partner-pilot-exit-criteria:insurer` | TODO://authority/design-partner-pilot-exit-criteria/insurer | insurer evidence for design-partner-pilot-exit-criteria |
 | `insurer-api-and-actuarial-products:insurer` | TODO://authority/insurer-api-and-actuarial-products/insurer | insurer evidence for insurer-api-and-actuarial-products |
 | `roadmap-phase-scoreboard:insurer` | TODO://authority/roadmap-phase-scoreboard/insurer | insurer evidence for roadmap-phase-scoreboard |
 | `vertical-packs:insurer` | TODO://authority/vertical-packs/insurer | insurer evidence for vertical-packs |
@@ -65,7 +62,6 @@
 | `insurer-api-and-actuarial-products:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/identity-provider.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/identity-provider.json |
 | `trust-network-procurement-and-marketplace:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/identity-provider.json | artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/identity-provider.json |
 | `byoc-self-hosted:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/byoc-self-hosted/customer.json | artifacts/external-evidence-intakes/byoc-self-hosted/customer.json |
-| `design-partner-pilot-exit-criteria:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/customer.json | artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/customer.json |
 | `insurer-api-and-actuarial-products:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/customer.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/customer.json |
 | `product-scope-discipline:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/product-scope-discipline/customer.json | artifacts/external-evidence-intakes/product-scope-discipline/customer.json |
 | `roadmap-phase-scoreboard:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/roadmap-phase-scoreboard/customer.json | artifacts/external-evidence-intakes/roadmap-phase-scoreboard/customer.json |
@@ -79,7 +75,6 @@
 | `trust-network-procurement-and-marketplace:provider-api` | integration/platform owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/provider-api.json | artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/provider-api.json |
 | `auditor-and-review-portal:regulator` | legal/compliance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/auditor-and-review-portal/regulator.json | artifacts/external-evidence-intakes/auditor-and-review-portal/regulator.json |
 | `compliance-mapper-and-eu-ai-act:regulator` | legal/compliance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/regulator.json | artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/regulator.json |
-| `design-partner-pilot-exit-criteria:regulator` | legal/compliance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/regulator.json | artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/regulator.json |
 | `roadmap-phase-scoreboard:regulator` | legal/compliance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/roadmap-phase-scoreboard/regulator.json | artifacts/external-evidence-intakes/roadmap-phase-scoreboard/regulator.json |
 | `vertical-packs:regulator` | legal/compliance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/vertical-packs/regulator.json | artifacts/external-evidence-intakes/vertical-packs/regulator.json |
 | `byoc-self-hosted:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/byoc-self-hosted/ci-run.json | artifacts/external-evidence-intakes/byoc-self-hosted/ci-run.json |
@@ -88,7 +83,6 @@
 | `product-scope-discipline:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/product-scope-discipline/ci-run.json | artifacts/external-evidence-intakes/product-scope-discipline/ci-run.json |
 | `roadmap-phase-scoreboard:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/roadmap-phase-scoreboard/ci-run.json | artifacts/external-evidence-intakes/roadmap-phase-scoreboard/ci-run.json |
 | `runtime-policy-and-attestation:ci-run` | release engineering | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/runtime-policy-and-attestation/ci-run.json | artifacts/external-evidence-intakes/runtime-policy-and-attestation/ci-run.json |
-| `design-partner-pilot-exit-criteria:insurer` | risk/insurance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/insurer.json | artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/insurer.json |
 | `insurer-api-and-actuarial-products:insurer` | risk/insurance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/insurer.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/insurer.json |
 | `roadmap-phase-scoreboard:insurer` | risk/insurance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/roadmap-phase-scoreboard/insurer.json | artifacts/external-evidence-intakes/roadmap-phase-scoreboard/insurer.json |
 | `vertical-packs:insurer` | risk/insurance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/vertical-packs/insurer.json | artifacts/external-evidence-intakes/vertical-packs/insurer.json |

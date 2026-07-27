@@ -1,0 +1,64 @@
+{
+  "environment": "aitrade-prod",
+  "evidence": {
+    "design_partner_authority_source": {
+      "path": "src/trustai/design_partner_authority.py",
+      "sha256": "sha256:4022a8776fd73c794804f2bec0e5c65cd8980e21ef222554a6c01cb6db2d522f"
+    },
+    "design_partner_authority_spec": {
+      "path": "docs/specs/design-partner-authority-v0.1.md",
+      "sha256": "sha256:0d5ad23055c0a0c1d942f5691ad0577b40d9f1fa4dd0f5be154d924a1d8cac14"
+    },
+    "design_partner_authority_tests": {
+      "path": "tests/test_design_partner_authority.py",
+      "sha256": "sha256:58a2e0f6a0a54364c153fb77ab18f00f6c6e333e268455c6559ef497560da973"
+    },
+    "design_partner_pilot_source": {
+      "path": "src/trustai/design_partner.py",
+      "sha256": "sha256:e4af4d3af3a3b2c79c9c272651cde61659b80c24136ec40cfb50adaefc50b90c"
+    },
+    "design_partner_pilot_spec": {
+      "path": "docs/specs/design-partner-pilot-v0.1.md",
+      "sha256": "sha256:c9918cd65a84d6075820cd1dcc6288c836d10e7dbfe481ed873a00dc239dc81d"
+    },
+    "design_partner_pilot_tests": {
+      "path": "tests/test_design_partner.py",
+      "sha256": "sha256:5dc098d46accd8181534b7f498e74ea23885cc8fcc79fb6e916cab39348a6033"
+    },
+    "regulator_acceptance_source": {
+      "path": "src/trustai/regulator_acceptance.py",
+      "sha256": "sha256:6aa521d0436f6b1fda596664c70455ba55a61fedb8620578d15a05b33e1ba312"
+    },
+    "regulator_acceptance_spec": {
+      "path": "docs/specs/regulator-acceptance-v0.1.md",
+      "sha256": "sha256:99ecf4e60cf072f421795c715ada7a059cf2fefa02f7e8939ffadfbb7fb8dfb0"
+    },
+    "regulator_acceptance_tests": {
+      "path": "tests/test_regulator_acceptance.py",
+      "sha256": "sha256:9e3be4dc0315b89c1ccb26fced14f915584f6682ccc43c49209159603c4439a8"
+    },
+    "regulator_view_source": {
+      "path": "src/trustai/regulator.py",
+      "sha256": "sha256:359913b137c37c0f099dca9a12f4c0d4b167ffb399465fc586d100e2930f513f"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "export_ref": "regulator-export:aitrade/design-partner/proof-pack-scrutiny/2026-07-11",
+  "issued_at": "2026-07-11T23:10:00Z",
+  "issuer": "Example Regulator",
+  "schema": "trustai.design-partner-regulator-authority-export/0.1",
+  "scrutiny": {
+    "authority_ref": "regulator:example-supervisor/design-partner-proof-pack",
+    "dossier_ref": "dossier:design-partner-authority/phase1-production",
+    "outcome": "survived",
+    "review_ref": "review:regulator-a/proof-pack-survived"
+  },
+  "subject": "TrustAI design-partner proof-pack scrutiny survival",
+  "verified_controls": [
+    "design-partner pilot source binding",
+    "external-evidence mode exit metrics",
+    "regulator scrutiny survival evidence reference",
+    "production authority dossier freshness",
+    "offline verifier acceptance"
+  ]
+}

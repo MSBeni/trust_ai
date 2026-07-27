@@ -5,7 +5,7 @@
     "A closed task still requires rebuilt manifest verification and readiness verification before external authority coverage is accepted.",
     "Placeholder source URIs keep tasks blocked even when a local intake artifact is present."
   ],
-  "owner_packet_status_id": "16962aa76afae85636d08f66c226604d0825164dba80567bc9e86697a059fc8f",
+  "owner_packet_status_id": "9c656217e4330b6e2339d0a1c4f98d3646fd5299b3aa7c12f344357b72e17668",
   "packets": [
     {
       "blocked_task_count": 3,
@@ -18,14 +18,14 @@
       "task_count": 3
     },
     {
-      "blocked_task_count": 9,
+      "blocked_task_count": 8,
       "closed_task_count": 0,
       "open_task_count": 0,
       "owner_hint": "customer success/account owner",
-      "packet_id": "b6c51823b2158f7a36a336b736f16b90bbf598454e0141f5296495a1834006bf",
+      "packet_id": "69f40c32125c09c10fbd28e319547f2551b3fb9a305a20be3d9fffee642dd753",
       "packet_ref": "owner-packet:owner_hint:customer-success-account-owner",
       "packet_status": "blocked",
-      "task_count": 9
+      "task_count": 8
     },
     {
       "blocked_task_count": 4,
@@ -38,14 +38,14 @@
       "task_count": 4
     },
     {
-      "blocked_task_count": 5,
+      "blocked_task_count": 4,
       "closed_task_count": 0,
       "open_task_count": 0,
       "owner_hint": "legal/compliance owner",
-      "packet_id": "de70e9621ef7a3afb73cdb7e977758214ec6e8a82d3cf5d9b40f1c39099481ee",
+      "packet_id": "e22d57fe22460d3903650e15cc62d9711e90398a068013b4bd64c583eb7688b2",
       "packet_ref": "owner-packet:owner_hint:legal-compliance-owner",
       "packet_status": "blocked",
-      "task_count": 5
+      "task_count": 4
     },
     {
       "blocked_task_count": 6,
@@ -58,14 +58,14 @@
       "task_count": 6
     },
     {
-      "blocked_task_count": 4,
+      "blocked_task_count": 3,
       "closed_task_count": 0,
       "open_task_count": 0,
       "owner_hint": "risk/insurance owner",
-      "packet_id": "df229181c03b4dcb7032ca43f6b9fed7703fac1c258d0e29b1b6fdbff00a520f",
+      "packet_id": "694680aa2bbf1b45c8bef8f737fced0b3f9a67164d45795e9998eb5e4823e6fa",
       "packet_ref": "owner-packet:owner_hint:risk-insurance-owner",
       "packet_status": "blocked",
-      "task_count": 4
+      "task_count": 3
     },
     {
       "blocked_task_count": 3,
@@ -103,41 +103,41 @@
     "intake_hashes": [],
     "owner_packet_bundle": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_bundle_hash": "bee6c6082bdda5dcb0a8f5447634a643d20b76cfc6c2da167bdf2f51dc987459",
-      "owner_packet_bundle_id": "a7cba02902091b620f434c00f9209fd0eebfd5da72dd7e40cf221a6721172eac",
+      "owner_packet_bundle_hash": "e6972707cbaf5b850ae78191d6622c316e43ce59c44944b505c167f39895c8f2",
+      "owner_packet_bundle_id": "c8f84ef56de71e35f29322ece4fafdd8feed4f2e8954a5e83108062b083fe7a0",
       "schema": "trustai.external-evidence-owner-packet-bundle/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "9048b7ab0645dff1099d9bea8237ded6c77479420107e70c02cc5238be737672",
-      "source_map_id": "10f8c388573262d4f29d250ab195a4afbe7522e8f82a6d37e851ac38186ecd5d"
+      "source_map_hash": "4f55d3283d0a449c4cca7787473727dde74d7281c3d740ca25482daaf386f00a",
+      "source_map_id": "1436a463f227095f3fd96a1c04a32b305e9bf383394df0f5dcd5863dab9e65d8"
     },
     "work_package": {
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-work-package/0.1",
-      "work_package_hash": "ca166a2a03466430168b50a171ed619d5a5974e07920ec53500f2d7a5b82cea7",
-      "work_package_id": "d6204a9e3573b614a0c45accc7ca6c25466e9ddf352b50645dbed073fb36e171"
+      "work_package_hash": "4d31a39b72ba0199f4b36beb83d76879cf03b3c0ea39890b8a7ebafe6b32b6d6",
+      "work_package_id": "7c62a00e43966c25b883696410abd4a8865616f2ecb8e574be48314607680612"
     }
   },
   "summary": {
     "blocked_packet_count": 9,
-    "blocked_task_count": 42,
+    "blocked_task_count": 39,
     "closed_packet_count": 0,
     "closed_task_count": 0,
     "invalid_intake_count": 0,
     "live_source_uri_count": 0,
-    "missing_intake_count": 42,
+    "missing_intake_count": 39,
     "open_packet_count": 0,
     "open_task_count": 0,
     "packet_count": 9,
     "packet_status_counts": {
       "blocked": 9
     },
-    "placeholder_source_uri_count": 42,
-    "task_count": 42,
+    "placeholder_source_uri_count": 39,
+    "task_count": 39,
     "task_status_counts": {
-      "blocked": 42
+      "blocked": 39
     }
   },
   "tasks": [
@@ -208,23 +208,6 @@
       "task_ref": "external-evidence:product-scope-discipline:customer",
       "task_status": "blocked",
       "unit_ref": "product-scope-discipline:customer"
-    },
-    {
-      "authority_kind": "customer",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake": null,
-      "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/customer.json",
-      "owner_hint": "customer success/account owner",
-      "requirement_id": "design-partner-pilot-exit-criteria",
-      "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/customer.json",
-      "source_uri": "TODO://authority/design-partner-pilot-exit-criteria/customer",
-      "source_uri_status": "placeholder",
-      "task_ref": "external-evidence:design-partner-pilot-exit-criteria:customer",
-      "task_status": "blocked",
-      "unit_ref": "design-partner-pilot-exit-criteria:customer"
     },
     {
       "authority_kind": "customer",
@@ -420,23 +403,6 @@
         "missing-intake"
       ],
       "intake": null,
-      "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/regulator.json",
-      "owner_hint": "legal/compliance owner",
-      "requirement_id": "design-partner-pilot-exit-criteria",
-      "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/regulator.json",
-      "source_uri": "TODO://authority/design-partner-pilot-exit-criteria/regulator",
-      "source_uri_status": "placeholder",
-      "task_ref": "external-evidence:design-partner-pilot-exit-criteria:regulator",
-      "task_status": "blocked",
-      "unit_ref": "design-partner-pilot-exit-criteria:regulator"
-    },
-    {
-      "authority_kind": "regulator",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake": null,
       "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/regulator.json",
       "owner_hint": "legal/compliance owner",
       "requirement_id": "auditor-and-review-portal",
@@ -599,23 +565,6 @@
       "task_ref": "external-evidence:insurer-api-and-actuarial-products:ci-run",
       "task_status": "blocked",
       "unit_ref": "insurer-api-and-actuarial-products:ci-run"
-    },
-    {
-      "authority_kind": "insurer",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake": null,
-      "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/insurer.json",
-      "owner_hint": "risk/insurance owner",
-      "requirement_id": "design-partner-pilot-exit-criteria",
-      "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/insurer.json",
-      "source_uri": "TODO://authority/design-partner-pilot-exit-criteria/insurer",
-      "source_uri_status": "placeholder",
-      "task_ref": "external-evidence:design-partner-pilot-exit-criteria:insurer",
-      "task_status": "blocked",
-      "unit_ref": "design-partner-pilot-exit-criteria:insurer"
     },
     {
       "authority_kind": "insurer",

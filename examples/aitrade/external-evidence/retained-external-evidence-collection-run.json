@@ -199,6 +199,39 @@
       "warnings": []
     },
     {
+      "evidence_argument": "design-partner-pilot-exit-criteria,regulator,examples/aitrade/external-evidence/design-partner-regulator-source-snapshot.json,Retained regulator export for design-partner proof-pack scrutiny survival evidence;issuer=Example Regulator;subject=TrustAI design-partner proof-pack scrutiny survival;source_uri=https://regulator.example/exports/trustai/design-partner/proof-pack-scrutiny;issued_at=2026-07-11T23:10:00Z;expires_at=2026-12-31T00:00:00Z",
+      "intake_id": "431da973c2095345139e2dbc4b96be938d1a2dcccb6ccaff93b4397850ab59e4",
+      "intake_path": "examples/aitrade/external-evidence/intakes/design-partner-pilot-exit-criteria-regulator.json",
+      "snapshot_artifact_path": "examples/aitrade/external-evidence/design-partner-regulator-source-snapshot.json",
+      "snapshot_id": "17ec32b2061dcd1226b06dec09d693e1908e350780f43934b28a96e7346990d9",
+      "snapshot_path": "examples/aitrade/external-evidence/design-partner-regulator-source-snapshot.json",
+      "source_uri": "https://regulator.example/exports/trustai/design-partner/proof-pack-scrutiny",
+      "task": "design-partner-pilot-exit-criteria:regulator",
+      "warnings": []
+    },
+    {
+      "evidence_argument": "design-partner-pilot-exit-criteria,insurer,examples/aitrade/external-evidence/design-partner-insurer-source-snapshot.json,Retained insurer export for design-partner underwriting review evidence;issuer=Example AI Liability Underwriter;subject=TrustAI design-partner underwriting review;source_uri=https://insurer.example/exports/trustai/design-partner/underwriting-review;issued_at=2026-07-11T23:11:00Z;expires_at=2026-12-31T00:00:00Z",
+      "intake_id": "7c51cc6f43845b38c27352a9336ea862d3eef1a0bf98e2dbfb904045e75a45ae",
+      "intake_path": "examples/aitrade/external-evidence/intakes/design-partner-pilot-exit-criteria-insurer.json",
+      "snapshot_artifact_path": "examples/aitrade/external-evidence/design-partner-insurer-source-snapshot.json",
+      "snapshot_id": "871319cc52bcf468193d81c693dc2870a224993ced6922de25b626761464f01f",
+      "snapshot_path": "examples/aitrade/external-evidence/design-partner-insurer-source-snapshot.json",
+      "source_uri": "https://insurer.example/exports/trustai/design-partner/underwriting-review",
+      "task": "design-partner-pilot-exit-criteria:insurer",
+      "warnings": []
+    },
+    {
+      "evidence_argument": "design-partner-pilot-exit-criteria,customer,examples/aitrade/external-evidence/design-partner-customer-source-snapshot.json,Retained customer export for design-partner paid pilot acceptance evidence;issuer=Example Customer;subject=TrustAI design-partner paid pilot acceptance;source_uri=https://customer.example/exports/trustai/design-partner/paid-pilot-acceptance;issued_at=2026-07-11T23:12:00Z;expires_at=2026-12-31T00:00:00Z",
+      "intake_id": "ff144d945faa8891000e0f1f0d61da6242169ddbcdc94a3e744a7bec2429164c",
+      "intake_path": "examples/aitrade/external-evidence/intakes/design-partner-pilot-exit-criteria-customer.json",
+      "snapshot_artifact_path": "examples/aitrade/external-evidence/design-partner-customer-source-snapshot.json",
+      "snapshot_id": "861a9b187a0b1f187a78b58a0dc2195e09c9086a5f90966b87b2f76b9f184566",
+      "snapshot_path": "examples/aitrade/external-evidence/design-partner-customer-source-snapshot.json",
+      "source_uri": "https://customer.example/exports/trustai/design-partner/paid-pilot-acceptance",
+      "task": "design-partner-pilot-exit-criteria:customer",
+      "warnings": []
+    },
+    {
       "evidence_argument": "framework-adapters,provider-api,examples/aitrade/external-evidence/framework-hook-release-provider-api-source-snapshot.json,Retained GitHub contents API export for framework adapter hook release evidence;issuer=GitHub Contents API;subject=trustai framework hook release export;source_uri=https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/framework-hook-release.json?ref=main;issued_at=2026-07-09T00:30:00Z;expires_at=2026-12-31T00:00:00Z",
       "intake_id": "1c78eb10012929e989fecedb3207b49d9575b2f9444f0e26873e1551f75962cd",
       "intake_path": "examples/aitrade/external-evidence/intakes/framework-adapters-provider-api.json",
@@ -321,15 +354,15 @@
     }
   ],
   "generated_at": "2026-07-12T00:01:00Z",
-  "run_id": "5eae9468c382a404be123c17dc2251f6ff3016f794a8dbdd34cb3659f2af39cc",
+  "run_id": "0250b7fc7d4a9fe6423ba2f4764d127d0451dea1cd9ebc6dfacd294f3aae63af",
   "schema": "trustai.external-evidence-collection-run/0.1",
   "source_map": {
     "path": "examples/aitrade/external-evidence/retained-external-evidence-collected-source-map.json",
-    "source_map_hash": "054bae12d4a160d62d3381c90a193f76d56f6d97445c3279e8e00bf8d9273c7d"
+    "source_map_hash": "4921b1fad222e783af52f284db371ad24d2d5bf79bac6f9266dcf155a226872a"
   },
   "summary": {
-    "collected_count": 29,
+    "collected_count": 32,
     "require_fresh": true,
-    "task_count": 29
+    "task_count": 32
   }
 }

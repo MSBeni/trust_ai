@@ -338,6 +338,60 @@
     },
     {
       "accepted_authority_kinds": [
+        "regulator",
+        "insurer",
+        "customer"
+      ],
+      "authority_kind": "regulator",
+      "description": "Retained regulator export for design-partner proof-pack scrutiny survival evidence",
+      "evidence_id": "b9c70734753b3882b6a678850e7efa983a086727820d5f89ab1f79dc067aa9c9",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-11T23:10:00Z",
+      "issuer": "Example Regulator",
+      "path": "examples/aitrade/external-evidence/design-partner-regulator-source-snapshot.json",
+      "requirement_id": "design-partner-pilot-exit-criteria",
+      "sha256": "sha256:0b85d8e475a950f5937e25405ca9c55c35dfec80b255b8d50d49e2aa394260f5",
+      "source_uri": "https://regulator.example/exports/trustai/design-partner/proof-pack-scrutiny",
+      "subject": "TrustAI design-partner proof-pack scrutiny survival"
+    },
+    {
+      "accepted_authority_kinds": [
+        "regulator",
+        "insurer",
+        "customer"
+      ],
+      "authority_kind": "insurer",
+      "description": "Retained insurer export for design-partner underwriting review evidence",
+      "evidence_id": "bf5bbce326c8e1be65bfba2be80e011c4ca0f3b4139a3aa0994d937674982d2b",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-11T23:11:00Z",
+      "issuer": "Example AI Liability Underwriter",
+      "path": "examples/aitrade/external-evidence/design-partner-insurer-source-snapshot.json",
+      "requirement_id": "design-partner-pilot-exit-criteria",
+      "sha256": "sha256:383c04dea9faf8c502c7ce5e9fe3879aaa645c4b30389ab74206c05b47968b9f",
+      "source_uri": "https://insurer.example/exports/trustai/design-partner/underwriting-review",
+      "subject": "TrustAI design-partner underwriting review"
+    },
+    {
+      "accepted_authority_kinds": [
+        "regulator",
+        "insurer",
+        "customer"
+      ],
+      "authority_kind": "customer",
+      "description": "Retained customer export for design-partner paid pilot acceptance evidence",
+      "evidence_id": "14731c3917d6f70d5dbb0ad9f5df39a9a3650265fe90ac32dc3fe28aad1300d2",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-11T23:12:00Z",
+      "issuer": "Example Customer",
+      "path": "examples/aitrade/external-evidence/design-partner-customer-source-snapshot.json",
+      "requirement_id": "design-partner-pilot-exit-criteria",
+      "sha256": "sha256:4a61854537abf175592eb6232755e028379cbe4358716b9b20489de4207dbfe6",
+      "source_uri": "https://customer.example/exports/trustai/design-partner/paid-pilot-acceptance",
+      "subject": "TrustAI design-partner paid pilot acceptance"
+    },
+    {
+      "accepted_authority_kinds": [
         "ci-run",
         "provider-api",
         "hosted-service"
@@ -556,7 +610,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "79e3f92d99b9931c3c0e947efc56dd97636a936b86cd65cd68d36bb2d7520b52",
+  "manifest_id": "400a4ac3ac138e7ffc1ce09dcc1b8e507f4de0c00d03629dd2a590fbe125572b",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -795,7 +849,7 @@
     },
     {
       "authority_kind": "regulator",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, hash-bound contract/payment evidence, and hash-bound external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
       ],
@@ -808,7 +862,7 @@
     },
     {
       "authority_kind": "insurer",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, hash-bound contract/payment evidence, and hash-bound external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
       ],
@@ -821,7 +875,7 @@
     },
     {
       "authority_kind": "customer",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, hash-bound contract/payment evidence, and hash-bound external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
       ],
@@ -1783,7 +1837,7 @@
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {
-    "covered_authority_kind_count": 29,
+    "covered_authority_kind_count": 32,
     "covered_authority_kinds_by_requirement": {
       "agent-inventory-and-identity": [
         "provider-api",
@@ -1799,6 +1853,11 @@
         "provider-api",
         "hosted-service",
         "identity-provider"
+      ],
+      "design-partner-pilot-exit-criteria": [
+        "regulator",
+        "insurer",
+        "customer"
       ],
       "framework-adapters": [
         "provider-api",
@@ -1833,11 +1892,12 @@
         "standards-body"
       ]
     },
-    "covered_requirement_count": 9,
+    "covered_requirement_count": 10,
     "covered_requirement_ids": [
       "agent-inventory-and-identity",
       "byoc-self-hosted",
       "cicd-provider-approvals",
+      "design-partner-pilot-exit-criteria",
       "framework-adapters",
       "mcp-gateway",
       "oss-verifier-and-public-spec",
@@ -1845,11 +1905,11 @@
       "self-serve-onboarding",
       "shadow-replay-temporal-holdout"
     ],
-    "evidence_count": 29,
-    "expires_at_count": 29,
-    "freshness_window_count": 29,
-    "issued_at_count": 29,
-    "missing_authority_kind_count": 42,
+    "evidence_count": 32,
+    "expires_at_count": 32,
+    "freshness_window_count": 32,
+    "issued_at_count": 32,
+    "missing_authority_kind_count": 39,
     "missing_authority_kinds_by_requirement": {
       "auditor-and-review-portal": [
         "kms-hsm",
@@ -1867,11 +1927,6 @@
         "provider-api",
         "regulator",
         "standards-body"
-      ],
-      "design-partner-pilot-exit-criteria": [
-        "regulator",
-        "insurer",
-        "customer"
       ],
       "framework-adapters": [
         "ci-run"
@@ -1922,9 +1977,8 @@
         "customer"
       ]
     },
-    "missing_requirement_count": 11,
+    "missing_requirement_count": 10,
     "missing_requirement_ids": [
-      "design-partner-pilot-exit-criteria",
       "auditor-and-review-portal",
       "compliance-mapper-and-eu-ai-act",
       "trustai-own-compliance",

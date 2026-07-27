@@ -1,22 +1,22 @@
 # External Evidence Work Packages
 
-- Work package ID: `d6204a9e3573b614a0c45accc7ca6c25466e9ddf352b50645dbed073fb36e171`
+- Work package ID: `7c62a00e43966c25b883696410abd4a8865616f2ecb8e574be48314607680612`
 - Generated at: `2026-07-12T00:01:00Z`
 - Grouped by: `owner_hint`
 - Packages: 9
-- Tasks: 42
-- Missing tasks: 42
-- Placeholder source URIs: 42
+- Tasks: 39
+- Missing tasks: 39
+- Placeholder source URIs: 39
 - Live source URIs: 0
 
 ## Tasks By Owner
 
 - IAM/identity owner: 3
-- customer success/account owner: 9
+- customer success/account owner: 8
 - integration/platform owner: 4
-- legal/compliance owner: 5
+- legal/compliance owner: 4
 - release engineering: 6
-- risk/insurance owner: 4
+- risk/insurance owner: 3
 - security/platform KMS owner: 3
 - service owner: 3
 - standards/governance owner: 5
@@ -52,18 +52,17 @@
 ### customer success/account owner
 
 - Package ref: `owner_hint:customer-success-account-owner`
-- Package ID: `c989f4ba44c4c7912f648f0328d7ef720aefd49553f291f977c6058edc28d566`
+- Package ID: `985e925d5c4aecaa5b7c422b7ed885a21345ff389af65549004cacbfcc1ad0ee`
 - Owner Hint: `customer success/account owner`
-- Tasks: 9
+- Tasks: 8
 - Authority kinds: `customer`
-- Requirements: `byoc-self-hosted`, `design-partner-pilot-exit-criteria`, `insurer-api-and-actuarial-products`, `product-scope-discipline`, `roadmap-phase-scoreboard`, `state-of-agent-reliability-report`, `trust-network-procurement-and-marketplace`, `trustai-own-compliance`, `vertical-packs`
+- Requirements: `byoc-self-hosted`, `insurer-api-and-actuarial-products`, `product-scope-discipline`, `roadmap-phase-scoreboard`, `state-of-agent-reliability-report`, `trust-network-procurement-and-marketplace`, `trustai-own-compliance`, `vertical-packs`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
 
 | Task | Phase | Priority | Authority | Source URI Status | Intake |
 |---|---|---|---|---|---|
 | `product-scope-discipline:customer` | P0-P4 | P0 | `customer` | placeholder | `artifacts/external-evidence-intakes/product-scope-discipline/customer.json` |
-| `design-partner-pilot-exit-criteria:customer` | P1 | P0 | `customer` | placeholder | `artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/customer.json` |
 | `byoc-self-hosted:customer` | P1-P2 | P0 | `customer` | placeholder | `artifacts/external-evidence-intakes/byoc-self-hosted/customer.json` |
 | `roadmap-phase-scoreboard:customer` | P1-P4 | P0 | `customer` | placeholder | `artifacts/external-evidence-intakes/roadmap-phase-scoreboard/customer.json` |
 | `trustai-own-compliance:customer` | P2 | P0 | `customer` | placeholder | `artifacts/external-evidence-intakes/trustai-own-compliance/customer.json` |
@@ -76,8 +75,6 @@
 
 - `product-scope-discipline:customer` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/product-scope-discipline/customer --root . --task product-scope-discipline:customer --description 'customer evidence for product-scope-discipline' --snapshot-out artifacts/external-evidence-sources/product-scope-discipline/customer.json --intake-out artifacts/external-evidence-intakes/product-scope-discipline/customer.json`
 - `product-scope-discipline:customer` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/product-scope-discipline/customer.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
-- `design-partner-pilot-exit-criteria:customer` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/design-partner-pilot-exit-criteria/customer --root . --task design-partner-pilot-exit-criteria:customer --description 'customer evidence for design-partner-pilot-exit-criteria' --snapshot-out artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/customer.json --intake-out artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/customer.json`
-- `design-partner-pilot-exit-criteria:customer` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/customer.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `byoc-self-hosted:customer` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/byoc-self-hosted/customer --root . --task byoc-self-hosted:customer --description 'customer evidence for byoc-self-hosted' --snapshot-out artifacts/external-evidence-sources/byoc-self-hosted/customer.json --intake-out artifacts/external-evidence-intakes/byoc-self-hosted/customer.json`
 - `byoc-self-hosted:customer` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/byoc-self-hosted/customer.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `roadmap-phase-scoreboard:customer` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/roadmap-phase-scoreboard/customer --root . --task roadmap-phase-scoreboard:customer --description 'customer evidence for roadmap-phase-scoreboard' --snapshot-out artifacts/external-evidence-sources/roadmap-phase-scoreboard/customer.json --intake-out artifacts/external-evidence-intakes/roadmap-phase-scoreboard/customer.json`
@@ -125,17 +122,16 @@
 ### legal/compliance owner
 
 - Package ref: `owner_hint:legal-compliance-owner`
-- Package ID: `41375da159f353cbbf6f0d6084bfdcbde9252e92be8b8ec46c08de75c215d82c`
+- Package ID: `92cba2bab95eaa9adfe67e73bb1626d82e8c3326ab0145701334cb62ed42c229`
 - Owner Hint: `legal/compliance owner`
-- Tasks: 5
+- Tasks: 4
 - Authority kinds: `regulator`
-- Requirements: `auditor-and-review-portal`, `compliance-mapper-and-eu-ai-act`, `design-partner-pilot-exit-criteria`, `roadmap-phase-scoreboard`, `vertical-packs`
+- Requirements: `auditor-and-review-portal`, `compliance-mapper-and-eu-ai-act`, `roadmap-phase-scoreboard`, `vertical-packs`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
 
 | Task | Phase | Priority | Authority | Source URI Status | Intake |
 |---|---|---|---|---|---|
-| `design-partner-pilot-exit-criteria:regulator` | P1 | P0 | `regulator` | placeholder | `artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/regulator.json` |
 | `auditor-and-review-portal:regulator` | P1-P3 | P1 | `regulator` | placeholder | `artifacts/external-evidence-intakes/auditor-and-review-portal/regulator.json` |
 | `roadmap-phase-scoreboard:regulator` | P1-P4 | P0 | `regulator` | placeholder | `artifacts/external-evidence-intakes/roadmap-phase-scoreboard/regulator.json` |
 | `compliance-mapper-and-eu-ai-act:regulator` | P2-P3 | P0 | `regulator` | placeholder | `artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/regulator.json` |
@@ -143,8 +139,6 @@
 
 #### Task Commands
 
-- `design-partner-pilot-exit-criteria:regulator` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/design-partner-pilot-exit-criteria/regulator --root . --task design-partner-pilot-exit-criteria:regulator --description 'regulator evidence for design-partner-pilot-exit-criteria' --snapshot-out artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/regulator.json --intake-out artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/regulator.json`
-- `design-partner-pilot-exit-criteria:regulator` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/regulator.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `auditor-and-review-portal:regulator` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/auditor-and-review-portal/regulator --root . --task auditor-and-review-portal:regulator --description 'regulator evidence for auditor-and-review-portal' --snapshot-out artifacts/external-evidence-sources/auditor-and-review-portal/regulator.json --intake-out artifacts/external-evidence-intakes/auditor-and-review-portal/regulator.json`
 - `auditor-and-review-portal:regulator` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/auditor-and-review-portal/regulator.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `roadmap-phase-scoreboard:regulator` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/roadmap-phase-scoreboard/regulator --root . --task roadmap-phase-scoreboard:regulator --description 'regulator evidence for roadmap-phase-scoreboard' --snapshot-out artifacts/external-evidence-sources/roadmap-phase-scoreboard/regulator.json --intake-out artifacts/external-evidence-intakes/roadmap-phase-scoreboard/regulator.json`
@@ -192,25 +186,22 @@
 ### risk/insurance owner
 
 - Package ref: `owner_hint:risk-insurance-owner`
-- Package ID: `4e8c4ea0c1485a4f74d654c6751a3fe1ce50686a434841596b6f8b0325dbcfb3`
+- Package ID: `e3cfe80dd86841fba5e8da22ab8afdd1a30befa5474e40b2fb087b69418df27c`
 - Owner Hint: `risk/insurance owner`
-- Tasks: 4
+- Tasks: 3
 - Authority kinds: `insurer`
-- Requirements: `design-partner-pilot-exit-criteria`, `insurer-api-and-actuarial-products`, `roadmap-phase-scoreboard`, `vertical-packs`
+- Requirements: `insurer-api-and-actuarial-products`, `roadmap-phase-scoreboard`, `vertical-packs`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
 
 | Task | Phase | Priority | Authority | Source URI Status | Intake |
 |---|---|---|---|---|---|
-| `design-partner-pilot-exit-criteria:insurer` | P1 | P0 | `insurer` | placeholder | `artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/insurer.json` |
 | `roadmap-phase-scoreboard:insurer` | P1-P4 | P0 | `insurer` | placeholder | `artifacts/external-evidence-intakes/roadmap-phase-scoreboard/insurer.json` |
 | `insurer-api-and-actuarial-products:insurer` | P2-P4 | P0 | `insurer` | placeholder | `artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/insurer.json` |
 | `vertical-packs:insurer` | P3 | P1 | `insurer` | placeholder | `artifacts/external-evidence-intakes/vertical-packs/insurer.json` |
 
 #### Task Commands
 
-- `design-partner-pilot-exit-criteria:insurer` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/design-partner-pilot-exit-criteria/insurer --root . --task design-partner-pilot-exit-criteria:insurer --description 'insurer evidence for design-partner-pilot-exit-criteria' --snapshot-out artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/insurer.json --intake-out artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/insurer.json`
-- `design-partner-pilot-exit-criteria:insurer` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/insurer.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `roadmap-phase-scoreboard:insurer` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/roadmap-phase-scoreboard/insurer --root . --task roadmap-phase-scoreboard:insurer --description 'insurer evidence for roadmap-phase-scoreboard' --snapshot-out artifacts/external-evidence-sources/roadmap-phase-scoreboard/insurer.json --intake-out artifacts/external-evidence-intakes/roadmap-phase-scoreboard/insurer.json`
 - `roadmap-phase-scoreboard:insurer` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/roadmap-phase-scoreboard/insurer.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `insurer-api-and-actuarial-products:insurer` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/insurer-api-and-actuarial-products/insurer --root . --task insurer-api-and-actuarial-products:insurer --description 'insurer evidence for insurer-api-and-actuarial-products' --snapshot-out artifacts/external-evidence-sources/insurer-api-and-actuarial-products/insurer.json --intake-out artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/insurer.json`

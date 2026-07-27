@@ -1,21 +1,18 @@
 # External Evidence Owner Fulfillment Closure
 
-- Closure ID: `216392d5c5d61760e5e754d85be5e4f68767cc8a589ab9d4057c719caf9a2432`
+- Closure ID: `c1057230d15817c511cae3cf05482538b727afebc8d6b0c6b791ef103b56f289`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Closed tasks: 0/42
-- Missing intakes: 42
+- Closed tasks: 0/39
+- Missing intakes: 39
 - Invalid intake tasks: 0
-- Missing manifest coverage: 42
-- Placeholder source URIs: 42
+- Missing manifest coverage: 39
+- Placeholder source URIs: 39
 
 ## Task Closure
 
 | Task | Owner | Status | Intake | Manifest Evidence | Blocking Reasons |
 |---|---|---|---|---|---|
-| `design-partner-pilot-exit-criteria:regulator` | legal/compliance owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
-| `design-partner-pilot-exit-criteria:insurer` | risk/insurance owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
-| `design-partner-pilot-exit-criteria:customer` | customer success/account owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `framework-adapters:ci-run` | release engineering | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `auditor-and-review-portal:kms-hsm` | security/platform KMS owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `auditor-and-review-portal:provider-api` | integration/platform owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
@@ -58,9 +55,9 @@
 
 ## Blockers
 
-- 42 reviewed tasks still use placeholder source_uri values
-- 42 reviewed tasks do not have intake receipts
-- 42 reviewed tasks are not covered by the rebuilt manifest
+- 39 reviewed tasks still use placeholder source_uri values
+- 39 reviewed tasks do not have intake receipts
+- 39 reviewed tasks are not covered by the rebuilt manifest
 
 ## Next Actions
 

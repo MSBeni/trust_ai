@@ -1,0 +1,57 @@
+{
+  "customer_acceptance": {
+    "accepted_partner_refs": [
+      "partner:bank-a",
+      "partner:insurer-b",
+      "partner:fintech-c"
+    ],
+    "authority_ref": "customer:design-partners/phase1-paid-pilots",
+    "dossier_ref": "dossier:design-partner-authority/phase1-production",
+    "payment_evidence_refs": [
+      "payment:bank-a/pilot-invoice-2026",
+      "payment:insurer-b/pilot-invoice-2026",
+      "payment:fintech-c/pilot-invoice-2026"
+    ],
+    "signed_pilot_value_usd": 260000
+  },
+  "environment": "aitrade-prod",
+  "evidence": {
+    "design_partner_authority_source": {
+      "path": "src/trustai/design_partner_authority.py",
+      "sha256": "sha256:4022a8776fd73c794804f2bec0e5c65cd8980e21ef222554a6c01cb6db2d522f"
+    },
+    "design_partner_authority_spec": {
+      "path": "docs/specs/design-partner-authority-v0.1.md",
+      "sha256": "sha256:0d5ad23055c0a0c1d942f5691ad0577b40d9f1fa4dd0f5be154d924a1d8cac14"
+    },
+    "design_partner_authority_tests": {
+      "path": "tests/test_design_partner_authority.py",
+      "sha256": "sha256:58a2e0f6a0a54364c153fb77ab18f00f6c6e333e268455c6559ef497560da973"
+    },
+    "design_partner_pilot_source": {
+      "path": "src/trustai/design_partner.py",
+      "sha256": "sha256:e4af4d3af3a3b2c79c9c272651cde61659b80c24136ec40cfb50adaefc50b90c"
+    },
+    "design_partner_pilot_spec": {
+      "path": "docs/specs/design-partner-pilot-v0.1.md",
+      "sha256": "sha256:c9918cd65a84d6075820cd1dcc6288c836d10e7dbfe481ed873a00dc239dc81d"
+    },
+    "design_partner_pilot_tests": {
+      "path": "tests/test_design_partner.py",
+      "sha256": "sha256:5dc098d46accd8181534b7f498e74ea23885cc8fcc79fb6e916cab39348a6033"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "export_ref": "customer-export:aitrade/design-partner/paid-pilot-acceptance/2026-07-11",
+  "issued_at": "2026-07-11T23:12:00Z",
+  "issuer": "Example Customer",
+  "schema": "trustai.design-partner-customer-authority-export/0.1",
+  "subject": "TrustAI design-partner paid pilot acceptance",
+  "verified_controls": [
+    "three paying design partner references",
+    "hash-bound contract and payment evidence references",
+    "signed pilot value threshold",
+    "customer authority evidence freshness",
+    "offline verifier acceptance"
+  ]
+}

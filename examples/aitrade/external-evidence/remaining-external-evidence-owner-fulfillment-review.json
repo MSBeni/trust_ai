@@ -1,7 +1,7 @@
 {
   "blockers": [
-    "owner fulfillment review contains 42 placeholder source_uri values",
-    "fulfilled source map: source map contains 42 placeholder source_uri values but live source URIs are required"
+    "owner fulfillment review contains 39 placeholder source_uri values",
+    "fulfilled source map: source map contains 39 placeholder source_uri values but live source URIs are required"
   ],
   "commands": {
     "collect_after_ready_review": "python -m trustai external-evidence-collect-batch <fulfilled-source-map.json> <manifest.json> <roadmap-audit.json> --root . --require-live-source-uris",
@@ -11,78 +11,6 @@
   "fulfilled_source_map": {
     "defaults": {},
     "entries": [
-      {
-        "authority_kind": "regulator",
-        "coverage_status": "missing",
-        "description": "regulator evidence for design-partner-pilot-exit-criteria",
-        "external_authority_required": [
-          "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, hash-bound contract/payment evidence, and hash-bound external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/regulator.json",
-        "owner_hint": "legal/compliance owner",
-        "requirement_id": "design-partner-pilot-exit-criteria",
-        "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/regulator.json",
-        "source_uri": "TODO://authority/design-partner-pilot-exit-criteria/regulator",
-        "suggested_evidence_sources": [
-          "regulator acknowledgement",
-          "supervisor portal receipt",
-          "conformity-assessment record"
-        ],
-        "task": "design-partner-pilot-exit-criteria:regulator",
-        "task_id": "8beb464dea5f99349b68fac304cdbfe073de0b3d8f0d3871a3c552b611e5fe57",
-        "task_ref": "external-evidence:design-partner-pilot-exit-criteria:regulator",
-        "title": "Design-partner pilot and external-scrutiny exit criteria",
-        "unit_id": "a1e976a67018099d65aa78e30ffa6013c78716d28bab10e5906ee4e78db9a043",
-        "unit_ref": "design-partner-pilot-exit-criteria:regulator"
-      },
-      {
-        "authority_kind": "insurer",
-        "coverage_status": "missing",
-        "description": "insurer evidence for design-partner-pilot-exit-criteria",
-        "external_authority_required": [
-          "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, hash-bound contract/payment evidence, and hash-bound external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/insurer.json",
-        "owner_hint": "risk/insurance owner",
-        "requirement_id": "design-partner-pilot-exit-criteria",
-        "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/insurer.json",
-        "source_uri": "TODO://authority/design-partner-pilot-exit-criteria/insurer",
-        "suggested_evidence_sources": [
-          "underwriter response",
-          "premium or policy-system quote",
-          "insurer API response export"
-        ],
-        "task": "design-partner-pilot-exit-criteria:insurer",
-        "task_id": "f89ead8e5b1ef2df684cdafe8b68cc53afc9a520feb84ac4cf8a2372f4b9d833",
-        "task_ref": "external-evidence:design-partner-pilot-exit-criteria:insurer",
-        "title": "Design-partner pilot and external-scrutiny exit criteria",
-        "unit_id": "d41d0d5c4e7c4c9fd33df8fb1685df9b9c7a4d826a0f813f8ab6d17dfc8fd769",
-        "unit_ref": "design-partner-pilot-exit-criteria:insurer"
-      },
-      {
-        "authority_kind": "customer",
-        "coverage_status": "missing",
-        "description": "customer evidence for design-partner-pilot-exit-criteria",
-        "external_authority_required": [
-          "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, hash-bound contract/payment evidence, and hash-bound external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/customer.json",
-        "owner_hint": "customer success/account owner",
-        "requirement_id": "design-partner-pilot-exit-criteria",
-        "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/customer.json",
-        "source_uri": "TODO://authority/design-partner-pilot-exit-criteria/customer",
-        "suggested_evidence_sources": [
-          "customer acceptance artifact",
-          "contract/payment/procurement evidence",
-          "deployment or signoff record"
-        ],
-        "task": "design-partner-pilot-exit-criteria:customer",
-        "task_id": "3b433a43be3da2c0e04eb8936dac0b61ec81ee1421fb95fe1c400b8a58f0e6b3",
-        "task_ref": "external-evidence:design-partner-pilot-exit-criteria:customer",
-        "title": "Design-partner pilot and external-scrutiny exit criteria",
-        "unit_id": "f59acd1b3d75f14f173e51163ad559dba1aed89a00fba70e143375b6b5be60d7",
-        "unit_ref": "design-partner-pilot-exit-criteria:customer"
-      },
       {
         "authority_kind": "ci-run",
         "coverage_status": "missing",
@@ -1027,14 +955,14 @@
       "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
     ],
     "schema": "trustai.external-evidence-source-map/0.1",
-    "source_map_id": "10b6672a6e03b1da379dd8311f8f3424164a4f4da43d3c1f7a51a8d6d7a7e822",
+    "source_map_id": "92993b9124409af0ba7132d41148b9a29a4561c3a82c8aaf5857fc71ba32aa13",
     "source_plan": {
-      "plan_hash": "690eb8308d6b2100afd55b904429b203211fd9a34d7a1059bb35e9c5dcec75f3",
-      "plan_id": "b8164fef72e2eca9e875e10e9cda7b65d6801d2515e61c2d52f3d820d2a335b6",
+      "plan_hash": "4050326aba3b16896896352546a9cd7f4f2203116c713df0f8b6833c9477aeff",
+      "plan_id": "b4ccd3558866e04e7a504e969610f7cca62b36d754813a5d8eebd6cb7c334c43",
       "source_manifest": {
         "generated_at": "2026-07-12T00:01:00Z",
-        "manifest_hash": "b33df72a639a95b48e7a06587cd9c9c46ed86d259aee92b37b81f25ed4341499",
-        "manifest_id": "79e3f92d99b9931c3c0e947efc56dd97636a936b86cd65cd68d36bb2d7520b52",
+        "manifest_hash": "98ba337daf8dd4e8894097259a162a492f5373f31b0ea1edea0817e8e5438de6",
+        "manifest_id": "400a4ac3ac138e7ffc1ce09dcc1b8e507f4de0c00d03629dd2a590fbe125572b",
         "manifest_ref": "production-external-evidence",
         "status": "partial"
       },
@@ -1042,12 +970,12 @@
     },
     "summary": {
       "authority_kinds": [],
-      "entry_count": 42,
+      "entry_count": 39,
       "intake_dir": "artifacts/external-evidence-intakes",
       "live_source_uri_count": 0,
-      "placeholder_source_uri_count": 42,
+      "placeholder_source_uri_count": 39,
       "snapshot_dir": "artifacts/external-evidence-sources",
-      "source_plan_task_count": 42,
+      "source_plan_task_count": 39,
       "status_filter": "missing"
     }
   },
@@ -1062,91 +990,49 @@
     "Regenerate this review with --require-live-source-uris before collecting source snapshots.",
     "After the fulfilled source map is ready, run external-evidence-collect-batch and rebuild the retained manifest from intake receipts."
   ],
-  "owner_fulfillment_review_id": "7f2cccb3f65b87ad7bd95a30fa3da76894835f89d08ca778394ff4d29f70129a",
+  "owner_fulfillment_review_id": "a74057fd91c401535b4721313072e5974b1bec0b970527cfdefd060d973649de",
   "schema": "trustai.external-evidence-owner-fulfillment-review/0.1",
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "690eb8308d6b2100afd55b904429b203211fd9a34d7a1059bb35e9c5dcec75f3",
-      "plan_id": "b8164fef72e2eca9e875e10e9cda7b65d6801d2515e61c2d52f3d820d2a335b6",
+      "plan_hash": "4050326aba3b16896896352546a9cd7f4f2203116c713df0f8b6833c9477aeff",
+      "plan_id": "b4ccd3558866e04e7a504e969610f7cca62b36d754813a5d8eebd6cb7c334c43",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "owner_fulfillment_template": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_fulfillment_template_hash": "4626b7d801821528036c298bc6ee4df784d88e52fd2774e02bed95798df05ea0",
-      "owner_fulfillment_template_id": "1188952637c8bc43f4dfdd40f9f681c362c25eb967f9685d56df73ec50395d99",
+      "owner_fulfillment_template_hash": "c37c4a542e28d7a974e87334ad70edffde8db9abf618ef530e52c82b9d855007",
+      "owner_fulfillment_template_id": "4b230ee97c91873b68e64d92c37aae62811c42c71b1ffb23f6ce32bca5574a10",
       "schema": "trustai.external-evidence-owner-fulfillment-template/0.1"
     },
     "owner_packet_status": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_status_hash": "3441e708ed617e0730a30c5cff7de06d0dbdf4149602644e2e489032838eceaf",
-      "owner_packet_status_id": "16962aa76afae85636d08f66c226604d0825164dba80567bc9e86697a059fc8f",
+      "owner_packet_status_hash": "f9a4bec61b880a4049f2f9b9aee65abadbf74dd2b5ab74e49d5e531ee0d393d4",
+      "owner_packet_status_id": "9c656217e4330b6e2339d0a1c4f98d3646fd5299b3aa7c12f344357b72e17668",
       "schema": "trustai.external-evidence-owner-packet-status/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "9048b7ab0645dff1099d9bea8237ded6c77479420107e70c02cc5238be737672",
-      "source_map_id": "10f8c388573262d4f29d250ab195a4afbe7522e8f82a6d37e851ac38186ecd5d"
+      "source_map_hash": "4f55d3283d0a449c4cca7787473727dde74d7281c3d740ca25482daaf386f00a",
+      "source_map_id": "1436a463f227095f3fd96a1c04a32b305e9bf383394df0f5dcd5863dab9e65d8"
     }
   },
   "summary": {
-    "blocked_task_count": 42,
+    "blocked_task_count": 39,
     "error_count": 1,
     "fulfilled_source_map_verification_ok": false,
-    "fulfillment_count": 42,
+    "fulfillment_count": 39,
     "live_source_uri_count": 0,
     "owner_count": 9,
-    "placeholder_source_uri_count": 42,
+    "placeholder_source_uri_count": 39,
     "ready_task_count": 0,
     "review_status": "blocked",
-    "source_map_entry_count": 42,
+    "source_map_entry_count": 39,
     "template_verification_ok": true,
     "warning_count": 3
   },
   "task_reviews": [
-    {
-      "authority_kind": "regulator",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/regulator.json",
-      "owner_hint": "legal/compliance owner",
-      "requirement_id": "design-partner-pilot-exit-criteria",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/regulator.json",
-      "source_uri": "TODO://authority/design-partner-pilot-exit-criteria/regulator",
-      "source_uri_status": "placeholder",
-      "task": "design-partner-pilot-exit-criteria:regulator"
-    },
-    {
-      "authority_kind": "insurer",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/insurer.json",
-      "owner_hint": "risk/insurance owner",
-      "requirement_id": "design-partner-pilot-exit-criteria",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/insurer.json",
-      "source_uri": "TODO://authority/design-partner-pilot-exit-criteria/insurer",
-      "source_uri_status": "placeholder",
-      "task": "design-partner-pilot-exit-criteria:insurer"
-    },
-    {
-      "authority_kind": "customer",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/customer.json",
-      "owner_hint": "customer success/account owner",
-      "requirement_id": "design-partner-pilot-exit-criteria",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/customer.json",
-      "source_uri": "TODO://authority/design-partner-pilot-exit-criteria/customer",
-      "source_uri_status": "placeholder",
-      "task": "design-partner-pilot-exit-criteria:customer"
-    },
     {
       "authority_kind": "ci-run",
       "blocking_reasons": [
@@ -1696,14 +1582,14 @@
   ],
   "verification": {
     "fulfilled_source_map_errors": [
-      "source map contains 42 placeholder source_uri values but live source URIs are required"
+      "source map contains 39 placeholder source_uri values but live source URIs are required"
     ],
     "fulfilled_source_map_warnings": [
-      "source map contains 42 placeholder source_uri values"
+      "source map contains 39 placeholder source_uri values"
     ],
     "template_warnings": [
-      "owner fulfillment template summary contains 42 placeholder source_uri values",
-      "owner fulfillment template summary contains 42 tasks without intake receipts"
+      "owner fulfillment template summary contains 39 placeholder source_uri values",
+      "owner fulfillment template summary contains 39 tasks without intake receipts"
     ]
   },
   "verification_options": {

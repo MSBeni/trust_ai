@@ -1889,6 +1889,9 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         cicd_provider_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/github-audit-log-source-snapshot.json")
         cicd_hosted_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/cicd-provider-approvals-hosted-service-source-snapshot.json")
         cicd_identity_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/cicd-provider-approvals-identity-provider-source-snapshot.json")
+        design_partner_regulator_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/design-partner-regulator-source-snapshot.json")
+        design_partner_insurer_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/design-partner-insurer-source-snapshot.json")
+        design_partner_customer_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/design-partner-customer-source-snapshot.json")
         framework_provider_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/framework-hook-release-provider-api-source-snapshot.json")
         framework_hosted_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/framework-hook-release-hosted-service-source-snapshot.json")
         agent_inventory_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/agent-inventory-provider-api-source-snapshot.json")
@@ -1918,6 +1921,9 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         cicd_provider_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/cicd-provider-approvals-provider-api.json")
         cicd_hosted_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/cicd-provider-approvals-hosted-service.json")
         cicd_identity_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/cicd-provider-approvals-identity-provider.json")
+        design_partner_regulator_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/design-partner-pilot-exit-criteria-regulator.json")
+        design_partner_insurer_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/design-partner-pilot-exit-criteria-insurer.json")
+        design_partner_customer_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/design-partner-pilot-exit-criteria-customer.json")
         framework_provider_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/framework-adapters-provider-api.json")
         framework_hosted_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/framework-adapters-hosted-service.json")
         agent_inventory_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/agent-inventory-and-identity-provider-api.json")
@@ -1986,6 +1992,9 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 cicd_provider_snapshot,
                 cicd_hosted_snapshot,
                 cicd_identity_snapshot,
+                design_partner_regulator_snapshot,
+                design_partner_insurer_snapshot,
+                design_partner_customer_snapshot,
                 framework_provider_snapshot,
                 framework_hosted_snapshot,
                 agent_inventory_snapshot,
@@ -2030,6 +2039,9 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 cicd_provider_intake,
                 cicd_hosted_intake,
                 cicd_identity_intake,
+                design_partner_regulator_intake,
+                design_partner_insurer_intake,
+                design_partner_customer_intake,
                 framework_provider_intake,
                 framework_hosted_intake,
                 agent_inventory_intake,
@@ -2067,6 +2079,9 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 cicd_provider_intake,
                 cicd_hosted_intake,
                 cicd_identity_intake,
+                design_partner_regulator_intake,
+                design_partner_insurer_intake,
+                design_partner_customer_intake,
                 framework_provider_intake,
                 framework_hosted_intake,
                 agent_inventory_intake,
@@ -2142,6 +2157,21 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual("identity-provider", cicd_identity_intake["task"]["authority_kind"])
         self.assertEqual("file-copy", cicd_identity_snapshot["retrieval_method"])
         self.assertEqual("sha256:" + sha256((ROOT / "examples/aitrade/cicd-provider-approvals-identity-provider-authority-export.json").read_bytes()).hexdigest(), cicd_identity_snapshot["body_sha256"])
+        self.assertEqual("examples/aitrade/external-evidence/design-partner-regulator-source-snapshot.json", design_partner_regulator_intake["evidence_item"]["path"])
+        self.assertEqual("design-partner-pilot-exit-criteria", design_partner_regulator_intake["task"]["requirement_id"])
+        self.assertEqual("regulator", design_partner_regulator_intake["task"]["authority_kind"])
+        self.assertEqual("file-copy", design_partner_regulator_snapshot["retrieval_method"])
+        self.assertEqual("sha256:" + sha256((ROOT / "examples/aitrade/design-partner-regulator-authority-export.json").read_bytes()).hexdigest(), design_partner_regulator_snapshot["body_sha256"])
+        self.assertEqual("examples/aitrade/external-evidence/design-partner-insurer-source-snapshot.json", design_partner_insurer_intake["evidence_item"]["path"])
+        self.assertEqual("design-partner-pilot-exit-criteria", design_partner_insurer_intake["task"]["requirement_id"])
+        self.assertEqual("insurer", design_partner_insurer_intake["task"]["authority_kind"])
+        self.assertEqual("file-copy", design_partner_insurer_snapshot["retrieval_method"])
+        self.assertEqual("sha256:" + sha256((ROOT / "examples/aitrade/design-partner-insurer-authority-export.json").read_bytes()).hexdigest(), design_partner_insurer_snapshot["body_sha256"])
+        self.assertEqual("examples/aitrade/external-evidence/design-partner-customer-source-snapshot.json", design_partner_customer_intake["evidence_item"]["path"])
+        self.assertEqual("design-partner-pilot-exit-criteria", design_partner_customer_intake["task"]["requirement_id"])
+        self.assertEqual("customer", design_partner_customer_intake["task"]["authority_kind"])
+        self.assertEqual("file-copy", design_partner_customer_snapshot["retrieval_method"])
+        self.assertEqual("sha256:" + sha256((ROOT / "examples/aitrade/design-partner-customer-authority-export.json").read_bytes()).hexdigest(), design_partner_customer_snapshot["body_sha256"])
         self.assertEqual("examples/aitrade/external-evidence/framework-hook-release-provider-api-source-snapshot.json", framework_provider_intake["evidence_item"]["path"])
         self.assertEqual("framework-adapters", framework_provider_intake["task"]["requirement_id"])
         self.assertEqual("provider-api", framework_provider_intake["task"]["authority_kind"])
@@ -2242,26 +2272,26 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             export = json.loads(base64.b64decode(snapshot["body_base64"]).decode("utf-8"))
             self.assertEqual("trustai.external-evidence-git-remote-ref-export/0.1", export["schema"])
         self.assertEqual(71, rebuilt["summary"]["required_authority_kind_count"])
-        self.assertEqual(29, rebuilt["summary"]["covered_authority_kind_count"])
-        self.assertEqual(42, rebuilt["summary"]["missing_authority_kind_count"])
+        self.assertEqual(32, rebuilt["summary"]["covered_authority_kind_count"])
+        self.assertEqual(39, rebuilt["summary"]["missing_authority_kind_count"])
         self.assertEqual(retained_manifest["summary"], rebuilt["summary"])
-        self.assertEqual(42, remaining_plan["summary"]["selected_task_count"])
-        self.assertEqual(42, remaining_plan["summary"]["selected_missing_task_count"])
+        self.assertEqual(39, remaining_plan["summary"]["selected_task_count"])
+        self.assertEqual(39, remaining_plan["summary"]["selected_missing_task_count"])
         self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA, source_map["schema"])
         self.assertEqual(content_hash(without_keys(source_map, "source_map_id")), source_map["source_map_id"])
-        self.assertEqual(42, source_map["summary"]["entry_count"])
-        self.assertEqual(42, source_map["summary"]["placeholder_source_uri_count"])
+        self.assertEqual(39, source_map["summary"]["entry_count"])
+        self.assertEqual(39, source_map["summary"]["placeholder_source_uri_count"])
         self.assertEqual(0, source_map["summary"]["live_source_uri_count"])
         self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA, collected_source_map["schema"])
         self.assertEqual(content_hash(without_keys(collected_source_map, "source_map_id")), collected_source_map["source_map_id"])
-        self.assertEqual(29, collected_source_map["summary"]["entry_count"])
+        self.assertEqual(32, collected_source_map["summary"]["entry_count"])
         self.assertEqual(0, collected_source_map["summary"]["placeholder_source_uri_count"])
-        self.assertEqual(29, collected_source_map["summary"]["live_source_uri_count"])
+        self.assertEqual(32, collected_source_map["summary"]["live_source_uri_count"])
         self.assertEqual(EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA, collection_run["schema"])
         self.assertEqual(content_hash(without_keys(collection_run, "run_id")), collection_run["run_id"])
         self.assertEqual(content_hash(collected_source_map), collection_run["source_map"]["source_map_hash"])
-        self.assertEqual(29, collection_run["summary"]["collected_count"])
-        self.assertEqual(29, collection_run_result.collected_count)
+        self.assertEqual(32, collection_run["summary"]["collected_count"])
+        self.assertEqual(32, collection_run_result.collected_count)
         self.assertEqual(
             ["ci-run", "provider-api", "hosted-service"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["oss-verifier-and-public-spec"],
@@ -2273,6 +2303,10 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual(
             ["ci-run", "provider-api", "hosted-service", "identity-provider"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["cicd-provider-approvals"],
+        )
+        self.assertEqual(
+            ["regulator", "insurer", "customer"],
+            rebuilt["summary"]["covered_authority_kinds_by_requirement"]["design-partner-pilot-exit-criteria"],
         )
         self.assertEqual(
             ["provider-api", "hosted-service"],
@@ -2337,8 +2371,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertEqual(collection_run["run_id"], collection_payload["run_id"])
             self.assertEqual(content_hash(collection_run), collection_payload["run_hash"])
             self.assertEqual(content_hash(collected_source_map), collection_payload["source_map_hash"])
-            self.assertEqual(29, collection_payload["collected_count"])
-            self.assertEqual(29, collection_payload["task_count"])
+            self.assertEqual(32, collection_payload["collected_count"])
+            self.assertEqual(32, collection_payload["task_count"])
             self.assertTrue(collection_payload["require_live_source_uris"])
             self.assertTrue(collection_payload["require_source_snapshot_artifacts"])
             self.assertTrue(collection_payload["require_fresh_source_snapshot_artifacts"])
@@ -2540,22 +2574,22 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             )
             self.assertFalse(strict_report_result.ok)
             self.assertTrue(any("live source URIs" in error for error in strict_report_result.errors), strict_report_result.errors)
-            self.assertEqual(29, report["summary"]["covered_authority_kind_count"])
-            self.assertEqual(42, report["summary"]["missing_authority_kind_count"])
-            self.assertEqual(42, report["summary"]["remaining_task_count"])
-            self.assertEqual(42, report["summary"]["source_map_entry_count"])
-            self.assertEqual(42, report["summary"]["placeholder_source_uri_count"])
+            self.assertEqual(32, report["summary"]["covered_authority_kind_count"])
+            self.assertEqual(39, report["summary"]["missing_authority_kind_count"])
+            self.assertEqual(39, report["summary"]["remaining_task_count"])
+            self.assertEqual(39, report["summary"]["source_map_entry_count"])
+            self.assertEqual(39, report["summary"]["placeholder_source_uri_count"])
             self.assertEqual(0, report["summary"]["live_source_uri_count"])
             first_gap = report["gaps"][0]
-            self.assertEqual("design-partner-pilot-exit-criteria:regulator", first_gap["unit_ref"])
-            self.assertEqual("regulator evidence for design-partner-pilot-exit-criteria", first_gap["description"])
+            self.assertEqual("framework-adapters:ci-run", first_gap["unit_ref"])
+            self.assertEqual("ci-run evidence for framework-adapters", first_gap["description"])
             self.assertNotIn("source_file", first_gap)
-            self.assertEqual("artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/regulator.json", first_gap["snapshot_out"])
-            self.assertEqual("artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/regulator.json", first_gap["intake_out"])
+            self.assertEqual("artifacts/external-evidence-sources/framework-adapters/ci-run.json", first_gap["snapshot_out"])
+            self.assertEqual("artifacts/external-evidence-intakes/framework-adapters/ci-run.json", first_gap["intake_out"])
             markdown = markdown_path.read_text(encoding="utf-8")
             self.assertIn("# External Evidence Gap Report", markdown)
-            self.assertIn("Placeholder source URIs: 42", markdown)
-            self.assertIn("- Description: regulator evidence for design-partner-pilot-exit-criteria", markdown)
+            self.assertIn("Placeholder source URIs: 39", markdown)
+            self.assertIn("- Description: ci-run evidence for framework-adapters", markdown)
 
             tampered = copy.deepcopy(report)
             tampered["summary"]["remaining_task_count"] = 51

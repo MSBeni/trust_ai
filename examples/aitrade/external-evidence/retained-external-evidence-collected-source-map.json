@@ -542,6 +542,96 @@
       "unit_ref": "cicd-provider-approvals:identity-provider"
     },
     {
+      "authority_kind": "regulator",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained regulator export for design-partner proof-pack scrutiny survival evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, hash-bound contract/payment evidence, and hash-bound external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/design-partner-pilot-exit-criteria-regulator.json",
+      "issued_at": "2026-07-11T23:10:00Z",
+      "issuer": "Example Regulator",
+      "owner_hint": "legal/compliance owner",
+      "requirement_id": "design-partner-pilot-exit-criteria",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/design-partner-regulator-source-snapshot.json",
+      "source_uri": "https://regulator.example/exports/trustai/design-partner/proof-pack-scrutiny",
+      "subject": "TrustAI design-partner proof-pack scrutiny survival",
+      "suggested_evidence_sources": [
+        "regulator acknowledgement",
+        "supervisor portal receipt",
+        "conformity-assessment record"
+      ],
+      "task": "design-partner-pilot-exit-criteria:regulator",
+      "task_id": "8beb464dea5f99349b68fac304cdbfe073de0b3d8f0d3871a3c552b611e5fe57",
+      "task_ref": "external-evidence:design-partner-pilot-exit-criteria:regulator",
+      "title": "Design-partner pilot and external-scrutiny exit criteria",
+      "unit_id": "a1e976a67018099d65aa78e30ffa6013c78716d28bab10e5906ee4e78db9a043",
+      "unit_ref": "design-partner-pilot-exit-criteria:regulator"
+    },
+    {
+      "authority_kind": "insurer",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained insurer export for design-partner underwriting review evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, hash-bound contract/payment evidence, and hash-bound external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/design-partner-pilot-exit-criteria-insurer.json",
+      "issued_at": "2026-07-11T23:11:00Z",
+      "issuer": "Example AI Liability Underwriter",
+      "owner_hint": "risk/insurance owner",
+      "requirement_id": "design-partner-pilot-exit-criteria",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/design-partner-insurer-source-snapshot.json",
+      "source_uri": "https://insurer.example/exports/trustai/design-partner/underwriting-review",
+      "subject": "TrustAI design-partner underwriting review",
+      "suggested_evidence_sources": [
+        "underwriter response",
+        "premium or policy-system quote",
+        "insurer API response export"
+      ],
+      "task": "design-partner-pilot-exit-criteria:insurer",
+      "task_id": "f89ead8e5b1ef2df684cdafe8b68cc53afc9a520feb84ac4cf8a2372f4b9d833",
+      "task_ref": "external-evidence:design-partner-pilot-exit-criteria:insurer",
+      "title": "Design-partner pilot and external-scrutiny exit criteria",
+      "unit_id": "d41d0d5c4e7c4c9fd33df8fb1685df9b9c7a4d826a0f813f8ab6d17dfc8fd769",
+      "unit_ref": "design-partner-pilot-exit-criteria:insurer"
+    },
+    {
+      "authority_kind": "customer",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained customer export for design-partner paid pilot acceptance evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, hash-bound contract/payment evidence, and hash-bound external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/design-partner-pilot-exit-criteria-customer.json",
+      "issued_at": "2026-07-11T23:12:00Z",
+      "issuer": "Example Customer",
+      "owner_hint": "customer success/account owner",
+      "requirement_id": "design-partner-pilot-exit-criteria",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/design-partner-customer-source-snapshot.json",
+      "source_uri": "https://customer.example/exports/trustai/design-partner/paid-pilot-acceptance",
+      "subject": "TrustAI design-partner paid pilot acceptance",
+      "suggested_evidence_sources": [
+        "customer acceptance artifact",
+        "contract/payment/procurement evidence",
+        "deployment or signoff record"
+      ],
+      "task": "design-partner-pilot-exit-criteria:customer",
+      "task_id": "3b433a43be3da2c0e04eb8936dac0b61ec81ee1421fb95fe1c400b8a58f0e6b3",
+      "task_ref": "external-evidence:design-partner-pilot-exit-criteria:customer",
+      "title": "Design-partner pilot and external-scrutiny exit criteria",
+      "unit_id": "f59acd1b3d75f14f173e51163ad559dba1aed89a00fba70e143375b6b5be60d7",
+      "unit_ref": "design-partner-pilot-exit-criteria:customer"
+    },
+    {
       "authority_kind": "provider-api",
       "content_type": "application/json",
       "coverage_status": "missing",
@@ -879,7 +969,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "2a786e61232c79a95cb1c6222d2c2948d4c7027ab9f7880478a041c7812e206a",
+  "source_map_id": "e2a52cebb05a8b08cb506d2be7ba127fe1e462387db14a543dc2e80b7c8c56ce",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -894,9 +984,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 29,
+    "entry_count": 32,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 29,
+    "live_source_uri_count": 32,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

@@ -1,8 +1,8 @@
 # TrustAI External Evidence Collection Plan
 
-Plan ID: `b8164fef72e2eca9e875e10e9cda7b65d6801d2515e61c2d52f3d820d2a335b6`
+Plan ID: `b4ccd3558866e04e7a504e969610f7cca62b36d754813a5d8eebd6cb7c334c43`
 
-Source manifest: `79e3f92d99b9931c3c0e947efc56dd97636a936b86cd65cd68d36bb2d7520b52`
+Source manifest: `400a4ac3ac138e7ffc1ce09dcc1b8e507f4de0c00d03629dd2a590fbe125572b`
 
 Status filter: missing
 
@@ -10,18 +10,15 @@ Status filter: missing
 
 - Source manifest status: partial
 - Total authority units: 71
-- Selected tasks: 42
-- Selected missing tasks: 42
+- Selected tasks: 39
+- Selected missing tasks: 39
 - Selected covered tasks: 0
-- Missing authority kinds overall: 42
+- Missing authority kinds overall: 39
 
 ## Collection Tasks
 
 | Task ID | Unit Ref | Requirement | Authority | Status | Owner Hint | Suggested Artifact | Evidence Argument Template |
 |---|---|---|---|---|---|---|---|
-| `8beb464dea5f99349b68fac304cdbfe073de0b3d8f0d3871a3c552b611e5fe57` | `design-partner-pilot-exit-criteria:regulator` | `design-partner-pilot-exit-criteria` | regulator | missing | legal/compliance owner | `external-evidence/design-partner-pilot-exit-criteria/regulator.json` | `design-partner-pilot-exit-criteria,regulator,external-evidence/design-partner-pilot-exit-criteria/regulator.json,regulator evidence for design-partner-pilot-exit-criteria;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
-| `f89ead8e5b1ef2df684cdafe8b68cc53afc9a520feb84ac4cf8a2372f4b9d833` | `design-partner-pilot-exit-criteria:insurer` | `design-partner-pilot-exit-criteria` | insurer | missing | risk/insurance owner | `external-evidence/design-partner-pilot-exit-criteria/insurer.json` | `design-partner-pilot-exit-criteria,insurer,external-evidence/design-partner-pilot-exit-criteria/insurer.json,insurer evidence for design-partner-pilot-exit-criteria;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
-| `3b433a43be3da2c0e04eb8936dac0b61ec81ee1421fb95fe1c400b8a58f0e6b3` | `design-partner-pilot-exit-criteria:customer` | `design-partner-pilot-exit-criteria` | customer | missing | customer success/account owner | `external-evidence/design-partner-pilot-exit-criteria/customer.json` | `design-partner-pilot-exit-criteria,customer,external-evidence/design-partner-pilot-exit-criteria/customer.json,customer evidence for design-partner-pilot-exit-criteria;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `ab8887f1051e79a457ce56e289a9f4ad3306687a8df45f30c0ed0217570eb002` | `framework-adapters:ci-run` | `framework-adapters` | ci-run | missing | release engineering | `external-evidence/framework-adapters/ci-run.json` | `framework-adapters,ci-run,external-evidence/framework-adapters/ci-run.json,ci-run evidence for framework-adapters;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `0b35d2f033f96f6bd1373d1d28cc0ff5b3e53a6f39da2e7691cfdaf27df40f31` | `auditor-and-review-portal:kms-hsm` | `auditor-and-review-portal` | kms-hsm | missing | security/platform KMS owner | `external-evidence/auditor-and-review-portal/kms-hsm.json` | `auditor-and-review-portal,kms-hsm,external-evidence/auditor-and-review-portal/kms-hsm.json,kms-hsm evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `699e8d3307be54666ad631cdf7fb69f8177fcb9f54115c67c83b917bca3dea7b` | `auditor-and-review-portal:provider-api` | `auditor-and-review-portal` | provider-api | missing | integration/platform owner | `external-evidence/auditor-and-review-portal/provider-api.json` | `auditor-and-review-portal,provider-api,external-evidence/auditor-and-review-portal/provider-api.json,provider-api evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |

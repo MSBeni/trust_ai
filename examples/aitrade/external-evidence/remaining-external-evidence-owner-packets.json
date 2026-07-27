@@ -5,7 +5,7 @@
     "Source URIs marked TODO or placeholder must be replaced with authority-owned source exports before collection.",
     "Packet completion is proven only by verified source snapshots, intake receipts, rebuilt manifests, and readiness reports."
   ],
-  "owner_packet_bundle_id": "a7cba02902091b620f434c00f9209fd0eebfd5da72dd7e40cf221a6721172eac",
+  "owner_packet_bundle_id": "c8f84ef56de71e35f29322ece4fafdd8feed4f2e8954a5e83108062b083fe7a0",
   "packets": [
     {
       "authority_kinds": [
@@ -292,16 +292,15 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 9,
+      "missing_task_count": 8,
       "owner_hint": "customer success/account owner",
-      "package_hash": "bd8d7c61062a9886f349a7c19e77e7a14e947551ec826f1d6db0761d7197a26b",
-      "package_id": "c989f4ba44c4c7912f648f0328d7ef720aefd49553f291f977c6058edc28d566",
+      "package_hash": "6184e6bb46268894f761326c79bdbf0026b10a712377469daf3257aef7373679",
+      "package_id": "985e925d5c4aecaa5b7c422b7ed885a21345ff389af65549004cacbfcc1ad0ee",
       "package_ref": "owner_hint:customer-success-account-owner",
-      "packet_id": "b6c51823b2158f7a36a336b736f16b90bbf598454e0141f5296495a1834006bf",
+      "packet_id": "69f40c32125c09c10fbd28e319547f2551b3fb9a305a20be3d9fffee642dd753",
       "packet_ref": "owner-packet:owner_hint:customer-success-account-owner",
       "phases": [
         "P0-P4",
-        "P1",
         "P1-P2",
         "P1-P4",
         "P2",
@@ -309,14 +308,13 @@
         "P3",
         "P4"
       ],
-      "placeholder_source_uri_count": 9,
+      "placeholder_source_uri_count": 8,
       "priorities": [
         "P0",
         "P1"
       ],
       "requirement_ids": [
         "byoc-self-hosted",
-        "design-partner-pilot-exit-criteria",
         "insurer-api-and-actuarial-products",
         "product-scope-discipline",
         "roadmap-phase-scoreboard",
@@ -325,7 +323,7 @@
         "trustai-own-compliance",
         "vertical-packs"
       ],
-      "task_count": 9,
+      "task_count": 8,
       "tasks": [
         {
           "acceptance_criteria": [
@@ -403,83 +401,6 @@
           "title": "Product scope discipline and anti-focus decisions",
           "unit_id": "b9bb5a1cee7e34da59216f2b3b2abdd9998507ec8b76789cffba6731a8a24544",
           "unit_ref": "product-scope-discipline:customer"
-        },
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be customer and accepted for design-partner-pilot-exit-criteria.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "customer",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/design-partner-pilot-exit-criteria/customer",
-              "--root",
-              ".",
-              "--task",
-              "design-partner-pilot-exit-criteria:customer",
-              "--description",
-              "customer evidence for design-partner-pilot-exit-criteria",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/customer.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/customer.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/design-partner-pilot-exit-criteria/customer --root . --task design-partner-pilot-exit-criteria:customer --description 'customer evidence for design-partner-pilot-exit-criteria' --snapshot-out artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/customer.json --intake-out artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/customer.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/customer.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/customer.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "customer evidence for design-partner-pilot-exit-criteria",
-          "evidence_argument_template": "design-partner-pilot-exit-criteria,customer,external-evidence/design-partner-pilot-exit-criteria/customer.json,customer evidence for design-partner-pilot-exit-criteria;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, hash-bound contract/payment evidence, and hash-bound external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/customer.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "customer success/account owner",
-          "phase": "P1",
-          "priority": "P0",
-          "requirement_id": "design-partner-pilot-exit-criteria",
-          "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/customer.json",
-          "source_uri": "TODO://authority/design-partner-pilot-exit-criteria/customer",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/design-partner-pilot-exit-criteria/customer.json",
-          "suggested_evidence_sources": [
-            "customer acceptance artifact",
-            "contract/payment/procurement evidence",
-            "deployment or signoff record"
-          ],
-          "task_id": "3b433a43be3da2c0e04eb8936dac0b61ec81ee1421fb95fe1c400b8a58f0e6b3",
-          "task_ref": "external-evidence:design-partner-pilot-exit-criteria:customer",
-          "title": "Design-partner pilot and external-scrutiny exit criteria",
-          "unit_id": "f59acd1b3d75f14f173e51163ad559dba1aed89a00fba70e143375b6b5be60d7",
-          "unit_ref": "design-partner-pilot-exit-criteria:customer"
         },
         {
           "acceptance_criteria": [
@@ -1386,21 +1307,20 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 5,
+      "missing_task_count": 4,
       "owner_hint": "legal/compliance owner",
-      "package_hash": "df3b60e0870955b8e7e44131ca58ce36965825b023f030e3c3f93d76184a7d46",
-      "package_id": "41375da159f353cbbf6f0d6084bfdcbde9252e92be8b8ec46c08de75c215d82c",
+      "package_hash": "9d0582f2add29ab94b0ab5444dd827d09a1a680437a3cea177572df1b6b48da3",
+      "package_id": "92cba2bab95eaa9adfe67e73bb1626d82e8c3326ab0145701334cb62ed42c229",
       "package_ref": "owner_hint:legal-compliance-owner",
-      "packet_id": "de70e9621ef7a3afb73cdb7e977758214ec6e8a82d3cf5d9b40f1c39099481ee",
+      "packet_id": "e22d57fe22460d3903650e15cc62d9711e90398a068013b4bd64c583eb7688b2",
       "packet_ref": "owner-packet:owner_hint:legal-compliance-owner",
       "phases": [
-        "P1",
         "P1-P3",
         "P1-P4",
         "P2-P3",
         "P3"
       ],
-      "placeholder_source_uri_count": 5,
+      "placeholder_source_uri_count": 4,
       "priorities": [
         "P0",
         "P1"
@@ -1408,89 +1328,11 @@
       "requirement_ids": [
         "auditor-and-review-portal",
         "compliance-mapper-and-eu-ai-act",
-        "design-partner-pilot-exit-criteria",
         "roadmap-phase-scoreboard",
         "vertical-packs"
       ],
-      "task_count": 5,
+      "task_count": 4,
       "tasks": [
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be regulator and accepted for design-partner-pilot-exit-criteria.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "regulator",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/design-partner-pilot-exit-criteria/regulator",
-              "--root",
-              ".",
-              "--task",
-              "design-partner-pilot-exit-criteria:regulator",
-              "--description",
-              "regulator evidence for design-partner-pilot-exit-criteria",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/regulator.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/regulator.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/design-partner-pilot-exit-criteria/regulator --root . --task design-partner-pilot-exit-criteria:regulator --description 'regulator evidence for design-partner-pilot-exit-criteria' --snapshot-out artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/regulator.json --intake-out artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/regulator.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/regulator.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/regulator.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "regulator evidence for design-partner-pilot-exit-criteria",
-          "evidence_argument_template": "design-partner-pilot-exit-criteria,regulator,external-evidence/design-partner-pilot-exit-criteria/regulator.json,regulator evidence for design-partner-pilot-exit-criteria;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, hash-bound contract/payment evidence, and hash-bound external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/regulator.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "legal/compliance owner",
-          "phase": "P1",
-          "priority": "P0",
-          "requirement_id": "design-partner-pilot-exit-criteria",
-          "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/regulator.json",
-          "source_uri": "TODO://authority/design-partner-pilot-exit-criteria/regulator",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/design-partner-pilot-exit-criteria/regulator.json",
-          "suggested_evidence_sources": [
-            "regulator acknowledgement",
-            "supervisor portal receipt",
-            "conformity-assessment record"
-          ],
-          "task_id": "8beb464dea5f99349b68fac304cdbfe073de0b3d8f0d3871a3c552b611e5fe57",
-          "task_ref": "external-evidence:design-partner-pilot-exit-criteria:regulator",
-          "title": "Design-partner pilot and external-scrutiny exit criteria",
-          "unit_id": "a1e976a67018099d65aa78e30ffa6013c78716d28bab10e5906ee4e78db9a043",
-          "unit_ref": "design-partner-pilot-exit-criteria:regulator"
-        },
         {
           "acceptance_criteria": [
             "Artifact path must be repository-relative and hashable before manifest verification.",
@@ -2323,109 +2165,30 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 4,
+      "missing_task_count": 3,
       "owner_hint": "risk/insurance owner",
-      "package_hash": "3fd863fb0d19c6533e620bd1d0f876cfc6115423af897c029c3840e4a995243c",
-      "package_id": "4e8c4ea0c1485a4f74d654c6751a3fe1ce50686a434841596b6f8b0325dbcfb3",
+      "package_hash": "9d5016dfbd115740b35055214ec517077af2d7eff4c7b7fcedf3b3cad073aade",
+      "package_id": "e3cfe80dd86841fba5e8da22ab8afdd1a30befa5474e40b2fb087b69418df27c",
       "package_ref": "owner_hint:risk-insurance-owner",
-      "packet_id": "df229181c03b4dcb7032ca43f6b9fed7703fac1c258d0e29b1b6fdbff00a520f",
+      "packet_id": "694680aa2bbf1b45c8bef8f737fced0b3f9a67164d45795e9998eb5e4823e6fa",
       "packet_ref": "owner-packet:owner_hint:risk-insurance-owner",
       "phases": [
-        "P1",
         "P1-P4",
         "P2-P4",
         "P3"
       ],
-      "placeholder_source_uri_count": 4,
+      "placeholder_source_uri_count": 3,
       "priorities": [
         "P0",
         "P1"
       ],
       "requirement_ids": [
-        "design-partner-pilot-exit-criteria",
         "insurer-api-and-actuarial-products",
         "roadmap-phase-scoreboard",
         "vertical-packs"
       ],
-      "task_count": 4,
+      "task_count": 3,
       "tasks": [
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be insurer and accepted for design-partner-pilot-exit-criteria.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "insurer",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/design-partner-pilot-exit-criteria/insurer",
-              "--root",
-              ".",
-              "--task",
-              "design-partner-pilot-exit-criteria:insurer",
-              "--description",
-              "insurer evidence for design-partner-pilot-exit-criteria",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/insurer.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/insurer.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/design-partner-pilot-exit-criteria/insurer --root . --task design-partner-pilot-exit-criteria:insurer --description 'insurer evidence for design-partner-pilot-exit-criteria' --snapshot-out artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/insurer.json --intake-out artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/insurer.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/insurer.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/insurer.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "insurer evidence for design-partner-pilot-exit-criteria",
-          "evidence_argument_template": "design-partner-pilot-exit-criteria,insurer,external-evidence/design-partner-pilot-exit-criteria/insurer.json,insurer evidence for design-partner-pilot-exit-criteria;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Design-partner pilot dossiers cover local/reference readiness and external-evidence schemas for partner count, signed pilot value, hash-bound contract/payment evidence, and hash-bound external scrutiny survival; actual paying partner contracts, payment records, customer-owned governed-agent deployments, external auditor/regulator/insurer/procurement review artifacts, and signed value/ARR evidence remain external business evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/insurer.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "risk/insurance owner",
-          "phase": "P1",
-          "priority": "P0",
-          "requirement_id": "design-partner-pilot-exit-criteria",
-          "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/insurer.json",
-          "source_uri": "TODO://authority/design-partner-pilot-exit-criteria/insurer",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/design-partner-pilot-exit-criteria/insurer.json",
-          "suggested_evidence_sources": [
-            "underwriter response",
-            "premium or policy-system quote",
-            "insurer API response export"
-          ],
-          "task_id": "f89ead8e5b1ef2df684cdafe8b68cc53afc9a520feb84ac4cf8a2372f4b9d833",
-          "task_ref": "external-evidence:design-partner-pilot-exit-criteria:insurer",
-          "title": "Design-partner pilot and external-scrutiny exit criteria",
-          "unit_id": "d41d0d5c4e7c4c9fd33df8fb1685df9b9c7a4d826a0f813f8ab6d17dfc8fd769",
-          "unit_ref": "design-partner-pilot-exit-criteria:insurer"
-        },
         {
           "acceptance_criteria": [
             "Artifact path must be repository-relative and hashable before manifest verification.",
@@ -3635,35 +3398,35 @@
   "source_work_package": {
     "generated_at": "2026-07-12T00:01:00Z",
     "group_by": "owner_hint",
-    "work_package_hash": "ca166a2a03466430168b50a171ed619d5a5974e07920ec53500f2d7a5b82cea7",
-    "work_package_id": "d6204a9e3573b614a0c45accc7ca6c25466e9ddf352b50645dbed073fb36e171"
+    "work_package_hash": "4d31a39b72ba0199f4b36beb83d76879cf03b3c0ea39890b8a7ebafe6b32b6d6",
+    "work_package_id": "7c62a00e43966c25b883696410abd4a8865616f2ecb8e574be48314607680612"
   },
   "summary": {
     "covered_task_count": 0,
     "live_source_uri_count": 0,
-    "missing_task_count": 42,
+    "missing_task_count": 39,
     "packet_count": 9,
-    "placeholder_source_uri_count": 42,
-    "source_work_package_task_count": 42,
-    "task_count": 42,
+    "placeholder_source_uri_count": 39,
+    "source_work_package_task_count": 39,
+    "task_count": 39,
     "task_count_by_authority_kind": {
       "ci-run": 6,
-      "customer": 9,
+      "customer": 8,
       "hosted-service": 3,
       "identity-provider": 3,
-      "insurer": 4,
+      "insurer": 3,
       "kms-hsm": 3,
       "provider-api": 4,
-      "regulator": 5,
+      "regulator": 4,
       "standards-body": 5
     },
     "task_count_by_owner_hint": {
       "IAM/identity owner": 3,
-      "customer success/account owner": 9,
+      "customer success/account owner": 8,
       "integration/platform owner": 4,
-      "legal/compliance owner": 5,
+      "legal/compliance owner": 4,
       "release engineering": 6,
-      "risk/insurance owner": 4,
+      "risk/insurance owner": 3,
       "security/platform KMS owner": 3,
       "service owner": 3,
       "standards/governance owner": 5

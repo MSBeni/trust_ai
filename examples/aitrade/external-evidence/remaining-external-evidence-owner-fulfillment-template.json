@@ -62,20 +62,6 @@
         "placeholder-source-uri",
         "missing-intake"
       ],
-      "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/customer.json",
-      "owner_hint": "customer success/account owner",
-      "requirement_id": "design-partner-pilot-exit-criteria",
-      "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/customer.json",
-      "source_uri_status": "placeholder",
-      "task": "design-partner-pilot-exit-criteria:customer",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "customer",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
       "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/customer.json",
       "owner_hint": "customer success/account owner",
       "requirement_id": "insurer-api-and-actuarial-products",
@@ -258,20 +244,6 @@
         "placeholder-source-uri",
         "missing-intake"
       ],
-      "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/regulator.json",
-      "owner_hint": "legal/compliance owner",
-      "requirement_id": "design-partner-pilot-exit-criteria",
-      "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/regulator.json",
-      "source_uri_status": "placeholder",
-      "task": "design-partner-pilot-exit-criteria:regulator",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "regulator",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
       "intake_out": "artifacts/external-evidence-intakes/roadmap-phase-scoreboard/regulator.json",
       "owner_hint": "legal/compliance owner",
       "requirement_id": "roadmap-phase-scoreboard",
@@ -376,20 +348,6 @@
       "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/ci-run.json",
       "source_uri_status": "placeholder",
       "task": "runtime-policy-and-attestation:ci-run",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "insurer",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/insurer.json",
-      "owner_hint": "risk/insurance owner",
-      "requirement_id": "design-partner-pilot-exit-criteria",
-      "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/insurer.json",
-      "source_uri_status": "placeholder",
-      "task": "design-partner-pilot-exit-criteria:insurer",
       "task_status": "blocked"
     },
     {
@@ -620,11 +578,6 @@
       "task": "byoc-self-hosted:customer"
     },
     {
-      "description": "customer evidence for design-partner-pilot-exit-criteria",
-      "source_uri": "TODO://authority/design-partner-pilot-exit-criteria/customer",
-      "task": "design-partner-pilot-exit-criteria:customer"
-    },
-    {
       "description": "customer evidence for insurer-api-and-actuarial-products",
       "source_uri": "TODO://authority/insurer-api-and-actuarial-products/customer",
       "task": "insurer-api-and-actuarial-products:customer"
@@ -690,11 +643,6 @@
       "task": "compliance-mapper-and-eu-ai-act:regulator"
     },
     {
-      "description": "regulator evidence for design-partner-pilot-exit-criteria",
-      "source_uri": "TODO://authority/design-partner-pilot-exit-criteria/regulator",
-      "task": "design-partner-pilot-exit-criteria:regulator"
-    },
-    {
       "description": "regulator evidence for roadmap-phase-scoreboard",
       "source_uri": "TODO://authority/roadmap-phase-scoreboard/regulator",
       "task": "roadmap-phase-scoreboard:regulator"
@@ -733,11 +681,6 @@
       "description": "ci-run evidence for runtime-policy-and-attestation",
       "source_uri": "TODO://authority/runtime-policy-and-attestation/ci-run",
       "task": "runtime-policy-and-attestation:ci-run"
-    },
-    {
-      "description": "insurer evidence for design-partner-pilot-exit-criteria",
-      "source_uri": "TODO://authority/design-partner-pilot-exit-criteria/insurer",
-      "task": "design-partner-pilot-exit-criteria:insurer"
     },
     {
       "description": "insurer evidence for insurer-api-and-actuarial-products",
@@ -820,21 +763,21 @@
     "This template is a handoff artifact; it does not satisfy missing external authority evidence by itself.",
     "Placeholder source URIs intentionally keep readiness blocked until owners replace them with live authority sources."
   ],
-  "owner_fulfillment_template_id": "1188952637c8bc43f4dfdd40f9f681c362c25eb967f9685d56df73ec50395d99",
+  "owner_fulfillment_template_id": "4b230ee97c91873b68e64d92c37aae62811c42c71b1ffb23f6ce32bca5574a10",
   "schema": "trustai.external-evidence-owner-fulfillment-template/0.1",
   "source_owner_packet_status": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "owner_packet_status_hash": "3441e708ed617e0730a30c5cff7de06d0dbdf4149602644e2e489032838eceaf",
-    "owner_packet_status_id": "16962aa76afae85636d08f66c226604d0825164dba80567bc9e86697a059fc8f",
+    "owner_packet_status_hash": "f9a4bec61b880a4049f2f9b9aee65abadbf74dd2b5ab74e49d5e531ee0d393d4",
+    "owner_packet_status_id": "9c656217e4330b6e2339d0a1c4f98d3646fd5299b3aa7c12f344357b72e17668",
     "schema": "trustai.external-evidence-owner-packet-status/0.1"
   },
   "summary": {
-    "assignment_count": 42,
-    "blocked_task_count": 42,
+    "assignment_count": 39,
+    "blocked_task_count": 39,
     "closed_task_count": 0,
-    "fulfillment_count": 42,
+    "fulfillment_count": 39,
     "live_source_uri_count": 0,
-    "missing_intake_count": 42,
+    "missing_intake_count": 39,
     "open_task_count": 0,
     "owner_count": 9,
     "owners": [
@@ -848,6 +791,6 @@
       "service owner",
       "standards/governance owner"
     ],
-    "placeholder_source_uri_count": 42
+    "placeholder_source_uri_count": 39
   }
 }

@@ -1,25 +1,25 @@
 # External Evidence Gap Report
 
-- Gap report ID: `5d8711a2432645e0a21020a6026f457cfc919c99987d81d7d424941d8005f26f`
+- Gap report ID: `7bbbba2a432432f57691e28b1c3ea8541c6eaa9f489001dd9811c07883a94879`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 29/71
-- Missing authority kinds: 42
-- Remaining collection tasks: 42
-- Source-map entries: 42
-- Placeholder source URIs: 42
+- Covered authority kinds: 32/71
+- Missing authority kinds: 39
+- Remaining collection tasks: 39
+- Source-map entries: 39
+- Placeholder source URIs: 39
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
 
 - `ci-run`: 6
-- `customer`: 9
+- `customer`: 8
 - `hosted-service`: 3
 - `identity-provider`: 3
-- `insurer`: 4
+- `insurer`: 3
 - `kms-hsm`: 3
 - `provider-api`: 4
-- `regulator`: 5
+- `regulator`: 4
 - `standards-body`: 5
 
 ## Gaps By Requirement
@@ -27,7 +27,6 @@
 - `auditor-and-review-portal`: 5
 - `byoc-self-hosted`: 3
 - `compliance-mapper-and-eu-ai-act`: 3
-- `design-partner-pilot-exit-criteria`: 3
 - `framework-adapters`: 1
 - `insurer-api-and-actuarial-products`: 7
 - `product-scope-discipline`: 2
@@ -40,39 +39,6 @@
 - `vertical-packs`: 3
 
 ## Collection Worklist
-
-### design-partner-pilot-exit-criteria:regulator
-
-- Title: Design-partner pilot and external-scrutiny exit criteria
-- Authority kind: `regulator`
-- Owner hint: legal/compliance owner
-- Description: regulator evidence for design-partner-pilot-exit-criteria
-- Source URI: `TODO://authority/design-partner-pilot-exit-criteria/regulator`
-- Snapshot output: `artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/regulator.json`
-- Intake output: `artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/regulator.json`
-- Suggested evidence sources: regulator acknowledgement; supervisor portal receipt; conformity-assessment record
-
-### design-partner-pilot-exit-criteria:insurer
-
-- Title: Design-partner pilot and external-scrutiny exit criteria
-- Authority kind: `insurer`
-- Owner hint: risk/insurance owner
-- Description: insurer evidence for design-partner-pilot-exit-criteria
-- Source URI: `TODO://authority/design-partner-pilot-exit-criteria/insurer`
-- Snapshot output: `artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/insurer.json`
-- Intake output: `artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/insurer.json`
-- Suggested evidence sources: underwriter response; premium or policy-system quote; insurer API response export
-
-### design-partner-pilot-exit-criteria:customer
-
-- Title: Design-partner pilot and external-scrutiny exit criteria
-- Authority kind: `customer`
-- Owner hint: customer success/account owner
-- Description: customer evidence for design-partner-pilot-exit-criteria
-- Source URI: `TODO://authority/design-partner-pilot-exit-criteria/customer`
-- Snapshot output: `artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/customer.json`
-- Intake output: `artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/customer.json`
-- Suggested evidence sources: customer acceptance artifact; contract/payment/procurement evidence; deployment or signoff record
 
 ### framework-adapters:ci-run
 
