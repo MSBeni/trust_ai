@@ -5,7 +5,8 @@
       "identity-provider"
     ],
     "auditor-and-review-portal": [
-      "kms-hsm"
+      "kms-hsm",
+      "provider-api"
     ],
     "byoc-self-hosted": [
       "kms-hsm",
@@ -57,31 +58,8 @@
       "standards-body"
     ]
   },
-  "gap_report_id": "c5ce2d5bcf64c1dc1caa24c7961290980390da7a6160c7e93c7dd7c71018367f",
+  "gap_report_id": "c91ac2c0d063aa2945697ed5922d778e5b863e62ba34a37f08ca668333dc187e",
   "gaps": [
-    {
-      "authority_kind": "provider-api",
-      "description": "provider-api evidence for auditor-and-review-portal",
-      "external_authority_required": [
-        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/provider-api.json",
-      "owner_hint": "integration/platform owner",
-      "requirement_id": "auditor-and-review-portal",
-      "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/provider-api.json",
-      "source_uri": "TODO://authority/auditor-and-review-portal/provider-api",
-      "suggested_evidence_sources": [
-        "provider API response export",
-        "request/response transcript",
-        "provider-owned audit event"
-      ],
-      "task": "auditor-and-review-portal:provider-api",
-      "task_id": "699e8d3307be54666ad631cdf7fb69f8177fcb9f54115c67c83b917bca3dea7b",
-      "task_ref": "external-evidence:auditor-and-review-portal:provider-api",
-      "title": "Auditor view, supervised access, regulator view, and review portal attestations",
-      "unit_id": "248848c8b3fa34f616469d68be67714e13edfe6ba6707a55d6d646b69329ba60",
-      "unit_ref": "auditor-and-review-portal:provider-api"
-    },
     {
       "authority_kind": "hosted-service",
       "description": "hosted-service evidence for auditor-and-review-portal",
@@ -919,7 +897,6 @@
   ],
   "missing_authority_kinds_by_requirement": {
     "auditor-and-review-portal": [
-      "provider-api",
       "hosted-service",
       "identity-provider",
       "regulator"
@@ -984,14 +961,14 @@
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "98f98ff35c5a9ac81422a4848c8d00d29fc1d52bbc34294a27bd16065c0482ae",
-      "plan_id": "f431d38004d299a9b3efa8e6c832196a6c74396c4763f875387fb31f6c643403",
+      "plan_hash": "5ba5068964f09ffc24713aad1b513d825ddb85afce3f84384a66e1047300a0ba",
+      "plan_id": "9bc568c80bdb2cfdd47dbc3322fe6645a65d2a712baada9064d4e5d910d6cf5b",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "cb663fa4c523e88f43ec5e42727bcabcdf648bb9fd4120551cab199f4745842a",
-      "manifest_id": "83312292ac9c9e9f2ef13ad523dcb5e557b1a94fc14c753760b60252ea8fabe4",
+      "manifest_hash": "f547fb7ec4181ae49d38674d905eb350cec33c9baf8efed035378722a91ec486",
+      "manifest_id": "d3b97aa0f40db01d7147a146b3d225f290c2d8f3dfacd41b801a4151a98cd145",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
@@ -1003,12 +980,12 @@
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "92c184c097552d87f413fc87d15ef5504bc34dfe7517060d028251a4760b01fe",
-      "source_map_id": "bfbedd9110297ad67bac5cf1292d53b4e29bc15ef17efcef19e42551d7a11789"
+      "source_map_hash": "53fa55661b77a60736a46d6c2922771d0638beb1a69a7247923ad40ba5f5f26c",
+      "source_map_id": "fa14d6e25d4104b2d7a5a38041e3f5f76f2b4bead346d11ea90cd852cf9a94a4"
     }
   },
   "summary": {
-    "covered_authority_kind_count": 34,
+    "covered_authority_kind_count": 35,
     "covered_requirement_count": 11,
     "gap_count_by_authority_kind": {
       "ci-run": 5,
@@ -1017,12 +994,12 @@
       "identity-provider": 3,
       "insurer": 3,
       "kms-hsm": 2,
-      "provider-api": 4,
+      "provider-api": 3,
       "regulator": 4,
       "standards-body": 5
     },
     "gap_count_by_requirement": {
-      "auditor-and-review-portal": 4,
+      "auditor-and-review-portal": 3,
       "byoc-self-hosted": 3,
       "compliance-mapper-and-eu-ai-act": 3,
       "insurer-api-and-actuarial-products": 7,
@@ -1036,27 +1013,27 @@
       "vertical-packs": 3
     },
     "live_source_uri_count": 0,
-    "missing_authority_kind_count": 37,
+    "missing_authority_kind_count": 36,
     "missing_requirement_count": 9,
-    "placeholder_source_uri_count": 37,
-    "remaining_missing_task_count": 37,
-    "remaining_task_count": 37,
+    "placeholder_source_uri_count": 36,
+    "remaining_missing_task_count": 36,
+    "remaining_task_count": 36,
     "required_authority_kind_count": 71,
     "required_requirement_count": 20,
-    "source_map_entry_count": 37,
+    "source_map_entry_count": 36,
     "status": "partial"
   },
   "verification": {
     "manifest_warnings": [
       "external evidence missing for: compliance-mapper-and-eu-ai-act, trustai-own-compliance, vertical-packs, insurer-api-and-actuarial-products, state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
-      "external evidence authority kinds missing for: auditor-and-review-portal: provider-api, hosted-service, identity-provider, regulator; byoc-self-hosted: ci-run, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
+      "external evidence authority kinds missing for: auditor-and-review-portal: hosted-service, identity-provider, regulator; byoc-self-hosted: ci-run, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
     ],
     "plan_warnings": [
       "external evidence missing for: compliance-mapper-and-eu-ai-act, trustai-own-compliance, vertical-packs, insurer-api-and-actuarial-products, state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
-      "external evidence authority kinds missing for: auditor-and-review-portal: provider-api, hosted-service, identity-provider, regulator; byoc-self-hosted: ci-run, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
+      "external evidence authority kinds missing for: auditor-and-review-portal: hosted-service, identity-provider, regulator; byoc-self-hosted: ci-run, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
     ],
     "source_map_warnings": [
-      "source map contains 37 placeholder source_uri values"
+      "source map contains 36 placeholder source_uri values"
     ]
   },
   "verification_options": {

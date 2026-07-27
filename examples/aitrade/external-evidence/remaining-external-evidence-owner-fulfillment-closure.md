@@ -1,19 +1,18 @@
 # External Evidence Owner Fulfillment Closure
 
-- Closure ID: `96e3ae2901ed9c207158f97197a9ab3845d3555318a8957b469549aea2898a83`
+- Closure ID: `07f1e0c01844f4a1065646fc50c0575209f7a7a4e9791be030438656a8a04539`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Closed tasks: 0/37
-- Missing intakes: 37
+- Closed tasks: 0/36
+- Missing intakes: 36
 - Invalid intake tasks: 0
-- Missing manifest coverage: 37
-- Placeholder source URIs: 37
+- Missing manifest coverage: 36
+- Placeholder source URIs: 36
 
 ## Task Closure
 
 | Task | Owner | Status | Intake | Manifest Evidence | Blocking Reasons |
 |---|---|---|---|---|---|
-| `auditor-and-review-portal:provider-api` | integration/platform owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `auditor-and-review-portal:hosted-service` | service owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `auditor-and-review-portal:identity-provider` | IAM/identity owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
 | `auditor-and-review-portal:regulator` | legal/compliance owner | missing-intake | None | 0 | `placeholder-source-uri`, `missing-intake`, `missing-manifest-coverage` |
@@ -53,9 +52,9 @@
 
 ## Blockers
 
-- 37 reviewed tasks still use placeholder source_uri values
-- 37 reviewed tasks do not have intake receipts
-- 37 reviewed tasks are not covered by the rebuilt manifest
+- 36 reviewed tasks still use placeholder source_uri values
+- 36 reviewed tasks do not have intake receipts
+- 36 reviewed tasks are not covered by the rebuilt manifest
 
 ## Next Actions
 

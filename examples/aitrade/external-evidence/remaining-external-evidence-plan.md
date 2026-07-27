@@ -1,8 +1,8 @@
 # TrustAI External Evidence Collection Plan
 
-Plan ID: `f431d38004d299a9b3efa8e6c832196a6c74396c4763f875387fb31f6c643403`
+Plan ID: `9bc568c80bdb2cfdd47dbc3322fe6645a65d2a712baada9064d4e5d910d6cf5b`
 
-Source manifest: `83312292ac9c9e9f2ef13ad523dcb5e557b1a94fc14c753760b60252ea8fabe4`
+Source manifest: `d3b97aa0f40db01d7147a146b3d225f290c2d8f3dfacd41b801a4151a98cd145`
 
 Status filter: missing
 
@@ -10,16 +10,15 @@ Status filter: missing
 
 - Source manifest status: partial
 - Total authority units: 71
-- Selected tasks: 37
-- Selected missing tasks: 37
+- Selected tasks: 36
+- Selected missing tasks: 36
 - Selected covered tasks: 0
-- Missing authority kinds overall: 37
+- Missing authority kinds overall: 36
 
 ## Collection Tasks
 
 | Task ID | Unit Ref | Requirement | Authority | Status | Owner Hint | Suggested Artifact | Evidence Argument Template |
 |---|---|---|---|---|---|---|---|
-| `699e8d3307be54666ad631cdf7fb69f8177fcb9f54115c67c83b917bca3dea7b` | `auditor-and-review-portal:provider-api` | `auditor-and-review-portal` | provider-api | missing | integration/platform owner | `external-evidence/auditor-and-review-portal/provider-api.json` | `auditor-and-review-portal,provider-api,external-evidence/auditor-and-review-portal/provider-api.json,provider-api evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `4a20afe57cc9f2971078547577b16f64216382a3ce57613712a53d233e191ce4` | `auditor-and-review-portal:hosted-service` | `auditor-and-review-portal` | hosted-service | missing | service owner | `external-evidence/auditor-and-review-portal/hosted-service.json` | `auditor-and-review-portal,hosted-service,external-evidence/auditor-and-review-portal/hosted-service.json,hosted-service evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `a5df2131c85c2fc3035d01e886ed613d473d2494e864149834b747d7f38f533b` | `auditor-and-review-portal:identity-provider` | `auditor-and-review-portal` | identity-provider | missing | IAM/identity owner | `external-evidence/auditor-and-review-portal/identity-provider.json` | `auditor-and-review-portal,identity-provider,external-evidence/auditor-and-review-portal/identity-provider.json,identity-provider evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `5587a2f2cd16dbff0317d1329cb227cf9a44a025d41f1cde680f23d8872f6d1c` | `auditor-and-review-portal:regulator` | `auditor-and-review-portal` | regulator | missing | legal/compliance owner | `external-evidence/auditor-and-review-portal/regulator.json` | `auditor-and-review-portal,regulator,external-evidence/auditor-and-review-portal/regulator.json,regulator evidence for auditor-and-review-portal;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |

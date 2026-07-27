@@ -1,13 +1,13 @@
 # External Evidence Gap Report
 
-- Gap report ID: `c5ce2d5bcf64c1dc1caa24c7961290980390da7a6160c7e93c7dd7c71018367f`
+- Gap report ID: `c91ac2c0d063aa2945697ed5922d778e5b863e62ba34a37f08ca668333dc187e`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 34/71
-- Missing authority kinds: 37
-- Remaining collection tasks: 37
-- Source-map entries: 37
-- Placeholder source URIs: 37
+- Covered authority kinds: 35/71
+- Missing authority kinds: 36
+- Remaining collection tasks: 36
+- Source-map entries: 36
+- Placeholder source URIs: 36
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
@@ -18,13 +18,13 @@
 - `identity-provider`: 3
 - `insurer`: 3
 - `kms-hsm`: 2
-- `provider-api`: 4
+- `provider-api`: 3
 - `regulator`: 4
 - `standards-body`: 5
 
 ## Gaps By Requirement
 
-- `auditor-and-review-portal`: 4
+- `auditor-and-review-portal`: 3
 - `byoc-self-hosted`: 3
 - `compliance-mapper-and-eu-ai-act`: 3
 - `insurer-api-and-actuarial-products`: 7
@@ -38,17 +38,6 @@
 - `vertical-packs`: 3
 
 ## Collection Worklist
-
-### auditor-and-review-portal:provider-api
-
-- Title: Auditor view, supervised access, regulator view, and review portal attestations
-- Authority kind: `provider-api`
-- Owner hint: integration/platform owner
-- Description: provider-api evidence for auditor-and-review-portal
-- Source URI: `TODO://authority/auditor-and-review-portal/provider-api`
-- Snapshot output: `artifacts/external-evidence-sources/auditor-and-review-portal/provider-api.json`
-- Intake output: `artifacts/external-evidence-intakes/auditor-and-review-portal/provider-api.json`
-- Suggested evidence sources: provider API response export; request/response transcript; provider-owned audit event
 
 ### auditor-and-review-portal:hosted-service
 

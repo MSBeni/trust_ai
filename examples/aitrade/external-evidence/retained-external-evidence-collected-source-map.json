@@ -752,6 +752,36 @@
       "unit_ref": "auditor-and-review-portal:kms-hsm"
     },
     {
+      "authority_kind": "provider-api",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained provider API export for review portal authority dossier and control evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/auditor-and-review-portal-provider-api.json",
+      "issued_at": "2026-07-08T06:13:00Z",
+      "issuer": "TrustAI Cloud Provider API",
+      "owner_hint": "integration/platform owner",
+      "requirement_id": "auditor-and-review-portal",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/review-portal-provider-api-source-snapshot.json",
+      "source_uri": "https://api.trustai.example/v1/review-portals/aitrade-prod/authority-dossier",
+      "subject": "aitrade review portal provider API authority dossier export",
+      "suggested_evidence_sources": [
+        "provider API response export",
+        "request/response transcript",
+        "provider-owned audit event"
+      ],
+      "task": "auditor-and-review-portal:provider-api",
+      "task_id": "699e8d3307be54666ad631cdf7fb69f8177fcb9f54115c67c83b917bca3dea7b",
+      "task_ref": "external-evidence:auditor-and-review-portal:provider-api",
+      "title": "Auditor view, supervised access, regulator view, and review portal attestations",
+      "unit_id": "248848c8b3fa34f616469d68be67714e13edfe6ba6707a55d6d646b69329ba60",
+      "unit_ref": "auditor-and-review-portal:provider-api"
+    },
+    {
       "authority_kind": "kms-hsm",
       "content_type": "application/json",
       "coverage_status": "missing",
@@ -1029,7 +1059,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "4676325a949cdff4802b44c2d3a33eaf98581a8a14fbf3471eb618351b473d08",
+  "source_map_id": "877ddb399e1cb17e743c6d2c373072448565dd67400fa24b20cd4f80a6eaf54e",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -1044,9 +1074,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 34,
+    "entry_count": 35,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 34,
+    "live_source_uri_count": 35,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,
