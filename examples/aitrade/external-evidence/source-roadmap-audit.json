@@ -1,7 +1,7 @@
 {
-  "audit_id": "bc884270a97fe3197010e36dd8c5201439314499a7b37f3c25643902ce08457b",
+  "audit_id": "dab45b3a72377ad2996d4bef90802496de70cf0147687f36fb2acfcc285c28f5",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
-  "generated_at": "2026-07-27T03:44:05Z",
+  "generated_at": "2026-07-27T04:21:51Z",
   "limitations": [
     "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
     "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",
@@ -389,7 +389,7 @@
         {
           "path": "src/trustai/self_serve_authority.py",
           "present": true,
-          "sha256": "sha256:919672d52f5acf6472df093ba2b0c999d1d2e485ecdfa4006d4f0bca79aefc76"
+          "sha256": "sha256:56d950f0a7e2f4c11aeb46d6f855826532e8e7a42bf2b5d9f78a0eddbded6c3b"
         },
         {
           "path": "src/trustai/control_plane.py",
