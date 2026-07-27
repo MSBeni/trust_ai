@@ -76,18 +76,40 @@
       "source_uri": "https://github.com/MSBeni/trust_ai/blob/main/examples/aitrade/framework-hook-release.json",
       "task": "framework-adapters:hosted-service",
       "warnings": []
+    },
+    {
+      "evidence_argument": "agent-inventory-and-identity,provider-api,examples/aitrade/external-evidence/agent-inventory-provider-api-source-snapshot.json,Retained GitHub contents API export for agent registry inventory evidence;issuer=GitHub Contents API;subject=trustai agent registry inventory export;source_uri=https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/agent-inventory.json?ref=main;issued_at=2026-07-03T11:55:00Z;expires_at=2026-12-31T00:00:00Z",
+      "intake_id": "162e63458f0cd9716ce9d603bd7debafb6b14928a26fa255ef31e31f2b241e52",
+      "intake_path": "examples/aitrade/external-evidence/intakes/agent-inventory-and-identity-provider-api.json",
+      "snapshot_artifact_path": "examples/aitrade/external-evidence/agent-inventory-provider-api-source-snapshot.json",
+      "snapshot_id": "694503e2c0a9038ecc09c2c82879ba3f4fac28417e00f0367bd6db540021c7ec",
+      "snapshot_path": "examples/aitrade/external-evidence/agent-inventory-provider-api-source-snapshot.json",
+      "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/agent-inventory.json?ref=main",
+      "task": "agent-inventory-and-identity:provider-api",
+      "warnings": []
+    },
+    {
+      "evidence_argument": "agent-inventory-and-identity,identity-provider,examples/aitrade/external-evidence/identity-inventory-provider-source-snapshot.json,Retained identity-provider export for governed agent inventory reconciliation evidence;issuer=Identity Provider Export;subject=aitrade governed agent identity inventory;source_uri=https://idp.example/exports/aitrade/identity-inventory;issued_at=2026-07-03T11:57:00Z;expires_at=2026-12-31T00:00:00Z",
+      "intake_id": "f62c47faecdefa35d5732cfd846e53a5cb0b86a57d32a91eef82b42b31eb205a",
+      "intake_path": "examples/aitrade/external-evidence/intakes/agent-inventory-and-identity-identity-provider.json",
+      "snapshot_artifact_path": "examples/aitrade/external-evidence/identity-inventory-provider-source-snapshot.json",
+      "snapshot_id": "d5ade07946e99be12e3166ad9e6f9032fbc98996f8b7e444db20462004ffc9e8",
+      "snapshot_path": "examples/aitrade/external-evidence/identity-inventory-provider-source-snapshot.json",
+      "source_uri": "https://idp.example/exports/aitrade/identity-inventory",
+      "task": "agent-inventory-and-identity:identity-provider",
+      "warnings": []
     }
   ],
   "generated_at": "2026-07-12T00:01:00Z",
-  "run_id": "242ded2a22162ba99ed5676414479ceac2fa4bcf88aa7cf5cc926642c120bee4",
+  "run_id": "4373faae1d59f9c4b0752e35c98ebaed98b3ec33eee642e5b59b4667206cc135",
   "schema": "trustai.external-evidence-collection-run/0.1",
   "source_map": {
     "path": "examples/aitrade/external-evidence/retained-external-evidence-collected-source-map.json",
-    "source_map_hash": "a5df4b7f4f0c72be177a2a86f024bf87e5650c4f27b00d52cd4e98af4c38bdf2"
+    "source_map_hash": "3209b8b9d3cfc4fcfb451e4d1c008aaa9c9b8919d53d0720579974f77d8603b6"
   },
   "summary": {
-    "collected_count": 7,
+    "collected_count": 9,
     "require_fresh": true,
-    "task_count": 7
+    "task_count": 9
   }
 }

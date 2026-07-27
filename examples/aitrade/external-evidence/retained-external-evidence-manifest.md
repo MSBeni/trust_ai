@@ -1,20 +1,20 @@
 # TrustAI External Evidence Manifest
 
-Manifest ID: `da1839a025798bd08745c84c5a8207dc35a44d574ec24a8cedfe55ec36b84620`
+Manifest ID: `aeff1ad249f16d018b89eec85bf9322db6e31b2861cd90a1bc181af190b46cd4`
 
 Status: partial
 
 ## Coverage
 
 - Required external requirements: 20
-- Covered requirements: 3
+- Covered requirements: 4
 - Required authority kinds: 71
-- Covered authority kinds: 7
-- Missing authority kinds: 64
-- Evidence items: 7
-- Evidence with issued_at: 7
-- Evidence with expires_at: 7
-- Evidence with freshness windows: 7
+- Covered authority kinds: 9
+- Missing authority kinds: 62
+- Evidence items: 9
+- Evidence with issued_at: 9
+- Evidence with expires_at: 9
+- Evidence with freshness windows: 9
 
 ## Required External Evidence
 
@@ -37,7 +37,7 @@ Status: partial
 | `roadmap-phase-scoreboard` | P1-P4 | P0 | missing | `ci-run`, `regulator`, `insurer`, `standards-body`, `customer` |  | `ci-run`, `regulator`, `insurer`, `standards-body`, `customer` | Roadmap phase scoreboards cover local/reference schemas for P1-P4 business milestones and can bind external evidence references and hashes; actual paying customers, signed contracts, ARR, Series A financing, live insurer integrations, SOC 2/ISO certificates, named regulator acceptance, standards-body progress, third-party procurement clauses, data-product revenue, and generic market usage remain external business evidence. |
 | `product-scope-discipline` | P0-P4 | P0 | missing | `ci-run`, `customer` |  | `ci-run`, `customer` | Product scope decisions cover local/reference checks for proof-strength, cheaper-production, wider-acceptance, and anti-focus decline controls; actual company governance adoption, product-council enforcement, customer-pressure evidence, and ongoing roadmap discipline remain external operating evidence. |
 | `runtime-policy-and-attestation` | P2 | P1 | missing | `ci-run`, `kms-hsm`, `provider-api`, `hosted-service`, `identity-provider` |  | `ci-run`, `kms-hsm`, `provider-api`, `hosted-service`, `identity-provider` | Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence. |
-| `agent-inventory-and-identity` | P2 | P1 | missing | `provider-api`, `identity-provider` |  | `provider-api`, `identity-provider` | Identity-provider production authority dossiers cover the local/reference authority checklist for live event streams, token/session propagation, lifecycle APIs, provider audit exports, credential custody, scheduler/queue evidence, per-evidence source_context bound to lifecycle worker bindings, recomputed controls, and freshness-gated production claims; actual fresh provider-owned exports remain external evidence. |
+| `agent-inventory-and-identity` | P2 | P1 | covered | `provider-api`, `identity-provider` | `provider-api`, `identity-provider` |  | Identity-provider production authority dossiers cover the local/reference authority checklist for live event streams, token/session propagation, lifecycle APIs, provider audit exports, credential custody, scheduler/queue evidence, per-evidence source_context bound to lifecycle worker bindings, recomputed controls, and freshness-gated production claims; actual fresh provider-owned exports remain external evidence. |
 | `standards-track-and-auditor-ecosystem` | P3 | P1 | missing | `kms-hsm`, `standards-body` |  | `kms-hsm`, `standards-body` | Actual standards-body acceptance and sponsor-owned KMS/HSM enforcement require external governance events. |
 | `trust-network-procurement-and-marketplace` | P4 | P1 | missing | `provider-api`, `hosted-service`, `identity-provider`, `customer` |  | `provider-api`, `hosted-service`, `identity-provider`, `customer` | Signed trust-network service attestations, worker receipts, worker review bundles, and production authority dossiers cover local/reference proof; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, marketplace asset replay, frontend replay, and service/worker linkage before external trust-network authority evidence is accepted. Live hosted services, provider-owned identity events, marketplace payouts, revocation propagation, callbacks, and procurement propagation remain external evidence until fresh provider-owned exports are supplied. |
 
@@ -108,8 +108,8 @@ Status: partial
 | `ba43e60fcdba3109317a26d9426dabc58bd32dace07922c5a84df5e0aee2907f` | `runtime-policy-and-attestation:provider-api` | `runtime-policy-and-attestation` | provider-api | missing | Runtime attestation, policy engine receipts, and proof decay |
 | `6029f74fe9ceff003106411ba51fa63253e190d1b7a74c5c65c86c165e8bd856` | `runtime-policy-and-attestation:hosted-service` | `runtime-policy-and-attestation` | hosted-service | missing | Runtime attestation, policy engine receipts, and proof decay |
 | `7615ae83cc0b5602b4eca58785051961e3f22104b5e761ff4de4428e37833221` | `runtime-policy-and-attestation:identity-provider` | `runtime-policy-and-attestation` | identity-provider | missing | Runtime attestation, policy engine receipts, and proof decay |
-| `5b78e87c9420ec76f41c07dd0c80905ddc4126edfff06c600428da1eaf20de69` | `agent-inventory-and-identity:provider-api` | `agent-inventory-and-identity` | provider-api | missing | Agent registry, inventory, identity provider attestations, and lifecycle receipts |
-| `2830ddc16f51490829895379277460cd4d0c7f689d2de75b8d3cc1c59e76616d` | `agent-inventory-and-identity:identity-provider` | `agent-inventory-and-identity` | identity-provider | missing | Agent registry, inventory, identity provider attestations, and lifecycle receipts |
+| `5b78e87c9420ec76f41c07dd0c80905ddc4126edfff06c600428da1eaf20de69` | `agent-inventory-and-identity:provider-api` | `agent-inventory-and-identity` | provider-api | covered | Agent registry, inventory, identity provider attestations, and lifecycle receipts |
+| `2830ddc16f51490829895379277460cd4d0c7f689d2de75b8d3cc1c59e76616d` | `agent-inventory-and-identity:identity-provider` | `agent-inventory-and-identity` | identity-provider | covered | Agent registry, inventory, identity provider attestations, and lifecycle receipts |
 | `132fcd6a63da92f4b08b3ea0792e8fcd3b7428a04df7d4a7f1de8f71eabb316b` | `standards-track-and-auditor-ecosystem:kms-hsm` | `standards-track-and-auditor-ecosystem` | kms-hsm | missing | Standards-track package and auditor certification ecosystem |
 | `9cfcf61758e21fd5536276d9d2e0c6ea8ffe1bb526f92aa50463e58906f4e931` | `standards-track-and-auditor-ecosystem:standards-body` | `standards-track-and-auditor-ecosystem` | standards-body | missing | Standards-track package and auditor certification ecosystem |
 | `d4b8f1c0c744a35ab85646d246873fa679eec94f926a622618d1bdc2bada93cd` | `trust-network-procurement-and-marketplace:provider-api` | `trust-network-procurement-and-marketplace` | provider-api | missing | Trust network, procurement clauses, and marketplace distribution |
@@ -128,6 +128,8 @@ Status: partial
 | `cicd-provider-approvals` | provider-api | `ci-run`, `provider-api`, `hosted-service`, `identity-provider` | `examples/aitrade/external-evidence/github-audit-log-source-snapshot.json` | 2026-07-08T00:00:00Z to 2026-12-31T00:00:00Z | Retained GitHub audit-log export for CI/CD promotion provider API evidence |
 | `framework-adapters` | provider-api | `ci-run`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/framework-hook-release-provider-api-source-snapshot.json` | 2026-07-09T00:30:00Z to 2026-12-31T00:00:00Z | Retained GitHub contents API export for framework adapter hook release evidence |
 | `framework-adapters` | hosted-service | `ci-run`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/framework-hook-release-hosted-service-source-snapshot.json` | 2026-07-09T00:30:00Z to 2026-12-31T00:00:00Z | Retained GitHub hosted file export for framework adapter hook release evidence |
+| `agent-inventory-and-identity` | provider-api | `provider-api`, `identity-provider` | `examples/aitrade/external-evidence/agent-inventory-provider-api-source-snapshot.json` | 2026-07-03T11:55:00Z to 2026-12-31T00:00:00Z | Retained GitHub contents API export for agent registry inventory evidence |
+| `agent-inventory-and-identity` | identity-provider | `provider-api`, `identity-provider` | `examples/aitrade/external-evidence/identity-inventory-provider-source-snapshot.json` | 2026-07-03T11:57:00Z to 2026-12-31T00:00:00Z | Retained identity-provider export for governed agent inventory reconciliation evidence |
 
 ## Missing Requirements
 
@@ -145,6 +147,5 @@ Status: partial
 - `roadmap-phase-scoreboard`
 - `product-scope-discipline`
 - `runtime-policy-and-attestation`
-- `agent-inventory-and-identity`
 - `standards-track-and-auditor-ecosystem`
 - `trust-network-procurement-and-marketplace`

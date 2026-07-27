@@ -1,7 +1,7 @@
 {
   "blockers": [
-    "owner fulfillment review contains 64 placeholder source_uri values",
-    "fulfilled source map: source map contains 64 placeholder source_uri values but live source URIs are required"
+    "owner fulfillment review contains 62 placeholder source_uri values",
+    "fulfilled source map: source map contains 62 placeholder source_uri values but live source URIs are required"
   ],
   "commands": {
     "collect_after_ready_review": "python -m trustai external-evidence-collect-batch <fulfilled-source-map.json> <manifest.json> <roadmap-audit.json> --root . --require-live-source-uris",
@@ -1356,54 +1356,6 @@
         "unit_ref": "runtime-policy-and-attestation:identity-provider"
       },
       {
-        "authority_kind": "provider-api",
-        "coverage_status": "missing",
-        "description": "provider-api evidence for agent-inventory-and-identity",
-        "external_authority_required": [
-          "Identity-provider production authority dossiers cover the local/reference authority checklist for live event streams, token/session propagation, lifecycle APIs, provider audit exports, credential custody, scheduler/queue evidence, per-evidence source_context bound to lifecycle worker bindings, recomputed controls, and freshness-gated production claims; actual fresh provider-owned exports remain external evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/agent-inventory-and-identity/provider-api.json",
-        "owner_hint": "integration/platform owner",
-        "requirement_id": "agent-inventory-and-identity",
-        "snapshot_out": "artifacts/external-evidence-sources/agent-inventory-and-identity/provider-api.json",
-        "source_uri": "TODO://authority/agent-inventory-and-identity/provider-api",
-        "suggested_evidence_sources": [
-          "provider API response export",
-          "request/response transcript",
-          "provider-owned audit event"
-        ],
-        "task": "agent-inventory-and-identity:provider-api",
-        "task_id": "6ad751328b2d1976a3bfa134863e1131850c695455c5c53ca96e0918d3a2639e",
-        "task_ref": "external-evidence:agent-inventory-and-identity:provider-api",
-        "title": "Agent registry, inventory, identity provider attestations, and lifecycle receipts",
-        "unit_id": "5b78e87c9420ec76f41c07dd0c80905ddc4126edfff06c600428da1eaf20de69",
-        "unit_ref": "agent-inventory-and-identity:provider-api"
-      },
-      {
-        "authority_kind": "identity-provider",
-        "coverage_status": "missing",
-        "description": "identity-provider evidence for agent-inventory-and-identity",
-        "external_authority_required": [
-          "Identity-provider production authority dossiers cover the local/reference authority checklist for live event streams, token/session propagation, lifecycle APIs, provider audit exports, credential custody, scheduler/queue evidence, per-evidence source_context bound to lifecycle worker bindings, recomputed controls, and freshness-gated production claims; actual fresh provider-owned exports remain external evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/agent-inventory-and-identity/identity-provider.json",
-        "owner_hint": "IAM/identity owner",
-        "requirement_id": "agent-inventory-and-identity",
-        "snapshot_out": "artifacts/external-evidence-sources/agent-inventory-and-identity/identity-provider.json",
-        "source_uri": "TODO://authority/agent-inventory-and-identity/identity-provider",
-        "suggested_evidence_sources": [
-          "identity-provider event export",
-          "OIDC/session/lifecycle evidence",
-          "RBAC or account-state report"
-        ],
-        "task": "agent-inventory-and-identity:identity-provider",
-        "task_id": "6f7b4b881e73f25ec58a52f33fef9f6632b584de3088171da965ebed3e090c1d",
-        "task_ref": "external-evidence:agent-inventory-and-identity:identity-provider",
-        "title": "Agent registry, inventory, identity provider attestations, and lifecycle receipts",
-        "unit_id": "2830ddc16f51490829895379277460cd4d0c7f689d2de75b8d3cc1c59e76616d",
-        "unit_ref": "agent-inventory-and-identity:identity-provider"
-      },
-      {
         "authority_kind": "kms-hsm",
         "coverage_status": "missing",
         "description": "kms-hsm evidence for standards-track-and-auditor-ecosystem",
@@ -1555,14 +1507,14 @@
       "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
     ],
     "schema": "trustai.external-evidence-source-map/0.1",
-    "source_map_id": "3df345911e92736f2cb035676e83c489dabe5a5eafb2e4caf0c7c8d41900885a",
+    "source_map_id": "250a4dc744d84bdaa09c251d28af668005a6fead05efcc2fe04772800fdc4944",
     "source_plan": {
-      "plan_hash": "f1dbe0ac0afa1b6828bc79aa8e8a14ebc8d476fe802bffee7134d7514e5c38dd",
-      "plan_id": "2310fcd34419b5b78ad0cdab924f799c2a984bdd4195633081f3aac4bdf31ac2",
+      "plan_hash": "0de2fd2ac37d32de11b1908e7b1879ce3f2e91296ec7cbc40c2a826c2564c896",
+      "plan_id": "6190407de0c9ff6397e13a9bba70640897a592970e338134ab0868ac1cd612ef",
       "source_manifest": {
         "generated_at": "2026-07-12T00:01:00Z",
-        "manifest_hash": "b59f20633fadc6aa0fc32b842b54901b2c64b2aa6e43e6c5a5030b501e700d59",
-        "manifest_id": "da1839a025798bd08745c84c5a8207dc35a44d574ec24a8cedfe55ec36b84620",
+        "manifest_hash": "9a5492b9701e70ba488d82f51caf513d6936134962342e2d7b58155e52d378c2",
+        "manifest_id": "aeff1ad249f16d018b89eec85bf9322db6e31b2861cd90a1bc181af190b46cd4",
         "manifest_ref": "production-external-evidence",
         "status": "partial"
       },
@@ -1570,12 +1522,12 @@
     },
     "summary": {
       "authority_kinds": [],
-      "entry_count": 64,
+      "entry_count": 62,
       "intake_dir": "artifacts/external-evidence-intakes",
       "live_source_uri_count": 0,
-      "placeholder_source_uri_count": 64,
+      "placeholder_source_uri_count": 62,
       "snapshot_dir": "artifacts/external-evidence-sources",
-      "source_plan_task_count": 64,
+      "source_plan_task_count": 62,
       "status_filter": "missing"
     }
   },
@@ -1590,45 +1542,45 @@
     "Regenerate this review with --require-live-source-uris before collecting source snapshots.",
     "After the fulfilled source map is ready, run external-evidence-collect-batch and rebuild the retained manifest from intake receipts."
   ],
-  "owner_fulfillment_review_id": "057ed02e934ffb9221ffb84894eae321c2400253b1ae2e049de738237cc514a1",
+  "owner_fulfillment_review_id": "bd95b75b03b6260025557565e406b193e02c157bb050c2daef24976add238800",
   "schema": "trustai.external-evidence-owner-fulfillment-review/0.1",
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "f1dbe0ac0afa1b6828bc79aa8e8a14ebc8d476fe802bffee7134d7514e5c38dd",
-      "plan_id": "2310fcd34419b5b78ad0cdab924f799c2a984bdd4195633081f3aac4bdf31ac2",
+      "plan_hash": "0de2fd2ac37d32de11b1908e7b1879ce3f2e91296ec7cbc40c2a826c2564c896",
+      "plan_id": "6190407de0c9ff6397e13a9bba70640897a592970e338134ab0868ac1cd612ef",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "owner_fulfillment_template": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_fulfillment_template_hash": "1761e53bcf1df421332f3d9b75808f1d96d0dfbedbe3124347f67ad653d8b000",
-      "owner_fulfillment_template_id": "31f1a6f1b63524f757b3e08d07a1cdb3de72f46e44f92d3d9ab87ad893c9b7a3",
+      "owner_fulfillment_template_hash": "21fafb57ee3593d485e06fde011fd6e222d8a008ff25f828d325d61ee465f515",
+      "owner_fulfillment_template_id": "83ae2815bc4b3c41b58316c5bc3b66556042a59d757588f8a7d6d6e3b705ea9c",
       "schema": "trustai.external-evidence-owner-fulfillment-template/0.1"
     },
     "owner_packet_status": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_status_hash": "8b7a34cd31f11524a705cc3f3706b889e633c980cb7e28908d4d5c8c88f91cee",
-      "owner_packet_status_id": "8482dac1db0ed2cd95cdfb30dd99c3e30b64dba96768db510f7cd407440b632f",
+      "owner_packet_status_hash": "c3d0cc54289d317592af3ef9b7b1ecd6e5e68b2745d39f93e2e4c1bc501755a8",
+      "owner_packet_status_id": "e55e06e65a65b452be683b1d7f0c1bf2b2a9a8a27356b0a4d0ea369e89d76c59",
       "schema": "trustai.external-evidence-owner-packet-status/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "fb94d1480af30195812ac281c1390b9e3e28c45e022feafa73770ac6789ff19c",
-      "source_map_id": "701fb4d0e2b253531b2434d0fe04775b91639fb5fe6e4a3488f098d059a1d05e"
+      "source_map_hash": "1a2bb997ce30c2c16aa2ac1ef0e32ffadd2540019112f6cca4e12b2fe8670bfc",
+      "source_map_id": "98eba14dfaccf0efe71a34f5c137eaf7020a7cf8a4b0a8c6057d2a90900c58b0"
     }
   },
   "summary": {
-    "blocked_task_count": 64,
+    "blocked_task_count": 62,
     "error_count": 1,
     "fulfilled_source_map_verification_ok": false,
-    "fulfillment_count": 64,
+    "fulfillment_count": 62,
     "live_source_uri_count": 0,
     "owner_count": 10,
-    "placeholder_source_uri_count": 64,
+    "placeholder_source_uri_count": 62,
     "ready_task_count": 0,
     "review_status": "blocked",
-    "source_map_entry_count": 64,
+    "source_map_entry_count": 62,
     "template_verification_ok": true,
     "warning_count": 3
   },
@@ -2418,34 +2370,6 @@
       "task": "runtime-policy-and-attestation:identity-provider"
     },
     {
-      "authority_kind": "provider-api",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/agent-inventory-and-identity/provider-api.json",
-      "owner_hint": "integration/platform owner",
-      "requirement_id": "agent-inventory-and-identity",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/agent-inventory-and-identity/provider-api.json",
-      "source_uri": "TODO://authority/agent-inventory-and-identity/provider-api",
-      "source_uri_status": "placeholder",
-      "task": "agent-inventory-and-identity:provider-api"
-    },
-    {
-      "authority_kind": "identity-provider",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/agent-inventory-and-identity/identity-provider.json",
-      "owner_hint": "IAM/identity owner",
-      "requirement_id": "agent-inventory-and-identity",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/agent-inventory-and-identity/identity-provider.json",
-      "source_uri": "TODO://authority/agent-inventory-and-identity/identity-provider",
-      "source_uri_status": "placeholder",
-      "task": "agent-inventory-and-identity:identity-provider"
-    },
-    {
       "authority_kind": "kms-hsm",
       "blocking_reasons": [
         "placeholder-source-uri"
@@ -2532,14 +2456,14 @@
   ],
   "verification": {
     "fulfilled_source_map_errors": [
-      "source map contains 64 placeholder source_uri values but live source URIs are required"
+      "source map contains 62 placeholder source_uri values but live source URIs are required"
     ],
     "fulfilled_source_map_warnings": [
-      "source map contains 64 placeholder source_uri values"
+      "source map contains 62 placeholder source_uri values"
     ],
     "template_warnings": [
-      "owner fulfillment template summary contains 64 placeholder source_uri values",
-      "owner fulfillment template summary contains 64 tasks without intake receipts"
+      "owner fulfillment template summary contains 62 placeholder source_uri values",
+      "owner fulfillment template summary contains 62 tasks without intake receipts"
     ]
   },
   "verification_options": {

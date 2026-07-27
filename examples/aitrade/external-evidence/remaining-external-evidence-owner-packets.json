@@ -5,7 +5,7 @@
     "Source URIs marked TODO or placeholder must be replaced with authority-owned source exports before collection.",
     "Packet completion is proven only by verified source snapshots, intake receipts, rebuilt manifests, and readiness reports."
   ],
-  "owner_packet_bundle_id": "b4852cb56e6e7b584409a73f238989b23c89bc3d52c6fef238418efc44cb2dee",
+  "owner_packet_bundle_id": "5194734d8a853fa925aae7d2897b04d456ed2d4c6c31ea2b72d8fe51f3186b55",
   "packets": [
     {
       "authority_kinds": [
@@ -21,12 +21,12 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 8,
+      "missing_task_count": 7,
       "owner_hint": "IAM/identity owner",
-      "package_hash": "04be4ec1181f2bb75084509159e81a3245d85268b5c45526eb7981e253cb592e",
-      "package_id": "5c7883e3a722c18406107720c68b962cc2b79c3257021385549ae31911372be8",
+      "package_hash": "3fd8e011b1cded75ee0cbfa0b0ce4d0a166f234c4693298b368e34b727ce9aae",
+      "package_id": "43b5242e67a5b4ad25894dac7cd5acc18945eb147aed167b634f9c92fdf286f9",
       "package_ref": "owner_hint:IAM-identity-owner",
-      "packet_id": "1ca549666047a2f91599081507365b25072f572ad5dd8a31b749fd01010e0de0",
+      "packet_id": "81cdb3ecd1ff659e586c5bf5555a41bbd9cf69e320a18700ed46a32fd7c59f6d",
       "packet_ref": "owner-packet:owner_hint:IAM-identity-owner",
       "phases": [
         "P1",
@@ -35,13 +35,12 @@
         "P2-P4",
         "P4"
       ],
-      "placeholder_source_uri_count": 8,
+      "placeholder_source_uri_count": 7,
       "priorities": [
         "P0",
         "P1"
       ],
       "requirement_ids": [
-        "agent-inventory-and-identity",
         "auditor-and-review-portal",
         "cicd-provider-approvals",
         "insurer-api-and-actuarial-products",
@@ -50,7 +49,7 @@
         "shadow-replay-temporal-holdout",
         "trust-network-procurement-and-marketplace"
       ],
-      "task_count": 8,
+      "task_count": 7,
       "tasks": [
         {
           "acceptance_criteria": [
@@ -282,83 +281,6 @@
           "title": "Auditor view, supervised access, regulator view, and review portal attestations",
           "unit_id": "e751495f6bd0337a851b9cf8192967544a97538cca79641c714107ddf77b25fb",
           "unit_ref": "auditor-and-review-portal:identity-provider"
-        },
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be identity-provider and accepted for agent-inventory-and-identity.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "identity-provider",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/agent-inventory-and-identity/identity-provider",
-              "--root",
-              ".",
-              "--task",
-              "agent-inventory-and-identity:identity-provider",
-              "--description",
-              "identity-provider evidence for agent-inventory-and-identity",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/agent-inventory-and-identity/identity-provider.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/agent-inventory-and-identity/identity-provider.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/agent-inventory-and-identity/identity-provider --root . --task agent-inventory-and-identity:identity-provider --description 'identity-provider evidence for agent-inventory-and-identity' --snapshot-out artifacts/external-evidence-sources/agent-inventory-and-identity/identity-provider.json --intake-out artifacts/external-evidence-intakes/agent-inventory-and-identity/identity-provider.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/agent-inventory-and-identity/identity-provider.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/agent-inventory-and-identity/identity-provider.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "identity-provider evidence for agent-inventory-and-identity",
-          "evidence_argument_template": "agent-inventory-and-identity,identity-provider,external-evidence/agent-inventory-and-identity/identity-provider.json,identity-provider evidence for agent-inventory-and-identity;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Identity-provider production authority dossiers cover the local/reference authority checklist for live event streams, token/session propagation, lifecycle APIs, provider audit exports, credential custody, scheduler/queue evidence, per-evidence source_context bound to lifecycle worker bindings, recomputed controls, and freshness-gated production claims; actual fresh provider-owned exports remain external evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/agent-inventory-and-identity/identity-provider.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "IAM/identity owner",
-          "phase": "P2",
-          "priority": "P1",
-          "requirement_id": "agent-inventory-and-identity",
-          "snapshot_out": "artifacts/external-evidence-sources/agent-inventory-and-identity/identity-provider.json",
-          "source_uri": "TODO://authority/agent-inventory-and-identity/identity-provider",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/agent-inventory-and-identity/identity-provider.json",
-          "suggested_evidence_sources": [
-            "identity-provider event export",
-            "OIDC/session/lifecycle evidence",
-            "RBAC or account-state report"
-          ],
-          "task_id": "6f7b4b881e73f25ec58a52f33fef9f6632b584de3088171da965ebed3e090c1d",
-          "task_ref": "external-evidence:agent-inventory-and-identity:identity-provider",
-          "title": "Agent registry, inventory, identity provider attestations, and lifecycle receipts",
-          "unit_id": "2830ddc16f51490829895379277460cd4d0c7f689d2de75b8d3cc1c59e76616d",
-          "unit_ref": "agent-inventory-and-identity:identity-provider"
         },
         {
           "acceptance_criteria": [
@@ -1540,12 +1462,12 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 10,
+      "missing_task_count": 9,
       "owner_hint": "integration/platform owner",
-      "package_hash": "5d45879caa60927976e7ceb78291fc495b777f38111145916c07bf3ef80f3bd3",
-      "package_id": "6054435e90033f562b2fd9b6b3798282897fd59ea2e9136e026a8081a70084de",
+      "package_hash": "4f612fc70fc540871e6a90f56cb1f677ae2439744f9797f1e3bffa1ffb070e91",
+      "package_id": "26ba64cc0b964e2160d4e2ceefd2227c72a1f4d393797eabaa5b83d48a094690",
       "package_ref": "owner_hint:integration-platform-owner",
-      "packet_id": "10c942e76ddf0484341eadc86561f3f346d6bce7e7a8ed82ab5b432d30d6b843",
+      "packet_id": "a79f90d15dfa7444d9d87b51547cdd915f4c6729a4e91121c7a0863985b4ac3a",
       "packet_ref": "owner-packet:owner_hint:integration-platform-owner",
       "phases": [
         "P1",
@@ -1556,13 +1478,12 @@
         "P2-P4",
         "P4"
       ],
-      "placeholder_source_uri_count": 10,
+      "placeholder_source_uri_count": 9,
       "priorities": [
         "P0",
         "P1"
       ],
       "requirement_ids": [
-        "agent-inventory-and-identity",
         "auditor-and-review-portal",
         "byoc-self-hosted",
         "compliance-mapper-and-eu-ai-act",
@@ -1573,7 +1494,7 @@
         "shadow-replay-temporal-holdout",
         "trust-network-procurement-and-marketplace"
       ],
-      "task_count": 10,
+      "task_count": 9,
       "tasks": [
         {
           "acceptance_criteria": [
@@ -1882,83 +1803,6 @@
           "title": "Auditor view, supervised access, regulator view, and review portal attestations",
           "unit_id": "248848c8b3fa34f616469d68be67714e13edfe6ba6707a55d6d646b69329ba60",
           "unit_ref": "auditor-and-review-portal:provider-api"
-        },
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be provider-api and accepted for agent-inventory-and-identity.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "provider-api",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/agent-inventory-and-identity/provider-api",
-              "--root",
-              ".",
-              "--task",
-              "agent-inventory-and-identity:provider-api",
-              "--description",
-              "provider-api evidence for agent-inventory-and-identity",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/agent-inventory-and-identity/provider-api.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/agent-inventory-and-identity/provider-api.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/agent-inventory-and-identity/provider-api --root . --task agent-inventory-and-identity:provider-api --description 'provider-api evidence for agent-inventory-and-identity' --snapshot-out artifacts/external-evidence-sources/agent-inventory-and-identity/provider-api.json --intake-out artifacts/external-evidence-intakes/agent-inventory-and-identity/provider-api.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/agent-inventory-and-identity/provider-api.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/agent-inventory-and-identity/provider-api.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "provider-api evidence for agent-inventory-and-identity",
-          "evidence_argument_template": "agent-inventory-and-identity,provider-api,external-evidence/agent-inventory-and-identity/provider-api.json,provider-api evidence for agent-inventory-and-identity;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Identity-provider production authority dossiers cover the local/reference authority checklist for live event streams, token/session propagation, lifecycle APIs, provider audit exports, credential custody, scheduler/queue evidence, per-evidence source_context bound to lifecycle worker bindings, recomputed controls, and freshness-gated production claims; actual fresh provider-owned exports remain external evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/agent-inventory-and-identity/provider-api.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "integration/platform owner",
-          "phase": "P2",
-          "priority": "P1",
-          "requirement_id": "agent-inventory-and-identity",
-          "snapshot_out": "artifacts/external-evidence-sources/agent-inventory-and-identity/provider-api.json",
-          "source_uri": "TODO://authority/agent-inventory-and-identity/provider-api",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/agent-inventory-and-identity/provider-api.json",
-          "suggested_evidence_sources": [
-            "provider API response export",
-            "request/response transcript",
-            "provider-owned audit event"
-          ],
-          "task_id": "6ad751328b2d1976a3bfa134863e1131850c695455c5c53ca96e0918d3a2639e",
-          "task_ref": "external-evidence:agent-inventory-and-identity:provider-api",
-          "title": "Agent registry, inventory, identity provider attestations, and lifecycle receipts",
-          "unit_id": "5b78e87c9420ec76f41c07dd0c80905ddc4126edfff06c600428da1eaf20de69",
-          "unit_ref": "agent-inventory-and-identity:provider-api"
         },
         {
           "acceptance_criteria": [
@@ -5396,34 +5240,34 @@
   "source_work_package": {
     "generated_at": "2026-07-12T00:01:00Z",
     "group_by": "owner_hint",
-    "work_package_hash": "6f9d6ac232b981d06867af49322e037a6bdfdbfa4a98a4bb9d974d2fd397ffb1",
-    "work_package_id": "09c94a3488982f95c6fd2e845062bf715844a541065c81c609e1d939c91a4ff1"
+    "work_package_hash": "6aae376852038105c33a9aca6220d67dfd62bc9f262ccbb2a64f2de538f026b6",
+    "work_package_id": "deb14a1f0f7e7c5070995339c05f5523713e0f14499e9c3dcec92df31a314530"
   },
   "summary": {
     "covered_task_count": 0,
     "live_source_uri_count": 0,
-    "missing_task_count": 64,
+    "missing_task_count": 62,
     "packet_count": 10,
-    "placeholder_source_uri_count": 64,
-    "source_work_package_task_count": 64,
-    "task_count": 64,
+    "placeholder_source_uri_count": 62,
+    "source_work_package_task_count": 62,
+    "task_count": 62,
     "task_count_by_authority_kind": {
       "ci-run": 7,
       "cloud-object-lock": 1,
       "customer": 9,
       "hosted-service": 7,
-      "identity-provider": 8,
+      "identity-provider": 7,
       "insurer": 4,
       "kms-hsm": 7,
-      "provider-api": 10,
+      "provider-api": 9,
       "regulator": 5,
       "standards-body": 6
     },
     "task_count_by_owner_hint": {
-      "IAM/identity owner": 8,
+      "IAM/identity owner": 7,
       "cloud storage owner": 1,
       "customer success/account owner": 9,
-      "integration/platform owner": 10,
+      "integration/platform owner": 9,
       "legal/compliance owner": 5,
       "release engineering": 7,
       "risk/insurance owner": 4,

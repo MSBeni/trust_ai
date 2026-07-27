@@ -1,23 +1,23 @@
 # External Evidence Owner Packet Status
 
-- Status ID: `8482dac1db0ed2cd95cdfb30dd99c3e30b64dba96768db510f7cd407440b632f`
+- Status ID: `e55e06e65a65b452be683b1d7f0c1bf2b2a9a8a27356b0a4d0ea369e89d76c59`
 - Generated at: `2026-07-12T00:01:00Z`
 - Packets: 10
-- Tasks: 64
+- Tasks: 62
 - Closed tasks: 0
 - Open tasks: 0
-- Blocked tasks: 64
-- Placeholder source URIs: 64
-- Missing intakes: 64
+- Blocked tasks: 62
+- Placeholder source URIs: 62
+- Missing intakes: 62
 
 ## Packets
 
 | Owner | Packet | Status | Tasks | Closed | Open | Blocked |
 |---|---|---|---:|---:|---:|---:|
-| IAM/identity owner | `owner-packet:owner_hint:IAM-identity-owner` | blocked | 8 | 0 | 0 | 8 |
+| IAM/identity owner | `owner-packet:owner_hint:IAM-identity-owner` | blocked | 7 | 0 | 0 | 7 |
 | cloud storage owner | `owner-packet:owner_hint:cloud-storage-owner` | blocked | 1 | 0 | 0 | 1 |
 | customer success/account owner | `owner-packet:owner_hint:customer-success-account-owner` | blocked | 9 | 0 | 0 | 9 |
-| integration/platform owner | `owner-packet:owner_hint:integration-platform-owner` | blocked | 10 | 0 | 0 | 10 |
+| integration/platform owner | `owner-packet:owner_hint:integration-platform-owner` | blocked | 9 | 0 | 0 | 9 |
 | legal/compliance owner | `owner-packet:owner_hint:legal-compliance-owner` | blocked | 5 | 0 | 0 | 5 |
 | release engineering | `owner-packet:owner_hint:release-engineering` | blocked | 7 | 0 | 0 | 7 |
 | risk/insurance owner | `owner-packet:owner_hint:risk-insurance-owner` | blocked | 4 | 0 | 0 | 4 |
@@ -32,7 +32,6 @@
 | `cicd-provider-approvals:identity-provider` | IAM/identity owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `shadow-replay-temporal-holdout:identity-provider` | IAM/identity owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `auditor-and-review-portal:identity-provider` | IAM/identity owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
-| `agent-inventory-and-identity:identity-provider` | IAM/identity owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `runtime-policy-and-attestation:identity-provider` | IAM/identity owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `self-serve-onboarding:identity-provider` | IAM/identity owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `insurer-api-and-actuarial-products:identity-provider` | IAM/identity owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
@@ -51,7 +50,6 @@
 | `shadow-replay-temporal-holdout:provider-api` | integration/platform owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `byoc-self-hosted:provider-api` | integration/platform owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `auditor-and-review-portal:provider-api` | integration/platform owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
-| `agent-inventory-and-identity:provider-api` | integration/platform owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `runtime-policy-and-attestation:provider-api` | integration/platform owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `self-serve-onboarding:provider-api` | integration/platform owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `compliance-mapper-and-eu-ai-act:provider-api` | integration/platform owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |

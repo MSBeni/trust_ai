@@ -1,13 +1,13 @@
 # External Evidence Gap Report
 
-- Gap report ID: `f45dccd0825065953186ae0f9156cd648d7669d9bf63dcbce447c378dbb7b8d0`
+- Gap report ID: `30be30a5abc54833c23c2120b66364c3484867cf98b3e826f8a22a1ddca9d03a`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 7/71
-- Missing authority kinds: 64
-- Remaining collection tasks: 64
-- Source-map entries: 64
-- Placeholder source URIs: 64
+- Covered authority kinds: 9/71
+- Missing authority kinds: 62
+- Remaining collection tasks: 62
+- Source-map entries: 62
+- Placeholder source URIs: 62
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
@@ -16,16 +16,15 @@
 - `cloud-object-lock`: 1
 - `customer`: 9
 - `hosted-service`: 7
-- `identity-provider`: 8
+- `identity-provider`: 7
 - `insurer`: 4
 - `kms-hsm`: 7
-- `provider-api`: 10
+- `provider-api`: 9
 - `regulator`: 5
 - `standards-body`: 6
 
 ## Gaps By Requirement
 
-- `agent-inventory-and-identity`: 2
 - `auditor-and-review-portal`: 5
 - `byoc-self-hosted`: 6
 - `cicd-provider-approvals`: 2
@@ -661,28 +660,6 @@
 - Source URI: `TODO://authority/runtime-policy-and-attestation/identity-provider`
 - Snapshot output: `artifacts/external-evidence-sources/runtime-policy-and-attestation/identity-provider.json`
 - Intake output: `artifacts/external-evidence-intakes/runtime-policy-and-attestation/identity-provider.json`
-- Suggested evidence sources: identity-provider event export; OIDC/session/lifecycle evidence; RBAC or account-state report
-
-### agent-inventory-and-identity:provider-api
-
-- Title: Agent registry, inventory, identity provider attestations, and lifecycle receipts
-- Authority kind: `provider-api`
-- Owner hint: integration/platform owner
-- Description: provider-api evidence for agent-inventory-and-identity
-- Source URI: `TODO://authority/agent-inventory-and-identity/provider-api`
-- Snapshot output: `artifacts/external-evidence-sources/agent-inventory-and-identity/provider-api.json`
-- Intake output: `artifacts/external-evidence-intakes/agent-inventory-and-identity/provider-api.json`
-- Suggested evidence sources: provider API response export; request/response transcript; provider-owned audit event
-
-### agent-inventory-and-identity:identity-provider
-
-- Title: Agent registry, inventory, identity provider attestations, and lifecycle receipts
-- Authority kind: `identity-provider`
-- Owner hint: IAM/identity owner
-- Description: identity-provider evidence for agent-inventory-and-identity
-- Source URI: `TODO://authority/agent-inventory-and-identity/identity-provider`
-- Snapshot output: `artifacts/external-evidence-sources/agent-inventory-and-identity/identity-provider.json`
-- Intake output: `artifacts/external-evidence-intakes/agent-inventory-and-identity/identity-provider.json`
 - Suggested evidence sources: identity-provider event export; OIDC/session/lifecycle evidence; RBAC or account-state report
 
 ### standards-track-and-auditor-ecosystem:kms-hsm

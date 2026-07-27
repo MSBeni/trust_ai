@@ -1,5 +1,9 @@
 {
   "covered_authority_kinds_by_requirement": {
+    "agent-inventory-and-identity": [
+      "provider-api",
+      "identity-provider"
+    ],
     "cicd-provider-approvals": [
       "ci-run",
       "provider-api"
@@ -14,7 +18,7 @@
       "hosted-service"
     ]
   },
-  "gap_report_id": "f45dccd0825065953186ae0f9156cd648d7669d9bf63dcbce447c378dbb7b8d0",
+  "gap_report_id": "30be30a5abc54833c23c2120b66364c3484867cf98b3e826f8a22a1ddca9d03a",
   "gaps": [
     {
       "authority_kind": "provider-api",
@@ -1305,52 +1309,6 @@
       "unit_ref": "runtime-policy-and-attestation:identity-provider"
     },
     {
-      "authority_kind": "provider-api",
-      "description": "provider-api evidence for agent-inventory-and-identity",
-      "external_authority_required": [
-        "Identity-provider production authority dossiers cover the local/reference authority checklist for live event streams, token/session propagation, lifecycle APIs, provider audit exports, credential custody, scheduler/queue evidence, per-evidence source_context bound to lifecycle worker bindings, recomputed controls, and freshness-gated production claims; actual fresh provider-owned exports remain external evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/agent-inventory-and-identity/provider-api.json",
-      "owner_hint": "integration/platform owner",
-      "requirement_id": "agent-inventory-and-identity",
-      "snapshot_out": "artifacts/external-evidence-sources/agent-inventory-and-identity/provider-api.json",
-      "source_uri": "TODO://authority/agent-inventory-and-identity/provider-api",
-      "suggested_evidence_sources": [
-        "provider API response export",
-        "request/response transcript",
-        "provider-owned audit event"
-      ],
-      "task": "agent-inventory-and-identity:provider-api",
-      "task_id": "6ad751328b2d1976a3bfa134863e1131850c695455c5c53ca96e0918d3a2639e",
-      "task_ref": "external-evidence:agent-inventory-and-identity:provider-api",
-      "title": "Agent registry, inventory, identity provider attestations, and lifecycle receipts",
-      "unit_id": "5b78e87c9420ec76f41c07dd0c80905ddc4126edfff06c600428da1eaf20de69",
-      "unit_ref": "agent-inventory-and-identity:provider-api"
-    },
-    {
-      "authority_kind": "identity-provider",
-      "description": "identity-provider evidence for agent-inventory-and-identity",
-      "external_authority_required": [
-        "Identity-provider production authority dossiers cover the local/reference authority checklist for live event streams, token/session propagation, lifecycle APIs, provider audit exports, credential custody, scheduler/queue evidence, per-evidence source_context bound to lifecycle worker bindings, recomputed controls, and freshness-gated production claims; actual fresh provider-owned exports remain external evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/agent-inventory-and-identity/identity-provider.json",
-      "owner_hint": "IAM/identity owner",
-      "requirement_id": "agent-inventory-and-identity",
-      "snapshot_out": "artifacts/external-evidence-sources/agent-inventory-and-identity/identity-provider.json",
-      "source_uri": "TODO://authority/agent-inventory-and-identity/identity-provider",
-      "suggested_evidence_sources": [
-        "identity-provider event export",
-        "OIDC/session/lifecycle evidence",
-        "RBAC or account-state report"
-      ],
-      "task": "agent-inventory-and-identity:identity-provider",
-      "task_id": "6f7b4b881e73f25ec58a52f33fef9f6632b584de3088171da965ebed3e090c1d",
-      "task_ref": "external-evidence:agent-inventory-and-identity:identity-provider",
-      "title": "Agent registry, inventory, identity provider attestations, and lifecycle receipts",
-      "unit_id": "2830ddc16f51490829895379277460cd4d0c7f689d2de75b8d3cc1c59e76616d",
-      "unit_ref": "agent-inventory-and-identity:identity-provider"
-    },
-    {
       "authority_kind": "kms-hsm",
       "description": "kms-hsm evidence for standards-track-and-auditor-ecosystem",
       "external_authority_required": [
@@ -1496,10 +1454,6 @@
     "Live authority access, issuer quality, and production status remain outside this report unless supplied as external evidence artifacts."
   ],
   "missing_authority_kinds_by_requirement": {
-    "agent-inventory-and-identity": [
-      "provider-api",
-      "identity-provider"
-    ],
     "auditor-and-review-portal": [
       "kms-hsm",
       "provider-api",
@@ -1603,14 +1557,14 @@
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "f1dbe0ac0afa1b6828bc79aa8e8a14ebc8d476fe802bffee7134d7514e5c38dd",
-      "plan_id": "2310fcd34419b5b78ad0cdab924f799c2a984bdd4195633081f3aac4bdf31ac2",
+      "plan_hash": "0de2fd2ac37d32de11b1908e7b1879ce3f2e91296ec7cbc40c2a826c2564c896",
+      "plan_id": "6190407de0c9ff6397e13a9bba70640897a592970e338134ab0868ac1cd612ef",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "b59f20633fadc6aa0fc32b842b54901b2c64b2aa6e43e6c5a5030b501e700d59",
-      "manifest_id": "da1839a025798bd08745c84c5a8207dc35a44d574ec24a8cedfe55ec36b84620",
+      "manifest_hash": "9a5492b9701e70ba488d82f51caf513d6936134962342e2d7b58155e52d378c2",
+      "manifest_id": "aeff1ad249f16d018b89eec85bf9322db6e31b2861cd90a1bc181af190b46cd4",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
@@ -1622,27 +1576,26 @@
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "fb94d1480af30195812ac281c1390b9e3e28c45e022feafa73770ac6789ff19c",
-      "source_map_id": "701fb4d0e2b253531b2434d0fe04775b91639fb5fe6e4a3488f098d059a1d05e"
+      "source_map_hash": "1a2bb997ce30c2c16aa2ac1ef0e32ffadd2540019112f6cca4e12b2fe8670bfc",
+      "source_map_id": "98eba14dfaccf0efe71a34f5c137eaf7020a7cf8a4b0a8c6057d2a90900c58b0"
     }
   },
   "summary": {
-    "covered_authority_kind_count": 7,
-    "covered_requirement_count": 3,
+    "covered_authority_kind_count": 9,
+    "covered_requirement_count": 4,
     "gap_count_by_authority_kind": {
       "ci-run": 7,
       "cloud-object-lock": 1,
       "customer": 9,
       "hosted-service": 7,
-      "identity-provider": 8,
+      "identity-provider": 7,
       "insurer": 4,
       "kms-hsm": 7,
-      "provider-api": 10,
+      "provider-api": 9,
       "regulator": 5,
       "standards-body": 6
     },
     "gap_count_by_requirement": {
-      "agent-inventory-and-identity": 2,
       "auditor-and-review-portal": 5,
       "byoc-self-hosted": 6,
       "cicd-provider-approvals": 2,
@@ -1663,27 +1616,27 @@
       "vertical-packs": 3
     },
     "live_source_uri_count": 0,
-    "missing_authority_kind_count": 64,
-    "missing_requirement_count": 17,
-    "placeholder_source_uri_count": 64,
-    "remaining_missing_task_count": 64,
-    "remaining_task_count": 64,
+    "missing_authority_kind_count": 62,
+    "missing_requirement_count": 16,
+    "placeholder_source_uri_count": 62,
+    "remaining_missing_task_count": 62,
+    "remaining_task_count": 62,
     "required_authority_kind_count": 71,
     "required_requirement_count": 20,
-    "source_map_entry_count": 64,
+    "source_map_entry_count": 62,
     "status": "partial"
   },
   "verification": {
     "manifest_warnings": [
-      "external evidence missing for: self-serve-onboarding, mcp-gateway, shadow-replay-temporal-holdout, design-partner-pilot-exit-criteria, auditor-and-review-portal, byoc-self-hosted, compliance-mapper-and-eu-ai-act, trustai-own-compliance, vertical-packs, insurer-api-and-actuarial-products, state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, runtime-policy-and-attestation, agent-inventory-and-identity, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
-      "external evidence authority kinds missing for: self-serve-onboarding: provider-api, hosted-service, identity-provider; mcp-gateway: ci-run, kms-hsm, provider-api, hosted-service; shadow-replay-temporal-holdout: kms-hsm, provider-api, identity-provider, standards-body; cicd-provider-approvals: hosted-service, identity-provider; design-partner-pilot-exit-criteria: regulator, insurer, customer; framework-adapters: ci-run; auditor-and-review-portal: kms-hsm, provider-api, hosted-service, identity-provider, regulator; byoc-self-hosted: ci-run, kms-hsm, cloud-object-lock, provider-api, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run, kms-hsm, provider-api, hosted-service, identity-provider; agent-inventory-and-identity: provider-api, identity-provider; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
+      "external evidence missing for: self-serve-onboarding, mcp-gateway, shadow-replay-temporal-holdout, design-partner-pilot-exit-criteria, auditor-and-review-portal, byoc-self-hosted, compliance-mapper-and-eu-ai-act, trustai-own-compliance, vertical-packs, insurer-api-and-actuarial-products, state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, runtime-policy-and-attestation, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
+      "external evidence authority kinds missing for: self-serve-onboarding: provider-api, hosted-service, identity-provider; mcp-gateway: ci-run, kms-hsm, provider-api, hosted-service; shadow-replay-temporal-holdout: kms-hsm, provider-api, identity-provider, standards-body; cicd-provider-approvals: hosted-service, identity-provider; design-partner-pilot-exit-criteria: regulator, insurer, customer; framework-adapters: ci-run; auditor-and-review-portal: kms-hsm, provider-api, hosted-service, identity-provider, regulator; byoc-self-hosted: ci-run, kms-hsm, cloud-object-lock, provider-api, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run, kms-hsm, provider-api, hosted-service, identity-provider; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
     ],
     "plan_warnings": [
-      "external evidence missing for: self-serve-onboarding, mcp-gateway, shadow-replay-temporal-holdout, design-partner-pilot-exit-criteria, auditor-and-review-portal, byoc-self-hosted, compliance-mapper-and-eu-ai-act, trustai-own-compliance, vertical-packs, insurer-api-and-actuarial-products, state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, runtime-policy-and-attestation, agent-inventory-and-identity, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
-      "external evidence authority kinds missing for: self-serve-onboarding: provider-api, hosted-service, identity-provider; mcp-gateway: ci-run, kms-hsm, provider-api, hosted-service; shadow-replay-temporal-holdout: kms-hsm, provider-api, identity-provider, standards-body; cicd-provider-approvals: hosted-service, identity-provider; design-partner-pilot-exit-criteria: regulator, insurer, customer; framework-adapters: ci-run; auditor-and-review-portal: kms-hsm, provider-api, hosted-service, identity-provider, regulator; byoc-self-hosted: ci-run, kms-hsm, cloud-object-lock, provider-api, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run, kms-hsm, provider-api, hosted-service, identity-provider; agent-inventory-and-identity: provider-api, identity-provider; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
+      "external evidence missing for: self-serve-onboarding, mcp-gateway, shadow-replay-temporal-holdout, design-partner-pilot-exit-criteria, auditor-and-review-portal, byoc-self-hosted, compliance-mapper-and-eu-ai-act, trustai-own-compliance, vertical-packs, insurer-api-and-actuarial-products, state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, runtime-policy-and-attestation, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
+      "external evidence authority kinds missing for: self-serve-onboarding: provider-api, hosted-service, identity-provider; mcp-gateway: ci-run, kms-hsm, provider-api, hosted-service; shadow-replay-temporal-holdout: kms-hsm, provider-api, identity-provider, standards-body; cicd-provider-approvals: hosted-service, identity-provider; design-partner-pilot-exit-criteria: regulator, insurer, customer; framework-adapters: ci-run; auditor-and-review-portal: kms-hsm, provider-api, hosted-service, identity-provider, regulator; byoc-self-hosted: ci-run, kms-hsm, cloud-object-lock, provider-api, standards-body, customer; compliance-mapper-and-eu-ai-act: provider-api, regulator, standards-body; trustai-own-compliance: standards-body, customer; vertical-packs: regulator, insurer, customer; insurer-api-and-actuarial-products: ci-run, kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run, kms-hsm, provider-api, hosted-service, identity-provider; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
     ],
     "source_map_warnings": [
-      "source map contains 64 placeholder source_uri values"
+      "source map contains 62 placeholder source_uri values"
     ]
   },
   "verification_options": {

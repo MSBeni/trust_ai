@@ -127,6 +127,40 @@
       "sha256": "sha256:f19afc13ed2e41ac020a3d940e0807c7a26b7cf2856d11a6c470490af0628020",
       "source_uri": "https://github.com/MSBeni/trust_ai/blob/main/examples/aitrade/framework-hook-release.json",
       "subject": "trustai framework hook release export"
+    },
+    {
+      "accepted_authority_kinds": [
+        "provider-api",
+        "identity-provider"
+      ],
+      "authority_kind": "provider-api",
+      "description": "Retained GitHub contents API export for agent registry inventory evidence",
+      "evidence_id": "53c508a288bd13bd906ad964b94906781c9eeac47eeadbd81dec98f41454631c",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-03T11:55:00Z",
+      "issuer": "GitHub Contents API",
+      "path": "examples/aitrade/external-evidence/agent-inventory-provider-api-source-snapshot.json",
+      "requirement_id": "agent-inventory-and-identity",
+      "sha256": "sha256:6f3ec714f2e344ed199116b30d6488ad29666fcef5378c5b6d4862f7c5a29de2",
+      "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/agent-inventory.json?ref=main",
+      "subject": "trustai agent registry inventory export"
+    },
+    {
+      "accepted_authority_kinds": [
+        "provider-api",
+        "identity-provider"
+      ],
+      "authority_kind": "identity-provider",
+      "description": "Retained identity-provider export for governed agent inventory reconciliation evidence",
+      "evidence_id": "6a2131aa287c151a077bf6b7bce8cd744842e5ddcc7d64092a31de0580aa9975",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-03T11:57:00Z",
+      "issuer": "Identity Provider Export",
+      "path": "examples/aitrade/external-evidence/identity-inventory-provider-source-snapshot.json",
+      "requirement_id": "agent-inventory-and-identity",
+      "sha256": "sha256:6bba1f0599e91e2c55601ae3b56806a8bdb62943e5368e1d1aa1ade6d6ac1ca6",
+      "source_uri": "https://idp.example/exports/aitrade/identity-inventory",
+      "subject": "aitrade governed agent identity inventory"
     }
   ],
   "generated_at": "2026-07-12T00:01:00Z",
@@ -135,7 +169,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "da1839a025798bd08745c84c5a8207dc35a44d574ec24a8cedfe55ec36b84620",
+  "manifest_id": "aeff1ad249f16d018b89eec85bf9322db6e31b2861cd90a1bc181af190b46cd4",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -959,7 +993,7 @@
     },
     {
       "authority_kind": "provider-api",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Identity-provider production authority dossiers cover the local/reference authority checklist for live event streams, token/session propagation, lifecycle APIs, provider audit exports, credential custody, scheduler/queue evidence, per-evidence source_context bound to lifecycle worker bindings, recomputed controls, and freshness-gated production claims; actual fresh provider-owned exports remain external evidence."
       ],
@@ -972,7 +1006,7 @@
     },
     {
       "authority_kind": "identity-provider",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Identity-provider production authority dossiers cover the local/reference authority checklist for live event streams, token/session propagation, lifecycle APIs, provider audit exports, credential custody, scheduler/queue evidence, per-evidence source_context bound to lifecycle worker bindings, recomputed controls, and freshness-gated production claims; actual fresh provider-owned exports remain external evidence."
       ],
@@ -1362,8 +1396,12 @@
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {
-    "covered_authority_kind_count": 7,
+    "covered_authority_kind_count": 9,
     "covered_authority_kinds_by_requirement": {
+      "agent-inventory-and-identity": [
+        "provider-api",
+        "identity-provider"
+      ],
       "cicd-provider-approvals": [
         "ci-run",
         "provider-api"
@@ -1378,22 +1416,19 @@
         "hosted-service"
       ]
     },
-    "covered_requirement_count": 3,
+    "covered_requirement_count": 4,
     "covered_requirement_ids": [
+      "agent-inventory-and-identity",
       "cicd-provider-approvals",
       "framework-adapters",
       "oss-verifier-and-public-spec"
     ],
-    "evidence_count": 7,
-    "expires_at_count": 7,
-    "freshness_window_count": 7,
-    "issued_at_count": 7,
-    "missing_authority_kind_count": 64,
+    "evidence_count": 9,
+    "expires_at_count": 9,
+    "freshness_window_count": 9,
+    "issued_at_count": 9,
+    "missing_authority_kind_count": 62,
     "missing_authority_kinds_by_requirement": {
-      "agent-inventory-and-identity": [
-        "provider-api",
-        "identity-provider"
-      ],
       "auditor-and-review-portal": [
         "kms-hsm",
         "provider-api",
@@ -1493,7 +1528,7 @@
         "customer"
       ]
     },
-    "missing_requirement_count": 17,
+    "missing_requirement_count": 16,
     "missing_requirement_ids": [
       "self-serve-onboarding",
       "mcp-gateway",
@@ -1509,7 +1544,6 @@
       "roadmap-phase-scoreboard",
       "product-scope-discipline",
       "runtime-policy-and-attestation",
-      "agent-inventory-and-identity",
       "standards-track-and-auditor-ecosystem",
       "trust-network-procurement-and-marketplace"
     ],

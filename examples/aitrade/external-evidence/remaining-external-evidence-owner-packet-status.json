@@ -5,17 +5,17 @@
     "A closed task still requires rebuilt manifest verification and readiness verification before external authority coverage is accepted.",
     "Placeholder source URIs keep tasks blocked even when a local intake artifact is present."
   ],
-  "owner_packet_status_id": "8482dac1db0ed2cd95cdfb30dd99c3e30b64dba96768db510f7cd407440b632f",
+  "owner_packet_status_id": "e55e06e65a65b452be683b1d7f0c1bf2b2a9a8a27356b0a4d0ea369e89d76c59",
   "packets": [
     {
-      "blocked_task_count": 8,
+      "blocked_task_count": 7,
       "closed_task_count": 0,
       "open_task_count": 0,
       "owner_hint": "IAM/identity owner",
-      "packet_id": "1ca549666047a2f91599081507365b25072f572ad5dd8a31b749fd01010e0de0",
+      "packet_id": "81cdb3ecd1ff659e586c5bf5555a41bbd9cf69e320a18700ed46a32fd7c59f6d",
       "packet_ref": "owner-packet:owner_hint:IAM-identity-owner",
       "packet_status": "blocked",
-      "task_count": 8
+      "task_count": 7
     },
     {
       "blocked_task_count": 1,
@@ -38,14 +38,14 @@
       "task_count": 9
     },
     {
-      "blocked_task_count": 10,
+      "blocked_task_count": 9,
       "closed_task_count": 0,
       "open_task_count": 0,
       "owner_hint": "integration/platform owner",
-      "packet_id": "10c942e76ddf0484341eadc86561f3f346d6bce7e7a8ed82ab5b432d30d6b843",
+      "packet_id": "a79f90d15dfa7444d9d87b51547cdd915f4c6729a4e91121c7a0863985b4ac3a",
       "packet_ref": "owner-packet:owner_hint:integration-platform-owner",
       "packet_status": "blocked",
-      "task_count": 10
+      "task_count": 9
     },
     {
       "blocked_task_count": 5,
@@ -113,41 +113,41 @@
     "intake_hashes": [],
     "owner_packet_bundle": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_bundle_hash": "7cec483a5af78521b7de53a43afc5d58b6a9054058e78a4a9ec6738eebff46b9",
-      "owner_packet_bundle_id": "b4852cb56e6e7b584409a73f238989b23c89bc3d52c6fef238418efc44cb2dee",
+      "owner_packet_bundle_hash": "3819b262067a6af821849a3fc9dc4eea58b9cca1092fcf1af58288efd99e5a03",
+      "owner_packet_bundle_id": "5194734d8a853fa925aae7d2897b04d456ed2d4c6c31ea2b72d8fe51f3186b55",
       "schema": "trustai.external-evidence-owner-packet-bundle/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "fb94d1480af30195812ac281c1390b9e3e28c45e022feafa73770ac6789ff19c",
-      "source_map_id": "701fb4d0e2b253531b2434d0fe04775b91639fb5fe6e4a3488f098d059a1d05e"
+      "source_map_hash": "1a2bb997ce30c2c16aa2ac1ef0e32ffadd2540019112f6cca4e12b2fe8670bfc",
+      "source_map_id": "98eba14dfaccf0efe71a34f5c137eaf7020a7cf8a4b0a8c6057d2a90900c58b0"
     },
     "work_package": {
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-work-package/0.1",
-      "work_package_hash": "6f9d6ac232b981d06867af49322e037a6bdfdbfa4a98a4bb9d974d2fd397ffb1",
-      "work_package_id": "09c94a3488982f95c6fd2e845062bf715844a541065c81c609e1d939c91a4ff1"
+      "work_package_hash": "6aae376852038105c33a9aca6220d67dfd62bc9f262ccbb2a64f2de538f026b6",
+      "work_package_id": "deb14a1f0f7e7c5070995339c05f5523713e0f14499e9c3dcec92df31a314530"
     }
   },
   "summary": {
     "blocked_packet_count": 10,
-    "blocked_task_count": 64,
+    "blocked_task_count": 62,
     "closed_packet_count": 0,
     "closed_task_count": 0,
     "invalid_intake_count": 0,
     "live_source_uri_count": 0,
-    "missing_intake_count": 64,
+    "missing_intake_count": 62,
     "open_packet_count": 0,
     "open_task_count": 0,
     "packet_count": 10,
     "packet_status_counts": {
       "blocked": 10
     },
-    "placeholder_source_uri_count": 64,
-    "task_count": 64,
+    "placeholder_source_uri_count": 62,
+    "task_count": 62,
     "task_status_counts": {
-      "blocked": 64
+      "blocked": 62
     }
   },
   "tasks": [
@@ -201,23 +201,6 @@
       "task_ref": "external-evidence:auditor-and-review-portal:identity-provider",
       "task_status": "blocked",
       "unit_ref": "auditor-and-review-portal:identity-provider"
-    },
-    {
-      "authority_kind": "identity-provider",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake": null,
-      "intake_out": "artifacts/external-evidence-intakes/agent-inventory-and-identity/identity-provider.json",
-      "owner_hint": "IAM/identity owner",
-      "requirement_id": "agent-inventory-and-identity",
-      "snapshot_out": "artifacts/external-evidence-sources/agent-inventory-and-identity/identity-provider.json",
-      "source_uri": "TODO://authority/agent-inventory-and-identity/identity-provider",
-      "source_uri_status": "placeholder",
-      "task_ref": "external-evidence:agent-inventory-and-identity:identity-provider",
-      "task_status": "blocked",
-      "unit_ref": "agent-inventory-and-identity:identity-provider"
     },
     {
       "authority_kind": "identity-provider",
@@ -524,23 +507,6 @@
       "task_ref": "external-evidence:auditor-and-review-portal:provider-api",
       "task_status": "blocked",
       "unit_ref": "auditor-and-review-portal:provider-api"
-    },
-    {
-      "authority_kind": "provider-api",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake": null,
-      "intake_out": "artifacts/external-evidence-intakes/agent-inventory-and-identity/provider-api.json",
-      "owner_hint": "integration/platform owner",
-      "requirement_id": "agent-inventory-and-identity",
-      "snapshot_out": "artifacts/external-evidence-sources/agent-inventory-and-identity/provider-api.json",
-      "source_uri": "TODO://authority/agent-inventory-and-identity/provider-api",
-      "source_uri_status": "placeholder",
-      "task_ref": "external-evidence:agent-inventory-and-identity:provider-api",
-      "task_status": "blocked",
-      "unit_ref": "agent-inventory-and-identity:provider-api"
     },
     {
       "authority_kind": "provider-api",

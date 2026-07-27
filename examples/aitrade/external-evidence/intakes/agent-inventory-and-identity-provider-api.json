@@ -1,0 +1,64 @@
+{
+  "evidence_argument": "agent-inventory-and-identity,provider-api,examples/aitrade/external-evidence/agent-inventory-provider-api-source-snapshot.json,Retained GitHub contents API export for agent registry inventory evidence;issuer=GitHub Contents API;subject=trustai agent registry inventory export;source_uri=https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/agent-inventory.json?ref=main;issued_at=2026-07-03T11:55:00Z;expires_at=2026-12-31T00:00:00Z",
+  "evidence_item": {
+    "accepted_authority_kinds": [
+      "provider-api",
+      "identity-provider"
+    ],
+    "authority_kind": "provider-api",
+    "description": "Retained GitHub contents API export for agent registry inventory evidence",
+    "evidence_id": "53c508a288bd13bd906ad964b94906781c9eeac47eeadbd81dec98f41454631c",
+    "expires_at": "2026-12-31T00:00:00Z",
+    "issued_at": "2026-07-03T11:55:00Z",
+    "issuer": "GitHub Contents API",
+    "path": "examples/aitrade/external-evidence/agent-inventory-provider-api-source-snapshot.json",
+    "requirement_id": "agent-inventory-and-identity",
+    "sha256": "sha256:6f3ec714f2e344ed199116b30d6488ad29666fcef5378c5b6d4862f7c5a29de2",
+    "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/agent-inventory.json?ref=main",
+    "subject": "trustai agent registry inventory export"
+  },
+  "generated_at": "2026-07-12T00:01:00Z",
+  "intake_id": "162e63458f0cd9716ce9d603bd7debafb6b14928a26fa255ef31e31f2b241e52",
+  "limitations": [
+    "This intake receipt hashes and maps one collected artifact to a collection-plan task; it does not itself satisfy roadmap completion.",
+    "Coverage is updated only after rebuilding and verifying an external evidence manifest with the emitted evidence argument.",
+    "Issuer authority and freshness remain bounded by the collected artifact and manifest verification options."
+  ],
+  "schema": "trustai.external-evidence-intake/0.1",
+  "source_manifest": {
+    "covered_authority_kind_count": 1,
+    "manifest_hash": "614aed31f3e3791640f3192624fab080815440210b65341fb4a2121ed84db717",
+    "manifest_id": "9364d02d07c6d4002372ad45c4017ee3b7a6c6ffd8dc91c46fb9fac9c84f7586",
+    "manifest_ref": "production-external-evidence",
+    "missing_authority_kind_count": 70,
+    "required_authority_kind_count": 71,
+    "status": "partial"
+  },
+  "source_plan": {
+    "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
+    "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
+    "source_manifest": {
+      "generated_at": "2026-07-12T00:01:00Z",
+      "manifest_hash": "614aed31f3e3791640f3192624fab080815440210b65341fb4a2121ed84db717",
+      "manifest_id": "9364d02d07c6d4002372ad45c4017ee3b7a6c6ffd8dc91c46fb9fac9c84f7586",
+      "manifest_ref": "production-external-evidence",
+      "status": "partial"
+    },
+    "status_filter": "all"
+  },
+  "source_roadmap_audit": {
+    "audit_hash": "86cfd25ee3bed75b75604091d3fca2daec16da708498209193e84226bd29816e",
+    "audit_id": "08f9ff68d1301a7891428145af040a68839468931a42dea27e80a0e0ad3bf7f2",
+    "completion_position": "local-reference-complete-with-external-authority-deferred"
+  },
+  "task": {
+    "authority_kind": "provider-api",
+    "coverage_status": "missing",
+    "requirement_id": "agent-inventory-and-identity",
+    "suggested_artifact_path": "external-evidence/agent-inventory-and-identity/provider-api.json",
+    "task_id": "6ad751328b2d1976a3bfa134863e1131850c695455c5c53ca96e0918d3a2639e",
+    "task_ref": "external-evidence:agent-inventory-and-identity:provider-api",
+    "unit_id": "5b78e87c9420ec76f41c07dd0c80905ddc4126edfff06c600428da1eaf20de69",
+    "unit_ref": "agent-inventory-and-identity:provider-api"
+  }
+}

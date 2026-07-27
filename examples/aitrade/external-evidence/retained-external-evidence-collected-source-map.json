@@ -210,6 +210,66 @@
       "title": "Framework adapters for LangGraph, OpenAI Agents, Claude, CrewAI, Bedrock, and Vertex",
       "unit_id": "8563dcf215b5ef63455bca12f81e4fb2d7e98b515192ee839340c62b8332ca82",
       "unit_ref": "framework-adapters:hosted-service"
+    },
+    {
+      "authority_kind": "provider-api",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained GitHub contents API export for agent registry inventory evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Identity-provider production authority dossiers cover the local/reference authority checklist for live event streams, token/session propagation, lifecycle APIs, provider audit exports, credential custody, scheduler/queue evidence, per-evidence source_context bound to lifecycle worker bindings, recomputed controls, and freshness-gated production claims; actual fresh provider-owned exports remain external evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/agent-inventory-and-identity-provider-api.json",
+      "issued_at": "2026-07-03T11:55:00Z",
+      "issuer": "GitHub Contents API",
+      "owner_hint": "integration/platform owner",
+      "requirement_id": "agent-inventory-and-identity",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/agent-inventory-provider-api-source-snapshot.json",
+      "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/agent-inventory.json?ref=main",
+      "subject": "trustai agent registry inventory export",
+      "suggested_evidence_sources": [
+        "provider API response export",
+        "request/response transcript",
+        "provider-owned audit event"
+      ],
+      "task": "agent-inventory-and-identity:provider-api",
+      "task_id": "6ad751328b2d1976a3bfa134863e1131850c695455c5c53ca96e0918d3a2639e",
+      "task_ref": "external-evidence:agent-inventory-and-identity:provider-api",
+      "title": "Agent registry, inventory, identity provider attestations, and lifecycle receipts",
+      "unit_id": "5b78e87c9420ec76f41c07dd0c80905ddc4126edfff06c600428da1eaf20de69",
+      "unit_ref": "agent-inventory-and-identity:provider-api"
+    },
+    {
+      "authority_kind": "identity-provider",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained identity-provider export for governed agent inventory reconciliation evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Identity-provider production authority dossiers cover the local/reference authority checklist for live event streams, token/session propagation, lifecycle APIs, provider audit exports, credential custody, scheduler/queue evidence, per-evidence source_context bound to lifecycle worker bindings, recomputed controls, and freshness-gated production claims; actual fresh provider-owned exports remain external evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/agent-inventory-and-identity-identity-provider.json",
+      "issued_at": "2026-07-03T11:57:00Z",
+      "issuer": "Identity Provider Export",
+      "owner_hint": "IAM/identity owner",
+      "requirement_id": "agent-inventory-and-identity",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/identity-inventory-provider-source-snapshot.json",
+      "source_uri": "https://idp.example/exports/aitrade/identity-inventory",
+      "subject": "aitrade governed agent identity inventory",
+      "suggested_evidence_sources": [
+        "identity-provider event export",
+        "OIDC/session/lifecycle evidence",
+        "RBAC or account-state report"
+      ],
+      "task": "agent-inventory-and-identity:identity-provider",
+      "task_id": "6f7b4b881e73f25ec58a52f33fef9f6632b584de3088171da965ebed3e090c1d",
+      "task_ref": "external-evidence:agent-inventory-and-identity:identity-provider",
+      "title": "Agent registry, inventory, identity provider attestations, and lifecycle receipts",
+      "unit_id": "2830ddc16f51490829895379277460cd4d0c7f689d2de75b8d3cc1c59e76616d",
+      "unit_ref": "agent-inventory-and-identity:identity-provider"
     }
   ],
   "generated_at": "2026-07-12T01:00:00Z",
@@ -219,7 +279,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "65cbfcc2750c4e351038cf1e534a378505a5fc0ec6ae5a4698c4894532a52900",
+  "source_map_id": "2b82fa1aa947bce629ad7d10e833bde97e4a0ea8f981174aaae9e9f5df96d5d0",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -234,9 +294,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 7,
+    "entry_count": 9,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 7,
+    "live_source_uri_count": 9,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

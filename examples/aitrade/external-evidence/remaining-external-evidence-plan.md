@@ -1,8 +1,8 @@
 # TrustAI External Evidence Collection Plan
 
-Plan ID: `2310fcd34419b5b78ad0cdab924f799c2a984bdd4195633081f3aac4bdf31ac2`
+Plan ID: `6190407de0c9ff6397e13a9bba70640897a592970e338134ab0868ac1cd612ef`
 
-Source manifest: `da1839a025798bd08745c84c5a8207dc35a44d574ec24a8cedfe55ec36b84620`
+Source manifest: `aeff1ad249f16d018b89eec85bf9322db6e31b2861cd90a1bc181af190b46cd4`
 
 Status filter: missing
 
@@ -10,10 +10,10 @@ Status filter: missing
 
 - Source manifest status: partial
 - Total authority units: 71
-- Selected tasks: 64
-- Selected missing tasks: 64
+- Selected tasks: 62
+- Selected missing tasks: 62
 - Selected covered tasks: 0
-- Missing authority kinds overall: 64
+- Missing authority kinds overall: 62
 
 ## Collection Tasks
 
@@ -75,8 +75,6 @@ Status filter: missing
 | `ce6621c5587c4344d9f3f8db1d509403fea5a8f1f8581fcaf3ebc375af999ec4` | `runtime-policy-and-attestation:provider-api` | `runtime-policy-and-attestation` | provider-api | missing | integration/platform owner | `external-evidence/runtime-policy-and-attestation/provider-api.json` | `runtime-policy-and-attestation,provider-api,external-evidence/runtime-policy-and-attestation/provider-api.json,provider-api evidence for runtime-policy-and-attestation;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `51b061b63412d64ce0f2dc4744658708a50a3864bdb00e74f373a831d1ba7cb7` | `runtime-policy-and-attestation:hosted-service` | `runtime-policy-and-attestation` | hosted-service | missing | service owner | `external-evidence/runtime-policy-and-attestation/hosted-service.json` | `runtime-policy-and-attestation,hosted-service,external-evidence/runtime-policy-and-attestation/hosted-service.json,hosted-service evidence for runtime-policy-and-attestation;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `1d7cc30adc75215cfaa0833a1ea45ff5d0783def3982c7455a3e4d829d1c7bc6` | `runtime-policy-and-attestation:identity-provider` | `runtime-policy-and-attestation` | identity-provider | missing | IAM/identity owner | `external-evidence/runtime-policy-and-attestation/identity-provider.json` | `runtime-policy-and-attestation,identity-provider,external-evidence/runtime-policy-and-attestation/identity-provider.json,identity-provider evidence for runtime-policy-and-attestation;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
-| `6ad751328b2d1976a3bfa134863e1131850c695455c5c53ca96e0918d3a2639e` | `agent-inventory-and-identity:provider-api` | `agent-inventory-and-identity` | provider-api | missing | integration/platform owner | `external-evidence/agent-inventory-and-identity/provider-api.json` | `agent-inventory-and-identity,provider-api,external-evidence/agent-inventory-and-identity/provider-api.json,provider-api evidence for agent-inventory-and-identity;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
-| `6f7b4b881e73f25ec58a52f33fef9f6632b584de3088171da965ebed3e090c1d` | `agent-inventory-and-identity:identity-provider` | `agent-inventory-and-identity` | identity-provider | missing | IAM/identity owner | `external-evidence/agent-inventory-and-identity/identity-provider.json` | `agent-inventory-and-identity,identity-provider,external-evidence/agent-inventory-and-identity/identity-provider.json,identity-provider evidence for agent-inventory-and-identity;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `b3ca77081443acdd89a265983844a03f8f085020279c8e272513548181dabcec` | `standards-track-and-auditor-ecosystem:kms-hsm` | `standards-track-and-auditor-ecosystem` | kms-hsm | missing | security/platform KMS owner | `external-evidence/standards-track-and-auditor-ecosystem/kms-hsm.json` | `standards-track-and-auditor-ecosystem,kms-hsm,external-evidence/standards-track-and-auditor-ecosystem/kms-hsm.json,kms-hsm evidence for standards-track-and-auditor-ecosystem;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `fd4c4a579fc40de146198260048ce339850dba546a8e83bea8c12c0726794622` | `standards-track-and-auditor-ecosystem:standards-body` | `standards-track-and-auditor-ecosystem` | standards-body | missing | standards/governance owner | `external-evidence/standards-track-and-auditor-ecosystem/standards-body.json` | `standards-track-and-auditor-ecosystem,standards-body,external-evidence/standards-track-and-auditor-ecosystem/standards-body.json,standards-body evidence for standards-track-and-auditor-ecosystem;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `eba08154dc6363b8818d68f122608804d9f93b54a94556768cb51d654975ed40` | `trust-network-procurement-and-marketplace:provider-api` | `trust-network-procurement-and-marketplace` | provider-api | missing | integration/platform owner | `external-evidence/trust-network-procurement-and-marketplace/provider-api.json` | `trust-network-procurement-and-marketplace,provider-api,external-evidence/trust-network-procurement-and-marketplace/provider-api.json,provider-api evidence for trust-network-procurement-and-marketplace;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |

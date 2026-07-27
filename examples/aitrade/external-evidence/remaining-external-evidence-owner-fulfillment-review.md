@@ -1,13 +1,13 @@
 # External Evidence Owner Fulfillment Review
 
-- Review ID: `057ed02e934ffb9221ffb84894eae321c2400253b1ae2e049de738237cc514a1`
+- Review ID: `bd95b75b03b6260025557565e406b193e02c157bb050c2daef24976add238800`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Fulfillments: 64
+- Fulfillments: 62
 - Owners: 10
 - Ready tasks: 0
-- Blocked tasks: 64
-- Placeholder source URIs: 64
+- Blocked tasks: 62
+- Placeholder source URIs: 62
 - Live source URIs: 0
 
 ## Task Review
@@ -70,8 +70,6 @@
 | `runtime-policy-and-attestation:provider-api` | integration/platform owner | blocked | TODO://authority/runtime-policy-and-attestation/provider-api | `placeholder-source-uri` |
 | `runtime-policy-and-attestation:hosted-service` | service owner | blocked | TODO://authority/runtime-policy-and-attestation/hosted-service | `placeholder-source-uri` |
 | `runtime-policy-and-attestation:identity-provider` | IAM/identity owner | blocked | TODO://authority/runtime-policy-and-attestation/identity-provider | `placeholder-source-uri` |
-| `agent-inventory-and-identity:provider-api` | integration/platform owner | blocked | TODO://authority/agent-inventory-and-identity/provider-api | `placeholder-source-uri` |
-| `agent-inventory-and-identity:identity-provider` | IAM/identity owner | blocked | TODO://authority/agent-inventory-and-identity/identity-provider | `placeholder-source-uri` |
 | `standards-track-and-auditor-ecosystem:kms-hsm` | security/platform KMS owner | blocked | TODO://authority/standards-track-and-auditor-ecosystem/kms-hsm | `placeholder-source-uri` |
 | `standards-track-and-auditor-ecosystem:standards-body` | standards/governance owner | blocked | TODO://authority/standards-track-and-auditor-ecosystem/standards-body | `placeholder-source-uri` |
 | `trust-network-procurement-and-marketplace:provider-api` | integration/platform owner | blocked | TODO://authority/trust-network-procurement-and-marketplace/provider-api | `placeholder-source-uri` |
@@ -83,12 +81,12 @@
 
 - Fulfilled source map errors: 1
 - Fulfilled source map warnings: 1
-  - source map contains 64 placeholder source_uri values but live source URIs are required
+  - source map contains 62 placeholder source_uri values but live source URIs are required
 
 ## Blockers
 
-- owner fulfillment review contains 64 placeholder source_uri values
-- fulfilled source map: source map contains 64 placeholder source_uri values but live source URIs are required
+- owner fulfillment review contains 62 placeholder source_uri values
+- fulfilled source map: source map contains 62 placeholder source_uri values but live source URIs are required
 
 ## Next Actions
 

@@ -1,20 +1,20 @@
 # External Evidence Work Packages
 
-- Work package ID: `09c94a3488982f95c6fd2e845062bf715844a541065c81c609e1d939c91a4ff1`
+- Work package ID: `deb14a1f0f7e7c5070995339c05f5523713e0f14499e9c3dcec92df31a314530`
 - Generated at: `2026-07-12T00:01:00Z`
 - Grouped by: `owner_hint`
 - Packages: 10
-- Tasks: 64
-- Missing tasks: 64
-- Placeholder source URIs: 64
+- Tasks: 62
+- Missing tasks: 62
+- Placeholder source URIs: 62
 - Live source URIs: 0
 
 ## Tasks By Owner
 
-- IAM/identity owner: 8
+- IAM/identity owner: 7
 - cloud storage owner: 1
 - customer success/account owner: 9
-- integration/platform owner: 10
+- integration/platform owner: 9
 - legal/compliance owner: 5
 - release engineering: 7
 - risk/insurance owner: 4
@@ -27,11 +27,11 @@
 ### IAM/identity owner
 
 - Package ref: `owner_hint:IAM-identity-owner`
-- Package ID: `5c7883e3a722c18406107720c68b962cc2b79c3257021385549ae31911372be8`
+- Package ID: `43b5242e67a5b4ad25894dac7cd5acc18945eb147aed167b634f9c92fdf286f9`
 - Owner Hint: `IAM/identity owner`
-- Tasks: 8
+- Tasks: 7
 - Authority kinds: `identity-provider`
-- Requirements: `agent-inventory-and-identity`, `auditor-and-review-portal`, `cicd-provider-approvals`, `insurer-api-and-actuarial-products`, `runtime-policy-and-attestation`, `self-serve-onboarding`, `shadow-replay-temporal-holdout`, `trust-network-procurement-and-marketplace`
+- Requirements: `auditor-and-review-portal`, `cicd-provider-approvals`, `insurer-api-and-actuarial-products`, `runtime-policy-and-attestation`, `self-serve-onboarding`, `shadow-replay-temporal-holdout`, `trust-network-procurement-and-marketplace`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
 
@@ -40,7 +40,6 @@
 | `cicd-provider-approvals:identity-provider` | P1 | P0 | `identity-provider` | placeholder | `artifacts/external-evidence-intakes/cicd-provider-approvals/identity-provider.json` |
 | `shadow-replay-temporal-holdout:identity-provider` | P1 | P0 | `identity-provider` | placeholder | `artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/identity-provider.json` |
 | `auditor-and-review-portal:identity-provider` | P1-P3 | P1 | `identity-provider` | placeholder | `artifacts/external-evidence-intakes/auditor-and-review-portal/identity-provider.json` |
-| `agent-inventory-and-identity:identity-provider` | P2 | P1 | `identity-provider` | placeholder | `artifacts/external-evidence-intakes/agent-inventory-and-identity/identity-provider.json` |
 | `runtime-policy-and-attestation:identity-provider` | P2 | P1 | `identity-provider` | placeholder | `artifacts/external-evidence-intakes/runtime-policy-and-attestation/identity-provider.json` |
 | `self-serve-onboarding:identity-provider` | P2 | P1 | `identity-provider` | placeholder | `artifacts/external-evidence-intakes/self-serve-onboarding/identity-provider.json` |
 | `insurer-api-and-actuarial-products:identity-provider` | P2-P4 | P0 | `identity-provider` | placeholder | `artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/identity-provider.json` |
@@ -54,8 +53,6 @@
 - `shadow-replay-temporal-holdout:identity-provider` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/identity-provider.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `auditor-and-review-portal:identity-provider` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/auditor-and-review-portal/identity-provider --root . --task auditor-and-review-portal:identity-provider --description 'identity-provider evidence for auditor-and-review-portal' --snapshot-out artifacts/external-evidence-sources/auditor-and-review-portal/identity-provider.json --intake-out artifacts/external-evidence-intakes/auditor-and-review-portal/identity-provider.json`
 - `auditor-and-review-portal:identity-provider` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/auditor-and-review-portal/identity-provider.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
-- `agent-inventory-and-identity:identity-provider` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/agent-inventory-and-identity/identity-provider --root . --task agent-inventory-and-identity:identity-provider --description 'identity-provider evidence for agent-inventory-and-identity' --snapshot-out artifacts/external-evidence-sources/agent-inventory-and-identity/identity-provider.json --intake-out artifacts/external-evidence-intakes/agent-inventory-and-identity/identity-provider.json`
-- `agent-inventory-and-identity:identity-provider` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/agent-inventory-and-identity/identity-provider.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `runtime-policy-and-attestation:identity-provider` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/runtime-policy-and-attestation/identity-provider --root . --task runtime-policy-and-attestation:identity-provider --description 'identity-provider evidence for runtime-policy-and-attestation' --snapshot-out artifacts/external-evidence-sources/runtime-policy-and-attestation/identity-provider.json --intake-out artifacts/external-evidence-intakes/runtime-policy-and-attestation/identity-provider.json`
 - `runtime-policy-and-attestation:identity-provider` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/runtime-policy-and-attestation/identity-provider.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `self-serve-onboarding:identity-provider` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/self-serve-onboarding/identity-provider --root . --task self-serve-onboarding:identity-provider --description 'identity-provider evidence for self-serve-onboarding' --snapshot-out artifacts/external-evidence-sources/self-serve-onboarding/identity-provider.json --intake-out artifacts/external-evidence-intakes/self-serve-onboarding/identity-provider.json`
@@ -132,11 +129,11 @@
 ### integration/platform owner
 
 - Package ref: `owner_hint:integration-platform-owner`
-- Package ID: `6054435e90033f562b2fd9b6b3798282897fd59ea2e9136e026a8081a70084de`
+- Package ID: `26ba64cc0b964e2160d4e2ceefd2227c72a1f4d393797eabaa5b83d48a094690`
 - Owner Hint: `integration/platform owner`
-- Tasks: 10
+- Tasks: 9
 - Authority kinds: `provider-api`
-- Requirements: `agent-inventory-and-identity`, `auditor-and-review-portal`, `byoc-self-hosted`, `compliance-mapper-and-eu-ai-act`, `insurer-api-and-actuarial-products`, `mcp-gateway`, `runtime-policy-and-attestation`, `self-serve-onboarding`, `shadow-replay-temporal-holdout`, `trust-network-procurement-and-marketplace`
+- Requirements: `auditor-and-review-portal`, `byoc-self-hosted`, `compliance-mapper-and-eu-ai-act`, `insurer-api-and-actuarial-products`, `mcp-gateway`, `runtime-policy-and-attestation`, `self-serve-onboarding`, `shadow-replay-temporal-holdout`, `trust-network-procurement-and-marketplace`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
 
@@ -146,7 +143,6 @@
 | `shadow-replay-temporal-holdout:provider-api` | P1 | P0 | `provider-api` | placeholder | `artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/provider-api.json` |
 | `byoc-self-hosted:provider-api` | P1-P2 | P0 | `provider-api` | placeholder | `artifacts/external-evidence-intakes/byoc-self-hosted/provider-api.json` |
 | `auditor-and-review-portal:provider-api` | P1-P3 | P1 | `provider-api` | placeholder | `artifacts/external-evidence-intakes/auditor-and-review-portal/provider-api.json` |
-| `agent-inventory-and-identity:provider-api` | P2 | P1 | `provider-api` | placeholder | `artifacts/external-evidence-intakes/agent-inventory-and-identity/provider-api.json` |
 | `runtime-policy-and-attestation:provider-api` | P2 | P1 | `provider-api` | placeholder | `artifacts/external-evidence-intakes/runtime-policy-and-attestation/provider-api.json` |
 | `self-serve-onboarding:provider-api` | P2 | P1 | `provider-api` | placeholder | `artifacts/external-evidence-intakes/self-serve-onboarding/provider-api.json` |
 | `compliance-mapper-and-eu-ai-act:provider-api` | P2-P3 | P0 | `provider-api` | placeholder | `artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/provider-api.json` |
@@ -163,8 +159,6 @@
 - `byoc-self-hosted:provider-api` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/byoc-self-hosted/provider-api.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `auditor-and-review-portal:provider-api` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/auditor-and-review-portal/provider-api --root . --task auditor-and-review-portal:provider-api --description 'provider-api evidence for auditor-and-review-portal' --snapshot-out artifacts/external-evidence-sources/auditor-and-review-portal/provider-api.json --intake-out artifacts/external-evidence-intakes/auditor-and-review-portal/provider-api.json`
 - `auditor-and-review-portal:provider-api` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/auditor-and-review-portal/provider-api.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
-- `agent-inventory-and-identity:provider-api` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/agent-inventory-and-identity/provider-api --root . --task agent-inventory-and-identity:provider-api --description 'provider-api evidence for agent-inventory-and-identity' --snapshot-out artifacts/external-evidence-sources/agent-inventory-and-identity/provider-api.json --intake-out artifacts/external-evidence-intakes/agent-inventory-and-identity/provider-api.json`
-- `agent-inventory-and-identity:provider-api` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/agent-inventory-and-identity/provider-api.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `runtime-policy-and-attestation:provider-api` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/runtime-policy-and-attestation/provider-api --root . --task runtime-policy-and-attestation:provider-api --description 'provider-api evidence for runtime-policy-and-attestation' --snapshot-out artifacts/external-evidence-sources/runtime-policy-and-attestation/provider-api.json --intake-out artifacts/external-evidence-intakes/runtime-policy-and-attestation/provider-api.json`
 - `runtime-policy-and-attestation:provider-api` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/runtime-policy-and-attestation/provider-api.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `self-serve-onboarding:provider-api` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/self-serve-onboarding/provider-api --root . --task self-serve-onboarding:provider-api --description 'provider-api evidence for self-serve-onboarding' --snapshot-out artifacts/external-evidence-sources/self-serve-onboarding/provider-api.json --intake-out artifacts/external-evidence-intakes/self-serve-onboarding/provider-api.json`

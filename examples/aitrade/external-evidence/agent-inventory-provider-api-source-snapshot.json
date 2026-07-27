@@ -1,0 +1,22 @@
+{
+  "body_base64": "ewogICJzb3VyY2UiOiAibWFudWFsLWRlc2lnbi1wYXJ0bmVyLWludmVudG9yeSIsCiAgIm9ic2VydmVkX2F0IjogIjIwMjYtMDctMDNUMTE6NTU6MDBaIiwKICAiYWdlbnRzIjogWwogICAgewogICAgICAibmFtZSI6ICJhaXRyYWRlLXJpc2stYWdlbnQiLAogICAgICAidmVyc2lvbiI6ICJzaGEyNTY6MGQ1YmJkOGQyMzU3YjdkMzZlMGYzZjdjNWU5YTBhM2UxZjViN2EwZDJjNGU2ZjhhOWIxYzNkNWU3ZjkwMTIzNCIsCiAgICAgICJvd25lciI6ICJ0cmFkaW5nLXBsYXRmb3JtIiwKICAgICAgInJpc2tfY2xhc3MiOiAidHJhZGluZy1wcm9kLXdyaXRlIiwKICAgICAgImVudmlyb25tZW50IjogInNoYWRvdyIsCiAgICAgICJnb3Zlcm5lZCI6IHRydWUsCiAgICAgICJjb250cmFjdF9pZCI6ICJhaXRyYWRlLWJ0Y3VzZHQtY2FuYXJ5IgogICAgfSwKICAgIHsKICAgICAgIm5hbWUiOiAiYWl0cmFkZS1uZXdzLXN1bW1hcml6ZXIiLAogICAgICAidmVyc2lvbiI6ICJzaGEyNTY6MTExMTIyMjIzMzMzNDQ0NDU1NTU2NjY2Nzc3Nzg4ODg5OTk5YWFhYWJiYmJjY2NjZGRkZGVlZWVmZmZmMDAwMCIsCiAgICAgICJvd25lciI6ICJyZXNlYXJjaCIsCiAgICAgICJyaXNrX2NsYXNzIjogInJlc2VhcmNoLXJlYWQtb25seSIsCiAgICAgICJlbnZpcm9ubWVudCI6ICJkZXYiLAogICAgICAiZ292ZXJuZWQiOiBmYWxzZQogICAgfQogIF0KfQo=",
+  "body_sha256": "sha256:34fbd625b35bc9f5d34f90429d3025b4bc5482954ac38ccc3629a1a16cc65b58",
+  "body_size_bytes": 695,
+  "content_type": "application/json",
+  "expires_at": "2026-12-31T00:00:00Z",
+  "generated_at": "2026-07-12T00:01:00Z",
+  "issued_at": "2026-07-03T11:55:00Z",
+  "issuer": "GitHub Contents API",
+  "limitations": [
+    "This source snapshot preserves one collected authority response as a hashable artifact; it does not prove that the authority will return the same response later.",
+    "Verifier checks cover snapshot integrity, body hash, optional HTTP metadata, and optional freshness metadata.",
+    "Use this snapshot as the artifact supplied to external-evidence-intake for the matching collection-plan task."
+  ],
+  "response_headers": {},
+  "retrieval_method": "file-copy",
+  "schema": "trustai.external-evidence-source-snapshot/0.1",
+  "snapshot_id": "694503e2c0a9038ecc09c2c82879ba3f4fac28417e00f0367bd6db540021c7ec",
+  "source_uri": "https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/agent-inventory.json?ref=main",
+  "status_code": null,
+  "subject": "trustai agent registry inventory export"
+}
