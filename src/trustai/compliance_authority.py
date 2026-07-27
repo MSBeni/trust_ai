@@ -578,7 +578,7 @@ def _build_authority_evidence_item(item: dict[str, Any], source_context: dict[st
     requirement_id = str(item.get("requirement_id") or "")
     authority_kind = str(item.get("authority_kind") or "")
     evidence_ref = str(item.get("evidence_ref") or "")
-    evidence_hash = str(item.get("evidence_hash") or "")
+    evidence_hash = item.get("evidence_hash")
     description = str(item.get("description") or "")
     if requirement_id not in PRODUCTION_AUTHORITY_REQUIREMENT_IDS:
         raise ValueError(f"unsupported compliance authority requirement: {requirement_id}")
@@ -587,10 +587,9 @@ def _build_authority_evidence_item(item: dict[str, Any], source_context: dict[st
         raise ValueError(f"unsupported authority kind: {authority_kind}")
     if authority_kind not in requirement["authority_kinds"]:
         raise ValueError(f"authority kind {authority_kind} is not valid for requirement {requirement_id}")
-    for value, field in ((evidence_ref, "evidence_ref"), (evidence_hash, "evidence_hash"), (description, "description")):
+    for value, field in ((evidence_ref, "evidence_ref"), (description, "description")):
         _require_text(value, field)
-    if not evidence_hash.startswith("sha256:"):
-        raise ValueError("evidence_hash must start with sha256:")
+    evidence_hash = _normalize_sha256_ref(evidence_hash, "evidence_hash")
     built = {"requirement_id": requirement_id, "authority_kind": authority_kind, "evidence_ref": evidence_ref, "evidence_hash": evidence_hash, "description": description}
     for field in ("issuer", "subject", "source_uri", "issued_at", "expires_at"):
         if item.get(field):
@@ -776,3 +775,14 @@ def _is_redacted_reference(value: str) -> bool:
 def _require_text(value: Any, field: str) -> None:
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"compliance authority {field} is required")
+
+
+def _normalize_sha256_ref(value: Any, field: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"compliance authority {field} is required")
+    if not value.startswith("sha256:"):
+        raise ValueError(f"compliance authority {field} must start with sha256:")
+    hexdigest = value.removeprefix("sha256:")
+    if len(hexdigest) != 64 or any(character not in "0123456789abcdefABCDEF" for character in hexdigest):
+        raise ValueError(f"compliance authority {field} must contain a 64-character sha256 digest")
+    return "sha256:" + hexdigest.lower()

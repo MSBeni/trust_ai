@@ -1,7 +1,7 @@
 {
-  "audit_id": "dde71017185cc5d0bb4dacf2945465db47d734c49761fe2ed01d707ccc8056fe",
+  "audit_id": "bc6893d985a9c61161812c17979f2e9afdb36d5a72dcd033eaf86663d3233d89",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
-  "generated_at": "2026-07-24T17:53:46Z",
+  "generated_at": "2026-07-27T03:04:10Z",
   "limitations": [
     "This audit proves local repository evidence and hashes; it does not claim live external services exist.",
     "Statuses marked reference-attested require provider-owned, cloud, regulator, insurer, standards-body, or customer evidence before production completion can be claimed.",
@@ -1267,7 +1267,7 @@
         {
           "path": "src/trustai/compliance_authority.py",
           "present": true,
-          "sha256": "sha256:a37e6bdc7b4b6024dcefabdbd8f6d422d8bfe04c0a2bb397dbb25e2a34436e5e"
+          "sha256": "sha256:db459112978417fab5e932c1e8658d24484a3200d6d717788264853364d4238c"
         },
         {
           "path": "src/trustai/eu_ai_act.py",
@@ -1317,7 +1317,7 @@
         {
           "path": "tests/test_compliance_authority.py",
           "present": true,
-          "sha256": "sha256:c0649de7e49bcdc97fc06c2928d682bd8aecbd434864e892f25d89d61b72c540"
+          "sha256": "sha256:a2e211432b201bb2feb835a716094f6e35cbc6a2932bd737c314f445f4a7fd37"
         },
         {
           "path": "tests/test_eu_ai_act.py",
@@ -1418,7 +1418,7 @@
         {
           "path": "src/trustai/compliance_authority.py",
           "present": true,
-          "sha256": "sha256:a37e6bdc7b4b6024dcefabdbd8f6d422d8bfe04c0a2bb397dbb25e2a34436e5e"
+          "sha256": "sha256:db459112978417fab5e932c1e8658d24484a3200d6d717788264853364d4238c"
         },
         {
           "path": "src/trustai/standards.py",

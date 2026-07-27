@@ -49,7 +49,7 @@
     {
       "items": [
         {
-          "evidence_id": "d247ce302f54514c96cd943000d293b16ca81e06eec5e56006544a92a5737aa2",
+          "evidence_id": "9da77b651f183b9a3579f93e4c71d7f2ab25159a30c1e22042503210b9d344d5",
           "path": "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json",
           "reasons": [
             "checked-in fixture",
@@ -63,45 +63,45 @@
       "unit_ref": "oss-verifier-and-public-spec:ci-run"
     }
   ],
-  "readiness_id": "3c634fa4f27734b608a5949af26e79b74eb0fa4bf26b8886bb51d0118466318a",
+  "readiness_id": "6ae6966e152c11620c2350cff67850e54cbb714fe113956972e9b97c5e8f0f58",
   "readiness_status": "not-ready",
   "schema": "trustai.external-evidence-readiness/0.1",
   "sources": {
     "collection_plan": {
-      "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "c8e6bc9d3b4a0a926a8b1288a199663f424c87322cc5e75d9aaecef1e9017c33",
-      "plan_id": "7f21d5b378611b9b5fdbee5b27574bb0fea513f8343a2700dd990b9c152a99cd",
+      "generated_at": "2026-07-27T03:12:18Z",
+      "plan_hash": "ece71d79d4dec54a81f67284e6a69a1cebc210bb4fc9a7bf2daf895d17ae29d2",
+      "plan_id": "d0ad2359381546887fe066bb44f8ced54ce4bac859d6e00080f2008bb832f402",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "gap_report": {
-      "gap_report_hash": "cce440647c7af087b9ea4e41de70e4564e7edced1a2e1b5a783eaa231bdc7aff",
-      "gap_report_id": "620a5e0dda4012dcc4a159f51c7c8c65f2c60e732bd758689544da7ff885eec6",
+      "gap_report_hash": "43c9ad7a5e78c2dd8e0a6517a6ffa2823ff54717baadf00d1ab74603a0eb2c5e",
+      "gap_report_id": "b0cee12bf1a0dbfd729f2444e115aabcb83f1c8525b163adbcac2fc95ba8cc4a",
       "generated_at": "2026-07-12T01:29:00Z",
       "schema": "trustai.external-evidence-gap-report/0.1"
     },
     "manifest": {
-      "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "6d77938ca40b568a5e0136bc17ec89807d2938254df66e1cb703898084cef9df",
-      "manifest_id": "a01a58129abe015a0253d16919be25d8a2dbba5cf8b41c548e8380e1aca4a43e",
+      "generated_at": "2026-07-27T03:11:13Z",
+      "manifest_hash": "0f5456e7f5d0066733fefe71326e3e68b98548077552f78f5d75fa766ee7af19",
+      "manifest_id": "1521a5cd0e38ac509f6e882f9ad6989057b96c604a04b98c734d5401689d2068",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
-      "audit_hash": "23977e6153f49f1004e346f8142d75569d2a997927a68ff2b4c6f0112521ab1e",
-      "audit_id": "dde71017185cc5d0bb4dacf2945465db47d734c49761fe2ed01d707ccc8056fe",
-      "generated_at": "2026-07-24T17:53:46Z",
+      "audit_hash": "98e7b4633052ae959aea5593164da322dddcc2072740b44f73ab6ee54df26a7f",
+      "audit_id": "bc6893d985a9c61161812c17979f2e9afdb36d5a72dcd033eaf86663d3233d89",
+      "generated_at": "2026-07-27T03:04:10Z",
       "schema": "trustai.roadmap-audit/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:01:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "a48c91f489d596d403b85fa403250e88745ee00ecead040439454a8cfcbbfee6",
-      "source_map_id": "e1e9e6857b43c541127bdbf0a6ed8f48dcbd7f6e6f966cf07c847538c5203485"
+      "source_map_hash": "20fa603322bac483bdcc25866ad421f4d71e6a7970e00d75cf52158337063efe",
+      "source_map_id": "e6e8fb294a3fa39042077942f3a06301c50e25cddfa095aeaf5ac021908c329d"
     },
     "work_package": {
       "generated_at": "2026-07-12T01:30:00Z",
       "schema": "trustai.external-evidence-work-package/0.1",
-      "work_package_hash": "be92485bf4f8b7664e07a22058eda71cd3d52d2e3487077e764c1fdba4eb7f75",
-      "work_package_id": "766d4f862743d3468b02ccc4b28f8c3a7379c31873d0d7f7fb6d08c048237760"
+      "work_package_hash": "ddf642b9d423c056601b3b5b7cc8484a9e256832a66dac95559f0880789ca923",
+      "work_package_id": "d908398de6bee3641754ae495ccecd944883b25466617bdb835a677a17864d68"
     }
   },
   "summary": {

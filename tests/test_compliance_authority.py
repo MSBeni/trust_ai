@@ -223,6 +223,74 @@ class ComplianceAuthorityTests(unittest.TestCase):
             self.assertNotIn("compliance authority evidence_id does not match evidence body: framework-control-mapping-ontology", result.errors)
             self.assertIn("compliance authority source_context does not match source binding: framework-control-mapping-ontology", result.errors)
 
+    def test_compliance_authority_normalizes_uppercase_evidence_hash(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            _, pack, disclosure, compliance_export, document = self._sources(Path(tmp_dir))
+            expected_hash = self._evidence("framework-control-mapping-ontology", "standards-body")["evidence_hash"]
+            evidence = self._evidence("framework-control-mapping-ontology", "standards-body")
+            evidence["evidence_hash"] = "sha256:" + expected_hash.removeprefix("sha256:").upper()
+            dossier = build_compliance_authority_dossier(
+                compliance_export,
+                document,
+                proof_pack=pack,
+                regulator_disclosure=disclosure,
+                mode="provider-dossier",
+                environment="aitrade-prod",
+                dossier_ref="dossier:compliance-authority/aitrade-prod",
+                authority_ref="authority:compliance/aitrade-prod",
+                producer_ref="oidc:trustai.example/compliance-authority-worker",
+                authority_evidence=[evidence],
+            )
+
+            result = verify_compliance_authority_dossier(
+                dossier,
+                compliance_export=compliance_export,
+                eu_ai_act_document=document,
+                proof_pack=pack,
+                regulator_disclosure=disclosure,
+            )
+
+            self.assertTrue(result.ok, result.errors)
+            self.assertEqual(expected_hash, dossier["authority_evidence"][0]["evidence_hash"])
+
+    def test_compliance_authority_rejects_resigned_malformed_evidence_hash(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            _, pack, disclosure, compliance_export, document = self._sources(Path(tmp_dir))
+            dossier = build_compliance_authority_dossier(
+                compliance_export,
+                document,
+                proof_pack=pack,
+                regulator_disclosure=disclosure,
+                mode="provider-dossier",
+                environment="aitrade-prod",
+                dossier_ref="dossier:compliance-authority/aitrade-prod",
+                authority_ref="authority:compliance/aitrade-prod",
+                producer_ref="oidc:trustai.example/compliance-authority-worker",
+                authority_evidence=[self._evidence("framework-control-mapping-ontology", "standards-body")],
+            )
+            tampered = copy.deepcopy(dossier)
+            item = tampered["authority_evidence"][0]
+            item["evidence_hash"] = "sha256:not-a-real-digest"
+            item["evidence_id"] = content_hash(without_keys(item, "evidence_id"))
+            self._resign_dossier(tampered)
+
+            result = verify_compliance_authority_dossier(
+                tampered,
+                compliance_export=compliance_export,
+                eu_ai_act_document=document,
+                proof_pack=pack,
+                regulator_disclosure=disclosure,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertIn(
+                "invalid compliance authority evidence: compliance authority evidence_hash must contain a 64-character sha256 digest",
+                result.errors,
+            )
+            self.assertNotIn("dossier_id does not match canonical compliance authority body", result.errors)
+            self.assertNotIn("compliance authority signature verification failed", result.errors)
+            self.assertNotIn("compliance authority evidence_id does not match evidence body: framework-control-mapping-ontology", result.errors)
+
     def test_append_payload_includes_authority_source_context(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)
@@ -357,9 +425,11 @@ class ComplianceAuthorityTests(unittest.TestCase):
             ):
                 path.write_text(json.dumps(value), encoding="utf-8")
             env = {**os.environ, "PYTHONPATH": str(ROOT / "src")}
+            evidence_ref = "standards:ontology/2026"
+            evidence_hash = f"sha256:{content_hash({'ref': evidence_ref, 'requirement_id': 'framework-control-mapping-ontology'})}"
             evidence_arg = (
-                "framework-control-mapping-ontology,standards-body,standards:ontology/2026,"
-                "sha256:compliance-authority-ontology,Recorded compliance ontology evidence;"
+                f"framework-control-mapping-ontology,standards-body,{evidence_ref},"
+                f"{evidence_hash},Recorded compliance ontology evidence;"
                 "issuer=TrustAI CI;subject=aitrade compliance authority;"
                 "source_uri=https://example.test/compliance;issued_at=2026-07-04T03:00:00Z;expires_at=2026-12-31T00:00:00Z"
             )
