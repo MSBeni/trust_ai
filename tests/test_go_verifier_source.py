@@ -98,6 +98,8 @@ class GoVerifierSourceTests(unittest.TestCase):
             "packed gate decision mismatch for",
             "packed subject agent mismatch",
             "packed subject environment mismatch",
+            "runtime attestation entry",
+            "evaluateRuntimeAction",
             "framework_mappings must be a list",
             "framework mappings do not match gate decision",
         ]

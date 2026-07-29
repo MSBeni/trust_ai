@@ -9,6 +9,7 @@ from trustai.contracts import load_contract, register_contract
 from trustai.crypto import sign_value
 from trustai.gate import append_eval_and_gate
 from trustai.proofpack import compile_proof_pack
+from trustai.runtime import RUNTIME_ENTRY_TYPE, append_runtime_attestation, evaluate_runtime_action, load_action
 from trustai.registry import (
     AGENT_INVENTORY_ENTRY_TYPE,
     DELEGATION_GRAPH_ENTRY_TYPE,
@@ -27,6 +28,7 @@ CONTRACT = ROOT / "examples" / "aitrade" / "verification-contract.yaml"
 RESULTS = ROOT / "examples" / "aitrade" / "eval-results.json"
 INVENTORY = ROOT / "examples" / "aitrade" / "agent-inventory.json"
 DELEGATION = ROOT / "examples" / "aitrade" / "delegation.json"
+ACTION = ROOT / "examples" / "aitrade" / "runtime-action.json"
 
 
 class ProofPackFlowTests(unittest.TestCase):
@@ -46,6 +48,22 @@ class ProofPackFlowTests(unittest.TestCase):
             out_path=tmp / "pack.json",
             pdf_path=tmp / "pack.pdf",
         )
+
+    def _build_pack_with_runtime_attestation(self, tmp: Path, *, tamper_payload: bool = False):
+        chain = EvidenceChain.load(tmp / "chain.json", tenant_id="test")
+        contract = load_contract(CONTRACT)
+        register_contract(chain, contract)
+        action = load_action(ACTION)
+        if tamper_payload:
+            payload = evaluate_runtime_action(contract, action)
+            payload["checks"][0] = {**payload["checks"][0], "passed": not payload["checks"][0]["passed"]}
+            chain.append(RUNTIME_ENTRY_TYPE, payload, timestamp=payload["timestamp"])
+        else:
+            append_runtime_attestation(chain, contract, action)
+        results = json.loads(RESULTS.read_text(encoding="utf-8"))
+        eval_entry, gate_entry, decision = append_eval_and_gate(chain, contract, results)
+        chain.save()
+        return compile_proof_pack(chain, contract, eval_entry, gate_entry, decision, out_path=tmp / "pack.json")
 
     def _build_pack_with_delegation_graph(self, tmp: Path):
         chain = EvidenceChain.load(tmp / "chain.json", tenant_id="test")
@@ -131,6 +149,27 @@ class ProofPackFlowTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "decision gate_entry_id does not match gate entry"):
                 compile_proof_pack(chain, contract, eval_entry, gate_entry, bad_decision, out_path=out_path)
             self.assertFalse(out_path.exists())
+
+    def test_proof_pack_includes_and_verifies_runtime_attestation(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            pack = self._build_pack_with_runtime_attestation(Path(tmp_dir))
+
+            result = verify_proof_pack(pack)
+
+            self.assertTrue(result.ok, result.errors)
+            entry_types = [entry["entry_type"] for entry in pack["chain"]["entries"]]
+            self.assertIn(RUNTIME_ENTRY_TYPE, entry_types)
+
+    def test_proof_pack_rejects_signed_runtime_attestation_semantic_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            pack = self._build_pack_with_runtime_attestation(Path(tmp_dir), tamper_payload=True)
+
+            result = verify_proof_pack(pack)
+
+            self.assertFalse(result.ok)
+            self.assertTrue(any("runtime attestation entry" in error and "mismatch for checks" in error for error in result.errors))
+            self.assertNotIn("pack_id does not match canonical pack body", result.errors)
+            self.assertNotIn("proof pack signature invalid", result.errors)
 
     def test_proof_pack_includes_and_verifies_delegation_graph(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

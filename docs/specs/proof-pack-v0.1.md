@@ -71,13 +71,16 @@ An offline verifier must reject the pack when any of these checks fail:
 14. any included `soak_report.completed` entry contains source soak-window,
     hash, metric-check, incident, drift-alarm, timestamp, outcome, or contract
     evidence that cannot be replayed against the packed contract body;
-15. any included `agent.delegation_graph.exported` entry omits the embedded
+15. any included `runtime.attested` entry contains action hash, timestamp,
+    blast-radius check, approval, outcome, or contract evidence that cannot be
+    replayed against the packed contract body and embedded action;
+16. any included `agent.delegation_graph.exported` entry omits the embedded
     signed graph, mismatches the graph hash/id/summary/filter fields, references
     another contract, fails graph signature/hash/source inclusion checks, or
     names source inventory/delegation entries that are not embedded in the pack;
-16. the packed framework control mappings differ from the deterministic mappings
+17. the packed framework control mappings differ from the deterministic mappings
     for the packed gate decision;
-17. the packed subject agent or environment differs from the registered
+18. the packed subject agent or environment differs from the registered
     contract agent, gate decision agent, eval entry agent, or eval results
     environment.
 

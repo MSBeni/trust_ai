@@ -1,6 +1,6 @@
 # External Evidence Owner Fulfillment Closure
 
-- Closure ID: `7751de9b5456d11d7985f232bcfcd18386feb7b9f06fe3cc925411bcb1934dd2`
+- Closure ID: `b402c060797d1b3f3d22b42348352161fa07b3b6838cd8ce41880cb566338803`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `closed`
 - Closed tasks: 0/0

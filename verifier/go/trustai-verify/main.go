@@ -35,6 +35,7 @@ const (
 	evalEntryType                          = "eval.completed"
 	gateEntryType                          = "promotion_gate.decided"
 	approvalEntryType                      = "human_approval.granted"
+	runtimeEntryType                       = "runtime.attested"
 	roadmapAuditEntryType                  = "trustai.roadmap_audit.attested"
 	externalEvidenceEntryType              = "trustai.external_evidence_manifest.attested"
 	externalEvidenceCollectionRunEntryType = "trustai.external_evidence_collection_run.attested"
@@ -1216,6 +1217,7 @@ func verifyProofPack(pack map[string]any, key, tsaKey string) result {
 	}
 	entryByType := map[string]map[string]any{}
 	var approvalEntries []map[string]any
+	var runtimeEntries []map[string]any
 
 	if root == "" {
 		errors = append(errors, "chain tree root missing")
@@ -1255,6 +1257,9 @@ func verifyProofPack(pack map[string]any, key, tsaKey string) result {
 			entryByType[entryType] = entry
 			if entryType == approvalEntryType {
 				approvalEntries = append(approvalEntries, entry)
+			}
+			if entryType == runtimeEntryType {
+				runtimeEntries = append(runtimeEntries, entry)
 			}
 		}
 	}
@@ -1356,6 +1361,12 @@ func verifyProofPack(pack map[string]any, key, tsaKey string) result {
 		}
 	}
 
+	if contractDigest != "" && contractBody != nil {
+		for _, runtimeEntry := range runtimeEntries {
+			verifyRuntimeAttestationEntry(runtimeEntry, contractBody, contractDigest, &errors)
+		}
+	}
+
 	frameworkMappings, frameworkMappingsOK := pack["framework_mappings"].([]any)
 	if !frameworkMappingsOK {
 		errors = append(errors, "framework_mappings must be a list")
@@ -1368,6 +1379,40 @@ func verifyProofPack(pack map[string]any, key, tsaKey string) result {
 		warnings = append(warnings, "proof pack is valid but gate outcome is "+decision)
 	}
 	return result{OK: len(errors) == 0, Errors: errors, Warnings: warnings, Decision: decision}
+}
+
+func verifyRuntimeAttestationEntry(entry, contractBody map[string]any, contractDigest string, errors *[]string) {
+	label := fmt.Sprintf("runtime attestation entry %v", entry["index"])
+	payload := getMap(entry, "payload")
+	if payload == nil {
+		*errors = append(*errors, label+" payload missing")
+		return
+	}
+	if getString(payload, "contract_hash") != contractDigest {
+		*errors = append(*errors, label+" references a different contract hash")
+	}
+	if getString(entry, "timestamp") != getString(payload, "timestamp") {
+		*errors = append(*errors, label+" timestamp mismatch")
+	}
+	action := getMap(payload, "action")
+	if action == nil {
+		*errors = append(*errors, label+" action missing")
+		return
+	}
+	if getString(action, "timestamp") == "" {
+		*errors = append(*errors, label+" action timestamp missing")
+		return
+	}
+	expected, err := evaluateRuntimeAction(contractBody, action)
+	if err != "" {
+		*errors = append(*errors, label+" replay failed: "+err)
+		return
+	}
+	for _, k := range []string{"contract_id", "contract_hash", "action_hash", "timestamp", "passed", "outcome", "checks"} {
+		if !canonicalEqual(payload[k], expected[k]) {
+			*errors = append(*errors, label+" mismatch for "+k)
+		}
+	}
 }
 
 func verifyEntry(entry map[string]any, key, tsaKey string) []string {
@@ -1415,6 +1460,60 @@ func verifyTimestampToken(message any, token map[string]any, tsaKey string) bool
 		return false
 	}
 	return verifyValue(map[string]any{"timestamp_token": unsigned}, sig, tsaKey)
+}
+
+func evaluateRuntimeAction(contract, action map[string]any) (map[string]any, string) {
+	timestamp := getString(action, "timestamp")
+	if timestamp == "" {
+		return nil, "runtime action timestamp missing"
+	}
+	if mustParseTime(timestamp).IsZero() {
+		return nil, "runtime action timestamp invalid"
+	}
+	var checks []any
+	blastRadius := getMap(contract, "blast_radius")
+	if threshold := blastRadius["max_notional_usd"]; threshold != nil {
+		if actual := action["notional_usd"]; actual != nil {
+			passed, _ := compareNumbers(actual, threshold, "<=")
+			checks = append(checks, map[string]any{"name": "max_notional_usd", "actual": actual, "operator": "<=", "threshold": threshold, "passed": passed})
+		}
+	}
+	if threshold := blastRadius["max_daily_orders"]; threshold != nil {
+		if actual := action["daily_order_count"]; actual != nil {
+			passed, _ := compareNumbers(actual, threshold, "<=")
+			checks = append(checks, map[string]any{"name": "max_daily_orders", "actual": actual, "operator": "<=", "threshold": threshold, "passed": passed})
+		}
+	}
+	if expectedRisk := getString(getMap(contract, "agent"), "risk_class"); expectedRisk != "" {
+		if actualRisk := getString(action, "risk_class"); actualRisk != "" {
+			checks = append(checks, map[string]any{"name": "risk_class", "actual": actualRisk, "operator": "==", "threshold": expectedRisk, "passed": actualRisk == expectedRisk})
+		}
+	}
+	if getBool(action, "requires_human_approval") {
+		approval := getMap(action, "approval")
+		approved := getString(approval, "approved_at") != ""
+		checks = append(checks, map[string]any{"name": "human_approval", "actual": approved, "operator": "==", "threshold": true, "passed": approved})
+	}
+	passed := true
+	for _, raw := range checks {
+		if !getBool(raw.(map[string]any), "passed") {
+			passed = false
+		}
+	}
+	outcome := "failed"
+	if passed {
+		outcome = "passed"
+	}
+	return map[string]any{
+		"contract_id":   contract["id"],
+		"contract_hash": contentHash(contract),
+		"action_hash":   contentHash(action),
+		"timestamp":     timestamp,
+		"passed":        passed,
+		"outcome":       outcome,
+		"checks":        checks,
+		"action":        action,
+	}, ""
 }
 
 func evaluateContract(contract, results map[string]any, approvalEntries []map[string]any) map[string]any {

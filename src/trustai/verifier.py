@@ -17,6 +17,7 @@ from .merkle import verify_inclusion
 from .tree_header import verify_packed_tree_header
 from .mcp_gateway import MCP_TOOL_CALL_ENTRY_TYPE, verify_mcp_transcript_entries
 from .proofpack import PROOF_PACK_SPEC_VERSION
+from .runtime import RUNTIME_ENTRY_TYPE, evaluate_runtime_action
 from .registry import (
     AGENT_INVENTORY_ENTRY_TYPE,
     DELEGATION_ENTRY_TYPE,
@@ -93,6 +94,7 @@ def verify_proof_pack(
     approval_entries: list[dict[str, Any]] = []
     shadow_entries: list[dict[str, Any]] = []
     mcp_entries: list[dict[str, Any]] = []
+    runtime_entries: list[dict[str, Any]] = []
     soak_entries: list[dict[str, Any]] = []
     delegation_graph_entries: list[dict[str, Any]] = []
 
@@ -127,6 +129,8 @@ def verify_proof_pack(
                 shadow_entries.append(entry)
             if entry_type == MCP_TOOL_CALL_ENTRY_TYPE:
                 mcp_entries.append(entry)
+            if entry_type == RUNTIME_ENTRY_TYPE:
+                runtime_entries.append(entry)
             if entry_type == SOAK_REPORT_ENTRY_TYPE:
                 soak_entries.append(entry)
             if entry_type == DELEGATION_GRAPH_ENTRY_TYPE:
@@ -248,6 +252,32 @@ def verify_proof_pack(
                     errors.append(
                         f"shadow replay entry {shadow_entry.get('index')} temporal_holdout summary mismatch for {field}"
                     )
+    if contract_digest and isinstance(contract_body, dict):
+        for runtime_entry in runtime_entries:
+            payload = runtime_entry.get("payload", {})
+            if not isinstance(payload, dict):
+                errors.append(f"runtime attestation entry {runtime_entry.get('index')} payload missing")
+                continue
+            if payload.get("contract_hash") != contract_digest:
+                errors.append(f"runtime attestation entry {runtime_entry.get('index')} references a different contract hash")
+            if runtime_entry.get("timestamp") != payload.get("timestamp"):
+                errors.append(f"runtime attestation entry {runtime_entry.get('index')} timestamp mismatch")
+            action = payload.get("action")
+            if not isinstance(action, dict):
+                errors.append(f"runtime attestation entry {runtime_entry.get('index')} action missing")
+                continue
+            if not action.get("timestamp"):
+                errors.append(f"runtime attestation entry {runtime_entry.get('index')} action timestamp missing")
+                continue
+            try:
+                expected_runtime = evaluate_runtime_action(contract_body, action)
+            except (KeyError, TypeError, ValueError) as exc:
+                errors.append(f"runtime attestation entry {runtime_entry.get('index')} replay failed: {exc}")
+                continue
+            for key_name in ("contract_id", "contract_hash", "action_hash", "timestamp", "passed", "outcome", "checks"):
+                if payload.get(key_name) != expected_runtime.get(key_name):
+                    errors.append(f"runtime attestation entry {runtime_entry.get('index')} mismatch for {key_name}")
+
     if contract_digest and isinstance(contract_body, dict):
         for soak_entry in soak_entries:
             payload = soak_entry.get("payload", {})
