@@ -638,7 +638,7 @@
       "description": "Retained GitHub Actions export for framework adapter hook release CI evidence",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
+        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; local adapter ingestion rejects traces without content-addressed pre-registration hashes, content-addressed agent versions, agent names, and risk classes before framework evidence is accepted; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/framework-adapters-ci-run.json",
       "issued_at": "2026-07-09T00:35:00Z",
@@ -668,7 +668,7 @@
       "description": "Retained GitHub contents API export for framework adapter hook release evidence",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
+        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; local adapter ingestion rejects traces without content-addressed pre-registration hashes, content-addressed agent versions, agent names, and risk classes before framework evidence is accepted; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/framework-adapters-provider-api.json",
       "issued_at": "2026-07-09T00:30:00Z",
@@ -698,7 +698,7 @@
       "description": "Retained GitHub hosted file export for framework adapter hook release evidence",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
+        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; local adapter ingestion rejects traces without content-addressed pre-registration hashes, content-addressed agent versions, agent names, and risk classes before framework evidence is accepted; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/framework-adapters-hosted-service.json",
       "issued_at": "2026-07-09T00:30:00Z",
@@ -2139,14 +2139,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "e546182dd311e492e59be63c225c18d63d3437787a4b12bef9cf23c0e8bd392e",
+  "source_map_id": "47f920b99a4f7cccbcf2dcc45dd82fc7bf2831f448590db972e85b002aa9a9e5",
   "source_plan": {
-    "plan_hash": "f14f5cf42d7b77a10fe23b3700b4483deb954014804c3c5d59dcd797fd728087",
-    "plan_id": "b4a143f793556da2bd2646d8decd21897d6254858aec5431fe0d32cfd92af0c6",
+    "plan_hash": "e91418a162da869011431e02bf5d1db5249914c35cc6aeed4d5ab272c960b393",
+    "plan_id": "5fa3f744e17fe6d8b5db052f6c1b44c7ffb0af95050c84e7b380e842830c0960",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "23d6f7facf5e1df9f66fb813c414e92428bb24baee01f447ee3402040bd4ab73",
-      "manifest_id": "7a8ef0264c9ab2b6023e544c66424f3dd2508e4bb55adb878bdaf6e38134cb06",
+      "manifest_hash": "872b68bbca49c34b835a5e2637c522bb76c8c7e640dfa72c1fd2d9123013633e",
+      "manifest_id": "a1d4853bab974553b276c3e88f51134b1254b4c59c480a3b04214fd95f8436ff",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },

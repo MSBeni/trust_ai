@@ -1,3 +1,4 @@
+import copy
 import json
 import tempfile
 import unittest
@@ -81,6 +82,53 @@ class FrameworkAdapterTests(unittest.TestCase):
             self.assertEqual(12, len(entries))
             self.assertTrue(all(entry["entry_type"] == INGEST_ENTRY_TYPE for entry in entries))
             self.assertTrue(chain.verify_all().ok)
+
+    def test_framework_trace_requires_content_addressed_contract_and_agent_metadata(self):
+        payload = {
+            "framework": "openai_agents",
+            "trace_id": "openai-run-001",
+            "contract_hash": "a" * 64,
+            "agent": {
+                "name": "aitrade-risk-agent",
+                "version": "sha256:" + "b" * 64,
+                "risk_class": "trading-prod-write",
+            },
+            "items": [
+                {
+                    "type": "message",
+                    "role": "assistant",
+                    "content": "shadow run complete",
+                    "timestamp": "2026-07-03T12:00:00Z",
+                }
+            ],
+        }
+
+        events = framework_payload_to_events(payload)
+
+        self.assertEqual(1, len(events))
+        self.assertEqual("a" * 64, events[0]["contract_hash"])
+        self.assertEqual("trading-prod-write", events[0]["risk_class"])
+        self.assertEqual("sha256:" + "b" * 64, events[0]["agent"]["version"])
+
+        invalid_contract = copy.deepcopy(payload)
+        invalid_contract["contract_hash"] = "not-a-contract-hash"
+        with self.assertRaisesRegex(ValueError, "contract_hash must be"):
+            framework_payload_to_events(invalid_contract)
+
+        invalid_agent_version = copy.deepcopy(payload)
+        invalid_agent_version["agent"]["version"] = "v1"
+        with self.assertRaisesRegex(ValueError, "agent version"):
+            framework_payload_to_events(invalid_agent_version)
+
+        missing_agent_name = copy.deepcopy(payload)
+        missing_agent_name["agent"].pop("name")
+        with self.assertRaisesRegex(ValueError, "agent missing name"):
+            framework_payload_to_events(missing_agent_name)
+
+        missing_risk_class = copy.deepcopy(payload)
+        missing_risk_class["agent"].pop("risk_class")
+        with self.assertRaisesRegex(ValueError, "missing risk_class"):
+            framework_payload_to_events(missing_risk_class)
 
     def test_framework_trace_requires_known_framework(self):
         with self.assertRaisesRegex(ValueError, "unsupported framework"):

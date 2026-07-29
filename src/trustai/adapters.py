@@ -175,6 +175,13 @@ def _valid_hex_id(value: Any, length: int) -> bool:
     )
 
 
+def _valid_sha256_ref(value: Any) -> bool:
+    if not isinstance(value, str):
+        return False
+    raw = value.removeprefix("sha256:")
+    return _valid_hex_id(raw, 64)
+
+
 def _otel_trace_id(framework: str, source_trace_id: Any) -> str:
     raw = str(source_trace_id)
     if _valid_hex_id(raw, 32):
@@ -193,13 +200,24 @@ def _metadata(payload: dict[str, Any]) -> dict[str, Any]:
     agent = payload.get("agent")
     if not isinstance(agent, dict):
         raise ValueError("framework trace payload missing agent")
+    agent_name = str(agent.get("name") or "").strip()
+    if not agent_name:
+        raise ValueError("framework trace payload agent missing name")
+    agent_version = agent.get("version") or agent.get("version_hash") or agent.get("versionHash")
+    if not _valid_sha256_ref(agent_version):
+        raise ValueError("framework trace payload agent version must be a sha256 content-addressed ref")
     contract_hash = payload.get("contract_hash") or payload.get("contractHash")
     if not contract_hash:
         raise ValueError("framework trace payload missing contract_hash")
+    if not _valid_sha256_ref(contract_hash):
+        raise ValueError("framework trace payload contract_hash must be a sha256 content-addressed ref")
+    risk_class = payload.get("risk_class") or payload.get("riskClass") or agent.get("risk_class")
+    if not isinstance(risk_class, str) or not risk_class.strip():
+        raise ValueError("framework trace payload missing risk_class")
     return {
         "agent": agent,
-        "contract_hash": contract_hash,
-        "risk_class": payload.get("risk_class") or payload.get("riskClass") or agent.get("risk_class"),
+        "contract_hash": str(contract_hash),
+        "risk_class": risk_class.strip(),
         "trace_id": payload.get("trace_id")
         or payload.get("traceId")
         or payload.get("run_id")

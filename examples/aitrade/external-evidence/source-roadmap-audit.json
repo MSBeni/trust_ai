@@ -1,5 +1,5 @@
 {
-  "audit_id": "73e0037bcc67f04fab8beaf65f5d17398b6251f058a7d905c469c7ed220bff09",
+  "audit_id": "c5642b89a050e1bd952fcbbed0b55c6f22f3487ca057bd38764788c1554687c8",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
   "generated_at": "2026-07-12T00:00:00Z",
   "limitations": [
@@ -999,7 +999,7 @@
         {
           "path": "docs/specs/framework-adapters-v0.1.md",
           "present": true,
-          "sha256": "sha256:10f0ab2425a1d44f86a0803313b67185b0dc55be57e3aba7b8be3c06c36f643e"
+          "sha256": "sha256:9fdd59e9c9d2a4056f527bc753fb8b6bb09518c7151350466a5632e18cdb299a"
         },
         {
           "path": "docs/specs/framework-adapter-matrix-v0.1.md",
@@ -1014,7 +1014,7 @@
         {
           "path": "src/trustai/adapters.py",
           "present": true,
-          "sha256": "sha256:e78ad0d17c7bb86612f279c0e5ee85684b3699c2009e6ad813aeaccff8568ec3"
+          "sha256": "sha256:dabe29dda25385d72a0b2417eb4369c4ac423eea18da1d2a1e99a4ef1d66e072"
         },
         {
           "path": "src/trustai/framework_adapter_matrix.py",
@@ -1039,7 +1039,7 @@
         {
           "path": "tests/test_framework_adapters.py",
           "present": true,
-          "sha256": "sha256:5d9a2aaa3d5bdf2995d3235653e0d1feadc5433ccc084b80eb98436df58c2c80"
+          "sha256": "sha256:64be8cf0d74b468757ec966d1943c162e4890e520973647b1a0aa16361510e69"
         },
         {
           "path": "tests/test_framework_adapter_matrix.py",
@@ -1054,7 +1054,7 @@
       ],
       "evidence_count": 11,
       "external_authority_required": [
-        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
+        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; local adapter ingestion rejects traces without content-addressed pre-registration hashes, content-addressed agent versions, agent names, and risk classes before framework evidence is accepted; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
       ],
       "id": "framework-adapters",
       "missing_evidence_count": 0,
@@ -1458,7 +1458,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:047aa1bfbff8c1ca896efadab9cea0c6453d0afa91d9340c0c3a73148eb6bed5"
+          "sha256": "sha256:428ebdcf5cb980272374876ba7c04adcd37f1f445beee2985268db64a991b12f"
         },
         {
           "path": "src/trustai/trust_authority.py",
@@ -1861,7 +1861,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:047aa1bfbff8c1ca896efadab9cea0c6453d0afa91d9340c0c3a73148eb6bed5"
+          "sha256": "sha256:428ebdcf5cb980272374876ba7c04adcd37f1f445beee2985268db64a991b12f"
         },
         {
           "path": "tests/test_reliability_report.py",
@@ -1987,7 +1987,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:047aa1bfbff8c1ca896efadab9cea0c6453d0afa91d9340c0c3a73148eb6bed5"
+          "sha256": "sha256:428ebdcf5cb980272374876ba7c04adcd37f1f445beee2985268db64a991b12f"
         },
         {
           "path": "tests/test_phase_scoreboard.py",
@@ -2053,7 +2053,7 @@
         {
           "path": "docs/architecture/roadmap-coverage.md",
           "present": true,
-          "sha256": "sha256:48d5f713f05570a2bd927f905cbea1168e38f37f649807fad017bcb24bf98548"
+          "sha256": "sha256:8646a9d9397273be3264f4fb8a9399d982c16ebd1a694f42b18d9624bd63077f"
         },
         {
           "path": "src/trustai/proofpack.py",
@@ -2073,7 +2073,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:047aa1bfbff8c1ca896efadab9cea0c6453d0afa91d9340c0c3a73148eb6bed5"
+          "sha256": "sha256:428ebdcf5cb980272374876ba7c04adcd37f1f445beee2985268db64a991b12f"
         },
         {
           "path": "tests/test_product_scope.py",
@@ -2623,7 +2623,7 @@
     "coverage": {
       "path": "docs/architecture/roadmap-coverage.md",
       "present": true,
-      "sha256": "sha256:48d5f713f05570a2bd927f905cbea1168e38f37f649807fad017bcb24bf98548"
+      "sha256": "sha256:8646a9d9397273be3264f4fb8a9399d982c16ebd1a694f42b18d9624bd63077f"
     },
     "requirement_count": 26,
     "roadmap": {

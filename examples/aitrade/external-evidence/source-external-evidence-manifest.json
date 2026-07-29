@@ -25,7 +25,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "7a8ef0264c9ab2b6023e544c66424f3dd2508e4bb55adb878bdaf6e38134cb06",
+  "manifest_id": "a1d4853bab974553b276c3e88f51134b1254b4c59c480a3b04214fd95f8436ff",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -305,7 +305,7 @@
       "authority_kind": "ci-run",
       "coverage_status": "missing",
       "external_authority_required": [
-        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
+        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; local adapter ingestion rejects traces without content-addressed pre-registration hashes, content-addressed agent versions, agent names, and risk classes before framework evidence is accepted; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
       ],
       "phase": "P1",
       "priority": "P1",
@@ -318,7 +318,7 @@
       "authority_kind": "provider-api",
       "coverage_status": "missing",
       "external_authority_required": [
-        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
+        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; local adapter ingestion rejects traces without content-addressed pre-registration hashes, content-addressed agent versions, agent names, and risk classes before framework evidence is accepted; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
       ],
       "phase": "P1",
       "priority": "P1",
@@ -331,7 +331,7 @@
       "authority_kind": "hosted-service",
       "coverage_status": "missing",
       "external_authority_required": [
-        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
+        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; local adapter ingestion rejects traces without content-addressed pre-registration hashes, content-addressed agent versions, agent names, and risk classes before framework evidence is accepted; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
       ],
       "phase": "P1",
       "priority": "P1",
@@ -1047,7 +1047,7 @@
         "hosted-service"
       ],
       "external_authority_required": [
-        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
+        "Framework adapter production authority dossiers cover the local/reference authority checklist for exact runtime release matrices, native hook package provenance, compatibility refresh cadence, regression replay, runtime provider certification, collector schema compatibility, immutable release artifacts, supply-chain attestation, upgrade SLAs, runtime service authority binding, per-evidence source context, and rollout controls; local adapter ingestion rejects traces without content-addressed pre-registration hashes, content-addressed agent versions, agent names, and risk classes before framework evidence is accepted; actual fresh provider-owned runtime release, package, CI, artifact, and operations exports remain external deployment evidence."
       ],
       "id": "framework-adapters",
       "phase": "P1",
@@ -1247,8 +1247,8 @@
   ],
   "schema": "trustai.external-evidence-manifest/0.1",
   "source_roadmap_audit": {
-    "audit_hash": "ac08b0adccdc90085b6f45d37f54bfe51a2e06c7f48a77066b5d3b252db65dc7",
-    "audit_id": "73e0037bcc67f04fab8beaf65f5d17398b6251f058a7d905c469c7ed220bff09",
+    "audit_hash": "e1bbfa71ef950531f7026f486c861f3b9deb032ff465d32ab4f836936ad56464",
+    "audit_id": "c5642b89a050e1bd952fcbbed0b55c6f22f3487ca057bd38764788c1554687c8",
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {

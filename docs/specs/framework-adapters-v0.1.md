@@ -19,7 +19,7 @@ frameworks and normalize them for evidence capture.
 
 ## Input Envelope
 
-Each trace must include TrustAI metadata:
+Each trace must include TrustAI metadata. Adapter ingestion rejects traces unless the contract hash is a 64-hex or `sha256:` content-addressed reference, the agent has a name, the agent version is a `sha256:` content-addressed reference, and a non-empty risk class is present:
 
 ```json
 {
@@ -59,6 +59,9 @@ Adapters emit normalized events with:
 Tool calls preserve `tool.name`, `tool.arguments`, `tool.result`, and
 `tool.status` when present. Agent steps preserve hashes of framework input and
 output payloads instead of requiring raw payloads in downstream proof checks.
+All emitted events retain the validated contract hash, content-addressed agent
+version, and risk class so downstream proof packs cannot accidentally rely on
+unbound framework exports.
 
 Framework-native trace and span identifiers may be human-readable or provider-specific.
 Adapters derive stable OTel-compatible 32-hex `trace_id` and 16-hex `span_id`
