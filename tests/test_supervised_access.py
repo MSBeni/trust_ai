@@ -129,6 +129,78 @@ class SupervisedAccessTests(unittest.TestCase):
             self.assertIn("receipt_id does not match canonical receipt body", result.errors)
             self.assertIn("supervised access receipt is expired at verification time", result.warnings)
 
+    def test_supervised_access_rejects_resigned_scope_escalation(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            _, pack, pack_path, disclosure, disclosure_path, view_path = self._chain_pack_disclosure_view(tmp)
+            receipt = build_supervised_access_receipt(
+                pack,
+                proof_pack_path=pack_path,
+                disclosure=disclosure,
+                disclosure_path=disclosure_path,
+                view_path=view_path,
+                subject_ref="oidc:regulator.example/supervisor-123",
+                organization="Example Supervisor",
+                role="regulator_reviewer",
+                audience_type="regulator",
+                purpose="EU AI Act supervised review",
+                issued_at="2026-07-08T00:00:00Z",
+                expires_at="2026-08-08T00:00:00Z",
+            )
+            receipt["scope"]["write_access"] = True
+            self._resign_receipt(receipt)
+
+            result = verify_supervised_access_receipt(
+                receipt,
+                proof_pack=pack,
+                proof_pack_path=pack_path,
+                disclosure=disclosure,
+                disclosure_path=disclosure_path,
+                view_path=view_path,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("receipt_id does not match canonical receipt body", result.errors)
+            self.assertNotIn("supervised access receipt signature invalid", result.errors)
+            self.assertIn("supervised access scope does not match audience and artifacts", result.errors)
+
+    def test_supervised_access_rejects_resigned_control_removal(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            _, pack, pack_path, disclosure, disclosure_path, view_path = self._chain_pack_disclosure_view(tmp)
+            receipt = build_supervised_access_receipt(
+                pack,
+                proof_pack_path=pack_path,
+                disclosure=disclosure,
+                disclosure_path=disclosure_path,
+                view_path=view_path,
+                subject_ref="oidc:regulator.example/supervisor-123",
+                organization="Example Supervisor",
+                role="regulator_reviewer",
+                audience_type="regulator",
+                purpose="EU AI Act supervised review",
+                issued_at="2026-07-08T00:00:00Z",
+                expires_at="2026-08-08T00:00:00Z",
+            )
+            receipt["controls"] = [
+                control for control in receipt["controls"] if control["id"] != "hosted-portal-auth"
+            ]
+            self._resign_receipt(receipt)
+
+            result = verify_supervised_access_receipt(
+                receipt,
+                proof_pack=pack,
+                proof_pack_path=pack_path,
+                disclosure=disclosure,
+                disclosure_path=disclosure_path,
+                view_path=view_path,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("receipt_id does not match canonical receipt body", result.errors)
+            self.assertNotIn("supervised access receipt signature invalid", result.errors)
+            self.assertIn("supervised access controls do not match audience and artifacts", result.errors)
+
     def test_supervised_access_rejects_resigned_artifact_summary_mismatch(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)

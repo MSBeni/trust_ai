@@ -155,6 +155,14 @@ def verify_supervised_access_receipt(
     if audience_type == "insurer" and "insurer_telemetry" not in artifact_by_name:
         errors.append("insurer supervised access requires an insurer_telemetry artifact")
 
+    policy_artifacts = [artifact for artifact in artifacts if isinstance(artifact, dict)]
+    expected_scope = _scope_for(str(audience_type), policy_artifacts)
+    if receipt.get("scope") != expected_scope:
+        errors.append("supervised access scope does not match audience and artifacts")
+    expected_controls = _controls_for(str(audience_type), policy_artifacts)
+    if receipt.get("controls") != expected_controls:
+        errors.append("supervised access controls do not match audience and artifacts")
+
     _verify_supplied_proof_pack(
         artifact_by_name.get("proof_pack"),
         proof_pack,

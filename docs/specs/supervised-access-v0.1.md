@@ -56,6 +56,8 @@ Supported artifact records:
 - valid issued/expiry time window, with expiry surfaced as a warning when
   verifying after `expires_at`;
 - required artifact types for the selected audience;
+- deterministic recomputation of read-only selective-disclosure `scope` and
+  verifier `controls` from the audience and artifact set;
 - source artifact hash and recorded summary-field binding when source files are
   supplied;
 - optional source proof pack validity when `--pack` is supplied;

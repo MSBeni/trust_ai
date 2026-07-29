@@ -1,5 +1,5 @@
 {
-  "audit_id": "c5642b89a050e1bd952fcbbed0b55c6f22f3487ca057bd38764788c1554687c8",
+  "audit_id": "bb077bee6128f93fef8ad2d915715ed537e420366c38184520f1005afc354907",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
   "generated_at": "2026-07-12T00:00:00Z",
   "limitations": [
@@ -1085,7 +1085,7 @@
         {
           "path": "src/trustai/supervised_access.py",
           "present": true,
-          "sha256": "sha256:345a108b22b0e3ea9e249a2633173fd2f882690f574922c6539f7b57a0840c59"
+          "sha256": "sha256:f0aa7e4d2a326ea6b6914e37d5738b4277e7ad8b7c19c1148705a2f32d00167c"
         },
         {
           "path": "src/trustai/review_portal_service.py",
@@ -1100,7 +1100,7 @@
         {
           "path": "docs/specs/supervised-access-v0.1.md",
           "present": true,
-          "sha256": "sha256:2a0f165893d6306bc7ba1bee65b5654b0678990b2e3b2b83f60fc32bd1efdd78"
+          "sha256": "sha256:e700cd865894fcb21fa8aaaa04c824b74ef56e1c3e9fe14a8afeb0613407d542"
         },
         {
           "path": "docs/specs/review-portal-service-attestation-v0.1.md",
@@ -1115,7 +1115,7 @@
         {
           "path": "tests/test_supervised_access.py",
           "present": true,
-          "sha256": "sha256:64e216fe86e1de30a83bcfd9da33c4275f6b10ef5c18f787048b769bb66f00aa"
+          "sha256": "sha256:da569653b93edd6ee203579e0e29c9645905eb3505599f66d1b466c120923881"
         },
         {
           "path": "tests/test_review_portal_service.py",
@@ -1130,7 +1130,7 @@
       ],
       "evidence_count": 12,
       "external_authority_required": [
-        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
+        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay with recomputed read-only scopes and verifier controls; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
       ],
       "id": "auditor-and-review-portal",
       "missing_evidence_count": 0,
@@ -1458,7 +1458,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:428ebdcf5cb980272374876ba7c04adcd37f1f445beee2985268db64a991b12f"
+          "sha256": "sha256:86942a085399cbe67ebf2acd2088e8c525018342f50a99a768a51b1b3a02ec45"
         },
         {
           "path": "src/trustai/trust_authority.py",
@@ -1549,7 +1549,7 @@
         {
           "path": "docs/specs/supervised-access-v0.1.md",
           "present": true,
-          "sha256": "sha256:2a0f165893d6306bc7ba1bee65b5654b0678990b2e3b2b83f60fc32bd1efdd78"
+          "sha256": "sha256:e700cd865894fcb21fa8aaaa04c824b74ef56e1c3e9fe14a8afeb0613407d542"
         },
         {
           "path": "docs/specs/byoc-production-authority-v0.1.md",
@@ -1594,7 +1594,7 @@
         {
           "path": "src/trustai/supervised_access.py",
           "present": true,
-          "sha256": "sha256:345a108b22b0e3ea9e249a2633173fd2f882690f574922c6539f7b57a0840c59"
+          "sha256": "sha256:f0aa7e4d2a326ea6b6914e37d5738b4277e7ad8b7c19c1148705a2f32d00167c"
         },
         {
           "path": "src/trustai/deployment.py",
@@ -1861,7 +1861,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:428ebdcf5cb980272374876ba7c04adcd37f1f445beee2985268db64a991b12f"
+          "sha256": "sha256:86942a085399cbe67ebf2acd2088e8c525018342f50a99a768a51b1b3a02ec45"
         },
         {
           "path": "tests/test_reliability_report.py",
@@ -1987,7 +1987,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:428ebdcf5cb980272374876ba7c04adcd37f1f445beee2985268db64a991b12f"
+          "sha256": "sha256:86942a085399cbe67ebf2acd2088e8c525018342f50a99a768a51b1b3a02ec45"
         },
         {
           "path": "tests/test_phase_scoreboard.py",
@@ -2053,7 +2053,7 @@
         {
           "path": "docs/architecture/roadmap-coverage.md",
           "present": true,
-          "sha256": "sha256:8646a9d9397273be3264f4fb8a9399d982c16ebd1a694f42b18d9624bd63077f"
+          "sha256": "sha256:724a9dce86bdb2473e3a22e1cc563b032df30e8abfb9e32d77b2ce6e95ba3605"
         },
         {
           "path": "src/trustai/proofpack.py",
@@ -2073,7 +2073,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:428ebdcf5cb980272374876ba7c04adcd37f1f445beee2985268db64a991b12f"
+          "sha256": "sha256:86942a085399cbe67ebf2acd2088e8c525018342f50a99a768a51b1b3a02ec45"
         },
         {
           "path": "tests/test_product_scope.py",
@@ -2623,7 +2623,7 @@
     "coverage": {
       "path": "docs/architecture/roadmap-coverage.md",
       "present": true,
-      "sha256": "sha256:8646a9d9397273be3264f4fb8a9399d982c16ebd1a694f42b18d9624bd63077f"
+      "sha256": "sha256:724a9dce86bdb2473e3a22e1cc563b032df30e8abfb9e32d77b2ce6e95ba3605"
     },
     "requirement_count": 26,
     "roadmap": {

@@ -728,7 +728,7 @@
       "description": "Retained KMS/HSM export for review portal session and disclosed artifact encryption evidence",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
+        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay with recomputed read-only scopes and verifier controls; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/auditor-and-review-portal-kms-hsm.json",
       "issued_at": "2026-07-08T06:12:00Z",
@@ -758,7 +758,7 @@
       "description": "Retained provider API export for review portal authority dossier and control evidence",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
+        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay with recomputed read-only scopes and verifier controls; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/auditor-and-review-portal-provider-api.json",
       "issued_at": "2026-07-08T06:13:00Z",
@@ -788,7 +788,7 @@
       "description": "Retained hosted service export for review portal worker fleet and service health evidence",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
+        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay with recomputed read-only scopes and verifier controls; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/auditor-and-review-portal-hosted-service.json",
       "issued_at": "2026-07-08T06:14:00Z",
@@ -818,7 +818,7 @@
       "description": "Retained identity-provider export for review portal reviewer sessions and account lifecycle evidence",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
+        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay with recomputed read-only scopes and verifier controls; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/auditor-and-review-portal-identity-provider.json",
       "issued_at": "2026-07-08T06:15:00Z",
@@ -848,7 +848,7 @@
       "description": "Retained regulator export for review portal supervised-access acceptance evidence",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
+        "Review portal production authority dossiers cover the local/reference authority checklist for hosted portal workers, production identity-provider sessions, account lifecycle operations, immutable access logs, frontend release evidence, selective-disclosure enforcement, RBAC/session controls, KMS-backed session data, observability, and supervised-access replay with recomputed read-only scopes and verifier controls; actual fresh hosted UI, identity-provider, immutable log, KMS, and regulator/auditor account exports remain external deployment evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/auditor-and-review-portal-regulator.json",
       "issued_at": "2026-07-08T06:16:00Z",
@@ -2139,14 +2139,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "47f920b99a4f7cccbcf2dcc45dd82fc7bf2831f448590db972e85b002aa9a9e5",
+  "source_map_id": "a1bdf5931628ccc8925ceb375e32b613e5a183af2dc747678a4de93dee8f1820",
   "source_plan": {
-    "plan_hash": "e91418a162da869011431e02bf5d1db5249914c35cc6aeed4d5ab272c960b393",
-    "plan_id": "5fa3f744e17fe6d8b5db052f6c1b44c7ffb0af95050c84e7b380e842830c0960",
+    "plan_hash": "6dc7a889cdd26c2026317334a42d338e2bbafa3234e34b7a544dc9fd4e92b747",
+    "plan_id": "d98cafbd3d18a7433168502788c04be272bb68668c9e04d5329b4f0b9fa55530",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "872b68bbca49c34b835a5e2637c522bb76c8c7e640dfa72c1fd2d9123013633e",
-      "manifest_id": "a1d4853bab974553b276c3e88f51134b1254b4c59c480a3b04214fd95f8436ff",
+      "manifest_hash": "9c8e805f63ee547843a99a8018fc6142bd0d23bc99310c1d68f88de097ed5dc0",
+      "manifest_id": "acdeba26e7c80e996eafc2abb19008d823d7a03a3d7f8874c633d36b9bf0a1dd",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },
