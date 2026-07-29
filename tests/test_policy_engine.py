@@ -1,8 +1,11 @@
+import copy
 import tempfile
 import unittest
 from pathlib import Path
 
+from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
+from trustai.crypto import sign_value
 from trustai.contracts import load_contract, register_contract
 from trustai.gate import append_eval_and_gate
 from trustai.policy import append_policy_decision, load_policy_pack
@@ -53,6 +56,12 @@ class PolicyEngineReceiptTests(unittest.TestCase):
         )
         policy_export = export_policy_pack(policy)
         return chain, policy, action, pack, policy_decision, policy_export
+
+    def _resign_receipt(self, receipt: dict) -> None:
+        body = without_keys(receipt, "receipt_id", "signatures")
+        receipt_id = content_hash(body)
+        receipt["receipt_id"] = receipt_id
+        receipt["signatures"] = [sign_value({"receipt_id": receipt_id, "receipt": body})]
 
     def test_policy_engine_receipt_verifies_and_appends_to_chain(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -116,6 +125,71 @@ class PolicyEngineReceiptTests(unittest.TestCase):
 
             self.assertFalse(result.ok)
             self.assertIn("receipt action hash does not match action", result.errors)
+
+    def test_policy_engine_receipt_replays_active_gate_outcome(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            _, policy, action, pack, policy_decision, policy_export = self._fixtures(Path(tmp_dir))
+            receipt = build_policy_engine_receipt(
+                policy,
+                action,
+                pack,
+                policy_decision,
+                policy_export=policy_export,
+                engine="opa",
+            )
+            failed_pack = copy.deepcopy(pack)
+            failed_pack["gate_decision"]["outcome"] = "failed"
+            receipt["proof_pack"]["content_hash"] = content_hash(failed_pack)
+            receipt["proof_pack"]["gate_outcome"] = "failed"
+            self._resign_receipt(receipt)
+
+            result = verify_policy_engine_receipt(
+                receipt,
+                policy,
+                action,
+                failed_pack,
+                policy_decision,
+                policy_export=policy_export,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("receipt_id does not match canonical receipt body", result.errors)
+            self.assertNotIn("policy engine receipt signature verification failed", result.errors)
+            self.assertIn("policy decision does not replay from policy, action, proof pack, and proof decay", result.errors)
+
+    def test_policy_engine_receipt_replays_proof_decay(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            _, policy, action, pack, policy_decision, policy_export = self._fixtures(Path(tmp_dir))
+            receipt = build_policy_engine_receipt(
+                policy,
+                action,
+                pack,
+                policy_decision,
+                policy_export=policy_export,
+                engine="opa",
+            )
+            stale_pack = copy.deepcopy(pack)
+            stale_pack["gate_decision"]["evaluated_at"] = "2026-01-01T00:00:00Z"
+            stale_entry_types = {"runtime.attested", "soak_report.completed", "shadow_replay.completed"}
+            for entry in stale_pack["chain"]["entries"]:
+                if entry.get("entry_type") in stale_entry_types:
+                    entry["timestamp"] = "2026-01-01T00:00:00Z"
+            receipt["proof_pack"]["content_hash"] = content_hash(stale_pack)
+            self._resign_receipt(receipt)
+
+            result = verify_policy_engine_receipt(
+                receipt,
+                policy,
+                action,
+                stale_pack,
+                policy_decision,
+                policy_export=policy_export,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("receipt_id does not match canonical receipt body", result.errors)
+            self.assertNotIn("policy engine receipt signature verification failed", result.errors)
+            self.assertIn("policy decision does not replay from policy, action, proof pack, and proof decay", result.errors)
 
 
 if __name__ == "__main__":

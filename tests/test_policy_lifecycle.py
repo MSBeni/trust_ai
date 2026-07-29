@@ -129,10 +129,18 @@ class PolicyLifecycleTests(unittest.TestCase):
 
         self.assertEqual(POLICY_EXPORT_SCHEMA, export["schema"])
         self.assertIn("package trustai.runtime", opa)
+        self.assertIn('input.proof.gate_outcome == "passed"', opa)
         self.assertIn("input.action.notional_usd > 5000", opa)
         self.assertIn('missing_approvals["require-trading-ops-approval-for-large-notional"]', opa)
         self.assertIn('not approval_present("trading_ops")', opa)
         self.assertEqual("trustai.cedar-policy-set/0.1", cedar["schema"])
+        self.assertTrue(
+            any(
+                cedar_policy["id"] == "proof-active-gate-passed"
+                and cedar_policy["condition"] == 'context.proof.gate_outcome != "passed"'
+                for cedar_policy in cedar["policies"]
+            )
+        )
         self.assertTrue(
             any(
                 cedar_policy["id"] == "deny-non-shadow-before-production-promotion"

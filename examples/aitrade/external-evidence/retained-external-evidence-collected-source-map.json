@@ -1748,7 +1748,7 @@
       "description": "Retained ci-run export for runtime-policy-and-attestation evidence",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
+        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, policy-engine decision replay, active proof-pack gate outcome, source-artifact roots, per-evidence source-context bindings, derived control verification, proof-decay freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/runtime-policy-and-attestation-ci-run.json",
       "issued_at": "2026-07-12T00:00:00Z",
@@ -1778,7 +1778,7 @@
       "description": "Retained KMS/HSM enforcement export for runtime policy evidence signing",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
+        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, policy-engine decision replay, active proof-pack gate outcome, source-artifact roots, per-evidence source-context bindings, derived control verification, proof-decay freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/runtime-policy-and-attestation-kms-hsm.json",
       "issued_at": "2026-07-03T12:03:00Z",
@@ -1808,7 +1808,7 @@
       "description": "Retained GitHub contents API export for runtime policy pack evidence",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
+        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, policy-engine decision replay, active proof-pack gate outcome, source-artifact roots, per-evidence source-context bindings, derived control verification, proof-decay freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/runtime-policy-and-attestation-provider-api.json",
       "issued_at": "2026-07-03T12:02:00Z",
@@ -1838,7 +1838,7 @@
       "description": "Retained GitHub hosted file export for runtime action attestation evidence",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
+        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, policy-engine decision replay, active proof-pack gate outcome, source-artifact roots, per-evidence source-context bindings, derived control verification, proof-decay freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/runtime-policy-and-attestation-hosted-service.json",
       "issued_at": "2026-07-03T12:00:12Z",
@@ -1868,7 +1868,7 @@
       "description": "Retained identity-provider export for runtime policy agent identity binding evidence",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
+        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, policy-engine decision replay, active proof-pack gate outcome, source-artifact roots, per-evidence source-context bindings, derived control verification, proof-decay freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/runtime-policy-and-attestation-identity-provider.json",
       "issued_at": "2026-07-03T11:57:00Z",
@@ -2139,14 +2139,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "a1bdf5931628ccc8925ceb375e32b613e5a183af2dc747678a4de93dee8f1820",
+  "source_map_id": "f6103fd9288413a55370f9fe2625a0f6fb599c82df049f76075acaaa36972619",
   "source_plan": {
-    "plan_hash": "6dc7a889cdd26c2026317334a42d338e2bbafa3234e34b7a544dc9fd4e92b747",
-    "plan_id": "d98cafbd3d18a7433168502788c04be272bb68668c9e04d5329b4f0b9fa55530",
+    "plan_hash": "e7d08a74a36148d4a8c865c638376ac6c3151fea5fdb84b1bf42de5dfacc6338",
+    "plan_id": "e0e438e6a978cfea937f40585976876de0c3c0f777bfc281cf6f577f5ed39590",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "9c8e805f63ee547843a99a8018fc6142bd0d23bc99310c1d68f88de097ed5dc0",
-      "manifest_id": "acdeba26e7c80e996eafc2abb19008d823d7a03a3d7f8874c633d36b9bf0a1dd",
+      "manifest_hash": "0a2b943f8164ae63570d833cb4c151b438998f7d5a6ffb43c3e2d6602bddb0dd",
+      "manifest_id": "a30f1acc345946f2114c9056e91370feee826586fe90fb027682ca01991e5425",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },

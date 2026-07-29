@@ -125,6 +125,18 @@ def evaluate_proof_freshness(
         }
 
     decision = proof_pack.get("gate_decision", {})
+    if not isinstance(decision, dict):
+        decision = {}
+    gate_outcome = decision.get("outcome")
+    checks.append(
+        {
+            "name": "active_proof_pack",
+            "actual": gate_outcome,
+            "operator": "==",
+            "threshold": "passed",
+            "passed": gate_outcome == "passed",
+        }
+    )
     gate_ts = decision.get("evaluated_at") or proof_pack.get("issued_at")
     if decay.get("max_gate_age_hours") is not None:
         checks.append(

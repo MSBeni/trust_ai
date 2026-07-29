@@ -8,7 +8,7 @@ from typing import Any
 from .canonical import content_hash, utc_now, without_keys
 from .chain import EvidenceChain
 from .crypto import sign_value, verify_value
-from .policy import POLICY_DECISION_ENTRY_TYPE, validate_policy_pack
+from .policy import POLICY_DECISION_ENTRY_TYPE, evaluate_policy, validate_policy_pack
 from .policy_export import POLICY_EXPORT_SCHEMA
 
 POLICY_ENGINE_RECEIPT_SCHEMA = "trustai.policy-engine-receipt/0.1"
@@ -193,6 +193,15 @@ def verify_policy_engine_receipt(
         if receipt_decision.get("passed") != decision_payload.get("passed"):
             errors.append("receipt decision pass status does not match policy decision")
         _check_decision_consistency(errors, receipt, decision_payload)
+        if policy_pack is not None and action is not None and proof_pack is not None:
+            replayed = evaluate_policy(
+                policy_pack,
+                action,
+                proof_pack=proof_pack,
+                now=decision_payload.get("evaluated_at") or receipt.get("evaluated_at"),
+            )
+            if content_hash(replayed) != content_hash(decision_payload):
+                errors.append("policy decision does not replay from policy, action, proof pack, and proof decay")
 
     export_ref = receipt.get("policy_export")
     if export_ref:

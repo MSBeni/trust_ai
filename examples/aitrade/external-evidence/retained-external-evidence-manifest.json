@@ -1367,7 +1367,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "79f32136412ff81f66c7d4090258c4c93154ddb9eaa3e91f60ba661776439564",
+  "manifest_id": "c04939cb1481e20393f8bf530d636f7315bec849623202e417d24a41dec13c9b",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -2128,7 +2128,7 @@
       "authority_kind": "ci-run",
       "coverage_status": "covered",
       "external_authority_required": [
-        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
+        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, policy-engine decision replay, active proof-pack gate outcome, source-artifact roots, per-evidence source-context bindings, derived control verification, proof-decay freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
       ],
       "phase": "P2",
       "priority": "P1",
@@ -2141,7 +2141,7 @@
       "authority_kind": "kms-hsm",
       "coverage_status": "covered",
       "external_authority_required": [
-        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
+        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, policy-engine decision replay, active proof-pack gate outcome, source-artifact roots, per-evidence source-context bindings, derived control verification, proof-decay freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
       ],
       "phase": "P2",
       "priority": "P1",
@@ -2154,7 +2154,7 @@
       "authority_kind": "provider-api",
       "coverage_status": "covered",
       "external_authority_required": [
-        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
+        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, policy-engine decision replay, active proof-pack gate outcome, source-artifact roots, per-evidence source-context bindings, derived control verification, proof-decay freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
       ],
       "phase": "P2",
       "priority": "P1",
@@ -2167,7 +2167,7 @@
       "authority_kind": "hosted-service",
       "coverage_status": "covered",
       "external_authority_required": [
-        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
+        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, policy-engine decision replay, active proof-pack gate outcome, source-artifact roots, per-evidence source-context bindings, derived control verification, proof-decay freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
       ],
       "phase": "P2",
       "priority": "P1",
@@ -2180,7 +2180,7 @@
       "authority_kind": "identity-provider",
       "coverage_status": "covered",
       "external_authority_required": [
-        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
+        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, policy-engine decision replay, active proof-pack gate outcome, source-artifact roots, per-evidence source-context bindings, derived control verification, proof-decay freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
       ],
       "phase": "P2",
       "priority": "P1",
@@ -2538,7 +2538,7 @@
         "identity-provider"
       ],
       "external_authority_required": [
-        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
+        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, policy-engine decision replay, active proof-pack gate outcome, source-artifact roots, per-evidence source-context bindings, derived control verification, proof-decay freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
       ],
       "id": "runtime-policy-and-attestation",
       "phase": "P2",
@@ -2589,8 +2589,8 @@
   ],
   "schema": "trustai.external-evidence-manifest/0.1",
   "source_roadmap_audit": {
-    "audit_hash": "a74ec6a066144228f4347e83c664a6a8bb4d1f32f3497ed927c8adb7fa435aa3",
-    "audit_id": "bb077bee6128f93fef8ad2d915715ed537e420366c38184520f1005afc354907",
+    "audit_hash": "716aceffcd7a75f62057ca75bf95e5da2287fe1a6bddb1126f37d5db0a796c35",
+    "audit_id": "e6c6984db8218b94d66c55988819115ed768f8950306185e347fa7cbab4ce0b9",
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {

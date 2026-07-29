@@ -77,9 +77,11 @@ packed proof body. Missing policy pack bodies, policy pack hash/id/version
 mismatches, stale proof freshness, rule-result mismatches, or outcome tampering
 fail verification even when the chain entry and proof pack signatures are valid.
 
-Missing proof packs fail closed. Missing, malformed, or stale gate, soak,
-runtime attestation, or shadow replay timestamps also fail closed when the policy
-pack defines the corresponding decay limit.
+Missing proof packs fail closed. Proof packs must carry an active promotion gate
+decision with outcome `passed`; failed, missing, or malformed gate decisions fail
+before age-based checks. Missing, malformed, or stale gate, soak, runtime
+attestation, or shadow replay timestamps also fail closed when the policy pack
+defines the corresponding decay limit.
 
 ## Policy Backend Exports
 
@@ -87,7 +89,8 @@ pack defines the corresponding decay limit.
 policy pack. The export includes:
 
 - `targets.opa_rego`: a Rego module with proof freshness, deny rules, and
-  approval requirements. Callers provide precomputed proof ages under
+  approval requirements. Callers provide the active gate outcome under
+  `input.proof.gate_outcome` and precomputed proof ages under
   `input.proof.age_hours`.
 - `targets.cedar`: a Cedar-shaped JSON policy set for review or production
   translation. Helper functions such as `hasApproval(role)` are intentionally
@@ -105,9 +108,11 @@ or Cedar-shaped backend artifact. The receipt schema is
 `trustai.policy-engine-receipt/0.1`; see
 `docs/specs/policy-engine-receipt-v0.1.md`.
 
-`trustai policy-engine-verify` re-checks the receipt signature and source hashes.
-`trustai policy-engine-append` appends `policy_engine.evaluated` after the
-receipt and all supplied source artifacts verify.
+`trustai policy-engine-verify` re-checks the receipt signature, source hashes,
+and supplied policy decision replay from the policy pack, action, proof pack,
+active gate outcome, and proof-decay timestamps. `trustai policy-engine-append`
+appends `policy_engine.evaluated` after the receipt and all supplied source
+artifacts verify.
 
 ## Lifecycle Entries
 

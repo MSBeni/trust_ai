@@ -1,5 +1,5 @@
 {
-  "audit_id": "bb077bee6128f93fef8ad2d915715ed537e420366c38184520f1005afc354907",
+  "audit_id": "e6c6984db8218b94d66c55988819115ed768f8950306185e347fa7cbab4ce0b9",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
   "generated_at": "2026-07-12T00:00:00Z",
   "limitations": [
@@ -1458,7 +1458,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:86942a085399cbe67ebf2acd2088e8c525018342f50a99a768a51b1b3a02ec45"
+          "sha256": "sha256:55cd153cecd919a6c9690f8accbcd285502472a4446315999b326b53c8f27df9"
         },
         {
           "path": "src/trustai/trust_authority.py",
@@ -1519,7 +1519,7 @@
         {
           "path": "docs/specs/runtime-policy-v0.1.md",
           "present": true,
-          "sha256": "sha256:0fc9f0c1c1b59de81c60003fb4050a69431e58f2b1224f5d516aeaa6df732d50"
+          "sha256": "sha256:61c35feef698d3768a934a43eb24a2331d573ac21676772b4f537994ab8f67be"
         },
         {
           "path": "docs/specs/marketplace-v0.1.md",
@@ -1861,7 +1861,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:86942a085399cbe67ebf2acd2088e8c525018342f50a99a768a51b1b3a02ec45"
+          "sha256": "sha256:55cd153cecd919a6c9690f8accbcd285502472a4446315999b326b53c8f27df9"
         },
         {
           "path": "tests/test_reliability_report.py",
@@ -1987,7 +1987,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:86942a085399cbe67ebf2acd2088e8c525018342f50a99a768a51b1b3a02ec45"
+          "sha256": "sha256:55cd153cecd919a6c9690f8accbcd285502472a4446315999b326b53c8f27df9"
         },
         {
           "path": "tests/test_phase_scoreboard.py",
@@ -2053,7 +2053,7 @@
         {
           "path": "docs/architecture/roadmap-coverage.md",
           "present": true,
-          "sha256": "sha256:724a9dce86bdb2473e3a22e1cc563b032df30e8abfb9e32d77b2ce6e95ba3605"
+          "sha256": "sha256:24aa9e5f354a5ad15d4ed35beb326ceb4a1940eba79b4ecaf7090f8aca885bab"
         },
         {
           "path": "src/trustai/proofpack.py",
@@ -2073,7 +2073,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:86942a085399cbe67ebf2acd2088e8c525018342f50a99a768a51b1b3a02ec45"
+          "sha256": "sha256:55cd153cecd919a6c9690f8accbcd285502472a4446315999b326b53c8f27df9"
         },
         {
           "path": "tests/test_product_scope.py",
@@ -2104,12 +2104,12 @@
         {
           "path": "docs/specs/runtime-policy-v0.1.md",
           "present": true,
-          "sha256": "sha256:0fc9f0c1c1b59de81c60003fb4050a69431e58f2b1224f5d516aeaa6df732d50"
+          "sha256": "sha256:61c35feef698d3768a934a43eb24a2331d573ac21676772b4f537994ab8f67be"
         },
         {
           "path": "docs/specs/policy-engine-receipt-v0.1.md",
           "present": true,
-          "sha256": "sha256:4512748654677ba1389a2a3bbcff057d56cc96055656f2e869bd0560c8353efa"
+          "sha256": "sha256:adeba6f751f4b3029230a2ba8c18864ea3f7d93f70404aa407df7cbd2b339668"
         },
         {
           "path": "src/trustai/runtime.py",
@@ -2119,12 +2119,12 @@
         {
           "path": "src/trustai/policy.py",
           "present": true,
-          "sha256": "sha256:e749e7a8f4ae618c748e6d68ea1fe4a89d052cd9bcf6ebcbd5bb950d9c4ec962"
+          "sha256": "sha256:eb7699cd80e3aab725c83752107cb19abdd6359f1a40d56819e794d992d817ca"
         },
         {
           "path": "src/trustai/policy_engine.py",
           "present": true,
-          "sha256": "sha256:8e08fa75a9da774bddcd83a24210563329da4ec3d69c925b702a8a3d5d63c8ff"
+          "sha256": "sha256:993b2103a2478214c76952a6d185acb48e19b2485d47d19fae56e966bc4c7c90"
         },
         {
           "path": "src/trustai/policy_backend_enforcement.py",
@@ -2174,7 +2174,7 @@
         {
           "path": "tests/test_policy_engine.py",
           "present": true,
-          "sha256": "sha256:7a2202b3df146e93462df9d89871b68871f817c0913af3f03393c28aaba83a90"
+          "sha256": "sha256:1772624f10696e680c94272d841880fc7ca3bc52a39f56f1303846bfe5a3f320"
         },
         {
           "path": "tests/test_policy_backend_enforcement.py",
@@ -2194,7 +2194,7 @@
       ],
       "evidence_count": 18,
       "external_authority_required": [
-        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
+        "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, policy-engine decision replay, active proof-pack gate outcome, source-artifact roots, per-evidence source-context bindings, derived control verification, proof-decay freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
       ],
       "id": "runtime-policy-and-attestation",
       "missing_evidence_count": 0,
@@ -2623,7 +2623,7 @@
     "coverage": {
       "path": "docs/architecture/roadmap-coverage.md",
       "present": true,
-      "sha256": "sha256:724a9dce86bdb2473e3a22e1cc563b032df30e8abfb9e32d77b2ce6e95ba3605"
+      "sha256": "sha256:24aa9e5f354a5ad15d4ed35beb326ceb4a1940eba79b4ecaf7090f8aca885bab"
     },
     "requirement_count": 26,
     "roadmap": {

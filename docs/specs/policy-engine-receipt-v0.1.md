@@ -7,8 +7,10 @@ offline review.
 
 This v0.1 artifact does not claim that TrustAI operated a hosted OPA/Cedar
 service. It proves which policy pack, action, proof pack, local policy decision,
-and exported backend artifact were bound into a signed receipt. In
-`recorded-response` mode it also binds the hash of a supplied backend response.
+and exported backend artifact were bound into a signed receipt, and lets offline
+verifiers replay the supplied decision from the active gate outcome and
+proof-decay inputs. In `recorded-response` mode it also binds the hash of a
+supplied backend response.
 
 ## Schema
 
@@ -60,6 +62,8 @@ hash and optional status/outcome metadata.
 - policy decision hash, outcome, pass status, and chain entry binding.
 - consistency between the policy decision and receipt policy/action/contract
   references.
+- local policy decision replay from the supplied policy pack, action, proof pack,
+  active gate outcome, and proof-decay timestamps.
 - OPA/Cedar export target presence and export hash when supplied.
 - recorded response hash when supplied.
 
