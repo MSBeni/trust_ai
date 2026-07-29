@@ -17,9 +17,9 @@ The receipt uses schema `trustai.promotion-status/0.1` and records:
 - gate decision contract ID, contract hash, agent identity, outcome, pass flag,
   gate entry ID, and eval entry ID;
 - provider payload schema, payload hash, request method/path, request body hash,
-  pack ID, contract ID, and contract hash;
-- provider status shape, including GitHub check-run status/conclusion/head SHA or
-  GitLab commit-status state;
+  pack ID, contract ID, contract hash, and native proof-pack reference binding;
+- provider status shape, including GitHub check-run status/conclusion/head SHA,
+  details URL, and external ID, or GitLab commit-status state and target URL;
 - provider target ref binding, including concrete GitHub repository or GitLab
   project path plus a 40-character commit SHA;
 - optional provider delivery binding, including delivery ID, delivery hash,
@@ -41,15 +41,16 @@ all source artifacts:
   and response artifact paths when the delivery receipt binds those bytes.
 
 When sources are supplied, the verifier recomputes proof-pack hash, provider
-payload hash, provider status success/failure and provider-native status shape, concrete repository/project commit ref binding, delivery receipt verification, retained delivery payload/response artifact
+payload hash, provider status success/failure and provider-native status shape, concrete repository/project commit ref binding, native proof-pack URL/correlation binding, delivery receipt verification, retained delivery payload/response artifact
 replay status, controls, violations, and pass/fail status. Editing the
-proof-pack gate decision, provider payload conclusion/state, contract hash,
-payload hash, delivery payload hash, retained response artifact binding, or
-delivery signature changes the replayed receipt result.
+proof-pack gate decision, provider payload conclusion/state, provider proof-pack
+URL, provider external ID, contract hash, payload hash, delivery payload hash,
+retained response artifact binding, or delivery signature changes the replayed
+receipt result.
 
 A receipt passes only when the proof pack verifies offline, the payload pack and
 contract bindings match the gate decision, the provider status/check result
-matches the TrustAI gate outcome, the provider payload targets a concrete repository/project commit ref, any supplied provider delivery receipt
+matches the TrustAI gate outcome, the provider payload targets a concrete repository/project commit ref, the provider-native proof-pack URL/correlation fields bind back to the same proof pack, any supplied provider delivery receipt
 verifies and binds to the same payload, and any retained delivery payload or
 response artifacts bound by that delivery receipt are replayed.
 

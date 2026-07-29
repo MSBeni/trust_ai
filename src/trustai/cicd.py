@@ -113,6 +113,11 @@ def build_promotion_check_payload(
     decision = _decision(proof_pack)
     summary = _summary(proof_pack, verification)
     success = _success(proof_pack, verification)
+    external_id = _promotion_status_external_id(
+        pack_id=proof_pack.get("pack_id"),
+        contract_hash=decision.get("contract_hash"),
+        commit_sha=commit_sha,
+    )
 
     if provider == "gitlab":
         body: dict[str, Any] = {
@@ -130,6 +135,7 @@ def build_promotion_check_payload(
             "pack_id": proof_pack.get("pack_id"),
             "contract_id": decision.get("contract_id"),
             "contract_hash": decision.get("contract_hash"),
+            "proof_pack_url": target_url,
             "agent": decision.get("agent", {}),
             "summary": summary,
             "source_report_hash": content_hash(report),
@@ -149,6 +155,7 @@ def build_promotion_check_payload(
             "pack_id": proof_pack.get("pack_id"),
             "contract_id": decision.get("contract_id"),
             "contract_hash": decision.get("contract_hash"),
+            "proof_pack_url": target_url,
             "agent": decision.get("agent", {}),
             "summary": summary,
             "source_report_hash": content_hash(report),
@@ -160,10 +167,13 @@ def build_promotion_check_payload(
                     "head_sha": commit_sha,
                     "status": report.get("status", "completed"),
                     "conclusion": report.get("conclusion", "failure"),
+                    "external_id": external_id,
                     "output": output,
                 },
             },
         }
+        if target_url:
+            payload["request"]["body"]["details_url"] = target_url
     payload["payload_hash"] = content_hash(payload)
     return payload
 
@@ -460,6 +470,7 @@ def _promotion_status_body(
     decision = _decision(proof_pack)
     provider_status = _provider_status(payload)
     provider_target = _provider_target_ref(payload)
+    provider_proof_pack_ref = _provider_proof_pack_ref(payload, provider_target)
     expected_success = verification.ok and decision.get("outcome") == "passed"
     delivery_binding = (
         _promotion_delivery_binding(
@@ -481,6 +492,7 @@ def _promotion_status_body(
         "provider_status_shape_valid": provider_status.get("shape_valid") is True,
         "provider_status_matches_gate": provider_status.get("success") is expected_success,
         "provider_target_ref_bound": provider_target.get("bound") is True,
+        "provider_proof_pack_ref_bound": provider_proof_pack_ref.get("bound") is True,
         "delivery_verified": True if delivery_binding is None else delivery_binding.get("verification_ok"),
         "delivery_payload_matches": True if delivery_binding is None else delivery_binding.get("payload_hash_matches"),
         "delivery_payload_artifact_replayed": True if delivery_binding is None else delivery_binding.get("payload_artifact_replayed"),
@@ -519,6 +531,7 @@ def _promotion_status_body(
             "contract_id": payload.get("contract_id"),
             "contract_hash": payload.get("contract_hash"),
             "target_ref": provider_target,
+            "proof_pack_ref": provider_proof_pack_ref,
             "request": {
                 "method": payload.get("request", {}).get("method"),
                 "path": payload.get("request", {}).get("path"),
@@ -543,7 +556,13 @@ def _provider_status(payload: dict[str, Any]) -> dict[str, Any]:
         request_body = {}
     if payload.get("provider") == "gitlab":
         state = request_body.get("state")
-        return {"kind": "gitlab-status", "state": state, "success": state == "success", "shape_valid": state in {"success", "failed"}}
+        return {
+            "kind": "gitlab-status",
+            "state": state,
+            "target_url": request_body.get("target_url"),
+            "success": state == "success",
+            "shape_valid": state in {"success", "failed"},
+        }
     conclusion = request_body.get("conclusion")
     status = request_body.get("status")
     head_sha = request_body.get("head_sha")
@@ -552,6 +571,8 @@ def _provider_status(payload: dict[str, Any]) -> dict[str, Any]:
         "status": status,
         "conclusion": conclusion,
         "head_sha": head_sha,
+        "details_url": request_body.get("details_url"),
+        "external_id": request_body.get("external_id"),
         "success": status == "completed" and conclusion == "success",
         "shape_valid": status == "completed" and conclusion in {"success", "failure"} and _is_commit_sha(head_sha),
     }
@@ -619,6 +640,59 @@ def _gitlab_project_and_commit(path: str) -> tuple[str | None, str | None]:
 def _is_commit_sha(value: Any) -> bool:
     return isinstance(value, str) and len(value) == 40 and all(ch in "0123456789abcdefABCDEF" for ch in value)
 
+
+def _promotion_status_external_id(*, pack_id: Any, contract_hash: Any, commit_sha: Any) -> str:
+    return content_hash(
+        {
+            "pack_id": pack_id,
+            "contract_hash": contract_hash,
+            "commit_sha": commit_sha,
+        }
+    )[:64]
+
+
+def _provider_proof_pack_ref(payload: dict[str, Any], provider_target: dict[str, Any]) -> dict[str, Any]:
+    request = payload.get("request", {})
+    request_body = request.get("body", {}) if isinstance(request, dict) else {}
+    if not isinstance(request_body, dict):
+        request_body = {}
+    proof_pack_url = payload.get("proof_pack_url")
+    if payload.get("provider") == "gitlab":
+        native_url = request_body.get("target_url")
+        url_bound = proof_pack_url is None or (native_url == proof_pack_url and _is_http_url(native_url))
+        return {
+            "provider": "gitlab",
+            "proof_pack_url": proof_pack_url,
+            "target_url": native_url,
+            "url_bound": url_bound,
+            "external_id_bound": True,
+            "bound": url_bound,
+        }
+    expected_external_id = _promotion_status_external_id(
+        pack_id=payload.get("pack_id"),
+        contract_hash=payload.get("contract_hash"),
+        commit_sha=provider_target.get("commit_sha"),
+    )
+    external_id = request_body.get("external_id")
+    native_url = request_body.get("details_url")
+    url_bound = proof_pack_url is None or (native_url == proof_pack_url and _is_http_url(native_url))
+    external_id_bound = external_id == expected_external_id
+    return {
+        "provider": "github",
+        "proof_pack_url": proof_pack_url,
+        "details_url": native_url,
+        "external_id": external_id,
+        "expected_external_id": expected_external_id,
+        "url_bound": url_bound,
+        "external_id_bound": external_id_bound,
+        "bound": url_bound and external_id_bound,
+    }
+
+
+def _is_http_url(value: Any) -> bool:
+    return isinstance(value, str) and (value.startswith("https://") or value.startswith("http://"))
+
+
 def _promotion_delivery_binding(
     delivery: dict[str, Any],
     payload: dict[str, Any],
@@ -663,6 +737,7 @@ def _promotion_status_violations(source: dict[str, Any]) -> list[dict[str, Any]]
         ("provider_status_shape_valid", "provider status/check payload has an invalid provider status shape"),
         ("provider_status_matches_gate", "provider status/check result does not match gate decision"),
         ("provider_target_ref_bound", "provider status/check payload is not bound to a concrete repository/project commit ref"),
+        ("provider_proof_pack_ref_bound", "provider status/check payload is not bound to a native proof-pack URL or correlation ID"),
         ("delivery_verified", "provider delivery receipt verification failed"),
         ("delivery_payload_matches", "provider delivery payload hash does not match status payload"),
         ("delivery_payload_artifact_replayed", "provider delivery retained payload artifact was not replayed"),
@@ -682,6 +757,7 @@ def _promotion_status_controls(source: dict[str, Any]) -> list[dict[str, Any]]:
         {"id": "provider-payload-bound", "status": "passed" if source.get("pack_id_matches") and source.get("contract_hash_matches") else "failed", "description": "Provider payload is bound to the proof-pack pack ID and contract hash."},
         {"id": "gate-outcome-bound", "status": "passed" if source.get("gate_outcome_matches") and source.get("provider_status_matches_gate") and source.get("provider_status_shape_valid") else "failed", "description": "Provider status/check result and provider-native status shape match the TrustAI gate outcome."},
         {"id": "provider-target-ref-bound", "status": "passed" if source.get("provider_target_ref_bound") else "failed", "description": "Provider status/check payload targets a concrete repository or project commit ref."},
+        {"id": "provider-proof-pack-ref-bound", "status": "passed" if source.get("provider_proof_pack_ref_bound") else "failed", "description": "Provider status/check payload carries a native proof-pack URL or correlation ID for third-party review."},
         {"id": "delivery-bound", "status": "passed" if source.get("delivery_present") and source.get("delivery_verified") and source.get("delivery_payload_matches") else "deferred", "description": "Provider delivery receipt is replay-bound when supplied."},
         {"id": "delivery-artifacts-replayed", "status": "passed" if source.get("delivery_payload_artifact_replayed") and source.get("delivery_response_artifact_replayed") else "failed", "description": "Retained provider delivery payload and response artifacts are replayed when the delivery receipt binds them."},
         {"id": "delivery-accepted", "status": "passed" if source.get("delivery_accepted") else "deferred", "description": "Provider delivery was accepted or explicitly dry-run for local rehearsal."},

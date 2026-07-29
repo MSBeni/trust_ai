@@ -274,8 +274,12 @@ class ProviderDeliveryTests(unittest.TestCase):
         self.assertTrue(receipt["passed"])
         self.assertEqual("github", receipt["provider"])
         self.assertTrue(receipt["source"]["provider_status_matches_gate"])
+        self.assertTrue(receipt["source"]["provider_proof_pack_ref_bound"])
         self.assertTrue(receipt["source"]["delivery_verified"])
         self.assertTrue(receipt["source"]["delivery_payload_matches"])
+        self.assertEqual("https://example.test/proof-pack", payload["request"]["body"]["details_url"])
+        self.assertEqual(payload["request"]["body"]["external_id"], receipt["provider_payload"]["proof_pack_ref"]["external_id"])
+        self.assertEqual(payload["request"]["body"]["external_id"], receipt["provider_payload"]["proof_pack_ref"]["expected_external_id"])
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="promotion-status-test")
@@ -461,8 +465,56 @@ class ProviderDeliveryTests(unittest.TestCase):
         self.assertTrue(receipt["passed"])
         self.assertTrue(receipt["source"]["provider_status_shape_valid"])
         self.assertTrue(receipt["source"]["provider_target_ref_bound"])
+        self.assertTrue(receipt["source"]["provider_proof_pack_ref_bound"])
         self.assertEqual("123456", receipt["provider_payload"]["target_ref"]["project_ref"])
         self.assertEqual("0123456789abcdef0123456789abcdef01234567", receipt["provider_payload"]["target_ref"]["commit_sha"])
+        self.assertEqual("https://example.test/proof-pack", receipt["provider_payload"]["proof_pack_ref"]["target_url"])
+
+    def test_promotion_status_receipt_requires_native_github_proof_pack_ref(self):
+        pack = self._pack()
+        verification = verify_proof_pack(pack)
+        payload = build_promotion_check_payload(
+            pack,
+            verification,
+            provider="github",
+            commit_sha="0123456789abcdef0123456789abcdef01234567",
+            repository="volelabs/trust_ai",
+            target_url="https://example.test/proof-pack",
+        )
+        payload["request"]["body"]["details_url"] = "https://wrong.example/proof-pack"
+        payload["payload_hash"] = content_hash(without_keys(payload, "payload_hash"))
+        delivery = build_provider_delivery(
+            payload,
+            endpoint_base="https://api.github.com",
+            credential_ref="env:GITHUB_TOKEN",
+            mode="dry-run",
+            delivered_at="2026-07-04T00:00:00Z",
+        )
+        receipt = build_promotion_status_receipt(
+            pack,
+            verification,
+            payload,
+            delivery=delivery,
+            attested_at="2026-07-04T00:01:00Z",
+        )
+
+        result = verify_promotion_status_receipt(
+            receipt,
+            proof_pack=pack,
+            verification=verification,
+            payload=payload,
+            delivery=delivery,
+        )
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertFalse(receipt["passed"])
+        self.assertFalse(receipt["source"]["provider_proof_pack_ref_bound"])
+        self.assertFalse(receipt["provider_payload"]["proof_pack_ref"]["url_bound"])
+        self.assertTrue(any(item["check"] == "provider_proof_pack_ref_bound" for item in receipt["violations"]))
+        controls = {control["id"]: control["status"] for control in receipt["controls"]}
+        self.assertEqual("failed", controls["provider-proof-pack-ref-bound"])
+        self.assertTrue(result.warnings)
+
     def test_promotion_status_receipt_requires_concrete_provider_target_ref(self):
         pack = self._pack()
         verification = verify_proof_pack(pack)
