@@ -21,7 +21,7 @@
     "subject": "aitrade review portal regulator supervised-access acceptance export"
   },
   "generated_at": "2026-07-12T00:01:00Z",
-  "intake_id": "4ec1b7aff8e511724d234004a80adc99482884111d6a98645e1a822cbb4e8509",
+  "intake_id": "f5af6dac22234e7be34c5b1b1a73af6fbcef37cc6e6a4fb3f28bffbf32ed283f",
   "limitations": [
     "This intake receipt hashes and maps one collected artifact to a collection-plan task; it does not itself satisfy roadmap completion.",
     "Coverage is updated only after rebuilding and verifying an external evidence manifest with the emitted evidence argument.",
@@ -30,20 +30,20 @@
   "schema": "trustai.external-evidence-intake/0.1",
   "source_manifest": {
     "covered_authority_kind_count": 1,
-    "manifest_hash": "614aed31f3e3791640f3192624fab080815440210b65341fb4a2121ed84db717",
-    "manifest_id": "9364d02d07c6d4002372ad45c4017ee3b7a6c6ffd8dc91c46fb9fac9c84f7586",
+    "manifest_hash": "1989728e0817015ad6d25fdaa9210e8771741b09e02e654e40596d14e85d2052",
+    "manifest_id": "0264183c65ac929056cd8b5871a0c2cb82377a6a84770b6363b9bdcdf5264297",
     "manifest_ref": "production-external-evidence",
     "missing_authority_kind_count": 70,
     "required_authority_kind_count": 71,
     "status": "partial"
   },
   "source_plan": {
-    "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
-    "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
+    "plan_hash": "08ecc2dedde1dd3e32cdccb72f3aad69521f44b131f2644ea1170ab0f5e2f2e2",
+    "plan_id": "b7db0fe648384092499cb5b515737b3b3b6aa705ee6bca5d085c577b9dcbdca2",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "614aed31f3e3791640f3192624fab080815440210b65341fb4a2121ed84db717",
-      "manifest_id": "9364d02d07c6d4002372ad45c4017ee3b7a6c6ffd8dc91c46fb9fac9c84f7586",
+      "manifest_hash": "1989728e0817015ad6d25fdaa9210e8771741b09e02e654e40596d14e85d2052",
+      "manifest_id": "0264183c65ac929056cd8b5871a0c2cb82377a6a84770b6363b9bdcdf5264297",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },

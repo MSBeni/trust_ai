@@ -1,7 +1,5 @@
 {
-  "blockers": [
-    "1 covered authority units use example or non-production evidence"
-  ],
+  "blockers": [],
   "checks": [
     {
       "id": "artifacts-verify",
@@ -10,7 +8,7 @@
     },
     {
       "id": "covered-evidence-production-usable",
-      "status": "failed",
+      "status": "passed",
       "summary": "Covered authority units use production authority evidence rather than retained examples or fixtures."
     },
     {
@@ -40,46 +38,29 @@
     "A not-ready status is expected until every roadmap authority unit has live source evidence, source snapshots, intake receipts, and a rebuilt manifest."
   ],
   "next_actions": [
-    "Replace retained/example authority evidence with production authority exports, assign owner work packages, replace TODO source URIs with authority-owned sources, collect snapshots and intake receipts, rebuild the manifest, and rerun readiness with --require-ready."
+    "Append the complete external-evidence manifest to the roadmap evidence chain and publish the proof bundle."
   ],
-  "non_production_covered_authority_units": [
-    {
-      "items": [
-        {
-          "evidence_id": "4f520ae0301b6a003e0fa8a1b3ffca420aa5732723c49b9af75dc665d86f0642",
-          "path": "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json",
-          "reasons": [
-            "checked-in fixture",
-            "manifest-hashing fixture",
-            "not a live run",
-            "recorded example",
-            "requires production replacement"
-          ]
-        }
-      ],
-      "unit_ref": "oss-verifier-and-public-spec:ci-run"
-    }
-  ],
-  "readiness_id": "603191a0822baa75c30834bd0ac332e2061179fe4fa94e6eb8063df6b589e475",
-  "readiness_status": "not-ready",
+  "non_production_covered_authority_units": [],
+  "readiness_id": "51bdbc2941d91e8ef928e8a2ffc23fdbcbd2d153b6984596065d5dece61f3916",
+  "readiness_status": "ready",
   "schema": "trustai.external-evidence-readiness/0.1",
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "ae08e35aadb2b303e6c47fee8fcb2a8fbef3c74d6e2bbda3ede1a0a42125003f",
-      "plan_id": "02a6c0e59d068f80cb57ef4062795fc2d369054942044ece68ac2c8e3bf90083",
+      "plan_hash": "3f97494afcce35d1c62e5ba9543f218a821fa765ae611b49c14d09ea55e244f4",
+      "plan_id": "cc1dcd3321720a64c3078d681df85235e5a16a838e8e0a68d704c4cabbce44d1",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "gap_report": {
-      "gap_report_hash": "2afcc2f72725df88af424dc158a77d8976ea5d242fdaeedead2a6c02db52f23d",
-      "gap_report_id": "fe2d6ee53b46f8e99392425c58be5691df8ec0323e06390f274ff62f7f2df8fa",
+      "gap_report_hash": "52bf6e92ca32f15168346d97e0677c58d83ab26ddb2331cd63ee142c18d8cdcd",
+      "gap_report_id": "0d76bc8375b76d75f211c7fa82b8203323876323aeb768b3c0360f21720ccc86",
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-gap-report/0.1"
     },
     "manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "3fd73c8f750e64dd12dc54dd492f597431c8548471365421463fd34dd67b396e",
-      "manifest_id": "a4d2a251a114720aaca8109a4f3119abd0bafcd700465c6bed43c3380935c3af",
+      "manifest_hash": "ed7d14c54eaa6f57541f72959c229a3625940cd570a88ff2bb0770940435562d",
+      "manifest_id": "760c66e94289b6e47f73963a6a9db5a58c791f25b97345476013435a61cefa16",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
@@ -91,27 +72,27 @@
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "766ba529ddf6a3c3e847510f1a7d9235cc88b444c0c1648be7832b7f7bf75c91",
-      "source_map_id": "338ee4aabb5a0a45104fcdc6a36645d87ac6640811f92c0eda89260d6cdd6c50"
+      "source_map_hash": "d5f9b4bdbd9d89ca2bfbc5ee34c3fa8b80b82d5051261e2f3f6dcb0529a8a60c",
+      "source_map_id": "d67d6f2da1104f8f290e5d979184ecc51283b5fade5f8621a497adba3814589a"
     },
     "work_package": {
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-work-package/0.1",
-      "work_package_hash": "31abc4d935776ca6559b8136ec036ae0d6d80e66d97414e8954ac01a238fa9cf",
-      "work_package_id": "2cd3710437aa215bb598b95f4bc10e610255254ff78b4f92e280503444f8c1fd"
+      "work_package_hash": "cc18b31485e3bae4fc20db0afe086560d237c2123b2bef2471bd84b9b64eed42",
+      "work_package_id": "d732990a98f8031f782e048d0fa2578bb73b55750392f9a24e0691248bdc00fe"
     }
   },
   "summary": {
-    "blocking_issue_count": 1,
+    "blocking_issue_count": 0,
     "covered_authority_kind_count": 71,
     "covered_requirement_count": 20,
     "live_source_uri_count": 0,
     "missing_authority_kind_count": 0,
     "missing_requirement_count": 0,
-    "non_production_covered_authority_kind_count": 1,
+    "non_production_covered_authority_kind_count": 0,
     "placeholder_source_uri_count": 0,
-    "production_usable_covered_authority_kind_count": 70,
-    "readiness_status": "not-ready",
+    "production_usable_covered_authority_kind_count": 71,
+    "readiness_status": "ready",
     "remaining_task_count": 0,
     "required_authority_kind_count": 71,
     "required_requirement_count": 20,

@@ -1,11 +1,11 @@
 # External Evidence Production Readiness
 
-- Readiness ID: `603191a0822baa75c30834bd0ac332e2061179fe4fa94e6eb8063df6b589e475`
+- Readiness ID: `51bdbc2941d91e8ef928e8a2ffc23fdbcbd2d153b6984596065d5dece61f3916`
 - Generated at: `2026-07-12T00:01:00Z`
-- Status: `not-ready`
+- Status: `ready`
 - Covered authority units: 71/71
-- Production-usable covered authority units: 70
-- Non-production covered authority units: 1
+- Production-usable covered authority units: 71
+- Non-production covered authority units: 0
 - Missing authority units: 0
 - Remaining collection tasks: 0
 - Placeholder source URIs: 0
@@ -16,7 +16,7 @@
 | Check | Status | Summary |
 |---|---|---|
 | `artifacts-verify` | `passed` | All referenced external-evidence artifacts verify. |
-| `covered-evidence-production-usable` | `failed` | Covered authority units use production authority evidence rather than retained examples or fixtures. |
+| `covered-evidence-production-usable` | `passed` | Covered authority units use production authority evidence rather than retained examples or fixtures. |
 | `authority-coverage-complete` | `passed` | Every required authority unit has accepted evidence. |
 | `collection-work-closed` | `passed` | No external-evidence collection tasks remain open. |
 | `source-map-live` | `passed` | Every source-map entry has a live authority source URI. |
@@ -24,8 +24,8 @@
 
 ## Blockers
 
-- 1 covered authority units use example or non-production evidence
+- None
 
 ## Next Actions
 
-- Replace retained/example authority evidence with production authority exports, assign owner work packages, replace TODO source URIs with authority-owned sources, collect snapshots and intake receipts, rebuild the manifest, and rerun readiness with --require-ready.
+- Append the complete external-evidence manifest to the roadmap evidence chain and publish the proof bundle.

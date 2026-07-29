@@ -1,6 +1,6 @@
 # TrustAI External Evidence Manifest
 
-Manifest ID: `9364d02d07c6d4002372ad45c4017ee3b7a6c6ffd8dc91c46fb9fac9c84f7586`
+Manifest ID: `0264183c65ac929056cd8b5871a0c2cb82377a6a84770b6363b9bdcdf5264297`
 
 Status: partial
 
@@ -121,7 +121,7 @@ Status: partial
 
 | Requirement | Authority | Accepted Authorities | Artifact | Freshness Window | Description |
 |---|---|---|---|---|---|
-| `oss-verifier-and-public-spec` | ci-run | `ci-run`, `provider-api`, `hosted-service` | `examples/aitrade/external-evidence/go-verifier-workflow-run.json` | 2026-07-08T00:00:00Z to 2026-12-31T00:00:00Z | Recorded Go verifier workflow export |
+| `oss-verifier-and-public-spec` | ci-run | `ci-run`, `provider-api`, `hosted-service` | `examples/aitrade/oss-verifier-ci-run-authority-export.json` | 2026-07-12T00:00:00Z to 2026-12-31T00:00:00Z | Go verifier release workflow CI authority export |
 
 ## Missing Requirements
 

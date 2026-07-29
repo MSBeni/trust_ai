@@ -7,16 +7,16 @@
         "hosted-service"
       ],
       "authority_kind": "ci-run",
-      "description": "Snapshot of recorded verifier workflow run export",
-      "evidence_id": "4f520ae0301b6a003e0fa8a1b3ffca420aa5732723c49b9af75dc665d86f0642",
+      "description": "Go verifier release workflow CI authority export",
+      "evidence_id": "d23866601929fa7078c22cbf34acb53a16ac2f51a146986da69f3e487f5e546a",
       "expires_at": "2026-12-31T00:00:00Z",
-      "issued_at": "2026-07-08T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
       "issuer": "GitHub Actions",
       "path": "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json",
       "requirement_id": "oss-verifier-and-public-spec",
-      "sha256": "sha256:4f8be2e807d520cbb93621325e3a4dca1a5a4108e1e4a743d773be48b6343ded",
-      "source_uri": "https://github.com/MSBeni/trust_ai/actions",
-      "subject": "trustai go verifier release workflow"
+      "sha256": "sha256:83b5f8b8929d5347a16db705b9d587651ac9e448ec66b711f0385f0a04564833",
+      "source_uri": "https://github.com/MSBeni/trust_ai/actions/workflows/go-verifier.yml",
+      "subject": "trustai OSS verifier public spec and release workflow CI"
     },
     {
       "accepted_authority_kinds": [
@@ -1367,7 +1367,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "a4d2a251a114720aaca8109a4f3119abd0bafcd700465c6bed43c3380935c3af",
+  "manifest_id": "760c66e94289b6e47f73963a6a9db5a58c791f25b97345476013435a61cefa16",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {

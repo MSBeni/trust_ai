@@ -2078,7 +2078,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         for result in intake_results:
             self.assertTrue(result.ok, result.errors)
         self.assertEqual("file-copy", ci_snapshot["retrieval_method"])
-        self.assertEqual("sha256:" + sha256((ROOT / "examples/aitrade/external-evidence/go-verifier-workflow-run.json").read_bytes()).hexdigest(), ci_snapshot["body_sha256"])
+        self.assertEqual("sha256:" + sha256((ROOT / "examples/aitrade/oss-verifier-ci-run-authority-export.json").read_bytes()).hexdigest(), ci_snapshot["body_sha256"])
         self.assertEqual("examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json", ci_intake["evidence_item"]["path"])
         self.assertEqual("examples/aitrade/external-evidence/self-serve-provider-api-source-snapshot.json", self_serve_provider_intake["evidence_item"]["path"])
         self.assertEqual("self-serve-onboarding", self_serve_provider_intake["task"]["requirement_id"])

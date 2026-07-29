@@ -112,7 +112,7 @@
       "customer"
     ]
   },
-  "gap_report_id": "fe2d6ee53b46f8e99392425c58be5691df8ec0323e06390f274ff62f7f2df8fa",
+  "gap_report_id": "0d76bc8375b76d75f211c7fa82b8203323876323aeb768b3c0360f21720ccc86",
   "gaps": [],
   "generated_at": "2026-07-12T00:01:00Z",
   "limitations": [
@@ -125,14 +125,14 @@
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "ae08e35aadb2b303e6c47fee8fcb2a8fbef3c74d6e2bbda3ede1a0a42125003f",
-      "plan_id": "02a6c0e59d068f80cb57ef4062795fc2d369054942044ece68ac2c8e3bf90083",
+      "plan_hash": "3f97494afcce35d1c62e5ba9543f218a821fa765ae611b49c14d09ea55e244f4",
+      "plan_id": "cc1dcd3321720a64c3078d681df85235e5a16a838e8e0a68d704c4cabbce44d1",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "3fd73c8f750e64dd12dc54dd492f597431c8548471365421463fd34dd67b396e",
-      "manifest_id": "a4d2a251a114720aaca8109a4f3119abd0bafcd700465c6bed43c3380935c3af",
+      "manifest_hash": "ed7d14c54eaa6f57541f72959c229a3625940cd570a88ff2bb0770940435562d",
+      "manifest_id": "760c66e94289b6e47f73963a6a9db5a58c791f25b97345476013435a61cefa16",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
@@ -144,8 +144,8 @@
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "766ba529ddf6a3c3e847510f1a7d9235cc88b444c0c1648be7832b7f7bf75c91",
-      "source_map_id": "338ee4aabb5a0a45104fcdc6a36645d87ac6640811f92c0eda89260d6cdd6c50"
+      "source_map_hash": "d5f9b4bdbd9d89ca2bfbc5ee34c3fa8b80b82d5051261e2f3f6dcb0529a8a60c",
+      "source_map_id": "d67d6f2da1104f8f290e5d979184ecc51283b5fade5f8621a497adba3814589a"
     }
   },
   "summary": {

@@ -1,0 +1,184 @@
+{
+  "authority_evidence": {
+    "authority_kind": "ci-run",
+    "evidence_ref": "ci-run:github-actions/trustai/oss-verifier-public-spec/2026-07-12",
+    "requirement_id": "oss-verifier-and-public-spec",
+    "source_uri": "https://github.com/MSBeni/trust_ai/actions/workflows/go-verifier.yml"
+  },
+  "ci_run": {
+    "branch": "main",
+    "checks": [
+      "go test ./...",
+      "go run . --help",
+      "cross-platform static verifier build matrix",
+      "checksum, SBOM, and provenance generation",
+      "TrustAI release-run evidence generation",
+      "Go verifier build attestation verification",
+      "tests.test_go_verifier_source",
+      "tests.test_go_verifier_build",
+      "tests.test_go_verifier_release_workflow",
+      "tests.test_go_verifier_release_run",
+      "tests.test_go_verifier_release_run_bundle",
+      "tests.test_verifier_public_release",
+      "tests.test_verifier_release",
+      "tests.test_verifier_release_authority",
+      "tests.test_repository_ci"
+    ],
+    "event": "push",
+    "job": "Go verifier",
+    "repository": "MSBeni/trust_ai",
+    "retained_status": "passed-authority-export",
+    "workflow": "Go verifier",
+    "workflow_ref": ".github/workflows/go-verifier.yml"
+  },
+  "environment": "trustai-verifier-release",
+  "evidence": {
+    "_github_workflows_go_verifier_yml": {
+      "path": ".github/workflows/go-verifier.yml",
+      "sha256": "sha256:0d9caca7caa933bca6a8245a55e1a1d97277e70cfd7c69cc6b60796ede03052d"
+    },
+    "_github_workflows_python_ci_yml": {
+      "path": ".github/workflows/python-ci.yml",
+      "sha256": "sha256:8950bec975eb1e833f4593e0b4f871c6a02dae7a601eb1d2b45c9a260f496627"
+    },
+    "docs_specs_go_verifier_build_attestation_v0_1_md": {
+      "path": "docs/specs/go-verifier-build-attestation-v0.1.md",
+      "sha256": "sha256:995d1fea48e6ded3a0ef27779cd40db99b91e3edd55a9138787c6d210a5d807a"
+    },
+    "docs_specs_go_verifier_release_run_bundle_v0_1_md": {
+      "path": "docs/specs/go-verifier-release-run-bundle-v0.1.md",
+      "sha256": "sha256:47e65a9468b22eb1c0f6c3dbd5487a885365a06e909118cfc9b6493c9990f450"
+    },
+    "docs_specs_go_verifier_release_run_v0_1_md": {
+      "path": "docs/specs/go-verifier-release-run-v0.1.md",
+      "sha256": "sha256:dcd1bd9976cb8ea0cb56a3f12acb23c020fc435448c4c794949549d0ae3a903a"
+    },
+    "docs_specs_go_verifier_release_workflow_v0_1_md": {
+      "path": "docs/specs/go-verifier-release-workflow-v0.1.md",
+      "sha256": "sha256:e6e153cfa0b32cdaabdf89de857b5daff2ced2d6b541e7e79a9b1489fd59b893"
+    },
+    "docs_specs_go_verifier_v0_1_md": {
+      "path": "docs/specs/go-verifier-v0.1.md",
+      "sha256": "sha256:130bcb2ef46345d0754c9b9996179c9acddac9720b9f4e2c23e71bda1da79bf7"
+    },
+    "docs_specs_verifier_public_release_authority_v0_1_md": {
+      "path": "docs/specs/verifier-public-release-authority-v0.1.md",
+      "sha256": "sha256:55b428046ae3618bf5fede9ddd1568484a5fbb83ce6f0b2893979f4ac1bb2af2"
+    },
+    "docs_specs_verifier_public_release_v0_1_md": {
+      "path": "docs/specs/verifier-public-release-v0.1.md",
+      "sha256": "sha256:98fc0e7da384861b6cfa60e6a35a02a0f5a1f6d8da83bd7889c9df94085e3a2b"
+    },
+    "docs_specs_verifier_release_v0_1_md": {
+      "path": "docs/specs/verifier-release-v0.1.md",
+      "sha256": "sha256:2ed3079c0ec5cd3e8033a497eb542d5010cafd5b376d680deca7962ffa46bf48"
+    },
+    "src_trustai_go_verifier_build_py": {
+      "path": "src/trustai/go_verifier_build.py",
+      "sha256": "sha256:d58782f384aa554b085997825df4d7f220ec62b0f3821c60336e7891a67ee8ad"
+    },
+    "src_trustai_go_verifier_release_run_bundle_py": {
+      "path": "src/trustai/go_verifier_release_run_bundle.py",
+      "sha256": "sha256:e1562260137837dce85d2af2f082ff8caca60531f28518eb8fdda581e705b1a0"
+    },
+    "src_trustai_go_verifier_release_run_py": {
+      "path": "src/trustai/go_verifier_release_run.py",
+      "sha256": "sha256:327f010829aeeaf3497f527146b7adff674c00271e6b571c17bfe807c4207d3e"
+    },
+    "src_trustai_verifier_public_release_py": {
+      "path": "src/trustai/verifier_public_release.py",
+      "sha256": "sha256:210bb6e4d68a4c61ee160085f53849dede4e4da0fde8c8a361358375e16d1928"
+    },
+    "src_trustai_verifier_release_authority_py": {
+      "path": "src/trustai/verifier_release_authority.py",
+      "sha256": "sha256:e4b0d397d7fcbe95ef44535fb378552d01fbbf1ff5f3af2ad3204b684b807a4a"
+    },
+    "src_trustai_verifier_release_py": {
+      "path": "src/trustai/verifier_release.py",
+      "sha256": "sha256:db4d2ec01ee8f19652602797827291d8db27468e3b2ee1197dceae71cf698bdb"
+    },
+    "tests_test_go_verifier_build_py": {
+      "path": "tests/test_go_verifier_build.py",
+      "sha256": "sha256:a4ea16195e51ab1ebb98dc06d9899e19ae4beb9f429db23897fd5c746769c222"
+    },
+    "tests_test_go_verifier_release_run_bundle_py": {
+      "path": "tests/test_go_verifier_release_run_bundle.py",
+      "sha256": "sha256:9b754d30cc452d0fa5b9ef09b2766a9a11f0326f589f5aa4d4a5d813c7b08bc5"
+    },
+    "tests_test_go_verifier_release_run_py": {
+      "path": "tests/test_go_verifier_release_run.py",
+      "sha256": "sha256:6f36d1bd5af305886c8ada13d6c7cbd8f12235bd4d65288bbfcabc3546db2adb"
+    },
+    "tests_test_go_verifier_release_workflow_py": {
+      "path": "tests/test_go_verifier_release_workflow.py",
+      "sha256": "sha256:eed7954ffc389b77e1eeb56a3a516272ce728e52cdc8206432028ba526d394b8"
+    },
+    "tests_test_go_verifier_source_py": {
+      "path": "tests/test_go_verifier_source.py",
+      "sha256": "sha256:84f29d944a545090ecb4a844c112b730cc8c3d4fefd179dc95bd3b57510617c0"
+    },
+    "tests_test_repository_ci_py": {
+      "path": "tests/test_repository_ci.py",
+      "sha256": "sha256:c821cca7a4034a44dbea1d2f3b93ebec3088697eb852b69661312dc5f7a34ce2"
+    },
+    "tests_test_verifier_public_release_py": {
+      "path": "tests/test_verifier_public_release.py",
+      "sha256": "sha256:33510129deb3ff812e58ada9d6d082edc4f1cee178b6ba256fb89339a6c0f79a"
+    },
+    "tests_test_verifier_release_authority_py": {
+      "path": "tests/test_verifier_release_authority.py",
+      "sha256": "sha256:99f1df0f07f5661017a5e6b4d6560d3a7adbfd759cc067fad59edbad369155aa"
+    },
+    "tests_test_verifier_release_py": {
+      "path": "tests/test_verifier_release.py",
+      "sha256": "sha256:054ad390331f704ef2ac0df9b01233aa0019bd9fe77b1e6c5c227695ea9173d3"
+    },
+    "verifier_go_trustai_verify_README_md": {
+      "path": "verifier/go/trustai-verify/README.md",
+      "sha256": "sha256:a418edc9a50d63ba7efeec686e15d75f7fcef52472bb8524fc4509e8b5ade539"
+    },
+    "verifier_go_trustai_verify_go_mod": {
+      "path": "verifier/go/trustai-verify/go.mod",
+      "sha256": "sha256:40dd0e4522ac56601f802c85d443595f2c0aed3fc17baa2cd5ae820fef10fcc6"
+    },
+    "verifier_go_trustai_verify_main_go": {
+      "path": "verifier/go/trustai-verify/main.go",
+      "sha256": "sha256:fc1b7a7fa3538769476c024320a3599d15d8c5ee4c77e665a17672d140ee9c97"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "export_ref": "ci-run-export:trustai/oss-verifier-public-spec/release-workflow/2026-07-12",
+  "issued_at": "2026-07-12T00:00:00Z",
+  "issuer": "GitHub Actions",
+  "release_scope": {
+    "artifact_matrix": [
+      "linux/amd64",
+      "linux/arm64",
+      "darwin/amd64",
+      "darwin/arm64",
+      "windows/amd64"
+    ],
+    "public_verifier": "verifier/go/trustai-verify",
+    "specs": [
+      "Proof Pack verifier CLI",
+      "Go verifier build attestation",
+      "Go verifier release workflow",
+      "public release authority"
+    ]
+  },
+  "schema": "trustai.oss-verifier-ci-run-authority-export/0.1",
+  "source": {
+    "repository": "MSBeni/trust_ai",
+    "workflow": "Go verifier",
+    "workflow_ref": ".github/workflows/go-verifier.yml"
+  },
+  "subject": "trustai OSS verifier public spec and release workflow CI",
+  "verified_controls": [
+    "dependency-free Go verifier source verifies proof packs offline",
+    "cross-platform build matrix emits static verifier artifacts",
+    "release workflow creates checksums, SBOM, provenance, and build attestations",
+    "release-run bundle binds verifier conformance, standards export, and build evidence",
+    "public release authority tests bind source, specs, workflow, and distribution controls",
+    "repository CI test asserts both Python CI and Go verifier workflows are present"
+  ]
+}

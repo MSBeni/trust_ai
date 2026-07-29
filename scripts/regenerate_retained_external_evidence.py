@@ -42,14 +42,15 @@ MAP_TIME = "2026-07-12T01:00:00Z"
 
 RETAINED_SOURCES: dict[str, dict[str, str]] = {
     "oss-verifier-and-public-spec:ci-run": {
-        "source_uri": "https://github.com/MSBeni/trust_ai/actions",
-        "description": "Snapshot of recorded verifier workflow run export",
+        "source_uri": "https://github.com/MSBeni/trust_ai/actions/workflows/go-verifier.yml",
+        "description": "Go verifier release workflow CI authority export",
         "artifact": "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json",
+        "source_file": "examples/aitrade/oss-verifier-ci-run-authority-export.json",
         "retrieval_method": "file-copy",
         "content_type": "application/json",
         "issuer": "GitHub Actions",
-        "subject": "trustai go verifier release workflow",
-        "issued_at": "2026-07-08T00:00:00Z",
+        "subject": "trustai OSS verifier public spec and release workflow CI",
+        "issued_at": "2026-07-12T00:00:00Z",
         "expires_at": "2026-12-31T00:00:00Z",
         "snapshot_out": "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json",
         "intake_out": "examples/aitrade/external-evidence/intakes/oss-verifier-ci-run.json",
@@ -1269,12 +1270,12 @@ def write_deterministic_source_manifest() -> None:
     evidence = [
         parse_evidence_arg(
             "oss-verifier-and-public-spec,ci-run,"
-            "examples/aitrade/external-evidence/go-verifier-workflow-run.json,"
-            "Recorded Go verifier workflow export;"
+            "examples/aitrade/oss-verifier-ci-run-authority-export.json,"
+            "Go verifier release workflow CI authority export;"
             "issuer=GitHub Actions;"
-            "subject=trustai go verifier release workflow;"
-            "source_uri=https://github.com/MSBeni/trust_ai/actions;"
-            "issued_at=2026-07-08T00:00:00Z;"
+            "subject=trustai OSS verifier public spec and release workflow CI;"
+            "source_uri=https://github.com/MSBeni/trust_ai/actions/workflows/go-verifier.yml;"
+            "issued_at=2026-07-12T00:00:00Z;"
             "expires_at=2026-12-31T00:00:00Z"
         )
     ]
@@ -1586,6 +1587,7 @@ def assert_retained_counts() -> None:
     expected_review_status = "ready-to-collect" if remaining_count == 0 else "blocked"
     expected_review_source_map_ok = remaining_count == 0
     expected_closure_status = "closed" if remaining_count == 0 else "blocked"
+    expected_readiness_status = "ready" if remaining_count == 0 else "not-ready"
     checks = [
         (manifest["summary"]["covered_authority_kind_count"], retained_count, "manifest covered authority kind count"),
         (manifest["summary"]["missing_authority_kind_count"], remaining_count, "manifest missing authority kind count"),
@@ -1614,7 +1616,8 @@ def assert_retained_counts() -> None:
         (owner_fulfillment_closure["summary"]["missing_intake_count"], remaining_count, "owner fulfillment closure missing intake count"),
         (owner_fulfillment_closure["summary"]["missing_manifest_coverage_count"], remaining_count, "owner fulfillment closure missing manifest coverage count"),
         (owner_fulfillment_closure["summary"]["placeholder_source_uri_count"], remaining_count, "owner fulfillment closure placeholder URI count"),
-        (readiness["summary"]["readiness_status"], "not-ready", "readiness status"),
+        (readiness["summary"]["readiness_status"], expected_readiness_status, "readiness status"),
+        (readiness["summary"]["non_production_covered_authority_kind_count"], 0, "readiness non-production coverage count"),
     ]
     for actual, expected, label in checks:
         if actual != expected:

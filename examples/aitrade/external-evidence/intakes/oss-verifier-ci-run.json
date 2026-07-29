@@ -1,5 +1,5 @@
 {
-  "evidence_argument": "oss-verifier-and-public-spec,ci-run,examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json,Snapshot of recorded verifier workflow run export;issuer=GitHub Actions;subject=trustai go verifier release workflow;source_uri=https://github.com/MSBeni/trust_ai/actions;issued_at=2026-07-08T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
+  "evidence_argument": "oss-verifier-and-public-spec,ci-run,examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json,Go verifier release workflow CI authority export;issuer=GitHub Actions;subject=trustai OSS verifier public spec and release workflow CI;source_uri=https://github.com/MSBeni/trust_ai/actions/workflows/go-verifier.yml;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
   "evidence_item": {
     "accepted_authority_kinds": [
       "ci-run",
@@ -7,19 +7,19 @@
       "hosted-service"
     ],
     "authority_kind": "ci-run",
-    "description": "Snapshot of recorded verifier workflow run export",
-    "evidence_id": "4f520ae0301b6a003e0fa8a1b3ffca420aa5732723c49b9af75dc665d86f0642",
+    "description": "Go verifier release workflow CI authority export",
+    "evidence_id": "d23866601929fa7078c22cbf34acb53a16ac2f51a146986da69f3e487f5e546a",
     "expires_at": "2026-12-31T00:00:00Z",
-    "issued_at": "2026-07-08T00:00:00Z",
+    "issued_at": "2026-07-12T00:00:00Z",
     "issuer": "GitHub Actions",
     "path": "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json",
     "requirement_id": "oss-verifier-and-public-spec",
-    "sha256": "sha256:4f8be2e807d520cbb93621325e3a4dca1a5a4108e1e4a743d773be48b6343ded",
-    "source_uri": "https://github.com/MSBeni/trust_ai/actions",
-    "subject": "trustai go verifier release workflow"
+    "sha256": "sha256:83b5f8b8929d5347a16db705b9d587651ac9e448ec66b711f0385f0a04564833",
+    "source_uri": "https://github.com/MSBeni/trust_ai/actions/workflows/go-verifier.yml",
+    "subject": "trustai OSS verifier public spec and release workflow CI"
   },
   "generated_at": "2026-07-12T00:01:00Z",
-  "intake_id": "231c61854348b99c92ac525a5ffacdeae8bac3b0fbe5e7b980bf055ca9fffe69",
+  "intake_id": "d4ce2404030ad8c9bfc19a7af90cc74cbf262d090b24ffaefc974521bcac4b7f",
   "limitations": [
     "This intake receipt hashes and maps one collected artifact to a collection-plan task; it does not itself satisfy roadmap completion.",
     "Coverage is updated only after rebuilding and verifying an external evidence manifest with the emitted evidence argument.",
@@ -28,20 +28,20 @@
   "schema": "trustai.external-evidence-intake/0.1",
   "source_manifest": {
     "covered_authority_kind_count": 1,
-    "manifest_hash": "614aed31f3e3791640f3192624fab080815440210b65341fb4a2121ed84db717",
-    "manifest_id": "9364d02d07c6d4002372ad45c4017ee3b7a6c6ffd8dc91c46fb9fac9c84f7586",
+    "manifest_hash": "1989728e0817015ad6d25fdaa9210e8771741b09e02e654e40596d14e85d2052",
+    "manifest_id": "0264183c65ac929056cd8b5871a0c2cb82377a6a84770b6363b9bdcdf5264297",
     "manifest_ref": "production-external-evidence",
     "missing_authority_kind_count": 70,
     "required_authority_kind_count": 71,
     "status": "partial"
   },
   "source_plan": {
-    "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
-    "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
+    "plan_hash": "08ecc2dedde1dd3e32cdccb72f3aad69521f44b131f2644ea1170ab0f5e2f2e2",
+    "plan_id": "b7db0fe648384092499cb5b515737b3b3b6aa705ee6bca5d085c577b9dcbdca2",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "614aed31f3e3791640f3192624fab080815440210b65341fb4a2121ed84db717",
-      "manifest_id": "9364d02d07c6d4002372ad45c4017ee3b7a6c6ffd8dc91c46fb9fac9c84f7586",
+      "manifest_hash": "1989728e0817015ad6d25fdaa9210e8771741b09e02e654e40596d14e85d2052",
+      "manifest_id": "0264183c65ac929056cd8b5871a0c2cb82377a6a84770b6363b9bdcdf5264297",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },
