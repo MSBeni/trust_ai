@@ -1,13 +1,13 @@
 # External Evidence Owner Packets
 
-- Owner packet bundle ID: `487a32dc438b7553854d29a2a67e70153665beeb0ce159398fade5c6ca24c5dd`
+- Owner packet bundle ID: `8810a889c1f2b1e02770343b6c4c9c90c144edb659284c3b2c37e08dba46c6b7`
 - Generated at: `2026-07-12T00:01:00Z`
-- Source work package ID: `9536772547ffde591898af66045a83ae8991d7f459c5e85b07f64e9757183e0e`
-- Source work package hash: `4f02025ca982e65dcd4934d1df36d331a670fb11c69a0e26c25ccad029e5a9c3`
+- Source work package ID: `05cc60cda2b5099d11456eb055af415cf37eb99fbee199eaf964ecfc321dd832`
+- Source work package hash: `c9c79b92c38e4f9883c19c995eb46d5dac34b3c4e5315fda1aab1f272927b2e2`
 - Packets: 9
-- Tasks: 21
-- Missing tasks: 21
-- Placeholder source URIs: 21
+- Tasks: 20
+- Missing tasks: 20
+- Placeholder source URIs: 20
 
 ## Packets
 
@@ -173,25 +173,22 @@
 ### security/platform KMS owner
 
 - Packet ref: `owner-packet:owner_hint:security-platform-KMS-owner`
-- Packet ID: `06e78b0ed0578bee00b1903d8cc2c624fbf2980be434184e94190ac4f6b2f9a0`
+- Packet ID: `087444437d2aeeaec6a4f18babcabf1e4d52b83dd00129f48d512f9dc2a3805f`
 - Package ref: `owner_hint:security-platform-KMS-owner`
-- Tasks: 2
-- Missing tasks: 2
+- Tasks: 1
+- Missing tasks: 1
 - Authority kinds: `kms-hsm`
-- Requirements: `insurer-api-and-actuarial-products`, `standards-track-and-auditor-ecosystem`
+- Requirements: `standards-track-and-auditor-ecosystem`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
 - Completion gate: Every task must have a live authority source URI, a verified source snapshot, a verified intake receipt, and a rebuilt external-evidence manifest before readiness can pass.
 
 | Task | Phase | Priority | Authority | Source URI Status | Intake |
 |---|---|---|---|---|---|
-| `insurer-api-and-actuarial-products:kms-hsm` | P2-P4 | P0 | `kms-hsm` | placeholder | `artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/kms-hsm.json` |
 | `standards-track-and-auditor-ecosystem:kms-hsm` | P3 | P1 | `kms-hsm` | placeholder | `artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/kms-hsm.json` |
 
 #### Task Commands
 
-- `insurer-api-and-actuarial-products:kms-hsm` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/insurer-api-and-actuarial-products/kms-hsm --root . --task insurer-api-and-actuarial-products:kms-hsm --description 'kms-hsm evidence for insurer-api-and-actuarial-products' --snapshot-out artifacts/external-evidence-sources/insurer-api-and-actuarial-products/kms-hsm.json --intake-out artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/kms-hsm.json`
-- `insurer-api-and-actuarial-products:kms-hsm` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/kms-hsm.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `standards-track-and-auditor-ecosystem:kms-hsm` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/standards-track-and-auditor-ecosystem/kms-hsm --root . --task standards-track-and-auditor-ecosystem:kms-hsm --description 'kms-hsm evidence for standards-track-and-auditor-ecosystem' --snapshot-out artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/kms-hsm.json --intake-out artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/kms-hsm.json`
 - `standards-track-and-auditor-ecosystem:kms-hsm` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/kms-hsm.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 

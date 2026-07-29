@@ -5,7 +5,7 @@
     "Source URIs marked TODO or placeholder must be replaced with authority-owned source exports before collection.",
     "Packet completion is proven only by verified source snapshots, intake receipts, rebuilt manifests, and readiness reports."
   ],
-  "owner_packet_bundle_id": "487a32dc438b7553854d29a2a67e70153665beeb0ce159398fade5c6ca24c5dd",
+  "owner_packet_bundle_id": "8810a889c1f2b1e02770343b6c4c9c90c144edb659284c3b2c37e08dba46c6b7",
   "packets": [
     {
       "authority_kinds": [
@@ -1407,105 +1407,25 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 2,
+      "missing_task_count": 1,
       "owner_hint": "security/platform KMS owner",
-      "package_hash": "bd3d80a0959ee4c9b7296dfcff2cc8c8c5c560484bf972c6547d2a6c9c8d3f5b",
-      "package_id": "88a8b81dae5232660ca7f181c889975e7cfa3bedea3b87712dea11b7ecb8d732",
+      "package_hash": "906401a48027fc9af7e8acf7694c8303c452c2c83064a1948d2208b03e64ca0c",
+      "package_id": "6394fa8dafdcbcde6250ea663ed133092525ed1a5a0c86c29fa4e84d485cc1c0",
       "package_ref": "owner_hint:security-platform-KMS-owner",
-      "packet_id": "06e78b0ed0578bee00b1903d8cc2c624fbf2980be434184e94190ac4f6b2f9a0",
+      "packet_id": "087444437d2aeeaec6a4f18babcabf1e4d52b83dd00129f48d512f9dc2a3805f",
       "packet_ref": "owner-packet:owner_hint:security-platform-KMS-owner",
       "phases": [
-        "P2-P4",
         "P3"
       ],
-      "placeholder_source_uri_count": 2,
+      "placeholder_source_uri_count": 1,
       "priorities": [
-        "P0",
         "P1"
       ],
       "requirement_ids": [
-        "insurer-api-and-actuarial-products",
         "standards-track-and-auditor-ecosystem"
       ],
-      "task_count": 2,
+      "task_count": 1,
       "tasks": [
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be kms-hsm and accepted for insurer-api-and-actuarial-products.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "kms-hsm",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/insurer-api-and-actuarial-products/kms-hsm",
-              "--root",
-              ".",
-              "--task",
-              "insurer-api-and-actuarial-products:kms-hsm",
-              "--description",
-              "kms-hsm evidence for insurer-api-and-actuarial-products",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/kms-hsm.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/kms-hsm.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/insurer-api-and-actuarial-products/kms-hsm --root . --task insurer-api-and-actuarial-products:kms-hsm --description 'kms-hsm evidence for insurer-api-and-actuarial-products' --snapshot-out artifacts/external-evidence-sources/insurer-api-and-actuarial-products/kms-hsm.json --intake-out artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/kms-hsm.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/kms-hsm.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/kms-hsm.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "kms-hsm evidence for insurer-api-and-actuarial-products",
-          "evidence_argument_template": "insurer-api-and-actuarial-products,kms-hsm,external-evidence/insurer-api-and-actuarial-products/kms-hsm.json,kms-hsm evidence for insurer-api-and-actuarial-products;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/kms-hsm.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "security/platform KMS owner",
-          "phase": "P2-P4",
-          "priority": "P0",
-          "requirement_id": "insurer-api-and-actuarial-products",
-          "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/kms-hsm.json",
-          "source_uri": "TODO://authority/insurer-api-and-actuarial-products/kms-hsm",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/insurer-api-and-actuarial-products/kms-hsm.json",
-          "suggested_evidence_sources": [
-            "KMS/HSM key policy export",
-            "signing operation receipt",
-            "custody or audit-log root"
-          ],
-          "task_id": "4bc6c354d31aac131cd1f8fa9cb9451124c2231482600681d05ecf665cf12252",
-          "task_ref": "external-evidence:insurer-api-and-actuarial-products:kms-hsm",
-          "title": "Consent-gated insurer telemetry, underwriting quotes, and actuarial products",
-          "unit_id": "4d33cee7e2005f0f855cd1f3cad8c2e2862b5acda6f9ca893ba1f2b2b30155a8",
-          "unit_ref": "insurer-api-and-actuarial-products:kms-hsm"
-        },
         {
           "acceptance_criteria": [
             "Artifact path must be repository-relative and hashable before manifest verification.",
@@ -1974,24 +1894,24 @@
   "source_work_package": {
     "generated_at": "2026-07-12T00:01:00Z",
     "group_by": "owner_hint",
-    "work_package_hash": "4f02025ca982e65dcd4934d1df36d331a670fb11c69a0e26c25ccad029e5a9c3",
-    "work_package_id": "9536772547ffde591898af66045a83ae8991d7f459c5e85b07f64e9757183e0e"
+    "work_package_hash": "c9c79b92c38e4f9883c19c995eb46d5dac34b3c4e5315fda1aab1f272927b2e2",
+    "work_package_id": "05cc60cda2b5099d11456eb055af415cf37eb99fbee199eaf964ecfc321dd832"
   },
   "summary": {
     "covered_task_count": 0,
     "live_source_uri_count": 0,
-    "missing_task_count": 21,
+    "missing_task_count": 20,
     "packet_count": 9,
-    "placeholder_source_uri_count": 21,
-    "source_work_package_task_count": 21,
-    "task_count": 21,
+    "placeholder_source_uri_count": 20,
+    "source_work_package_task_count": 20,
+    "task_count": 20,
     "task_count_by_authority_kind": {
       "ci-run": 3,
       "customer": 5,
       "hosted-service": 2,
       "identity-provider": 2,
       "insurer": 2,
-      "kms-hsm": 2,
+      "kms-hsm": 1,
       "provider-api": 2,
       "regulator": 1,
       "standards-body": 2
@@ -2003,7 +1923,7 @@
       "legal/compliance owner": 1,
       "release engineering": 3,
       "risk/insurance owner": 2,
-      "security/platform KMS owner": 2,
+      "security/platform KMS owner": 1,
       "service owner": 2,
       "standards/governance owner": 2
     }

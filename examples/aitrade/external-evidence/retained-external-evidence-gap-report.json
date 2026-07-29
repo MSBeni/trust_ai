@@ -41,7 +41,8 @@
       "hosted-service"
     ],
     "insurer-api-and-actuarial-products": [
-      "ci-run"
+      "ci-run",
+      "kms-hsm"
     ],
     "mcp-gateway": [
       "ci-run",
@@ -81,31 +82,8 @@
       "customer"
     ]
   },
-  "gap_report_id": "e1e07ea41e15a279b2c51ef18fe2bd65f349eeeca095d1470f386b2f61a543e9",
+  "gap_report_id": "35e45d0227f183fbb7f8429c1c2fa70b899da1c68a3fdf94611e8f54fc8e5b7e",
   "gaps": [
-    {
-      "authority_kind": "kms-hsm",
-      "description": "kms-hsm evidence for insurer-api-and-actuarial-products",
-      "external_authority_required": [
-        "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/kms-hsm.json",
-      "owner_hint": "security/platform KMS owner",
-      "requirement_id": "insurer-api-and-actuarial-products",
-      "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/kms-hsm.json",
-      "source_uri": "TODO://authority/insurer-api-and-actuarial-products/kms-hsm",
-      "suggested_evidence_sources": [
-        "KMS/HSM key policy export",
-        "signing operation receipt",
-        "custody or audit-log root"
-      ],
-      "task": "insurer-api-and-actuarial-products:kms-hsm",
-      "task_id": "4bc6c354d31aac131cd1f8fa9cb9451124c2231482600681d05ecf665cf12252",
-      "task_ref": "external-evidence:insurer-api-and-actuarial-products:kms-hsm",
-      "title": "Consent-gated insurer telemetry, underwriting quotes, and actuarial products",
-      "unit_id": "4d33cee7e2005f0f855cd1f3cad8c2e2862b5acda6f9ca893ba1f2b2b30155a8",
-      "unit_ref": "insurer-api-and-actuarial-products:kms-hsm"
-    },
     {
       "authority_kind": "provider-api",
       "description": "provider-api evidence for insurer-api-and-actuarial-products",
@@ -575,7 +553,6 @@
   ],
   "missing_authority_kinds_by_requirement": {
     "insurer-api-and-actuarial-products": [
-      "kms-hsm",
       "provider-api",
       "hosted-service",
       "identity-provider",
@@ -614,14 +591,14 @@
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "0c0824e171bead040d0a0436f0d179dffd073147f4acfefec3270f89b4ee1b7b",
-      "plan_id": "967fd94b49bd979de45b4ae08fcaeb031c026bf6678436fb7146c646ca7ac317",
+      "plan_hash": "b64b3fb25445645eded616133afab1cf6f75cf9b35982179ca785531f6f1e973",
+      "plan_id": "9ceee075b5724252dd6f6523e19582a19be4a1f3221b3cd8d573676855496237",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "5e99aac8ba1e2bbfdb952cab411cfcae19359bc2a442f8ca3e6e32533692dd09",
-      "manifest_id": "fab0e37126e7e2e9cddf5dae27abde3d20b46eb61fa9d656ef6e625784fa8687",
+      "manifest_hash": "30a116b81b177a265faca5b506b67303cc20e1f204491321bdf8b1908e03831b",
+      "manifest_id": "0c5bd3e9ddd23df4bdd70044d9c44210f8d56e7cd1fb49c31df807830df95fc3",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
@@ -633,12 +610,12 @@
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "1cf55aafe518342208343b4e03cce7646c4485864c4e779e444088d38a84f5c7",
-      "source_map_id": "ec2181896352668e34d272ff353d034371284b5f8754ab286dfa4473348f104b"
+      "source_map_hash": "c0526372b6d2cba73d6e0b5922ed1eeacf0d4e1a6b7969996667898b654510f3",
+      "source_map_id": "0f1b492349f8597f7f58f352816f179128ba18c7e4f75bd283d3adb755fe9b83"
     }
   },
   "summary": {
-    "covered_authority_kind_count": 50,
+    "covered_authority_kind_count": 51,
     "covered_requirement_count": 15,
     "gap_count_by_authority_kind": {
       "ci-run": 3,
@@ -646,13 +623,13 @@
       "hosted-service": 2,
       "identity-provider": 2,
       "insurer": 2,
-      "kms-hsm": 2,
+      "kms-hsm": 1,
       "provider-api": 2,
       "regulator": 1,
       "standards-body": 2
     },
     "gap_count_by_requirement": {
-      "insurer-api-and-actuarial-products": 6,
+      "insurer-api-and-actuarial-products": 5,
       "product-scope-discipline": 2,
       "roadmap-phase-scoreboard": 5,
       "runtime-policy-and-attestation": 1,
@@ -661,27 +638,27 @@
       "trust-network-procurement-and-marketplace": 4
     },
     "live_source_uri_count": 0,
-    "missing_authority_kind_count": 21,
+    "missing_authority_kind_count": 20,
     "missing_requirement_count": 5,
-    "placeholder_source_uri_count": 21,
-    "remaining_missing_task_count": 21,
-    "remaining_task_count": 21,
+    "placeholder_source_uri_count": 20,
+    "remaining_missing_task_count": 20,
+    "remaining_task_count": 20,
     "required_authority_kind_count": 71,
     "required_requirement_count": 20,
-    "source_map_entry_count": 21,
+    "source_map_entry_count": 20,
     "status": "partial"
   },
   "verification": {
     "manifest_warnings": [
       "external evidence missing for: state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
-      "external evidence authority kinds missing for: insurer-api-and-actuarial-products: kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
+      "external evidence authority kinds missing for: insurer-api-and-actuarial-products: provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
     ],
     "plan_warnings": [
       "external evidence missing for: state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
-      "external evidence authority kinds missing for: insurer-api-and-actuarial-products: kms-hsm, provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
+      "external evidence authority kinds missing for: insurer-api-and-actuarial-products: provider-api, hosted-service, identity-provider, insurer, customer; state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer"
     ],
     "source_map_warnings": [
-      "source map contains 21 placeholder source_uri values"
+      "source map contains 20 placeholder source_uri values"
     ]
   },
   "verification_options": {

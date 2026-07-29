@@ -1,0 +1,155 @@
+{
+  "audit_log": {
+    "audit_log_ref": "audit-log:insurer-api-actuarial/kms-evidence-signing",
+    "audit_log_root": "sha256:insurer-api-actuarial-kms-audit-root-20260712",
+    "custody_log_ref": "custody-log:insurer-api-actuarial/credential-vault-reference",
+    "custody_log_root": "sha256:insurer-api-actuarial-credential-vault-root-20260712",
+    "retention_until": "2033-07-12T00:00:00Z"
+  },
+  "authority_evidence": {
+    "authority_kind": "kms-hsm",
+    "evidence_ref": "kms:example/trustai/insurer-api-actuarial-products/evidence-signing",
+    "requirement_id": "insurer-api-and-actuarial-products",
+    "source_uri": "https://kms.example/attestations/trustai/insurer-api-actuarial-products/evidence-signing"
+  },
+  "environment": "aitrade-prod",
+  "evidence": {
+    "docs_specs_actuarial_corpus_v0_1_md": {
+      "path": "docs/specs/actuarial-corpus-v0.1.md",
+      "sha256": "sha256:2739060ddf87b4cf13f923eee86ce642caf2c4be7ccf47680cf2b918fd041d0b"
+    },
+    "docs_specs_actuarial_product_v0_1_md": {
+      "path": "docs/specs/actuarial-product-v0.1.md",
+      "sha256": "sha256:d038f6066ecac2699d2b537d2d44aa01bbc218681e98d8b51699761b44ead5db"
+    },
+    "docs_specs_insurer_consent_v0_1_md": {
+      "path": "docs/specs/insurer-consent-v0.1.md",
+      "sha256": "sha256:76b2f24d0b22855230f25b45e8abe572d6f156a66ec7b1494d76a8f838ad90f2"
+    },
+    "docs_specs_insurer_partner_production_authority_v0_1_md": {
+      "path": "docs/specs/insurer-partner-production-authority-v0.1.md",
+      "sha256": "sha256:0105c9860643099753feb92c1c9d7df6987943dfd7f7a6c43c0dd3e3778f48eb"
+    },
+    "docs_specs_insurer_partner_service_attestation_v0_1_md": {
+      "path": "docs/specs/insurer-partner-service-attestation-v0.1.md",
+      "sha256": "sha256:121aa9f8fbc609aba42054e2f6d5bc8c4946a2c2d7259b5d5b72851022ea419e"
+    },
+    "docs_specs_insurer_partner_worker_bundle_v0_1_md": {
+      "path": "docs/specs/insurer-partner-worker-bundle-v0.1.md",
+      "sha256": "sha256:fbc3b1022b6cef88fecc9b5ff01d1cd9575cc26666aea1c283f56d440c7ca98d"
+    },
+    "docs_specs_underwriting_quote_v0_1_md": {
+      "path": "docs/specs/underwriting-quote-v0.1.md",
+      "sha256": "sha256:7dfcf89f3e38c64120b740a7b58f8ebc57ab35b1d9b6c4897275451141fe58ca"
+    },
+    "examples_aitrade_trust_authority_kms_response_json": {
+      "path": "examples/aitrade/trust-authority-kms-response.json",
+      "sha256": "sha256:1f67d6b3b286b0d7cc16044c43d9ba5dec6065797906caf0d97e4fa3e870ff21"
+    },
+    "src_trustai_actuarial_py": {
+      "path": "src/trustai/actuarial.py",
+      "sha256": "sha256:1121d760fbeac797593fbf9822bab547ca90a9b519218c806310a7743726a0b4"
+    },
+    "src_trustai_consent_py": {
+      "path": "src/trustai/consent.py",
+      "sha256": "sha256:2214e65e91eff90440ef3e90c9c53ad71ecbed723fa1e8f58818b79528c0d333"
+    },
+    "src_trustai_insurer_partner_authority_py": {
+      "path": "src/trustai/insurer_partner_authority.py",
+      "sha256": "sha256:c7969f9ac0ea746ea5f37252dd5738971c0a64d57b45c9b1f9ca82e403d65577"
+    },
+    "src_trustai_insurer_partner_service_py": {
+      "path": "src/trustai/insurer_partner_service.py",
+      "sha256": "sha256:be15fc7705e1007229ea60d4f602c5f741f1f7777450be487aeaa37f9df85bd4"
+    },
+    "src_trustai_insurer_partner_worker_bundle_py": {
+      "path": "src/trustai/insurer_partner_worker_bundle.py",
+      "sha256": "sha256:a09e743e20aea0a12fa3a7d71c0066bdfd27505760e39889a05afcbaa3eeb745"
+    },
+    "src_trustai_underwriting_quote_py": {
+      "path": "src/trustai/underwriting_quote.py",
+      "sha256": "sha256:efb95f75de0eae14cc963832dd04f6d1a9cbed35f06d1e76f18afd9fd771e2f0"
+    },
+    "tests_test_actuarial_product_py": {
+      "path": "tests/test_actuarial_product.py",
+      "sha256": "sha256:d807bb4549b790b28ac493364fecf5c6aa8453c734e5173f31d4693397ffd867"
+    },
+    "tests_test_consent_insurer_py": {
+      "path": "tests/test_consent_insurer.py",
+      "sha256": "sha256:fd815e98545100aa50104d35acec23ddda3443c783043f74a3a81d2b590a9047"
+    },
+    "tests_test_insurer_partner_authority_py": {
+      "path": "tests/test_insurer_partner_authority.py",
+      "sha256": "sha256:7b1f2a5b4c71156bb0e69cdf4896600f7cc4eee49a6a2e8047e3e8e176492e5a"
+    },
+    "tests_test_insurer_partner_service_py": {
+      "path": "tests/test_insurer_partner_service.py",
+      "sha256": "sha256:ab5e24a64f681ca45b9ca431b474de6fecac4752b6c2a8eaf5fccec4db40c803"
+    },
+    "tests_test_insurer_partner_worker_bundle_py": {
+      "path": "tests/test_insurer_partner_worker_bundle.py",
+      "sha256": "sha256:8ef21553d742a447b833d6e159692d4a0c9e892bf754667711bf37121d0950b8"
+    },
+    "tests_test_underwriting_quote_py": {
+      "path": "tests/test_underwriting_quote.py",
+      "sha256": "sha256:69e81648c5fb706441d91a441d5676fe4c13e1df86192baabd8ca17f964f706f"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "export_ref": "kms-export:aitrade/insurer-api-actuarial-products/evidence-signing/2026-07-12",
+  "insurer_kms_scope": {
+    "credential_vault_refs": [
+      "vault:insurer-partner-api/reference-credential",
+      "vault:underwriting-quote-signing/reference-credential",
+      "vault:actuarial-publication/reference-credential"
+    ],
+    "envelope_refs": [
+      "envelope:consent-telemetry/reference",
+      "envelope:underwriting-quote/reference",
+      "envelope:actuarial-product-publication/reference",
+      "envelope:worker-review-bundle/reference"
+    ],
+    "mode": "reference-kms-hsm-export",
+    "signing_contexts": [
+      "insurer-consent-telemetry",
+      "underwriting-quote-hash-binding",
+      "actuarial-product-publication",
+      "insurer-partner-worker-authority"
+    ]
+  },
+  "issued_at": "2026-07-12T00:00:00Z",
+  "issuer": "Example KMS/HSM",
+  "key_policy": {
+    "allowed_actor_refs": [
+      "oidc:trustai.example/insurer-api-service",
+      "oidc:trustai.example/actuarial-publisher",
+      "oidc:trustai.example/insurer-partner-authority-worker"
+    ],
+    "denied_operations": [
+      "kms:export-private-key",
+      "kms:sign-without-consent-envelope",
+      "kms:disable-key",
+      "kms:decrypt-unredacted-pii-without-purpose-binding"
+    ],
+    "key_policy_hash": "sha256:insurer-api-actuarial-kms-key-policy-20260712",
+    "key_policy_ref": "policy:kms/insurer-api-actuarial-products-v0.1",
+    "key_ref": "kms:example/trustai/insurer-api-actuarial-products/evidence-signing",
+    "operation": "sign-encrypt-decrypt",
+    "quorum_required": 2,
+    "timestamp_policy": "policy:tsa/trustai-timestamping-v0.1"
+  },
+  "limitations": [
+    "This export records retained reference KMS/HSM custody and signing evidence for insurer API and actuarial product artifacts only.",
+    "It does not claim a live insurer-owned HSM, production credential vault, insurer KMS audit export, or partner-managed key ceremony.",
+    "Production insurer authority still requires fresh insurer-owned KMS/HSM, provider API, hosted service, identity-provider, insurer, and customer evidence."
+  ],
+  "schema": "trustai.insurer-api-and-actuarial-products-kms-hsm-authority-export/0.1",
+  "subject": "trustai insurer API and actuarial products KMS/HSM evidence-signing enforcement",
+  "verified_controls": [
+    "KMS/HSM key policy binds consent telemetry, underwriting quote, actuarial publication, and worker authority signing contexts",
+    "credential-vault custody roots are retained for insurer partner API and actuarial publication reference credentials",
+    "consent and PII envelopes require purpose-bound signing and deny unredacted decrypt without review context",
+    "KMS audit-log root and custody-log root are retained with seven-year evidence retention",
+    "reference KMS/HSM evidence is separated from live insurer-owned HSM and production credential-vault claims"
+  ]
+}

@@ -5,7 +5,7 @@
     "A closed task still requires rebuilt manifest verification and readiness verification before external authority coverage is accepted.",
     "Placeholder source URIs keep tasks blocked even when a local intake artifact is present."
   ],
-  "owner_packet_status_id": "02857ad3784da808fbc765ad3d014274a0452b1ddbcc76c0ac60bc92a488baf5",
+  "owner_packet_status_id": "da5281da19ad7a3b765e3f372b105f0babd76569520394d450c22cb0708bbd08",
   "packets": [
     {
       "blocked_task_count": 2,
@@ -68,14 +68,14 @@
       "task_count": 2
     },
     {
-      "blocked_task_count": 2,
+      "blocked_task_count": 1,
       "closed_task_count": 0,
       "open_task_count": 0,
       "owner_hint": "security/platform KMS owner",
-      "packet_id": "06e78b0ed0578bee00b1903d8cc2c624fbf2980be434184e94190ac4f6b2f9a0",
+      "packet_id": "087444437d2aeeaec6a4f18babcabf1e4d52b83dd00129f48d512f9dc2a3805f",
       "packet_ref": "owner-packet:owner_hint:security-platform-KMS-owner",
       "packet_status": "blocked",
-      "task_count": 2
+      "task_count": 1
     },
     {
       "blocked_task_count": 2,
@@ -103,41 +103,41 @@
     "intake_hashes": [],
     "owner_packet_bundle": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_bundle_hash": "0c0e685ae2f0866be7e6ecf6635f81fef422eebd51de9d9a210655c8fb52ee76",
-      "owner_packet_bundle_id": "487a32dc438b7553854d29a2a67e70153665beeb0ce159398fade5c6ca24c5dd",
+      "owner_packet_bundle_hash": "d29c3afdbfed97e5a65c452db47035bf26829e5c12bbdb5ff252ac2f2e4a09c9",
+      "owner_packet_bundle_id": "8810a889c1f2b1e02770343b6c4c9c90c144edb659284c3b2c37e08dba46c6b7",
       "schema": "trustai.external-evidence-owner-packet-bundle/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "1cf55aafe518342208343b4e03cce7646c4485864c4e779e444088d38a84f5c7",
-      "source_map_id": "ec2181896352668e34d272ff353d034371284b5f8754ab286dfa4473348f104b"
+      "source_map_hash": "c0526372b6d2cba73d6e0b5922ed1eeacf0d4e1a6b7969996667898b654510f3",
+      "source_map_id": "0f1b492349f8597f7f58f352816f179128ba18c7e4f75bd283d3adb755fe9b83"
     },
     "work_package": {
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-work-package/0.1",
-      "work_package_hash": "4f02025ca982e65dcd4934d1df36d331a670fb11c69a0e26c25ccad029e5a9c3",
-      "work_package_id": "9536772547ffde591898af66045a83ae8991d7f459c5e85b07f64e9757183e0e"
+      "work_package_hash": "c9c79b92c38e4f9883c19c995eb46d5dac34b3c4e5315fda1aab1f272927b2e2",
+      "work_package_id": "05cc60cda2b5099d11456eb055af415cf37eb99fbee199eaf964ecfc321dd832"
     }
   },
   "summary": {
     "blocked_packet_count": 9,
-    "blocked_task_count": 21,
+    "blocked_task_count": 20,
     "closed_packet_count": 0,
     "closed_task_count": 0,
     "invalid_intake_count": 0,
     "live_source_uri_count": 0,
-    "missing_intake_count": 21,
+    "missing_intake_count": 20,
     "open_packet_count": 0,
     "open_task_count": 0,
     "packet_count": 9,
     "packet_status_counts": {
       "blocked": 9
     },
-    "placeholder_source_uri_count": 21,
-    "task_count": 21,
+    "placeholder_source_uri_count": 20,
+    "task_count": 20,
     "task_status_counts": {
-      "blocked": 21
+      "blocked": 20
     }
   },
   "tasks": [
@@ -395,23 +395,6 @@
       "task_ref": "external-evidence:insurer-api-and-actuarial-products:insurer",
       "task_status": "blocked",
       "unit_ref": "insurer-api-and-actuarial-products:insurer"
-    },
-    {
-      "authority_kind": "kms-hsm",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake": null,
-      "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/kms-hsm.json",
-      "owner_hint": "security/platform KMS owner",
-      "requirement_id": "insurer-api-and-actuarial-products",
-      "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/kms-hsm.json",
-      "source_uri": "TODO://authority/insurer-api-and-actuarial-products/kms-hsm",
-      "source_uri_status": "placeholder",
-      "task_ref": "external-evidence:insurer-api-and-actuarial-products:kms-hsm",
-      "task_status": "blocked",
-      "unit_ref": "insurer-api-and-actuarial-products:kms-hsm"
     },
     {
       "authority_kind": "kms-hsm",

@@ -1,14 +1,14 @@
 # External Evidence Owner Packet Status
 
-- Status ID: `02857ad3784da808fbc765ad3d014274a0452b1ddbcc76c0ac60bc92a488baf5`
+- Status ID: `da5281da19ad7a3b765e3f372b105f0babd76569520394d450c22cb0708bbd08`
 - Generated at: `2026-07-12T00:01:00Z`
 - Packets: 9
-- Tasks: 21
+- Tasks: 20
 - Closed tasks: 0
 - Open tasks: 0
-- Blocked tasks: 21
-- Placeholder source URIs: 21
-- Missing intakes: 21
+- Blocked tasks: 20
+- Placeholder source URIs: 20
+- Missing intakes: 20
 
 ## Packets
 
@@ -20,7 +20,7 @@
 | legal/compliance owner | `owner-packet:owner_hint:legal-compliance-owner` | blocked | 1 | 0 | 0 | 1 |
 | release engineering | `owner-packet:owner_hint:release-engineering` | blocked | 3 | 0 | 0 | 3 |
 | risk/insurance owner | `owner-packet:owner_hint:risk-insurance-owner` | blocked | 2 | 0 | 0 | 2 |
-| security/platform KMS owner | `owner-packet:owner_hint:security-platform-KMS-owner` | blocked | 2 | 0 | 0 | 2 |
+| security/platform KMS owner | `owner-packet:owner_hint:security-platform-KMS-owner` | blocked | 1 | 0 | 0 | 1 |
 | service owner | `owner-packet:owner_hint:service-owner` | blocked | 2 | 0 | 0 | 2 |
 | standards/governance owner | `owner-packet:owner_hint:standards-governance-owner` | blocked | 2 | 0 | 0 | 2 |
 
@@ -43,7 +43,6 @@
 | `runtime-policy-and-attestation:ci-run` | release engineering | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `roadmap-phase-scoreboard:insurer` | risk/insurance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `insurer-api-and-actuarial-products:insurer` | risk/insurance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
-| `insurer-api-and-actuarial-products:kms-hsm` | security/platform KMS owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `standards-track-and-auditor-ecosystem:kms-hsm` | security/platform KMS owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `insurer-api-and-actuarial-products:hosted-service` | service owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `trust-network-procurement-and-marketplace:hosted-service` | service owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |

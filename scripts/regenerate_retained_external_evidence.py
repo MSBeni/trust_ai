@@ -738,6 +738,20 @@ RETAINED_SOURCES: dict[str, dict[str, str]] = {
         "snapshot_out": "examples/aitrade/external-evidence/insurer-api-actuarial-ci-run-source-snapshot.json",
         "intake_out": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-ci-run.json",
     },
+    "insurer-api-and-actuarial-products:kms-hsm": {
+        "source_uri": "https://kms.example/attestations/trustai/insurer-api-actuarial-products/evidence-signing",
+        "description": "Retained KMS/HSM export for insurer API and actuarial products evidence signing",
+        "artifact": "examples/aitrade/external-evidence/insurer-api-actuarial-kms-hsm-source-snapshot.json",
+        "source_file": "examples/aitrade/insurer-api-and-actuarial-products-kms-hsm-authority-export.json",
+        "retrieval_method": "file-copy",
+        "content_type": "application/json",
+        "issuer": "Example KMS/HSM",
+        "subject": "trustai insurer API and actuarial products KMS/HSM evidence-signing enforcement",
+        "issued_at": "2026-07-12T00:00:00Z",
+        "expires_at": "2026-12-31T00:00:00Z",
+        "snapshot_out": "examples/aitrade/external-evidence/insurer-api-actuarial-kms-hsm-source-snapshot.json",
+        "intake_out": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-kms-hsm.json",
+    },
 }
 
 

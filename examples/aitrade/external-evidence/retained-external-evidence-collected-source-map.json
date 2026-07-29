@@ -1325,6 +1325,36 @@
       "authority_kind": "kms-hsm",
       "content_type": "application/json",
       "coverage_status": "missing",
+      "description": "Retained KMS/HSM export for insurer API and actuarial products evidence signing",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-kms-hsm.json",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "Example KMS/HSM",
+      "owner_hint": "security/platform KMS owner",
+      "requirement_id": "insurer-api-and-actuarial-products",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/insurer-api-actuarial-kms-hsm-source-snapshot.json",
+      "source_uri": "https://kms.example/attestations/trustai/insurer-api-actuarial-products/evidence-signing",
+      "subject": "trustai insurer API and actuarial products KMS/HSM evidence-signing enforcement",
+      "suggested_evidence_sources": [
+        "KMS/HSM key policy export",
+        "signing operation receipt",
+        "custody or audit-log root"
+      ],
+      "task": "insurer-api-and-actuarial-products:kms-hsm",
+      "task_id": "4bc6c354d31aac131cd1f8fa9cb9451124c2231482600681d05ecf665cf12252",
+      "task_ref": "external-evidence:insurer-api-and-actuarial-products:kms-hsm",
+      "title": "Consent-gated insurer telemetry, underwriting quotes, and actuarial products",
+      "unit_id": "4d33cee7e2005f0f855cd1f3cad8c2e2862b5acda6f9ca893ba1f2b2b30155a8",
+      "unit_ref": "insurer-api-and-actuarial-products:kms-hsm"
+    },
+    {
+      "authority_kind": "kms-hsm",
+      "content_type": "application/json",
+      "coverage_status": "missing",
       "description": "Retained KMS/HSM enforcement export for runtime policy evidence signing",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
@@ -1509,7 +1539,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "8d27e312120f22e9b76528ab4fbc7f8eee87c402f1ab8dcf366d3e935631a53e",
+  "source_map_id": "c31e5efc36b0bff248da15e653ff06cf8b48f6462debbba7270a41efb9f2161b",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -1524,9 +1554,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 50,
+    "entry_count": 51,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 50,
+    "live_source_uri_count": 51,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

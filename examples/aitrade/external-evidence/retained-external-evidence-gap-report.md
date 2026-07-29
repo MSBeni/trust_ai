@@ -1,13 +1,13 @@
 # External Evidence Gap Report
 
-- Gap report ID: `e1e07ea41e15a279b2c51ef18fe2bd65f349eeeca095d1470f386b2f61a543e9`
+- Gap report ID: `35e45d0227f183fbb7f8429c1c2fa70b899da1c68a3fdf94611e8f54fc8e5b7e`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 50/71
-- Missing authority kinds: 21
-- Remaining collection tasks: 21
-- Source-map entries: 21
-- Placeholder source URIs: 21
+- Covered authority kinds: 51/71
+- Missing authority kinds: 20
+- Remaining collection tasks: 20
+- Source-map entries: 20
+- Placeholder source URIs: 20
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
@@ -17,14 +17,14 @@
 - `hosted-service`: 2
 - `identity-provider`: 2
 - `insurer`: 2
-- `kms-hsm`: 2
+- `kms-hsm`: 1
 - `provider-api`: 2
 - `regulator`: 1
 - `standards-body`: 2
 
 ## Gaps By Requirement
 
-- `insurer-api-and-actuarial-products`: 6
+- `insurer-api-and-actuarial-products`: 5
 - `product-scope-discipline`: 2
 - `roadmap-phase-scoreboard`: 5
 - `runtime-policy-and-attestation`: 1
@@ -33,17 +33,6 @@
 - `trust-network-procurement-and-marketplace`: 4
 
 ## Collection Worklist
-
-### insurer-api-and-actuarial-products:kms-hsm
-
-- Title: Consent-gated insurer telemetry, underwriting quotes, and actuarial products
-- Authority kind: `kms-hsm`
-- Owner hint: security/platform KMS owner
-- Description: kms-hsm evidence for insurer-api-and-actuarial-products
-- Source URI: `TODO://authority/insurer-api-and-actuarial-products/kms-hsm`
-- Snapshot output: `artifacts/external-evidence-sources/insurer-api-and-actuarial-products/kms-hsm.json`
-- Intake output: `artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/kms-hsm.json`
-- Suggested evidence sources: KMS/HSM key policy export; signing operation receipt; custody or audit-log root
 
 ### insurer-api-and-actuarial-products:provider-api
 

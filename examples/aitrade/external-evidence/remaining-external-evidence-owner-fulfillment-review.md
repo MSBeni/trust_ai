@@ -1,20 +1,19 @@
 # External Evidence Owner Fulfillment Review
 
-- Review ID: `bb3e0c5cfeaa7e10e45c1008c7bec39eb3dafe481e1a63f14cfd38c537933bf2`
+- Review ID: `7a93c5a1ef220f1f903a4c5d97c4ea9874cfbf3e1c0bdaef8f01d41302cbbc39`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Fulfillments: 21
+- Fulfillments: 20
 - Owners: 9
 - Ready tasks: 0
-- Blocked tasks: 21
-- Placeholder source URIs: 21
+- Blocked tasks: 20
+- Placeholder source URIs: 20
 - Live source URIs: 0
 
 ## Task Review
 
 | Task | Owner | Status | Source URI | Blocking Reasons |
 |---|---|---|---|---|
-| `insurer-api-and-actuarial-products:kms-hsm` | security/platform KMS owner | blocked | TODO://authority/insurer-api-and-actuarial-products/kms-hsm | `placeholder-source-uri` |
 | `insurer-api-and-actuarial-products:provider-api` | integration/platform owner | blocked | TODO://authority/insurer-api-and-actuarial-products/provider-api | `placeholder-source-uri` |
 | `insurer-api-and-actuarial-products:hosted-service` | service owner | blocked | TODO://authority/insurer-api-and-actuarial-products/hosted-service | `placeholder-source-uri` |
 | `insurer-api-and-actuarial-products:identity-provider` | IAM/identity owner | blocked | TODO://authority/insurer-api-and-actuarial-products/identity-provider | `placeholder-source-uri` |
@@ -40,12 +39,12 @@
 
 - Fulfilled source map errors: 1
 - Fulfilled source map warnings: 1
-  - source map contains 21 placeholder source_uri values but live source URIs are required
+  - source map contains 20 placeholder source_uri values but live source URIs are required
 
 ## Blockers
 
-- owner fulfillment review contains 21 placeholder source_uri values
-- fulfilled source map: source map contains 21 placeholder source_uri values but live source URIs are required
+- owner fulfillment review contains 20 placeholder source_uri values
+- fulfilled source map: source map contains 20 placeholder source_uri values but live source URIs are required
 
 ## Next Actions
 
