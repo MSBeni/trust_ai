@@ -5,12 +5,12 @@
     "A task is covered only after a matching evidence artifact is supplied to an external evidence manifest and verified.",
     "Freshness and issuer authority remain bounded by the supplied evidence artifact and manifest verification options."
   ],
-  "plan_id": "9ceee075b5724252dd6f6523e19582a19be4a1f3221b3cd8d573676855496237",
+  "plan_id": "2e982195f6f8461721e7c9f8d5f9133197f049d2f4b19ad9c730c5ec6d773103",
   "schema": "trustai.external-evidence-collection-plan/0.1",
   "source_manifest": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "manifest_hash": "30a116b81b177a265faca5b506b67303cc20e1f204491321bdf8b1908e03831b",
-    "manifest_id": "0c5bd3e9ddd23df4bdd70044d9c44210f8d56e7cd1fb49c31df807830df95fc3",
+    "manifest_hash": "be1bdef8d8b6d9a6b0f20858cb4924dc18ba9e81fb2e93c6c17c9cf6f48dd6cf",
+    "manifest_id": "870254943e11df3effa1d892602cecbe963b39f4a9ee3b5c4135994fb3915ca8",
     "manifest_ref": "production-external-evidence",
     "status": "partial"
   },
@@ -21,8 +21,8 @@
   },
   "status_filter": "missing",
   "summary": {
-    "covered_authority_kind_count": 51,
-    "missing_authority_kind_count": 20,
+    "covered_authority_kind_count": 52,
+    "missing_authority_kind_count": 19,
     "missing_task_count_by_authority_kind": {
       "ci-run": 3,
       "customer": 5,
@@ -30,14 +30,14 @@
       "identity-provider": 2,
       "insurer": 2,
       "kms-hsm": 1,
-      "provider-api": 2,
+      "provider-api": 1,
       "regulator": 1,
       "standards-body": 2
     },
     "required_authority_kind_count": 71,
     "selected_covered_task_count": 0,
-    "selected_missing_task_count": 20,
-    "selected_task_count": 20,
+    "selected_missing_task_count": 19,
+    "selected_task_count": 19,
     "source_manifest_status": "partial",
     "task_count_by_authority_kind": {
       "ci-run": 3,
@@ -46,7 +46,7 @@
       "identity-provider": 2,
       "insurer": 2,
       "kms-hsm": 1,
-      "provider-api": 2,
+      "provider-api": 1,
       "regulator": 1,
       "standards-body": 2
     },
@@ -54,42 +54,13 @@
       "P0-P4": 2,
       "P1-P4": 5,
       "P2": 1,
-      "P2-P4": 6,
+      "P2-P4": 5,
       "P3": 2,
       "P4": 4
     },
     "total_authority_unit_count": 71
   },
   "tasks": [
-    {
-      "acceptance_criteria": [
-        "Artifact path must be repository-relative and hashable before manifest verification.",
-        "Evidence item authority_kind must be provider-api and accepted for insurer-api-and-actuarial-products.",
-        "Use issued_at and expires_at metadata when strict freshness verification is required.",
-        "Rebuild and verify the external evidence manifest after adding the artifact."
-      ],
-      "authority_kind": "provider-api",
-      "coverage_status": "missing",
-      "evidence_argument_template": "insurer-api-and-actuarial-products,provider-api,external-evidence/insurer-api-and-actuarial-products/provider-api.json,provider-api evidence for insurer-api-and-actuarial-products;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-      "external_authority_required": [
-        "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
-      ],
-      "owner_hint": "integration/platform owner",
-      "phase": "P2-P4",
-      "priority": "P0",
-      "requirement_id": "insurer-api-and-actuarial-products",
-      "suggested_artifact_path": "external-evidence/insurer-api-and-actuarial-products/provider-api.json",
-      "suggested_evidence_sources": [
-        "provider API response export",
-        "request/response transcript",
-        "provider-owned audit event"
-      ],
-      "task_id": "8a1c69e9de014653f116fbf20e000e659ce983679ddf2f2c48acb58c7dfdb0e3",
-      "task_ref": "external-evidence:insurer-api-and-actuarial-products:provider-api",
-      "title": "Consent-gated insurer telemetry, underwriting quotes, and actuarial products",
-      "unit_id": "ec41a716efbbbffacaace5827fe9eb8be1b5f3001c97dd502b1b92eebe09f800",
-      "unit_ref": "insurer-api-and-actuarial-products:provider-api"
-    },
     {
       "acceptance_criteria": [
         "Artifact path must be repository-relative and hashable before manifest verification.",

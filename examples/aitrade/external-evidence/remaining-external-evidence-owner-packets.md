@@ -1,13 +1,13 @@
 # External Evidence Owner Packets
 
-- Owner packet bundle ID: `8810a889c1f2b1e02770343b6c4c9c90c144edb659284c3b2c37e08dba46c6b7`
+- Owner packet bundle ID: `27422447fad4ada070e603913beb135fddbfa3e3b0144eab50379a0213eef41a`
 - Generated at: `2026-07-12T00:01:00Z`
-- Source work package ID: `05cc60cda2b5099d11456eb055af415cf37eb99fbee199eaf964ecfc321dd832`
-- Source work package hash: `c9c79b92c38e4f9883c19c995eb46d5dac34b3c4e5315fda1aab1f272927b2e2`
+- Source work package ID: `b20805322571ba1058b6df372cbfcbbb767178685a3218f3d14d7e062e34272d`
+- Source work package hash: `8882ef391b284328765054e74951edcbf946fd7ba5f8147e48d8b99cb4c0887c`
 - Packets: 9
-- Tasks: 20
-- Missing tasks: 20
-- Placeholder source URIs: 20
+- Tasks: 19
+- Missing tasks: 19
+- Placeholder source URIs: 19
 
 ## Packets
 
@@ -73,25 +73,22 @@
 ### integration/platform owner
 
 - Packet ref: `owner-packet:owner_hint:integration-platform-owner`
-- Packet ID: `67ef146647256379520b2b8e5bf228f70b30a9ef1ea512e0055a2385bcbed9e3`
+- Packet ID: `2726dbfa77a03fe869d3914f98eb7eb523c2e622d776d1adf71cbc08ee0c9e94`
 - Package ref: `owner_hint:integration-platform-owner`
-- Tasks: 2
-- Missing tasks: 2
+- Tasks: 1
+- Missing tasks: 1
 - Authority kinds: `provider-api`
-- Requirements: `insurer-api-and-actuarial-products`, `trust-network-procurement-and-marketplace`
+- Requirements: `trust-network-procurement-and-marketplace`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
 - Completion gate: Every task must have a live authority source URI, a verified source snapshot, a verified intake receipt, and a rebuilt external-evidence manifest before readiness can pass.
 
 | Task | Phase | Priority | Authority | Source URI Status | Intake |
 |---|---|---|---|---|---|
-| `insurer-api-and-actuarial-products:provider-api` | P2-P4 | P0 | `provider-api` | placeholder | `artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/provider-api.json` |
 | `trust-network-procurement-and-marketplace:provider-api` | P4 | P1 | `provider-api` | placeholder | `artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/provider-api.json` |
 
 #### Task Commands
 
-- `insurer-api-and-actuarial-products:provider-api` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/insurer-api-and-actuarial-products/provider-api --root . --task insurer-api-and-actuarial-products:provider-api --description 'provider-api evidence for insurer-api-and-actuarial-products' --snapshot-out artifacts/external-evidence-sources/insurer-api-and-actuarial-products/provider-api.json --intake-out artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/provider-api.json`
-- `insurer-api-and-actuarial-products:provider-api` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/provider-api.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `trust-network-procurement-and-marketplace:provider-api` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/trust-network-procurement-and-marketplace/provider-api --root . --task trust-network-procurement-and-marketplace:provider-api --description 'provider-api evidence for trust-network-procurement-and-marketplace' --snapshot-out artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/provider-api.json --intake-out artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/provider-api.json`
 - `trust-network-procurement-and-marketplace:provider-api` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/provider-api.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 

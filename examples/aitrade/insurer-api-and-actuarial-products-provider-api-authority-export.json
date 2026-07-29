@@ -1,0 +1,184 @@
+{
+  "api_export": {
+    "api_ref": "api:trustai/insurer-api-actuarial-products/v0.1",
+    "endpoint_urls": [
+      "https://api.trustai.example/v1/insurer/aitrade/consent-telemetry",
+      "https://api.trustai.example/v1/insurer/aitrade/underwriting-quotes",
+      "https://api.trustai.example/v1/insurer/aitrade/actuarial-products",
+      "https://api.trustai.example/v1/insurer/aitrade/partner-authority-dossier"
+    ],
+    "export_ref": "provider-api-export:aitrade/insurer-api-actuarial-products/2026-07-12",
+    "exported_at": "2026-07-12T00:00:00Z",
+    "provider_account_ref": "provider-account:trustai-cloud/aitrade-prod",
+    "request_ref": "api-request:insurer-api-actuarial-products/2026-07-12T00:00:00Z",
+    "response_ref": "api-response:insurer-api-actuarial-products/2026-07-12T00:00:00Z",
+    "response_root": "sha256:insurer-api-actuarial-provider-api-response-root-20260712",
+    "status": "available"
+  },
+  "authority_evidence": {
+    "authority_kind": "provider-api",
+    "evidence_ref": "provider-api:trustai/insurer-api-actuarial-products/aitrade-prod",
+    "requirement_id": "insurer-api-and-actuarial-products",
+    "source_uri": "https://api.trustai.example/v1/insurer/aitrade/authority-evidence"
+  },
+  "covered_provider_api_controls": [
+    {
+      "control_ref": "insurer-api:consent-telemetry-export",
+      "requirement_id": "consent-gated-risk-telemetry",
+      "status": "exported"
+    },
+    {
+      "control_ref": "insurer-api:underwriting-quote-export",
+      "requirement_id": "underwriting-quote-response-binding",
+      "status": "exported"
+    },
+    {
+      "control_ref": "insurer-api:actuarial-product-publication",
+      "requirement_id": "actuarial-product-data-publication",
+      "status": "exported"
+    },
+    {
+      "control_ref": "insurer-api:partner-authority-dossier",
+      "requirement_id": "insurer-partner-production-authority-dossier",
+      "status": "exported"
+    },
+    {
+      "control_ref": "insurer-api:worker-review-bundle",
+      "requirement_id": "insurer-partner-worker-review-bundle",
+      "status": "exported"
+    },
+    {
+      "control_ref": "insurer-api:pii-minimization-policy",
+      "requirement_id": "consent-pii-data-minimization-enforcement",
+      "status": "exported"
+    },
+    {
+      "control_ref": "insurer-api:provider-audit-events",
+      "requirement_id": "provider-owned-insurer-api-audit-events",
+      "status": "exported"
+    },
+    {
+      "control_ref": "insurer-api:kms-evidence-linkage",
+      "requirement_id": "partner-credential-vault-kms-linkage",
+      "status": "exported"
+    },
+    {
+      "control_ref": "insurer-api:observability-alerting",
+      "requirement_id": "insurer-observability-alerting",
+      "status": "exported"
+    },
+    {
+      "control_ref": "insurer-api:policy-system-workflow-execution",
+      "requirement_id": "policy-system-workflow-execution",
+      "status": "exported"
+    }
+  ],
+  "environment": "aitrade-prod",
+  "evidence": {
+    "actuarial_corpus_spec": {
+      "path": "docs/specs/actuarial-corpus-v0.1.md",
+      "sha256": "sha256:2739060ddf87b4cf13f923eee86ce642caf2c4be7ccf47680cf2b918fd041d0b"
+    },
+    "actuarial_product_source": {
+      "path": "src/trustai/actuarial.py",
+      "sha256": "sha256:1121d760fbeac797593fbf9822bab547ca90a9b519218c806310a7743726a0b4"
+    },
+    "actuarial_product_spec": {
+      "path": "docs/specs/actuarial-product-v0.1.md",
+      "sha256": "sha256:d038f6066ecac2699d2b537d2d44aa01bbc218681e98d8b51699761b44ead5db"
+    },
+    "actuarial_product_tests": {
+      "path": "tests/test_actuarial_product.py",
+      "sha256": "sha256:d807bb4549b790b28ac493364fecf5c6aa8453c734e5173f31d4693397ffd867"
+    },
+    "consent_source": {
+      "path": "src/trustai/consent.py",
+      "sha256": "sha256:2214e65e91eff90440ef3e90c9c53ad71ecbed723fa1e8f58818b79528c0d333"
+    },
+    "insurer_consent_spec": {
+      "path": "docs/specs/insurer-consent-v0.1.md",
+      "sha256": "sha256:76b2f24d0b22855230f25b45e8abe572d6f156a66ec7b1494d76a8f838ad90f2"
+    },
+    "insurer_partner_authority_source": {
+      "path": "src/trustai/insurer_partner_authority.py",
+      "sha256": "sha256:c7969f9ac0ea746ea5f37252dd5738971c0a64d57b45c9b1f9ca82e403d65577"
+    },
+    "insurer_partner_authority_tests": {
+      "path": "tests/test_insurer_partner_authority.py",
+      "sha256": "sha256:7b1f2a5b4c71156bb0e69cdf4896600f7cc4eee49a6a2e8047e3e8e176492e5a"
+    },
+    "insurer_partner_service_source": {
+      "path": "src/trustai/insurer_partner_service.py",
+      "sha256": "sha256:be15fc7705e1007229ea60d4f602c5f741f1f7777450be487aeaa37f9df85bd4"
+    },
+    "insurer_partner_service_spec": {
+      "path": "docs/specs/insurer-partner-service-attestation-v0.1.md",
+      "sha256": "sha256:121aa9f8fbc609aba42054e2f6d5bc8c4946a2c2d7259b5d5b72851022ea419e"
+    },
+    "insurer_partner_service_tests": {
+      "path": "tests/test_insurer_partner_service.py",
+      "sha256": "sha256:ab5e24a64f681ca45b9ca431b474de6fecac4752b6c2a8eaf5fccec4db40c803"
+    },
+    "insurer_partner_worker_bundle_source": {
+      "path": "src/trustai/insurer_partner_worker_bundle.py",
+      "sha256": "sha256:a09e743e20aea0a12fa3a7d71c0066bdfd27505760e39889a05afcbaa3eeb745"
+    },
+    "insurer_partner_worker_bundle_spec": {
+      "path": "docs/specs/insurer-partner-worker-bundle-v0.1.md",
+      "sha256": "sha256:fbc3b1022b6cef88fecc9b5ff01d1cd9575cc26666aea1c283f56d440c7ca98d"
+    },
+    "insurer_partner_worker_bundle_tests": {
+      "path": "tests/test_insurer_partner_worker_bundle.py",
+      "sha256": "sha256:8ef21553d742a447b833d6e159692d4a0c9e892bf754667711bf37121d0950b8"
+    },
+    "insurer_partner_worker_source": {
+      "path": "src/trustai/insurer_partner_worker.py",
+      "sha256": "sha256:2d337567cac79163dd696413604c5fe878c54b999f6bde516d702648905619f5"
+    },
+    "insurer_partner_worker_tests": {
+      "path": "tests/test_insurer_partner_worker.py",
+      "sha256": "sha256:41f2460ba8750d1303262615ce33690d96407b714a2744d7a051902fb37548b0"
+    },
+    "insurer_production_authority_spec": {
+      "path": "docs/specs/insurer-partner-production-authority-v0.1.md",
+      "sha256": "sha256:0105c9860643099753feb92c1c9d7df6987943dfd7f7a6c43c0dd3e3778f48eb"
+    },
+    "kms_authority_export": {
+      "path": "examples/aitrade/insurer-api-and-actuarial-products-kms-hsm-authority-export.json",
+      "sha256": "sha256:54ef19cae9c0a7c50bbea88fef90740f8693053db99c68fb670ffb257124c737"
+    },
+    "underwriting_quote_source": {
+      "path": "src/trustai/underwriting_quote.py",
+      "sha256": "sha256:efb95f75de0eae14cc963832dd04f6d1a9cbed35f06d1e76f18afd9fd771e2f0"
+    },
+    "underwriting_quote_spec": {
+      "path": "docs/specs/underwriting-quote-v0.1.md",
+      "sha256": "sha256:7dfcf89f3e38c64120b740a7b58f8ebc57ab35b1d9b6c4897275451141fe58ca"
+    },
+    "underwriting_quote_tests": {
+      "path": "tests/test_underwriting_quote.py",
+      "sha256": "sha256:69e81648c5fb706441d91a441d5676fe4c13e1df86192baabd8ca17f964f706f"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "issued_at": "2026-07-12T00:00:00Z",
+  "issuer": "TrustAI Cloud Provider API",
+  "schema": "trustai.insurer-api-and-actuarial-products-provider-api-authority-export/0.1",
+  "source_binding": {
+    "actuarial_product_publication_ref": "actuarial-product:aitrade/reference-publication/2026-07-12",
+    "consent_telemetry_ref": "insurer-consent-telemetry:aitrade/reference/2026-07-12",
+    "kms_authority_ref": "kms:example/trustai/insurer-api-actuarial-products/evidence-signing",
+    "partner_authority_dossier_ref": "insurer-partner-authority:aitrade/reference-dossier",
+    "provider_audit_log_ref": "audit-log:insurer-api-actuarial/provider-api",
+    "underwriting_quote_ref": "underwriting-quote:aitrade/reference/2026-07-12",
+    "worker_review_bundle_ref": "insurer-partner-worker-bundle:aitrade/reference-review"
+  },
+  "subject": "aitrade insurer API and actuarial products provider API evidence",
+  "verified_controls": [
+    "provider API exposes consent-gated insurer telemetry exports with source hashes",
+    "provider API exports underwriting quote response roots and actuarial product publication references",
+    "provider API binds partner authority dossiers, worker review bundles, and provider-owned audit events",
+    "provider API links KMS/HSM evidence-signing authority without claiming live insurer-owned custody",
+    "provider API records PII minimization, policy workflow, observability, and source replay controls"
+  ]
+}

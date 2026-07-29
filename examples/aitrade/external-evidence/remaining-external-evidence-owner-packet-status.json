@@ -5,7 +5,7 @@
     "A closed task still requires rebuilt manifest verification and readiness verification before external authority coverage is accepted.",
     "Placeholder source URIs keep tasks blocked even when a local intake artifact is present."
   ],
-  "owner_packet_status_id": "da5281da19ad7a3b765e3f372b105f0babd76569520394d450c22cb0708bbd08",
+  "owner_packet_status_id": "e70c898f46f2e2d2f3caa73aa8d81522b38e89363a63780b628754f6e78620b4",
   "packets": [
     {
       "blocked_task_count": 2,
@@ -28,14 +28,14 @@
       "task_count": 5
     },
     {
-      "blocked_task_count": 2,
+      "blocked_task_count": 1,
       "closed_task_count": 0,
       "open_task_count": 0,
       "owner_hint": "integration/platform owner",
-      "packet_id": "67ef146647256379520b2b8e5bf228f70b30a9ef1ea512e0055a2385bcbed9e3",
+      "packet_id": "2726dbfa77a03fe869d3914f98eb7eb523c2e622d776d1adf71cbc08ee0c9e94",
       "packet_ref": "owner-packet:owner_hint:integration-platform-owner",
       "packet_status": "blocked",
-      "task_count": 2
+      "task_count": 1
     },
     {
       "blocked_task_count": 1,
@@ -103,41 +103,41 @@
     "intake_hashes": [],
     "owner_packet_bundle": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_bundle_hash": "d29c3afdbfed97e5a65c452db47035bf26829e5c12bbdb5ff252ac2f2e4a09c9",
-      "owner_packet_bundle_id": "8810a889c1f2b1e02770343b6c4c9c90c144edb659284c3b2c37e08dba46c6b7",
+      "owner_packet_bundle_hash": "1391745a6350651858de4c66df81e8096bfe4c5e2decae4b23a4014f8cfa482a",
+      "owner_packet_bundle_id": "27422447fad4ada070e603913beb135fddbfa3e3b0144eab50379a0213eef41a",
       "schema": "trustai.external-evidence-owner-packet-bundle/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "c0526372b6d2cba73d6e0b5922ed1eeacf0d4e1a6b7969996667898b654510f3",
-      "source_map_id": "0f1b492349f8597f7f58f352816f179128ba18c7e4f75bd283d3adb755fe9b83"
+      "source_map_hash": "4fd1e9607dcf84fb9cf194ad4bb04c25f509988803a1cfc7dd43e4f8d8676170",
+      "source_map_id": "09729dde5ca52c7030081c81fddf2db0c67675ab1584c343ff472950387dd54e"
     },
     "work_package": {
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-work-package/0.1",
-      "work_package_hash": "c9c79b92c38e4f9883c19c995eb46d5dac34b3c4e5315fda1aab1f272927b2e2",
-      "work_package_id": "05cc60cda2b5099d11456eb055af415cf37eb99fbee199eaf964ecfc321dd832"
+      "work_package_hash": "8882ef391b284328765054e74951edcbf946fd7ba5f8147e48d8b99cb4c0887c",
+      "work_package_id": "b20805322571ba1058b6df372cbfcbbb767178685a3218f3d14d7e062e34272d"
     }
   },
   "summary": {
     "blocked_packet_count": 9,
-    "blocked_task_count": 20,
+    "blocked_task_count": 19,
     "closed_packet_count": 0,
     "closed_task_count": 0,
     "invalid_intake_count": 0,
     "live_source_uri_count": 0,
-    "missing_intake_count": 20,
+    "missing_intake_count": 19,
     "open_packet_count": 0,
     "open_task_count": 0,
     "packet_count": 9,
     "packet_status_counts": {
       "blocked": 9
     },
-    "placeholder_source_uri_count": 20,
-    "task_count": 20,
+    "placeholder_source_uri_count": 19,
+    "task_count": 19,
     "task_status_counts": {
-      "blocked": 20
+      "blocked": 19
     }
   },
   "tasks": [
@@ -259,23 +259,6 @@
       "task_ref": "external-evidence:trust-network-procurement-and-marketplace:customer",
       "task_status": "blocked",
       "unit_ref": "trust-network-procurement-and-marketplace:customer"
-    },
-    {
-      "authority_kind": "provider-api",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake": null,
-      "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/provider-api.json",
-      "owner_hint": "integration/platform owner",
-      "requirement_id": "insurer-api-and-actuarial-products",
-      "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/provider-api.json",
-      "source_uri": "TODO://authority/insurer-api-and-actuarial-products/provider-api",
-      "source_uri_status": "placeholder",
-      "task_ref": "external-evidence:insurer-api-and-actuarial-products:provider-api",
-      "task_status": "blocked",
-      "unit_ref": "insurer-api-and-actuarial-products:provider-api"
     },
     {
       "authority_kind": "provider-api",

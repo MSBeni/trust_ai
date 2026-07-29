@@ -1352,6 +1352,36 @@
       "unit_ref": "insurer-api-and-actuarial-products:kms-hsm"
     },
     {
+      "authority_kind": "provider-api",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained provider API export for insurer API and actuarial products evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-provider-api.json",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "TrustAI Cloud Provider API",
+      "owner_hint": "integration/platform owner",
+      "requirement_id": "insurer-api-and-actuarial-products",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/insurer-api-actuarial-provider-api-source-snapshot.json",
+      "source_uri": "https://api.trustai.example/v1/insurer/aitrade/authority-evidence",
+      "subject": "aitrade insurer API and actuarial products provider API evidence",
+      "suggested_evidence_sources": [
+        "provider API response export",
+        "request/response transcript",
+        "provider-owned audit event"
+      ],
+      "task": "insurer-api-and-actuarial-products:provider-api",
+      "task_id": "8a1c69e9de014653f116fbf20e000e659ce983679ddf2f2c48acb58c7dfdb0e3",
+      "task_ref": "external-evidence:insurer-api-and-actuarial-products:provider-api",
+      "title": "Consent-gated insurer telemetry, underwriting quotes, and actuarial products",
+      "unit_id": "ec41a716efbbbffacaace5827fe9eb8be1b5f3001c97dd502b1b92eebe09f800",
+      "unit_ref": "insurer-api-and-actuarial-products:provider-api"
+    },
+    {
       "authority_kind": "kms-hsm",
       "content_type": "application/json",
       "coverage_status": "missing",
@@ -1539,7 +1569,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "c31e5efc36b0bff248da15e653ff06cf8b48f6462debbba7270a41efb9f2161b",
+  "source_map_id": "08348df4c338737b2e2b7526688945a77f2c15658ffee2aacbfdbe575ef9a4b0",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -1554,9 +1584,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 51,
+    "entry_count": 52,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 51,
+    "live_source_uri_count": 52,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

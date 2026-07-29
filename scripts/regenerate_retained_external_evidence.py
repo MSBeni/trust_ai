@@ -752,6 +752,20 @@ RETAINED_SOURCES: dict[str, dict[str, str]] = {
         "snapshot_out": "examples/aitrade/external-evidence/insurer-api-actuarial-kms-hsm-source-snapshot.json",
         "intake_out": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-kms-hsm.json",
     },
+    "insurer-api-and-actuarial-products:provider-api": {
+        "source_uri": "https://api.trustai.example/v1/insurer/aitrade/authority-evidence",
+        "description": "Retained provider API export for insurer API and actuarial products evidence",
+        "artifact": "examples/aitrade/external-evidence/insurer-api-actuarial-provider-api-source-snapshot.json",
+        "source_file": "examples/aitrade/insurer-api-and-actuarial-products-provider-api-authority-export.json",
+        "retrieval_method": "file-copy",
+        "content_type": "application/json",
+        "issuer": "TrustAI Cloud Provider API",
+        "subject": "aitrade insurer API and actuarial products provider API evidence",
+        "issued_at": "2026-07-12T00:00:00Z",
+        "expires_at": "2026-12-31T00:00:00Z",
+        "snapshot_out": "examples/aitrade/external-evidence/insurer-api-actuarial-provider-api-source-snapshot.json",
+        "intake_out": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-provider-api.json",
+    },
 }
 
 

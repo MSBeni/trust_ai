@@ -1,13 +1,13 @@
 # External Evidence Gap Report
 
-- Gap report ID: `35e45d0227f183fbb7f8429c1c2fa70b899da1c68a3fdf94611e8f54fc8e5b7e`
+- Gap report ID: `9f422f2fb65a75b40f54a5068d11a59a690008778114285dedfb2508a06b7df0`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 51/71
-- Missing authority kinds: 20
-- Remaining collection tasks: 20
-- Source-map entries: 20
-- Placeholder source URIs: 20
+- Covered authority kinds: 52/71
+- Missing authority kinds: 19
+- Remaining collection tasks: 19
+- Source-map entries: 19
+- Placeholder source URIs: 19
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
@@ -18,13 +18,13 @@
 - `identity-provider`: 2
 - `insurer`: 2
 - `kms-hsm`: 1
-- `provider-api`: 2
+- `provider-api`: 1
 - `regulator`: 1
 - `standards-body`: 2
 
 ## Gaps By Requirement
 
-- `insurer-api-and-actuarial-products`: 5
+- `insurer-api-and-actuarial-products`: 4
 - `product-scope-discipline`: 2
 - `roadmap-phase-scoreboard`: 5
 - `runtime-policy-and-attestation`: 1
@@ -33,17 +33,6 @@
 - `trust-network-procurement-and-marketplace`: 4
 
 ## Collection Worklist
-
-### insurer-api-and-actuarial-products:provider-api
-
-- Title: Consent-gated insurer telemetry, underwriting quotes, and actuarial products
-- Authority kind: `provider-api`
-- Owner hint: integration/platform owner
-- Description: provider-api evidence for insurer-api-and-actuarial-products
-- Source URI: `TODO://authority/insurer-api-and-actuarial-products/provider-api`
-- Snapshot output: `artifacts/external-evidence-sources/insurer-api-and-actuarial-products/provider-api.json`
-- Intake output: `artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/provider-api.json`
-- Suggested evidence sources: provider API response export; request/response transcript; provider-owned audit event
 
 ### insurer-api-and-actuarial-products:hosted-service
 
