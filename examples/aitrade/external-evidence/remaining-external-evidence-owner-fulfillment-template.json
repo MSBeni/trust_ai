@@ -6,20 +6,6 @@
         "placeholder-source-uri",
         "missing-intake"
       ],
-      "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/identity-provider.json",
-      "owner_hint": "IAM/identity owner",
-      "requirement_id": "insurer-api-and-actuarial-products",
-      "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/identity-provider.json",
-      "source_uri_status": "placeholder",
-      "task": "insurer-api-and-actuarial-products:identity-provider",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "identity-provider",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
       "intake_out": "artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/identity-provider.json",
       "owner_hint": "IAM/identity owner",
       "requirement_id": "trust-network-procurement-and-marketplace",
@@ -264,11 +250,6 @@
   },
   "fulfillments": [
     {
-      "description": "identity-provider evidence for insurer-api-and-actuarial-products",
-      "source_uri": "TODO://authority/insurer-api-and-actuarial-products/identity-provider",
-      "task": "insurer-api-and-actuarial-products:identity-provider"
-    },
-    {
       "description": "identity-provider evidence for trust-network-procurement-and-marketplace",
       "source_uri": "TODO://authority/trust-network-procurement-and-marketplace/identity-provider",
       "task": "trust-network-procurement-and-marketplace:identity-provider"
@@ -364,21 +345,21 @@
     "This template is a handoff artifact; it does not satisfy missing external authority evidence by itself.",
     "Placeholder source URIs intentionally keep readiness blocked until owners replace them with live authority sources."
   ],
-  "owner_fulfillment_template_id": "c04ce72d7db63ce17981100a6d51b34530aa7bf1f7e3757e150f64c8d5c6992e",
+  "owner_fulfillment_template_id": "dea10a62ee0ec71193321c5d7e48acbea92dd0778f933328c32f5364609a9bb0",
   "schema": "trustai.external-evidence-owner-fulfillment-template/0.1",
   "source_owner_packet_status": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "owner_packet_status_hash": "aef10fbd89046d6d4b0f2c4ab33d5b928bc18309ac64237fd1a52a2228aa4ae4",
-    "owner_packet_status_id": "3a3ad937ce8ecce2a85e29a4fc6556638437506345e9e71a40001bcc03057e50",
+    "owner_packet_status_hash": "3e1c06c983d21c6a65fcc57967d6defadc91055be1538715edd3de03784ecae3",
+    "owner_packet_status_id": "2871e783a476d15e022f478ffa68f6be1fba504dadef2dcb78d0dc8a81fc2ebf",
     "schema": "trustai.external-evidence-owner-packet-status/0.1"
   },
   "summary": {
-    "assignment_count": 18,
-    "blocked_task_count": 18,
+    "assignment_count": 17,
+    "blocked_task_count": 17,
     "closed_task_count": 0,
-    "fulfillment_count": 18,
+    "fulfillment_count": 17,
     "live_source_uri_count": 0,
-    "missing_intake_count": 18,
+    "missing_intake_count": 17,
     "open_task_count": 0,
     "owner_count": 9,
     "owners": [
@@ -392,6 +373,6 @@
       "service owner",
       "standards/governance owner"
     ],
-    "placeholder_source_uri_count": 18
+    "placeholder_source_uri_count": 17
   }
 }

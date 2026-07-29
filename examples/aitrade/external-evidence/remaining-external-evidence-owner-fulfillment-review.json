@@ -1,7 +1,7 @@
 {
   "blockers": [
-    "owner fulfillment review contains 18 placeholder source_uri values",
-    "fulfilled source map: source map contains 18 placeholder source_uri values but live source URIs are required"
+    "owner fulfillment review contains 17 placeholder source_uri values",
+    "fulfilled source map: source map contains 17 placeholder source_uri values but live source URIs are required"
   ],
   "commands": {
     "collect_after_ready_review": "python -m trustai external-evidence-collect-batch <fulfilled-source-map.json> <manifest.json> <roadmap-audit.json> --root . --require-live-source-uris",
@@ -11,30 +11,6 @@
   "fulfilled_source_map": {
     "defaults": {},
     "entries": [
-      {
-        "authority_kind": "identity-provider",
-        "coverage_status": "missing",
-        "description": "identity-provider evidence for insurer-api-and-actuarial-products",
-        "external_authority_required": [
-          "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
-        ],
-        "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/identity-provider.json",
-        "owner_hint": "IAM/identity owner",
-        "requirement_id": "insurer-api-and-actuarial-products",
-        "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/identity-provider.json",
-        "source_uri": "TODO://authority/insurer-api-and-actuarial-products/identity-provider",
-        "suggested_evidence_sources": [
-          "identity-provider event export",
-          "OIDC/session/lifecycle evidence",
-          "RBAC or account-state report"
-        ],
-        "task": "insurer-api-and-actuarial-products:identity-provider",
-        "task_id": "be476f5a0609a99f8bdfc11244dd070cf7e05e146b850f2865c8a5961d905fa2",
-        "task_ref": "external-evidence:insurer-api-and-actuarial-products:identity-provider",
-        "title": "Consent-gated insurer telemetry, underwriting quotes, and actuarial products",
-        "unit_id": "28b281bd8d494e059053e05528c651d80bedfca517b74c3185c2e21460f3771b",
-        "unit_ref": "insurer-api-and-actuarial-products:identity-provider"
-      },
       {
         "authority_kind": "insurer",
         "coverage_status": "missing",
@@ -451,14 +427,14 @@
       "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
     ],
     "schema": "trustai.external-evidence-source-map/0.1",
-    "source_map_id": "068152a5e27da3719cfe53e99f2e18c91878009094ef86f217f16c015ee64891",
+    "source_map_id": "df66673ca78a4d433d4256777e5246c639dcdca0e73b7d2eae3a472fd144ab98",
     "source_plan": {
-      "plan_hash": "bd4f5d65219a0a152291e2f3521715d847b8b3bbc94920ecd90c9d709e80c942",
-      "plan_id": "a9e6b3831a0ed6bd46774d62ca386bf66398ebe5629aa324effcab8d6e16e624",
+      "plan_hash": "e5e3812a0029a62c34e8d7dee62fb07c7359d69c03182e591951d40d7d27e5b4",
+      "plan_id": "46fcd1b36eb1b37da7c26e371adfcd1e105019c65216c54f28ade1c458eb7a63",
       "source_manifest": {
         "generated_at": "2026-07-12T00:01:00Z",
-        "manifest_hash": "7fdd51fb9cab47bcc034d23ffe130ce1e0e2872665edada95a58bf34c5c8d48a",
-        "manifest_id": "0745bf36f5d45d8d66383781994dbe8ac9497f3aecb830c4a516bf86514dbd6f",
+        "manifest_hash": "06f74063f32c10e4e31ddc9aaabfec3983f53a8d67b4cca0aa45138e7682557b",
+        "manifest_id": "411a0c7925cf5612f0f1ca481355b48f2909a10d5d6cb8712d039f1c8bfe84e6",
         "manifest_ref": "production-external-evidence",
         "status": "partial"
       },
@@ -466,12 +442,12 @@
     },
     "summary": {
       "authority_kinds": [],
-      "entry_count": 18,
+      "entry_count": 17,
       "intake_dir": "artifacts/external-evidence-intakes",
       "live_source_uri_count": 0,
-      "placeholder_source_uri_count": 18,
+      "placeholder_source_uri_count": 17,
       "snapshot_dir": "artifacts/external-evidence-sources",
-      "source_plan_task_count": 18,
+      "source_plan_task_count": 17,
       "status_filter": "missing"
     }
   },
@@ -486,63 +462,49 @@
     "Regenerate this review with --require-live-source-uris before collecting source snapshots.",
     "After the fulfilled source map is ready, run external-evidence-collect-batch and rebuild the retained manifest from intake receipts."
   ],
-  "owner_fulfillment_review_id": "42498f00a12dc1b6ed234723927d20d2aeb29466bc05a3157400ba095bd7cdda",
+  "owner_fulfillment_review_id": "13d5471ce5fafdeda513f5db7bd1c07b4ebef58dcbf3eb0b9e8498937b63e8b7",
   "schema": "trustai.external-evidence-owner-fulfillment-review/0.1",
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "bd4f5d65219a0a152291e2f3521715d847b8b3bbc94920ecd90c9d709e80c942",
-      "plan_id": "a9e6b3831a0ed6bd46774d62ca386bf66398ebe5629aa324effcab8d6e16e624",
+      "plan_hash": "e5e3812a0029a62c34e8d7dee62fb07c7359d69c03182e591951d40d7d27e5b4",
+      "plan_id": "46fcd1b36eb1b37da7c26e371adfcd1e105019c65216c54f28ade1c458eb7a63",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "owner_fulfillment_template": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_fulfillment_template_hash": "3a3bd31a66beb5fdf222a6293f0b4ff229534d18b4b72afb25a166dcadf5de4a",
-      "owner_fulfillment_template_id": "c04ce72d7db63ce17981100a6d51b34530aa7bf1f7e3757e150f64c8d5c6992e",
+      "owner_fulfillment_template_hash": "3d1b044a31111d5f366e9b5a066dc51d3453a03a91abe47c68b98cacdf37b9da",
+      "owner_fulfillment_template_id": "dea10a62ee0ec71193321c5d7e48acbea92dd0778f933328c32f5364609a9bb0",
       "schema": "trustai.external-evidence-owner-fulfillment-template/0.1"
     },
     "owner_packet_status": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_status_hash": "aef10fbd89046d6d4b0f2c4ab33d5b928bc18309ac64237fd1a52a2228aa4ae4",
-      "owner_packet_status_id": "3a3ad937ce8ecce2a85e29a4fc6556638437506345e9e71a40001bcc03057e50",
+      "owner_packet_status_hash": "3e1c06c983d21c6a65fcc57967d6defadc91055be1538715edd3de03784ecae3",
+      "owner_packet_status_id": "2871e783a476d15e022f478ffa68f6be1fba504dadef2dcb78d0dc8a81fc2ebf",
       "schema": "trustai.external-evidence-owner-packet-status/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "de063d978911ff5177d28eb1ba1e46feb23e9e8f455c924350cf65603bb1efa8",
-      "source_map_id": "6ab43aca5b0965b8b958a8b2acb61aecfa8d04b0c313698dac0e390fb9b89023"
+      "source_map_hash": "cd1b61502cf74cbafac1d2fedd27829fe408a3fa0246820e6e4658a77e7d9b25",
+      "source_map_id": "b39a0f2d015c76b1208542ab55dd3949680f50e6c6dea7ca14c7e1b68c41017a"
     }
   },
   "summary": {
-    "blocked_task_count": 18,
+    "blocked_task_count": 17,
     "error_count": 1,
     "fulfilled_source_map_verification_ok": false,
-    "fulfillment_count": 18,
+    "fulfillment_count": 17,
     "live_source_uri_count": 0,
     "owner_count": 9,
-    "placeholder_source_uri_count": 18,
+    "placeholder_source_uri_count": 17,
     "ready_task_count": 0,
     "review_status": "blocked",
-    "source_map_entry_count": 18,
+    "source_map_entry_count": 17,
     "template_verification_ok": true,
     "warning_count": 3
   },
   "task_reviews": [
-    {
-      "authority_kind": "identity-provider",
-      "blocking_reasons": [
-        "placeholder-source-uri"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/identity-provider.json",
-      "owner_hint": "IAM/identity owner",
-      "requirement_id": "insurer-api-and-actuarial-products",
-      "review_status": "blocked",
-      "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/identity-provider.json",
-      "source_uri": "TODO://authority/insurer-api-and-actuarial-products/identity-provider",
-      "source_uri_status": "placeholder",
-      "task": "insurer-api-and-actuarial-products:identity-provider"
-    },
     {
       "authority_kind": "insurer",
       "blocking_reasons": [
@@ -784,14 +746,14 @@
   ],
   "verification": {
     "fulfilled_source_map_errors": [
-      "source map contains 18 placeholder source_uri values but live source URIs are required"
+      "source map contains 17 placeholder source_uri values but live source URIs are required"
     ],
     "fulfilled_source_map_warnings": [
-      "source map contains 18 placeholder source_uri values"
+      "source map contains 17 placeholder source_uri values"
     ],
     "template_warnings": [
-      "owner fulfillment template summary contains 18 placeholder source_uri values",
-      "owner fulfillment template summary contains 18 tasks without intake receipts"
+      "owner fulfillment template summary contains 17 placeholder source_uri values",
+      "owner fulfillment template summary contains 17 tasks without intake receipts"
     ]
   },
   "verification_options": {

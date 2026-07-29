@@ -1,0 +1,105 @@
+{
+  "authority_evidence": {
+    "authority_kind": "identity-provider",
+    "evidence_ref": "identity-provider:aitrade/insurer-api-actuarial-products/partner-sessions",
+    "requirement_id": "insurer-api-and-actuarial-products",
+    "source_uri": "https://idp.example/exports/aitrade/insurer-api-actuarial-products/partner-sessions"
+  },
+  "environment": "aitrade-prod",
+  "evidence": {
+    "ci_run_authority_export": {
+      "path": "examples/aitrade/insurer-api-and-actuarial-products-ci-run-authority-export.json",
+      "sha256": "sha256:eb79e9ef19487f4b74ab680f16ab7a29dc87c077dba5531655966c222e2b348d"
+    },
+    "kms_authority_export": {
+      "path": "examples/aitrade/insurer-api-and-actuarial-products-kms-hsm-authority-export.json",
+      "sha256": "sha256:54ef19cae9c0a7c50bbea88fef90740f8693053db99c68fb670ffb257124c737"
+    },
+    "provider_api_authority_export": {
+      "path": "examples/aitrade/insurer-api-and-actuarial-products-provider-api-authority-export.json",
+      "sha256": "sha256:a4522415fb8f106045f2bd32fcfa70659bdf71c76dc3f35221f3169d5192cfb1"
+    },
+    "hosted_service_authority_export": {
+      "path": "examples/aitrade/insurer-api-and-actuarial-products-hosted-service-authority-export.json",
+      "sha256": "sha256:c415e44f6851944e3ffd656485b0684e05a9728b9b4aa2e20b936baad1cd31d0"
+    },
+    "identity_provider_authority_source": {
+      "path": "src/trustai/identity_provider_authority.py",
+      "sha256": "sha256:0066e9c36a15934729d74d959d79e03a51385f443dc1fe4b2a3d6f0998af1e91"
+    },
+    "identity_provider_authority_spec": {
+      "path": "docs/specs/identity-provider-production-authority-v0.1.md",
+      "sha256": "sha256:f5d438fc5bb049a120862d7a13d4c0dc277fd62893abca27152f3cfdf3506308"
+    },
+    "identity_provider_authority_tests": {
+      "path": "tests/test_identity_provider_authority.py",
+      "sha256": "sha256:e7f5a94e1c88f847f60bb0c199141050e47d6e0ec96751ca18a457c83677caad"
+    },
+    "identity_provider_session_source": {
+      "path": "src/trustai/identity_provider_session.py",
+      "sha256": "sha256:3380a224a2452dcbec3e400a4f15c3c8f7745ce62f011e1c99b8f3ad5e9af3a3"
+    },
+    "identity_provider_session_spec": {
+      "path": "docs/specs/identity-provider-session-v0.1.md",
+      "sha256": "sha256:fc0cd887c407e58f0267aa1b11b68293d081a7d9b1bebd9994e856b09f426470"
+    },
+    "identity_provider_session_tests": {
+      "path": "tests/test_identity_provider_session.py",
+      "sha256": "sha256:856f92340a56a9556a1db6f1ae8d0d282e92a90906c35f2c4226865ff79565a2"
+    },
+    "insurer_partner_authority_source": {
+      "path": "src/trustai/insurer_partner_authority.py",
+      "sha256": "sha256:c7969f9ac0ea746ea5f37252dd5738971c0a64d57b45c9b1f9ca82e403d65577"
+    },
+    "insurer_partner_service_source": {
+      "path": "src/trustai/insurer_partner_service.py",
+      "sha256": "sha256:be15fc7705e1007229ea60d4f602c5f741f1f7777450be487aeaa37f9df85bd4"
+    },
+    "consent_source": {
+      "path": "src/trustai/consent.py",
+      "sha256": "sha256:2214e65e91eff90440ef3e90c9c53ad71ecbed723fa1e8f58818b79528c0d333"
+    },
+    "underwriting_quote_source": {
+      "path": "src/trustai/underwriting_quote.py",
+      "sha256": "sha256:efb95f75de0eae14cc963832dd04f6d1a9cbed35f06d1e76f18afd9fd771e2f0"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "identity_provider": {
+    "account_lifecycle_export_ref": "idp-export:insurer-api-actuarial-products/account-lifecycle/2026-07-12",
+    "auth_provider_ref": "oidc:trustai.example/insurer-api-actuarial-products",
+    "consent_scope_refs": [
+      "scope:insurer.telemetry.read",
+      "scope:insurer.underwriting-quotes.read",
+      "scope:insurer.actuarial-products.read",
+      "scope:insurer.partner-authority.read"
+    ],
+    "mfa_policy_ref": "policy:idp/insurer-api-actuarial-products-mfa-v0.1",
+    "partner_api_group_refs": [
+      "group:insurer-underwriters",
+      "group:insurer-actuarial-reviewers",
+      "group:insurer-risk-api-clients"
+    ],
+    "provisioned_partner_subjects": [
+      "oidc:example-insurer/underwriter-service-account",
+      "oidc:example-insurer/actuarial-reviewer-001",
+      "oidc:example-insurer/risk-api-client-001"
+    ],
+    "rbac_policy_ref": "policy:rbac/insurer-api-actuarial-products-v0.1",
+    "revocation_log_root": "sha256:insurer-api-actuarial-idp-revocation-root-20260712",
+    "session_log_root": "sha256:insurer-api-actuarial-idp-session-root-20260712",
+    "session_policy_ref": "policy:session/insurer-api-actuarial-products-v0.1",
+    "tenant_ref": "tenant:aitrade-prod"
+  },
+  "issued_at": "2026-07-12T00:00:00Z",
+  "issuer": "Example IdP",
+  "schema": "trustai.insurer-api-and-actuarial-products-identity-provider-authority-export/0.1",
+  "subject": "aitrade insurer API and actuarial products identity-provider evidence",
+  "verified_controls": [
+    "OIDC and MFA session export covers insurer API partner users and service accounts",
+    "RBAC scopes bind consent telemetry, underwriting quote, actuarial product, and partner authority reads",
+    "account lifecycle and revocation roots are retained for insurer-facing API access",
+    "identity-provider session evidence links to hosted service, provider API, and KMS authority exports",
+    "identity session source hashes bind the retained IdP export to verified authority and session code"
+  ]
+}

@@ -1,13 +1,13 @@
 # External Evidence Gap Report
 
-- Gap report ID: `02343befb7441e6004d7696e1db15c082674bff185c2869eff2d3072118e58ca`
+- Gap report ID: `384a4be46cc8aa676d6aada6f0d9d66814f522a4fb6529a6e18554eae3a3a3fb`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 53/71
-- Missing authority kinds: 18
-- Remaining collection tasks: 18
-- Source-map entries: 18
-- Placeholder source URIs: 18
+- Covered authority kinds: 54/71
+- Missing authority kinds: 17
+- Remaining collection tasks: 17
+- Source-map entries: 17
+- Placeholder source URIs: 17
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
@@ -15,7 +15,7 @@
 - `ci-run`: 3
 - `customer`: 5
 - `hosted-service`: 1
-- `identity-provider`: 2
+- `identity-provider`: 1
 - `insurer`: 2
 - `kms-hsm`: 1
 - `provider-api`: 1
@@ -24,7 +24,7 @@
 
 ## Gaps By Requirement
 
-- `insurer-api-and-actuarial-products`: 3
+- `insurer-api-and-actuarial-products`: 2
 - `product-scope-discipline`: 2
 - `roadmap-phase-scoreboard`: 5
 - `runtime-policy-and-attestation`: 1
@@ -33,17 +33,6 @@
 - `trust-network-procurement-and-marketplace`: 4
 
 ## Collection Worklist
-
-### insurer-api-and-actuarial-products:identity-provider
-
-- Title: Consent-gated insurer telemetry, underwriting quotes, and actuarial products
-- Authority kind: `identity-provider`
-- Owner hint: IAM/identity owner
-- Description: identity-provider evidence for insurer-api-and-actuarial-products
-- Source URI: `TODO://authority/insurer-api-and-actuarial-products/identity-provider`
-- Snapshot output: `artifacts/external-evidence-sources/insurer-api-and-actuarial-products/identity-provider.json`
-- Intake output: `artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/identity-provider.json`
-- Suggested evidence sources: identity-provider event export; OIDC/session/lifecycle evidence; RBAC or account-state report
 
 ### insurer-api-and-actuarial-products:insurer
 

@@ -1412,6 +1412,36 @@
       "unit_ref": "insurer-api-and-actuarial-products:hosted-service"
     },
     {
+      "authority_kind": "identity-provider",
+      "content_type": "application/json",
+      "coverage_status": "missing",
+      "description": "Retained identity-provider export for insurer API and actuarial products evidence",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "external_authority_required": [
+        "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
+      ],
+      "intake_out": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-identity-provider.json",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "Example IdP",
+      "owner_hint": "IAM/identity owner",
+      "requirement_id": "insurer-api-and-actuarial-products",
+      "retrieval_method": "file-copy",
+      "snapshot_out": "examples/aitrade/external-evidence/insurer-api-actuarial-identity-provider-source-snapshot.json",
+      "source_uri": "https://idp.example/exports/aitrade/insurer-api-actuarial-products/partner-sessions",
+      "subject": "aitrade insurer API and actuarial products identity-provider evidence",
+      "suggested_evidence_sources": [
+        "identity-provider event export",
+        "OIDC/session/lifecycle evidence",
+        "RBAC or account-state report"
+      ],
+      "task": "insurer-api-and-actuarial-products:identity-provider",
+      "task_id": "be476f5a0609a99f8bdfc11244dd070cf7e05e146b850f2865c8a5961d905fa2",
+      "task_ref": "external-evidence:insurer-api-and-actuarial-products:identity-provider",
+      "title": "Consent-gated insurer telemetry, underwriting quotes, and actuarial products",
+      "unit_id": "28b281bd8d494e059053e05528c651d80bedfca517b74c3185c2e21460f3771b",
+      "unit_ref": "insurer-api-and-actuarial-products:identity-provider"
+    },
+    {
       "authority_kind": "kms-hsm",
       "content_type": "application/json",
       "coverage_status": "missing",
@@ -1599,7 +1629,7 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "641ad4dc360c74c4ae561d4958d973afd353e1066d469d308863e4c5bdc680fb",
+  "source_map_id": "7d8b7a06ca6ded373b97a164f05c3cd5298d6cc6b63576cc61ef883c571f46a4",
   "source_plan": {
     "plan_hash": "6439258cb263dc738703e7aa8a1c078c08d9402c0a2987dc9876d2faf6008417",
     "plan_id": "41e73fa9f0d7b0050b0dbf9ddce5cef52466e3d096cf9dfe70fed65952a80eb4",
@@ -1614,9 +1644,9 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 53,
+    "entry_count": 54,
     "intake_dir": "examples/aitrade/external-evidence/intakes",
-    "live_source_uri_count": 53,
+    "live_source_uri_count": 54,
     "placeholder_source_uri_count": 0,
     "snapshot_dir": "examples/aitrade/external-evidence",
     "source_plan_task_count": 71,

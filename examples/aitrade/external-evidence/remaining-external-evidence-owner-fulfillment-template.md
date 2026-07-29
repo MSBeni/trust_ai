@@ -1,20 +1,19 @@
 # External Evidence Owner Fulfillment Template
 
-- Template ID: `c04ce72d7db63ce17981100a6d51b34530aa7bf1f7e3757e150f64c8d5c6992e`
+- Template ID: `dea10a62ee0ec71193321c5d7e48acbea92dd0778f933328c32f5364609a9bb0`
 - Generated at: `2026-07-12T00:01:00Z`
-- Fulfillments: 18
+- Fulfillments: 17
 - Owners: 9
-- Blocked tasks: 18
+- Blocked tasks: 17
 - Open tasks: 0
 - Closed tasks: 0
-- Placeholder source URIs: 18
-- Missing intakes: 18
+- Placeholder source URIs: 17
+- Missing intakes: 17
 
 ## Fulfillments
 
 | Task | Source URI | Description |
 |---|---|---|
-| `insurer-api-and-actuarial-products:identity-provider` | TODO://authority/insurer-api-and-actuarial-products/identity-provider | identity-provider evidence for insurer-api-and-actuarial-products |
 | `trust-network-procurement-and-marketplace:identity-provider` | TODO://authority/trust-network-procurement-and-marketplace/identity-provider | identity-provider evidence for trust-network-procurement-and-marketplace |
 | `insurer-api-and-actuarial-products:customer` | TODO://authority/insurer-api-and-actuarial-products/customer | customer evidence for insurer-api-and-actuarial-products |
 | `product-scope-discipline:customer` | TODO://authority/product-scope-discipline/customer | customer evidence for product-scope-discipline |
@@ -37,7 +36,6 @@
 
 | Task | Owner | Status | Blocking Reasons | Snapshot | Intake |
 |---|---|---|---|---|---|
-| `insurer-api-and-actuarial-products:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/identity-provider.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/identity-provider.json |
 | `trust-network-procurement-and-marketplace:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/identity-provider.json | artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/identity-provider.json |
 | `insurer-api-and-actuarial-products:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/customer.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/customer.json |
 | `product-scope-discipline:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/product-scope-discipline/customer.json | artifacts/external-evidence-intakes/product-scope-discipline/customer.json |

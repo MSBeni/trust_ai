@@ -1,20 +1,19 @@
 # External Evidence Owner Fulfillment Review
 
-- Review ID: `42498f00a12dc1b6ed234723927d20d2aeb29466bc05a3157400ba095bd7cdda`
+- Review ID: `13d5471ce5fafdeda513f5db7bd1c07b4ebef58dcbf3eb0b9e8498937b63e8b7`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Fulfillments: 18
+- Fulfillments: 17
 - Owners: 9
 - Ready tasks: 0
-- Blocked tasks: 18
-- Placeholder source URIs: 18
+- Blocked tasks: 17
+- Placeholder source URIs: 17
 - Live source URIs: 0
 
 ## Task Review
 
 | Task | Owner | Status | Source URI | Blocking Reasons |
 |---|---|---|---|---|
-| `insurer-api-and-actuarial-products:identity-provider` | IAM/identity owner | blocked | TODO://authority/insurer-api-and-actuarial-products/identity-provider | `placeholder-source-uri` |
 | `insurer-api-and-actuarial-products:insurer` | risk/insurance owner | blocked | TODO://authority/insurer-api-and-actuarial-products/insurer | `placeholder-source-uri` |
 | `insurer-api-and-actuarial-products:customer` | customer success/account owner | blocked | TODO://authority/insurer-api-and-actuarial-products/customer | `placeholder-source-uri` |
 | `state-of-agent-reliability-report:customer` | customer success/account owner | blocked | TODO://authority/state-of-agent-reliability-report/customer | `placeholder-source-uri` |
@@ -37,12 +36,12 @@
 
 - Fulfilled source map errors: 1
 - Fulfilled source map warnings: 1
-  - source map contains 18 placeholder source_uri values but live source URIs are required
+  - source map contains 17 placeholder source_uri values but live source URIs are required
 
 ## Blockers
 
-- owner fulfillment review contains 18 placeholder source_uri values
-- fulfilled source map: source map contains 18 placeholder source_uri values but live source URIs are required
+- owner fulfillment review contains 17 placeholder source_uri values
+- fulfilled source map: source map contains 17 placeholder source_uri values but live source URIs are required
 
 ## Next Actions
 

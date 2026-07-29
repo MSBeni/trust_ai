@@ -1,20 +1,20 @@
 # External Evidence Owner Packet Status
 
-- Status ID: `3a3ad937ce8ecce2a85e29a4fc6556638437506345e9e71a40001bcc03057e50`
+- Status ID: `2871e783a476d15e022f478ffa68f6be1fba504dadef2dcb78d0dc8a81fc2ebf`
 - Generated at: `2026-07-12T00:01:00Z`
 - Packets: 9
-- Tasks: 18
+- Tasks: 17
 - Closed tasks: 0
 - Open tasks: 0
-- Blocked tasks: 18
-- Placeholder source URIs: 18
-- Missing intakes: 18
+- Blocked tasks: 17
+- Placeholder source URIs: 17
+- Missing intakes: 17
 
 ## Packets
 
 | Owner | Packet | Status | Tasks | Closed | Open | Blocked |
 |---|---|---|---:|---:|---:|---:|
-| IAM/identity owner | `owner-packet:owner_hint:IAM-identity-owner` | blocked | 2 | 0 | 0 | 2 |
+| IAM/identity owner | `owner-packet:owner_hint:IAM-identity-owner` | blocked | 1 | 0 | 0 | 1 |
 | customer success/account owner | `owner-packet:owner_hint:customer-success-account-owner` | blocked | 5 | 0 | 0 | 5 |
 | integration/platform owner | `owner-packet:owner_hint:integration-platform-owner` | blocked | 1 | 0 | 0 | 1 |
 | legal/compliance owner | `owner-packet:owner_hint:legal-compliance-owner` | blocked | 1 | 0 | 0 | 1 |
@@ -28,7 +28,6 @@
 
 | Task | Owner | Status | Source URI | Blocking Reasons |
 |---|---|---|---|---|
-| `insurer-api-and-actuarial-products:identity-provider` | IAM/identity owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `trust-network-procurement-and-marketplace:identity-provider` | IAM/identity owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `product-scope-discipline:customer` | customer success/account owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `roadmap-phase-scoreboard:customer` | customer success/account owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |

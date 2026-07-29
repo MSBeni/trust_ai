@@ -780,6 +780,20 @@ RETAINED_SOURCES: dict[str, dict[str, str]] = {
         "snapshot_out": "examples/aitrade/external-evidence/insurer-api-actuarial-hosted-service-source-snapshot.json",
         "intake_out": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-hosted-service.json",
     },
+    "insurer-api-and-actuarial-products:identity-provider": {
+        "source_uri": "https://idp.example/exports/aitrade/insurer-api-actuarial-products/partner-sessions",
+        "description": "Retained identity-provider export for insurer API and actuarial products evidence",
+        "artifact": "examples/aitrade/external-evidence/insurer-api-actuarial-identity-provider-source-snapshot.json",
+        "source_file": "examples/aitrade/insurer-api-and-actuarial-products-identity-provider-authority-export.json",
+        "retrieval_method": "file-copy",
+        "content_type": "application/json",
+        "issuer": "Example IdP",
+        "subject": "aitrade insurer API and actuarial products identity-provider evidence",
+        "issued_at": "2026-07-12T00:00:00Z",
+        "expires_at": "2026-12-31T00:00:00Z",
+        "snapshot_out": "examples/aitrade/external-evidence/insurer-api-actuarial-identity-provider-source-snapshot.json",
+        "intake_out": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-identity-provider.json",
+    },
 }
 
 

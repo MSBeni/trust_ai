@@ -1932,6 +1932,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         insurer_api_kms_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/insurer-api-actuarial-kms-hsm-source-snapshot.json")
         insurer_api_provider_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/insurer-api-actuarial-provider-api-source-snapshot.json")
         insurer_api_hosted_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/insurer-api-actuarial-hosted-service-source-snapshot.json")
+        insurer_api_identity_snapshot = load_external_evidence_source_snapshot(ROOT / "examples/aitrade/external-evidence/insurer-api-actuarial-identity-provider-source-snapshot.json")
         ci_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/oss-verifier-ci-run.json")
         provider_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/oss-verifier-provider-api.json")
         hosted_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/oss-verifier-hosted-service.json")
@@ -1985,6 +1986,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         insurer_api_kms_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-kms-hsm.json")
         insurer_api_provider_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-provider-api.json")
         insurer_api_hosted_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-hosted-service.json")
+        insurer_api_identity_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-identity-provider.json")
 
         audit_result = verify_roadmap_audit(audit, root=ROOT)
         manifest_result = verify_external_evidence_manifest(
@@ -2077,6 +2079,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 insurer_api_kms_snapshot,
                 insurer_api_provider_snapshot,
                 insurer_api_hosted_snapshot,
+                insurer_api_identity_snapshot,
             )
         ]
         intake_results = [
@@ -2145,6 +2148,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 insurer_api_kms_intake,
                 insurer_api_provider_intake,
                 insurer_api_hosted_intake,
+                insurer_api_identity_intake,
             )
         ]
         rebuilt = build_external_evidence_manifest_from_intakes(
@@ -2206,6 +2210,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 insurer_api_kms_intake,
                 insurer_api_provider_intake,
                 insurer_api_hosted_intake,
+                insurer_api_identity_intake,
             ],
             require_fresh=True,
             require_source_snapshot_artifacts=True,
@@ -2477,31 +2482,36 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual("hosted-service", insurer_api_hosted_intake["task"]["authority_kind"])
         self.assertEqual("file-copy", insurer_api_hosted_snapshot["retrieval_method"])
         self.assertEqual("sha256:" + sha256((ROOT / "examples/aitrade/insurer-api-and-actuarial-products-hosted-service-authority-export.json").read_bytes()).hexdigest(), insurer_api_hosted_snapshot["body_sha256"])
+        self.assertEqual("examples/aitrade/external-evidence/insurer-api-actuarial-identity-provider-source-snapshot.json", insurer_api_identity_intake["evidence_item"]["path"])
+        self.assertEqual("insurer-api-and-actuarial-products", insurer_api_identity_intake["task"]["requirement_id"])
+        self.assertEqual("identity-provider", insurer_api_identity_intake["task"]["authority_kind"])
+        self.assertEqual("file-copy", insurer_api_identity_snapshot["retrieval_method"])
+        self.assertEqual("sha256:" + sha256((ROOT / "examples/aitrade/insurer-api-and-actuarial-products-identity-provider-authority-export.json").read_bytes()).hexdigest(), insurer_api_identity_snapshot["body_sha256"])
         for snapshot in (provider_snapshot, hosted_snapshot):
             self.assertEqual("git-ls-remote", snapshot["retrieval_method"])
             export = json.loads(base64.b64decode(snapshot["body_base64"]).decode("utf-8"))
             self.assertEqual("trustai.external-evidence-git-remote-ref-export/0.1", export["schema"])
         self.assertEqual(71, rebuilt["summary"]["required_authority_kind_count"])
-        self.assertEqual(53, rebuilt["summary"]["covered_authority_kind_count"])
-        self.assertEqual(18, rebuilt["summary"]["missing_authority_kind_count"])
+        self.assertEqual(54, rebuilt["summary"]["covered_authority_kind_count"])
+        self.assertEqual(17, rebuilt["summary"]["missing_authority_kind_count"])
         self.assertEqual(retained_manifest["summary"], rebuilt["summary"])
-        self.assertEqual(18, remaining_plan["summary"]["selected_task_count"])
-        self.assertEqual(18, remaining_plan["summary"]["selected_missing_task_count"])
+        self.assertEqual(17, remaining_plan["summary"]["selected_task_count"])
+        self.assertEqual(17, remaining_plan["summary"]["selected_missing_task_count"])
         self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA, source_map["schema"])
         self.assertEqual(content_hash(without_keys(source_map, "source_map_id")), source_map["source_map_id"])
-        self.assertEqual(18, source_map["summary"]["entry_count"])
-        self.assertEqual(18, source_map["summary"]["placeholder_source_uri_count"])
+        self.assertEqual(17, source_map["summary"]["entry_count"])
+        self.assertEqual(17, source_map["summary"]["placeholder_source_uri_count"])
         self.assertEqual(0, source_map["summary"]["live_source_uri_count"])
         self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA, collected_source_map["schema"])
         self.assertEqual(content_hash(without_keys(collected_source_map, "source_map_id")), collected_source_map["source_map_id"])
-        self.assertEqual(53, collected_source_map["summary"]["entry_count"])
+        self.assertEqual(54, collected_source_map["summary"]["entry_count"])
         self.assertEqual(0, collected_source_map["summary"]["placeholder_source_uri_count"])
-        self.assertEqual(53, collected_source_map["summary"]["live_source_uri_count"])
+        self.assertEqual(54, collected_source_map["summary"]["live_source_uri_count"])
         self.assertEqual(EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA, collection_run["schema"])
         self.assertEqual(content_hash(without_keys(collection_run, "run_id")), collection_run["run_id"])
         self.assertEqual(content_hash(collected_source_map), collection_run["source_map"]["source_map_hash"])
-        self.assertEqual(53, collection_run["summary"]["collected_count"])
-        self.assertEqual(53, collection_run_result.collected_count)
+        self.assertEqual(54, collection_run["summary"]["collected_count"])
+        self.assertEqual(54, collection_run_result.collected_count)
         self.assertEqual(
             ["ci-run", "provider-api", "hosted-service"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["oss-verifier-and-public-spec"],
@@ -2559,7 +2569,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["vertical-packs"],
         )
         self.assertEqual(
-            ["ci-run", "kms-hsm", "provider-api", "hosted-service"],
+            ["ci-run", "kms-hsm", "provider-api", "hosted-service", "identity-provider"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["insurer-api-and-actuarial-products"],
         )
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -2601,8 +2611,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertEqual(collection_run["run_id"], collection_payload["run_id"])
             self.assertEqual(content_hash(collection_run), collection_payload["run_hash"])
             self.assertEqual(content_hash(collected_source_map), collection_payload["source_map_hash"])
-            self.assertEqual(53, collection_payload["collected_count"])
-            self.assertEqual(53, collection_payload["task_count"])
+            self.assertEqual(54, collection_payload["collected_count"])
+            self.assertEqual(54, collection_payload["task_count"])
             self.assertTrue(collection_payload["require_live_source_uris"])
             self.assertTrue(collection_payload["require_source_snapshot_artifacts"])
             self.assertTrue(collection_payload["require_fresh_source_snapshot_artifacts"])
@@ -2804,22 +2814,22 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             )
             self.assertFalse(strict_report_result.ok)
             self.assertTrue(any("live source URIs" in error for error in strict_report_result.errors), strict_report_result.errors)
-            self.assertEqual(53, report["summary"]["covered_authority_kind_count"])
-            self.assertEqual(18, report["summary"]["missing_authority_kind_count"])
-            self.assertEqual(18, report["summary"]["remaining_task_count"])
-            self.assertEqual(18, report["summary"]["source_map_entry_count"])
-            self.assertEqual(18, report["summary"]["placeholder_source_uri_count"])
+            self.assertEqual(54, report["summary"]["covered_authority_kind_count"])
+            self.assertEqual(17, report["summary"]["missing_authority_kind_count"])
+            self.assertEqual(17, report["summary"]["remaining_task_count"])
+            self.assertEqual(17, report["summary"]["source_map_entry_count"])
+            self.assertEqual(17, report["summary"]["placeholder_source_uri_count"])
             self.assertEqual(0, report["summary"]["live_source_uri_count"])
             first_gap = report["gaps"][0]
-            self.assertEqual("insurer-api-and-actuarial-products:identity-provider", first_gap["unit_ref"])
-            self.assertEqual("identity-provider evidence for insurer-api-and-actuarial-products", first_gap["description"])
+            self.assertEqual("insurer-api-and-actuarial-products:insurer", first_gap["unit_ref"])
+            self.assertEqual("insurer evidence for insurer-api-and-actuarial-products", first_gap["description"])
             self.assertNotIn("source_file", first_gap)
-            self.assertEqual("artifacts/external-evidence-sources/insurer-api-and-actuarial-products/identity-provider.json", first_gap["snapshot_out"])
-            self.assertEqual("artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/identity-provider.json", first_gap["intake_out"])
+            self.assertEqual("artifacts/external-evidence-sources/insurer-api-and-actuarial-products/insurer.json", first_gap["snapshot_out"])
+            self.assertEqual("artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/insurer.json", first_gap["intake_out"])
             markdown = markdown_path.read_text(encoding="utf-8")
             self.assertIn("# External Evidence Gap Report", markdown)
-            self.assertIn("Placeholder source URIs: 18", markdown)
-            self.assertIn("- Description: identity-provider evidence for insurer-api-and-actuarial-products", markdown)
+            self.assertIn("Placeholder source URIs: 17", markdown)
+            self.assertIn("- Description: insurer evidence for insurer-api-and-actuarial-products", markdown)
 
             tampered = copy.deepcopy(report)
             tampered["summary"]["remaining_task_count"] = 51
