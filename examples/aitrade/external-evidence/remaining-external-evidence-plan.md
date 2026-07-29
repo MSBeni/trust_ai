@@ -1,8 +1,8 @@
 # TrustAI External Evidence Collection Plan
 
-Plan ID: `46fcd1b36eb1b37da7c26e371adfcd1e105019c65216c54f28ade1c458eb7a63`
+Plan ID: `4f329f02acdb49de0a0e7d1881c2f88f4b649a24d215871c068e83a8737afb41`
 
-Source manifest: `411a0c7925cf5612f0f1ca481355b48f2909a10d5d6cb8712d039f1c8bfe84e6`
+Source manifest: `2a5c37f6d4f5bf3f763eb9b4b8b455766db7c636bdd221fb62cd20acb4e6d16b`
 
 Status filter: missing
 
@@ -10,16 +10,15 @@ Status filter: missing
 
 - Source manifest status: partial
 - Total authority units: 71
-- Selected tasks: 17
-- Selected missing tasks: 17
+- Selected tasks: 16
+- Selected missing tasks: 16
 - Selected covered tasks: 0
-- Missing authority kinds overall: 17
+- Missing authority kinds overall: 16
 
 ## Collection Tasks
 
 | Task ID | Unit Ref | Requirement | Authority | Status | Owner Hint | Suggested Artifact | Evidence Argument Template |
 |---|---|---|---|---|---|---|---|
-| `df7d4f7635486599b295883c711463b4aaa3a43b8c5956ee8642e9ea7df66398` | `insurer-api-and-actuarial-products:insurer` | `insurer-api-and-actuarial-products` | insurer | missing | risk/insurance owner | `external-evidence/insurer-api-and-actuarial-products/insurer.json` | `insurer-api-and-actuarial-products,insurer,external-evidence/insurer-api-and-actuarial-products/insurer.json,insurer evidence for insurer-api-and-actuarial-products;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `7629a131bef204524faf1bbecd64f984118e19da5f9f1b211b2d588ce40fcd8c` | `insurer-api-and-actuarial-products:customer` | `insurer-api-and-actuarial-products` | customer | missing | customer success/account owner | `external-evidence/insurer-api-and-actuarial-products/customer.json` | `insurer-api-and-actuarial-products,customer,external-evidence/insurer-api-and-actuarial-products/customer.json,customer evidence for insurer-api-and-actuarial-products;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `4dd50ea7ed49b54b1084e6d77f1ba62180ce3cff1da146a09a33cd42ca947883` | `state-of-agent-reliability-report:customer` | `state-of-agent-reliability-report` | customer | missing | customer success/account owner | `external-evidence/state-of-agent-reliability-report/customer.json` | `state-of-agent-reliability-report,customer,external-evidence/state-of-agent-reliability-report/customer.json,customer evidence for state-of-agent-reliability-report;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |
 | `1610c58d7c78812735abbe2d744652707138c8b709eb04e9afbee1d70c0d44d9` | `roadmap-phase-scoreboard:ci-run` | `roadmap-phase-scoreboard` | ci-run | missing | release engineering | `external-evidence/roadmap-phase-scoreboard/ci-run.json` | `roadmap-phase-scoreboard,ci-run,external-evidence/roadmap-phase-scoreboard/ci-run.json,ci-run evidence for roadmap-phase-scoreboard;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>` |

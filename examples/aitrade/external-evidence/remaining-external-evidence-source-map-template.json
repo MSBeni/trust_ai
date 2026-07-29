@@ -2,30 +2,6 @@
   "defaults": {},
   "entries": [
     {
-      "authority_kind": "insurer",
-      "coverage_status": "missing",
-      "description": "insurer evidence for insurer-api-and-actuarial-products",
-      "external_authority_required": [
-        "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/insurer.json",
-      "owner_hint": "risk/insurance owner",
-      "requirement_id": "insurer-api-and-actuarial-products",
-      "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/insurer.json",
-      "source_uri": "TODO://authority/insurer-api-and-actuarial-products/insurer",
-      "suggested_evidence_sources": [
-        "underwriter response",
-        "premium or policy-system quote",
-        "insurer API response export"
-      ],
-      "task": "insurer-api-and-actuarial-products:insurer",
-      "task_id": "df7d4f7635486599b295883c711463b4aaa3a43b8c5956ee8642e9ea7df66398",
-      "task_ref": "external-evidence:insurer-api-and-actuarial-products:insurer",
-      "title": "Consent-gated insurer telemetry, underwriting quotes, and actuarial products",
-      "unit_id": "1c0b31031e056c43886090c6fbdea435d1df355188edf7ab14155de604dda823",
-      "unit_ref": "insurer-api-and-actuarial-products:insurer"
-    },
-    {
       "authority_kind": "customer",
       "coverage_status": "missing",
       "description": "customer evidence for insurer-api-and-actuarial-products",
@@ -417,14 +393,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "b39a0f2d015c76b1208542ab55dd3949680f50e6c6dea7ca14c7e1b68c41017a",
+  "source_map_id": "8816392a44a4f27f6ac14f1534d305c8fad466def37f9d64617449a189008fdc",
   "source_plan": {
-    "plan_hash": "e5e3812a0029a62c34e8d7dee62fb07c7359d69c03182e591951d40d7d27e5b4",
-    "plan_id": "46fcd1b36eb1b37da7c26e371adfcd1e105019c65216c54f28ade1c458eb7a63",
+    "plan_hash": "e889618b9dadc4a3cd9c7762a14e010d9956b74947eb5893df4f28f8f4bc27b4",
+    "plan_id": "4f329f02acdb49de0a0e7d1881c2f88f4b649a24d215871c068e83a8737afb41",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "06f74063f32c10e4e31ddc9aaabfec3983f53a8d67b4cca0aa45138e7682557b",
-      "manifest_id": "411a0c7925cf5612f0f1ca481355b48f2909a10d5d6cb8712d039f1c8bfe84e6",
+      "manifest_hash": "207c3f36e88264ca5173935b34891b9f85af95e6625e83eee8791d2d3a7ed59b",
+      "manifest_id": "2a5c37f6d4f5bf3f763eb9b4b8b455766db7c636bdd221fb62cd20acb4e6d16b",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },
@@ -432,12 +408,12 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 17,
+    "entry_count": 16,
     "intake_dir": "artifacts/external-evidence-intakes",
     "live_source_uri_count": 0,
-    "placeholder_source_uri_count": 17,
+    "placeholder_source_uri_count": 16,
     "snapshot_dir": "artifacts/external-evidence-sources",
-    "source_plan_task_count": 17,
+    "source_plan_task_count": 16,
     "status_filter": "missing"
   }
 }

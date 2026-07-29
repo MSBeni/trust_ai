@@ -794,6 +794,20 @@ RETAINED_SOURCES: dict[str, dict[str, str]] = {
         "snapshot_out": "examples/aitrade/external-evidence/insurer-api-actuarial-identity-provider-source-snapshot.json",
         "intake_out": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-identity-provider.json",
     },
+    "insurer-api-and-actuarial-products:insurer": {
+        "source_uri": "https://insurer.example/exports/aitrade/insurer-api-actuarial-products/underwriting-review/2026-07-12",
+        "description": "Retained insurer underwriting export for insurer API and actuarial products evidence",
+        "artifact": "examples/aitrade/external-evidence/insurer-api-actuarial-insurer-source-snapshot.json",
+        "source_file": "examples/aitrade/insurer-api-and-actuarial-products-insurer-authority-export.json",
+        "retrieval_method": "file-copy",
+        "content_type": "application/json",
+        "issuer": "Example AI Liability Underwriter",
+        "subject": "aitrade insurer API and actuarial products underwriting review evidence",
+        "issued_at": "2026-07-12T00:00:00Z",
+        "expires_at": "2026-12-31T00:00:00Z",
+        "snapshot_out": "examples/aitrade/external-evidence/insurer-api-actuarial-insurer-source-snapshot.json",
+        "intake_out": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-insurer.json",
+    },
 }
 
 
