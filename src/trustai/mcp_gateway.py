@@ -252,6 +252,11 @@ def verify_mcp_stdio_proxy_event_export(
             errors.append("MCP stdio proxy event_count mismatch")
         if export.get("event_chain_root") != event_records[-1]["event_hash"]:
             errors.append("MCP stdio proxy event_chain_root mismatch")
+        export_session_id = export.get("session_id")
+        for index, record in enumerate(event_records):
+            event = record.get("event", {})
+            if event.get("session_id") != export_session_id:
+                errors.append(f"MCP stdio proxy event {index} session_id mismatch")
         try:
             tool_call_count = _mcp_tool_call_pair_count_from_records(event_records)
         except ValueError as exc:
@@ -755,6 +760,8 @@ def _tool_calls_from_proxy_records(
     calls: list[dict[str, Any]] = []
     for record in records:
         event = record["event"]
+        if event.get("session_id") != session_id:
+            raise ValueError(f"MCP proxy event session_id mismatch: expected {session_id}, got {event.get('session_id')}")
         message = event["message"]
         if event["direction"] == "client_to_server" and message.get("method") == "tools/call":
             request_id, request_key = _jsonrpc_request_identity(message, "MCP tools/call request")
@@ -810,17 +817,18 @@ def _tool_calls_from_proxy_records(
 
 
 def _mcp_tool_call_pair_count_from_records(records: list[dict[str, Any]]) -> int:
-    requests: dict[tuple[str, str | int], str] = {}
+    requests: dict[tuple[str, str, str | int], str] = {}
     count = 0
     for record in records:
         event = record["event"]
         message = event["message"]
         if event["direction"] == "client_to_server" and message.get("method") == "tools/call":
             request_id, request_key = _jsonrpc_request_identity(message, "MCP tools/call request")
+            scoped_request_key = (event["session_id"], request_key[0], request_key[1])
             _require_jsonrpc_2(message, f"MCP tools/call request {request_id}")
             if "result" in message or "error" in message:
                 raise ValueError(f"MCP tools/call request {request_id} must not contain result or error")
-            if request_key in requests:
+            if scoped_request_key in requests:
                 raise ValueError(f"duplicate MCP tools/call request id: {request_id}")
             params = message.get("params")
             if not isinstance(params, dict):
@@ -831,12 +839,13 @@ def _mcp_tool_call_pair_count_from_records(records: list[dict[str, Any]]) -> int
             arguments = params.get("arguments", {})
             if not isinstance(arguments, dict):
                 raise ValueError(f"MCP tools/call request {request_id} arguments must be an object")
-            requests[request_key] = request_id
+            requests[scoped_request_key] = request_id
         elif event["direction"] == "server_to_client" and ("result" in message or "error" in message):
             request_id, request_key = _jsonrpc_request_identity(message, "MCP tools/call response")
-            if request_key not in requests:
+            scoped_request_key = (event["session_id"], request_key[0], request_key[1])
+            if scoped_request_key not in requests:
                 continue
-            requests.pop(request_key)
+            requests.pop(scoped_request_key)
             _jsonrpc_response_payload(message, request_id)
             count += 1
     if requests:

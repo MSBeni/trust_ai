@@ -47,7 +47,9 @@ export content hash, redacted event content hash, event count, event chain root,
 and artifact id. Verification replays the retained raw export bytes,
 normalizes/redacts the events, and rejects byte SHA-256 mismatches even when
 parsed JSON content is unchanged. The event chain root binds the full
-request/response envelope order. The capture pairs each `tools/call` client
+request/response envelope order. A capture is single-session evidence: every
+event `session_id` must match the capture `session_id`, and request/response
+matching is scoped to that session. The capture pairs each `tools/call` client
 request with the matching server response by typed JSON-RPC id. Tool-call
 requests and matched responses must use JSON-RPC 2.0 with a non-empty string id
 or integer id; numeric ids are rendered in normalized transcripts as
@@ -92,8 +94,9 @@ byte SHA-256 values, sizes, redacted message/response hashes, per-message hashes
 counts, and artifact ids. Verification replays the retained client message file
 and raw upstream stdout JSONL response bytes, redacts sensitive fields, and
 rejects byte changes even when the parsed JSON-RPC messages are unchanged.
-Verification also replays the matched `tools/call` request/response count from
-the event chain and checks the top-level `stdout_sha256` and
+Verification also requires every redacted event to match the exported session
+id, replays the matched `tools/call` request/response count from the event chain,
+and checks the top-level `stdout_sha256` and
 `stdout_size_bytes` claims against the retained `stdout_artifact`, so a
 canonicalized export cannot carry misleading summary digests while the embedded
 artifact binding remains valid.
