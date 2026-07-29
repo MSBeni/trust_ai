@@ -9,6 +9,7 @@ import unittest
 from pathlib import Path
 
 from trustai.chain import EvidenceChain
+from trustai.canonical import content_hash, without_keys
 from trustai.contracts import load_contract, register_contract
 from trustai.gate import append_eval_and_gate
 from trustai.mcp_gateway import (
@@ -395,6 +396,119 @@ class McpGatewayTests(unittest.TestCase):
             )
             cli_capture = json.loads(capture_path.read_text(encoding="utf-8"))
             self.assertTrue(verify_mcp_proxy_capture(cli_capture, source_events_path=events_path).ok)
+
+    def test_mcp_stdio_proxy_event_export_replays_tool_call_count(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            upstream = tmp / "upstream_mcp.py"
+            upstream.write_text(
+                "import json, sys\n"
+                "for line in sys.stdin:\n"
+                "    message = json.loads(line)\n"
+                "    print(json.dumps({'jsonrpc': '2.0', 'id': message['id'], 'result': {'status': 'accepted'}}, sort_keys=True), flush=True)\n",
+                encoding="utf-8",
+            )
+            messages = tmp / "client-messages.json"
+            stdout_path = tmp / "mcp-proxy-stdio-stdout.jsonl"
+            messages.write_text(
+                json.dumps(
+                    {
+                        "messages": [
+                            {
+                                "jsonrpc": "2.0",
+                                "id": "tool-call-stdio-001",
+                                "method": "tools/call",
+                                "params": {"name": "place_shadow_order", "arguments": {"notional_usd": 2500}},
+                            }
+                        ]
+                    },
+                    indent=2,
+                    sort_keys=True,
+                ),
+                encoding="utf-8",
+            )
+            event_export = build_mcp_stdio_proxy_event_export(
+                load_mcp_client_messages(messages),
+                upstream_command=[sys.executable, str(upstream)],
+                session_id="stdio-session-001",
+                agent=AGENT,
+                contract_hash=CONTRACT_HASH,
+                proxy_ref="mcp-proxy:trustai/stdio-test",
+                upstream_ref="mcp-server:test/upstream",
+                captured_at="2026-07-03T12:00:12Z",
+                source_messages_path=messages,
+                stdout_artifact_path=stdout_path,
+            )
+            tampered = copy.deepcopy(event_export)
+            tampered["tool_call_count"] = 0
+            tampered["export_id"] = content_hash(without_keys(tampered, "export_id"))
+
+            result = verify_mcp_stdio_proxy_event_export(
+                tampered,
+                source_messages_path=messages,
+                stdout_artifact_path=stdout_path,
+            )
+
+            self.assertFalse(result.ok)
+            self.assertTrue(any("tool_call_count mismatch" in error for error in result.errors), result.errors)
+
+    def test_mcp_stdio_proxy_event_export_replays_stdout_top_level_digest(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            upstream = tmp / "upstream_mcp.py"
+            upstream.write_text(
+                "import json, sys\n"
+                "for line in sys.stdin:\n"
+                "    message = json.loads(line)\n"
+                "    print(json.dumps({'jsonrpc': '2.0', 'id': message['id'], 'result': {'status': 'accepted'}}, sort_keys=True), flush=True)\n",
+                encoding="utf-8",
+            )
+            messages = tmp / "client-messages.json"
+            stdout_path = tmp / "mcp-proxy-stdio-stdout.jsonl"
+            messages.write_text(
+                json.dumps(
+                    {
+                        "messages": [
+                            {
+                                "jsonrpc": "2.0",
+                                "id": "tool-call-stdio-001",
+                                "method": "tools/call",
+                                "params": {"name": "place_shadow_order", "arguments": {"notional_usd": 2500}},
+                            }
+                        ]
+                    },
+                    indent=2,
+                    sort_keys=True,
+                ),
+                encoding="utf-8",
+            )
+            event_export = build_mcp_stdio_proxy_event_export(
+                load_mcp_client_messages(messages),
+                upstream_command=[sys.executable, str(upstream)],
+                session_id="stdio-session-001",
+                agent=AGENT,
+                contract_hash=CONTRACT_HASH,
+                proxy_ref="mcp-proxy:trustai/stdio-test",
+                upstream_ref="mcp-server:test/upstream",
+                captured_at="2026-07-03T12:00:12Z",
+                source_messages_path=messages,
+                stdout_artifact_path=stdout_path,
+            )
+            tampered = copy.deepcopy(event_export)
+            tampered["stdout_sha256"] = "sha256:" + "0" * 64
+            tampered["stdout_size_bytes"] = 1
+            tampered["export_id"] = content_hash(without_keys(tampered, "export_id"))
+
+            result = verify_mcp_stdio_proxy_event_export(
+                tampered,
+                source_messages_path=messages,
+                stdout_artifact_path=stdout_path,
+            )
+
+            self.assertFalse(result.ok)
+            errors = "\n".join(result.errors)
+            self.assertIn("stdout_sha256 mismatch", errors)
+            self.assertIn("stdout_size_bytes mismatch", errors)
 
     def test_cli_mcp_proxy_capture_round_trip(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

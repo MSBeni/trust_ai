@@ -252,6 +252,13 @@ def verify_mcp_stdio_proxy_event_export(
             errors.append("MCP stdio proxy event_count mismatch")
         if export.get("event_chain_root") != event_records[-1]["event_hash"]:
             errors.append("MCP stdio proxy event_chain_root mismatch")
+        try:
+            tool_call_count = _mcp_tool_call_pair_count_from_records(event_records)
+        except ValueError as exc:
+            errors.append(f"MCP stdio proxy tool_call_count cannot replay: {exc}")
+            tool_call_count = None
+        if tool_call_count is not None and export.get("tool_call_count") != tool_call_count:
+            errors.append("MCP stdio proxy tool_call_count mismatch")
     client_messages = [event.get("message") for event in events if isinstance(event, dict) and event.get("direction") == "client_to_server"]
     stdout_messages = [event.get("message") for event in events if isinstance(event, dict) and event.get("direction") == "server_to_client"]
     if export.get("request_count") != len(client_messages):
@@ -288,6 +295,10 @@ def verify_mcp_stdio_proxy_event_export(
             else:
                 if stdout_artifact != expected_artifact:
                     errors.append("MCP stdio proxy stdout_artifact does not match supplied stdout bytes")
+                if export.get("stdout_sha256") != expected_artifact["sha256"]:
+                    errors.append("MCP stdio proxy stdout_sha256 mismatch")
+                if export.get("stdout_size_bytes") != expected_artifact["size_bytes"]:
+                    errors.append("MCP stdio proxy stdout_size_bytes mismatch")
     elif stdout_artifact_path is not None:
         warnings.append("MCP stdio proxy stdout bytes were supplied but are not bound in this export")
     return McpStdioProxyEventExportVerification(ok=not errors, errors=errors, warnings=warnings)
@@ -796,6 +807,42 @@ def _tool_calls_from_proxy_records(
     if not calls:
         raise ValueError("MCP proxy capture must include at least one matched tools/call request/response")
     return calls
+
+
+def _mcp_tool_call_pair_count_from_records(records: list[dict[str, Any]]) -> int:
+    requests: dict[tuple[str, str | int], str] = {}
+    count = 0
+    for record in records:
+        event = record["event"]
+        message = event["message"]
+        if event["direction"] == "client_to_server" and message.get("method") == "tools/call":
+            request_id, request_key = _jsonrpc_request_identity(message, "MCP tools/call request")
+            _require_jsonrpc_2(message, f"MCP tools/call request {request_id}")
+            if "result" in message or "error" in message:
+                raise ValueError(f"MCP tools/call request {request_id} must not contain result or error")
+            if request_key in requests:
+                raise ValueError(f"duplicate MCP tools/call request id: {request_id}")
+            params = message.get("params")
+            if not isinstance(params, dict):
+                raise ValueError(f"MCP tools/call request {request_id} params must be an object")
+            tool_name = params.get("name") or params.get("tool_name")
+            if not isinstance(tool_name, str) or not tool_name:
+                raise ValueError(f"MCP tools/call request {request_id} missing tool name")
+            arguments = params.get("arguments", {})
+            if not isinstance(arguments, dict):
+                raise ValueError(f"MCP tools/call request {request_id} arguments must be an object")
+            requests[request_key] = request_id
+        elif event["direction"] == "server_to_client" and ("result" in message or "error" in message):
+            request_id, request_key = _jsonrpc_request_identity(message, "MCP tools/call response")
+            if request_key not in requests:
+                continue
+            requests.pop(request_key)
+            _jsonrpc_response_payload(message, request_id)
+            count += 1
+    if requests:
+        request_ids = sorted(requests.values())
+        raise ValueError("unmatched MCP tools/call request ids: " + ", ".join(request_ids))
+    return count
 
 
 def _require_jsonrpc_2(message: dict[str, Any], context: str) -> None:

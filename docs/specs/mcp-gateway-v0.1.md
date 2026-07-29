@@ -92,6 +92,11 @@ byte SHA-256 values, sizes, redacted message/response hashes, per-message hashes
 counts, and artifact ids. Verification replays the retained client message file
 and raw upstream stdout JSONL response bytes, redacts sensitive fields, and
 rejects byte changes even when the parsed JSON-RPC messages are unchanged.
+Verification also replays the matched `tools/call` request/response count from
+the event chain and checks the top-level `stdout_sha256` and
+`stdout_size_bytes` claims against the retained `stdout_artifact`, so a
+canonicalized export cannot carry misleading summary digests while the embedded
+artifact binding remains valid.
 
 The CLI verifies those retained stdio artifacts, then compiles the event export
 into the existing signed `trustai.mcp-proxy-capture/0.1` receipt and verifies the
