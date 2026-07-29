@@ -196,13 +196,14 @@ class VerifierConformanceTests(unittest.TestCase):
 
             self.assertEqual(VERIFIER_CONFORMANCE_SCHEMA, report["schema"])
             self.assertTrue(result.ok, result.errors)
-            self.assertEqual(5, result.case_count)
+            self.assertEqual(6, result.case_count)
             self.assertTrue(cases["valid-proof-pack"]["actual_ok"])
             for case_id in (
                 "pack-signature-tamper",
                 "chain-entry-payload-tamper",
                 "inclusion-proof-tamper",
                 "packed-contract-body-tamper",
+                "issued-at-tamper",
             ):
                 self.assertFalse(cases[case_id]["actual_ok"])
                 self.assertTrue(cases[case_id]["passed"])
@@ -217,7 +218,7 @@ class VerifierConformanceTests(unittest.TestCase):
             cases = {case["id"]: case for case in report["test_cases"]}
 
             self.assertTrue(result.ok, result.errors)
-            self.assertEqual(6, result.case_count)
+            self.assertEqual(7, result.case_count)
             self.assertEqual(1, report["source_proof_pack"]["delegation_graph_entry_count"])
             self.assertIn("delegation-graph-tamper", cases)
             self.assertFalse(cases["delegation-graph-tamper"]["actual_ok"])
@@ -241,7 +242,7 @@ class VerifierConformanceTests(unittest.TestCase):
             cases = {case["id"]: case for case in report["test_cases"]}
 
             self.assertTrue(result.ok, result.errors)
-            self.assertEqual(9, result.case_count)
+            self.assertEqual(10, result.case_count)
             self.assertEqual(provider_bundle["bundle_id"], report["source_provider_bundle"]["bundle_id"])
             self.assertIn("Source provider bundle", markdown)
             self.assertTrue(cases["valid-provider-bundle"]["actual_ok"])
@@ -275,7 +276,7 @@ class VerifierConformanceTests(unittest.TestCase):
             cases = {case["id"]: case for case in report["test_cases"]}
 
             self.assertTrue(result.ok, result.errors)
-            self.assertEqual(9, result.case_count)
+            self.assertEqual(10, result.case_count)
             self.assertEqual(release_run["run_id"], report["source_release_run"]["run_id"])
             self.assertIn("Source Go verifier release run", markdown)
             self.assertTrue(cases["valid-go-verifier-release-run"]["actual_ok"])
@@ -351,7 +352,7 @@ class VerifierConformanceTests(unittest.TestCase):
             report = json.loads(report_path.read_text(encoding="utf-8"))
             markdown = markdown_path.read_text(encoding="utf-8")
 
-        self.assertEqual(9, report["summary"]["case_count"])
+        self.assertEqual(10, report["summary"]["case_count"])
         self.assertIn("valid-go-verifier-release-run", {case["id"] for case in report["test_cases"]})
         self.assertIn("Source Go verifier release run", markdown)
     def test_cli_verifier_conformance_includes_provider_bundle_vectors(self):
@@ -397,7 +398,7 @@ class VerifierConformanceTests(unittest.TestCase):
             report = json.loads(report_path.read_text(encoding="utf-8"))
             markdown = markdown_path.read_text(encoding="utf-8")
 
-        self.assertEqual(9, report["summary"]["case_count"])
+        self.assertEqual(10, report["summary"]["case_count"])
         self.assertIn("valid-provider-bundle", {case["id"] for case in report["test_cases"]})
         self.assertIn("Source provider bundle", markdown)
 

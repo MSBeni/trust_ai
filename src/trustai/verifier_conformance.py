@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from .canonical import content_hash, utc_now, without_keys
+from .crypto import sign_value
 from .framework_runtime_service_authority_recorded_export_provider_bundle import (
     verify_framework_runtime_service_authority_recorded_export_provider_bundle,
 )
@@ -67,6 +68,13 @@ def build_verifier_conformance_report(
             "packed-contract-body-tamper",
             "Changing the packed verification contract body is rejected.",
             _tamper_contract_body(proof_pack),
+            False,
+            key,
+        ),
+        _case(
+            "issued-at-tamper",
+            "Replacing the proof-pack issued_at timestamp with malformed metadata is rejected after resigning.",
+            _tamper_issued_at(proof_pack, key),
             False,
             key,
         ),
@@ -539,6 +547,19 @@ def _tampered_pack(proof_pack: dict[str, Any], mutator: Callable[[dict[str, Any]
     mutator(tampered)
     return tampered
 
+
+def _resign_pack(proof_pack: dict[str, Any], key: str | None) -> None:
+    body = without_keys(proof_pack, "pack_id", "signatures")
+    pack_id = content_hash(body)
+    proof_pack["pack_id"] = pack_id
+    proof_pack["signatures"] = [sign_value({"pack_id": pack_id, "pack": body}, key)]
+
+
+def _tamper_issued_at(proof_pack: dict[str, Any], key: str | None) -> dict[str, Any]:
+    tampered = copy.deepcopy(proof_pack)
+    tampered["issued_at"] = "not-a-rfc3339-timestamp"
+    _resign_pack(tampered, key)
+    return tampered
 
 
 def _tamper_delegation_graph(proof_pack: dict[str, Any]) -> dict[str, Any]:

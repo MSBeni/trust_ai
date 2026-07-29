@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from .approvals import APPROVAL_ENTRY_TYPE
-from .canonical import content_hash, without_keys
+from .canonical import content_hash, parse_rfc3339, without_keys
 from .chain import compute_entry_id, entry_core, verify_entry
 from .contracts import CONTRACT_ENTRY_TYPE, contract_hash
 from .crypto import verify_value
@@ -54,6 +54,14 @@ def verify_proof_pack(
 
     if proof_pack.get("spec_version") != PROOF_PACK_SPEC_VERSION:
         errors.append(f"unsupported proof pack spec_version: {proof_pack.get('spec_version')}")
+    issued_at = proof_pack.get("issued_at")
+    if not isinstance(issued_at, str) or not issued_at:
+        errors.append("proof pack issued_at missing")
+    else:
+        try:
+            parse_rfc3339(issued_at)
+        except ValueError:
+            errors.append("proof pack issued_at invalid")
 
     pack_body = without_keys(proof_pack, "pack_id", "signatures")
     expected_pack_id = content_hash(pack_body)

@@ -1181,6 +1181,12 @@ func verifyProofPack(pack map[string]any, key, tsaKey string) result {
 	if getString(pack, "spec_version") != proofPackSpecVersion {
 		errors = append(errors, fmt.Sprintf("unsupported proof pack spec_version: %v", pack["spec_version"]))
 	}
+	issuedAt := getString(pack, "issued_at")
+	if issuedAt == "" {
+		errors = append(errors, "proof pack issued_at missing")
+	} else if mustParseTime(issuedAt).IsZero() {
+		errors = append(errors, "proof pack issued_at invalid")
+	}
 
 	packBody := withoutKeys(pack, "pack_id", "signatures")
 	expectedPackID := contentHash(packBody)

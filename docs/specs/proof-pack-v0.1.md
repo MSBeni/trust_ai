@@ -47,36 +47,37 @@ supplied gate entry.
 
 An offline verifier must reject the pack when any of these checks fail:
 
-1. the pack signature does not verify against the canonical pack body;
-2. any evidence entry signature is invalid;
-3. any entry payload hash differs from its canonical payload;
-4. any entry id differs from its canonical entry core;
-5. any Merkle inclusion proof does not resolve to the declared tree root;
-6. the packed chain tree header has a missing or malformed `size`/`root`, is
+1. the pack omits `issued_at` or provides a malformed RFC3339 issuance timestamp;
+2. the pack signature does not verify against the canonical pack body;
+3. any evidence entry signature is invalid;
+4. any entry payload hash differs from its canonical payload;
+5. any entry id differs from its canonical entry core;
+6. any Merkle inclusion proof does not resolve to the declared tree root;
+7. the packed chain tree header has a missing or malformed `size`/`root`, is
    smaller than the packed entries or their indexes, or, when the pack contains
    the complete tree, does not recompute from the packed entries;
-7. the contract entry is not ordered before eval and gate entries;
-8. the eval or gate entry references a contract hash different from the packed
+8. the contract entry is not ordered before eval and gate entries;
+9. the eval or gate entry references a contract hash different from the packed
    contract body;
-9. holdout timestamps do not postdate the agent freeze boundary;
-10. recomputing the gate decision from the contract, results, and packed
+10. holdout timestamps do not postdate the agent freeze boundary;
+11. recomputing the gate decision from the contract, results, and packed
    approval evidence entries produces a different decision;
-11. any included `shadow_replay.completed` entry contains a temporal holdout
+12. any included `shadow_replay.completed` entry contains a temporal holdout
     manifest that fails signature, record-chain, contract, replay, or summary
     verification;
-12. any included `mcp.tool_call.evidenced` entries contain request, response,
+13. any included `mcp.tool_call.evidenced` entries contain request, response,
     tool-call, sequence, call-count, previous-node, node, root, or contract
     evidence that cannot be replayed into the declared MCP transcript chain;
-13. any included `soak_report.completed` entry contains source soak-window,
+14. any included `soak_report.completed` entry contains source soak-window,
     hash, metric-check, incident, drift-alarm, timestamp, outcome, or contract
     evidence that cannot be replayed against the packed contract body;
-14. any included `agent.delegation_graph.exported` entry omits the embedded
+15. any included `agent.delegation_graph.exported` entry omits the embedded
     signed graph, mismatches the graph hash/id/summary/filter fields, references
     another contract, fails graph signature/hash/source inclusion checks, or
     names source inventory/delegation entries that are not embedded in the pack;
-15. the packed framework control mappings differ from the deterministic mappings
+16. the packed framework control mappings differ from the deterministic mappings
     for the packed gate decision;
-16. the packed subject agent or environment differs from the registered
+17. the packed subject agent or environment differs from the registered
     contract agent, gate decision agent, eval entry agent, or eval results
     environment.
 

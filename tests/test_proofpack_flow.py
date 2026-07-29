@@ -188,6 +188,32 @@ class ProofPackFlowTests(unittest.TestCase):
             self.assertIn("packed subject agent mismatch", result.errors)
             self.assertIn("packed subject environment mismatch", result.errors)
 
+    def test_issued_at_is_required_after_resign(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            pack = self._build_pack(Path(tmp_dir))
+            del pack["issued_at"]
+            self._resign_pack(pack)
+
+            result = verify_proof_pack(pack)
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("pack_id does not match canonical pack body", result.errors)
+            self.assertNotIn("proof pack signature invalid", result.errors)
+            self.assertIn("proof pack issued_at missing", result.errors)
+
+    def test_malformed_issued_at_is_rejected_after_resign(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            pack = self._build_pack(Path(tmp_dir))
+            pack["issued_at"] = "not-a-rfc3339-timestamp"
+            self._resign_pack(pack)
+
+            result = verify_proof_pack(pack)
+
+            self.assertFalse(result.ok)
+            self.assertNotIn("pack_id does not match canonical pack body", result.errors)
+            self.assertNotIn("proof pack signature invalid", result.errors)
+            self.assertIn("proof pack issued_at invalid", result.errors)
+
     def test_framework_mapping_tamper_is_rejected_after_resign(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             pack = self._build_pack(Path(tmp_dir))

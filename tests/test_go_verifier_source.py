@@ -86,6 +86,8 @@ class GoVerifierSourceTests(unittest.TestCase):
             "defaultFrameworkMappings",
             "pack_id does not match canonical pack body",
             "proof pack signature invalid",
+            "proof pack issued_at missing",
+            "proof pack issued_at invalid",
             "chain ordering must be contract registration < eval < gate",
             "packed contract chain_entry_id mismatch",
             "packed eval chain_entry_id mismatch",
