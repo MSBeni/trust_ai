@@ -71,9 +71,9 @@ The decision payload includes:
 - freshness checks and matched rules.
 - the action payload used for evaluation.
 
-Missing proof packs fail closed. Stale gate, soak, runtime attestation, or
-shadow replay evidence also fail closed when the policy pack defines the
-corresponding decay limit.
+Missing proof packs fail closed. Missing, malformed, or stale gate, soak,
+runtime attestation, or shadow replay timestamps also fail closed when the policy
+pack defines the corresponding decay limit.
 
 ## Policy Backend Exports
 

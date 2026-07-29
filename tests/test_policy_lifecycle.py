@@ -1,3 +1,4 @@
+import copy
 import json
 import tempfile
 import unittest
@@ -77,6 +78,46 @@ class PolicyLifecycleTests(unittest.TestCase):
 
             self.assertEqual("denied", decision["outcome"])
             self.assertFalse(decision["checks"][0]["passed"])
+
+    def test_policy_denies_missing_gate_timestamp_when_decay_requires_it(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            _, _, pack = self._proof_pack(Path(tmp_dir))
+            policy = load_policy_pack(POLICY)
+            action = load_action(ACTION)
+            tampered_pack = copy.deepcopy(pack)
+            tampered_pack["gate_decision"].pop("evaluated_at", None)
+            tampered_pack.pop("issued_at", None)
+
+            decision = evaluate_policy(policy, action, proof_pack=tampered_pack, now="2026-07-04T02:00:00Z")
+
+            self.assertEqual("denied", decision["outcome"])
+            freshness = decision["checks"][0]
+            self.assertFalse(freshness["passed"])
+            gate_checks = [check for check in freshness["checks"] if check["name"] == "max_gate_age_hours"]
+            self.assertEqual(1, len(gate_checks))
+            self.assertFalse(gate_checks[0]["passed"])
+            self.assertIn("missing gate decision timestamp", gate_checks[0]["reason"])
+
+    def test_policy_denies_invalid_runtime_attestation_timestamp_when_decay_requires_it(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            _, _, pack = self._proof_pack(Path(tmp_dir))
+            policy = load_policy_pack(POLICY)
+            action = load_action(ACTION)
+            tampered_pack = copy.deepcopy(pack)
+            for entry in tampered_pack["chain"]["entries"]:
+                if entry["entry_type"] == "runtime.attested":
+                    entry["timestamp"] = "not-a-timestamp"
+                    break
+
+            decision = evaluate_policy(policy, action, proof_pack=tampered_pack, now="2026-07-04T02:00:00Z")
+
+            self.assertEqual("denied", decision["outcome"])
+            freshness = decision["checks"][0]
+            self.assertFalse(freshness["passed"])
+            runtime_checks = [check for check in freshness["checks"] if check["name"] == "max_runtime_attestation_age_hours"]
+            self.assertEqual(1, len(runtime_checks))
+            self.assertFalse(runtime_checks[0]["passed"])
+            self.assertIn("invalid runtime.attested timestamp", runtime_checks[0]["reason"])
 
     def test_policy_pack_exports_to_opa_and_cedar_artifacts(self):
         policy = load_policy_pack(POLICY)

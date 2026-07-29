@@ -1,5 +1,5 @@
 {
-  "audit_id": "8df6055d8cca7a741f88887914cc54b28d5a496fde3c1e05afe0cf25aa6db672",
+  "audit_id": "538a9604e0a744f8077c2d18bd4798ecb174ceb766bdad8b04129652a82cfe36",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
   "generated_at": "2026-07-12T00:00:00Z",
   "limitations": [
@@ -1519,7 +1519,7 @@
         {
           "path": "docs/specs/runtime-policy-v0.1.md",
           "present": true,
-          "sha256": "sha256:2b48ed7529f079413fa276c2b0f29c2d8308e7a65f9e396754c8500ba7246cb5"
+          "sha256": "sha256:2cad03ad9dcdd1ca56c8dc4f4e1913055b232cd7a0d7fb4479ad3c5bfeaed796"
         },
         {
           "path": "docs/specs/marketplace-v0.1.md",
@@ -2104,7 +2104,7 @@
         {
           "path": "docs/specs/runtime-policy-v0.1.md",
           "present": true,
-          "sha256": "sha256:2b48ed7529f079413fa276c2b0f29c2d8308e7a65f9e396754c8500ba7246cb5"
+          "sha256": "sha256:2cad03ad9dcdd1ca56c8dc4f4e1913055b232cd7a0d7fb4479ad3c5bfeaed796"
         },
         {
           "path": "docs/specs/policy-engine-receipt-v0.1.md",
@@ -2119,7 +2119,7 @@
         {
           "path": "src/trustai/policy.py",
           "present": true,
-          "sha256": "sha256:db7a8ae2cec786e4380fec339b4702b11755e483211a03c4398606bc58c9489c"
+          "sha256": "sha256:f43790f9669559af7563a627c33e5564705ee150bedda31bdf9fe2a2ce4c7738"
         },
         {
           "path": "src/trustai/policy_engine.py",

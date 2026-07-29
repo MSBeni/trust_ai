@@ -73,6 +73,36 @@ def _age_hours(timestamp: str, now: datetime) -> float:
     return (now - parse_rfc3339(timestamp)).total_seconds() / 3600
 
 
+def _freshness_age_check(
+    name: str,
+    timestamp: Any,
+    threshold: float,
+    now: datetime,
+    *,
+    entry_type: str | None = None,
+    timestamp_label: str = "timestamp",
+) -> dict[str, Any]:
+    check: dict[str, Any] = {
+        "name": name,
+        "operator": "<=",
+        "threshold": threshold,
+        "passed": False,
+    }
+    if entry_type:
+        check["entry_type"] = entry_type
+    if not timestamp:
+        check["reason"] = f"missing {timestamp_label}"
+        return check
+    try:
+        actual = _age_hours(str(timestamp), now)
+    except ValueError as exc:
+        check["reason"] = f"invalid {timestamp_label}: {exc}"
+        return check
+    check["actual"] = actual
+    check["passed"] = actual <= threshold
+    return check
+
+
 def evaluate_proof_freshness(
     proof_pack: dict[str, Any] | None,
     policy_pack: dict[str, Any],
@@ -96,26 +126,32 @@ def evaluate_proof_freshness(
 
     decision = proof_pack.get("gate_decision", {})
     gate_ts = decision.get("evaluated_at") or proof_pack.get("issued_at")
-    if decay.get("max_gate_age_hours") is not None and gate_ts:
-        actual = _age_hours(gate_ts, now_dt)
-        threshold = decay["max_gate_age_hours"]
+    if decay.get("max_gate_age_hours") is not None:
         checks.append(
-            {
-                "name": "max_gate_age_hours",
-                "actual": actual,
-                "operator": "<=",
-                "threshold": threshold,
-                "passed": actual <= threshold,
-            }
+            _freshness_age_check(
+                "max_gate_age_hours",
+                gate_ts,
+                decay["max_gate_age_hours"],
+                now_dt,
+                timestamp_label="gate decision timestamp",
+            )
         )
 
     latest_by_type: dict[str, str] = {}
+    latest_parsed_by_type: dict[str, datetime] = {}
+    invalid_timestamp_by_type: dict[str, str] = {}
     for entry in proof_pack.get("chain", {}).get("entries", []):
         entry_type = entry.get("entry_type")
         timestamp = entry.get("timestamp")
         if entry_type and timestamp:
-            if entry_type not in latest_by_type or parse_rfc3339(timestamp) > parse_rfc3339(latest_by_type[entry_type]):
-                latest_by_type[entry_type] = timestamp
+            try:
+                parsed_timestamp = parse_rfc3339(str(timestamp))
+            except ValueError as exc:
+                invalid_timestamp_by_type.setdefault(str(entry_type), str(exc))
+                continue
+            if entry_type not in latest_by_type or parsed_timestamp > latest_parsed_by_type[str(entry_type)]:
+                latest_by_type[str(entry_type)] = str(timestamp)
+                latest_parsed_by_type[str(entry_type)] = parsed_timestamp
 
     freshness_entry_map = {
         "max_soak_age_hours": "soak_report.completed",
@@ -124,6 +160,16 @@ def evaluate_proof_freshness(
     }
     for policy_key, entry_type in freshness_entry_map.items():
         if decay.get(policy_key) is None:
+            continue
+        if entry_type in invalid_timestamp_by_type:
+            checks.append(
+                {
+                    "name": policy_key,
+                    "entry_type": entry_type,
+                    "passed": False,
+                    "reason": f"invalid {entry_type} timestamp: {invalid_timestamp_by_type[entry_type]}",
+                }
+            )
             continue
         timestamp = latest_by_type.get(entry_type)
         if not timestamp:
@@ -136,17 +182,15 @@ def evaluate_proof_freshness(
                 }
             )
             continue
-        actual = _age_hours(timestamp, now_dt)
-        threshold = decay[policy_key]
         checks.append(
-            {
-                "name": policy_key,
-                "entry_type": entry_type,
-                "actual": actual,
-                "operator": "<=",
-                "threshold": threshold,
-                "passed": actual <= threshold,
-            }
+            _freshness_age_check(
+                policy_key,
+                timestamp,
+                decay[policy_key],
+                now_dt,
+                entry_type=entry_type,
+                timestamp_label=f"{entry_type} timestamp",
+            )
         )
 
     return {"passed": all(check["passed"] for check in checks), "checks": checks}
