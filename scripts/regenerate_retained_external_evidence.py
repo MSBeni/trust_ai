@@ -766,6 +766,20 @@ RETAINED_SOURCES: dict[str, dict[str, str]] = {
         "snapshot_out": "examples/aitrade/external-evidence/insurer-api-actuarial-provider-api-source-snapshot.json",
         "intake_out": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-provider-api.json",
     },
+    "insurer-api-and-actuarial-products:hosted-service": {
+        "source_uri": "https://status.trustai.example/insurer/aitrade/actuarial-products",
+        "description": "Retained hosted service export for insurer API and actuarial products evidence",
+        "artifact": "examples/aitrade/external-evidence/insurer-api-actuarial-hosted-service-source-snapshot.json",
+        "source_file": "examples/aitrade/insurer-api-and-actuarial-products-hosted-service-authority-export.json",
+        "retrieval_method": "file-copy",
+        "content_type": "application/json",
+        "issuer": "TrustAI Cloud",
+        "subject": "aitrade insurer API and actuarial products hosted service evidence",
+        "issued_at": "2026-07-12T00:00:00Z",
+        "expires_at": "2026-12-31T00:00:00Z",
+        "snapshot_out": "examples/aitrade/external-evidence/insurer-api-actuarial-hosted-service-source-snapshot.json",
+        "intake_out": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-hosted-service.json",
+    },
 }
 
 

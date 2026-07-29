@@ -1,14 +1,14 @@
 # External Evidence Owner Fulfillment Template
 
-- Template ID: `5f704455f618c8cf11eb750ca24b2150cae11b2f114cff9de97f78cc0da361b1`
+- Template ID: `c04ce72d7db63ce17981100a6d51b34530aa7bf1f7e3757e150f64c8d5c6992e`
 - Generated at: `2026-07-12T00:01:00Z`
-- Fulfillments: 19
+- Fulfillments: 18
 - Owners: 9
-- Blocked tasks: 19
+- Blocked tasks: 18
 - Open tasks: 0
 - Closed tasks: 0
-- Placeholder source URIs: 19
-- Missing intakes: 19
+- Placeholder source URIs: 18
+- Missing intakes: 18
 
 ## Fulfillments
 
@@ -29,7 +29,6 @@
 | `insurer-api-and-actuarial-products:insurer` | TODO://authority/insurer-api-and-actuarial-products/insurer | insurer evidence for insurer-api-and-actuarial-products |
 | `roadmap-phase-scoreboard:insurer` | TODO://authority/roadmap-phase-scoreboard/insurer | insurer evidence for roadmap-phase-scoreboard |
 | `standards-track-and-auditor-ecosystem:kms-hsm` | TODO://authority/standards-track-and-auditor-ecosystem/kms-hsm | kms-hsm evidence for standards-track-and-auditor-ecosystem |
-| `insurer-api-and-actuarial-products:hosted-service` | TODO://authority/insurer-api-and-actuarial-products/hosted-service | hosted-service evidence for insurer-api-and-actuarial-products |
 | `trust-network-procurement-and-marketplace:hosted-service` | TODO://authority/trust-network-procurement-and-marketplace/hosted-service | hosted-service evidence for trust-network-procurement-and-marketplace |
 | `roadmap-phase-scoreboard:standards-body` | TODO://authority/roadmap-phase-scoreboard/standards-body | standards-body evidence for roadmap-phase-scoreboard |
 | `standards-track-and-auditor-ecosystem:standards-body` | TODO://authority/standards-track-and-auditor-ecosystem/standards-body | standards-body evidence for standards-track-and-auditor-ecosystem |
@@ -53,7 +52,6 @@
 | `insurer-api-and-actuarial-products:insurer` | risk/insurance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/insurer.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/insurer.json |
 | `roadmap-phase-scoreboard:insurer` | risk/insurance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/roadmap-phase-scoreboard/insurer.json | artifacts/external-evidence-intakes/roadmap-phase-scoreboard/insurer.json |
 | `standards-track-and-auditor-ecosystem:kms-hsm` | security/platform KMS owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/kms-hsm.json | artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/kms-hsm.json |
-| `insurer-api-and-actuarial-products:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/hosted-service.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/hosted-service.json |
 | `trust-network-procurement-and-marketplace:hosted-service` | service owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/hosted-service.json | artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/hosted-service.json |
 | `roadmap-phase-scoreboard:standards-body` | standards/governance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/roadmap-phase-scoreboard/standards-body.json | artifacts/external-evidence-intakes/roadmap-phase-scoreboard/standards-body.json |
 | `standards-track-and-auditor-ecosystem:standards-body` | standards/governance owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/standards-body.json | artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/standards-body.json |

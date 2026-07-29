@@ -1,14 +1,14 @@
 # External Evidence Owner Packet Status
 
-- Status ID: `e70c898f46f2e2d2f3caa73aa8d81522b38e89363a63780b628754f6e78620b4`
+- Status ID: `3a3ad937ce8ecce2a85e29a4fc6556638437506345e9e71a40001bcc03057e50`
 - Generated at: `2026-07-12T00:01:00Z`
 - Packets: 9
-- Tasks: 19
+- Tasks: 18
 - Closed tasks: 0
 - Open tasks: 0
-- Blocked tasks: 19
-- Placeholder source URIs: 19
-- Missing intakes: 19
+- Blocked tasks: 18
+- Placeholder source URIs: 18
+- Missing intakes: 18
 
 ## Packets
 
@@ -21,7 +21,7 @@
 | release engineering | `owner-packet:owner_hint:release-engineering` | blocked | 3 | 0 | 0 | 3 |
 | risk/insurance owner | `owner-packet:owner_hint:risk-insurance-owner` | blocked | 2 | 0 | 0 | 2 |
 | security/platform KMS owner | `owner-packet:owner_hint:security-platform-KMS-owner` | blocked | 1 | 0 | 0 | 1 |
-| service owner | `owner-packet:owner_hint:service-owner` | blocked | 2 | 0 | 0 | 2 |
+| service owner | `owner-packet:owner_hint:service-owner` | blocked | 1 | 0 | 0 | 1 |
 | standards/governance owner | `owner-packet:owner_hint:standards-governance-owner` | blocked | 2 | 0 | 0 | 2 |
 
 ## Open And Blocked Tasks
@@ -43,7 +43,6 @@
 | `roadmap-phase-scoreboard:insurer` | risk/insurance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `insurer-api-and-actuarial-products:insurer` | risk/insurance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `standards-track-and-auditor-ecosystem:kms-hsm` | security/platform KMS owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
-| `insurer-api-and-actuarial-products:hosted-service` | service owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `trust-network-procurement-and-marketplace:hosted-service` | service owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `roadmap-phase-scoreboard:standards-body` | standards/governance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `standards-track-and-auditor-ecosystem:standards-body` | standards/governance owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |

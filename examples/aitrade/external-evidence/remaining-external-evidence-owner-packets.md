@@ -1,13 +1,13 @@
 # External Evidence Owner Packets
 
-- Owner packet bundle ID: `27422447fad4ada070e603913beb135fddbfa3e3b0144eab50379a0213eef41a`
+- Owner packet bundle ID: `bf3cd8d22c1f74c31ff31d6ed0a6f04c584e1b3dc7c2ea26b8ceae7d6612d291`
 - Generated at: `2026-07-12T00:01:00Z`
-- Source work package ID: `b20805322571ba1058b6df372cbfcbbb767178685a3218f3d14d7e062e34272d`
-- Source work package hash: `8882ef391b284328765054e74951edcbf946fd7ba5f8147e48d8b99cb4c0887c`
+- Source work package ID: `59c9f23d4b3062210740d7c0e83b5a27df48c781bad2b1885767da9b7c1b5d59`
+- Source work package hash: `edf1d353edbbccb381510a9f83253e5392f6d27a6d94e8ca1f84ac3b95684f35`
 - Packets: 9
-- Tasks: 19
-- Missing tasks: 19
-- Placeholder source URIs: 19
+- Tasks: 18
+- Missing tasks: 18
+- Placeholder source URIs: 18
 
 ## Packets
 
@@ -192,25 +192,22 @@
 ### service owner
 
 - Packet ref: `owner-packet:owner_hint:service-owner`
-- Packet ID: `6b9bf39cc7fc0daf80fae3de35ece909cc1511d0155261ca7606c7f1828612a0`
+- Packet ID: `ddbad1aa5642285ff9b4131398d20aea75030c38f41cfb2d447055255d38fdd8`
 - Package ref: `owner_hint:service-owner`
-- Tasks: 2
-- Missing tasks: 2
+- Tasks: 1
+- Missing tasks: 1
 - Authority kinds: `hosted-service`
-- Requirements: `insurer-api-and-actuarial-products`, `trust-network-procurement-and-marketplace`
+- Requirements: `trust-network-procurement-and-marketplace`
 - Batch collect command: `python -m trustai external-evidence-collect-batch examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json examples/aitrade/external-evidence/remaining-external-evidence-source-map-template.json --root . --out artifacts/external-evidence-collection-run.json`
 - Rebuild manifest command: `python -m trustai external-evidence-manifest-from-intakes examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root . --intake-dir artifacts/external-evidence-intakes --out artifacts/external-evidence-manifest-from-intakes.json`
 - Completion gate: Every task must have a live authority source URI, a verified source snapshot, a verified intake receipt, and a rebuilt external-evidence manifest before readiness can pass.
 
 | Task | Phase | Priority | Authority | Source URI Status | Intake |
 |---|---|---|---|---|---|
-| `insurer-api-and-actuarial-products:hosted-service` | P2-P4 | P0 | `hosted-service` | placeholder | `artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/hosted-service.json` |
 | `trust-network-procurement-and-marketplace:hosted-service` | P4 | P1 | `hosted-service` | placeholder | `artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/hosted-service.json` |
 
 #### Task Commands
 
-- `insurer-api-and-actuarial-products:hosted-service` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/insurer-api-and-actuarial-products/hosted-service --root . --task insurer-api-and-actuarial-products:hosted-service --description 'hosted-service evidence for insurer-api-and-actuarial-products' --snapshot-out artifacts/external-evidence-sources/insurer-api-and-actuarial-products/hosted-service.json --intake-out artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/hosted-service.json`
-- `insurer-api-and-actuarial-products:hosted-service` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/hosted-service.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 - `trust-network-procurement-and-marketplace:hosted-service` collect: `python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/trust-network-procurement-and-marketplace/hosted-service --root . --task trust-network-procurement-and-marketplace:hosted-service --description 'hosted-service evidence for trust-network-procurement-and-marketplace' --snapshot-out artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/hosted-service.json --intake-out artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/hosted-service.json`
 - `trust-network-procurement-and-marketplace:hosted-service` verify intake: `python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/hosted-service.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root .`
 

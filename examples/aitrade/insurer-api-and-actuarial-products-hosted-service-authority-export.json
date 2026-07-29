@@ -1,0 +1,73 @@
+{
+  "authority_evidence": {
+    "authority_kind": "hosted-service",
+    "evidence_ref": "hosted-service:trustai/insurer-api-actuarial-products/aitrade-prod",
+    "requirement_id": "insurer-api-and-actuarial-products",
+    "source_uri": "https://status.trustai.example/insurer/aitrade/actuarial-products"
+  },
+  "environment": "aitrade-prod",
+  "evidence": {
+    "ci_run_authority_export": {
+      "path": "examples/aitrade/insurer-api-and-actuarial-products-ci-run-authority-export.json",
+      "sha256": "sha256:eb79e9ef19487f4b74ab680f16ab7a29dc87c077dba5531655966c222e2b348d"
+    },
+    "kms_authority_export": {
+      "path": "examples/aitrade/insurer-api-and-actuarial-products-kms-hsm-authority-export.json",
+      "sha256": "sha256:54ef19cae9c0a7c50bbea88fef90740f8693053db99c68fb670ffb257124c737"
+    },
+    "provider_api_authority_export": {
+      "path": "examples/aitrade/insurer-api-and-actuarial-products-provider-api-authority-export.json",
+      "sha256": "sha256:a4522415fb8f106045f2bd32fcfa70659bdf71c76dc3f35221f3169d5192cfb1"
+    },
+    "actuarial_product_service_source": {
+      "path": "src/trustai/insurer_partner_service.py",
+      "sha256": "sha256:be15fc7705e1007229ea60d4f602c5f741f1f7777450be487aeaa37f9df85bd4"
+    },
+    "actuarial_product_worker_source": {
+      "path": "src/trustai/insurer_partner_worker.py",
+      "sha256": "sha256:2d337567cac79163dd696413604c5fe878c54b999f6bde516d702648905619f5"
+    },
+    "insurer_partner_service_spec": {
+      "path": "docs/specs/insurer-partner-service-attestation-v0.1.md",
+      "sha256": "sha256:121aa9f8fbc609aba42054e2f6d5bc8c4946a2c2d7259b5d5b72851022ea419e"
+    },
+    "underwriting_quote_source": {
+      "path": "src/trustai/underwriting_quote.py",
+      "sha256": "sha256:efb95f75de0eae14cc963832dd04f6d1a9cbed35f06d1e76f18afd9fd771e2f0"
+    },
+    "underwriting_quote_tests": {
+      "path": "tests/test_underwriting_quote.py",
+      "sha256": "sha256:69e81648c5fb706441d91a441d5676fe4c13e1df86192baabd8ca17f964f706f"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "hosted_service": {
+    "access_log_ref": "access-log:insurer-api-actuarial-products/aitrade-prod",
+    "api_ref": "api:trustai/insurer-api-actuarial-products/v0.1",
+    "availability_zones": [
+      "use1-az1",
+      "use1-az2",
+      "use1-az3"
+    ],
+    "deployment_ref": "deploy:insurer-api-actuarial-products/aitrade-prod/2026-07-12",
+    "endpoint_url": "https://api.trustai.example/v1/insurer/aitrade/actuarial-products",
+    "health_check_ref": "health:insurer-api-actuarial-products/aitrade-prod/2026-07-12T00:00:00Z",
+    "metrics_ref": "metrics:insurer-api-actuarial-products/aitrade-prod",
+    "replicas_ready": 3,
+    "service_image_digest": "sha256:insurerapiactuarialservice000000000000000000000000000000000001",
+    "service_ref": "service:insurer-api-actuarial-products/aitrade-prod",
+    "slo_ref": "slo:insurer-api-actuarial-products/availability-99.9",
+    "status_page_ref": "status:trustai/insurer-api-actuarial-products"
+  },
+  "issued_at": "2026-07-12T00:00:00Z",
+  "issuer": "TrustAI Cloud",
+  "schema": "trustai.insurer-api-and-actuarial-products-hosted-service-authority-export/0.1",
+  "subject": "aitrade insurer API and actuarial products hosted service evidence",
+  "verified_controls": [
+    "hosted service health export covers consent telemetry and actuarial product endpoints",
+    "deployment evidence binds the hosted service to provider API and KMS authority exports",
+    "multi-zone service availability and SLO references are retained for insurer-facing API operations",
+    "access-log and metrics roots preserve source evidence for operational audit replay",
+    "worker and service source hashes bind hosted insurer API behavior to reviewed implementation artifacts"
+  ]
+}

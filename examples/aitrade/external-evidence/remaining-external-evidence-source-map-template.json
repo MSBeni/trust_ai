@@ -2,30 +2,6 @@
   "defaults": {},
   "entries": [
     {
-      "authority_kind": "hosted-service",
-      "coverage_status": "missing",
-      "description": "hosted-service evidence for insurer-api-and-actuarial-products",
-      "external_authority_required": [
-        "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/hosted-service.json",
-      "owner_hint": "service owner",
-      "requirement_id": "insurer-api-and-actuarial-products",
-      "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/hosted-service.json",
-      "source_uri": "TODO://authority/insurer-api-and-actuarial-products/hosted-service",
-      "suggested_evidence_sources": [
-        "hosted service health or deployment export",
-        "service audit root",
-        "operational SLO/status evidence"
-      ],
-      "task": "insurer-api-and-actuarial-products:hosted-service",
-      "task_id": "eb8cf37d890a258e16d3af9df709c8b155f11a0fb0846a3731237c27961a1327",
-      "task_ref": "external-evidence:insurer-api-and-actuarial-products:hosted-service",
-      "title": "Consent-gated insurer telemetry, underwriting quotes, and actuarial products",
-      "unit_id": "2094b694497fad70e48e0e62455bdda09a0055591ad393962bfb59465d58c367",
-      "unit_ref": "insurer-api-and-actuarial-products:hosted-service"
-    },
-    {
       "authority_kind": "identity-provider",
       "coverage_status": "missing",
       "description": "identity-provider evidence for insurer-api-and-actuarial-products",
@@ -465,14 +441,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "09729dde5ca52c7030081c81fddf2db0c67675ab1584c343ff472950387dd54e",
+  "source_map_id": "6ab43aca5b0965b8b958a8b2acb61aecfa8d04b0c313698dac0e390fb9b89023",
   "source_plan": {
-    "plan_hash": "af711d4e63710b81a0b64e9f1436bdf7854383114ee5e323195f7b92941f92aa",
-    "plan_id": "2e982195f6f8461721e7c9f8d5f9133197f049d2f4b19ad9c730c5ec6d773103",
+    "plan_hash": "bd4f5d65219a0a152291e2f3521715d847b8b3bbc94920ecd90c9d709e80c942",
+    "plan_id": "a9e6b3831a0ed6bd46774d62ca386bf66398ebe5629aa324effcab8d6e16e624",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "be1bdef8d8b6d9a6b0f20858cb4924dc18ba9e81fb2e93c6c17c9cf6f48dd6cf",
-      "manifest_id": "870254943e11df3effa1d892602cecbe963b39f4a9ee3b5c4135994fb3915ca8",
+      "manifest_hash": "7fdd51fb9cab47bcc034d23ffe130ce1e0e2872665edada95a58bf34c5c8d48a",
+      "manifest_id": "0745bf36f5d45d8d66383781994dbe8ac9497f3aecb830c4a516bf86514dbd6f",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },
@@ -480,12 +456,12 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 19,
+    "entry_count": 18,
     "intake_dir": "artifacts/external-evidence-intakes",
     "live_source_uri_count": 0,
-    "placeholder_source_uri_count": 19,
+    "placeholder_source_uri_count": 18,
     "snapshot_dir": "artifacts/external-evidence-sources",
-    "source_plan_task_count": 19,
+    "source_plan_task_count": 18,
     "status_filter": "missing"
   }
 }

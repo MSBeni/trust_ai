@@ -1,20 +1,20 @@
 # External Evidence Gap Report
 
-- Gap report ID: `9f422f2fb65a75b40f54a5068d11a59a690008778114285dedfb2508a06b7df0`
+- Gap report ID: `02343befb7441e6004d7696e1db15c082674bff185c2869eff2d3072118e58ca`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 52/71
-- Missing authority kinds: 19
-- Remaining collection tasks: 19
-- Source-map entries: 19
-- Placeholder source URIs: 19
+- Covered authority kinds: 53/71
+- Missing authority kinds: 18
+- Remaining collection tasks: 18
+- Source-map entries: 18
+- Placeholder source URIs: 18
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
 
 - `ci-run`: 3
 - `customer`: 5
-- `hosted-service`: 2
+- `hosted-service`: 1
 - `identity-provider`: 2
 - `insurer`: 2
 - `kms-hsm`: 1
@@ -24,7 +24,7 @@
 
 ## Gaps By Requirement
 
-- `insurer-api-and-actuarial-products`: 4
+- `insurer-api-and-actuarial-products`: 3
 - `product-scope-discipline`: 2
 - `roadmap-phase-scoreboard`: 5
 - `runtime-policy-and-attestation`: 1
@@ -33,17 +33,6 @@
 - `trust-network-procurement-and-marketplace`: 4
 
 ## Collection Worklist
-
-### insurer-api-and-actuarial-products:hosted-service
-
-- Title: Consent-gated insurer telemetry, underwriting quotes, and actuarial products
-- Authority kind: `hosted-service`
-- Owner hint: service owner
-- Description: hosted-service evidence for insurer-api-and-actuarial-products
-- Source URI: `TODO://authority/insurer-api-and-actuarial-products/hosted-service`
-- Snapshot output: `artifacts/external-evidence-sources/insurer-api-and-actuarial-products/hosted-service.json`
-- Intake output: `artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/hosted-service.json`
-- Suggested evidence sources: hosted service health or deployment export; service audit root; operational SLO/status evidence
 
 ### insurer-api-and-actuarial-products:identity-provider
 

@@ -5,12 +5,12 @@
     "A task is covered only after a matching evidence artifact is supplied to an external evidence manifest and verified.",
     "Freshness and issuer authority remain bounded by the supplied evidence artifact and manifest verification options."
   ],
-  "plan_id": "2e982195f6f8461721e7c9f8d5f9133197f049d2f4b19ad9c730c5ec6d773103",
+  "plan_id": "a9e6b3831a0ed6bd46774d62ca386bf66398ebe5629aa324effcab8d6e16e624",
   "schema": "trustai.external-evidence-collection-plan/0.1",
   "source_manifest": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "manifest_hash": "be1bdef8d8b6d9a6b0f20858cb4924dc18ba9e81fb2e93c6c17c9cf6f48dd6cf",
-    "manifest_id": "870254943e11df3effa1d892602cecbe963b39f4a9ee3b5c4135994fb3915ca8",
+    "manifest_hash": "7fdd51fb9cab47bcc034d23ffe130ce1e0e2872665edada95a58bf34c5c8d48a",
+    "manifest_id": "0745bf36f5d45d8d66383781994dbe8ac9497f3aecb830c4a516bf86514dbd6f",
     "manifest_ref": "production-external-evidence",
     "status": "partial"
   },
@@ -21,12 +21,12 @@
   },
   "status_filter": "missing",
   "summary": {
-    "covered_authority_kind_count": 52,
-    "missing_authority_kind_count": 19,
+    "covered_authority_kind_count": 53,
+    "missing_authority_kind_count": 18,
     "missing_task_count_by_authority_kind": {
       "ci-run": 3,
       "customer": 5,
-      "hosted-service": 2,
+      "hosted-service": 1,
       "identity-provider": 2,
       "insurer": 2,
       "kms-hsm": 1,
@@ -36,13 +36,13 @@
     },
     "required_authority_kind_count": 71,
     "selected_covered_task_count": 0,
-    "selected_missing_task_count": 19,
-    "selected_task_count": 19,
+    "selected_missing_task_count": 18,
+    "selected_task_count": 18,
     "source_manifest_status": "partial",
     "task_count_by_authority_kind": {
       "ci-run": 3,
       "customer": 5,
-      "hosted-service": 2,
+      "hosted-service": 1,
       "identity-provider": 2,
       "insurer": 2,
       "kms-hsm": 1,
@@ -54,42 +54,13 @@
       "P0-P4": 2,
       "P1-P4": 5,
       "P2": 1,
-      "P2-P4": 5,
+      "P2-P4": 4,
       "P3": 2,
       "P4": 4
     },
     "total_authority_unit_count": 71
   },
   "tasks": [
-    {
-      "acceptance_criteria": [
-        "Artifact path must be repository-relative and hashable before manifest verification.",
-        "Evidence item authority_kind must be hosted-service and accepted for insurer-api-and-actuarial-products.",
-        "Use issued_at and expires_at metadata when strict freshness verification is required.",
-        "Rebuild and verify the external evidence manifest after adding the artifact."
-      ],
-      "authority_kind": "hosted-service",
-      "coverage_status": "missing",
-      "evidence_argument_template": "insurer-api-and-actuarial-products,hosted-service,external-evidence/insurer-api-and-actuarial-products/hosted-service.json,hosted-service evidence for insurer-api-and-actuarial-products;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-      "external_authority_required": [
-        "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
-      ],
-      "owner_hint": "service owner",
-      "phase": "P2-P4",
-      "priority": "P0",
-      "requirement_id": "insurer-api-and-actuarial-products",
-      "suggested_artifact_path": "external-evidence/insurer-api-and-actuarial-products/hosted-service.json",
-      "suggested_evidence_sources": [
-        "hosted service health or deployment export",
-        "service audit root",
-        "operational SLO/status evidence"
-      ],
-      "task_id": "eb8cf37d890a258e16d3af9df709c8b155f11a0fb0846a3731237c27961a1327",
-      "task_ref": "external-evidence:insurer-api-and-actuarial-products:hosted-service",
-      "title": "Consent-gated insurer telemetry, underwriting quotes, and actuarial products",
-      "unit_id": "2094b694497fad70e48e0e62455bdda09a0055591ad393962bfb59465d58c367",
-      "unit_ref": "insurer-api-and-actuarial-products:hosted-service"
-    },
     {
       "acceptance_criteria": [
         "Artifact path must be repository-relative and hashable before manifest verification.",

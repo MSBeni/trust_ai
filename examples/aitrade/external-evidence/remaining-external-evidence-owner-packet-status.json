@@ -5,7 +5,7 @@
     "A closed task still requires rebuilt manifest verification and readiness verification before external authority coverage is accepted.",
     "Placeholder source URIs keep tasks blocked even when a local intake artifact is present."
   ],
-  "owner_packet_status_id": "e70c898f46f2e2d2f3caa73aa8d81522b38e89363a63780b628754f6e78620b4",
+  "owner_packet_status_id": "3a3ad937ce8ecce2a85e29a4fc6556638437506345e9e71a40001bcc03057e50",
   "packets": [
     {
       "blocked_task_count": 2,
@@ -78,14 +78,14 @@
       "task_count": 1
     },
     {
-      "blocked_task_count": 2,
+      "blocked_task_count": 1,
       "closed_task_count": 0,
       "open_task_count": 0,
       "owner_hint": "service owner",
-      "packet_id": "6b9bf39cc7fc0daf80fae3de35ece909cc1511d0155261ca7606c7f1828612a0",
+      "packet_id": "ddbad1aa5642285ff9b4131398d20aea75030c38f41cfb2d447055255d38fdd8",
       "packet_ref": "owner-packet:owner_hint:service-owner",
       "packet_status": "blocked",
-      "task_count": 2
+      "task_count": 1
     },
     {
       "blocked_task_count": 2,
@@ -103,41 +103,41 @@
     "intake_hashes": [],
     "owner_packet_bundle": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_bundle_hash": "1391745a6350651858de4c66df81e8096bfe4c5e2decae4b23a4014f8cfa482a",
-      "owner_packet_bundle_id": "27422447fad4ada070e603913beb135fddbfa3e3b0144eab50379a0213eef41a",
+      "owner_packet_bundle_hash": "b629f3644ee10ea4e0573bf387184c47efcf4dbd78adf9b6bded557fe95d8552",
+      "owner_packet_bundle_id": "bf3cd8d22c1f74c31ff31d6ed0a6f04c584e1b3dc7c2ea26b8ceae7d6612d291",
       "schema": "trustai.external-evidence-owner-packet-bundle/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "4fd1e9607dcf84fb9cf194ad4bb04c25f509988803a1cfc7dd43e4f8d8676170",
-      "source_map_id": "09729dde5ca52c7030081c81fddf2db0c67675ab1584c343ff472950387dd54e"
+      "source_map_hash": "de063d978911ff5177d28eb1ba1e46feb23e9e8f455c924350cf65603bb1efa8",
+      "source_map_id": "6ab43aca5b0965b8b958a8b2acb61aecfa8d04b0c313698dac0e390fb9b89023"
     },
     "work_package": {
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-work-package/0.1",
-      "work_package_hash": "8882ef391b284328765054e74951edcbf946fd7ba5f8147e48d8b99cb4c0887c",
-      "work_package_id": "b20805322571ba1058b6df372cbfcbbb767178685a3218f3d14d7e062e34272d"
+      "work_package_hash": "edf1d353edbbccb381510a9f83253e5392f6d27a6d94e8ca1f84ac3b95684f35",
+      "work_package_id": "59c9f23d4b3062210740d7c0e83b5a27df48c781bad2b1885767da9b7c1b5d59"
     }
   },
   "summary": {
     "blocked_packet_count": 9,
-    "blocked_task_count": 19,
+    "blocked_task_count": 18,
     "closed_packet_count": 0,
     "closed_task_count": 0,
     "invalid_intake_count": 0,
     "live_source_uri_count": 0,
-    "missing_intake_count": 19,
+    "missing_intake_count": 18,
     "open_packet_count": 0,
     "open_task_count": 0,
     "packet_count": 9,
     "packet_status_counts": {
       "blocked": 9
     },
-    "placeholder_source_uri_count": 19,
-    "task_count": 19,
+    "placeholder_source_uri_count": 18,
+    "task_count": 18,
     "task_status_counts": {
-      "blocked": 19
+      "blocked": 18
     }
   },
   "tasks": [
@@ -395,23 +395,6 @@
       "task_ref": "external-evidence:standards-track-and-auditor-ecosystem:kms-hsm",
       "task_status": "blocked",
       "unit_ref": "standards-track-and-auditor-ecosystem:kms-hsm"
-    },
-    {
-      "authority_kind": "hosted-service",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake": null,
-      "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/hosted-service.json",
-      "owner_hint": "service owner",
-      "requirement_id": "insurer-api-and-actuarial-products",
-      "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/hosted-service.json",
-      "source_uri": "TODO://authority/insurer-api-and-actuarial-products/hosted-service",
-      "source_uri_status": "placeholder",
-      "task_ref": "external-evidence:insurer-api-and-actuarial-products:hosted-service",
-      "task_status": "blocked",
-      "unit_ref": "insurer-api-and-actuarial-products:hosted-service"
     },
     {
       "authority_kind": "hosted-service",
