@@ -1,21 +1,20 @@
 # External Evidence Owner Fulfillment Template
 
-- Template ID: `a1ea653ee6e2dd2dc912f2af2404746186437706c18bc15c5b116188c6613f6b`
+- Template ID: `02a3937e4ed85aa47e0936f6a2a58bb89be9cfd90eb056d7d2173599537ae2bf`
 - Generated at: `2026-07-12T00:01:00Z`
-- Fulfillments: 16
+- Fulfillments: 15
 - Owners: 9
-- Blocked tasks: 16
+- Blocked tasks: 15
 - Open tasks: 0
 - Closed tasks: 0
-- Placeholder source URIs: 16
-- Missing intakes: 16
+- Placeholder source URIs: 15
+- Missing intakes: 15
 
 ## Fulfillments
 
 | Task | Source URI | Description |
 |---|---|---|
 | `trust-network-procurement-and-marketplace:identity-provider` | TODO://authority/trust-network-procurement-and-marketplace/identity-provider | identity-provider evidence for trust-network-procurement-and-marketplace |
-| `insurer-api-and-actuarial-products:customer` | TODO://authority/insurer-api-and-actuarial-products/customer | customer evidence for insurer-api-and-actuarial-products |
 | `product-scope-discipline:customer` | TODO://authority/product-scope-discipline/customer | customer evidence for product-scope-discipline |
 | `roadmap-phase-scoreboard:customer` | TODO://authority/roadmap-phase-scoreboard/customer | customer evidence for roadmap-phase-scoreboard |
 | `state-of-agent-reliability-report:customer` | TODO://authority/state-of-agent-reliability-report/customer | customer evidence for state-of-agent-reliability-report |
@@ -36,7 +35,6 @@
 | Task | Owner | Status | Blocking Reasons | Snapshot | Intake |
 |---|---|---|---|---|---|
 | `trust-network-procurement-and-marketplace:identity-provider` | IAM/identity owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/identity-provider.json | artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/identity-provider.json |
-| `insurer-api-and-actuarial-products:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/insurer-api-and-actuarial-products/customer.json | artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/customer.json |
 | `product-scope-discipline:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/product-scope-discipline/customer.json | artifacts/external-evidence-intakes/product-scope-discipline/customer.json |
 | `roadmap-phase-scoreboard:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/roadmap-phase-scoreboard/customer.json | artifacts/external-evidence-intakes/roadmap-phase-scoreboard/customer.json |
 | `state-of-agent-reliability-report:customer` | customer success/account owner | blocked | `placeholder-source-uri`, `missing-intake` | artifacts/external-evidence-sources/state-of-agent-reliability-report/customer.json | artifacts/external-evidence-intakes/state-of-agent-reliability-report/customer.json |

@@ -4,30 +4,6 @@
     {
       "authority_kind": "customer",
       "coverage_status": "missing",
-      "description": "customer evidence for insurer-api-and-actuarial-products",
-      "external_authority_required": [
-        "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/customer.json",
-      "owner_hint": "customer success/account owner",
-      "requirement_id": "insurer-api-and-actuarial-products",
-      "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/customer.json",
-      "source_uri": "TODO://authority/insurer-api-and-actuarial-products/customer",
-      "suggested_evidence_sources": [
-        "customer acceptance artifact",
-        "contract/payment/procurement evidence",
-        "deployment or signoff record"
-      ],
-      "task": "insurer-api-and-actuarial-products:customer",
-      "task_id": "7629a131bef204524faf1bbecd64f984118e19da5f9f1b211b2d588ce40fcd8c",
-      "task_ref": "external-evidence:insurer-api-and-actuarial-products:customer",
-      "title": "Consent-gated insurer telemetry, underwriting quotes, and actuarial products",
-      "unit_id": "c199c5956cb59b9b0a0ba7fead08802096161432854f09a9dd0a1e6dd3b284ca",
-      "unit_ref": "insurer-api-and-actuarial-products:customer"
-    },
-    {
-      "authority_kind": "customer",
-      "coverage_status": "missing",
       "description": "customer evidence for state-of-agent-reliability-report",
       "external_authority_required": [
         "State of Agent Reliability reports cover local/reference aggregate report generation, privacy thresholds, actuarial source-product bindings, and publication-evidence schemas; actual public publication, independent review, partner/customer permission, market acceptance, external distribution metrics, and continuously refreshed longitudinal data remain external GTM evidence."
@@ -393,14 +369,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "8816392a44a4f27f6ac14f1534d305c8fad466def37f9d64617449a189008fdc",
+  "source_map_id": "0e71756f80d9b16940d615fffe60aee94dfee44d3cebe7c0152d38218146244b",
   "source_plan": {
-    "plan_hash": "e889618b9dadc4a3cd9c7762a14e010d9956b74947eb5893df4f28f8f4bc27b4",
-    "plan_id": "4f329f02acdb49de0a0e7d1881c2f88f4b649a24d215871c068e83a8737afb41",
+    "plan_hash": "e4b4b6b861056eff92a219f41dd8404015f6ffb2b1af827819cc74e6151a120c",
+    "plan_id": "6107d4e7475c3570edbe64f8b0dffa46afc9caa767fde1170c7fb2d7f90c4b69",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "207c3f36e88264ca5173935b34891b9f85af95e6625e83eee8791d2d3a7ed59b",
-      "manifest_id": "2a5c37f6d4f5bf3f763eb9b4b8b455766db7c636bdd221fb62cd20acb4e6d16b",
+      "manifest_hash": "8567dea7ac6db0df694f350ed3285238fad5581d4c0190707ec16dc4495085bb",
+      "manifest_id": "84ac9821cf1a63c0ca595e7e7bc8e9e6abd861898e06003e0d7caa2e1b8d1c22",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },
@@ -408,12 +384,12 @@
   },
   "summary": {
     "authority_kinds": [],
-    "entry_count": 16,
+    "entry_count": 15,
     "intake_dir": "artifacts/external-evidence-intakes",
     "live_source_uri_count": 0,
-    "placeholder_source_uri_count": 16,
+    "placeholder_source_uri_count": 15,
     "snapshot_dir": "artifacts/external-evidence-sources",
-    "source_plan_task_count": 16,
+    "source_plan_task_count": 15,
     "status_filter": "missing"
   }
 }

@@ -5,7 +5,7 @@
     "Source URIs marked TODO or placeholder must be replaced with authority-owned source exports before collection.",
     "Packet completion is proven only by verified source snapshots, intake receipts, rebuilt manifests, and readiness reports."
   ],
-  "owner_packet_bundle_id": "663c07aecf31b768b1e95f97464d719adc8cb241b4ffadc0fe1c54dbef7d3c87",
+  "owner_packet_bundle_id": "9299c2ba203679a8f07af845233f9c083fb62efb047836f53270b20d80fe523c",
   "packets": [
     {
       "authority_kinds": [
@@ -133,12 +133,12 @@
         "requires_placeholder_replacement": true
       },
       "live_source_uri_count": 0,
-      "missing_task_count": 5,
+      "missing_task_count": 4,
       "owner_hint": "customer success/account owner",
-      "package_hash": "a009004b325e424bd10592c2439c5fc2797ed6895e0aac2168b96a8272bd65a1",
-      "package_id": "89bf96f3d861fc68083d7b422eaafb9edd4bd1dbfb9f76fd8c49c40efbbb7528",
+      "package_hash": "d4e49ae153bf3e178c3aac491b016eaa1dd66a96e33aefe1e91d1106b1c92ad1",
+      "package_id": "d9a57efc2974ed03ef865246162574898db5fc3742dbe8f749a555bf0eeadc88",
       "package_ref": "owner_hint:customer-success-account-owner",
-      "packet_id": "b9bd3fd75009e84aeb2b1caf756759583f44ecba443475c56f1359edd142439c",
+      "packet_id": "955a503f61587a9398da53ffd1ceb4e7d0807d753dcd3c2ea8d230ef749d8702",
       "packet_ref": "owner-packet:owner_hint:customer-success-account-owner",
       "phases": [
         "P0-P4",
@@ -146,19 +146,18 @@
         "P2-P4",
         "P4"
       ],
-      "placeholder_source_uri_count": 5,
+      "placeholder_source_uri_count": 4,
       "priorities": [
         "P0",
         "P1"
       ],
       "requirement_ids": [
-        "insurer-api-and-actuarial-products",
         "product-scope-discipline",
         "roadmap-phase-scoreboard",
         "state-of-agent-reliability-report",
         "trust-network-procurement-and-marketplace"
       ],
-      "task_count": 5,
+      "task_count": 4,
       "tasks": [
         {
           "acceptance_criteria": [
@@ -313,83 +312,6 @@
           "title": "Roadmap phase exit-criteria business scoreboard",
           "unit_id": "dfd8d820f52d475a756ebba3046042653b0c1936d5256c032c008009a6484b81",
           "unit_ref": "roadmap-phase-scoreboard:customer"
-        },
-        {
-          "acceptance_criteria": [
-            "Artifact path must be repository-relative and hashable before manifest verification.",
-            "Evidence item authority_kind must be customer and accepted for insurer-api-and-actuarial-products.",
-            "Use issued_at and expires_at metadata when strict freshness verification is required.",
-            "Rebuild and verify the external evidence manifest after adding the artifact."
-          ],
-          "authority_kind": "customer",
-          "commands": {
-            "collect_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-collect",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "TODO://authority/insurer-api-and-actuarial-products/customer",
-              "--root",
-              ".",
-              "--task",
-              "insurer-api-and-actuarial-products:customer",
-              "--description",
-              "customer evidence for insurer-api-and-actuarial-products",
-              "--snapshot-out",
-              "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/customer.json",
-              "--intake-out",
-              "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/customer.json"
-            ],
-            "collect_command": "python -m trustai external-evidence-collect examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json TODO://authority/insurer-api-and-actuarial-products/customer --root . --task insurer-api-and-actuarial-products:customer --description 'customer evidence for insurer-api-and-actuarial-products' --snapshot-out artifacts/external-evidence-sources/insurer-api-and-actuarial-products/customer.json --intake-out artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/customer.json",
-            "verify_intake_args": [
-              "python",
-              "-m",
-              "trustai",
-              "external-evidence-intake-verify",
-              "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/customer.json",
-              "examples/aitrade/external-evidence/remaining-external-evidence-plan.json",
-              "examples/aitrade/external-evidence/retained-external-evidence-manifest.json",
-              "examples/aitrade/external-evidence/source-roadmap-audit.json",
-              "--root",
-              "."
-            ],
-            "verify_intake_command": "python -m trustai external-evidence-intake-verify artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/customer.json examples/aitrade/external-evidence/remaining-external-evidence-plan.json examples/aitrade/external-evidence/retained-external-evidence-manifest.json examples/aitrade/external-evidence/source-roadmap-audit.json --root ."
-          },
-          "coverage_status": "missing",
-          "description": "customer evidence for insurer-api-and-actuarial-products",
-          "evidence_argument_template": "insurer-api-and-actuarial-products,customer,external-evidence/insurer-api-and-actuarial-products/customer.json,customer evidence for insurer-api-and-actuarial-products;issuer=<issuer>;subject=<subject>;source_uri=<source-uri>;issued_at=<rfc3339>;expires_at=<rfc3339>",
-          "external_authority_required": [
-            "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
-          ],
-          "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/customer.json",
-          "next_actions": [
-            "Replace the placeholder source_uri with an authority-owned source export URI before collection.",
-            "Fill authority metadata before strict verification: issuer, subject, issued_at, expires_at.",
-            "Run the collect command to create a source snapshot and intake receipt for this task.",
-            "Verify the generated intake receipt before rebuilding the external evidence manifest.",
-            "Rebuild and verify the external evidence manifest after all assigned intakes are collected."
-          ],
-          "owner_hint": "customer success/account owner",
-          "phase": "P2-P4",
-          "priority": "P0",
-          "requirement_id": "insurer-api-and-actuarial-products",
-          "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/customer.json",
-          "source_uri": "TODO://authority/insurer-api-and-actuarial-products/customer",
-          "source_uri_status": "placeholder",
-          "suggested_artifact_path": "external-evidence/insurer-api-and-actuarial-products/customer.json",
-          "suggested_evidence_sources": [
-            "customer acceptance artifact",
-            "contract/payment/procurement evidence",
-            "deployment or signoff record"
-          ],
-          "task_id": "7629a131bef204524faf1bbecd64f984118e19da5f9f1b211b2d588ce40fcd8c",
-          "task_ref": "external-evidence:insurer-api-and-actuarial-products:customer",
-          "title": "Consent-gated insurer telemetry, underwriting quotes, and actuarial products",
-          "unit_id": "c199c5956cb59b9b0a0ba7fead08802096161432854f09a9dd0a1e6dd3b284ca",
-          "unit_ref": "insurer-api-and-actuarial-products:customer"
         },
         {
           "acceptance_criteria": [
@@ -1575,20 +1497,20 @@
   "source_work_package": {
     "generated_at": "2026-07-12T00:01:00Z",
     "group_by": "owner_hint",
-    "work_package_hash": "08aea521401be5dd1fa3f802d8b80259130eae404e18c4b518b38041fae3f654",
-    "work_package_id": "dbe2eb09edb03c5c1be836ddb924b64a435574dea274a116dacc22270082e794"
+    "work_package_hash": "46bc1771831e6ac2d5851c1ded6a44720a0e20a1570f0906f37ba75c952fdc4a",
+    "work_package_id": "022227e85b1363a802eb738b95dafa23450d9f00c49c8a4e39c0024f6935f3d0"
   },
   "summary": {
     "covered_task_count": 0,
     "live_source_uri_count": 0,
-    "missing_task_count": 16,
+    "missing_task_count": 15,
     "packet_count": 9,
-    "placeholder_source_uri_count": 16,
-    "source_work_package_task_count": 16,
-    "task_count": 16,
+    "placeholder_source_uri_count": 15,
+    "source_work_package_task_count": 15,
+    "task_count": 15,
     "task_count_by_authority_kind": {
       "ci-run": 3,
-      "customer": 5,
+      "customer": 4,
       "hosted-service": 1,
       "identity-provider": 1,
       "insurer": 1,
@@ -1599,7 +1521,7 @@
     },
     "task_count_by_owner_hint": {
       "IAM/identity owner": 1,
-      "customer success/account owner": 5,
+      "customer success/account owner": 4,
       "integration/platform owner": 1,
       "legal/compliance owner": 1,
       "release engineering": 3,

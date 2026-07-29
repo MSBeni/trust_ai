@@ -1,20 +1,19 @@
 # External Evidence Owner Fulfillment Review
 
-- Review ID: `004ab325689f908f5b82c5ce50b5c4b026ff95c7709e1925bb0bd602a2c9a798`
+- Review ID: `e7714b2cfc953e1ac7f898fab4300441d452320022440585e6f271be5700e74b`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
-- Fulfillments: 16
+- Fulfillments: 15
 - Owners: 9
 - Ready tasks: 0
-- Blocked tasks: 16
-- Placeholder source URIs: 16
+- Blocked tasks: 15
+- Placeholder source URIs: 15
 - Live source URIs: 0
 
 ## Task Review
 
 | Task | Owner | Status | Source URI | Blocking Reasons |
 |---|---|---|---|---|
-| `insurer-api-and-actuarial-products:customer` | customer success/account owner | blocked | TODO://authority/insurer-api-and-actuarial-products/customer | `placeholder-source-uri` |
 | `state-of-agent-reliability-report:customer` | customer success/account owner | blocked | TODO://authority/state-of-agent-reliability-report/customer | `placeholder-source-uri` |
 | `roadmap-phase-scoreboard:ci-run` | release engineering | blocked | TODO://authority/roadmap-phase-scoreboard/ci-run | `placeholder-source-uri` |
 | `roadmap-phase-scoreboard:regulator` | legal/compliance owner | blocked | TODO://authority/roadmap-phase-scoreboard/regulator | `placeholder-source-uri` |
@@ -35,12 +34,12 @@
 
 - Fulfilled source map errors: 1
 - Fulfilled source map warnings: 1
-  - source map contains 16 placeholder source_uri values but live source URIs are required
+  - source map contains 15 placeholder source_uri values but live source URIs are required
 
 ## Blockers
 
-- owner fulfillment review contains 16 placeholder source_uri values
-- fulfilled source map: source map contains 16 placeholder source_uri values but live source URIs are required
+- owner fulfillment review contains 15 placeholder source_uri values
+- fulfilled source map: source map contains 15 placeholder source_uri values but live source URIs are required
 
 ## Next Actions
 

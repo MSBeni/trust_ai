@@ -808,6 +808,20 @@ RETAINED_SOURCES: dict[str, dict[str, str]] = {
         "snapshot_out": "examples/aitrade/external-evidence/insurer-api-actuarial-insurer-source-snapshot.json",
         "intake_out": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-insurer.json",
     },
+    "insurer-api-and-actuarial-products:customer": {
+        "source_uri": "https://customers.example/aitrade/model-risk/insurer-api-actuarial-products/reference-acceptance/2026-07-12",
+        "description": "Retained customer acceptance export for insurer API and actuarial products evidence",
+        "artifact": "examples/aitrade/external-evidence/insurer-api-actuarial-customer-source-snapshot.json",
+        "source_file": "examples/aitrade/insurer-api-and-actuarial-products-customer-authority-export.json",
+        "retrieval_method": "file-copy",
+        "content_type": "application/json",
+        "issuer": "Aitrade Model Risk Committee",
+        "subject": "aitrade insurer API and actuarial products customer acceptance evidence",
+        "issued_at": "2026-07-12T00:00:00Z",
+        "expires_at": "2026-12-31T00:00:00Z",
+        "snapshot_out": "examples/aitrade/external-evidence/insurer-api-actuarial-customer-source-snapshot.json",
+        "intake_out": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-customer.json",
+    },
 }
 
 

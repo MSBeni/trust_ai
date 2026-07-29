@@ -1,19 +1,19 @@
 # External Evidence Gap Report
 
-- Gap report ID: `b16bc58bae04c52892366791db7ffafc3692bde6be3ba3d79dc97464ba243209`
+- Gap report ID: `8e680622c83c46587989c2c482210da79b804cf4e66277897f139bdb206d549a`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `partial`
-- Covered authority kinds: 55/71
-- Missing authority kinds: 16
-- Remaining collection tasks: 16
-- Source-map entries: 16
-- Placeholder source URIs: 16
+- Covered authority kinds: 56/71
+- Missing authority kinds: 15
+- Remaining collection tasks: 15
+- Source-map entries: 15
+- Placeholder source URIs: 15
 - Live source URIs: 0
 
 ## Gaps By Authority Kind
 
 - `ci-run`: 3
-- `customer`: 5
+- `customer`: 4
 - `hosted-service`: 1
 - `identity-provider`: 1
 - `insurer`: 1
@@ -24,7 +24,6 @@
 
 ## Gaps By Requirement
 
-- `insurer-api-and-actuarial-products`: 1
 - `product-scope-discipline`: 2
 - `roadmap-phase-scoreboard`: 5
 - `runtime-policy-and-attestation`: 1
@@ -33,17 +32,6 @@
 - `trust-network-procurement-and-marketplace`: 4
 
 ## Collection Worklist
-
-### insurer-api-and-actuarial-products:customer
-
-- Title: Consent-gated insurer telemetry, underwriting quotes, and actuarial products
-- Authority kind: `customer`
-- Owner hint: customer success/account owner
-- Description: customer evidence for insurer-api-and-actuarial-products
-- Source URI: `TODO://authority/insurer-api-and-actuarial-products/customer`
-- Snapshot output: `artifacts/external-evidence-sources/insurer-api-and-actuarial-products/customer.json`
-- Intake output: `artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/customer.json`
-- Suggested evidence sources: customer acceptance artifact; contract/payment/procurement evidence; deployment or signoff record
 
 ### state-of-agent-reliability-report:customer
 

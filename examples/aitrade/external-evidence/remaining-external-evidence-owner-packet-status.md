@@ -1,21 +1,21 @@
 # External Evidence Owner Packet Status
 
-- Status ID: `b72204999e0cbc2d045aa78c6ec57fe4d3559eb0a3ebcc5e9002460502647c70`
+- Status ID: `d33e1f4a4f17ea7f0c3de9dc7b9bdd65b1dad4c980a2f17c71c38d8d7fe7daa7`
 - Generated at: `2026-07-12T00:01:00Z`
 - Packets: 9
-- Tasks: 16
+- Tasks: 15
 - Closed tasks: 0
 - Open tasks: 0
-- Blocked tasks: 16
-- Placeholder source URIs: 16
-- Missing intakes: 16
+- Blocked tasks: 15
+- Placeholder source URIs: 15
+- Missing intakes: 15
 
 ## Packets
 
 | Owner | Packet | Status | Tasks | Closed | Open | Blocked |
 |---|---|---|---:|---:|---:|---:|
 | IAM/identity owner | `owner-packet:owner_hint:IAM-identity-owner` | blocked | 1 | 0 | 0 | 1 |
-| customer success/account owner | `owner-packet:owner_hint:customer-success-account-owner` | blocked | 5 | 0 | 0 | 5 |
+| customer success/account owner | `owner-packet:owner_hint:customer-success-account-owner` | blocked | 4 | 0 | 0 | 4 |
 | integration/platform owner | `owner-packet:owner_hint:integration-platform-owner` | blocked | 1 | 0 | 0 | 1 |
 | legal/compliance owner | `owner-packet:owner_hint:legal-compliance-owner` | blocked | 1 | 0 | 0 | 1 |
 | release engineering | `owner-packet:owner_hint:release-engineering` | blocked | 3 | 0 | 0 | 3 |
@@ -31,7 +31,6 @@
 | `trust-network-procurement-and-marketplace:identity-provider` | IAM/identity owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `product-scope-discipline:customer` | customer success/account owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `roadmap-phase-scoreboard:customer` | customer success/account owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
-| `insurer-api-and-actuarial-products:customer` | customer success/account owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `state-of-agent-reliability-report:customer` | customer success/account owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `trust-network-procurement-and-marketplace:customer` | customer success/account owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |
 | `trust-network-procurement-and-marketplace:provider-api` | integration/platform owner | blocked | placeholder | `placeholder-source-uri`, `missing-intake` |

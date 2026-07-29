@@ -950,6 +950,28 @@
         "kms-hsm",
         "provider-api",
         "hosted-service",
+        "identity-provider",
+        "insurer",
+        "customer"
+      ],
+      "authority_kind": "customer",
+      "description": "Retained customer acceptance export for insurer API and actuarial products evidence",
+      "evidence_id": "622bca0d4391b1c3703d08dd0ec5364dcea883857d5751467d4b8e43b1d92cf2",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "Aitrade Model Risk Committee",
+      "path": "examples/aitrade/external-evidence/insurer-api-actuarial-customer-source-snapshot.json",
+      "requirement_id": "insurer-api-and-actuarial-products",
+      "sha256": "sha256:5ffbb2e791374b4b2f10b4f5c2fbef840cabed27c9114b22ca0b2e94554ae27e",
+      "source_uri": "https://customers.example/aitrade/model-risk/insurer-api-actuarial-products/reference-acceptance/2026-07-12",
+      "subject": "aitrade insurer API and actuarial products customer acceptance evidence"
+    },
+    {
+      "accepted_authority_kinds": [
+        "ci-run",
+        "kms-hsm",
+        "provider-api",
+        "hosted-service",
         "identity-provider"
       ],
       "authority_kind": "kms-hsm",
@@ -1065,7 +1087,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "2a5c37f6d4f5bf3f763eb9b4b8b455766db7c636bdd221fb62cd20acb4e6d16b",
+  "manifest_id": "84ac9821cf1a63c0ca595e7e7bc8e9e6abd861898e06003e0d7caa2e1b8d1c22",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -1707,7 +1729,7 @@
     },
     {
       "authority_kind": "customer",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Insurer partner production authority dossiers cover the local/reference authority checklist for credentialed partner API calls, partner-owned authentication events, operated insurer worker fleets, live underwriter responses, policy-system workflow execution, immutable partner delivery logs, scheduler/lease storage, credential vault/KMS custody, consent/PII enforcement, actuarial risk publication, and observability evidence; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, frontend replay, actuarial replay, telemetry and underwriting quote hashes, and service/worker linkage before external insurer authority evidence is accepted. Actual fresh insurer-owned API, identity-provider, policy-system, delivery-log, KMS, and hosted worker exports remain external deployment evidence."
       ],
@@ -2292,7 +2314,7 @@
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {
-    "covered_authority_kind_count": 55,
+    "covered_authority_kind_count": 56,
     "covered_authority_kinds_by_requirement": {
       "agent-inventory-and-identity": [
         "provider-api",
@@ -2340,7 +2362,8 @@
         "provider-api",
         "hosted-service",
         "identity-provider",
-        "insurer"
+        "insurer",
+        "customer"
       ],
       "mcp-gateway": [
         "ci-run",
@@ -2398,15 +2421,12 @@
       "trustai-own-compliance",
       "vertical-packs"
     ],
-    "evidence_count": 55,
-    "expires_at_count": 55,
-    "freshness_window_count": 55,
-    "issued_at_count": 55,
-    "missing_authority_kind_count": 16,
+    "evidence_count": 56,
+    "expires_at_count": 56,
+    "freshness_window_count": 56,
+    "issued_at_count": 56,
+    "missing_authority_kind_count": 15,
     "missing_authority_kinds_by_requirement": {
-      "insurer-api-and-actuarial-products": [
-        "customer"
-      ],
       "product-scope-discipline": [
         "ci-run",
         "customer"
