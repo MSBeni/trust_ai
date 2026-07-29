@@ -17,6 +17,7 @@ from .merkle import verify_inclusion
 from .tree_header import verify_packed_tree_header
 from .mcp_gateway import MCP_TOOL_CALL_ENTRY_TYPE, verify_mcp_transcript_entries
 from .proofpack import PROOF_PACK_SPEC_VERSION
+from .policy import POLICY_DECISION_ENTRY_TYPE, evaluate_policy
 from .runtime import RUNTIME_ENTRY_TYPE, evaluate_runtime_action
 from .registry import (
     AGENT_INVENTORY_ENTRY_TYPE,
@@ -95,6 +96,7 @@ def verify_proof_pack(
     shadow_entries: list[dict[str, Any]] = []
     mcp_entries: list[dict[str, Any]] = []
     runtime_entries: list[dict[str, Any]] = []
+    policy_entries: list[dict[str, Any]] = []
     soak_entries: list[dict[str, Any]] = []
     delegation_graph_entries: list[dict[str, Any]] = []
 
@@ -131,6 +133,8 @@ def verify_proof_pack(
                 mcp_entries.append(entry)
             if entry_type == RUNTIME_ENTRY_TYPE:
                 runtime_entries.append(entry)
+            if entry_type == POLICY_DECISION_ENTRY_TYPE:
+                policy_entries.append(entry)
             if entry_type == SOAK_REPORT_ENTRY_TYPE:
                 soak_entries.append(entry)
             if entry_type == DELEGATION_GRAPH_ENTRY_TYPE:
@@ -277,6 +281,42 @@ def verify_proof_pack(
             for key_name in ("contract_id", "contract_hash", "action_hash", "timestamp", "passed", "outcome", "checks"):
                 if payload.get(key_name) != expected_runtime.get(key_name):
                     errors.append(f"runtime attestation entry {runtime_entry.get('index')} mismatch for {key_name}")
+
+    if contract_digest and isinstance(contract_body, dict):
+        for policy_entry in policy_entries:
+            payload = policy_entry.get("payload", {})
+            if not isinstance(payload, dict):
+                errors.append(f"policy decision entry {policy_entry.get('index')} payload missing")
+                continue
+            if payload.get("contract_hash") != contract_digest:
+                errors.append(f"policy decision entry {policy_entry.get('index')} references a different contract hash")
+            if policy_entry.get("timestamp") != payload.get("evaluated_at"):
+                errors.append(f"policy decision entry {policy_entry.get('index')} timestamp mismatch")
+            policy_pack = payload.get("policy_pack")
+            if not isinstance(policy_pack, dict):
+                errors.append(f"policy decision entry {policy_entry.get('index')} policy_pack missing")
+                continue
+            if payload.get("policy_pack_hash") != content_hash(policy_pack):
+                errors.append(f"policy decision entry {policy_entry.get('index')} policy_pack hash mismatch")
+            if payload.get("policy_pack_id") != policy_pack.get("id"):
+                errors.append(f"policy decision entry {policy_entry.get('index')} policy_pack id mismatch")
+            if payload.get("policy_pack_version") != policy_pack.get("version"):
+                errors.append(f"policy decision entry {policy_entry.get('index')} policy_pack version mismatch")
+            action = payload.get("action")
+            if not isinstance(action, dict):
+                errors.append(f"policy decision entry {policy_entry.get('index')} action missing")
+                continue
+            if not payload.get("evaluated_at"):
+                errors.append(f"policy decision entry {policy_entry.get('index')} evaluated_at missing")
+                continue
+            try:
+                expected_policy = evaluate_policy(policy_pack, action, proof_pack=proof_pack, now=str(payload["evaluated_at"]))
+            except (KeyError, TypeError, ValueError) as exc:
+                errors.append(f"policy decision entry {policy_entry.get('index')} replay failed: {exc}")
+                continue
+            for key_name in ("policy_pack_id", "policy_pack_version", "policy_pack_hash", "policy_pack", "contract_hash", "action_hash", "evaluated_at", "passed", "outcome", "checks", "matched_rules", "action"):
+                if payload.get(key_name) != expected_policy.get(key_name):
+                    errors.append(f"policy decision entry {policy_entry.get('index')} mismatch for {key_name}")
 
     if contract_digest and isinstance(contract_body, dict):
         for soak_entry in soak_entries:

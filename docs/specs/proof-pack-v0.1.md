@@ -74,13 +74,18 @@ An offline verifier must reject the pack when any of these checks fail:
 15. any included `runtime.attested` entry contains action hash, timestamp,
     blast-radius check, approval, outcome, or contract evidence that cannot be
     replayed against the packed contract body and embedded action;
-16. any included `agent.delegation_graph.exported` entry omits the embedded
+16. any included `policy.decision` entry omits the embedded policy pack,
+    mismatches the policy pack hash/id/version, timestamp, action hash, proof
+    freshness, rule result, outcome, or contract evidence that cannot be
+    replayed against the packed proof body, embedded policy pack, and embedded
+    action;
+17. any included `agent.delegation_graph.exported` entry omits the embedded
     signed graph, mismatches the graph hash/id/summary/filter fields, references
     another contract, fails graph signature/hash/source inclusion checks, or
     names source inventory/delegation entries that are not embedded in the pack;
-17. the packed framework control mappings differ from the deterministic mappings
+18. the packed framework control mappings differ from the deterministic mappings
     for the packed gate decision;
-18. the packed subject agent or environment differs from the registered
+19. the packed subject agent or environment differs from the registered
     contract agent, gate decision agent, eval entry agent, or eval results
     environment.
 

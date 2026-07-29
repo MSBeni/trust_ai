@@ -8,6 +8,7 @@ from trustai.chain import EvidenceChain
 from trustai.contracts import load_contract, register_contract
 from trustai.crypto import sign_value
 from trustai.gate import append_eval_and_gate
+from trustai.policy import POLICY_DECISION_ENTRY_TYPE, append_policy_decision, evaluate_policy, load_policy_pack
 from trustai.proofpack import compile_proof_pack
 from trustai.runtime import RUNTIME_ENTRY_TYPE, append_runtime_attestation, evaluate_runtime_action, load_action
 from trustai.registry import (
@@ -20,6 +21,7 @@ from trustai.registry import (
     load_delegation,
     load_inventory,
 )
+from trustai.shadow import append_shadow_replay, append_soak_report, load_shadow_replay, load_soak_window, shadow_replay_to_eval_results
 from trustai.verifier import verify_proof_pack
 
 
@@ -29,6 +31,9 @@ RESULTS = ROOT / "examples" / "aitrade" / "eval-results.json"
 INVENTORY = ROOT / "examples" / "aitrade" / "agent-inventory.json"
 DELEGATION = ROOT / "examples" / "aitrade" / "delegation.json"
 ACTION = ROOT / "examples" / "aitrade" / "runtime-action.json"
+POLICY = ROOT / "examples" / "aitrade" / "policy-pack.json"
+SHADOW = ROOT / "examples" / "aitrade" / "shadow-replay.json"
+SOAK = ROOT / "examples" / "aitrade" / "soak-window.json"
 
 
 class ProofPackFlowTests(unittest.TestCase):
@@ -62,6 +67,31 @@ class ProofPackFlowTests(unittest.TestCase):
             append_runtime_attestation(chain, contract, action)
         results = json.loads(RESULTS.read_text(encoding="utf-8"))
         eval_entry, gate_entry, decision = append_eval_and_gate(chain, contract, results)
+        chain.save()
+        return compile_proof_pack(chain, contract, eval_entry, gate_entry, decision, out_path=tmp / "pack.json")
+
+    def _build_pack_with_policy_decision(self, tmp: Path, *, tamper_payload: bool = False):
+        chain = EvidenceChain.load(tmp / "chain.json", tenant_id="test")
+        contract = load_contract(CONTRACT)
+        register_contract(chain, contract)
+        shadow = load_shadow_replay(SHADOW)
+        append_shadow_replay(chain, contract, shadow)
+        append_soak_report(chain, contract, load_soak_window(SOAK))
+        append_runtime_attestation(chain, contract, load_action(ACTION))
+        eval_entry, gate_entry, decision = append_eval_and_gate(
+            chain,
+            contract,
+            shadow_replay_to_eval_results(contract, shadow),
+        )
+        base_pack = compile_proof_pack(chain, contract, eval_entry, gate_entry, decision, out_path=tmp / "base-pack.json")
+        policy = load_policy_pack(POLICY)
+        action = load_action(ACTION)
+        if tamper_payload:
+            payload = evaluate_policy(policy, action, proof_pack=base_pack, now="2026-07-04T02:00:00Z")
+            payload["checks"][0] = {**payload["checks"][0], "passed": not payload["checks"][0]["passed"]}
+            chain.append(POLICY_DECISION_ENTRY_TYPE, payload, timestamp=payload["evaluated_at"])
+        else:
+            append_policy_decision(chain, policy, action, proof_pack=base_pack, now="2026-07-04T02:00:00Z")
         chain.save()
         return compile_proof_pack(chain, contract, eval_entry, gate_entry, decision, out_path=tmp / "pack.json")
 
@@ -168,6 +198,27 @@ class ProofPackFlowTests(unittest.TestCase):
 
             self.assertFalse(result.ok)
             self.assertTrue(any("runtime attestation entry" in error and "mismatch for checks" in error for error in result.errors))
+            self.assertNotIn("pack_id does not match canonical pack body", result.errors)
+            self.assertNotIn("proof pack signature invalid", result.errors)
+
+    def test_proof_pack_includes_and_verifies_policy_decision(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            pack = self._build_pack_with_policy_decision(Path(tmp_dir))
+
+            result = verify_proof_pack(pack)
+
+            self.assertTrue(result.ok, result.errors)
+            policy_entry = next(entry for entry in pack["chain"]["entries"] if entry["entry_type"] == POLICY_DECISION_ENTRY_TYPE)
+            self.assertEqual(content_hash(policy_entry["payload"]["policy_pack"]), policy_entry["payload"]["policy_pack_hash"])
+
+    def test_proof_pack_rejects_signed_policy_decision_semantic_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            pack = self._build_pack_with_policy_decision(Path(tmp_dir), tamper_payload=True)
+
+            result = verify_proof_pack(pack)
+
+            self.assertFalse(result.ok)
+            self.assertTrue(any("policy decision entry" in error and "mismatch for checks" in error for error in result.errors))
             self.assertNotIn("pack_id does not match canonical pack body", result.errors)
             self.assertNotIn("proof pack signature invalid", result.errors)
 

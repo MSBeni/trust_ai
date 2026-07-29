@@ -255,6 +255,7 @@ def evaluate_policy(
         "policy_pack_id": policy_pack["id"],
         "policy_pack_version": policy_pack["version"],
         "policy_pack_hash": content_hash(policy_pack),
+        "policy_pack": policy_pack,
         "contract_hash": (proof_pack or {}).get("contract", {}).get("hash") or action.get("contract_hash"),
         "action_hash": content_hash(action),
         "evaluated_at": now or utc_now(),

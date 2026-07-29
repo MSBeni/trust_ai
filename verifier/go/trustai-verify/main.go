@@ -20,13 +20,13 @@ import (
 const (
 	proofPackSpecVersion = "trustai.proof-pack/0.1"
 
-	roadmapEvidenceBundleSchema         = "trustai.roadmap-evidence-bundle/0.1"
-	roadmapEvidenceReportSchema         = "trustai.roadmap-evidence-report/0.1"
-	chainSpecVersion                    = "trustai.evidence-chain/0.1"
-	externalEvidenceCollectionRunSchema = "trustai.external-evidence-collection-run/0.1"
-	externalEvidenceSourceMapSchema     = "trustai.external-evidence-source-map/0.1"
+	roadmapEvidenceBundleSchema          = "trustai.roadmap-evidence-bundle/0.1"
+	roadmapEvidenceReportSchema          = "trustai.roadmap-evidence-report/0.1"
+	chainSpecVersion                     = "trustai.evidence-chain/0.1"
+	externalEvidenceCollectionRunSchema  = "trustai.external-evidence-collection-run/0.1"
+	externalEvidenceSourceMapSchema      = "trustai.external-evidence-source-map/0.1"
 	externalEvidenceSourceSnapshotSchema = "trustai.external-evidence-source-snapshot/0.1"
-	externalEvidenceIntakeSchema        = "trustai.external-evidence-intake/0.1"
+	externalEvidenceIntakeSchema         = "trustai.external-evidence-intake/0.1"
 
 	defaultSigningKey = "trustai-local-dev-key-change-me"
 	defaultTSAKey     = "trustai-local-tsa-key-change-me"
@@ -36,6 +36,8 @@ const (
 	gateEntryType                          = "promotion_gate.decided"
 	approvalEntryType                      = "human_approval.granted"
 	runtimeEntryType                       = "runtime.attested"
+	policyDecisionEntryType                = "policy.decision"
+	policyPackSpecVersion                  = "trustai.policy-pack/0.1"
 	roadmapAuditEntryType                  = "trustai.roadmap_audit.attested"
 	externalEvidenceEntryType              = "trustai.external_evidence_manifest.attested"
 	externalEvidenceCollectionRunEntryType = "trustai.external_evidence_collection_run.attested"
@@ -540,33 +542,34 @@ func verifyExternalEvidenceCollectionRunEntrySummary(entry map[string]any, error
 		*errors = append(*errors, fmt.Sprintf("external evidence collection run entry %v was not appended with source snapshot artifact verification", entry["index"]))
 	}
 }
+
 type bundleSourceRefs struct {
-	manifestEvidence             map[string]string
-	embeddedExternalFiles        map[string]bool
-	collectionSourceMapHashes    map[string]bool
-	collectionSnapshotRefs       map[string]string
-	collectionIntakeRefs         map[string]string
-	embeddedRoadmapAuditHashes    map[string]bool
+	manifestEvidence               map[string]string
+	embeddedExternalFiles          map[string]bool
+	collectionSourceMapHashes      map[string]bool
+	collectionSnapshotRefs         map[string]string
+	collectionIntakeRefs           map[string]string
+	embeddedRoadmapAuditHashes     map[string]bool
 	embeddedExternalManifestHashes map[string]bool
-	embeddedCollectionRunHashes  map[string]bool
-	embeddedSourceMapHashes      map[string]bool
-	embeddedSnapshotRefs         map[string]bool
-	embeddedIntakeRefs           map[string]bool
+	embeddedCollectionRunHashes    map[string]bool
+	embeddedSourceMapHashes        map[string]bool
+	embeddedSnapshotRefs           map[string]bool
+	embeddedIntakeRefs             map[string]bool
 }
 
 func newBundleSourceRefs() bundleSourceRefs {
 	return bundleSourceRefs{
-		manifestEvidence:              map[string]string{},
-		embeddedExternalFiles:         map[string]bool{},
-		collectionSourceMapHashes:     map[string]bool{},
-		collectionSnapshotRefs:        map[string]string{},
-		collectionIntakeRefs:          map[string]string{},
-		embeddedRoadmapAuditHashes:    map[string]bool{},
+		manifestEvidence:               map[string]string{},
+		embeddedExternalFiles:          map[string]bool{},
+		collectionSourceMapHashes:      map[string]bool{},
+		collectionSnapshotRefs:         map[string]string{},
+		collectionIntakeRefs:           map[string]string{},
+		embeddedRoadmapAuditHashes:     map[string]bool{},
 		embeddedExternalManifestHashes: map[string]bool{},
-		embeddedCollectionRunHashes:   map[string]bool{},
-		embeddedSourceMapHashes:       map[string]bool{},
-		embeddedSnapshotRefs:          map[string]bool{},
-		embeddedIntakeRefs:            map[string]bool{},
+		embeddedCollectionRunHashes:    map[string]bool{},
+		embeddedSourceMapHashes:        map[string]bool{},
+		embeddedSnapshotRefs:           map[string]bool{},
+		embeddedIntakeRefs:             map[string]bool{},
 	}
 }
 
@@ -863,28 +866,28 @@ func roadmapEvidenceSummary(entries []map[string]any, chainResult roadmapChainRe
 	return map[string]any{
 		"semantic_ok":                                  chainResult.OK,
 		"chain_entry_count":                            len(entries),
-		"roadmap_audit_entry_count":                     chainResult.AuditEntryCount,
-		"external_evidence_entry_count":                 chainResult.ExternalEvidenceEntryCount,
-		"external_evidence_collection_run_entry_count":  chainResult.ExternalEvidenceCollectionRunEntryCount,
-		"complete_external_evidence_entry_count":        chainResult.CompleteExternalEvidenceEntryCount,
-		"fresh_external_evidence_entry_count":           chainResult.FreshExternalEvidenceEntryCount,
-		"has_external_evidence":                         chainResult.ExternalEvidenceEntryCount > 0,
-		"has_external_evidence_collection_runs":         chainResult.ExternalEvidenceCollectionRunEntryCount > 0,
-		"has_complete_external_evidence":                chainResult.CompleteExternalEvidenceEntryCount > 0,
-		"has_fresh_external_evidence":                   chainResult.FreshExternalEvidenceEntryCount > 0,
+		"roadmap_audit_entry_count":                    chainResult.AuditEntryCount,
+		"external_evidence_entry_count":                chainResult.ExternalEvidenceEntryCount,
+		"external_evidence_collection_run_entry_count": chainResult.ExternalEvidenceCollectionRunEntryCount,
+		"complete_external_evidence_entry_count":       chainResult.CompleteExternalEvidenceEntryCount,
+		"fresh_external_evidence_entry_count":          chainResult.FreshExternalEvidenceEntryCount,
+		"has_external_evidence":                        chainResult.ExternalEvidenceEntryCount > 0,
+		"has_external_evidence_collection_runs":        chainResult.ExternalEvidenceCollectionRunEntryCount > 0,
+		"has_complete_external_evidence":               chainResult.CompleteExternalEvidenceEntryCount > 0,
+		"has_fresh_external_evidence":                  chainResult.FreshExternalEvidenceEntryCount > 0,
 	}
 }
 
 func roadmapEvidenceVerificationRecord(chainResult roadmapChainResult) map[string]any {
 	return map[string]any{
-		"ok":                                            chainResult.OK,
-		"errors":                                        chainResult.Errors,
-		"warnings":                                      chainResult.Warnings,
-		"audit_entry_count":                             chainResult.AuditEntryCount,
-		"external_evidence_entry_count":                 chainResult.ExternalEvidenceEntryCount,
-		"external_evidence_collection_run_entry_count":  chainResult.ExternalEvidenceCollectionRunEntryCount,
-		"complete_external_evidence_entry_count":        chainResult.CompleteExternalEvidenceEntryCount,
-		"fresh_external_evidence_entry_count":           chainResult.FreshExternalEvidenceEntryCount,
+		"ok":                            chainResult.OK,
+		"errors":                        chainResult.Errors,
+		"warnings":                      chainResult.Warnings,
+		"audit_entry_count":             chainResult.AuditEntryCount,
+		"external_evidence_entry_count": chainResult.ExternalEvidenceEntryCount,
+		"external_evidence_collection_run_entry_count": chainResult.ExternalEvidenceCollectionRunEntryCount,
+		"complete_external_evidence_entry_count":       chainResult.CompleteExternalEvidenceEntryCount,
+		"fresh_external_evidence_entry_count":          chainResult.FreshExternalEvidenceEntryCount,
 	}
 }
 
@@ -894,17 +897,17 @@ func roadmapEvidenceBundleSummary(entries []map[string]any, report map[string]an
 		reportSummary = map[string]any{}
 	}
 	return map[string]any{
-		"report_id":                                    report["report_id"],
-		"report_hash":                                  contentHash(report),
-		"chain_tree":                                   chainTree(entries),
-		"chain_entry_count":                            len(entries),
-		"roadmap_audit_entry_count":                     reportSummary["roadmap_audit_entry_count"],
-		"external_evidence_entry_count":                 reportSummary["external_evidence_entry_count"],
-		"external_evidence_collection_run_entry_count":  reportSummary["external_evidence_collection_run_entry_count"],
-		"complete_external_evidence_entry_count":        reportSummary["complete_external_evidence_entry_count"],
-		"fresh_external_evidence_entry_count":           reportSummary["fresh_external_evidence_entry_count"],
-		"source_artifact_count":                         len(sourceArtifacts),
-		"semantic_ok":                                   reportSummary["semantic_ok"],
+		"report_id":                     report["report_id"],
+		"report_hash":                   contentHash(report),
+		"chain_tree":                    chainTree(entries),
+		"chain_entry_count":             len(entries),
+		"roadmap_audit_entry_count":     reportSummary["roadmap_audit_entry_count"],
+		"external_evidence_entry_count": reportSummary["external_evidence_entry_count"],
+		"external_evidence_collection_run_entry_count": reportSummary["external_evidence_collection_run_entry_count"],
+		"complete_external_evidence_entry_count":       reportSummary["complete_external_evidence_entry_count"],
+		"fresh_external_evidence_entry_count":          reportSummary["fresh_external_evidence_entry_count"],
+		"source_artifact_count":                        len(sourceArtifacts),
+		"semantic_ok":                                  reportSummary["semantic_ok"],
 	}
 }
 
@@ -945,19 +948,19 @@ func externalEvidenceEntryRecords(entries []map[string]any) []any {
 			payload = map[string]any{}
 		}
 		records = append(records, map[string]any{
-			"index":                                   entry["index"],
-			"entry_id":                                entry["entry_id"],
-			"timestamp":                               entry["timestamp"],
-			"manifest_id":                             payload["manifest_id"],
-			"manifest_hash":                           payload["manifest_hash"],
-			"manifest_ref":                            payload["manifest_ref"],
-			"source_roadmap_audit":                    payload["source_roadmap_audit"],
-			"source_roadmap_audit_inclusion_proof":    roadmapProofRecord(payload["source_roadmap_audit_inclusion_proof"]),
-			"status":                                  payload["status"],
-			"require_complete":                        payload["require_complete"],
-			"require_fresh":                           payload["require_fresh"],
-			"require_live_source_uris":                payload["require_live_source_uris"],
-			"require_source_snapshot_artifacts":       payload["require_source_snapshot_artifacts"],
+			"index":                                entry["index"],
+			"entry_id":                             entry["entry_id"],
+			"timestamp":                            entry["timestamp"],
+			"manifest_id":                          payload["manifest_id"],
+			"manifest_hash":                        payload["manifest_hash"],
+			"manifest_ref":                         payload["manifest_ref"],
+			"source_roadmap_audit":                 payload["source_roadmap_audit"],
+			"source_roadmap_audit_inclusion_proof": roadmapProofRecord(payload["source_roadmap_audit_inclusion_proof"]),
+			"status":                               payload["status"],
+			"require_complete":                     payload["require_complete"],
+			"require_fresh":                        payload["require_fresh"],
+			"require_live_source_uris":             payload["require_live_source_uris"],
+			"require_source_snapshot_artifacts":    payload["require_source_snapshot_artifacts"],
 			"require_fresh_source_snapshot_artifacts": payload["require_fresh_source_snapshot_artifacts"],
 			"freshness_checked_at":                    payload["freshness_checked_at"],
 			"required_requirement_count":              payload["required_requirement_count"],
@@ -993,20 +996,20 @@ func externalEvidenceCollectionRunEntryRecords(entries []map[string]any) []any {
 			payload = map[string]any{}
 		}
 		records = append(records, map[string]any{
-			"index":                                   entry["index"],
-			"entry_id":                                entry["entry_id"],
-			"timestamp":                               entry["timestamp"],
-			"run_id":                                  payload["run_id"],
-			"run_hash":                                payload["run_hash"],
-			"source_map":                              payload["source_map"],
-			"source_map_hash":                         payload["source_map_hash"],
-			"source_plan":                             payload["source_plan"],
-			"source_manifest":                         payload["source_manifest"],
-			"source_roadmap_audit":                    payload["source_roadmap_audit"],
-			"source_roadmap_audit_inclusion_proof":    roadmapProofRecord(payload["source_roadmap_audit_inclusion_proof"]),
-			"require_fresh":                           payload["require_fresh"],
-			"require_live_source_uris":                payload["require_live_source_uris"],
-			"require_source_snapshot_artifacts":       payload["require_source_snapshot_artifacts"],
+			"index":                                entry["index"],
+			"entry_id":                             entry["entry_id"],
+			"timestamp":                            entry["timestamp"],
+			"run_id":                               payload["run_id"],
+			"run_hash":                             payload["run_hash"],
+			"source_map":                           payload["source_map"],
+			"source_map_hash":                      payload["source_map_hash"],
+			"source_plan":                          payload["source_plan"],
+			"source_manifest":                      payload["source_manifest"],
+			"source_roadmap_audit":                 payload["source_roadmap_audit"],
+			"source_roadmap_audit_inclusion_proof": roadmapProofRecord(payload["source_roadmap_audit_inclusion_proof"]),
+			"require_fresh":                        payload["require_fresh"],
+			"require_live_source_uris":             payload["require_live_source_uris"],
+			"require_source_snapshot_artifacts":    payload["require_source_snapshot_artifacts"],
 			"require_fresh_source_snapshot_artifacts": payload["require_fresh_source_snapshot_artifacts"],
 			"freshness_checked_at":                    payload["freshness_checked_at"],
 			"collected_count":                         payload["collected_count"],
@@ -1218,6 +1221,7 @@ func verifyProofPack(pack map[string]any, key, tsaKey string) result {
 	entryByType := map[string]map[string]any{}
 	var approvalEntries []map[string]any
 	var runtimeEntries []map[string]any
+	var policyEntries []map[string]any
 
 	if root == "" {
 		errors = append(errors, "chain tree root missing")
@@ -1260,6 +1264,9 @@ func verifyProofPack(pack map[string]any, key, tsaKey string) result {
 			}
 			if entryType == runtimeEntryType {
 				runtimeEntries = append(runtimeEntries, entry)
+			}
+			if entryType == policyDecisionEntryType {
+				policyEntries = append(policyEntries, entry)
 			}
 		}
 	}
@@ -1366,6 +1373,11 @@ func verifyProofPack(pack map[string]any, key, tsaKey string) result {
 			verifyRuntimeAttestationEntry(runtimeEntry, contractBody, contractDigest, &errors)
 		}
 	}
+	if contractDigest != "" {
+		for _, policyEntry := range policyEntries {
+			verifyPolicyDecisionEntry(policyEntry, pack, contractDigest, &errors)
+		}
+	}
 
 	frameworkMappings, frameworkMappingsOK := pack["framework_mappings"].([]any)
 	if !frameworkMappingsOK {
@@ -1415,6 +1427,55 @@ func verifyRuntimeAttestationEntry(entry, contractBody map[string]any, contractD
 	}
 }
 
+func verifyPolicyDecisionEntry(entry, pack map[string]any, contractDigest string, errors *[]string) {
+	label := fmt.Sprintf("policy decision entry %v", entry["index"])
+	payload := getMap(entry, "payload")
+	if payload == nil {
+		*errors = append(*errors, label+" payload missing")
+		return
+	}
+	if getString(payload, "contract_hash") != contractDigest {
+		*errors = append(*errors, label+" references a different contract hash")
+	}
+	if getString(entry, "timestamp") != getString(payload, "evaluated_at") {
+		*errors = append(*errors, label+" timestamp mismatch")
+	}
+	policyPack := getMap(payload, "policy_pack")
+	if policyPack == nil {
+		*errors = append(*errors, label+" policy_pack missing")
+		return
+	}
+	if getString(payload, "policy_pack_hash") != contentHash(policyPack) {
+		*errors = append(*errors, label+" policy_pack hash mismatch")
+	}
+	if getString(payload, "policy_pack_id") != getString(policyPack, "id") {
+		*errors = append(*errors, label+" policy_pack id mismatch")
+	}
+	if getString(payload, "policy_pack_version") != getString(policyPack, "version") {
+		*errors = append(*errors, label+" policy_pack version mismatch")
+	}
+	action := getMap(payload, "action")
+	if action == nil {
+		*errors = append(*errors, label+" action missing")
+		return
+	}
+	evaluatedAt := getString(payload, "evaluated_at")
+	if evaluatedAt == "" {
+		*errors = append(*errors, label+" evaluated_at missing")
+		return
+	}
+	expected, err := evaluatePolicyDecision(policyPack, action, pack, evaluatedAt)
+	if err != "" {
+		*errors = append(*errors, label+" replay failed: "+err)
+		return
+	}
+	for _, k := range []string{"policy_pack_id", "policy_pack_version", "policy_pack_hash", "policy_pack", "contract_hash", "action_hash", "evaluated_at", "passed", "outcome", "checks", "matched_rules", "action"} {
+		if !canonicalEqual(payload[k], expected[k]) {
+			*errors = append(*errors, label+" mismatch for "+k)
+		}
+	}
+}
+
 func verifyEntry(entry map[string]any, key, tsaKey string) []string {
 	var errors []string
 	core := entryCore(entry)
@@ -1428,7 +1489,7 @@ func verifyEntry(entry map[string]any, key, tsaKey string) []string {
 	signaturePayload := map[string]any{"entry_id": entry["entry_id"], "core": core}
 	if token := getMap(entry, "timestamp_token"); token != nil {
 		message := map[string]any{
-			"entry_id":         entry["entry_id"],
+			"entry_id":        entry["entry_id"],
 			"entry_timestamp": core["timestamp"],
 			"payload_hash":    core["payload_hash"],
 		}
@@ -1460,6 +1521,274 @@ func verifyTimestampToken(message any, token map[string]any, tsaKey string) bool
 		return false
 	}
 	return verifyValue(map[string]any{"timestamp_token": unsigned}, sig, tsaKey)
+}
+
+func evaluatePolicyDecision(policyPack, action, pack map[string]any, evaluatedAt string) (map[string]any, string) {
+	if err := validatePolicyPack(policyPack); err != "" {
+		return nil, err
+	}
+	if evaluatedAt == "" {
+		return nil, "policy decision evaluated_at missing"
+	}
+	if mustParseTime(evaluatedAt).IsZero() {
+		return nil, "policy decision evaluated_at invalid"
+	}
+	context := map[string]any{"action": action, "proof": pack, "policy": policyPack}
+	var matchedRules []any
+	var checks []any
+	denied := false
+	freshness := evaluateProofFreshness(pack, policyPack, evaluatedAt)
+	freshnessCheck := map[string]any{"name": "proof_freshness"}
+	for k, v := range freshness {
+		freshnessCheck[k] = v
+	}
+	checks = append(checks, freshnessCheck)
+	if !getBool(freshness, "passed") {
+		denied = true
+	}
+	for _, rawRule := range getSlice(policyPack, "rules") {
+		rule, ok := rawRule.(map[string]any)
+		if !ok {
+			return nil, "policy pack rule must be an object"
+		}
+		matches := true
+		for _, rawCondition := range getSlice(rule, "conditions") {
+			condition, ok := rawCondition.(map[string]any)
+			if !ok {
+				return nil, "policy rule condition must be an object"
+			}
+			matched, err := policyConditionMatches(condition, context)
+			if err != "" {
+				return nil, err
+			}
+			if !matched {
+				matches = false
+				break
+			}
+		}
+		if !matches {
+			continue
+		}
+		effect := getString(rule, "effect")
+		if effect == "" {
+			effect = "deny"
+		}
+		ruleCheck := map[string]any{"name": getString(rule, "id"), "effect": effect, "matched": true, "passed": true}
+		if effect == "deny" {
+			ruleCheck["passed"] = false
+			denied = true
+		} else if effect == "require_approval" {
+			role := getString(rule, "approval_role")
+			approved := policyApprovalPresent(action, role)
+			ruleCheck["approval_role"] = role
+			ruleCheck["passed"] = approved
+			if !approved {
+				denied = true
+			}
+		} else if effect == "allow" {
+			ruleCheck["passed"] = true
+		} else {
+			return nil, "unsupported policy effect: " + effect
+		}
+		matchedRules = append(matchedRules, rule)
+		checks = append(checks, ruleCheck)
+	}
+	passed := !denied
+	outcome := "denied"
+	if passed {
+		outcome = "allowed"
+	}
+	contractHash := getString(getMap(pack, "contract"), "hash")
+	if contractHash == "" {
+		contractHash = getString(action, "contract_hash")
+	}
+	return map[string]any{
+		"policy_pack_id":      policyPack["id"],
+		"policy_pack_version": policyPack["version"],
+		"policy_pack_hash":    contentHash(policyPack),
+		"policy_pack":         policyPack,
+		"contract_hash":       contractHash,
+		"action_hash":         contentHash(action),
+		"evaluated_at":        evaluatedAt,
+		"passed":              passed,
+		"outcome":             outcome,
+		"checks":              checks,
+		"matched_rules":       matchedRules,
+		"action":              action,
+	}, ""
+}
+
+func evaluateProofFreshness(pack, policyPack map[string]any, now string) map[string]any {
+	if pack == nil {
+		return map[string]any{"passed": false, "checks": []any{map[string]any{"name": "active_proof_pack", "passed": false, "reason": "missing proof pack"}}}
+	}
+	nowTime := mustParseTime(now)
+	decay := getMap(policyPack, "proof_decay")
+	var checks []any
+	gateTS := getString(getMap(pack, "gate_decision"), "evaluated_at")
+	if gateTS == "" {
+		gateTS = getString(pack, "issued_at")
+	}
+	if threshold := decay["max_gate_age_hours"]; threshold != nil {
+		checks = append(checks, freshnessAgeCheck("max_gate_age_hours", gateTS, threshold, nowTime, "", "gate decision timestamp"))
+	}
+	latestByType := map[string]string{}
+	latestParsedByType := map[string]time.Time{}
+	invalidTimestampByType := map[string]string{}
+	for _, rawEntry := range getSlice(getMap(pack, "chain"), "entries") {
+		entry, ok := rawEntry.(map[string]any)
+		if !ok {
+			continue
+		}
+		entryType := getString(entry, "entry_type")
+		timestamp := getString(entry, "timestamp")
+		if entryType == "" || timestamp == "" {
+			continue
+		}
+		parsed := mustParseTime(timestamp)
+		if parsed.IsZero() {
+			if _, exists := invalidTimestampByType[entryType]; !exists {
+				invalidTimestampByType[entryType] = "invalid timestamp"
+			}
+			continue
+		}
+		if previous, exists := latestParsedByType[entryType]; !exists || parsed.After(previous) {
+			latestByType[entryType] = timestamp
+			latestParsedByType[entryType] = parsed
+		}
+	}
+	entryFreshness := []struct{ policyKey, entryType string }{
+		{"max_soak_age_hours", "soak_report.completed"},
+		{"max_runtime_attestation_age_hours", runtimeEntryType},
+		{"max_shadow_replay_age_hours", "shadow_replay.completed"},
+	}
+	for _, item := range entryFreshness {
+		threshold := decay[item.policyKey]
+		if threshold == nil {
+			continue
+		}
+		if reason, invalid := invalidTimestampByType[item.entryType]; invalid {
+			checks = append(checks, map[string]any{"name": item.policyKey, "entry_type": item.entryType, "passed": false, "reason": "invalid " + item.entryType + " timestamp: " + reason})
+			continue
+		}
+		timestamp := latestByType[item.entryType]
+		if timestamp == "" {
+			checks = append(checks, map[string]any{"name": item.policyKey, "entry_type": item.entryType, "passed": false, "reason": "missing " + item.entryType + " evidence"})
+			continue
+		}
+		checks = append(checks, freshnessAgeCheck(item.policyKey, timestamp, threshold, nowTime, item.entryType, item.entryType+" timestamp"))
+	}
+	passed := true
+	for _, rawCheck := range checks {
+		if !getBool(rawCheck.(map[string]any), "passed") {
+			passed = false
+		}
+	}
+	return map[string]any{"passed": passed, "checks": checks}
+}
+
+func freshnessAgeCheck(name, timestamp string, threshold any, now time.Time, entryType, timestampLabel string) map[string]any {
+	check := map[string]any{"name": name, "operator": "<=", "threshold": threshold, "passed": false}
+	if entryType != "" {
+		check["entry_type"] = entryType
+	}
+	if timestamp == "" {
+		check["reason"] = "missing " + timestampLabel
+		return check
+	}
+	parsed := mustParseTime(timestamp)
+	if parsed.IsZero() {
+		check["reason"] = "invalid " + timestampLabel
+		return check
+	}
+	actual := pythonFloatNumber(now.Sub(parsed).Hours())
+	check["actual"] = actual
+	passed, err := compareNumbers(actual, threshold, "<=")
+	if err != "" {
+		check["reason"] = err
+	} else {
+		check["passed"] = passed
+	}
+	return check
+}
+
+func validatePolicyPack(policyPack map[string]any) string {
+	if getString(policyPack, "spec_version") != policyPackSpecVersion {
+		return fmt.Sprintf("policy pack spec_version must be %s", policyPackSpecVersion)
+	}
+	for _, field := range []string{"id", "version"} {
+		if getString(policyPack, field) == "" {
+			return "policy pack missing required field: " + field
+		}
+	}
+	rules := getSlice(policyPack, "rules")
+	if len(rules) == 0 {
+		return "policy pack missing required field: rules"
+	}
+	return ""
+}
+
+func resolvePolicyField(context map[string]any, dotted string) any {
+	var current any = context
+	for _, part := range strings.Split(dotted, ".") {
+		m, ok := current.(map[string]any)
+		if !ok {
+			return nil
+		}
+		value, exists := m[part]
+		if !exists {
+			return nil
+		}
+		current = value
+	}
+	return current
+}
+
+func policyConditionMatches(condition, context map[string]any) (bool, string) {
+	actual := resolvePolicyField(context, getString(condition, "field"))
+	operator := getString(condition, "operator")
+	passed, err := comparePolicyValues(actual, condition["value"], operator)
+	if err == "type mismatch" {
+		return false, ""
+	}
+	return passed, err
+}
+
+func comparePolicyValues(actual, expected any, op string) (bool, string) {
+	if op == "==" {
+		return canonicalEqual(actual, expected) || sameNumber(actual, expected), ""
+	}
+	if op == "!=" {
+		return !(canonicalEqual(actual, expected) || sameNumber(actual, expected)), ""
+	}
+	if op == ">=" || op == ">" || op == "<=" || op == "<" {
+		passed, err := compareNumbers(actual, expected, op)
+		if err != "" {
+			return false, "type mismatch"
+		}
+		return passed, ""
+	}
+	return false, "unsupported policy operator: " + op
+}
+
+func policyApprovalPresent(action map[string]any, role string) bool {
+	approvals, ok := action["approvals"].([]any)
+	if !ok {
+		if approval := getMap(action, "approval"); approval != nil {
+			approvals = []any{approval}
+		}
+	}
+	for _, rawApproval := range approvals {
+		approval, ok := rawApproval.(map[string]any)
+		if !ok {
+			continue
+		}
+		roleMatches := role == "" || getString(approval, "role") == role
+		if roleMatches && getString(approval, "approved_at") != "" {
+			return true
+		}
+	}
+	return false
 }
 
 func evaluateRuntimeAction(contract, action map[string]any) (map[string]any, string) {
@@ -1613,7 +1942,7 @@ func evaluateHoldout(contract, results map[string]any) map[string]any {
 		"passed":          len(errors) == 0,
 		"records_checked": checked,
 		"freeze_at":       getString(getMap(contract, "freeze"), "frozen_at"),
-		"min_timestamp":  getString(getMap(contract, "holdout"), "min_timestamp"),
+		"min_timestamp":   getString(getMap(contract, "holdout"), "min_timestamp"),
 		"errors":          errors,
 	}
 }
@@ -2030,6 +2359,14 @@ func numberInt(v any) int64 {
 		return int64(n)
 	}
 	return 0
+}
+
+func pythonFloatNumber(value float64) json.Number {
+	text := strconv.FormatFloat(value, 'f', -1, 64)
+	if !strings.ContainsAny(text, ".eE") {
+		text += ".0"
+	}
+	return json.Number(text)
 }
 
 func numberFloat(v any) (float64, bool) {

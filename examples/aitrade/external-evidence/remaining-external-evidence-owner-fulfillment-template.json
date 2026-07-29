@@ -20,12 +20,12 @@
     "This template is a handoff artifact; it does not satisfy missing external authority evidence by itself.",
     "Placeholder source URIs intentionally keep readiness blocked until owners replace them with live authority sources."
   ],
-  "owner_fulfillment_template_id": "c37dfad669f423f678895e83b4d7218e6ac6cf59fc245ddc4d04ab35f2729dfc",
+  "owner_fulfillment_template_id": "cdab966b0f44d787794718830272c856d46a8b5d046c113751114c25b2b75bae",
   "schema": "trustai.external-evidence-owner-fulfillment-template/0.1",
   "source_owner_packet_status": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "owner_packet_status_hash": "a7b8af275346c1cff027927608a72aa3adfa00d21085c5e523f35d0d35e28424",
-    "owner_packet_status_id": "8619a3be1086670f0b4cc0aa2dac9bb9c6a8ba014956b630e5e579da2157578e",
+    "owner_packet_status_hash": "3b31daf5fbf40aebd98da2d4d44d82e79c30b59f679422f10c5ac6187f0c2343",
+    "owner_packet_status_id": "c56926b450d400878dbd2a4e25c0def8f0f807c5632b66ce67757f260d4a831a",
     "schema": "trustai.external-evidence-owner-packet-status/0.1"
   },
   "summary": {

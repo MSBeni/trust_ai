@@ -100,6 +100,11 @@ class GoVerifierSourceTests(unittest.TestCase):
             "packed subject environment mismatch",
             "runtime attestation entry",
             "evaluateRuntimeAction",
+            "policy decision entry",
+            "evaluatePolicyDecision",
+            "evaluateProofFreshness",
+            "policy_pack hash mismatch",
+            "pythonFloatNumber",
             "framework_mappings must be a list",
             "framework mappings do not match gate decision",
         ]

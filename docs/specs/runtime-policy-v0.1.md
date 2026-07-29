@@ -63,13 +63,19 @@ chain.
 
 The decision payload includes:
 
-- policy pack id, version, and hash.
+- policy pack id, version, hash, and embedded policy pack body.
 - action hash.
 - contract hash derived from the proof pack or action.
 - `evaluated_at`.
 - `passed` and `outcome`.
 - freshness checks and matched rules.
 - the action payload used for evaluation.
+
+When a `policy.decision` entry is included in a proof pack, offline verifiers
+recompute the decision from the embedded policy pack, embedded action, and
+packed proof body. Missing policy pack bodies, policy pack hash/id/version
+mismatches, stale proof freshness, rule-result mismatches, or outcome tampering
+fail verification even when the chain entry and proof pack signatures are valid.
 
 Missing proof packs fail closed. Missing, malformed, or stale gate, soak,
 runtime attestation, or shadow replay timestamps also fail closed when the policy
