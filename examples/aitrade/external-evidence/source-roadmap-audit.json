@@ -1,5 +1,5 @@
 {
-  "audit_id": "4ebc3f863b5ca00a36c7671e285caa49a67cb4c52f14cb9bff3ee7c926c3e6e2",
+  "audit_id": "e750d939540ff178ade4ca1b53713a1d6d14690262271bdfc0883bfa6ac419f6",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
   "generated_at": "2026-07-12T00:00:00Z",
   "limitations": [
@@ -82,7 +82,7 @@
         {
           "path": "tests/test_temporal_holdout.py",
           "present": true,
-          "sha256": "sha256:d136b9978998912334cdee76ef650f8ed881e1edf484114752fa83c253acf33c"
+          "sha256": "sha256:2899a929020b725f2f9b90d6fe74c55be8571dd368629253bbb7f374a3a96bbe"
         },
         {
           "path": "tests/test_phase1_phase2.py",
@@ -621,12 +621,12 @@
         {
           "path": "docs/specs/temporal-holdout-manifest-v0.1.md",
           "present": true,
-          "sha256": "sha256:b8a65c2a295f209d722d91e68285cb220901f9053791240f6ad54ec1883e3143"
+          "sha256": "sha256:74b89b3f60c84f4a61a2b39af1bd0c11b6a4ae5319afdb7e9c7b1d5e85537581"
         },
         {
           "path": "docs/specs/traffic-holdout-export-v0.1.md",
           "present": true,
-          "sha256": "sha256:7178a2fbafb15d73d4e6b90f351cb1c6641835c6664be48e5ba77419fe27f402"
+          "sha256": "sha256:750f4e98e8a5b0bd28a1d230264d008a10667eaab757562b410ad40d1dcb3443"
         },
         {
           "path": "docs/specs/traffic-completeness-receipt-v0.1.md",
@@ -651,7 +651,7 @@
         {
           "path": "src/trustai/shadow.py",
           "present": true,
-          "sha256": "sha256:c49c353cc96452c7938a1a82b507de932f10cf517c83a933a6704f7a38f40761"
+          "sha256": "sha256:d3a39f114117a79715ccc5a34931389c4a3b23a386bc1e8369fc7f27a5ea2954"
         },
         {
           "path": "src/trustai/lifecycle.py",
@@ -696,7 +696,7 @@
         {
           "path": "tests/test_temporal_holdout.py",
           "present": true,
-          "sha256": "sha256:d136b9978998912334cdee76ef650f8ed881e1edf484114752fa83c253acf33c"
+          "sha256": "sha256:2899a929020b725f2f9b90d6fe74c55be8571dd368629253bbb7f374a3a96bbe"
         },
         {
           "path": "tests/test_phase1_phase2.py",
@@ -943,7 +943,7 @@
         {
           "path": "src/trustai/shadow.py",
           "present": true,
-          "sha256": "sha256:c49c353cc96452c7938a1a82b507de932f10cf517c83a933a6704f7a38f40761"
+          "sha256": "sha256:d3a39f114117a79715ccc5a34931389c4a3b23a386bc1e8369fc7f27a5ea2954"
         },
         {
           "path": "src/trustai/lifecycle.py",

@@ -321,19 +321,7 @@ def verify_temporal_holdout_manifest(
         if manifest_contract.get("min_timestamp") != contract.get("holdout", {}).get("min_timestamp"):
             errors.append("temporal holdout contract min_timestamp mismatch")
     if replay is not None:
-        if manifest.get("replay_hash") != content_hash(replay):
-            errors.append("temporal holdout replay_hash mismatch")
-        replay_records = _shadow_records(replay)
-        if len(replay_records) != len(records):
-            errors.append("temporal holdout replay record count mismatch")
-        else:
-            for index, (record, node) in enumerate(zip(replay_records, records)):
-                if node.get("record_hash") != content_hash(record):
-                    errors.append(f"temporal holdout replay record hash mismatch at sequence {index}")
-                if _shadow_record_id(record, index) != node.get("record_id"):
-                    errors.append(f"temporal holdout replay record id mismatch at sequence {index}")
-                if str(record.get("timestamp") or "") != node.get("timestamp"):
-                    errors.append(f"temporal holdout replay record timestamp mismatch at sequence {index}")
+        _verify_temporal_holdout_replay_bindings(manifest, records, replay, errors)
     artifact = manifest.get("replay_source_artifact")
     if artifact is not None:
         if not isinstance(artifact, dict):
@@ -351,6 +339,8 @@ def verify_temporal_holdout_manifest(
                     errors.append("temporal holdout replay_source_artifact does not match supplied replay source bytes")
                 if manifest.get("replay_hash") != expected_artifact.get("replay_hash"):
                     errors.append("temporal holdout replay_source_artifact replay_hash mismatch")
+                if replay is None:
+                    _verify_temporal_holdout_replay_bindings(manifest, records, replay_for_artifact, errors)
     elif replay_source_path is not None:
         warnings.append("temporal holdout replay source bytes were supplied but are not bound in this manifest")
     return TemporalHoldoutVerification(ok=not errors, errors=errors, warnings=warnings)
@@ -944,19 +934,7 @@ def verify_traffic_holdout_export(
         if not isinstance(replay_ref, dict):
             errors.append("traffic holdout export replay must be an object")
             replay_ref = {}
-        if replay_ref.get("hash") != content_hash(replay):
-            errors.append("traffic holdout export replay hash mismatch")
-        replay_records = _shadow_records(replay)
-        if len(replay_records) != len(records):
-            errors.append("traffic holdout export replay record count mismatch")
-        else:
-            for index, (source_record, record) in enumerate(zip(replay_records, records)):
-                if record.get("record_hash") != content_hash(source_record):
-                    errors.append(f"traffic holdout export replay record hash mismatch at sequence {index}")
-                if record.get("record_id") != _shadow_record_id(source_record, index):
-                    errors.append(f"traffic holdout export replay record id mismatch at sequence {index}")
-                if record.get("timestamp") != str(source_record.get("timestamp") or ""):
-                    errors.append(f"traffic holdout export replay record timestamp mismatch at sequence {index}")
+        _verify_traffic_holdout_replay_bindings(receipt, records, replay, replay_ref, errors)
 
     artifact = receipt.get("replay_source_artifact")
     if artifact is not None:
@@ -973,6 +951,14 @@ def verify_traffic_holdout_export(
             else:
                 if artifact != expected_artifact:
                     errors.append("traffic holdout export replay_source_artifact does not match supplied replay source bytes")
+                replay_ref = receipt.get("replay", {})
+                if not isinstance(replay_ref, dict):
+                    errors.append("traffic holdout export replay must be an object")
+                    replay_ref = {}
+                elif replay_ref.get("hash") != expected_artifact.get("replay_hash"):
+                    errors.append("traffic holdout export replay_source_artifact replay hash mismatch")
+                if replay is None:
+                    _verify_traffic_holdout_replay_bindings(receipt, records, replay_for_artifact, replay_ref, errors)
     elif replay_source_path is not None:
         warnings.append("traffic holdout export replay source bytes were supplied but are not bound in this receipt")
 
@@ -1228,6 +1214,52 @@ def append_traffic_completeness_receipt(
         "privacy": receipt.get("privacy"),
     }
     return chain.append(TRAFFIC_COMPLETENESS_ENTRY_TYPE, payload, key=key, timestamp=receipt.get("produced_at"))
+
+def _verify_temporal_holdout_replay_bindings(
+    manifest: dict[str, Any],
+    records: list[Any],
+    replay: dict[str, Any],
+    errors: list[str],
+) -> None:
+    if manifest.get("replay_hash") != content_hash(replay):
+        errors.append("temporal holdout replay_hash mismatch")
+    replay_records = _shadow_records(replay)
+    if len(replay_records) != len(records):
+        errors.append("temporal holdout replay record count mismatch")
+        return
+    for index, (record, node) in enumerate(zip(replay_records, records)):
+        if not isinstance(node, dict):
+            continue
+        if node.get("record_hash") != content_hash(record):
+            errors.append(f"temporal holdout replay record hash mismatch at sequence {index}")
+        if _shadow_record_id(record, index) != node.get("record_id"):
+            errors.append(f"temporal holdout replay record id mismatch at sequence {index}")
+        if str(record.get("timestamp") or "") != node.get("timestamp"):
+            errors.append(f"temporal holdout replay record timestamp mismatch at sequence {index}")
+
+
+def _verify_traffic_holdout_replay_bindings(
+    receipt: dict[str, Any],
+    records: list[Any],
+    replay: dict[str, Any],
+    replay_ref: dict[str, Any],
+    errors: list[str],
+) -> None:
+    if replay_ref.get("hash") != content_hash(replay):
+        errors.append("traffic holdout export replay hash mismatch")
+    replay_records = _shadow_records(replay)
+    if len(replay_records) != len(records):
+        errors.append("traffic holdout export replay record count mismatch")
+        return
+    for index, (source_record, record) in enumerate(zip(replay_records, records)):
+        if not isinstance(record, dict):
+            continue
+        if record.get("record_hash") != content_hash(source_record):
+            errors.append(f"traffic holdout export replay record hash mismatch at sequence {index}")
+        if record.get("record_id") != _shadow_record_id(source_record, index):
+            errors.append(f"traffic holdout export replay record id mismatch at sequence {index}")
+        if record.get("timestamp") != str(source_record.get("timestamp") or ""):
+            errors.append(f"traffic holdout export replay record timestamp mismatch at sequence {index}")
 
 def _traffic_replay_source_artifact(path: str | Path, replay: dict[str, Any]) -> dict[str, Any]:
     target = Path(path)

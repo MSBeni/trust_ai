@@ -614,6 +614,51 @@ class TemporalHoldoutTests(unittest.TestCase):
         self.assertIn("replay_source_artifact", errors)
         self.assertIn("bytes", errors)
 
+    def test_traffic_holdout_export_replays_retained_source_records_without_replay_arg(self):
+        contract = self._contract()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            replay_path = Path(tmp_dir) / "shadow-replay.json"
+            replay_body = self._replay()
+            replay_path.write_text(json.dumps(replay_body, indent=2, sort_keys=True), encoding="utf-8")
+            replay = load_shadow_replay(replay_path)
+            source_receipt = build_traffic_holdout_export(
+                contract,
+                replay,
+                export_ref="traffic-export:aitrade/prod-traffic-holdout-20260702",
+                source_ref="collector:aitrade-prod/redpanda/trustai.otel.events",
+                exporter_ref="oidc:trustai.example/traffic-exporter",
+                window_start="2026-07-02T00:00:00Z",
+                window_end="2026-07-03T23:59:59Z",
+                produced_at="2026-07-03T12:20:00Z",
+                replay_source_path=replay_path,
+            )
+            tampered_replay = copy.deepcopy(replay)
+            tampered_replay["records"][0]["latency_ms"] = 1
+            tampered = build_traffic_holdout_export(
+                contract,
+                tampered_replay,
+                export_ref="traffic-export:aitrade/prod-traffic-holdout-20260702",
+                source_ref="collector:aitrade-prod/redpanda/trustai.otel.events",
+                exporter_ref="oidc:trustai.example/traffic-exporter",
+                window_start="2026-07-02T00:00:00Z",
+                window_end="2026-07-03T23:59:59Z",
+                produced_at="2026-07-03T12:20:00Z",
+            )
+            tampered["replay_source_artifact"] = source_receipt["replay_source_artifact"]
+            tampered["replay"]["hash"] = source_receipt["replay_source_artifact"]["replay_hash"]
+            body = without_keys(tampered, "export_id", "signatures")
+            tampered["export_id"] = content_hash(body)
+            tampered["signatures"] = [sign_value({"export_id": tampered["export_id"], "traffic_holdout_export": body})]
+
+            result = verify_traffic_holdout_export(
+                tampered,
+                contract=contract,
+                replay_source_path=replay_path,
+            )
+
+        self.assertFalse(result.ok)
+        self.assertTrue(any("replay record hash mismatch" in error for error in result.errors), result.errors)
+
     def test_traffic_holdout_export_appends_to_chain(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)
@@ -1124,6 +1169,41 @@ class TemporalHoldoutTests(unittest.TestCase):
         errors = "\n".join(result.errors)
         self.assertIn("replay_source_artifact", errors)
         self.assertIn("bytes", errors)
+
+    def test_temporal_holdout_manifest_replays_retained_source_records_without_replay_arg(self):
+        contract = self._contract()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            replay_path = Path(tmp_dir) / "shadow-replay.json"
+            replay_body = self._replay()
+            replay_path.write_text(json.dumps(replay_body, indent=2, sort_keys=True), encoding="utf-8")
+            replay = load_shadow_replay(replay_path)
+            source_manifest = build_temporal_holdout_manifest(
+                contract,
+                replay,
+                generated_at="2026-07-03T12:30:00Z",
+                replay_source_path=replay_path,
+            )
+            tampered_replay = copy.deepcopy(replay)
+            tampered_replay["records"][1]["candidate_action"] = "allow_shadow_order"
+            tampered = build_temporal_holdout_manifest(
+                contract,
+                tampered_replay,
+                generated_at="2026-07-03T12:30:00Z",
+            )
+            tampered["replay_source_artifact"] = source_manifest["replay_source_artifact"]
+            tampered["replay_hash"] = source_manifest["replay_source_artifact"]["replay_hash"]
+            body = without_keys(tampered, "manifest_id", "signatures")
+            tampered["manifest_id"] = content_hash(body)
+            tampered["signatures"] = [sign_value({"manifest_id": tampered["manifest_id"], "temporal_holdout": body})]
+
+            result = verify_temporal_holdout_manifest(
+                tampered,
+                contract=contract,
+                replay_source_path=replay_path,
+            )
+
+        self.assertFalse(result.ok)
+        self.assertTrue(any("replay record hash mismatch" in error for error in result.errors), result.errors)
 
     def test_temporal_holdout_manifest_appends_to_chain(self):
         manifest = build_temporal_holdout_manifest(

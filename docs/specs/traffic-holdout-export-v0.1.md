@@ -37,9 +37,11 @@ optionally replay the source verification contract and shadow replay JSON.
 When a replay source is supplied, the verifier recomputes the replay hash and
 every exported record hash from the replay file. When `replay_source_artifact` is
 present, it also replays the retained source file bytes and rejects byte SHA-256,
-byte size, canonical source content hash, replay hash, record count, or
-record-hash-root mismatches. This catches source replay tampering and
-reserialization after the export receipt was signed.
+byte size, canonical source content hash, replay hash, record count,
+record-hash-root, or per-record export hash mismatches. The retained source file
+is used for these checks even when the caller does not separately pass a parsed
+replay object. This catches source replay tampering and reserialization after the
+export receipt was signed.
 
 This receipt narrows the roadmap's production-traffic completeness gap, but it
 can be paired with a `traffic-completeness` receipt that replays provider stream and audit evidence. By itself, it still does not claim upstream completeness without provider-owned collector,

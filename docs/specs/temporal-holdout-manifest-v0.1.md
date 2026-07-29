@@ -30,8 +30,9 @@ signature, checks the internal record hash chain, recomputes duplicate record-id
 boundary violations from the frozen contract timestamps, and optionally replays the source
 contract, replay JSON, and retained replay source bytes to catch source tampering. When
 `replay_source_artifact` is present, verification requires the source replay path so the
-SHA-256 bytes, canonical content hash, replay hash, record count, and record hash root can
-be recomputed.
+SHA-256 bytes, canonical content hash, replay hash, record count, record hash root, and
+per-record manifest hashes can be recomputed from the retained source file even when the
+caller does not separately pass a parsed replay object.
 
 The manifest proves the supplied replay records postdate the freeze and holdout
 minimum. A `traffic-holdout-export` receipt can separately bind production
