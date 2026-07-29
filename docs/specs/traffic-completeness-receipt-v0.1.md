@@ -19,9 +19,12 @@ The receipt uses schema `trustai.traffic-completeness-receipt/0.1` and records:
   cursor bounds, traffic record count/root, stream record root, and audit root;
 - optional `provider_export_artifact` with retained provider export path, byte SHA-256,
   size, canonical content hash, and artifact ID;
-- matched replay/export records with provider cursor refs and provider record
-  hashes;
-- extra provider records and missing provider matches;
+- matched replay/export records with provider cursor refs, provider record
+  hashes, provider source refs, previous export-record hash bindings, and
+  per-record binding mismatch lists;
+- extra provider records, missing provider matches, duplicate provider cursor
+  refs, duplicate provider record identities, and duplicate provider export
+  record hashes;
 - matched audit records that bind the traffic export ID or records root;
 - explicit completeness violations and pass/fail status;
 - privacy metadata confirming raw production traffic payloads and provider
@@ -38,13 +41,15 @@ embedded coverage summary, and can replay both source artifacts:
 
 When source artifacts are supplied, the verifier recomputes the traffic export
 hash, provider export hash, stream record root, audit record root, matched record
-set, missing/extra record counts, matched audit records, controls, violations,
-and pass/fail status. If the receipt contains `provider_export_artifact`, the
-verifier also replays the retained provider export file bytes and rejects byte SHA-256
-mismatches even when the canonical parsed JSON content is unchanged. Editing a
-provider stream record, removing a replay record, changing a cursor, changing only
-provider export formatting bytes, or changing the provider audit export changes the
-receipt verification result.
+set, missing/extra record counts, matched audit records, provider stream cursor
+presence/uniqueness, provider record-key uniqueness, matched row source/ref hash-chain
+metadata, controls, violations, and pass/fail status. If the receipt contains
+`provider_export_artifact`, the verifier also replays the retained provider export
+file bytes and rejects byte SHA-256 mismatches even when the canonical parsed JSON
+content is unchanged. Editing a provider stream record, removing a replay record,
+reusing a cursor ref, changing a matched provider row's previous export hash or
+source ref, changing only provider export formatting bytes, or changing the provider
+audit export changes the receipt verification result.
 
 `production-export` is required for production completeness claims. The other
 modes are useful for local and design-partner rehearsal but do not claim live

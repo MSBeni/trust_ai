@@ -1410,6 +1410,15 @@ def _build_traffic_completeness_body(
     records_root_matches = provider_root == traffic_export.get("records_root")
     missing_count = sum(1 for record in matched_records if not record.get("matched"))
     extra_count = len(extra_provider_records)
+    binding_mismatch_count = sum(
+        1
+        for record in matched_records
+        if record.get("matched") and not record.get("provider_binding_matches")
+    )
+    duplicate_cursor_count = _traffic_provider_duplicate_value_count(stream_records, "cursor_ref")
+    missing_cursor_count = sum(1 for record in stream_records if not record.get("cursor_ref"))
+    duplicate_record_key_count = _traffic_provider_duplicate_record_key_count(stream_records)
+    duplicate_export_hash_count = _traffic_provider_duplicate_value_count(stream_records, "export_record_hash")
     coverage = {
         "source_ref_match": source_ref_match,
         "record_count_matches": record_count_matches,
@@ -1417,12 +1426,22 @@ def _build_traffic_completeness_body(
         "window_covers_export": window_covers,
         "cursor_bounds_match": cursor_bounds_match,
         "audit_records_bound": bool(matched_audit_records),
+        "provider_record_bindings_match": binding_mismatch_count == 0,
+        "provider_cursor_refs_present": missing_cursor_count == 0,
+        "provider_cursor_refs_unique": duplicate_cursor_count == 0,
+        "provider_record_keys_unique": duplicate_record_key_count == 0,
+        "provider_export_record_hashes_unique": duplicate_export_hash_count == 0,
         "traffic_record_count": traffic_record_count,
         "provider_stream_record_count": provider_stream_count,
         "provider_declared_traffic_record_count": provider_declared_count,
         "matched_record_count": len(matched_records) - missing_count,
         "missing_record_count": missing_count,
         "extra_provider_record_count": extra_count,
+        "provider_record_binding_mismatch_count": binding_mismatch_count,
+        "missing_provider_cursor_count": missing_cursor_count,
+        "duplicate_provider_cursor_count": duplicate_cursor_count,
+        "duplicate_provider_record_key_count": duplicate_record_key_count,
+        "duplicate_provider_export_record_hash_count": duplicate_export_hash_count,
     }
     provider_exchange = {
         "endpoint_url": endpoint_url,
@@ -1598,6 +1617,8 @@ def _traffic_completeness_record_matches(
         provider_record = by_export_hash.get(traffic_record.get("export_record_hash")) or by_record_key.get(_traffic_export_record_key(traffic_record))
         if provider_record is not None:
             used_hashes.add(content_hash(provider_record))
+        provider_summary = _traffic_provider_stream_record_summary(provider_record) if provider_record is not None else {}
+        binding_mismatches = _traffic_provider_binding_mismatches(traffic_export, traffic_record, provider_summary)
         matched.append(
             {
                 "sequence": traffic_record.get("sequence"),
@@ -1606,10 +1627,14 @@ def _traffic_completeness_record_matches(
                 "record_hash": traffic_record.get("record_hash"),
                 "export_record_hash": traffic_record.get("export_record_hash"),
                 "provider_record_hash": content_hash(provider_record) if provider_record is not None else None,
-                "cursor_ref": provider_record.get("cursor_ref") if provider_record is not None else None,
-                "partition": provider_record.get("partition") if provider_record is not None else None,
-                "offset": provider_record.get("offset") if provider_record is not None else None,
+                "provider_previous_export_record_hash": provider_summary.get("previous_export_record_hash"),
+                "provider_source_ref": provider_summary.get("source_ref"),
+                "cursor_ref": provider_summary.get("cursor_ref"),
+                "partition": provider_summary.get("partition"),
+                "offset": provider_summary.get("offset"),
                 "matched": provider_record is not None,
+                "provider_binding_matches": provider_record is not None and not binding_mismatches,
+                "provider_binding_mismatches": binding_mismatches,
             }
         )
     extra = []
@@ -1645,6 +1670,11 @@ def _traffic_completeness_violations_from_coverage(
         ("window_covers_export", "provider export window does not cover traffic export extraction window"),
         ("cursor_bounds_match", "provider cursor bounds do not match traffic export cursor bounds"),
         ("audit_records_bound", "provider audit records do not bind the traffic export"),
+        ("provider_record_bindings_match", "provider stream records contradict matched traffic export record metadata"),
+        ("provider_cursor_refs_present", "provider stream records are missing cursor refs"),
+        ("provider_cursor_refs_unique", "provider stream record cursor refs are not unique"),
+        ("provider_record_keys_unique", "provider stream record identities are not unique"),
+        ("provider_export_record_hashes_unique", "provider stream export record hashes are not unique"),
     )
     violations: list[dict[str, Any]] = []
     for field, message in checks:
@@ -1654,6 +1684,16 @@ def _traffic_completeness_violations_from_coverage(
         violations.append({"check": "missing_provider_records", "violation": "traffic export records are missing from provider stream export", "count": coverage.get("missing_record_count")})
     if coverage.get("extra_provider_record_count", 0):
         violations.append({"check": "extra_provider_records", "violation": "provider stream export contains records not included in traffic export", "count": coverage.get("extra_provider_record_count")})
+    if coverage.get("provider_record_binding_mismatch_count", 0):
+        violations.append({"check": "provider_record_binding_mismatches", "violation": "matched provider stream records contain contradictory source or hash-chain metadata", "count": coverage.get("provider_record_binding_mismatch_count")})
+    if coverage.get("missing_provider_cursor_count", 0):
+        violations.append({"check": "missing_provider_cursors", "violation": "provider stream records are missing cursor refs", "count": coverage.get("missing_provider_cursor_count")})
+    if coverage.get("duplicate_provider_cursor_count", 0):
+        violations.append({"check": "duplicate_provider_cursors", "violation": "provider stream record cursor refs are duplicated", "count": coverage.get("duplicate_provider_cursor_count")})
+    if coverage.get("duplicate_provider_record_key_count", 0):
+        violations.append({"check": "duplicate_provider_record_keys", "violation": "provider stream record identities are duplicated", "count": coverage.get("duplicate_provider_record_key_count")})
+    if coverage.get("duplicate_provider_export_record_hash_count", 0):
+        violations.append({"check": "duplicate_provider_export_record_hashes", "violation": "provider stream export record hashes are duplicated", "count": coverage.get("duplicate_provider_export_record_hash_count")})
     if provider_exchange.get("success") is not True:
         violations.append({"check": "provider_exchange_success", "violation": "provider export API exchange was not successful"})
     return violations
@@ -1666,6 +1706,10 @@ def _traffic_completeness_controls(coverage: dict[str, Any], provider_exchange: 
         {"id": "records-root-bound", "status": "passed" if coverage.get("records_root_matches") else "failed", "description": "Provider traffic records root matches the traffic holdout export records root."},
         {"id": "all-records-provider-bound", "status": "passed" if not coverage.get("missing_record_count") else "failed", "description": "Every traffic export record appears in the provider stream export."},
         {"id": "no-extra-provider-records", "status": "passed" if not coverage.get("extra_provider_record_count") else "failed", "description": "The provider stream export does not contain unmatched records for the same window."},
+        {"id": "provider-record-bindings-match", "status": "passed" if coverage.get("provider_record_bindings_match") else "failed", "description": "Matched provider stream rows carry the same record, previous-hash, and source metadata as the traffic export."},
+        {"id": "provider-cursors-present", "status": "passed" if coverage.get("provider_cursor_refs_present") else "failed", "description": "Every provider stream row includes a cursor ref."},
+        {"id": "provider-cursors-unique", "status": "passed" if coverage.get("provider_cursor_refs_unique") else "failed", "description": "Provider cursor refs are unique within the replay window."},
+        {"id": "provider-record-identities-unique", "status": "passed" if coverage.get("provider_record_keys_unique") and coverage.get("provider_export_record_hashes_unique") else "failed", "description": "Provider record identities and export record hashes are unique within the replay window."},
         {"id": "window-and-cursors-bound", "status": "passed" if coverage.get("window_covers_export") and coverage.get("cursor_bounds_match") else "failed", "description": "Provider window and cursor bounds cover the traffic holdout export."},
         {"id": "provider-audit-bound", "status": "passed" if coverage.get("audit_records_bound") else "failed", "description": "Provider audit records bind the traffic holdout export root or ID."},
         {"id": "provider-export-artifact-replayed", "status": "passed" if provider_artifact else "deferred", "description": "Retained provider export source bytes are SHA-256 replay-bound when supplied."},
@@ -1680,6 +1724,50 @@ def _traffic_export_record_key(record: dict[str, Any]) -> tuple[Any, Any, Any]:
 
 def _traffic_provider_record_key(record: dict[str, Any]) -> tuple[Any, Any, Any]:
     return (record.get("record_id") or record.get("id"), record.get("timestamp"), record.get("record_hash"))
+
+
+def _traffic_provider_binding_mismatches(
+    traffic_export: dict[str, Any],
+    traffic_record: dict[str, Any],
+    provider_summary: dict[str, Any],
+) -> list[str]:
+    if not provider_summary:
+        return []
+    mismatches: list[str] = []
+    for field in ("record_id", "timestamp", "record_hash", "export_record_hash", "previous_export_record_hash"):
+        if provider_summary.get(field) != traffic_record.get(field):
+            mismatches.append(field)
+    if provider_summary.get("source_ref") != traffic_export.get("source_ref"):
+        mismatches.append("source_ref")
+    return mismatches
+
+
+def _traffic_provider_duplicate_value_count(stream_records: list[dict[str, Any]], field: str) -> int:
+    seen: set[Any] = set()
+    duplicates = 0
+    for record in stream_records:
+        value = record.get(field)
+        if value in (None, ""):
+            continue
+        if value in seen:
+            duplicates += 1
+        else:
+            seen.add(value)
+    return duplicates
+
+
+def _traffic_provider_duplicate_record_key_count(stream_records: list[dict[str, Any]]) -> int:
+    seen: set[tuple[Any, Any, Any]] = set()
+    duplicates = 0
+    for record in stream_records:
+        key = _traffic_provider_record_key(record)
+        if any(value in (None, "") for value in key):
+            continue
+        if key in seen:
+            duplicates += 1
+        else:
+            seen.add(key)
+    return duplicates
 
 
 def _nested(value: dict[str, Any], outer: str, inner: str) -> Any:

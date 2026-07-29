@@ -1006,6 +1006,59 @@ class TemporalHoldoutTests(unittest.TestCase):
         self.assertTrue(any(item["check"] == "extra_provider_records" for item in receipt["violations"]))
         self.assertTrue(result.warnings)
 
+    def test_traffic_completeness_records_provider_binding_mismatches(self):
+        traffic_export = self._traffic_export()
+        provider_export = self._provider_export(traffic_export)
+        provider_export["stream_records"][1]["previous_export_record_hash"] = "sha256:not-the-previous-export-record"
+        receipt = build_traffic_completeness_receipt(
+            traffic_export,
+            provider_export,
+            mode="production-export",
+            authority_ref="authority:traffic-completeness/aitrade-prod",
+            endpoint_url="https://provider.example/aitrade/traffic-holdout/export",
+            request_hash="sha256:traffic-completeness-request",
+            response_status=200,
+            response_hash="sha256:traffic-completeness-response",
+            actor_ref="oidc:trustai.example/traffic-completeness-worker",
+            produced_at="2026-07-03T12:25:00Z",
+        )
+        result = verify_traffic_completeness_receipt(receipt, traffic_export=traffic_export, provider_export=provider_export)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertFalse(receipt["passed"])
+        self.assertEqual(1, receipt["source_completeness"]["provider_record_binding_mismatch_count"])
+        self.assertFalse(receipt["source_completeness"]["provider_record_bindings_match"])
+        self.assertIn("previous_export_record_hash", receipt["matched_records"][1]["provider_binding_mismatches"])
+        self.assertTrue(any(item["check"] == "provider_record_binding_mismatches" for item in receipt["violations"]))
+        controls = {control["id"]: control["status"] for control in receipt["controls"]}
+        self.assertEqual("failed", controls["provider-record-bindings-match"])
+
+    def test_traffic_completeness_records_duplicate_provider_cursors(self):
+        traffic_export = self._traffic_export()
+        provider_export = self._provider_export(traffic_export)
+        provider_export["stream_records"][1]["cursor_ref"] = provider_export["stream_records"][0]["cursor_ref"]
+        receipt = build_traffic_completeness_receipt(
+            traffic_export,
+            provider_export,
+            mode="production-export",
+            authority_ref="authority:traffic-completeness/aitrade-prod",
+            endpoint_url="https://provider.example/aitrade/traffic-holdout/export",
+            request_hash="sha256:traffic-completeness-request",
+            response_status=200,
+            response_hash="sha256:traffic-completeness-response",
+            actor_ref="oidc:trustai.example/traffic-completeness-worker",
+            produced_at="2026-07-03T12:25:00Z",
+        )
+        result = verify_traffic_completeness_receipt(receipt, traffic_export=traffic_export, provider_export=provider_export)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertFalse(receipt["passed"])
+        self.assertEqual(1, receipt["source_completeness"]["duplicate_provider_cursor_count"])
+        self.assertFalse(receipt["source_completeness"]["provider_cursor_refs_unique"])
+        self.assertTrue(any(item["check"] == "duplicate_provider_cursors" for item in receipt["violations"]))
+        controls = {control["id"]: control["status"] for control in receipt["controls"]}
+        self.assertEqual("failed", controls["provider-cursors-unique"])
+
     def test_cli_traffic_completeness_round_trip(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)

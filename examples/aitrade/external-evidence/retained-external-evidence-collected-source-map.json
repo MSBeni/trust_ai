@@ -308,7 +308,7 @@
       "description": "Retained KMS/HSM enforcement export for shadow replay temporal holdout evidence signing",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
+        "Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay, provider row previous-hash/source binding checks, provider cursor uniqueness checks, and supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/shadow-replay-temporal-holdout-kms-hsm.json",
       "issued_at": "2026-07-03T12:03:00Z",
@@ -338,7 +338,7 @@
       "description": "Retained provider API export for traffic holdout completeness evidence",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
+        "Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay, provider row previous-hash/source binding checks, provider cursor uniqueness checks, and supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/shadow-replay-temporal-holdout-provider-api.json",
       "issued_at": "2026-07-03T12:23:00Z",
@@ -368,7 +368,7 @@
       "description": "Retained identity-provider export for shadow holdout agent identity binding evidence",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
+        "Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay, provider row previous-hash/source binding checks, provider cursor uniqueness checks, and supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/shadow-replay-temporal-holdout-identity-provider.json",
       "issued_at": "2026-07-03T11:57:00Z",
@@ -398,7 +398,7 @@
       "description": "Retained standards-body ballot system response for temporal holdout evidence semantics",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
+        "Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay, provider row previous-hash/source binding checks, provider cursor uniqueness checks, and supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/shadow-replay-temporal-holdout-standards-body.json",
       "issued_at": "2026-07-03T12:04:00Z",
@@ -2139,14 +2139,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "cd0fe6ee21e2181946b940cfd371d25986904bcb3a966f0c4f348a52bd5cdded",
+  "source_map_id": "f3946aea4accabf1f8e5384c05ad241f5371965348436c9e56c3579efa07fb55",
   "source_plan": {
-    "plan_hash": "c463cb570cc8d6b7cad8723965282e7e1cfaa38c42778dec007f22ac6f8e1a5e",
-    "plan_id": "bd7b64fe0566f5c41c233369e93ffa63ff1c594b1ea5d50b70158dbd2fb76b71",
+    "plan_hash": "7807cb3b42a58310511aa0f8cd36254326e0a16ce29f71ea17746c2ffa42fc2d",
+    "plan_id": "9f7e7081952bd617ef0465b7e53a4bd3f6d708f41096feb2fe40ad3a7d48ba41",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "5039faab60ba5c482cb203d465ea98de9cc480f263c7b2365d7256cc2cd620f0",
-      "manifest_id": "8bfca8c5fd99203fa3092a0b831440aeca33f6ef2a7541926820263b4180262e",
+      "manifest_hash": "3ec7bc8663327289299fd250ab2c8487d5b64b9053c7d9d1839233be8693c1f5",
+      "manifest_id": "1032b6f7fa50418fc308ecdbe3a3de2ea0679c5dff27b2ec366c442973e22089",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },

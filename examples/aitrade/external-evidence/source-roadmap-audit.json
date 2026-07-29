@@ -1,5 +1,5 @@
 {
-  "audit_id": "4b7c1d97cc2b5c99737ec08e26b038153b295b48b7d752b144b4e4b750ba25fd",
+  "audit_id": "3bfaae622571b7108c3feeb90542c58df4d63c5d80902967929b916ad42f6389",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
   "generated_at": "2026-07-12T00:00:00Z",
   "limitations": [
@@ -82,7 +82,7 @@
         {
           "path": "tests/test_temporal_holdout.py",
           "present": true,
-          "sha256": "sha256:2899a929020b725f2f9b90d6fe74c55be8571dd368629253bbb7f374a3a96bbe"
+          "sha256": "sha256:909d1ffa1e9f6baf1f57f3fa235087028945893a11616394903f1fb7f882ca58"
         },
         {
           "path": "tests/test_phase1_phase2.py",
@@ -631,7 +631,7 @@
         {
           "path": "docs/specs/traffic-completeness-receipt-v0.1.md",
           "present": true,
-          "sha256": "sha256:d2b9e9d7132228e0ba2ad4e488cc99733d604d2d2070ff605b47747750d67c6a"
+          "sha256": "sha256:b8ac80acbf6a7d85a728dea7f700a52ee6b8e684a0580d661103f751ed38dd52"
         },
         {
           "path": "docs/specs/soak-demotion-receipt-v0.1.md",
@@ -651,7 +651,7 @@
         {
           "path": "src/trustai/shadow.py",
           "present": true,
-          "sha256": "sha256:d3a39f114117a79715ccc5a34931389c4a3b23a386bc1e8369fc7f27a5ea2954"
+          "sha256": "sha256:957a5f0ee6b998b256410828546c4fd4cc324027445e79ef8aed002c10d8ecc8"
         },
         {
           "path": "src/trustai/lifecycle.py",
@@ -696,7 +696,7 @@
         {
           "path": "tests/test_temporal_holdout.py",
           "present": true,
-          "sha256": "sha256:2899a929020b725f2f9b90d6fe74c55be8571dd368629253bbb7f374a3a96bbe"
+          "sha256": "sha256:909d1ffa1e9f6baf1f57f3fa235087028945893a11616394903f1fb7f882ca58"
         },
         {
           "path": "tests/test_phase1_phase2.py",
@@ -721,7 +721,7 @@
       ],
       "evidence_count": 21,
       "external_authority_required": [
-        "Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay for supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
+        "Temporal holdout manifests cover retained replay source byte replay for supplied shadow datasets; traffic completeness receipts cover retained provider export byte replay, provider row previous-hash/source binding checks, provider cursor uniqueness checks, and supplied collector/provider stream and audit evidence; temporal holdout and traffic export receipts bind duplicate replay record identity violations before promotion evidence is trusted; soak demotion receipts cover local failed-soak-to-demotion replay; re-execution runner production authority dossiers cover the local/reference authority checklist for production runner fleets, scheduler/queue/lease/checkpoint exports, orchestrator admission, kernel/container isolation enforcement, immutable runtime audit logs, artifact/result custody, deterministic execution controls, tenant/network/egress controls, KMS credential custody, and observability evidence; actual fresh provider-owned runtime exports remain external deployment evidence."
       ],
       "id": "shadow-replay-temporal-holdout",
       "missing_evidence_count": 0,
@@ -943,7 +943,7 @@
         {
           "path": "src/trustai/shadow.py",
           "present": true,
-          "sha256": "sha256:d3a39f114117a79715ccc5a34931389c4a3b23a386bc1e8369fc7f27a5ea2954"
+          "sha256": "sha256:957a5f0ee6b998b256410828546c4fd4cc324027445e79ef8aed002c10d8ecc8"
         },
         {
           "path": "src/trustai/lifecycle.py",
@@ -1458,7 +1458,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:d7f3742ae6d2572cc3ff18d249b4a4c0a31ceca1dd5051b62b6a8870a8ace340"
+          "sha256": "sha256:eae1e9f44d5ceaadeddc3ee597536b9cdb500a1c3c44189262bff70058e7ca10"
         },
         {
           "path": "src/trustai/trust_authority.py",
@@ -1861,7 +1861,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:d7f3742ae6d2572cc3ff18d249b4a4c0a31ceca1dd5051b62b6a8870a8ace340"
+          "sha256": "sha256:eae1e9f44d5ceaadeddc3ee597536b9cdb500a1c3c44189262bff70058e7ca10"
         },
         {
           "path": "tests/test_reliability_report.py",
@@ -1987,7 +1987,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:d7f3742ae6d2572cc3ff18d249b4a4c0a31ceca1dd5051b62b6a8870a8ace340"
+          "sha256": "sha256:eae1e9f44d5ceaadeddc3ee597536b9cdb500a1c3c44189262bff70058e7ca10"
         },
         {
           "path": "tests/test_phase_scoreboard.py",
@@ -2053,7 +2053,7 @@
         {
           "path": "docs/architecture/roadmap-coverage.md",
           "present": true,
-          "sha256": "sha256:49f37b7ba42f1ee028d6c6b45583ae4281d7aa5bf1982b7d3c46baba6582e78a"
+          "sha256": "sha256:77e5da507150eebccf6146b570d1477eb675825528efd641525de47618005e77"
         },
         {
           "path": "src/trustai/proofpack.py",
@@ -2073,7 +2073,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:d7f3742ae6d2572cc3ff18d249b4a4c0a31ceca1dd5051b62b6a8870a8ace340"
+          "sha256": "sha256:eae1e9f44d5ceaadeddc3ee597536b9cdb500a1c3c44189262bff70058e7ca10"
         },
         {
           "path": "tests/test_product_scope.py",
@@ -2623,7 +2623,7 @@
     "coverage": {
       "path": "docs/architecture/roadmap-coverage.md",
       "present": true,
-      "sha256": "sha256:49f37b7ba42f1ee028d6c6b45583ae4281d7aa5bf1982b7d3c46baba6582e78a"
+      "sha256": "sha256:77e5da507150eebccf6146b570d1477eb675825528efd641525de47618005e77"
     },
     "requirement_count": 26,
     "roadmap": {
