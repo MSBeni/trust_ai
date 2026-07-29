@@ -1,5 +1,5 @@
 {
-  "audit_id": "08f9ff68d1301a7891428145af040a68839468931a42dea27e80a0e0ad3bf7f2",
+  "audit_id": "8df6055d8cca7a741f88887914cc54b28d5a496fde3c1e05afe0cf25aa6db672",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
   "generated_at": "2026-07-12T00:00:00Z",
   "limitations": [
@@ -200,7 +200,7 @@
         {
           "path": "docs/specs/verifier-public-release-authority-v0.1.md",
           "present": true,
-          "sha256": "sha256:55b428046ae3618bf5fede9ddd1568484a5fbb83ce6f0b2893979f4ac1bb2af2"
+          "sha256": "sha256:a21982e26f6c78167859719d2c8a6659fbc525bb2315e38210834a3ba7a31325"
         },
         {
           "path": "src/trustai/verifier_public_release.py",
@@ -213,9 +213,9 @@
           "sha256": "sha256:e4b0d397d7fcbe95ef44535fb378552d01fbbf1ff5f3af2ad3204b684b807a4a"
         },
         {
-          "path": "examples/aitrade/external-evidence/go-verifier-workflow-run.json",
+          "path": "examples/aitrade/oss-verifier-ci-run-authority-export.json",
           "present": true,
-          "sha256": "sha256:a86fee6cea8e9a0f1128988ebf3d64cfb14baa788c5f1626be1bf1f6e4a99c94"
+          "sha256": "sha256:de47edc2b2bba6ebb9e49f8b0c612effd57e971e6ecc3886a7ca0f9ae978e53b"
         },
         {
           "path": ".github/workflows/go-verifier.yml",
@@ -240,12 +240,12 @@
         {
           "path": "tests/test_verifier_release_authority.py",
           "present": true,
-          "sha256": "sha256:99f1df0f07f5661017a5e6b4d6560d3a7adbfd759cc067fad59edbad369155aa"
+          "sha256": "sha256:fb808aaed0e999ed6512ae26dffefb59376336937c762cbe86da13587fe79434"
         }
       ],
       "evidence_count": 15,
       "external_authority_required": [
-        "Verifier release authority dossiers cover the local/reference public release authority checklist and retained provider workflow export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
+        "Verifier release authority dossiers cover the local/reference public release authority checklist and retained OSS verifier CI authority export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
       ],
       "id": "oss-verifier-and-public-spec",
       "missing_evidence_count": 0,
@@ -1453,12 +1453,12 @@
         {
           "path": "src/trustai/standards.py",
           "present": true,
-          "sha256": "sha256:02ded53eb8435e68f4a34d5563fe2f05e0b61b10bbad8d38e65753a84c01995a"
+          "sha256": "sha256:1bcb15a1b515dd6a921a9f4cfdcef8c703e26efd58f7368ab5377810146e7b6e"
         },
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:430785a7c4cf190e8d19607d62953b62482953fc3db44ae31317aa14a840df07"
+          "sha256": "sha256:d7f3742ae6d2572cc3ff18d249b4a4c0a31ceca1dd5051b62b6a8870a8ace340"
         },
         {
           "path": "src/trustai/trust_authority.py",
@@ -1861,7 +1861,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:430785a7c4cf190e8d19607d62953b62482953fc3db44ae31317aa14a840df07"
+          "sha256": "sha256:d7f3742ae6d2572cc3ff18d249b4a4c0a31ceca1dd5051b62b6a8870a8ace340"
         },
         {
           "path": "tests/test_reliability_report.py",
@@ -1987,7 +1987,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:430785a7c4cf190e8d19607d62953b62482953fc3db44ae31317aa14a840df07"
+          "sha256": "sha256:d7f3742ae6d2572cc3ff18d249b4a4c0a31ceca1dd5051b62b6a8870a8ace340"
         },
         {
           "path": "tests/test_phase_scoreboard.py",
@@ -2053,7 +2053,7 @@
         {
           "path": "docs/architecture/roadmap-coverage.md",
           "present": true,
-          "sha256": "sha256:e238899dcd27ae9212347e8e17c2c8b5db35266c2172428c4fa90bc5120abd77"
+          "sha256": "sha256:49f37b7ba42f1ee028d6c6b45583ae4281d7aa5bf1982b7d3c46baba6582e78a"
         },
         {
           "path": "src/trustai/proofpack.py",
@@ -2073,7 +2073,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:430785a7c4cf190e8d19607d62953b62482953fc3db44ae31317aa14a840df07"
+          "sha256": "sha256:d7f3742ae6d2572cc3ff18d249b4a4c0a31ceca1dd5051b62b6a8870a8ace340"
         },
         {
           "path": "tests/test_product_scope.py",
@@ -2425,7 +2425,7 @@
         {
           "path": "src/trustai/standards.py",
           "present": true,
-          "sha256": "sha256:02ded53eb8435e68f4a34d5563fe2f05e0b61b10bbad8d38e65753a84c01995a"
+          "sha256": "sha256:1bcb15a1b515dd6a921a9f4cfdcef8c703e26efd58f7368ab5377810146e7b6e"
         },
         {
           "path": "src/trustai/standards_body_submission.py",
@@ -2455,7 +2455,7 @@
         {
           "path": "tests/test_standards.py",
           "present": true,
-          "sha256": "sha256:231b574ee1a7b153c9becf77777c472d3340b4652da28520a92791e71b77e805"
+          "sha256": "sha256:1146207e0dee90eed3d42ebad5d0a6be2db7e9971392a085b076faa655f4191b"
         },
         {
           "path": "tests/test_certification.py",
@@ -2623,7 +2623,7 @@
     "coverage": {
       "path": "docs/architecture/roadmap-coverage.md",
       "present": true,
-      "sha256": "sha256:e238899dcd27ae9212347e8e17c2c8b5db35266c2172428c4fa90bc5120abd77"
+      "sha256": "sha256:49f37b7ba42f1ee028d6c6b45583ae4281d7aa5bf1982b7d3c46baba6582e78a"
     },
     "requirement_count": 26,
     "roadmap": {

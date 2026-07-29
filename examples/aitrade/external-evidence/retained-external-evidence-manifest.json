@@ -1367,14 +1367,14 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "760c66e94289b6e47f73963a6a9db5a58c791f25b97345476013435a61cefa16",
+  "manifest_id": "9bb5850394c1d241f7ecabe56dcbe9f2d6ff936b549964ac48ab950fade6c359",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
       "authority_kind": "ci-run",
       "coverage_status": "covered",
       "external_authority_required": [
-        "Verifier release authority dossiers cover the local/reference public release authority checklist and retained provider workflow export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
+        "Verifier release authority dossiers cover the local/reference public release authority checklist and retained OSS verifier CI authority export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
       ],
       "phase": "P0",
       "priority": "P0",
@@ -1387,7 +1387,7 @@
       "authority_kind": "provider-api",
       "coverage_status": "covered",
       "external_authority_required": [
-        "Verifier release authority dossiers cover the local/reference public release authority checklist and retained provider workflow export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
+        "Verifier release authority dossiers cover the local/reference public release authority checklist and retained OSS verifier CI authority export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
       ],
       "phase": "P0",
       "priority": "P0",
@@ -1400,7 +1400,7 @@
       "authority_kind": "hosted-service",
       "coverage_status": "covered",
       "external_authority_required": [
-        "Verifier release authority dossiers cover the local/reference public release authority checklist and retained provider workflow export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
+        "Verifier release authority dossiers cover the local/reference public release authority checklist and retained OSS verifier CI authority export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
       ],
       "phase": "P0",
       "priority": "P0",
@@ -2302,7 +2302,7 @@
         "hosted-service"
       ],
       "external_authority_required": [
-        "Verifier release authority dossiers cover the local/reference public release authority checklist and retained provider workflow export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
+        "Verifier release authority dossiers cover the local/reference public release authority checklist and retained OSS verifier CI authority export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
       ],
       "id": "oss-verifier-and-public-spec",
       "phase": "P0",
@@ -2589,8 +2589,8 @@
   ],
   "schema": "trustai.external-evidence-manifest/0.1",
   "source_roadmap_audit": {
-    "audit_hash": "86cfd25ee3bed75b75604091d3fca2daec16da708498209193e84226bd29816e",
-    "audit_id": "08f9ff68d1301a7891428145af040a68839468931a42dea27e80a0e0ad3bf7f2",
+    "audit_hash": "781a1640c875ed8895da562ff9c5eb27d1b1de881c199f864f08c10407e5130e",
+    "audit_id": "8df6055d8cca7a741f88887914cc54b28d5a496fde3c1e05afe0cf25aa6db672",
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {

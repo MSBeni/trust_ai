@@ -87,7 +87,7 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "docs/specs/verifier-public-release-authority-v0.1.md",
             "src/trustai/verifier_public_release.py",
             "src/trustai/verifier_release_authority.py",
-            "examples/aitrade/external-evidence/go-verifier-workflow-run.json",
+            "examples/aitrade/oss-verifier-ci-run-authority-export.json",
             ".github/workflows/go-verifier.yml",
             "tests/test_go_verifier_source.py",
             "tests/test_verifier_distribution.py",
@@ -95,7 +95,7 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "tests/test_verifier_release_authority.py",
         ],
         "external_authority": [
-            "Verifier release authority dossiers cover the local/reference public release authority checklist and retained provider workflow export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence.",
+            "Verifier release authority dossiers cover the local/reference public release authority checklist and retained OSS verifier CI authority export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence.",
         ],
     },
     {

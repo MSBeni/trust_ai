@@ -48,9 +48,9 @@ class RoadmapAuditTests(unittest.TestCase):
         self.assertIn("tests/test_phase1_phase2.py", proof_pack_evidence)
         oss_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "oss-verifier-and-public-spec")
         oss_evidence = {item["path"] for item in oss_requirement["evidence"]}
-        self.assertIn("examples/aitrade/external-evidence/go-verifier-workflow-run.json", oss_evidence)
+        self.assertIn("examples/aitrade/oss-verifier-ci-run-authority-export.json", oss_evidence)
         oss_external_authority = " ".join(oss_requirement["external_authority_required"])
-        self.assertIn("retained provider workflow export replay", oss_external_authority)
+        self.assertIn("retained OSS verifier CI authority export replay", oss_external_authority)
         identity_requirement = next(requirement for requirement in audit["requirements"] if requirement["id"] == "agent-inventory-and-identity")
         identity_evidence = {item["path"] for item in identity_requirement["evidence"]}
         self.assertIn("src/trustai/identity_provider_lifecycle_operation.py", identity_evidence)

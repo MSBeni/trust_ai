@@ -8,7 +8,7 @@
       "description": "Go verifier release workflow CI authority export",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "Verifier release authority dossiers cover the local/reference public release authority checklist and retained provider workflow export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
+        "Verifier release authority dossiers cover the local/reference public release authority checklist and retained OSS verifier CI authority export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/oss-verifier-ci-run.json",
       "issued_at": "2026-07-12T00:00:00Z",
@@ -38,7 +38,7 @@
       "description": "GitHub remote main ref advertisement for pushed TrustAI checkpoint",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "Verifier release authority dossiers cover the local/reference public release authority checklist and retained provider workflow export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
+        "Verifier release authority dossiers cover the local/reference public release authority checklist and retained OSS verifier CI authority export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/oss-verifier-provider-api.json",
       "issued_at": "2026-07-12T00:00:00Z",
@@ -68,7 +68,7 @@
       "description": "GitHub hosted git service remote advertisement for TrustAI verifier and spec repository",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "Verifier release authority dossiers cover the local/reference public release authority checklist and retained provider workflow export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
+        "Verifier release authority dossiers cover the local/reference public release authority checklist and retained OSS verifier CI authority export replay, but released static Go verifier binaries, hosted provenance, fresh completed provider workflow runs, and provider-owned release/artifact/transparency/audit exports still require a completed CI/release run, local Go toolchain, or external authority evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/oss-verifier-hosted-service.json",
       "issued_at": "2026-07-12T00:00:00Z",
@@ -2139,14 +2139,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "1c7323947eaa24faa9cc7884049d1b18e107d27a27d7581fcf0cfccda3e5e30d",
+  "source_map_id": "979c18d5d074324c2d08d9e2858d96f8d592b57b0d70e179a229f29ae3feaa06",
   "source_plan": {
-    "plan_hash": "08ecc2dedde1dd3e32cdccb72f3aad69521f44b131f2644ea1170ab0f5e2f2e2",
-    "plan_id": "b7db0fe648384092499cb5b515737b3b3b6aa705ee6bca5d085c577b9dcbdca2",
+    "plan_hash": "dc5ebefa3967da29fa7f8c390cbadf96e9cbc16f0903342553108f31ffbf4523",
+    "plan_id": "68deba6e4d6f7060b45f630de9c33da3e6f0efcf3fd65c5b124e37c4ae5a24af",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "1989728e0817015ad6d25fdaa9210e8771741b09e02e654e40596d14e85d2052",
-      "manifest_id": "0264183c65ac929056cd8b5871a0c2cb82377a6a84770b6363b9bdcdf5264297",
+      "manifest_hash": "971962754a30bd3087ed146a347baac2c5bb91c308625a36363d19f35754dae0",
+      "manifest_id": "e658be1a0e3be58296388b225165fe79128233bfe9acd65bcb23cb464a50e32b",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },

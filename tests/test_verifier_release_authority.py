@@ -26,8 +26,8 @@ import tests.test_verifier_public_release as public_release_helpers
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VERIFIER_WORKFLOW_AUTHORITY_EXPORT = ROOT / "examples" / "aitrade" / "external-evidence" / "go-verifier-workflow-run.json"
-VERIFIER_WORKFLOW_AUTHORITY_EXPORT_REL = "examples/aitrade/external-evidence/go-verifier-workflow-run.json"
+VERIFIER_WORKFLOW_AUTHORITY_EXPORT = ROOT / "examples" / "aitrade" / "oss-verifier-ci-run-authority-export.json"
+VERIFIER_WORKFLOW_AUTHORITY_EXPORT_REL = "examples/aitrade/oss-verifier-ci-run-authority-export.json"
 
 
 def _sha256_ref(path: Path) -> str:
