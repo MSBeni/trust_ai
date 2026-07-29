@@ -1,5 +1,5 @@
 {
-  "audit_id": "e6c6984db8218b94d66c55988819115ed768f8950306185e347fa7cbab4ce0b9",
+  "audit_id": "559229334f62b55baf34385f9de8a6c1c5f787d4d512d4ce82a5237a64b6d351",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
   "generated_at": "2026-07-12T00:00:00Z",
   "limitations": [
@@ -310,7 +310,7 @@
         {
           "path": "docs/specs/typescript-sdk-v0.1.md",
           "present": true,
-          "sha256": "sha256:e246fb1f439513d571f238c36a3d998e41e87a1e6b67c521e83c34b17695e04d"
+          "sha256": "sha256:3dd22cad24993a47d321fa38d57b0923be6bd4acb8393f71bec93fcdc2aaa57b"
         },
         {
           "path": "src/trustai/ingest.py",
@@ -325,7 +325,7 @@
         {
           "path": "sdk/typescript/src/index.mjs",
           "present": true,
-          "sha256": "sha256:9518a198603ba3ea5c7e09407c7572d23a2d86ea9267eb7012bd05b06f4319c5"
+          "sha256": "sha256:8b4588ea988708a2cc0f196123973de969744cf314feade0b2d3dde6f326b9e0"
         },
         {
           "path": "tests/test_ingest_runtime.py",
@@ -335,7 +335,7 @@
         {
           "path": "tests/test_typescript_sdk.py",
           "present": true,
-          "sha256": "sha256:3d49e16c20681926ffbabcb28ad1889589329668084beefc9328a4e4029cdc7f"
+          "sha256": "sha256:1ba57ffbb843672f200514a66b59c9a82c0801dedab1a3111ad51821027c35f9"
         }
       ],
       "evidence_count": 8,
@@ -369,7 +369,7 @@
         {
           "path": "docs/specs/typescript-sdk-v0.1.md",
           "present": true,
-          "sha256": "sha256:e246fb1f439513d571f238c36a3d998e41e87a1e6b67c521e83c34b17695e04d"
+          "sha256": "sha256:3dd22cad24993a47d321fa38d57b0923be6bd4acb8393f71bec93fcdc2aaa57b"
         },
         {
           "path": "docs/specs/otel-ingest-v0.1.md",
@@ -434,7 +434,7 @@
         {
           "path": "sdk/typescript/src/index.mjs",
           "present": true,
-          "sha256": "sha256:9518a198603ba3ea5c7e09407c7572d23a2d86ea9267eb7012bd05b06f4319c5"
+          "sha256": "sha256:8b4588ea988708a2cc0f196123973de969744cf314feade0b2d3dde6f326b9e0"
         },
         {
           "path": "examples/aitrade/verification-contract.yaml",
@@ -519,7 +519,7 @@
         {
           "path": "tests/test_typescript_sdk.py",
           "present": true,
-          "sha256": "sha256:3d49e16c20681926ffbabcb28ad1889589329668084beefc9328a4e4029cdc7f"
+          "sha256": "sha256:1ba57ffbb843672f200514a66b59c9a82c0801dedab1a3111ad51821027c35f9"
         },
         {
           "path": "tests/test_mcp_gateway.py",

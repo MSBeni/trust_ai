@@ -22,6 +22,11 @@ export interface CaptureResult {
   response: Record<string, unknown>;
 }
 
+export interface CaptureBatchResult {
+  events: TrustAIEvent[];
+  response: Record<string, unknown>;
+}
+
 export interface ClientOptions {
   agent: TrustAIAgent;
   contractHash: string;
@@ -46,6 +51,11 @@ export interface BuildEventOptions {
 
 export interface InstrumentOptions extends BuildEventOptions {}
 
+export interface EventDefinition {
+  eventName: string;
+  options?: BuildEventOptions;
+}
+
 export const DEFAULT_SCHEMA_URL: string;
 
 export function newTraceId(): string;
@@ -54,12 +64,15 @@ export function utcNow(): string;
 export function canonicalStringify(value: unknown): string;
 export function contentHash(value: unknown): string;
 export function normalizeEvent(event: Partial<TrustAIEvent>): TrustAIEvent;
+export function normalizeEvents(events: Array<Partial<TrustAIEvent>>): TrustAIEvent[];
 
 export class TrustAIClient {
   constructor(options: ClientOptions);
   static fromContract(contract: { agent: TrustAIAgent; [key: string]: unknown }, options: FromContractOptions): TrustAIClient;
   buildEvent(eventName: string, options?: BuildEventOptions): TrustAIEvent;
+  buildEvents(eventDefinitions: EventDefinition[]): TrustAIEvent[];
   emitEvent(eventName: string, options?: BuildEventOptions): Promise<CaptureResult>;
+  emitEvents(eventDefinitions: EventDefinition[]): Promise<CaptureBatchResult>;
   recordDecision(decision: string, options?: BuildEventOptions): Promise<CaptureResult>;
   recordToolCall(toolName: string, options?: BuildEventOptions): Promise<CaptureResult>;
   trace(traceId?: string): TraceCapture;
@@ -69,12 +82,14 @@ export class TrustAIClient {
     options?: InstrumentOptions,
   ): (...args: TArgs) => Promise<TResult>;
   postEvent(event: TrustAIEvent): Promise<Record<string, unknown>>;
+  postEvents(events: TrustAIEvent[]): Promise<Record<string, unknown>>;
 }
 
 export class TraceCapture {
   constructor(client: TrustAIClient, traceId: string);
   readonly traceId: string;
   event(eventName: string, options?: BuildEventOptions): Promise<CaptureResult>;
+  events(eventDefinitions: EventDefinition[]): Promise<CaptureBatchResult>;
   decision(decision: string, options?: BuildEventOptions): Promise<CaptureResult>;
   toolCall(toolName: string, options?: BuildEventOptions): Promise<CaptureResult>;
 }

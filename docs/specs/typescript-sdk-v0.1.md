@@ -50,11 +50,33 @@ await trace.toolCall("place_shadow_order", {
 });
 ```
 
+## Batch Capture
+
+```js
+await trace.events([
+  {
+    eventName: "gen_ai.agent.decision",
+    options: { attributes: { decision: "batch_allow_shadow_order" } }
+  },
+  {
+    eventName: "gen_ai.tool.call",
+    options: { attributes: { "tool.name": "batch_place_shadow_order" } }
+  }
+]);
+```
+
+Batch capture validates every event locally before posting a single
+`{ "events": [...] }` request to `/v0/ingest`. A malformed event rejects the
+whole batch before any collector call is attempted, keeping the signed ingest
+chain from mixing accepted and invalid evidence.
+
 The client records:
 
 - `gen_ai.agent.decision`
 - `gen_ai.tool.call`
 - arbitrary event names through `emitEvent(...)`
+- batch event arrays through `emitEvents(...)`, `postEvents(...)`, and trace-scoped
+  `trace.events(...)`
 
 All events normalize to the same fields used by file ingest and the Python SDK:
 `trace_id`, `span_id`, `timestamp`, `event_name`, `schema_url`,

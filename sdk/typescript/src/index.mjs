@@ -78,6 +78,13 @@ export function normalizeEvent(event) {
   return normalized;
 }
 
+export function normalizeEvents(events) {
+  if (!Array.isArray(events) || events.length === 0) {
+    throw new Error("events must be a non-empty array");
+  }
+  return events.map((event) => normalizeEvent(event));
+}
+
 function canonicalHex(value, field, length) {
   if (typeof value !== "string" || value.length !== length || !HEX_PATTERN.test(value)) {
     throw new Error(`event.${field} must be a ${length}-character hexadecimal string`);
@@ -146,10 +153,32 @@ export class TrustAIClient {
     });
   }
 
+  buildEvents(eventDefinitions) {
+    if (!Array.isArray(eventDefinitions) || eventDefinitions.length === 0) {
+      throw new Error("eventDefinitions must be a non-empty array");
+    }
+    return eventDefinitions.map((definition) => {
+      if (!definition || typeof definition !== "object" || Array.isArray(definition)) {
+        throw new Error("event definition must be an object");
+      }
+      const { eventName, options = {} } = definition;
+      if (typeof eventName !== "string" || !eventName.trim()) {
+        throw new Error("event definition eventName is required");
+      }
+      return this.buildEvent(eventName, options);
+    });
+  }
+
   async emitEvent(eventName, options = {}) {
     const event = this.buildEvent(eventName, options);
     const response = await this.postEvent(event);
     return { event, response };
+  }
+
+  async emitEvents(eventDefinitions) {
+    const events = this.buildEvents(eventDefinitions);
+    const response = await this.postEvents(events);
+    return { events, response };
   }
 
   async recordDecision(decision, options = {}) {
@@ -200,13 +229,18 @@ export class TrustAIClient {
   }
 
   async postEvent(event) {
+    return this.postEvents([event]);
+  }
+
+  async postEvents(events) {
+    const normalizedEvents = normalizeEvents(events);
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.timeoutMs);
     try {
       const response = await this.fetchImpl(`${this.endpoint}/v0/ingest`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ events: [event] }),
+        body: JSON.stringify({ events: normalizedEvents }),
         signal: controller.signal,
       });
       const text = await response.text();
@@ -229,6 +263,18 @@ export class TraceCapture {
 
   event(eventName, options = {}) {
     return this.client.emitEvent(eventName, { ...options, traceId: this.traceId });
+  }
+
+  events(eventDefinitions) {
+    if (!Array.isArray(eventDefinitions)) {
+      throw new Error("eventDefinitions must be an array");
+    }
+    return this.client.emitEvents(
+      eventDefinitions.map((definition) => ({
+        ...definition,
+        options: { ...(definition.options ?? {}), traceId: this.traceId },
+      })),
+    );
   }
 
   decision(decision, options = {}) {
