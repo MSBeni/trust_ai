@@ -1,15 +1,15 @@
 # External Evidence Production Readiness
 
-- Readiness ID: `120adc527a3007815cab6fdd1b3eb51d77ba2af710c9d78fad955f120eab7e78`
+- Readiness ID: `603191a0822baa75c30834bd0ac332e2061179fe4fa94e6eb8063df6b589e475`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `not-ready`
-- Covered authority units: 56/71
-- Production-usable covered authority units: 55
+- Covered authority units: 71/71
+- Production-usable covered authority units: 70
 - Non-production covered authority units: 1
-- Missing authority units: 15
-- Remaining collection tasks: 15
-- Placeholder source URIs: 15
-- Work packages: 9
+- Missing authority units: 0
+- Remaining collection tasks: 0
+- Placeholder source URIs: 0
+- Work packages: 0
 
 ## Checks
 
@@ -17,17 +17,14 @@
 |---|---|---|
 | `artifacts-verify` | `passed` | All referenced external-evidence artifacts verify. |
 | `covered-evidence-production-usable` | `failed` | Covered authority units use production authority evidence rather than retained examples or fixtures. |
-| `authority-coverage-complete` | `failed` | Every required authority unit has accepted evidence. |
-| `collection-work-closed` | `failed` | No external-evidence collection tasks remain open. |
-| `source-map-live` | `failed` | Every source-map entry has a live authority source URI. |
+| `authority-coverage-complete` | `passed` | Every required authority unit has accepted evidence. |
+| `collection-work-closed` | `passed` | No external-evidence collection tasks remain open. |
+| `source-map-live` | `passed` | Every source-map entry has a live authority source URI. |
 | `work-package-current` | `passed` | The work package covers the current remaining task set. |
 
 ## Blockers
 
 - 1 covered authority units use example or non-production evidence
-- 15 authority units still lack accepted evidence
-- 15 external evidence collection tasks remain open
-- 15 source-map entries still use placeholder source URIs
 
 ## Next Actions
 

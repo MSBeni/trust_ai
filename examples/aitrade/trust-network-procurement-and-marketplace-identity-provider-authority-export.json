@@ -1,0 +1,132 @@
+{
+  "authority_evidence": {
+    "authority_kind": "identity-provider",
+    "evidence_ref": "identity-provider:aitrade/trust-network-procurement-and-marketplace/2026-07-12",
+    "requirement_id": "trust-network-procurement-and-marketplace",
+    "source_uri": "https://idp.example/exports/aitrade/trust-network-procurement-and-marketplace/authority-sessions/2026-07-12"
+  },
+  "authority_review": {
+    "review_ref": "identity-provider:aitrade/trust-network-procurement-and-marketplace/authority-review/2026-07-12",
+    "reviewer_refs": [
+      "identity-provider:primary-reviewer",
+      "identity-provider:evidence-control-reviewer"
+    ],
+    "scope": "trust network vendor identity federation export",
+    "status": "accepted-for-reference-authority-evidence"
+  },
+  "environment": "aitrade-prod",
+  "evidence": {
+    "docs_specs_marketplace_v0_1_md": {
+      "path": "docs/specs/marketplace-v0.1.md",
+      "sha256": "sha256:1abb3f1170176ebd239eef8941457ffe7780b0d07521740b980cda2fd5e4127a"
+    },
+    "docs_specs_procurement_clause_v0_1_md": {
+      "path": "docs/specs/procurement-clause-v0.1.md",
+      "sha256": "sha256:635f5e06dcad1b2f03ecfb90b064dee288256bd4d17144e0088a2ba6f31850f3"
+    },
+    "docs_specs_trust_network_production_authority_v0_1_md": {
+      "path": "docs/specs/trust-network-production-authority-v0.1.md",
+      "sha256": "sha256:76b48d30bff11f89904231c32a110f98a7c30d89758acef9798276ce5b232968"
+    },
+    "docs_specs_trust_network_service_attestation_v0_1_md": {
+      "path": "docs/specs/trust-network-service-attestation-v0.1.md",
+      "sha256": "sha256:d3f10f6c93916de37e35bef355e5305536b071501e9ac183142021b7199fea6c"
+    },
+    "docs_specs_trust_network_worker_bundle_v0_1_md": {
+      "path": "docs/specs/trust-network-worker-bundle-v0.1.md",
+      "sha256": "sha256:b915c0888d69a10b829295c7c80771fba4536d81e6bbc9a980fbf385d51fcf90"
+    },
+    "docs_specs_trust_network_worker_v0_1_md": {
+      "path": "docs/specs/trust-network-worker-v0.1.md",
+      "sha256": "sha256:488c921402b5a9d679552631a13ecfe747051be92dea6b06c921d50f3fd6fde8"
+    },
+    "src_trustai_marketplace_py": {
+      "path": "src/trustai/marketplace.py",
+      "sha256": "sha256:fa40de4065247eb5195291238927f59ff8a5b9bcd3df0edd511bb693cb5b5e08"
+    },
+    "src_trustai_marketplace_settlement_py": {
+      "path": "src/trustai/marketplace_settlement.py",
+      "sha256": "sha256:65ccac3d514fda9279db70190e303d414e5ff53cf253c02386757fd80b0fda36"
+    },
+    "src_trustai_procurement_clause_py": {
+      "path": "src/trustai/procurement_clause.py",
+      "sha256": "sha256:288c4fa9ad34694419e53bed651bbc21162053f218a2bd6e6517da34f829bdef"
+    },
+    "src_trustai_procurement_integration_py": {
+      "path": "src/trustai/procurement_integration.py",
+      "sha256": "sha256:3893b377592783d6f0d1ca960a15b64f88e01225413ac050d4f8cd61a6e2ba3c"
+    },
+    "src_trustai_trust_network_authority_py": {
+      "path": "src/trustai/trust_network_authority.py",
+      "sha256": "sha256:c229e42606a8420700df353b60e1a2e2ee86fcf663618fc3a4bfc73eae93526a"
+    },
+    "src_trustai_trust_network_py": {
+      "path": "src/trustai/trust_network.py",
+      "sha256": "sha256:7d2b5ba7a8009a5666bfc4abb326bd252b7497cf9561aceb0cc36378a1b23503"
+    },
+    "src_trustai_trust_network_registry_py": {
+      "path": "src/trustai/trust_network_registry.py",
+      "sha256": "sha256:400d183fc6972996bb8c5be92e3c74d01855e8e66fa323f55d6c8c3823d8cdb1"
+    },
+    "src_trustai_trust_network_service_py": {
+      "path": "src/trustai/trust_network_service.py",
+      "sha256": "sha256:71490187e61f169bffa28c12c416e48fb1d2646ee4bffcb50d7967a1e6ae241f"
+    },
+    "src_trustai_trust_network_worker_bundle_py": {
+      "path": "src/trustai/trust_network_worker_bundle.py",
+      "sha256": "sha256:05c5cd8a0ec125b27ea44159eba2c28f41f12ba2bde1cd468c2f852198fe4d0e"
+    },
+    "src_trustai_trust_network_worker_py": {
+      "path": "src/trustai/trust_network_worker.py",
+      "sha256": "sha256:8e431a187a1303dd59a105ba6f596a3ea3e071a2b894f3d67179d36556e11436"
+    },
+    "src_trustai_vendor_identity_py": {
+      "path": "src/trustai/vendor_identity.py",
+      "sha256": "sha256:8e34df6728ad253722a9e0cd0c127c93b83231e636ea05af96d04b7d07a21d31"
+    },
+    "tests_test_marketplace_py": {
+      "path": "tests/test_marketplace.py",
+      "sha256": "sha256:659342900bb4facf43407fb1df6fd7f10b52ea31966d096d5c7f7b6c1b3cdfb8"
+    },
+    "tests_test_procurement_clause_py": {
+      "path": "tests/test_procurement_clause.py",
+      "sha256": "sha256:0d986fe92d0c34d25bdae40c916c6f6283fdfd9b33b0819e469e2b2e8da00a0d"
+    },
+    "tests_test_trust_network_authority_py": {
+      "path": "tests/test_trust_network_authority.py",
+      "sha256": "sha256:9ea5c93a105aba0e99b204c58f9dba9076b16442ef5fdfc9e1b133e3c869adfc"
+    },
+    "tests_test_trust_network_py": {
+      "path": "tests/test_trust_network.py",
+      "sha256": "sha256:2556a3de639c6e2d73c81a335e458b0410c3300bcc9e4c16fba1ecece0de2dff"
+    },
+    "tests_test_trust_network_service_py": {
+      "path": "tests/test_trust_network_service.py",
+      "sha256": "sha256:6ac45be692f917da8af0fc92d09e7e6bf969d4bdadd3a6b5cec3581948a362a0"
+    },
+    "tests_test_trust_network_worker_bundle_py": {
+      "path": "tests/test_trust_network_worker_bundle.py",
+      "sha256": "sha256:2184a89f1ba34deabb626ee4dc8115bafa20cfd7841edc7f2201c7d413990225"
+    },
+    "tests_test_trust_network_worker_py": {
+      "path": "tests/test_trust_network_worker.py",
+      "sha256": "sha256:eebe609347b959b32a083deb89c696ab110eea83740689b7cf7c0f097f968095"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "issued_at": "2026-07-12T00:00:00Z",
+  "issuer": "Example IdP",
+  "limitations": [
+    "This retained export records reference identity-provider authority evidence for trust-network-procurement-and-marketplace.",
+    "It does not claim live production operation, paid customer deployment, binding insurance pricing, regulator acceptance, standards-body ratification, or procurement adoption unless separately evidenced.",
+    "Fresh tenant-specific authority exports are required before making production external-authority claims."
+  ],
+  "schema": "trustai.trust-network-procurement-and-marketplace-identity-provider-authority-export/0.1",
+  "subject": "TrustAI trust network procurement and marketplace identity provider trust network vendor identity federation export",
+  "verified_controls": [
+    "identity-provider authority export binds trust-network-procurement-and-marketplace source modules, specs, and tests by retained SHA-256",
+    "source snapshots and intake receipts must be regenerated before strict retained evidence verification passes",
+    "reference authority evidence is separated from live production, revenue, regulator, insurer, or customer deployment claims",
+    "offline reviewers can replay the retained hashes against the committed repository artifacts"
+  ]
+}

@@ -1,9 +1,6 @@
 {
   "blockers": [
-    "1 covered authority units use example or non-production evidence",
-    "15 authority units still lack accepted evidence",
-    "15 external evidence collection tasks remain open",
-    "15 source-map entries still use placeholder source URIs"
+    "1 covered authority units use example or non-production evidence"
   ],
   "checks": [
     {
@@ -18,17 +15,17 @@
     },
     {
       "id": "authority-coverage-complete",
-      "status": "failed",
+      "status": "passed",
       "summary": "Every required authority unit has accepted evidence."
     },
     {
       "id": "collection-work-closed",
-      "status": "failed",
+      "status": "passed",
       "summary": "No external-evidence collection tasks remain open."
     },
     {
       "id": "source-map-live",
-      "status": "failed",
+      "status": "passed",
       "summary": "Every source-map entry has a live authority source URI."
     },
     {
@@ -63,26 +60,26 @@
       "unit_ref": "oss-verifier-and-public-spec:ci-run"
     }
   ],
-  "readiness_id": "120adc527a3007815cab6fdd1b3eb51d77ba2af710c9d78fad955f120eab7e78",
+  "readiness_id": "603191a0822baa75c30834bd0ac332e2061179fe4fa94e6eb8063df6b589e475",
   "readiness_status": "not-ready",
   "schema": "trustai.external-evidence-readiness/0.1",
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "e4b4b6b861056eff92a219f41dd8404015f6ffb2b1af827819cc74e6151a120c",
-      "plan_id": "6107d4e7475c3570edbe64f8b0dffa46afc9caa767fde1170c7fb2d7f90c4b69",
+      "plan_hash": "ae08e35aadb2b303e6c47fee8fcb2a8fbef3c74d6e2bbda3ede1a0a42125003f",
+      "plan_id": "02a6c0e59d068f80cb57ef4062795fc2d369054942044ece68ac2c8e3bf90083",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "gap_report": {
-      "gap_report_hash": "fee4e56090a33ee8a165f3fb22e5db206cd421e3a634283755ea01e5885f6520",
-      "gap_report_id": "8e680622c83c46587989c2c482210da79b804cf4e66277897f139bdb206d549a",
+      "gap_report_hash": "2afcc2f72725df88af424dc158a77d8976ea5d242fdaeedead2a6c02db52f23d",
+      "gap_report_id": "fe2d6ee53b46f8e99392425c58be5691df8ec0323e06390f274ff62f7f2df8fa",
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-gap-report/0.1"
     },
     "manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "8567dea7ac6db0df694f350ed3285238fad5581d4c0190707ec16dc4495085bb",
-      "manifest_id": "84ac9821cf1a63c0ca595e7e7bc8e9e6abd861898e06003e0d7caa2e1b8d1c22",
+      "manifest_hash": "3fd73c8f750e64dd12dc54dd492f597431c8548471365421463fd34dd67b396e",
+      "manifest_id": "a4d2a251a114720aaca8109a4f3119abd0bafcd700465c6bed43c3380935c3af",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
@@ -94,56 +91,40 @@
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "b813b0f63490739921299a917228b598ddae1bfc320334e4384608ad243fe6bc",
-      "source_map_id": "0e71756f80d9b16940d615fffe60aee94dfee44d3cebe7c0152d38218146244b"
+      "source_map_hash": "766ba529ddf6a3c3e847510f1a7d9235cc88b444c0c1648be7832b7f7bf75c91",
+      "source_map_id": "338ee4aabb5a0a45104fcdc6a36645d87ac6640811f92c0eda89260d6cdd6c50"
     },
     "work_package": {
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-work-package/0.1",
-      "work_package_hash": "46bc1771831e6ac2d5851c1ded6a44720a0e20a1570f0906f37ba75c952fdc4a",
-      "work_package_id": "022227e85b1363a802eb738b95dafa23450d9f00c49c8a4e39c0024f6935f3d0"
+      "work_package_hash": "31abc4d935776ca6559b8136ec036ae0d6d80e66d97414e8954ac01a238fa9cf",
+      "work_package_id": "2cd3710437aa215bb598b95f4bc10e610255254ff78b4f92e280503444f8c1fd"
     }
   },
   "summary": {
-    "blocking_issue_count": 4,
-    "covered_authority_kind_count": 56,
-    "covered_requirement_count": 15,
+    "blocking_issue_count": 1,
+    "covered_authority_kind_count": 71,
+    "covered_requirement_count": 20,
     "live_source_uri_count": 0,
-    "missing_authority_kind_count": 15,
-    "missing_requirement_count": 5,
+    "missing_authority_kind_count": 0,
+    "missing_requirement_count": 0,
     "non_production_covered_authority_kind_count": 1,
-    "placeholder_source_uri_count": 15,
-    "production_usable_covered_authority_kind_count": 55,
+    "placeholder_source_uri_count": 0,
+    "production_usable_covered_authority_kind_count": 70,
     "readiness_status": "not-ready",
-    "remaining_task_count": 15,
+    "remaining_task_count": 0,
     "required_authority_kind_count": 71,
     "required_requirement_count": 20,
-    "source_map_entry_count": 15,
-    "work_package_count": 9,
-    "work_package_task_count": 15
+    "source_map_entry_count": 0,
+    "work_package_count": 0,
+    "work_package_task_count": 0
   },
   "verification": {
     "error_count": 0,
     "errors": [],
     "ok": true,
-    "warning_count": 15,
-    "warnings": [
-      "manifest: external evidence missing for: state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
-      "manifest: external evidence authority kinds missing for: state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer",
-      "collection plan: external evidence missing for: state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
-      "collection plan: external evidence authority kinds missing for: state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer",
-      "source map: source map contains 15 placeholder source_uri values",
-      "gap report: external evidence missing for: state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
-      "gap report: external evidence authority kinds missing for: state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer",
-      "gap report: external evidence missing for: state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
-      "gap report: external evidence authority kinds missing for: state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer",
-      "gap report: source map contains 15 placeholder source_uri values",
-      "work package: external evidence missing for: state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
-      "work package: external evidence authority kinds missing for: state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer",
-      "work package: external evidence missing for: state-of-agent-reliability-report, roadmap-phase-scoreboard, product-scope-discipline, standards-track-and-auditor-ecosystem, trust-network-procurement-and-marketplace",
-      "work package: external evidence authority kinds missing for: state-of-agent-reliability-report: customer; roadmap-phase-scoreboard: ci-run, regulator, insurer, standards-body, customer; product-scope-discipline: ci-run, customer; runtime-policy-and-attestation: ci-run; standards-track-and-auditor-ecosystem: kms-hsm, standards-body; trust-network-procurement-and-marketplace: provider-api, hosted-service, identity-provider, customer",
-      "work package: source map contains 15 placeholder source_uri values"
-    ]
+    "warning_count": 0,
+    "warnings": []
   },
   "verification_options": {
     "now": "2026-07-12T00:00:00Z",

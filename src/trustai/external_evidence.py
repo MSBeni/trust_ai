@@ -961,9 +961,6 @@ def fulfill_external_evidence_source_map(
         raise ValueError(f"unsupported external evidence source map schema: {source_map.get('schema')}")
     if source_map.get("source_map_id") != content_hash(without_keys(source_map, "source_map_id")):
         raise ValueError("external evidence source map_id does not match canonical body")
-    if not fulfillments:
-        raise ValueError("at least one source map fulfillment is required")
-
     body = json.loads(json.dumps(without_keys(source_map, "source_map_id"), sort_keys=True))
     entries = body.get("entries")
     if not isinstance(entries, list):
@@ -974,6 +971,8 @@ def fulfill_external_evidence_source_map(
     defaults = body.get("defaults", {})
     if not isinstance(defaults, dict):
         raise ValueError("external evidence source map defaults must be an object")
+    if not fulfillments and entries:
+        raise ValueError("at least one source map fulfillment is required")
 
     fulfilled_refs: set[str] = set()
     for index, fulfillment in enumerate(fulfillments):
@@ -2755,7 +2754,7 @@ def build_external_evidence_owner_fulfillment_closure(
     manifest_mismatch_count = sum(1 for task in task_closures if "manifest-intake-mismatch" in task.get("blocking_reasons", []))
     invalid_intake_receipt_count = sum(1 for record in intake_records if not record.get("verification_ok"))
     source_error_count = len(verification_errors) + sum(len(record.get("errors", [])) for record in intake_records)
-    if task_count and closed_task_count == task_count and source_error_count == 0:
+    if closed_task_count == task_count and source_error_count == 0:
         closure_status = "closed"
     elif closed_task_count:
         closure_status = "partial"

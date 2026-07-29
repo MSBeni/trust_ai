@@ -1,0 +1,108 @@
+{
+  "authority_evidence": {
+    "authority_kind": "ci-run",
+    "evidence_ref": "ci-run:aitrade/runtime-policy-and-attestation/2026-07-12",
+    "requirement_id": "runtime-policy-and-attestation",
+    "source_uri": "https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml"
+  },
+  "authority_review": {
+    "review_ref": "ci-run:aitrade/runtime-policy-and-attestation/authority-review/2026-07-12",
+    "reviewer_refs": [
+      "ci-run:primary-reviewer",
+      "ci-run:evidence-control-reviewer"
+    ],
+    "scope": "runtime policy CI verification",
+    "status": "accepted-for-reference-authority-evidence"
+  },
+  "environment": "aitrade-prod",
+  "evidence": {
+    "docs_specs_policy_backend_production_authority_v0_1_md": {
+      "path": "docs/specs/policy-backend-production-authority-v0.1.md",
+      "sha256": "sha256:b31e9009f182a2597ae03132c84a463696a7eb48543589585bcac3e7a1d65d2c"
+    },
+    "docs_specs_policy_backend_service_bundle_v0_1_md": {
+      "path": "docs/specs/policy-backend-service-bundle-v0.1.md",
+      "sha256": "sha256:007e480563a61e77634be6ce0fac3ecc08dda9982ea953f6766b8cc7b367bb51"
+    },
+    "docs_specs_policy_engine_receipt_v0_1_md": {
+      "path": "docs/specs/policy-engine-receipt-v0.1.md",
+      "sha256": "sha256:4512748654677ba1389a2a3bbcff057d56cc96055656f2e869bd0560c8353efa"
+    },
+    "docs_specs_runtime_policy_v0_1_md": {
+      "path": "docs/specs/runtime-policy-v0.1.md",
+      "sha256": "sha256:2b48ed7529f079413fa276c2b0f29c2d8308e7a65f9e396754c8500ba7246cb5"
+    },
+    "src_trustai_policy_backend_authority_py": {
+      "path": "src/trustai/policy_backend_authority.py",
+      "sha256": "sha256:35c814fc79de345014f5953b84f13030d9b1442f1e79b22275bfc332fc5390c9"
+    },
+    "src_trustai_policy_backend_enforcement_py": {
+      "path": "src/trustai/policy_backend_enforcement.py",
+      "sha256": "sha256:4511c69ac966a93421e4c381979ae503357d520dd41577d1f62f70e1b6a0e69c"
+    },
+    "src_trustai_policy_backend_provider_bundle_py": {
+      "path": "src/trustai/policy_backend_provider_bundle.py",
+      "sha256": "sha256:3a0b0bb568a26d09a074893ecdb494e7e70eda57fd1bca83d188667c814f9c7f"
+    },
+    "src_trustai_policy_backend_provider_py": {
+      "path": "src/trustai/policy_backend_provider.py",
+      "sha256": "sha256:1c63fda02959bb35f5bf008b74cd646583587670a070b4f448439bb86ccde639"
+    },
+    "src_trustai_policy_backend_service_bundle_py": {
+      "path": "src/trustai/policy_backend_service_bundle.py",
+      "sha256": "sha256:fb3f2141438e3b2cd5c7911feb54a9d8d0ffcf606f36482d5f36e6edf1e2e447"
+    },
+    "src_trustai_policy_backend_service_py": {
+      "path": "src/trustai/policy_backend_service.py",
+      "sha256": "sha256:468c6c00a3f9d796c529b40fda55e9c6237f0d89c3c9e5e1f9382a255952607b"
+    },
+    "src_trustai_policy_backend_worker_py": {
+      "path": "src/trustai/policy_backend_worker.py",
+      "sha256": "sha256:1fe1ef061450ae14070b5428eb74a53ab9c79cfbb165c4ea214ca6072736e7f8"
+    },
+    "src_trustai_policy_engine_py": {
+      "path": "src/trustai/policy_engine.py",
+      "sha256": "sha256:8e08fa75a9da774bddcd83a24210563329da4ec3d69c925b702a8a3d5d63c8ff"
+    },
+    "src_trustai_policy_py": {
+      "path": "src/trustai/policy.py",
+      "sha256": "sha256:db7a8ae2cec786e4380fec339b4702b11755e483211a03c4398606bc58c9489c"
+    },
+    "src_trustai_runtime_py": {
+      "path": "src/trustai/runtime.py",
+      "sha256": "sha256:f14ade85413756f533e323a9f7814ff40f2ae5cbe10ba5a7639139ae5257089d"
+    },
+    "tests_test_policy_backend_authority_py": {
+      "path": "tests/test_policy_backend_authority.py",
+      "sha256": "sha256:be8a83cfa1f41c7d7ad0c95a03ecf265272941c3f6a49eca07ec5559d35d78e9"
+    },
+    "tests_test_policy_backend_enforcement_py": {
+      "path": "tests/test_policy_backend_enforcement.py",
+      "sha256": "sha256:662c435da28e91642eb9d4a5ed4c392be78f6e3d75b6e292bffcd43d539ee7ba"
+    },
+    "tests_test_policy_backend_service_bundle_py": {
+      "path": "tests/test_policy_backend_service_bundle.py",
+      "sha256": "sha256:233a323d9574d28057eb1ad2fe3f31992c5a8570eb223ecf6fb4510754c2387b"
+    },
+    "tests_test_policy_engine_py": {
+      "path": "tests/test_policy_engine.py",
+      "sha256": "sha256:7a2202b3df146e93462df9d89871b68871f817c0913af3f03393c28aaba83a90"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "issued_at": "2026-07-12T00:00:00Z",
+  "issuer": "GitHub Actions",
+  "limitations": [
+    "This retained export records reference ci-run authority evidence for runtime-policy-and-attestation.",
+    "It does not claim live production operation, paid customer deployment, binding insurance pricing, regulator acceptance, standards-body ratification, or procurement adoption unless separately evidenced.",
+    "Fresh tenant-specific authority exports are required before making production external-authority claims."
+  ],
+  "schema": "trustai.runtime-policy-and-attestation-ci-run-authority-export/0.1",
+  "subject": "TrustAI runtime policy and attestation ci run runtime policy CI verification",
+  "verified_controls": [
+    "ci-run authority export binds runtime-policy-and-attestation source modules, specs, and tests by retained SHA-256",
+    "source snapshots and intake receipts must be regenerated before strict retained evidence verification passes",
+    "reference authority evidence is separated from live production, revenue, regulator, insurer, or customer deployment claims",
+    "offline reviewers can replay the retained hashes against the committed repository artifacts"
+  ]
+}

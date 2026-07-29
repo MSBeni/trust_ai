@@ -1,0 +1,92 @@
+{
+  "authority_evidence": {
+    "authority_kind": "ci-run",
+    "evidence_ref": "ci-run:aitrade/product-scope-discipline/2026-07-12",
+    "requirement_id": "product-scope-discipline",
+    "source_uri": "https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml"
+  },
+  "authority_review": {
+    "review_ref": "ci-run:aitrade/product-scope-discipline/authority-review/2026-07-12",
+    "reviewer_refs": [
+      "ci-run:primary-reviewer",
+      "ci-run:evidence-control-reviewer"
+    ],
+    "scope": "scope discipline CI verification",
+    "status": "accepted-for-reference-authority-evidence"
+  },
+  "environment": "aitrade-prod",
+  "evidence": {
+    "docs_architecture_roadmap_coverage_md": {
+      "path": "docs/architecture/roadmap-coverage.md",
+      "sha256": "sha256:e238899dcd27ae9212347e8e17c2c8b5db35266c2172428c4fa90bc5120abd77"
+    },
+    "docs_specs_product_scope_authority_v0_1_md": {
+      "path": "docs/specs/product-scope-authority-v0.1.md",
+      "sha256": "sha256:1052bc9a303091886ad090fc054045d90e1e177039601e3801a0cfbc0dfbb3e4"
+    },
+    "docs_specs_product_scope_decision_v0_1_md": {
+      "path": "docs/specs/product-scope-decision-v0.1.md",
+      "sha256": "sha256:2636bf581a4e79becd6016e7fd82564982d61345175dd4eb1c4e1dc0eb8a4340"
+    },
+    "docs_specs_proof_pack_v0_1_md": {
+      "path": "docs/specs/proof-pack-v0.1.md",
+      "sha256": "sha256:9bfe0b9dd85fef1ccaffd944bc0fa807814e0aba2da6370d82c8059b4b6ee79e"
+    },
+    "docs_specs_roadmap_audit_v0_1_md": {
+      "path": "docs/specs/roadmap-audit-v0.1.md",
+      "sha256": "sha256:a233335ddab7045ca8c45ee68e32963ba4c3498ba95207840409c60f4d3399d9"
+    },
+    "docs_specs_verification_contract_v0_1_md": {
+      "path": "docs/specs/verification-contract-v0.1.md",
+      "sha256": "sha256:0c37fb6f5b41014dfb3df6bb344c08dbef8918919de5f70cf7114986581fc1b6"
+    },
+    "src_trustai_gate_py": {
+      "path": "src/trustai/gate.py",
+      "sha256": "sha256:58d83999022f90da5a7af507a325ac52970fdc7838a47d4d7bde87f515294f73"
+    },
+    "src_trustai_product_scope_authority_py": {
+      "path": "src/trustai/product_scope_authority.py",
+      "sha256": "sha256:a1bfac52b3416dec3dcf8dd106d19b21f057908724f3c39134473d18f7e90dac"
+    },
+    "src_trustai_product_scope_py": {
+      "path": "src/trustai/product_scope.py",
+      "sha256": "sha256:af69657443dd0c6244cfe2d85b5854a5c98d786f8b926dff7414c8c026b98bb5"
+    },
+    "src_trustai_proofpack_py": {
+      "path": "src/trustai/proofpack.py",
+      "sha256": "sha256:dcbcf7252e3723e61e12ac288c96e7c89c9b160d17c063074a01aa04a6986c87"
+    },
+    "src_trustai_roadmap_audit_py": {
+      "path": "src/trustai/roadmap_audit.py",
+      "sha256": "sha256:430785a7c4cf190e8d19607d62953b62482953fc3db44ae31317aa14a840df07"
+    },
+    "src_trustai_verifier_py": {
+      "path": "src/trustai/verifier.py",
+      "sha256": "sha256:39c53b7e65aba6cf0645ebc5fc4b0f1095d17b52c74f262ea786e852d0ce55c4"
+    },
+    "tests_test_product_scope_authority_py": {
+      "path": "tests/test_product_scope_authority.py",
+      "sha256": "sha256:1cc8ae01ff7a135793a3934af0cdf9cce6d3e082bd2b3e4012f1fafc78819b7b"
+    },
+    "tests_test_product_scope_py": {
+      "path": "tests/test_product_scope.py",
+      "sha256": "sha256:3ae2631f3c3f11e8f1addc01b496103a77c0b122f2b01c77326183b490127130"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "issued_at": "2026-07-12T00:00:00Z",
+  "issuer": "GitHub Actions",
+  "limitations": [
+    "This retained export records reference ci-run authority evidence for product-scope-discipline.",
+    "It does not claim live production operation, paid customer deployment, binding insurance pricing, regulator acceptance, standards-body ratification, or procurement adoption unless separately evidenced.",
+    "Fresh tenant-specific authority exports are required before making production external-authority claims."
+  ],
+  "schema": "trustai.product-scope-discipline-ci-run-authority-export/0.1",
+  "subject": "TrustAI product scope discipline ci run scope discipline CI verification",
+  "verified_controls": [
+    "ci-run authority export binds product-scope-discipline source modules, specs, and tests by retained SHA-256",
+    "source snapshots and intake receipts must be regenerated before strict retained evidence verification passes",
+    "reference authority evidence is separated from live production, revenue, regulator, insurer, or customer deployment claims",
+    "offline reviewers can replay the retained hashes against the committed repository artifacts"
+  ]
+}

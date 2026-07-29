@@ -1,0 +1,72 @@
+{
+  "authority_evidence": {
+    "authority_kind": "kms-hsm",
+    "evidence_ref": "kms-hsm:aitrade/standards-track-and-auditor-ecosystem/2026-07-12",
+    "requirement_id": "standards-track-and-auditor-ecosystem",
+    "source_uri": "https://kms.example/attestations/trustai/standards-track-and-auditor-ecosystem/evidence-signing/2026-07-12"
+  },
+  "authority_review": {
+    "review_ref": "kms-hsm:aitrade/standards-track-and-auditor-ecosystem/authority-review/2026-07-12",
+    "reviewer_refs": [
+      "kms-hsm:primary-reviewer",
+      "kms-hsm:evidence-control-reviewer"
+    ],
+    "scope": "auditor ecosystem KMS signing enforcement",
+    "status": "accepted-for-reference-authority-evidence"
+  },
+  "environment": "aitrade-prod",
+  "evidence": {
+    "docs_specs_auditor_certification_v0_1_md": {
+      "path": "docs/specs/auditor-certification-v0.1.md",
+      "sha256": "sha256:9db70d7d557a2edc4949ff05c3633a11d63d8382847df061aa705d188f8fdc31"
+    },
+    "docs_specs_standards_submission_v0_1_md": {
+      "path": "docs/specs/standards-submission-v0.1.md",
+      "sha256": "sha256:f5b94745f26cf47f4ac9548032132cae0a13b55e9fb0101683fb639843832538"
+    },
+    "src_trustai_auditor_accreditation_py": {
+      "path": "src/trustai/auditor_accreditation.py",
+      "sha256": "sha256:291e139d290774979008dbd4f66452cb65f7cb5e35276603e7a23a60d3de92c4"
+    },
+    "src_trustai_certification_py": {
+      "path": "src/trustai/certification.py",
+      "sha256": "sha256:93b8a757170e0c652083529aaa9f640db2edf9d0138d21a4ba2d0ad3df399152"
+    },
+    "src_trustai_standards_body_submission_py": {
+      "path": "src/trustai/standards_body_submission.py",
+      "sha256": "sha256:ed80042b82a0ea3d88c6f56804b3d74639f10dc90179bacb88cd082474634ba5"
+    },
+    "src_trustai_standards_py": {
+      "path": "src/trustai/standards.py",
+      "sha256": "sha256:02ded53eb8435e68f4a34d5563fe2f05e0b61b10bbad8d38e65753a84c01995a"
+    },
+    "tests_test_auditor_accreditation_py": {
+      "path": "tests/test_auditor_accreditation.py",
+      "sha256": "sha256:eeefd5bc9e096239e991a3255a72b7e25bcbf5620659dc2f6915cbf8c75b315c"
+    },
+    "tests_test_certification_py": {
+      "path": "tests/test_certification.py",
+      "sha256": "sha256:00de48c361eeedfe23037024f2a5f1b45d262d3f870b863b762c76186973c473"
+    },
+    "tests_test_standards_py": {
+      "path": "tests/test_standards.py",
+      "sha256": "sha256:231b574ee1a7b153c9becf77777c472d3340b4652da28520a92791e71b77e805"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "issued_at": "2026-07-12T00:00:00Z",
+  "issuer": "Example KMS/HSM",
+  "limitations": [
+    "This retained export records reference kms-hsm authority evidence for standards-track-and-auditor-ecosystem.",
+    "It does not claim live production operation, paid customer deployment, binding insurance pricing, regulator acceptance, standards-body ratification, or procurement adoption unless separately evidenced.",
+    "Fresh tenant-specific authority exports are required before making production external-authority claims."
+  ],
+  "schema": "trustai.standards-track-and-auditor-ecosystem-kms-hsm-authority-export/0.1",
+  "subject": "TrustAI standards track and auditor ecosystem kms hsm auditor ecosystem KMS signing enforcement",
+  "verified_controls": [
+    "kms-hsm authority export binds standards-track-and-auditor-ecosystem source modules, specs, and tests by retained SHA-256",
+    "source snapshots and intake receipts must be regenerated before strict retained evidence verification passes",
+    "reference authority evidence is separated from live production, revenue, regulator, insurer, or customer deployment claims",
+    "offline reviewers can replay the retained hashes against the committed repository artifacts"
+  ]
+}

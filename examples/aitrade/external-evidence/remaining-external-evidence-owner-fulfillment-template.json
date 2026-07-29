@@ -1,216 +1,5 @@
 {
-  "assignments": [
-    {
-      "authority_kind": "identity-provider",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/identity-provider.json",
-      "owner_hint": "IAM/identity owner",
-      "requirement_id": "trust-network-procurement-and-marketplace",
-      "snapshot_out": "artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/identity-provider.json",
-      "source_uri_status": "placeholder",
-      "task": "trust-network-procurement-and-marketplace:identity-provider",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "customer",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/product-scope-discipline/customer.json",
-      "owner_hint": "customer success/account owner",
-      "requirement_id": "product-scope-discipline",
-      "snapshot_out": "artifacts/external-evidence-sources/product-scope-discipline/customer.json",
-      "source_uri_status": "placeholder",
-      "task": "product-scope-discipline:customer",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "customer",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/roadmap-phase-scoreboard/customer.json",
-      "owner_hint": "customer success/account owner",
-      "requirement_id": "roadmap-phase-scoreboard",
-      "snapshot_out": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/customer.json",
-      "source_uri_status": "placeholder",
-      "task": "roadmap-phase-scoreboard:customer",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "customer",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/state-of-agent-reliability-report/customer.json",
-      "owner_hint": "customer success/account owner",
-      "requirement_id": "state-of-agent-reliability-report",
-      "snapshot_out": "artifacts/external-evidence-sources/state-of-agent-reliability-report/customer.json",
-      "source_uri_status": "placeholder",
-      "task": "state-of-agent-reliability-report:customer",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "customer",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/customer.json",
-      "owner_hint": "customer success/account owner",
-      "requirement_id": "trust-network-procurement-and-marketplace",
-      "snapshot_out": "artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/customer.json",
-      "source_uri_status": "placeholder",
-      "task": "trust-network-procurement-and-marketplace:customer",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "provider-api",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/provider-api.json",
-      "owner_hint": "integration/platform owner",
-      "requirement_id": "trust-network-procurement-and-marketplace",
-      "snapshot_out": "artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/provider-api.json",
-      "source_uri_status": "placeholder",
-      "task": "trust-network-procurement-and-marketplace:provider-api",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "regulator",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/roadmap-phase-scoreboard/regulator.json",
-      "owner_hint": "legal/compliance owner",
-      "requirement_id": "roadmap-phase-scoreboard",
-      "snapshot_out": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/regulator.json",
-      "source_uri_status": "placeholder",
-      "task": "roadmap-phase-scoreboard:regulator",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "ci-run",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/product-scope-discipline/ci-run.json",
-      "owner_hint": "release engineering",
-      "requirement_id": "product-scope-discipline",
-      "snapshot_out": "artifacts/external-evidence-sources/product-scope-discipline/ci-run.json",
-      "source_uri_status": "placeholder",
-      "task": "product-scope-discipline:ci-run",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "ci-run",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/roadmap-phase-scoreboard/ci-run.json",
-      "owner_hint": "release engineering",
-      "requirement_id": "roadmap-phase-scoreboard",
-      "snapshot_out": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/ci-run.json",
-      "source_uri_status": "placeholder",
-      "task": "roadmap-phase-scoreboard:ci-run",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "ci-run",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/runtime-policy-and-attestation/ci-run.json",
-      "owner_hint": "release engineering",
-      "requirement_id": "runtime-policy-and-attestation",
-      "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/ci-run.json",
-      "source_uri_status": "placeholder",
-      "task": "runtime-policy-and-attestation:ci-run",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "insurer",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/roadmap-phase-scoreboard/insurer.json",
-      "owner_hint": "risk/insurance owner",
-      "requirement_id": "roadmap-phase-scoreboard",
-      "snapshot_out": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/insurer.json",
-      "source_uri_status": "placeholder",
-      "task": "roadmap-phase-scoreboard:insurer",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "kms-hsm",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/kms-hsm.json",
-      "owner_hint": "security/platform KMS owner",
-      "requirement_id": "standards-track-and-auditor-ecosystem",
-      "snapshot_out": "artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/kms-hsm.json",
-      "source_uri_status": "placeholder",
-      "task": "standards-track-and-auditor-ecosystem:kms-hsm",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "hosted-service",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/hosted-service.json",
-      "owner_hint": "service owner",
-      "requirement_id": "trust-network-procurement-and-marketplace",
-      "snapshot_out": "artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/hosted-service.json",
-      "source_uri_status": "placeholder",
-      "task": "trust-network-procurement-and-marketplace:hosted-service",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "standards-body",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/roadmap-phase-scoreboard/standards-body.json",
-      "owner_hint": "standards/governance owner",
-      "requirement_id": "roadmap-phase-scoreboard",
-      "snapshot_out": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/standards-body.json",
-      "source_uri_status": "placeholder",
-      "task": "roadmap-phase-scoreboard:standards-body",
-      "task_status": "blocked"
-    },
-    {
-      "authority_kind": "standards-body",
-      "blocking_reasons": [
-        "placeholder-source-uri",
-        "missing-intake"
-      ],
-      "intake_out": "artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/standards-body.json",
-      "owner_hint": "standards/governance owner",
-      "requirement_id": "standards-track-and-auditor-ecosystem",
-      "snapshot_out": "artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/standards-body.json",
-      "source_uri_status": "placeholder",
-      "task": "standards-track-and-auditor-ecosystem:standards-body",
-      "task_status": "blocked"
-    }
-  ],
+  "assignments": [],
   "commands": {
     "collect_after_fulfillment": "python -m trustai external-evidence-collect-batch <fulfilled-source-map.json> <manifest.json> <roadmap-audit.json> --root . --require-live-source-uris",
     "fill_then_fulfill_source_map": "python -m trustai external-evidence-source-map-fulfill <source-map.json> <plan.json> --fulfillment-file <this-template.json> --require-live-source-uris --out <fulfilled-source-map.json>",
@@ -220,83 +9,7 @@
     "include_closed": false,
     "owner_hint": null
   },
-  "fulfillments": [
-    {
-      "description": "identity-provider evidence for trust-network-procurement-and-marketplace",
-      "source_uri": "TODO://authority/trust-network-procurement-and-marketplace/identity-provider",
-      "task": "trust-network-procurement-and-marketplace:identity-provider"
-    },
-    {
-      "description": "customer evidence for product-scope-discipline",
-      "source_uri": "TODO://authority/product-scope-discipline/customer",
-      "task": "product-scope-discipline:customer"
-    },
-    {
-      "description": "customer evidence for roadmap-phase-scoreboard",
-      "source_uri": "TODO://authority/roadmap-phase-scoreboard/customer",
-      "task": "roadmap-phase-scoreboard:customer"
-    },
-    {
-      "description": "customer evidence for state-of-agent-reliability-report",
-      "source_uri": "TODO://authority/state-of-agent-reliability-report/customer",
-      "task": "state-of-agent-reliability-report:customer"
-    },
-    {
-      "description": "customer evidence for trust-network-procurement-and-marketplace",
-      "source_uri": "TODO://authority/trust-network-procurement-and-marketplace/customer",
-      "task": "trust-network-procurement-and-marketplace:customer"
-    },
-    {
-      "description": "provider-api evidence for trust-network-procurement-and-marketplace",
-      "source_uri": "TODO://authority/trust-network-procurement-and-marketplace/provider-api",
-      "task": "trust-network-procurement-and-marketplace:provider-api"
-    },
-    {
-      "description": "regulator evidence for roadmap-phase-scoreboard",
-      "source_uri": "TODO://authority/roadmap-phase-scoreboard/regulator",
-      "task": "roadmap-phase-scoreboard:regulator"
-    },
-    {
-      "description": "ci-run evidence for product-scope-discipline",
-      "source_uri": "TODO://authority/product-scope-discipline/ci-run",
-      "task": "product-scope-discipline:ci-run"
-    },
-    {
-      "description": "ci-run evidence for roadmap-phase-scoreboard",
-      "source_uri": "TODO://authority/roadmap-phase-scoreboard/ci-run",
-      "task": "roadmap-phase-scoreboard:ci-run"
-    },
-    {
-      "description": "ci-run evidence for runtime-policy-and-attestation",
-      "source_uri": "TODO://authority/runtime-policy-and-attestation/ci-run",
-      "task": "runtime-policy-and-attestation:ci-run"
-    },
-    {
-      "description": "insurer evidence for roadmap-phase-scoreboard",
-      "source_uri": "TODO://authority/roadmap-phase-scoreboard/insurer",
-      "task": "roadmap-phase-scoreboard:insurer"
-    },
-    {
-      "description": "kms-hsm evidence for standards-track-and-auditor-ecosystem",
-      "source_uri": "TODO://authority/standards-track-and-auditor-ecosystem/kms-hsm",
-      "task": "standards-track-and-auditor-ecosystem:kms-hsm"
-    },
-    {
-      "description": "hosted-service evidence for trust-network-procurement-and-marketplace",
-      "source_uri": "TODO://authority/trust-network-procurement-and-marketplace/hosted-service",
-      "task": "trust-network-procurement-and-marketplace:hosted-service"
-    },
-    {
-      "description": "standards-body evidence for roadmap-phase-scoreboard",
-      "source_uri": "TODO://authority/roadmap-phase-scoreboard/standards-body",
-      "task": "roadmap-phase-scoreboard:standards-body"
-    },
-    {
-      "description": "standards-body evidence for standards-track-and-auditor-ecosystem",
-      "source_uri": "TODO://authority/standards-track-and-auditor-ecosystem/standards-body",
-      "task": "standards-track-and-auditor-ecosystem:standards-body"
-    }
-  ],
+  "fulfillments": [],
   "generated_at": "2026-07-12T00:01:00Z",
   "instructions": [
     "Replace every TODO or placeholder fulfillments[*].source_uri with an authority-owned live source URI.",
@@ -307,34 +20,24 @@
     "This template is a handoff artifact; it does not satisfy missing external authority evidence by itself.",
     "Placeholder source URIs intentionally keep readiness blocked until owners replace them with live authority sources."
   ],
-  "owner_fulfillment_template_id": "02a3937e4ed85aa47e0936f6a2a58bb89be9cfd90eb056d7d2173599537ae2bf",
+  "owner_fulfillment_template_id": "2407dba43a91c92e6acd5c94fe344f4cb1f40ebdc55d31ca943cde9301f7ee35",
   "schema": "trustai.external-evidence-owner-fulfillment-template/0.1",
   "source_owner_packet_status": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "owner_packet_status_hash": "eb2455c89490c2747bb5107522686bdaadff55cd6a755f061bc7e6e2b426c5c5",
-    "owner_packet_status_id": "d33e1f4a4f17ea7f0c3de9dc7b9bdd65b1dad4c980a2f17c71c38d8d7fe7daa7",
+    "owner_packet_status_hash": "02bf6faed4acfc79f05c5e7d36d28eed07476081d9eab5f3efbb4c64548cdd1d",
+    "owner_packet_status_id": "df7ba45ef1c8e5079cf66c692f921fc3ba61792af3d5e101de15fc40692be901",
     "schema": "trustai.external-evidence-owner-packet-status/0.1"
   },
   "summary": {
-    "assignment_count": 15,
-    "blocked_task_count": 15,
+    "assignment_count": 0,
+    "blocked_task_count": 0,
     "closed_task_count": 0,
-    "fulfillment_count": 15,
+    "fulfillment_count": 0,
     "live_source_uri_count": 0,
-    "missing_intake_count": 15,
+    "missing_intake_count": 0,
     "open_task_count": 0,
-    "owner_count": 9,
-    "owners": [
-      "IAM/identity owner",
-      "customer success/account owner",
-      "integration/platform owner",
-      "legal/compliance owner",
-      "release engineering",
-      "risk/insurance owner",
-      "security/platform KMS owner",
-      "service owner",
-      "standards/governance owner"
-    ],
-    "placeholder_source_uri_count": 15
+    "owner_count": 0,
+    "owners": [],
+    "placeholder_source_uri_count": 0
   }
 }

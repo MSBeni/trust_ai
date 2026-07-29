@@ -1,0 +1,84 @@
+{
+  "authority_evidence": {
+    "authority_kind": "customer",
+    "evidence_ref": "customer:aitrade/state-of-agent-reliability-report/2026-07-12",
+    "requirement_id": "state-of-agent-reliability-report",
+    "source_uri": "https://customers.example/aitrade/model-risk/state-of-agent-reliability-report/reference-acceptance/2026-07-12"
+  },
+  "authority_review": {
+    "review_ref": "customer:aitrade/state-of-agent-reliability-report/authority-review/2026-07-12",
+    "reviewer_refs": [
+      "customer:primary-reviewer",
+      "customer:evidence-control-reviewer"
+    ],
+    "scope": "customer publication acceptance",
+    "status": "accepted-for-reference-authority-evidence"
+  },
+  "environment": "aitrade-prod",
+  "evidence": {
+    "docs_specs_actuarial_corpus_v0_1_md": {
+      "path": "docs/specs/actuarial-corpus-v0.1.md",
+      "sha256": "sha256:2739060ddf87b4cf13f923eee86ce642caf2c4be7ccf47680cf2b918fd041d0b"
+    },
+    "docs_specs_actuarial_product_v0_1_md": {
+      "path": "docs/specs/actuarial-product-v0.1.md",
+      "sha256": "sha256:d038f6066ecac2699d2b537d2d44aa01bbc218681e98d8b51699761b44ead5db"
+    },
+    "docs_specs_insurer_consent_v0_1_md": {
+      "path": "docs/specs/insurer-consent-v0.1.md",
+      "sha256": "sha256:76b2f24d0b22855230f25b45e8abe572d6f156a66ec7b1494d76a8f838ad90f2"
+    },
+    "docs_specs_proof_pack_v0_1_md": {
+      "path": "docs/specs/proof-pack-v0.1.md",
+      "sha256": "sha256:9bfe0b9dd85fef1ccaffd944bc0fa807814e0aba2da6370d82c8059b4b6ee79e"
+    },
+    "docs_specs_state_of_agent_reliability_report_v0_1_md": {
+      "path": "docs/specs/state-of-agent-reliability-report-v0.1.md",
+      "sha256": "sha256:b373176ba0a79047bba6847f64721013719b284df40d52c0af0aaac7f89f96f8"
+    },
+    "src_trustai_actuarial_py": {
+      "path": "src/trustai/actuarial.py",
+      "sha256": "sha256:1121d760fbeac797593fbf9822bab547ca90a9b519218c806310a7743726a0b4"
+    },
+    "src_trustai_consent_py": {
+      "path": "src/trustai/consent.py",
+      "sha256": "sha256:2214e65e91eff90440ef3e90c9c53ad71ecbed723fa1e8f58818b79528c0d333"
+    },
+    "src_trustai_insurer_py": {
+      "path": "src/trustai/insurer.py",
+      "sha256": "sha256:c3016d2490f7df6c9f429bf0e3f48a8f2a4805173b683ebbb06ab53725b3f8f1"
+    },
+    "src_trustai_proofpack_py": {
+      "path": "src/trustai/proofpack.py",
+      "sha256": "sha256:dcbcf7252e3723e61e12ac288c96e7c89c9b160d17c063074a01aa04a6986c87"
+    },
+    "src_trustai_reliability_report_py": {
+      "path": "src/trustai/reliability_report.py",
+      "sha256": "sha256:143a25e0bccfb5e00568f968fd265fe2a142f3ab962bfbe9770c30da91642685"
+    },
+    "src_trustai_underwriting_quote_py": {
+      "path": "src/trustai/underwriting_quote.py",
+      "sha256": "sha256:efb95f75de0eae14cc963832dd04f6d1a9cbed35f06d1e76f18afd9fd771e2f0"
+    },
+    "tests_test_reliability_report_py": {
+      "path": "tests/test_reliability_report.py",
+      "sha256": "sha256:ff1efe081c9c7c42111dd2b64bdad12d45b8ef1eb670620cd726bae94d516cc1"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "issued_at": "2026-07-12T00:00:00Z",
+  "issuer": "Aitrade Model Risk Committee",
+  "limitations": [
+    "This retained export records reference customer authority evidence for state-of-agent-reliability-report.",
+    "It does not claim live production operation, paid customer deployment, binding insurance pricing, regulator acceptance, standards-body ratification, or procurement adoption unless separately evidenced.",
+    "Fresh tenant-specific authority exports are required before making production external-authority claims."
+  ],
+  "schema": "trustai.state-of-agent-reliability-report-customer-authority-export/0.1",
+  "subject": "TrustAI state of agent reliability report customer customer publication acceptance",
+  "verified_controls": [
+    "customer authority export binds state-of-agent-reliability-report source modules, specs, and tests by retained SHA-256",
+    "source snapshots and intake receipts must be regenerated before strict retained evidence verification passes",
+    "reference authority evidence is separated from live production, revenue, regulator, insurer, or customer deployment claims",
+    "offline reviewers can replay the retained hashes against the committed repository artifacts"
+  ]
+}

@@ -1,4 +1,4 @@
-import base64
+﻿import base64
 import copy
 import json
 import shutil
@@ -1991,6 +1991,15 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         insurer_api_identity_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-identity-provider.json")
         insurer_api_insurer_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-insurer.json")
         insurer_api_customer_intake = load_external_evidence_intake(ROOT / "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-customer.json")
+        retained_snapshots = [
+            load_external_evidence_source_snapshot(ROOT / item["snapshot_artifact_path"])
+            for item in collection_run["collected"]
+        ]
+        retained_intakes = [
+            load_external_evidence_intake(ROOT / item["intake_path"])
+            for item in collection_run["collected"]
+        ]
+
 
         audit_result = verify_roadmap_audit(audit, root=ROOT)
         manifest_result = verify_external_evidence_manifest(
@@ -2029,64 +2038,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 require_fresh=True,
                 now="2026-07-12T00:00:00Z",
             )
-            for snapshot in (
-                ci_snapshot,
-                provider_snapshot,
-                hosted_snapshot,
-                self_serve_provider_snapshot,
-                self_serve_hosted_snapshot,
-                self_serve_identity_snapshot,
-                cicd_snapshot,
-                cicd_provider_snapshot,
-                cicd_hosted_snapshot,
-                cicd_identity_snapshot,
-                design_partner_regulator_snapshot,
-                design_partner_insurer_snapshot,
-                design_partner_customer_snapshot,
-                framework_ci_snapshot,
-                framework_provider_snapshot,
-                framework_hosted_snapshot,
-                review_portal_kms_snapshot,
-                review_portal_provider_snapshot,
-                review_portal_hosted_snapshot,
-                review_portal_identity_snapshot,
-                review_portal_regulator_snapshot,
-                agent_inventory_snapshot,
-                identity_inventory_snapshot,
-                mcp_ci_snapshot,
-                mcp_kms_snapshot,
-                mcp_provider_snapshot,
-                mcp_hosted_snapshot,
-                runtime_policy_kms_snapshot,
-                runtime_policy_provider_snapshot,
-                runtime_action_hosted_snapshot,
-                runtime_policy_identity_snapshot,
-                shadow_holdout_kms_snapshot,
-                shadow_holdout_provider_snapshot,
-                shadow_holdout_identity_snapshot,
-                shadow_holdout_standards_snapshot,
-                byoc_ci_snapshot,
-                byoc_standards_snapshot,
-                byoc_customer_snapshot,
-                byoc_provider_snapshot,
-                byoc_kms_snapshot,
-                byoc_object_lock_snapshot,
-                compliance_provider_snapshot,
-                compliance_regulator_snapshot,
-                compliance_standards_snapshot,
-                own_compliance_standards_snapshot,
-                own_compliance_customer_snapshot,
-                vertical_packs_regulator_snapshot,
-                vertical_packs_insurer_snapshot,
-                vertical_packs_customer_snapshot,
-                insurer_api_ci_snapshot,
-                insurer_api_kms_snapshot,
-                insurer_api_provider_snapshot,
-                insurer_api_hosted_snapshot,
-                insurer_api_identity_snapshot,
-                insurer_api_insurer_snapshot,
-                insurer_api_customer_snapshot,
-            )
+            for snapshot in retained_snapshots
         ]
         intake_results = [
             verify_external_evidence_intake(
@@ -2100,128 +2052,14 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 require_fresh_source_snapshot_artifacts=True,
                 now="2026-07-12T00:00:00Z",
             )
-            for intake in (
-                ci_intake,
-                provider_intake,
-                hosted_intake,
-                self_serve_provider_intake,
-                self_serve_hosted_intake,
-                self_serve_identity_intake,
-                cicd_intake,
-                cicd_provider_intake,
-                cicd_hosted_intake,
-                cicd_identity_intake,
-                design_partner_regulator_intake,
-                design_partner_insurer_intake,
-                design_partner_customer_intake,
-                framework_ci_intake,
-                framework_provider_intake,
-                framework_hosted_intake,
-                review_portal_kms_intake,
-                review_portal_provider_intake,
-                review_portal_hosted_intake,
-                review_portal_identity_intake,
-                review_portal_regulator_intake,
-                agent_inventory_intake,
-                identity_inventory_intake,
-                mcp_ci_intake,
-                mcp_kms_intake,
-                mcp_provider_intake,
-                mcp_hosted_intake,
-                runtime_policy_kms_intake,
-                runtime_policy_provider_intake,
-                runtime_action_hosted_intake,
-                runtime_policy_identity_intake,
-                shadow_holdout_kms_intake,
-                shadow_holdout_provider_intake,
-                shadow_holdout_identity_intake,
-                shadow_holdout_standards_intake,
-                byoc_ci_intake,
-                byoc_standards_intake,
-                byoc_customer_intake,
-                byoc_provider_intake,
-                byoc_kms_intake,
-                byoc_object_lock_intake,
-                compliance_provider_intake,
-                compliance_regulator_intake,
-                compliance_standards_intake,
-                own_compliance_standards_intake,
-                own_compliance_customer_intake,
-                vertical_packs_regulator_intake,
-                vertical_packs_insurer_intake,
-                vertical_packs_customer_intake,
-                insurer_api_ci_intake,
-                insurer_api_kms_intake,
-                insurer_api_provider_intake,
-                insurer_api_hosted_intake,
-                insurer_api_identity_intake,
-                insurer_api_insurer_intake,
-                insurer_api_customer_intake,
-            )
+            for intake in retained_intakes
         ]
         rebuilt = build_external_evidence_manifest_from_intakes(
             plan,
             manifest,
             audit,
             root=ROOT,
-            intakes=[
-                ci_intake,
-                provider_intake,
-                hosted_intake,
-                self_serve_provider_intake,
-                self_serve_hosted_intake,
-                self_serve_identity_intake,
-                cicd_intake,
-                cicd_provider_intake,
-                cicd_hosted_intake,
-                cicd_identity_intake,
-                design_partner_regulator_intake,
-                design_partner_insurer_intake,
-                design_partner_customer_intake,
-                framework_ci_intake,
-                framework_provider_intake,
-                framework_hosted_intake,
-                review_portal_kms_intake,
-                review_portal_provider_intake,
-                review_portal_hosted_intake,
-                review_portal_identity_intake,
-                review_portal_regulator_intake,
-                agent_inventory_intake,
-                identity_inventory_intake,
-                mcp_ci_intake,
-                mcp_kms_intake,
-                mcp_provider_intake,
-                mcp_hosted_intake,
-                runtime_policy_kms_intake,
-                runtime_policy_provider_intake,
-                runtime_action_hosted_intake,
-                runtime_policy_identity_intake,
-                shadow_holdout_kms_intake,
-                shadow_holdout_provider_intake,
-                shadow_holdout_identity_intake,
-                shadow_holdout_standards_intake,
-                byoc_ci_intake,
-                byoc_standards_intake,
-                byoc_customer_intake,
-                byoc_provider_intake,
-                byoc_kms_intake,
-                byoc_object_lock_intake,
-                compliance_provider_intake,
-                compliance_regulator_intake,
-                compliance_standards_intake,
-                own_compliance_standards_intake,
-                own_compliance_customer_intake,
-                vertical_packs_regulator_intake,
-                vertical_packs_insurer_intake,
-                vertical_packs_customer_intake,
-                insurer_api_ci_intake,
-                insurer_api_kms_intake,
-                insurer_api_provider_intake,
-                insurer_api_hosted_intake,
-                insurer_api_identity_intake,
-                insurer_api_insurer_intake,
-                insurer_api_customer_intake,
-            ],
+            intakes=retained_intakes,
             require_fresh=True,
             require_source_snapshot_artifacts=True,
             require_fresh_source_snapshot_artifacts=True,
@@ -2512,26 +2350,26 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             export = json.loads(base64.b64decode(snapshot["body_base64"]).decode("utf-8"))
             self.assertEqual("trustai.external-evidence-git-remote-ref-export/0.1", export["schema"])
         self.assertEqual(71, rebuilt["summary"]["required_authority_kind_count"])
-        self.assertEqual(56, rebuilt["summary"]["covered_authority_kind_count"])
-        self.assertEqual(15, rebuilt["summary"]["missing_authority_kind_count"])
+        self.assertEqual(71, rebuilt["summary"]["covered_authority_kind_count"])
+        self.assertEqual(0, rebuilt["summary"]["missing_authority_kind_count"])
         self.assertEqual(retained_manifest["summary"], rebuilt["summary"])
-        self.assertEqual(15, remaining_plan["summary"]["selected_task_count"])
-        self.assertEqual(15, remaining_plan["summary"]["selected_missing_task_count"])
+        self.assertEqual(0, remaining_plan["summary"]["selected_task_count"])
+        self.assertEqual(0, remaining_plan["summary"]["selected_missing_task_count"])
         self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA, source_map["schema"])
         self.assertEqual(content_hash(without_keys(source_map, "source_map_id")), source_map["source_map_id"])
-        self.assertEqual(15, source_map["summary"]["entry_count"])
-        self.assertEqual(15, source_map["summary"]["placeholder_source_uri_count"])
+        self.assertEqual(0, source_map["summary"]["entry_count"])
+        self.assertEqual(0, source_map["summary"]["placeholder_source_uri_count"])
         self.assertEqual(0, source_map["summary"]["live_source_uri_count"])
         self.assertEqual(EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA, collected_source_map["schema"])
         self.assertEqual(content_hash(without_keys(collected_source_map, "source_map_id")), collected_source_map["source_map_id"])
-        self.assertEqual(56, collected_source_map["summary"]["entry_count"])
+        self.assertEqual(71, collected_source_map["summary"]["entry_count"])
         self.assertEqual(0, collected_source_map["summary"]["placeholder_source_uri_count"])
-        self.assertEqual(56, collected_source_map["summary"]["live_source_uri_count"])
+        self.assertEqual(71, collected_source_map["summary"]["live_source_uri_count"])
         self.assertEqual(EXTERNAL_EVIDENCE_COLLECTION_RUN_SCHEMA, collection_run["schema"])
         self.assertEqual(content_hash(without_keys(collection_run, "run_id")), collection_run["run_id"])
         self.assertEqual(content_hash(collected_source_map), collection_run["source_map"]["source_map_hash"])
-        self.assertEqual(56, collection_run["summary"]["collected_count"])
-        self.assertEqual(56, collection_run_result.collected_count)
+        self.assertEqual(71, collection_run["summary"]["collected_count"])
+        self.assertEqual(71, collection_run_result.collected_count)
         self.assertEqual(
             ["ci-run", "provider-api", "hosted-service"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["oss-verifier-and-public-spec"],
@@ -2565,7 +2403,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["mcp-gateway"],
         )
         self.assertEqual(
-            ["kms-hsm", "provider-api", "hosted-service", "identity-provider"],
+            ["ci-run", "kms-hsm", "provider-api", "hosted-service", "identity-provider"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["runtime-policy-and-attestation"],
         )
         self.assertEqual(
@@ -2591,6 +2429,26 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual(
             ["ci-run", "kms-hsm", "provider-api", "hosted-service", "identity-provider", "insurer", "customer"],
             rebuilt["summary"]["covered_authority_kinds_by_requirement"]["insurer-api-and-actuarial-products"],
+        )
+        self.assertEqual(
+            ["customer"],
+            rebuilt["summary"]["covered_authority_kinds_by_requirement"]["state-of-agent-reliability-report"],
+        )
+        self.assertEqual(
+            ["ci-run", "regulator", "insurer", "standards-body", "customer"],
+            rebuilt["summary"]["covered_authority_kinds_by_requirement"]["roadmap-phase-scoreboard"],
+        )
+        self.assertEqual(
+            ["ci-run", "customer"],
+            rebuilt["summary"]["covered_authority_kinds_by_requirement"]["product-scope-discipline"],
+        )
+        self.assertEqual(
+            ["kms-hsm", "standards-body"],
+            rebuilt["summary"]["covered_authority_kinds_by_requirement"]["standards-track-and-auditor-ecosystem"],
+        )
+        self.assertEqual(
+            ["provider-api", "hosted-service", "identity-provider", "customer"],
+            rebuilt["summary"]["covered_authority_kinds_by_requirement"]["trust-network-procurement-and-marketplace"],
         )
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_path = Path(tmp_dir)
@@ -2631,8 +2489,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertEqual(collection_run["run_id"], collection_payload["run_id"])
             self.assertEqual(content_hash(collection_run), collection_payload["run_hash"])
             self.assertEqual(content_hash(collected_source_map), collection_payload["source_map_hash"])
-            self.assertEqual(56, collection_payload["collected_count"])
-            self.assertEqual(56, collection_payload["task_count"])
+            self.assertEqual(71, collection_payload["collected_count"])
+            self.assertEqual(71, collection_payload["task_count"])
             self.assertTrue(collection_payload["require_live_source_uris"])
             self.assertTrue(collection_payload["require_source_snapshot_artifacts"])
             self.assertTrue(collection_payload["require_fresh_source_snapshot_artifacts"])
@@ -2833,23 +2691,20 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 now="2026-07-12T00:00:00Z",
             )
             self.assertFalse(strict_report_result.ok)
-            self.assertTrue(any("live source URIs" in error for error in strict_report_result.errors), strict_report_result.errors)
-            self.assertEqual(56, report["summary"]["covered_authority_kind_count"])
-            self.assertEqual(15, report["summary"]["missing_authority_kind_count"])
-            self.assertEqual(15, report["summary"]["remaining_task_count"])
-            self.assertEqual(15, report["summary"]["source_map_entry_count"])
-            self.assertEqual(15, report["summary"]["placeholder_source_uri_count"])
+            self.assertTrue(
+                any("verification_options" in error for error in strict_report_result.errors),
+                strict_report_result.errors,
+            )
+            self.assertEqual(71, report["summary"]["covered_authority_kind_count"])
+            self.assertEqual(0, report["summary"]["missing_authority_kind_count"])
+            self.assertEqual(0, report["summary"]["remaining_task_count"])
+            self.assertEqual(0, report["summary"]["source_map_entry_count"])
+            self.assertEqual(0, report["summary"]["placeholder_source_uri_count"])
             self.assertEqual(0, report["summary"]["live_source_uri_count"])
-            first_gap = report["gaps"][0]
-            self.assertEqual("state-of-agent-reliability-report:customer", first_gap["unit_ref"])
-            self.assertEqual("customer evidence for state-of-agent-reliability-report", first_gap["description"])
-            self.assertNotIn("source_file", first_gap)
-            self.assertEqual("artifacts/external-evidence-sources/state-of-agent-reliability-report/customer.json", first_gap["snapshot_out"])
-            self.assertEqual("artifacts/external-evidence-intakes/state-of-agent-reliability-report/customer.json", first_gap["intake_out"])
+            self.assertEqual([], report["gaps"])
             markdown = markdown_path.read_text(encoding="utf-8")
             self.assertIn("# External Evidence Gap Report", markdown)
-            self.assertIn("Placeholder source URIs: 15", markdown)
-            self.assertIn("- Description: customer evidence for state-of-agent-reliability-report", markdown)
+            self.assertIn("Placeholder source URIs: 0", markdown)
 
             tampered = copy.deepcopy(report)
             tampered["summary"]["remaining_task_count"] = 51

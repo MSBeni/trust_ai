@@ -1,0 +1,128 @@
+{
+  "authority_evidence": {
+    "authority_kind": "regulator",
+    "evidence_ref": "regulator:aitrade/roadmap-phase-scoreboard/2026-07-12",
+    "requirement_id": "roadmap-phase-scoreboard",
+    "source_uri": "https://regulator.example/exports/trustai/roadmap-phase-scoreboard/supervisory-review/2026-07-12"
+  },
+  "authority_review": {
+    "review_ref": "regulator:aitrade/roadmap-phase-scoreboard/authority-review/2026-07-12",
+    "reviewer_refs": [
+      "regulator:primary-reviewer",
+      "regulator:evidence-control-reviewer"
+    ],
+    "scope": "phase exit supervisory acceptance",
+    "status": "accepted-for-reference-authority-evidence"
+  },
+  "environment": "aitrade-prod",
+  "evidence": {
+    "docs_specs_actuarial_product_v0_1_md": {
+      "path": "docs/specs/actuarial-product-v0.1.md",
+      "sha256": "sha256:d038f6066ecac2699d2b537d2d44aa01bbc218681e98d8b51699761b44ead5db"
+    },
+    "docs_specs_design_partner_pilot_v0_1_md": {
+      "path": "docs/specs/design-partner-pilot-v0.1.md",
+      "sha256": "sha256:c9918cd65a84d6075820cd1dcc6288c836d10e7dbfe481ed873a00dc239dc81d"
+    },
+    "docs_specs_own_compliance_dossier_v0_1_md": {
+      "path": "docs/specs/own-compliance-dossier-v0.1.md",
+      "sha256": "sha256:1b9c415357bad998fb162fcc93926b8eb5e01271067eee98b6b4fb89d66b008d"
+    },
+    "docs_specs_procurement_clause_v0_1_md": {
+      "path": "docs/specs/procurement-clause-v0.1.md",
+      "sha256": "sha256:635f5e06dcad1b2f03ecfb90b064dee288256bd4d17144e0088a2ba6f31850f3"
+    },
+    "docs_specs_regulator_acceptance_v0_1_md": {
+      "path": "docs/specs/regulator-acceptance-v0.1.md",
+      "sha256": "sha256:99ecf4e60cf072f421795c715ada7a059cf2fefa02f7e8939ffadfbb7fb8dfb0"
+    },
+    "docs_specs_roadmap_phase_scoreboard_authority_v0_1_md": {
+      "path": "docs/specs/roadmap-phase-scoreboard-authority-v0.1.md",
+      "sha256": "sha256:5e1e3edca21c116f9ae7c616eae3f0d292d48a5edcefbeb42199787631026f30"
+    },
+    "docs_specs_roadmap_phase_scoreboard_v0_1_md": {
+      "path": "docs/specs/roadmap-phase-scoreboard-v0.1.md",
+      "sha256": "sha256:a978d81af3168bf542b0de380ebcc0f94ee55d0228341897434091d81697a878"
+    },
+    "docs_specs_standards_body_submission_v0_1_md": {
+      "path": "docs/specs/standards-body-submission-v0.1.md",
+      "sha256": "sha256:660390ed4499f060e6ab52ad3be6306236263dac082e67913b611b994d5c725d"
+    },
+    "docs_specs_state_of_agent_reliability_report_v0_1_md": {
+      "path": "docs/specs/state-of-agent-reliability-report-v0.1.md",
+      "sha256": "sha256:b373176ba0a79047bba6847f64721013719b284df40d52c0af0aaac7f89f96f8"
+    },
+    "docs_specs_underwriting_quote_v0_1_md": {
+      "path": "docs/specs/underwriting-quote-v0.1.md",
+      "sha256": "sha256:7dfcf89f3e38c64120b740a7b58f8ebc57ab35b1d9b6c4897275451141fe58ca"
+    },
+    "src_trustai_actuarial_py": {
+      "path": "src/trustai/actuarial.py",
+      "sha256": "sha256:1121d760fbeac797593fbf9822bab547ca90a9b519218c806310a7743726a0b4"
+    },
+    "src_trustai_design_partner_py": {
+      "path": "src/trustai/design_partner.py",
+      "sha256": "sha256:e4af4d3af3a3b2c79c9c272651cde61659b80c24136ec40cfb50adaefc50b90c"
+    },
+    "src_trustai_own_compliance_py": {
+      "path": "src/trustai/own_compliance.py",
+      "sha256": "sha256:ca708f87814fc3ccab496050768d1d74fe1bc19d99af9d8fe99d62668ff2dbfe"
+    },
+    "src_trustai_phase_scoreboard_authority_py": {
+      "path": "src/trustai/phase_scoreboard_authority.py",
+      "sha256": "sha256:c107886737b3005f1caaec7a0426249db684a11cc9d8c1772faf38d1cc113621"
+    },
+    "src_trustai_phase_scoreboard_py": {
+      "path": "src/trustai/phase_scoreboard.py",
+      "sha256": "sha256:ba70da97214fb66997a0123db6b10ec04a3ec019728bc01d459ebcd002df732b"
+    },
+    "src_trustai_procurement_clause_py": {
+      "path": "src/trustai/procurement_clause.py",
+      "sha256": "sha256:288c4fa9ad34694419e53bed651bbc21162053f218a2bd6e6517da34f829bdef"
+    },
+    "src_trustai_regulator_acceptance_py": {
+      "path": "src/trustai/regulator_acceptance.py",
+      "sha256": "sha256:6aa521d0436f6b1fda596664c70455ba55a61fedb8620578d15a05b33e1ba312"
+    },
+    "src_trustai_reliability_report_py": {
+      "path": "src/trustai/reliability_report.py",
+      "sha256": "sha256:143a25e0bccfb5e00568f968fd265fe2a142f3ab962bfbe9770c30da91642685"
+    },
+    "src_trustai_roadmap_audit_py": {
+      "path": "src/trustai/roadmap_audit.py",
+      "sha256": "sha256:430785a7c4cf190e8d19607d62953b62482953fc3db44ae31317aa14a840df07"
+    },
+    "src_trustai_standards_body_submission_py": {
+      "path": "src/trustai/standards_body_submission.py",
+      "sha256": "sha256:ed80042b82a0ea3d88c6f56804b3d74639f10dc90179bacb88cd082474634ba5"
+    },
+    "src_trustai_underwriting_quote_py": {
+      "path": "src/trustai/underwriting_quote.py",
+      "sha256": "sha256:efb95f75de0eae14cc963832dd04f6d1a9cbed35f06d1e76f18afd9fd771e2f0"
+    },
+    "tests_test_phase_scoreboard_authority_py": {
+      "path": "tests/test_phase_scoreboard_authority.py",
+      "sha256": "sha256:64e4692d63bdfa3f5967b5f2269f616c2a1a3835408276a74912e2f94f5bd593"
+    },
+    "tests_test_phase_scoreboard_py": {
+      "path": "tests/test_phase_scoreboard.py",
+      "sha256": "sha256:e66569efdac517df9fedc6a503cd0f1fa0bf421a852b3a1302408448ee851be3"
+    }
+  },
+  "expires_at": "2026-12-31T00:00:00Z",
+  "issued_at": "2026-07-12T00:00:00Z",
+  "issuer": "Example Regulator",
+  "limitations": [
+    "This retained export records reference regulator authority evidence for roadmap-phase-scoreboard.",
+    "It does not claim live production operation, paid customer deployment, binding insurance pricing, regulator acceptance, standards-body ratification, or procurement adoption unless separately evidenced.",
+    "Fresh tenant-specific authority exports are required before making production external-authority claims."
+  ],
+  "schema": "trustai.roadmap-phase-scoreboard-regulator-authority-export/0.1",
+  "subject": "TrustAI roadmap phase scoreboard regulator phase exit supervisory acceptance",
+  "verified_controls": [
+    "regulator authority export binds roadmap-phase-scoreboard source modules, specs, and tests by retained SHA-256",
+    "source snapshots and intake receipts must be regenerated before strict retained evidence verification passes",
+    "reference authority evidence is separated from live production, revenue, regulator, insurer, or customer deployment claims",
+    "offline reviewers can replay the retained hashes against the committed repository artifacts"
+  ]
+}

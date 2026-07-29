@@ -968,6 +968,176 @@
     },
     {
       "accepted_authority_kinds": [
+        "customer"
+      ],
+      "authority_kind": "customer",
+      "description": "Retained customer export for state-of-agent-reliability-report evidence",
+      "evidence_id": "ac040cc3e25e36ca61ecebabb3e3cb2c4dd6bfb3cb567efa3ac21d0fd866d659",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "Aitrade Model Risk Committee",
+      "path": "examples/aitrade/external-evidence/state-of-agent-reliability-report-customer-source-snapshot.json",
+      "requirement_id": "state-of-agent-reliability-report",
+      "sha256": "sha256:4d11bf668c347ab1a0a300ae8834fb5c76aff096fcf4d7f20a8e8921dd532c55",
+      "source_uri": "https://customers.example/aitrade/model-risk/state-of-agent-reliability-report/reference-acceptance/2026-07-12",
+      "subject": "TrustAI state of agent reliability report customer customer publication acceptance"
+    },
+    {
+      "accepted_authority_kinds": [
+        "ci-run",
+        "regulator",
+        "insurer",
+        "standards-body",
+        "customer"
+      ],
+      "authority_kind": "ci-run",
+      "description": "Retained ci-run export for roadmap-phase-scoreboard evidence",
+      "evidence_id": "4009080f34da9078e1661be3b9fffb329138338269a71b18256bbf18347dd758",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "GitHub Actions",
+      "path": "examples/aitrade/external-evidence/roadmap-phase-scoreboard-ci-run-source-snapshot.json",
+      "requirement_id": "roadmap-phase-scoreboard",
+      "sha256": "sha256:98427c7d0690d05ef93a507491ec772bfb0c84424cfc332f5f2880f680cb6b4c",
+      "source_uri": "https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml",
+      "subject": "TrustAI roadmap phase scoreboard ci run phase scoreboard CI verification"
+    },
+    {
+      "accepted_authority_kinds": [
+        "ci-run",
+        "regulator",
+        "insurer",
+        "standards-body",
+        "customer"
+      ],
+      "authority_kind": "regulator",
+      "description": "Retained regulator export for roadmap-phase-scoreboard evidence",
+      "evidence_id": "88673b320200aa0d6fbf4fd9963a89b4a6114fbab8c0f3c0cb12e54163a2d5c5",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "Example Regulator",
+      "path": "examples/aitrade/external-evidence/roadmap-phase-scoreboard-regulator-source-snapshot.json",
+      "requirement_id": "roadmap-phase-scoreboard",
+      "sha256": "sha256:e47b3d51b42bfa6aa71707f76b571185331e9ef979c871d8e13c7b0031775b98",
+      "source_uri": "https://regulator.example/exports/trustai/roadmap-phase-scoreboard/supervisory-review/2026-07-12",
+      "subject": "TrustAI roadmap phase scoreboard regulator phase exit supervisory acceptance"
+    },
+    {
+      "accepted_authority_kinds": [
+        "ci-run",
+        "regulator",
+        "insurer",
+        "standards-body",
+        "customer"
+      ],
+      "authority_kind": "insurer",
+      "description": "Retained insurer export for roadmap-phase-scoreboard evidence",
+      "evidence_id": "c20a42dce7ceb91000bfbf389752134c32a02c7fefe45f6eda41e5f3cfee69d2",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "Example AI Liability Underwriter",
+      "path": "examples/aitrade/external-evidence/roadmap-phase-scoreboard-insurer-source-snapshot.json",
+      "requirement_id": "roadmap-phase-scoreboard",
+      "sha256": "sha256:a64d0894fead2a7c8df9200a8ff2c6659f1dfe774bfeac4df51c4f827bc04c05",
+      "source_uri": "https://insurer.example/exports/trustai/roadmap-phase-scoreboard/underwriting-review/2026-07-12",
+      "subject": "TrustAI roadmap phase scoreboard insurer phase exit underwriting review"
+    },
+    {
+      "accepted_authority_kinds": [
+        "ci-run",
+        "regulator",
+        "insurer",
+        "standards-body",
+        "customer"
+      ],
+      "authority_kind": "standards-body",
+      "description": "Retained standards-body export for roadmap-phase-scoreboard evidence",
+      "evidence_id": "7046edce432dc13d0d157eff5e449863cf15ef1bac41e538fdd70f48e76187d9",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "LF TrustAI Ballot System",
+      "path": "examples/aitrade/external-evidence/roadmap-phase-scoreboard-standards-body-source-snapshot.json",
+      "requirement_id": "roadmap-phase-scoreboard",
+      "sha256": "sha256:51128a2330d002319950bac05bb0c0e5d903f7653b0ed1d3ef9adb6aae82a1a2",
+      "source_uri": "https://standards.example/lf-trustai/roadmap-phase-scoreboard/docket-review/2026-07-12",
+      "subject": "TrustAI roadmap phase scoreboard standards body phase exit standards-track docket review"
+    },
+    {
+      "accepted_authority_kinds": [
+        "ci-run",
+        "regulator",
+        "insurer",
+        "standards-body",
+        "customer"
+      ],
+      "authority_kind": "customer",
+      "description": "Retained customer export for roadmap-phase-scoreboard evidence",
+      "evidence_id": "9437634d4d9a74488b5af28c14541fcab55781c0627d93e91c93873bf2068415",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "Aitrade Model Risk Committee",
+      "path": "examples/aitrade/external-evidence/roadmap-phase-scoreboard-customer-source-snapshot.json",
+      "requirement_id": "roadmap-phase-scoreboard",
+      "sha256": "sha256:48521426b707362c2bdc382c7741cf79ed6a1413501ef2ac3baab6ccefe9464f",
+      "source_uri": "https://customers.example/aitrade/model-risk/roadmap-phase-scoreboard/reference-acceptance/2026-07-12",
+      "subject": "TrustAI roadmap phase scoreboard customer phase exit customer acceptance"
+    },
+    {
+      "accepted_authority_kinds": [
+        "ci-run",
+        "customer"
+      ],
+      "authority_kind": "ci-run",
+      "description": "Retained ci-run export for product-scope-discipline evidence",
+      "evidence_id": "5490b469c1174a8befa60b02cdb739c53c97fafcf3cb34aee91e1033d4585ac2",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "GitHub Actions",
+      "path": "examples/aitrade/external-evidence/product-scope-discipline-ci-run-source-snapshot.json",
+      "requirement_id": "product-scope-discipline",
+      "sha256": "sha256:255b5188a5f21a62fcd47baf50d195075733521fd1b1c3df50d25f35df652a53",
+      "source_uri": "https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml",
+      "subject": "TrustAI product scope discipline ci run scope discipline CI verification"
+    },
+    {
+      "accepted_authority_kinds": [
+        "ci-run",
+        "customer"
+      ],
+      "authority_kind": "customer",
+      "description": "Retained customer export for product-scope-discipline evidence",
+      "evidence_id": "9423fb62d0f857210752d264bb1fafd4f9ef2439d968fd9188eb1f88f3710794",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "Aitrade Model Risk Committee",
+      "path": "examples/aitrade/external-evidence/product-scope-discipline-customer-source-snapshot.json",
+      "requirement_id": "product-scope-discipline",
+      "sha256": "sha256:9cefc256e03c33365790a6972ada75bf10ddab481ea409f1574b3cffd38d4d47",
+      "source_uri": "https://customers.example/aitrade/model-risk/product-scope-discipline/reference-acceptance/2026-07-12",
+      "subject": "TrustAI product scope discipline customer scope discipline customer acceptance"
+    },
+    {
+      "accepted_authority_kinds": [
+        "ci-run",
+        "kms-hsm",
+        "provider-api",
+        "hosted-service",
+        "identity-provider"
+      ],
+      "authority_kind": "ci-run",
+      "description": "Retained ci-run export for runtime-policy-and-attestation evidence",
+      "evidence_id": "c8559fd68be6db2bba984a09e6ccf2ff6d9b777119458c3914242047e593f0c8",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "GitHub Actions",
+      "path": "examples/aitrade/external-evidence/runtime-policy-ci-run-source-snapshot.json",
+      "requirement_id": "runtime-policy-and-attestation",
+      "sha256": "sha256:6b7b252619f8537f13916c9000898cf2b21280f498983be0831a0a2ee6990c73",
+      "source_uri": "https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml",
+      "subject": "TrustAI runtime policy and attestation ci run runtime policy CI verification"
+    },
+    {
+      "accepted_authority_kinds": [
         "ci-run",
         "kms-hsm",
         "provider-api",
@@ -1079,6 +1249,116 @@
       "sha256": "sha256:6bba1f0599e91e2c55601ae3b56806a8bdb62943e5368e1d1aa1ade6d6ac1ca6",
       "source_uri": "https://idp.example/exports/aitrade/identity-inventory",
       "subject": "aitrade governed agent identity inventory"
+    },
+    {
+      "accepted_authority_kinds": [
+        "kms-hsm",
+        "standards-body"
+      ],
+      "authority_kind": "kms-hsm",
+      "description": "Retained kms-hsm export for standards-track-and-auditor-ecosystem evidence",
+      "evidence_id": "7d40a184d34bdd85198263de2d90c554a6431264acc59e9987fa31f07b5d35c4",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "Example KMS/HSM",
+      "path": "examples/aitrade/external-evidence/standards-track-auditor-kms-hsm-source-snapshot.json",
+      "requirement_id": "standards-track-and-auditor-ecosystem",
+      "sha256": "sha256:b0ad1a730431dafb058c9d2405ee78685b77c5917f477b36a8dea22f15b94379",
+      "source_uri": "https://kms.example/attestations/trustai/standards-track-and-auditor-ecosystem/evidence-signing/2026-07-12",
+      "subject": "TrustAI standards track and auditor ecosystem kms hsm auditor ecosystem KMS signing enforcement"
+    },
+    {
+      "accepted_authority_kinds": [
+        "kms-hsm",
+        "standards-body"
+      ],
+      "authority_kind": "standards-body",
+      "description": "Retained standards-body export for standards-track-and-auditor-ecosystem evidence",
+      "evidence_id": "e7e478732e555cb8d5c96e40418cb0658ba194be178173c286b06d24c9cbccce",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "LF TrustAI Ballot System",
+      "path": "examples/aitrade/external-evidence/standards-track-auditor-standards-body-source-snapshot.json",
+      "requirement_id": "standards-track-and-auditor-ecosystem",
+      "sha256": "sha256:c3e5c826ab1419e0109e036fccd296582c310038e6e006b805a88168265f0655",
+      "source_uri": "https://standards.example/lf-trustai/standards-track-and-auditor-ecosystem/docket-review/2026-07-12",
+      "subject": "TrustAI standards track and auditor ecosystem standards body standards and auditor ecosystem docket review"
+    },
+    {
+      "accepted_authority_kinds": [
+        "provider-api",
+        "hosted-service",
+        "identity-provider",
+        "customer"
+      ],
+      "authority_kind": "provider-api",
+      "description": "Retained provider-api export for trust-network-procurement-and-marketplace evidence",
+      "evidence_id": "b8adec94bf2864c409cdf1410825cdd8b8c84baf3f4c25a16e9bddde56e1898d",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "TrustAI Cloud Provider API",
+      "path": "examples/aitrade/external-evidence/trust-network-provider-api-source-snapshot.json",
+      "requirement_id": "trust-network-procurement-and-marketplace",
+      "sha256": "sha256:7553c0fb87a0c1e534d93e069bfddefc9ad81c74ea8baecf516b5828b21e5950",
+      "source_uri": "https://api.trustai.example/v1/trust-network-procurement-and-marketplace/authority-evidence/2026-07-12",
+      "subject": "TrustAI trust network procurement and marketplace provider api trust network provider API export"
+    },
+    {
+      "accepted_authority_kinds": [
+        "provider-api",
+        "hosted-service",
+        "identity-provider",
+        "customer"
+      ],
+      "authority_kind": "hosted-service",
+      "description": "Retained hosted-service export for trust-network-procurement-and-marketplace evidence",
+      "evidence_id": "3eb30d515e0c4df06a655b7679e32af32a9115e44f081ef049d2fd3ccae1c04b",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "TrustAI Cloud",
+      "path": "examples/aitrade/external-evidence/trust-network-hosted-service-source-snapshot.json",
+      "requirement_id": "trust-network-procurement-and-marketplace",
+      "sha256": "sha256:4e931e249f388c270f5d39f69076effbc011d79167c50b47836590f89294fad3",
+      "source_uri": "https://status.trustai.example/trust-network-procurement-and-marketplace/authority-evidence/2026-07-12",
+      "subject": "TrustAI trust network procurement and marketplace hosted service trust network hosted marketplace service export"
+    },
+    {
+      "accepted_authority_kinds": [
+        "provider-api",
+        "hosted-service",
+        "identity-provider",
+        "customer"
+      ],
+      "authority_kind": "identity-provider",
+      "description": "Retained identity-provider export for trust-network-procurement-and-marketplace evidence",
+      "evidence_id": "bff31eb2d79dacceb130a236f646d0d5634b8104d32c1ae87cdfa2371b8e113e",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "Example IdP",
+      "path": "examples/aitrade/external-evidence/trust-network-identity-provider-source-snapshot.json",
+      "requirement_id": "trust-network-procurement-and-marketplace",
+      "sha256": "sha256:678dd6c5c0eb3fdc50cd0361ec5a2f8c3badcf6b63219d22c8d0fd6e739f4759",
+      "source_uri": "https://idp.example/exports/aitrade/trust-network-procurement-and-marketplace/authority-sessions/2026-07-12",
+      "subject": "TrustAI trust network procurement and marketplace identity provider trust network vendor identity federation export"
+    },
+    {
+      "accepted_authority_kinds": [
+        "provider-api",
+        "hosted-service",
+        "identity-provider",
+        "customer"
+      ],
+      "authority_kind": "customer",
+      "description": "Retained customer export for trust-network-procurement-and-marketplace evidence",
+      "evidence_id": "3d6df225f6a8ef3100d9a3b4a92451ce5eda343dd72ea6b09f80a11bcb7ca42d",
+      "expires_at": "2026-12-31T00:00:00Z",
+      "issued_at": "2026-07-12T00:00:00Z",
+      "issuer": "Aitrade Model Risk Committee",
+      "path": "examples/aitrade/external-evidence/trust-network-customer-source-snapshot.json",
+      "requirement_id": "trust-network-procurement-and-marketplace",
+      "sha256": "sha256:707e3f9181539b996f5a7aa227bedd39a955671a8e7bb42f5cf7bd75a3a65bc6",
+      "source_uri": "https://customers.example/aitrade/model-risk/trust-network-procurement-and-marketplace/reference-acceptance/2026-07-12",
+      "subject": "TrustAI trust network procurement and marketplace customer trust network procurement customer acceptance"
     }
   ],
   "generated_at": "2026-07-12T00:01:00Z",
@@ -1087,7 +1367,7 @@
     "A complete manifest requires evidence for every reference-attested roadmap requirement and every accepted authority kind for that requirement.",
     "Evidence quality still depends on the authority that issued each supplied artifact."
   ],
-  "manifest_id": "84ac9821cf1a63c0ca595e7e7bc8e9e6abd861898e06003e0d7caa2e1b8d1c22",
+  "manifest_id": "a4d2a251a114720aaca8109a4f3119abd0bafcd700465c6bed43c3380935c3af",
   "manifest_ref": "production-external-evidence",
   "required_authority_evidence_units": [
     {
@@ -1742,7 +2022,7 @@
     },
     {
       "authority_kind": "customer",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "State of Agent Reliability reports cover local/reference aggregate report generation, privacy thresholds, actuarial source-product bindings, and publication-evidence schemas; actual public publication, independent review, partner/customer permission, market acceptance, external distribution metrics, and continuously refreshed longitudinal data remain external GTM evidence."
       ],
@@ -1755,7 +2035,7 @@
     },
     {
       "authority_kind": "ci-run",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Roadmap phase scoreboards cover local/reference schemas for P1-P4 business milestones and can bind external evidence references and hashes; actual paying customers, signed contracts, ARR, Series A financing, live insurer integrations, SOC 2/ISO certificates, named regulator acceptance, standards-body progress, third-party procurement clauses, data-product revenue, and generic market usage remain external business evidence."
       ],
@@ -1768,7 +2048,7 @@
     },
     {
       "authority_kind": "regulator",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Roadmap phase scoreboards cover local/reference schemas for P1-P4 business milestones and can bind external evidence references and hashes; actual paying customers, signed contracts, ARR, Series A financing, live insurer integrations, SOC 2/ISO certificates, named regulator acceptance, standards-body progress, third-party procurement clauses, data-product revenue, and generic market usage remain external business evidence."
       ],
@@ -1781,7 +2061,7 @@
     },
     {
       "authority_kind": "insurer",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Roadmap phase scoreboards cover local/reference schemas for P1-P4 business milestones and can bind external evidence references and hashes; actual paying customers, signed contracts, ARR, Series A financing, live insurer integrations, SOC 2/ISO certificates, named regulator acceptance, standards-body progress, third-party procurement clauses, data-product revenue, and generic market usage remain external business evidence."
       ],
@@ -1794,7 +2074,7 @@
     },
     {
       "authority_kind": "standards-body",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Roadmap phase scoreboards cover local/reference schemas for P1-P4 business milestones and can bind external evidence references and hashes; actual paying customers, signed contracts, ARR, Series A financing, live insurer integrations, SOC 2/ISO certificates, named regulator acceptance, standards-body progress, third-party procurement clauses, data-product revenue, and generic market usage remain external business evidence."
       ],
@@ -1807,7 +2087,7 @@
     },
     {
       "authority_kind": "customer",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Roadmap phase scoreboards cover local/reference schemas for P1-P4 business milestones and can bind external evidence references and hashes; actual paying customers, signed contracts, ARR, Series A financing, live insurer integrations, SOC 2/ISO certificates, named regulator acceptance, standards-body progress, third-party procurement clauses, data-product revenue, and generic market usage remain external business evidence."
       ],
@@ -1820,7 +2100,7 @@
     },
     {
       "authority_kind": "ci-run",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Product scope decisions cover local/reference checks for proof-strength, cheaper-production, wider-acceptance, and anti-focus decline controls; actual company governance adoption, product-council enforcement, customer-pressure evidence, and ongoing roadmap discipline remain external operating evidence."
       ],
@@ -1833,7 +2113,7 @@
     },
     {
       "authority_kind": "customer",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Product scope decisions cover local/reference checks for proof-strength, cheaper-production, wider-acceptance, and anti-focus decline controls; actual company governance adoption, product-council enforcement, customer-pressure evidence, and ongoing roadmap discipline remain external operating evidence."
       ],
@@ -1846,7 +2126,7 @@
     },
     {
       "authority_kind": "ci-run",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Signed policy backend service, worker, provider export, provider export review bundle, service review bundle, and production authority dossiers cover local/reference OPA/Cedar backend evidence; authority dossiers now bind provider export bundle hashes, optional service review bundle hashes, service attestation/enforcement hashes, backend identity, endpoint, decision hashes, source-artifact roots, per-evidence source-context bindings, derived control verification, freshness windows, and missing authority coverage before external production backend evidence is accepted. Actual continuously operated policy backends, provider-owned decision-log roots, service audit exports, KMS/vault custody, and live backend fleet evidence remain external authority evidence."
       ],
@@ -1937,7 +2217,7 @@
     },
     {
       "authority_kind": "kms-hsm",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Actual standards-body acceptance and sponsor-owned KMS/HSM enforcement require external governance events."
       ],
@@ -1950,7 +2230,7 @@
     },
     {
       "authority_kind": "standards-body",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Actual standards-body acceptance and sponsor-owned KMS/HSM enforcement require external governance events."
       ],
@@ -1963,7 +2243,7 @@
     },
     {
       "authority_kind": "provider-api",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Signed trust-network service attestations, worker receipts, worker review bundles, and production authority dossiers cover local/reference proof; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, marketplace asset replay, frontend replay, and service/worker linkage before external trust-network authority evidence is accepted. Live hosted services, provider-owned identity events, marketplace payouts, revocation propagation, callbacks, and procurement propagation remain external evidence until fresh provider-owned exports are supplied."
       ],
@@ -1976,7 +2256,7 @@
     },
     {
       "authority_kind": "hosted-service",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Signed trust-network service attestations, worker receipts, worker review bundles, and production authority dossiers cover local/reference proof; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, marketplace asset replay, frontend replay, and service/worker linkage before external trust-network authority evidence is accepted. Live hosted services, provider-owned identity events, marketplace payouts, revocation propagation, callbacks, and procurement propagation remain external evidence until fresh provider-owned exports are supplied."
       ],
@@ -1989,7 +2269,7 @@
     },
     {
       "authority_kind": "identity-provider",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Signed trust-network service attestations, worker receipts, worker review bundles, and production authority dossiers cover local/reference proof; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, marketplace asset replay, frontend replay, and service/worker linkage before external trust-network authority evidence is accepted. Live hosted services, provider-owned identity events, marketplace payouts, revocation propagation, callbacks, and procurement propagation remain external evidence until fresh provider-owned exports are supplied."
       ],
@@ -2002,7 +2282,7 @@
     },
     {
       "authority_kind": "customer",
-      "coverage_status": "missing",
+      "coverage_status": "covered",
       "external_authority_required": [
         "Signed trust-network service attestations, worker receipts, worker review bundles, and production authority dossiers cover local/reference proof; authority dossiers now bind verified worker review bundle hashes, embedded source-artifact roots, marketplace asset replay, frontend replay, and service/worker linkage before external trust-network authority evidence is accepted. Live hosted services, provider-owned identity events, marketplace payouts, revocation propagation, callbacks, and procurement propagation remain external evidence until fresh provider-owned exports are supplied."
       ],
@@ -2314,7 +2594,7 @@
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "summary": {
-    "covered_authority_kind_count": 56,
+    "covered_authority_kind_count": 71,
     "covered_authority_kinds_by_requirement": {
       "agent-inventory-and-identity": [
         "provider-api",
@@ -2376,7 +2656,19 @@
         "provider-api",
         "hosted-service"
       ],
+      "product-scope-discipline": [
+        "ci-run",
+        "customer"
+      ],
+      "roadmap-phase-scoreboard": [
+        "ci-run",
+        "regulator",
+        "insurer",
+        "standards-body",
+        "customer"
+      ],
       "runtime-policy-and-attestation": [
+        "ci-run",
         "kms-hsm",
         "provider-api",
         "hosted-service",
@@ -2393,54 +2685,6 @@
         "identity-provider",
         "standards-body"
       ],
-      "trustai-own-compliance": [
-        "standards-body",
-        "customer"
-      ],
-      "vertical-packs": [
-        "regulator",
-        "insurer",
-        "customer"
-      ]
-    },
-    "covered_requirement_count": 15,
-    "covered_requirement_ids": [
-      "agent-inventory-and-identity",
-      "auditor-and-review-portal",
-      "byoc-self-hosted",
-      "cicd-provider-approvals",
-      "compliance-mapper-and-eu-ai-act",
-      "design-partner-pilot-exit-criteria",
-      "framework-adapters",
-      "insurer-api-and-actuarial-products",
-      "mcp-gateway",
-      "oss-verifier-and-public-spec",
-      "runtime-policy-and-attestation",
-      "self-serve-onboarding",
-      "shadow-replay-temporal-holdout",
-      "trustai-own-compliance",
-      "vertical-packs"
-    ],
-    "evidence_count": 56,
-    "expires_at_count": 56,
-    "freshness_window_count": 56,
-    "issued_at_count": 56,
-    "missing_authority_kind_count": 15,
-    "missing_authority_kinds_by_requirement": {
-      "product-scope-discipline": [
-        "ci-run",
-        "customer"
-      ],
-      "roadmap-phase-scoreboard": [
-        "ci-run",
-        "regulator",
-        "insurer",
-        "standards-body",
-        "customer"
-      ],
-      "runtime-policy-and-attestation": [
-        "ci-run"
-      ],
       "standards-track-and-auditor-ecosystem": [
         "kms-hsm",
         "standards-body"
@@ -2453,18 +2697,50 @@
         "hosted-service",
         "identity-provider",
         "customer"
+      ],
+      "trustai-own-compliance": [
+        "standards-body",
+        "customer"
+      ],
+      "vertical-packs": [
+        "regulator",
+        "insurer",
+        "customer"
       ]
     },
-    "missing_requirement_count": 5,
-    "missing_requirement_ids": [
-      "state-of-agent-reliability-report",
-      "roadmap-phase-scoreboard",
+    "covered_requirement_count": 20,
+    "covered_requirement_ids": [
+      "agent-inventory-and-identity",
+      "auditor-and-review-portal",
+      "byoc-self-hosted",
+      "cicd-provider-approvals",
+      "compliance-mapper-and-eu-ai-act",
+      "design-partner-pilot-exit-criteria",
+      "framework-adapters",
+      "insurer-api-and-actuarial-products",
+      "mcp-gateway",
+      "oss-verifier-and-public-spec",
       "product-scope-discipline",
+      "roadmap-phase-scoreboard",
+      "runtime-policy-and-attestation",
+      "self-serve-onboarding",
+      "shadow-replay-temporal-holdout",
       "standards-track-and-auditor-ecosystem",
-      "trust-network-procurement-and-marketplace"
+      "state-of-agent-reliability-report",
+      "trust-network-procurement-and-marketplace",
+      "trustai-own-compliance",
+      "vertical-packs"
     ],
+    "evidence_count": 71,
+    "expires_at_count": 71,
+    "freshness_window_count": 71,
+    "issued_at_count": 71,
+    "missing_authority_kind_count": 0,
+    "missing_authority_kinds_by_requirement": {},
+    "missing_requirement_count": 0,
+    "missing_requirement_ids": [],
     "required_authority_kind_count": 71,
     "required_requirement_count": 20,
-    "status": "partial"
+    "status": "complete"
   }
 }

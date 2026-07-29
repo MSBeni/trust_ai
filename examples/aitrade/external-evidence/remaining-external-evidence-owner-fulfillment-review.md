@@ -1,51 +1,34 @@
 # External Evidence Owner Fulfillment Review
 
-- Review ID: `e7714b2cfc953e1ac7f898fab4300441d452320022440585e6f271be5700e74b`
+- Review ID: `06ac77d3c2c0cf71a631956d0883f0e5c39d9096d1b14b3f8ea02b7c2532f9c3`
 - Generated at: `2026-07-12T00:01:00Z`
-- Status: `blocked`
-- Fulfillments: 15
-- Owners: 9
+- Status: `ready-to-collect`
+- Fulfillments: 0
+- Owners: 0
 - Ready tasks: 0
-- Blocked tasks: 15
-- Placeholder source URIs: 15
+- Blocked tasks: 0
+- Placeholder source URIs: 0
 - Live source URIs: 0
 
 ## Task Review
 
 | Task | Owner | Status | Source URI | Blocking Reasons |
 |---|---|---|---|---|
-| `state-of-agent-reliability-report:customer` | customer success/account owner | blocked | TODO://authority/state-of-agent-reliability-report/customer | `placeholder-source-uri` |
-| `roadmap-phase-scoreboard:ci-run` | release engineering | blocked | TODO://authority/roadmap-phase-scoreboard/ci-run | `placeholder-source-uri` |
-| `roadmap-phase-scoreboard:regulator` | legal/compliance owner | blocked | TODO://authority/roadmap-phase-scoreboard/regulator | `placeholder-source-uri` |
-| `roadmap-phase-scoreboard:insurer` | risk/insurance owner | blocked | TODO://authority/roadmap-phase-scoreboard/insurer | `placeholder-source-uri` |
-| `roadmap-phase-scoreboard:standards-body` | standards/governance owner | blocked | TODO://authority/roadmap-phase-scoreboard/standards-body | `placeholder-source-uri` |
-| `roadmap-phase-scoreboard:customer` | customer success/account owner | blocked | TODO://authority/roadmap-phase-scoreboard/customer | `placeholder-source-uri` |
-| `product-scope-discipline:ci-run` | release engineering | blocked | TODO://authority/product-scope-discipline/ci-run | `placeholder-source-uri` |
-| `product-scope-discipline:customer` | customer success/account owner | blocked | TODO://authority/product-scope-discipline/customer | `placeholder-source-uri` |
-| `runtime-policy-and-attestation:ci-run` | release engineering | blocked | TODO://authority/runtime-policy-and-attestation/ci-run | `placeholder-source-uri` |
-| `standards-track-and-auditor-ecosystem:kms-hsm` | security/platform KMS owner | blocked | TODO://authority/standards-track-and-auditor-ecosystem/kms-hsm | `placeholder-source-uri` |
-| `standards-track-and-auditor-ecosystem:standards-body` | standards/governance owner | blocked | TODO://authority/standards-track-and-auditor-ecosystem/standards-body | `placeholder-source-uri` |
-| `trust-network-procurement-and-marketplace:provider-api` | integration/platform owner | blocked | TODO://authority/trust-network-procurement-and-marketplace/provider-api | `placeholder-source-uri` |
-| `trust-network-procurement-and-marketplace:hosted-service` | service owner | blocked | TODO://authority/trust-network-procurement-and-marketplace/hosted-service | `placeholder-source-uri` |
-| `trust-network-procurement-and-marketplace:identity-provider` | IAM/identity owner | blocked | TODO://authority/trust-network-procurement-and-marketplace/identity-provider | `placeholder-source-uri` |
-| `trust-network-procurement-and-marketplace:customer` | customer success/account owner | blocked | TODO://authority/trust-network-procurement-and-marketplace/customer | `placeholder-source-uri` |
 
 ## Verification
 
-- Fulfilled source map errors: 1
-- Fulfilled source map warnings: 1
-  - source map contains 15 placeholder source_uri values but live source URIs are required
+- Fulfilled source map errors: 0
+- Fulfilled source map warnings: 0
 
 ## Blockers
 
-- owner fulfillment review contains 15 placeholder source_uri values
-- fulfilled source map: source map contains 15 placeholder source_uri values but live source URIs are required
+- None
 
 ## Next Actions
 
-- Replace every placeholder source_uri in the owner fulfillment template with a live authority-owned URI.
-- Regenerate this review with --require-live-source-uris before collecting source snapshots.
-- After the fulfilled source map is ready, run external-evidence-collect-batch and rebuild the retained manifest from intake receipts.
+- Run external-evidence-collect-batch with the reviewed fulfilled source map.
+- Verify source snapshots and intake receipts, then rebuild the external evidence manifest from intakes.
+- Regenerate external-evidence-readiness with --require-ready before claiming production authority coverage.
 
 ## Commands
 
