@@ -12,6 +12,7 @@ The manifest uses schema `trustai.temporal-holdout-manifest/0.1` and records:
 - replay run ID, dataset ID, candidate version, replay payload hash, and optional retained replay source artifact byte binding;
 - first, last, earliest, and latest replay record timestamps;
 - `dataset_fingerprint`, a canonical dataset-level fingerprint over dataset ID, replay run ID, candidate version, record count, records root, root kind, and timestamp bounds, plus any replay-declared fingerprint match status;
+- `outcome_summary`, a verifier-recomputed behavioral summary over held-out replay records, including action comparison counts, action-comparison hash root, mismatch record IDs, policy-violation counts, latency percentiles, and position-error bounds;
 - a hash-chained record list with sequence, unique record ID, timestamp, record
   hash, previous node hash, and node hash;
 - a `records_root` equal to the final record node hash;
@@ -30,15 +31,17 @@ or candidate version also changes the fingerprint.
 `temporal-holdout-verify` recalculates the manifest ID, verifies at least one
 signature, checks the internal record hash chain, recomputes duplicate record-id and
 boundary violations from the frozen contract timestamps, recomputes the dataset fingerprint,
-rejects replay-declared fingerprint mismatches, and optionally replays the source
-contract, replay JSON, and retained replay source bytes to catch source tampering. When
+rejects replay-declared fingerprint mismatches, recomputes the behavioral `outcome_summary`
+from the supplied replay, and optionally replays the source contract, replay JSON, and
+retained replay source bytes to catch source tampering. When
 `replay_source_artifact` is present, verification requires the source replay path so the
 SHA-256 bytes, canonical content hash, replay hash, record count, record hash root, and
 per-record manifest hashes can be recomputed from the retained source file even when the
 caller does not separately pass a parsed replay object.
 
 The manifest proves the supplied replay records postdate the freeze and holdout
-minimum. A `traffic-holdout-export` receipt can separately bind production
+minimum and binds the candidate behavior observed on those held-out records when the replay
+source is supplied. A `traffic-holdout-export` receipt can separately bind production
 traffic source refs, extraction windows, replay record hashes, and privacy limits.
 A `traffic-completeness` receipt can replay provider stream/audit exports for the supplied window. Neither artifact proves upstream production traffic completeness without
 collector or provider-owned production export evidence.

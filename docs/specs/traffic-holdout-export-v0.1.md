@@ -17,6 +17,7 @@ The receipt uses schema `trustai.traffic-holdout-export/0.1` and records:
 - optional `replay_source_artifact` with retained replay source path, byte SHA-256, byte size, canonical source content hash, replay hash, record count, and record-hash root;
 - first, last, earliest, and latest exported record timestamps;
 - `dataset_fingerprint`, a canonical dataset-level fingerprint over replay dataset ID, replay run ID, candidate version, export record count, export records root, root kind, and timestamp bounds, plus any replay-declared fingerprint match status;
+- `outcome_summary`, a verifier-recomputed behavioral summary over exported replay records, including action comparison counts, action-comparison hash root, mismatch record IDs, policy-violation counts, latency percentiles, and position-error bounds;
 - a hash-chained record list with sequence, unique record ID, timestamp,
   canonical replay-record hash, previous export record hash, and export record
   hash;
@@ -34,9 +35,9 @@ candidate version also changes the fingerprint.
 `traffic-holdout-export-verify` recalculates the receipt ID, verifies at least
 one signature, replays the export record hash chain, recomputes duplicate
 record-id, freeze/holdout, and extraction-window checks, recomputes the dataset
-fingerprint, rejects replay-declared fingerprint mismatches, enforces the
-no-raw-payload privacy flag, and can
-optionally replay the source verification contract and shadow replay JSON.
+fingerprint, rejects replay-declared fingerprint mismatches, recomputes the behavioral
+`outcome_summary` from the supplied replay, enforces the no-raw-payload privacy flag,
+and can optionally replay the source verification contract and shadow replay JSON.
 
 When a replay source is supplied, the verifier recomputes the replay hash and
 every exported record hash from the replay file. When `replay_source_artifact` is
@@ -60,6 +61,7 @@ Verified receipts append `traffic_holdout.export_attested` entries with:
 - extraction window;
 - contract and replay refs, including the retained replay source artifact when present;
 - dataset fingerprint;
+- outcome summary;
 - record count, records root, earliest/latest timestamps;
 - violation count and pass/fail status;
 - privacy metadata.

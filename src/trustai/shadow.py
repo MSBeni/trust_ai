@@ -19,6 +19,7 @@ SOAK_REPORT_ENTRY_TYPE = "soak_report.completed"
 TEMPORAL_HOLDOUT_SCHEMA = "trustai.temporal-holdout-manifest/0.1"
 TEMPORAL_HOLDOUT_CHAIN_SCHEMA = "trustai.temporal-holdout-record-chain/0.1"
 SHADOW_DATASET_FINGERPRINT_SCHEMA = "trustai.shadow-dataset-fingerprint/0.1"
+SHADOW_REPLAY_OUTCOME_SUMMARY_SCHEMA = "trustai.shadow-replay-outcome-summary/0.1"
 TEMPORAL_HOLDOUT_ENTRY_TYPE = "temporal_holdout.manifest_attested"
 TRAFFIC_HOLDOUT_EXPORT_SCHEMA = "trustai.traffic-holdout-export/0.1"
 TRAFFIC_HOLDOUT_EXPORT_RECORD_SCHEMA = "trustai.traffic-holdout-export-record/0.1"
@@ -157,6 +158,7 @@ def build_temporal_holdout_manifest(
         latest_record_timestamp=max(timestamps),
         declared_fingerprint=replay.get("dataset_fingerprint"),
     )
+    outcome_summary = _shadow_replay_outcome_summary(replay)
     replay_source_artifact = _traffic_replay_source_artifact(replay_source_path, replay) if replay_source_path is not None else None
     body = {
         "schema": TEMPORAL_HOLDOUT_SCHEMA,
@@ -179,6 +181,7 @@ def build_temporal_holdout_manifest(
         "earliest_record_timestamp": min(timestamps),
         "latest_record_timestamp": max(timestamps),
         "dataset_fingerprint": dataset_fingerprint,
+        "outcome_summary": outcome_summary,
         "records": record_nodes,
         "violations": violations,
         "passed": not violations,
@@ -339,6 +342,13 @@ def verify_temporal_holdout_manifest(
         errors=errors,
     )
 
+    if replay is None:
+        _verify_shadow_replay_outcome_summary(
+            manifest.get("outcome_summary"),
+            context="temporal holdout",
+            errors=errors,
+        )
+
     if manifest.get("violations") != expected_violations:
         errors.append("temporal holdout violations do not match record timestamps")
     if manifest.get("passed") is not (not expected_violations):
@@ -415,6 +425,7 @@ def append_temporal_holdout_manifest(
         "latest_record_timestamp": manifest.get("latest_record_timestamp"),
         "replay_source_artifact": manifest.get("replay_source_artifact"),
         "dataset_fingerprint": manifest.get("dataset_fingerprint"),
+        "outcome_summary": manifest.get("outcome_summary"),
         "violation_count": len(manifest.get("violations", [])),
         "passed": manifest.get("passed"),
     }
@@ -555,6 +566,7 @@ def append_shadow_replay(
             "records_root": holdout_manifest["records_root"],
             "record_count": holdout_manifest["record_count"],
             "dataset_fingerprint": holdout_manifest.get("dataset_fingerprint"),
+            "outcome_summary": holdout_manifest.get("outcome_summary"),
             "passed": holdout_manifest["passed"],
         },
         "replay": replay,
@@ -793,6 +805,7 @@ def build_traffic_holdout_export(
         latest_record_timestamp=max(timestamps),
         declared_fingerprint=replay.get("dataset_fingerprint"),
     )
+    outcome_summary = _shadow_replay_outcome_summary(replay)
     replay_source_artifact = _traffic_replay_source_artifact(replay_source_path, replay) if replay_source_path is not None else None
     body = {
         "schema": TRAFFIC_HOLDOUT_EXPORT_SCHEMA,
@@ -821,6 +834,7 @@ def build_traffic_holdout_export(
         "earliest_record_timestamp": min(timestamps),
         "latest_record_timestamp": max(timestamps),
         "dataset_fingerprint": dataset_fingerprint,
+        "outcome_summary": outcome_summary,
         "records": records,
         "violations": violations,
         "passed": not violations,
@@ -989,6 +1003,13 @@ def verify_traffic_holdout_export(
         errors=errors,
     )
 
+    if replay is None:
+        _verify_shadow_replay_outcome_summary(
+            receipt.get("outcome_summary"),
+            context="traffic holdout export",
+            errors=errors,
+        )
+
     if receipt.get("violations") != expected_violations:
         errors.append("traffic holdout export violations do not match record checks")
     if receipt.get("passed") is not (not expected_violations):
@@ -1062,6 +1083,7 @@ def append_traffic_holdout_export(
         "replay": receipt.get("replay"),
         "replay_source_artifact": receipt.get("replay_source_artifact"),
         "dataset_fingerprint": receipt.get("dataset_fingerprint"),
+        "outcome_summary": receipt.get("outcome_summary"),
         "record_count": receipt.get("record_count"),
         "records_root": receipt.get("records_root"),
         "earliest_record_timestamp": receipt.get("earliest_record_timestamp"),
@@ -1359,6 +1381,87 @@ def _verify_shadow_dataset_fingerprint(
     _append_dataset_fingerprint_declared_error(context, expected, errors)
 
 
+def _shadow_replay_outcome_summary(replay: dict[str, Any]) -> dict[str, Any]:
+    records = _shadow_records(replay)
+    action_pairs: list[dict[str, Any]] = []
+    mismatch_record_ids: list[str] = []
+    policy_violation_record_ids: list[str] = []
+    latencies: list[float] = []
+    position_errors: list[float] = []
+    comparable = 0
+    matches = 0
+
+    for index, record in enumerate(records):
+        if not isinstance(record, dict):
+            continue
+        record_id = _shadow_record_id(record, index)
+        if "expected_action" in record and "candidate_action" in record:
+            comparable += 1
+            matched = record.get("expected_action") == record.get("candidate_action")
+            if matched:
+                matches += 1
+            else:
+                mismatch_record_ids.append(record_id)
+            action_pairs.append(
+                {
+                    "record_id": record_id,
+                    "expected_action_hash": content_hash(record.get("expected_action")),
+                    "candidate_action_hash": content_hash(record.get("candidate_action")),
+                    "matched": matched,
+                }
+            )
+        if record.get("policy_violation") or record.get("violations"):
+            policy_violation_record_ids.append(record_id)
+        if "latency_ms" in record:
+            latencies.append(float(record["latency_ms"]))
+        if "position_error_usd" in record:
+            position_errors.append(abs(float(record["position_error_usd"])))
+
+    total = len(records)
+    body = {
+        "schema": SHADOW_REPLAY_OUTCOME_SUMMARY_SCHEMA,
+        "run_id": replay.get("run_id"),
+        "dataset_id": replay.get("dataset_id") or "shadow-replay",
+        "candidate_version": replay.get("candidate_version"),
+        "record_count": total,
+        "comparable_action_count": comparable,
+        "action_match_count": matches,
+        "action_mismatch_count": comparable - matches,
+        "shadow_match_rate": matches / comparable if comparable else 1.0,
+        "mismatch_record_ids": mismatch_record_ids,
+        "action_comparison_root": content_hash(action_pairs),
+        "policy_violation_record_count": len(policy_violation_record_ids),
+        "policy_violation_record_ids": policy_violation_record_ids,
+        "trade_policy_compliance_rate": 1 - (len(policy_violation_record_ids) / total) if total else 1.0,
+        "latency_record_count": len(latencies),
+        "p95_decision_latency_ms": percentile(latencies, 95) if latencies else 0,
+        "max_decision_latency_ms": max(latencies) if latencies else 0,
+        "position_error_record_count": len(position_errors),
+        "p95_position_error_usd": percentile(position_errors, 95) if position_errors else 0,
+        "max_position_error_usd": max(position_errors) if position_errors else 0,
+    }
+    return {**body, "summary_id": content_hash(body)}
+
+
+def _verify_shadow_replay_outcome_summary(
+    summary: Any,
+    *,
+    context: str,
+    errors: list[str],
+    replay: dict[str, Any] | None = None,
+) -> None:
+    if not isinstance(summary, dict):
+        errors.append(f"{context} outcome_summary must be an object")
+        return
+    if summary.get("schema") != SHADOW_REPLAY_OUTCOME_SUMMARY_SCHEMA:
+        errors.append(f"{context} outcome_summary schema is unsupported")
+    body = without_keys(summary, "summary_id")
+    if summary.get("summary_id") != content_hash(body):
+        errors.append(f"{context} outcome_summary summary_id mismatch")
+    if replay is not None and summary != _shadow_replay_outcome_summary(replay):
+        errors.append(f"{context} outcome_summary mismatch")
+
+
 def _verify_temporal_holdout_replay_bindings(
     manifest: dict[str, Any],
     records: list[Any],
@@ -1391,6 +1494,12 @@ def _verify_temporal_holdout_replay_bindings(
         if fingerprint != expected_fingerprint:
             errors.append("temporal holdout dataset_fingerprint replay binding mismatch")
         _append_dataset_fingerprint_declared_error("temporal holdout", expected_fingerprint, errors)
+    _verify_shadow_replay_outcome_summary(
+        manifest.get("outcome_summary"),
+        context="temporal holdout",
+        errors=errors,
+        replay=replay,
+    )
     replay_records = _shadow_records(replay)
     if len(replay_records) != len(records):
         errors.append("temporal holdout replay record count mismatch")
@@ -1439,6 +1548,12 @@ def _verify_traffic_holdout_replay_bindings(
         if fingerprint != expected_fingerprint:
             errors.append("traffic holdout export dataset_fingerprint replay binding mismatch")
         _append_dataset_fingerprint_declared_error("traffic holdout export", expected_fingerprint, errors)
+    _verify_shadow_replay_outcome_summary(
+        receipt.get("outcome_summary"),
+        context="traffic holdout export",
+        errors=errors,
+        replay=replay,
+    )
     replay_records = _shadow_records(replay)
     if len(replay_records) != len(records):
         errors.append("traffic holdout export replay record count mismatch")
@@ -1700,6 +1815,7 @@ def _traffic_export_summary(traffic_export: dict[str, Any]) -> dict[str, Any]:
         "contract": traffic_export.get("contract"),
         "replay": traffic_export.get("replay"),
         "dataset_fingerprint": traffic_export.get("dataset_fingerprint"),
+        "outcome_summary": traffic_export.get("outcome_summary"),
         "record_count": traffic_export.get("record_count"),
         "records_root": traffic_export.get("records_root"),
         "earliest_record_timestamp": traffic_export.get("earliest_record_timestamp"),

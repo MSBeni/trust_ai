@@ -17,6 +17,7 @@ from trustai.proofpack import compile_proof_pack
 from trustai.verifier import verify_proof_pack
 from trustai.shadow import (
     SHADOW_REPLAY_ENTRY_TYPE,
+    SHADOW_REPLAY_OUTCOME_SUMMARY_SCHEMA,
     TEMPORAL_HOLDOUT_ENTRY_TYPE,
     TEMPORAL_HOLDOUT_SCHEMA,
     TRAFFIC_COMPLETENESS_ENTRY_TYPE,
@@ -565,6 +566,16 @@ class TemporalHoldoutTests(unittest.TestCase):
         self.assertEqual(receipt["records"][-1]["export_record_hash"], receipt["records_root"])
         self.assertIsNone(receipt["records"][0]["previous_export_record_hash"])
         self.assertEqual(receipt["records"][0]["export_record_hash"], receipt["records"][1]["previous_export_record_hash"])
+        summary = receipt["outcome_summary"]
+        self.assertEqual(SHADOW_REPLAY_OUTCOME_SUMMARY_SCHEMA, summary["schema"])
+        self.assertEqual(content_hash(without_keys(summary, "summary_id")), summary["summary_id"])
+        self.assertEqual(3, summary["comparable_action_count"])
+        self.assertEqual(3, summary["action_match_count"])
+        self.assertEqual(0, summary["action_mismatch_count"])
+        self.assertEqual(1.0, summary["shadow_match_rate"])
+        self.assertEqual(0, summary["policy_violation_record_count"])
+        self.assertEqual(1100.0, summary["p95_decision_latency_ms"])
+        self.assertEqual(250.0, summary["max_position_error_usd"])
 
     def test_traffic_holdout_export_binds_dataset_fingerprint(self):
         base_receipt = self._traffic_export()
@@ -595,6 +606,25 @@ class TemporalHoldoutTests(unittest.TestCase):
         self.assertEqual(fingerprint["fingerprint_id"], receipt["dataset_fingerprint"]["fingerprint_id"])
         self.assertEqual(fingerprint["fingerprint_id"], receipt["dataset_fingerprint"]["declared_fingerprint"])
         self.assertTrue(receipt["dataset_fingerprint"]["declared_matches"])
+
+    def test_traffic_holdout_export_rejects_resigned_outcome_summary_tamper(self):
+        receipt = self._traffic_export()
+        tampered = copy.deepcopy(receipt)
+        tampered["outcome_summary"]["action_match_count"] = 2
+        tampered["outcome_summary"]["action_mismatch_count"] = 1
+        tampered["outcome_summary"]["shadow_match_rate"] = 2 / 3
+        summary_body = without_keys(tampered["outcome_summary"], "summary_id")
+        tampered["outcome_summary"]["summary_id"] = content_hash(summary_body)
+        body = without_keys(tampered, "export_id", "signatures")
+        tampered["export_id"] = content_hash(body)
+        tampered["signatures"] = [sign_value({"export_id": tampered["export_id"], "traffic_holdout_export": body})]
+
+        result = verify_traffic_holdout_export(tampered, contract=self._contract(), replay=self._replay())
+
+        self.assertFalse(result.ok)
+        self.assertTrue(any("outcome_summary mismatch" in error for error in result.errors), result.errors)
+        self.assertFalse(any("export_id does not match" in error for error in result.errors), result.errors)
+        self.assertFalse(any("signature verification failed" in error for error in result.errors), result.errors)
 
     def test_traffic_holdout_export_rejects_declared_dataset_fingerprint_mismatch(self):
         replay = self._replay()
@@ -733,6 +763,7 @@ class TemporalHoldoutTests(unittest.TestCase):
             self.assertEqual(receipt["export_id"], entry["payload"]["export_id"])
             self.assertEqual(receipt["replay_source_artifact"], entry["payload"]["replay_source_artifact"])
             self.assertEqual(receipt["dataset_fingerprint"], entry["payload"]["dataset_fingerprint"])
+            self.assertEqual(receipt["outcome_summary"], entry["payload"]["outcome_summary"])
             self.assertEqual(receipt["records_root"], entry["payload"]["records_root"])
             self.assertTrue(chain.verify_all().ok)
 
@@ -1297,6 +1328,13 @@ class TemporalHoldoutTests(unittest.TestCase):
             manifest["records"][0]["record_node_hash"],
             manifest["records"][1]["previous_record_node_hash"],
         )
+        summary = manifest["outcome_summary"]
+        self.assertEqual(SHADOW_REPLAY_OUTCOME_SUMMARY_SCHEMA, summary["schema"])
+        self.assertEqual(content_hash(without_keys(summary, "summary_id")), summary["summary_id"])
+        self.assertEqual(3, summary["comparable_action_count"])
+        self.assertEqual(3, summary["action_match_count"])
+        self.assertEqual(0, summary["policy_violation_record_count"])
+        self.assertEqual(1.0, summary["trade_policy_compliance_rate"])
 
     def test_temporal_holdout_manifest_binds_dataset_fingerprint(self):
         base_manifest = build_temporal_holdout_manifest(
@@ -1326,6 +1364,29 @@ class TemporalHoldoutTests(unittest.TestCase):
         self.assertEqual(fingerprint["fingerprint_id"], manifest["dataset_fingerprint"]["fingerprint_id"])
         self.assertEqual(fingerprint["fingerprint_id"], manifest["dataset_fingerprint"]["declared_fingerprint"])
         self.assertTrue(manifest["dataset_fingerprint"]["declared_matches"])
+
+    def test_temporal_holdout_manifest_rejects_resigned_outcome_summary_tamper(self):
+        manifest = build_temporal_holdout_manifest(
+            self._contract(),
+            self._replay(),
+            generated_at="2026-07-03T12:30:00Z",
+        )
+        tampered = copy.deepcopy(manifest)
+        tampered["outcome_summary"]["action_match_count"] = 2
+        tampered["outcome_summary"]["action_mismatch_count"] = 1
+        tampered["outcome_summary"]["shadow_match_rate"] = 2 / 3
+        summary_body = without_keys(tampered["outcome_summary"], "summary_id")
+        tampered["outcome_summary"]["summary_id"] = content_hash(summary_body)
+        body = without_keys(tampered, "manifest_id", "signatures")
+        tampered["manifest_id"] = content_hash(body)
+        tampered["signatures"] = [sign_value({"manifest_id": tampered["manifest_id"], "temporal_holdout": body})]
+
+        result = verify_temporal_holdout_manifest(tampered, contract=self._contract(), replay=self._replay())
+
+        self.assertFalse(result.ok)
+        self.assertTrue(any("outcome_summary mismatch" in error for error in result.errors), result.errors)
+        self.assertFalse(any("manifest_id does not match" in error for error in result.errors), result.errors)
+        self.assertFalse(any("signature verification failed" in error for error in result.errors), result.errors)
 
     def test_temporal_holdout_manifest_rejects_declared_dataset_fingerprint_mismatch(self):
         replay = self._replay()
@@ -1441,6 +1502,7 @@ class TemporalHoldoutTests(unittest.TestCase):
             self.assertEqual(manifest["manifest_id"], entry["payload"]["manifest_id"])
             self.assertEqual(manifest["records_root"], entry["payload"]["records_root"])
             self.assertEqual(manifest["dataset_fingerprint"], entry["payload"]["dataset_fingerprint"])
+            self.assertEqual(manifest["outcome_summary"], entry["payload"]["outcome_summary"])
             self.assertTrue(chain.verify_all().ok)
 
     def test_shadow_replay_entry_embeds_temporal_holdout_manifest(self):
@@ -1459,6 +1521,7 @@ class TemporalHoldoutTests(unittest.TestCase):
             self.assertEqual(payload["temporal_holdout_manifest"]["manifest_id"], payload["temporal_holdout"]["manifest_id"])
             self.assertEqual(payload["temporal_holdout_manifest"]["records_root"], payload["temporal_holdout"]["records_root"])
             self.assertEqual(payload["temporal_holdout_manifest"]["dataset_fingerprint"], payload["temporal_holdout"]["dataset_fingerprint"])
+            self.assertEqual(payload["temporal_holdout_manifest"]["outcome_summary"], payload["temporal_holdout"]["outcome_summary"])
             self.assertTrue(payload["temporal_holdout"]["passed"])
 
     def test_temporal_holdout_manifest_records_boundary_violations(self):
