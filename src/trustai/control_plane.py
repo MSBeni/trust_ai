@@ -7490,6 +7490,10 @@ class ControlPlane:
             (item for item in lifecycle if item.get("artifact_kind") == "remediation-queue"),
             None,
         )
+        remediation_owner_packet_bundle = next(
+            (item for item in lifecycle if item.get("artifact_kind") == "remediation-owner-packet-bundle"),
+            None,
+        )
         collection_package = next(
             (item for item in lifecycle if item.get("artifact_kind") == "collection-package"),
             None,
@@ -7533,6 +7537,30 @@ class ControlPlane:
             }
             for item in remediation_items
             if isinstance(item, dict)
+        ]
+        owner_packet_body = remediation_owner_packet_bundle.get("body") if remediation_owner_packet_bundle else {}
+        if not isinstance(owner_packet_body, dict):
+            owner_packet_body = {}
+        owner_packet_summary = remediation_owner_packet_bundle.get("summary") if remediation_owner_packet_bundle else {}
+        if not isinstance(owner_packet_summary, dict):
+            owner_packet_summary = {}
+        owner_packet_rows = owner_packet_body.get("packets") if isinstance(owner_packet_body.get("packets"), list) else []
+        remediation_owner_packets = [
+            {
+                "packet_ref": packet.get("packet_ref"),
+                "packet_id": packet.get("packet_id"),
+                "owner_hint": packet.get("owner_hint"),
+                "remediation_task_count": int(packet.get("remediation_task_count") or 0),
+                "blocked_task_count": int(packet.get("blocked_task_count") or 0),
+                "placeholder_source_uri_count": int(packet.get("placeholder_source_uri_count") or 0),
+                "live_source_uri_count": int(packet.get("live_source_uri_count") or 0),
+                "authority_kinds": packet.get("authority_kinds") if isinstance(packet.get("authority_kinds"), list) else [],
+                "requirement_ids": packet.get("requirement_ids") if isinstance(packet.get("requirement_ids"), list) else [],
+                "source_uri_statuses": packet.get("source_uri_statuses") if isinstance(packet.get("source_uri_statuses"), list) else [],
+                "blocking_reasons": packet.get("blocking_reasons") if isinstance(packet.get("blocking_reasons"), list) else [],
+            }
+            for packet in owner_packet_rows
+            if isinstance(packet, dict)
         ]
         package_body = collection_package.get("body") if collection_package else {}
         if not isinstance(package_body, dict):
@@ -7739,6 +7767,19 @@ class ControlPlane:
             "remediation_tasks": remediation_tasks[:limit],
             "remediation_task_limit": limit,
             "remediation_task_total": len(remediation_tasks),
+            "remediation_owner_packet_bundle_present": remediation_owner_packet_bundle is not None,
+            "remediation_owner_packet_bundle_status": owner_packet_summary.get("queue_status") or (remediation_owner_packet_bundle.get("status") if remediation_owner_packet_bundle else None),
+            "remediation_owner_packet_bundle_artifact_id": remediation_owner_packet_bundle.get("artifact_id") if remediation_owner_packet_bundle else None,
+            "remediation_owner_packet_bundle_artifact_hash": remediation_owner_packet_bundle.get("artifact_hash") if remediation_owner_packet_bundle else None,
+            "remediation_owner_packet_count": int(owner_packet_summary.get("packet_count") or len(remediation_owner_packets)),
+            "remediation_owner_packet_owner_count": int(owner_packet_summary.get("owner_count") or 0),
+            "remediation_owner_packet_task_count": int(owner_packet_summary.get("remediation_task_count") or 0),
+            "remediation_owner_packet_blocked_task_count": int(owner_packet_summary.get("blocked_task_count") or 0),
+            "remediation_owner_packet_placeholder_source_uri_count": int(owner_packet_summary.get("placeholder_source_uri_count") or 0),
+            "remediation_owner_packet_counts_by_owner": owner_packet_summary.get("remediation_count_by_owner_hint") if isinstance(owner_packet_summary.get("remediation_count_by_owner_hint"), dict) else {},
+            "remediation_owner_packets": remediation_owner_packets[:limit],
+            "remediation_owner_packet_limit": limit,
+            "remediation_owner_packet_total": len(remediation_owner_packets),
             "collection_package_present": collection_package is not None,
             "collection_package_ready": collection_package_ready,
             "collection_status": collection_status,

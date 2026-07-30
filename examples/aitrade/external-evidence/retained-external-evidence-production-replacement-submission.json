@@ -10,12 +10,12 @@
     "Any remaining placeholder source URIs intentionally keep the downstream submission review and collection package blocked.",
     "Production readiness still requires source snapshot collection, intake verification, manifest rebuild, readiness verification, and production replacement closure."
   ],
-  "production_replacement_submission_id": "61394ad065c677eb40cb46d8a57d5d3cd912e6dc73b387a6f4770f964cbb6d96",
+  "production_replacement_submission_id": "ef25a0737b7f21233427e97588a4049a26b92b80d118ff8d6af7fc1121ab19e3",
   "schema": "trustai.external-evidence-production-replacement-submission/0.1",
   "source_intake_template": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "production_replacement_intake_template_hash": "f32c229ebdd098a191d40ec682f16e640d9f1a192d4e2ad7d23addffec689439",
-    "production_replacement_intake_template_id": "82b37ae0d7167e2f1d5552aa53d0e3005722e08091ccf950a9d8973ab01db410",
+    "production_replacement_intake_template_hash": "98fe0831e3a32bb7b5f8b959a6c6ee76f4316f1b8708d31a403c0d07a8f4ad0c",
+    "production_replacement_intake_template_id": "40a8274adc4a4ef5c0ef0780642aa6613ec3cffb7b0945b96316a658e590f556",
     "schema": "trustai.external-evidence-production-replacement-intake-template/0.1"
   },
   "submitted_fulfillments": [
@@ -1846,7 +1846,7 @@
       "Placeholder TODO source URIs intentionally keep readiness blocked until owners replace them with live authority sources.",
       "Retained example artifacts remain useful for demo verification but must not be counted as production authority evidence."
     ],
-    "production_replacement_intake_template_id": "b33aa28b814b9c37eca7d4a02c9816ee74949eb572bfaf36022fded3d3ccca84",
+    "production_replacement_intake_template_id": "f40c945121b28f3b53804a455c6e6badf404cd2270a44ba7f879c67644280eec",
     "requests": [
       {
         "acceptance_criteria": [
@@ -5918,8 +5918,8 @@
     "schema": "trustai.external-evidence-production-replacement-intake-template/0.1",
     "source_owner_packet_status": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_status_hash": "7d4cdfb5a0aa146d9b59b09c5f548d41e51fd601a545f270330e65237e88c9ea",
-      "owner_packet_status_id": "0e91d09a7352210be759f7b89f1c1771bba84abca18e2ef5cc2b10ec2293f5d2",
+      "owner_packet_status_hash": "f43707fbc683b0ef39710369a06a8dfa026c749faf7a3467d432234fa69284c8",
+      "owner_packet_status_id": "b5aac6afda4ad78f1c0553205539615c110f205250c386b61110b377e8081ef6",
       "schema": "trustai.external-evidence-production-replacement-owner-packet-status/0.1"
     },
     "summary": {
