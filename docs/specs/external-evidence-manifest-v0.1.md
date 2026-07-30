@@ -451,6 +451,15 @@ blockers; with `--require-ready`, verification MUST fail unless every submitted
 replacement task has live source URIs and the fulfilled source map verifies
 under the requested snapshot options.
 
+`external-evidence-production-replacement-remediation-queue` emits
+`trustai.external-evidence-production-replacement-remediation-queue/0.1` from a
+submission review. It extracts the blocked task rows into an owner-facing
+remediation queue with counts by owner, authority kind, requirement, source URI
+status, and blocking reason. Each remediation item carries a fulfillment
+template so evidence owners can replace placeholder authority metadata without
+changing the review body by hand. `external-evidence-production-replacement-remediation-queue-verify --require-empty` MUST fail while any blocked remediation item remains, making
+the queue a strict pre-collection control for production readiness.
+
 `external-evidence-production-replacement-collection-package` emits
 `trustai.external-evidence-production-replacement-collection-package/0.1` from a
 submission review, source manifest, and roadmap audit. It is the operator handoff

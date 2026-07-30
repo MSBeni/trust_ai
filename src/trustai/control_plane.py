@@ -40,6 +40,7 @@ from .external_evidence import (
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_STATUS_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_PLAN_SCHEMA,
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_QUEUE_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA,
 )
@@ -262,6 +263,7 @@ PRODUCTION_REPLACEMENT_ARTIFACTS = {
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_INTAKE_TEMPLATE_SCHEMA: ("intake-template", "production_replacement_intake_template_id"),
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_SCHEMA: ("submission", "production_replacement_submission_id"),
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA: ("submission-review", "production_replacement_submission_review_id"),
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_QUEUE_SCHEMA: ("remediation-queue", "production_replacement_remediation_queue_id"),
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_COLLECTION_PACKAGE_SCHEMA: ("collection-package", "production_replacement_collection_package_id"),
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA: ("closure", "production_replacement_closure_id"),
 }
@@ -1336,7 +1338,7 @@ def _summary_int(summary: dict[str, Any], *fields: str) -> int:
 
 
 def _production_replacement_status(summary: dict[str, Any]) -> str | None:
-    for field in ("closure_status", "review_status", "submission_status", "replacement_status", "readiness_status"):
+    for field in ("closure_status", "queue_status", "review_status", "submission_status", "replacement_status", "readiness_status"):
         value = summary.get(field)
         if value:
             return str(value)
@@ -5813,7 +5815,7 @@ class ControlPlane:
         sources = artifact.get("sources") if isinstance(artifact.get("sources"), dict) else {}
         next_actions = artifact.get("next_actions") if isinstance(artifact.get("next_actions"), list) else []
         tasks = []
-        for field in ("tasks", "task_reviews", "task_closures"):
+        for field in ("tasks", "task_reviews", "remediation_items", "task_closures"):
             value = artifact.get(field)
             if isinstance(value, list):
                 tasks = value
@@ -5849,7 +5851,7 @@ class ControlPlane:
                 summary.get("readiness_status"),
                 summary.get("review_status"),
                 summary.get("closure_status"),
-                _summary_int(summary, "task_count", "source_plan_task_count", "submitted_task_count", "request_count"),
+                _summary_int(summary, "task_count", "source_plan_task_count", "submitted_task_count", "remediation_task_count", "request_count"),
                 _summary_int(summary, "open_task_count"),
                 _summary_int(summary, "closed_task_count"),
                 _summary_int(summary, "blocked_task_count"),
@@ -7482,6 +7484,10 @@ class ControlPlane:
             (item for item in lifecycle if item.get("artifact_kind") == "submission-review"),
             None,
         )
+        remediation_queue = next(
+            (item for item in lifecycle if item.get("artifact_kind") == "remediation-queue"),
+            None,
+        )
         collection_package = next(
             (item for item in lifecycle if item.get("artifact_kind") == "collection-package"),
             None,
@@ -7501,6 +7507,31 @@ class ControlPlane:
         submission_review_summary = submission_review.get("summary") if submission_review else {}
         if not isinstance(submission_review_summary, dict):
             submission_review_summary = {}
+        queue_body = remediation_queue.get("body") if remediation_queue else {}
+        if not isinstance(queue_body, dict):
+            queue_body = {}
+        queue_summary = remediation_queue.get("summary") if remediation_queue else {}
+        if not isinstance(queue_summary, dict):
+            queue_summary = {}
+        remediation_items = queue_body.get("remediation_items") if isinstance(queue_body.get("remediation_items"), list) else []
+        remediation_tasks = [
+            {
+                "task": item.get("task"),
+                "task_ref": item.get("task_ref"),
+                "requirement_id": item.get("requirement_id"),
+                "authority_kind": item.get("authority_kind"),
+                "owner_hint": item.get("owner_hint"),
+                "source_uri": item.get("source_uri"),
+                "source_uri_status": item.get("source_uri_status"),
+                "review_status": item.get("review_status"),
+                "blocking_reasons": item.get("blocking_reasons") if isinstance(item.get("blocking_reasons"), list) else [],
+                "remediation_action": item.get("remediation_action"),
+                "snapshot_out": item.get("snapshot_out"),
+                "intake_out": item.get("intake_out"),
+            }
+            for item in remediation_items
+            if isinstance(item, dict)
+        ]
         package_body = collection_package.get("body") if collection_package else {}
         if not isinstance(package_body, dict):
             package_body = {}
@@ -7569,6 +7600,9 @@ class ControlPlane:
         by_owner = _counts_by(blocked_tasks, "owner_hint", "unassigned")
         by_authority_kind = _counts_by(blocked_tasks, "authority_kind", "unknown")
         by_requirement = _counts_by(blocked_tasks, "requirement_id", "unknown")
+        remediation_by_owner = _counts_by(remediation_tasks, "owner_hint", "unassigned")
+        remediation_by_authority_kind = _counts_by(remediation_tasks, "authority_kind", "unknown")
+        remediation_by_requirement = _counts_by(remediation_tasks, "requirement_id", "unknown")
         submitted_by_owner = _counts_by(submitted_tasks, "owner_hint", "unassigned")
         submitted_by_authority_kind = _counts_by(submitted_tasks, "authority_kind", "unknown")
         submitted_by_requirement = _counts_by(submitted_tasks, "requirement_id", "unknown")
@@ -7691,6 +7725,18 @@ class ControlPlane:
             "submission_review_blocked_task_count": int(submission_review_summary.get("blocked_task_count") or 0),
             "submission_review_placeholder_source_uri_count": int(submission_review_summary.get("placeholder_source_uri_count") or 0),
             "submission_review_live_source_uri_count": int(submission_review_summary.get("live_source_uri_count") or 0),
+            "remediation_queue_present": remediation_queue is not None,
+            "remediation_queue_status": queue_summary.get("queue_status") or (remediation_queue.get("status") if remediation_queue else None),
+            "remediation_queue_artifact_id": remediation_queue.get("artifact_id") if remediation_queue else None,
+            "remediation_queue_artifact_hash": remediation_queue.get("artifact_hash") if remediation_queue else None,
+            "remediation_task_count": int(queue_summary.get("remediation_task_count") or len(remediation_tasks)),
+            "remediation_placeholder_source_uri_count": int(queue_summary.get("placeholder_source_uri_count") or 0),
+            "remediation_task_counts_by_owner": remediation_by_owner,
+            "remediation_task_counts_by_authority_kind": remediation_by_authority_kind,
+            "remediation_task_counts_by_requirement": remediation_by_requirement,
+            "remediation_tasks": remediation_tasks[:limit],
+            "remediation_task_limit": limit,
+            "remediation_task_total": len(remediation_tasks),
             "collection_package_present": collection_package is not None,
             "collection_package_ready": collection_package_ready,
             "collection_status": collection_status,

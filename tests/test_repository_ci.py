@@ -14,6 +14,7 @@ RETAINED_EVIDENCE_SCRIPT = ROOT / "scripts" / "regenerate_retained_external_evid
 RETAINED_EVIDENCE_MANIFEST = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-manifest.json"
 RETAINED_EVIDENCE_READINESS = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-readiness.json"
 PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-production-replacement-submission-review.json"
+PRODUCTION_REPLACEMENT_REMEDIATION_QUEUE = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-production-replacement-remediation-queue.json"
 PRODUCTION_REPLACEMENT_COLLECTION_PACKAGE = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-production-replacement-collection-package.json"
 PRODUCTION_REPLACEMENT_CLOSURE = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-production-replacement-closure.json"
 TESTS_INIT = ROOT / "tests" / "__init__.py"
@@ -139,6 +140,8 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("retained-external-evidence-production-replacement-submitted-template.json", script)
         self.assertIn("external-evidence-production-replacement-submission-review", script)
         self.assertIn("retained-external-evidence-production-replacement-submission-review.json", script)
+        self.assertIn("external-evidence-production-replacement-remediation-queue", script)
+        self.assertIn("retained-external-evidence-production-replacement-remediation-queue.json", script)
         self.assertIn("external-evidence-production-replacement-collection-package", script)
         self.assertIn("retained-external-evidence-production-replacement-collection-package.json", script)
         self.assertIn("retained-external-evidence-production-replacement-package-source-map.json", script)
@@ -153,11 +156,13 @@ class RepositoryCiTests(unittest.TestCase):
         manifest = json.loads(RETAINED_EVIDENCE_MANIFEST.read_text(encoding="utf-8"))
         readiness = json.loads(RETAINED_EVIDENCE_READINESS.read_text(encoding="utf-8"))
         production_review = json.loads(PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW.read_text(encoding="utf-8"))
+        production_remediation_queue = json.loads(PRODUCTION_REPLACEMENT_REMEDIATION_QUEUE.read_text(encoding="utf-8"))
         production_collection_package = json.loads(PRODUCTION_REPLACEMENT_COLLECTION_PACKAGE.read_text(encoding="utf-8"))
         production_closure = json.loads(PRODUCTION_REPLACEMENT_CLOSURE.read_text(encoding="utf-8"))
         summary = manifest["summary"]
         readiness_summary = readiness["summary"]
         production_review_summary = production_review["summary"]
+        production_remediation_queue_summary = production_remediation_queue["summary"]
         production_collection_package_summary = production_collection_package["summary"]
         production_closure_summary = production_closure["summary"]
         required = summary["required_authority_kind_count"]
@@ -174,6 +179,9 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertEqual("blocked", production_review_summary["review_status"])
         self.assertEqual(required, blocked_replacements)
         self.assertEqual(required, production_review_summary["placeholder_source_uri_count"])
+        self.assertEqual("blocked", production_remediation_queue_summary["queue_status"])
+        self.assertEqual(required, production_remediation_queue_summary["remediation_task_count"])
+        self.assertEqual(required, production_remediation_queue_summary["placeholder_source_uri_count"])
         self.assertEqual("blocked", production_collection_package_summary["collection_status"])
         self.assertEqual(required, production_collection_package_summary["blocked_task_count"])
         self.assertEqual(required, production_collection_package_summary["placeholder_source_uri_count"])
@@ -188,6 +196,7 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("Strict production retained-evidence completion gate; expected to fail", readme)
         self.assertIn("external-evidence-production-replacement-submission-verify", readme)
         self.assertIn("external-evidence-production-replacement-submission-review-verify", readme)
+        self.assertIn("external-evidence-production-replacement-remediation-queue-verify", readme)
         self.assertIn("external-evidence-production-replacement-collection-package-verify", readme)
         self.assertIn("external-evidence-production-replacement-closure-verify", readme)
         self.assertNotIn("zero non-production retained authority units", readme)
@@ -209,6 +218,8 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("external-evidence-production-replacement-submission", spec)
         self.assertIn("external-evidence-production-replacement-submission-verify", spec)
         self.assertIn("external-evidence-production-replacement-submission-review", spec)
+        self.assertIn("external-evidence-production-replacement-remediation-queue", spec)
+        self.assertIn("external-evidence-production-replacement-remediation-queue-verify --require-empty", spec)
         self.assertIn("external-evidence-production-replacement-collection-package", spec)
         self.assertIn("external-evidence-production-replacement-closure", spec)
         self.assertIn("external-evidence-production-replacement-closure-verify --require-closed", spec)

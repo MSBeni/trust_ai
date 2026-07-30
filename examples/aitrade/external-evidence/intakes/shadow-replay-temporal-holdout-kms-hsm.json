@@ -21,7 +21,7 @@
     "subject": "trustai shadow replay temporal holdout evidence-signing enforcement"
   },
   "generated_at": "2026-07-12T00:01:00Z",
-  "intake_id": "1a57b4764a77f8119afc0727578ea7d655348b3d2119246bdeda867d05e2597b",
+  "intake_id": "a3c371addcfebab6520185c22d520061ccdbf183815909af6cba5c3023be026e",
   "limitations": [
     "This intake receipt hashes and maps one collected artifact to a collection-plan task; it does not itself satisfy roadmap completion.",
     "Coverage is updated only after rebuilding and verifying an external evidence manifest with the emitted evidence argument.",
@@ -30,28 +30,28 @@
   "schema": "trustai.external-evidence-intake/0.1",
   "source_manifest": {
     "covered_authority_kind_count": 1,
-    "manifest_hash": "0f99b246751be42becea2cb5769eb029a30d59a650d503061407820a2dbb7601",
-    "manifest_id": "0df75296ff1a99166a97635731fe426182cd8325331f5cf064db10f0ea7a8d5b",
+    "manifest_hash": "46e89c708d0428fa84a793f6d7e8da2dae4b58c3158bff12b37d3804bfcdfb6f",
+    "manifest_id": "69132d685a7779810f39aca9a61d2d14e4517ab4eb08cc8d78ffcd14a26d7858",
     "manifest_ref": "production-external-evidence",
     "missing_authority_kind_count": 71,
     "required_authority_kind_count": 72,
     "status": "partial"
   },
   "source_plan": {
-    "plan_hash": "9ac13939d2d558cbd3f691dfd2142e7d0ad511b2b829bb77d5b64d560928bfe7",
-    "plan_id": "0f0c74c1adf45f9cf714782ec206d175e831006dc61cfb3fe4c641ae23fefd0b",
+    "plan_hash": "34c5748ba6a5628cf6117f8d0f56e2b5cfa50479a46dd6039ea1864c7262ef86",
+    "plan_id": "d13474a3a0ec31c0d2de2775b57258c4af1096c0f3bc8079ac9212e8b37a60ac",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "0f99b246751be42becea2cb5769eb029a30d59a650d503061407820a2dbb7601",
-      "manifest_id": "0df75296ff1a99166a97635731fe426182cd8325331f5cf064db10f0ea7a8d5b",
+      "manifest_hash": "46e89c708d0428fa84a793f6d7e8da2dae4b58c3158bff12b37d3804bfcdfb6f",
+      "manifest_id": "69132d685a7779810f39aca9a61d2d14e4517ab4eb08cc8d78ffcd14a26d7858",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },
     "status_filter": "all"
   },
   "source_roadmap_audit": {
-    "audit_hash": "c83d5fceceea50df7754ca45de6420ad30b37c87496072d68f71bb1974082e07",
-    "audit_id": "275a78a6e732fc8a0679c91dad05934db6cee1cb528d6ea8150f77baa3c70c25",
+    "audit_hash": "5cc9c18ba5c306333bddda11b2b6f65dc98abb99865e6d45a06fb0ecf0f0494c",
+    "audit_id": "491528aa22d8d535dc0dbffc4a4fb10a1c15bf67d780e15a04915a1a2f0543d8",
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "task": {

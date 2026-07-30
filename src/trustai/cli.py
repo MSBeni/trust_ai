@@ -1201,6 +1201,7 @@ from .external_evidence import (
     build_external_evidence_production_replacement_intake_template,
     build_external_evidence_production_replacement_submission,
     build_external_evidence_production_replacement_submission_review,
+    build_external_evidence_production_replacement_remediation_queue,
     build_external_evidence_production_replacement_collection_package,
     build_external_evidence_production_replacement_closure,
     build_external_evidence_source_map_template,
@@ -1231,6 +1232,7 @@ from .external_evidence import (
     load_external_evidence_production_replacement_intake_template,
     load_external_evidence_production_replacement_submission,
     load_external_evidence_production_replacement_submission_review,
+    load_external_evidence_production_replacement_remediation_queue,
     load_external_evidence_production_replacement_collection_package,
     load_external_evidence_production_replacement_closure,
     load_external_evidence_collection_plan,
@@ -1260,6 +1262,7 @@ from .external_evidence import (
     verify_external_evidence_production_replacement_intake_template,
     verify_external_evidence_production_replacement_submission,
     verify_external_evidence_production_replacement_submission_review,
+    verify_external_evidence_production_replacement_remediation_queue,
     verify_external_evidence_production_replacement_collection_package,
     verify_external_evidence_production_replacement_closure,
     verify_external_evidence_collection_plan,
@@ -1299,6 +1302,8 @@ from .external_evidence import (
     write_external_evidence_production_replacement_submission_markdown,
     write_external_evidence_production_replacement_submission_review,
     write_external_evidence_production_replacement_submission_review_markdown,
+    write_external_evidence_production_replacement_remediation_queue,
+    write_external_evidence_production_replacement_remediation_queue_markdown,
     write_external_evidence_production_replacement_collection_package,
     write_external_evidence_production_replacement_collection_package_markdown,
     write_external_evidence_production_replacement_closure,
@@ -17334,6 +17339,66 @@ def cmd_external_evidence_production_replacement_submission_review_verify(args: 
 
 
 
+def cmd_external_evidence_production_replacement_remediation_queue(args: argparse.Namespace) -> int:
+    try:
+        review = load_external_evidence_production_replacement_submission_review(args.review)
+        queue = build_external_evidence_production_replacement_remediation_queue(
+            review,
+            generated_at=args.generated_at,
+        )
+        result = verify_external_evidence_production_replacement_remediation_queue(queue, review)
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement remediation queue failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("external evidence production replacement remediation queue verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_external_evidence_production_replacement_remediation_queue(args.out, queue)
+    if args.markdown:
+        write_external_evidence_production_replacement_remediation_queue_markdown(args.markdown, queue)
+        print(f"external evidence production replacement remediation queue markdown: {args.markdown}")
+    summary = queue["summary"]
+    print(f"external evidence production replacement remediation queue: {args.out}")
+    print(f"production replacement remediation queue id: {queue['production_replacement_remediation_queue_id']}")
+    print(f"status: {summary['queue_status']}")
+    print(f"remediation tasks: {summary['remediation_task_count']}")
+    print(f"placeholder source URIs: {summary['placeholder_source_uri_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_external_evidence_production_replacement_remediation_queue_verify(args: argparse.Namespace) -> int:
+    try:
+        queue = load_external_evidence_production_replacement_remediation_queue(args.queue)
+        review = load_external_evidence_production_replacement_submission_review(args.review)
+        result = verify_external_evidence_production_replacement_remediation_queue(
+            queue,
+            review,
+            require_empty=args.require_empty,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement remediation queue verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        summary = queue.get("summary", {})
+        print(f"verified external evidence production replacement remediation queue: {args.queue}")
+        print(f"production replacement remediation queue id: {queue.get('production_replacement_remediation_queue_id')}")
+        print(f"status: {summary.get('queue_status')}")
+        print(f"remediation tasks: {summary.get('remediation_task_count', 0)}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"external evidence production replacement remediation queue verification failed: {args.queue}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+
+
 
 def cmd_external_evidence_production_replacement_collection_package(args: argparse.Namespace) -> int:
     try:
@@ -29056,6 +29121,20 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_production_replacement_submission_review_verify.set_defaults(func=cmd_external_evidence_production_replacement_submission_review_verify)
 
 
+
+
+    external_evidence_production_replacement_remediation_queue = subparsers.add_parser("external-evidence-production-replacement-remediation-queue", help="write owner remediation queue for blocked production replacement submission review tasks")
+    external_evidence_production_replacement_remediation_queue.add_argument("review")
+    external_evidence_production_replacement_remediation_queue.add_argument("--generated-at")
+    external_evidence_production_replacement_remediation_queue.add_argument("--out", default="artifacts/external-evidence-production-replacement-remediation-queue.json")
+    external_evidence_production_replacement_remediation_queue.add_argument("--markdown", default="artifacts/external-evidence-production-replacement-remediation-queue.md")
+    external_evidence_production_replacement_remediation_queue.set_defaults(func=cmd_external_evidence_production_replacement_remediation_queue)
+
+    external_evidence_production_replacement_remediation_queue_verify = subparsers.add_parser("external-evidence-production-replacement-remediation-queue-verify", help="verify a production replacement remediation queue against a submission review")
+    external_evidence_production_replacement_remediation_queue_verify.add_argument("queue")
+    external_evidence_production_replacement_remediation_queue_verify.add_argument("review")
+    external_evidence_production_replacement_remediation_queue_verify.add_argument("--require-empty", action="store_true", help="fail unless the remediation queue has no blocked tasks")
+    external_evidence_production_replacement_remediation_queue_verify.set_defaults(func=cmd_external_evidence_production_replacement_remediation_queue_verify)
 
     external_evidence_production_replacement_collection_package = subparsers.add_parser("external-evidence-production-replacement-collection-package", help="write a collection handoff package from a reviewed production replacement submission")
     external_evidence_production_replacement_collection_package.add_argument("review")
