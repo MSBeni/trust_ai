@@ -8,6 +8,7 @@ README = ROOT / "README.md"
 PYTHON_CI = ROOT / ".github" / "workflows" / "python-ci.yml"
 GO_CI = ROOT / ".github" / "workflows" / "go-verifier.yml"
 ARCHITECTURE_NOTE = ROOT / "docs" / "architecture" / "phase-0.md"
+EXTERNAL_EVIDENCE_SPEC = ROOT / "docs" / "specs" / "external-evidence-manifest-v0.1.md"
 RETAINED_EVIDENCE_SCRIPT = ROOT / "scripts" / "regenerate_retained_external_evidence.py"
 RETAINED_EVIDENCE_MANIFEST = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-manifest.json"
 RETAINED_EVIDENCE_READINESS = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-readiness.json"
@@ -163,6 +164,24 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn(f"missing_authority_kind_count'] == {required - 3}", readme)
         self.assertIn(f"required_authority_kind_count'] == {required}", workflow)
         self.assertIn(f"missing_authority_kind_count'] == {required - 3}", workflow)
+
+    def test_external_evidence_spec_documents_production_replacement_lifecycle(self):
+        spec = EXTERNAL_EVIDENCE_SPEC.read_text(encoding="utf-8")
+
+        self.assertIn("## Production Replacement Lifecycle", spec)
+        self.assertIn("Retained or local/reference evidence", spec)
+        self.assertIn("external-evidence-production-replacement-plan", spec)
+        self.assertIn("external-evidence-production-replacement-owner-packets", spec)
+        self.assertIn("external-evidence-production-replacement-owner-packet-status", spec)
+        self.assertIn("external-evidence-production-replacement-intake-template", spec)
+        self.assertIn("external-evidence-production-replacement-submission-review", spec)
+        self.assertIn("TODO://production-authority", spec)
+        self.assertIn("--require-live-source-uris", spec)
+        self.assertIn("--require-ready", spec)
+        self.assertIn("external-evidence-collect-batch", spec)
+        self.assertIn("external-evidence-manifest-from-intakes", spec)
+        self.assertIn("external-evidence-readiness-verify --require-ready", spec)
+        self.assertIn("committed to the evidence chain", spec)
 
     def test_architecture_note_documents_current_production_boundary(self):
         architecture = ARCHITECTURE_NOTE.read_text(encoding="utf-8")

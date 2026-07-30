@@ -390,6 +390,64 @@ and the top-level `work_package_id`, and rejects edited owner assignments,
 commands, paths, counts, or task bodies. The artifact remains a work assignment,
 not evidence: authority gaps close only after real source snapshots, intake
 receipts, a rebuilt manifest, and an evidence-chain entry verify successfully.
+
+## Production Replacement Lifecycle
+
+Retained or local/reference evidence can keep CI examples reproducible, but it
+MUST NOT be counted as production authority evidence. The production replacement
+lifecycle turns the non-production units reported by `external-evidence-readiness`
+into owner-routed collection work and keeps the strict production gate blocked
+until live authority sources are supplied.
+
+`external-evidence-production-replacement-plan` emits
+`trustai.external-evidence-production-replacement-plan/0.1` from a verified
+readiness report, retained manifest, and roadmap audit. It selects every covered
+authority unit whose artifact is retained, local-reference, or otherwise not
+production-usable, groups those units by owner hint, authority kind, phase,
+priority, or requirement, and records replacement tasks with the retained unit
+hashes that must be superseded. `external-evidence-production-replacement-plan-verify`
+MUST rebuild the expected plan from the supplied readiness report, manifest, and
+audit, and MUST reject edited counts, grouping, task refs, source hashes, or
+production-usable/non-production unit totals.
+
+`external-evidence-production-replacement-owner-packets` and
+`external-evidence-production-replacement-owner-packet-status` produce the owner
+handoff and status checkpoint for the replacement plan. Owner packets are
+assignment artifacts; status reports may mark task refs open, blocked, or closed,
+but closing a task in this status report alone does not close production evidence.
+The corresponding verifiers MUST reject task refs that are not present in the
+plan and MUST keep packet/status counts consistent with the source replacement
+plan.
+
+`external-evidence-production-replacement-intake-template` emits
+`trustai.external-evidence-production-replacement-intake-template/0.1`, a
+fillable authority intake request set for open or blocked replacement tasks. Each
+fulfillment row carries task-bound collection metadata: `source_uri`,
+`description`, `source_file`, `retrieval_method`, `content_type`, `issuer`,
+`subject`, freshness windows, snapshot output, and intake output. Placeholder
+`TODO://production-authority/...` source URIs are allowed in the template so
+owners can see the work, but they MUST keep any production review blocked.
+
+`external-evidence-production-replacement-submission-review` emits
+`trustai.external-evidence-production-replacement-submission-review/0.1` from a
+filled intake template, the owner packet status, and the all-authority collection
+plan. It builds a fulfilled source map limited to the submitted replacement
+tasks, verifies that every submitted task is anchored to the owner status report,
+counts ready and blocked tasks, and exports commands for batch collection,
+manifest rebuild, and strict readiness proof. With `--require-live-source-uris`,
+placeholder or example source URIs MUST produce blockers; with
+`--require-ready`, verification MUST fail unless every submitted replacement task
+has live source URIs and the fulfilled source map verifies under the requested
+snapshot options.
+
+A ready production replacement submission review is still not final authority
+evidence. Production readiness is proven only after `external-evidence-collect-batch`
+collects source snapshots from the fulfilled source map,
+`external-evidence-manifest-from-intakes` rebuilds the manifest from verified
+intake receipts, `external-evidence-readiness-verify --require-ready` passes
+against the rebuilt sources, and the resulting manifest/readiness evidence is
+committed to the evidence chain.
+
 ## Roadmap Evidence Report
 
 `roadmap-evidence-report` emits `trustai.roadmap-evidence-report/0.1`, a
