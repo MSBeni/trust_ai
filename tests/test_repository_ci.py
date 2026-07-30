@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 README = ROOT / "README.md"
 PYTHON_CI = ROOT / ".github" / "workflows" / "python-ci.yml"
 GO_CI = ROOT / ".github" / "workflows" / "go-verifier.yml"
+ARCHITECTURE_NOTE = ROOT / "docs" / "architecture" / "phase-0.md"
 RETAINED_EVIDENCE_SCRIPT = ROOT / "scripts" / "regenerate_retained_external_evidence.py"
 RETAINED_EVIDENCE_MANIFEST = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-manifest.json"
 TESTS_INIT = ROOT / "tests" / "__init__.py"
@@ -122,6 +123,17 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn(f"missing_authority_kind_count'] == {required - 3}", readme)
         self.assertIn(f"required_authority_kind_count'] == {required}", workflow)
         self.assertIn(f"missing_authority_kind_count'] == {required - 3}", workflow)
+
+    def test_architecture_note_documents_current_production_boundary(self):
+        architecture = ARCHITECTURE_NOTE.read_text(encoding="utf-8")
+
+        self.assertIn("Current Production Authority Boundary", architecture)
+        self.assertIn("local-reference-complete-with-external-", architecture)
+        self.assertIn("72/72 authority units covered", architecture)
+        self.assertIn("KMS/TSA provider attestations", architecture)
+        self.assertIn("BYOC/self-hosted authority dossiers", architecture)
+        self.assertIn("not a claim that those external production events have happened", architecture)
+        self.assertNotIn("KMS/HSM signatures and RFC 3161 timestamp authority integration;", architecture)
 
 
 if __name__ == "__main__":

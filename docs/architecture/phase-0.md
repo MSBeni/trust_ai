@@ -1,8 +1,11 @@
-# Phase 0-2 Reference Architecture
+# TrustAI Reference Architecture and Production Boundary
 
-This implementation covers a local, executable slice of the roadmap. It is a
-single-process reference stack that can later be split into Go services, a Python
-eval orchestrator, and a TypeScript portal.
+This implementation covers the executable local/reference slice of the uploaded
+roadmap. It is a self-contained repository for proof generation, offline
+verification, retained authority replay, and roadmap evidence review. The code is
+organized so the current single-process Python reference can be split into Go
+services, a Python eval/holdout orchestrator, and a TypeScript portal without
+changing the signed artifact shapes.
 
 ## Components
 
@@ -56,7 +59,7 @@ eval results
   -> offline verifier
 ```
 
-## Implemented Now
+## Implemented Locally
 
 - contract pre-registration;
 - agent inventory and delegation evidence;
@@ -74,14 +77,55 @@ eval results
 - CI reports, provider API payloads, Slack approval request payloads, compliance, insurer, and auditor exports;
 - aitrade reference example;
 - BYOC Docker/Helm scaffold;
-- tamper detection tests.
+- tamper detection tests;
+- KMS/TSA provider attestations, trust-authority KMS/HSM enforcement receipts, and anchor provider receipts with retained source replay;
+- BYOC/self-hosted authority dossiers, Helm validation, Kubernetes release-state receipts, deployment image integrity receipts, Object Lock/WORM evidence, and air-gap install bundles;
+- provider webhook/delivery/approval authority receipts, promotion status review bundles, and retained payload byte replay;
+- policy backend service/provider/worker receipts and review bundles;
+- self-serve onboarding, framework adapter, MCP gateway, review portal, insurer, regulator, standards, trust-network, marketplace, and auditor ecosystem reference receipts;
+- retained external-evidence corpus with 72/72 authority units covered and zero remaining collection tasks.
 
-## Deferred Production Work
+## Current Production Authority Boundary
 
-- KMS/HSM signatures and RFC 3161 timestamp authority integration;
-- network collector process, MCP proxy service, and ClickHouse/Postgres stores;
-- SaaS/BYOC operator and object-lock storage controls;
-- credentialed live posting to GitHub, GitLab, and Slack APIs;
-- full React auditor/regulator portals;
-- authenticated insurer API service;
-- standards submission and certification program.
+The current repo proves local implementation integrity and reference authority
+logic. `trustai roadmap-audit` reports `local-reference-complete-with-external-
+authority-deferred`: 26 roadmap requirements have local evidence, 6 are fully
+implemented locally, and 20 are reference-attested because production claims need
+fresh authority-owned exports.
+
+Those deferred production inputs are not missing code paths; they are external
+facts that cannot be honestly manufactured in a local repository:
+
+- completed provider-owned GitHub/GitLab/Slack workflow, webhook, callback,
+  delivery, release, artifact, audit-log, and credential-custody exports;
+- customer, regulator, insurer, standards-body, identity-provider, KMS/HSM,
+  cloud Object Lock, hosted-service, and marketplace authority exports;
+- live hosted control-plane, collector, MCP gateway, review portal, insurer API,
+  regulator portal, trust-network, and marketplace service operations;
+- production tenant data-plane evidence such as scheduler/queue/lease exports,
+  immutable audit logs, mTLS/network/KMS enforcement, backup/restore evidence,
+  and WORM retention/legal-hold records;
+- business milestone evidence for paying design partners, ARR, insurer pricing,
+  regulator acceptance, procurement clauses, standards-track acceptance, and
+  actuarial data product revenue.
+
+The retained example corpus under `examples/aitrade/external-evidence/` models
+that authority collection process with fresh, hash-bound source snapshots and
+intake receipts. It is intentionally verifier-backed reference evidence; it is not a claim that those external production events have happened.
+
+## Verification Gates
+
+The repository keeps the boundary above executable through:
+
+- `.github/workflows/python-ci.yml`, which rebuilds and verifies proof packs,
+  roadmap audits, retained external evidence, roadmap evidence bundles, and
+  clean-checkout smoke tests;
+- `.github/workflows/go-verifier.yml`, which tests and cross-builds the
+  dependency-free Go verifier source;
+- `scripts/regenerate_retained_external_evidence.py --verify-only`, which
+  checks retained authority coverage, source snapshots, intake receipts,
+  readiness, collection-run evidence, and bundle source counts;
+- `tests/test_repository_ci.py`, `tests/test_roadmap_audit.py`, and
+  `tests/test_external_evidence.py`, which guard the CI workflow, roadmap
+  evidence hashes, retained authority counts, and strict production-readiness
+  semantics.
