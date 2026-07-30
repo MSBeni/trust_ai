@@ -886,7 +886,7 @@
     "Placeholder TODO source URIs intentionally keep readiness blocked until owners replace them with live authority sources.",
     "Retained example artifacts remain useful for demo verification but must not be counted as production authority evidence."
   ],
-  "production_replacement_intake_template_id": "26eeaab37a6b02074aca26e66cf9a7cb7305845e19ecac55218cdff88f56c359",
+  "production_replacement_intake_template_id": "1d410059a72e14d8e1fc890f8226651f4204c6b7790fbad00a6f96d49cdae6b0",
   "requests": [
     {
       "acceptance_criteria": [
@@ -4958,8 +4958,8 @@
   "schema": "trustai.external-evidence-production-replacement-intake-template/0.1",
   "source_owner_packet_status": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "owner_packet_status_hash": "880a1ff5721e51367939fe598ea40a1dab027cdfda17a4bdf04e83e27adbdb2f",
-    "owner_packet_status_id": "b2fea1d4cf068382c7e0419079c790235dc3a5e5086af1ee9fd5b177e8d66593",
+    "owner_packet_status_hash": "80718b6c3dc165e23e971eb1a98ebabdc262b24bfceb3af2a4d850a6985abfd8",
+    "owner_packet_status_id": "ed2380ae08eef0592a5399a618353fa7b0fcdb7e527dba35d66f335f646964e1",
     "schema": "trustai.external-evidence-production-replacement-owner-packet-status/0.1"
   },
   "summary": {

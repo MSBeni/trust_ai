@@ -1,5 +1,5 @@
 {
-  "audit_id": "e77d0bcc71103ad49c9abacb37bf930b7ef483075fd1f70bb035873c9129305f",
+  "audit_id": "5d799af4931a2b615da552b573d99a2d82816841351fcb7837c9048b3ff34d7f",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
   "generated_at": "2026-07-12T00:00:00Z",
   "limitations": [
@@ -2098,7 +2098,7 @@
         {
           "path": "docs/architecture/roadmap-coverage.md",
           "present": true,
-          "sha256": "sha256:1389cd0aac08a2ba1a7ec11d4aa054294cf7a3b61bb7feaa97301737085cda5a"
+          "sha256": "sha256:61ded834fa15a4243cabfab5de3177b833d2de5f4cef7821dc83fc28bb67acb3"
         },
         {
           "path": "src/trustai/proofpack.py",
@@ -2668,7 +2668,7 @@
     "coverage": {
       "path": "docs/architecture/roadmap-coverage.md",
       "present": true,
-      "sha256": "sha256:1389cd0aac08a2ba1a7ec11d4aa054294cf7a3b61bb7feaa97301737085cda5a"
+      "sha256": "sha256:61ded834fa15a4243cabfab5de3177b833d2de5f4cef7821dc83fc28bb67acb3"
     },
     "requirement_count": 26,
     "roadmap": {
