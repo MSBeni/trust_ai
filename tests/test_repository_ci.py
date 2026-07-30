@@ -10,6 +10,8 @@ GO_CI = ROOT / ".github" / "workflows" / "go-verifier.yml"
 ARCHITECTURE_NOTE = ROOT / "docs" / "architecture" / "phase-0.md"
 RETAINED_EVIDENCE_SCRIPT = ROOT / "scripts" / "regenerate_retained_external_evidence.py"
 RETAINED_EVIDENCE_MANIFEST = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-manifest.json"
+RETAINED_EVIDENCE_READINESS = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-readiness.json"
+PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-production-replacement-submission-review.json"
 TESTS_INIT = ROOT / "tests" / "__init__.py"
 
 
@@ -130,13 +132,33 @@ class RepositoryCiTests(unittest.TestCase):
         readme = README.read_text(encoding="utf-8")
         workflow = PYTHON_CI.read_text(encoding="utf-8")
         manifest = json.loads(RETAINED_EVIDENCE_MANIFEST.read_text(encoding="utf-8"))
+        readiness = json.loads(RETAINED_EVIDENCE_READINESS.read_text(encoding="utf-8"))
+        production_review = json.loads(PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW.read_text(encoding="utf-8"))
         summary = manifest["summary"]
+        readiness_summary = readiness["summary"]
+        production_review_summary = production_review["summary"]
         required = summary["required_authority_kind_count"]
         covered = summary["covered_authority_kind_count"]
+        production_usable = readiness_summary["production_usable_covered_authority_kind_count"]
+        non_production = readiness_summary["non_production_covered_authority_kind_count"]
+        blocked_replacements = production_review_summary["blocked_task_count"]
 
         self.assertEqual(required, covered)
         self.assertEqual(0, summary["missing_authority_kind_count"])
+        self.assertEqual("not-ready", readiness_summary["readiness_status"])
+        self.assertEqual(0, production_usable)
+        self.assertEqual(required, non_production)
+        self.assertEqual("blocked", production_review_summary["review_status"])
+        self.assertEqual(required, blocked_replacements)
+        self.assertEqual(required, production_review_summary["placeholder_source_uri_count"])
         self.assertIn(f"{covered}/{required} authority units covered", readme)
+        self.assertIn("readiness status is `not-ready`", readme)
+        self.assertIn(f"{production_usable} authority units are production-usable", readme)
+        self.assertIn(f"{blocked_replacements} production replacement tasks remain blocked", readme)
+        self.assertIn("Strict production retained-evidence completion gate; expected to fail", readme)
+        self.assertIn("external-evidence-production-replacement-submission-review-verify", readme)
+        self.assertNotIn("zero non-production retained authority units", readme)
+        self.assertNotIn("expected to pass for the retained example set", readme)
         self.assertIn(f"required_authority_kind_count'] == {required}", readme)
         self.assertIn(f"missing_authority_kind_count'] == {required - 3}", readme)
         self.assertIn(f"required_authority_kind_count'] == {required}", workflow)
