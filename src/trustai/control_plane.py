@@ -7474,11 +7474,33 @@ class ControlPlane:
         if limit < 1:
             raise ValueError("limit must be a positive integer")
         lifecycle = self.recent_external_evidence_production_replacement_lifecycle(limit=100)
+        submission = next(
+            (item for item in lifecycle if item.get("artifact_kind") == "submission"),
+            None,
+        )
+        submission_review = next(
+            (item for item in lifecycle if item.get("artifact_kind") == "submission-review"),
+            None,
+        )
         collection_package = next(
             (item for item in lifecycle if item.get("artifact_kind") == "collection-package"),
             None,
         )
         closures = self.recent_external_evidence_production_replacement_closures(limit=1)
+        submission_body = submission.get("body") if submission else {}
+        if not isinstance(submission_body, dict):
+            submission_body = {}
+        submission_summary = submission.get("summary") if submission else {}
+        if not isinstance(submission_summary, dict):
+            submission_summary = {}
+        submitted_task_refs = submission_body.get("submitted_task_refs")
+        if not isinstance(submitted_task_refs, list):
+            submitted_task_refs = []
+        submitted_task_refs = [str(ref) for ref in submitted_task_refs if str(ref or "").strip()]
+
+        submission_review_summary = submission_review.get("summary") if submission_review else {}
+        if not isinstance(submission_review_summary, dict):
+            submission_review_summary = {}
         package_body = collection_package.get("body") if collection_package else {}
         if not isinstance(package_body, dict):
             package_body = {}
@@ -7521,8 +7543,43 @@ class ControlPlane:
         next_actions = collection_package.get("next_actions") if collection_package else []
         if not isinstance(next_actions, list):
             next_actions = []
+        submission_status = submission_summary.get("submission_status") or (submission.get("status") if submission else None)
+        submission_review_status = submission_review_summary.get("review_status") or (
+            submission_review.get("review_status") if submission_review else None
+        )
         return {
             "schema_version": SCHEMA_VERSION,
+            "submission_present": submission is not None,
+            "submission_ready_for_review": bool(
+                submission
+                and submission_status == "submitted"
+                and int(submission_summary.get("submitted_task_count") or 0) > 0
+                and int(submission_summary.get("submitted_placeholder_source_uri_count") or 0) == 0
+            ),
+            "submission_status": submission_status,
+            "submission_artifact_id": submission.get("artifact_id") if submission else None,
+            "submission_artifact_hash": submission.get("artifact_hash") if submission else None,
+            "submitted_task_count": int(submission_summary.get("submitted_task_count") or 0),
+            "submitted_live_source_uri_count": int(submission_summary.get("submitted_live_source_uri_count") or 0),
+            "submitted_placeholder_source_uri_count": int(submission_summary.get("submitted_placeholder_source_uri_count") or 0),
+            "submitted_task_refs": submitted_task_refs[:limit],
+            "submitted_task_limit": limit,
+            "submitted_task_total": len(submitted_task_refs),
+            "submission_review_present": submission_review is not None,
+            "submission_review_ready": bool(
+                submission_review
+                and submission_review_status == "ready-to-collect"
+                and int(submission_review_summary.get("blocked_task_count") or 0) == 0
+                and int(submission_review_summary.get("placeholder_source_uri_count") or 0) == 0
+            ),
+            "submission_review_status": submission_review_status,
+            "submission_review_artifact_id": submission_review.get("artifact_id") if submission_review else None,
+            "submission_review_artifact_hash": submission_review.get("artifact_hash") if submission_review else None,
+            "submission_review_task_count": int(submission_review_summary.get("source_map_entry_count") or 0),
+            "submission_review_ready_task_count": int(submission_review_summary.get("ready_task_count") or 0),
+            "submission_review_blocked_task_count": int(submission_review_summary.get("blocked_task_count") or 0),
+            "submission_review_placeholder_source_uri_count": int(submission_review_summary.get("placeholder_source_uri_count") or 0),
+            "submission_review_live_source_uri_count": int(submission_review_summary.get("live_source_uri_count") or 0),
             "collection_package_present": collection_package is not None,
             "collection_package_ready": bool(
                 collection_package
@@ -8916,6 +8973,57 @@ class ControlPlane:
                 blockers.append("latest external-evidence collection run was not collected with strict source snapshot and freshness checks")
 
         production_replacement_worklist = self.production_replacement_worklist(limit=10)
+        production_replacement_submission_present = bool(
+            production_replacement_worklist.get("submission_present")
+        )
+        production_replacement_submission_ready_for_review = bool(
+            production_replacement_worklist.get("submission_ready_for_review")
+        )
+        production_replacement_submission_review_present = bool(
+            production_replacement_worklist.get("submission_review_present")
+        )
+        production_replacement_submission_review_ready = bool(
+            production_replacement_worklist.get("submission_review_ready")
+        )
+        production_replacement_submission_summary = {
+            "present": production_replacement_submission_present,
+            "ready_for_review": production_replacement_submission_ready_for_review,
+            "submission_status": production_replacement_worklist.get("submission_status"),
+            "submitted_task_count": int(production_replacement_worklist.get("submitted_task_count") or 0),
+            "submitted_live_source_uri_count": int(production_replacement_worklist.get("submitted_live_source_uri_count") or 0),
+            "submitted_placeholder_source_uri_count": int(production_replacement_worklist.get("submitted_placeholder_source_uri_count") or 0),
+            "review_present": production_replacement_submission_review_present,
+            "review_ready": production_replacement_submission_review_ready,
+            "review_status": production_replacement_worklist.get("submission_review_status"),
+            "review_task_count": int(production_replacement_worklist.get("submission_review_task_count") or 0),
+            "review_ready_task_count": int(production_replacement_worklist.get("submission_review_ready_task_count") or 0),
+            "review_blocked_task_count": int(production_replacement_worklist.get("submission_review_blocked_task_count") or 0),
+            "review_placeholder_source_uri_count": int(production_replacement_worklist.get("submission_review_placeholder_source_uri_count") or 0),
+            "review_live_source_uri_count": int(production_replacement_worklist.get("submission_review_live_source_uri_count") or 0),
+        }
+        if not production_replacement_submission_present:
+            blockers.append("no production replacement submission indexed")
+        elif not production_replacement_submission_ready_for_review:
+            blockers.append(
+                "production replacement submission is not ready for review: "
+                f"status={production_replacement_worklist.get('submission_status')}, "
+                f"submitted-tasks={production_replacement_submission_summary['submitted_task_count']}, "
+                f"placeholder-source-uris="
+                f"{production_replacement_submission_summary['submitted_placeholder_source_uri_count']}"
+            )
+        if not production_replacement_submission_review_present:
+            blockers.append("no production replacement submission review indexed")
+        elif not production_replacement_submission_review_ready:
+            blockers.append(
+                "production replacement submission review is not ready to collect: "
+                f"status={production_replacement_worklist.get('submission_review_status')}, "
+                f"ready-tasks={production_replacement_submission_summary['review_ready_task_count']}/"
+                f"{production_replacement_submission_summary['review_task_count']}, "
+                f"blocked-tasks={production_replacement_submission_summary['review_blocked_task_count']}, "
+                f"placeholder-source-uris="
+                f"{production_replacement_submission_summary['review_placeholder_source_uri_count']}"
+            )
+
         production_replacement_collection_package_present = bool(
             production_replacement_worklist.get("collection_package_present")
         )
@@ -9211,6 +9319,8 @@ class ControlPlane:
                 local_reference_complete,
                 external_authority_complete,
                 collection_run_complete,
+                production_replacement_submission_ready_for_review,
+                production_replacement_submission_review_ready,
                 production_replacement_collection_package_ready,
                 production_replacement_closure_closed,
                 production_authority_ready,
@@ -9232,6 +9342,10 @@ class ControlPlane:
             "external_authority_complete": external_authority_complete,
             "collection_run_present": collection_run_present,
             "collection_run_complete": collection_run_complete,
+            "production_replacement_submission_present": production_replacement_submission_present,
+            "production_replacement_submission_ready_for_review": production_replacement_submission_ready_for_review,
+            "production_replacement_submission_review_present": production_replacement_submission_review_present,
+            "production_replacement_submission_review_ready": production_replacement_submission_review_ready,
             "production_replacement_collection_package_present": production_replacement_collection_package_present,
             "production_replacement_collection_package_ready": production_replacement_collection_package_ready,
             "production_replacement_closure_present": production_replacement_closure_present,
@@ -9265,6 +9379,7 @@ class ControlPlane:
             "product_scope_summary": product_scope_summary,
             "vertical_pack_summary": vertical_pack_summary,
             "reliability_report_summary": reliability_report_summary,
+            "production_replacement_submission_summary": production_replacement_submission_summary,
             "production_replacement_collection_package_summary": production_replacement_collection_package_summary,
             "production_replacement_closure_summary": production_replacement_closure_summary,
             "authority_dossier_summary": authority_dossier_summary,
