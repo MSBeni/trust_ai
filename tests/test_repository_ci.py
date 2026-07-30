@@ -1,11 +1,14 @@
+import json
 import unittest
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+README = ROOT / "README.md"
 PYTHON_CI = ROOT / ".github" / "workflows" / "python-ci.yml"
 GO_CI = ROOT / ".github" / "workflows" / "go-verifier.yml"
 RETAINED_EVIDENCE_SCRIPT = ROOT / "scripts" / "regenerate_retained_external_evidence.py"
+RETAINED_EVIDENCE_MANIFEST = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-manifest.json"
 TESTS_INIT = ROOT / "tests" / "__init__.py"
 
 
@@ -103,6 +106,22 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("remaining-external-evidence-owner-fulfillment-closure.json", script)
         self.assertIn("remaining-external-evidence-owner-fulfilled-source-map.json", script)
         self.assertTrue(TESTS_INIT.exists())
+
+    def test_readme_and_ci_retained_evidence_counts_match_manifest(self):
+        readme = README.read_text(encoding="utf-8")
+        workflow = PYTHON_CI.read_text(encoding="utf-8")
+        manifest = json.loads(RETAINED_EVIDENCE_MANIFEST.read_text(encoding="utf-8"))
+        summary = manifest["summary"]
+        required = summary["required_authority_kind_count"]
+        covered = summary["covered_authority_kind_count"]
+
+        self.assertEqual(required, covered)
+        self.assertEqual(0, summary["missing_authority_kind_count"])
+        self.assertIn(f"{covered}/{required} authority units covered", readme)
+        self.assertIn(f"required_authority_kind_count'] == {required}", readme)
+        self.assertIn(f"missing_authority_kind_count'] == {required - 3}", readme)
+        self.assertIn(f"required_authority_kind_count'] == {required}", workflow)
+        self.assertIn(f"missing_authority_kind_count'] == {required - 3}", workflow)
 
 
 if __name__ == "__main__":
