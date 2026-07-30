@@ -471,6 +471,19 @@ groupings, task bodies, fulfillment templates, or queue hashes. This is the
 operator dispatch artifact for replacing retained/reference evidence without
 losing the strict queue-to-review derivation.
 
+`external-evidence-production-replacement-remediation-owner-fulfillment-template`
+emits
+`trustai.external-evidence-production-replacement-remediation-owner-fulfillment-template/0.1`
+from the remediation owner packet bundle. It flattens owner packet fulfillment
+templates into a `fulfillments` array that is directly accepted by
+`external-evidence-production-replacement-submission --fulfillment-file`, while
+preserving owner, requirement, authority, blocked reason, snapshot, intake, and
+replacement traceability under `requests`. `REPLACE_WITH_*`, `TODO:*`, and
+example-domain source URIs MUST count as placeholders.
+`external-evidence-production-replacement-remediation-owner-fulfillment-template-verify`
+MUST rebuild the template from the owner packet bundle and reject stale source
+packet hashes, owner filters, request bodies, or fulfillment rows.
+
 `external-evidence-production-replacement-collection-package` emits
 `trustai.external-evidence-production-replacement-collection-package/0.1` from a
 submission review, source manifest, and roadmap audit. It is the operator handoff

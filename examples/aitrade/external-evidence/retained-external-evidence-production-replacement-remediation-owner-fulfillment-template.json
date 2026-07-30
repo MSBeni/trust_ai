@@ -1,28 +1,897 @@
 {
   "commands": {
-    "apply_fulfillment": "python -m trustai external-evidence-production-replacement-submission <intake-template.json> --fulfillment-file <remediated-fulfillments.json> --require-submitted-live-source-uris --submitted-template-out <submitted-template.json>",
-    "collect_after_clear": "python -m trustai external-evidence-production-replacement-collection-package <ready-review.json> <manifest.json> <roadmap-audit.json> --require-ready",
-    "review_after_remediation": "python -m trustai external-evidence-production-replacement-submission-review <submitted-template.json> <status-report.json> <plan-all.json> --require-live-source-uris --require-ready --out <review.json>",
-    "verify_queue_clear": "python -m trustai external-evidence-production-replacement-remediation-queue-verify <queue.json> <review.json> --require-empty"
+    "apply_to_submission": "python -m trustai external-evidence-production-replacement-submission <intake-template.json> --fulfillment-file <owner-fulfillment-template.json> --require-submitted-live-source-uris --submitted-template-out <submitted-template.json>",
+    "fill_owner_template": "edit this JSON and replace every REPLACE_WITH_* value with authority-owned source metadata",
+    "review_after_apply": "python -m trustai external-evidence-production-replacement-submission-review <submitted-template.json> <status-report.json> <plan-all.json> --require-live-source-uris --require-ready --out <review.json>",
+    "verify_template": "python -m trustai external-evidence-production-replacement-remediation-owner-fulfillment-template-verify <template.json> <owner-packets.json>"
   },
+  "filters": {
+    "owner_hint": null
+  },
+  "fulfillments": [
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for agent-inventory-and-identity:identity-provider",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/agent-inventory-and-identity/identity-provider.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_agent-inventory-and-identity:identity-provider",
+      "task": "agent-inventory-and-identity:identity-provider"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for agent-inventory-and-identity:provider-api",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/agent-inventory-and-identity/provider-api.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_agent-inventory-and-identity:provider-api",
+      "task": "agent-inventory-and-identity:provider-api"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for auditor-and-review-portal:hosted-service",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/auditor-and-review-portal/hosted-service.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_auditor-and-review-portal:hosted-service",
+      "task": "auditor-and-review-portal:hosted-service"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for auditor-and-review-portal:identity-provider",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/auditor-and-review-portal/identity-provider.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_auditor-and-review-portal:identity-provider",
+      "task": "auditor-and-review-portal:identity-provider"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for auditor-and-review-portal:kms-hsm",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/auditor-and-review-portal/kms-hsm.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_auditor-and-review-portal:kms-hsm",
+      "task": "auditor-and-review-portal:kms-hsm"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for auditor-and-review-portal:provider-api",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/auditor-and-review-portal/provider-api.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_auditor-and-review-portal:provider-api",
+      "task": "auditor-and-review-portal:provider-api"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for auditor-and-review-portal:regulator",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/auditor-and-review-portal/regulator.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_auditor-and-review-portal:regulator",
+      "task": "auditor-and-review-portal:regulator"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for byoc-self-hosted:ci-run",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/byoc-self-hosted/ci-run.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_byoc-self-hosted:ci-run",
+      "task": "byoc-self-hosted:ci-run"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for byoc-self-hosted:cloud-object-lock",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/byoc-self-hosted/cloud-object-lock.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_byoc-self-hosted:cloud-object-lock",
+      "task": "byoc-self-hosted:cloud-object-lock"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for byoc-self-hosted:customer",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/byoc-self-hosted/customer.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_byoc-self-hosted:customer",
+      "task": "byoc-self-hosted:customer"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for byoc-self-hosted:kms-hsm",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/byoc-self-hosted/kms-hsm.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_byoc-self-hosted:kms-hsm",
+      "task": "byoc-self-hosted:kms-hsm"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for byoc-self-hosted:provider-api",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/byoc-self-hosted/provider-api.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_byoc-self-hosted:provider-api",
+      "task": "byoc-self-hosted:provider-api"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for byoc-self-hosted:standards-body",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/byoc-self-hosted/standards-body.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_byoc-self-hosted:standards-body",
+      "task": "byoc-self-hosted:standards-body"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for cicd-provider-approvals:ci-run",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/cicd-provider-approvals/ci-run.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_cicd-provider-approvals:ci-run",
+      "task": "cicd-provider-approvals:ci-run"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for cicd-provider-approvals:hosted-service",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/cicd-provider-approvals/hosted-service.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_cicd-provider-approvals:hosted-service",
+      "task": "cicd-provider-approvals:hosted-service"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for cicd-provider-approvals:identity-provider",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/cicd-provider-approvals/identity-provider.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_cicd-provider-approvals:identity-provider",
+      "task": "cicd-provider-approvals:identity-provider"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for cicd-provider-approvals:provider-api",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/cicd-provider-approvals/provider-api.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_cicd-provider-approvals:provider-api",
+      "task": "cicd-provider-approvals:provider-api"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for compliance-mapper-and-eu-ai-act:provider-api",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/provider-api.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_compliance-mapper-and-eu-ai-act:provider-api",
+      "task": "compliance-mapper-and-eu-ai-act:provider-api"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for compliance-mapper-and-eu-ai-act:regulator",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/regulator.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_compliance-mapper-and-eu-ai-act:regulator",
+      "task": "compliance-mapper-and-eu-ai-act:regulator"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for compliance-mapper-and-eu-ai-act:standards-body",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/standards-body.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_compliance-mapper-and-eu-ai-act:standards-body",
+      "task": "compliance-mapper-and-eu-ai-act:standards-body"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for design-partner-pilot-exit-criteria:customer",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/customer.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_design-partner-pilot-exit-criteria:customer",
+      "task": "design-partner-pilot-exit-criteria:customer"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for design-partner-pilot-exit-criteria:insurer",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/insurer.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_design-partner-pilot-exit-criteria:insurer",
+      "task": "design-partner-pilot-exit-criteria:insurer"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for design-partner-pilot-exit-criteria:regulator",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/regulator.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_design-partner-pilot-exit-criteria:regulator",
+      "task": "design-partner-pilot-exit-criteria:regulator"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for framework-adapters:ci-run",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/framework-adapters/ci-run.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_framework-adapters:ci-run",
+      "task": "framework-adapters:ci-run"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for framework-adapters:hosted-service",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/framework-adapters/hosted-service.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_framework-adapters:hosted-service",
+      "task": "framework-adapters:hosted-service"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for framework-adapters:provider-api",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/framework-adapters/provider-api.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_framework-adapters:provider-api",
+      "task": "framework-adapters:provider-api"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for insurer-api-and-actuarial-products:ci-run",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/ci-run.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_insurer-api-and-actuarial-products:ci-run",
+      "task": "insurer-api-and-actuarial-products:ci-run"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for insurer-api-and-actuarial-products:customer",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/customer.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_insurer-api-and-actuarial-products:customer",
+      "task": "insurer-api-and-actuarial-products:customer"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for insurer-api-and-actuarial-products:hosted-service",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/hosted-service.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_insurer-api-and-actuarial-products:hosted-service",
+      "task": "insurer-api-and-actuarial-products:hosted-service"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for insurer-api-and-actuarial-products:identity-provider",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/identity-provider.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_insurer-api-and-actuarial-products:identity-provider",
+      "task": "insurer-api-and-actuarial-products:identity-provider"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for insurer-api-and-actuarial-products:insurer",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/insurer.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_insurer-api-and-actuarial-products:insurer",
+      "task": "insurer-api-and-actuarial-products:insurer"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for insurer-api-and-actuarial-products:kms-hsm",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/kms-hsm.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_insurer-api-and-actuarial-products:kms-hsm",
+      "task": "insurer-api-and-actuarial-products:kms-hsm"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for insurer-api-and-actuarial-products:provider-api",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/provider-api.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_insurer-api-and-actuarial-products:provider-api",
+      "task": "insurer-api-and-actuarial-products:provider-api"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for mcp-gateway:ci-run",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/mcp-gateway/ci-run.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_mcp-gateway:ci-run",
+      "task": "mcp-gateway:ci-run"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for mcp-gateway:hosted-service",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/mcp-gateway/hosted-service.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_mcp-gateway:hosted-service",
+      "task": "mcp-gateway:hosted-service"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for mcp-gateway:kms-hsm",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/mcp-gateway/kms-hsm.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_mcp-gateway:kms-hsm",
+      "task": "mcp-gateway:kms-hsm"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for mcp-gateway:provider-api",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/mcp-gateway/provider-api.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_mcp-gateway:provider-api",
+      "task": "mcp-gateway:provider-api"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for oss-verifier-and-public-spec:ci-run",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/oss-verifier-and-public-spec/ci-run.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_oss-verifier-and-public-spec:ci-run",
+      "task": "oss-verifier-and-public-spec:ci-run"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for oss-verifier-and-public-spec:hosted-service",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/oss-verifier-and-public-spec/hosted-service.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_oss-verifier-and-public-spec:hosted-service",
+      "task": "oss-verifier-and-public-spec:hosted-service"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for oss-verifier-and-public-spec:provider-api",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/oss-verifier-and-public-spec/provider-api.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_oss-verifier-and-public-spec:provider-api",
+      "task": "oss-verifier-and-public-spec:provider-api"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for product-scope-discipline:ci-run",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/product-scope-discipline/ci-run.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_product-scope-discipline:ci-run",
+      "task": "product-scope-discipline:ci-run"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for product-scope-discipline:customer",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/product-scope-discipline/customer.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_product-scope-discipline:customer",
+      "task": "product-scope-discipline:customer"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for roadmap-phase-scoreboard:ci-run",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/ci-run.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_roadmap-phase-scoreboard:ci-run",
+      "task": "roadmap-phase-scoreboard:ci-run"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for roadmap-phase-scoreboard:customer",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/customer.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_roadmap-phase-scoreboard:customer",
+      "task": "roadmap-phase-scoreboard:customer"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for roadmap-phase-scoreboard:insurer",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/insurer.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_roadmap-phase-scoreboard:insurer",
+      "task": "roadmap-phase-scoreboard:insurer"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for roadmap-phase-scoreboard:regulator",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/regulator.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_roadmap-phase-scoreboard:regulator",
+      "task": "roadmap-phase-scoreboard:regulator"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for roadmap-phase-scoreboard:standards-body",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/standards-body.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_roadmap-phase-scoreboard:standards-body",
+      "task": "roadmap-phase-scoreboard:standards-body"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for runtime-policy-and-attestation:ci-run",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/runtime-policy-and-attestation/ci-run.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_runtime-policy-and-attestation:ci-run",
+      "task": "runtime-policy-and-attestation:ci-run"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for runtime-policy-and-attestation:hosted-service",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/runtime-policy-and-attestation/hosted-service.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_runtime-policy-and-attestation:hosted-service",
+      "task": "runtime-policy-and-attestation:hosted-service"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for runtime-policy-and-attestation:identity-provider",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/runtime-policy-and-attestation/identity-provider.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_runtime-policy-and-attestation:identity-provider",
+      "task": "runtime-policy-and-attestation:identity-provider"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for runtime-policy-and-attestation:kms-hsm",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/runtime-policy-and-attestation/kms-hsm.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_runtime-policy-and-attestation:kms-hsm",
+      "task": "runtime-policy-and-attestation:kms-hsm"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for runtime-policy-and-attestation:provider-api",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/runtime-policy-and-attestation/provider-api.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_runtime-policy-and-attestation:provider-api",
+      "task": "runtime-policy-and-attestation:provider-api"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for self-serve-onboarding:hosted-service",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/self-serve-onboarding/hosted-service.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_self-serve-onboarding:hosted-service",
+      "task": "self-serve-onboarding:hosted-service"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for self-serve-onboarding:identity-provider",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/self-serve-onboarding/identity-provider.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_self-serve-onboarding:identity-provider",
+      "task": "self-serve-onboarding:identity-provider"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for self-serve-onboarding:provider-api",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/self-serve-onboarding/provider-api.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_self-serve-onboarding:provider-api",
+      "task": "self-serve-onboarding:provider-api"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for shadow-replay-temporal-holdout:customer",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/customer.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_shadow-replay-temporal-holdout:customer",
+      "task": "shadow-replay-temporal-holdout:customer"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for shadow-replay-temporal-holdout:identity-provider",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/identity-provider.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_shadow-replay-temporal-holdout:identity-provider",
+      "task": "shadow-replay-temporal-holdout:identity-provider"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for shadow-replay-temporal-holdout:kms-hsm",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/kms-hsm.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_shadow-replay-temporal-holdout:kms-hsm",
+      "task": "shadow-replay-temporal-holdout:kms-hsm"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for shadow-replay-temporal-holdout:provider-api",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/provider-api.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_shadow-replay-temporal-holdout:provider-api",
+      "task": "shadow-replay-temporal-holdout:provider-api"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for shadow-replay-temporal-holdout:standards-body",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/standards-body.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_shadow-replay-temporal-holdout:standards-body",
+      "task": "shadow-replay-temporal-holdout:standards-body"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for standards-track-and-auditor-ecosystem:kms-hsm",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/kms-hsm.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_standards-track-and-auditor-ecosystem:kms-hsm",
+      "task": "standards-track-and-auditor-ecosystem:kms-hsm"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for standards-track-and-auditor-ecosystem:standards-body",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/standards-body.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_standards-track-and-auditor-ecosystem:standards-body",
+      "task": "standards-track-and-auditor-ecosystem:standards-body"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for state-of-agent-reliability-report:customer",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/state-of-agent-reliability-report/customer.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_state-of-agent-reliability-report:customer",
+      "task": "state-of-agent-reliability-report:customer"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for trust-network-procurement-and-marketplace:customer",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/customer.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_trust-network-procurement-and-marketplace:customer",
+      "task": "trust-network-procurement-and-marketplace:customer"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for trust-network-procurement-and-marketplace:hosted-service",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/hosted-service.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_trust-network-procurement-and-marketplace:hosted-service",
+      "task": "trust-network-procurement-and-marketplace:hosted-service"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for trust-network-procurement-and-marketplace:identity-provider",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/identity-provider.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_trust-network-procurement-and-marketplace:identity-provider",
+      "task": "trust-network-procurement-and-marketplace:identity-provider"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for trust-network-procurement-and-marketplace:provider-api",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/provider-api.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_trust-network-procurement-and-marketplace:provider-api",
+      "task": "trust-network-procurement-and-marketplace:provider-api"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for trustai-own-compliance:customer",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/trustai-own-compliance/customer.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_trustai-own-compliance:customer",
+      "task": "trustai-own-compliance:customer"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for trustai-own-compliance:standards-body",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/trustai-own-compliance/standards-body.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_trustai-own-compliance:standards-body",
+      "task": "trustai-own-compliance:standards-body"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for vertical-packs:customer",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/vertical-packs/customer.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_vertical-packs:customer",
+      "task": "vertical-packs:customer"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for vertical-packs:insurer",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/vertical-packs/insurer.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_vertical-packs:insurer",
+      "task": "vertical-packs:insurer"
+    },
+    {
+      "content_type": "application/json",
+      "description": "Production authority evidence for vertical-packs:regulator",
+      "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
+      "issued_at": "REPLACE_WITH_RFC3339_ISSUED_AT",
+      "issuer": "REPLACE_WITH_AUTHORITY_ISSUER",
+      "retrieval_method": "authority-export",
+      "source_file": "artifacts/external-evidence-sources/vertical-packs/regulator.json",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
+      "subject": "REPLACE_WITH_AUTHORITY_SUBJECT_FOR_vertical-packs:regulator",
+      "task": "vertical-packs:regulator"
+    }
+  ],
   "generated_at": "2026-07-12T00:01:00Z",
+  "instructions": [
+    "Send the owner-filtered template to the matching owner_hint, or use the unfiltered template as the all-owner coordination file.",
+    "Replace every REPLACE_WITH_* source_uri, issuer, subject, issued_at, expires_at, and source_file value with live authority-owned production metadata before applying it to the submission.",
+    "Keep the fulfillments array compatible with --fulfillment-file; use requests for owner context, blocked reason, and retained-artifact replacement traceability."
+  ],
   "limitations": [
-    "This queue is a remediation control artifact; it does not claim production evidence has been collected or accepted.",
-    "A blocked queue preserves the exact production replacement work still needed before proof packs can be production-ready."
+    "This template routes remediation fulfillments; it does not collect source snapshots, create intake receipts, or claim production readiness.",
+    "Placeholder source URIs intentionally keep downstream production replacement review blocked until owners provide live authority sources."
   ],
-  "next_actions": [
-    "Assign every remediation item to its owner_hint and replace placeholder authority metadata with live production authority exports.",
-    "Regenerate the production replacement submission and submission review with strict live-source URI checks.",
-    "Only collect source snapshots after this queue verifies with --require-empty against a ready submission review."
-  ],
-  "production_replacement_remediation_queue_id": "bf8ad9c27db1b1f82ae38e8a1027a701c6b0846e0d4606c7b73c02a30db36cb0",
-  "remediation_items": [
+  "production_replacement_remediation_owner_fulfillment_template_id": "57045a1bd00268e1169cb5df041b97874ddda99fd9a1b64a23858a5c30b1b275",
+  "requests": [
     {
       "authority_kind": "identity-provider",
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for agent-inventory-and-identity:identity-provider",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -36,6 +905,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/agent-inventory-and-identity/identity-provider.json",
       "owner_hint": "IAM/identity owner",
+      "packet_id": "b2aa94413e377e05c9d0e181b5298eb11950ea1b66557b979c0fbe968741ea8f",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:IAM-identity-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/identity-inventory-provider-source-snapshot.json"
@@ -46,7 +917,6 @@
       "requirement_id": "agent-inventory-and-identity",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/agent-inventory-and-identity/identity-provider.json",
-      "source_uri": "TODO://production-authority/agent-inventory-and-identity/identity-provider",
       "source_uri_status": "placeholder",
       "task": "agent-inventory-and-identity:identity-provider",
       "task_ref": "external-evidence:agent-inventory-and-identity:identity-provider"
@@ -56,7 +926,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for auditor-and-review-portal:identity-provider",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -70,6 +940,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/identity-provider.json",
       "owner_hint": "IAM/identity owner",
+      "packet_id": "b2aa94413e377e05c9d0e181b5298eb11950ea1b66557b979c0fbe968741ea8f",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:IAM-identity-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/review-portal-identity-provider-source-snapshot.json"
@@ -80,7 +952,6 @@
       "requirement_id": "auditor-and-review-portal",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/identity-provider.json",
-      "source_uri": "TODO://production-authority/auditor-and-review-portal/identity-provider",
       "source_uri_status": "placeholder",
       "task": "auditor-and-review-portal:identity-provider",
       "task_ref": "external-evidence:auditor-and-review-portal:identity-provider"
@@ -90,7 +961,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for cicd-provider-approvals:identity-provider",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -104,6 +975,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/cicd-provider-approvals/identity-provider.json",
       "owner_hint": "IAM/identity owner",
+      "packet_id": "b2aa94413e377e05c9d0e181b5298eb11950ea1b66557b979c0fbe968741ea8f",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:IAM-identity-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/cicd-provider-approvals-identity-provider-source-snapshot.json"
@@ -114,7 +987,6 @@
       "requirement_id": "cicd-provider-approvals",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/cicd-provider-approvals/identity-provider.json",
-      "source_uri": "TODO://production-authority/cicd-provider-approvals/identity-provider",
       "source_uri_status": "placeholder",
       "task": "cicd-provider-approvals:identity-provider",
       "task_ref": "external-evidence:cicd-provider-approvals:identity-provider"
@@ -124,7 +996,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for insurer-api-and-actuarial-products:identity-provider",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -138,6 +1010,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/identity-provider.json",
       "owner_hint": "IAM/identity owner",
+      "packet_id": "b2aa94413e377e05c9d0e181b5298eb11950ea1b66557b979c0fbe968741ea8f",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:IAM-identity-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/insurer-api-actuarial-identity-provider-source-snapshot.json"
@@ -148,7 +1022,6 @@
       "requirement_id": "insurer-api-and-actuarial-products",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/identity-provider.json",
-      "source_uri": "TODO://production-authority/insurer-api-and-actuarial-products/identity-provider",
       "source_uri_status": "placeholder",
       "task": "insurer-api-and-actuarial-products:identity-provider",
       "task_ref": "external-evidence:insurer-api-and-actuarial-products:identity-provider"
@@ -158,7 +1031,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for runtime-policy-and-attestation:identity-provider",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -172,6 +1045,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/runtime-policy-and-attestation/identity-provider.json",
       "owner_hint": "IAM/identity owner",
+      "packet_id": "b2aa94413e377e05c9d0e181b5298eb11950ea1b66557b979c0fbe968741ea8f",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:IAM-identity-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/runtime-policy-identity-provider-source-snapshot.json"
@@ -182,7 +1057,6 @@
       "requirement_id": "runtime-policy-and-attestation",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/identity-provider.json",
-      "source_uri": "TODO://production-authority/runtime-policy-and-attestation/identity-provider",
       "source_uri_status": "placeholder",
       "task": "runtime-policy-and-attestation:identity-provider",
       "task_ref": "external-evidence:runtime-policy-and-attestation:identity-provider"
@@ -192,7 +1066,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for self-serve-onboarding:identity-provider",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -206,6 +1080,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/self-serve-onboarding/identity-provider.json",
       "owner_hint": "IAM/identity owner",
+      "packet_id": "b2aa94413e377e05c9d0e181b5298eb11950ea1b66557b979c0fbe968741ea8f",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:IAM-identity-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/self-serve-identity-provider-source-snapshot.json"
@@ -216,7 +1092,6 @@
       "requirement_id": "self-serve-onboarding",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/self-serve-onboarding/identity-provider.json",
-      "source_uri": "TODO://production-authority/self-serve-onboarding/identity-provider",
       "source_uri_status": "placeholder",
       "task": "self-serve-onboarding:identity-provider",
       "task_ref": "external-evidence:self-serve-onboarding:identity-provider"
@@ -226,7 +1101,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for shadow-replay-temporal-holdout:identity-provider",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -240,6 +1115,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/identity-provider.json",
       "owner_hint": "IAM/identity owner",
+      "packet_id": "b2aa94413e377e05c9d0e181b5298eb11950ea1b66557b979c0fbe968741ea8f",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:IAM-identity-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/shadow-holdout-identity-provider-source-snapshot.json"
@@ -250,7 +1127,6 @@
       "requirement_id": "shadow-replay-temporal-holdout",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/identity-provider.json",
-      "source_uri": "TODO://production-authority/shadow-replay-temporal-holdout/identity-provider",
       "source_uri_status": "placeholder",
       "task": "shadow-replay-temporal-holdout:identity-provider",
       "task_ref": "external-evidence:shadow-replay-temporal-holdout:identity-provider"
@@ -260,7 +1136,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for trust-network-procurement-and-marketplace:identity-provider",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -274,6 +1150,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/identity-provider.json",
       "owner_hint": "IAM/identity owner",
+      "packet_id": "b2aa94413e377e05c9d0e181b5298eb11950ea1b66557b979c0fbe968741ea8f",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:IAM-identity-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/trust-network-identity-provider-source-snapshot.json"
@@ -284,7 +1162,6 @@
       "requirement_id": "trust-network-procurement-and-marketplace",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/identity-provider.json",
-      "source_uri": "TODO://production-authority/trust-network-procurement-and-marketplace/identity-provider",
       "source_uri_status": "placeholder",
       "task": "trust-network-procurement-and-marketplace:identity-provider",
       "task_ref": "external-evidence:trust-network-procurement-and-marketplace:identity-provider"
@@ -294,7 +1171,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for byoc-self-hosted:cloud-object-lock",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -308,6 +1185,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/cloud-object-lock.json",
       "owner_hint": "cloud storage owner",
+      "packet_id": "585f069c0f47dbfcf97c866f6fc8f1c50a2196564ccd0909ebf5f732308a57aa",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:cloud-storage-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/byoc-object-lock-source-snapshot.json"
@@ -318,7 +1197,6 @@
       "requirement_id": "byoc-self-hosted",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/cloud-object-lock.json",
-      "source_uri": "TODO://production-authority/byoc-self-hosted/cloud-object-lock",
       "source_uri_status": "placeholder",
       "task": "byoc-self-hosted:cloud-object-lock",
       "task_ref": "external-evidence:byoc-self-hosted:cloud-object-lock"
@@ -328,7 +1206,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for byoc-self-hosted:customer",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -342,6 +1220,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/customer.json",
       "owner_hint": "customer success/account owner",
+      "packet_id": "8d302a523eeafc59678a21f946eb33aa2e3bb630fe747b83a7912a9e751fba66",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:customer-success-account-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/byoc-customer-source-snapshot.json"
@@ -352,7 +1232,6 @@
       "requirement_id": "byoc-self-hosted",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/customer.json",
-      "source_uri": "TODO://production-authority/byoc-self-hosted/customer",
       "source_uri_status": "placeholder",
       "task": "byoc-self-hosted:customer",
       "task_ref": "external-evidence:byoc-self-hosted:customer"
@@ -362,7 +1241,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for design-partner-pilot-exit-criteria:customer",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -376,6 +1255,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/customer.json",
       "owner_hint": "customer success/account owner",
+      "packet_id": "8d302a523eeafc59678a21f946eb33aa2e3bb630fe747b83a7912a9e751fba66",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:customer-success-account-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/design-partner-customer-source-snapshot.json"
@@ -386,7 +1267,6 @@
       "requirement_id": "design-partner-pilot-exit-criteria",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/customer.json",
-      "source_uri": "TODO://production-authority/design-partner-pilot-exit-criteria/customer",
       "source_uri_status": "placeholder",
       "task": "design-partner-pilot-exit-criteria:customer",
       "task_ref": "external-evidence:design-partner-pilot-exit-criteria:customer"
@@ -396,7 +1276,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for insurer-api-and-actuarial-products:customer",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -410,6 +1290,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/customer.json",
       "owner_hint": "customer success/account owner",
+      "packet_id": "8d302a523eeafc59678a21f946eb33aa2e3bb630fe747b83a7912a9e751fba66",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:customer-success-account-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/insurer-api-actuarial-customer-source-snapshot.json"
@@ -420,7 +1302,6 @@
       "requirement_id": "insurer-api-and-actuarial-products",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/customer.json",
-      "source_uri": "TODO://production-authority/insurer-api-and-actuarial-products/customer",
       "source_uri_status": "placeholder",
       "task": "insurer-api-and-actuarial-products:customer",
       "task_ref": "external-evidence:insurer-api-and-actuarial-products:customer"
@@ -430,7 +1311,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for product-scope-discipline:customer",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -444,6 +1325,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/product-scope-discipline/customer.json",
       "owner_hint": "customer success/account owner",
+      "packet_id": "8d302a523eeafc59678a21f946eb33aa2e3bb630fe747b83a7912a9e751fba66",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:customer-success-account-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/product-scope-discipline-customer-source-snapshot.json"
@@ -454,7 +1337,6 @@
       "requirement_id": "product-scope-discipline",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/product-scope-discipline/customer.json",
-      "source_uri": "TODO://production-authority/product-scope-discipline/customer",
       "source_uri_status": "placeholder",
       "task": "product-scope-discipline:customer",
       "task_ref": "external-evidence:product-scope-discipline:customer"
@@ -464,7 +1346,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for roadmap-phase-scoreboard:customer",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -478,6 +1360,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/roadmap-phase-scoreboard/customer.json",
       "owner_hint": "customer success/account owner",
+      "packet_id": "8d302a523eeafc59678a21f946eb33aa2e3bb630fe747b83a7912a9e751fba66",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:customer-success-account-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/roadmap-phase-scoreboard-customer-source-snapshot.json"
@@ -488,7 +1372,6 @@
       "requirement_id": "roadmap-phase-scoreboard",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/customer.json",
-      "source_uri": "TODO://production-authority/roadmap-phase-scoreboard/customer",
       "source_uri_status": "placeholder",
       "task": "roadmap-phase-scoreboard:customer",
       "task_ref": "external-evidence:roadmap-phase-scoreboard:customer"
@@ -498,7 +1381,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for shadow-replay-temporal-holdout:customer",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -512,6 +1395,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/customer.json",
       "owner_hint": "customer success/account owner",
+      "packet_id": "8d302a523eeafc59678a21f946eb33aa2e3bb630fe747b83a7912a9e751fba66",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:customer-success-account-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/shadow-holdout-customer-source-snapshot.json"
@@ -522,7 +1407,6 @@
       "requirement_id": "shadow-replay-temporal-holdout",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/customer.json",
-      "source_uri": "TODO://production-authority/shadow-replay-temporal-holdout/customer",
       "source_uri_status": "placeholder",
       "task": "shadow-replay-temporal-holdout:customer",
       "task_ref": "external-evidence:shadow-replay-temporal-holdout:customer"
@@ -532,7 +1416,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for state-of-agent-reliability-report:customer",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -546,6 +1430,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/state-of-agent-reliability-report/customer.json",
       "owner_hint": "customer success/account owner",
+      "packet_id": "8d302a523eeafc59678a21f946eb33aa2e3bb630fe747b83a7912a9e751fba66",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:customer-success-account-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/state-of-agent-reliability-report-customer-source-snapshot.json"
@@ -556,7 +1442,6 @@
       "requirement_id": "state-of-agent-reliability-report",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/state-of-agent-reliability-report/customer.json",
-      "source_uri": "TODO://production-authority/state-of-agent-reliability-report/customer",
       "source_uri_status": "placeholder",
       "task": "state-of-agent-reliability-report:customer",
       "task_ref": "external-evidence:state-of-agent-reliability-report:customer"
@@ -566,7 +1451,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for trust-network-procurement-and-marketplace:customer",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -580,6 +1465,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/customer.json",
       "owner_hint": "customer success/account owner",
+      "packet_id": "8d302a523eeafc59678a21f946eb33aa2e3bb630fe747b83a7912a9e751fba66",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:customer-success-account-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/trust-network-customer-source-snapshot.json"
@@ -590,7 +1477,6 @@
       "requirement_id": "trust-network-procurement-and-marketplace",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/customer.json",
-      "source_uri": "TODO://production-authority/trust-network-procurement-and-marketplace/customer",
       "source_uri_status": "placeholder",
       "task": "trust-network-procurement-and-marketplace:customer",
       "task_ref": "external-evidence:trust-network-procurement-and-marketplace:customer"
@@ -600,7 +1486,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for trustai-own-compliance:customer",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -614,6 +1500,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/trustai-own-compliance/customer.json",
       "owner_hint": "customer success/account owner",
+      "packet_id": "8d302a523eeafc59678a21f946eb33aa2e3bb630fe747b83a7912a9e751fba66",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:customer-success-account-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/trustai-own-compliance-customer-source-snapshot.json"
@@ -624,7 +1512,6 @@
       "requirement_id": "trustai-own-compliance",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/trustai-own-compliance/customer.json",
-      "source_uri": "TODO://production-authority/trustai-own-compliance/customer",
       "source_uri_status": "placeholder",
       "task": "trustai-own-compliance:customer",
       "task_ref": "external-evidence:trustai-own-compliance:customer"
@@ -634,7 +1521,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for vertical-packs:customer",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -648,6 +1535,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/vertical-packs/customer.json",
       "owner_hint": "customer success/account owner",
+      "packet_id": "8d302a523eeafc59678a21f946eb33aa2e3bb630fe747b83a7912a9e751fba66",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:customer-success-account-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/vertical-packs-customer-source-snapshot.json"
@@ -658,7 +1547,6 @@
       "requirement_id": "vertical-packs",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/vertical-packs/customer.json",
-      "source_uri": "TODO://production-authority/vertical-packs/customer",
       "source_uri_status": "placeholder",
       "task": "vertical-packs:customer",
       "task_ref": "external-evidence:vertical-packs:customer"
@@ -668,7 +1556,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for agent-inventory-and-identity:provider-api",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -682,6 +1570,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/agent-inventory-and-identity/provider-api.json",
       "owner_hint": "integration/platform owner",
+      "packet_id": "33bcfa687e005806be0225f60f42a389a1de67fd3cd8a16fef7c73958c3afb72",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:integration-platform-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/agent-inventory-provider-api-source-snapshot.json"
@@ -692,7 +1582,6 @@
       "requirement_id": "agent-inventory-and-identity",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/agent-inventory-and-identity/provider-api.json",
-      "source_uri": "TODO://production-authority/agent-inventory-and-identity/provider-api",
       "source_uri_status": "placeholder",
       "task": "agent-inventory-and-identity:provider-api",
       "task_ref": "external-evidence:agent-inventory-and-identity:provider-api"
@@ -702,7 +1591,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for auditor-and-review-portal:provider-api",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -716,6 +1605,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/provider-api.json",
       "owner_hint": "integration/platform owner",
+      "packet_id": "33bcfa687e005806be0225f60f42a389a1de67fd3cd8a16fef7c73958c3afb72",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:integration-platform-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/review-portal-provider-api-source-snapshot.json"
@@ -726,7 +1617,6 @@
       "requirement_id": "auditor-and-review-portal",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/provider-api.json",
-      "source_uri": "TODO://production-authority/auditor-and-review-portal/provider-api",
       "source_uri_status": "placeholder",
       "task": "auditor-and-review-portal:provider-api",
       "task_ref": "external-evidence:auditor-and-review-portal:provider-api"
@@ -736,7 +1626,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for byoc-self-hosted:provider-api",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -750,6 +1640,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/provider-api.json",
       "owner_hint": "integration/platform owner",
+      "packet_id": "33bcfa687e005806be0225f60f42a389a1de67fd3cd8a16fef7c73958c3afb72",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:integration-platform-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/byoc-provider-api-source-snapshot.json"
@@ -760,7 +1652,6 @@
       "requirement_id": "byoc-self-hosted",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/provider-api.json",
-      "source_uri": "TODO://production-authority/byoc-self-hosted/provider-api",
       "source_uri_status": "placeholder",
       "task": "byoc-self-hosted:provider-api",
       "task_ref": "external-evidence:byoc-self-hosted:provider-api"
@@ -770,7 +1661,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for cicd-provider-approvals:provider-api",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -784,6 +1675,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/cicd-provider-approvals/provider-api.json",
       "owner_hint": "integration/platform owner",
+      "packet_id": "33bcfa687e005806be0225f60f42a389a1de67fd3cd8a16fef7c73958c3afb72",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:integration-platform-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/github-audit-log-source-snapshot.json"
@@ -794,7 +1687,6 @@
       "requirement_id": "cicd-provider-approvals",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/cicd-provider-approvals/provider-api.json",
-      "source_uri": "TODO://production-authority/cicd-provider-approvals/provider-api",
       "source_uri_status": "placeholder",
       "task": "cicd-provider-approvals:provider-api",
       "task_ref": "external-evidence:cicd-provider-approvals:provider-api"
@@ -804,7 +1696,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for compliance-mapper-and-eu-ai-act:provider-api",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -818,6 +1710,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/provider-api.json",
       "owner_hint": "integration/platform owner",
+      "packet_id": "33bcfa687e005806be0225f60f42a389a1de67fd3cd8a16fef7c73958c3afb72",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:integration-platform-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/compliance-provider-api-source-snapshot.json"
@@ -828,7 +1722,6 @@
       "requirement_id": "compliance-mapper-and-eu-ai-act",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/provider-api.json",
-      "source_uri": "TODO://production-authority/compliance-mapper-and-eu-ai-act/provider-api",
       "source_uri_status": "placeholder",
       "task": "compliance-mapper-and-eu-ai-act:provider-api",
       "task_ref": "external-evidence:compliance-mapper-and-eu-ai-act:provider-api"
@@ -838,7 +1731,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for framework-adapters:provider-api",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -852,6 +1745,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/framework-adapters/provider-api.json",
       "owner_hint": "integration/platform owner",
+      "packet_id": "33bcfa687e005806be0225f60f42a389a1de67fd3cd8a16fef7c73958c3afb72",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:integration-platform-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/framework-hook-release-provider-api-source-snapshot.json"
@@ -862,7 +1757,6 @@
       "requirement_id": "framework-adapters",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/framework-adapters/provider-api.json",
-      "source_uri": "TODO://production-authority/framework-adapters/provider-api",
       "source_uri_status": "placeholder",
       "task": "framework-adapters:provider-api",
       "task_ref": "external-evidence:framework-adapters:provider-api"
@@ -872,7 +1766,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for insurer-api-and-actuarial-products:provider-api",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -886,6 +1780,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/provider-api.json",
       "owner_hint": "integration/platform owner",
+      "packet_id": "33bcfa687e005806be0225f60f42a389a1de67fd3cd8a16fef7c73958c3afb72",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:integration-platform-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/insurer-api-actuarial-provider-api-source-snapshot.json"
@@ -896,7 +1792,6 @@
       "requirement_id": "insurer-api-and-actuarial-products",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/provider-api.json",
-      "source_uri": "TODO://production-authority/insurer-api-and-actuarial-products/provider-api",
       "source_uri_status": "placeholder",
       "task": "insurer-api-and-actuarial-products:provider-api",
       "task_ref": "external-evidence:insurer-api-and-actuarial-products:provider-api"
@@ -906,7 +1801,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for mcp-gateway:provider-api",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -920,6 +1815,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/provider-api.json",
       "owner_hint": "integration/platform owner",
+      "packet_id": "33bcfa687e005806be0225f60f42a389a1de67fd3cd8a16fef7c73958c3afb72",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:integration-platform-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/mcp-proxy-events-provider-api-source-snapshot.json"
@@ -930,7 +1827,6 @@
       "requirement_id": "mcp-gateway",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/provider-api.json",
-      "source_uri": "TODO://production-authority/mcp-gateway/provider-api",
       "source_uri_status": "placeholder",
       "task": "mcp-gateway:provider-api",
       "task_ref": "external-evidence:mcp-gateway:provider-api"
@@ -940,7 +1836,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for oss-verifier-and-public-spec:provider-api",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -954,6 +1850,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/oss-verifier-and-public-spec/provider-api.json",
       "owner_hint": "integration/platform owner",
+      "packet_id": "33bcfa687e005806be0225f60f42a389a1de67fd3cd8a16fef7c73958c3afb72",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:integration-platform-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/github-main-ref-source-snapshot.json"
@@ -964,7 +1862,6 @@
       "requirement_id": "oss-verifier-and-public-spec",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/oss-verifier-and-public-spec/provider-api.json",
-      "source_uri": "TODO://production-authority/oss-verifier-and-public-spec/provider-api",
       "source_uri_status": "placeholder",
       "task": "oss-verifier-and-public-spec:provider-api",
       "task_ref": "external-evidence:oss-verifier-and-public-spec:provider-api"
@@ -974,7 +1871,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for runtime-policy-and-attestation:provider-api",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -988,6 +1885,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/runtime-policy-and-attestation/provider-api.json",
       "owner_hint": "integration/platform owner",
+      "packet_id": "33bcfa687e005806be0225f60f42a389a1de67fd3cd8a16fef7c73958c3afb72",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:integration-platform-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/runtime-policy-provider-api-source-snapshot.json"
@@ -998,7 +1897,6 @@
       "requirement_id": "runtime-policy-and-attestation",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/provider-api.json",
-      "source_uri": "TODO://production-authority/runtime-policy-and-attestation/provider-api",
       "source_uri_status": "placeholder",
       "task": "runtime-policy-and-attestation:provider-api",
       "task_ref": "external-evidence:runtime-policy-and-attestation:provider-api"
@@ -1008,7 +1906,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for self-serve-onboarding:provider-api",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1022,6 +1920,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/self-serve-onboarding/provider-api.json",
       "owner_hint": "integration/platform owner",
+      "packet_id": "33bcfa687e005806be0225f60f42a389a1de67fd3cd8a16fef7c73958c3afb72",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:integration-platform-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/self-serve-provider-api-source-snapshot.json"
@@ -1032,7 +1932,6 @@
       "requirement_id": "self-serve-onboarding",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/self-serve-onboarding/provider-api.json",
-      "source_uri": "TODO://production-authority/self-serve-onboarding/provider-api",
       "source_uri_status": "placeholder",
       "task": "self-serve-onboarding:provider-api",
       "task_ref": "external-evidence:self-serve-onboarding:provider-api"
@@ -1042,7 +1941,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for shadow-replay-temporal-holdout:provider-api",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1056,6 +1955,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/provider-api.json",
       "owner_hint": "integration/platform owner",
+      "packet_id": "33bcfa687e005806be0225f60f42a389a1de67fd3cd8a16fef7c73958c3afb72",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:integration-platform-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/traffic-completeness-provider-api-source-snapshot.json"
@@ -1066,7 +1967,6 @@
       "requirement_id": "shadow-replay-temporal-holdout",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/provider-api.json",
-      "source_uri": "TODO://production-authority/shadow-replay-temporal-holdout/provider-api",
       "source_uri_status": "placeholder",
       "task": "shadow-replay-temporal-holdout:provider-api",
       "task_ref": "external-evidence:shadow-replay-temporal-holdout:provider-api"
@@ -1076,7 +1976,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for trust-network-procurement-and-marketplace:provider-api",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1090,6 +1990,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/provider-api.json",
       "owner_hint": "integration/platform owner",
+      "packet_id": "33bcfa687e005806be0225f60f42a389a1de67fd3cd8a16fef7c73958c3afb72",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:integration-platform-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/trust-network-provider-api-source-snapshot.json"
@@ -1100,7 +2002,6 @@
       "requirement_id": "trust-network-procurement-and-marketplace",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/provider-api.json",
-      "source_uri": "TODO://production-authority/trust-network-procurement-and-marketplace/provider-api",
       "source_uri_status": "placeholder",
       "task": "trust-network-procurement-and-marketplace:provider-api",
       "task_ref": "external-evidence:trust-network-procurement-and-marketplace:provider-api"
@@ -1110,7 +2011,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for auditor-and-review-portal:regulator",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1124,6 +2025,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/regulator.json",
       "owner_hint": "legal/compliance owner",
+      "packet_id": "6286c30e802f6cd5f1ccb53e796111a90416592c6beaa59b17b6a964aab97be9",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:legal-compliance-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/review-portal-regulator-source-snapshot.json"
@@ -1134,7 +2037,6 @@
       "requirement_id": "auditor-and-review-portal",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/regulator.json",
-      "source_uri": "TODO://production-authority/auditor-and-review-portal/regulator",
       "source_uri_status": "placeholder",
       "task": "auditor-and-review-portal:regulator",
       "task_ref": "external-evidence:auditor-and-review-portal:regulator"
@@ -1144,7 +2046,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for compliance-mapper-and-eu-ai-act:regulator",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1158,6 +2060,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/regulator.json",
       "owner_hint": "legal/compliance owner",
+      "packet_id": "6286c30e802f6cd5f1ccb53e796111a90416592c6beaa59b17b6a964aab97be9",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:legal-compliance-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/compliance-regulator-source-snapshot.json"
@@ -1168,7 +2072,6 @@
       "requirement_id": "compliance-mapper-and-eu-ai-act",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/regulator.json",
-      "source_uri": "TODO://production-authority/compliance-mapper-and-eu-ai-act/regulator",
       "source_uri_status": "placeholder",
       "task": "compliance-mapper-and-eu-ai-act:regulator",
       "task_ref": "external-evidence:compliance-mapper-and-eu-ai-act:regulator"
@@ -1178,7 +2081,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for design-partner-pilot-exit-criteria:regulator",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1192,6 +2095,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/regulator.json",
       "owner_hint": "legal/compliance owner",
+      "packet_id": "6286c30e802f6cd5f1ccb53e796111a90416592c6beaa59b17b6a964aab97be9",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:legal-compliance-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/design-partner-regulator-source-snapshot.json"
@@ -1202,7 +2107,6 @@
       "requirement_id": "design-partner-pilot-exit-criteria",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/regulator.json",
-      "source_uri": "TODO://production-authority/design-partner-pilot-exit-criteria/regulator",
       "source_uri_status": "placeholder",
       "task": "design-partner-pilot-exit-criteria:regulator",
       "task_ref": "external-evidence:design-partner-pilot-exit-criteria:regulator"
@@ -1212,7 +2116,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for roadmap-phase-scoreboard:regulator",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1226,6 +2130,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/roadmap-phase-scoreboard/regulator.json",
       "owner_hint": "legal/compliance owner",
+      "packet_id": "6286c30e802f6cd5f1ccb53e796111a90416592c6beaa59b17b6a964aab97be9",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:legal-compliance-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/roadmap-phase-scoreboard-regulator-source-snapshot.json"
@@ -1236,7 +2142,6 @@
       "requirement_id": "roadmap-phase-scoreboard",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/regulator.json",
-      "source_uri": "TODO://production-authority/roadmap-phase-scoreboard/regulator",
       "source_uri_status": "placeholder",
       "task": "roadmap-phase-scoreboard:regulator",
       "task_ref": "external-evidence:roadmap-phase-scoreboard:regulator"
@@ -1246,7 +2151,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for vertical-packs:regulator",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1260,6 +2165,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/vertical-packs/regulator.json",
       "owner_hint": "legal/compliance owner",
+      "packet_id": "6286c30e802f6cd5f1ccb53e796111a90416592c6beaa59b17b6a964aab97be9",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:legal-compliance-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/vertical-packs-regulator-source-snapshot.json"
@@ -1270,7 +2177,6 @@
       "requirement_id": "vertical-packs",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/vertical-packs/regulator.json",
-      "source_uri": "TODO://production-authority/vertical-packs/regulator",
       "source_uri_status": "placeholder",
       "task": "vertical-packs:regulator",
       "task_ref": "external-evidence:vertical-packs:regulator"
@@ -1280,7 +2186,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for byoc-self-hosted:ci-run",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1294,6 +2200,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/ci-run.json",
       "owner_hint": "release engineering",
+      "packet_id": "fda7ee963f7421f7cd8e70b0afd3bb55192845d9c94e74a2a26c35666db70781",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:release-engineering",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/byoc-ci-run-source-snapshot.json"
@@ -1304,7 +2212,6 @@
       "requirement_id": "byoc-self-hosted",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/ci-run.json",
-      "source_uri": "TODO://production-authority/byoc-self-hosted/ci-run",
       "source_uri_status": "placeholder",
       "task": "byoc-self-hosted:ci-run",
       "task_ref": "external-evidence:byoc-self-hosted:ci-run"
@@ -1314,7 +2221,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for cicd-provider-approvals:ci-run",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1328,6 +2235,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/cicd-provider-approvals/ci-run.json",
       "owner_hint": "release engineering",
+      "packet_id": "fda7ee963f7421f7cd8e70b0afd3bb55192845d9c94e74a2a26c35666db70781",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:release-engineering",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/github-check-suite-source-snapshot.json"
@@ -1338,7 +2247,6 @@
       "requirement_id": "cicd-provider-approvals",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/cicd-provider-approvals/ci-run.json",
-      "source_uri": "TODO://production-authority/cicd-provider-approvals/ci-run",
       "source_uri_status": "placeholder",
       "task": "cicd-provider-approvals:ci-run",
       "task_ref": "external-evidence:cicd-provider-approvals:ci-run"
@@ -1348,7 +2256,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for framework-adapters:ci-run",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1362,6 +2270,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/framework-adapters/ci-run.json",
       "owner_hint": "release engineering",
+      "packet_id": "fda7ee963f7421f7cd8e70b0afd3bb55192845d9c94e74a2a26c35666db70781",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:release-engineering",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/framework-adapters-ci-run-source-snapshot.json"
@@ -1372,7 +2282,6 @@
       "requirement_id": "framework-adapters",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/framework-adapters/ci-run.json",
-      "source_uri": "TODO://production-authority/framework-adapters/ci-run",
       "source_uri_status": "placeholder",
       "task": "framework-adapters:ci-run",
       "task_ref": "external-evidence:framework-adapters:ci-run"
@@ -1382,7 +2291,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for insurer-api-and-actuarial-products:ci-run",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1396,6 +2305,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/ci-run.json",
       "owner_hint": "release engineering",
+      "packet_id": "fda7ee963f7421f7cd8e70b0afd3bb55192845d9c94e74a2a26c35666db70781",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:release-engineering",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/insurer-api-actuarial-ci-run-source-snapshot.json"
@@ -1406,7 +2317,6 @@
       "requirement_id": "insurer-api-and-actuarial-products",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/ci-run.json",
-      "source_uri": "TODO://production-authority/insurer-api-and-actuarial-products/ci-run",
       "source_uri_status": "placeholder",
       "task": "insurer-api-and-actuarial-products:ci-run",
       "task_ref": "external-evidence:insurer-api-and-actuarial-products:ci-run"
@@ -1416,7 +2326,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for mcp-gateway:ci-run",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1430,6 +2340,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/ci-run.json",
       "owner_hint": "release engineering",
+      "packet_id": "fda7ee963f7421f7cd8e70b0afd3bb55192845d9c94e74a2a26c35666db70781",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:release-engineering",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/mcp-gateway-ci-run-source-snapshot.json"
@@ -1440,7 +2352,6 @@
       "requirement_id": "mcp-gateway",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/ci-run.json",
-      "source_uri": "TODO://production-authority/mcp-gateway/ci-run",
       "source_uri_status": "placeholder",
       "task": "mcp-gateway:ci-run",
       "task_ref": "external-evidence:mcp-gateway:ci-run"
@@ -1450,7 +2361,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for oss-verifier-and-public-spec:ci-run",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1464,6 +2375,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/oss-verifier-and-public-spec/ci-run.json",
       "owner_hint": "release engineering",
+      "packet_id": "fda7ee963f7421f7cd8e70b0afd3bb55192845d9c94e74a2a26c35666db70781",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:release-engineering",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json"
@@ -1474,7 +2387,6 @@
       "requirement_id": "oss-verifier-and-public-spec",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/oss-verifier-and-public-spec/ci-run.json",
-      "source_uri": "TODO://production-authority/oss-verifier-and-public-spec/ci-run",
       "source_uri_status": "placeholder",
       "task": "oss-verifier-and-public-spec:ci-run",
       "task_ref": "external-evidence:oss-verifier-and-public-spec:ci-run"
@@ -1484,7 +2396,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for product-scope-discipline:ci-run",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1498,6 +2410,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/product-scope-discipline/ci-run.json",
       "owner_hint": "release engineering",
+      "packet_id": "fda7ee963f7421f7cd8e70b0afd3bb55192845d9c94e74a2a26c35666db70781",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:release-engineering",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/product-scope-discipline-ci-run-source-snapshot.json"
@@ -1508,7 +2422,6 @@
       "requirement_id": "product-scope-discipline",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/product-scope-discipline/ci-run.json",
-      "source_uri": "TODO://production-authority/product-scope-discipline/ci-run",
       "source_uri_status": "placeholder",
       "task": "product-scope-discipline:ci-run",
       "task_ref": "external-evidence:product-scope-discipline:ci-run"
@@ -1518,7 +2431,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for roadmap-phase-scoreboard:ci-run",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1532,6 +2445,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/roadmap-phase-scoreboard/ci-run.json",
       "owner_hint": "release engineering",
+      "packet_id": "fda7ee963f7421f7cd8e70b0afd3bb55192845d9c94e74a2a26c35666db70781",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:release-engineering",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/roadmap-phase-scoreboard-ci-run-source-snapshot.json"
@@ -1542,7 +2457,6 @@
       "requirement_id": "roadmap-phase-scoreboard",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/ci-run.json",
-      "source_uri": "TODO://production-authority/roadmap-phase-scoreboard/ci-run",
       "source_uri_status": "placeholder",
       "task": "roadmap-phase-scoreboard:ci-run",
       "task_ref": "external-evidence:roadmap-phase-scoreboard:ci-run"
@@ -1552,7 +2466,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for runtime-policy-and-attestation:ci-run",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1566,6 +2480,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/runtime-policy-and-attestation/ci-run.json",
       "owner_hint": "release engineering",
+      "packet_id": "fda7ee963f7421f7cd8e70b0afd3bb55192845d9c94e74a2a26c35666db70781",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:release-engineering",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/runtime-policy-ci-run-source-snapshot.json"
@@ -1576,7 +2492,6 @@
       "requirement_id": "runtime-policy-and-attestation",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/ci-run.json",
-      "source_uri": "TODO://production-authority/runtime-policy-and-attestation/ci-run",
       "source_uri_status": "placeholder",
       "task": "runtime-policy-and-attestation:ci-run",
       "task_ref": "external-evidence:runtime-policy-and-attestation:ci-run"
@@ -1586,7 +2501,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for design-partner-pilot-exit-criteria:insurer",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1600,6 +2515,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/design-partner-pilot-exit-criteria/insurer.json",
       "owner_hint": "risk/insurance owner",
+      "packet_id": "1f939afbc1575acf2bc283dd33f0882fc2ccbfd1bff286eb80f4aa79ec8e0607",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:risk-insurance-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/design-partner-insurer-source-snapshot.json"
@@ -1610,7 +2527,6 @@
       "requirement_id": "design-partner-pilot-exit-criteria",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/insurer.json",
-      "source_uri": "TODO://production-authority/design-partner-pilot-exit-criteria/insurer",
       "source_uri_status": "placeholder",
       "task": "design-partner-pilot-exit-criteria:insurer",
       "task_ref": "external-evidence:design-partner-pilot-exit-criteria:insurer"
@@ -1620,7 +2536,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for insurer-api-and-actuarial-products:insurer",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1634,6 +2550,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/insurer.json",
       "owner_hint": "risk/insurance owner",
+      "packet_id": "1f939afbc1575acf2bc283dd33f0882fc2ccbfd1bff286eb80f4aa79ec8e0607",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:risk-insurance-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/insurer-api-actuarial-insurer-source-snapshot.json"
@@ -1644,7 +2562,6 @@
       "requirement_id": "insurer-api-and-actuarial-products",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/insurer.json",
-      "source_uri": "TODO://production-authority/insurer-api-and-actuarial-products/insurer",
       "source_uri_status": "placeholder",
       "task": "insurer-api-and-actuarial-products:insurer",
       "task_ref": "external-evidence:insurer-api-and-actuarial-products:insurer"
@@ -1654,7 +2571,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for roadmap-phase-scoreboard:insurer",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1668,6 +2585,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/roadmap-phase-scoreboard/insurer.json",
       "owner_hint": "risk/insurance owner",
+      "packet_id": "1f939afbc1575acf2bc283dd33f0882fc2ccbfd1bff286eb80f4aa79ec8e0607",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:risk-insurance-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/roadmap-phase-scoreboard-insurer-source-snapshot.json"
@@ -1678,7 +2597,6 @@
       "requirement_id": "roadmap-phase-scoreboard",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/insurer.json",
-      "source_uri": "TODO://production-authority/roadmap-phase-scoreboard/insurer",
       "source_uri_status": "placeholder",
       "task": "roadmap-phase-scoreboard:insurer",
       "task_ref": "external-evidence:roadmap-phase-scoreboard:insurer"
@@ -1688,7 +2606,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for vertical-packs:insurer",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1702,6 +2620,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/vertical-packs/insurer.json",
       "owner_hint": "risk/insurance owner",
+      "packet_id": "1f939afbc1575acf2bc283dd33f0882fc2ccbfd1bff286eb80f4aa79ec8e0607",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:risk-insurance-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/vertical-packs-insurer-source-snapshot.json"
@@ -1712,7 +2632,6 @@
       "requirement_id": "vertical-packs",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/vertical-packs/insurer.json",
-      "source_uri": "TODO://production-authority/vertical-packs/insurer",
       "source_uri_status": "placeholder",
       "task": "vertical-packs:insurer",
       "task_ref": "external-evidence:vertical-packs:insurer"
@@ -1722,7 +2641,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for auditor-and-review-portal:kms-hsm",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1736,6 +2655,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/kms-hsm.json",
       "owner_hint": "security/platform KMS owner",
+      "packet_id": "7ec803fe154913ae979c8b942d0d534fe463a1b6e16ff558cfa6c0e6e8a33145",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:security-platform-KMS-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/review-portal-kms-hsm-source-snapshot.json"
@@ -1746,7 +2667,6 @@
       "requirement_id": "auditor-and-review-portal",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/kms-hsm.json",
-      "source_uri": "TODO://production-authority/auditor-and-review-portal/kms-hsm",
       "source_uri_status": "placeholder",
       "task": "auditor-and-review-portal:kms-hsm",
       "task_ref": "external-evidence:auditor-and-review-portal:kms-hsm"
@@ -1756,7 +2676,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for byoc-self-hosted:kms-hsm",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1770,6 +2690,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/kms-hsm.json",
       "owner_hint": "security/platform KMS owner",
+      "packet_id": "7ec803fe154913ae979c8b942d0d534fe463a1b6e16ff558cfa6c0e6e8a33145",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:security-platform-KMS-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/byoc-kms-hsm-source-snapshot.json"
@@ -1780,7 +2702,6 @@
       "requirement_id": "byoc-self-hosted",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/kms-hsm.json",
-      "source_uri": "TODO://production-authority/byoc-self-hosted/kms-hsm",
       "source_uri_status": "placeholder",
       "task": "byoc-self-hosted:kms-hsm",
       "task_ref": "external-evidence:byoc-self-hosted:kms-hsm"
@@ -1790,7 +2711,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for insurer-api-and-actuarial-products:kms-hsm",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1804,6 +2725,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/kms-hsm.json",
       "owner_hint": "security/platform KMS owner",
+      "packet_id": "7ec803fe154913ae979c8b942d0d534fe463a1b6e16ff558cfa6c0e6e8a33145",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:security-platform-KMS-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/insurer-api-actuarial-kms-hsm-source-snapshot.json"
@@ -1814,7 +2737,6 @@
       "requirement_id": "insurer-api-and-actuarial-products",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/kms-hsm.json",
-      "source_uri": "TODO://production-authority/insurer-api-and-actuarial-products/kms-hsm",
       "source_uri_status": "placeholder",
       "task": "insurer-api-and-actuarial-products:kms-hsm",
       "task_ref": "external-evidence:insurer-api-and-actuarial-products:kms-hsm"
@@ -1824,7 +2746,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for mcp-gateway:kms-hsm",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1838,6 +2760,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/kms-hsm.json",
       "owner_hint": "security/platform KMS owner",
+      "packet_id": "7ec803fe154913ae979c8b942d0d534fe463a1b6e16ff558cfa6c0e6e8a33145",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:security-platform-KMS-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/mcp-gateway-kms-hsm-source-snapshot.json"
@@ -1848,7 +2772,6 @@
       "requirement_id": "mcp-gateway",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/kms-hsm.json",
-      "source_uri": "TODO://production-authority/mcp-gateway/kms-hsm",
       "source_uri_status": "placeholder",
       "task": "mcp-gateway:kms-hsm",
       "task_ref": "external-evidence:mcp-gateway:kms-hsm"
@@ -1858,7 +2781,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for runtime-policy-and-attestation:kms-hsm",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1872,6 +2795,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/runtime-policy-and-attestation/kms-hsm.json",
       "owner_hint": "security/platform KMS owner",
+      "packet_id": "7ec803fe154913ae979c8b942d0d534fe463a1b6e16ff558cfa6c0e6e8a33145",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:security-platform-KMS-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/runtime-policy-kms-hsm-source-snapshot.json"
@@ -1882,7 +2807,6 @@
       "requirement_id": "runtime-policy-and-attestation",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/kms-hsm.json",
-      "source_uri": "TODO://production-authority/runtime-policy-and-attestation/kms-hsm",
       "source_uri_status": "placeholder",
       "task": "runtime-policy-and-attestation:kms-hsm",
       "task_ref": "external-evidence:runtime-policy-and-attestation:kms-hsm"
@@ -1892,7 +2816,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for shadow-replay-temporal-holdout:kms-hsm",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1906,6 +2830,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/kms-hsm.json",
       "owner_hint": "security/platform KMS owner",
+      "packet_id": "7ec803fe154913ae979c8b942d0d534fe463a1b6e16ff558cfa6c0e6e8a33145",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:security-platform-KMS-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/shadow-holdout-kms-hsm-source-snapshot.json"
@@ -1916,7 +2842,6 @@
       "requirement_id": "shadow-replay-temporal-holdout",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/kms-hsm.json",
-      "source_uri": "TODO://production-authority/shadow-replay-temporal-holdout/kms-hsm",
       "source_uri_status": "placeholder",
       "task": "shadow-replay-temporal-holdout:kms-hsm",
       "task_ref": "external-evidence:shadow-replay-temporal-holdout:kms-hsm"
@@ -1926,7 +2851,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for standards-track-and-auditor-ecosystem:kms-hsm",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1940,6 +2865,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/kms-hsm.json",
       "owner_hint": "security/platform KMS owner",
+      "packet_id": "7ec803fe154913ae979c8b942d0d534fe463a1b6e16ff558cfa6c0e6e8a33145",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:security-platform-KMS-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/standards-track-auditor-kms-hsm-source-snapshot.json"
@@ -1950,7 +2877,6 @@
       "requirement_id": "standards-track-and-auditor-ecosystem",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/kms-hsm.json",
-      "source_uri": "TODO://production-authority/standards-track-and-auditor-ecosystem/kms-hsm",
       "source_uri_status": "placeholder",
       "task": "standards-track-and-auditor-ecosystem:kms-hsm",
       "task_ref": "external-evidence:standards-track-and-auditor-ecosystem:kms-hsm"
@@ -1960,7 +2886,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for auditor-and-review-portal:hosted-service",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -1974,6 +2900,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/auditor-and-review-portal/hosted-service.json",
       "owner_hint": "service owner",
+      "packet_id": "6b5d602b15283cbb98dad9449221c578cd01e0acc8af2cafbec833c2a24dd866",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:service-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/review-portal-hosted-service-source-snapshot.json"
@@ -1984,7 +2912,6 @@
       "requirement_id": "auditor-and-review-portal",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/hosted-service.json",
-      "source_uri": "TODO://production-authority/auditor-and-review-portal/hosted-service",
       "source_uri_status": "placeholder",
       "task": "auditor-and-review-portal:hosted-service",
       "task_ref": "external-evidence:auditor-and-review-portal:hosted-service"
@@ -1994,7 +2921,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for cicd-provider-approvals:hosted-service",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -2008,6 +2935,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/cicd-provider-approvals/hosted-service.json",
       "owner_hint": "service owner",
+      "packet_id": "6b5d602b15283cbb98dad9449221c578cd01e0acc8af2cafbec833c2a24dd866",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:service-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/cicd-provider-approvals-hosted-service-source-snapshot.json"
@@ -2018,7 +2947,6 @@
       "requirement_id": "cicd-provider-approvals",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/cicd-provider-approvals/hosted-service.json",
-      "source_uri": "TODO://production-authority/cicd-provider-approvals/hosted-service",
       "source_uri_status": "placeholder",
       "task": "cicd-provider-approvals:hosted-service",
       "task_ref": "external-evidence:cicd-provider-approvals:hosted-service"
@@ -2028,7 +2956,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for framework-adapters:hosted-service",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -2042,6 +2970,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/framework-adapters/hosted-service.json",
       "owner_hint": "service owner",
+      "packet_id": "6b5d602b15283cbb98dad9449221c578cd01e0acc8af2cafbec833c2a24dd866",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:service-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/framework-hook-release-hosted-service-source-snapshot.json"
@@ -2052,7 +2982,6 @@
       "requirement_id": "framework-adapters",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/framework-adapters/hosted-service.json",
-      "source_uri": "TODO://production-authority/framework-adapters/hosted-service",
       "source_uri_status": "placeholder",
       "task": "framework-adapters:hosted-service",
       "task_ref": "external-evidence:framework-adapters:hosted-service"
@@ -2062,7 +2991,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for insurer-api-and-actuarial-products:hosted-service",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -2076,6 +3005,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/insurer-api-and-actuarial-products/hosted-service.json",
       "owner_hint": "service owner",
+      "packet_id": "6b5d602b15283cbb98dad9449221c578cd01e0acc8af2cafbec833c2a24dd866",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:service-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/insurer-api-actuarial-hosted-service-source-snapshot.json"
@@ -2086,7 +3017,6 @@
       "requirement_id": "insurer-api-and-actuarial-products",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/hosted-service.json",
-      "source_uri": "TODO://production-authority/insurer-api-and-actuarial-products/hosted-service",
       "source_uri_status": "placeholder",
       "task": "insurer-api-and-actuarial-products:hosted-service",
       "task_ref": "external-evidence:insurer-api-and-actuarial-products:hosted-service"
@@ -2096,7 +3026,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for mcp-gateway:hosted-service",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -2110,6 +3040,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/mcp-gateway/hosted-service.json",
       "owner_hint": "service owner",
+      "packet_id": "6b5d602b15283cbb98dad9449221c578cd01e0acc8af2cafbec833c2a24dd866",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:service-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/mcp-proxy-events-hosted-service-source-snapshot.json"
@@ -2120,7 +3052,6 @@
       "requirement_id": "mcp-gateway",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/hosted-service.json",
-      "source_uri": "TODO://production-authority/mcp-gateway/hosted-service",
       "source_uri_status": "placeholder",
       "task": "mcp-gateway:hosted-service",
       "task_ref": "external-evidence:mcp-gateway:hosted-service"
@@ -2130,7 +3061,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for oss-verifier-and-public-spec:hosted-service",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -2144,6 +3075,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/oss-verifier-and-public-spec/hosted-service.json",
       "owner_hint": "service owner",
+      "packet_id": "6b5d602b15283cbb98dad9449221c578cd01e0acc8af2cafbec833c2a24dd866",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:service-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/github-hosted-service-source-snapshot.json"
@@ -2154,7 +3087,6 @@
       "requirement_id": "oss-verifier-and-public-spec",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/oss-verifier-and-public-spec/hosted-service.json",
-      "source_uri": "TODO://production-authority/oss-verifier-and-public-spec/hosted-service",
       "source_uri_status": "placeholder",
       "task": "oss-verifier-and-public-spec:hosted-service",
       "task_ref": "external-evidence:oss-verifier-and-public-spec:hosted-service"
@@ -2164,7 +3096,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for runtime-policy-and-attestation:hosted-service",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -2178,6 +3110,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/runtime-policy-and-attestation/hosted-service.json",
       "owner_hint": "service owner",
+      "packet_id": "6b5d602b15283cbb98dad9449221c578cd01e0acc8af2cafbec833c2a24dd866",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:service-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/runtime-action-hosted-service-source-snapshot.json"
@@ -2188,7 +3122,6 @@
       "requirement_id": "runtime-policy-and-attestation",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/hosted-service.json",
-      "source_uri": "TODO://production-authority/runtime-policy-and-attestation/hosted-service",
       "source_uri_status": "placeholder",
       "task": "runtime-policy-and-attestation:hosted-service",
       "task_ref": "external-evidence:runtime-policy-and-attestation:hosted-service"
@@ -2198,7 +3131,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for self-serve-onboarding:hosted-service",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -2212,6 +3145,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/self-serve-onboarding/hosted-service.json",
       "owner_hint": "service owner",
+      "packet_id": "6b5d602b15283cbb98dad9449221c578cd01e0acc8af2cafbec833c2a24dd866",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:service-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/self-serve-hosted-service-source-snapshot.json"
@@ -2222,7 +3157,6 @@
       "requirement_id": "self-serve-onboarding",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/self-serve-onboarding/hosted-service.json",
-      "source_uri": "TODO://production-authority/self-serve-onboarding/hosted-service",
       "source_uri_status": "placeholder",
       "task": "self-serve-onboarding:hosted-service",
       "task_ref": "external-evidence:self-serve-onboarding:hosted-service"
@@ -2232,7 +3166,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for trust-network-procurement-and-marketplace:hosted-service",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -2246,6 +3180,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/trust-network-procurement-and-marketplace/hosted-service.json",
       "owner_hint": "service owner",
+      "packet_id": "6b5d602b15283cbb98dad9449221c578cd01e0acc8af2cafbec833c2a24dd866",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:service-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/trust-network-hosted-service-source-snapshot.json"
@@ -2256,7 +3192,6 @@
       "requirement_id": "trust-network-procurement-and-marketplace",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/hosted-service.json",
-      "source_uri": "TODO://production-authority/trust-network-procurement-and-marketplace/hosted-service",
       "source_uri_status": "placeholder",
       "task": "trust-network-procurement-and-marketplace:hosted-service",
       "task_ref": "external-evidence:trust-network-procurement-and-marketplace:hosted-service"
@@ -2266,7 +3201,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for byoc-self-hosted:standards-body",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -2280,6 +3215,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/byoc-self-hosted/standards-body.json",
       "owner_hint": "standards/governance owner",
+      "packet_id": "aa8e3a0d16df6d51a6942ce2af7ec347dc7fb1ad9a1f11042c114d239b54f8b1",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:standards-governance-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/byoc-standards-body-source-snapshot.json"
@@ -2290,7 +3227,6 @@
       "requirement_id": "byoc-self-hosted",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/standards-body.json",
-      "source_uri": "TODO://production-authority/byoc-self-hosted/standards-body",
       "source_uri_status": "placeholder",
       "task": "byoc-self-hosted:standards-body",
       "task_ref": "external-evidence:byoc-self-hosted:standards-body"
@@ -2300,7 +3236,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for compliance-mapper-and-eu-ai-act:standards-body",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -2314,6 +3250,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/compliance-mapper-and-eu-ai-act/standards-body.json",
       "owner_hint": "standards/governance owner",
+      "packet_id": "aa8e3a0d16df6d51a6942ce2af7ec347dc7fb1ad9a1f11042c114d239b54f8b1",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:standards-governance-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/compliance-standards-body-source-snapshot.json"
@@ -2324,7 +3262,6 @@
       "requirement_id": "compliance-mapper-and-eu-ai-act",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/standards-body.json",
-      "source_uri": "TODO://production-authority/compliance-mapper-and-eu-ai-act/standards-body",
       "source_uri_status": "placeholder",
       "task": "compliance-mapper-and-eu-ai-act:standards-body",
       "task_ref": "external-evidence:compliance-mapper-and-eu-ai-act:standards-body"
@@ -2334,7 +3271,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for roadmap-phase-scoreboard:standards-body",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -2348,6 +3285,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/roadmap-phase-scoreboard/standards-body.json",
       "owner_hint": "standards/governance owner",
+      "packet_id": "aa8e3a0d16df6d51a6942ce2af7ec347dc7fb1ad9a1f11042c114d239b54f8b1",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:standards-governance-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/roadmap-phase-scoreboard-standards-body-source-snapshot.json"
@@ -2358,7 +3297,6 @@
       "requirement_id": "roadmap-phase-scoreboard",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/standards-body.json",
-      "source_uri": "TODO://production-authority/roadmap-phase-scoreboard/standards-body",
       "source_uri_status": "placeholder",
       "task": "roadmap-phase-scoreboard:standards-body",
       "task_ref": "external-evidence:roadmap-phase-scoreboard:standards-body"
@@ -2368,7 +3306,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for shadow-replay-temporal-holdout:standards-body",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -2382,6 +3320,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/shadow-replay-temporal-holdout/standards-body.json",
       "owner_hint": "standards/governance owner",
+      "packet_id": "aa8e3a0d16df6d51a6942ce2af7ec347dc7fb1ad9a1f11042c114d239b54f8b1",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:standards-governance-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/shadow-holdout-standards-body-source-snapshot.json"
@@ -2392,7 +3332,6 @@
       "requirement_id": "shadow-replay-temporal-holdout",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/standards-body.json",
-      "source_uri": "TODO://production-authority/shadow-replay-temporal-holdout/standards-body",
       "source_uri_status": "placeholder",
       "task": "shadow-replay-temporal-holdout:standards-body",
       "task_ref": "external-evidence:shadow-replay-temporal-holdout:standards-body"
@@ -2402,7 +3341,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for standards-track-and-auditor-ecosystem:standards-body",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -2416,6 +3355,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/standards-track-and-auditor-ecosystem/standards-body.json",
       "owner_hint": "standards/governance owner",
+      "packet_id": "aa8e3a0d16df6d51a6942ce2af7ec347dc7fb1ad9a1f11042c114d239b54f8b1",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:standards-governance-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/standards-track-auditor-standards-body-source-snapshot.json"
@@ -2426,7 +3367,6 @@
       "requirement_id": "standards-track-and-auditor-ecosystem",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/standards-body.json",
-      "source_uri": "TODO://production-authority/standards-track-and-auditor-ecosystem/standards-body",
       "source_uri_status": "placeholder",
       "task": "standards-track-and-auditor-ecosystem:standards-body",
       "task_ref": "external-evidence:standards-track-and-auditor-ecosystem:standards-body"
@@ -2436,7 +3376,7 @@
       "blocking_reasons": [
         "placeholder-source-uri"
       ],
-      "fulfillment_template": {
+      "fulfillment": {
         "content_type": "application/json",
         "description": "Production authority evidence for trustai-own-compliance:standards-body",
         "expires_at": "REPLACE_WITH_RFC3339_EXPIRES_AT",
@@ -2450,6 +3390,8 @@
       },
       "intake_out": "artifacts/external-evidence-intakes/trustai-own-compliance/standards-body.json",
       "owner_hint": "standards/governance owner",
+      "packet_id": "aa8e3a0d16df6d51a6942ce2af7ec347dc7fb1ad9a1f11042c114d239b54f8b1",
+      "packet_ref": "production-replacement-remediation-owner-packet:owner_hint:standards-governance-owner",
       "remediation_action": "replace source_uri and authority metadata with a live production authority-owned source, then regenerate the submission review",
       "replaces_artifacts": [
         "examples/aitrade/external-evidence/trustai-own-compliance-standards-body-source-snapshot.json"
@@ -2460,33 +3402,42 @@
       "requirement_id": "trustai-own-compliance",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/trustai-own-compliance/standards-body.json",
-      "source_uri": "TODO://production-authority/trustai-own-compliance/standards-body",
       "source_uri_status": "placeholder",
       "task": "trustai-own-compliance:standards-body",
       "task_ref": "external-evidence:trustai-own-compliance:standards-body"
     }
   ],
-  "review_blockers": [
-    "production replacement submission review contains 72 placeholder source_uri values",
-    "fulfilled production source map: source map contains 72 placeholder source_uri values but live source URIs are required"
-  ],
-  "schema": "trustai.external-evidence-production-replacement-remediation-queue/0.1",
-  "sources": {
-    "production_replacement_submission_review": {
-      "generated_at": "2026-07-12T00:01:00Z",
-      "production_replacement_submission_review_hash": "89d658ceec138d2652f229cce9d5102ca67ff2555468986421af684ec08afe03",
-      "production_replacement_submission_review_id": "27abf93fa433bf142bcec3225e84d23891c070e436adce45cec2a40944a02a5d",
-      "schema": "trustai.external-evidence-production-replacement-submission-review/0.1"
-    }
+  "schema": "trustai.external-evidence-production-replacement-remediation-owner-fulfillment-template/0.1",
+  "source_remediation_owner_packets": {
+    "generated_at": "2026-07-12T00:01:00Z",
+    "production_replacement_remediation_owner_packet_bundle_hash": "20170ebdff04d6acae5846a542ff3af25b76dc21aea299b6e822f5fbdec6f75d",
+    "production_replacement_remediation_owner_packet_bundle_id": "08db78c695b5910fab1cc28f200b1b1d036cfc3e189d8ba866eb3740a9789383",
+    "schema": "trustai.external-evidence-production-replacement-remediation-owner-packet-bundle/0.1"
   },
   "summary": {
     "blocked_task_count": 72,
+    "fulfillment_count": 72,
     "live_source_uri_count": 0,
     "owner_count": 10,
+    "owners": [
+      "IAM/identity owner",
+      "cloud storage owner",
+      "customer success/account owner",
+      "integration/platform owner",
+      "legal/compliance owner",
+      "release engineering",
+      "risk/insurance owner",
+      "security/platform KMS owner",
+      "service owner",
+      "standards/governance owner"
+    ],
+    "packet_count": 10,
     "placeholder_source_uri_count": 72,
-    "queue_status": "blocked",
-    "ready_task_count": 0,
-    "remediation_count_by_authority_kind": {
+    "remediation_task_count": 72,
+    "request_count": 72,
+    "source_owner_packet_count": 10,
+    "source_remediation_task_count": 72,
+    "task_count_by_authority_kind": {
       "ci-run": 9,
       "cloud-object-lock": 1,
       "customer": 10,
@@ -2498,10 +3449,7 @@
       "regulator": 5,
       "standards-body": 6
     },
-    "remediation_count_by_blocking_reason": {
-      "placeholder-source-uri": 72
-    },
-    "remediation_count_by_owner_hint": {
+    "task_count_by_owner_hint": {
       "IAM/identity owner": 8,
       "cloud storage owner": 1,
       "customer success/account owner": 10,
@@ -2513,7 +3461,7 @@
       "service owner": 9,
       "standards/governance owner": 6
     },
-    "remediation_count_by_requirement": {
+    "task_count_by_requirement": {
       "agent-inventory-and-identity": 2,
       "auditor-and-review-portal": 5,
       "byoc-self-hosted": 6,
@@ -2535,13 +3483,9 @@
       "trustai-own-compliance": 2,
       "vertical-packs": 3
     },
-    "remediation_count_by_source_uri_status": {
+    "task_count_by_source_uri_status": {
       "placeholder": 72
     },
-    "remediation_task_count": 72,
-    "review_live_source_uri_count": 0,
-    "review_placeholder_source_uri_count": 72,
-    "review_status": "blocked",
-    "task_count": 72
+    "template_status": "blocked"
   }
 }

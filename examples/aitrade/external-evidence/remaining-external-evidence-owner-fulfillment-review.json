@@ -15,14 +15,14 @@
       "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
     ],
     "schema": "trustai.external-evidence-source-map/0.1",
-    "source_map_id": "11625aa0e13be8204b37220465f51c203a4d905dfd59b733c7d00067a7f5d466",
+    "source_map_id": "ba2b9863b184ec284201f26103bdcc5161070d87923754329d2c3508f03c41d1",
     "source_plan": {
-      "plan_hash": "2637e445ff0b48b959f4352ba9a477940ce6e36d637226448db8db490f7df025",
-      "plan_id": "b3bac3428518bdb3715f9889ee34009289f5007aa9b3cf0b64d62f2e2a6dace0",
+      "plan_hash": "d05a1285a496559b6c9804e7ac7e2ce6148df992ab3d4f4f93460d5ff3e77e76",
+      "plan_id": "9f5dfb4a9417f7b943ce87df2eedc3ba78f5c35074430c219388c9d98359a071",
       "source_manifest": {
         "generated_at": "2026-07-12T00:01:00Z",
-        "manifest_hash": "a78929f6d4c3583b75f00dd1698fd6fcc30bb0033026ede4a3c2346694d3c986",
-        "manifest_id": "9da5b00ef1ea43a74db46932cf32c6ce89084536f5318f760b6fdc02b28fdc2e",
+        "manifest_hash": "a51f4028437c469750b1218c14b81e26709e111457aaeb030fbc0d7d169db8ba",
+        "manifest_id": "899bf2166975e46c61648544a710dc3e3460df0cf24ff949c1a777be3b7f62b2",
         "manifest_ref": "production-external-evidence",
         "status": "complete"
       },
@@ -50,32 +50,32 @@
     "Verify source snapshots and intake receipts, then rebuild the external evidence manifest from intakes.",
     "Regenerate external-evidence-readiness with --require-ready before claiming production authority coverage."
   ],
-  "owner_fulfillment_review_id": "e876eabedc9f18136cb599cb6fcabbd674d55f75f90fd255f710aa654e72ea27",
+  "owner_fulfillment_review_id": "c113778ee7bc56dab73369e3b7fb137d6cc25ca967d65798a3fcd7f89f5f9698",
   "schema": "trustai.external-evidence-owner-fulfillment-review/0.1",
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "2637e445ff0b48b959f4352ba9a477940ce6e36d637226448db8db490f7df025",
-      "plan_id": "b3bac3428518bdb3715f9889ee34009289f5007aa9b3cf0b64d62f2e2a6dace0",
+      "plan_hash": "d05a1285a496559b6c9804e7ac7e2ce6148df992ab3d4f4f93460d5ff3e77e76",
+      "plan_id": "9f5dfb4a9417f7b943ce87df2eedc3ba78f5c35074430c219388c9d98359a071",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "owner_fulfillment_template": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_fulfillment_template_hash": "15b540f00152fe47fa013f37aaf6115a29627252bd5f4cd9eb3541e0b5f587d8",
-      "owner_fulfillment_template_id": "a0b0eed1e19583e202f19d05a418359484fda2806536d2d836e7d690304ebbba",
+      "owner_fulfillment_template_hash": "3434f3a8b662db6d3aa4abc6b868125d6a00c76535005f39ef2c1abc4f2112bd",
+      "owner_fulfillment_template_id": "400809d43ee7469e27f8f89f8e783308ff27a2d1e9c217e90b2b732c43c44740",
       "schema": "trustai.external-evidence-owner-fulfillment-template/0.1"
     },
     "owner_packet_status": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_status_hash": "e44d8049a6acb1075eaf3a3acdd52d116abe0bd6ea6d757591caabc8ff0bd71b",
-      "owner_packet_status_id": "115b47e31297d4c37874ffa957fcfcd5e5faa34e80088149650c62744f735098",
+      "owner_packet_status_hash": "3fe587a75d89209212faa57d9659e534b30fa5b782bfcffc13b9715707bc8431",
+      "owner_packet_status_id": "26a09239e05629f78ef53d1420f228d285e3cbfa52a0bae047869591ec1310cb",
       "schema": "trustai.external-evidence-owner-packet-status/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "f8e043b588b1ff52f79b4cb4a8b973382071bf0c611b54fc096e0feefa28fc6f",
-      "source_map_id": "61f5b156e56cacb18f694e25823090d7331fd26c34ccefcf6be95179d8fd9faf"
+      "source_map_hash": "d92effceb1cd4ade106b4fe3e43d356ef6c56a6af524d8eb3f1296bf168d9bff",
+      "source_map_id": "09c027dff76fcfb2d4d5dcdd4d071b0e77167c386cb247849841f31651a5e451"
     }
   },
   "summary": {

@@ -1203,6 +1203,7 @@ from .external_evidence import (
     build_external_evidence_production_replacement_submission_review,
     build_external_evidence_production_replacement_remediation_queue,
     build_external_evidence_production_replacement_remediation_owner_packets,
+    build_external_evidence_production_replacement_remediation_owner_fulfillment_template,
     build_external_evidence_production_replacement_collection_package,
     build_external_evidence_production_replacement_closure,
     build_external_evidence_source_map_template,
@@ -1235,6 +1236,7 @@ from .external_evidence import (
     load_external_evidence_production_replacement_submission_review,
     load_external_evidence_production_replacement_remediation_queue,
     load_external_evidence_production_replacement_remediation_owner_packets,
+    load_external_evidence_production_replacement_remediation_owner_fulfillment_template,
     load_external_evidence_production_replacement_collection_package,
     load_external_evidence_production_replacement_closure,
     load_external_evidence_collection_plan,
@@ -1266,6 +1268,7 @@ from .external_evidence import (
     verify_external_evidence_production_replacement_submission_review,
     verify_external_evidence_production_replacement_remediation_queue,
     verify_external_evidence_production_replacement_remediation_owner_packets,
+    verify_external_evidence_production_replacement_remediation_owner_fulfillment_template,
     verify_external_evidence_production_replacement_collection_package,
     verify_external_evidence_production_replacement_closure,
     verify_external_evidence_collection_plan,
@@ -1309,6 +1312,8 @@ from .external_evidence import (
     write_external_evidence_production_replacement_remediation_queue_markdown,
     write_external_evidence_production_replacement_remediation_owner_packets,
     write_external_evidence_production_replacement_remediation_owner_packets_markdown,
+    write_external_evidence_production_replacement_remediation_owner_fulfillment_template,
+    write_external_evidence_production_replacement_remediation_owner_fulfillment_template_markdown,
     write_external_evidence_production_replacement_collection_package,
     write_external_evidence_production_replacement_collection_package_markdown,
     write_external_evidence_production_replacement_closure,
@@ -17460,6 +17465,76 @@ def cmd_external_evidence_production_replacement_remediation_owner_packets_verif
 
 
 
+
+
+def cmd_external_evidence_production_replacement_remediation_owner_fulfillment_template(args: argparse.Namespace) -> int:
+    try:
+        packet_bundle = load_external_evidence_production_replacement_remediation_owner_packets(args.packet_bundle)
+        template = build_external_evidence_production_replacement_remediation_owner_fulfillment_template(
+            packet_bundle,
+            owner_hint=args.owner_hint,
+            generated_at=args.generated_at,
+        )
+        result = verify_external_evidence_production_replacement_remediation_owner_fulfillment_template(
+            template,
+            packet_bundle,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement remediation owner fulfillment template failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("external evidence production replacement remediation owner fulfillment template verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_external_evidence_production_replacement_remediation_owner_fulfillment_template(args.out, template)
+    if args.markdown:
+        write_external_evidence_production_replacement_remediation_owner_fulfillment_template_markdown(args.markdown, template)
+        print(f"external evidence production replacement remediation owner fulfillment template markdown: {args.markdown}")
+    summary = template["summary"]
+    print(f"external evidence production replacement remediation owner fulfillment template: {args.out}")
+    print(
+        "production replacement remediation owner fulfillment template id: "
+        f"{template['production_replacement_remediation_owner_fulfillment_template_id']}"
+    )
+    print(f"owners: {summary['owner_count']}")
+    print(f"fulfillments: {summary['fulfillment_count']}")
+    print(f"placeholder source URIs: {summary['placeholder_source_uri_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_external_evidence_production_replacement_remediation_owner_fulfillment_template_verify(args: argparse.Namespace) -> int:
+    try:
+        template = load_external_evidence_production_replacement_remediation_owner_fulfillment_template(args.template)
+        packet_bundle = load_external_evidence_production_replacement_remediation_owner_packets(args.packet_bundle)
+        result = verify_external_evidence_production_replacement_remediation_owner_fulfillment_template(
+            template,
+            packet_bundle,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement remediation owner fulfillment template verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        summary = template.get("summary", {})
+        print(f"verified external evidence production replacement remediation owner fulfillment template: {args.template}")
+        print(
+            "production replacement remediation owner fulfillment template id: "
+            f"{template.get('production_replacement_remediation_owner_fulfillment_template_id')}"
+        )
+        print(f"owners: {summary.get('owner_count', 0)}")
+        print(f"fulfillments: {summary.get('fulfillment_count', 0)}")
+        print(f"placeholder source URIs: {summary.get('placeholder_source_uri_count', 0)}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"external evidence production replacement remediation owner fulfillment template verification failed: {args.template}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
 def cmd_external_evidence_production_replacement_collection_package(args: argparse.Namespace) -> int:
     try:
         review = load_external_evidence_production_replacement_submission_review(args.review)
@@ -29207,6 +29282,19 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_production_replacement_remediation_owner_packets_verify.add_argument("packet_bundle")
     external_evidence_production_replacement_remediation_owner_packets_verify.add_argument("queue")
     external_evidence_production_replacement_remediation_owner_packets_verify.set_defaults(func=cmd_external_evidence_production_replacement_remediation_owner_packets_verify)
+
+    external_evidence_production_replacement_remediation_owner_fulfillment_template = subparsers.add_parser("external-evidence-production-replacement-remediation-owner-fulfillment-template", help="write fulfillment template from production replacement remediation owner packets")
+    external_evidence_production_replacement_remediation_owner_fulfillment_template.add_argument("packet_bundle")
+    external_evidence_production_replacement_remediation_owner_fulfillment_template.add_argument("--owner-hint")
+    external_evidence_production_replacement_remediation_owner_fulfillment_template.add_argument("--generated-at")
+    external_evidence_production_replacement_remediation_owner_fulfillment_template.add_argument("--out", default="artifacts/external-evidence-production-replacement-remediation-owner-fulfillment-template.json")
+    external_evidence_production_replacement_remediation_owner_fulfillment_template.add_argument("--markdown", default="artifacts/external-evidence-production-replacement-remediation-owner-fulfillment-template.md")
+    external_evidence_production_replacement_remediation_owner_fulfillment_template.set_defaults(func=cmd_external_evidence_production_replacement_remediation_owner_fulfillment_template)
+
+    external_evidence_production_replacement_remediation_owner_fulfillment_template_verify = subparsers.add_parser("external-evidence-production-replacement-remediation-owner-fulfillment-template-verify", help="verify a production replacement remediation owner fulfillment template against owner packets")
+    external_evidence_production_replacement_remediation_owner_fulfillment_template_verify.add_argument("template")
+    external_evidence_production_replacement_remediation_owner_fulfillment_template_verify.add_argument("packet_bundle")
+    external_evidence_production_replacement_remediation_owner_fulfillment_template_verify.set_defaults(func=cmd_external_evidence_production_replacement_remediation_owner_fulfillment_template_verify)
 
     external_evidence_production_replacement_collection_package = subparsers.add_parser("external-evidence-production-replacement-collection-package", help="write a collection handoff package from a reviewed production replacement submission")
     external_evidence_production_replacement_collection_package.add_argument("review")

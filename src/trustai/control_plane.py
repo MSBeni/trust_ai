@@ -42,6 +42,7 @@ from .external_evidence import (
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_PLAN_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_QUEUE_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_PACKET_SCHEMA,
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_FULFILLMENT_TEMPLATE_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA,
 )
@@ -266,6 +267,7 @@ PRODUCTION_REPLACEMENT_ARTIFACTS = {
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA: ("submission-review", "production_replacement_submission_review_id"),
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_QUEUE_SCHEMA: ("remediation-queue", "production_replacement_remediation_queue_id"),
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_PACKET_SCHEMA: ("remediation-owner-packet-bundle", "production_replacement_remediation_owner_packet_bundle_id"),
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_FULFILLMENT_TEMPLATE_SCHEMA: ("remediation-owner-fulfillment-template", "production_replacement_remediation_owner_fulfillment_template_id"),
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_COLLECTION_PACKAGE_SCHEMA: ("collection-package", "production_replacement_collection_package_id"),
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA: ("closure", "production_replacement_closure_id"),
 }
@@ -1340,7 +1342,7 @@ def _summary_int(summary: dict[str, Any], *fields: str) -> int:
 
 
 def _production_replacement_status(summary: dict[str, Any]) -> str | None:
-    for field in ("closure_status", "queue_status", "review_status", "submission_status", "replacement_status", "readiness_status"):
+    for field in ("closure_status", "queue_status", "review_status", "submission_status", "template_status", "replacement_status", "readiness_status"):
         value = summary.get(field)
         if value:
             return str(value)
@@ -7494,6 +7496,10 @@ class ControlPlane:
             (item for item in lifecycle if item.get("artifact_kind") == "remediation-owner-packet-bundle"),
             None,
         )
+        remediation_owner_fulfillment_template = next(
+            (item for item in lifecycle if item.get("artifact_kind") == "remediation-owner-fulfillment-template"),
+            None,
+        )
         collection_package = next(
             (item for item in lifecycle if item.get("artifact_kind") == "collection-package"),
             None,
@@ -7561,6 +7567,28 @@ class ControlPlane:
             }
             for packet in owner_packet_rows
             if isinstance(packet, dict)
+        ]
+        owner_fulfillment_body = remediation_owner_fulfillment_template.get("body") if remediation_owner_fulfillment_template else {}
+        if not isinstance(owner_fulfillment_body, dict):
+            owner_fulfillment_body = {}
+        owner_fulfillment_summary = remediation_owner_fulfillment_template.get("summary") if remediation_owner_fulfillment_template else {}
+        if not isinstance(owner_fulfillment_summary, dict):
+            owner_fulfillment_summary = {}
+        owner_fulfillment_rows = owner_fulfillment_body.get("fulfillments") if isinstance(owner_fulfillment_body.get("fulfillments"), list) else []
+        remediation_owner_fulfillments = [
+            {
+                "task": fulfillment.get("task"),
+                "source_uri": fulfillment.get("source_uri"),
+                "source_file": fulfillment.get("source_file"),
+                "issuer": fulfillment.get("issuer"),
+                "subject": fulfillment.get("subject"),
+                "issued_at": fulfillment.get("issued_at"),
+                "expires_at": fulfillment.get("expires_at"),
+                "content_type": fulfillment.get("content_type"),
+                "retrieval_method": fulfillment.get("retrieval_method"),
+            }
+            for fulfillment in owner_fulfillment_rows
+            if isinstance(fulfillment, dict)
         ]
         package_body = collection_package.get("body") if collection_package else {}
         if not isinstance(package_body, dict):
@@ -7780,6 +7808,17 @@ class ControlPlane:
             "remediation_owner_packets": remediation_owner_packets[:limit],
             "remediation_owner_packet_limit": limit,
             "remediation_owner_packet_total": len(remediation_owner_packets),
+            "remediation_owner_fulfillment_template_present": remediation_owner_fulfillment_template is not None,
+            "remediation_owner_fulfillment_template_status": owner_fulfillment_summary.get("template_status") or (remediation_owner_fulfillment_template.get("status") if remediation_owner_fulfillment_template else None),
+            "remediation_owner_fulfillment_template_artifact_id": remediation_owner_fulfillment_template.get("artifact_id") if remediation_owner_fulfillment_template else None,
+            "remediation_owner_fulfillment_template_artifact_hash": remediation_owner_fulfillment_template.get("artifact_hash") if remediation_owner_fulfillment_template else None,
+            "remediation_owner_fulfillment_template_owner_count": int(owner_fulfillment_summary.get("owner_count") or 0),
+            "remediation_owner_fulfillment_template_fulfillment_count": int(owner_fulfillment_summary.get("fulfillment_count") or 0),
+            "remediation_owner_fulfillment_template_placeholder_source_uri_count": int(owner_fulfillment_summary.get("placeholder_source_uri_count") or 0),
+            "remediation_owner_fulfillment_template_live_source_uri_count": int(owner_fulfillment_summary.get("live_source_uri_count") or 0),
+            "remediation_owner_fulfillments": remediation_owner_fulfillments[:limit],
+            "remediation_owner_fulfillment_limit": limit,
+            "remediation_owner_fulfillment_total": len(remediation_owner_fulfillments),
             "collection_package_present": collection_package is not None,
             "collection_package_ready": collection_package_ready,
             "collection_status": collection_status,

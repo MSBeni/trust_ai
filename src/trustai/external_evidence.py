@@ -40,6 +40,7 @@ EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_SCHEMA = "trustai.external-e
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA = "trustai.external-evidence-production-replacement-submission-review/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_QUEUE_SCHEMA = "trustai.external-evidence-production-replacement-remediation-queue/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_PACKET_SCHEMA = "trustai.external-evidence-production-replacement-remediation-owner-packet-bundle/0.1"
+EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_FULFILLMENT_TEMPLATE_SCHEMA = "trustai.external-evidence-production-replacement-remediation-owner-fulfillment-template/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_COLLECTION_PACKAGE_SCHEMA = "trustai.external-evidence-production-replacement-collection-package/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA = "trustai.external-evidence-production-replacement-closure/0.1"
 EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA = "trustai.external-evidence-git-remote-ref-export/0.1"
@@ -324,6 +325,13 @@ class ExternalEvidenceProductionReplacementRemediationQueueVerification:
 
 @dataclass
 class ExternalEvidenceProductionReplacementRemediationOwnerPacketVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class ExternalEvidenceProductionReplacementRemediationOwnerFulfillmentTemplateVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -662,6 +670,7 @@ def _source_map_is_placeholder_uri(source_uri: str) -> bool:
         "example.net",
         "example.org",
         "<source-uri>",
+        "replace_with_",
     )
     return normalized.startswith("todo:") or any(marker in normalized for marker in placeholder_markers)
 
@@ -4943,6 +4952,167 @@ def verify_external_evidence_production_replacement_remediation_owner_packets(
 
 
 
+
+
+def _external_evidence_production_replacement_remediation_template_request(
+    packet: dict[str, Any],
+    item: dict[str, Any],
+    fulfillment: dict[str, Any],
+) -> dict[str, Any]:
+    return {
+        "task": item.get("task") or fulfillment.get("task"),
+        "task_ref": item.get("task_ref"),
+        "packet_ref": packet.get("packet_ref"),
+        "packet_id": packet.get("packet_id"),
+        "owner_hint": item.get("owner_hint") or packet.get("owner_hint"),
+        "requirement_id": item.get("requirement_id"),
+        "authority_kind": item.get("authority_kind"),
+        "source_uri_status": item.get("source_uri_status"),
+        "review_status": item.get("review_status"),
+        "blocking_reasons": item.get("blocking_reasons") if isinstance(item.get("blocking_reasons"), list) else [],
+        "remediation_action": item.get("remediation_action"),
+        "snapshot_out": item.get("snapshot_out"),
+        "intake_out": item.get("intake_out"),
+        "replaces_artifacts": list(item.get("replaces_artifacts") or []),
+        "replaces_evidence_ids": list(item.get("replaces_evidence_ids") or []),
+        "fulfillment": fulfillment,
+    }
+
+
+def build_external_evidence_production_replacement_remediation_owner_fulfillment_template(
+    packet_bundle: dict[str, Any],
+    *,
+    owner_hint: str | None = None,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    if packet_bundle.get("schema") != EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_PACKET_SCHEMA:
+        raise ValueError(
+            "unsupported external evidence production replacement remediation owner packet schema: "
+            f"{packet_bundle.get('schema')}"
+        )
+    if packet_bundle.get("production_replacement_remediation_owner_packet_bundle_id") != content_hash(
+        without_keys(packet_bundle, "production_replacement_remediation_owner_packet_bundle_id")
+    ):
+        raise ValueError("production_replacement_remediation_owner_packet_bundle_id does not match canonical owner packet bundle body")
+    owner_filter = str(owner_hint).strip() if owner_hint else None
+    packets = packet_bundle.get("packets")
+    if not isinstance(packets, list):
+        raise ValueError("production replacement remediation owner packet bundle packets must be a list")
+
+    selected_packets = [
+        packet
+        for packet in packets
+        if isinstance(packet, dict) and (owner_filter is None or str(packet.get("owner_hint") or "") == owner_filter)
+    ]
+    fulfillments: list[dict[str, Any]] = []
+    requests: list[dict[str, Any]] = []
+    for packet in selected_packets:
+        items = packet.get("remediation_items") if isinstance(packet.get("remediation_items"), list) else []
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            template = item.get("fulfillment_template") if isinstance(item.get("fulfillment_template"), dict) else {}
+            fulfillment = {key: template[key] for key in template if key in SOURCE_MAP_FULFILLMENT_FIELDS or key in SOURCE_MAP_FULFILLMENT_TASK_KEYS}
+            if not fulfillment.get("task"):
+                fulfillment["task"] = item.get("task")
+            fulfillments.append(fulfillment)
+            requests.append(_external_evidence_production_replacement_remediation_template_request(packet, item, fulfillment))
+
+    fulfillments.sort(key=lambda row: str(row.get("task") or ""))
+    requests.sort(key=lambda row: (str(row.get("owner_hint") or ""), str(row.get("task") or "")))
+    counts = _source_map_source_uri_counts(fulfillments)
+    owner_hints = sorted({str(request.get("owner_hint") or "unassigned") for request in requests})
+    body = {
+        "schema": EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_FULFILLMENT_TEMPLATE_SCHEMA,
+        "generated_at": generated_at or utc_now(),
+        "source_remediation_owner_packets": {
+            "production_replacement_remediation_owner_packet_bundle_id": packet_bundle.get("production_replacement_remediation_owner_packet_bundle_id"),
+            "production_replacement_remediation_owner_packet_bundle_hash": content_hash(packet_bundle),
+            "schema": packet_bundle.get("schema"),
+            "generated_at": packet_bundle.get("generated_at"),
+        },
+        "filters": {"owner_hint": owner_filter},
+        "summary": {
+            "template_status": "blocked" if counts["placeholder_source_uri_count"] else ("ready-to-submit" if fulfillments else "empty"),
+            "packet_count": len(selected_packets),
+            "owner_count": len(owner_hints),
+            "owners": owner_hints,
+            "request_count": len(requests),
+            "fulfillment_count": len(fulfillments),
+            "remediation_task_count": len(requests),
+            "blocked_task_count": sum(1 for request in requests if request.get("review_status") != "ready-to-collect"),
+            "placeholder_source_uri_count": counts["placeholder_source_uri_count"],
+            "live_source_uri_count": counts["live_source_uri_count"],
+            "task_count_by_owner_hint": _external_evidence_production_replacement_queue_counts(requests, "owner_hint", "unassigned"),
+            "task_count_by_authority_kind": _external_evidence_production_replacement_queue_counts(requests, "authority_kind", "unknown"),
+            "task_count_by_requirement": _external_evidence_production_replacement_queue_counts(requests, "requirement_id", "unknown"),
+            "task_count_by_source_uri_status": _external_evidence_production_replacement_queue_counts(requests, "source_uri_status", "unknown"),
+            "source_owner_packet_count": packet_bundle.get("summary", {}).get("packet_count", 0) if isinstance(packet_bundle.get("summary"), dict) else 0,
+            "source_remediation_task_count": packet_bundle.get("summary", {}).get("remediation_task_count", 0) if isinstance(packet_bundle.get("summary"), dict) else 0,
+        },
+        "requests": requests,
+        "fulfillments": fulfillments,
+        "commands": {
+            "fill_owner_template": "edit this JSON and replace every REPLACE_WITH_* value with authority-owned source metadata",
+            "apply_to_submission": "python -m trustai external-evidence-production-replacement-submission <intake-template.json> --fulfillment-file <owner-fulfillment-template.json> --require-submitted-live-source-uris --submitted-template-out <submitted-template.json>",
+            "review_after_apply": "python -m trustai external-evidence-production-replacement-submission-review <submitted-template.json> <status-report.json> <plan-all.json> --require-live-source-uris --require-ready --out <review.json>",
+            "verify_template": "python -m trustai external-evidence-production-replacement-remediation-owner-fulfillment-template-verify <template.json> <owner-packets.json>",
+        },
+        "instructions": [
+            "Send the owner-filtered template to the matching owner_hint, or use the unfiltered template as the all-owner coordination file.",
+            "Replace every REPLACE_WITH_* source_uri, issuer, subject, issued_at, expires_at, and source_file value with live authority-owned production metadata before applying it to the submission.",
+            "Keep the fulfillments array compatible with --fulfillment-file; use requests for owner context, blocked reason, and retained-artifact replacement traceability.",
+        ],
+        "limitations": [
+            "This template routes remediation fulfillments; it does not collect source snapshots, create intake receipts, or claim production readiness.",
+            "Placeholder source URIs intentionally keep downstream production replacement review blocked until owners provide live authority sources.",
+        ],
+    }
+    return {**body, "production_replacement_remediation_owner_fulfillment_template_id": content_hash(body)}
+
+
+def verify_external_evidence_production_replacement_remediation_owner_fulfillment_template(
+    template: dict[str, Any],
+    packet_bundle: dict[str, Any],
+) -> ExternalEvidenceProductionReplacementRemediationOwnerFulfillmentTemplateVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if template.get("schema") != EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_FULFILLMENT_TEMPLATE_SCHEMA:
+        errors.append(
+            "unsupported external evidence production replacement remediation owner fulfillment template schema: "
+            f"{template.get('schema')}"
+        )
+    if template.get("production_replacement_remediation_owner_fulfillment_template_id") != content_hash(
+        without_keys(template, "production_replacement_remediation_owner_fulfillment_template_id")
+    ):
+        errors.append("production_replacement_remediation_owner_fulfillment_template_id does not match canonical template body")
+    source = template.get("source_remediation_owner_packets") if isinstance(template.get("source_remediation_owner_packets"), dict) else {}
+    if source.get("production_replacement_remediation_owner_packet_bundle_id") != packet_bundle.get("production_replacement_remediation_owner_packet_bundle_id"):
+        errors.append("production replacement remediation owner fulfillment template source packet bundle id does not match supplied packets")
+    if source.get("production_replacement_remediation_owner_packet_bundle_hash") != content_hash(packet_bundle):
+        errors.append("production replacement remediation owner fulfillment template source packet bundle hash does not match supplied packets")
+    filters = template.get("filters") if isinstance(template.get("filters"), dict) else {}
+    try:
+        expected = build_external_evidence_production_replacement_remediation_owner_fulfillment_template(
+            packet_bundle,
+            owner_hint=filters.get("owner_hint"),
+            generated_at=str(template.get("generated_at") or ""),
+        )
+    except ValueError as exc:
+        errors.append(str(exc))
+    else:
+        if without_keys(template, "production_replacement_remediation_owner_fulfillment_template_id") != without_keys(
+            expected,
+            "production_replacement_remediation_owner_fulfillment_template_id",
+        ):
+            errors.append("production replacement remediation owner fulfillment template body does not match supplied owner packets")
+    summary = template.get("summary") if isinstance(template.get("summary"), dict) else {}
+    placeholder_count = int(summary.get("placeholder_source_uri_count") or 0)
+    if placeholder_count:
+        warnings.append(f"production replacement remediation owner fulfillment template contains {placeholder_count} placeholder source_uri values")
+    return ExternalEvidenceProductionReplacementRemediationOwnerFulfillmentTemplateVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
 def _external_evidence_production_replacement_collection_status(review: dict[str, Any]) -> str:
     summary = review.get("summary", {}) if isinstance(review.get("summary"), dict) else {}
     if (
@@ -6870,6 +7040,22 @@ def write_external_evidence_production_replacement_remediation_owner_packets_mar
     target.write_text(render_external_evidence_production_replacement_remediation_owner_packets_markdown(packet_bundle), encoding="utf-8")
 
 
+def write_external_evidence_production_replacement_remediation_owner_fulfillment_template(path: str | Path, template: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(template, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_external_evidence_production_replacement_remediation_owner_fulfillment_template(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def write_external_evidence_production_replacement_remediation_owner_fulfillment_template_markdown(path: str | Path, template: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_external_evidence_production_replacement_remediation_owner_fulfillment_template_markdown(template), encoding="utf-8")
+
+
 def write_external_evidence_production_replacement_collection_package(path: str | Path, package: dict[str, Any]) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -8121,6 +8307,96 @@ def render_external_evidence_production_replacement_remediation_owner_packets_ma
         lines.append("- None")
     return "\n".join(lines).rstrip() + "\n"
 
+
+
+
+
+def render_external_evidence_production_replacement_remediation_owner_fulfillment_template_markdown(template: dict[str, Any]) -> str:
+    summary = template.get("summary", {}) if isinstance(template.get("summary"), dict) else {}
+    source = template.get("source_remediation_owner_packets", {}) if isinstance(template.get("source_remediation_owner_packets"), dict) else {}
+    filters = template.get("filters", {}) if isinstance(template.get("filters"), dict) else {}
+    lines = [
+        "# External Evidence Production Replacement Remediation Owner Fulfillment Template",
+        "",
+        f"- Template ID: `{template.get('production_replacement_remediation_owner_fulfillment_template_id')}`",
+        f"- Generated at: `{template.get('generated_at')}`",
+        f"- Source owner packet bundle ID: `{source.get('production_replacement_remediation_owner_packet_bundle_id')}`",
+        f"- Source owner packet bundle hash: `{source.get('production_replacement_remediation_owner_packet_bundle_hash')}`",
+        f"- Owner filter: `{filters.get('owner_hint')}`",
+        f"- Status: `{summary.get('template_status')}`",
+        f"- Owners: {summary.get('owner_count', 0)}",
+        f"- Packets: {summary.get('packet_count', 0)}",
+        f"- Remediation tasks: {summary.get('remediation_task_count', 0)}",
+        f"- Placeholder source URIs: {summary.get('placeholder_source_uri_count', 0)}",
+        f"- Live source URIs: {summary.get('live_source_uri_count', 0)}",
+        "",
+        "## Fulfillments",
+        "",
+        "| Task | Source URI | Source File | Issuer | Subject |",
+        "|---|---|---|---|---|",
+    ]
+    fulfillments = template.get("fulfillments", []) if isinstance(template.get("fulfillments"), list) else []
+    if fulfillments:
+        for fulfillment in fulfillments:
+            if not isinstance(fulfillment, dict):
+                continue
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        f"`{_markdown_cell(fulfillment.get('task'))}`",
+                        f"`{_markdown_cell(fulfillment.get('source_uri'))}`",
+                        f"`{_markdown_cell(fulfillment.get('source_file'))}`",
+                        _markdown_cell(fulfillment.get("issuer")),
+                        _markdown_cell(fulfillment.get("subject")),
+                    ]
+                )
+                + " |"
+            )
+    else:
+        lines.append("| - | - | - | - | - |")
+    requests = template.get("requests", []) if isinstance(template.get("requests"), list) else []
+    lines.extend(["", "## Owner Context", "", "| Task | Owner | Requirement | Authority | Blocking Reasons |", "|---|---|---|---|---|"])
+    if requests:
+        for request in requests:
+            if not isinstance(request, dict):
+                continue
+            reasons = request.get("blocking_reasons") if isinstance(request.get("blocking_reasons"), list) else []
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        f"`{_markdown_cell(request.get('task'))}`",
+                        _markdown_cell(request.get("owner_hint")),
+                        f"`{_markdown_cell(request.get('requirement_id'))}`",
+                        f"`{_markdown_cell(request.get('authority_kind'))}`",
+                        _markdown_cell(", ".join(str(reason) for reason in reasons) or "none"),
+                    ]
+                )
+                + " |"
+            )
+    else:
+        lines.append("| - | - | - | - | - |")
+    commands = template.get("commands", {}) if isinstance(template.get("commands"), dict) else {}
+    lines.extend(["", "## Commands", ""])
+    if commands:
+        for key, command in commands.items():
+            lines.append(f"- {key}: `{_markdown_cell(command)}`")
+    else:
+        lines.append("- None")
+    instructions = template.get("instructions", []) if isinstance(template.get("instructions"), list) else []
+    lines.extend(["", "## Instructions", ""])
+    if instructions:
+        lines.extend(f"- {_markdown_cell(item)}" for item in instructions)
+    else:
+        lines.append("- None")
+    limitations = template.get("limitations", []) if isinstance(template.get("limitations"), list) else []
+    lines.extend(["", "## Limitations", ""])
+    if limitations:
+        lines.extend(f"- {_markdown_cell(item)}" for item in limitations)
+    else:
+        lines.append("- None")
+    return "\n".join(lines).rstrip() + "\n"
 
 
 def render_external_evidence_production_replacement_collection_package_markdown(package: dict[str, Any]) -> str:
