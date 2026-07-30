@@ -5,7 +5,7 @@
     "Open tasks require live authority-owned source snapshots, verified intakes, rebuilt manifest entries, and ready readiness verification before closure.",
     "A closed status should be treated as provisional until a regenerated production replacement plan no longer lists the task."
   ],
-  "owner_packet_status_id": "ee2189ac7ca72eb85b0d651b2a3f53b9078096bb16fb911eea5a805af7855dc2",
+  "owner_packet_status_id": "9ec2e157fd0872735aa50426703e42787a54fad422904ff5303bbd60930a33d2",
   "packets": [
     {
       "blocked_task_count": 0,
@@ -122,14 +122,14 @@
   "sources": {
     "owner_packet_bundle": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_bundle_hash": "c45f88027aecbbbd5c831265045ff3d670ec326033ba10ccbfa143cedc7c4620",
-      "owner_packet_bundle_id": "e46a923c41d55595233770b45f8b1139690faf9e537c5113d32cf21154d9afc7",
+      "owner_packet_bundle_hash": "978c2d1432f92f8544abc5f6fd0d369106f00a55e8b8d556634505e75e1e8d59",
+      "owner_packet_bundle_id": "8ce550527f801cbe483309f6709e20fa0a844da4c9b726c6c6cf1b97e8b7c07b",
       "schema": "trustai.external-evidence-production-replacement-owner-packet-bundle/0.1"
     },
     "replacement_plan": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "replacement_plan_hash": "afbfd63f0f57e0b060905efcec7b9aaf600e445a5012dd4cf199150bfdd7ef7b",
-      "replacement_plan_id": "400752c65c323f62bace76507ceaedc4302fa6bd392686e3e0babafb863e09ce",
+      "replacement_plan_hash": "869632d6c997a305410d39db779250be04fc1eccc865f55011522f4c1379fde1",
+      "replacement_plan_id": "4f4c95558fb2e214b49b73a2140710d360f63d1714ff55aef63162721d584877",
       "schema": "trustai.external-evidence-production-replacement-plan/0.1"
     }
   },

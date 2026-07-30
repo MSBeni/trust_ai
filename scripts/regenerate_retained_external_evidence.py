@@ -1314,6 +1314,21 @@ def refresh_retained_artifacts() -> None:
         "--markdown",
         path("retained-external-evidence-production-replacement-intake-template.md"),
     )
+    run(
+        "external-evidence-production-replacement-submission-review",
+        path("retained-external-evidence-production-replacement-intake-template.json"),
+        path("retained-external-evidence-production-replacement-owner-packet-status.json"),
+        path("source-external-evidence-plan-all.json"),
+        "--require-live-source-uris",
+        "--generated-at",
+        COLLECTION_TIME,
+        "--out",
+        path("retained-external-evidence-production-replacement-submission-review.json"),
+        "--markdown",
+        path("retained-external-evidence-production-replacement-submission-review.md"),
+        "--fulfilled-source-map-out",
+        path("retained-external-evidence-production-replacement-fulfilled-source-map.json"),
+    )
 
 
 def write_deterministic_source_roadmap_audit() -> None:
@@ -1650,6 +1665,14 @@ def verify_retained_artifacts() -> None:
         path("retained-external-evidence-production-replacement-intake-template.json"),
         path("retained-external-evidence-production-replacement-owner-packet-status.json"),
     )
+    run(
+        "external-evidence-production-replacement-submission-review-verify",
+        path("retained-external-evidence-production-replacement-submission-review.json"),
+        path("retained-external-evidence-production-replacement-intake-template.json"),
+        path("retained-external-evidence-production-replacement-owner-packet-status.json"),
+        path("source-external-evidence-plan-all.json"),
+        "--require-live-source-uris",
+    )
     assert_retained_counts()
     verify_retained_collection_chain()
 
@@ -1677,6 +1700,8 @@ def assert_retained_counts() -> None:
     production_replacement_owner_packets = json_load(DIR / "retained-external-evidence-production-replacement-owner-packets.json")
     production_replacement_owner_packet_status = json_load(DIR / "retained-external-evidence-production-replacement-owner-packet-status.json")
     production_replacement_intake_template = json_load(DIR / "retained-external-evidence-production-replacement-intake-template.json")
+    production_replacement_submission_review = json_load(DIR / "retained-external-evidence-production-replacement-submission-review.json")
+    production_replacement_fulfilled_source_map = json_load(DIR / "retained-external-evidence-production-replacement-fulfilled-source-map.json")
     remaining_package_count = len(work_package.get("packages", []))
     expected_review_status = "ready-to-collect" if remaining_count == 0 else "blocked"
     expected_review_source_map_ok = remaining_count == 0
@@ -1729,6 +1754,14 @@ def assert_retained_counts() -> None:
         (production_replacement_intake_template["summary"]["owner_count"], production_replacement_owner_packet_status["summary"]["packet_count"], "production replacement intake template owner count"),
         (production_replacement_intake_template["summary"]["placeholder_source_uri_count"], expected_non_production_count, "production replacement intake template placeholder URI count"),
         (production_replacement_intake_template["summary"]["open_task_count"], expected_non_production_count, "production replacement intake template open task count"),
+        (production_replacement_submission_review["summary"]["review_status"], "blocked", "production replacement submission review status"),
+        (production_replacement_submission_review["summary"]["ready_task_count"], 0, "production replacement submission review ready task count"),
+        (production_replacement_submission_review["summary"]["blocked_task_count"], expected_non_production_count, "production replacement submission review blocked task count"),
+        (production_replacement_submission_review["summary"]["placeholder_source_uri_count"], expected_non_production_count, "production replacement submission review placeholder URI count"),
+        (production_replacement_submission_review["summary"]["live_source_uri_count"], 0, "production replacement submission review live URI count"),
+        (production_replacement_submission_review["summary"]["fulfilled_source_map_verification_ok"], False, "production replacement submission review source-map verification status"),
+        (production_replacement_fulfilled_source_map["summary"]["entry_count"], expected_non_production_count, "production replacement fulfilled source-map entry count"),
+        (production_replacement_fulfilled_source_map["summary"]["placeholder_source_uri_count"], expected_non_production_count, "production replacement fulfilled source-map placeholder URI count"),
     ]
     for actual, expected, label in checks:
         if actual != expected:

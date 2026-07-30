@@ -1199,6 +1199,7 @@ from .external_evidence import (
     build_external_evidence_production_replacement_owner_packets,
     build_external_evidence_production_replacement_owner_packet_status,
     build_external_evidence_production_replacement_intake_template,
+    build_external_evidence_production_replacement_submission_review,
     build_external_evidence_source_map_template,
     fulfill_external_evidence_source_map,
     build_external_evidence_collection_plan,
@@ -1224,6 +1225,7 @@ from .external_evidence import (
     load_external_evidence_production_replacement_owner_packets,
     load_external_evidence_production_replacement_owner_packet_status,
     load_external_evidence_production_replacement_intake_template,
+    load_external_evidence_production_replacement_submission_review,
     load_external_evidence_collection_plan,
     load_external_evidence_source_map,
     load_external_evidence_collection_run,
@@ -1249,6 +1251,7 @@ from .external_evidence import (
     verify_external_evidence_production_replacement_owner_packets,
     verify_external_evidence_production_replacement_owner_packet_status,
     verify_external_evidence_production_replacement_intake_template,
+    verify_external_evidence_production_replacement_submission_review,
     verify_external_evidence_collection_plan,
     verify_external_evidence_source_map_template,
     verify_external_evidence_collection_run,
@@ -1282,6 +1285,8 @@ from .external_evidence import (
     write_external_evidence_production_replacement_owner_packet_status_markdown,
     write_external_evidence_production_replacement_intake_template,
     write_external_evidence_production_replacement_intake_template_markdown,
+    write_external_evidence_production_replacement_submission_review,
+    write_external_evidence_production_replacement_submission_review_markdown,
     write_external_evidence_collection_plan,
     write_external_evidence_collection_plan_markdown,
     write_external_evidence_intake,
@@ -17105,6 +17110,105 @@ def cmd_external_evidence_production_replacement_intake_template_verify(args: ar
     return 1
 
 
+def cmd_external_evidence_production_replacement_submission_review(args: argparse.Namespace) -> int:
+    try:
+        template = load_external_evidence_production_replacement_intake_template(args.template)
+        status_report = load_external_evidence_production_replacement_owner_packet_status(args.status_report)
+        plan = load_external_evidence_collection_plan(args.plan)
+        review = build_external_evidence_production_replacement_submission_review(
+            template,
+            status_report,
+            plan,
+            root=args.root,
+            require_live_source_uris=args.require_live_source_uris,
+            require_source_snapshots=args.require_source_snapshots,
+            require_fresh_source_snapshots=args.require_fresh_source_snapshots,
+            now=args.now,
+            snapshot_dir=args.snapshot_dir,
+            intake_dir=args.intake_dir,
+            generated_at=args.generated_at,
+        )
+        result = verify_external_evidence_production_replacement_submission_review(
+            review,
+            template,
+            status_report,
+            plan,
+            root=args.root,
+            require_live_source_uris=args.require_live_source_uris,
+            require_source_snapshots=args.require_source_snapshots,
+            require_fresh_source_snapshots=args.require_fresh_source_snapshots,
+            now=args.now,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement submission review failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("external evidence production replacement submission review verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_external_evidence_production_replacement_submission_review(args.out, review)
+    if args.markdown:
+        write_external_evidence_production_replacement_submission_review_markdown(args.markdown, review)
+        print(f"external evidence production replacement submission review markdown: {args.markdown}")
+    if args.fulfilled_source_map_out:
+        target = Path(args.fulfilled_source_map_out)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(review["fulfilled_source_map"], indent=2, sort_keys=True), encoding="utf-8")
+        print(f"external evidence production replacement fulfilled source map: {args.fulfilled_source_map_out}")
+    summary = review["summary"]
+    print(f"external evidence production replacement submission review: {args.out}")
+    print(f"production replacement submission review id: {review['production_replacement_submission_review_id']}")
+    print(f"status: {summary['review_status']}")
+    print(f"ready tasks: {summary['ready_task_count']}")
+    print(f"blocked tasks: {summary['blocked_task_count']}")
+    print(f"placeholder source URIs: {summary['placeholder_source_uri_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    if args.require_ready and summary.get("review_status") != "ready-to-collect":
+        print("external evidence production replacement submission review is not ready to collect", file=sys.stderr)
+        for blocker in review.get("blockers", []):
+            print(f"- {blocker}", file=sys.stderr)
+        return 1
+    return 0
+
+
+def cmd_external_evidence_production_replacement_submission_review_verify(args: argparse.Namespace) -> int:
+    try:
+        review = load_external_evidence_production_replacement_submission_review(args.review)
+        template = load_external_evidence_production_replacement_intake_template(args.template)
+        status_report = load_external_evidence_production_replacement_owner_packet_status(args.status_report)
+        plan = load_external_evidence_collection_plan(args.plan)
+        result = verify_external_evidence_production_replacement_submission_review(
+            review,
+            template,
+            status_report,
+            plan,
+            root=args.root,
+            require_live_source_uris=args.require_live_source_uris,
+            require_source_snapshots=args.require_source_snapshots,
+            require_fresh_source_snapshots=args.require_fresh_source_snapshots,
+            now=args.now,
+            require_ready=args.require_ready,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement submission review verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        summary = review.get("summary", {})
+        print(f"verified external evidence production replacement submission review: {args.review}")
+        print(f"production replacement submission review id: {review.get('production_replacement_submission_review_id')}")
+        print(f"status: {summary.get('review_status')}")
+        print(f"ready tasks: {summary.get('ready_task_count', 0)}")
+        print(f"blocked tasks: {summary.get('blocked_task_count', 0)}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"external evidence production replacement submission review verification failed: {args.review}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
 def cmd_external_evidence_plan(args: argparse.Namespace) -> int:
     try:
         roadmap_audit = load_roadmap_audit(args.roadmap_audit)
@@ -28611,6 +28715,37 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_production_replacement_intake_template_verify.add_argument("template")
     external_evidence_production_replacement_intake_template_verify.add_argument("status_report")
     external_evidence_production_replacement_intake_template_verify.set_defaults(func=cmd_external_evidence_production_replacement_intake_template_verify)
+
+    external_evidence_production_replacement_submission_review = subparsers.add_parser("external-evidence-production-replacement-submission-review", help="review a filled production authority replacement intake template against the all-authority collection plan")
+    external_evidence_production_replacement_submission_review.add_argument("template")
+    external_evidence_production_replacement_submission_review.add_argument("status_report")
+    external_evidence_production_replacement_submission_review.add_argument("plan")
+    external_evidence_production_replacement_submission_review.add_argument("--root", default=".")
+    external_evidence_production_replacement_submission_review.add_argument("--require-live-source-uris", action="store_true")
+    external_evidence_production_replacement_submission_review.add_argument("--require-source-snapshots", action="store_true")
+    external_evidence_production_replacement_submission_review.add_argument("--require-fresh-source-snapshots", action="store_true")
+    external_evidence_production_replacement_submission_review.add_argument("--require-ready", action="store_true", help="exit non-zero unless the production replacement submission review is ready to collect")
+    external_evidence_production_replacement_submission_review.add_argument("--now", help="RFC3339 verification time for source snapshot freshness checks")
+    external_evidence_production_replacement_submission_review.add_argument("--snapshot-dir", default="artifacts/external-evidence-sources")
+    external_evidence_production_replacement_submission_review.add_argument("--intake-dir", default="artifacts/external-evidence-intakes")
+    external_evidence_production_replacement_submission_review.add_argument("--generated-at")
+    external_evidence_production_replacement_submission_review.add_argument("--out", default="artifacts/external-evidence-production-replacement-submission-review.json")
+    external_evidence_production_replacement_submission_review.add_argument("--markdown", default="artifacts/external-evidence-production-replacement-submission-review.md")
+    external_evidence_production_replacement_submission_review.add_argument("--fulfilled-source-map-out")
+    external_evidence_production_replacement_submission_review.set_defaults(func=cmd_external_evidence_production_replacement_submission_review)
+
+    external_evidence_production_replacement_submission_review_verify = subparsers.add_parser("external-evidence-production-replacement-submission-review-verify", help="verify a production authority replacement submission review")
+    external_evidence_production_replacement_submission_review_verify.add_argument("review")
+    external_evidence_production_replacement_submission_review_verify.add_argument("template")
+    external_evidence_production_replacement_submission_review_verify.add_argument("status_report")
+    external_evidence_production_replacement_submission_review_verify.add_argument("plan")
+    external_evidence_production_replacement_submission_review_verify.add_argument("--root", default=".")
+    external_evidence_production_replacement_submission_review_verify.add_argument("--require-live-source-uris", action="store_true")
+    external_evidence_production_replacement_submission_review_verify.add_argument("--require-source-snapshots", action="store_true")
+    external_evidence_production_replacement_submission_review_verify.add_argument("--require-fresh-source-snapshots", action="store_true")
+    external_evidence_production_replacement_submission_review_verify.add_argument("--require-ready", action="store_true", help="exit non-zero unless the production replacement submission review is ready to collect")
+    external_evidence_production_replacement_submission_review_verify.add_argument("--now")
+    external_evidence_production_replacement_submission_review_verify.set_defaults(func=cmd_external_evidence_production_replacement_submission_review_verify)
     external_evidence_append = subparsers.add_parser("external-evidence-append", help="append a verified external-evidence manifest to an evidence chain")
     external_evidence_append.add_argument("manifest")
     external_evidence_append.add_argument("roadmap_audit")
