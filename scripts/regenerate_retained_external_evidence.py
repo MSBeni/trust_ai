@@ -1605,7 +1605,8 @@ def assert_retained_counts() -> None:
     expected_review_status = "ready-to-collect" if remaining_count == 0 else "blocked"
     expected_review_source_map_ok = remaining_count == 0
     expected_closure_status = "closed" if remaining_count == 0 else "blocked"
-    expected_readiness_status = "ready" if remaining_count == 0 else "not-ready"
+    expected_readiness_status = "not-ready"
+    expected_non_production_count = retained_count
     checks = [
         (manifest["summary"]["covered_authority_kind_count"], retained_count, "manifest covered authority kind count"),
         (manifest["summary"]["missing_authority_kind_count"], remaining_count, "manifest missing authority kind count"),
@@ -1635,7 +1636,7 @@ def assert_retained_counts() -> None:
         (owner_fulfillment_closure["summary"]["missing_manifest_coverage_count"], remaining_count, "owner fulfillment closure missing manifest coverage count"),
         (owner_fulfillment_closure["summary"]["placeholder_source_uri_count"], remaining_count, "owner fulfillment closure placeholder URI count"),
         (readiness["summary"]["readiness_status"], expected_readiness_status, "readiness status"),
-        (readiness["summary"]["non_production_covered_authority_kind_count"], 0, "readiness non-production coverage count"),
+        (readiness["summary"]["non_production_covered_authority_kind_count"], expected_non_production_count, "readiness non-production coverage count"),
     ]
     for actual, expected, label in checks:
         if actual != expected:

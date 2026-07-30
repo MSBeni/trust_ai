@@ -1870,6 +1870,22 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             finally:
                 shutil.rmtree(snapshot_path.parent, ignore_errors=True)
 
+    def test_retained_external_evidence_readiness_keeps_reference_exports_not_ready(self):
+        readiness = load_external_evidence_readiness_report(ROOT / "examples/aitrade/external-evidence/retained-external-evidence-readiness.json")
+
+        self.assertEqual("not-ready", readiness["summary"]["readiness_status"])
+        self.assertEqual(72, readiness["summary"]["non_production_covered_authority_kind_count"])
+        self.assertEqual(72, len(readiness["non_production_covered_authority_units"]))
+        self.assertTrue(
+            any(
+                "reference" in reason or "example" in reason
+                for unit in readiness["non_production_covered_authority_units"]
+                for item in unit["items"]
+                for reason in item["reasons"]
+            ),
+            readiness["non_production_covered_authority_units"][:3],
+        )
+
     def test_retained_external_evidence_examples_verify(self):
         audit = json.loads((ROOT / "examples/aitrade/external-evidence/source-roadmap-audit.json").read_text(encoding="utf-8"))
         manifest = load_external_evidence_manifest(ROOT / "examples/aitrade/external-evidence/source-external-evidence-manifest.json")

@@ -1,5 +1,7 @@
 {
-  "blockers": [],
+  "blockers": [
+    "72 covered authority units use example or non-production evidence"
+  ],
   "checks": [
     {
       "id": "artifacts-verify",
@@ -8,7 +10,7 @@
     },
     {
       "id": "covered-evidence-production-usable",
-      "status": "passed",
+      "status": "failed",
       "summary": "Covered authority units use production authority evidence rather than retained examples or fixtures."
     },
     {
@@ -38,11 +40,982 @@
     "A not-ready status is expected until every roadmap authority unit has live source evidence, source snapshots, intake receipts, and a rebuilt manifest."
   ],
   "next_actions": [
-    "Append the complete external-evidence manifest to the roadmap evidence chain and publish the proof bundle."
+    "Replace retained/example authority evidence with production authority exports, assign owner work packages, replace TODO source URIs with authority-owned sources, collect snapshots and intake receipts, rebuild the manifest, and rerun readiness with --require-ready."
   ],
-  "non_production_covered_authority_units": [],
-  "readiness_id": "a4c0286fc0f55b22646077407566866b9a50465d09bf5dd834eb5ac39332f621",
-  "readiness_status": "ready",
+  "non_production_covered_authority_units": [
+    {
+      "items": [
+        {
+          "evidence_id": "6a2131aa287c151a077bf6b7bce8cd744842e5ddcc7d64092a31de0580aa9975",
+          "path": "examples/aitrade/external-evidence/identity-inventory-provider-source-snapshot.json",
+          "reasons": [
+            "example identity-provider authority",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "agent-inventory-and-identity:identity-provider"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "53c508a288bd13bd906ad964b94906781c9eeac47eeadbd81dec98f41454631c",
+          "path": "examples/aitrade/external-evidence/agent-inventory-provider-api-source-snapshot.json",
+          "reasons": [
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "agent-inventory-and-identity:provider-api"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "f2dcc9e217884166fdf1a4a760e0d44c719ec7828879043ca6ade0451ef0936c",
+          "path": "examples/aitrade/external-evidence/review-portal-hosted-service-source-snapshot.json",
+          "reasons": [
+            "example TrustAI service authority",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "auditor-and-review-portal:hosted-service"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "d520e3e59bafba5d756f3c04768855127b16e3c60901ec21be2cc55bca2b18fc",
+          "path": "examples/aitrade/external-evidence/review-portal-identity-provider-source-snapshot.json",
+          "reasons": [
+            "example TrustAI service authority",
+            "example identity-provider authority",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "auditor-and-review-portal:identity-provider"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "55b83e928fe650ba5237e56a9d5e9fe528722bc18c86c1ae7c22cac1d8f6ce26",
+          "path": "examples/aitrade/external-evidence/review-portal-kms-hsm-source-snapshot.json",
+          "reasons": [
+            "example KMS/HSM authority",
+            "example TrustAI service authority",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "auditor-and-review-portal:kms-hsm"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "70f33128e86d36550d0511a271580f38f61247fbdb11a58c9d9629210cf27f34",
+          "path": "examples/aitrade/external-evidence/review-portal-provider-api-source-snapshot.json",
+          "reasons": [
+            "example TrustAI service authority",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "auditor-and-review-portal:provider-api"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "bcdcfb62d171045eaa0291f12082d09df8b91b53581afdf4e3347ed20104ce42",
+          "path": "examples/aitrade/external-evidence/review-portal-regulator-source-snapshot.json",
+          "reasons": [
+            "example regulator authority",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "auditor-and-review-portal:regulator"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "e43c8a4744bc84e4438c153fa333cdf69c5ba87fb7bd1f5ec1f3e9a1b375287c",
+          "path": "examples/aitrade/external-evidence/byoc-ci-run-source-snapshot.json",
+          "reasons": [
+            "not a live customer record",
+            "reference authority export",
+            "reference deployment",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "byoc-self-hosted:ci-run"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "273a0c1ac72545c9c277d5b0475a37eae888e7d9b641dd22aaaa9892f49b6de5",
+          "path": "examples/aitrade/external-evidence/byoc-object-lock-source-snapshot.json",
+          "reasons": [
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "byoc-self-hosted:cloud-object-lock"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "7630f5961c9ea01fd1a201d72d4cc1be720771b21a309fb61a9247041b214bd9",
+          "path": "examples/aitrade/external-evidence/byoc-customer-source-snapshot.json",
+          "reasons": [
+            "example customer authority",
+            "reference deployment",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "byoc-self-hosted:customer"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "113809767f29184b1965064929055bc2b69bdfd48ce81bffbf3556bc82d8918e",
+          "path": "examples/aitrade/external-evidence/byoc-kms-hsm-source-snapshot.json",
+          "reasons": [
+            "example KMS/HSM authority",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "byoc-self-hosted:kms-hsm"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "055776e2d804b83b2f82680eea97b35d03d244bffae321038a4e66188f765185",
+          "path": "examples/aitrade/external-evidence/byoc-provider-api-source-snapshot.json",
+          "reasons": [
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "byoc-self-hosted:provider-api"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "b40c0f2a835aa9743913d6a8577d686fc3ca698c1b22bdd2eaacfa5dc8b7e077",
+          "path": "examples/aitrade/external-evidence/byoc-standards-body-source-snapshot.json",
+          "reasons": [
+            "not a named customer record",
+            "reference deployment",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "byoc-self-hosted:standards-body"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "135447c661526da9744d2742adc31bb8d091c24082d4fa16d83994d0e00ef1f3",
+          "path": "examples/aitrade/external-evidence/github-check-suite-source-snapshot.json",
+          "reasons": [
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "cicd-provider-approvals:ci-run"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "9c0078f8404c17db96da2eac8ce7091f345c5cd398c7bd2e53eb6eef55280886",
+          "path": "examples/aitrade/external-evidence/cicd-provider-approvals-hosted-service-source-snapshot.json",
+          "reasons": [
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "cicd-provider-approvals:hosted-service"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "a14d01087f2943bdee895cb133f03b7940f3c84fcc6ba63c25ed0322b9f18427",
+          "path": "examples/aitrade/external-evidence/cicd-provider-approvals-identity-provider-source-snapshot.json",
+          "reasons": [
+            "example identity-provider authority",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "cicd-provider-approvals:identity-provider"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "e4dac64768d98038bcaf75caa8b524efa5b3cb2e6e3394cf03bd057d1cf7a5cf",
+          "path": "examples/aitrade/external-evidence/github-audit-log-source-snapshot.json",
+          "reasons": [
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "cicd-provider-approvals:provider-api"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "e3940193b90ce521da641c60baa92b59a6b70e2fcd7dfc4901cc5ad253a767ae",
+          "path": "examples/aitrade/external-evidence/compliance-provider-api-source-snapshot.json",
+          "reasons": [
+            "example TrustAI service authority",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "compliance-mapper-and-eu-ai-act:provider-api"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "4b767f3efddfe75d769f8bf8fada3bee961019430b2223bbc4b760fec786d0cc",
+          "path": "examples/aitrade/external-evidence/compliance-regulator-source-snapshot.json",
+          "reasons": [
+            "example regulator authority",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "compliance-mapper-and-eu-ai-act:regulator"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "efca36eb2498858ddaf83920ba73ec598abbf4530682f99156b58e2fc57d3302",
+          "path": "examples/aitrade/external-evidence/compliance-standards-body-source-snapshot.json",
+          "reasons": [
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "compliance-mapper-and-eu-ai-act:standards-body"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "14731c3917d6f70d5dbb0ad9f5df39a9a3650265fe90ac32dc3fe28aad1300d2",
+          "path": "examples/aitrade/external-evidence/design-partner-customer-source-snapshot.json",
+          "reasons": [
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "design-partner-pilot-exit-criteria:customer"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "bf5bbce326c8e1be65bfba2be80e011c4ca0f3b4139a3aa0994d937674982d2b",
+          "path": "examples/aitrade/external-evidence/design-partner-insurer-source-snapshot.json",
+          "reasons": [
+            "example insurer authority",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "design-partner-pilot-exit-criteria:insurer"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "b9c70734753b3882b6a678850e7efa983a086727820d5f89ab1f79dc067aa9c9",
+          "path": "examples/aitrade/external-evidence/design-partner-regulator-source-snapshot.json",
+          "reasons": [
+            "example regulator authority",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "design-partner-pilot-exit-criteria:regulator"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "1f7ce0a6442f77c9c2cf5801496f02ad54489dd4d7568609e7874f3d6bfc1c5d",
+          "path": "examples/aitrade/external-evidence/framework-adapters-ci-run-source-snapshot.json",
+          "reasons": [
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "framework-adapters:ci-run"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "a95d7ff14ba17dd3309403eb75e1e9f54025c8c70f89f05ca6496f5c267aa14f",
+          "path": "examples/aitrade/external-evidence/framework-hook-release-hosted-service-source-snapshot.json",
+          "reasons": [
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "framework-adapters:hosted-service"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "9538b7db9f260a65c81532a50111b58fccd995124b08e2a1807d6710e6b90cef",
+          "path": "examples/aitrade/external-evidence/framework-hook-release-provider-api-source-snapshot.json",
+          "reasons": [
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "framework-adapters:provider-api"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "2ba405e81db6d5837b479d843f01e1271182f47cf0d8c9f91880d406c17c5de1",
+          "path": "examples/aitrade/external-evidence/insurer-api-actuarial-ci-run-source-snapshot.json",
+          "reasons": [
+            "reference CI run",
+            "reference authority export",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "insurer-api-and-actuarial-products:ci-run"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "622bca0d4391b1c3703d08dd0ec5364dcea883857d5751467d4b8e43b1d92cf2",
+          "path": "examples/aitrade/external-evidence/insurer-api-actuarial-customer-source-snapshot.json",
+          "reasons": [
+            "example customer authority",
+            "no live customer deployment",
+            "reference acceptance",
+            "reference authority export",
+            "reference customer review",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "insurer-api-and-actuarial-products:customer"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "7f9752152f4006c4e3f09e1ea90b5d8e773329e384b9ba0d8bf115fa164e9057",
+          "path": "examples/aitrade/external-evidence/insurer-api-actuarial-hosted-service-source-snapshot.json",
+          "reasons": [
+            "example TrustAI service authority",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "insurer-api-and-actuarial-products:hosted-service"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "218113799658aa491029712a6ee59399c1ee5e2a08d68c4888f167c6ad7899f6",
+          "path": "examples/aitrade/external-evidence/insurer-api-actuarial-identity-provider-source-snapshot.json",
+          "reasons": [
+            "example TrustAI service authority",
+            "example identity-provider authority",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "insurer-api-and-actuarial-products:identity-provider"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "438e6c7b8abcef20d94e902ca4f43219073eab1931cb7f7b3661593a8c748596",
+          "path": "examples/aitrade/external-evidence/insurer-api-actuarial-insurer-source-snapshot.json",
+          "reasons": [
+            "example insurer authority",
+            "no live policy issuance",
+            "reference authority export",
+            "reference underwriting",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "insurer-api-and-actuarial-products:insurer"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "2e695600bdd29ea0bf4028c1d1f6a6c9ad5559365f14f41472c8c1983909d847",
+          "path": "examples/aitrade/external-evidence/insurer-api-actuarial-kms-hsm-source-snapshot.json",
+          "reasons": [
+            "example KMS/HSM authority",
+            "example TrustAI service authority",
+            "reference KMS/HSM export",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "insurer-api-and-actuarial-products:kms-hsm"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "04f3151a730fe1dc641606ae5a2fd7bb0b7645370f954a58d7c26a49d15341c9",
+          "path": "examples/aitrade/external-evidence/insurer-api-actuarial-provider-api-source-snapshot.json",
+          "reasons": [
+            "example TrustAI service authority",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "insurer-api-and-actuarial-products:provider-api"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "e935805f041bf2edd46c29a2c73e22815860c05ac15fd2ffdac7dcadf84777a7",
+          "path": "examples/aitrade/external-evidence/mcp-gateway-ci-run-source-snapshot.json",
+          "reasons": [
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "mcp-gateway:ci-run"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "3fd8736dd52d3ae12df65d53d52fa1931688a33150e7e77809e82496d48583ca",
+          "path": "examples/aitrade/external-evidence/mcp-proxy-events-hosted-service-source-snapshot.json",
+          "reasons": [
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "mcp-gateway:hosted-service"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "3506ff0c10de1c82c35c78acda167e647b81b76ddb6ef9f9dbe43ed0c28bb55c",
+          "path": "examples/aitrade/external-evidence/mcp-gateway-kms-hsm-source-snapshot.json",
+          "reasons": [
+            "example KMS/HSM authority",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "mcp-gateway:kms-hsm"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "549683ae41e990528a4926b23f8f9f2cebb1b9ad5af5cdc9027c7f76127faf67",
+          "path": "examples/aitrade/external-evidence/mcp-proxy-events-provider-api-source-snapshot.json",
+          "reasons": [
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "mcp-gateway:provider-api"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "d23866601929fa7078c22cbf34acb53a16ac2f51a146986da69f3e487f5e546a",
+          "path": "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json",
+          "reasons": [
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "oss-verifier-and-public-spec:ci-run"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "2e0508cfbd7578bcfad9ab87e650cb438673f8ce8206fc0a4b0a063731bb8343",
+          "path": "examples/aitrade/external-evidence/github-hosted-service-source-snapshot.json",
+          "reasons": [
+            "retained git remote snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "oss-verifier-and-public-spec:hosted-service"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "41a05a579e46bf85f1fa3de12ed0808551bc9f51a89f363dc7bd0a060c84de8d",
+          "path": "examples/aitrade/external-evidence/github-main-ref-source-snapshot.json",
+          "reasons": [
+            "retained git remote snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "oss-verifier-and-public-spec:provider-api"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "5490b469c1174a8befa60b02cdb739c53c97fafcf3cb34aee91e1033d4585ac2",
+          "path": "examples/aitrade/external-evidence/product-scope-discipline-ci-run-source-snapshot.json",
+          "reasons": [
+            "reference authority export",
+            "requires fresh tenant authority exports",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "product-scope-discipline:ci-run"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "9423fb62d0f857210752d264bb1fafd4f9ef2439d968fd9188eb1f88f3710794",
+          "path": "examples/aitrade/external-evidence/product-scope-discipline-customer-source-snapshot.json",
+          "reasons": [
+            "example customer authority",
+            "reference authority export",
+            "requires fresh tenant authority exports",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "product-scope-discipline:customer"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "4009080f34da9078e1661be3b9fffb329138338269a71b18256bbf18347dd758",
+          "path": "examples/aitrade/external-evidence/roadmap-phase-scoreboard-ci-run-source-snapshot.json",
+          "reasons": [
+            "reference authority export",
+            "requires fresh tenant authority exports",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "roadmap-phase-scoreboard:ci-run"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "9437634d4d9a74488b5af28c14541fcab55781c0627d93e91c93873bf2068415",
+          "path": "examples/aitrade/external-evidence/roadmap-phase-scoreboard-customer-source-snapshot.json",
+          "reasons": [
+            "example customer authority",
+            "reference authority export",
+            "requires fresh tenant authority exports",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "roadmap-phase-scoreboard:customer"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "c20a42dce7ceb91000bfbf389752134c32a02c7fefe45f6eda41e5f3cfee69d2",
+          "path": "examples/aitrade/external-evidence/roadmap-phase-scoreboard-insurer-source-snapshot.json",
+          "reasons": [
+            "example insurer authority",
+            "reference authority export",
+            "requires fresh tenant authority exports",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "roadmap-phase-scoreboard:insurer"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "88673b320200aa0d6fbf4fd9963a89b4a6114fbab8c0f3c0cb12e54163a2d5c5",
+          "path": "examples/aitrade/external-evidence/roadmap-phase-scoreboard-regulator-source-snapshot.json",
+          "reasons": [
+            "example regulator authority",
+            "reference authority export",
+            "requires fresh tenant authority exports",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "roadmap-phase-scoreboard:regulator"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "7046edce432dc13d0d157eff5e449863cf15ef1bac41e538fdd70f48e76187d9",
+          "path": "examples/aitrade/external-evidence/roadmap-phase-scoreboard-standards-body-source-snapshot.json",
+          "reasons": [
+            "reference authority export",
+            "requires fresh tenant authority exports",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "roadmap-phase-scoreboard:standards-body"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "c8559fd68be6db2bba984a09e6ccf2ff6d9b777119458c3914242047e593f0c8",
+          "path": "examples/aitrade/external-evidence/runtime-policy-ci-run-source-snapshot.json",
+          "reasons": [
+            "reference authority export",
+            "requires fresh tenant authority exports",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "runtime-policy-and-attestation:ci-run"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "9fc05978d2aea108dff2101f6373dd0544fcc8b4c1bbd5a57f78fc185a0b1ea7",
+          "path": "examples/aitrade/external-evidence/runtime-action-hosted-service-source-snapshot.json",
+          "reasons": [
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "runtime-policy-and-attestation:hosted-service"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "5c168102aa8a072797d3f6d120c199ee7628593a5f440e1aef2bb64eafbaee2c",
+          "path": "examples/aitrade/external-evidence/runtime-policy-identity-provider-source-snapshot.json",
+          "reasons": [
+            "example identity-provider authority",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "runtime-policy-and-attestation:identity-provider"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "6654026e409a757b071fff418b49791b4c746078be03019b926b07f368df8605",
+          "path": "examples/aitrade/external-evidence/runtime-policy-kms-hsm-source-snapshot.json",
+          "reasons": [
+            "example KMS/HSM authority",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "runtime-policy-and-attestation:kms-hsm"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "bae97d9f4c34d0db2c72f33aa552591e3e617e4ec8e3f48b914da8d602c8d40b",
+          "path": "examples/aitrade/external-evidence/runtime-policy-provider-api-source-snapshot.json",
+          "reasons": [
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "runtime-policy-and-attestation:provider-api"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "01c87d42a388678fbdead75596a6691d969490ca3acedc8bdc9680bd8a1d481a",
+          "path": "examples/aitrade/external-evidence/self-serve-hosted-service-source-snapshot.json",
+          "reasons": [
+            "example TrustAI service authority",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "self-serve-onboarding:hosted-service"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "fa5761aa553b86c9486d59d0275636eff636f4bcc046010b0e9f9582c7404848",
+          "path": "examples/aitrade/external-evidence/self-serve-identity-provider-source-snapshot.json",
+          "reasons": [
+            "example identity-provider authority",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "self-serve-onboarding:identity-provider"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "f691d82a388adf51b7bae8b4c948e06572aaa9ffd4dc7ba87239c0ca02b7743b",
+          "path": "examples/aitrade/external-evidence/self-serve-provider-api-source-snapshot.json",
+          "reasons": [
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "self-serve-onboarding:provider-api"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "69867db75c5c7afb1db4511e3b5f4c8a80471720166fbfcc0e91bbdb430b3547",
+          "path": "examples/aitrade/external-evidence/shadow-holdout-customer-source-snapshot.json",
+          "reasons": [
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "shadow-replay-temporal-holdout:customer"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "906cfdbe8d13ef1e275a02d979e4a54a22e1768fd688abe7c1c4cf2b3334acf4",
+          "path": "examples/aitrade/external-evidence/shadow-holdout-identity-provider-source-snapshot.json",
+          "reasons": [
+            "example identity-provider authority",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "shadow-replay-temporal-holdout:identity-provider"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "f0fa089bad342adaadfb4b47e251b704335eb97a119869813b6eb3fdfb2d90d6",
+          "path": "examples/aitrade/external-evidence/shadow-holdout-kms-hsm-source-snapshot.json",
+          "reasons": [
+            "example KMS/HSM authority",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "shadow-replay-temporal-holdout:kms-hsm"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "b0bb1908788c7ead4d49ac7b2ad4b4f94123c91b99e19d6641254994f00f5858",
+          "path": "examples/aitrade/external-evidence/traffic-completeness-provider-api-source-snapshot.json",
+          "reasons": [
+            "example TrustAI service authority",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "shadow-replay-temporal-holdout:provider-api"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "53765685cbbb34b8bb08cdefb4c5d862ee911107cc53b72e66368598d135055b",
+          "path": "examples/aitrade/external-evidence/shadow-holdout-standards-body-source-snapshot.json",
+          "reasons": [
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "shadow-replay-temporal-holdout:standards-body"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "7d40a184d34bdd85198263de2d90c554a6431264acc59e9987fa31f07b5d35c4",
+          "path": "examples/aitrade/external-evidence/standards-track-auditor-kms-hsm-source-snapshot.json",
+          "reasons": [
+            "example KMS/HSM authority",
+            "reference authority export",
+            "requires fresh tenant authority exports",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "standards-track-and-auditor-ecosystem:kms-hsm"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "e7e478732e555cb8d5c96e40418cb0658ba194be178173c286b06d24c9cbccce",
+          "path": "examples/aitrade/external-evidence/standards-track-auditor-standards-body-source-snapshot.json",
+          "reasons": [
+            "reference authority export",
+            "requires fresh tenant authority exports",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "standards-track-and-auditor-ecosystem:standards-body"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "ac040cc3e25e36ca61ecebabb3e3cb2c4dd6bfb3cb567efa3ac21d0fd866d659",
+          "path": "examples/aitrade/external-evidence/state-of-agent-reliability-report-customer-source-snapshot.json",
+          "reasons": [
+            "example customer authority",
+            "reference authority export",
+            "requires fresh tenant authority exports",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "state-of-agent-reliability-report:customer"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "3d6df225f6a8ef3100d9a3b4a92451ce5eda343dd72ea6b09f80a11bcb7ca42d",
+          "path": "examples/aitrade/external-evidence/trust-network-customer-source-snapshot.json",
+          "reasons": [
+            "example customer authority",
+            "reference authority export",
+            "requires fresh tenant authority exports",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "trust-network-procurement-and-marketplace:customer"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "3eb30d515e0c4df06a655b7679e32af32a9115e44f081ef049d2fd3ccae1c04b",
+          "path": "examples/aitrade/external-evidence/trust-network-hosted-service-source-snapshot.json",
+          "reasons": [
+            "example TrustAI service authority",
+            "reference authority export",
+            "requires fresh tenant authority exports",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "trust-network-procurement-and-marketplace:hosted-service"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "bff31eb2d79dacceb130a236f646d0d5634b8104d32c1ae87cdfa2371b8e113e",
+          "path": "examples/aitrade/external-evidence/trust-network-identity-provider-source-snapshot.json",
+          "reasons": [
+            "example identity-provider authority",
+            "reference authority export",
+            "requires fresh tenant authority exports",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "trust-network-procurement-and-marketplace:identity-provider"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "b8adec94bf2864c409cdf1410825cdd8b8c84baf3f4c25a16e9bddde56e1898d",
+          "path": "examples/aitrade/external-evidence/trust-network-provider-api-source-snapshot.json",
+          "reasons": [
+            "example TrustAI service authority",
+            "reference authority export",
+            "requires fresh tenant authority exports",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "trust-network-procurement-and-marketplace:provider-api"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "60e592a467bd5eecaffafb7b2c43bcf0538e769ecb471836b1af7fd15d58a56e",
+          "path": "examples/aitrade/external-evidence/trustai-own-compliance-customer-source-snapshot.json",
+          "reasons": [
+            "example customer authority",
+            "requires fresh certification references",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "trustai-own-compliance:customer"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "355ac383d3ccd5b9aeff6940a6f61414c117b1020667eb3d38d62baf9d694634",
+          "path": "examples/aitrade/external-evidence/trustai-own-compliance-standards-body-source-snapshot.json",
+          "reasons": [
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "trustai-own-compliance:standards-body"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "87094259e89e5f38518c67718cb60960abcf5db53069de4d15fb26f679c4ee9f",
+          "path": "examples/aitrade/external-evidence/vertical-packs-customer-source-snapshot.json",
+          "reasons": [
+            "example customer authority",
+            "reference acceptance",
+            "reference authority export",
+            "reference customer review",
+            "reference environment",
+            "reference template review",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "vertical-packs:customer"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "b5f359d097cf043d5a28907475c9d75e478895f9c803c53db8d3ae449896e20b",
+          "path": "examples/aitrade/external-evidence/vertical-packs-insurer-source-snapshot.json",
+          "reasons": [
+            "example insurer authority",
+            "no binding premium discount",
+            "reference acceptance",
+            "reference authority export",
+            "reference environment",
+            "reference review",
+            "reference underwriting",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "vertical-packs:insurer"
+    },
+    {
+      "items": [
+        {
+          "evidence_id": "ff7a692362945c0c86a0ab430f9f32db95389e12857029ded4b805e96dab1481",
+          "path": "examples/aitrade/external-evidence/vertical-packs-regulator-source-snapshot.json",
+          "reasons": [
+            "example regulator authority",
+            "reference environment",
+            "reference review",
+            "reference template review",
+            "retained file-copy snapshot"
+          ]
+        }
+      ],
+      "unit_ref": "vertical-packs:regulator"
+    }
+  ],
+  "readiness_id": "86a40b34729695f30bf8813bad227752b2b40d8ccc1c7b66ad99180742f9435d",
+  "readiness_status": "not-ready",
   "schema": "trustai.external-evidence-readiness/0.1",
   "sources": {
     "collection_plan": {
@@ -83,16 +1056,16 @@
     }
   },
   "summary": {
-    "blocking_issue_count": 0,
+    "blocking_issue_count": 1,
     "covered_authority_kind_count": 72,
     "covered_requirement_count": 20,
     "live_source_uri_count": 0,
     "missing_authority_kind_count": 0,
     "missing_requirement_count": 0,
-    "non_production_covered_authority_kind_count": 0,
+    "non_production_covered_authority_kind_count": 72,
     "placeholder_source_uri_count": 0,
-    "production_usable_covered_authority_kind_count": 72,
-    "readiness_status": "ready",
+    "production_usable_covered_authority_kind_count": 0,
+    "readiness_status": "not-ready",
     "remaining_task_count": 0,
     "required_authority_kind_count": 72,
     "required_requirement_count": 20,
