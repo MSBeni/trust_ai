@@ -2254,14 +2254,14 @@
       "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
     ],
     "schema": "trustai.external-evidence-source-map/0.1",
-    "source_map_id": "95ab8c7649d473aa2b3acd4332f883c25b4c5a2e13ab88fedd990e9b45d05f65",
+    "source_map_id": "b7f39c45287280373ac31d4b8b5702f95982364086d1150f0e38a80b93d8978a",
     "source_plan": {
-      "plan_hash": "f55041ec95283cda79a9ab94648486b8556f3d816ad32a2471bdd9aec86df630",
-      "plan_id": "ea33269b089a8aaf227d680c8cc1578b50f57d1b534b458b5b6719a34b2d5204",
+      "plan_hash": "0470fa929c70e08cf7204ecf6b0cc1f5004b3baaec7b3f89d968cd0425ad7c8c",
+      "plan_id": "4e991cfa1ade1e7fe48a5ebffc9e17254dbf85704abe48f9c26868613bc204fd",
       "source_manifest": {
         "generated_at": "2026-07-12T00:01:00Z",
-        "manifest_hash": "def072b35e1e82e38667ee49cbc3eb8d08ee1d72a479a4556b574be19182d6cb",
-        "manifest_id": "575a096cc46aca061379953695c27886632f6fe5cf39b122c6100f76fa682fdf",
+        "manifest_hash": "d9fc56ea8dfe8988a85eee7216edc5aababedd0244fda6fc3c5d52df207e60a0",
+        "manifest_id": "7ac3b60e336c62b8bf23a91276d7f3dd5b34b42a5d4168764cbedb463dfa43ad",
         "manifest_ref": "production-external-evidence",
         "status": "partial"
       },
@@ -2289,31 +2289,31 @@
     "Replace remaining placeholder source URIs in the remediation owner fulfillment template and rerun this application.",
     "Resolve blocked applied review tasks before creating a production collection package."
   ],
-  "production_replacement_submission_review_id": "35551fb79227b954f1ff79bf45816f78f50918e91b8f8bb2148878e494693ab4",
+  "production_replacement_submission_review_id": "17556121186fd35316ae2bba8dd6980f4e107ae369382aa22659ecce4cef6dbe",
   "schema": "trustai.external-evidence-production-replacement-submission-review/0.1",
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "f55041ec95283cda79a9ab94648486b8556f3d816ad32a2471bdd9aec86df630",
-      "plan_id": "ea33269b089a8aaf227d680c8cc1578b50f57d1b534b458b5b6719a34b2d5204",
+      "plan_hash": "0470fa929c70e08cf7204ecf6b0cc1f5004b3baaec7b3f89d968cd0425ad7c8c",
+      "plan_id": "4e991cfa1ade1e7fe48a5ebffc9e17254dbf85704abe48f9c26868613bc204fd",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "production_replacement_intake_template": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "production_replacement_intake_template_hash": "80bab3e37cfabf5aed4729343378b5ab96a3658e2fc257219aae984a65dafde5",
-      "production_replacement_intake_template_id": "132271c57d1508605e9d5d8565e6abef7e4542e5ebbeed005f2dce3aa99455d3",
+      "production_replacement_intake_template_hash": "40cac4dc0b19d90460d4162f6dba259d44c5e159d1db8085c4ffde0f1b90af78",
+      "production_replacement_intake_template_id": "646052eef92ef53db1462ae5663cc3811c7e1444bedd404ec898b419a6ffbfa5",
       "schema": "trustai.external-evidence-production-replacement-intake-template/0.1"
     },
     "production_replacement_owner_packet_status": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_status_hash": "d4dd3260b0f814fb737461794e9c362ef4347195866a62b339030cb437cb607a",
-      "owner_packet_status_id": "dc54fa0db2b3f6e406351a677a378f1009249ad6709839388474b77c70fe87f2",
+      "owner_packet_status_hash": "20db9330ab8328f247a9f0cfeb7971ec782cf090c5ec3f2820a6e79dced19c29",
+      "owner_packet_status_id": "ebeee2d60d9e96a10b275ff5ac71ebad11301f9f17e86afea09927c722757dd2",
       "schema": "trustai.external-evidence-production-replacement-owner-packet-status/0.1"
     },
     "production_replacement_remediation_owner_fulfillment_review": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "production_replacement_remediation_owner_fulfillment_review_hash": "472e954b0ec3d7a54271d0b6c09734b3df8faae4389cabd78637b428ec15b802",
-      "production_replacement_remediation_owner_fulfillment_review_id": "f1e17e01da40ea2d02bef3309db1c21f7645647f00e1d862e11e732ef9a00c32",
+      "production_replacement_remediation_owner_fulfillment_review_hash": "bae33d1572a05354b5795ba73cc4565fedc71262799474e679c24050b27ae274",
+      "production_replacement_remediation_owner_fulfillment_review_id": "49444f0ea9ffde8c6b074f576d853ea56b53977ae3add9666041c2c35408b6ae",
       "schema": "trustai.external-evidence-production-replacement-remediation-owner-fulfillment-review/0.1"
     }
   },
@@ -4357,8 +4357,8 @@
     "application_warnings": [
       "source map contains 72 placeholder source_uri values"
     ],
-    "remediation_owner_fulfillment_review_id": "f1e17e01da40ea2d02bef3309db1c21f7645647f00e1d862e11e732ef9a00c32",
-    "source_submission_review_id": "d0c7989833197beebdeee2d9e9fcb74724a828582a3d058c0d05cec2f2ee899a"
+    "remediation_owner_fulfillment_review_id": "49444f0ea9ffde8c6b074f576d853ea56b53977ae3add9666041c2c35408b6ae",
+    "source_submission_review_id": "20d5727a362e3962bcbaa429c63ad9cc3f5ec53295d91f3f2ec50f2dff7b51bb"
   },
   "verification_options": {
     "intake_dir": "artifacts/external-evidence-intakes",

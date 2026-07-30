@@ -480,9 +480,12 @@ templates into a `fulfillments` array that is directly accepted by
 preserving owner, requirement, authority, blocked reason, snapshot, intake, and
 replacement traceability under `requests`. Its `--csv` output is the
 spreadsheet-friendly owner work queue for replacing every retained/reference
-authority row; it MUST contain the same task rows as `fulfillments` plus owner,
-snapshot, intake, issuer, subject, and blocking-reason columns. `REPLACE_WITH_*`,
-`TODO:*`, and example-domain source URIs MUST count as placeholders.
+authority row and can be fed back through
+`external-evidence-production-replacement-submission --fulfillment-csv-file`
+after owners fill live authority metadata. It MUST contain the same task rows as
+`fulfillments` plus owner, snapshot, intake, issuer, subject, and blocking-reason
+columns. `REPLACE_WITH_*`, `TODO:*`, and example-domain source URIs MUST count as
+placeholders.
 `external-evidence-production-replacement-remediation-owner-fulfillment-template-verify`
 MUST rebuild the template from the owner packet bundle and reject stale source
 packet hashes, owner filters, request bodies, or fulfillment rows.

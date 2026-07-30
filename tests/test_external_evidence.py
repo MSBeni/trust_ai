@@ -1997,6 +1997,9 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             remediation_owner_fulfillment_template_path = tmp_path / "replacement-remediation-owner-fulfillment-template.json"
             remediation_owner_fulfillment_template_markdown_path = tmp_path / "replacement-remediation-owner-fulfillment-template.md"
             remediation_owner_fulfillment_template_csv_path = tmp_path / "replacement-remediation-owner-fulfillment-template.csv"
+            remediation_owner_fulfillment_template_filled_csv_path = tmp_path / "replacement-remediation-owner-fulfillment-template-filled.csv"
+            csv_submission_path = tmp_path / "replacement-submission-from-csv.json"
+            csv_submitted_template_path = tmp_path / "replacement-submitted-template-from-csv.json"
             remediation_owner_fulfillment_review_path = tmp_path / "replacement-remediation-owner-fulfillment-review.json"
             remediation_owner_fulfillment_review_markdown_path = tmp_path / "replacement-remediation-owner-fulfillment-review.md"
             remediation_owner_fulfillment_review_source_map_path = tmp_path / "replacement-remediation-owner-fulfilled-source-map.json"
@@ -2385,6 +2388,41 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             self.assertIn("owner_hint", csv_rows[0])
             self.assertIn("snapshot_out", csv_rows[0])
             self.assertIn("intake_out", csv_rows[0])
+            csv_fulfillment_rows = [dict(row) for row in csv_rows]
+            csv_fulfillment_rows[0].update(live_fulfillment)
+            with remediation_owner_fulfillment_template_filled_csv_path.open("w", encoding="utf-8", newline="") as handle:
+                writer = csv.DictWriter(handle, fieldnames=list(csv_rows[0].keys()), extrasaction="ignore")
+                writer.writeheader()
+                writer.writerows(csv_fulfillment_rows)
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-production-replacement-submission",
+                    str(intake_template_path),
+                    "--fulfillment-csv-file",
+                    str(remediation_owner_fulfillment_template_filled_csv_path),
+                    "--require-submitted-live-source-uris",
+                    "--generated-at",
+                    "2026-07-09T00:08:30Z",
+                    "--out",
+                    str(csv_submission_path),
+                    "--submitted-template-out",
+                    str(csv_submitted_template_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            csv_submission = load_external_evidence_production_replacement_submission(csv_submission_path)
+            self.assertEqual("submitted", csv_submission["summary"]["submission_status"])
+            self.assertEqual(1, csv_submission["summary"]["submitted_task_count"])
+            self.assertEqual(1, csv_submission["summary"]["submitted_live_source_uri_count"])
+            self.assertEqual(0, csv_submission["summary"]["submitted_placeholder_source_uri_count"])
+            self.assertEqual(live_fulfillment["source_uri"], csv_submission["submitted_fulfillments"][0]["source_uri"])
+            csv_submitted_template = load_external_evidence_production_replacement_intake_template(csv_submitted_template_path)
+            self.assertEqual(live_fulfillment["source_uri"], csv_submitted_template["fulfillments"][0]["source_uri"])
+            self.assertEqual(live_fulfillment["source_uri"], csv_submitted_template["requests"][0]["fulfillment"]["source_uri"])
             subprocess.run(
                 [
                     sys.executable,

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import os
 import shutil
@@ -1217,6 +1218,8 @@ from .external_evidence import (
     EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA,
     EXTERNAL_EVIDENCE_SOURCE_MAP_SCHEMA,
     EXTERNAL_EVIDENCE_WORK_PACKAGE_GROUP_BY,
+    SOURCE_MAP_FULFILLMENT_FIELDS,
+    SOURCE_MAP_FULFILLMENT_TASK_KEYS,
     build_external_evidence_source_snapshot,
     build_roadmap_evidence_bundle,
     build_roadmap_evidence_report,
@@ -17193,7 +17196,7 @@ def cmd_external_evidence_production_replacement_intake_template_verify(args: ar
 def cmd_external_evidence_production_replacement_submission(args: argparse.Namespace) -> int:
     try:
         template = load_external_evidence_production_replacement_intake_template(args.template)
-        fulfillments = _load_source_map_fulfillments(args.fulfillment, args.fulfillment_file)
+        fulfillments = _load_source_map_fulfillments(args.fulfillment, args.fulfillment_file, args.fulfillment_csv_file)
         submission = build_external_evidence_production_replacement_submission(
             template,
             fulfillments,
@@ -18008,7 +18011,28 @@ def cmd_external_evidence_source_map_template(args: argparse.Namespace) -> int:
     print(f"entries: {source_map['summary']['entry_count']}")
     return 0
 
-def _load_source_map_fulfillments(values: list[str], files: list[str]) -> list[dict[str, Any]]:
+def _load_source_map_fulfillment_csv(path: str) -> list[dict[str, Any]]:
+    fulfillments: list[dict[str, Any]] = []
+    allowed_keys = set(SOURCE_MAP_FULFILLMENT_TASK_KEYS) | SOURCE_MAP_FULFILLMENT_FIELDS
+    with Path(path).open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        for index, row in enumerate(reader, start=2):
+            if row is None:
+                continue
+            fulfillment = {
+                str(key): str(value).strip()
+                for key, value in row.items()
+                if key in allowed_keys and str(value or "").strip()
+            }
+            if not fulfillment:
+                continue
+            if not any(fulfillment.get(key) for key in SOURCE_MAP_FULFILLMENT_TASK_KEYS):
+                raise ValueError(f"source map fulfillment CSV row {index} is missing task reference: {path}")
+            fulfillments.append(fulfillment)
+    return fulfillments
+
+
+def _load_source_map_fulfillments(values: list[str], files: list[str], csv_files: list[str] | None = None) -> list[dict[str, Any]]:
     fulfillments = [parse_source_map_fulfillment_arg(value) for value in values]
     for path in files:
         document = _load_json(path)
@@ -18020,6 +18044,8 @@ def _load_source_map_fulfillments(values: list[str], files: list[str]) -> list[d
             if not isinstance(item, dict):
                 raise ValueError(f"source map fulfillment file item {index} must be an object: {path}")
             fulfillments.append(item)
+    for path in csv_files or []:
+        fulfillments.extend(_load_source_map_fulfillment_csv(path))
     return fulfillments
 
 
@@ -18027,7 +18053,7 @@ def cmd_external_evidence_source_map_fulfill(args: argparse.Namespace) -> int:
     try:
         source_map = load_external_evidence_source_map(args.source_map)
         plan = load_external_evidence_collection_plan(args.plan)
-        fulfillments = _load_source_map_fulfillments(args.fulfillment, args.fulfillment_file)
+        fulfillments = _load_source_map_fulfillments(args.fulfillment, args.fulfillment_file, args.fulfillment_csv_file)
         fulfilled = fulfill_external_evidence_source_map(
             source_map,
             fulfillments,
@@ -28960,6 +28986,7 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_source_map_fulfill.add_argument("--root", default=".")
     external_evidence_source_map_fulfill.add_argument("--fulfillment", action="append", default=[], help="task;source_uri=URI[;description=TEXT;issuer=TEXT;issued_at=RFC3339;expires_at=RFC3339]")
     external_evidence_source_map_fulfill.add_argument("--fulfillment-file", action="append", default=[], help="JSON list or object with a fulfillments list of source-map metadata objects")
+    external_evidence_source_map_fulfill.add_argument("--fulfillment-csv-file", action="append", default=[], help="CSV rows of source-map metadata objects, such as the owner fulfillment work queue export")
     external_evidence_source_map_fulfill.add_argument("--generated-at")
     external_evidence_source_map_fulfill.add_argument("--require-live-source-uris", action="store_true", help="verify the fulfilled map has no placeholder/example source_uri values")
     external_evidence_source_map_fulfill.add_argument("--require-source-snapshots", action="store_true", help="verify every source_map entry has a matching source snapshot at snapshot_out")
@@ -29412,6 +29439,7 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_production_replacement_submission.add_argument("template")
     external_evidence_production_replacement_submission.add_argument("--fulfillment", action="append", default=[], help="task;source_uri=URI[;description=TEXT;issuer=TEXT;issued_at=RFC3339;expires_at=RFC3339]")
     external_evidence_production_replacement_submission.add_argument("--fulfillment-file", action="append", default=[], help="JSON list or object with a fulfillments list of source-map metadata objects")
+    external_evidence_production_replacement_submission.add_argument("--fulfillment-csv-file", action="append", default=[], help="CSV rows from the production replacement owner fulfillment work queue")
     external_evidence_production_replacement_submission.add_argument("--require-submitted-live-source-uris", action="store_true", help="fail when submitted fulfillment rows still use placeholder/example source_uri values")
     external_evidence_production_replacement_submission.add_argument("--generated-at")
     external_evidence_production_replacement_submission.add_argument("--out", default="artifacts/external-evidence-production-replacement-submission.json")

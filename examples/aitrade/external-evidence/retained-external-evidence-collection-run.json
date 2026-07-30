@@ -2,7 +2,7 @@
   "collected": [
     {
       "evidence_argument": "oss-verifier-and-public-spec,ci-run,examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json,Go verifier release workflow CI authority export;issuer=GitHub Actions;subject=trustai OSS verifier public spec and release workflow CI;source_uri=https://github.com/MSBeni/trust_ai/actions/workflows/go-verifier.yml;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "1ed1fc331eb8b515b823e06dc6a7fcdc5ffc361622174ebdaeea7bd47f0459cf",
+      "intake_id": "8515f0dcf7e60db729fd5a4b73fdceec4c93fab75f2a280f480c7ad8a3055dd4",
       "intake_path": "examples/aitrade/external-evidence/intakes/oss-verifier-ci-run.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/github-actions-workflow-run-source-snapshot.json",
       "snapshot_id": "102a7a7d9a07e8e0a0eaacbf5a30e770afeb7d04d4a58d05bed9eace17f62d87",
@@ -13,7 +13,7 @@
     },
     {
       "evidence_argument": "oss-verifier-and-public-spec,provider-api,examples/aitrade/external-evidence/github-main-ref-source-snapshot.json,GitHub remote main ref advertisement for pushed TrustAI checkpoint;issuer=GitHub Git;subject=MSBeni/trust_ai main branch;source_uri=git+https://github.com/MSBeni/trust_ai.git#refs/heads/main;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "9b56525b3f808d5e242573ad83262cc5f880d28851308401de315594ef7ca927",
+      "intake_id": "c452514e227a712139cf7ad08ce93af73ff64c5ab1648e9efb5bf4ca445cd515",
       "intake_path": "examples/aitrade/external-evidence/intakes/oss-verifier-provider-api.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/github-main-ref-source-snapshot.json",
       "snapshot_id": "9fba3ef5dffd64d54fff270b6b2606c034619930c167dea8ddfff3948aaa947a",
@@ -24,7 +24,7 @@
     },
     {
       "evidence_argument": "oss-verifier-and-public-spec,hosted-service,examples/aitrade/external-evidence/github-hosted-service-source-snapshot.json,GitHub hosted git service remote advertisement for TrustAI verifier and spec repository;issuer=GitHub Git;subject=MSBeni/trust_ai hosted repository service;source_uri=git+https://github.com/MSBeni/trust_ai.git#HEAD;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "331cf077f4047408c5034a6b9c75baa8aa79e2fbde17dd36a38299b22f61abae",
+      "intake_id": "1160a015b11ba6190e8a3b8c31b93e36d3dbeb3e195b5940b4b535a272a6d903",
       "intake_path": "examples/aitrade/external-evidence/intakes/oss-verifier-hosted-service.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/github-hosted-service-source-snapshot.json",
       "snapshot_id": "9d66741264ef1e364c739403d58a057c43964799f2580715c74f17f06bb5dfc9",
@@ -35,7 +35,7 @@
     },
     {
       "evidence_argument": "self-serve-onboarding,provider-api,examples/aitrade/external-evidence/self-serve-provider-api-source-snapshot.json,Retained provider API export for self-serve tenant and SDK provisioning evidence;issuer=TrustAI Cloud Provider API;subject=aitrade self-serve onboarding provider API;source_uri=https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/self-serve-provider-api-authority-export.json?ref=main;issued_at=2026-07-11T20:11:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "a6f57749b6f01b4d108d68ffc9923dc07b381c5515757dbd0410a65a96385a8e",
+      "intake_id": "ac7a1be6271f472798c56ffd6876f973a351613c25c7d91e9b54e6f5dcc20c06",
       "intake_path": "examples/aitrade/external-evidence/intakes/self-serve-onboarding-provider-api.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/self-serve-provider-api-source-snapshot.json",
       "snapshot_id": "ddacb8aebcf38240793ba3db30a04702f570d2ba659345236a8018bf6bb7979c",
@@ -46,7 +46,7 @@
     },
     {
       "evidence_argument": "self-serve-onboarding,hosted-service,examples/aitrade/external-evidence/self-serve-hosted-service-source-snapshot.json,Retained hosted service export for self-serve signup and quickstart completion evidence;issuer=TrustAI Cloud;subject=aitrade self-serve onboarding hosted service;source_uri=https://status.trustai.example/self-serve/aitrade/signup-prod;issued_at=2026-07-11T20:10:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "fab0bbc32cdb9d320ff76de6a265d3c17733354096abe1ab4b69e75d45b96859",
+      "intake_id": "8e554df94b1f991c91d31e21532aa7410cd336a3dd0a2acc2652dc92f1cc856b",
       "intake_path": "examples/aitrade/external-evidence/intakes/self-serve-onboarding-hosted-service.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/self-serve-hosted-service-source-snapshot.json",
       "snapshot_id": "27fbaae16c32c788c3709cfffe4b14d00b7bd59bb2407fb0723b972cc79d2f17",
@@ -57,7 +57,7 @@
     },
     {
       "evidence_argument": "self-serve-onboarding,identity-provider,examples/aitrade/external-evidence/self-serve-identity-provider-source-snapshot.json,Retained identity-provider export for self-serve OIDC, MFA, and tenant-admin sessions;issuer=Example IdP;subject=aitrade self-serve onboarding identity federation;source_uri=https://idp.example/exports/aitrade/self-serve/signup-prod;issued_at=2026-07-11T20:12:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "ec6e80ee838a5caeacee9b590c88f326a39b298336eec5713469cacf1395bb4f",
+      "intake_id": "a9450a6675a8f23dff755726c5718e2cbe7483cf95665a7143521df89503742a",
       "intake_path": "examples/aitrade/external-evidence/intakes/self-serve-onboarding-identity-provider.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/self-serve-identity-provider-source-snapshot.json",
       "snapshot_id": "3dbdc22d8219a6f192ab848e0c43a7b0f0a62fdd58f7b51ad274ca3e3a8ed4bd",
@@ -68,7 +68,7 @@
     },
     {
       "evidence_argument": "mcp-gateway,ci-run,examples/aitrade/external-evidence/mcp-gateway-ci-run-source-snapshot.json,Retained GitHub Actions export for MCP gateway proxy capture and authority test evidence;issuer=GitHub Actions;subject=trustai MCP gateway reference capture CI;source_uri=https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml;issued_at=2026-07-03T12:06:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "309a2edc345e0ea56864b6a5f3c667e4e77baf4d3a46b3643f98589d8d3cf2f7",
+      "intake_id": "dd15b0524d209475aabf4d4caaeecf09ba7f6d1ebc9ce9fe8cfd6dea2b71d6e8",
       "intake_path": "examples/aitrade/external-evidence/intakes/mcp-gateway-ci-run.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/mcp-gateway-ci-run-source-snapshot.json",
       "snapshot_id": "8f5fcc299b711225dea318a10296644b3707157187d623be67d3a9bfe5e1a28a",
@@ -79,7 +79,7 @@
     },
     {
       "evidence_argument": "mcp-gateway,kms-hsm,examples/aitrade/external-evidence/mcp-gateway-kms-hsm-source-snapshot.json,Retained KMS/HSM export for MCP gateway evidence-signing enforcement;issuer=Example KMS/HSM;subject=trustai MCP gateway evidence-signing enforcement;source_uri=https://kms.example/attestations/trustai/mcp-gateway/evidence-signing;issued_at=2026-07-03T12:07:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "bd3ec201cfbadb98f03d11284971c15e6e2e557931756bbfa5911cce0c2e8ea4",
+      "intake_id": "8951362772c849e6ac92c7758f55ef1667bf51a7f02b8a4fbb013ada98ff35cd",
       "intake_path": "examples/aitrade/external-evidence/intakes/mcp-gateway-kms-hsm.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/mcp-gateway-kms-hsm-source-snapshot.json",
       "snapshot_id": "0bff857bfb86a4996847786b4482f8729f5fc61bd0f651b1213d076aca17a9db",
@@ -90,7 +90,7 @@
     },
     {
       "evidence_argument": "mcp-gateway,provider-api,examples/aitrade/external-evidence/mcp-proxy-events-provider-api-source-snapshot.json,Retained GitHub contents API export for MCP gateway proxy event evidence;issuer=GitHub Contents API;subject=trustai MCP proxy event export;source_uri=https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/mcp-proxy-events.json?ref=main;issued_at=2026-07-03T12:05:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "a5b6ed8fee12a3fb1ff7642d0d577c3a01dcacd4ba94f24a7a10eafdee249a64",
+      "intake_id": "2df76258e196ee9fd7a091158c627539629ac94e6759a94231aa8f90165ebc87",
       "intake_path": "examples/aitrade/external-evidence/intakes/mcp-gateway-provider-api.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/mcp-proxy-events-provider-api-source-snapshot.json",
       "snapshot_id": "e8c52bc6b1bbc4d182c9a9a02b49414ea734283e4d8fea801dade7170d961bd8",
@@ -101,7 +101,7 @@
     },
     {
       "evidence_argument": "mcp-gateway,hosted-service,examples/aitrade/external-evidence/mcp-proxy-events-hosted-service-source-snapshot.json,Retained GitHub hosted file export for MCP gateway proxy event evidence;issuer=GitHub Hosted Repository;subject=trustai MCP proxy event export;source_uri=https://github.com/MSBeni/trust_ai/blob/main/examples/aitrade/mcp-proxy-events.json;issued_at=2026-07-03T12:05:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "decf2c3e53f649f12a11db8afe499c3d0468c0924897948bb03d1a4a8f2bc7e8",
+      "intake_id": "f3eaf4732b025b1bc2244de055b40254348bea644424d95c16e83319887e4998",
       "intake_path": "examples/aitrade/external-evidence/intakes/mcp-gateway-hosted-service.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/mcp-proxy-events-hosted-service-source-snapshot.json",
       "snapshot_id": "ce94704e20020569d3d93cb05f3310adb047a563839333daf4e3a8b631efd9e3",
@@ -112,7 +112,7 @@
     },
     {
       "evidence_argument": "shadow-replay-temporal-holdout,kms-hsm,examples/aitrade/external-evidence/shadow-holdout-kms-hsm-source-snapshot.json,Retained KMS/HSM enforcement export for shadow replay temporal holdout evidence signing;issuer=Example KMS/HSM;subject=trustai shadow replay temporal holdout evidence-signing enforcement;source_uri=https://kms.example/attestations/trustai/shadow-holdout/evidence-signing;issued_at=2026-07-03T12:03:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "bb43ecad86ba2086ca06f30bfe3a0c285c181ab6a582386cea8577d7d677ddad",
+      "intake_id": "c00acef3f03b1cee02cd0df496f47bee584b445bba707629097b9565464ddee5",
       "intake_path": "examples/aitrade/external-evidence/intakes/shadow-replay-temporal-holdout-kms-hsm.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/shadow-holdout-kms-hsm-source-snapshot.json",
       "snapshot_id": "7f7e0151c2de8e6ea2f82745137f871caf8623bd9339ad4bb00b46683b748beb",
@@ -123,7 +123,7 @@
     },
     {
       "evidence_argument": "shadow-replay-temporal-holdout,provider-api,examples/aitrade/external-evidence/traffic-completeness-provider-api-source-snapshot.json,Retained provider API export for traffic holdout completeness evidence;issuer=Traffic Completeness Provider API;subject=aitrade production traffic holdout completeness export;source_uri=https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/traffic-completeness-provider-export.json?ref=main;issued_at=2026-07-03T12:23:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "bd6cfbeb6efa986839cc1d2bdafefc7de2e3c1bc23d05a8eb648238c84a2391b",
+      "intake_id": "d3351166e660475cd5133f9b8e7ae3e4e73ba89553c38bc8d792aa1fc2ecc87f",
       "intake_path": "examples/aitrade/external-evidence/intakes/shadow-replay-temporal-holdout-provider-api.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/traffic-completeness-provider-api-source-snapshot.json",
       "snapshot_id": "605ae4717aa8a8dbf471e350a080dbc7208b91563fee2ddf483ef34e13859bc4",
@@ -134,7 +134,7 @@
     },
     {
       "evidence_argument": "shadow-replay-temporal-holdout,identity-provider,examples/aitrade/external-evidence/shadow-holdout-identity-provider-source-snapshot.json,Retained identity-provider export for shadow holdout agent identity binding evidence;issuer=Identity Provider Export;subject=aitrade shadow holdout governed agent identity binding;source_uri=https://idp.example/exports/aitrade/shadow-holdout-agent-identity;issued_at=2026-07-03T11:57:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "4c12a9e2e8f5f70c5edfccbfa68e6a5ca977d732289603ea73cfa0fccd4e2b52",
+      "intake_id": "8fce3e0db91b530d2384da8233a2dab5b9b18b389a3c172081c8c81300a50ce3",
       "intake_path": "examples/aitrade/external-evidence/intakes/shadow-replay-temporal-holdout-identity-provider.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/shadow-holdout-identity-provider-source-snapshot.json",
       "snapshot_id": "a4672e8e2c78423b500bf67037f06380806cdde626d9d9fb4f4469be25ba98f7",
@@ -145,7 +145,7 @@
     },
     {
       "evidence_argument": "shadow-replay-temporal-holdout,standards-body,examples/aitrade/external-evidence/shadow-holdout-standards-body-source-snapshot.json,Retained standards-body ballot system response for temporal holdout evidence semantics;issuer=LF TrustAI Ballot System;subject=trustai temporal holdout standards ballot system response;source_uri=https://standards.example/lf-trustai/ballots/LF-TRUSTAI-BALLOT-2026-001;issued_at=2026-07-03T12:04:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "e932c9da70341e7f9bd34fe6365277fbba70762a3e1ae1443763d8c0409bc47e",
+      "intake_id": "5cb770f0a8de16242cdf838dbfe39f3e45bd04ac48b243b362072e5ab94574a4",
       "intake_path": "examples/aitrade/external-evidence/intakes/shadow-replay-temporal-holdout-standards-body.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/shadow-holdout-standards-body-source-snapshot.json",
       "snapshot_id": "ac6da630a27a20626554f45ea857df42b28b10ea157d0bb99b30fe69c25e01a1",
@@ -156,7 +156,7 @@
     },
     {
       "evidence_argument": "shadow-replay-temporal-holdout,customer,examples/aitrade/external-evidence/shadow-holdout-customer-source-snapshot.json,Retained customer acceptance export for shadow replay temporal holdout review evidence;issuer=Example Aitrade Customer;subject=aitrade shadow replay temporal holdout customer acceptance;source_uri=https://customer.example/exports/aitrade/shadow-holdout/customer-acceptance;issued_at=2026-07-03T13:12:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "f6067cd42d1fcffa4a651e4e493bb46032a1c15f97e0b3c538b887b327b0e2e2",
+      "intake_id": "d0859ed320ba142aa8c63fa26b9c3c1cd121082ab9b2eee3a2e834cabc2a5383",
       "intake_path": "examples/aitrade/external-evidence/intakes/shadow-replay-temporal-holdout-customer.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/shadow-holdout-customer-source-snapshot.json",
       "snapshot_id": "dbb8f576bfdd597cd6bc29e8771de393c1af476f2c646fa8ccc15f2501373fe4",
@@ -167,7 +167,7 @@
     },
     {
       "evidence_argument": "cicd-provider-approvals,ci-run,examples/aitrade/external-evidence/github-check-suite-source-snapshot.json,Retained GitHub check-suite callback export for CI/CD promotion provider evidence;issuer=GitHub Checks;subject=trustai GitHub check-suite promotion callback;source_uri=https://github.com/MSBeni/trust_ai/actions;issued_at=2026-07-08T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "543f519ee8533a2c58346038ff874108195f3a9a755b865b742a607983baf125",
+      "intake_id": "58cc9de5a0b49d954d56b8e3e06e1483feb4b53d0dfe2000dab6bcbf8b483410",
       "intake_path": "examples/aitrade/external-evidence/intakes/cicd-provider-approvals-ci-run.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/github-check-suite-source-snapshot.json",
       "snapshot_id": "15aea8d847e1344c2b3d76a7704b07fbb9f98d7fe7df17740ac7e5268fc4c5af",
@@ -178,7 +178,7 @@
     },
     {
       "evidence_argument": "cicd-provider-approvals,provider-api,examples/aitrade/external-evidence/github-audit-log-source-snapshot.json,Retained GitHub audit-log export for CI/CD promotion provider API evidence;issuer=GitHub Audit Log;subject=trustai GitHub provider audit-log export;source_uri=https://api.github.com/repos/MSBeni/trust_ai/actions/runs;issued_at=2026-07-08T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "02535fc57571b0b2d5d4ff54088e5a0c725c63e7c4cd1cfa3900c3e1a27d9aa7",
+      "intake_id": "4f29a2b241b19caf02837cc786892c00d638d85ec5a6ddd02ae744f7e83a26f4",
       "intake_path": "examples/aitrade/external-evidence/intakes/cicd-provider-approvals-provider-api.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/github-audit-log-source-snapshot.json",
       "snapshot_id": "de8ada3479ba892a8ed62b8f5e05e3e27ac2a71924a5865f6a0d9f05c7b1bf62",
@@ -189,7 +189,7 @@
     },
     {
       "evidence_argument": "cicd-provider-approvals,hosted-service,examples/aitrade/external-evidence/cicd-provider-approvals-hosted-service-source-snapshot.json,Retained GitHub hosted checks export for CI/CD promotion approval service evidence;issuer=GitHub Hosted Checks;subject=trustai CI/CD promotion approval hosted service;source_uri=https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml;issued_at=2026-07-08T00:02:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "5f927a1c5bcab6fd5c606b4c1cebf44c906549925ef283ff2fc33b866d7ceb3a",
+      "intake_id": "d05664e05e496650f71cc6589eec747d049c56c18f6d335957896d21ccf4187b",
       "intake_path": "examples/aitrade/external-evidence/intakes/cicd-provider-approvals-hosted-service.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/cicd-provider-approvals-hosted-service-source-snapshot.json",
       "snapshot_id": "988333b47c41889d7306f2f58e9affcacaf3d8691a58422f45969b307d7bd39b",
@@ -200,7 +200,7 @@
     },
     {
       "evidence_argument": "cicd-provider-approvals,identity-provider,examples/aitrade/external-evidence/cicd-provider-approvals-identity-provider-source-snapshot.json,Retained identity-provider export for CI/CD promotion reviewer approval sessions;issuer=Example IdP;subject=aitrade CI/CD promotion reviewer identity federation;source_uri=https://idp.example/exports/aitrade/cicd-approvals/reviewer-sessions;issued_at=2026-07-08T00:03:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "39569c89baf1b6680bd10ea91b4950d796945737b9b96372a1f1ec76d02274fa",
+      "intake_id": "f60e87b7ae1d93947b9afb840511c8ec4c674b30d288d3c2876dd6a81c6338f7",
       "intake_path": "examples/aitrade/external-evidence/intakes/cicd-provider-approvals-identity-provider.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/cicd-provider-approvals-identity-provider-source-snapshot.json",
       "snapshot_id": "59600c6a1a7d23b478124932216810b16a45822feae0b571dd8ac59ad185aefd",
@@ -211,7 +211,7 @@
     },
     {
       "evidence_argument": "design-partner-pilot-exit-criteria,regulator,examples/aitrade/external-evidence/design-partner-regulator-source-snapshot.json,Retained regulator export for design-partner proof-pack scrutiny survival evidence;issuer=Example Regulator;subject=TrustAI design-partner proof-pack scrutiny survival;source_uri=https://regulator.example/exports/trustai/design-partner/proof-pack-scrutiny;issued_at=2026-07-11T23:10:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "ff8732bf6e3e0334d5358c9c949e831dd439916f2437f225f0c543601f3b75b1",
+      "intake_id": "99fcae3c88c46f53d033dcd3fadf9fca2d92106fde0e57d4918da3829c651915",
       "intake_path": "examples/aitrade/external-evidence/intakes/design-partner-pilot-exit-criteria-regulator.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/design-partner-regulator-source-snapshot.json",
       "snapshot_id": "17ec32b2061dcd1226b06dec09d693e1908e350780f43934b28a96e7346990d9",
@@ -222,7 +222,7 @@
     },
     {
       "evidence_argument": "design-partner-pilot-exit-criteria,insurer,examples/aitrade/external-evidence/design-partner-insurer-source-snapshot.json,Retained insurer export for design-partner underwriting review evidence;issuer=Example AI Liability Underwriter;subject=TrustAI design-partner underwriting review;source_uri=https://insurer.example/exports/trustai/design-partner/underwriting-review;issued_at=2026-07-11T23:11:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "18a321e879d7fb6f437e7c52d9540ac21f105979703f40b84fc0904d944ed2c4",
+      "intake_id": "0c9751b4b1fd256a0fff0c8f527567efe7a6651110258d428eecf27dd5255db7",
       "intake_path": "examples/aitrade/external-evidence/intakes/design-partner-pilot-exit-criteria-insurer.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/design-partner-insurer-source-snapshot.json",
       "snapshot_id": "871319cc52bcf468193d81c693dc2870a224993ced6922de25b626761464f01f",
@@ -233,7 +233,7 @@
     },
     {
       "evidence_argument": "design-partner-pilot-exit-criteria,customer,examples/aitrade/external-evidence/design-partner-customer-source-snapshot.json,Retained customer export for design-partner paid pilot acceptance evidence;issuer=Example Customer;subject=TrustAI design-partner paid pilot acceptance;source_uri=https://customer.example/exports/trustai/design-partner/paid-pilot-acceptance;issued_at=2026-07-11T23:12:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "fa46b97b63810ff030862faade175ae23cc8233fbda118a31576e7f1cd243a32",
+      "intake_id": "1f9237192143db0a65bb55f352ea3d592c923ea680aacea1b01df6ec883d63c4",
       "intake_path": "examples/aitrade/external-evidence/intakes/design-partner-pilot-exit-criteria-customer.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/design-partner-customer-source-snapshot.json",
       "snapshot_id": "861a9b187a0b1f187a78b58a0dc2195e09c9086a5f90966b87b2f76b9f184566",
@@ -244,7 +244,7 @@
     },
     {
       "evidence_argument": "framework-adapters,ci-run,examples/aitrade/external-evidence/framework-adapters-ci-run-source-snapshot.json,Retained GitHub Actions export for framework adapter hook release CI evidence;issuer=GitHub Actions;subject=trustai framework adapter release CI;source_uri=https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml;issued_at=2026-07-09T00:35:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "2947b7d4661963ecbb5e2e357d35150e81788d9a9f0e27abc72ba2cfb9bdf471",
+      "intake_id": "1c92d5308a719dc77bfb12de46471491f416bd795ce1a6f6e60182d403612937",
       "intake_path": "examples/aitrade/external-evidence/intakes/framework-adapters-ci-run.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/framework-adapters-ci-run-source-snapshot.json",
       "snapshot_id": "33eac32824d0d76332919cdf448d3f198332aaa60e932fc67b38a1ac1e8a555a",
@@ -255,7 +255,7 @@
     },
     {
       "evidence_argument": "framework-adapters,provider-api,examples/aitrade/external-evidence/framework-hook-release-provider-api-source-snapshot.json,Retained GitHub contents API export for framework adapter hook release evidence;issuer=GitHub Contents API;subject=trustai framework hook release export;source_uri=https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/framework-hook-release.json?ref=main;issued_at=2026-07-09T00:30:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "f97d4d1060ea28a8141edd6e98c95ff4a9075ab1c037f59c6a4aa9f8def0887f",
+      "intake_id": "3ddf5f31817eacf26cadbd1881aa720b602ed3d5503ddbbac6b8c8ef3ad34d98",
       "intake_path": "examples/aitrade/external-evidence/intakes/framework-adapters-provider-api.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/framework-hook-release-provider-api-source-snapshot.json",
       "snapshot_id": "7124e8582c670b7f9e9f76c52d76a4adbaf606bbb96a986ab03f1863f60e9f5d",
@@ -266,7 +266,7 @@
     },
     {
       "evidence_argument": "framework-adapters,hosted-service,examples/aitrade/external-evidence/framework-hook-release-hosted-service-source-snapshot.json,Retained GitHub hosted file export for framework adapter hook release evidence;issuer=GitHub Hosted Repository;subject=trustai framework hook release export;source_uri=https://github.com/MSBeni/trust_ai/blob/main/examples/aitrade/framework-hook-release.json;issued_at=2026-07-09T00:30:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "35b79c7430a022fe2738d82e99aba8ff3f80a6643a26452d7e25cf1e069b1a3c",
+      "intake_id": "0cef791918175b1a99783d26476d7ed648569ce2a130135c32073831d7a89216",
       "intake_path": "examples/aitrade/external-evidence/intakes/framework-adapters-hosted-service.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/framework-hook-release-hosted-service-source-snapshot.json",
       "snapshot_id": "cd7b72497276dd7ceea4dd7e09fc97cdc08a43d7228929c59858735ef76e67a1",
@@ -277,7 +277,7 @@
     },
     {
       "evidence_argument": "auditor-and-review-portal,kms-hsm,examples/aitrade/external-evidence/review-portal-kms-hsm-source-snapshot.json,Retained KMS/HSM export for review portal session and disclosed artifact encryption evidence;issuer=Example KMS/HSM;subject=aitrade review portal KMS-backed session encryption;source_uri=https://kms.example/attestations/trustai/review-portal/session-data-encryption;issued_at=2026-07-08T06:12:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "1bb190262c55263373f31f132495f58bb3854b6b1021779769713499e9a9394c",
+      "intake_id": "d20f7c2ba3f6c973e066a0320be1a4e33f64b3a6c4ec18a84057f74ce5c3e123",
       "intake_path": "examples/aitrade/external-evidence/intakes/auditor-and-review-portal-kms-hsm.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/review-portal-kms-hsm-source-snapshot.json",
       "snapshot_id": "d9b2b1d885f77295d91b208f99d74b4fd82d10e5d42f8adfd80c2555deb58525",
@@ -288,7 +288,7 @@
     },
     {
       "evidence_argument": "auditor-and-review-portal,provider-api,examples/aitrade/external-evidence/review-portal-provider-api-source-snapshot.json,Retained provider API export for review portal authority dossier and control evidence;issuer=TrustAI Cloud Provider API;subject=aitrade review portal provider API authority dossier export;source_uri=https://api.trustai.example/v1/review-portals/aitrade-prod/authority-dossier;issued_at=2026-07-08T06:13:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "4b160e90216075fa3817f5789b45186662f839ee3826aaf29bd1f9b66001b7b6",
+      "intake_id": "c6a0555012f08f9fc9ee3ebb34ee1c1eec5813bdad0147791c650962663a17b0",
       "intake_path": "examples/aitrade/external-evidence/intakes/auditor-and-review-portal-provider-api.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/review-portal-provider-api-source-snapshot.json",
       "snapshot_id": "4a6b60bda56144c3e8edb9c6de1a149f203177fdd6481783934cc449b6567139",
@@ -299,7 +299,7 @@
     },
     {
       "evidence_argument": "auditor-and-review-portal,hosted-service,examples/aitrade/external-evidence/review-portal-hosted-service-source-snapshot.json,Retained hosted service export for review portal worker fleet and service health evidence;issuer=TrustAI Cloud;subject=aitrade review portal hosted service authority export;source_uri=https://review.trustai.example/aitrade/regulator/.well-known/trustai-authority;issued_at=2026-07-08T06:14:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "226e5a0fa036b82123827f6895c2c70b2d5d6bf746b452d72d78b8a5c2b50745",
+      "intake_id": "ca167f08a26fdd6b2e96eab0564bb4809569f2dbd2617443036c93e3027abfd5",
       "intake_path": "examples/aitrade/external-evidence/intakes/auditor-and-review-portal-hosted-service.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/review-portal-hosted-service-source-snapshot.json",
       "snapshot_id": "00c0c9abaf80dfd75d510901635f773ac528a7a0954d7d90cdd0a1ec1a195a5d",
@@ -310,7 +310,7 @@
     },
     {
       "evidence_argument": "auditor-and-review-portal,identity-provider,examples/aitrade/external-evidence/review-portal-identity-provider-source-snapshot.json,Retained identity-provider export for review portal reviewer sessions and account lifecycle evidence;issuer=Example IdP;subject=aitrade review portal reviewer identity-provider authority export;source_uri=https://idp.example/exports/aitrade/review-portal/reviewer-sessions;issued_at=2026-07-08T06:15:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "a076a95bffd9a7a725cba5a3d62079122d4cb21f6b460f442084c78e949ace1e",
+      "intake_id": "be5d87edd779cc3968088329a96249188958b3aceacbd10caab009cc703b7c8d",
       "intake_path": "examples/aitrade/external-evidence/intakes/auditor-and-review-portal-identity-provider.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/review-portal-identity-provider-source-snapshot.json",
       "snapshot_id": "1375c02d8bb8b83ede2f6dc3f7bc30511b709a2670888ea5a49909d9b4342760",
@@ -321,7 +321,7 @@
     },
     {
       "evidence_argument": "auditor-and-review-portal,regulator,examples/aitrade/external-evidence/review-portal-regulator-source-snapshot.json,Retained regulator export for review portal supervised-access acceptance evidence;issuer=Example Regulator;subject=aitrade review portal regulator supervised-access acceptance export;source_uri=https://regulator.example/exports/aitrade/review-portal/supervised-access-acceptance;issued_at=2026-07-08T06:16:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "4a4c6890cb40d2e07d8b222ade64f1c523acdafa8f71b0f0e4e7112545021ccc",
+      "intake_id": "4b722136c0a6e46f10ad00855f8b35e9f0284f42eaffc874d3a269967505147a",
       "intake_path": "examples/aitrade/external-evidence/intakes/auditor-and-review-portal-regulator.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/review-portal-regulator-source-snapshot.json",
       "snapshot_id": "30b818f3ad90b2ca9f5f6f7c4f15a63db9e552b89bd4e7062de7790674edda57",
@@ -332,7 +332,7 @@
     },
     {
       "evidence_argument": "byoc-self-hosted,ci-run,examples/aitrade/external-evidence/byoc-ci-run-source-snapshot.json,Retained GitHub Actions export for BYOC deployment, operator, and authority validation CI evidence;issuer=GitHub Actions;subject=trustai BYOC/self-hosted deployment validation CI;source_uri=https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "6a88d0f1fc8fcf41f08eb65e6c0862ab9a1a5d7fc6e08ffdd465a039d03e2d95",
+      "intake_id": "556333e1a7523ae47f75d185cd0ce4e92e71f94c09049a66d6ca40b07dd6e5c9",
       "intake_path": "examples/aitrade/external-evidence/intakes/byoc-self-hosted-ci-run.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/byoc-ci-run-source-snapshot.json",
       "snapshot_id": "a68122cd25b2564d1d13e723aaa9b0dc7829570da6444741eb506758ee0b1007",
@@ -343,7 +343,7 @@
     },
     {
       "evidence_argument": "byoc-self-hosted,kms-hsm,examples/aitrade/external-evidence/byoc-kms-hsm-source-snapshot.json,Retained KMS/HSM enforcement export for BYOC evidence signing;issuer=Example KMS/HSM;subject=trustai BYOC evidence-signing enforcement;source_uri=https://kms.example/attestations/trustai/byoc/evidence-signing;issued_at=2026-07-03T12:03:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "de8f3c11d410bc4d3bdac7bd49d8f22799d64c787ce86a490029ebaf6f3b7d59",
+      "intake_id": "3bf6110fd5cb7f904d5df7e1e8907b49f038dcb0ab257a8837fc0dd2b2a40f17",
       "intake_path": "examples/aitrade/external-evidence/intakes/byoc-self-hosted-kms-hsm.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/byoc-kms-hsm-source-snapshot.json",
       "snapshot_id": "f5eda7b023e2b2624b9a41e28f5c61f5a4c585e7b39c5ce736f1b6540c3fb6da",
@@ -354,7 +354,7 @@
     },
     {
       "evidence_argument": "byoc-self-hosted,cloud-object-lock,examples/aitrade/external-evidence/byoc-object-lock-source-snapshot.json,Retained cloud Object Lock export for BYOC immutable evidence storage;issuer=Example S3 Object Lock;subject=trustai-aitrade-evidence BYOC Object Lock configuration;source_uri=https://cloud.example/s3/trustai-aitrade-evidence/object-lock;issued_at=2026-07-04T03:06:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "13187a426ef9d74ddde45131041563d26bda786f694c9aba01a5c521b84a7693",
+      "intake_id": "854e5c08d95f4fc6b28e2f37dc53349aba5ad79f39797c5b70afe38d579d3353",
       "intake_path": "examples/aitrade/external-evidence/intakes/byoc-self-hosted-cloud-object-lock.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/byoc-object-lock-source-snapshot.json",
       "snapshot_id": "92dfd5e25d9ad85244dc396862c0caba101e216f73b6b43ae3bb5dfbd9d9829c",
@@ -365,7 +365,7 @@
     },
     {
       "evidence_argument": "byoc-self-hosted,provider-api,examples/aitrade/external-evidence/byoc-provider-api-source-snapshot.json,Retained provider API export for BYOC NetworkPolicy admission and audit evidence;issuer=Example Kubernetes API;subject=aitrade BYOC NetworkPolicy admission export;source_uri=https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/byoc-network-policy-authority-export.json?ref=main;issued_at=2026-07-04T03:07:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "589226aef4ee659157468869aedac6e6077eb9afb7de7429515ca1df623f3693",
+      "intake_id": "74ebe75e1a5662b08ff5707ae45bfeb74fdd45ce1b1eed32417168d1959d96c4",
       "intake_path": "examples/aitrade/external-evidence/intakes/byoc-self-hosted-provider-api.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/byoc-provider-api-source-snapshot.json",
       "snapshot_id": "9e144e8871608819af2741be1a4190c2472216f966c884b27a2ecd99a23dbb4c",
@@ -376,7 +376,7 @@
     },
     {
       "evidence_argument": "byoc-self-hosted,standards-body,examples/aitrade/external-evidence/byoc-standards-body-source-snapshot.json,Retained standards-body profile export for BYOC/self-hosted deployment evidence semantics;issuer=LF TrustAI Ballot System;subject=trustai BYOC/self-hosted standards profile acceptance;source_uri=https://standards.example/lf-trustai/profiles/byoc-self-hosted/LF-TRUSTAI-BYOC-SELF-HOSTED-0.1;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "4044228d42c86d5687c4c2192dccd02249f2f82d873d9e1b5723f3033a64d9f6",
+      "intake_id": "e894332331c92cc4349bbf3990b81579288bc86fa2c15aa84bb1df3a2916ceb3",
       "intake_path": "examples/aitrade/external-evidence/intakes/byoc-self-hosted-standards-body.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/byoc-standards-body-source-snapshot.json",
       "snapshot_id": "c01acdd65dd592593806ae128b193008306ccba1ee951d769efae8fe14084a46",
@@ -387,7 +387,7 @@
     },
     {
       "evidence_argument": "byoc-self-hosted,customer,examples/aitrade/external-evidence/byoc-customer-source-snapshot.json,Retained customer acceptance export for aitrade BYOC/self-hosted deployment evidence;issuer=Aitrade Model Risk Committee;subject=aitrade BYOC/self-hosted TrustAI deployment acceptance;source_uri=https://customers.example/aitrade/model-risk/byoc-self-hosted/acceptance/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "92feab3d4e028a8713de3c0a515df233195612064ae5e6ed116f045513f5b16a",
+      "intake_id": "ffaa70263935932e9062c7fd27102fe0747e0e744694ab7c7d237be37406045c",
       "intake_path": "examples/aitrade/external-evidence/intakes/byoc-self-hosted-customer.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/byoc-customer-source-snapshot.json",
       "snapshot_id": "74ee0718bdd001886dc0c78ebd7e28f92ecaa9d75a3833be363777de29d4784a",
@@ -398,7 +398,7 @@
     },
     {
       "evidence_argument": "compliance-mapper-and-eu-ai-act,provider-api,examples/aitrade/external-evidence/compliance-provider-api-source-snapshot.json,Retained provider API export for compliance mapper and EU AI Act evidence;issuer=TrustAI Cloud Provider API;subject=aitrade compliance mapper and EU AI Act provider API evidence;source_uri=https://api.trustai.example/v1/compliance/aitrade-prod/evidence;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "194da0b3db123fe38001d1e08070cc6ea55678f0d982fb3b3b2f94be2796c87e",
+      "intake_id": "85710d110bc15dbc64bd41405aa0b41389593f9617f3932ef32a01f8262ef02f",
       "intake_path": "examples/aitrade/external-evidence/intakes/compliance-mapper-and-eu-ai-act-provider-api.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/compliance-provider-api-source-snapshot.json",
       "snapshot_id": "0fd8a3a2d8a4a9e1231ca0f82dfec787a481d4bcea3407a669363c8bd62d6fe5",
@@ -409,7 +409,7 @@
     },
     {
       "evidence_argument": "compliance-mapper-and-eu-ai-act,regulator,examples/aitrade/external-evidence/compliance-regulator-source-snapshot.json,Retained regulator acknowledgement export for compliance mapper and EU AI Act evidence;issuer=Example Regulator;subject=aitrade compliance mapper and EU AI Act regulator acceptance export;source_uri=https://regulator.example/exports/aitrade/compliance/eu-ai-act-supervisory-acknowledgement;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "bc06bfd700c2ef09666aee72f1eb1a807277e72d351f28fed0c3becd6ab4ad46",
+      "intake_id": "1a3c7565b9850ad5605c6ad6dc22249b04d9b5559028c1179c835754bf3dfb3b",
       "intake_path": "examples/aitrade/external-evidence/intakes/compliance-mapper-and-eu-ai-act-regulator.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/compliance-regulator-source-snapshot.json",
       "snapshot_id": "4bbb07eb0930042e2287e75245b958fa9fb9b015c7ab8d192dbe9241326453e2",
@@ -420,7 +420,7 @@
     },
     {
       "evidence_argument": "compliance-mapper-and-eu-ai-act,standards-body,examples/aitrade/external-evidence/compliance-standards-body-source-snapshot.json,Retained standards-body submission export for compliance mapper and EU AI Act evidence;issuer=LF TrustAI Ballot System;subject=aitrade compliance mapper and EU AI Act standards-body submission export;source_uri=https://standards.example/lf-trustai/compliance-mapper/eu-ai-act/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "8bac90b63a2ca5586f0ac4c598b83b03e13b1c5edecde8e5b7b7cc91dde92639",
+      "intake_id": "678e251d1717208b6c5dad4743a3b63bda87131b95d50dfb7b0d30b27b05e45b",
       "intake_path": "examples/aitrade/external-evidence/intakes/compliance-mapper-and-eu-ai-act-standards-body.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/compliance-standards-body-source-snapshot.json",
       "snapshot_id": "52e7a808f520343a9fd21dc5bc9ca19b314ff144f3a86eba73758ca53a94e443",
@@ -431,7 +431,7 @@
     },
     {
       "evidence_argument": "trustai-own-compliance,standards-body,examples/aitrade/external-evidence/trustai-own-compliance-standards-body-source-snapshot.json,Retained standards-body docket export for TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance evidence;issuer=LF TrustAI Ballot System;subject=TrustAI own SOC 2 Type II and ISO/IEC 42001 standards-body dossier review;source_uri=https://standards.example/lf-trustai/own-compliance/soc2-iso42001/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "0fed7f792905e5c332fff021426faf46686fe609327c84a871d74f7293355ca1",
+      "intake_id": "3e3f3d06eaca208f7f09dd10c8679f003d21210e196d1a4429a229aaad8d0207",
       "intake_path": "examples/aitrade/external-evidence/intakes/trustai-own-compliance-standards-body.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/trustai-own-compliance-standards-body-source-snapshot.json",
       "snapshot_id": "b5f75084ba4be8b12fa25e1e7513a3225f9507184152283c324ef190d522a61d",
@@ -442,7 +442,7 @@
     },
     {
       "evidence_argument": "trustai-own-compliance,customer,examples/aitrade/external-evidence/trustai-own-compliance-customer-source-snapshot.json,Retained customer acceptance export for TrustAI own SOC 2 Type II and ISO/IEC 42001 compliance evidence;issuer=Aitrade Model Risk Committee;subject=TrustAI own SOC 2 Type II and ISO/IEC 42001 customer due-diligence acceptance;source_uri=https://customers.example/aitrade/model-risk/trustai-own-compliance/soc2-iso42001/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "d887a1c3425dfb5dff78dca6ce7c8fcf61672973386bf27386d25c9473c1243e",
+      "intake_id": "e1bff353e69614557dd7b96345f1d92ca01a4fa90eebd234752d8ef3ecb67df3",
       "intake_path": "examples/aitrade/external-evidence/intakes/trustai-own-compliance-customer.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/trustai-own-compliance-customer-source-snapshot.json",
       "snapshot_id": "83e927ff749896c24abfefa14bf690385536a5448572f107edb146e562171c96",
@@ -453,7 +453,7 @@
     },
     {
       "evidence_argument": "vertical-packs,regulator,examples/aitrade/external-evidence/vertical-packs-regulator-source-snapshot.json,Retained regulator acknowledgement export for TrustAI vertical-pack reference review evidence;issuer=Example Regulator;subject=TrustAI vertical-pack supervisory reference review export;source_uri=https://regulator.example/exports/trustai/vertical-packs/reference-supervisory-review/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "abdb36be986dbb355a9e4378dd5568d39b12428ff39bf237b9a815bc0806495f",
+      "intake_id": "4742b1127e6c9a37a25c3628fbe0e57d0e3a1f87087041c49e21687c5ddc63fc",
       "intake_path": "examples/aitrade/external-evidence/intakes/vertical-packs-regulator.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/vertical-packs-regulator-source-snapshot.json",
       "snapshot_id": "1245bdc0c6ec788876ae9d58a1d940241378c26fec8b3555e10d66d9e25174db",
@@ -464,7 +464,7 @@
     },
     {
       "evidence_argument": "vertical-packs,insurer,examples/aitrade/external-evidence/vertical-packs-insurer-source-snapshot.json,Retained insurer underwriting export for TrustAI vertical-pack reference evidence;issuer=Example AI Liability Underwriter;subject=TrustAI vertical-pack underwriting reference review export;source_uri=https://insurer.example/exports/trustai/vertical-packs/reference-underwriting-review/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "87fde4ce6e134006dabf6af00d0848c8766484ad85b4c97322b8e164777826df",
+      "intake_id": "c77f75e7963b74a359c19f0829baba6fa5214220462a440e2385680b561e6f9a",
       "intake_path": "examples/aitrade/external-evidence/intakes/vertical-packs-insurer.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/vertical-packs-insurer-source-snapshot.json",
       "snapshot_id": "888660862f51e08df8c149d6cee9081cb3c8883089c20a095d9ef7a8e442658c",
@@ -475,7 +475,7 @@
     },
     {
       "evidence_argument": "vertical-packs,customer,examples/aitrade/external-evidence/vertical-packs-customer-source-snapshot.json,Retained customer acceptance export for TrustAI vertical-pack reference evidence;issuer=Aitrade Model Risk Committee;subject=TrustAI vertical-pack customer reference acceptance export;source_uri=https://customers.example/aitrade/model-risk/vertical-packs/reference-acceptance/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "c00146c3d9ef041414ca9e1968290adffa53e83a16226533b71d18758cb4c506",
+      "intake_id": "78c1ab7ab4245a879cbb1da222dfbee0e41dd3faf1345acb96ace1035428037a",
       "intake_path": "examples/aitrade/external-evidence/intakes/vertical-packs-customer.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/vertical-packs-customer-source-snapshot.json",
       "snapshot_id": "64e7d67a639c2be92bbb9b228ba299a640361ad016f6385d9a32be4ea11edd06",
@@ -486,7 +486,7 @@
     },
     {
       "evidence_argument": "insurer-api-and-actuarial-products,ci-run,examples/aitrade/external-evidence/insurer-api-actuarial-ci-run-source-snapshot.json,Retained GitHub Actions export for insurer API and actuarial products CI evidence;issuer=GitHub Actions;subject=trustai insurer API and actuarial products CI;source_uri=https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "10175b08e1ea8ea20aa0bb4cd90e3641e69327d7de9396d8af7739e636d02cc9",
+      "intake_id": "129241b8aa5451ac124e818d0a60cdc068ab7f85b6465f218e40586b934ff908",
       "intake_path": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-ci-run.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/insurer-api-actuarial-ci-run-source-snapshot.json",
       "snapshot_id": "cdda4dfb447d16f84c03463726dc907aaa8182af2303f9d7ca014d96957ebe51",
@@ -497,7 +497,7 @@
     },
     {
       "evidence_argument": "insurer-api-and-actuarial-products,kms-hsm,examples/aitrade/external-evidence/insurer-api-actuarial-kms-hsm-source-snapshot.json,Retained KMS/HSM export for insurer API and actuarial products evidence signing;issuer=Example KMS/HSM;subject=trustai insurer API and actuarial products KMS/HSM evidence-signing enforcement;source_uri=https://kms.example/attestations/trustai/insurer-api-actuarial-products/evidence-signing;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "5b567bc43815f0ab2b06ab60392f0b28893273a9a310f4b00c237764669770cf",
+      "intake_id": "4542f82a4daa650fa4e4affbd4e070201e2a810430009b1b020f36a19115e40f",
       "intake_path": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-kms-hsm.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/insurer-api-actuarial-kms-hsm-source-snapshot.json",
       "snapshot_id": "0916ff646282e088fa08e38a61eaa0da99067276a8a500647e9458124b9e4927",
@@ -508,7 +508,7 @@
     },
     {
       "evidence_argument": "insurer-api-and-actuarial-products,provider-api,examples/aitrade/external-evidence/insurer-api-actuarial-provider-api-source-snapshot.json,Retained provider API export for insurer API and actuarial products evidence;issuer=TrustAI Cloud Provider API;subject=aitrade insurer API and actuarial products provider API evidence;source_uri=https://api.trustai.example/v1/insurer/aitrade/authority-evidence;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "10ae9683ab343a7c5cb432d99ef3132ccbda0109ba790975ac86aff85a30c4bf",
+      "intake_id": "ab2e5400eda2a34d244dd402858cce1e1af314b6dfa9faddd41e98ea287a7352",
       "intake_path": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-provider-api.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/insurer-api-actuarial-provider-api-source-snapshot.json",
       "snapshot_id": "153a50af34893cf3d16d7bfaadc61b061fcae2b6ce5aee3edce70c9b12711c32",
@@ -519,7 +519,7 @@
     },
     {
       "evidence_argument": "insurer-api-and-actuarial-products,hosted-service,examples/aitrade/external-evidence/insurer-api-actuarial-hosted-service-source-snapshot.json,Retained hosted service export for insurer API and actuarial products evidence;issuer=TrustAI Cloud;subject=aitrade insurer API and actuarial products hosted service evidence;source_uri=https://status.trustai.example/insurer/aitrade/actuarial-products;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "70a0c1f5e828e983ecc734437c75478a4883f1eefd80d8887783dfac35a1ea1d",
+      "intake_id": "34ada52f13174f2640663bc947a1abcd4a013a835e2d3225aa2372c3a32d18b4",
       "intake_path": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-hosted-service.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/insurer-api-actuarial-hosted-service-source-snapshot.json",
       "snapshot_id": "0645baef6f165608bfaaa34655cfe7c07a671106ae9c105d3b77c56da3345961",
@@ -530,7 +530,7 @@
     },
     {
       "evidence_argument": "insurer-api-and-actuarial-products,identity-provider,examples/aitrade/external-evidence/insurer-api-actuarial-identity-provider-source-snapshot.json,Retained identity-provider export for insurer API and actuarial products evidence;issuer=Example IdP;subject=aitrade insurer API and actuarial products identity-provider evidence;source_uri=https://idp.example/exports/aitrade/insurer-api-actuarial-products/partner-sessions;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "f0457d6bdd66cdf42bb69deb6ef9ee9388e9d69b13343e50699a16e86b3dad6e",
+      "intake_id": "a3765ffcc12a534140fa2d78ad755abdfb5cec817be02e77c82d8a0bbb84674d",
       "intake_path": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-identity-provider.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/insurer-api-actuarial-identity-provider-source-snapshot.json",
       "snapshot_id": "5ed6ffb2257d08ddab8fc346c3eda9c563b0ad4a6f06ab35ab36663beec52cd3",
@@ -541,7 +541,7 @@
     },
     {
       "evidence_argument": "insurer-api-and-actuarial-products,insurer,examples/aitrade/external-evidence/insurer-api-actuarial-insurer-source-snapshot.json,Retained insurer underwriting export for insurer API and actuarial products evidence;issuer=Example AI Liability Underwriter;subject=aitrade insurer API and actuarial products underwriting review evidence;source_uri=https://insurer.example/exports/aitrade/insurer-api-actuarial-products/underwriting-review/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "0d23b96260b5f6abc448750723680a71e6b6ee6a7f89269f6702916d1d5417bf",
+      "intake_id": "798462d9961d7a722377f31c91347020c9f1e5de566472a1d19bcf7020449ba1",
       "intake_path": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-insurer.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/insurer-api-actuarial-insurer-source-snapshot.json",
       "snapshot_id": "e1e962937d3c0632562955d8c98c63354818db2b67b96f17c464b94acca9650b",
@@ -552,7 +552,7 @@
     },
     {
       "evidence_argument": "insurer-api-and-actuarial-products,customer,examples/aitrade/external-evidence/insurer-api-actuarial-customer-source-snapshot.json,Retained customer acceptance export for insurer API and actuarial products evidence;issuer=Aitrade Model Risk Committee;subject=aitrade insurer API and actuarial products customer acceptance evidence;source_uri=https://customers.example/aitrade/model-risk/insurer-api-actuarial-products/reference-acceptance/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "549b88720392aab4ed0f448cd7428733b21fb3109196f9030c9a365f57e65a92",
+      "intake_id": "3f7b2b8f4b3c3066bb91d09e3140ebaa9df9d0268b330c4b9e105c0f4ed1aeca",
       "intake_path": "examples/aitrade/external-evidence/intakes/insurer-api-and-actuarial-products-customer.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/insurer-api-actuarial-customer-source-snapshot.json",
       "snapshot_id": "445836e78d81026f5eb28fa3b6a85c73d05917e2972010dd94cc4ac3cb7dba00",
@@ -563,7 +563,7 @@
     },
     {
       "evidence_argument": "state-of-agent-reliability-report,customer,examples/aitrade/external-evidence/state-of-agent-reliability-report-customer-source-snapshot.json,Retained customer export for state-of-agent-reliability-report evidence;issuer=Aitrade Model Risk Committee;subject=TrustAI state of agent reliability report customer customer publication acceptance;source_uri=https://customers.example/aitrade/model-risk/state-of-agent-reliability-report/reference-acceptance/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "a82c51fef7a884fefb72a70b66ae752345e7f6ab9fe6df2f4ae3ef0ce8bceef1",
+      "intake_id": "a75f98fc2853f1d5c77961e3d3bd2938efae875b371842156a32ec00bb824d16",
       "intake_path": "examples/aitrade/external-evidence/intakes/state-of-agent-reliability-report-customer.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/state-of-agent-reliability-report-customer-source-snapshot.json",
       "snapshot_id": "9e6b7c6304956ac927075cb2229b157fa1e46e4c7c65e3de889a71da06c1c029",
@@ -574,7 +574,7 @@
     },
     {
       "evidence_argument": "roadmap-phase-scoreboard,ci-run,examples/aitrade/external-evidence/roadmap-phase-scoreboard-ci-run-source-snapshot.json,Retained ci-run export for roadmap-phase-scoreboard evidence;issuer=GitHub Actions;subject=TrustAI roadmap phase scoreboard ci run phase scoreboard CI verification;source_uri=https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "6ff48955a7aaa335d42c622dee5dda165cd0adb70afa2787a5446aaf97daf4e0",
+      "intake_id": "ae62d7ef3bac95a40a0741104ff86e2037c41440e9c76c83e23a1ffc0b373a29",
       "intake_path": "examples/aitrade/external-evidence/intakes/roadmap-phase-scoreboard-ci-run.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/roadmap-phase-scoreboard-ci-run-source-snapshot.json",
       "snapshot_id": "a9d6306ae9eab679b29c0765e467540f3fe1c5a434ab6478fa13b8a24b37fb72",
@@ -585,7 +585,7 @@
     },
     {
       "evidence_argument": "roadmap-phase-scoreboard,regulator,examples/aitrade/external-evidence/roadmap-phase-scoreboard-regulator-source-snapshot.json,Retained regulator export for roadmap-phase-scoreboard evidence;issuer=Example Regulator;subject=TrustAI roadmap phase scoreboard regulator phase exit supervisory acceptance;source_uri=https://regulator.example/exports/trustai/roadmap-phase-scoreboard/supervisory-review/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "1f43b18caa609a9f51d2fcd0687d6a8e07d704848cfad964f90436869f5e8094",
+      "intake_id": "432f834b8b7edb49abe3d9f570f571c25f3d3b308bcd0f9dbd9bfd81cb5e8a9a",
       "intake_path": "examples/aitrade/external-evidence/intakes/roadmap-phase-scoreboard-regulator.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/roadmap-phase-scoreboard-regulator-source-snapshot.json",
       "snapshot_id": "0de3f7a0bcd43fbd4b95a98edf8390ebfaf679a40a9710d80950194443cd6c87",
@@ -596,7 +596,7 @@
     },
     {
       "evidence_argument": "roadmap-phase-scoreboard,insurer,examples/aitrade/external-evidence/roadmap-phase-scoreboard-insurer-source-snapshot.json,Retained insurer export for roadmap-phase-scoreboard evidence;issuer=Example AI Liability Underwriter;subject=TrustAI roadmap phase scoreboard insurer phase exit underwriting review;source_uri=https://insurer.example/exports/trustai/roadmap-phase-scoreboard/underwriting-review/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "9bdb7ba2e005152eb48f08a31b75d9668e191f5f0370410ae3b33774b75afc5f",
+      "intake_id": "faf8aaf0de2c4b0d061814805a9675da50c179fd112ce444e2636de911d02f89",
       "intake_path": "examples/aitrade/external-evidence/intakes/roadmap-phase-scoreboard-insurer.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/roadmap-phase-scoreboard-insurer-source-snapshot.json",
       "snapshot_id": "0a85d5694d8f0fd773a9aa31aa314bd03cf7d2324d9812188094aeb2ef3e579d",
@@ -607,7 +607,7 @@
     },
     {
       "evidence_argument": "roadmap-phase-scoreboard,standards-body,examples/aitrade/external-evidence/roadmap-phase-scoreboard-standards-body-source-snapshot.json,Retained standards-body export for roadmap-phase-scoreboard evidence;issuer=LF TrustAI Ballot System;subject=TrustAI roadmap phase scoreboard standards body phase exit standards-track docket review;source_uri=https://standards.example/lf-trustai/roadmap-phase-scoreboard/docket-review/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "841b74265c039cc9f635a21244198a383450d187913809dcca81a88fed10d668",
+      "intake_id": "9d8b4c5666279bbc231408517b75ea50e6ed6b0a4adee65d7d3ea1bd1bb0bf40",
       "intake_path": "examples/aitrade/external-evidence/intakes/roadmap-phase-scoreboard-standards-body.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/roadmap-phase-scoreboard-standards-body-source-snapshot.json",
       "snapshot_id": "c5145d28dc86387888a9738486dffe1e896bbe2ca13573130d58b932fa3ecc28",
@@ -618,7 +618,7 @@
     },
     {
       "evidence_argument": "roadmap-phase-scoreboard,customer,examples/aitrade/external-evidence/roadmap-phase-scoreboard-customer-source-snapshot.json,Retained customer export for roadmap-phase-scoreboard evidence;issuer=Aitrade Model Risk Committee;subject=TrustAI roadmap phase scoreboard customer phase exit customer acceptance;source_uri=https://customers.example/aitrade/model-risk/roadmap-phase-scoreboard/reference-acceptance/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "315cc1dce0f76dea43596ad35d0bc55e56cd2430e1fae14c244f946abf07c1c4",
+      "intake_id": "afb9a58f4ada526a935818735c2dce3db8641880eddc2a6cc1941deffd0cd321",
       "intake_path": "examples/aitrade/external-evidence/intakes/roadmap-phase-scoreboard-customer.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/roadmap-phase-scoreboard-customer-source-snapshot.json",
       "snapshot_id": "4825871fae2ec5a30360a6a8f5a2a3fc52db4a370d0ccecdf2264139cada4fea",
@@ -629,7 +629,7 @@
     },
     {
       "evidence_argument": "product-scope-discipline,ci-run,examples/aitrade/external-evidence/product-scope-discipline-ci-run-source-snapshot.json,Retained ci-run export for product-scope-discipline evidence;issuer=GitHub Actions;subject=TrustAI product scope discipline ci run scope discipline CI verification;source_uri=https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "47891bd6b34276cca1e35010f4bf33692965d34043470f7cbaa18787bd34600d",
+      "intake_id": "8bb09792169cb2f83fa37ae8113d76ae9ce766e3aa1b913be4b6ced4284c3e12",
       "intake_path": "examples/aitrade/external-evidence/intakes/product-scope-discipline-ci-run.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/product-scope-discipline-ci-run-source-snapshot.json",
       "snapshot_id": "6e12b4c6d0bcd56404acf3501303c262d5b2bb1346e73bcc162c85ce9c7f89d1",
@@ -640,7 +640,7 @@
     },
     {
       "evidence_argument": "product-scope-discipline,customer,examples/aitrade/external-evidence/product-scope-discipline-customer-source-snapshot.json,Retained customer export for product-scope-discipline evidence;issuer=Aitrade Model Risk Committee;subject=TrustAI product scope discipline customer scope discipline customer acceptance;source_uri=https://customers.example/aitrade/model-risk/product-scope-discipline/reference-acceptance/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "42e4809f2684a0bfb329602d309e1bd745a943f807d9398b7d6b744671c10c60",
+      "intake_id": "088f71f84a785d0217f39e653447a84b2fc75f975dd06c26a0913acbf11c162e",
       "intake_path": "examples/aitrade/external-evidence/intakes/product-scope-discipline-customer.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/product-scope-discipline-customer-source-snapshot.json",
       "snapshot_id": "6b1b5179556dc57780d62bbe26b3d775ce8b4371778935f4cbfc07121425a203",
@@ -651,7 +651,7 @@
     },
     {
       "evidence_argument": "runtime-policy-and-attestation,ci-run,examples/aitrade/external-evidence/runtime-policy-ci-run-source-snapshot.json,Retained ci-run export for runtime-policy-and-attestation evidence;issuer=GitHub Actions;subject=TrustAI runtime policy and attestation ci run runtime policy CI verification;source_uri=https://github.com/MSBeni/trust_ai/actions/workflows/python-ci.yml;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "722dddab0b4635bebde11e4350096b264eb69e582eed1d0d6291ce60bec742ee",
+      "intake_id": "0a8dabaccd2d183c9d527b6356bbd4649d9ed9558ca3f127762bbabd5ff8ac8b",
       "intake_path": "examples/aitrade/external-evidence/intakes/runtime-policy-and-attestation-ci-run.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/runtime-policy-ci-run-source-snapshot.json",
       "snapshot_id": "3da7fc16819d1652933e291f3479e3aefb666ff51605cd5d89194b0cade8a962",
@@ -662,7 +662,7 @@
     },
     {
       "evidence_argument": "runtime-policy-and-attestation,kms-hsm,examples/aitrade/external-evidence/runtime-policy-kms-hsm-source-snapshot.json,Retained KMS/HSM enforcement export for runtime policy evidence signing;issuer=Example KMS/HSM;subject=trustai runtime policy evidence-signing enforcement;source_uri=https://kms.example/attestations/trustai/runtime-policy/evidence-signing;issued_at=2026-07-03T12:03:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "4771a790c17e9974ed3c6f5c0267802800ecc9000f827af22d9e713bff03e350",
+      "intake_id": "0c60727e2d8eb126ab15051419729f1c6ba119d39a4c85edfbe74a60ba185900",
       "intake_path": "examples/aitrade/external-evidence/intakes/runtime-policy-and-attestation-kms-hsm.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/runtime-policy-kms-hsm-source-snapshot.json",
       "snapshot_id": "0de6fcb6f85719feab8a595f5b54e4079854950d40f23104d7f4c07d93562810",
@@ -673,7 +673,7 @@
     },
     {
       "evidence_argument": "runtime-policy-and-attestation,provider-api,examples/aitrade/external-evidence/runtime-policy-provider-api-source-snapshot.json,Retained GitHub contents API export for runtime policy pack evidence;issuer=GitHub Contents API;subject=trustai runtime policy pack export;source_uri=https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/policy-pack.json?ref=main;issued_at=2026-07-03T12:02:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "41a6f2613815ca66fa8eb3a3c007a13ca7fef10abfe31b745d14b112adcb36c5",
+      "intake_id": "4c8dab26dd36b0c1fe993009486593e442e4f404f3045c2e4762358b58e207e0",
       "intake_path": "examples/aitrade/external-evidence/intakes/runtime-policy-and-attestation-provider-api.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/runtime-policy-provider-api-source-snapshot.json",
       "snapshot_id": "a38dce7c970b9d591c5b204c6d97eee26248f7d934803a0dad253ca1ac1b2498",
@@ -684,7 +684,7 @@
     },
     {
       "evidence_argument": "runtime-policy-and-attestation,hosted-service,examples/aitrade/external-evidence/runtime-action-hosted-service-source-snapshot.json,Retained GitHub hosted file export for runtime action attestation evidence;issuer=GitHub Hosted Repository;subject=trustai runtime action attestation export;source_uri=https://github.com/MSBeni/trust_ai/blob/main/examples/aitrade/runtime-action.json;issued_at=2026-07-03T12:00:12Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "06c5fda6f04505083fddc0e55b15210e7d59d507131b7fab46d5cc36ade9722a",
+      "intake_id": "8d15199e67c399378f7dd198d37fc7332bffcaa0b2d51e683b675b3b94c41e17",
       "intake_path": "examples/aitrade/external-evidence/intakes/runtime-policy-and-attestation-hosted-service.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/runtime-action-hosted-service-source-snapshot.json",
       "snapshot_id": "7dd49d48c853345be04ef37036ba3885cbaae58a96b4b369f6b05a855c6d31a7",
@@ -695,7 +695,7 @@
     },
     {
       "evidence_argument": "runtime-policy-and-attestation,identity-provider,examples/aitrade/external-evidence/runtime-policy-identity-provider-source-snapshot.json,Retained identity-provider export for runtime policy agent identity binding evidence;issuer=Identity Provider Export;subject=aitrade runtime policy governed agent identity binding;source_uri=https://idp.example/exports/aitrade/runtime-policy-agent-identity;issued_at=2026-07-03T11:57:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "62f807c741141bd0ca73a1568ecb20f427c2e69935075332e7510a997f34f3b6",
+      "intake_id": "9eda1821c253261c0bf51832b37394cd10c78ab184f857dcdbc48406b1f80e7f",
       "intake_path": "examples/aitrade/external-evidence/intakes/runtime-policy-and-attestation-identity-provider.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/runtime-policy-identity-provider-source-snapshot.json",
       "snapshot_id": "2164c71b1be63125f4eb3a626a50bd80fd622d842228431a1027da73d3821987",
@@ -706,7 +706,7 @@
     },
     {
       "evidence_argument": "agent-inventory-and-identity,provider-api,examples/aitrade/external-evidence/agent-inventory-provider-api-source-snapshot.json,Retained GitHub contents API export for agent registry inventory evidence;issuer=GitHub Contents API;subject=trustai agent registry inventory export;source_uri=https://api.github.com/repos/MSBeni/trust_ai/contents/examples/aitrade/agent-inventory.json?ref=main;issued_at=2026-07-03T11:55:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "bf2edfcae5b676308d8accdd4b34cc44cae1ac1dc0ae8c0577db3bd7211002ce",
+      "intake_id": "90ef2abe1e112aae5ef9604b1b362861779094dbe445530d8f195ade32654e10",
       "intake_path": "examples/aitrade/external-evidence/intakes/agent-inventory-and-identity-provider-api.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/agent-inventory-provider-api-source-snapshot.json",
       "snapshot_id": "694503e2c0a9038ecc09c2c82879ba3f4fac28417e00f0367bd6db540021c7ec",
@@ -717,7 +717,7 @@
     },
     {
       "evidence_argument": "agent-inventory-and-identity,identity-provider,examples/aitrade/external-evidence/identity-inventory-provider-source-snapshot.json,Retained identity-provider export for governed agent inventory reconciliation evidence;issuer=Identity Provider Export;subject=aitrade governed agent identity inventory;source_uri=https://idp.example/exports/aitrade/identity-inventory;issued_at=2026-07-03T11:57:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "71ab03b380993cb7d0c8e94e1c7c779a7d5be3e353538c8a9e9437341632cbaf",
+      "intake_id": "fdbd0cfa09530a66cacc22648137e8dbb27a55e266bf4102542f747c93a2de94",
       "intake_path": "examples/aitrade/external-evidence/intakes/agent-inventory-and-identity-identity-provider.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/identity-inventory-provider-source-snapshot.json",
       "snapshot_id": "d5ade07946e99be12e3166ad9e6f9032fbc98996f8b7e444db20462004ffc9e8",
@@ -728,7 +728,7 @@
     },
     {
       "evidence_argument": "standards-track-and-auditor-ecosystem,kms-hsm,examples/aitrade/external-evidence/standards-track-auditor-kms-hsm-source-snapshot.json,Retained kms-hsm export for standards-track-and-auditor-ecosystem evidence;issuer=Example KMS/HSM;subject=TrustAI standards track and auditor ecosystem kms hsm auditor ecosystem KMS signing enforcement;source_uri=https://kms.example/attestations/trustai/standards-track-and-auditor-ecosystem/evidence-signing/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "2209b124eaa14b5216588fe5686fe96ed15c4d0039b141ae1a9c5d1be13cdf51",
+      "intake_id": "25283c5040a0a64b50ca2cfc79e04e4d19e630ac64ece63b53211216185fc0d3",
       "intake_path": "examples/aitrade/external-evidence/intakes/standards-track-and-auditor-ecosystem-kms-hsm.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/standards-track-auditor-kms-hsm-source-snapshot.json",
       "snapshot_id": "9052d9296a4f703a9b4804d4faff2950b23a7abeee0a1994127219d3f196c22b",
@@ -739,7 +739,7 @@
     },
     {
       "evidence_argument": "standards-track-and-auditor-ecosystem,standards-body,examples/aitrade/external-evidence/standards-track-auditor-standards-body-source-snapshot.json,Retained standards-body export for standards-track-and-auditor-ecosystem evidence;issuer=LF TrustAI Ballot System;subject=TrustAI standards track and auditor ecosystem standards body standards and auditor ecosystem docket review;source_uri=https://standards.example/lf-trustai/standards-track-and-auditor-ecosystem/docket-review/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "b382533f86226ced7ea431cb6a90b2668299d098f21c9b34334e2b57f1df7a1f",
+      "intake_id": "da678e47e42ac5ddda8ff26d2ab62ae2df9b9f11ed88d63be54a6587270f19c8",
       "intake_path": "examples/aitrade/external-evidence/intakes/standards-track-and-auditor-ecosystem-standards-body.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/standards-track-auditor-standards-body-source-snapshot.json",
       "snapshot_id": "c7a4358a67fe309dd3b921ae246d8d7d8c7e652591f445bfc0841223a68a9498",
@@ -750,7 +750,7 @@
     },
     {
       "evidence_argument": "trust-network-procurement-and-marketplace,provider-api,examples/aitrade/external-evidence/trust-network-provider-api-source-snapshot.json,Retained provider-api export for trust-network-procurement-and-marketplace evidence;issuer=TrustAI Cloud Provider API;subject=TrustAI trust network procurement and marketplace provider api trust network provider API export;source_uri=https://api.trustai.example/v1/trust-network-procurement-and-marketplace/authority-evidence/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "cb60666282ac39a1ab340f7cf0e15b81543d3548c09654c1884de1cd65caf3f9",
+      "intake_id": "200d56ec1db0bae7718064073011eac22435e83c1fd7abc784f100659b80c4e3",
       "intake_path": "examples/aitrade/external-evidence/intakes/trust-network-procurement-and-marketplace-provider-api.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/trust-network-provider-api-source-snapshot.json",
       "snapshot_id": "5073d9cec2983323ca5901549cbf62bf2d6fd8de5b28650e1033382a47dc0674",
@@ -761,7 +761,7 @@
     },
     {
       "evidence_argument": "trust-network-procurement-and-marketplace,hosted-service,examples/aitrade/external-evidence/trust-network-hosted-service-source-snapshot.json,Retained hosted-service export for trust-network-procurement-and-marketplace evidence;issuer=TrustAI Cloud;subject=TrustAI trust network procurement and marketplace hosted service trust network hosted marketplace service export;source_uri=https://status.trustai.example/trust-network-procurement-and-marketplace/authority-evidence/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "d12d9201e4ded1ba657db8f531456f0670e66314a770282d3a06c8c9d9f1f35f",
+      "intake_id": "3fefea96519cf5609031dc1c344d099c51c1a53ab27fe070922501da1088eb4c",
       "intake_path": "examples/aitrade/external-evidence/intakes/trust-network-procurement-and-marketplace-hosted-service.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/trust-network-hosted-service-source-snapshot.json",
       "snapshot_id": "1e4f0aa8d1271842cfdde82372fd60dab2e205f38480e5e407a6dd3bf8478318",
@@ -772,7 +772,7 @@
     },
     {
       "evidence_argument": "trust-network-procurement-and-marketplace,identity-provider,examples/aitrade/external-evidence/trust-network-identity-provider-source-snapshot.json,Retained identity-provider export for trust-network-procurement-and-marketplace evidence;issuer=Example IdP;subject=TrustAI trust network procurement and marketplace identity provider trust network vendor identity federation export;source_uri=https://idp.example/exports/aitrade/trust-network-procurement-and-marketplace/authority-sessions/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "cb96ab0c7095db8e5aca808525e6e641d71d807659a214b4c02de6b995fda6ab",
+      "intake_id": "aecc5759128608df1e71b3307de097aff0c75c7b99c2cf6cb626b786440f59eb",
       "intake_path": "examples/aitrade/external-evidence/intakes/trust-network-procurement-and-marketplace-identity-provider.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/trust-network-identity-provider-source-snapshot.json",
       "snapshot_id": "1f74563be3c62dc470f180fd0210d65062a4cbddce45f2c7203b37592bbe4bdd",
@@ -783,7 +783,7 @@
     },
     {
       "evidence_argument": "trust-network-procurement-and-marketplace,customer,examples/aitrade/external-evidence/trust-network-customer-source-snapshot.json,Retained customer export for trust-network-procurement-and-marketplace evidence;issuer=Aitrade Model Risk Committee;subject=TrustAI trust network procurement and marketplace customer trust network procurement customer acceptance;source_uri=https://customers.example/aitrade/model-risk/trust-network-procurement-and-marketplace/reference-acceptance/2026-07-12;issued_at=2026-07-12T00:00:00Z;expires_at=2026-12-31T00:00:00Z",
-      "intake_id": "fa97371ef0e9bd6c5e9736710174f684ae0c89bf6b0beed4673c054d99c50fa8",
+      "intake_id": "165962ecc226ebc256c7764eafdfe01dfbb0efad6ce07635765a5a8484381d5b",
       "intake_path": "examples/aitrade/external-evidence/intakes/trust-network-procurement-and-marketplace-customer.json",
       "snapshot_artifact_path": "examples/aitrade/external-evidence/trust-network-customer-source-snapshot.json",
       "snapshot_id": "c7ccc1cc1a0128f4a845d3e0e5544d40011953ac111a50c01df6c01d14945fbb",
@@ -794,11 +794,11 @@
     }
   ],
   "generated_at": "2026-07-12T00:01:00Z",
-  "run_id": "0281eb607b0a475496657a47d90a5c53da404c749caca38ea56268d557a48b7e",
+  "run_id": "5992bbe17b8323ceea58588e11629be62c50c961af72335a0823c3f626391726",
   "schema": "trustai.external-evidence-collection-run/0.1",
   "source_map": {
     "path": "examples/aitrade/external-evidence/retained-external-evidence-collected-source-map.json",
-    "source_map_hash": "cc826b4edfe8c2b02673557f7ee53e00f5f74412ec06a2fe84d2f0ffc95d1964"
+    "source_map_hash": "d1cef16ae8137db01144a1a13d848e06f261a47c3f5abca0450cc634cdfd6dd0"
   },
   "summary": {
     "collected_count": 72,
