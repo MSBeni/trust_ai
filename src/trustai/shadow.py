@@ -1261,6 +1261,16 @@ def _verify_traffic_holdout_replay_bindings(
         if record.get("timestamp") != str(source_record.get("timestamp") or ""):
             errors.append(f"traffic holdout export replay record timestamp mismatch at sequence {index}")
 
+def _traffic_artifact_path(path: Path) -> str:
+    if not path.is_absolute():
+        return path.as_posix()
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(Path.cwd().resolve()).as_posix()
+    except ValueError:
+        return resolved.as_posix()
+
+
 def _traffic_replay_source_artifact(path: str | Path, replay: dict[str, Any]) -> dict[str, Any]:
     target = Path(path)
     if not target.is_file():
@@ -1278,7 +1288,7 @@ def _traffic_replay_source_artifact(path: str | Path, replay: dict[str, Any]) ->
     records = _shadow_records(replay)
     record_hashes = [content_hash(record) for record in records]
     body = {
-        "path": str(path).replace("\\", "/"),
+        "path": _traffic_artifact_path(target),
         "sha256": "sha256:" + sha256(data).hexdigest(),
         "size_bytes": len(data),
         "content_hash": content_hash(parsed),
@@ -1552,7 +1562,7 @@ def _traffic_provider_export_artifact(path: str | Path, provider_export: dict[st
     if parsed_hash != content_hash(provider_export):
         raise ValueError("provider export artifact content does not match supplied provider export object")
     body = {
-        "path": str(path).replace("\\", "/"),
+        "path": _traffic_artifact_path(target),
         "sha256": "sha256:" + sha256(data).hexdigest(),
         "size_bytes": len(data),
         "content_hash": parsed_hash,

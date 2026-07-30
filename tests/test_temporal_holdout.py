@@ -586,6 +586,7 @@ class TemporalHoldoutTests(unittest.TestCase):
             artifact_sha = _sha256_ref(replay_path)
 
         self.assertTrue(result.ok, result.errors)
+        self.assertEqual(str(replay_path).replace("\\", "/"), receipt["replay_source_artifact"]["path"])
         self.assertEqual(artifact_sha, receipt["replay_source_artifact"]["sha256"])
         self.assertEqual(content_hash(replay), receipt["replay_source_artifact"]["replay_hash"])
 
@@ -883,6 +884,7 @@ class TemporalHoldoutTests(unittest.TestCase):
             artifact_sha = _sha256_ref(provider_export_path)
 
         self.assertTrue(result.ok, result.errors)
+        self.assertEqual(str(provider_export_path).replace("\\", "/"), receipt["provider_export_artifact"]["path"])
         self.assertEqual(artifact_sha, receipt["provider_export_artifact"]["sha256"])
         self.assertEqual(content_hash(provider_export), receipt["provider_export_artifact"]["content_hash"])
         controls = {control["id"]: control["status"] for control in receipt["controls"]}
@@ -1194,6 +1196,7 @@ class TemporalHoldoutTests(unittest.TestCase):
             artifact_sha = _sha256_ref(replay_path)
 
         self.assertTrue(result.ok, result.errors)
+        self.assertEqual(str(replay_path).replace("\\", "/"), manifest["replay_source_artifact"]["path"])
         self.assertEqual(artifact_sha, manifest["replay_source_artifact"]["sha256"])
         self.assertEqual(content_hash(replay), manifest["replay_source_artifact"]["replay_hash"])
         self.assertEqual(manifest["record_count"], manifest["replay_source_artifact"]["record_count"])
@@ -1479,6 +1482,7 @@ class TemporalHoldoutTests(unittest.TestCase):
 
         self.assertEqual(manifest["manifest_id"], entry["payload"]["manifest_id"])
         self.assertIn("replay_source_artifact", manifest)
+        self.assertEqual("examples/aitrade/shadow-replay.json", manifest["replay_source_artifact"]["path"])
         self.assertEqual(_sha256_ref(SHADOW), manifest["replay_source_artifact"]["sha256"])
         self.assertEqual(manifest["replay_source_artifact"], entry["payload"]["replay_source_artifact"])
 

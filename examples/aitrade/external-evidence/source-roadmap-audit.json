@@ -1,5 +1,5 @@
 {
-  "audit_id": "9355e4c9c5692b8a8ebbf6f9b13279ea75290278a600734562d478b829247b28",
+  "audit_id": "4f2085ef62a49c4e0c75dbf6a4115fc2eb1d1a3896cd3478a1338ed4c2ebecea",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
   "generated_at": "2026-07-12T00:00:00Z",
   "limitations": [
@@ -82,7 +82,7 @@
         {
           "path": "tests/test_temporal_holdout.py",
           "present": true,
-          "sha256": "sha256:909d1ffa1e9f6baf1f57f3fa235087028945893a11616394903f1fb7f882ca58"
+          "sha256": "sha256:5a07730637e1bd361766453d78f97df55169e6640fdcc5870ddf8f4d3da5a68f"
         },
         {
           "path": "tests/test_phase1_phase2.py",
@@ -651,7 +651,7 @@
         {
           "path": "src/trustai/shadow.py",
           "present": true,
-          "sha256": "sha256:957a5f0ee6b998b256410828546c4fd4cc324027445e79ef8aed002c10d8ecc8"
+          "sha256": "sha256:029095573046db56a1afb7230aa68c9b6fff38825234c33e86320e514b6158bd"
         },
         {
           "path": "src/trustai/lifecycle.py",
@@ -696,7 +696,7 @@
         {
           "path": "tests/test_temporal_holdout.py",
           "present": true,
-          "sha256": "sha256:909d1ffa1e9f6baf1f57f3fa235087028945893a11616394903f1fb7f882ca58"
+          "sha256": "sha256:5a07730637e1bd361766453d78f97df55169e6640fdcc5870ddf8f4d3da5a68f"
         },
         {
           "path": "tests/test_phase1_phase2.py",
@@ -943,7 +943,7 @@
         {
           "path": "src/trustai/shadow.py",
           "present": true,
-          "sha256": "sha256:957a5f0ee6b998b256410828546c4fd4cc324027445e79ef8aed002c10d8ecc8"
+          "sha256": "sha256:029095573046db56a1afb7230aa68c9b6fff38825234c33e86320e514b6158bd"
         },
         {
           "path": "src/trustai/lifecycle.py",
