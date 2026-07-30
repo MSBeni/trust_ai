@@ -1315,8 +1315,22 @@ def refresh_retained_artifacts() -> None:
         path("retained-external-evidence-production-replacement-intake-template.md"),
     )
     run(
-        "external-evidence-production-replacement-submission-review",
+        "external-evidence-production-replacement-submission",
         path("retained-external-evidence-production-replacement-intake-template.json"),
+        "--fulfillment-file",
+        path("retained-external-evidence-production-replacement-intake-template.json"),
+        "--generated-at",
+        COLLECTION_TIME,
+        "--out",
+        path("retained-external-evidence-production-replacement-submission.json"),
+        "--markdown",
+        path("retained-external-evidence-production-replacement-submission.md"),
+        "--submitted-template-out",
+        path("retained-external-evidence-production-replacement-submitted-template.json"),
+    )
+    run(
+        "external-evidence-production-replacement-submission-review",
+        path("retained-external-evidence-production-replacement-submitted-template.json"),
         path("retained-external-evidence-production-replacement-owner-packet-status.json"),
         path("source-external-evidence-plan-all.json"),
         "--require-live-source-uris",
@@ -1693,9 +1707,14 @@ def verify_retained_artifacts() -> None:
         path("retained-external-evidence-production-replacement-owner-packet-status.json"),
     )
     run(
+        "external-evidence-production-replacement-submission-verify",
+        path("retained-external-evidence-production-replacement-submission.json"),
+        path("retained-external-evidence-production-replacement-intake-template.json"),
+    )
+    run(
         "external-evidence-production-replacement-submission-review-verify",
         path("retained-external-evidence-production-replacement-submission-review.json"),
-        path("retained-external-evidence-production-replacement-intake-template.json"),
+        path("retained-external-evidence-production-replacement-submitted-template.json"),
         path("retained-external-evidence-production-replacement-owner-packet-status.json"),
         path("source-external-evidence-plan-all.json"),
         "--require-live-source-uris",
@@ -1742,6 +1761,8 @@ def assert_retained_counts() -> None:
     production_replacement_owner_packets = json_load(DIR / "retained-external-evidence-production-replacement-owner-packets.json")
     production_replacement_owner_packet_status = json_load(DIR / "retained-external-evidence-production-replacement-owner-packet-status.json")
     production_replacement_intake_template = json_load(DIR / "retained-external-evidence-production-replacement-intake-template.json")
+    production_replacement_submission = json_load(DIR / "retained-external-evidence-production-replacement-submission.json")
+    production_replacement_submitted_template = json_load(DIR / "retained-external-evidence-production-replacement-submitted-template.json")
     production_replacement_submission_review = json_load(DIR / "retained-external-evidence-production-replacement-submission-review.json")
     production_replacement_collection_package = json_load(DIR / "retained-external-evidence-production-replacement-collection-package.json")
     production_replacement_closure = json_load(DIR / "retained-external-evidence-production-replacement-closure.json")
@@ -1799,6 +1820,13 @@ def assert_retained_counts() -> None:
         (production_replacement_intake_template["summary"]["owner_count"], production_replacement_owner_packet_status["summary"]["packet_count"], "production replacement intake template owner count"),
         (production_replacement_intake_template["summary"]["placeholder_source_uri_count"], expected_non_production_count, "production replacement intake template placeholder URI count"),
         (production_replacement_intake_template["summary"]["open_task_count"], expected_non_production_count, "production replacement intake template open task count"),
+        (production_replacement_submission["summary"]["submission_status"], "blocked", "production replacement submission status"),
+        (production_replacement_submission["summary"]["submitted_task_count"], expected_non_production_count, "production replacement submission task count"),
+        (production_replacement_submission["summary"]["submitted_placeholder_source_uri_count"], expected_non_production_count, "production replacement submission submitted placeholder URI count"),
+        (production_replacement_submission["summary"]["submitted_live_source_uri_count"], 0, "production replacement submission submitted live URI count"),
+        (production_replacement_submission["summary"]["placeholder_source_uri_count"], expected_non_production_count, "production replacement submission total placeholder URI count"),
+        (production_replacement_submitted_template["summary"]["submitted_task_count"], expected_non_production_count, "production replacement submitted template task count"),
+        (production_replacement_submitted_template["summary"]["placeholder_source_uri_count"], expected_non_production_count, "production replacement submitted template placeholder URI count"),
         (production_replacement_submission_review["summary"]["review_status"], "blocked", "production replacement submission review status"),
         (production_replacement_submission_review["summary"]["ready_task_count"], 0, "production replacement submission review ready task count"),
         (production_replacement_submission_review["summary"]["blocked_task_count"], expected_non_production_count, "production replacement submission review blocked task count"),

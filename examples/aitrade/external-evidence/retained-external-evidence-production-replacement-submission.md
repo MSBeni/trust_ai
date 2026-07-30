@@ -1,91 +1,14 @@
-# External Evidence Production Replacement Intake Template
+# External Evidence Production Replacement Submission
 
-- Intake template ID: `81c39d9771ef8bc267a116cbfc6c6396e6fed72f4d4f5dd9f88a53491677ff6f`
+- Submission ID: `4c707053565f17ba32e1934ff67f5cf40c9c7a3434e39781c8e3051966929632`
 - Generated at: `2026-07-12T00:01:00Z`
-- Requests: 72
-- Owners: 10
-- Open tasks: 72
-- Blocked tasks: 0
-- Placeholder source URIs: 72
+- Submitted tasks: 72
+- Submitted live source URIs: 0
+- Submitted placeholder source URIs: 72
+- Total placeholder source URIs after submission: 72
+- Total live source URIs after submission: 0
 
-## Intake Requests
-
-| Unit | Owner | Authority | Source URI | Suggested Artifact |
-|---|---|---|---|---|
-| `agent-inventory-and-identity:identity-provider` | IAM/identity owner | `identity-provider` | TODO://production-authority/agent-inventory-and-identity/identity-provider | `external-evidence/production/agent-inventory-and-identity/identity-provider.json` |
-| `auditor-and-review-portal:identity-provider` | IAM/identity owner | `identity-provider` | TODO://production-authority/auditor-and-review-portal/identity-provider | `external-evidence/production/auditor-and-review-portal/identity-provider.json` |
-| `cicd-provider-approvals:identity-provider` | IAM/identity owner | `identity-provider` | TODO://production-authority/cicd-provider-approvals/identity-provider | `external-evidence/production/cicd-provider-approvals/identity-provider.json` |
-| `insurer-api-and-actuarial-products:identity-provider` | IAM/identity owner | `identity-provider` | TODO://production-authority/insurer-api-and-actuarial-products/identity-provider | `external-evidence/production/insurer-api-and-actuarial-products/identity-provider.json` |
-| `runtime-policy-and-attestation:identity-provider` | IAM/identity owner | `identity-provider` | TODO://production-authority/runtime-policy-and-attestation/identity-provider | `external-evidence/production/runtime-policy-and-attestation/identity-provider.json` |
-| `self-serve-onboarding:identity-provider` | IAM/identity owner | `identity-provider` | TODO://production-authority/self-serve-onboarding/identity-provider | `external-evidence/production/self-serve-onboarding/identity-provider.json` |
-| `shadow-replay-temporal-holdout:identity-provider` | IAM/identity owner | `identity-provider` | TODO://production-authority/shadow-replay-temporal-holdout/identity-provider | `external-evidence/production/shadow-replay-temporal-holdout/identity-provider.json` |
-| `trust-network-procurement-and-marketplace:identity-provider` | IAM/identity owner | `identity-provider` | TODO://production-authority/trust-network-procurement-and-marketplace/identity-provider | `external-evidence/production/trust-network-procurement-and-marketplace/identity-provider.json` |
-| `byoc-self-hosted:cloud-object-lock` | cloud storage owner | `cloud-object-lock` | TODO://production-authority/byoc-self-hosted/cloud-object-lock | `external-evidence/production/byoc-self-hosted/cloud-object-lock.json` |
-| `byoc-self-hosted:customer` | customer success/account owner | `customer` | TODO://production-authority/byoc-self-hosted/customer | `external-evidence/production/byoc-self-hosted/customer.json` |
-| `design-partner-pilot-exit-criteria:customer` | customer success/account owner | `customer` | TODO://production-authority/design-partner-pilot-exit-criteria/customer | `external-evidence/production/design-partner-pilot-exit-criteria/customer.json` |
-| `insurer-api-and-actuarial-products:customer` | customer success/account owner | `customer` | TODO://production-authority/insurer-api-and-actuarial-products/customer | `external-evidence/production/insurer-api-and-actuarial-products/customer.json` |
-| `product-scope-discipline:customer` | customer success/account owner | `customer` | TODO://production-authority/product-scope-discipline/customer | `external-evidence/production/product-scope-discipline/customer.json` |
-| `roadmap-phase-scoreboard:customer` | customer success/account owner | `customer` | TODO://production-authority/roadmap-phase-scoreboard/customer | `external-evidence/production/roadmap-phase-scoreboard/customer.json` |
-| `shadow-replay-temporal-holdout:customer` | customer success/account owner | `customer` | TODO://production-authority/shadow-replay-temporal-holdout/customer | `external-evidence/production/shadow-replay-temporal-holdout/customer.json` |
-| `state-of-agent-reliability-report:customer` | customer success/account owner | `customer` | TODO://production-authority/state-of-agent-reliability-report/customer | `external-evidence/production/state-of-agent-reliability-report/customer.json` |
-| `trust-network-procurement-and-marketplace:customer` | customer success/account owner | `customer` | TODO://production-authority/trust-network-procurement-and-marketplace/customer | `external-evidence/production/trust-network-procurement-and-marketplace/customer.json` |
-| `trustai-own-compliance:customer` | customer success/account owner | `customer` | TODO://production-authority/trustai-own-compliance/customer | `external-evidence/production/trustai-own-compliance/customer.json` |
-| `vertical-packs:customer` | customer success/account owner | `customer` | TODO://production-authority/vertical-packs/customer | `external-evidence/production/vertical-packs/customer.json` |
-| `agent-inventory-and-identity:provider-api` | integration/platform owner | `provider-api` | TODO://production-authority/agent-inventory-and-identity/provider-api | `external-evidence/production/agent-inventory-and-identity/provider-api.json` |
-| `auditor-and-review-portal:provider-api` | integration/platform owner | `provider-api` | TODO://production-authority/auditor-and-review-portal/provider-api | `external-evidence/production/auditor-and-review-portal/provider-api.json` |
-| `byoc-self-hosted:provider-api` | integration/platform owner | `provider-api` | TODO://production-authority/byoc-self-hosted/provider-api | `external-evidence/production/byoc-self-hosted/provider-api.json` |
-| `cicd-provider-approvals:provider-api` | integration/platform owner | `provider-api` | TODO://production-authority/cicd-provider-approvals/provider-api | `external-evidence/production/cicd-provider-approvals/provider-api.json` |
-| `compliance-mapper-and-eu-ai-act:provider-api` | integration/platform owner | `provider-api` | TODO://production-authority/compliance-mapper-and-eu-ai-act/provider-api | `external-evidence/production/compliance-mapper-and-eu-ai-act/provider-api.json` |
-| `framework-adapters:provider-api` | integration/platform owner | `provider-api` | TODO://production-authority/framework-adapters/provider-api | `external-evidence/production/framework-adapters/provider-api.json` |
-| `insurer-api-and-actuarial-products:provider-api` | integration/platform owner | `provider-api` | TODO://production-authority/insurer-api-and-actuarial-products/provider-api | `external-evidence/production/insurer-api-and-actuarial-products/provider-api.json` |
-| `mcp-gateway:provider-api` | integration/platform owner | `provider-api` | TODO://production-authority/mcp-gateway/provider-api | `external-evidence/production/mcp-gateway/provider-api.json` |
-| `oss-verifier-and-public-spec:provider-api` | integration/platform owner | `provider-api` | TODO://production-authority/oss-verifier-and-public-spec/provider-api | `external-evidence/production/oss-verifier-and-public-spec/provider-api.json` |
-| `runtime-policy-and-attestation:provider-api` | integration/platform owner | `provider-api` | TODO://production-authority/runtime-policy-and-attestation/provider-api | `external-evidence/production/runtime-policy-and-attestation/provider-api.json` |
-| `self-serve-onboarding:provider-api` | integration/platform owner | `provider-api` | TODO://production-authority/self-serve-onboarding/provider-api | `external-evidence/production/self-serve-onboarding/provider-api.json` |
-| `shadow-replay-temporal-holdout:provider-api` | integration/platform owner | `provider-api` | TODO://production-authority/shadow-replay-temporal-holdout/provider-api | `external-evidence/production/shadow-replay-temporal-holdout/provider-api.json` |
-| `trust-network-procurement-and-marketplace:provider-api` | integration/platform owner | `provider-api` | TODO://production-authority/trust-network-procurement-and-marketplace/provider-api | `external-evidence/production/trust-network-procurement-and-marketplace/provider-api.json` |
-| `auditor-and-review-portal:regulator` | legal/compliance owner | `regulator` | TODO://production-authority/auditor-and-review-portal/regulator | `external-evidence/production/auditor-and-review-portal/regulator.json` |
-| `compliance-mapper-and-eu-ai-act:regulator` | legal/compliance owner | `regulator` | TODO://production-authority/compliance-mapper-and-eu-ai-act/regulator | `external-evidence/production/compliance-mapper-and-eu-ai-act/regulator.json` |
-| `design-partner-pilot-exit-criteria:regulator` | legal/compliance owner | `regulator` | TODO://production-authority/design-partner-pilot-exit-criteria/regulator | `external-evidence/production/design-partner-pilot-exit-criteria/regulator.json` |
-| `roadmap-phase-scoreboard:regulator` | legal/compliance owner | `regulator` | TODO://production-authority/roadmap-phase-scoreboard/regulator | `external-evidence/production/roadmap-phase-scoreboard/regulator.json` |
-| `vertical-packs:regulator` | legal/compliance owner | `regulator` | TODO://production-authority/vertical-packs/regulator | `external-evidence/production/vertical-packs/regulator.json` |
-| `byoc-self-hosted:ci-run` | release engineering | `ci-run` | TODO://production-authority/byoc-self-hosted/ci-run | `external-evidence/production/byoc-self-hosted/ci-run.json` |
-| `cicd-provider-approvals:ci-run` | release engineering | `ci-run` | TODO://production-authority/cicd-provider-approvals/ci-run | `external-evidence/production/cicd-provider-approvals/ci-run.json` |
-| `framework-adapters:ci-run` | release engineering | `ci-run` | TODO://production-authority/framework-adapters/ci-run | `external-evidence/production/framework-adapters/ci-run.json` |
-| `insurer-api-and-actuarial-products:ci-run` | release engineering | `ci-run` | TODO://production-authority/insurer-api-and-actuarial-products/ci-run | `external-evidence/production/insurer-api-and-actuarial-products/ci-run.json` |
-| `mcp-gateway:ci-run` | release engineering | `ci-run` | TODO://production-authority/mcp-gateway/ci-run | `external-evidence/production/mcp-gateway/ci-run.json` |
-| `oss-verifier-and-public-spec:ci-run` | release engineering | `ci-run` | TODO://production-authority/oss-verifier-and-public-spec/ci-run | `external-evidence/production/oss-verifier-and-public-spec/ci-run.json` |
-| `product-scope-discipline:ci-run` | release engineering | `ci-run` | TODO://production-authority/product-scope-discipline/ci-run | `external-evidence/production/product-scope-discipline/ci-run.json` |
-| `roadmap-phase-scoreboard:ci-run` | release engineering | `ci-run` | TODO://production-authority/roadmap-phase-scoreboard/ci-run | `external-evidence/production/roadmap-phase-scoreboard/ci-run.json` |
-| `runtime-policy-and-attestation:ci-run` | release engineering | `ci-run` | TODO://production-authority/runtime-policy-and-attestation/ci-run | `external-evidence/production/runtime-policy-and-attestation/ci-run.json` |
-| `design-partner-pilot-exit-criteria:insurer` | risk/insurance owner | `insurer` | TODO://production-authority/design-partner-pilot-exit-criteria/insurer | `external-evidence/production/design-partner-pilot-exit-criteria/insurer.json` |
-| `insurer-api-and-actuarial-products:insurer` | risk/insurance owner | `insurer` | TODO://production-authority/insurer-api-and-actuarial-products/insurer | `external-evidence/production/insurer-api-and-actuarial-products/insurer.json` |
-| `roadmap-phase-scoreboard:insurer` | risk/insurance owner | `insurer` | TODO://production-authority/roadmap-phase-scoreboard/insurer | `external-evidence/production/roadmap-phase-scoreboard/insurer.json` |
-| `vertical-packs:insurer` | risk/insurance owner | `insurer` | TODO://production-authority/vertical-packs/insurer | `external-evidence/production/vertical-packs/insurer.json` |
-| `auditor-and-review-portal:kms-hsm` | security/platform KMS owner | `kms-hsm` | TODO://production-authority/auditor-and-review-portal/kms-hsm | `external-evidence/production/auditor-and-review-portal/kms-hsm.json` |
-| `byoc-self-hosted:kms-hsm` | security/platform KMS owner | `kms-hsm` | TODO://production-authority/byoc-self-hosted/kms-hsm | `external-evidence/production/byoc-self-hosted/kms-hsm.json` |
-| `insurer-api-and-actuarial-products:kms-hsm` | security/platform KMS owner | `kms-hsm` | TODO://production-authority/insurer-api-and-actuarial-products/kms-hsm | `external-evidence/production/insurer-api-and-actuarial-products/kms-hsm.json` |
-| `mcp-gateway:kms-hsm` | security/platform KMS owner | `kms-hsm` | TODO://production-authority/mcp-gateway/kms-hsm | `external-evidence/production/mcp-gateway/kms-hsm.json` |
-| `runtime-policy-and-attestation:kms-hsm` | security/platform KMS owner | `kms-hsm` | TODO://production-authority/runtime-policy-and-attestation/kms-hsm | `external-evidence/production/runtime-policy-and-attestation/kms-hsm.json` |
-| `shadow-replay-temporal-holdout:kms-hsm` | security/platform KMS owner | `kms-hsm` | TODO://production-authority/shadow-replay-temporal-holdout/kms-hsm | `external-evidence/production/shadow-replay-temporal-holdout/kms-hsm.json` |
-| `standards-track-and-auditor-ecosystem:kms-hsm` | security/platform KMS owner | `kms-hsm` | TODO://production-authority/standards-track-and-auditor-ecosystem/kms-hsm | `external-evidence/production/standards-track-and-auditor-ecosystem/kms-hsm.json` |
-| `auditor-and-review-portal:hosted-service` | service owner | `hosted-service` | TODO://production-authority/auditor-and-review-portal/hosted-service | `external-evidence/production/auditor-and-review-portal/hosted-service.json` |
-| `cicd-provider-approvals:hosted-service` | service owner | `hosted-service` | TODO://production-authority/cicd-provider-approvals/hosted-service | `external-evidence/production/cicd-provider-approvals/hosted-service.json` |
-| `framework-adapters:hosted-service` | service owner | `hosted-service` | TODO://production-authority/framework-adapters/hosted-service | `external-evidence/production/framework-adapters/hosted-service.json` |
-| `insurer-api-and-actuarial-products:hosted-service` | service owner | `hosted-service` | TODO://production-authority/insurer-api-and-actuarial-products/hosted-service | `external-evidence/production/insurer-api-and-actuarial-products/hosted-service.json` |
-| `mcp-gateway:hosted-service` | service owner | `hosted-service` | TODO://production-authority/mcp-gateway/hosted-service | `external-evidence/production/mcp-gateway/hosted-service.json` |
-| `oss-verifier-and-public-spec:hosted-service` | service owner | `hosted-service` | TODO://production-authority/oss-verifier-and-public-spec/hosted-service | `external-evidence/production/oss-verifier-and-public-spec/hosted-service.json` |
-| `runtime-policy-and-attestation:hosted-service` | service owner | `hosted-service` | TODO://production-authority/runtime-policy-and-attestation/hosted-service | `external-evidence/production/runtime-policy-and-attestation/hosted-service.json` |
-| `self-serve-onboarding:hosted-service` | service owner | `hosted-service` | TODO://production-authority/self-serve-onboarding/hosted-service | `external-evidence/production/self-serve-onboarding/hosted-service.json` |
-| `trust-network-procurement-and-marketplace:hosted-service` | service owner | `hosted-service` | TODO://production-authority/trust-network-procurement-and-marketplace/hosted-service | `external-evidence/production/trust-network-procurement-and-marketplace/hosted-service.json` |
-| `byoc-self-hosted:standards-body` | standards/governance owner | `standards-body` | TODO://production-authority/byoc-self-hosted/standards-body | `external-evidence/production/byoc-self-hosted/standards-body.json` |
-| `compliance-mapper-and-eu-ai-act:standards-body` | standards/governance owner | `standards-body` | TODO://production-authority/compliance-mapper-and-eu-ai-act/standards-body | `external-evidence/production/compliance-mapper-and-eu-ai-act/standards-body.json` |
-| `roadmap-phase-scoreboard:standards-body` | standards/governance owner | `standards-body` | TODO://production-authority/roadmap-phase-scoreboard/standards-body | `external-evidence/production/roadmap-phase-scoreboard/standards-body.json` |
-| `shadow-replay-temporal-holdout:standards-body` | standards/governance owner | `standards-body` | TODO://production-authority/shadow-replay-temporal-holdout/standards-body | `external-evidence/production/shadow-replay-temporal-holdout/standards-body.json` |
-| `standards-track-and-auditor-ecosystem:standards-body` | standards/governance owner | `standards-body` | TODO://production-authority/standards-track-and-auditor-ecosystem/standards-body | `external-evidence/production/standards-track-and-auditor-ecosystem/standards-body.json` |
-| `trustai-own-compliance:standards-body` | standards/governance owner | `standards-body` | TODO://production-authority/trustai-own-compliance/standards-body | `external-evidence/production/trustai-own-compliance/standards-body.json` |
-
-## Fulfillments
+## Submitted Fulfillments
 
 | Task | Source URI | Description | Source File |
 |---|---|---|---|
@@ -164,13 +87,12 @@
 
 ## Commands
 
-- fill_then_fulfill_source_map: `python -m trustai external-evidence-source-map-fulfill <source-map-template.json> <plan.json> --fulfillment-file <this-template.json> --require-live-source-uris --out <fulfilled-source-map.json>`
-- collect_after_fulfillment: `python -m trustai external-evidence-collect-batch <fulfilled-source-map.json> <manifest.json> <roadmap-audit.json> --root . --require-live-source-uris --require-fresh-source-snapshot-artifacts`
-- rebuild_manifest_after_intakes: `python -m trustai external-evidence-manifest-from-intakes <plan.json> <manifest.json> <roadmap-audit.json> --intake-dir <intake-dir> --require-live-source-uris --require-source-snapshot-artifacts --require-fresh-source-snapshot-artifacts`
-- prove_ready_after_rebuild: `python -m trustai external-evidence-readiness <gap-report.json> <rebuilt-manifest.json> <remaining-plan.json> <source-map.json> <roadmap-audit.json> --require-ready`
+- write_submitted_template: `python -m trustai external-evidence-production-replacement-submission <intake-template.json> --fulfillment '<task;source_uri=...>' --submitted-template-out <submitted-template.json>`
+- review_submission: `python -m trustai external-evidence-production-replacement-submission-review <submitted-template.json> <status-report.json> <plan-all.json> --require-live-source-uris --out <review.json>`
+- verify_submission: `python -m trustai external-evidence-production-replacement-submission-verify <submission.json> <intake-template.json>`
 
 ## Limitations
 
-- This template is an intake handoff for production authority evidence; it does not collect, verify, or satisfy production readiness by itself.
-- Placeholder TODO source URIs intentionally keep readiness blocked until owners replace them with live authority sources.
-- Retained example artifacts remain useful for demo verification but must not be counted as production authority evidence.
+- This submission records owner-provided production authority source metadata; it does not collect source snapshots or prove production readiness by itself.
+- Any remaining placeholder source URIs intentionally keep the downstream submission review and collection package blocked.
+- Production readiness still requires source snapshot collection, intake verification, manifest rebuild, readiness verification, and production replacement closure.

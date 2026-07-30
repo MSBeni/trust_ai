@@ -886,7 +886,7 @@
     "Placeholder TODO source URIs intentionally keep readiness blocked until owners replace them with live authority sources.",
     "Retained example artifacts remain useful for demo verification but must not be counted as production authority evidence."
   ],
-  "production_replacement_intake_template_id": "81c39d9771ef8bc267a116cbfc6c6396e6fed72f4d4f5dd9f88a53491677ff6f",
+  "production_replacement_intake_template_id": "f52e5a9fc2b0e721a38fe1e3b27f5e7179b486c05c6a7f19429cc5063fe20e6a",
   "requests": [
     {
       "acceptance_criteria": [
@@ -4983,6 +4983,9 @@
     ],
     "placeholder_source_uri_count": 72,
     "request_count": 72,
+    "submitted_live_source_uri_count": 0,
+    "submitted_placeholder_source_uri_count": 72,
+    "submitted_task_count": 72,
     "task_count_by_authority_kind": {
       "ci-run": 9,
       "cloud-object-lock": 1,

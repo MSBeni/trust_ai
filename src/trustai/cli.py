@@ -1199,6 +1199,7 @@ from .external_evidence import (
     build_external_evidence_production_replacement_owner_packets,
     build_external_evidence_production_replacement_owner_packet_status,
     build_external_evidence_production_replacement_intake_template,
+    build_external_evidence_production_replacement_submission,
     build_external_evidence_production_replacement_submission_review,
     build_external_evidence_production_replacement_collection_package,
     build_external_evidence_production_replacement_closure,
@@ -1228,6 +1229,7 @@ from .external_evidence import (
     load_external_evidence_production_replacement_owner_packets,
     load_external_evidence_production_replacement_owner_packet_status,
     load_external_evidence_production_replacement_intake_template,
+    load_external_evidence_production_replacement_submission,
     load_external_evidence_production_replacement_submission_review,
     load_external_evidence_production_replacement_collection_package,
     load_external_evidence_production_replacement_closure,
@@ -1256,6 +1258,7 @@ from .external_evidence import (
     verify_external_evidence_production_replacement_owner_packets,
     verify_external_evidence_production_replacement_owner_packet_status,
     verify_external_evidence_production_replacement_intake_template,
+    verify_external_evidence_production_replacement_submission,
     verify_external_evidence_production_replacement_submission_review,
     verify_external_evidence_production_replacement_collection_package,
     verify_external_evidence_production_replacement_closure,
@@ -1292,6 +1295,8 @@ from .external_evidence import (
     write_external_evidence_production_replacement_owner_packet_status_markdown,
     write_external_evidence_production_replacement_intake_template,
     write_external_evidence_production_replacement_intake_template_markdown,
+    write_external_evidence_production_replacement_submission,
+    write_external_evidence_production_replacement_submission_markdown,
     write_external_evidence_production_replacement_submission_review,
     write_external_evidence_production_replacement_submission_review_markdown,
     write_external_evidence_production_replacement_collection_package,
@@ -17158,6 +17163,76 @@ def cmd_external_evidence_production_replacement_intake_template_verify(args: ar
     return 1
 
 
+
+def cmd_external_evidence_production_replacement_submission(args: argparse.Namespace) -> int:
+    try:
+        template = load_external_evidence_production_replacement_intake_template(args.template)
+        fulfillments = _load_source_map_fulfillments(args.fulfillment, args.fulfillment_file)
+        submission = build_external_evidence_production_replacement_submission(
+            template,
+            fulfillments,
+            generated_at=args.generated_at,
+        )
+        result = verify_external_evidence_production_replacement_submission(
+            submission,
+            template,
+            require_submitted_live_source_uris=args.require_submitted_live_source_uris,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement submission failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("external evidence production replacement submission verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_external_evidence_production_replacement_submission(args.out, submission)
+    if args.markdown:
+        write_external_evidence_production_replacement_submission_markdown(args.markdown, submission)
+        print(f"external evidence production replacement submission markdown: {args.markdown}")
+    if args.submitted_template_out:
+        write_external_evidence_production_replacement_intake_template(args.submitted_template_out, submission["submitted_template"])
+        print(f"external evidence production replacement submitted template: {args.submitted_template_out}")
+    summary = submission["summary"]
+    print(f"external evidence production replacement submission: {args.out}")
+    print(f"production replacement submission id: {submission['production_replacement_submission_id']}")
+    print(f"submitted tasks: {summary['submitted_task_count']}")
+    print(f"submitted live source URIs: {summary['submitted_live_source_uri_count']}")
+    print(f"submitted placeholder source URIs: {summary['submitted_placeholder_source_uri_count']}")
+    print(f"total placeholder source URIs: {summary['placeholder_source_uri_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_external_evidence_production_replacement_submission_verify(args: argparse.Namespace) -> int:
+    try:
+        submission = load_external_evidence_production_replacement_submission(args.submission)
+        template = load_external_evidence_production_replacement_intake_template(args.template)
+        result = verify_external_evidence_production_replacement_submission(
+            submission,
+            template,
+            require_submitted_live_source_uris=args.require_submitted_live_source_uris,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement submission verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        summary = submission.get("summary", {})
+        print(f"verified external evidence production replacement submission: {args.submission}")
+        print(f"production replacement submission id: {submission.get('production_replacement_submission_id')}")
+        print(f"submitted tasks: {summary.get('submitted_task_count', 0)}")
+        print(f"submitted live source URIs: {summary.get('submitted_live_source_uri_count', 0)}")
+        print(f"submitted placeholder source URIs: {summary.get('submitted_placeholder_source_uri_count', 0)}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"external evidence production replacement submission verification failed: {args.submission}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
 def cmd_external_evidence_production_replacement_submission_review(args: argparse.Namespace) -> int:
     try:
         template = load_external_evidence_production_replacement_intake_template(args.template)
@@ -28930,6 +29005,24 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_production_replacement_intake_template_verify.add_argument("template")
     external_evidence_production_replacement_intake_template_verify.add_argument("status_report")
     external_evidence_production_replacement_intake_template_verify.set_defaults(func=cmd_external_evidence_production_replacement_intake_template_verify)
+
+
+    external_evidence_production_replacement_submission = subparsers.add_parser("external-evidence-production-replacement-submission", help="write an owner submission bundle that applies live production authority fulfillment metadata to an intake template")
+    external_evidence_production_replacement_submission.add_argument("template")
+    external_evidence_production_replacement_submission.add_argument("--fulfillment", action="append", default=[], help="task;source_uri=URI[;description=TEXT;issuer=TEXT;issued_at=RFC3339;expires_at=RFC3339]")
+    external_evidence_production_replacement_submission.add_argument("--fulfillment-file", action="append", default=[], help="JSON list or object with a fulfillments list of source-map metadata objects")
+    external_evidence_production_replacement_submission.add_argument("--require-submitted-live-source-uris", action="store_true", help="fail when submitted fulfillment rows still use placeholder/example source_uri values")
+    external_evidence_production_replacement_submission.add_argument("--generated-at")
+    external_evidence_production_replacement_submission.add_argument("--out", default="artifacts/external-evidence-production-replacement-submission.json")
+    external_evidence_production_replacement_submission.add_argument("--markdown", default="artifacts/external-evidence-production-replacement-submission.md")
+    external_evidence_production_replacement_submission.add_argument("--submitted-template-out", help="write the derived submitted intake template for submission-review")
+    external_evidence_production_replacement_submission.set_defaults(func=cmd_external_evidence_production_replacement_submission)
+
+    external_evidence_production_replacement_submission_verify = subparsers.add_parser("external-evidence-production-replacement-submission-verify", help="verify an owner production authority replacement submission bundle")
+    external_evidence_production_replacement_submission_verify.add_argument("submission")
+    external_evidence_production_replacement_submission_verify.add_argument("template")
+    external_evidence_production_replacement_submission_verify.add_argument("--require-submitted-live-source-uris", action="store_true", help="fail when submitted fulfillment rows still use placeholder/example source_uri values")
+    external_evidence_production_replacement_submission_verify.set_defaults(func=cmd_external_evidence_production_replacement_submission_verify)
 
     external_evidence_production_replacement_submission_review = subparsers.add_parser("external-evidence-production-replacement-submission-review", help="review a filled production authority replacement intake template against the all-authority collection plan")
     external_evidence_production_replacement_submission_review.add_argument("template")

@@ -36,6 +36,7 @@ EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_PLAN_SCHEMA = "trustai.external-evidenc
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_SCHEMA = "trustai.external-evidence-production-replacement-owner-packet-bundle/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_STATUS_SCHEMA = "trustai.external-evidence-production-replacement-owner-packet-status/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_INTAKE_TEMPLATE_SCHEMA = "trustai.external-evidence-production-replacement-intake-template/0.1"
+EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_SCHEMA = "trustai.external-evidence-production-replacement-submission/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA = "trustai.external-evidence-production-replacement-submission-review/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_COLLECTION_PACKAGE_SCHEMA = "trustai.external-evidence-production-replacement-collection-package/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA = "trustai.external-evidence-production-replacement-closure/0.1"
@@ -293,6 +294,13 @@ class ExternalEvidenceProductionReplacementOwnerPacketStatusVerification:
 
 @dataclass
 class ExternalEvidenceProductionReplacementIntakeTemplateVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class ExternalEvidenceProductionReplacementSubmissionVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -4023,6 +4031,188 @@ def verify_external_evidence_production_replacement_intake_template(
     return ExternalEvidenceProductionReplacementIntakeTemplateVerification(ok=not errors, errors=errors, warnings=warnings)
 
 
+
+def _external_evidence_production_replacement_request_refs(request: dict[str, Any]) -> set[str]:
+    refs = _source_map_entry_refs(request)
+    fulfillment = request.get("fulfillment") if isinstance(request.get("fulfillment"), dict) else {}
+    refs.update(_source_map_entry_refs(fulfillment))
+    for key in ("collection_task_ref", "task_ref", "unit_ref", "task_id", "unit_id"):
+        value = str(request.get(key) or "").strip()
+        if value:
+            refs.add(value)
+    return refs
+
+
+def _external_evidence_production_replacement_merge_submission_fulfillments(
+    template: dict[str, Any],
+    fulfillments: list[dict[str, Any]],
+) -> tuple[dict[str, Any], list[str]]:
+    if template.get("schema") != EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_INTAKE_TEMPLATE_SCHEMA:
+        raise ValueError(f"unsupported external evidence production replacement intake template schema: {template.get('schema')}")
+    if template.get("production_replacement_intake_template_id") != content_hash(without_keys(template, "production_replacement_intake_template_id")):
+        raise ValueError("production_replacement_intake_template_id does not match canonical production replacement intake template body")
+    if not fulfillments:
+        raise ValueError("at least one production replacement fulfillment is required")
+    body = json.loads(json.dumps(without_keys(template, "production_replacement_intake_template_id"), sort_keys=True))
+    rows = body.get("fulfillments")
+    if not isinstance(rows, list):
+        raise ValueError("production replacement intake template fulfillments must be a list")
+    requests = body.get("requests")
+    if not isinstance(requests, list):
+        raise ValueError("production replacement intake template requests must be a list")
+
+    submitted_refs: set[str] = set()
+    for index, fulfillment in enumerate(fulfillments):
+        if not isinstance(fulfillment, dict):
+            raise ValueError(f"production replacement fulfillment {index} must be an object")
+        task_ref = _source_map_fulfillment_task_ref(fulfillment)
+        if not task_ref:
+            raise ValueError(f"production replacement fulfillment {index} is missing task reference")
+        matches = [row for row in rows if isinstance(row, dict) and task_ref in _source_map_entry_refs(row)]
+        if not matches:
+            raise ValueError(f"production replacement fulfillment task not found: {task_ref}")
+        if len(matches) > 1:
+            raise ValueError(f"production replacement fulfillment task is ambiguous: {task_ref}")
+        row = matches[0]
+        canonical_ref = str(row.get("task") or row.get("unit_ref") or task_ref)
+        if canonical_ref in submitted_refs:
+            raise ValueError(f"duplicate production replacement fulfillment for task: {canonical_ref}")
+        submitted_refs.add(canonical_ref)
+        for key, value in fulfillment.items():
+            if key in SOURCE_MAP_FULFILLMENT_TASK_KEYS:
+                continue
+            if key not in SOURCE_MAP_FULFILLMENT_FIELDS:
+                raise ValueError(f"unsupported production replacement fulfillment key: {key}")
+            if key == "timeout_seconds":
+                try:
+                    timeout = float(value)
+                except (TypeError, ValueError) as exc:
+                    raise ValueError("production replacement fulfillment timeout_seconds must be numeric") from exc
+                if timeout <= 0:
+                    raise ValueError("production replacement fulfillment timeout_seconds must be positive")
+                row[key] = timeout
+            else:
+                text_value = str(value or "").strip()
+                if key in {"source_uri", "description"} and not text_value:
+                    raise ValueError(f"production replacement fulfillment {key} is required")
+                row[key] = text_value
+        row_refs = _source_map_entry_refs(row)
+        for request in requests:
+            if isinstance(request, dict) and row_refs.intersection(_external_evidence_production_replacement_request_refs(request)):
+                request["fulfillment"] = json.loads(json.dumps(row, sort_keys=True))
+
+    summary = body.get("summary")
+    if not isinstance(summary, dict):
+        raise ValueError("production replacement intake template summary must be an object")
+    source_counts = _source_map_source_uri_counts([row for row in rows if isinstance(row, dict)])
+    submitted_rows = [row for row in rows if isinstance(row, dict) and str(row.get("task") or row.get("unit_ref") or "") in submitted_refs]
+    submitted_counts = _source_map_source_uri_counts(submitted_rows)
+    summary["request_count"] = len(requests)
+    summary["fulfillment_count"] = len(rows)
+    summary["submitted_task_count"] = len(submitted_refs)
+    summary["submitted_placeholder_source_uri_count"] = submitted_counts.get("placeholder_source_uri_count", 0)
+    summary["submitted_live_source_uri_count"] = submitted_counts.get("live_source_uri_count", 0)
+    summary.update(source_counts)
+    body["summary"] = summary
+    submitted_template = {**body, "production_replacement_intake_template_id": content_hash(body)}
+    return submitted_template, sorted(submitted_refs)
+
+
+def build_external_evidence_production_replacement_submission(
+    template: dict[str, Any],
+    fulfillments: list[dict[str, Any]],
+    *,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    submitted_template, submitted_refs = _external_evidence_production_replacement_merge_submission_fulfillments(
+        template,
+        fulfillments,
+    )
+    summary = submitted_template.get("summary", {}) if isinstance(submitted_template.get("summary"), dict) else {}
+    body = {
+        "schema": EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_SCHEMA,
+        "generated_at": generated_at or utc_now(),
+        "source_intake_template": {
+            "production_replacement_intake_template_id": template.get("production_replacement_intake_template_id"),
+            "production_replacement_intake_template_hash": content_hash(template),
+            "schema": template.get("schema"),
+            "generated_at": template.get("generated_at"),
+        },
+        "summary": {
+            "submission_status": "blocked" if int(summary.get("submitted_placeholder_source_uri_count") or 0) else "submitted",
+            "request_count": int(summary.get("request_count") or 0),
+            "fulfillment_count": int(summary.get("fulfillment_count") or 0),
+            "submitted_task_count": int(summary.get("submitted_task_count") or 0),
+            "submitted_placeholder_source_uri_count": int(summary.get("submitted_placeholder_source_uri_count") or 0),
+            "submitted_live_source_uri_count": int(summary.get("submitted_live_source_uri_count") or 0),
+            "placeholder_source_uri_count": int(summary.get("placeholder_source_uri_count") or 0),
+            "live_source_uri_count": int(summary.get("live_source_uri_count") or 0),
+            "owner_count": int(summary.get("owner_count") or 0),
+            "open_task_count": int(summary.get("open_task_count") or 0),
+            "blocked_task_count": int(summary.get("blocked_task_count") or 0),
+            "closed_task_count": int(summary.get("closed_task_count") or 0),
+        },
+        "submitted_task_refs": submitted_refs,
+        "submitted_fulfillments": json.loads(json.dumps(fulfillments, sort_keys=True)),
+        "submitted_template": submitted_template,
+        "commands": {
+            "write_submitted_template": "python -m trustai external-evidence-production-replacement-submission <intake-template.json> --fulfillment '<task;source_uri=...>' --submitted-template-out <submitted-template.json>",
+            "review_submission": "python -m trustai external-evidence-production-replacement-submission-review <submitted-template.json> <status-report.json> <plan-all.json> --require-live-source-uris --out <review.json>",
+            "verify_submission": "python -m trustai external-evidence-production-replacement-submission-verify <submission.json> <intake-template.json>",
+        },
+        "limitations": [
+            "This submission records owner-provided production authority source metadata; it does not collect source snapshots or prove production readiness by itself.",
+            "Any remaining placeholder source URIs intentionally keep the downstream submission review and collection package blocked.",
+            "Production readiness still requires source snapshot collection, intake verification, manifest rebuild, readiness verification, and production replacement closure.",
+        ],
+    }
+    return {**body, "production_replacement_submission_id": content_hash(body)}
+
+
+def verify_external_evidence_production_replacement_submission(
+    submission: dict[str, Any],
+    template: dict[str, Any],
+    *,
+    require_submitted_live_source_uris: bool = False,
+) -> ExternalEvidenceProductionReplacementSubmissionVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if submission.get("schema") != EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_SCHEMA:
+        errors.append(f"unsupported external evidence production replacement submission schema: {submission.get('schema')}")
+    if submission.get("production_replacement_submission_id") != content_hash(without_keys(submission, "production_replacement_submission_id")):
+        errors.append("production_replacement_submission_id does not match canonical production replacement submission body")
+    source = submission.get("source_intake_template") if isinstance(submission.get("source_intake_template"), dict) else {}
+    if source.get("production_replacement_intake_template_id") != template.get("production_replacement_intake_template_id"):
+        errors.append("production replacement submission source intake template id does not match supplied template")
+    if source.get("production_replacement_intake_template_hash") != content_hash(template):
+        errors.append("production replacement submission source intake template hash does not match supplied template")
+    fulfillments = submission.get("submitted_fulfillments")
+    if not isinstance(fulfillments, list):
+        errors.append("production replacement submission submitted_fulfillments must be a list")
+        fulfillments = []
+    try:
+        expected = build_external_evidence_production_replacement_submission(
+            template,
+            fulfillments,
+            generated_at=str(submission.get("generated_at") or ""),
+        )
+    except ValueError as exc:
+        errors.append(str(exc))
+    else:
+        if without_keys(submission, "production_replacement_submission_id") != without_keys(expected, "production_replacement_submission_id"):
+            errors.append("production replacement submission body does not match supplied intake template and submitted fulfillments")
+    summary = submission.get("summary", {}) if isinstance(submission.get("summary"), dict) else {}
+    submitted_placeholder_count = int(summary.get("submitted_placeholder_source_uri_count") or 0)
+    placeholder_count = int(summary.get("placeholder_source_uri_count") or 0)
+    if submitted_placeholder_count:
+        warnings.append(f"production replacement submission contains {submitted_placeholder_count} submitted placeholder source_uri values")
+    if placeholder_count:
+        warnings.append(f"production replacement submitted template contains {placeholder_count} total placeholder source_uri values")
+    if require_submitted_live_source_uris and submitted_placeholder_count:
+        errors.append("production replacement submitted fulfillments still contain placeholder source_uri values")
+    return ExternalEvidenceProductionReplacementSubmissionVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
 def _verify_external_evidence_production_replacement_submission(
     template: dict[str, Any],
     status_report: dict[str, Any],
@@ -6283,6 +6473,23 @@ def write_external_evidence_production_replacement_intake_template_markdown(path
 
 
 
+
+def write_external_evidence_production_replacement_submission(path: str | Path, submission: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(submission, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def load_external_evidence_production_replacement_submission(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def write_external_evidence_production_replacement_submission_markdown(path: str | Path, submission: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_external_evidence_production_replacement_submission_markdown(submission), encoding="utf-8")
+
+
 def write_external_evidence_production_replacement_submission_review(path: str | Path, review: dict[str, Any]) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -7060,6 +7267,52 @@ def render_external_evidence_production_replacement_intake_template_markdown(tem
     else:
         lines.append("- None")
     limitations = template.get("limitations", [])
+    lines.extend(["", "## Limitations", ""])
+    if isinstance(limitations, list) and limitations:
+        lines.extend(f"- {_markdown_cell(item)}" for item in limitations)
+    else:
+        lines.append("- None")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+
+def render_external_evidence_production_replacement_submission_markdown(submission: dict[str, Any]) -> str:
+    summary = submission.get("summary", {}) if isinstance(submission.get("summary"), dict) else {}
+    lines = [
+        "# External Evidence Production Replacement Submission",
+        "",
+        f"- Submission ID: `{submission.get('production_replacement_submission_id')}`",
+        f"- Generated at: `{submission.get('generated_at')}`",
+        f"- Submitted tasks: {summary.get('submitted_task_count', 0)}",
+        f"- Submitted live source URIs: {summary.get('submitted_live_source_uri_count', 0)}",
+        f"- Submitted placeholder source URIs: {summary.get('submitted_placeholder_source_uri_count', 0)}",
+        f"- Total placeholder source URIs after submission: {summary.get('placeholder_source_uri_count', 0)}",
+        f"- Total live source URIs after submission: {summary.get('live_source_uri_count', 0)}",
+        "",
+        "## Submitted Fulfillments",
+        "",
+        "| Task | Source URI | Description | Source File |",
+        "|---|---|---|---|",
+    ]
+    fulfillments = submission.get("submitted_fulfillments", [])
+    if isinstance(fulfillments, list):
+        for fulfillment in fulfillments:
+            if not isinstance(fulfillment, dict):
+                continue
+            lines.append(
+                f"| `{_markdown_cell(_source_map_fulfillment_task_ref(fulfillment))}` | "
+                f"{_markdown_cell(fulfillment.get('source_uri'))} | "
+                f"{_markdown_cell(fulfillment.get('description'))} | "
+                f"`{_markdown_cell(fulfillment.get('source_file'))}` |"
+            )
+    commands = submission.get("commands", {}) if isinstance(submission.get("commands"), dict) else {}
+    lines.extend(["", "## Commands", ""])
+    if commands:
+        for key, command in commands.items():
+            lines.append(f"- {key}: `{_markdown_cell(command)}`")
+    else:
+        lines.append("- None")
+    limitations = submission.get("limitations", [])
     lines.extend(["", "## Limitations", ""])
     if isinstance(limitations, list) and limitations:
         lines.extend(f"- {_markdown_cell(item)}" for item in limitations)

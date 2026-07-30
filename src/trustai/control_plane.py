@@ -40,6 +40,7 @@ from .external_evidence import (
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_STATUS_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_PLAN_SCHEMA,
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA,
 )
 from .framework_adapter_authority import FRAMEWORK_ADAPTER_AUTHORITY_ENTRY_TYPE
@@ -259,6 +260,7 @@ PRODUCTION_REPLACEMENT_ARTIFACTS = {
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_SCHEMA: ("owner-packet-bundle", "owner_packet_bundle_id"),
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_STATUS_SCHEMA: ("owner-packet-status", "owner_packet_status_id"),
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_INTAKE_TEMPLATE_SCHEMA: ("intake-template", "production_replacement_intake_template_id"),
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_SCHEMA: ("submission", "production_replacement_submission_id"),
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA: ("submission-review", "production_replacement_submission_review_id"),
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_COLLECTION_PACKAGE_SCHEMA: ("collection-package", "production_replacement_collection_package_id"),
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA: ("closure", "production_replacement_closure_id"),
@@ -1334,7 +1336,7 @@ def _summary_int(summary: dict[str, Any], *fields: str) -> int:
 
 
 def _production_replacement_status(summary: dict[str, Any]) -> str | None:
-    for field in ("closure_status", "review_status", "replacement_status", "readiness_status"):
+    for field in ("closure_status", "review_status", "submission_status", "replacement_status", "readiness_status"):
         value = summary.get(field)
         if value:
             return str(value)
@@ -5820,6 +5822,11 @@ class ControlPlane:
         if not packets and isinstance(artifact.get("packets"), list):
             packets = artifact.get("packets")
         requests = artifact.get("requests") if isinstance(artifact.get("requests"), list) else []
+        submitted_template = artifact.get("submitted_template") if isinstance(artifact.get("submitted_template"), dict) else {}
+        if not requests and isinstance(submitted_template.get("requests"), list):
+            requests = submitted_template.get("requests")
+        if not tasks and isinstance(artifact.get("submitted_fulfillments"), list):
+            tasks = artifact.get("submitted_fulfillments")
         self.conn.execute(
             """
             INSERT OR REPLACE INTO external_evidence_production_replacement_lifecycle(
@@ -5842,7 +5849,7 @@ class ControlPlane:
                 summary.get("readiness_status"),
                 summary.get("review_status"),
                 summary.get("closure_status"),
-                _summary_int(summary, "task_count", "source_plan_task_count", "request_count"),
+                _summary_int(summary, "task_count", "source_plan_task_count", "submitted_task_count", "request_count"),
                 _summary_int(summary, "open_task_count"),
                 _summary_int(summary, "closed_task_count"),
                 _summary_int(summary, "blocked_task_count"),

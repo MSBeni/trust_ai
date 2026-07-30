@@ -428,17 +428,28 @@ fulfillment row carries task-bound collection metadata: `source_uri`,
 `TODO://production-authority/...` source URIs are allowed in the template so
 owners can see the work, but they MUST keep any production review blocked.
 
+`external-evidence-production-replacement-submission` emits
+`trustai.external-evidence-production-replacement-submission/0.1` from an
+intake template and owner-provided fulfillment metadata. It records the exact
+submitted fulfillment rows, applies them to a derived submitted intake template,
+recomputes the template hash, and can write that submitted template for the
+review step. `external-evidence-production-replacement-submission-verify` MUST
+reject stale source-template hashes, edited submitted fulfillments, duplicate
+task refs, and unsupported fulfillment keys; with
+`--require-submitted-live-source-uris`, placeholder or example URIs in the
+submitted rows MUST fail verification.
+
 `external-evidence-production-replacement-submission-review` emits
 `trustai.external-evidence-production-replacement-submission-review/0.1` from a
-filled intake template, the owner packet status, and the all-authority collection
-plan. It builds a fulfilled source map limited to the submitted replacement
-tasks, verifies that every submitted task is anchored to the owner status report,
-counts ready and blocked tasks, and exports commands for batch collection,
-manifest rebuild, and strict readiness proof. With `--require-live-source-uris`,
-placeholder or example source URIs MUST produce blockers; with
-`--require-ready`, verification MUST fail unless every submitted replacement task
-has live source URIs and the fulfilled source map verifies under the requested
-snapshot options.
+submitted intake template, the owner packet status, and the all-authority
+collection plan. It builds a fulfilled source map limited to the submitted
+replacement tasks, verifies that every submitted task is anchored to the owner
+status report, counts ready and blocked tasks, and exports commands for batch
+collection, manifest rebuild, and strict readiness proof. With
+`--require-live-source-uris`, placeholder or example source URIs MUST produce
+blockers; with `--require-ready`, verification MUST fail unless every submitted
+replacement task has live source URIs and the fulfilled source map verifies
+under the requested snapshot options.
 
 `external-evidence-production-replacement-collection-package` emits
 `trustai.external-evidence-production-replacement-collection-package/0.1` from a
