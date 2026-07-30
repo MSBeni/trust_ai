@@ -208,6 +208,7 @@ RETAINED_PRODUCTION_REPLACEMENT_ARTIFACTS = (
     RETAINED_PRODUCTION_REPLACEMENT_DIR / "retained-external-evidence-production-replacement-remediation-owner-packets.json",
     RETAINED_PRODUCTION_REPLACEMENT_DIR / "retained-external-evidence-production-replacement-remediation-owner-fulfillment-template.json",
     RETAINED_PRODUCTION_REPLACEMENT_DIR / "retained-external-evidence-production-replacement-remediation-owner-fulfillment-review.json",
+    RETAINED_PRODUCTION_REPLACEMENT_DIR / "retained-external-evidence-production-replacement-remediation-application.json",
     RETAINED_PRODUCTION_REPLACEMENT_DIR / "retained-external-evidence-production-replacement-collection-package.json",
 )
 RETAINED_PRODUCTION_REPLACEMENT_CLOSURE = RETAINED_PRODUCTION_REPLACEMENT_DIR / "retained-external-evidence-production-replacement-closure.json"
@@ -966,7 +967,7 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(1, summary["counts"]["roadmap_audits"])
                 self.assertEqual(1, summary["counts"]["external_evidence_collection_runs"])
                 self.assertEqual(1, summary["counts"]["external_evidence_manifests"])
-                self.assertEqual(12, summary["counts"]["external_evidence_production_replacement_lifecycle"])
+                self.assertEqual(13, summary["counts"]["external_evidence_production_replacement_lifecycle"])
                 self.assertEqual(1, summary["counts"]["external_evidence_production_replacement_closures"])
                 self.assertEqual(2, summary["counts"]["authority_dossiers"])
                 self.assertEqual(1, summary["counts"]["phase_scoreboards"])
@@ -1021,6 +1022,7 @@ class ControlPlaneTests(unittest.TestCase):
                         "remediation-owner-packet-bundle",
                         "remediation-owner-fulfillment-template",
                         "remediation-owner-fulfillment-review",
+                        "remediation-application",
                         "collection-package",
                         "closure",
                     },
@@ -1232,7 +1234,7 @@ class ControlPlaneTests(unittest.TestCase):
                     roadmap_evidence["external_evidence_collection_runs"][0]["intake_ids"],
                 )
                 self.assertEqual(1, len(roadmap_evidence["external_evidence_manifests"]))
-                self.assertEqual(12, len(roadmap_evidence["external_evidence_production_replacement_lifecycle"]))
+                self.assertEqual(13, len(roadmap_evidence["external_evidence_production_replacement_lifecycle"]))
                 lifecycle_kinds = {item["artifact_kind"] for item in roadmap_evidence["external_evidence_production_replacement_lifecycle"]}
                 self.assertEqual(
                     {
@@ -1246,6 +1248,7 @@ class ControlPlaneTests(unittest.TestCase):
                         "remediation-owner-packet-bundle",
                         "remediation-owner-fulfillment-template",
                         "remediation-owner-fulfillment-review",
+                        "remediation-application",
                         "collection-package",
                         "closure",
                     },
@@ -1390,7 +1393,7 @@ class ControlPlaneTests(unittest.TestCase):
                     any("State of Agent Reliability publication incomplete" in blocker for blocker in readiness["blockers"])
                 )
                 production_replacement_lifecycle = control.recent_external_evidence_production_replacement_lifecycle()
-                self.assertEqual(12, len(production_replacement_lifecycle))
+                self.assertEqual(13, len(production_replacement_lifecycle))
                 lifecycle_by_kind = {item["artifact_kind"]: item for item in production_replacement_lifecycle}
                 self.assertEqual("open", lifecycle_by_kind["replacement-plan"]["status"])
                 self.assertEqual(72, lifecycle_by_kind["replacement-plan"]["task_count"])
@@ -1414,13 +1417,18 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual("blocked", lifecycle_by_kind["remediation-owner-fulfillment-review"]["status"])
                 self.assertEqual(72, lifecycle_by_kind["remediation-owner-fulfillment-review"]["blocked_task_count"])
                 self.assertEqual(72, lifecycle_by_kind["remediation-owner-fulfillment-review"]["placeholder_source_uri_count"])
+                self.assertEqual("blocked", lifecycle_by_kind["remediation-application"]["status"])
+                self.assertEqual("blocked", lifecycle_by_kind["remediation-application"]["summary"]["applied_review_status"])
+                self.assertEqual(72, lifecycle_by_kind["remediation-application"]["summary"]["applied_task_count"])
+                self.assertEqual(72, lifecycle_by_kind["remediation-application"]["blocked_task_count"])
+                self.assertEqual(72, lifecycle_by_kind["remediation-application"]["placeholder_source_uri_count"])
                 self.assertEqual("blocked", lifecycle_by_kind["collection-package"]["status"])
                 self.assertEqual(72, lifecycle_by_kind["collection-package"]["blocked_task_count"])
                 production_replacement_worklist = control.production_replacement_worklist(limit=3)
                 self.assertEqual("submission", production_replacement_worklist["current_stage"])
                 self.assertIn("replace submitted production replacement", production_replacement_worklist["next_required_action"])
                 self.assertEqual(
-                    ["submission", "submission-review", "remediation-owner-fulfillment-review", "collection-package", "closure"],
+                    ["submission", "submission-review", "remediation-owner-fulfillment-review", "remediation-application", "collection-package", "closure"],
                     [stage["stage"] for stage in production_replacement_worklist["stage_statuses"]],
                 )
                 self.assertEqual(72, production_replacement_worklist["stage_statuses"][0]["blocked_task_count"])
@@ -1470,6 +1478,14 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(0, production_replacement_worklist["remediation_owner_fulfillment_template_live_source_uri_count"])
                 self.assertEqual(3, len(production_replacement_worklist["remediation_owner_fulfillments"]))
                 self.assertEqual(72, production_replacement_worklist["remediation_owner_fulfillment_total"])
+                self.assertTrue(production_replacement_worklist["remediation_application_present"])
+                self.assertFalse(production_replacement_worklist["remediation_application_ready"])
+                self.assertEqual("blocked", production_replacement_worklist["remediation_application_status"])
+                self.assertEqual("blocked", production_replacement_worklist["remediation_application_applied_review_status"])
+                self.assertEqual(72, production_replacement_worklist["remediation_application_task_count"])
+                self.assertEqual(72, production_replacement_worklist["remediation_application_applied_task_count"])
+                self.assertEqual(72, production_replacement_worklist["remediation_application_blocked_task_count"])
+                self.assertEqual(72, production_replacement_worklist["remediation_application_placeholder_source_uri_count"])
                 self.assertEqual("blocked", production_replacement_worklist["collection_status"])
                 self.assertFalse(production_replacement_worklist["collection_package_ready"])
                 self.assertEqual(72, production_replacement_worklist["blocked_task_count"])

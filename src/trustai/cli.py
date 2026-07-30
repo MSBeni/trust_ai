@@ -1205,6 +1205,7 @@ from .external_evidence import (
     build_external_evidence_production_replacement_remediation_owner_packets,
     build_external_evidence_production_replacement_remediation_owner_fulfillment_template,
     build_external_evidence_production_replacement_remediation_owner_fulfillment_review,
+    build_external_evidence_production_replacement_remediation_application,
     build_external_evidence_production_replacement_collection_package,
     build_external_evidence_production_replacement_closure,
     build_external_evidence_source_map_template,
@@ -1239,6 +1240,7 @@ from .external_evidence import (
     load_external_evidence_production_replacement_remediation_owner_packets,
     load_external_evidence_production_replacement_remediation_owner_fulfillment_template,
     load_external_evidence_production_replacement_remediation_owner_fulfillment_review,
+    load_external_evidence_production_replacement_remediation_application,
     load_external_evidence_production_replacement_collection_package,
     load_external_evidence_production_replacement_closure,
     load_external_evidence_collection_plan,
@@ -1272,6 +1274,7 @@ from .external_evidence import (
     verify_external_evidence_production_replacement_remediation_owner_packets,
     verify_external_evidence_production_replacement_remediation_owner_fulfillment_template,
     verify_external_evidence_production_replacement_remediation_owner_fulfillment_review,
+    verify_external_evidence_production_replacement_remediation_application,
     verify_external_evidence_production_replacement_collection_package,
     verify_external_evidence_production_replacement_closure,
     verify_external_evidence_collection_plan,
@@ -1319,6 +1322,8 @@ from .external_evidence import (
     write_external_evidence_production_replacement_remediation_owner_fulfillment_review,
     write_external_evidence_production_replacement_remediation_owner_fulfillment_template_markdown,
     write_external_evidence_production_replacement_remediation_owner_fulfillment_review_markdown,
+    write_external_evidence_production_replacement_remediation_application,
+    write_external_evidence_production_replacement_remediation_application_markdown,
     write_external_evidence_production_replacement_collection_package,
     write_external_evidence_production_replacement_collection_package_markdown,
     write_external_evidence_production_replacement_closure,
@@ -17646,6 +17651,87 @@ def cmd_external_evidence_production_replacement_remediation_owner_fulfillment_r
     return 1
 
 
+
+def cmd_external_evidence_production_replacement_remediation_apply(args: argparse.Namespace) -> int:
+    try:
+        submission_review = load_external_evidence_production_replacement_submission_review(args.submission_review)
+        remediation_review = load_external_evidence_production_replacement_remediation_owner_fulfillment_review(
+            args.remediation_review
+        )
+        application = build_external_evidence_production_replacement_remediation_application(
+            submission_review,
+            remediation_review,
+            generated_at=args.generated_at,
+        )
+        result = verify_external_evidence_production_replacement_remediation_application(
+            application,
+            submission_review,
+            remediation_review,
+            require_ready=args.require_ready,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement remediation application failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("external evidence production replacement remediation application verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_external_evidence_production_replacement_remediation_application(args.out, application)
+    if args.markdown:
+        write_external_evidence_production_replacement_remediation_application_markdown(args.markdown, application)
+        print(f"external evidence production replacement remediation application markdown: {args.markdown}")
+    if args.applied_review_out:
+        target = Path(args.applied_review_out)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(application["applied_submission_review"], indent=2, sort_keys=True), encoding="utf-8")
+        print(f"external evidence production replacement applied submission review: {args.applied_review_out}")
+    summary = application["summary"]
+    print(f"external evidence production replacement remediation application: {args.out}")
+    print(f"production replacement remediation application id: {application['production_replacement_remediation_application_id']}")
+    print(f"status: {summary['application_status']}")
+    print(f"applied tasks: {summary['applied_task_count']}/{summary['task_count']}")
+    print(f"ready tasks: {summary['ready_task_count']}")
+    print(f"blocked tasks: {summary['blocked_task_count']}")
+    print(f"placeholder source URIs: {summary['placeholder_source_uri_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_external_evidence_production_replacement_remediation_apply_verify(args: argparse.Namespace) -> int:
+    try:
+        application = load_external_evidence_production_replacement_remediation_application(args.application)
+        submission_review = load_external_evidence_production_replacement_submission_review(args.submission_review)
+        remediation_review = load_external_evidence_production_replacement_remediation_owner_fulfillment_review(
+            args.remediation_review
+        )
+        result = verify_external_evidence_production_replacement_remediation_application(
+            application,
+            submission_review,
+            remediation_review,
+            require_ready=args.require_ready,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement remediation application verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        summary = application.get("summary", {})
+        print(f"verified external evidence production replacement remediation application: {args.application}")
+        print(f"production replacement remediation application id: {application.get('production_replacement_remediation_application_id')}")
+        print(f"status: {summary.get('application_status')}")
+        print(f"applied tasks: {summary.get('applied_task_count', 0)}/{summary.get('task_count', 0)}")
+        print(f"ready tasks: {summary.get('ready_task_count', 0)}")
+        print(f"blocked tasks: {summary.get('blocked_task_count', 0)}")
+        print(f"placeholder source URIs: {summary.get('placeholder_source_uri_count', 0)}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"external evidence production replacement remediation application verification failed: {args.application}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
 def cmd_external_evidence_production_replacement_collection_package(args: argparse.Namespace) -> int:
     try:
         review = load_external_evidence_production_replacement_submission_review(args.review)
@@ -29437,6 +29523,24 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_production_replacement_remediation_owner_fulfillment_review_verify.add_argument("--require-ready", action="store_true", help="exit non-zero unless the owner remediation fulfillment review is ready to collect")
     external_evidence_production_replacement_remediation_owner_fulfillment_review_verify.add_argument("--now")
     external_evidence_production_replacement_remediation_owner_fulfillment_review_verify.set_defaults(func=cmd_external_evidence_production_replacement_remediation_owner_fulfillment_review_verify)
+
+
+    external_evidence_production_replacement_remediation_apply = subparsers.add_parser("external-evidence-production-replacement-remediation-apply", help="apply a reviewed remediation fulfillment to a production replacement submission review")
+    external_evidence_production_replacement_remediation_apply.add_argument("submission_review")
+    external_evidence_production_replacement_remediation_apply.add_argument("remediation_review")
+    external_evidence_production_replacement_remediation_apply.add_argument("--require-ready", action="store_true", help="exit non-zero unless the applied submission review is ready to collect")
+    external_evidence_production_replacement_remediation_apply.add_argument("--generated-at")
+    external_evidence_production_replacement_remediation_apply.add_argument("--out", default="artifacts/external-evidence-production-replacement-remediation-application.json")
+    external_evidence_production_replacement_remediation_apply.add_argument("--markdown", default="artifacts/external-evidence-production-replacement-remediation-application.md")
+    external_evidence_production_replacement_remediation_apply.add_argument("--applied-review-out")
+    external_evidence_production_replacement_remediation_apply.set_defaults(func=cmd_external_evidence_production_replacement_remediation_apply)
+
+    external_evidence_production_replacement_remediation_apply_verify = subparsers.add_parser("external-evidence-production-replacement-remediation-apply-verify", help="verify a production replacement remediation application")
+    external_evidence_production_replacement_remediation_apply_verify.add_argument("application")
+    external_evidence_production_replacement_remediation_apply_verify.add_argument("submission_review")
+    external_evidence_production_replacement_remediation_apply_verify.add_argument("remediation_review")
+    external_evidence_production_replacement_remediation_apply_verify.add_argument("--require-ready", action="store_true", help="exit non-zero unless the applied submission review is ready to collect")
+    external_evidence_production_replacement_remediation_apply_verify.set_defaults(func=cmd_external_evidence_production_replacement_remediation_apply_verify)
 
     external_evidence_production_replacement_collection_package = subparsers.add_parser("external-evidence-production-replacement-collection-package", help="write a collection handoff package from a reviewed production replacement submission")
     external_evidence_production_replacement_collection_package.add_argument("review")

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import binascii
+import copy
 import json
 import shlex
 from dataclasses import dataclass
@@ -42,6 +43,7 @@ EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_QUEUE_SCHEMA = "trustai.ext
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_PACKET_SCHEMA = "trustai.external-evidence-production-replacement-remediation-owner-packet-bundle/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_FULFILLMENT_TEMPLATE_SCHEMA = "trustai.external-evidence-production-replacement-remediation-owner-fulfillment-template/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_FULFILLMENT_REVIEW_SCHEMA = "trustai.external-evidence-production-replacement-remediation-owner-fulfillment-review/0.1"
+EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_APPLICATION_SCHEMA = "trustai.external-evidence-production-replacement-remediation-application/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_COLLECTION_PACKAGE_SCHEMA = "trustai.external-evidence-production-replacement-collection-package/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA = "trustai.external-evidence-production-replacement-closure/0.1"
 EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA = "trustai.external-evidence-git-remote-ref-export/0.1"
@@ -340,6 +342,13 @@ class ExternalEvidenceProductionReplacementRemediationOwnerFulfillmentTemplateVe
 
 @dataclass
 class ExternalEvidenceProductionReplacementRemediationOwnerFulfillmentReviewVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class ExternalEvidenceProductionReplacementRemediationApplicationVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -5477,6 +5486,254 @@ def verify_external_evidence_production_replacement_remediation_owner_fulfillmen
     return ExternalEvidenceProductionReplacementRemediationOwnerFulfillmentReviewVerification(ok=not errors, errors=errors, warnings=warnings)
 
 
+
+
+def _external_evidence_production_replacement_review_task_ref(task: dict[str, Any]) -> str:
+    return str(task.get("task") or task.get("unit_ref") or task.get("task_ref") or "").strip()
+
+
+def _external_evidence_production_replacement_source_map_entry_ref(entry: dict[str, Any]) -> str:
+    return str(entry.get("unit_ref") or entry.get("task") or entry.get("task_ref") or "").strip()
+
+
+def _external_evidence_production_replacement_refresh_source_map_id(source_map: dict[str, Any]) -> dict[str, Any]:
+    refreshed = copy.deepcopy(source_map)
+    entries = refreshed.get("entries", []) if isinstance(refreshed.get("entries"), list) else []
+    summary = refreshed.get("summary") if isinstance(refreshed.get("summary"), dict) else {}
+    summary = dict(summary)
+    summary["entry_count"] = len(entries)
+    summary.update(_source_map_source_uri_counts(entries))
+    refreshed["summary"] = summary
+    refreshed["source_map_id"] = content_hash(without_keys(refreshed, "source_map_id"))
+    return refreshed
+
+
+def _external_evidence_production_replacement_apply_remediation_source_map(
+    base_review: dict[str, Any],
+    remediation_review: dict[str, Any],
+) -> dict[str, Any]:
+    base_source_map = base_review.get("fulfilled_source_map") if isinstance(base_review.get("fulfilled_source_map"), dict) else {}
+    remediation_source_map = remediation_review.get("fulfilled_source_map") if isinstance(remediation_review.get("fulfilled_source_map"), dict) else {}
+    base_entries = base_source_map.get("entries", []) if isinstance(base_source_map.get("entries"), list) else []
+    remediation_entries = remediation_source_map.get("entries", []) if isinstance(remediation_source_map.get("entries"), list) else []
+    remediation_by_ref = {
+        _external_evidence_production_replacement_source_map_entry_ref(entry): entry
+        for entry in remediation_entries
+        if isinstance(entry, dict) and _external_evidence_production_replacement_source_map_entry_ref(entry)
+    }
+    if not base_entries:
+        return _external_evidence_production_replacement_refresh_source_map_id(remediation_source_map)
+    applied = copy.deepcopy(base_source_map)
+    applied_entries: list[dict[str, Any]] = []
+    for entry in base_entries:
+        if not isinstance(entry, dict):
+            continue
+        ref = _external_evidence_production_replacement_source_map_entry_ref(entry)
+        applied_entries.append(copy.deepcopy(remediation_by_ref.get(ref, entry)))
+    applied["entries"] = applied_entries
+    return _external_evidence_production_replacement_refresh_source_map_id(applied)
+
+
+def _external_evidence_production_replacement_apply_remediation_tasks(
+    base_review: dict[str, Any],
+    remediation_review: dict[str, Any],
+) -> tuple[list[dict[str, Any]], int, list[str]]:
+    base_tasks = base_review.get("task_reviews", []) if isinstance(base_review.get("task_reviews"), list) else []
+    remediation_tasks = remediation_review.get("task_reviews", []) if isinstance(remediation_review.get("task_reviews"), list) else []
+    remediation_by_ref = {
+        _external_evidence_production_replacement_review_task_ref(task): task
+        for task in remediation_tasks
+        if isinstance(task, dict) and _external_evidence_production_replacement_review_task_ref(task)
+    }
+    errors: list[str] = []
+    base_refs = {
+        _external_evidence_production_replacement_review_task_ref(task)
+        for task in base_tasks
+        if isinstance(task, dict) and _external_evidence_production_replacement_review_task_ref(task)
+    }
+    for ref in sorted(remediation_by_ref):
+        if ref not in base_refs:
+            errors.append(f"remediation fulfillment review task is not present in source submission review: {ref}")
+    applied_tasks: list[dict[str, Any]] = []
+    applied_count = 0
+    for task in base_tasks:
+        if not isinstance(task, dict):
+            continue
+        ref = _external_evidence_production_replacement_review_task_ref(task)
+        if ref in remediation_by_ref:
+            applied = copy.deepcopy(remediation_by_ref[ref])
+            applied["applied_from_remediation_owner_fulfillment_review"] = True
+            applied_tasks.append(applied)
+            applied_count += 1
+        else:
+            applied = copy.deepcopy(task)
+            applied["applied_from_remediation_owner_fulfillment_review"] = False
+            applied_tasks.append(applied)
+    return applied_tasks, applied_count, errors
+
+
+def _external_evidence_production_replacement_remediation_application_next_actions(summary: dict[str, Any]) -> list[str]:
+    if summary.get("application_status") == "ready-to-collect":
+        return [
+            "Use applied_submission_review as the input to external-evidence-production-replacement-collection-package.",
+            "Collect source snapshots and intake receipts from the applied fulfilled source map.",
+            "Rebuild production readiness from collected intakes before closing production replacement tasks.",
+        ]
+    actions: list[str] = []
+    if summary.get("placeholder_source_uri_count"):
+        actions.append("Replace remaining placeholder source URIs in the remediation owner fulfillment template and rerun this application.")
+    if summary.get("blocked_task_count"):
+        actions.append("Resolve blocked applied review tasks before creating a production collection package.")
+    if summary.get("source_error_count"):
+        actions.append("Fix source review or remediation review hash/schema mismatches before applying remediation.")
+    if not actions:
+        actions.append("Resolve remediation application blockers and rerun before collection.")
+    return actions
+
+
+def build_external_evidence_production_replacement_remediation_application(
+    submission_review: dict[str, Any],
+    remediation_review: dict[str, Any],
+    *,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    app_generated_at = generated_at or utc_now()
+    errors: list[str] = []
+    if submission_review.get("schema") != EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA:
+        errors.append(f"unsupported external evidence production replacement submission review schema: {submission_review.get('schema')}")
+    if submission_review.get("production_replacement_submission_review_id") != content_hash(without_keys(submission_review, "production_replacement_submission_review_id")):
+        errors.append("production_replacement_submission_review_id does not match canonical source submission review body")
+    if remediation_review.get("schema") != EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_FULFILLMENT_REVIEW_SCHEMA:
+        errors.append("unsupported external evidence production replacement remediation owner fulfillment review schema: " f"{remediation_review.get('schema')}")
+    if remediation_review.get("production_replacement_remediation_owner_fulfillment_review_id") != content_hash(without_keys(remediation_review, "production_replacement_remediation_owner_fulfillment_review_id")):
+        errors.append("production_replacement_remediation_owner_fulfillment_review_id does not match canonical remediation review body")
+    applied_task_reviews, applied_task_count, task_errors = _external_evidence_production_replacement_apply_remediation_tasks(submission_review, remediation_review)
+    errors.extend(task_errors)
+    applied_source_map = _external_evidence_production_replacement_apply_remediation_source_map(submission_review, remediation_review)
+    ready_task_count = sum(1 for task in applied_task_reviews if task.get("review_status") == "ready-to-collect")
+    blocked_task_count = len(applied_task_reviews) - ready_task_count
+    placeholder_count = sum(1 for task in applied_task_reviews if task.get("source_uri_status") != "live" or _source_map_is_placeholder_uri(str(task.get("source_uri") or "")))
+    application_status = "ready-to-collect" if not errors and blocked_task_count == 0 and placeholder_count == 0 else "blocked"
+    source_summary = submission_review.get("summary", {}) if isinstance(submission_review.get("summary"), dict) else {}
+    remediation_summary = remediation_review.get("summary", {}) if isinstance(remediation_review.get("summary"), dict) else {}
+    source_map_summary = applied_source_map.get("summary", {}) if isinstance(applied_source_map.get("summary"), dict) else {}
+    applied_review = copy.deepcopy(submission_review)
+    applied_review["generated_at"] = app_generated_at
+    applied_sources = applied_review.get("sources") if isinstance(applied_review.get("sources"), dict) else {}
+    applied_sources = dict(applied_sources)
+    applied_sources["production_replacement_remediation_owner_fulfillment_review"] = _external_evidence_review_source_record(remediation_review, "production_replacement_remediation_owner_fulfillment_review_id", "production_replacement_remediation_owner_fulfillment_review_hash")
+    applied_review["sources"] = applied_sources
+    applied_review["summary"] = {
+        "review_status": application_status,
+        "request_count": int(source_summary.get("request_count") or len(applied_task_reviews)),
+        "fulfillment_count": int(source_summary.get("fulfillment_count") or len(applied_task_reviews)),
+        "owner_count": int(source_summary.get("owner_count") or remediation_summary.get("owner_count") or 0),
+        "ready_task_count": ready_task_count,
+        "blocked_task_count": blocked_task_count,
+        "placeholder_source_uri_count": placeholder_count,
+        "live_source_uri_count": int(source_map_summary.get("live_source_uri_count") or 0),
+        "source_map_entry_count": int(source_map_summary.get("entry_count") or len(applied_task_reviews)),
+        "source_plan_task_count": int(source_map_summary.get("source_plan_task_count") or remediation_summary.get("source_plan_task_count") or 0),
+        "template_verification_ok": bool(source_summary.get("template_verification_ok", True)),
+        "fulfilled_source_map_verification_ok": not errors and placeholder_count == 0,
+        "error_count": len(errors),
+        "warning_count": int(remediation_summary.get("warning_count") or 0),
+        "applied_remediation_task_count": applied_task_count,
+    }
+    applied_review["fulfilled_source_map"] = applied_source_map
+    applied_review["task_reviews"] = applied_task_reviews
+    applied_review["verification"] = {
+        "source_submission_review_id": submission_review.get("production_replacement_submission_review_id"),
+        "remediation_owner_fulfillment_review_id": remediation_review.get("production_replacement_remediation_owner_fulfillment_review_id"),
+        "application_errors": errors,
+        "application_warnings": list(remediation_review.get("verification", {}).get("fulfilled_source_map_warnings", [])) if isinstance(remediation_review.get("verification"), dict) else [],
+    }
+    applied_review["blockers"] = [] if application_status == "ready-to-collect" else [blocker for blocker in (([f"remediation application has {placeholder_count} placeholder source_uri values"] if placeholder_count else []) + ([f"remediation application has {blocked_task_count} blocked review tasks"] if blocked_task_count else []) + errors)]
+    applied_summary_for_actions = {"application_status": application_status, "placeholder_source_uri_count": placeholder_count, "blocked_task_count": blocked_task_count, "source_error_count": len(errors)}
+    applied_review["next_actions"] = _external_evidence_production_replacement_remediation_application_next_actions(applied_summary_for_actions)
+    applied_review["commands"] = dict(submission_review.get("commands", {}) if isinstance(submission_review.get("commands"), dict) else {})
+    applied_review["commands"]["collect_after_remediation_application"] = "python -m trustai external-evidence-production-replacement-collection-package <applied-submission-review.json> <manifest.json> <roadmap-audit.json> --require-ready"
+    applied_review["limitations"] = list(submission_review.get("limitations", []) if isinstance(submission_review.get("limitations"), list) else [])
+    applied_review["limitations"].append("This submission review was produced by applying a verified remediation owner fulfillment review to the original blocked review.")
+    applied_review["production_replacement_submission_review_id"] = content_hash(without_keys(applied_review, "production_replacement_submission_review_id"))
+    summary = {
+        "application_status": application_status,
+        "source_review_status": source_summary.get("review_status"),
+        "remediation_review_status": remediation_summary.get("review_status"),
+        "applied_review_status": applied_review["summary"]["review_status"],
+        "task_count": len(applied_task_reviews),
+        "applied_task_count": applied_task_count,
+        "ready_task_count": ready_task_count,
+        "blocked_task_count": blocked_task_count,
+        "placeholder_source_uri_count": placeholder_count,
+        "live_source_uri_count": int(source_map_summary.get("live_source_uri_count") or 0),
+        "source_error_count": len(errors),
+        "applied_submission_review_id": applied_review.get("production_replacement_submission_review_id"),
+    }
+    blockers: list[str] = []
+    if errors:
+        blockers.extend(errors)
+    if placeholder_count:
+        blockers.append(f"{placeholder_count} applied production replacement tasks still use placeholder source_uri values")
+    if blocked_task_count:
+        blockers.append(f"{blocked_task_count} applied production replacement tasks are not ready to collect")
+    body = {
+        "schema": EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_APPLICATION_SCHEMA,
+        "generated_at": app_generated_at,
+        "sources": {
+            "production_replacement_submission_review": _external_evidence_review_source_record(submission_review, "production_replacement_submission_review_id", "production_replacement_submission_review_hash"),
+            "production_replacement_remediation_owner_fulfillment_review": _external_evidence_review_source_record(remediation_review, "production_replacement_remediation_owner_fulfillment_review_id", "production_replacement_remediation_owner_fulfillment_review_hash"),
+            "applied_submission_review": _external_evidence_review_source_record(applied_review, "production_replacement_submission_review_id", "production_replacement_submission_review_hash"),
+        },
+        "summary": summary,
+        "applied_submission_review": applied_review,
+        "blockers": blockers,
+        "next_actions": _external_evidence_production_replacement_remediation_application_next_actions(summary),
+        "commands": {
+            "write_applied_review": "python -m trustai external-evidence-production-replacement-remediation-apply <submission-review.json> <remediation-review.json> --applied-review-out <applied-review.json>",
+            "collect_after_ready_application": "python -m trustai external-evidence-production-replacement-collection-package <applied-review.json> <manifest.json> <roadmap-audit.json> --require-ready",
+        },
+        "limitations": [
+            "This artifact applies reviewed owner remediation into the production replacement review stream; it does not collect evidence or prove readiness by itself.",
+            "Collection and closure still require source snapshots, intake receipts, rebuilt manifest coverage, and a ready external-evidence readiness report.",
+        ],
+    }
+    return {**body, "production_replacement_remediation_application_id": content_hash(body)}
+
+
+def verify_external_evidence_production_replacement_remediation_application(
+    application: dict[str, Any],
+    submission_review: dict[str, Any],
+    remediation_review: dict[str, Any],
+    *,
+    require_ready: bool = False,
+) -> ExternalEvidenceProductionReplacementRemediationApplicationVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if application.get("schema") != EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_APPLICATION_SCHEMA:
+        errors.append(f"unsupported external evidence production replacement remediation application schema: {application.get('schema')}")
+    if application.get("production_replacement_remediation_application_id") != content_hash(without_keys(application, "production_replacement_remediation_application_id")):
+        errors.append("production_replacement_remediation_application_id does not match canonical remediation application body")
+    sources = application.get("sources") if isinstance(application.get("sources"), dict) else {}
+    if sources.get("production_replacement_submission_review") != _external_evidence_review_source_record(submission_review, "production_replacement_submission_review_id", "production_replacement_submission_review_hash"):
+        errors.append("production replacement remediation application source submission review does not match supplied review")
+    if sources.get("production_replacement_remediation_owner_fulfillment_review") != _external_evidence_review_source_record(remediation_review, "production_replacement_remediation_owner_fulfillment_review_id", "production_replacement_remediation_owner_fulfillment_review_hash"):
+        errors.append("production replacement remediation application source remediation review does not match supplied review")
+    expected = build_external_evidence_production_replacement_remediation_application(submission_review, remediation_review, generated_at=str(application.get("generated_at") or ""))
+    if without_keys(application, "production_replacement_remediation_application_id") != without_keys(expected, "production_replacement_remediation_application_id"):
+        errors.append("production replacement remediation application body does not match supplied submission and remediation reviews")
+    applied_review = application.get("applied_submission_review") if isinstance(application.get("applied_submission_review"), dict) else {}
+    if applied_review.get("production_replacement_submission_review_id") != content_hash(without_keys(applied_review, "production_replacement_submission_review_id")):
+        errors.append("applied submission review id does not match canonical body")
+    summary = application.get("summary", {}) if isinstance(application.get("summary"), dict) else {}
+    if summary.get("placeholder_source_uri_count"):
+        warnings.append(f"production replacement remediation application contains {summary.get('placeholder_source_uri_count')} placeholder source_uri values")
+    if summary.get("blocked_task_count"):
+        warnings.append(f"production replacement remediation application contains {summary.get('blocked_task_count')} blocked tasks")
+    if require_ready and summary.get("application_status") != "ready-to-collect":
+        errors.append("production replacement remediation application is not ready to collect")
+    return ExternalEvidenceProductionReplacementRemediationApplicationVerification(ok=not errors, errors=errors, warnings=warnings)
+
 def _external_evidence_production_replacement_collection_status(review: dict[str, Any]) -> str:
     summary = review.get("summary", {}) if isinstance(review.get("summary"), dict) else {}
     if (
@@ -7436,6 +7693,22 @@ def write_external_evidence_production_replacement_remediation_owner_fulfillment
     target.write_text(render_external_evidence_production_replacement_remediation_owner_fulfillment_review_markdown(review), encoding="utf-8")
 
 
+def write_external_evidence_production_replacement_remediation_application(path: str | Path, application: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(application, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_external_evidence_production_replacement_remediation_application(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def write_external_evidence_production_replacement_remediation_application_markdown(path: str | Path, application: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_external_evidence_production_replacement_remediation_application_markdown(application), encoding="utf-8")
+
+
 def write_external_evidence_production_replacement_collection_package(path: str | Path, package: dict[str, Any]) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -8843,6 +9116,58 @@ def render_external_evidence_production_replacement_remediation_owner_fulfillmen
     limitations = template.get("limitations", []) if isinstance(template.get("limitations"), list) else []
     lines.extend(["", "## Limitations", ""])
     if limitations:
+        lines.extend(f"- {_markdown_cell(item)}" for item in limitations)
+    else:
+        lines.append("- None")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_external_evidence_production_replacement_remediation_application_markdown(application: dict[str, Any]) -> str:
+    summary = application.get("summary", {}) if isinstance(application.get("summary"), dict) else {}
+    lines = [
+        "# External Evidence Production Replacement Remediation Application",
+        "",
+        f"- Application ID: `{application.get('production_replacement_remediation_application_id')}`",
+        f"- Generated at: `{application.get('generated_at')}`",
+        f"- Status: `{summary.get('application_status')}`",
+        f"- Source review status: `{summary.get('source_review_status')}`",
+        f"- Remediation review status: `{summary.get('remediation_review_status')}`",
+        f"- Applied review status: `{summary.get('applied_review_status')}`",
+        f"- Tasks: {summary.get('task_count', 0)}",
+        f"- Applied remediation tasks: {summary.get('applied_task_count', 0)}",
+        f"- Ready tasks: {summary.get('ready_task_count', 0)}",
+        f"- Blocked tasks: {summary.get('blocked_task_count', 0)}",
+        f"- Placeholder source URIs: {summary.get('placeholder_source_uri_count', 0)}",
+        f"- Live source URIs: {summary.get('live_source_uri_count', 0)}",
+        "",
+        "## Applied Review",
+        "",
+        f"- Applied submission review ID: `{summary.get('applied_submission_review_id')}`",
+        "",
+        "## Blockers",
+        "",
+    ]
+    blockers = application.get("blockers", [])
+    if isinstance(blockers, list) and blockers:
+        lines.extend(f"- {_markdown_cell(blocker)}" for blocker in blockers)
+    else:
+        lines.append("- None")
+    next_actions = application.get("next_actions", [])
+    lines.extend(["", "## Next Actions", ""])
+    if isinstance(next_actions, list) and next_actions:
+        lines.extend(f"- {_markdown_cell(action)}" for action in next_actions)
+    else:
+        lines.append("- None")
+    commands = application.get("commands", {}) if isinstance(application.get("commands"), dict) else {}
+    lines.extend(["", "## Commands", ""])
+    if commands:
+        for key, command in commands.items():
+            lines.append(f"- {key}: `{_markdown_cell(command)}`")
+    else:
+        lines.append("- None")
+    limitations = application.get("limitations", [])
+    lines.extend(["", "## Limitations", ""])
+    if isinstance(limitations, list) and limitations:
         lines.extend(f"- {_markdown_cell(item)}" for item in limitations)
     else:
         lines.append("- None")

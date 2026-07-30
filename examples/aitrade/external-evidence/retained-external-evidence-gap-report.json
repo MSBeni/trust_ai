@@ -113,7 +113,7 @@
       "customer"
     ]
   },
-  "gap_report_id": "48a468645c6f95392e12fdad8a2d6c5f731f9e7c95bbb9fb1dc9610828597c0c",
+  "gap_report_id": "129df6df35682cc44dc85eb8fadb2cba13680c935d3def278ad3d9947bbed8b4",
   "gaps": [],
   "generated_at": "2026-07-12T00:01:00Z",
   "limitations": [
@@ -126,27 +126,27 @@
   "sources": {
     "collection_plan": {
       "generated_at": "2026-07-12T01:00:00Z",
-      "plan_hash": "99a14141f3496338d8d9464a292bf781c0351aad2a3d47cafb2e9a327c33d239",
-      "plan_id": "b4fe740ca60a6e929eeab839c4fe6eadbc16ea5d05b1fad4f9e1b23c40978e66",
+      "plan_hash": "b8b7151c8e88d1cd9104481db3e80ef7d6797bdd6fb90956d340d7f2d487c408",
+      "plan_id": "d803c3eb203ba6f7aace8e230440f565cf6cea614b9b3b6315fe20cc0e701308",
       "schema": "trustai.external-evidence-collection-plan/0.1"
     },
     "manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "41a40a04b34b9c098b771d2c63a8ccd73feed8f04c965f294fa2af71f09eb181",
-      "manifest_id": "ce62492e4a0c155d1ab938e91d7c7403d2026059f1913eb57439ef77d8b8351b",
+      "manifest_hash": "aa65ee8e79728725168ff2d8d998d29a1bb19e3c1f8312b8e3bf073a5593880d",
+      "manifest_id": "71175aefaaed06ca046eccbe2440364544a30a815a105f3cac8e141a8fc41443",
       "schema": "trustai.external-evidence-manifest/0.1"
     },
     "roadmap_audit": {
-      "audit_hash": "44f4e67a6b57537c4e4a612db9b489c665649a522214777172b2ddf2c880d0e9",
-      "audit_id": "73aacb0a16fe64efbdb19b0e8cc17ccd112ddf757badb02113ea69f8027e3f65",
+      "audit_hash": "1b6b4e3ebbdd6bf249b119d0728d8ac60c93addf5bd03598bb03feeef731b955",
+      "audit_id": "df73a5ebcbfbc33ab4d57dcf3ef5750b8345188ae444013665056267bd24fa8f",
       "generated_at": "2026-07-12T00:00:00Z",
       "schema": "trustai.roadmap-audit/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "5ecb5597c772ff1f9ae5d24cb41d2449837429887a9908d5b9f174fab6cb06aa",
-      "source_map_id": "963e3b7683d30bffc99024f52f2103019c8161f7d0dc20015527be79dcd675aa"
+      "source_map_hash": "a20c9647b02fbec6826723ae9d24548d84d656df124506c8f65c26fd05651328",
+      "source_map_id": "9901962cbd78e6a79b1936b140e363878d06fc430de4c60bba9906443b745a10"
     }
   },
   "summary": {

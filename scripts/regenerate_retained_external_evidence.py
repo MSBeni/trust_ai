@@ -1391,8 +1391,21 @@ def refresh_retained_artifacts() -> None:
         path("retained-external-evidence-production-replacement-remediation-owner-fulfilled-source-map.json"),
     )
     run(
-        "external-evidence-production-replacement-collection-package",
+        "external-evidence-production-replacement-remediation-apply",
         path("retained-external-evidence-production-replacement-submission-review.json"),
+        path("retained-external-evidence-production-replacement-remediation-owner-fulfillment-review.json"),
+        "--generated-at",
+        COLLECTION_TIME,
+        "--out",
+        path("retained-external-evidence-production-replacement-remediation-application.json"),
+        "--markdown",
+        path("retained-external-evidence-production-replacement-remediation-application.md"),
+        "--applied-review-out",
+        path("retained-external-evidence-production-replacement-remediation-applied-submission-review.json"),
+    )
+    run(
+        "external-evidence-production-replacement-collection-package",
+        path("retained-external-evidence-production-replacement-remediation-applied-submission-review.json"),
         path("retained-external-evidence-manifest.json"),
         path("source-roadmap-audit.json"),
         "--root",
@@ -1408,7 +1421,7 @@ def refresh_retained_artifacts() -> None:
     )
     run(
         "external-evidence-production-replacement-closure",
-        path("retained-external-evidence-production-replacement-submission-review.json"),
+        path("retained-external-evidence-production-replacement-remediation-applied-submission-review.json"),
         path("retained-external-evidence-readiness.json"),
         "--generated-at",
         COLLECTION_TIME,
@@ -1792,9 +1805,15 @@ def verify_retained_artifacts() -> None:
         "--require-live-source-uris",
     )
     run(
+        "external-evidence-production-replacement-remediation-apply-verify",
+        path("retained-external-evidence-production-replacement-remediation-application.json"),
+        path("retained-external-evidence-production-replacement-submission-review.json"),
+        path("retained-external-evidence-production-replacement-remediation-owner-fulfillment-review.json"),
+    )
+    run(
         "external-evidence-production-replacement-collection-package-verify",
         path("retained-external-evidence-production-replacement-collection-package.json"),
-        path("retained-external-evidence-production-replacement-submission-review.json"),
+        path("retained-external-evidence-production-replacement-remediation-applied-submission-review.json"),
         path("retained-external-evidence-manifest.json"),
         path("source-roadmap-audit.json"),
         "--root",
@@ -1803,7 +1822,7 @@ def verify_retained_artifacts() -> None:
     run(
         "external-evidence-production-replacement-closure-verify",
         path("retained-external-evidence-production-replacement-closure.json"),
-        path("retained-external-evidence-production-replacement-submission-review.json"),
+        path("retained-external-evidence-production-replacement-remediation-applied-submission-review.json"),
         path("retained-external-evidence-readiness.json"),
     )
     assert_retained_counts()
@@ -1841,6 +1860,8 @@ def assert_retained_counts() -> None:
     production_replacement_remediation_owner_fulfillment_template = json_load(DIR / "retained-external-evidence-production-replacement-remediation-owner-fulfillment-template.json")
     production_replacement_remediation_owner_fulfillment_review = json_load(DIR / "retained-external-evidence-production-replacement-remediation-owner-fulfillment-review.json")
     production_replacement_remediation_owner_fulfilled_source_map = json_load(DIR / "retained-external-evidence-production-replacement-remediation-owner-fulfilled-source-map.json")
+    production_replacement_remediation_application = json_load(DIR / "retained-external-evidence-production-replacement-remediation-application.json")
+    production_replacement_remediation_applied_submission_review = json_load(DIR / "retained-external-evidence-production-replacement-remediation-applied-submission-review.json")
     production_replacement_collection_package = json_load(DIR / "retained-external-evidence-production-replacement-collection-package.json")
     production_replacement_closure = json_load(DIR / "retained-external-evidence-production-replacement-closure.json")
     production_replacement_fulfilled_source_map = json_load(DIR / "retained-external-evidence-production-replacement-fulfilled-source-map.json")
@@ -1927,6 +1948,14 @@ def assert_retained_counts() -> None:
         (production_replacement_remediation_owner_fulfillment_review["summary"]["fulfilled_source_map_verification_ok"], False, "production replacement remediation owner fulfillment review source-map verification status"),
         (production_replacement_remediation_owner_fulfilled_source_map["summary"]["entry_count"], expected_non_production_count, "production replacement remediation owner fulfilled source-map entry count"),
         (production_replacement_remediation_owner_fulfilled_source_map["summary"]["placeholder_source_uri_count"], expected_non_production_count, "production replacement remediation owner fulfilled source-map placeholder URI count"),
+        (production_replacement_remediation_application["summary"]["application_status"], "blocked", "production replacement remediation application status"),
+        (production_replacement_remediation_application["summary"]["applied_review_status"], "blocked", "production replacement remediation application applied review status"),
+        (production_replacement_remediation_application["summary"]["applied_task_count"], expected_non_production_count, "production replacement remediation application applied task count"),
+        (production_replacement_remediation_application["summary"]["blocked_task_count"], expected_non_production_count, "production replacement remediation application blocked task count"),
+        (production_replacement_remediation_application["summary"]["placeholder_source_uri_count"], expected_non_production_count, "production replacement remediation application placeholder URI count"),
+        (production_replacement_remediation_applied_submission_review["summary"]["review_status"], "blocked", "production replacement remediation applied review status"),
+        (production_replacement_remediation_applied_submission_review["summary"]["blocked_task_count"], expected_non_production_count, "production replacement remediation applied review blocked task count"),
+        (production_replacement_remediation_applied_submission_review["summary"]["placeholder_source_uri_count"], expected_non_production_count, "production replacement remediation applied review placeholder URI count"),
         (production_replacement_collection_package["summary"]["collection_status"], "blocked", "production replacement collection package status"),
         (production_replacement_collection_package["summary"]["ready_task_count"], 0, "production replacement collection package ready task count"),
         (production_replacement_collection_package["summary"]["blocked_task_count"], expected_non_production_count, "production replacement collection package blocked task count"),

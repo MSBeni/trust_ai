@@ -499,6 +499,17 @@ MUST rebuild the review from those source artifacts and reject stale review IDs,
 source artifact mismatches, verification-option drift, task-context drift, or a
 `--require-ready` review that is not `ready-to-collect`.
 
+`external-evidence-production-replacement-remediation-apply` emits
+`trustai.external-evidence-production-replacement-remediation-application/0.1`
+from the original submission review and a remediation owner fulfillment review.
+It overlays the reviewed remediation task rows onto the original review, writes
+a canonical applied submission review for downstream collection/closure, and
+preserves source review hashes so operators can prove exactly which blocked
+submission was remediated. `external-evidence-production-replacement-remediation-apply-verify`
+MUST rebuild the application from both source reviews and, with `--require-ready`,
+MUST fail unless the applied review is `ready-to-collect` with no placeholder
+source URIs.
+
 `external-evidence-production-replacement-collection-package` emits
 `trustai.external-evidence-production-replacement-collection-package/0.1` from a
 submission review, source manifest, and roadmap audit. It is the operator handoff

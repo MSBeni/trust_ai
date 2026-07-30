@@ -22,7 +22,7 @@
     "Resolve blocked submission-review tasks before collecting production replacement evidence.",
     "Collect verified production snapshots and intake receipts, rebuild the manifest, and rerun external-evidence-readiness with --require-ready."
   ],
-  "production_replacement_closure_id": "e9b365e63dcc4f7c978cb6cf72d814e58228b4e5b411b195d6cf23a87d15cb7a",
+  "production_replacement_closure_id": "3cf92944d8e50b609c1a866faf6c3e9e7441164c3facdafbe4c94e237a90b1b5",
   "readiness_blockers": [
     "72 covered authority units use example or non-production evidence"
   ],
@@ -30,14 +30,14 @@
   "sources": {
     "production_replacement_submission_review": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "production_replacement_submission_review_hash": "a067c20abf3db2e0702780a55c551b2feafd114fc64e10919a56c209fa6d1f48",
-      "production_replacement_submission_review_id": "714d7c77f0487aa4691af1dace17d10dd20906db451c6365aa885f639aa5ac6f",
+      "production_replacement_submission_review_hash": "ee011bafbedc3587eb3c0fcb15f9799e7bf9ea845338836d83756b0ba841cc0e",
+      "production_replacement_submission_review_id": "3cf45ffc7b0da5be45083a0f7f10b35c094f4d030b413a773b0947aae0429fc4",
       "schema": "trustai.external-evidence-production-replacement-submission-review/0.1"
     },
     "readiness": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "readiness_hash": "3b587772492d2f25ab878575489b2b0807b63034721d3d841b5f99a249adab2d",
-      "readiness_id": "54fad800e20bcdf90ced679ddbcfaeb0dcf76f9377b036640f0c78df515d8434",
+      "readiness_hash": "6fca51a72f977c64cd268a269f00a33172f03dd3dcfc9d3fcbe4423da9edf77c",
+      "readiness_id": "5ef62a189380a413703ff8d01a66126419d0aad1b6acd2726d96f2a55a6f2902",
       "schema": "trustai.external-evidence-readiness/0.1"
     }
   },
@@ -76,7 +76,7 @@
       "requirement_id": "oss-verifier-and-public-spec",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/oss-verifier-and-public-spec/ci-run.json",
-      "source_uri": "TODO://production-authority/oss-verifier-and-public-spec/ci-run",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "oss-verifier-and-public-spec:ci-run",
       "task_ref": "external-evidence:oss-verifier-and-public-spec:ci-run"
@@ -96,7 +96,7 @@
       "requirement_id": "oss-verifier-and-public-spec",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/oss-verifier-and-public-spec/provider-api.json",
-      "source_uri": "TODO://production-authority/oss-verifier-and-public-spec/provider-api",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "oss-verifier-and-public-spec:provider-api",
       "task_ref": "external-evidence:oss-verifier-and-public-spec:provider-api"
@@ -116,7 +116,7 @@
       "requirement_id": "oss-verifier-and-public-spec",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/oss-verifier-and-public-spec/hosted-service.json",
-      "source_uri": "TODO://production-authority/oss-verifier-and-public-spec/hosted-service",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "oss-verifier-and-public-spec:hosted-service",
       "task_ref": "external-evidence:oss-verifier-and-public-spec:hosted-service"
@@ -136,7 +136,7 @@
       "requirement_id": "self-serve-onboarding",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/self-serve-onboarding/provider-api.json",
-      "source_uri": "TODO://production-authority/self-serve-onboarding/provider-api",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "self-serve-onboarding:provider-api",
       "task_ref": "external-evidence:self-serve-onboarding:provider-api"
@@ -156,7 +156,7 @@
       "requirement_id": "self-serve-onboarding",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/self-serve-onboarding/hosted-service.json",
-      "source_uri": "TODO://production-authority/self-serve-onboarding/hosted-service",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "self-serve-onboarding:hosted-service",
       "task_ref": "external-evidence:self-serve-onboarding:hosted-service"
@@ -176,7 +176,7 @@
       "requirement_id": "self-serve-onboarding",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/self-serve-onboarding/identity-provider.json",
-      "source_uri": "TODO://production-authority/self-serve-onboarding/identity-provider",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "self-serve-onboarding:identity-provider",
       "task_ref": "external-evidence:self-serve-onboarding:identity-provider"
@@ -196,7 +196,7 @@
       "requirement_id": "mcp-gateway",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/ci-run.json",
-      "source_uri": "TODO://production-authority/mcp-gateway/ci-run",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "mcp-gateway:ci-run",
       "task_ref": "external-evidence:mcp-gateway:ci-run"
@@ -216,7 +216,7 @@
       "requirement_id": "mcp-gateway",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/kms-hsm.json",
-      "source_uri": "TODO://production-authority/mcp-gateway/kms-hsm",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "mcp-gateway:kms-hsm",
       "task_ref": "external-evidence:mcp-gateway:kms-hsm"
@@ -236,7 +236,7 @@
       "requirement_id": "mcp-gateway",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/provider-api.json",
-      "source_uri": "TODO://production-authority/mcp-gateway/provider-api",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "mcp-gateway:provider-api",
       "task_ref": "external-evidence:mcp-gateway:provider-api"
@@ -256,7 +256,7 @@
       "requirement_id": "mcp-gateway",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/mcp-gateway/hosted-service.json",
-      "source_uri": "TODO://production-authority/mcp-gateway/hosted-service",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "mcp-gateway:hosted-service",
       "task_ref": "external-evidence:mcp-gateway:hosted-service"
@@ -276,7 +276,7 @@
       "requirement_id": "shadow-replay-temporal-holdout",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/kms-hsm.json",
-      "source_uri": "TODO://production-authority/shadow-replay-temporal-holdout/kms-hsm",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "shadow-replay-temporal-holdout:kms-hsm",
       "task_ref": "external-evidence:shadow-replay-temporal-holdout:kms-hsm"
@@ -296,7 +296,7 @@
       "requirement_id": "shadow-replay-temporal-holdout",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/provider-api.json",
-      "source_uri": "TODO://production-authority/shadow-replay-temporal-holdout/provider-api",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "shadow-replay-temporal-holdout:provider-api",
       "task_ref": "external-evidence:shadow-replay-temporal-holdout:provider-api"
@@ -316,7 +316,7 @@
       "requirement_id": "shadow-replay-temporal-holdout",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/identity-provider.json",
-      "source_uri": "TODO://production-authority/shadow-replay-temporal-holdout/identity-provider",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "shadow-replay-temporal-holdout:identity-provider",
       "task_ref": "external-evidence:shadow-replay-temporal-holdout:identity-provider"
@@ -336,7 +336,7 @@
       "requirement_id": "shadow-replay-temporal-holdout",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/standards-body.json",
-      "source_uri": "TODO://production-authority/shadow-replay-temporal-holdout/standards-body",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "shadow-replay-temporal-holdout:standards-body",
       "task_ref": "external-evidence:shadow-replay-temporal-holdout:standards-body"
@@ -356,7 +356,7 @@
       "requirement_id": "shadow-replay-temporal-holdout",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/shadow-replay-temporal-holdout/customer.json",
-      "source_uri": "TODO://production-authority/shadow-replay-temporal-holdout/customer",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "shadow-replay-temporal-holdout:customer",
       "task_ref": "external-evidence:shadow-replay-temporal-holdout:customer"
@@ -376,7 +376,7 @@
       "requirement_id": "cicd-provider-approvals",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/cicd-provider-approvals/ci-run.json",
-      "source_uri": "TODO://production-authority/cicd-provider-approvals/ci-run",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "cicd-provider-approvals:ci-run",
       "task_ref": "external-evidence:cicd-provider-approvals:ci-run"
@@ -396,7 +396,7 @@
       "requirement_id": "cicd-provider-approvals",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/cicd-provider-approvals/provider-api.json",
-      "source_uri": "TODO://production-authority/cicd-provider-approvals/provider-api",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "cicd-provider-approvals:provider-api",
       "task_ref": "external-evidence:cicd-provider-approvals:provider-api"
@@ -416,7 +416,7 @@
       "requirement_id": "cicd-provider-approvals",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/cicd-provider-approvals/hosted-service.json",
-      "source_uri": "TODO://production-authority/cicd-provider-approvals/hosted-service",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "cicd-provider-approvals:hosted-service",
       "task_ref": "external-evidence:cicd-provider-approvals:hosted-service"
@@ -436,7 +436,7 @@
       "requirement_id": "cicd-provider-approvals",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/cicd-provider-approvals/identity-provider.json",
-      "source_uri": "TODO://production-authority/cicd-provider-approvals/identity-provider",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "cicd-provider-approvals:identity-provider",
       "task_ref": "external-evidence:cicd-provider-approvals:identity-provider"
@@ -456,7 +456,7 @@
       "requirement_id": "design-partner-pilot-exit-criteria",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/regulator.json",
-      "source_uri": "TODO://production-authority/design-partner-pilot-exit-criteria/regulator",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "design-partner-pilot-exit-criteria:regulator",
       "task_ref": "external-evidence:design-partner-pilot-exit-criteria:regulator"
@@ -476,7 +476,7 @@
       "requirement_id": "design-partner-pilot-exit-criteria",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/insurer.json",
-      "source_uri": "TODO://production-authority/design-partner-pilot-exit-criteria/insurer",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "design-partner-pilot-exit-criteria:insurer",
       "task_ref": "external-evidence:design-partner-pilot-exit-criteria:insurer"
@@ -496,7 +496,7 @@
       "requirement_id": "design-partner-pilot-exit-criteria",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/design-partner-pilot-exit-criteria/customer.json",
-      "source_uri": "TODO://production-authority/design-partner-pilot-exit-criteria/customer",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "design-partner-pilot-exit-criteria:customer",
       "task_ref": "external-evidence:design-partner-pilot-exit-criteria:customer"
@@ -516,7 +516,7 @@
       "requirement_id": "framework-adapters",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/framework-adapters/ci-run.json",
-      "source_uri": "TODO://production-authority/framework-adapters/ci-run",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "framework-adapters:ci-run",
       "task_ref": "external-evidence:framework-adapters:ci-run"
@@ -536,7 +536,7 @@
       "requirement_id": "framework-adapters",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/framework-adapters/provider-api.json",
-      "source_uri": "TODO://production-authority/framework-adapters/provider-api",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "framework-adapters:provider-api",
       "task_ref": "external-evidence:framework-adapters:provider-api"
@@ -556,7 +556,7 @@
       "requirement_id": "framework-adapters",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/framework-adapters/hosted-service.json",
-      "source_uri": "TODO://production-authority/framework-adapters/hosted-service",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "framework-adapters:hosted-service",
       "task_ref": "external-evidence:framework-adapters:hosted-service"
@@ -576,7 +576,7 @@
       "requirement_id": "auditor-and-review-portal",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/kms-hsm.json",
-      "source_uri": "TODO://production-authority/auditor-and-review-portal/kms-hsm",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "auditor-and-review-portal:kms-hsm",
       "task_ref": "external-evidence:auditor-and-review-portal:kms-hsm"
@@ -596,7 +596,7 @@
       "requirement_id": "auditor-and-review-portal",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/provider-api.json",
-      "source_uri": "TODO://production-authority/auditor-and-review-portal/provider-api",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "auditor-and-review-portal:provider-api",
       "task_ref": "external-evidence:auditor-and-review-portal:provider-api"
@@ -616,7 +616,7 @@
       "requirement_id": "auditor-and-review-portal",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/hosted-service.json",
-      "source_uri": "TODO://production-authority/auditor-and-review-portal/hosted-service",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "auditor-and-review-portal:hosted-service",
       "task_ref": "external-evidence:auditor-and-review-portal:hosted-service"
@@ -636,7 +636,7 @@
       "requirement_id": "auditor-and-review-portal",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/identity-provider.json",
-      "source_uri": "TODO://production-authority/auditor-and-review-portal/identity-provider",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "auditor-and-review-portal:identity-provider",
       "task_ref": "external-evidence:auditor-and-review-portal:identity-provider"
@@ -656,7 +656,7 @@
       "requirement_id": "auditor-and-review-portal",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/auditor-and-review-portal/regulator.json",
-      "source_uri": "TODO://production-authority/auditor-and-review-portal/regulator",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "auditor-and-review-portal:regulator",
       "task_ref": "external-evidence:auditor-and-review-portal:regulator"
@@ -676,7 +676,7 @@
       "requirement_id": "byoc-self-hosted",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/ci-run.json",
-      "source_uri": "TODO://production-authority/byoc-self-hosted/ci-run",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "byoc-self-hosted:ci-run",
       "task_ref": "external-evidence:byoc-self-hosted:ci-run"
@@ -696,7 +696,7 @@
       "requirement_id": "byoc-self-hosted",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/kms-hsm.json",
-      "source_uri": "TODO://production-authority/byoc-self-hosted/kms-hsm",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "byoc-self-hosted:kms-hsm",
       "task_ref": "external-evidence:byoc-self-hosted:kms-hsm"
@@ -716,7 +716,7 @@
       "requirement_id": "byoc-self-hosted",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/cloud-object-lock.json",
-      "source_uri": "TODO://production-authority/byoc-self-hosted/cloud-object-lock",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "byoc-self-hosted:cloud-object-lock",
       "task_ref": "external-evidence:byoc-self-hosted:cloud-object-lock"
@@ -736,7 +736,7 @@
       "requirement_id": "byoc-self-hosted",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/provider-api.json",
-      "source_uri": "TODO://production-authority/byoc-self-hosted/provider-api",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "byoc-self-hosted:provider-api",
       "task_ref": "external-evidence:byoc-self-hosted:provider-api"
@@ -756,7 +756,7 @@
       "requirement_id": "byoc-self-hosted",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/standards-body.json",
-      "source_uri": "TODO://production-authority/byoc-self-hosted/standards-body",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "byoc-self-hosted:standards-body",
       "task_ref": "external-evidence:byoc-self-hosted:standards-body"
@@ -776,7 +776,7 @@
       "requirement_id": "byoc-self-hosted",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/byoc-self-hosted/customer.json",
-      "source_uri": "TODO://production-authority/byoc-self-hosted/customer",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "byoc-self-hosted:customer",
       "task_ref": "external-evidence:byoc-self-hosted:customer"
@@ -796,7 +796,7 @@
       "requirement_id": "compliance-mapper-and-eu-ai-act",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/provider-api.json",
-      "source_uri": "TODO://production-authority/compliance-mapper-and-eu-ai-act/provider-api",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "compliance-mapper-and-eu-ai-act:provider-api",
       "task_ref": "external-evidence:compliance-mapper-and-eu-ai-act:provider-api"
@@ -816,7 +816,7 @@
       "requirement_id": "compliance-mapper-and-eu-ai-act",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/regulator.json",
-      "source_uri": "TODO://production-authority/compliance-mapper-and-eu-ai-act/regulator",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "compliance-mapper-and-eu-ai-act:regulator",
       "task_ref": "external-evidence:compliance-mapper-and-eu-ai-act:regulator"
@@ -836,7 +836,7 @@
       "requirement_id": "compliance-mapper-and-eu-ai-act",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/compliance-mapper-and-eu-ai-act/standards-body.json",
-      "source_uri": "TODO://production-authority/compliance-mapper-and-eu-ai-act/standards-body",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "compliance-mapper-and-eu-ai-act:standards-body",
       "task_ref": "external-evidence:compliance-mapper-and-eu-ai-act:standards-body"
@@ -856,7 +856,7 @@
       "requirement_id": "trustai-own-compliance",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/trustai-own-compliance/standards-body.json",
-      "source_uri": "TODO://production-authority/trustai-own-compliance/standards-body",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "trustai-own-compliance:standards-body",
       "task_ref": "external-evidence:trustai-own-compliance:standards-body"
@@ -876,7 +876,7 @@
       "requirement_id": "trustai-own-compliance",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/trustai-own-compliance/customer.json",
-      "source_uri": "TODO://production-authority/trustai-own-compliance/customer",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "trustai-own-compliance:customer",
       "task_ref": "external-evidence:trustai-own-compliance:customer"
@@ -896,7 +896,7 @@
       "requirement_id": "vertical-packs",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/vertical-packs/regulator.json",
-      "source_uri": "TODO://production-authority/vertical-packs/regulator",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "vertical-packs:regulator",
       "task_ref": "external-evidence:vertical-packs:regulator"
@@ -916,7 +916,7 @@
       "requirement_id": "vertical-packs",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/vertical-packs/insurer.json",
-      "source_uri": "TODO://production-authority/vertical-packs/insurer",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "vertical-packs:insurer",
       "task_ref": "external-evidence:vertical-packs:insurer"
@@ -936,7 +936,7 @@
       "requirement_id": "vertical-packs",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/vertical-packs/customer.json",
-      "source_uri": "TODO://production-authority/vertical-packs/customer",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "vertical-packs:customer",
       "task_ref": "external-evidence:vertical-packs:customer"
@@ -956,7 +956,7 @@
       "requirement_id": "insurer-api-and-actuarial-products",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/ci-run.json",
-      "source_uri": "TODO://production-authority/insurer-api-and-actuarial-products/ci-run",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "insurer-api-and-actuarial-products:ci-run",
       "task_ref": "external-evidence:insurer-api-and-actuarial-products:ci-run"
@@ -976,7 +976,7 @@
       "requirement_id": "insurer-api-and-actuarial-products",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/kms-hsm.json",
-      "source_uri": "TODO://production-authority/insurer-api-and-actuarial-products/kms-hsm",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "insurer-api-and-actuarial-products:kms-hsm",
       "task_ref": "external-evidence:insurer-api-and-actuarial-products:kms-hsm"
@@ -996,7 +996,7 @@
       "requirement_id": "insurer-api-and-actuarial-products",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/provider-api.json",
-      "source_uri": "TODO://production-authority/insurer-api-and-actuarial-products/provider-api",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "insurer-api-and-actuarial-products:provider-api",
       "task_ref": "external-evidence:insurer-api-and-actuarial-products:provider-api"
@@ -1016,7 +1016,7 @@
       "requirement_id": "insurer-api-and-actuarial-products",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/hosted-service.json",
-      "source_uri": "TODO://production-authority/insurer-api-and-actuarial-products/hosted-service",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "insurer-api-and-actuarial-products:hosted-service",
       "task_ref": "external-evidence:insurer-api-and-actuarial-products:hosted-service"
@@ -1036,7 +1036,7 @@
       "requirement_id": "insurer-api-and-actuarial-products",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/identity-provider.json",
-      "source_uri": "TODO://production-authority/insurer-api-and-actuarial-products/identity-provider",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "insurer-api-and-actuarial-products:identity-provider",
       "task_ref": "external-evidence:insurer-api-and-actuarial-products:identity-provider"
@@ -1056,7 +1056,7 @@
       "requirement_id": "insurer-api-and-actuarial-products",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/insurer.json",
-      "source_uri": "TODO://production-authority/insurer-api-and-actuarial-products/insurer",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "insurer-api-and-actuarial-products:insurer",
       "task_ref": "external-evidence:insurer-api-and-actuarial-products:insurer"
@@ -1076,7 +1076,7 @@
       "requirement_id": "insurer-api-and-actuarial-products",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/insurer-api-and-actuarial-products/customer.json",
-      "source_uri": "TODO://production-authority/insurer-api-and-actuarial-products/customer",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "insurer-api-and-actuarial-products:customer",
       "task_ref": "external-evidence:insurer-api-and-actuarial-products:customer"
@@ -1096,7 +1096,7 @@
       "requirement_id": "state-of-agent-reliability-report",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/state-of-agent-reliability-report/customer.json",
-      "source_uri": "TODO://production-authority/state-of-agent-reliability-report/customer",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "state-of-agent-reliability-report:customer",
       "task_ref": "external-evidence:state-of-agent-reliability-report:customer"
@@ -1116,7 +1116,7 @@
       "requirement_id": "roadmap-phase-scoreboard",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/ci-run.json",
-      "source_uri": "TODO://production-authority/roadmap-phase-scoreboard/ci-run",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "roadmap-phase-scoreboard:ci-run",
       "task_ref": "external-evidence:roadmap-phase-scoreboard:ci-run"
@@ -1136,7 +1136,7 @@
       "requirement_id": "roadmap-phase-scoreboard",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/regulator.json",
-      "source_uri": "TODO://production-authority/roadmap-phase-scoreboard/regulator",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "roadmap-phase-scoreboard:regulator",
       "task_ref": "external-evidence:roadmap-phase-scoreboard:regulator"
@@ -1156,7 +1156,7 @@
       "requirement_id": "roadmap-phase-scoreboard",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/insurer.json",
-      "source_uri": "TODO://production-authority/roadmap-phase-scoreboard/insurer",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "roadmap-phase-scoreboard:insurer",
       "task_ref": "external-evidence:roadmap-phase-scoreboard:insurer"
@@ -1176,7 +1176,7 @@
       "requirement_id": "roadmap-phase-scoreboard",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/standards-body.json",
-      "source_uri": "TODO://production-authority/roadmap-phase-scoreboard/standards-body",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "roadmap-phase-scoreboard:standards-body",
       "task_ref": "external-evidence:roadmap-phase-scoreboard:standards-body"
@@ -1196,7 +1196,7 @@
       "requirement_id": "roadmap-phase-scoreboard",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/roadmap-phase-scoreboard/customer.json",
-      "source_uri": "TODO://production-authority/roadmap-phase-scoreboard/customer",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "roadmap-phase-scoreboard:customer",
       "task_ref": "external-evidence:roadmap-phase-scoreboard:customer"
@@ -1216,7 +1216,7 @@
       "requirement_id": "product-scope-discipline",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/product-scope-discipline/ci-run.json",
-      "source_uri": "TODO://production-authority/product-scope-discipline/ci-run",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "product-scope-discipline:ci-run",
       "task_ref": "external-evidence:product-scope-discipline:ci-run"
@@ -1236,7 +1236,7 @@
       "requirement_id": "product-scope-discipline",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/product-scope-discipline/customer.json",
-      "source_uri": "TODO://production-authority/product-scope-discipline/customer",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "product-scope-discipline:customer",
       "task_ref": "external-evidence:product-scope-discipline:customer"
@@ -1256,7 +1256,7 @@
       "requirement_id": "runtime-policy-and-attestation",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/ci-run.json",
-      "source_uri": "TODO://production-authority/runtime-policy-and-attestation/ci-run",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "runtime-policy-and-attestation:ci-run",
       "task_ref": "external-evidence:runtime-policy-and-attestation:ci-run"
@@ -1276,7 +1276,7 @@
       "requirement_id": "runtime-policy-and-attestation",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/kms-hsm.json",
-      "source_uri": "TODO://production-authority/runtime-policy-and-attestation/kms-hsm",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "runtime-policy-and-attestation:kms-hsm",
       "task_ref": "external-evidence:runtime-policy-and-attestation:kms-hsm"
@@ -1296,7 +1296,7 @@
       "requirement_id": "runtime-policy-and-attestation",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/provider-api.json",
-      "source_uri": "TODO://production-authority/runtime-policy-and-attestation/provider-api",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "runtime-policy-and-attestation:provider-api",
       "task_ref": "external-evidence:runtime-policy-and-attestation:provider-api"
@@ -1316,7 +1316,7 @@
       "requirement_id": "runtime-policy-and-attestation",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/hosted-service.json",
-      "source_uri": "TODO://production-authority/runtime-policy-and-attestation/hosted-service",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "runtime-policy-and-attestation:hosted-service",
       "task_ref": "external-evidence:runtime-policy-and-attestation:hosted-service"
@@ -1336,7 +1336,7 @@
       "requirement_id": "runtime-policy-and-attestation",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/runtime-policy-and-attestation/identity-provider.json",
-      "source_uri": "TODO://production-authority/runtime-policy-and-attestation/identity-provider",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "runtime-policy-and-attestation:identity-provider",
       "task_ref": "external-evidence:runtime-policy-and-attestation:identity-provider"
@@ -1356,7 +1356,7 @@
       "requirement_id": "agent-inventory-and-identity",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/agent-inventory-and-identity/provider-api.json",
-      "source_uri": "TODO://production-authority/agent-inventory-and-identity/provider-api",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "agent-inventory-and-identity:provider-api",
       "task_ref": "external-evidence:agent-inventory-and-identity:provider-api"
@@ -1376,7 +1376,7 @@
       "requirement_id": "agent-inventory-and-identity",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/agent-inventory-and-identity/identity-provider.json",
-      "source_uri": "TODO://production-authority/agent-inventory-and-identity/identity-provider",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "agent-inventory-and-identity:identity-provider",
       "task_ref": "external-evidence:agent-inventory-and-identity:identity-provider"
@@ -1396,7 +1396,7 @@
       "requirement_id": "standards-track-and-auditor-ecosystem",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/kms-hsm.json",
-      "source_uri": "TODO://production-authority/standards-track-and-auditor-ecosystem/kms-hsm",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "standards-track-and-auditor-ecosystem:kms-hsm",
       "task_ref": "external-evidence:standards-track-and-auditor-ecosystem:kms-hsm"
@@ -1416,7 +1416,7 @@
       "requirement_id": "standards-track-and-auditor-ecosystem",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/standards-track-and-auditor-ecosystem/standards-body.json",
-      "source_uri": "TODO://production-authority/standards-track-and-auditor-ecosystem/standards-body",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "standards-track-and-auditor-ecosystem:standards-body",
       "task_ref": "external-evidence:standards-track-and-auditor-ecosystem:standards-body"
@@ -1436,7 +1436,7 @@
       "requirement_id": "trust-network-procurement-and-marketplace",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/provider-api.json",
-      "source_uri": "TODO://production-authority/trust-network-procurement-and-marketplace/provider-api",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "trust-network-procurement-and-marketplace:provider-api",
       "task_ref": "external-evidence:trust-network-procurement-and-marketplace:provider-api"
@@ -1456,7 +1456,7 @@
       "requirement_id": "trust-network-procurement-and-marketplace",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/hosted-service.json",
-      "source_uri": "TODO://production-authority/trust-network-procurement-and-marketplace/hosted-service",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "trust-network-procurement-and-marketplace:hosted-service",
       "task_ref": "external-evidence:trust-network-procurement-and-marketplace:hosted-service"
@@ -1476,7 +1476,7 @@
       "requirement_id": "trust-network-procurement-and-marketplace",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/identity-provider.json",
-      "source_uri": "TODO://production-authority/trust-network-procurement-and-marketplace/identity-provider",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "trust-network-procurement-and-marketplace:identity-provider",
       "task_ref": "external-evidence:trust-network-procurement-and-marketplace:identity-provider"
@@ -1496,7 +1496,7 @@
       "requirement_id": "trust-network-procurement-and-marketplace",
       "review_status": "blocked",
       "snapshot_out": "artifacts/external-evidence-sources/trust-network-procurement-and-marketplace/customer.json",
-      "source_uri": "TODO://production-authority/trust-network-procurement-and-marketplace/customer",
+      "source_uri": "REPLACE_WITH_LIVE_AUTHORITY_URI",
       "source_uri_status": "placeholder",
       "task": "trust-network-procurement-and-marketplace:customer",
       "task_ref": "external-evidence:trust-network-procurement-and-marketplace:customer"

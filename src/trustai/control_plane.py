@@ -44,6 +44,7 @@ from .external_evidence import (
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_PACKET_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_FULFILLMENT_TEMPLATE_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_FULFILLMENT_REVIEW_SCHEMA,
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_APPLICATION_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA,
 )
@@ -270,6 +271,7 @@ PRODUCTION_REPLACEMENT_ARTIFACTS = {
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_PACKET_SCHEMA: ("remediation-owner-packet-bundle", "production_replacement_remediation_owner_packet_bundle_id"),
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_FULFILLMENT_TEMPLATE_SCHEMA: ("remediation-owner-fulfillment-template", "production_replacement_remediation_owner_fulfillment_template_id"),
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_FULFILLMENT_REVIEW_SCHEMA: ("remediation-owner-fulfillment-review", "production_replacement_remediation_owner_fulfillment_review_id"),
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_APPLICATION_SCHEMA: ("remediation-application", "production_replacement_remediation_application_id"),
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_COLLECTION_PACKAGE_SCHEMA: ("collection-package", "production_replacement_collection_package_id"),
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA: ("closure", "production_replacement_closure_id"),
 }
@@ -1344,7 +1346,7 @@ def _summary_int(summary: dict[str, Any], *fields: str) -> int:
 
 
 def _production_replacement_status(summary: dict[str, Any]) -> str | None:
-    for field in ("closure_status", "queue_status", "review_status", "submission_status", "template_status", "replacement_status", "readiness_status"):
+    for field in ("closure_status", "application_status", "queue_status", "review_status", "submission_status", "template_status", "replacement_status", "readiness_status"):
         value = summary.get(field)
         if value:
             return str(value)
@@ -7506,6 +7508,10 @@ class ControlPlane:
             (item for item in lifecycle if item.get("artifact_kind") == "remediation-owner-fulfillment-review"),
             None,
         )
+        remediation_application = next(
+            (item for item in lifecycle if item.get("artifact_kind") == "remediation-application"),
+            None,
+        )
         collection_package = next(
             (item for item in lifecycle if item.get("artifact_kind") == "collection-package"),
             None,
@@ -7584,6 +7590,9 @@ class ControlPlane:
         owner_fulfillment_review_summary = remediation_owner_fulfillment_review.get("summary") if remediation_owner_fulfillment_review else {}
         if not isinstance(owner_fulfillment_review_summary, dict):
             owner_fulfillment_review_summary = {}
+        remediation_application_summary = remediation_application.get("summary") if remediation_application else {}
+        if not isinstance(remediation_application_summary, dict):
+            remediation_application_summary = {}
         remediation_owner_fulfillments = [
             {
                 "task": fulfillment.get("task"),
@@ -7702,6 +7711,15 @@ class ControlPlane:
             and int(owner_fulfillment_review_summary.get("blocked_task_count") or 0) == 0
             and int(owner_fulfillment_review_summary.get("placeholder_source_uri_count") or 0) == 0
         )
+        remediation_application_status = remediation_application_summary.get("application_status") or (
+            remediation_application.get("status") if remediation_application else None
+        )
+        remediation_application_ready = bool(
+            remediation_application
+            and remediation_application_status == "ready-to-collect"
+            and int(remediation_application_summary.get("blocked_task_count") or 0) == 0
+            and int(remediation_application_summary.get("placeholder_source_uri_count") or 0) == 0
+        )
         collection_package_ready = bool(
             collection_package
             and collection_status == "ready-to-collect"
@@ -7752,6 +7770,17 @@ class ControlPlane:
                 "live_source_uri_count": int(owner_fulfillment_review_summary.get("live_source_uri_count") or 0),
             },
             {
+                "stage": "remediation-application",
+                "present": remediation_application is not None,
+                "ready": remediation_application_ready,
+                "status": remediation_application_status,
+                "task_count": int(remediation_application_summary.get("task_count") or 0),
+                "ready_task_count": int(remediation_application_summary.get("ready_task_count") or 0),
+                "blocked_task_count": int(remediation_application_summary.get("blocked_task_count") or 0),
+                "placeholder_source_uri_count": int(remediation_application_summary.get("placeholder_source_uri_count") or 0),
+                "live_source_uri_count": int(remediation_application_summary.get("live_source_uri_count") or 0),
+            },
+            {
                 "stage": "collection-package",
                 "present": collection_package is not None,
                 "ready": collection_package_ready,
@@ -7779,6 +7808,7 @@ class ControlPlane:
             "submission": "replace submitted production replacement placeholder source_uri values with live authority-owned source URIs",
             "submission-review": "rerun submission review with live source URIs and no blocked tasks",
             "remediation-owner-fulfillment-review": "review owner remediation fulfillment with live source URIs before applying it to submission",
+            "remediation-application": "apply the reviewed remediation fulfillment to produce a ready submission review",
             "collection-package": "collect source snapshots and intake receipts from the ready production replacement source map",
             "closure": "rebuild the manifest and readiness report, then close production replacement tasks",
             "complete": "append the production-ready manifest and closure to the roadmap evidence chain",
@@ -7849,6 +7879,18 @@ class ControlPlane:
             "remediation_owner_fulfillments": remediation_owner_fulfillments[:limit],
             "remediation_owner_fulfillment_limit": limit,
             "remediation_owner_fulfillment_total": len(remediation_owner_fulfillments),
+            "remediation_application_present": remediation_application is not None,
+            "remediation_application_ready": remediation_application_ready,
+            "remediation_application_status": remediation_application_status,
+            "remediation_application_artifact_id": remediation_application.get("artifact_id") if remediation_application else None,
+            "remediation_application_artifact_hash": remediation_application.get("artifact_hash") if remediation_application else None,
+            "remediation_application_applied_review_status": remediation_application_summary.get("applied_review_status"),
+            "remediation_application_task_count": int(remediation_application_summary.get("task_count") or 0),
+            "remediation_application_applied_task_count": int(remediation_application_summary.get("applied_task_count") or 0),
+            "remediation_application_ready_task_count": int(remediation_application_summary.get("ready_task_count") or 0),
+            "remediation_application_blocked_task_count": int(remediation_application_summary.get("blocked_task_count") or 0),
+            "remediation_application_placeholder_source_uri_count": int(remediation_application_summary.get("placeholder_source_uri_count") or 0),
+            "remediation_application_live_source_uri_count": int(remediation_application_summary.get("live_source_uri_count") or 0),
             "collection_package_present": collection_package is not None,
             "collection_package_ready": collection_package_ready,
             "collection_status": collection_status,

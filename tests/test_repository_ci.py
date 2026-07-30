@@ -18,6 +18,8 @@ PRODUCTION_REPLACEMENT_REMEDIATION_QUEUE = ROOT / "examples" / "aitrade" / "exte
 PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_PACKETS = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-production-replacement-remediation-owner-packets.json"
 PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_FULFILLMENT_TEMPLATE = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-production-replacement-remediation-owner-fulfillment-template.json"
 PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_FULFILLMENT_REVIEW = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-production-replacement-remediation-owner-fulfillment-review.json"
+PRODUCTION_REPLACEMENT_REMEDIATION_APPLICATION = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-production-replacement-remediation-application.json"
+PRODUCTION_REPLACEMENT_REMEDIATION_APPLIED_REVIEW = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-production-replacement-remediation-applied-submission-review.json"
 PRODUCTION_REPLACEMENT_COLLECTION_PACKAGE = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-production-replacement-collection-package.json"
 PRODUCTION_REPLACEMENT_CLOSURE = ROOT / "examples" / "aitrade" / "external-evidence" / "retained-external-evidence-production-replacement-closure.json"
 TESTS_INIT = ROOT / "tests" / "__init__.py"
@@ -159,6 +161,9 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("external-evidence-production-replacement-remediation-owner-fulfillment-review", script)
         self.assertIn("retained-external-evidence-production-replacement-remediation-owner-fulfillment-review.json", script)
         self.assertIn("retained-external-evidence-production-replacement-remediation-owner-fulfilled-source-map.json", script)
+        self.assertIn("external-evidence-production-replacement-remediation-apply", script)
+        self.assertIn("retained-external-evidence-production-replacement-remediation-application.json", script)
+        self.assertIn("retained-external-evidence-production-replacement-remediation-applied-submission-review.json", script)
         self.assertIn("external-evidence-production-replacement-collection-package", script)
         self.assertIn("retained-external-evidence-production-replacement-collection-package.json", script)
         self.assertIn("retained-external-evidence-production-replacement-package-source-map.json", script)
@@ -177,6 +182,8 @@ class RepositoryCiTests(unittest.TestCase):
         production_remediation_owner_packets = json.loads(PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_PACKETS.read_text(encoding="utf-8"))
         production_remediation_owner_fulfillment_template = json.loads(PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_FULFILLMENT_TEMPLATE.read_text(encoding="utf-8"))
         production_remediation_owner_fulfillment_review = json.loads(PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_FULFILLMENT_REVIEW.read_text(encoding="utf-8"))
+        production_remediation_application = json.loads(PRODUCTION_REPLACEMENT_REMEDIATION_APPLICATION.read_text(encoding="utf-8"))
+        production_remediation_applied_review = json.loads(PRODUCTION_REPLACEMENT_REMEDIATION_APPLIED_REVIEW.read_text(encoding="utf-8"))
         production_collection_package = json.loads(PRODUCTION_REPLACEMENT_COLLECTION_PACKAGE.read_text(encoding="utf-8"))
         production_closure = json.loads(PRODUCTION_REPLACEMENT_CLOSURE.read_text(encoding="utf-8"))
         summary = manifest["summary"]
@@ -186,6 +193,8 @@ class RepositoryCiTests(unittest.TestCase):
         production_remediation_owner_packets_summary = production_remediation_owner_packets["summary"]
         production_remediation_owner_fulfillment_template_summary = production_remediation_owner_fulfillment_template["summary"]
         production_remediation_owner_fulfillment_review_summary = production_remediation_owner_fulfillment_review["summary"]
+        production_remediation_application_summary = production_remediation_application["summary"]
+        production_remediation_applied_review_summary = production_remediation_applied_review["summary"]
         production_collection_package_summary = production_collection_package["summary"]
         production_closure_summary = production_closure["summary"]
         required = summary["required_authority_kind_count"]
@@ -216,6 +225,12 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertEqual(required, production_remediation_owner_fulfillment_review_summary["blocked_task_count"])
         self.assertEqual(required, production_remediation_owner_fulfillment_review_summary["placeholder_source_uri_count"])
         self.assertFalse(production_remediation_owner_fulfillment_review_summary["fulfilled_source_map_verification_ok"])
+        self.assertEqual("blocked", production_remediation_application_summary["application_status"])
+        self.assertEqual("blocked", production_remediation_application_summary["applied_review_status"])
+        self.assertEqual(required, production_remediation_application_summary["applied_task_count"])
+        self.assertEqual(required, production_remediation_application_summary["placeholder_source_uri_count"])
+        self.assertEqual("blocked", production_remediation_applied_review_summary["review_status"])
+        self.assertEqual(required, production_remediation_applied_review_summary["placeholder_source_uri_count"])
         self.assertEqual("blocked", production_collection_package_summary["collection_status"])
         self.assertEqual(required, production_collection_package_summary["blocked_task_count"])
         self.assertEqual(required, production_collection_package_summary["placeholder_source_uri_count"])
@@ -234,6 +249,7 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("external-evidence-production-replacement-remediation-owner-packets-verify", readme)
         self.assertIn("external-evidence-production-replacement-remediation-owner-fulfillment-template-verify", readme)
         self.assertIn("external-evidence-production-replacement-remediation-owner-fulfillment-review-verify", readme)
+        self.assertIn("external-evidence-production-replacement-remediation-apply-verify", readme)
         self.assertIn("external-evidence-production-replacement-collection-package-verify", readme)
         self.assertIn("external-evidence-production-replacement-closure-verify", readme)
         self.assertNotIn("zero non-production retained authority units", readme)
@@ -242,6 +258,8 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn(f"missing_authority_kind_count'] == {required - 3}", readme)
         self.assertIn(f"required_authority_kind_count'] == {required}", workflow)
         self.assertIn(f"missing_authority_kind_count'] == {required - 3}", workflow)
+        self.assertIn("external-evidence-production-replacement-remediation-apply-verify", workflow)
+        self.assertIn("retained-external-evidence-production-replacement-remediation-applied-submission-review.json", workflow)
 
     def test_external_evidence_spec_documents_production_replacement_lifecycle(self):
         spec = EXTERNAL_EVIDENCE_SPEC.read_text(encoding="utf-8")
@@ -263,6 +281,8 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("external-evidence-production-replacement-remediation-owner-fulfillment-template-verify", spec)
         self.assertIn("external-evidence-production-replacement-remediation-owner-fulfillment-review", spec)
         self.assertIn("external-evidence-production-replacement-remediation-owner-fulfillment-review-verify", spec)
+        self.assertIn("external-evidence-production-replacement-remediation-apply", spec)
+        self.assertIn("external-evidence-production-replacement-remediation-apply-verify", spec)
         self.assertIn("external-evidence-production-replacement-collection-package", spec)
         self.assertIn("external-evidence-production-replacement-closure", spec)
         self.assertIn("external-evidence-production-replacement-closure-verify --require-closed", spec)
