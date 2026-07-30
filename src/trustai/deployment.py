@@ -45,6 +45,9 @@ DEPLOYMENT_IMAGE_INTEGRITY_ENTRY_TYPE = "deployment.image.integrity_attested"
 DEPLOYMENT_IMAGE_SIGNATURE_SCHEMA = "trustai.deployment-image-signature/0.1"
 KUBERNETES_RELEASE_STATE_SCHEMA = "trustai.kubernetes-release-state/0.1"
 KUBERNETES_RELEASE_STATE_ENTRY_TYPE = "deployment.kubernetes_release_state.recorded"
+AIRGAP_BUNDLE_SCHEMA = "trustai.airgap-install-bundle/0.1"
+AIRGAP_BUNDLE_ENTRY_TYPE = "deployment.airgap_install_bundle.attested"
+AIRGAP_BUNDLE_MODES = {"airgap-reference", "airgap-install-bundle", "self-hosted-install-bundle"}
 DEFAULT_IMAGE_INTEGRITY_SOURCE_PATHS = (
     "deploy/docker/Dockerfile",
     "deploy/helm/trustai/values.yaml",
@@ -61,6 +64,23 @@ DEFAULT_KUBERNETES_RELEASE_SOURCE_PATHS = (
     "deploy/helm/trustai/templates/networkpolicy.yaml",
     "docs/specs/kubernetes-release-state-v0.1.md",
     "docs/deployment/byoc.md",
+    "src/trustai/deployment.py",
+)
+DEFAULT_AIRGAP_BUNDLE_SOURCE_PATHS = (
+    "deploy/docker/Dockerfile",
+    "deploy/helm/trustai/Chart.yaml",
+    "deploy/helm/trustai/values.yaml",
+    "deploy/helm/trustai/templates/configmap.yaml",
+    "deploy/helm/trustai/templates/deployment.yaml",
+    "deploy/helm/trustai/templates/service.yaml",
+    "deploy/helm/trustai/templates/networkpolicy.yaml",
+    "deploy/helm/trustai/templates/demo-job.yaml",
+    "deploy/helm/trustai/templates/pvc.yaml",
+    "docs/deployment/byoc.md",
+    "docs/specs/airgap-install-bundle-v0.1.md",
+    "docs/specs/deployment-image-integrity-v0.1.md",
+    "docs/specs/helm-chart-validation-v0.1.md",
+    "docs/specs/kubernetes-release-state-v0.1.md",
     "src/trustai/deployment.py",
 )
 
@@ -87,6 +107,13 @@ class DeploymentImageIntegrityVerification:
 
 @dataclass
 class KubernetesReleaseStateVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class AirgapBundleVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -824,6 +851,170 @@ def append_kubernetes_release_state_receipt(
     return chain.append(KUBERNETES_RELEASE_STATE_ENTRY_TYPE, payload, key=key, timestamp=receipt.get("generated_at"))
 
 
+def build_airgap_install_bundle(
+    root: str | Path = ".",
+    *,
+    deployment_manifest: dict[str, Any],
+    helm_chart_validation: dict[str, Any],
+    deployment_image_integrity: dict[str, Any],
+    kubernetes_release_state: dict[str, Any],
+    mode: str = "airgap-install-bundle",
+    environment: str = "local",
+    bundle_ref: str,
+    producer_ref: str,
+    generated_at: str | None = None,
+    key: str | None = None,
+) -> dict[str, Any]:
+    if mode not in AIRGAP_BUNDLE_MODES:
+        raise ValueError(f"mode must be one of {sorted(AIRGAP_BUNDLE_MODES)}")
+    body = _airgap_install_bundle_body(
+        Path(root),
+        deployment_manifest=deployment_manifest,
+        helm_chart_validation=helm_chart_validation,
+        deployment_image_integrity=deployment_image_integrity,
+        kubernetes_release_state=kubernetes_release_state,
+        mode=mode,
+        environment=environment,
+        bundle_ref=bundle_ref,
+        producer_ref=producer_ref,
+        generated_at=generated_at or utc_now(),
+        key=key,
+    )
+    bundle_id = content_hash(body)
+    return {**body, "bundle_id": bundle_id, "signatures": [sign_value({"bundle_id": bundle_id, "airgap_install_bundle": body}, key)]}
+
+
+def verify_airgap_install_bundle(
+    bundle: dict[str, Any],
+    *,
+    root: str | Path = ".",
+    deployment_manifest: dict[str, Any] | None = None,
+    helm_chart_validation: dict[str, Any] | None = None,
+    deployment_image_integrity: dict[str, Any] | None = None,
+    kubernetes_release_state: dict[str, Any] | None = None,
+    key: str | None = None,
+) -> AirgapBundleVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    root_path = Path(root)
+    if bundle.get("schema") != AIRGAP_BUNDLE_SCHEMA:
+        errors.append(f"unsupported air-gap install bundle schema: {bundle.get('schema')}")
+    body = without_keys(bundle, "bundle_id", "signatures")
+    if bundle.get("bundle_id") != content_hash(body):
+        errors.append("bundle_id does not match canonical air-gap install bundle body")
+    signatures = bundle.get("signatures", [])
+    signed_value = {"bundle_id": bundle.get("bundle_id"), "airgap_install_bundle": body}
+    if not isinstance(signatures, list) or not signatures:
+        errors.append("air-gap install bundle must include at least one signature")
+    elif not any(isinstance(sig, dict) and verify_value(signed_value, sig, key) for sig in signatures):
+        errors.append("air-gap install bundle signature verification failed")
+    if bundle.get("mode") not in AIRGAP_BUNDLE_MODES:
+        errors.append("air-gap install bundle mode is unsupported")
+    for field in ("generated_at", "environment", "bundle_ref", "producer_ref"):
+        if not isinstance(bundle.get(field), str) or not bundle.get(field):
+            errors.append(f"air-gap install bundle {field} missing")
+    try:
+        parse_rfc3339(str(bundle.get("generated_at") or ""))
+    except ValueError as exc:
+        errors.append(f"air-gap install bundle generated_at invalid: {exc}")
+    source_files = bundle.get("source_files", [])
+    if not isinstance(source_files, list) or not source_files:
+        errors.append("air-gap install bundle must include source_files")
+        source_files = []
+    paths = set()
+    for source in source_files:
+        if not isinstance(source, dict):
+            errors.append("source file record must be an object")
+            continue
+        path_value = source.get("path")
+        if not isinstance(path_value, str) or not path_value:
+            errors.append("source file path missing")
+            continue
+        paths.add(path_value)
+        if not (root_path / path_value).exists():
+            errors.append(f"source file missing from worktree: {path_value}")
+            continue
+        current = _source_record(root_path, path_value)
+        for field in ("sha256", "size_bytes"):
+            if source.get(field) != current.get(field):
+                errors.append(f"source file {path_value} {field} mismatch")
+    for required in DEFAULT_AIRGAP_BUNDLE_SOURCE_PATHS:
+        if required not in paths:
+            errors.append(f"required air-gap bundle source missing: {required}")
+    supplied = [deployment_manifest, helm_chart_validation, deployment_image_integrity, kubernetes_release_state]
+    if any(item is not None for item in supplied) and not all(item is not None for item in supplied):
+        errors.append("all air-gap bundle source receipts are required for replay")
+    elif all(item is not None for item in supplied):
+        try:
+            expected = _airgap_install_bundle_body(
+                root_path,
+                deployment_manifest=deployment_manifest or {},
+                helm_chart_validation=helm_chart_validation or {},
+                deployment_image_integrity=deployment_image_integrity or {},
+                kubernetes_release_state=kubernetes_release_state or {},
+                mode=str(body.get("mode") or ""),
+                environment=str(body.get("environment") or ""),
+                bundle_ref=str(body.get("bundle_ref") or ""),
+                producer_ref=str(body.get("producer_ref") or ""),
+                generated_at=str(body.get("generated_at") or ""),
+                key=key,
+            )
+        except (OSError, ValueError) as exc:
+            errors.append(f"air-gap install bundle replay failed: {exc}")
+        else:
+            for field in ("deployment_manifest", "helm_chart_validation", "deployment_image_integrity", "kubernetes_release_state", "install_package", "source_files", "checks", "summary", "passed", "limitations"):
+                if body.get(field) != expected.get(field):
+                    errors.append(f"air-gap install bundle {field} does not match replayed sources")
+    else:
+        warnings.append("source receipts were not supplied for air-gap install bundle replay")
+    checks = bundle.get("checks", [])
+    if not isinstance(checks, list) or not checks:
+        errors.append("air-gap install bundle must include checks")
+    else:
+        failed = [check.get("id") for check in checks if isinstance(check, dict) and not check.get("passed")]
+        if failed:
+            errors.append("air-gap install bundle checks failed: " + ", ".join(str(item) for item in failed))
+    if bundle.get("passed") is not True:
+        errors.append("air-gap install bundle is not marked passed")
+    return AirgapBundleVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
+def append_airgap_install_bundle(chain: EvidenceChain, bundle: dict[str, Any], *, root: str | Path = ".", deployment_manifest: dict[str, Any] | None = None, helm_chart_validation: dict[str, Any] | None = None, deployment_image_integrity: dict[str, Any] | None = None, kubernetes_release_state: dict[str, Any] | None = None, key: str | None = None) -> dict[str, Any]:
+    result = verify_airgap_install_bundle(bundle, root=root, deployment_manifest=deployment_manifest, helm_chart_validation=helm_chart_validation, deployment_image_integrity=deployment_image_integrity, kubernetes_release_state=kubernetes_release_state, key=key)
+    if not result.ok:
+        raise ValueError("invalid air-gap install bundle: " + "; ".join(result.errors))
+    payload = {
+        "bundle_id": bundle["bundle_id"],
+        "bundle_hash": content_hash(bundle),
+        "mode": bundle.get("mode"),
+        "environment": bundle.get("environment"),
+        "bundle_ref": bundle.get("bundle_ref"),
+        "producer_ref": bundle.get("producer_ref"),
+        "deployment_manifest": bundle.get("deployment_manifest"),
+        "helm_chart_validation": bundle.get("helm_chart_validation"),
+        "deployment_image_integrity": bundle.get("deployment_image_integrity"),
+        "kubernetes_release_state": bundle.get("kubernetes_release_state"),
+        "install_package": bundle.get("install_package"),
+        "source_file_count": len(bundle.get("source_files", [])),
+        "check_summary": bundle.get("summary"),
+        "passed": bundle.get("passed"),
+    }
+    return chain.append(AIRGAP_BUNDLE_ENTRY_TYPE, payload, key=key, timestamp=bundle.get("generated_at"))
+
+
+def load_airgap_install_bundle(path: str | Path) -> dict[str, Any]:
+    value = json.loads(Path(path).read_text(encoding="utf-8-sig"))
+    if not isinstance(value, dict):
+        raise ValueError("air-gap install bundle must contain an object")
+    return value
+
+
+def write_airgap_install_bundle(path: str | Path, bundle: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(bundle, indent=2, sort_keys=True), encoding="utf-8")
+
+
 def load_kubernetes_release_state_receipt(path: str | Path) -> dict[str, Any]:
     value = json.loads(Path(path).read_text(encoding="utf-8-sig"))
     if not isinstance(value, dict):
@@ -928,6 +1119,72 @@ Environment: {deployment.get('environment', '')}
 """
 
 
+
+
+
+def _airgap_install_bundle_body(root: Path, *, deployment_manifest: dict[str, Any], helm_chart_validation: dict[str, Any], deployment_image_integrity: dict[str, Any], kubernetes_release_state: dict[str, Any], mode: str, environment: str, bundle_ref: str, producer_ref: str, generated_at: str, key: str | None) -> dict[str, Any]:
+    for value, field in ((mode, "mode"), (environment, "environment"), (bundle_ref, "bundle_ref"), (producer_ref, "producer_ref"), (generated_at, "generated_at")):
+        _require_release_text(value, field)
+    parse_rfc3339(generated_at)
+    deployment_binding = _deployment_manifest_validation_binding(root, deployment_manifest)
+    helm_binding = _helm_chart_validation_binding(root, helm_chart_validation, deployment_manifest)
+    image_binding = _deployment_image_integrity_binding(root, deployment_image_integrity, deployment_manifest, key=key)
+    release_binding = _kubernetes_release_state_binding(root, kubernetes_release_state, deployment_manifest, helm_chart_validation, key=key)
+    source_records = [_source_record(root, path) for path in DEFAULT_AIRGAP_BUNDLE_SOURCE_PATHS]
+    install_package = _airgap_install_package(bundle_ref=bundle_ref, helm_chart_validation=helm_chart_validation, deployment_image_integrity=deployment_image_integrity, kubernetes_release_state=kubernetes_release_state, source_records=source_records)
+    checks = _airgap_install_bundle_checks(bundle_ref=bundle_ref, producer_ref=producer_ref, deployment_binding=deployment_binding, helm_binding=helm_binding, image_binding=image_binding, release_binding=release_binding, source_records=source_records, install_package=install_package)
+    summary = _helm_check_summary(checks)
+    passed = summary.get("failed", 0) == 0 and summary.get("passed", 0) == len(checks)
+    return {"schema": AIRGAP_BUNDLE_SCHEMA, "mode": mode, "environment": environment, "generated_at": generated_at, "bundle_ref": bundle_ref, "producer_ref": producer_ref, "deployment_manifest": deployment_binding, "helm_chart_validation": helm_binding, "deployment_image_integrity": image_binding, "kubernetes_release_state": release_binding, "install_package": install_package, "source_files": source_records, "checks": checks, "summary": summary, "passed": passed, "limitations": ["This bundle is an offline, deterministic BYOC/air-gap install package manifest over local TrustAI deployment artifacts.", "It binds the deployment manifest, Helm validation, image integrity receipt, and Kubernetes release-state receipt into one signed artifact for external review.", "It does not prove a customer has imported the image or chart into an air-gapped registry unless paired with fresh customer/provider installation evidence."]}
+
+
+def _deployment_image_integrity_binding(root: Path, receipt: dict[str, Any] | None, deployment_manifest: dict[str, Any], *, key: str | None) -> dict[str, Any] | None:
+    if receipt is None:
+        return None
+    result = verify_deployment_image_integrity_receipt(receipt, root=root, deployment_manifest=deployment_manifest, key=key)
+    image = receipt.get("image") if isinstance(receipt.get("image"), dict) else {}
+    signature = receipt.get("image_signature") if isinstance(receipt.get("image_signature"), dict) else {}
+    return {"receipt_id": receipt.get("receipt_id"), "receipt_hash": content_hash(receipt), "schema": receipt.get("schema"), "verified": result.ok, "passed": receipt.get("passed"), "check_summary": receipt.get("summary"), "image": image, "image_signature": {"verified": signature.get("verified"), "subject_hash": signature.get("subject_hash"), "signature_key_id": signature.get("signature_key_id"), "signature_provider": signature.get("signature_provider")}, "artifacts": receipt.get("artifacts", []), "errors": result.errors, "warnings": result.warnings}
+
+
+def _kubernetes_release_state_binding(root: Path, receipt: dict[str, Any] | None, deployment_manifest: dict[str, Any], helm_chart_validation: dict[str, Any], *, key: str | None) -> dict[str, Any] | None:
+    if receipt is None:
+        return None
+    result = verify_kubernetes_release_state_receipt(receipt, root=root, deployment_manifest=deployment_manifest, helm_chart_validation=helm_chart_validation, key=key)
+    return {"receipt_id": receipt.get("receipt_id"), "receipt_hash": content_hash(receipt), "schema": receipt.get("schema"), "verified": result.ok, "passed": receipt.get("passed"), "check_summary": receipt.get("summary"), "release": receipt.get("release"), "workload": receipt.get("workload"), "network_policy": receipt.get("network_policy"), "audit_log": receipt.get("audit_log"), "errors": result.errors, "warnings": result.warnings}
+
+
+def _airgap_install_package(*, bundle_ref: str, helm_chart_validation: dict[str, Any], deployment_image_integrity: dict[str, Any], kubernetes_release_state: dict[str, Any], source_records: list[dict[str, Any]]) -> dict[str, Any]:
+    image = deployment_image_integrity.get("image") if isinstance(deployment_image_integrity.get("image"), dict) else {}
+    release = kubernetes_release_state.get("release") if isinstance(kubernetes_release_state.get("release"), dict) else {}
+    workload = kubernetes_release_state.get("workload") if isinstance(kubernetes_release_state.get("workload"), dict) else {}
+    network_policy = kubernetes_release_state.get("network_policy") if isinstance(kubernetes_release_state.get("network_policy"), dict) else {}
+    artifact_hashes = [artifact.get("sha256") for artifact in deployment_image_integrity.get("artifacts", []) if isinstance(artifact, dict) and artifact.get("sha256")]
+    source_hashes = [source.get("sha256") for source in source_records if source.get("sha256")]
+    return {"bundle_ref": bundle_ref, "artifact_types": ["docker-image", "helm-chart", "values", "network-policy", "sbom", "provenance", "image-signature", "release-state-export"], "chart": helm_chart_validation.get("chart"), "image": image, "release": release, "namespace": release.get("namespace"), "workload": {"deployment_ref": workload.get("deployment_ref"), "service_ref": workload.get("service_ref"), "network_policy_ref": workload.get("network_policy_ref"), "secret_ref": workload.get("secret_ref"), "service_account_ref": workload.get("service_account_ref")}, "network_policy": network_policy, "offline_inputs": ["deployment-manifest", "helm-chart-validation", "deployment-image-integrity", "kubernetes-release-state"], "source_hash_root": content_hash(sorted(source_hashes)), "artifact_hash_root": content_hash(sorted(artifact_hashes))}
+
+
+def _airgap_install_bundle_checks(*, bundle_ref: str, producer_ref: str, deployment_binding: dict[str, Any] | None, helm_binding: dict[str, Any] | None, image_binding: dict[str, Any] | None, release_binding: dict[str, Any] | None, source_records: list[dict[str, Any]], install_package: dict[str, Any]) -> list[dict[str, Any]]:
+    image = image_binding.get("image", {}) if isinstance(image_binding, dict) else {}
+    image_signature = image_binding.get("image_signature", {}) if isinstance(image_binding, dict) else {}
+    release = release_binding.get("release", {}) if isinstance(release_binding, dict) else {}
+    workload = release_binding.get("workload", {}) if isinstance(release_binding, dict) else {}
+    network_policy = release_binding.get("network_policy", {}) if isinstance(release_binding, dict) else {}
+    desired = int(workload.get("desired_replicas") or 0) if isinstance(workload, dict) else 0
+    ready = int(workload.get("ready_replicas") or 0) if isinstance(workload, dict) else 0
+    return [
+        _helm_check("bundle-ref-bound", bool(bundle_ref and producer_ref), "Bundle and producer references are recorded for offline custody.", "artifacts/airgap-install-bundle.json"),
+        _helm_check("deployment-manifest-verified", bool(deployment_binding and deployment_binding.get("verified")), "The bundle is bound to a verified deployment manifest.", "artifacts/deployment-manifest.json"),
+        _helm_check("helm-validation-passed", bool(helm_binding and helm_binding.get("verified") and helm_binding.get("passed") is True), "The bundle is bound to a passing Helm chart validation receipt.", "artifacts/helm-chart-validation.json"),
+        _helm_check("image-integrity-passed", bool(image_binding and image_binding.get("verified") and image_binding.get("passed") is True), "The bundle is bound to a passing deployment image integrity receipt.", "artifacts/deployment-image-integrity.json"),
+        _helm_check("image-signature-verified", image_signature.get("verified") is True, "The image integrity receipt includes a verified image signature subject.", "artifacts/trustai-image.sig"),
+        _helm_check("image-pinned-digest", _is_sha256_ref(str(image.get("image_digest") or "")) and "@sha256:" in str(image.get("pinned_reference") or ""), "The image reference is pinned by digest for offline registry import.", "artifacts/deployment-image-integrity.json"),
+        _helm_check("kubernetes-release-passed", bool(release_binding and release_binding.get("verified") and release_binding.get("passed") is True), "The bundle is bound to a passing Kubernetes release-state receipt.", "artifacts/kubernetes-release-state.json"),
+        _helm_check("release-ready", release.get("release_status") == "deployed" and desired > 0 and ready >= desired, "The recorded release is deployed and ready replicas meet desired replicas.", "artifacts/kubernetes-release-state.json"),
+        _helm_check("network-policy-admitted", network_policy.get("admitted") is True and bool(network_policy.get("network_policy_ref")), "The recorded release includes admitted NetworkPolicy evidence.", "artifacts/kubernetes-release-state.json"),
+        _helm_check("source-files-bound", len(source_records) >= len(DEFAULT_AIRGAP_BUNDLE_SOURCE_PATHS), "The bundle binds the expected Docker, Helm, deployment docs, and schema source files.", "docs/specs/airgap-install-bundle-v0.1.md"),
+        _helm_check("offline-inputs-covered", set(install_package.get("offline_inputs", [])) == {"deployment-manifest", "helm-chart-validation", "deployment-image-integrity", "kubernetes-release-state"}, "The bundle records every offline input required to replay BYOC install readiness.", "artifacts/airgap-install-bundle.json"),
+    ]
 
 def _helm_chart_validation_body(
     root: Path,

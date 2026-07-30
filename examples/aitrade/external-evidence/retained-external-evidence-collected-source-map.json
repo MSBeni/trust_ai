@@ -878,7 +878,7 @@
       "description": "Retained GitHub Actions export for BYOC deployment, operator, and authority validation CI evidence",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
+        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, signed air-gap install bundles, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/byoc-self-hosted-ci-run.json",
       "issued_at": "2026-07-12T00:00:00Z",
@@ -908,7 +908,7 @@
       "description": "Retained KMS/HSM enforcement export for BYOC evidence signing",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
+        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, signed air-gap install bundles, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/byoc-self-hosted-kms-hsm.json",
       "issued_at": "2026-07-03T12:03:00Z",
@@ -938,7 +938,7 @@
       "description": "Retained cloud Object Lock export for BYOC immutable evidence storage",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
+        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, signed air-gap install bundles, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/byoc-self-hosted-cloud-object-lock.json",
       "issued_at": "2026-07-04T03:06:00Z",
@@ -968,7 +968,7 @@
       "description": "Retained provider API export for BYOC NetworkPolicy admission and audit evidence",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
+        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, signed air-gap install bundles, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/byoc-self-hosted-provider-api.json",
       "issued_at": "2026-07-04T03:07:00Z",
@@ -998,7 +998,7 @@
       "description": "Retained standards-body profile export for BYOC/self-hosted deployment evidence semantics",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
+        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, signed air-gap install bundles, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/byoc-self-hosted-standards-body.json",
       "issued_at": "2026-07-12T00:00:00Z",
@@ -1028,7 +1028,7 @@
       "description": "Retained customer acceptance export for aitrade BYOC/self-hosted deployment evidence",
       "expires_at": "2026-12-31T00:00:00Z",
       "external_authority_required": [
-        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
+        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, signed air-gap install bundles, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
       ],
       "intake_out": "examples/aitrade/external-evidence/intakes/byoc-self-hosted-customer.json",
       "issued_at": "2026-07-12T00:00:00Z",
@@ -2139,14 +2139,14 @@
     "Each entry remains bound to the source collection plan through task IDs, unit refs, and generated snapshot/intake paths."
   ],
   "schema": "trustai.external-evidence-source-map/0.1",
-  "source_map_id": "e08a5a0d92391a172ef99355ba96bca5ea8349c9c5b791db441f1cad8185bcb2",
+  "source_map_id": "1a22820820adc58e6817e07a7d1f625516e52d37878ba83c25240d3058074979",
   "source_plan": {
-    "plan_hash": "9165379fb28938c05d0a56f8b97b01f85f805c906ce67fd1399f1f98a335d93f",
-    "plan_id": "a33a06acd51edfe95c91f430f36cfd347999b45adc9958327f1d12b2092e08e1",
+    "plan_hash": "b8850858cdebaa39e7dba1a78512205816e42bd372aee63d5f9f41b5b3d1b201",
+    "plan_id": "41bb39b2d3339380f1f50da5d43f786c50ea91575f836896aae14bb2b4c526ed",
     "source_manifest": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "manifest_hash": "f65e01ce060549641aa313cfd2e53cd4af3b090af20169945872024ca840b04e",
-      "manifest_id": "dcfefd6532f2fe1bd9f160a7b93126aa3f99037b0c9371452201205945f83332",
+      "manifest_hash": "64ac814e3785af08894efe262f6f97a83195867e3850ffdb08335229a5e6798d",
+      "manifest_id": "e4d9927d9accb05e73c6c1527dffe3b8fa9874fe2c1960045a43dd88dde171c9",
       "manifest_ref": "production-external-evidence",
       "status": "partial"
     },

@@ -53,6 +53,9 @@ python -m trustai kubernetes-release-state-verify artifacts/kubernetes-release-s
 python -m trustai deployment-image-signature artifacts/deployment-manifest.json --root . --image-digest sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa --sbom artifacts/trustai-image.sbom.json --provenance artifacts/trustai-image.provenance.json --out artifacts/trustai-image.sig
 python -m trustai deployment-image-integrity artifacts/deployment-manifest.json --root . --image-digest sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa --sbom artifacts/trustai-image.sbom.json --provenance artifacts/trustai-image.provenance.json --signature artifacts/trustai-image.sig --out artifacts/deployment-image-integrity.json
 python -m trustai deployment-image-integrity-verify artifacts/deployment-image-integrity.json artifacts/deployment-manifest.json --root .
+python -m trustai airgap-install-bundle artifacts/deployment-manifest.json artifacts/helm-chart-validation.json artifacts/deployment-image-integrity.json artifacts/kubernetes-release-state.json --root . --environment aitrade-byoc --bundle-ref bundle:trustai/airgap/aitrade-byoc --producer-ref oidc:trustai.example/airgap-bundler --generated-at 2026-07-04T04:00:00Z --out artifacts/airgap-install-bundle.json
+python -m trustai airgap-install-bundle-verify artifacts/airgap-install-bundle.json artifacts/deployment-manifest.json artifacts/helm-chart-validation.json artifacts/deployment-image-integrity.json artifacts/kubernetes-release-state.json --root .
+python -m trustai airgap-install-bundle-append artifacts/airgap-install-bundle.json artifacts/deployment-manifest.json artifacts/helm-chart-validation.json artifacts/deployment-image-integrity.json artifacts/kubernetes-release-state.json --root . --state .trustai/airgap-install-bundle-demo/evidence-chain.json --tenant airgap-install-bundle-local --out artifacts/airgap-install-bundle-entry.json
 python -m trustai deployment-image-integrity-append artifacts/deployment-image-integrity.json artifacts/deployment-manifest.json --root . --state .trustai/image-integrity-demo/evidence-chain.json --tenant image-integrity-local --out artifacts/deployment-image-integrity-entry.json
 python -m trustai chain-verify --state .trustai/image-integrity-demo/evidence-chain.json --tenant image-integrity-local
 python -m trustai helm-chart-validation-append artifacts/helm-chart-validation.json artifacts/deployment-manifest.json --root . --state .trustai/helm-validation-demo/evidence-chain.json --tenant helm-validation-local --out artifacts/helm-chart-validation-entry.json
@@ -69,7 +72,8 @@ can append `deployment.helm_chart.validated` evidence for API, Service, PVC, Sec
 provenance, and signature bindings. See
 `docs/specs/deployment-manifest-v0.1.md`,
 `docs/specs/helm-chart-validation-v0.1.md`, and
-`docs/specs/deployment-image-integrity-v0.1.md` for the schemas.
+`docs/specs/deployment-image-integrity-v0.1.md`, and
+`docs/specs/airgap-install-bundle-v0.1.md` for the schemas.
 
 ## Production Authority Dossier
 

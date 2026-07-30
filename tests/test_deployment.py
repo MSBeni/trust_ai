@@ -9,6 +9,8 @@ from pathlib import Path
 
 from trustai.chain import EvidenceChain
 from trustai.deployment import (
+    AIRGAP_BUNDLE_ENTRY_TYPE,
+    AIRGAP_BUNDLE_SCHEMA,
     DEPLOYMENT_ENTRY_TYPE,
     DEPLOYMENT_IMAGE_INTEGRITY_ENTRY_TYPE,
     DEPLOYMENT_IMAGE_INTEGRITY_SCHEMA,
@@ -18,10 +20,12 @@ from trustai.deployment import (
     HELM_CHART_VALIDATION_SCHEMA,
     KUBERNETES_RELEASE_STATE_ENTRY_TYPE,
     KUBERNETES_RELEASE_STATE_SCHEMA,
+    append_airgap_install_bundle,
     append_deployment_image_integrity_receipt,
     append_deployment_manifest,
     append_helm_chart_validation_receipt,
     append_kubernetes_release_state_receipt,
+    build_airgap_install_bundle,
     build_deployment_image_integrity_receipt,
     build_deployment_image_signature_artifact,
     build_deployment_manifest,
@@ -29,6 +33,7 @@ from trustai.deployment import (
     build_kubernetes_release_state_receipt,
     render_deployment_markdown,
     write_deployment_image_signature_artifact,
+    verify_airgap_install_bundle,
     verify_deployment_image_integrity_receipt,
     verify_deployment_manifest,
     verify_helm_chart_validation_receipt,
@@ -39,6 +44,51 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class DeploymentManifestTests(unittest.TestCase):
+    def _airgap_receipts(self, tmp: Path):
+        manifest = build_deployment_manifest(ROOT, environment="test-airgap", generated_at="2026-07-04T00:00:00Z")
+        helm_receipt = build_helm_chart_validation_receipt(ROOT, deployment_manifest=manifest, generated_at="2026-07-04T00:30:00Z")
+        digest = "sha256:" + "f" * 64
+        sbom = tmp / "trustai-image.sbom.json"
+        provenance = tmp / "trustai-image.provenance.json"
+        signature = tmp / "trustai-image.sig"
+        sbom.write_text('{"sbom":"trustai","version":"0.1.0"}', encoding="utf-8")
+        provenance.write_text('{"builder":"trustai-local","source":"git"}', encoding="utf-8")
+        signature_artifact = build_deployment_image_signature_artifact(ROOT, deployment_manifest=manifest, image_digest=digest, sbom_path=sbom, provenance_path=provenance, generated_at="2026-07-04T00:44:00Z")
+        write_deployment_image_signature_artifact(signature, signature_artifact)
+        image_receipt = build_deployment_image_integrity_receipt(ROOT, deployment_manifest=manifest, image_digest=digest, sbom_path=sbom, provenance_path=provenance, signature_path=signature, generated_at="2026-07-04T00:45:00Z")
+        release_receipt = build_kubernetes_release_state_receipt(
+            ROOT,
+            deployment_manifest=manifest,
+            helm_chart_validation=helm_receipt,
+            environment="test-airgap",
+            provider="Example Kubernetes API",
+            cluster_ref="k8s:cluster/aitrade-prod",
+            namespace="trustai",
+            release_name="trustai",
+            release_revision="7",
+            release_status="deployed",
+            export_ref="k8s-export:aitrade-prod/trustai/2026-07-04",
+            export_hash="sha256:" + "a" * 64,
+            service_account_ref="k8s:sa/trustai/trustai-api",
+            deployment_ref="k8s:deployment/trustai/trustai-api",
+            service_ref="k8s:service/trustai/trustai-api",
+            network_policy_ref="k8s:networkpolicy/trustai/trustai-api",
+            secret_ref="k8s:secret/trustai/trustai-signing-key",
+            desired_replicas=2,
+            ready_replicas=2,
+            network_policy_admitted=True,
+            pod_selector_hash="sha256:" + "b" * 64,
+            ingress_policy_hash="sha256:" + "c" * 64,
+            egress_policy_hash="sha256:" + "d" * 64,
+            audit_log_ref="audit-log:kubernetes/aitrade-prod/trustai",
+            audit_log_root="sha256:" + "e" * 64,
+            exported_at="2026-07-04T03:08:00Z",
+            issued_at="2026-07-04T03:08:00Z",
+            expires_at="2026-07-05T03:08:00Z",
+            generated_at="2026-07-04T03:10:00Z",
+        )
+        return manifest, helm_receipt, image_receipt, release_receipt
+
     def test_deployment_manifest_verifies_scaffold_and_appends(self):
         manifest = build_deployment_manifest(ROOT, environment="test-byoc")
         result = verify_deployment_manifest(manifest, root=ROOT)
@@ -665,6 +715,69 @@ class DeploymentManifestTests(unittest.TestCase):
 
         self.assertTrue(receipt["passed"])
         self.assertEqual(KUBERNETES_RELEASE_STATE_ENTRY_TYPE, entry["entry_type"])
+        self.assertTrue(chain.verify_all().ok)
+
+
+    def test_airgap_install_bundle_verifies_and_appends(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            manifest, helm_receipt, image_receipt, release_receipt = self._airgap_receipts(tmp)
+            bundle = build_airgap_install_bundle(ROOT, deployment_manifest=manifest, helm_chart_validation=helm_receipt, deployment_image_integrity=image_receipt, kubernetes_release_state=release_receipt, environment="test-airgap", bundle_ref="bundle:trustai/airgap/test-airgap", producer_ref="oidc:trustai.example/airgap-bundler", generated_at="2026-07-04T04:00:00Z")
+            result = verify_airgap_install_bundle(bundle, root=ROOT, deployment_manifest=manifest, helm_chart_validation=helm_receipt, deployment_image_integrity=image_receipt, kubernetes_release_state=release_receipt)
+            chain = EvidenceChain.load(tmp / "chain.json", tenant_id="airgap-bundle-test")
+            entry = append_airgap_install_bundle(chain, bundle, root=ROOT, deployment_manifest=manifest, helm_chart_validation=helm_receipt, deployment_image_integrity=image_receipt, kubernetes_release_state=release_receipt)
+            check_ids = {check["id"] for check in bundle["checks"]}
+            source_paths = {source["path"] for source in bundle["source_files"]}
+
+            self.assertTrue(result.ok, result.errors)
+            self.assertEqual(AIRGAP_BUNDLE_SCHEMA, bundle["schema"])
+            self.assertTrue(bundle["passed"])
+            self.assertEqual({"failed": 0, "passed": 11, "total": 11}, bundle["summary"])
+            self.assertEqual(AIRGAP_BUNDLE_ENTRY_TYPE, entry["entry_type"])
+            self.assertEqual(bundle["bundle_id"], entry["payload"]["bundle_id"])
+            self.assertIn("image-pinned-digest", check_ids)
+            self.assertIn("network-policy-admitted", check_ids)
+            self.assertIn("offline-inputs-covered", check_ids)
+            self.assertIn("docs/specs/airgap-install-bundle-v0.1.md", source_paths)
+            self.assertEqual(image_receipt["image"], bundle["install_package"]["image"])
+            self.assertTrue(chain.verify_all().ok)
+
+    def test_airgap_install_bundle_rejects_replayed_image_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            manifest, helm_receipt, image_receipt, release_receipt = self._airgap_receipts(tmp)
+            bundle = build_airgap_install_bundle(ROOT, deployment_manifest=manifest, helm_chart_validation=helm_receipt, deployment_image_integrity=image_receipt, kubernetes_release_state=release_receipt, bundle_ref="bundle:trustai/airgap/test-airgap", producer_ref="oidc:trustai.example/airgap-bundler", generated_at="2026-07-04T04:00:00Z")
+            tampered_image = copy.deepcopy(image_receipt)
+            tampered_image["image"]["image_digest"] = "sha256:" + "9" * 64
+            result = verify_airgap_install_bundle(bundle, root=ROOT, deployment_manifest=manifest, helm_chart_validation=helm_receipt, deployment_image_integrity=tampered_image, kubernetes_release_state=release_receipt)
+
+            self.assertFalse(result.ok)
+            self.assertTrue(any("deployment_image_integrity" in error for error in result.errors))
+
+    def test_cli_airgap_install_bundle_round_trip(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            manifest, helm_receipt, image_receipt, release_receipt = self._airgap_receipts(tmp)
+            manifest_path = tmp / "deployment-manifest.json"
+            helm_path = tmp / "helm-chart-validation.json"
+            image_path = tmp / "deployment-image-integrity.json"
+            release_path = tmp / "kubernetes-release-state.json"
+            bundle_path = tmp / "airgap-install-bundle.json"
+            entry_path = tmp / "airgap-install-bundle-entry.json"
+            chain_path = tmp / "chain.json"
+            for path, value in ((manifest_path, manifest), (helm_path, helm_receipt), (image_path, image_receipt), (release_path, release_receipt)):
+                path.write_text(json.dumps(value, indent=2, sort_keys=True), encoding="utf-8")
+            env = {**os.environ, "PYTHONPATH": str(ROOT / "src")}
+            base = [sys.executable, "-m", "trustai"]
+            subprocess.run(base + ["airgap-install-bundle", str(manifest_path), str(helm_path), str(image_path), str(release_path), "--root", str(ROOT), "--environment", "test-airgap", "--bundle-ref", "bundle:trustai/airgap/test-airgap", "--producer-ref", "oidc:trustai.example/airgap-bundler", "--generated-at", "2026-07-04T04:00:00Z", "--out", str(bundle_path)], cwd=ROOT, env=env, check=True)
+            subprocess.run(base + ["airgap-install-bundle-verify", str(bundle_path), str(manifest_path), str(helm_path), str(image_path), str(release_path), "--root", str(ROOT)], cwd=ROOT, env=env, check=True)
+            subprocess.run(base + ["airgap-install-bundle-append", str(bundle_path), str(manifest_path), str(helm_path), str(image_path), str(release_path), "--root", str(ROOT), "--state", str(chain_path), "--tenant", "airgap-bundle-cli", "--out", str(entry_path)], cwd=ROOT, env=env, check=True)
+            bundle = json.loads(bundle_path.read_text(encoding="utf-8"))
+            entry = json.loads(entry_path.read_text(encoding="utf-8"))
+            chain = EvidenceChain.load(chain_path, tenant_id="airgap-bundle-cli")
+
+        self.assertTrue(bundle["passed"])
+        self.assertEqual(AIRGAP_BUNDLE_ENTRY_TYPE, entry["entry_type"])
         self.assertTrue(chain.verify_all().ok)
 
 

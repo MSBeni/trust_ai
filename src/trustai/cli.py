@@ -556,23 +556,28 @@ from .collector_worker import (
     write_collector_worker_receipt,
 )
 from .deployment import (
+    append_airgap_install_bundle,
     append_deployment_image_integrity_receipt,
     append_deployment_manifest,
     append_helm_chart_validation_receipt,
     append_kubernetes_release_state_receipt,
+    build_airgap_install_bundle,
     build_deployment_image_integrity_receipt,
     build_deployment_image_signature_artifact,
     build_deployment_manifest,
     build_helm_chart_validation_receipt,
     build_kubernetes_release_state_receipt,
+    load_airgap_install_bundle,
     load_deployment_image_integrity_receipt,
     load_deployment_manifest,
     load_helm_chart_validation_receipt,
     load_kubernetes_release_state_receipt,
+    verify_airgap_install_bundle,
     verify_deployment_image_integrity_receipt,
     verify_deployment_manifest,
     verify_helm_chart_validation_receipt,
     verify_kubernetes_release_state_receipt,
+    write_airgap_install_bundle,
     write_deployment_image_integrity_receipt,
     write_deployment_image_signature_artifact,
     write_deployment_manifest,
@@ -9337,6 +9342,74 @@ def cmd_kubernetes_release_state_append(args: argparse.Namespace) -> int:
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
+
+
+def _load_airgap_bundle_sources(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
+    deployment_manifest = load_deployment_manifest(args.deployment_manifest)
+    helm_chart_validation = load_helm_chart_validation_receipt(args.helm_chart_validation)
+    deployment_image_integrity = load_deployment_image_integrity_receipt(args.deployment_image_integrity)
+    kubernetes_release_state = load_kubernetes_release_state_receipt(args.kubernetes_release_state)
+    return deployment_manifest, helm_chart_validation, deployment_image_integrity, kubernetes_release_state
+
+
+def cmd_airgap_install_bundle(args: argparse.Namespace) -> int:
+    try:
+        deployment_manifest, helm_chart_validation, deployment_image_integrity, kubernetes_release_state = _load_airgap_bundle_sources(args)
+        bundle = build_airgap_install_bundle(args.root, deployment_manifest=deployment_manifest, helm_chart_validation=helm_chart_validation, deployment_image_integrity=deployment_image_integrity, kubernetes_release_state=kubernetes_release_state, mode=args.mode, environment=args.environment, bundle_ref=args.bundle_ref, producer_ref=args.producer_ref, generated_at=args.generated_at, key=args.key)
+        result = verify_airgap_install_bundle(bundle, root=args.root, deployment_manifest=deployment_manifest, helm_chart_validation=helm_chart_validation, deployment_image_integrity=deployment_image_integrity, kubernetes_release_state=kubernetes_release_state, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"air-gap install bundle failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("air-gap install bundle failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_airgap_install_bundle(args.out, bundle)
+    print(f"air-gap install bundle: {args.out}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"checks passed: {bundle['summary']['passed']}/{bundle['summary']['total']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_airgap_install_bundle_verify(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_airgap_install_bundle(args.bundle)
+        deployment_manifest, helm_chart_validation, deployment_image_integrity, kubernetes_release_state = _load_airgap_bundle_sources(args)
+    except OSError as exc:
+        print(f"air-gap install bundle verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_airgap_install_bundle(bundle, root=args.root, deployment_manifest=deployment_manifest, helm_chart_validation=helm_chart_validation, deployment_image_integrity=deployment_image_integrity, kubernetes_release_state=kubernetes_release_state, key=args.key)
+    if result.ok:
+        print(f"verified air-gap install bundle: {args.bundle}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"air-gap install bundle verification failed: {args.bundle}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_airgap_install_bundle_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    try:
+        bundle = load_airgap_install_bundle(args.bundle)
+        deployment_manifest, helm_chart_validation, deployment_image_integrity, kubernetes_release_state = _load_airgap_bundle_sources(args)
+        entry = append_airgap_install_bundle(chain, bundle, root=args.root, deployment_manifest=deployment_manifest, helm_chart_validation=helm_chart_validation, deployment_image_integrity=deployment_image_integrity, kubernetes_release_state=kubernetes_release_state, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"air-gap install bundle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"air-gap install bundle entry: {args.out}")
+    print(f"air-gap install bundle entry id: {entry['entry_id']}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
 
 def _load_byoc_operator_sources(args: argparse.Namespace) -> tuple[dict, dict, dict | None]:
     deployment_manifest = load_deployment_manifest(args.manifest)
@@ -21893,6 +21966,43 @@ def build_parser() -> argparse.ArgumentParser:
     k8s_release_append.add_argument("--key")
     _add_state_args(k8s_release_append)
     k8s_release_append.set_defaults(func=cmd_kubernetes_release_state_append)
+
+    airgap_bundle = subparsers.add_parser("airgap-install-bundle", help="write a signed BYOC/air-gap install bundle over deployment receipts")
+    airgap_bundle.add_argument("deployment_manifest")
+    airgap_bundle.add_argument("helm_chart_validation")
+    airgap_bundle.add_argument("deployment_image_integrity")
+    airgap_bundle.add_argument("kubernetes_release_state")
+    airgap_bundle.add_argument("--root", default=".")
+    airgap_bundle.add_argument("--mode", choices=["airgap-reference", "airgap-install-bundle", "self-hosted-install-bundle"], default="airgap-install-bundle")
+    airgap_bundle.add_argument("--environment", default="local")
+    airgap_bundle.add_argument("--bundle-ref", required=True)
+    airgap_bundle.add_argument("--producer-ref", required=True)
+    airgap_bundle.add_argument("--generated-at")
+    airgap_bundle.add_argument("--out", default="artifacts/airgap-install-bundle.json")
+    airgap_bundle.add_argument("--key")
+    airgap_bundle.set_defaults(func=cmd_airgap_install_bundle)
+
+    airgap_bundle_verify = subparsers.add_parser("airgap-install-bundle-verify", help="verify a signed BYOC/air-gap install bundle")
+    airgap_bundle_verify.add_argument("bundle")
+    airgap_bundle_verify.add_argument("deployment_manifest")
+    airgap_bundle_verify.add_argument("helm_chart_validation")
+    airgap_bundle_verify.add_argument("deployment_image_integrity")
+    airgap_bundle_verify.add_argument("kubernetes_release_state")
+    airgap_bundle_verify.add_argument("--root", default=".")
+    airgap_bundle_verify.add_argument("--key")
+    airgap_bundle_verify.set_defaults(func=cmd_airgap_install_bundle_verify)
+
+    airgap_bundle_append = subparsers.add_parser("airgap-install-bundle-append", help="append a verified BYOC/air-gap install bundle as chain evidence")
+    airgap_bundle_append.add_argument("bundle")
+    airgap_bundle_append.add_argument("deployment_manifest")
+    airgap_bundle_append.add_argument("helm_chart_validation")
+    airgap_bundle_append.add_argument("deployment_image_integrity")
+    airgap_bundle_append.add_argument("kubernetes_release_state")
+    airgap_bundle_append.add_argument("--root", default=".")
+    airgap_bundle_append.add_argument("--out", default="artifacts/airgap-install-bundle-entry.json")
+    airgap_bundle_append.add_argument("--key")
+    _add_state_args(airgap_bundle_append)
+    airgap_bundle_append.set_defaults(func=cmd_airgap_install_bundle_append)
     byoc_operator = subparsers.add_parser("byoc-operator-attestation", help="write a signed BYOC operator and Object Lock attestation")
     byoc_operator.add_argument("manifest")
     byoc_operator.add_argument("receipt")

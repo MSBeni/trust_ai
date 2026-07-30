@@ -1,5 +1,5 @@
 {
-  "audit_id": "6a2cbcc600290d6d8e66e2486ccb5a37d2dd61eaf97a8011e32d22b0e30da797",
+  "audit_id": "8ce06dccb0cbb9f4afb3cf4aa390d4bbd89b46467d2a97876b22713640a7151c",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
   "generated_at": "2026-07-12T00:00:00Z",
   "limitations": [
@@ -404,7 +404,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:38f66f42c35c5795e25a1622836f08a8781640ab72a3d44de6cf7ee5cb8352c8"
+          "sha256": "sha256:c3cb96f1bd934da13ec8df569d409f67e33a0cb5f6019fc2628246321f053bc2"
         },
         {
           "path": "src/trustai/sdk.py",
@@ -1189,9 +1189,14 @@
           "sha256": "sha256:74dbddefa93acdce77a1ea489d30fed8397849946c62016faab4a29cf67379f7"
         },
         {
+          "path": "docs/specs/airgap-install-bundle-v0.1.md",
+          "present": true,
+          "sha256": "sha256:619a26b4dbaa063569bd5757ff3dde5baa44287dc158e91c6dde5e2a4a486a1a"
+        },
+        {
           "path": "src/trustai/deployment.py",
           "present": true,
-          "sha256": "sha256:33a2427c7f98d63abf489973e73b27b4ff1f76458a4023c32b7ee0993822d1de"
+          "sha256": "sha256:1a870533eb87ee3b6a6077f24b8d6958d2a29ea03115ee7d2a54592380a250b2"
         },
         {
           "path": "src/trustai/byoc_operator.py",
@@ -1216,7 +1221,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:38f66f42c35c5795e25a1622836f08a8781640ab72a3d44de6cf7ee5cb8352c8"
+          "sha256": "sha256:c3cb96f1bd934da13ec8df569d409f67e33a0cb5f6019fc2628246321f053bc2"
         },
         {
           "path": "src/trustai/object_store.py",
@@ -1226,7 +1231,7 @@
         {
           "path": "docs/deployment/byoc.md",
           "present": true,
-          "sha256": "sha256:bddc07c94a312a8d2384baea4a0e4de324ea93e31c42a04253eb5edfc2ccb010"
+          "sha256": "sha256:ce735e3f033f7656e06fd6b42cce4caa9a4fcebfbe56e8549b266eb2b23c0128"
         },
         {
           "path": "docs/specs/byoc-production-authority-v0.1.md",
@@ -1246,7 +1251,7 @@
         {
           "path": "tests/test_deployment.py",
           "present": true,
-          "sha256": "sha256:8a06d497d201bffa45f88a73ad539f5fc29951c1884a644c70f70565c2e298bd"
+          "sha256": "sha256:9384363ff5106382b9d589eb1cc596a70f812c1134f4ea01b629a7249ffc0ccb"
         },
         {
           "path": "tests/test_byoc_operator.py",
@@ -1274,14 +1279,14 @@
           "sha256": "sha256:36df344b076189a394e51e32f6c70ae62b7c97092435c3d7970f716197448b49"
         }
       ],
-      "evidence_count": 26,
+      "evidence_count": 27,
       "external_authority_required": [
-        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
+        "BYOC production authority dossiers cover the local/reference authority checklist for customer cloud-account binding, Object Lock compliance mode, legal hold and retention exports, air-gapped installation, signed air-gap install bundles, Helm release state, Kubernetes release-state receipts, NetworkPolicy ingress/egress controls, provider-owned NetworkPolicy admission/audit exports, retained authority artifact replay for supplied source files, image digest/SBOM/provenance/signature bindings, operator reconciliation, customer KMS custody, backup/restore evidence, private ingress/egress controls, immutable provider audit logs, and tenant isolation; actual fresh provider-owned cloud, Kubernetes, KMS, Object Lock, audit-log, and customer account exports remain external deployment evidence."
       ],
       "id": "byoc-self-hosted",
       "missing_evidence_count": 0,
       "phase": "P1-P2",
-      "present_evidence_count": 26,
+      "present_evidence_count": 27,
       "priority": "P0",
       "roadmap_ref": "Phase 1 feature 7; Architecture deployment decision",
       "status": "reference-attested",
@@ -1322,7 +1327,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:38f66f42c35c5795e25a1622836f08a8781640ab72a3d44de6cf7ee5cb8352c8"
+          "sha256": "sha256:c3cb96f1bd934da13ec8df569d409f67e33a0cb5f6019fc2628246321f053bc2"
         },
         {
           "path": "docs/specs/compliance-production-authority-v0.1.md",
@@ -1458,7 +1463,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:6a211203603a650436e29d39bc104fe6b977b07542e4675be7356fb032eca42c"
+          "sha256": "sha256:e88d4d8f03e823464fdc12d67e99d954abc4ebcebee6259aa407e8325505b7cf"
         },
         {
           "path": "src/trustai/trust_authority.py",
@@ -1599,7 +1604,7 @@
         {
           "path": "src/trustai/deployment.py",
           "present": true,
-          "sha256": "sha256:33a2427c7f98d63abf489973e73b27b4ff1f76458a4023c32b7ee0993822d1de"
+          "sha256": "sha256:1a870533eb87ee3b6a6077f24b8d6958d2a29ea03115ee7d2a54592380a250b2"
         },
         {
           "path": "src/trustai/byoc_authority.py",
@@ -1670,7 +1675,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:38f66f42c35c5795e25a1622836f08a8781640ab72a3d44de6cf7ee5cb8352c8"
+          "sha256": "sha256:c3cb96f1bd934da13ec8df569d409f67e33a0cb5f6019fc2628246321f053bc2"
         },
         {
           "path": "src/trustai/underwriting_quote.py",
@@ -1861,7 +1866,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:6a211203603a650436e29d39bc104fe6b977b07542e4675be7356fb032eca42c"
+          "sha256": "sha256:e88d4d8f03e823464fdc12d67e99d954abc4ebcebee6259aa407e8325505b7cf"
         },
         {
           "path": "tests/test_reliability_report.py",
@@ -1987,7 +1992,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:6a211203603a650436e29d39bc104fe6b977b07542e4675be7356fb032eca42c"
+          "sha256": "sha256:e88d4d8f03e823464fdc12d67e99d954abc4ebcebee6259aa407e8325505b7cf"
         },
         {
           "path": "tests/test_phase_scoreboard.py",
@@ -2073,7 +2078,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:6a211203603a650436e29d39bc104fe6b977b07542e4675be7356fb032eca42c"
+          "sha256": "sha256:e88d4d8f03e823464fdc12d67e99d954abc4ebcebee6259aa407e8325505b7cf"
         },
         {
           "path": "tests/test_product_scope.py",
@@ -2255,7 +2260,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:38f66f42c35c5795e25a1622836f08a8781640ab72a3d44de6cf7ee5cb8352c8"
+          "sha256": "sha256:c3cb96f1bd934da13ec8df569d409f67e33a0cb5f6019fc2628246321f053bc2"
         },
         {
           "path": "docs/specs/identity-provider-attestation-v0.1.md",
@@ -2366,7 +2371,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:38f66f42c35c5795e25a1622836f08a8781640ab72a3d44de6cf7ee5cb8352c8"
+          "sha256": "sha256:c3cb96f1bd934da13ec8df569d409f67e33a0cb5f6019fc2628246321f053bc2"
         },
         {
           "path": "examples/aitrade/delegation.json",
