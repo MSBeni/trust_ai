@@ -21,7 +21,7 @@ An operation uses schema `trustai.framework-hook-operation/0.1` and contains:
 - hook package/version/mode/module/entrypoint/collector hook ref plus the bound
   hook release row hash;
 - release and adapter matrix IDs/hashes;
-- source trace ID, derived OTel trace ID, source trace hash, emitted event count/names/root, per-trace roots, contract
+- source trace ID, derived OTel trace ID, source trace hash, optional retained trace source artifact byte hash/size, emitted event count/names/root, per-trace roots, contract
   hashes, and agent metadata;
 - collector service, collector worker, stream message, and audit-log refs;
 - control statuses and detached signatures over the canonical operation body.
@@ -32,11 +32,16 @@ An operation uses schema `trustai.framework-hook-operation/0.1` and contains:
 least one signature, verifies the hook release and adapter matrix when supplied,
 replays the source trace through the hook adapter path, and checks source trace
 hash, event count, event names, event root, per-trace roots, source trace ID, derived OTel trace ID, hook
-release row hash, hook entrypoint metadata, release hash, and matrix hash.
+release row hash, hook entrypoint metadata, release hash, and matrix hash. When
+`trace.source_artifact` is present and the trace file path is supplied, verification
+also replays the retained trace file bytes and rejects byte SHA-256, size,
+selected-trace hash, event-root, and trace-root mismatches, including formatting-only
+JSON changes that leave canonical trace content unchanged.
 
 `framework-hook-operation-append` requires the source trace, hook release, and
 adapter matrix. Chain append therefore records only hashes and summary metadata,
-while offline verifiers can replay the raw trace payload when it is disclosed.
+while offline verifiers can replay the raw trace payload and retained source
+trace bytes when they are disclosed.
 
 ## CLI
 

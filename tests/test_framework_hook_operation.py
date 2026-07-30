@@ -75,16 +75,25 @@ class FrameworkHookOperationTests(unittest.TestCase):
             credential_ref="env:FRAMEWORK_HOOK_TOKEN",
             evidence_refs=["evidence:framework-hook/lg-trace-001"],
             captured_at="2026-07-09T00:40:00Z",
+            trace_source_path=TRACE_FIXTURE,
         )
         return operation, trace, release, matrix
 
     def test_framework_hook_operation_verifies_and_appends(self):
         operation, trace, release, matrix = self._operation()
-        result = verify_framework_hook_operation(operation, trace, release, matrix, root=ROOT)
+        result = verify_framework_hook_operation(operation, trace, release, matrix, root=ROOT, trace_source_path=TRACE_FIXTURE)
 
         with tempfile.TemporaryDirectory() as tmp_dir:
             chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="framework-hook-operation-test")
-            entry = append_framework_hook_operation(chain, operation, trace, release, matrix, root=ROOT)
+            entry = append_framework_hook_operation(
+                chain,
+                operation,
+                trace,
+                release,
+                matrix,
+                root=ROOT,
+                trace_source_path=TRACE_FIXTURE,
+            )
 
             self.assertTrue(result.ok, result.errors)
             self.assertTrue(result.warnings)
@@ -93,10 +102,14 @@ class FrameworkHookOperationTests(unittest.TestCase):
             self.assertEqual(32, len(operation["trace"]["trace_id"]))
             self.assertEqual(2, operation["trace"]["event_count"])
             self.assertTrue(operation["trace"]["trace_roots"])
+            source_artifact = operation["trace"]["source_artifact"]
+            self.assertEqual("examples/aitrade/framework-traces.json", source_artifact["path"])
+            self.assertEqual(TRACE_FIXTURE.stat().st_size, source_artifact["size_bytes"])
+            self.assertEqual(operation["trace"]["source_trace_hash"], source_artifact["selected_trace_hash"])
             self.assertEqual("env:FRAMEWORK_HOOK_TOKEN", operation["operation"]["credential"]["ref"])
             self.assertEqual(FRAMEWORK_HOOK_OPERATION_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(operation["operation_id"], entry["payload"]["operation_id"])
-            self.assertEqual(5, entry["payload"]["control_summary"]["passed"])
+            self.assertEqual(6, entry["payload"]["control_summary"]["passed"])
             self.assertEqual(1, entry["payload"]["control_summary"]["deferred"])
             self.assertTrue(chain.verify_all().ok)
 
@@ -105,11 +118,59 @@ class FrameworkHookOperationTests(unittest.TestCase):
         tampered_trace = copy.deepcopy(trace)
         tampered_trace["traces"][0]["nodes"][0]["decision"] = "tampered"
 
-        result = verify_framework_hook_operation(operation, tampered_trace, release, matrix, root=ROOT)
+        result = verify_framework_hook_operation(operation, tampered_trace, release, matrix, root=ROOT, trace_source_path=TRACE_FIXTURE)
 
         self.assertFalse(result.ok)
         self.assertTrue(any("source_trace_hash mismatch" in error for error in result.errors))
         self.assertTrue(any("event_root mismatch" in error for error in result.errors))
+
+    def test_framework_hook_operation_detects_source_trace_byte_tamper(self):
+        matrix = self._matrix()
+        release = self._release(matrix)
+        original = json.loads(TRACE_FIXTURE.read_text(encoding="utf-8"))
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            trace_path = Path(tmp_dir) / "framework-traces.json"
+            trace_path.write_text(json.dumps(original, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            trace = load_framework_trace_payload(trace_path)
+            operation = build_framework_hook_operation(
+                trace,
+                release,
+                matrix,
+                framework="langgraph",
+                trace_id="lg-trace-001",
+                root=ROOT,
+                mode="collector-observed",
+                environment="aitrade-prod",
+                operation_ref="framework-hook-operation:aitrade/langgraph/lg-trace-byte-tamper",
+                runtime_instance_ref="runtime:aitrade/langgraph/prod-worker-1",
+                runtime_process_ref="pid:4242",
+                collector_service_ref="collector:trustai/otel-prod",
+                collector_worker_ref="worker-run:collector/framework-hook/lg-trace-byte-tamper",
+                stream_message_ref="stream-message:collector/framework-hook/lg-trace-byte-tamper",
+                audit_log_ref="audit-log:framework-hooks/aitrade",
+                audit_log_root="sha256:framework-hook-operation-audit-root",
+                actor_ref="oidc:trustai.example/framework-hook-runtime",
+                credential_ref="env:FRAMEWORK_HOOK_TOKEN",
+                evidence_refs=["evidence:framework-hook/lg-trace-byte-tamper"],
+                captured_at="2026-07-09T00:40:00Z",
+                trace_source_path=trace_path,
+            )
+            trace_path.write_text(json.dumps(original, indent=4, sort_keys=True) + "\n", encoding="utf-8")
+            replayed_trace = load_framework_trace_payload(trace_path)
+
+            result = verify_framework_hook_operation(
+                operation,
+                replayed_trace,
+                release,
+                matrix,
+                root=ROOT,
+                trace_source_path=trace_path,
+            )
+
+        self.assertFalse(result.ok)
+        errors = "\n".join(result.errors)
+        self.assertIn("source_artifact", errors)
+        self.assertNotIn("source_trace_hash mismatch", errors)
 
     def test_framework_hook_operation_detects_release_tamper(self):
         operation, trace, release, matrix = self._operation()
@@ -117,7 +178,7 @@ class FrameworkHookOperationTests(unittest.TestCase):
         langgraph_row = next(row for row in tampered_release["entries"] if row["framework"] == "langgraph")
         langgraph_row["hook"]["entrypoint_ref"] = "trustai.framework_hooks:tampered"
 
-        result = verify_framework_hook_operation(operation, trace, tampered_release, matrix, root=ROOT)
+        result = verify_framework_hook_operation(operation, trace, tampered_release, matrix, root=ROOT, trace_source_path=TRACE_FIXTURE)
 
         self.assertFalse(result.ok)
         self.assertTrue(any("release_hash binding mismatch" in error for error in result.errors))
@@ -128,7 +189,7 @@ class FrameworkHookOperationTests(unittest.TestCase):
         tampered = copy.deepcopy(operation)
         tampered["operation"]["credential"] = "plain-secret"
 
-        result = verify_framework_hook_operation(tampered, trace, release, matrix, root=ROOT)
+        result = verify_framework_hook_operation(tampered, trace, release, matrix, root=ROOT, trace_source_path=TRACE_FIXTURE)
 
         self.assertFalse(result.ok)
         self.assertIn("framework hook operation credential must be a redacted reference", result.errors)
@@ -250,7 +311,14 @@ class FrameworkHookOperationTests(unittest.TestCase):
             operation = json.loads(operation_path.read_text(encoding="utf-8"))
             entry = json.loads(entry_path.read_text(encoding="utf-8"))
 
-        result = verify_framework_hook_operation(operation, load_framework_trace_payload(TRACE_FIXTURE), release, matrix, root=ROOT)
+        result = verify_framework_hook_operation(
+            operation,
+            load_framework_trace_payload(TRACE_FIXTURE),
+            release,
+            matrix,
+            root=ROOT,
+            trace_source_path=TRACE_FIXTURE,
+        )
         self.assertTrue(result.ok, result.errors)
         self.assertEqual(operation["operation_id"], entry["payload"]["operation_id"])
 

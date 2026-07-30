@@ -3980,6 +3980,7 @@ def cmd_framework_hook_operation(args: argparse.Namespace) -> int:
             credential_ref=args.credential_ref,
             evidence_refs=args.evidence_ref,
             captured_at=args.captured_at,
+            trace_source_path=args.trace,
             key=args.key,
         )
         result = verify_framework_hook_operation(
@@ -3988,6 +3989,7 @@ def cmd_framework_hook_operation(args: argparse.Namespace) -> int:
             load_framework_hook_release(args.release),
             load_framework_adapter_matrix(args.matrix),
             root=args.root,
+            trace_source_path=args.trace,
             key=args.key,
         )
     except (OSError, ValueError) as exc:
@@ -4016,7 +4018,15 @@ def cmd_framework_hook_operation_verify(args: argparse.Namespace) -> int:
     except (OSError, ValueError) as exc:
         print(f"framework hook operation verification failed: {exc}", file=sys.stderr)
         return 1
-    result = verify_framework_hook_operation(operation, trace, release, matrix, root=args.root, key=args.key)
+    result = verify_framework_hook_operation(
+        operation,
+        trace,
+        release,
+        matrix,
+        root=args.root,
+        trace_source_path=args.trace if args.trace else None,
+        key=args.key,
+    )
     if result.ok:
         print(f"verified framework hook operation: {args.operation}")
         print(f"operation id: {operation['operation_id']}")
@@ -4041,7 +4051,16 @@ def cmd_framework_hook_operation_append(args: argparse.Namespace) -> int:
         return 1
     chain = _load_chain(args)
     try:
-        entry = append_framework_hook_operation(chain, operation, trace, release, matrix, root=args.root, key=args.key)
+        entry = append_framework_hook_operation(
+            chain,
+            operation,
+            trace,
+            release,
+            matrix,
+            root=args.root,
+            trace_source_path=args.trace,
+            key=args.key,
+        )
     except ValueError as exc:
         print(f"framework hook operation append failed: {exc}", file=sys.stderr)
         return 1
@@ -4079,6 +4098,7 @@ def cmd_framework_runtime_audit(args: argparse.Namespace) -> int:
             response_hash=args.response_hash,
             actor_ref=args.actor_ref,
             exported_at=args.exported_at,
+            trace_source_path=args.trace,
             key=args.key,
         )
         result = verify_framework_runtime_audit_receipt(
@@ -4089,6 +4109,7 @@ def cmd_framework_runtime_audit(args: argparse.Namespace) -> int:
             release=release,
             matrix=matrix,
             root=args.root,
+            trace_source_path=args.trace,
             key=args.key,
         )
     except (OSError, ValueError) as exc:
@@ -4128,6 +4149,7 @@ def cmd_framework_runtime_audit_verify(args: argparse.Namespace) -> int:
         release=release,
         matrix=matrix,
         root=args.root,
+        trace_source_path=args.trace if args.trace else None,
         key=args.key,
     )
     if result.ok:
@@ -4165,6 +4187,7 @@ def cmd_framework_runtime_audit_append(args: argparse.Namespace) -> int:
             release=release,
             matrix=matrix,
             root=args.root,
+            trace_source_path=args.trace,
             key=args.key,
         )
     except ValueError as exc:

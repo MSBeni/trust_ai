@@ -134,6 +134,7 @@ def build_framework_runtime_audit_receipt(
     response_hash: str,
     actor_ref: str,
     exported_at: str | None = None,
+    trace_source_path: str | Path | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
     if mode not in FRAMEWORK_RUNTIME_AUDIT_MODES:
@@ -153,7 +154,15 @@ def build_framework_runtime_audit_receipt(
     timestamp = exported_at or utc_now()
     parse_rfc3339(timestamp)
 
-    operation_result = verify_framework_hook_operation(operation, trace_payload, release, matrix, root=root, key=key)
+    operation_result = verify_framework_hook_operation(
+        operation,
+        trace_payload,
+        release,
+        matrix,
+        root=root,
+        trace_source_path=trace_source_path,
+        key=key,
+    )
     if not operation_result.ok:
         raise ValueError("invalid framework hook operation: " + "; ".join(operation_result.errors))
 
@@ -254,6 +263,7 @@ def verify_framework_runtime_audit_receipt(
     release: dict[str, Any] | None = None,
     matrix: dict[str, Any] | None = None,
     root: str | Path = ".",
+    trace_source_path: str | Path | None = None,
     key: str | None = None,
 ) -> FrameworkRuntimeAuditVerification:
     errors: list[str] = []
@@ -299,6 +309,7 @@ def verify_framework_runtime_audit_receipt(
         release,
         matrix,
         root,
+        trace_source_path,
         key,
         errors,
         warnings,
@@ -324,6 +335,7 @@ def append_framework_runtime_audit_receipt(
     release: dict[str, Any],
     matrix: dict[str, Any],
     root: str | Path = ".",
+    trace_source_path: str | Path | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
     result = verify_framework_runtime_audit_receipt(
@@ -334,6 +346,7 @@ def append_framework_runtime_audit_receipt(
         release=release,
         matrix=matrix,
         root=root,
+        trace_source_path=trace_source_path,
         key=key,
     )
     if not result.ok:
@@ -398,6 +411,7 @@ def _verify_operation_binding(
     release: dict[str, Any] | None,
     matrix: dict[str, Any] | None,
     root: str | Path,
+    trace_source_path: str | Path | None,
     key: str | None,
     errors: list[str],
     warnings: list[str],
@@ -425,7 +439,15 @@ def _verify_operation_binding(
     if missing_sources:
         errors.append("framework runtime audit operation source artifacts are required for verification: " + ", ".join(missing_sources))
         return
-    result = verify_framework_hook_operation(operation, trace_payload, release, matrix, root=root, key=key)
+    result = verify_framework_hook_operation(
+        operation,
+        trace_payload,
+        release,
+        matrix,
+        root=root,
+        trace_source_path=trace_source_path,
+        key=key,
+    )
     if not result.ok:
         errors.extend(f"framework runtime audit operation invalid: {error}" for error in result.errors)
     expected = _operation_binding(operation)

@@ -1,5 +1,5 @@
 {
-  "audit_id": "559229334f62b55baf34385f9de8a6c1c5f787d4d512d4ce82a5237a64b6d351",
+  "audit_id": "94b3e481ec890564b351aecc06befb6c6fdefb9a736f3312f613af0f944f3973",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
   "generated_at": "2026-07-12T00:00:00Z",
   "limitations": [
@@ -404,7 +404,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:1b1e470b4fb02a443c4b486bb1d8b647f49af24f6773601ebee2f50bc2ab1200"
+          "sha256": "sha256:3300857aa8368c44d19d936443195428c7ffa002c4686336c35a1165ea86f0b7"
         },
         {
           "path": "src/trustai/sdk.py",
@@ -1216,7 +1216,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:1b1e470b4fb02a443c4b486bb1d8b647f49af24f6773601ebee2f50bc2ab1200"
+          "sha256": "sha256:3300857aa8368c44d19d936443195428c7ffa002c4686336c35a1165ea86f0b7"
         },
         {
           "path": "src/trustai/object_store.py",
@@ -1322,7 +1322,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:1b1e470b4fb02a443c4b486bb1d8b647f49af24f6773601ebee2f50bc2ab1200"
+          "sha256": "sha256:3300857aa8368c44d19d936443195428c7ffa002c4686336c35a1165ea86f0b7"
         },
         {
           "path": "docs/specs/compliance-production-authority-v0.1.md",
@@ -1670,7 +1670,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:1b1e470b4fb02a443c4b486bb1d8b647f49af24f6773601ebee2f50bc2ab1200"
+          "sha256": "sha256:3300857aa8368c44d19d936443195428c7ffa002c4686336c35a1165ea86f0b7"
         },
         {
           "path": "src/trustai/underwriting_quote.py",
@@ -2255,7 +2255,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:1b1e470b4fb02a443c4b486bb1d8b647f49af24f6773601ebee2f50bc2ab1200"
+          "sha256": "sha256:3300857aa8368c44d19d936443195428c7ffa002c4686336c35a1165ea86f0b7"
         },
         {
           "path": "docs/specs/identity-provider-attestation-v0.1.md",
@@ -2366,7 +2366,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:1b1e470b4fb02a443c4b486bb1d8b647f49af24f6773601ebee2f50bc2ab1200"
+          "sha256": "sha256:3300857aa8368c44d19d936443195428c7ffa002c4686336c35a1165ea86f0b7"
         },
         {
           "path": "examples/aitrade/delegation.json",

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from hashlib import sha256
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -66,6 +67,7 @@ def build_framework_hook_operation(
     credential_ref: str,
     evidence_refs: list[str] | None = None,
     captured_at: str | None = None,
+    trace_source_path: str | Path | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
     framework_name = _normalize_framework(framework)
@@ -106,6 +108,28 @@ def build_framework_hook_operation(
     agents = [event.get("agent") for event in events if isinstance(event.get("agent"), dict)]
     agent = agents[0] if agents else None
 
+    trace_record: dict[str, Any] = {
+        "trace_id": emitted_trace_id,
+        "source_trace_id": source_trace_id,
+        "source_trace_hash": content_hash(selected_trace),
+        "event_count": len(events),
+        "event_names": event_names,
+        "event_root": content_hash(events),
+        "trace_roots": trace_roots,
+        "event_chain_verified": True,
+        "contract_hashes": contract_hashes,
+        "agent": agent,
+    }
+    if trace_source_path is not None:
+        trace_record["source_artifact"] = _trace_source_artifact(
+            trace_source_path,
+            trace_payload=trace_payload,
+            selected_trace=selected_trace,
+            events=events,
+            root=Path(root),
+            framework=framework_name,
+        )
+
     body: dict[str, Any] = {
         "schema": FRAMEWORK_HOOK_OPERATION_SCHEMA,
         "mode": mode,
@@ -135,18 +159,7 @@ def build_framework_hook_operation(
             "matrix_id": matrix_record.get("matrix_id"),
             "matrix_hash": matrix_record.get("matrix_hash"),
         },
-        "trace": {
-            "trace_id": emitted_trace_id,
-            "source_trace_id": source_trace_id,
-            "source_trace_hash": content_hash(selected_trace),
-            "event_count": len(events),
-            "event_names": event_names,
-            "event_root": content_hash(events),
-            "trace_roots": trace_roots,
-            "event_chain_verified": True,
-            "contract_hashes": contract_hashes,
-            "agent": agent,
-        },
+        "trace": trace_record,
         "collector": {
             "collector_service_ref": collector_service_ref,
             "collector_worker_ref": collector_worker_ref,
@@ -156,7 +169,12 @@ def build_framework_hook_operation(
             "ref": audit_log_ref,
             "root": audit_log_root,
         },
-        "controls": _controls(mode=mode, collector_worker_ref=collector_worker_ref, audit_log_ref=audit_log_ref),
+        "controls": _controls(
+            mode=mode,
+            collector_worker_ref=collector_worker_ref,
+            audit_log_ref=audit_log_ref,
+            source_artifact_bound=trace_source_path is not None,
+        ),
         "limitations": [
             "This receipt proves a hook entrypoint normalized one framework runtime trace into hash-chained TrustAI adapter events.",
             "Local-reference and native-runtime receipts bind supplied runtime metadata; production-capture requires provider/runtime audit evidence and collector delivery evidence.",
@@ -178,6 +196,7 @@ def verify_framework_hook_operation(
     matrix: dict[str, Any] | None = None,
     *,
     root: str | Path = ".",
+    trace_source_path: str | Path | None = None,
     key: str | None = None,
 ) -> FrameworkHookOperationVerification:
     errors: list[str] = []
@@ -264,7 +283,15 @@ def verify_framework_hook_operation(
         warnings.append("framework hook operation release/matrix replay was not supplied")
 
     if trace_payload is not None and framework:
-        _verify_trace_binding(operation, trace_payload, framework, errors)
+        _verify_trace_binding(
+            operation,
+            trace_payload,
+            framework,
+            errors,
+            warnings,
+            root=Path(root),
+            trace_source_path=trace_source_path,
+        )
     else:
         warnings.append("framework hook operation trace payload replay was not supplied")
 
@@ -287,9 +314,18 @@ def append_framework_hook_operation(
     matrix: dict[str, Any],
     *,
     root: str | Path = ".",
+    trace_source_path: str | Path | None = None,
     key: str | None = None,
 ) -> dict[str, Any]:
-    result = verify_framework_hook_operation(operation, trace_payload, release, matrix, root=root, key=key)
+    result = verify_framework_hook_operation(
+        operation,
+        trace_payload,
+        release,
+        matrix,
+        root=root,
+        trace_source_path=trace_source_path,
+        key=key,
+    )
     if not result.ok:
         raise ValueError("invalid framework hook operation: " + "; ".join(result.errors))
     payload = {
@@ -313,7 +349,16 @@ def append_framework_hook_operation(
     return chain.append(FRAMEWORK_HOOK_OPERATION_ENTRY_TYPE, payload, key=key, timestamp=operation.get("captured_at"))
 
 
-def _verify_trace_binding(operation: dict[str, Any], payload: dict[str, Any], framework: str, errors: list[str]) -> None:
+def _verify_trace_binding(
+    operation: dict[str, Any],
+    payload: dict[str, Any],
+    framework: str,
+    errors: list[str],
+    warnings: list[str],
+    *,
+    root: Path,
+    trace_source_path: str | Path | None,
+) -> None:
     trace_record = operation.get("trace", {}) if isinstance(operation.get("trace"), dict) else {}
     selected = _select_trace(payload, framework, trace_record.get("source_trace_id") or trace_record.get("trace_id"))
     events = framework_trace_to_events(selected)
@@ -338,6 +383,27 @@ def _verify_trace_binding(operation: dict[str, Any], payload: dict[str, Any], fr
         errors.append("framework hook operation source_trace_id mismatch")
     if trace_record.get("trace_id") != emitted_trace_id:
         errors.append("framework hook operation trace_id mismatch")
+    source_artifact = trace_record.get("source_artifact")
+    if source_artifact is not None:
+        if trace_source_path is None:
+            warnings.append("framework hook operation source_artifact was not byte-replayed because trace_source_path was not supplied")
+        elif not isinstance(source_artifact, dict):
+            errors.append("framework hook operation source_artifact must be an object")
+        else:
+            try:
+                expected_artifact = _trace_source_artifact(
+                    trace_source_path,
+                    trace_payload=payload,
+                    selected_trace=selected,
+                    events=events,
+                    root=root,
+                    framework=framework,
+                )
+            except (OSError, ValueError) as exc:
+                errors.append(f"framework hook operation source_artifact invalid: {exc}")
+            else:
+                if source_artifact != expected_artifact:
+                    errors.append("framework hook operation source_artifact does not match supplied trace bytes")
 
 
 def _verify_release_entry_binding(operation: dict[str, Any], release_entry: dict[str, Any], errors: list[str]) -> None:
@@ -393,12 +459,57 @@ def _trace_roots(events: list[dict[str, Any]]) -> list[str]:
     )
 
 
-def _controls(*, mode: str, collector_worker_ref: str | None, audit_log_ref: str | None) -> list[dict[str, Any]]:
+def _trace_source_artifact(
+    path: str | Path,
+    *,
+    trace_payload: dict[str, Any],
+    selected_trace: dict[str, Any],
+    events: list[dict[str, Any]],
+    root: Path,
+    framework: str,
+) -> dict[str, Any]:
+    target = _resolve_trace_source_path(path, root)
+    data = target.read_bytes()
+    body = {
+        "path": _artifact_path(target, root),
+        "sha256": "sha256:" + sha256(data).hexdigest(),
+        "size_bytes": len(data),
+        "source_payload_hash": content_hash(trace_payload),
+        "selected_trace_hash": content_hash(selected_trace),
+        "framework": framework,
+        "source_trace_id": str(selected_trace.get("trace_id") or selected_trace.get("traceId") or selected_trace.get("run_id") or selected_trace.get("runId") or ""),
+        "event_count": len(events),
+        "event_root": content_hash(events),
+        "trace_roots": _trace_roots(events),
+    }
+    return {**body, "artifact_id": content_hash(body)}
+
+
+def _resolve_trace_source_path(path: str | Path, root: Path) -> Path:
+    target = Path(path)
+    if target.is_absolute():
+        return target
+    rooted = root / target
+    if rooted.exists():
+        return rooted
+    return target
+
+
+def _artifact_path(path: Path, root: Path) -> str:
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(root.resolve()).as_posix()
+    except ValueError:
+        return resolved.as_posix()
+
+
+def _controls(*, mode: str, collector_worker_ref: str | None, audit_log_ref: str | None, source_artifact_bound: bool) -> list[dict[str, Any]]:
     production = mode == "production-capture" and bool(collector_worker_ref) and bool(audit_log_ref)
     return [
         {"control": "hook-release-bound", "status": "passed"},
         {"control": "adapter-matrix-bound", "status": "passed"},
         {"control": "source-trace-replayed", "status": "passed"},
+        {"control": "source-trace-artifact-bound", "status": "passed" if source_artifact_bound else "deferred"},
         {"control": "event-chain-verified", "status": "passed"},
         {"control": "collector-delivery-bound", "status": "passed" if collector_worker_ref else "deferred"},
         {"control": "production-runtime-evidence", "status": "passed" if production else "deferred"},
