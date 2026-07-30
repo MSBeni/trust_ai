@@ -1196,6 +1196,8 @@ from .external_evidence import (
     build_external_evidence_owner_fulfillment_closure,
     build_external_evidence_readiness_report,
     build_external_evidence_production_replacement_plan,
+    build_external_evidence_production_replacement_owner_packets,
+    build_external_evidence_production_replacement_owner_packet_status,
     build_external_evidence_source_map_template,
     fulfill_external_evidence_source_map,
     build_external_evidence_collection_plan,
@@ -1218,6 +1220,8 @@ from .external_evidence import (
     load_external_evidence_owner_fulfillment_closure,
     load_external_evidence_readiness_report,
     load_external_evidence_production_replacement_plan,
+    load_external_evidence_production_replacement_owner_packets,
+    load_external_evidence_production_replacement_owner_packet_status,
     load_external_evidence_collection_plan,
     load_external_evidence_source_map,
     load_external_evidence_collection_run,
@@ -1240,6 +1244,8 @@ from .external_evidence import (
     verify_external_evidence_owner_fulfillment_closure,
     verify_external_evidence_readiness_report,
     verify_external_evidence_production_replacement_plan,
+    verify_external_evidence_production_replacement_owner_packets,
+    verify_external_evidence_production_replacement_owner_packet_status,
     verify_external_evidence_collection_plan,
     verify_external_evidence_source_map_template,
     verify_external_evidence_collection_run,
@@ -1267,6 +1273,10 @@ from .external_evidence import (
     write_external_evidence_readiness_markdown,
     write_external_evidence_production_replacement_plan,
     write_external_evidence_production_replacement_plan_markdown,
+    write_external_evidence_production_replacement_owner_packets,
+    write_external_evidence_production_replacement_owner_packets_markdown,
+    write_external_evidence_production_replacement_owner_packet_status,
+    write_external_evidence_production_replacement_owner_packet_status_markdown,
     write_external_evidence_collection_plan,
     write_external_evidence_collection_plan_markdown,
     write_external_evidence_intake,
@@ -16919,6 +16929,119 @@ def cmd_external_evidence_production_replacement_plan_verify(args: argparse.Name
     for error in result.errors:
         print(f"- {error}", file=sys.stderr)
     return 1
+
+
+def cmd_external_evidence_production_replacement_owner_packets(args: argparse.Namespace) -> int:
+    try:
+        plan = load_external_evidence_production_replacement_plan(args.plan)
+        packet_bundle = build_external_evidence_production_replacement_owner_packets(
+            plan,
+            generated_at=args.generated_at,
+        )
+        result = verify_external_evidence_production_replacement_owner_packets(packet_bundle, plan)
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement owner packets failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("external evidence production replacement owner packet verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_external_evidence_production_replacement_owner_packets(args.out, packet_bundle)
+    if args.markdown:
+        write_external_evidence_production_replacement_owner_packets_markdown(args.markdown, packet_bundle)
+        print(f"external evidence production replacement owner packets markdown: {args.markdown}")
+    summary = packet_bundle["summary"]
+    print(f"external evidence production replacement owner packets: {args.out}")
+    print(f"owner packet bundle id: {packet_bundle['owner_packet_bundle_id']}")
+    print(f"owner packets: {summary['packet_count']}")
+    print(f"open replacement tasks: {summary['open_task_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_external_evidence_production_replacement_owner_packets_verify(args: argparse.Namespace) -> int:
+    try:
+        packet_bundle = load_external_evidence_production_replacement_owner_packets(args.packet_bundle)
+        plan = load_external_evidence_production_replacement_plan(args.plan)
+        result = verify_external_evidence_production_replacement_owner_packets(packet_bundle, plan)
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement owner packet verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        summary = packet_bundle.get("summary", {})
+        print(f"verified external evidence production replacement owner packets: {args.packet_bundle}")
+        print(f"owner packet bundle id: {packet_bundle.get('owner_packet_bundle_id')}")
+        print(f"owner packets: {summary.get('packet_count', 0)}")
+        print(f"tasks: {summary.get('task_count', 0)}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"external evidence production replacement owner packet verification failed: {args.packet_bundle}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_external_evidence_production_replacement_owner_packet_status(args: argparse.Namespace) -> int:
+    try:
+        packet_bundle = load_external_evidence_production_replacement_owner_packets(args.packet_bundle)
+        plan = load_external_evidence_production_replacement_plan(args.plan)
+        status_report = build_external_evidence_production_replacement_owner_packet_status(
+            packet_bundle,
+            plan,
+            closed_task_refs=args.closed_task_ref,
+            blocked_task_refs=args.blocked_task_ref,
+            generated_at=args.generated_at,
+        )
+        result = verify_external_evidence_production_replacement_owner_packet_status(status_report, packet_bundle, plan)
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement owner packet status failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("external evidence production replacement owner packet status verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_external_evidence_production_replacement_owner_packet_status(args.out, status_report)
+    if args.markdown:
+        write_external_evidence_production_replacement_owner_packet_status_markdown(args.markdown, status_report)
+        print(f"external evidence production replacement owner packet status markdown: {args.markdown}")
+    summary = status_report["summary"]
+    print(f"external evidence production replacement owner packet status: {args.out}")
+    print(f"owner packet status id: {status_report['owner_packet_status_id']}")
+    print(f"status: {summary['replacement_status']}")
+    print(f"open tasks: {summary['open_task_count']}")
+    print(f"blocked tasks: {summary['blocked_task_count']}")
+    print(f"closed tasks: {summary['closed_task_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_external_evidence_production_replacement_owner_packet_status_verify(args: argparse.Namespace) -> int:
+    try:
+        status_report = load_external_evidence_production_replacement_owner_packet_status(args.status_report)
+        packet_bundle = load_external_evidence_production_replacement_owner_packets(args.packet_bundle)
+        plan = load_external_evidence_production_replacement_plan(args.plan)
+        result = verify_external_evidence_production_replacement_owner_packet_status(status_report, packet_bundle, plan)
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement owner packet status verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        summary = status_report.get("summary", {})
+        print(f"verified external evidence production replacement owner packet status: {args.status_report}")
+        print(f"owner packet status id: {status_report.get('owner_packet_status_id')}")
+        print(f"status: {summary.get('replacement_status')}")
+        print(f"open tasks: {summary.get('open_task_count', 0)}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"external evidence production replacement owner packet status verification failed: {args.status_report}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
 def cmd_external_evidence_plan(args: argparse.Namespace) -> int:
     try:
         roadmap_audit = load_roadmap_audit(args.roadmap_audit)
@@ -28383,6 +28506,34 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_production_replacement_plan_verify.add_argument("roadmap_audit")
     external_evidence_production_replacement_plan_verify.add_argument("--root", default=".")
     external_evidence_production_replacement_plan_verify.set_defaults(func=cmd_external_evidence_production_replacement_plan_verify)
+
+    external_evidence_production_replacement_owner_packets = subparsers.add_parser("external-evidence-production-replacement-owner-packets", help="write owner-facing packets for production replacement authority evidence tasks")
+    external_evidence_production_replacement_owner_packets.add_argument("plan")
+    external_evidence_production_replacement_owner_packets.add_argument("--generated-at")
+    external_evidence_production_replacement_owner_packets.add_argument("--out", default="artifacts/external-evidence-production-replacement-owner-packets.json")
+    external_evidence_production_replacement_owner_packets.add_argument("--markdown", default="artifacts/external-evidence-production-replacement-owner-packets.md")
+    external_evidence_production_replacement_owner_packets.set_defaults(func=cmd_external_evidence_production_replacement_owner_packets)
+
+    external_evidence_production_replacement_owner_packets_verify = subparsers.add_parser("external-evidence-production-replacement-owner-packets-verify", help="verify production replacement owner packets")
+    external_evidence_production_replacement_owner_packets_verify.add_argument("packet_bundle")
+    external_evidence_production_replacement_owner_packets_verify.add_argument("plan")
+    external_evidence_production_replacement_owner_packets_verify.set_defaults(func=cmd_external_evidence_production_replacement_owner_packets_verify)
+
+    external_evidence_production_replacement_owner_packet_status = subparsers.add_parser("external-evidence-production-replacement-owner-packet-status", help="write status for production replacement owner packets")
+    external_evidence_production_replacement_owner_packet_status.add_argument("packet_bundle")
+    external_evidence_production_replacement_owner_packet_status.add_argument("plan")
+    external_evidence_production_replacement_owner_packet_status.add_argument("--closed-task-ref", action="append", default=[])
+    external_evidence_production_replacement_owner_packet_status.add_argument("--blocked-task-ref", action="append", default=[])
+    external_evidence_production_replacement_owner_packet_status.add_argument("--generated-at")
+    external_evidence_production_replacement_owner_packet_status.add_argument("--out", default="artifacts/external-evidence-production-replacement-owner-packet-status.json")
+    external_evidence_production_replacement_owner_packet_status.add_argument("--markdown", default="artifacts/external-evidence-production-replacement-owner-packet-status.md")
+    external_evidence_production_replacement_owner_packet_status.set_defaults(func=cmd_external_evidence_production_replacement_owner_packet_status)
+
+    external_evidence_production_replacement_owner_packet_status_verify = subparsers.add_parser("external-evidence-production-replacement-owner-packet-status-verify", help="verify production replacement owner packet status")
+    external_evidence_production_replacement_owner_packet_status_verify.add_argument("status_report")
+    external_evidence_production_replacement_owner_packet_status_verify.add_argument("packet_bundle")
+    external_evidence_production_replacement_owner_packet_status_verify.add_argument("plan")
+    external_evidence_production_replacement_owner_packet_status_verify.set_defaults(func=cmd_external_evidence_production_replacement_owner_packet_status_verify)
     external_evidence_append = subparsers.add_parser("external-evidence-append", help="append a verified external-evidence manifest to an evidence chain")
     external_evidence_append.add_argument("manifest")
     external_evidence_append.add_argument("roadmap_audit")

@@ -33,6 +33,8 @@ EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_REVIEW_SCHEMA = "trustai.external-evidence-o
 EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_CLOSURE_SCHEMA = "trustai.external-evidence-owner-fulfillment-closure/0.1"
 EXTERNAL_EVIDENCE_READINESS_SCHEMA = "trustai.external-evidence-readiness/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_PLAN_SCHEMA = "trustai.external-evidence-production-replacement-plan/0.1"
+EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_SCHEMA = "trustai.external-evidence-production-replacement-owner-packet-bundle/0.1"
+EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_STATUS_SCHEMA = "trustai.external-evidence-production-replacement-owner-packet-status/0.1"
 EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA = "trustai.external-evidence-git-remote-ref-export/0.1"
 
 BUNDLE_SOURCE_ARTIFACT_KINDS = {
@@ -266,6 +268,20 @@ class ExternalEvidenceReadinessVerification:
 
 @dataclass
 class ExternalEvidenceProductionReplacementPlanVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class ExternalEvidenceProductionReplacementOwnerPacketVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class ExternalEvidenceProductionReplacementOwnerPacketStatusVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -1633,6 +1649,8 @@ def _external_evidence_owner_packet_task(task: dict[str, Any]) -> dict[str, Any]
         "title",
         "authority_kind",
         "coverage_status",
+        "replacement_status",
+        "collection_task_ref",
         "owner_hint",
         "suggested_artifact_path",
         "source_uri",
@@ -1642,6 +1660,10 @@ def _external_evidence_owner_packet_task(task: dict[str, Any]) -> dict[str, Any]
         "description",
         "evidence_argument_template",
         "suggested_evidence_sources",
+        "replaces_evidence_ids",
+        "replaces_artifacts",
+        "retained_source_uris",
+        "non_production_reasons",
         "acceptance_criteria",
         "external_authority_required",
         "next_actions",
@@ -3439,6 +3461,354 @@ def verify_external_evidence_production_replacement_plan(
     if summary.get("replacement_status") == "open":
         warnings.append(f"production replacement plan has {summary.get('task_count', 0)} open authority-evidence replacement tasks")
     return ExternalEvidenceProductionReplacementPlanVerification(ok=not errors, errors=errors, warnings=warnings)
+
+def _external_evidence_production_replacement_plan_task_refs(task: dict[str, Any]) -> list[str]:
+    return [
+        str(ref)
+        for ref in (
+            task.get("task_ref"),
+            task.get("unit_ref"),
+            task.get("task_id"),
+            task.get("collection_task_ref"),
+            task.get("unit_id"),
+        )
+        if ref
+    ]
+
+
+def _external_evidence_production_replacement_ref_set(refs: list[str] | tuple[str, ...] | set[str] | None) -> set[str]:
+    return {str(ref).strip() for ref in (refs or []) if str(ref).strip()}
+
+
+def build_external_evidence_production_replacement_owner_packets(
+    plan: dict[str, Any],
+    *,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    if plan.get("schema") != EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_PLAN_SCHEMA:
+        raise ValueError(f"unsupported external evidence production replacement plan schema: {plan.get('schema')}")
+    if plan.get("replacement_plan_id") != content_hash(without_keys(plan, "replacement_plan_id")):
+        raise ValueError("replacement_plan_id does not match canonical production replacement plan body")
+    packages = plan.get("packages")
+    if not isinstance(packages, list):
+        raise ValueError("external evidence production replacement plan packages must be a list")
+
+    packet_records: list[dict[str, Any]] = []
+    for index, package in enumerate(packages):
+        if not isinstance(package, dict):
+            raise ValueError(f"production replacement package {index} must be an object")
+        tasks = package.get("tasks")
+        if not isinstance(tasks, list):
+            raise ValueError(f"production replacement package {index} tasks must be a list")
+        package_ref = str(package.get("package_ref") or f"package:{index}")
+        packet_tasks = [_external_evidence_owner_packet_task(task) for task in tasks if isinstance(task, dict)]
+        packet_body = {
+            "packet_ref": f"production-replacement-owner-packet:{package_ref}",
+            "package_ref": package_ref,
+            "package_id": package.get("package_id"),
+            "package_hash": content_hash(package),
+            "group_by": package.get("group_by"),
+            "group_key": package.get("group_key"),
+            "owner_hint": package.get("owner_hint") or package.get("group_key"),
+            "task_count": package.get("task_count", len(packet_tasks)),
+            "replacement_status": "open" if packet_tasks else "not-needed",
+            "authority_kinds": package.get("authority_kinds", []),
+            "requirement_ids": package.get("requirement_ids", []),
+            "phases": package.get("phases", []),
+            "priorities": package.get("priorities", []),
+            "handoff": {
+                "completion_gate": "Every task closes only after retained/reference authority evidence is replaced with a live authority source snapshot, verified intake receipt, rebuilt manifest entry, and ready readiness report.",
+                "replacement_scope": "production-authority-evidence",
+                "requires_retained_artifact_replacement": True,
+            },
+            "tasks": packet_tasks,
+        }
+        packet_records.append({**packet_body, "packet_id": content_hash(packet_body)})
+
+    packet_records.sort(key=lambda packet: str(packet.get("packet_ref") or ""))
+    plan_summary = plan.get("summary", {}) if isinstance(plan.get("summary"), dict) else {}
+    body = {
+        "schema": EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_SCHEMA,
+        "generated_at": generated_at or utc_now(),
+        "source_replacement_plan": {
+            "replacement_plan_id": plan.get("replacement_plan_id"),
+            "replacement_plan_hash": content_hash(plan),
+            "schema": plan.get("schema"),
+            "group_by": plan.get("group_by"),
+            "generated_at": plan.get("generated_at"),
+            "replacement_status": plan_summary.get("replacement_status"),
+        },
+        "summary": {
+            "packet_count": len(packet_records),
+            "task_count": sum(int(packet.get("task_count") or 0) for packet in packet_records),
+            "open_task_count": sum(int(packet.get("task_count") or 0) for packet in packet_records),
+            "closed_task_count": 0,
+            "blocked_task_count": 0,
+            "replacement_status": plan_summary.get("replacement_status"),
+            "source_replacement_plan_task_count": plan_summary.get("task_count", 0),
+            "non_production_covered_authority_kind_count": plan_summary.get("non_production_covered_authority_kind_count", 0),
+            "production_usable_covered_authority_kind_count": plan_summary.get("production_usable_covered_authority_kind_count", 0),
+            "task_count_by_authority_kind": plan_summary.get("task_count_by_authority_kind", {}),
+            "task_count_by_owner_hint": plan_summary.get("task_count_by_owner_hint", {}),
+            "task_count_by_phase": plan_summary.get("task_count_by_phase", {}),
+            "task_count_by_priority": plan_summary.get("task_count_by_priority", {}),
+            "task_count_by_requirement": plan_summary.get("task_count_by_requirement", {}),
+        },
+        "packets": packet_records,
+        "limitations": [
+            "Production replacement owner packets assign the retained/reference authority evidence replacement work; they do not collect live authority evidence by themselves.",
+            "A packet can close only when the matching production replacement tasks disappear from a regenerated production replacement plan.",
+            "Keep retained examples for demo verification, but do not treat them as production authority evidence.",
+        ],
+    }
+    return {**body, "owner_packet_bundle_id": content_hash(body)}
+
+
+def verify_external_evidence_production_replacement_owner_packets(
+    packet_bundle: dict[str, Any],
+    plan: dict[str, Any],
+) -> ExternalEvidenceProductionReplacementOwnerPacketVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if packet_bundle.get("schema") != EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_SCHEMA:
+        errors.append(f"unsupported external evidence production replacement owner packet schema: {packet_bundle.get('schema')}")
+    if packet_bundle.get("owner_packet_bundle_id") != content_hash(without_keys(packet_bundle, "owner_packet_bundle_id")):
+        errors.append("owner_packet_bundle_id does not match canonical production replacement owner packet bundle body")
+    source = packet_bundle.get("source_replacement_plan") if isinstance(packet_bundle.get("source_replacement_plan"), dict) else {}
+    if source.get("replacement_plan_id") != plan.get("replacement_plan_id"):
+        errors.append("production replacement owner packet source replacement_plan_id does not match supplied plan")
+    if source.get("replacement_plan_hash") != content_hash(plan):
+        errors.append("production replacement owner packet source replacement_plan_hash does not match supplied plan")
+    try:
+        expected = build_external_evidence_production_replacement_owner_packets(
+            plan,
+            generated_at=str(packet_bundle.get("generated_at") or ""),
+        )
+    except ValueError as exc:
+        errors.append(str(exc))
+    else:
+        if without_keys(packet_bundle, "owner_packet_bundle_id") != without_keys(expected, "owner_packet_bundle_id"):
+            errors.append("production replacement owner packet body does not match supplied plan")
+        summary = packet_bundle.get("summary", {}) if isinstance(packet_bundle.get("summary"), dict) else {}
+        if summary.get("task_count") != summary.get("source_replacement_plan_task_count"):
+            warnings.append("production replacement owner packet task count does not match recorded source plan task count")
+        if summary.get("replacement_status") == "open":
+            warnings.append(f"production replacement owner packets contain {summary.get('task_count', 0)} open replacement tasks")
+    return ExternalEvidenceProductionReplacementOwnerPacketVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
+def _external_evidence_production_replacement_packet_task_status(
+    task: dict[str, Any],
+    *,
+    closed_task_refs: set[str],
+    blocked_task_refs: set[str],
+) -> dict[str, Any]:
+    refs = _external_evidence_production_replacement_plan_task_refs(task)
+    closed = any(ref in closed_task_refs for ref in refs)
+    blocked = not closed and any(ref in blocked_task_refs for ref in refs)
+    if closed:
+        task_status = "closed"
+        replacement_status = "replaced"
+        blocking_reasons: list[str] = []
+    elif blocked:
+        task_status = "blocked"
+        replacement_status = str(task.get("replacement_status") or "requires-production-authority")
+        blocking_reasons = ["owner-reported-blocker"]
+    else:
+        task_status = "open"
+        replacement_status = str(task.get("replacement_status") or "requires-production-authority")
+        blocking_reasons = []
+    return {
+        "task_ref": task.get("task_ref"),
+        "task_id": task.get("task_id"),
+        "unit_ref": task.get("unit_ref"),
+        "unit_id": task.get("unit_id"),
+        "collection_task_ref": task.get("collection_task_ref"),
+        "requirement_id": task.get("requirement_id"),
+        "authority_kind": task.get("authority_kind"),
+        "owner_hint": task.get("owner_hint"),
+        "priority": task.get("priority"),
+        "phase": task.get("phase"),
+        "coverage_status": task.get("coverage_status"),
+        "replacement_status": replacement_status,
+        "task_status": task_status,
+        "blocking_reasons": blocking_reasons,
+        "suggested_artifact_path": task.get("suggested_artifact_path"),
+        "replaces_evidence_ids": task.get("replaces_evidence_ids", []),
+        "replaces_artifacts": task.get("replaces_artifacts", []),
+        "retained_source_uris": task.get("retained_source_uris", []),
+        "non_production_reasons": task.get("non_production_reasons", []),
+        "acceptance_criteria": task.get("acceptance_criteria", []),
+        "next_actions": task.get("next_actions", []),
+    }
+
+
+def build_external_evidence_production_replacement_owner_packet_status(
+    packet_bundle: dict[str, Any],
+    plan: dict[str, Any],
+    *,
+    closed_task_refs: list[str] | tuple[str, ...] | set[str] | None = None,
+    blocked_task_refs: list[str] | tuple[str, ...] | set[str] | None = None,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    packet_result = verify_external_evidence_production_replacement_owner_packets(packet_bundle, plan)
+    if not packet_result.ok:
+        raise ValueError("external evidence production replacement owner packets are not valid for status: " + "; ".join(packet_result.errors))
+    closed_refs = _external_evidence_production_replacement_ref_set(closed_task_refs)
+    blocked_refs = _external_evidence_production_replacement_ref_set(blocked_task_refs) - closed_refs
+    packet_statuses: list[dict[str, Any]] = []
+    task_statuses: list[dict[str, Any]] = []
+    for packet in packet_bundle.get("packets", []):
+        if not isinstance(packet, dict):
+            continue
+        packet_tasks = packet.get("tasks", []) if isinstance(packet.get("tasks"), list) else []
+        statuses = [
+            _external_evidence_production_replacement_packet_task_status(
+                task,
+                closed_task_refs=closed_refs,
+                blocked_task_refs=blocked_refs,
+            )
+            for task in packet_tasks
+            if isinstance(task, dict)
+        ]
+        closed_count = sum(1 for status in statuses if status.get("task_status") == "closed")
+        blocked_count = sum(1 for status in statuses if status.get("task_status") == "blocked")
+        open_count = len(statuses) - closed_count - blocked_count
+        if statuses and closed_count == len(statuses):
+            packet_status = "closed"
+        elif blocked_count:
+            packet_status = "blocked"
+        else:
+            packet_status = "open"
+        packet_statuses.append(
+            {
+                "packet_ref": packet.get("packet_ref"),
+                "packet_id": packet.get("packet_id"),
+                "package_ref": packet.get("package_ref"),
+                "owner_hint": packet.get("owner_hint"),
+                "task_count": len(statuses),
+                "closed_task_count": closed_count,
+                "open_task_count": open_count,
+                "blocked_task_count": blocked_count,
+                "packet_status": packet_status,
+            }
+        )
+        task_statuses.extend(statuses)
+    closed_task_count = sum(1 for status in task_statuses if status.get("task_status") == "closed")
+    blocked_task_count = sum(1 for status in task_statuses if status.get("task_status") == "blocked")
+    open_task_count = len(task_statuses) - closed_task_count - blocked_task_count
+    if not task_statuses:
+        replacement_status = "not-needed"
+    elif closed_task_count == len(task_statuses):
+        replacement_status = "closed"
+    elif blocked_task_count:
+        replacement_status = "blocked"
+    else:
+        replacement_status = "open"
+    plan_summary = plan.get("summary", {}) if isinstance(plan.get("summary"), dict) else {}
+    body = {
+        "schema": EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_STATUS_SCHEMA,
+        "generated_at": generated_at or utc_now(),
+        "sources": {
+            "owner_packet_bundle": {
+                "owner_packet_bundle_id": packet_bundle.get("owner_packet_bundle_id"),
+                "owner_packet_bundle_hash": content_hash(packet_bundle),
+                "schema": packet_bundle.get("schema"),
+                "generated_at": packet_bundle.get("generated_at"),
+            },
+            "replacement_plan": {
+                "replacement_plan_id": plan.get("replacement_plan_id"),
+                "replacement_plan_hash": content_hash(plan),
+                "schema": plan.get("schema"),
+                "generated_at": plan.get("generated_at"),
+            },
+        },
+        "summary": {
+            "packet_count": len(packet_statuses),
+            "task_count": len(task_statuses),
+            "closed_packet_count": sum(1 for packet in packet_statuses if packet.get("packet_status") == "closed"),
+            "open_packet_count": sum(1 for packet in packet_statuses if packet.get("packet_status") == "open"),
+            "blocked_packet_count": sum(1 for packet in packet_statuses if packet.get("packet_status") == "blocked"),
+            "closed_task_count": closed_task_count,
+            "open_task_count": open_task_count,
+            "blocked_task_count": blocked_task_count,
+            "replacement_status": replacement_status,
+            "source_replacement_plan_task_count": plan_summary.get("task_count", 0),
+            "non_production_covered_authority_kind_count": plan_summary.get("non_production_covered_authority_kind_count", 0),
+            "production_usable_covered_authority_kind_count": plan_summary.get("production_usable_covered_authority_kind_count", 0),
+            "packet_status_counts": _external_evidence_owner_packet_status_counts(packet_statuses, "packet_status"),
+            "task_status_counts": _external_evidence_owner_packet_status_counts(task_statuses, "task_status"),
+            "task_count_by_authority_kind": _external_evidence_owner_packet_status_counts(task_statuses, "authority_kind"),
+            "task_count_by_owner_hint": _external_evidence_owner_packet_status_counts(task_statuses, "owner_hint"),
+        },
+        "packets": packet_statuses,
+        "tasks": task_statuses,
+        "limitations": [
+            "Production replacement owner packet status tracks assignment progress only; it does not prove production readiness.",
+            "Open tasks require live authority-owned source snapshots, verified intakes, rebuilt manifest entries, and ready readiness verification before closure.",
+            "A closed status should be treated as provisional until a regenerated production replacement plan no longer lists the task.",
+        ],
+    }
+    return {**body, "owner_packet_status_id": content_hash(body)}
+
+
+def verify_external_evidence_production_replacement_owner_packet_status(
+    status_report: dict[str, Any],
+    packet_bundle: dict[str, Any],
+    plan: dict[str, Any],
+) -> ExternalEvidenceProductionReplacementOwnerPacketStatusVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if status_report.get("schema") != EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_STATUS_SCHEMA:
+        errors.append(f"unsupported external evidence production replacement owner packet status schema: {status_report.get('schema')}")
+    if status_report.get("owner_packet_status_id") != content_hash(without_keys(status_report, "owner_packet_status_id")):
+        errors.append("owner_packet_status_id does not match canonical production replacement owner packet status body")
+    packet_result = verify_external_evidence_production_replacement_owner_packets(packet_bundle, plan)
+    warnings.extend(packet_result.warnings)
+    if not packet_result.ok:
+        errors.extend(packet_result.errors)
+    sources = status_report.get("sources") if isinstance(status_report.get("sources"), dict) else {}
+    packet_source = sources.get("owner_packet_bundle") if isinstance(sources.get("owner_packet_bundle"), dict) else {}
+    plan_source = sources.get("replacement_plan") if isinstance(sources.get("replacement_plan"), dict) else {}
+    if packet_source.get("owner_packet_bundle_id") != packet_bundle.get("owner_packet_bundle_id"):
+        errors.append("production replacement owner packet status source owner_packet_bundle_id does not match supplied packet bundle")
+    if packet_source.get("owner_packet_bundle_hash") != content_hash(packet_bundle):
+        errors.append("production replacement owner packet status source owner_packet_bundle_hash does not match supplied packet bundle")
+    if plan_source.get("replacement_plan_id") != plan.get("replacement_plan_id"):
+        errors.append("production replacement owner packet status source replacement_plan_id does not match supplied plan")
+    if plan_source.get("replacement_plan_hash") != content_hash(plan):
+        errors.append("production replacement owner packet status source replacement_plan_hash does not match supplied plan")
+    tasks = status_report.get("tasks", []) if isinstance(status_report.get("tasks"), list) else []
+    closed_refs = [str(task.get("task_ref") or "") for task in tasks if isinstance(task, dict) and task.get("task_status") == "closed"]
+    blocked_refs = [str(task.get("task_ref") or "") for task in tasks if isinstance(task, dict) and task.get("task_status") == "blocked"]
+    invalid_statuses = sorted(
+        {
+            str(task.get("task_status") or "")
+            for task in tasks
+            if isinstance(task, dict) and str(task.get("task_status") or "") not in {"open", "blocked", "closed"}
+        }
+    )
+    for invalid_status in invalid_statuses:
+        errors.append(f"unsupported production replacement owner task status: {invalid_status}")
+    try:
+        expected = build_external_evidence_production_replacement_owner_packet_status(
+            packet_bundle,
+            plan,
+            closed_task_refs=closed_refs,
+            blocked_task_refs=blocked_refs,
+            generated_at=str(status_report.get("generated_at") or ""),
+        )
+    except ValueError as exc:
+        errors.append(str(exc))
+    else:
+        if without_keys(status_report, "owner_packet_status_id") != without_keys(expected, "owner_packet_status_id"):
+            errors.append("production replacement owner packet status body does not match supplied packet bundle and plan")
+        summary = status_report.get("summary", {}) if isinstance(status_report.get("summary"), dict) else {}
+        if summary.get("open_task_count"):
+            warnings.append(f"production replacement owner packet status contains {summary.get('open_task_count')} open replacement tasks")
+        if summary.get("blocked_task_count"):
+            warnings.append(f"production replacement owner packet status contains {summary.get('blocked_task_count')} blocked replacement tasks")
+    return ExternalEvidenceProductionReplacementOwnerPacketStatusVerification(ok=not errors, errors=errors, warnings=warnings)
 def build_external_evidence_source_snapshot(
     *,
     source_uri: str,
@@ -4815,6 +5185,38 @@ def write_external_evidence_production_replacement_plan_markdown(path: str | Pat
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(render_external_evidence_production_replacement_plan_markdown(plan), encoding="utf-8")
+
+
+def write_external_evidence_production_replacement_owner_packets(path: str | Path, packet_bundle: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(packet_bundle, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_external_evidence_production_replacement_owner_packets(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def write_external_evidence_production_replacement_owner_packets_markdown(path: str | Path, packet_bundle: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_external_evidence_production_replacement_owner_packets_markdown(packet_bundle), encoding="utf-8")
+
+
+def write_external_evidence_production_replacement_owner_packet_status(path: str | Path, status_report: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(status_report, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_external_evidence_production_replacement_owner_packet_status(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def write_external_evidence_production_replacement_owner_packet_status_markdown(path: str | Path, status_report: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_external_evidence_production_replacement_owner_packet_status_markdown(status_report), encoding="utf-8")
 def write_roadmap_evidence_report(path: str | Path, report: dict[str, Any]) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -5399,6 +5801,96 @@ def render_external_evidence_production_replacement_plan_markdown(plan: dict[str
                     f"{_markdown_text_list(task.get('non_production_reasons'))} |"
                 )
     limitations = plan.get("limitations", [])
+    lines.extend(["", "## Limitations", ""])
+    if isinstance(limitations, list) and limitations:
+        lines.extend(f"- {_markdown_cell(item)}" for item in limitations)
+    else:
+        lines.append("- None")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_external_evidence_production_replacement_owner_packets_markdown(packet_bundle: dict[str, Any]) -> str:
+    summary = packet_bundle.get("summary", {}) if isinstance(packet_bundle.get("summary"), dict) else {}
+    lines = [
+        "# External Evidence Production Replacement Owner Packets",
+        "",
+        f"- Owner packet bundle ID: `{packet_bundle.get('owner_packet_bundle_id')}`",
+        f"- Generated at: `{packet_bundle.get('generated_at')}`",
+        f"- Status: `{summary.get('replacement_status')}`",
+        f"- Packets: {summary.get('packet_count', 0)}",
+        f"- Open replacement tasks: {summary.get('open_task_count', 0)}",
+        f"- Non-production covered authority units: {summary.get('non_production_covered_authority_kind_count', 0)}",
+        "",
+        "## Packets",
+        "",
+        "| Packet | Owner | Tasks | Authority Kinds | Requirements |",
+        "|---|---|---:|---|---|",
+    ]
+    packets = packet_bundle.get("packets", [])
+    if isinstance(packets, list):
+        for packet in packets:
+            if isinstance(packet, dict):
+                lines.append(
+                    f"| `{_markdown_cell(packet.get('packet_ref'))}` | {_markdown_cell(packet.get('owner_hint'))} | "
+                    f"{packet.get('task_count', 0)} | {_markdown_code_list(packet.get('authority_kinds'))} | "
+                    f"{_markdown_code_list(packet.get('requirement_ids'))} |"
+                )
+    tasks = [task for packet in packets if isinstance(packet, dict) for task in packet.get("tasks", []) if isinstance(task, dict)] if isinstance(packets, list) else []
+    lines.extend(["", "## Replacement Tasks", "", "| Unit | Owner | Authority | Replacement | Suggested Artifact |", "|---|---|---|---|---|"])
+    for task in tasks:
+        lines.append(
+            f"| `{_markdown_cell(task.get('unit_ref'))}` | {_markdown_cell(task.get('owner_hint'))} | "
+            f"`{_markdown_cell(task.get('authority_kind'))}` | `{_markdown_cell(task.get('replacement_status'))}` | "
+            f"`{_markdown_cell(task.get('suggested_artifact_path'))}` |"
+        )
+    limitations = packet_bundle.get("limitations", [])
+    lines.extend(["", "## Limitations", ""])
+    if isinstance(limitations, list) and limitations:
+        lines.extend(f"- {_markdown_cell(item)}" for item in limitations)
+    else:
+        lines.append("- None")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_external_evidence_production_replacement_owner_packet_status_markdown(status_report: dict[str, Any]) -> str:
+    summary = status_report.get("summary", {}) if isinstance(status_report.get("summary"), dict) else {}
+    lines = [
+        "# External Evidence Production Replacement Owner Packet Status",
+        "",
+        f"- Owner packet status ID: `{status_report.get('owner_packet_status_id')}`",
+        f"- Generated at: `{status_report.get('generated_at')}`",
+        f"- Status: `{summary.get('replacement_status')}`",
+        f"- Packets: {summary.get('packet_count', 0)}",
+        f"- Tasks: {summary.get('task_count', 0)}",
+        f"- Open tasks: {summary.get('open_task_count', 0)}",
+        f"- Blocked tasks: {summary.get('blocked_task_count', 0)}",
+        f"- Closed tasks: {summary.get('closed_task_count', 0)}",
+        "",
+        "## Packets",
+        "",
+        "| Packet | Owner | Status | Open | Blocked | Closed |",
+        "|---|---|---|---:|---:|---:|",
+    ]
+    packets = status_report.get("packets", [])
+    if isinstance(packets, list):
+        for packet in packets:
+            if isinstance(packet, dict):
+                lines.append(
+                    f"| `{_markdown_cell(packet.get('packet_ref'))}` | {_markdown_cell(packet.get('owner_hint'))} | "
+                    f"`{_markdown_cell(packet.get('packet_status'))}` | {packet.get('open_task_count', 0)} | "
+                    f"{packet.get('blocked_task_count', 0)} | {packet.get('closed_task_count', 0)} |"
+                )
+    tasks = status_report.get("tasks", [])
+    lines.extend(["", "## Tasks", "", "| Unit | Owner | Authority | Task Status | Replacement Status |", "|---|---|---|---|---|"])
+    if isinstance(tasks, list):
+        for task in tasks:
+            if isinstance(task, dict):
+                lines.append(
+                    f"| `{_markdown_cell(task.get('unit_ref'))}` | {_markdown_cell(task.get('owner_hint'))} | "
+                    f"`{_markdown_cell(task.get('authority_kind'))}` | `{_markdown_cell(task.get('task_status'))}` | "
+                    f"`{_markdown_cell(task.get('replacement_status'))}` |"
+                )
+    limitations = status_report.get("limitations", [])
     lines.extend(["", "## Limitations", ""])
     if isinstance(limitations, list) and limitations:
         lines.extend(f"- {_markdown_cell(item)}" for item in limitations)

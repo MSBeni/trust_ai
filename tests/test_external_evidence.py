@@ -29,6 +29,8 @@ from trustai.external_evidence import (
     EXTERNAL_EVIDENCE_OWNER_FULFILLMENT_CLOSURE_SCHEMA,
     EXTERNAL_EVIDENCE_READINESS_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_PLAN_SCHEMA,
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_SCHEMA,
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_STATUS_SCHEMA,
     EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA,
     ROADMAP_EVIDENCE_REPORT_SCHEMA,
     ROADMAP_EVIDENCE_BUNDLE_SCHEMA,
@@ -48,6 +50,8 @@ from trustai.external_evidence import (
     build_external_evidence_owner_fulfillment_closure,
     build_external_evidence_readiness_report,
     build_external_evidence_production_replacement_plan,
+    build_external_evidence_production_replacement_owner_packets,
+    build_external_evidence_production_replacement_owner_packet_status,
     build_external_evidence_intake,
     build_external_evidence_source_snapshot,
     build_external_evidence_source_map_template,
@@ -68,6 +72,8 @@ from trustai.external_evidence import (
     load_external_evidence_owner_fulfillment_closure,
     load_external_evidence_readiness_report,
     load_external_evidence_production_replacement_plan,
+    load_external_evidence_production_replacement_owner_packets,
+    load_external_evidence_production_replacement_owner_packet_status,
     load_external_evidence_intake,
     load_external_evidence_intakes,
     load_external_evidence_source_snapshot,
@@ -85,6 +91,8 @@ from trustai.external_evidence import (
     render_external_evidence_owner_fulfillment_closure_markdown,
     render_external_evidence_readiness_markdown,
     render_external_evidence_production_replacement_plan_markdown,
+    render_external_evidence_production_replacement_owner_packets_markdown,
+    render_external_evidence_production_replacement_owner_packet_status_markdown,
     render_roadmap_evidence_markdown,
     render_roadmap_evidence_bundle_markdown,
     verify_external_evidence_manifest,
@@ -97,6 +105,8 @@ from trustai.external_evidence import (
     verify_external_evidence_owner_fulfillment_closure,
     verify_external_evidence_readiness_report,
     verify_external_evidence_production_replacement_plan,
+    verify_external_evidence_production_replacement_owner_packets,
+    verify_external_evidence_production_replacement_owner_packet_status,
     verify_external_evidence_collection_plan,
     verify_external_evidence_source_map_template,
     verify_external_evidence_collection_run,
@@ -1469,12 +1479,41 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         )
         result = verify_external_evidence_production_replacement_plan(replacement_plan, readiness, manifest, audit, root=ROOT)
         markdown = render_external_evidence_production_replacement_plan_markdown(replacement_plan)
+        owner_packets = build_external_evidence_production_replacement_owner_packets(
+            replacement_plan,
+            generated_at="2026-07-09T00:06:00Z",
+        )
+        owner_packets_result = verify_external_evidence_production_replacement_owner_packets(owner_packets, replacement_plan)
+        owner_packets_markdown = render_external_evidence_production_replacement_owner_packets_markdown(owner_packets)
+        owner_packet_status = build_external_evidence_production_replacement_owner_packet_status(
+            owner_packets,
+            replacement_plan,
+            generated_at="2026-07-09T00:07:00Z",
+        )
+        owner_packet_status_result = verify_external_evidence_production_replacement_owner_packet_status(
+            owner_packet_status,
+            owner_packets,
+            replacement_plan,
+        )
+        owner_packet_status_markdown = render_external_evidence_production_replacement_owner_packet_status_markdown(owner_packet_status)
 
         self.assertEqual(EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_PLAN_SCHEMA, replacement_plan["schema"])
+        self.assertEqual(EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_SCHEMA, owner_packets["schema"])
+        self.assertEqual(EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_OWNER_PACKET_STATUS_SCHEMA, owner_packet_status["schema"])
         self.assertTrue(result.ok, result.errors)
+        self.assertTrue(owner_packets_result.ok, owner_packets_result.errors)
+        self.assertTrue(owner_packet_status_result.ok, owner_packet_status_result.errors)
         self.assertEqual("open", replacement_plan["summary"]["replacement_status"])
         self.assertEqual(1, replacement_plan["summary"]["task_count"])
         self.assertEqual(1, replacement_plan["summary"]["non_production_covered_authority_kind_count"])
+        self.assertEqual(1, owner_packets["summary"]["packet_count"])
+        self.assertEqual(1, owner_packets["summary"]["task_count"])
+        self.assertEqual(1, owner_packets["summary"]["open_task_count"])
+        self.assertEqual(1, owner_packet_status["summary"]["packet_count"])
+        self.assertEqual(1, owner_packet_status["summary"]["task_count"])
+        self.assertEqual(1, owner_packet_status["summary"]["open_task_count"])
+        self.assertEqual(0, owner_packet_status["summary"]["blocked_task_count"])
+        self.assertEqual(0, owner_packet_status["summary"]["closed_task_count"])
         task = replacement_plan["tasks"][0]
         self.assertEqual("oss-verifier-and-public-spec:ci-run", task["unit_ref"])
         self.assertEqual("non-production-covered", task["coverage_status"])
@@ -1483,6 +1522,10 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertTrue(task["non_production_reasons"])
         self.assertIn("External Evidence Production Replacement Plan", markdown)
         self.assertIn("Open replacement tasks: 1", markdown)
+        self.assertIn("External Evidence Production Replacement Owner Packets", owner_packets_markdown)
+        self.assertIn("Open replacement tasks: 1", owner_packets_markdown)
+        self.assertIn("External Evidence Production Replacement Owner Packet Status", owner_packet_status_markdown)
+        self.assertIn("Open tasks: 1", owner_packet_status_markdown)
 
         tampered = copy.deepcopy(replacement_plan)
         tampered["summary"]["task_count"] = 0
@@ -1498,6 +1541,10 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             readiness_path = tmp_path / "readiness.json"
             out_path = tmp_path / "replacement-plan.json"
             markdown_path = tmp_path / "replacement-plan.md"
+            packets_path = tmp_path / "replacement-owner-packets.json"
+            packets_markdown_path = tmp_path / "replacement-owner-packets.md"
+            status_path = tmp_path / "replacement-owner-packet-status.json"
+            status_markdown_path = tmp_path / "replacement-owner-packet-status.md"
             write_roadmap_audit(audit_path, audit)
             write_external_evidence_manifest(manifest_path, manifest)
             readiness_path.write_text(json.dumps(readiness, indent=2, sort_keys=True), encoding="utf-8")
@@ -1536,6 +1583,70 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     str(audit_path),
                     "--root",
                     str(ROOT),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-production-replacement-owner-packets",
+                    str(out_path),
+                    "--generated-at",
+                    "2026-07-09T00:06:00Z",
+                    "--out",
+                    str(packets_path),
+                    "--markdown",
+                    str(packets_markdown_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            cli_packets = load_external_evidence_production_replacement_owner_packets(packets_path)
+            self.assertEqual(owner_packets, cli_packets)
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-production-replacement-owner-packets-verify",
+                    str(packets_path),
+                    str(out_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-production-replacement-owner-packet-status",
+                    str(packets_path),
+                    str(out_path),
+                    "--generated-at",
+                    "2026-07-09T00:07:00Z",
+                    "--out",
+                    str(status_path),
+                    "--markdown",
+                    str(status_markdown_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            cli_status = load_external_evidence_production_replacement_owner_packet_status(status_path)
+            self.assertEqual(owner_packet_status, cli_status)
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-production-replacement-owner-packet-status-verify",
+                    str(status_path),
+                    str(packets_path),
+                    str(out_path),
                 ],
                 cwd=ROOT,
                 check=True,
@@ -2005,11 +2116,29 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         audit = json.loads((ROOT / "examples/aitrade/external-evidence/source-roadmap-audit.json").read_text(encoding="utf-8"))
         manifest = load_external_evidence_manifest(ROOT / "examples/aitrade/external-evidence/retained-external-evidence-manifest.json")
         replacement_plan = load_external_evidence_production_replacement_plan(ROOT / "examples/aitrade/external-evidence/retained-external-evidence-production-replacement-plan.json")
+        replacement_owner_packets = load_external_evidence_production_replacement_owner_packets(ROOT / "examples/aitrade/external-evidence/retained-external-evidence-production-replacement-owner-packets.json")
+        replacement_owner_packet_status = load_external_evidence_production_replacement_owner_packet_status(ROOT / "examples/aitrade/external-evidence/retained-external-evidence-production-replacement-owner-packet-status.json")
         replacement_result = verify_external_evidence_production_replacement_plan(replacement_plan, readiness, manifest, audit, root=ROOT)
+        replacement_owner_packets_result = verify_external_evidence_production_replacement_owner_packets(replacement_owner_packets, replacement_plan)
+        replacement_owner_packet_status_result = verify_external_evidence_production_replacement_owner_packet_status(
+            replacement_owner_packet_status,
+            replacement_owner_packets,
+            replacement_plan,
+        )
         self.assertTrue(replacement_result.ok, replacement_result.errors)
+        self.assertTrue(replacement_owner_packets_result.ok, replacement_owner_packets_result.errors)
+        self.assertTrue(replacement_owner_packet_status_result.ok, replacement_owner_packet_status_result.errors)
         self.assertEqual("open", replacement_plan["summary"]["replacement_status"])
         self.assertEqual(72, replacement_plan["summary"]["task_count"])
         self.assertEqual(72, replacement_plan["summary"]["non_production_covered_authority_kind_count"])
+        self.assertEqual(10, replacement_owner_packets["summary"]["packet_count"])
+        self.assertEqual(72, replacement_owner_packets["summary"]["task_count"])
+        self.assertEqual(72, replacement_owner_packets["summary"]["open_task_count"])
+        self.assertEqual(10, replacement_owner_packet_status["summary"]["packet_count"])
+        self.assertEqual(72, replacement_owner_packet_status["summary"]["task_count"])
+        self.assertEqual(72, replacement_owner_packet_status["summary"]["open_task_count"])
+        self.assertEqual(0, replacement_owner_packet_status["summary"]["blocked_task_count"])
+        self.assertEqual(0, replacement_owner_packet_status["summary"]["closed_task_count"])
 
     def test_retained_external_evidence_examples_verify(self):
         audit = json.loads((ROOT / "examples/aitrade/external-evidence/source-roadmap-audit.json").read_text(encoding="utf-8"))

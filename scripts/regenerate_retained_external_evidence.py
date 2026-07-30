@@ -1283,6 +1283,29 @@ def refresh_retained_artifacts() -> None:
     )
 
 
+    run(
+        "external-evidence-production-replacement-owner-packets",
+        path("retained-external-evidence-production-replacement-plan.json"),
+        "--generated-at",
+        COLLECTION_TIME,
+        "--out",
+        path("retained-external-evidence-production-replacement-owner-packets.json"),
+        "--markdown",
+        path("retained-external-evidence-production-replacement-owner-packets.md"),
+    )
+    run(
+        "external-evidence-production-replacement-owner-packet-status",
+        path("retained-external-evidence-production-replacement-owner-packets.json"),
+        path("retained-external-evidence-production-replacement-plan.json"),
+        "--generated-at",
+        COLLECTION_TIME,
+        "--out",
+        path("retained-external-evidence-production-replacement-owner-packet-status.json"),
+        "--markdown",
+        path("retained-external-evidence-production-replacement-owner-packet-status.md"),
+    )
+
+
 def write_deterministic_source_roadmap_audit() -> None:
     audit = build_roadmap_audit(ROOT)
     audit["generated_at"] = AUDIT_TIME
@@ -1601,6 +1624,17 @@ def verify_retained_artifacts() -> None:
         "--root",
         ".",
     )
+    run(
+        "external-evidence-production-replacement-owner-packets-verify",
+        path("retained-external-evidence-production-replacement-owner-packets.json"),
+        path("retained-external-evidence-production-replacement-plan.json"),
+    )
+    run(
+        "external-evidence-production-replacement-owner-packet-status-verify",
+        path("retained-external-evidence-production-replacement-owner-packet-status.json"),
+        path("retained-external-evidence-production-replacement-owner-packets.json"),
+        path("retained-external-evidence-production-replacement-plan.json"),
+    )
     assert_retained_counts()
     verify_retained_collection_chain()
 
@@ -1625,6 +1659,8 @@ def assert_retained_counts() -> None:
     owner_fulfilled_source_map = json_load(DIR / "remaining-external-evidence-owner-fulfilled-source-map.json")
     readiness = json_load(DIR / "retained-external-evidence-readiness.json")
     production_replacement_plan = json_load(DIR / "retained-external-evidence-production-replacement-plan.json")
+    production_replacement_owner_packets = json_load(DIR / "retained-external-evidence-production-replacement-owner-packets.json")
+    production_replacement_owner_packet_status = json_load(DIR / "retained-external-evidence-production-replacement-owner-packet-status.json")
     remaining_package_count = len(work_package.get("packages", []))
     expected_review_status = "ready-to-collect" if remaining_count == 0 else "blocked"
     expected_review_source_map_ok = remaining_count == 0
@@ -1664,6 +1700,14 @@ def assert_retained_counts() -> None:
         (production_replacement_plan["summary"]["replacement_status"], "open", "production replacement plan status"),
         (production_replacement_plan["summary"]["task_count"], expected_non_production_count, "production replacement plan task count"),
         (production_replacement_plan["summary"]["non_production_covered_authority_kind_count"], expected_non_production_count, "production replacement plan non-production coverage count"),
+        (production_replacement_owner_packets["summary"]["packet_count"], production_replacement_plan["summary"]["package_count"], "production replacement owner packet count"),
+        (production_replacement_owner_packets["summary"]["task_count"], expected_non_production_count, "production replacement owner packet task count"),
+        (production_replacement_owner_packets["summary"]["open_task_count"], expected_non_production_count, "production replacement owner packet open task count"),
+        (production_replacement_owner_packet_status["summary"]["packet_count"], production_replacement_plan["summary"]["package_count"], "production replacement owner packet status packet count"),
+        (production_replacement_owner_packet_status["summary"]["task_count"], expected_non_production_count, "production replacement owner packet status task count"),
+        (production_replacement_owner_packet_status["summary"]["open_task_count"], expected_non_production_count, "production replacement owner packet status open task count"),
+        (production_replacement_owner_packet_status["summary"]["blocked_task_count"], 0, "production replacement owner packet status blocked task count"),
+        (production_replacement_owner_packet_status["summary"]["closed_task_count"], 0, "production replacement owner packet status closed task count"),
     ]
     for actual, expected, label in checks:
         if actual != expected:
