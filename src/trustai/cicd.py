@@ -392,6 +392,8 @@ def verify_promotion_status_receipt(
     delivery: dict[str, Any] | None = None,
     delivery_payload_artifact_path: str | Path | None = None,
     delivery_response_artifact_path: str | Path | None = None,
+    delivery_payload_artifact_bytes: bytes | None = None,
+    delivery_response_artifact_bytes: bytes | None = None,
     key: str | None = None,
 ) -> PromotionStatusVerification:
     errors: list[str] = []
@@ -433,6 +435,8 @@ def verify_promotion_status_receipt(
                     delivery=delivery,
                     delivery_payload_artifact_path=delivery_payload_artifact_path,
                     delivery_response_artifact_path=delivery_response_artifact_path,
+                    delivery_payload_artifact_bytes=delivery_payload_artifact_bytes,
+                    delivery_response_artifact_bytes=delivery_response_artifact_bytes,
                     attested_at=str(receipt.get("attested_at") or ""),
                 )
             except ValueError as exc:
@@ -494,6 +498,8 @@ def _promotion_status_body(
     delivery: dict[str, Any] | None,
     delivery_payload_artifact_path: str | Path | None,
     delivery_response_artifact_path: str | Path | None,
+    delivery_payload_artifact_bytes: bytes | None = None,
+    delivery_response_artifact_bytes: bytes | None = None,
     attested_at: str,
 ) -> dict[str, Any]:
     if payload.get("provider") not in {"github", "gitlab"}:
@@ -511,6 +517,8 @@ def _promotion_status_body(
             payload,
             payload_artifact_path=delivery_payload_artifact_path,
             response_artifact_path=delivery_response_artifact_path,
+            payload_artifact_bytes=delivery_payload_artifact_bytes,
+            response_artifact_bytes=delivery_response_artifact_bytes,
         )
         if delivery is not None
         else None
@@ -732,12 +740,16 @@ def _promotion_delivery_binding(
     *,
     payload_artifact_path: str | Path | None,
     response_artifact_path: str | Path | None,
+    payload_artifact_bytes: bytes | None = None,
+    response_artifact_bytes: bytes | None = None,
 ) -> dict[str, Any]:
     result = verify_provider_delivery(
         delivery,
         payload,
         payload_artifact_path=payload_artifact_path,
+        payload_artifact_bytes=payload_artifact_bytes,
         response_artifact_path=response_artifact_path,
+        response_artifact_bytes=response_artifact_bytes,
     )
     response = delivery.get("response") if isinstance(delivery.get("response"), dict) else {}
     return {
@@ -751,8 +763,8 @@ def _promotion_delivery_binding(
         "response": response or None,
         "payload_artifact": delivery.get("payload_artifact"),
         "response_artifact": delivery.get("response_artifact"),
-        "payload_artifact_replayed": delivery.get("payload_artifact") is None or payload_artifact_path is not None,
-        "response_artifact_replayed": delivery.get("response_artifact") is None or response_artifact_path is not None,
+        "payload_artifact_replayed": delivery.get("payload_artifact") is None or payload_artifact_path is not None or payload_artifact_bytes is not None,
+        "response_artifact_replayed": delivery.get("response_artifact") is None or response_artifact_path is not None or response_artifact_bytes is not None,
         "verification_ok": result.ok,
         "verification_errors": result.errors,
         "verification_warnings": result.warnings,

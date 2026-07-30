@@ -1,5 +1,5 @@
 {
-  "audit_id": "13a61f4fd726fef8acfd59edee647a4f4d47772b95b3704d50329f6faa3d1fea",
+  "audit_id": "043f4632a33976b3890c3c6e241d533318def4985a3c97ccf3092f7bee7a97ec",
   "completion_position": "local-reference-complete-with-external-authority-deferred",
   "generated_at": "2026-07-12T00:00:00Z",
   "limitations": [
@@ -404,7 +404,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:e8ccc1fffa26b6d4eccf987f33af2cec0cf604f78e079231328fd07ee96d689d"
+          "sha256": "sha256:14e1cfd032dd9d7c8a3f0537aa752eb9fc4ea6b1b51e5d5374dfda4e4486dcc2"
         },
         {
           "path": "src/trustai/sdk.py",
@@ -747,7 +747,7 @@
         {
           "path": "src/trustai/cicd.py",
           "present": true,
-          "sha256": "sha256:585c654e78295dd19fdfc177c095ed0baf3dfe50c2434c02be4918a0220f71ab"
+          "sha256": "sha256:04e46332fd3011f5cef08a9e75a929c4660fc1d17638129439f500dae1e89c0e"
         },
         {
           "path": "src/trustai/approval_callback.py",
@@ -778,6 +778,11 @@
           "path": "src/trustai/provider_delivery_worker_bundle.py",
           "present": true,
           "sha256": "sha256:449ec1594559af0d48658b76d408fbcbff695ffc0b9cbb97de9f37c008c067dc"
+        },
+        {
+          "path": "src/trustai/promotion_status_bundle.py",
+          "present": true,
+          "sha256": "sha256:b585acb0659b45faf836ef793e92ac9a0bb21ab1870fcc911f7a0212e7cef872"
         },
         {
           "path": "src/trustai/provider_webhook.py",
@@ -827,7 +832,12 @@
         {
           "path": "docs/specs/promotion-status-receipt-v0.1.md",
           "present": true,
-          "sha256": "sha256:b049c90f92e476cd76d4f589f3e3ba3f81c402b2338cdc515c55a83a5a19ddf0"
+          "sha256": "sha256:c6dd7a303cf772ae514dbb157ed0439284938462344c63c034e8e2456bf6a0c0"
+        },
+        {
+          "path": "docs/specs/promotion-status-review-bundle-v0.1.md",
+          "present": true,
+          "sha256": "sha256:4efe9e051e203f5c13f49c1f17f9421926103e48c5984ee6ae78c3482ac8a27d"
         },
         {
           "path": "tests/test_approval_callback.py",
@@ -860,19 +870,24 @@
           "sha256": "sha256:065a63722a92e37878c7327f7fe7b54297654b8531fa321c5df785f6da214f31"
         },
         {
+          "path": "tests/test_promotion_status_bundle.py",
+          "present": true,
+          "sha256": "sha256:9b192064a86ba9313c53a2dd633ddac3d074f090bf42485de86bc8001738d7d0"
+        },
+        {
           "path": "tests/test_provider_webhook.py",
           "present": true,
           "sha256": "sha256:085b4a697d40d1c0dfb1f7c69c2d072920fe7454eb0ba7193b42bfcc0b4fafe3"
         }
       ],
-      "evidence_count": 24,
+      "evidence_count": 27,
       "external_authority_required": [
-        "Provider delivery receipts cover retained provider delivery payload artifact replay and retained provider response artifact byte replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs, provider-native status shape, provider-native proof-pack URL/correlation refs, and replayed retained provider delivery payload/response artifacts before CI/CD evidence is trusted; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks bound to optional GitHub/GitLab promotion payload hashes and concrete provider commit targets, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
+        "Provider delivery receipts cover retained provider delivery payload artifact replay and retained provider response artifact byte replay for supplied outbound GitHub/GitLab/Slack API-ready payloads; promotion status receipts bind concrete repository/project commit refs, provider-native status shape, provider-native proof-pack URL/correlation refs, and replayed retained provider delivery payload/response artifacts before CI/CD evidence is trusted; promotion status review bundles embed the receipt, proof pack, provider payload, delivery receipt, and retained delivery artifact bytes for third-party offline replay; provider delivery service attestations replay those retained payload artifacts through the service source path; provider delivery worker receipts replay those retained payload artifacts through the worker source path; provider delivery worker review bundles replay those retained payload artifacts from embedded source bytes for offline review; provider delivery production authority dossiers bind verified worker review bundle hashes, retained payload replay status, service attestation hashes, and worker receipt hashes before provider posting authority evidence is accepted; provider webhook receipts cover retained payload artifact byte replay for supplied GitHub/GitLab callback bodies; provider approval production authority dossiers cover the local/reference authority checklist for Slack approval callbacks bound to optional GitHub/GitLab promotion payload hashes and concrete provider commit targets, GitHub/GitLab webhook receipts, promotion status receipts, provider delivery authority, provider operations authority, pending request storage, provider credentials, immutable approval audit logs, scheduler/queue/idempotency controls, tenant/network/egress controls, and reviewer identity/RBAC evidence; actual fresh provider-owned callback, delivery, credential, ingress, and audit exports remain external deployment evidence."
       ],
       "id": "cicd-provider-approvals",
       "missing_evidence_count": 0,
       "phase": "P1",
-      "present_evidence_count": 24,
+      "present_evidence_count": 27,
       "priority": "P0",
       "roadmap_ref": "Phase 1 feature 3",
       "status": "reference-attested",
@@ -963,7 +978,7 @@
         {
           "path": "src/trustai/cicd.py",
           "present": true,
-          "sha256": "sha256:585c654e78295dd19fdfc177c095ed0baf3dfe50c2434c02be4918a0220f71ab"
+          "sha256": "sha256:04e46332fd3011f5cef08a9e75a929c4660fc1d17638129439f500dae1e89c0e"
         },
         {
           "path": "src/trustai/review_portal_service.py",
@@ -1231,7 +1246,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:e8ccc1fffa26b6d4eccf987f33af2cec0cf604f78e079231328fd07ee96d689d"
+          "sha256": "sha256:14e1cfd032dd9d7c8a3f0537aa752eb9fc4ea6b1b51e5d5374dfda4e4486dcc2"
         },
         {
           "path": "src/trustai/object_store.py",
@@ -1337,7 +1352,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:e8ccc1fffa26b6d4eccf987f33af2cec0cf604f78e079231328fd07ee96d689d"
+          "sha256": "sha256:14e1cfd032dd9d7c8a3f0537aa752eb9fc4ea6b1b51e5d5374dfda4e4486dcc2"
         },
         {
           "path": "docs/specs/compliance-production-authority-v0.1.md",
@@ -1468,12 +1483,12 @@
         {
           "path": "src/trustai/standards.py",
           "present": true,
-          "sha256": "sha256:4e51276da94046b8c7d66af8670fb07a7761aef21bc44e05e50579aa5a4c27e0"
+          "sha256": "sha256:3ce7f52e6ce6407f5d5cc2cda1c05c683c6f0c1bd0e8464657a2d91cff7cf469"
         },
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:1fb5cf2bc18e8b706fe5a85855f051dcedcd190b3500b6652be2d23d64ac5f6b"
+          "sha256": "sha256:feb961eb9382f2379a0ec8dc51947f16339ada60e2e05631548047759218d1bb"
         },
         {
           "path": "src/trustai/trust_authority.py",
@@ -1685,7 +1700,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:e8ccc1fffa26b6d4eccf987f33af2cec0cf604f78e079231328fd07ee96d689d"
+          "sha256": "sha256:14e1cfd032dd9d7c8a3f0537aa752eb9fc4ea6b1b51e5d5374dfda4e4486dcc2"
         },
         {
           "path": "src/trustai/underwriting_quote.py",
@@ -1876,7 +1891,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:1fb5cf2bc18e8b706fe5a85855f051dcedcd190b3500b6652be2d23d64ac5f6b"
+          "sha256": "sha256:feb961eb9382f2379a0ec8dc51947f16339ada60e2e05631548047759218d1bb"
         },
         {
           "path": "tests/test_reliability_report.py",
@@ -2002,7 +2017,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:1fb5cf2bc18e8b706fe5a85855f051dcedcd190b3500b6652be2d23d64ac5f6b"
+          "sha256": "sha256:feb961eb9382f2379a0ec8dc51947f16339ada60e2e05631548047759218d1bb"
         },
         {
           "path": "tests/test_phase_scoreboard.py",
@@ -2088,7 +2103,7 @@
         {
           "path": "src/trustai/roadmap_audit.py",
           "present": true,
-          "sha256": "sha256:1fb5cf2bc18e8b706fe5a85855f051dcedcd190b3500b6652be2d23d64ac5f6b"
+          "sha256": "sha256:feb961eb9382f2379a0ec8dc51947f16339ada60e2e05631548047759218d1bb"
         },
         {
           "path": "tests/test_product_scope.py",
@@ -2270,7 +2285,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:e8ccc1fffa26b6d4eccf987f33af2cec0cf604f78e079231328fd07ee96d689d"
+          "sha256": "sha256:14e1cfd032dd9d7c8a3f0537aa752eb9fc4ea6b1b51e5d5374dfda4e4486dcc2"
         },
         {
           "path": "docs/specs/identity-provider-attestation-v0.1.md",
@@ -2381,7 +2396,7 @@
         {
           "path": "src/trustai/cli.py",
           "present": true,
-          "sha256": "sha256:e8ccc1fffa26b6d4eccf987f33af2cec0cf604f78e079231328fd07ee96d689d"
+          "sha256": "sha256:14e1cfd032dd9d7c8a3f0537aa752eb9fc4ea6b1b51e5d5374dfda4e4486dcc2"
         },
         {
           "path": "examples/aitrade/delegation.json",
@@ -2440,7 +2455,7 @@
         {
           "path": "src/trustai/standards.py",
           "present": true,
-          "sha256": "sha256:4e51276da94046b8c7d66af8670fb07a7761aef21bc44e05e50579aa5a4c27e0"
+          "sha256": "sha256:3ce7f52e6ce6407f5d5cc2cda1c05c683c6f0c1bd0e8464657a2d91cff7cf469"
         },
         {
           "path": "src/trustai/standards_body_submission.py",

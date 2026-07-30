@@ -75,6 +75,8 @@ python -m trustai provider-delivery artifacts/github-check-run-payload.json --en
 python -m trustai promotion-status artifacts/aitrade-proof-pack.json artifacts/github-check-run-payload.json --delivery artifacts/github-check-run-delivery.json --delivery-response-artifact artifacts/github-check-run-response.json --attested-at 2026-07-04T00:01:00Z --out artifacts/promotion-status.json
 python -m trustai promotion-status-verify artifacts/promotion-status.json --pack artifacts/aitrade-proof-pack.json --payload artifacts/github-check-run-payload.json --delivery artifacts/github-check-run-delivery.json --delivery-response-artifact artifacts/github-check-run-response.json
 python -m trustai promotion-status-append artifacts/promotion-status.json --pack artifacts/aitrade-proof-pack.json --payload artifacts/github-check-run-payload.json --delivery artifacts/github-check-run-delivery.json --delivery-response-artifact artifacts/github-check-run-response.json --state .trustai/promotion-status-demo/evidence-chain.json --tenant promotion-status-local --out artifacts/promotion-status-entry.json
+python -m trustai promotion-status-bundle artifacts/promotion-status.json artifacts/aitrade-proof-pack.json artifacts/github-check-run-payload.json --delivery artifacts/github-check-run-delivery.json --delivery-response-artifact artifacts/github-check-run-response.json --reviewer-ref oidc:auditor.example/cicd-reviewer --out artifacts/promotion-status-review-bundle.json
+python -m trustai promotion-status-bundle-verify artifacts/promotion-status-review-bundle.json
 ```
 
 ## Limits

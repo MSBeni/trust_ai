@@ -517,6 +517,17 @@ from .cicd import (
     write_ci_report,
     write_promotion_status_receipt,
 )
+from .promotion_status_bundle import (
+    PROMOTION_STATUS_BUNDLE_MODES,
+    append_promotion_status_bundle,
+    build_promotion_status_bundle,
+    extract_promotion_status_bundle_sources,
+    load_promotion_status_bundle,
+    render_promotion_status_bundle_markdown,
+    verify_promotion_status_bundle,
+    write_promotion_status_bundle,
+    write_promotion_status_bundle_markdown,
+)
 from .compliance import build_compliance_export, write_compliance_export
 from .compliance_authority import (
     COMPLIANCE_AUTHORITY_MODES,
@@ -9051,6 +9062,142 @@ def cmd_promotion_status_append(args: argparse.Namespace) -> int:
         print(f"promotion status entry: {args.out}")
     print(f"promotion status entry id: {entry['entry_id']}")
     print(f"receipt id: {receipt['receipt_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
+def _promotion_status_bundle_artifact_paths(args: argparse.Namespace) -> dict[str, str]:
+    paths = {
+        "receipt": args.receipt,
+        "proof_pack": args.pack,
+        "payload": args.payload,
+    }
+    if getattr(args, "delivery", None):
+        paths["delivery"] = args.delivery
+    if getattr(args, "delivery_payload_artifact", None):
+        paths["delivery_payload_artifact"] = args.delivery_payload_artifact
+    if getattr(args, "delivery_response_artifact", None):
+        paths["delivery_response_artifact"] = args.delivery_response_artifact
+    return paths
+
+
+def cmd_promotion_status_bundle(args: argparse.Namespace) -> int:
+    try:
+        receipt = load_promotion_status_receipt(args.receipt)
+        pack = load_proof_pack(args.pack)
+        payload = load_provider_payload(args.payload)
+        delivery = load_provider_delivery(args.delivery) if args.delivery else None
+        bundle = build_promotion_status_bundle(
+            receipt,
+            pack,
+            payload,
+            delivery=delivery,
+            artifact_paths=_promotion_status_bundle_artifact_paths(args),
+            mode=args.mode,
+            environment=args.environment,
+            reviewer_ref=args.reviewer_ref,
+            bundle_ref=args.bundle_ref,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+        result = verify_promotion_status_bundle(bundle, key=args.key)
+    except (OSError, ValueError) as exc:
+        print(f"promotion status review bundle generation failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("promotion status review bundle generation failed verification", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_promotion_status_bundle(args.out, bundle)
+    if args.markdown:
+        write_promotion_status_bundle_markdown(args.markdown, bundle)
+        print(f"promotion status review bundle markdown: {args.markdown}")
+    print(f"promotion status review bundle: {args.out}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"receipt id: {bundle['source']['receipt_id']}")
+    print(f"provider: {bundle['source']['provider']}")
+    print(f"source artifact count: {bundle['summary']['source_artifact_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_promotion_status_bundle_verify(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_promotion_status_bundle(args.bundle)
+    except (OSError, ValueError) as exc:
+        print(f"promotion status review bundle verification failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_promotion_status_bundle(bundle, key=args.key)
+    if result.ok:
+        print(f"verified promotion status review bundle: {args.bundle}")
+        print(f"bundle id: {bundle['bundle_id']}")
+        print(f"receipt id: {bundle['source']['receipt_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"promotion status review bundle verification failed: {args.bundle}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_promotion_status_bundle_render(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_promotion_status_bundle(args.bundle)
+    except (OSError, ValueError) as exc:
+        print(f"promotion status review bundle render failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_promotion_status_bundle(bundle, key=args.key)
+    if not result.ok:
+        print(f"promotion status review bundle render failed verification: {args.bundle}", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_promotion_status_bundle_markdown(args.out, bundle)
+    print(f"promotion status review bundle markdown: {args.out}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_promotion_status_bundle_extract(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_promotion_status_bundle(args.bundle)
+        extracted = extract_promotion_status_bundle_sources(
+            bundle,
+            args.out_dir,
+            key=args.key,
+            overwrite=args.overwrite,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"promotion status review bundle extract failed: {exc}", file=sys.stderr)
+        return 1
+    print(f"extracted promotion status review bundle sources: {len(extracted)}")
+    for record in extracted:
+        print(f"- {record['name']} -> {record['extracted_to']}")
+    return 0
+
+
+def cmd_promotion_status_bundle_append(args: argparse.Namespace) -> int:
+    try:
+        bundle = load_promotion_status_bundle(args.bundle)
+    except (OSError, ValueError) as exc:
+        print(f"promotion status review bundle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain = _load_chain(args)
+    try:
+        entry = append_promotion_status_bundle(chain, bundle, key=args.key)
+    except ValueError as exc:
+        print(f"promotion status review bundle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"promotion status review bundle entry: {args.out}")
+    print(f"promotion status review bundle entry id: {entry['entry_id']}")
+    print(f"bundle id: {bundle['bundle_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
 
@@ -25750,6 +25897,47 @@ def build_parser() -> argparse.ArgumentParser:
     promotion_status_append.add_argument("--key")
     _add_state_args(promotion_status_append)
     promotion_status_append.set_defaults(func=cmd_promotion_status_append)
+    promotion_status_bundle = subparsers.add_parser("promotion-status-bundle", help="write a self-contained promotion status review bundle")
+    promotion_status_bundle.add_argument("receipt")
+    promotion_status_bundle.add_argument("pack")
+    promotion_status_bundle.add_argument("payload")
+    promotion_status_bundle.add_argument("--delivery")
+    promotion_status_bundle.add_argument("--delivery-payload-artifact", help="retained provider delivery payload artifact path; defaults to the payload file when delivery binds one")
+    promotion_status_bundle.add_argument("--delivery-response-artifact", help="retained provider delivery response body artifact path")
+    promotion_status_bundle.add_argument("--mode", choices=sorted(PROMOTION_STATUS_BUNDLE_MODES), default="offline-review")
+    promotion_status_bundle.add_argument("--environment")
+    promotion_status_bundle.add_argument("--reviewer-ref", required=True)
+    promotion_status_bundle.add_argument("--bundle-ref")
+    promotion_status_bundle.add_argument("--generated-at")
+    promotion_status_bundle.add_argument("--out", default="artifacts/promotion-status-review-bundle.json")
+    promotion_status_bundle.add_argument("--markdown", default="artifacts/promotion-status-review-bundle.md")
+    promotion_status_bundle.add_argument("--key")
+    promotion_status_bundle.set_defaults(func=cmd_promotion_status_bundle)
+
+    promotion_status_bundle_verify = subparsers.add_parser("promotion-status-bundle-verify", help="verify a self-contained promotion status review bundle")
+    promotion_status_bundle_verify.add_argument("bundle")
+    promotion_status_bundle_verify.add_argument("--key")
+    promotion_status_bundle_verify.set_defaults(func=cmd_promotion_status_bundle_verify)
+
+    promotion_status_bundle_render = subparsers.add_parser("promotion-status-bundle-render", help="verify and render a promotion status review bundle as Markdown")
+    promotion_status_bundle_render.add_argument("bundle")
+    promotion_status_bundle_render.add_argument("--out", default="artifacts/promotion-status-review-bundle.md")
+    promotion_status_bundle_render.add_argument("--key")
+    promotion_status_bundle_render.set_defaults(func=cmd_promotion_status_bundle_render)
+
+    promotion_status_bundle_extract = subparsers.add_parser("promotion-status-bundle-extract", help="verify and extract embedded source artifacts from a promotion status review bundle")
+    promotion_status_bundle_extract.add_argument("bundle")
+    promotion_status_bundle_extract.add_argument("--out-dir", default="artifacts/promotion-status-review-bundle-sources")
+    promotion_status_bundle_extract.add_argument("--overwrite", action="store_true")
+    promotion_status_bundle_extract.add_argument("--key")
+    promotion_status_bundle_extract.set_defaults(func=cmd_promotion_status_bundle_extract)
+
+    promotion_status_bundle_append = subparsers.add_parser("promotion-status-bundle-append", help="append a promotion status review bundle as chain evidence")
+    promotion_status_bundle_append.add_argument("bundle")
+    promotion_status_bundle_append.add_argument("--out", default="artifacts/promotion-status-review-bundle-entry.json")
+    promotion_status_bundle_append.add_argument("--key")
+    _add_state_args(promotion_status_bundle_append)
+    promotion_status_bundle_append.set_defaults(func=cmd_promotion_status_bundle_append)
 
     slack_approval = subparsers.add_parser("slack-approval-request", help="write a Slack approval request payload")
     slack_approval.add_argument("pack")
