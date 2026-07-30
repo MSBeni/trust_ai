@@ -109,6 +109,7 @@ class McpGatewayTests(unittest.TestCase):
         self.assertEqual({"status": "accepted", "order_id": "shadow-order-20260703-001"}, capture["tool_calls"][0]["response"])
         self.assertIn("request_event_hash", capture["tool_calls"][0]["proxy_capture"])
         self.assertEqual("result", capture["tool_calls"][0]["proxy_capture"]["response_kind"])
+        self.assertEqual("examples/aitrade/mcp-proxy-events.json", capture["proxy_events_artifact"]["path"])
         self.assertEqual(_sha256_ref(MCP_PROXY), capture["proxy_events_artifact"]["sha256"])
         self.assertEqual(capture["event_chain_root"], capture["proxy_events_artifact"]["event_chain_root"])
 
@@ -140,6 +141,7 @@ class McpGatewayTests(unittest.TestCase):
             artifact_sha = _sha256_ref(source_events_path)
 
         self.assertTrue(result.ok, result.errors)
+        self.assertEqual(str(source_events_path).replace("\\", "/"), capture["proxy_events_artifact"]["path"])
         self.assertEqual(artifact_sha, capture["proxy_events_artifact"]["sha256"])
         self.assertEqual(capture["event_chain_root"], capture["proxy_events_artifact"]["event_chain_root"])
         self.assertEqual(2, capture["proxy_events_artifact"]["event_count"])

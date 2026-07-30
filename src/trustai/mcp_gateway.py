@@ -923,6 +923,16 @@ def _redaction_errors(value: Any, path: str = "message") -> list[str]:
     return errors
 
 
+def _mcp_artifact_path(path: Path) -> str:
+    if not path.is_absolute():
+        return path.as_posix()
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(Path.cwd().resolve()).as_posix()
+    except ValueError:
+        return resolved.as_posix()
+
+
 def _mcp_client_messages_artifact(path: str | Path, expected_redacted_messages: list[dict[str, Any]]) -> dict[str, Any]:
     target = Path(path)
     if not target.is_file():
@@ -937,7 +947,7 @@ def _mcp_client_messages_artifact(path: str | Path, expected_redacted_messages: 
     if redacted_messages != expected_redacted_messages:
         raise ValueError("MCP client messages artifact content does not match redacted client events")
     body = {
-        "path": str(path).replace("\\", "/"),
+        "path": _mcp_artifact_path(target),
         "sha256": "sha256:" + sha256(data).hexdigest(),
         "size_bytes": len(data),
         "source_content_hash": content_hash(parsed),
@@ -960,7 +970,7 @@ def _mcp_stdio_stdout_artifact(path: str | Path, expected_redacted_responses: li
     if redacted_responses != expected_redacted_responses:
         raise ValueError("MCP stdio stdout artifact content does not match redacted server events")
     body = {
-        "path": str(path).replace("\\", "/"),
+        "path": _mcp_artifact_path(target),
         "sha256": "sha256:" + sha256(data).hexdigest(),
         "size_bytes": len(data),
         "stdout_content_hash": content_hash(text),
@@ -986,7 +996,7 @@ def _mcp_proxy_events_artifact(path: str | Path, normalized_events: list[dict[st
         raise ValueError("MCP proxy events artifact content does not match supplied redacted proxy events")
     event_records = build_mcp_proxy_event_chain(normalized_from_file)
     body = {
-        "path": str(path).replace("\\", "/"),
+        "path": _mcp_artifact_path(target),
         "sha256": "sha256:" + sha256(data).hexdigest(),
         "size_bytes": len(data),
         "source_content_hash": content_hash(parsed),
