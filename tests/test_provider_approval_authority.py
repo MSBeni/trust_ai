@@ -12,11 +12,12 @@ from pathlib import Path
 from trustai.approval_callback import build_approval_callback
 from trustai.canonical import content_hash, without_keys
 from trustai.chain import EvidenceChain
-from trustai.cicd import build_slack_approval_request
+from trustai.cicd import build_promotion_check_payload, build_slack_approval_request
 from trustai.contracts import load_contract, register_contract
 from trustai.crypto import sign_value
 from trustai.gate import append_eval_and_gate
 from trustai.proofpack import compile_proof_pack
+from trustai.verifier import verify_proof_pack
 from trustai.provider_approval_authority import (
     PRODUCTION_AUTHORITY_REQUIREMENTS,
     PRODUCTION_AUTHORITY_REQUIREMENT_IDS,
@@ -65,7 +66,7 @@ class ProviderApprovalAuthorityTests(unittest.TestCase):
         bundle["bundle_id"] = bundle_id
         bundle["signatures"] = [sign_value({"bundle_id": bundle_id, "provider_approval_authority_evidence_bundle": body})]
 
-    def _approval_sources(self, tmp: Path) -> tuple[dict, dict]:
+    def _approval_sources(self, tmp: Path, *, bind_promotion_target: bool = False) -> tuple[dict, dict]:
         chain = EvidenceChain.load(tmp / "approval-chain.json", tenant_id="provider-approval-authority-test")
         contract = load_contract(CONTRACT)
         register_contract(chain, contract)
@@ -73,12 +74,23 @@ class ProviderApprovalAuthorityTests(unittest.TestCase):
         results.pop("approvals", None)
         eval_entry, gate_entry, decision = append_eval_and_gate(chain, contract, results)
         pack = compile_proof_pack(chain, contract, eval_entry, gate_entry, decision)
+        promotion_payload = None
+        if bind_promotion_target:
+            promotion_payload = build_promotion_check_payload(
+                pack,
+                verify_proof_pack(pack),
+                provider="github",
+                commit_sha="0123456789abcdef0123456789abcdef01234567",
+                repository="MSBeni/trust_ai",
+                target_url="https://example.test/proof-pack",
+            )
         request = build_slack_approval_request(
             pack,
             channel="C07TRUSTAI",
             requested_roles=["model_risk"],
             requester="risk@example.com",
             callback_url="https://trustai.example/v0/approval-callbacks/slack",
+            promotion_payload=promotion_payload,
         )
         callback = build_approval_callback(
             request,
@@ -221,6 +233,30 @@ class ProviderApprovalAuthorityTests(unittest.TestCase):
             self.assertEqual(dossier["authority_evidence"][0]["source_context"], entry["payload"]["authority_evidence"][0]["source_context"])
             self.assertEqual({"deferred": 2, "passed": 5}, entry["payload"]["control_summary"])
             self.assertTrue(chain.verify_all().ok)
+
+    def test_provider_approval_authority_source_context_binds_promotion_target(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            request, callback = self._approval_sources(tmp, bind_promotion_target=True)
+            webhook = self._webhook_receipt()
+            delivery_authority, operations_authority = self._authority_sources()
+            dossier = self._dossier(request, callback, webhook, delivery_authority, operations_authority)
+            result = verify_provider_approval_authority_dossier(
+                dossier,
+                approval_request=request,
+                approval_callback=callback,
+                webhook_receipts=[webhook],
+                provider_delivery_authority=delivery_authority,
+                provider_operations_authority=operations_authority,
+            )
+
+            self.assertTrue(result.ok, result.errors)
+            source_context = dossier["authority_evidence"][0]["source_context"]
+            self.assertEqual(request["promotion_binding"], dossier["source_binding"]["approval_request"]["promotion_binding"])
+            self.assertEqual(callback["promotion_binding"], dossier["source_binding"]["approval_callback"]["promotion_binding"])
+            self.assertEqual(request["promotion_binding"], source_context["promotion_binding"])
+            self.assertEqual("github", source_context["promotion_provider"])
+            self.assertEqual("0123456789abcdef0123456789abcdef01234567", source_context["promotion_commit_sha"])
 
     def test_provider_approval_authority_evidence_bundle_drives_complete_provider_dossier(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

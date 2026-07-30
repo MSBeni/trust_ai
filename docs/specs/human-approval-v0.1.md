@@ -60,7 +60,7 @@ artifacts before becoming chain evidence:
 
 ```powershell
 $env:PYTHONPATH = "src"
-python -m trustai slack-approval-request artifacts/approval-backed-proof-pack.json --channel C07TRUSTAI --requested-roles model_risk --callback-url https://example.test/trustai/approval-callbacks --out artifacts/slack-approval-request.json
+python -m trustai slack-approval-request artifacts/approval-backed-proof-pack.json --channel C07TRUSTAI --requested-roles model_risk --callback-url https://example.test/trustai/approval-callbacks --promotion-payload artifacts/trustai-ci-payload.json --out artifacts/slack-approval-request.json
 python -m trustai approval-callback-build artifacts/slack-approval-request.json model_risk --approver model-risk@example.com --approved-at 2026-07-03T13:00:00Z --reason "Approved via verified callback artifact." --out artifacts/approval-callback-model-risk.json
 python -m trustai approval-callback-verify artifacts/slack-approval-request.json artifacts/approval-callback-model-risk.json
 python -m trustai approval-callback-append examples/aitrade/verification-contract.yaml artifacts/slack-approval-request.json artifacts/approval-callback-model-risk.json --state .trustai/approval-callback-demo/evidence-chain.json --tenant approval-callback-local --auto-register --out artifacts/approval-callback-model-risk-entry.json
@@ -68,7 +68,9 @@ python -m trustai approval-callback-append examples/aitrade/verification-contrac
 
 Callback verification binds the provider action id and action value to the
 original request, confirms the request payload hash, verifies the callback
-signature, and rejects approvals after request expiry when `expires_at` is set.
+signature, rejects provider-target replay when the request includes a
+GitHub/GitLab promotion binding, and rejects approvals after request expiry
+when `expires_at` is set.
 The local server can also store pending Slack requests at
 `POST /v0/approval-requests/slack` and accept Slack-style interaction payloads
 at `POST /v0/approval-callbacks/slack`, validate Slack request signatures and

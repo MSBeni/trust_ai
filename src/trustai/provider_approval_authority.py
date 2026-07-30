@@ -543,7 +543,7 @@ def _source_binding(
 
 def _approval_request_binding(request: dict[str, Any]) -> dict[str, Any]:
     body = request.get("request", {}).get("body", {}) if isinstance(request.get("request"), dict) and isinstance(request.get("request", {}).get("body"), dict) else {}
-    return {
+    binding = {
         "approval_request_id": request.get("approval_request_id"),
         "approval_request_hash": content_hash(request),
         "provider": request.get("provider", "slack"),
@@ -556,10 +556,13 @@ def _approval_request_binding(request: dict[str, Any]) -> dict[str, Any]:
         "body_hash": content_hash(body),
         "expires_at": request.get("expires_at"),
     }
+    if request.get("promotion_binding") is not None:
+        binding["promotion_binding"] = request.get("promotion_binding")
+    return binding
 
 
 def _approval_callback_binding(callback: dict[str, Any]) -> dict[str, Any]:
-    return {
+    binding = {
         "callback_id": callback.get("callback_id"),
         "callback_hash": content_hash(callback),
         "provider": callback.get("provider"),
@@ -576,6 +579,9 @@ def _approval_callback_binding(callback: dict[str, Any]) -> dict[str, Any]:
         "team_id": callback.get("team_id"),
         "approved_at": callback.get("approved_at"),
     }
+    if callback.get("promotion_binding") is not None:
+        binding["promotion_binding"] = callback.get("promotion_binding")
+    return binding
 
 
 def _webhook_binding(receipt: dict[str, Any]) -> dict[str, Any]:
@@ -1017,7 +1023,7 @@ def _authority_evidence_source_context(binding: dict[str, Any]) -> dict[str, Any
     webhooks = [item for item in binding.get("webhook_receipts", []) if isinstance(item, dict)] if isinstance(binding.get("webhook_receipts"), list) else []
     delivery = binding.get("provider_delivery_authority") if isinstance(binding.get("provider_delivery_authority"), dict) else {}
     operations = binding.get("provider_operations_authority") if isinstance(binding.get("provider_operations_authority"), dict) else {}
-    return {
+    context = {
         "approval_request_id": request.get("approval_request_id"),
         "approval_request_hash": request.get("approval_request_hash"),
         "pack_id": request.get("pack_id"),
@@ -1047,6 +1053,16 @@ def _authority_evidence_source_context(binding: dict[str, Any]) -> dict[str, Any
         "provider_operations_authority_environment": operations.get("environment"),
         "provider_operations_authority_summary": operations.get("summary"),
     }
+    promotion_binding = request.get("promotion_binding") or callback.get("promotion_binding")
+    if promotion_binding is not None:
+        context["promotion_binding"] = promotion_binding
+        if isinstance(promotion_binding, dict):
+            context["promotion_provider"] = promotion_binding.get("provider")
+            context["promotion_payload_hash"] = promotion_binding.get("promotion_payload_hash")
+            target_ref = promotion_binding.get("target_ref") if isinstance(promotion_binding.get("target_ref"), dict) else {}
+            context["promotion_target_ref"] = target_ref
+            context["promotion_commit_sha"] = target_ref.get("commit_sha")
+    return context
 
 
 def _sorted_present(values: Any) -> list[Any]:

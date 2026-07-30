@@ -118,6 +118,8 @@ def build_approval_callback(
         "external_user_id": external_user_id,
         "team_id": team_id,
     }
+    if request.get("promotion_binding") is not None:
+        body["promotion_binding"] = request.get("promotion_binding")
     callback_id = content_hash(body)
     return {
         **body,
@@ -193,6 +195,8 @@ def verify_approval_callback(
     for field in ("pack_id", "contract_id", "contract_hash", "channel"):
         if callback.get(field) != request.get(field):
             errors.append(f"callback {field} does not match request")
+    if callback.get("promotion_binding") != request.get("promotion_binding"):
+        errors.append("callback promotion_binding does not match request")
 
     role = callback.get("role")
     requested_roles = request.get("requested_roles", [])
@@ -224,6 +228,17 @@ def approval_from_callback(request: dict[str, Any], callback: dict[str, Any], *,
     if not result.ok:
         raise ValueError("invalid approval callback: " + "; ".join(result.errors))
     template = _template_for_role(request, callback["role"])
+    metadata = {
+        **(template.get("metadata", {}) if isinstance(template.get("metadata"), dict) else {}),
+        "callback_id": callback["callback_id"],
+        "request_payload_hash": callback["request_payload_hash"],
+        "action_id": callback["action_id"],
+        "action_value": callback["action_value"],
+        "external_user_id": callback.get("external_user_id"),
+        "team_id": callback.get("team_id"),
+    }
+    if callback.get("promotion_binding") is not None:
+        metadata["promotion_binding"] = callback.get("promotion_binding")
     approval = {
         **template,
         "source": f"{request.get('provider', 'slack')}-callback",
@@ -231,15 +246,7 @@ def approval_from_callback(request: dict[str, Any], callback: dict[str, Any], *,
         "approver": callback["approver"],
         "approved_at": callback["approved_at"],
         "reason": callback.get("reason") or template.get("reason") or "Approved via verified TrustAI callback.",
-        "metadata": {
-            **(template.get("metadata", {}) if isinstance(template.get("metadata"), dict) else {}),
-            "callback_id": callback["callback_id"],
-            "request_payload_hash": callback["request_payload_hash"],
-            "action_id": callback["action_id"],
-            "action_value": callback["action_value"],
-            "external_user_id": callback.get("external_user_id"),
-            "team_id": callback.get("team_id"),
-        },
+        "metadata": metadata,
     }
     return normalize_approval(approval)
 
@@ -281,6 +288,32 @@ def _request_errors(request: dict[str, Any]) -> list[str]:
             errors.append(f"{field} is required")
     if not isinstance(request.get("requested_roles"), list):
         errors.append("requested_roles must be a list")
+    binding = request.get("promotion_binding")
+    if binding is not None:
+        errors.extend(_promotion_binding_errors(request, binding))
+    return errors
+
+
+def _promotion_binding_errors(request: dict[str, Any], binding: Any) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(binding, dict):
+        return ["promotion_binding must be an object"]
+    if binding.get("schema") != "trustai.approval-promotion-binding/0.1":
+        errors.append("promotion_binding schema must be trustai.approval-promotion-binding/0.1")
+    if binding.get("provider") not in {"github", "gitlab"}:
+        errors.append("promotion_binding provider must be github or gitlab")
+    for field in ("promotion_payload_hash", "pack_id", "contract_id", "contract_hash", "target_ref", "proof_pack_ref"):
+        if not binding.get(field):
+            errors.append(f"promotion_binding.{field} is required")
+    for field in ("pack_id", "contract_id", "contract_hash"):
+        if binding.get(field) != request.get(field):
+            errors.append(f"promotion_binding {field} does not match request")
+    target_ref = binding.get("target_ref") if isinstance(binding.get("target_ref"), dict) else {}
+    proof_pack_ref = binding.get("proof_pack_ref") if isinstance(binding.get("proof_pack_ref"), dict) else {}
+    if target_ref.get("bound") is not True:
+        errors.append("promotion_binding target_ref must be bound")
+    if proof_pack_ref.get("bound") is not True:
+        errors.append("promotion_binding proof_pack_ref must be bound")
     return errors
 
 

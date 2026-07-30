@@ -231,7 +231,9 @@ checks the report hash, expected outcomes, pass flags, and summary counts.
 `trustai slack-approval-request` writes a Slack Block Kit `chat.postMessage`
 payload for required human approval roles. The artifact includes requested
 roles, already-approved roles, missing roles, Slack action IDs, and approval
-entry templates.
+entry templates. When `--promotion-payload` is supplied, the request also
+binds the human approval to the exact GitHub/GitLab promotion payload hash,
+repository/project commit target, and provider-native proof-pack reference.
 
 `trustai approval-callback-build`, `trustai approval-callback-verify`, and
 `trustai approval-callback-append` convert a provider action into a signed

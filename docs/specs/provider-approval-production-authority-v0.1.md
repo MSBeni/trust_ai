@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The provider approval production authority dossier binds Slack approval callbacks, GitHub/GitLab webhook receipts, provider delivery authority, and provider operations authority into a single CI/CD promotion-gate approval claim. It covers the roadmap gap where local callbacks and provider webhook receipts exist, but live production credentials, public ingress, provider-owned delivery logs, and callback audit evidence remain external authority.
+The provider approval production authority dossier binds Slack approval callbacks, optional Slack approval provider-target bindings, GitHub/GitLab webhook receipts, provider delivery authority, and provider operations authority into a single CI/CD promotion-gate approval claim. It covers the roadmap gap where local callbacks and provider webhook receipts exist, but live production credentials, public ingress, provider-owned delivery logs, and callback audit evidence remain external authority.
 
 The dossier is intentionally an authority wrapper. It does not store raw Slack, GitHub, GitLab, OAuth, or webhook secrets. It stores hashes, ids, redacted references, and freshness windows that an offline verifier can replay from supplied artifacts.
 
@@ -37,7 +37,7 @@ A dossier contains:
 10. `tenant-network-egress-controls`
 11. `reviewer-identity-and-rbac`
 
-Each authority evidence item carries a derived `source_context` tying the external authority row to the approval request hash, proof-pack/contract IDs, approval callback ID/hash, reviewer role/action/team fields, provider webhook receipt IDs/hashes/delivery IDs/payload hashes, and the provider delivery and provider operations authority dossier IDs/hashes/summaries recorded in `source_binding`.
+Each authority evidence item carries a derived `source_context` tying the external authority row to the approval request hash, proof-pack/contract IDs, optional provider promotion target binding, approval callback ID/hash, reviewer role/action/team fields, provider webhook receipt IDs/hashes/delivery IDs/payload hashes, and the provider delivery and provider operations authority dossier IDs/hashes/summaries recorded in `source_binding`.
 
 ## Evidence Bundle
 

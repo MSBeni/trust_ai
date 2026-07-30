@@ -8958,6 +8958,7 @@ def cmd_slack_approval_request(args: argparse.Namespace) -> int:
         requester=args.requester,
         callback_url=args.callback_url,
         expires_at=args.expires_at,
+        promotion_payload=_load_json(args.promotion_payload) if args.promotion_payload else None,
     )
     _write_json(args.out, payload)
     print(f"Slack approval request: {args.out}")
@@ -25515,6 +25516,7 @@ def build_parser() -> argparse.ArgumentParser:
     slack_approval.add_argument("--requester")
     slack_approval.add_argument("--callback-url")
     slack_approval.add_argument("--expires-at")
+    slack_approval.add_argument("--promotion-payload", help="optional GitHub/GitLab promotion status payload to bind this approval request to a concrete provider commit target")
     slack_approval.add_argument("--out", default="artifacts/slack-approval-request.json")
     slack_approval.set_defaults(func=cmd_slack_approval_request)
 

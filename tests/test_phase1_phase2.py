@@ -118,6 +118,7 @@ class PhaseOneTwoTests(unittest.TestCase):
                 channel="C07TRUSTAI",
                 requested_roles=["model_risk"],
                 requester="risk@example.com",
+                promotion_payload=github_payload,
             )
             compliance_export = build_compliance_export(pack)
             insurer_export = build_insurer_telemetry(pack)
@@ -132,6 +133,8 @@ class PhaseOneTwoTests(unittest.TestCase):
             self.assertEqual("trustai.slack-approval-request/0.1", slack_request["schema"])
             self.assertEqual(["model_risk"], slack_request["requested_roles"])
             self.assertEqual("/api/chat.postMessage", slack_request["request"]["path"])
+            self.assertEqual(github_payload["payload_hash"], slack_request["promotion_binding"]["promotion_payload_hash"])
+            self.assertEqual("0123456789abcdef0123456789abcdef01234567", slack_request["promotion_binding"]["target_ref"]["commit_sha"])
             self.assertEqual(5, len(compliance_export["mappings"]))
             self.assertEqual("low", insurer_export["risk_tier"])
             self.assertIn("TrustAI Proof Pack Auditor View", auditor_html)

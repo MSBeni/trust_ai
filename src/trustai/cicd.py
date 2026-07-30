@@ -207,6 +207,7 @@ def build_slack_approval_request(
     requester: str | None = None,
     callback_url: str | None = None,
     expires_at: str | None = None,
+    promotion_payload: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     if not channel:
         raise ValueError("channel is required")
@@ -224,6 +225,9 @@ def build_slack_approval_request(
         "channel": channel,
         "roles": roles,
     }
+    promotion_binding = _approval_promotion_binding(promotion_payload) if promotion_payload is not None else None
+    if promotion_binding is not None:
+        basis["promotion_payload_hash"] = promotion_binding["promotion_payload_hash"]
     request_id = content_hash(basis)[:32]
     agent = decision.get("agent", {})
     agent_name = agent.get("name", "agent")
@@ -279,6 +283,7 @@ def build_slack_approval_request(
                 "pack_id": proof_pack.get("pack_id"),
                 "contract_id": decision.get("contract_id"),
                 "contract_hash": decision.get("contract_hash"),
+                **({"promotion_target": promotion_binding["target_ref"]} if promotion_binding is not None else {}),
             },
         }
         for role in roles
@@ -301,12 +306,40 @@ def build_slack_approval_request(
         "approval_templates": templates,
         "request": {"method": "POST", "path": "/api/chat.postMessage", "body": body},
     }
+    if promotion_binding is not None:
+        payload["promotion_binding"] = promotion_binding
     if callback_url:
         payload["callback_url"] = callback_url
     if expires_at:
         payload["expires_at"] = expires_at
     payload["payload_hash"] = content_hash(payload)
     return payload
+
+
+def _approval_promotion_binding(promotion_payload: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(promotion_payload, dict):
+        raise ValueError("promotion_payload must be an object")
+    provider = promotion_payload.get("provider")
+    if provider not in {"github", "gitlab"}:
+        raise ValueError("promotion_payload provider must be github or gitlab")
+    if promotion_payload.get("payload_hash") != content_hash(without_keys(promotion_payload, "payload_hash")):
+        raise ValueError("promotion_payload payload_hash does not match payload body")
+    target_ref = _provider_target_ref(promotion_payload)
+    proof_pack_ref = _provider_proof_pack_ref(promotion_payload, target_ref)
+    if target_ref.get("bound") is not True:
+        raise ValueError("promotion_payload must be bound to a concrete provider commit target")
+    if proof_pack_ref.get("bound") is not True:
+        raise ValueError("promotion_payload must be bound to a provider-native proof-pack URL or correlation ID")
+    return {
+        "schema": "trustai.approval-promotion-binding/0.1",
+        "provider": provider,
+        "promotion_payload_hash": promotion_payload.get("payload_hash"),
+        "pack_id": promotion_payload.get("pack_id"),
+        "contract_id": promotion_payload.get("contract_id"),
+        "contract_hash": promotion_payload.get("contract_hash"),
+        "target_ref": target_ref,
+        "proof_pack_ref": proof_pack_ref,
+    }
 
 
 def load_promotion_status_receipt(path: str | Path) -> dict[str, Any]:

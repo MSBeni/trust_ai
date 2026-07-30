@@ -20,7 +20,7 @@ from trustai.approval_callback import (
 )
 from trustai.approvals import APPROVAL_ENTRY_TYPE, approval_entries_for_contract
 from trustai.chain import EvidenceChain
-from trustai.cicd import build_slack_approval_request
+from trustai.cicd import build_promotion_check_payload, build_slack_approval_request
 from trustai.contracts import contract_hash, load_contract, register_contract
 from trustai.gate import append_eval_and_gate
 from trustai.proofpack import compile_proof_pack
@@ -127,6 +127,94 @@ class ApprovalCallbackTests(unittest.TestCase):
             self.assertTrue(proof_result.ok, proof_result.errors)
             actual_sources = {item.get("source") for item in decision["approvals"]["actual"]}
             self.assertEqual({"slack-callback"}, actual_sources)
+
+    def test_slack_approval_callback_binds_provider_promotion_target(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="test")
+            contract = load_contract(CONTRACT)
+            register_contract(chain, contract)
+            _, pack = self._pack_missing_approvals(chain, contract)
+            verification = verify_proof_pack(pack)
+            promotion_payload = build_promotion_check_payload(
+                pack,
+                verification,
+                provider="github",
+                commit_sha="0123456789abcdef0123456789abcdef01234567",
+                repository="MSBeni/trust_ai",
+                target_url="https://example.test/proof-pack",
+            )
+            request = build_slack_approval_request(
+                pack,
+                channel="C07TRUSTAI",
+                requested_roles=["model_risk"],
+                requester="risk@example.com",
+                promotion_payload=promotion_payload,
+            )
+            callback = build_approval_callback(
+                request,
+                role="model_risk",
+                approver="model-risk@example.com",
+                approved_at="2026-07-03T13:00:00Z",
+            )
+            approval = approval_from_callback(request, callback)
+            result = verify_approval_callback(request, callback)
+
+            self.assertTrue(result.ok, result.errors)
+            self.assertEqual("trustai.approval-promotion-binding/0.1", request["promotion_binding"]["schema"])
+            self.assertEqual(promotion_payload["payload_hash"], request["promotion_binding"]["promotion_payload_hash"])
+            self.assertEqual("MSBeni/trust_ai", request["promotion_binding"]["target_ref"]["repository"])
+            self.assertEqual("0123456789abcdef0123456789abcdef01234567", request["promotion_binding"]["target_ref"]["commit_sha"])
+            self.assertEqual(request["promotion_binding"], callback["promotion_binding"])
+            self.assertEqual(request["promotion_binding"], approval["metadata"]["promotion_binding"])
+            self.assertEqual(request["promotion_binding"]["target_ref"], approval["metadata"]["promotion_target"])
+
+    def test_slack_approval_callback_rejects_provider_target_replay(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            chain = EvidenceChain.load(Path(tmp_dir) / "chain.json", tenant_id="test")
+            contract = load_contract(CONTRACT)
+            register_contract(chain, contract)
+            _, pack = self._pack_missing_approvals(chain, contract)
+            verification = verify_proof_pack(pack)
+            first_payload = build_promotion_check_payload(
+                pack,
+                verification,
+                provider="github",
+                commit_sha="0123456789abcdef0123456789abcdef01234567",
+                repository="MSBeni/trust_ai",
+                target_url="https://example.test/proof-pack",
+            )
+            second_payload = build_promotion_check_payload(
+                pack,
+                verification,
+                provider="github",
+                commit_sha="fedcba9876543210fedcba9876543210fedcba98",
+                repository="MSBeni/trust_ai",
+                target_url="https://example.test/proof-pack",
+            )
+            first_request = build_slack_approval_request(
+                pack,
+                channel="C07TRUSTAI",
+                requested_roles=["model_risk"],
+                promotion_payload=first_payload,
+            )
+            second_request = build_slack_approval_request(
+                pack,
+                channel="C07TRUSTAI",
+                requested_roles=["model_risk"],
+                promotion_payload=second_payload,
+            )
+            callback = build_approval_callback(
+                first_request,
+                role="model_risk",
+                approver="model-risk@example.com",
+                approved_at="2026-07-03T13:00:00Z",
+            )
+
+            result = verify_approval_callback(second_request, callback)
+
+            self.assertFalse(result.ok)
+            self.assertIn("callback request_payload_hash does not match request", result.errors)
+            self.assertIn("callback promotion_binding does not match request", result.errors)
 
     def test_slack_interaction_builds_signed_callback(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

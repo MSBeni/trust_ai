@@ -563,7 +563,7 @@ CONFORMANCE_TARGETS = (
     },
     {
         "id": "promotion-status-receipts",
-        "description": "Promotion status receipts bind verified proof-pack gate decisions to GitHub/GitLab status payloads and optional provider delivery receipts before CI/CD promotion status is trusted.",
+        "description": "Promotion status receipts bind verified proof-pack gate decisions to GitHub/GitLab status payloads and optional provider delivery receipts before CI/CD promotion status is trusted; Slack approval requests can bind human approvals to the exact provider promotion payload hash, concrete commit target, and proof-pack reference.",
         "reference": "src/trustai/cicd.py",
         "commands": [
             "python -m trustai promotion-status artifacts/aitrade-proof-pack.json artifacts/github-check-run-payload.json --delivery artifacts/github-check-run-delivery.json --attested-at 2026-07-04T00:01:00Z --out artifacts/promotion-status.json",

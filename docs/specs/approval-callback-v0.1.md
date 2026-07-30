@@ -27,7 +27,12 @@ Required fields:
 - `signatures`: one or more detached local signatures over the callback id and
   callback body.
 
-Optional fields include `reason`, `external_user_id`, and `team_id`.
+Optional fields include `reason`, `external_user_id`, `team_id`, and
+`promotion_binding`. `promotion_binding` is present when the originating
+Slack approval request was built with a GitHub/GitLab promotion payload; it
+records the provider, promotion payload hash, concrete repository/project
+commit target, and native proof-pack URL or correlation id that the human is
+authorizing.
 
 ## Verification Rules
 
@@ -39,6 +44,8 @@ Optional fields include `reason`, `external_user_id`, and `team_id`.
 - at least one callback signature verifies;
 - provider, request id, request hash, pack id, contract id, contract hash, and
   channel match the approval request;
+- `promotion_binding`, when present, matches the approval request and remains
+  bound to a concrete GitHub/GitLab commit target plus proof-pack reference;
 - the callback role is in `requested_roles`;
 - `action_id` and `action_value` match the generated button binding for the
   role;
@@ -47,7 +54,8 @@ Optional fields include `reason`, `external_user_id`, and `team_id`.
 `trustai approval-callback-append` re-runs verification and appends a signed
 `human_approval.granted` entry whose approval source is `{provider}-callback`.
 The appended approval metadata includes the callback id, request hash, action
-id, action value, and provider user/team identifiers when present.
+id, action value, provider user/team identifiers when present, and the
+provider promotion binding when the approval request carried one.
 
 ## Local HTTP Endpoint
 
@@ -79,7 +87,7 @@ webhook signature adapters before accepting live multi-provider traffic.
 
 ```powershell
 $env:PYTHONPATH = "src"
-python -m trustai slack-approval-request artifacts/approval-backed-proof-pack.json --channel C07TRUSTAI --requested-roles model_risk --callback-url https://example.test/trustai/approval-callbacks --out artifacts/slack-approval-request.json
+python -m trustai slack-approval-request artifacts/approval-backed-proof-pack.json --channel C07TRUSTAI --requested-roles model_risk --callback-url https://example.test/trustai/approval-callbacks --promotion-payload artifacts/trustai-ci-payload.json --out artifacts/slack-approval-request.json
 python -m trustai approval-callback-build artifacts/slack-approval-request.json model_risk --approver model-risk@example.com --approved-at 2026-07-03T13:00:00Z --reason "Approved via verified callback artifact." --out artifacts/approval-callback-model-risk.json
 python -m trustai approval-callback-verify artifacts/slack-approval-request.json artifacts/approval-callback-model-risk.json
 python -m trustai approval-callback-append examples/aitrade/verification-contract.yaml artifacts/slack-approval-request.json artifacts/approval-callback-model-risk.json --state .trustai/approval-callback-demo/evidence-chain.json --tenant approval-callback-local --auto-register --out artifacts/approval-callback-model-risk-entry.json
