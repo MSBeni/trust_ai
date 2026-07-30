@@ -28,6 +28,13 @@ from trustai.mcp_gateway import (
     verify_mcp_proxy_capture,
     verify_mcp_stdio_proxy_event_export,
 )
+from trustai.mcp_gateway_review_bundle import (
+    MCP_GATEWAY_REVIEW_BUNDLE_ENTRY_TYPE,
+    MCP_GATEWAY_REVIEW_BUNDLE_SCHEMA,
+    append_mcp_gateway_review_bundle,
+    build_mcp_gateway_review_bundle,
+    verify_mcp_gateway_review_bundle,
+)
 from trustai.proofpack import compile_proof_pack
 from trustai.verifier import verify_proof_pack
 
@@ -50,6 +57,18 @@ def _sha256_ref(path: Path) -> str:
 
 
 class McpGatewayTests(unittest.TestCase):
+    def _proxy_capture(self, source_events_path: Path | None = MCP_PROXY) -> dict:
+        kwargs = {"source_events_path": source_events_path} if source_events_path is not None else {}
+        return build_mcp_proxy_capture(
+            load_mcp_proxy_events(source_events_path or MCP_PROXY),
+            agent=AGENT,
+            contract_hash=CONTRACT_HASH,
+            proxy_ref="mcp-proxy:trustai/local",
+            upstream_ref="mcp-server:aitrade/tools",
+            captured_at="2026-07-03T12:00:12Z",
+            **kwargs,
+        )
+
     def test_mcp_transcript_hash_chain_binds_order(self):
         calls = load_mcp_transcript(MCP)
         second = copy.deepcopy(calls[0])
@@ -310,6 +329,149 @@ class McpGatewayTests(unittest.TestCase):
         self.assertFalse(result.ok)
         self.assertTrue(any("session_id mismatch" in error for error in result.errors), result.errors)
 
+    def test_mcp_gateway_review_bundle_verifies_and_appends(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            capture = self._proxy_capture()
+            capture_path = tmp / "mcp-proxy-capture.json"
+            capture_path.write_text(json.dumps(capture, indent=2, sort_keys=True), encoding="utf-8")
+            bundle = build_mcp_gateway_review_bundle(
+                capture,
+                source_events_path=MCP_PROXY,
+                capture_path=capture_path,
+                mode="proxy-capture-review",
+                bundle_ref="bundle:mcp-gateway/aitrade/proxy-review",
+                reviewer_ref="oidc:auditor.example/mcp-reviewer",
+                generated_at="2026-07-12T03:20:00Z",
+            )
+            result = verify_mcp_gateway_review_bundle(bundle, source_events_path=MCP_PROXY)
+            chain = EvidenceChain.load(tmp / "chain.json", tenant_id="mcp-gateway-review-bundle-test")
+            entry = append_mcp_gateway_review_bundle(chain, bundle, source_events_path=MCP_PROXY)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(MCP_GATEWAY_REVIEW_BUNDLE_SCHEMA, bundle["schema"])
+        self.assertEqual(capture["capture_id"], bundle["capture_binding"]["capture_id"])
+        self.assertEqual(1, bundle["summary"]["tool_call_count"])
+        self.assertEqual(1, bundle["summary"]["redacted_field_count"])
+        self.assertEqual(2, bundle["summary"]["source_artifact_count"])
+        self.assertEqual({"deferred": 1, "not-applicable": 1, "passed": 4}, entry["payload"]["control_summary"])
+        self.assertEqual(MCP_GATEWAY_REVIEW_BUNDLE_ENTRY_TYPE, entry["entry_type"])
+        self.assertEqual(bundle["bundle_id"], entry["payload"]["bundle_id"])
+        self.assertTrue(chain.verify_all().ok)
+
+    def test_mcp_gateway_review_bundle_detects_embedded_capture_tamper(self):
+        capture = self._proxy_capture()
+        bundle = build_mcp_gateway_review_bundle(
+            capture,
+            source_events_path=MCP_PROXY,
+            mode="proxy-capture-review",
+            bundle_ref="bundle:mcp-gateway/aitrade/proxy-review",
+            reviewer_ref="oidc:auditor.example/mcp-reviewer",
+            generated_at="2026-07-12T03:20:00Z",
+        )
+        tampered = copy.deepcopy(bundle)
+        tampered["capture_receipt"]["tool_calls"][0]["response"]["status"] = "tampered"
+
+        result = verify_mcp_gateway_review_bundle(tampered, source_events_path=MCP_PROXY)
+
+        self.assertFalse(result.ok)
+        errors = "\n".join(result.errors)
+        self.assertIn("bundle_id", errors)
+        self.assertIn("review bundle capture invalid", errors)
+
+    def test_mcp_gateway_review_bundle_replays_retained_event_bytes(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            source_events = tmp / "mcp-proxy-events.json"
+            source_events.write_text(MCP_PROXY.read_text(encoding="utf-8"), encoding="utf-8")
+            capture = self._proxy_capture(source_events)
+            bundle = build_mcp_gateway_review_bundle(
+                capture,
+                source_events_path=source_events,
+                mode="proxy-capture-review",
+                bundle_ref="bundle:mcp-gateway/aitrade/proxy-review",
+                reviewer_ref="oidc:auditor.example/mcp-reviewer",
+                generated_at="2026-07-12T03:20:00Z",
+            )
+            raw_events = json.loads(source_events.read_text(encoding="utf-8"))
+            source_events.write_text(json.dumps(raw_events, indent=4, sort_keys=True), encoding="utf-8")
+
+            result = verify_mcp_gateway_review_bundle(bundle, source_events_path=source_events)
+
+        self.assertFalse(result.ok)
+        self.assertTrue(any("proxy_events_artifact" in error for error in result.errors), result.errors)
+
+    def test_cli_mcp_gateway_review_bundle_round_trip(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp = Path(tmp_dir)
+            capture_path = tmp / "mcp-proxy-capture.json"
+            bundle_path = tmp / "mcp-gateway-review-bundle.json"
+            entry_path = tmp / "mcp-gateway-review-bundle-entry.json"
+            chain_path = tmp / "mcp-gateway-review-chain.json"
+            capture = self._proxy_capture()
+            capture_path.write_text(json.dumps(capture, indent=2, sort_keys=True), encoding="utf-8")
+            env = {**os.environ, "PYTHONPATH": str(ROOT / "src")}
+            base = [sys.executable, "-m", "trustai"]
+
+            subprocess.run(
+                base
+                + [
+                    "mcp-gateway-review-bundle",
+                    str(capture_path),
+                    "--events",
+                    str(MCP_PROXY),
+                    "--mode",
+                    "proxy-capture-review",
+                    "--bundle-ref",
+                    "bundle:mcp-gateway/aitrade/proxy-review",
+                    "--reviewer-ref",
+                    "oidc:auditor.example/mcp-reviewer",
+                    "--generated-at",
+                    "2026-07-12T03:20:00Z",
+                    "--out",
+                    str(bundle_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            subprocess.run(
+                base + ["mcp-gateway-review-bundle-verify", str(bundle_path), "--events", str(MCP_PROXY)],
+                cwd=ROOT,
+                env=env,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            subprocess.run(
+                base
+                + [
+                    "mcp-gateway-review-bundle-append",
+                    str(bundle_path),
+                    "--events",
+                    str(MCP_PROXY),
+                    "--state",
+                    str(chain_path),
+                    "--tenant",
+                    "mcp-gateway-review-local",
+                    "--out",
+                    str(entry_path),
+                ],
+                cwd=ROOT,
+                env=env,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            bundle = json.loads(bundle_path.read_text(encoding="utf-8"))
+            entry = json.loads(entry_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(MCP_GATEWAY_REVIEW_BUNDLE_SCHEMA, bundle["schema"])
+        self.assertEqual(MCP_GATEWAY_REVIEW_BUNDLE_ENTRY_TYPE, entry["entry_type"])
+        self.assertEqual(bundle["bundle_id"], entry["payload"]["bundle_id"])
+        self.assertEqual(capture["capture_id"], bundle["capture_binding"]["capture_id"])
     def test_mcp_stdio_proxy_runs_upstream_and_writes_signed_capture(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp = Path(tmp_dir)

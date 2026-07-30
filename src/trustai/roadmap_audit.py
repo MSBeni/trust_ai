@@ -185,8 +185,10 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
         "evidence_paths": [
             "docs/specs/mcp-gateway-v0.1.md",
             "docs/specs/mcp-gateway-production-authority-v0.1.md",
+            "docs/specs/mcp-gateway-review-bundle-v0.1.md",
             "src/trustai/mcp_gateway.py",
             "src/trustai/mcp_gateway_authority.py",
+            "src/trustai/mcp_gateway_review_bundle.py",
             "examples/aitrade/mcp-transcript.json",
             "examples/aitrade/mcp-proxy-events.json",
             "examples/aitrade/mcp-stdio-client-messages.json",
@@ -196,7 +198,7 @@ ROADMAP_REQUIREMENTS: tuple[dict[str, Any], ...] = (
             "tests/test_ingest_runtime.py",
         ],
         "external_authority": [
-            "MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, verifier-recomputed redaction summaries, and explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence.",
+            "MCP proxy capture receipts cover retained raw proxy event export byte replay, stdio client message artifact replay, upstream stdout response artifact replay, JSON-RPC 2.0 envelope validation, verifier-recomputed redaction summaries, explicit result/error response-kind binding for supplied JSON-RPC request/response envelopes, and signed MCP gateway review bundles for third-party offline handoff; MCP gateway production authority dossiers cover the local/reference authority checklist for proxy worker fleets, tool registry controls, session authentication, request/response replay, immutable audit logs, scheduler, policy, network, KMS, observability evidence, and per-evidence source_context bound to the transcript hash chain; actual fresh provider-owned proxy and audit exports remain external deployment evidence.",
         ],
     },
     {

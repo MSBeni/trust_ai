@@ -888,6 +888,14 @@ from .mcp_gateway_authority import (
     write_mcp_gateway_authority_dossier,
     write_mcp_gateway_authority_evidence_bundle,
 )
+from .mcp_gateway_review_bundle import (
+    MCP_GATEWAY_REVIEW_BUNDLE_MODES,
+    append_mcp_gateway_review_bundle,
+    build_mcp_gateway_review_bundle,
+    load_mcp_gateway_review_bundle,
+    verify_mcp_gateway_review_bundle,
+    write_mcp_gateway_review_bundle,
+)
 from .object_store import WORMStore
 from .policy import append_policy_decision, load_policy_pack
 from .policy_export import export_policy_pack, write_policy_export
@@ -6488,6 +6496,100 @@ def cmd_mcp_gateway_authority_append(args: argparse.Namespace) -> int:
     print(f"dossier id: {dossier['dossier_id']}")
     print(f"chain root: {chain.tree()['root']}")
     return 0
+
+
+def _load_optional_json(path: str | None) -> dict[str, Any] | None:
+    return _load_json(path) if path else None
+
+
+def cmd_mcp_gateway_review_bundle(args: argparse.Namespace) -> int:
+    capture = load_mcp_proxy_capture(args.capture)
+    stdio_export = _load_optional_json(args.stdio_export)
+    authority_bundle = load_mcp_gateway_authority_evidence_bundle(args.authority_evidence_bundle) if args.authority_evidence_bundle else None
+    try:
+        bundle = build_mcp_gateway_review_bundle(
+            capture,
+            source_events_path=args.events,
+            capture_path=args.capture,
+            stdio_export=stdio_export,
+            stdio_export_path=args.stdio_export,
+            source_messages_path=args.client_messages,
+            stdout_artifact_path=args.stdout_artifact,
+            authority_evidence_bundle=authority_bundle,
+            authority_evidence_bundle_path=args.authority_evidence_bundle,
+            mode=args.mode,
+            bundle_ref=args.bundle_ref,
+            reviewer_ref=args.reviewer_ref,
+            generated_at=args.generated_at,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"MCP gateway review bundle failed: {exc}", file=sys.stderr)
+        return 1
+    result = verify_mcp_gateway_review_bundle(
+        bundle,
+        source_events_path=args.events,
+        source_messages_path=args.client_messages,
+        stdout_artifact_path=args.stdout_artifact,
+        key=args.key,
+    )
+    if not result.ok:
+        print("MCP gateway review bundle verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_mcp_gateway_review_bundle(args.out, bundle)
+    print(f"MCP gateway review bundle: {args.out}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"capture id: {bundle['capture_binding']['capture_id']}")
+    return 0
+
+
+def cmd_mcp_gateway_review_bundle_verify(args: argparse.Namespace) -> int:
+    bundle = load_mcp_gateway_review_bundle(args.bundle)
+    result = verify_mcp_gateway_review_bundle(
+        bundle,
+        source_events_path=args.events,
+        source_messages_path=args.client_messages,
+        stdout_artifact_path=args.stdout_artifact,
+        key=args.key,
+    )
+    if result.ok:
+        print(f"verified MCP gateway review bundle: {args.bundle}")
+        print(f"bundle id: {bundle['bundle_id']}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"MCP gateway review bundle verification failed: {args.bundle}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+def cmd_mcp_gateway_review_bundle_append(args: argparse.Namespace) -> int:
+    chain = _load_chain(args)
+    bundle = load_mcp_gateway_review_bundle(args.bundle)
+    try:
+        entry = append_mcp_gateway_review_bundle(
+            chain,
+            bundle,
+            source_events_path=args.events,
+            source_messages_path=args.client_messages,
+            stdout_artifact_path=args.stdout_artifact,
+            key=args.key,
+        )
+    except ValueError as exc:
+        print(f"MCP gateway review bundle append failed: {exc}", file=sys.stderr)
+        return 1
+    chain.save()
+    if args.out:
+        _write_json(args.out, entry)
+        print(f"MCP gateway review bundle entry: {args.out}")
+    print(f"MCP gateway review bundle entry id: {entry['entry_id']}")
+    print(f"bundle id: {bundle['bundle_id']}")
+    print(f"chain root: {chain.tree()['root']}")
+    return 0
+
 
 def cmd_attest(args: argparse.Namespace) -> int:
     chain = _load_chain(args)
@@ -24187,6 +24289,36 @@ def build_parser() -> argparse.ArgumentParser:
     mcp_proxy_append.add_argument("--key")
     _add_state_args(mcp_proxy_append)
     mcp_proxy_append.set_defaults(func=cmd_mcp_proxy_capture_append)
+
+    def _add_mcp_gateway_review_bundle_source_args(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--events", help="retained raw MCP proxy events export for byte replay")
+        parser.add_argument("--client-messages", help="retained MCP stdio client messages artifact for byte replay")
+        parser.add_argument("--stdout-artifact", help="retained MCP stdio upstream stdout JSONL artifact for byte replay")
+        parser.add_argument("--key")
+
+    mcp_gateway_review_bundle = subparsers.add_parser("mcp-gateway-review-bundle", help="write a signed MCP gateway offline review bundle")
+    mcp_gateway_review_bundle.add_argument("capture")
+    mcp_gateway_review_bundle.add_argument("--stdio-export", help="optional MCP stdio event export JSON to embed")
+    mcp_gateway_review_bundle.add_argument("--authority-evidence-bundle", help="optional MCP gateway authority evidence bundle JSON to embed")
+    mcp_gateway_review_bundle.add_argument("--mode", choices=sorted(MCP_GATEWAY_REVIEW_BUNDLE_MODES), default="offline-review")
+    mcp_gateway_review_bundle.add_argument("--bundle-ref", required=True)
+    mcp_gateway_review_bundle.add_argument("--reviewer-ref", required=True)
+    mcp_gateway_review_bundle.add_argument("--generated-at")
+    mcp_gateway_review_bundle.add_argument("--out", default="artifacts/mcp-gateway-review-bundle.json")
+    _add_mcp_gateway_review_bundle_source_args(mcp_gateway_review_bundle)
+    mcp_gateway_review_bundle.set_defaults(func=cmd_mcp_gateway_review_bundle)
+
+    mcp_gateway_review_bundle_verify = subparsers.add_parser("mcp-gateway-review-bundle-verify", help="verify a signed MCP gateway offline review bundle")
+    mcp_gateway_review_bundle_verify.add_argument("bundle")
+    _add_mcp_gateway_review_bundle_source_args(mcp_gateway_review_bundle_verify)
+    mcp_gateway_review_bundle_verify.set_defaults(func=cmd_mcp_gateway_review_bundle_verify)
+
+    mcp_gateway_review_bundle_append = subparsers.add_parser("mcp-gateway-review-bundle-append", help="append a verified MCP gateway review bundle as chain evidence")
+    mcp_gateway_review_bundle_append.add_argument("bundle")
+    mcp_gateway_review_bundle_append.add_argument("--out", default="artifacts/mcp-gateway-review-bundle-entry.json")
+    _add_mcp_gateway_review_bundle_source_args(mcp_gateway_review_bundle_append)
+    _add_state_args(mcp_gateway_review_bundle_append)
+    mcp_gateway_review_bundle_append.set_defaults(func=cmd_mcp_gateway_review_bundle_append)
 
     def _add_mcp_gateway_authority_fields(parser: argparse.ArgumentParser) -> None:
         parser.add_argument("--mode", choices=sorted(MCP_GATEWAY_AUTHORITY_MODES), default="proxy-dossier")

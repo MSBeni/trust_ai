@@ -143,3 +143,16 @@ python -m trustai mcp-proxy-capture examples/aitrade/mcp-proxy-events.json --age
 python -m trustai mcp-proxy-capture-verify artifacts/mcp-proxy-capture.json --events examples/aitrade/mcp-proxy-events.json
 python -m trustai mcp-proxy-capture-append artifacts/mcp-proxy-capture.json --events examples/aitrade/mcp-proxy-events.json --state .trustai/mcp-proxy-capture-demo/evidence-chain.json --tenant mcp-proxy-capture-local --out artifacts/mcp-proxy-capture-entry.json
 ```
+
+For third-party handoff, a verified capture can be wrapped in a signed
+`trustai.mcp-gateway-review-bundle/0.1` artifact. The review bundle embeds the
+capture receipt, capture binding, optional stdio export, optional MCP gateway
+authority evidence bundle, retained source artifact hashes, and replay controls
+so an auditor, insurer, or model-risk reviewer can verify the capture without
+using the operator's dashboard.
+
+```powershell
+python -m trustai mcp-gateway-review-bundle artifacts/mcp-proxy-capture.json --events examples/aitrade/mcp-proxy-events.json --mode proxy-capture-review --bundle-ref bundle:mcp-gateway/aitrade/proxy-review --reviewer-ref oidc:auditor.example/mcp-reviewer --generated-at 2026-07-12T03:20:00Z --out artifacts/mcp-gateway-review-bundle.json
+python -m trustai mcp-gateway-review-bundle-verify artifacts/mcp-gateway-review-bundle.json --events examples/aitrade/mcp-proxy-events.json
+python -m trustai mcp-gateway-review-bundle-append artifacts/mcp-gateway-review-bundle.json --events examples/aitrade/mcp-proxy-events.json --state .trustai/mcp-gateway-review/evidence-chain.json --tenant mcp-gateway-review --out artifacts/mcp-gateway-review-bundle-entry.json
+```

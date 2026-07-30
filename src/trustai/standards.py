@@ -32,6 +32,7 @@ REQUIRED_SPEC_PATHS = (
     "docs/specs/collector-worker-v0.1.md",
     "docs/specs/mcp-gateway-v0.1.md",
     "docs/specs/mcp-gateway-production-authority-v0.1.md",
+    "docs/specs/mcp-gateway-review-bundle-v0.1.md",
     "docs/specs/keyring-v0.1.md",
     "docs/specs/trust-authority-receipt-v0.1.md",
     "docs/specs/trust-authority-provider-attestation-v0.1.md",
