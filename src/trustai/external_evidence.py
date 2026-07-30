@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import binascii
 import copy
+import csv
 import json
 import shlex
 from dataclasses import dataclass
@@ -7665,6 +7666,65 @@ def write_external_evidence_production_replacement_remediation_owner_fulfillment
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(template, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def write_external_evidence_production_replacement_remediation_owner_fulfillment_template_csv(path: str | Path, template: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    fields = [
+        "task",
+        "owner_hint",
+        "requirement_id",
+        "authority_kind",
+        "review_status",
+        "source_uri_status",
+        "source_uri",
+        "source_file",
+        "snapshot_out",
+        "intake_out",
+        "issuer",
+        "subject",
+        "issued_at",
+        "expires_at",
+        "description",
+        "blocking_reasons",
+        "remediation_action",
+    ]
+    requests_by_task = {
+        str(request.get("task") or ""): request
+        for request in template.get("requests", [])
+        if isinstance(request, dict)
+    }
+    with target.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fields)
+        writer.writeheader()
+        for fulfillment in template.get("fulfillments", []):
+            if not isinstance(fulfillment, dict):
+                continue
+            task = str(fulfillment.get("task") or "")
+            request = requests_by_task.get(task, {})
+            reasons = request.get("blocking_reasons") if isinstance(request.get("blocking_reasons"), list) else []
+            writer.writerow(
+                {
+                    "task": task,
+                    "owner_hint": request.get("owner_hint"),
+                    "requirement_id": request.get("requirement_id"),
+                    "authority_kind": request.get("authority_kind"),
+                    "review_status": request.get("review_status"),
+                    "source_uri_status": request.get("source_uri_status"),
+                    "source_uri": fulfillment.get("source_uri"),
+                    "source_file": fulfillment.get("source_file"),
+                    "snapshot_out": request.get("snapshot_out") or fulfillment.get("snapshot_out"),
+                    "intake_out": request.get("intake_out") or fulfillment.get("intake_out"),
+                    "issuer": fulfillment.get("issuer"),
+                    "subject": fulfillment.get("subject"),
+                    "issued_at": fulfillment.get("issued_at"),
+                    "expires_at": fulfillment.get("expires_at"),
+                    "description": fulfillment.get("description"),
+                    "blocking_reasons": ";".join(str(reason) for reason in reasons),
+                    "remediation_action": request.get("remediation_action"),
+                }
+            )
 
 
 def load_external_evidence_production_replacement_remediation_owner_fulfillment_template(path: str | Path) -> dict[str, Any]:

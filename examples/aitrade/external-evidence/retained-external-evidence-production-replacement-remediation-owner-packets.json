@@ -3710,12 +3710,12 @@
       ]
     }
   ],
-  "production_replacement_remediation_owner_packet_bundle_id": "f9b46a9063532f8fa7ff3c1fa6431080b005c1ffa2428a8b24eb9643719ec49c",
+  "production_replacement_remediation_owner_packet_bundle_id": "3569c448d35c274989ee8e7f3171a2c1105d7e0374576ea8e57cc9940e9bad53",
   "schema": "trustai.external-evidence-production-replacement-remediation-owner-packet-bundle/0.1",
   "source_remediation_queue": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "production_replacement_remediation_queue_hash": "5ee2d329d7c4ebec6bc3cfd824dcdb16a7a0736105b774cd307ff008156be064",
-    "production_replacement_remediation_queue_id": "350e61ad2c62c6be40cb29466261a8974a66cb5960d36b67351e032db4d62105",
+    "production_replacement_remediation_queue_hash": "e7d29b6040bff18b0144ad3f2de5a86ebae8b3031c379e3c1f56949d0e684aee",
+    "production_replacement_remediation_queue_id": "addf1c690ef6e1ff0743c655a6b5dd8f4652818072a6f9df1a5224af66ca4dde",
     "queue_status": "blocked",
     "schema": "trustai.external-evidence-production-replacement-remediation-queue/0.1"
   },

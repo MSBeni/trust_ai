@@ -1,4 +1,5 @@
 import base64
+import csv
 import copy
 import json
 import shutil
@@ -1995,6 +1996,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             remediation_owner_packets_markdown_path = tmp_path / "replacement-remediation-owner-packets.md"
             remediation_owner_fulfillment_template_path = tmp_path / "replacement-remediation-owner-fulfillment-template.json"
             remediation_owner_fulfillment_template_markdown_path = tmp_path / "replacement-remediation-owner-fulfillment-template.md"
+            remediation_owner_fulfillment_template_csv_path = tmp_path / "replacement-remediation-owner-fulfillment-template.csv"
             remediation_owner_fulfillment_review_path = tmp_path / "replacement-remediation-owner-fulfillment-review.json"
             remediation_owner_fulfillment_review_markdown_path = tmp_path / "replacement-remediation-owner-fulfillment-review.md"
             remediation_owner_fulfillment_review_source_map_path = tmp_path / "replacement-remediation-owner-fulfilled-source-map.json"
@@ -2365,6 +2367,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                     str(remediation_owner_fulfillment_template_path),
                     "--markdown",
                     str(remediation_owner_fulfillment_template_markdown_path),
+                    "--csv",
+                    str(remediation_owner_fulfillment_template_csv_path),
                 ],
                 cwd=ROOT,
                 check=True,
@@ -2373,6 +2377,14 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
                 remediation_owner_fulfillment_template_path
             )
             self.assertEqual(remediation_owner_fulfillment_template, cli_remediation_owner_fulfillment_template)
+            with remediation_owner_fulfillment_template_csv_path.open(encoding="utf-8", newline="") as handle:
+                csv_rows = list(csv.DictReader(handle))
+            self.assertEqual(remediation_owner_fulfillment_template["summary"]["fulfillment_count"], len(csv_rows))
+            self.assertEqual(remediation_owner_fulfillment_template["fulfillments"][0]["task"], csv_rows[0]["task"])
+            self.assertEqual("REPLACE_WITH_LIVE_AUTHORITY_URI", csv_rows[0]["source_uri"])
+            self.assertIn("owner_hint", csv_rows[0])
+            self.assertIn("snapshot_out", csv_rows[0])
+            self.assertIn("intake_out", csv_rows[0])
             subprocess.run(
                 [
                     sys.executable,
@@ -3100,6 +3112,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         replacement_submitted_template = load_external_evidence_production_replacement_intake_template(ROOT / "examples/aitrade/external-evidence/retained-external-evidence-production-replacement-submitted-template.json")
         replacement_submission_review = load_external_evidence_production_replacement_submission_review(ROOT / "examples/aitrade/external-evidence/retained-external-evidence-production-replacement-submission-review.json")
         replacement_remediation_owner_fulfillment_review = load_external_evidence_production_replacement_remediation_owner_fulfillment_review(ROOT / "examples/aitrade/external-evidence/retained-external-evidence-production-replacement-remediation-owner-fulfillment-review.json")
+        with (ROOT / "examples/aitrade/external-evidence/retained-external-evidence-production-replacement-remediation-owner-fulfillment-template.csv").open(encoding="utf-8", newline="") as handle:
+            replacement_remediation_owner_fulfillment_template_csv_rows = list(csv.DictReader(handle))
         replacement_remediation_application = load_external_evidence_production_replacement_remediation_application(ROOT / "examples/aitrade/external-evidence/retained-external-evidence-production-replacement-remediation-application.json")
         replacement_applied_submission_review = load_external_evidence_production_replacement_submission_review(ROOT / "examples/aitrade/external-evidence/retained-external-evidence-production-replacement-remediation-applied-submission-review.json")
         replacement_closure = load_external_evidence_production_replacement_closure(ROOT / "examples/aitrade/external-evidence/retained-external-evidence-production-replacement-closure.json")
@@ -3187,6 +3201,10 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual(72, replacement_closure["summary"]["placeholder_source_uri_count"])
         self.assertEqual(72, replacement_fulfilled_source_map["summary"]["entry_count"])
         self.assertEqual(72, replacement_fulfilled_source_map["summary"]["placeholder_source_uri_count"])
+        self.assertEqual(72, len(replacement_remediation_owner_fulfillment_template_csv_rows))
+        self.assertEqual("REPLACE_WITH_LIVE_AUTHORITY_URI", replacement_remediation_owner_fulfillment_template_csv_rows[0]["source_uri"])
+        self.assertEqual(72, sum(1 for row in replacement_remediation_owner_fulfillment_template_csv_rows if row["source_uri"] == "REPLACE_WITH_LIVE_AUTHORITY_URI"))
+        self.assertEqual(10, len({row["owner_hint"] for row in replacement_remediation_owner_fulfillment_template_csv_rows}))
 
     def test_retained_external_evidence_examples_verify(self):
         audit = json.loads((ROOT / "examples/aitrade/external-evidence/source-roadmap-audit.json").read_text(encoding="utf-8"))

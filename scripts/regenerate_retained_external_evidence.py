@@ -1372,6 +1372,8 @@ def refresh_retained_artifacts() -> None:
         path("retained-external-evidence-production-replacement-remediation-owner-fulfillment-template.json"),
         "--markdown",
         path("retained-external-evidence-production-replacement-remediation-owner-fulfillment-template.md"),
+        "--csv",
+        path("retained-external-evidence-production-replacement-remediation-owner-fulfillment-template.csv"),
     )
     run(
         "external-evidence-production-replacement-remediation-owner-fulfillment-review",

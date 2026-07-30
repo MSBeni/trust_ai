@@ -1319,6 +1319,7 @@ from .external_evidence import (
     write_external_evidence_production_replacement_remediation_owner_packets,
     write_external_evidence_production_replacement_remediation_owner_packets_markdown,
     write_external_evidence_production_replacement_remediation_owner_fulfillment_template,
+    write_external_evidence_production_replacement_remediation_owner_fulfillment_template_csv,
     write_external_evidence_production_replacement_remediation_owner_fulfillment_review,
     write_external_evidence_production_replacement_remediation_owner_fulfillment_template_markdown,
     write_external_evidence_production_replacement_remediation_owner_fulfillment_review_markdown,
@@ -17501,6 +17502,9 @@ def cmd_external_evidence_production_replacement_remediation_owner_fulfillment_t
     if args.markdown:
         write_external_evidence_production_replacement_remediation_owner_fulfillment_template_markdown(args.markdown, template)
         print(f"external evidence production replacement remediation owner fulfillment template markdown: {args.markdown}")
+    if args.csv:
+        write_external_evidence_production_replacement_remediation_owner_fulfillment_template_csv(args.csv, template)
+        print(f"external evidence production replacement remediation owner fulfillment template csv: {args.csv}")
     summary = template["summary"]
     print(f"external evidence production replacement remediation owner fulfillment template: {args.out}")
     print(
@@ -29486,6 +29490,7 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_production_replacement_remediation_owner_fulfillment_template.add_argument("--generated-at")
     external_evidence_production_replacement_remediation_owner_fulfillment_template.add_argument("--out", default="artifacts/external-evidence-production-replacement-remediation-owner-fulfillment-template.json")
     external_evidence_production_replacement_remediation_owner_fulfillment_template.add_argument("--markdown", default="artifacts/external-evidence-production-replacement-remediation-owner-fulfillment-template.md")
+    external_evidence_production_replacement_remediation_owner_fulfillment_template.add_argument("--csv", default="artifacts/external-evidence-production-replacement-remediation-owner-fulfillment-template.csv")
     external_evidence_production_replacement_remediation_owner_fulfillment_template.set_defaults(func=cmd_external_evidence_production_replacement_remediation_owner_fulfillment_template)
 
     external_evidence_production_replacement_remediation_owner_fulfillment_template_verify = subparsers.add_parser("external-evidence-production-replacement-remediation-owner-fulfillment-template-verify", help="verify a production replacement remediation owner fulfillment template against owner packets")
