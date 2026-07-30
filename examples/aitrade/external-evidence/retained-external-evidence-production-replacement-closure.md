@@ -1,6 +1,6 @@
 # External Evidence Production Replacement Closure
 
-- Closure ID: `242ee241be97e3912b6a4a7de8b42a20d9e066d51ed2b522836df4cb21bf7990`
+- Closure ID: `9f9b3569c12d3430238bb98ac40a63e378b349e163e5b1438306a3b98eabb1bc`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `blocked`
 - Readiness status: `not-ready`

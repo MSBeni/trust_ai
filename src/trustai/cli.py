@@ -2958,6 +2958,14 @@ def cmd_control_summary(args: argparse.Namespace) -> int:
             summary["external_evidence_production_replacement_lifecycle"] = (
                 control.recent_external_evidence_production_replacement_lifecycle()
             )
+        if args.production_replacement_worklist:
+            try:
+                summary["production_replacement_worklist"] = control.production_replacement_worklist(
+                    limit=args.production_replacement_worklist_limit
+                )
+            except ValueError as exc:
+                print(str(exc), file=sys.stderr)
+                return 2
         if args.production_replacement_closures:
             summary["external_evidence_production_replacement_closures"] = (
                 control.recent_external_evidence_production_replacement_closures()
@@ -23692,6 +23700,8 @@ def build_parser() -> argparse.ArgumentParser:
     control_summary.add_argument("--readiness", action="store_true")
     control_summary.add_argument("--external-evidence", action="store_true")
     control_summary.add_argument("--production-replacement-lifecycle", action="store_true")
+    control_summary.add_argument("--production-replacement-worklist", action="store_true")
+    control_summary.add_argument("--production-replacement-worklist-limit", type=int, default=20)
     control_summary.add_argument("--production-replacement-closures", action="store_true")
     control_summary.add_argument("--external-authority-gaps", action="store_true")
     control_summary.add_argument("--authority-kind", help="filter --external-authority-gaps by exact authority kind")

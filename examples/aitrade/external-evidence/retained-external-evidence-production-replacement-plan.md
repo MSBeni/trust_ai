@@ -1,6 +1,6 @@
 # External Evidence Production Replacement Plan
 
-- Replacement plan ID: `d4944e3b003ea24130335a3add7d59c3e6a83077b24e542002bec3cd73ef0606`
+- Replacement plan ID: `72bed45eef415346e0162d5853ac8405bbb910ae0843af05aa633360c454d376`
 - Generated at: `2026-07-12T00:01:00Z`
 - Status: `open`
 - Open replacement tasks: 72

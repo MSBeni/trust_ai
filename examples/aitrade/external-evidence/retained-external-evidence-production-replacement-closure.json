@@ -22,7 +22,7 @@
     "Resolve blocked submission-review tasks before collecting production replacement evidence.",
     "Collect verified production snapshots and intake receipts, rebuild the manifest, and rerun external-evidence-readiness with --require-ready."
   ],
-  "production_replacement_closure_id": "242ee241be97e3912b6a4a7de8b42a20d9e066d51ed2b522836df4cb21bf7990",
+  "production_replacement_closure_id": "9f9b3569c12d3430238bb98ac40a63e378b349e163e5b1438306a3b98eabb1bc",
   "readiness_blockers": [
     "72 covered authority units use example or non-production evidence"
   ],
@@ -30,14 +30,14 @@
   "sources": {
     "production_replacement_submission_review": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "production_replacement_submission_review_hash": "b20239cd71657054708f57e8e1a532a04c8476ab743a8ca455ec9395a14deaa8",
-      "production_replacement_submission_review_id": "4f50b9cff3f6108e45dc3d65a0b0f4534db6b8392b1907bef371b5ba1e4ea449",
+      "production_replacement_submission_review_hash": "09afa007b90b66dc8377eeb312dff96540a67cdd06444a65ab57f9b1941e5999",
+      "production_replacement_submission_review_id": "608d53b1bc2f7fa47d7a397f771d36343303e4daef6fbf6919597ede60984b1b",
       "schema": "trustai.external-evidence-production-replacement-submission-review/0.1"
     },
     "readiness": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "readiness_hash": "e457a7da9b58280febb6b07f5a09f8aa88c37da74e7966cc6bb21d0e9e6c4c71",
-      "readiness_id": "4543561debd80ed2ce3b0b25073f78e34df8cd2ed73a4900487d653c319f017d",
+      "readiness_hash": "9f192a79bcfc049e803a6769d7b48b8defc8bc571e75faa26e025ff2b1c7cb11",
+      "readiness_id": "dcfb595b796b50774403a5c654bc79f6b620f338039d749fbe7d1b6a71b4f908",
       "schema": "trustai.external-evidence-readiness/0.1"
     }
   },

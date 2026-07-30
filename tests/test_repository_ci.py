@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 README = ROOT / "README.md"
 PYTHON_CI = ROOT / ".github" / "workflows" / "python-ci.yml"
 GO_CI = ROOT / ".github" / "workflows" / "go-verifier.yml"
+CLI = ROOT / "src" / "trustai" / "cli.py"
 ARCHITECTURE_NOTE = ROOT / "docs" / "architecture" / "phase-0.md"
 EXTERNAL_EVIDENCE_SPEC = ROOT / "docs" / "specs" / "external-evidence-manifest-v0.1.md"
 RETAINED_EVIDENCE_SCRIPT = ROOT / "scripts" / "regenerate_retained_external_evidence.py"
@@ -92,6 +93,13 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn("tests.test_shadow_replay_review_bundle", workflow)
         self.assertIn("tests.test_tamper_stress", workflow)
         self.assertIn("tests.test_standards", workflow)
+
+    def test_control_summary_exposes_production_replacement_worklist(self):
+        cli = CLI.read_text(encoding="utf-8")
+
+        self.assertIn("--production-replacement-worklist", cli)
+        self.assertIn("--production-replacement-worklist-limit", cli)
+        self.assertIn("production_replacement_worklist", cli)
 
     def test_retained_evidence_guard_runs_before_worklist_verification(self):
         workflow = PYTHON_CI.read_text(encoding="utf-8")

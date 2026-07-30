@@ -1289,6 +1289,16 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertTrue(readiness["local_reference_complete"])
                 self.assertTrue(readiness["collection_run_present"])
                 self.assertTrue(readiness["collection_run_complete"])
+                self.assertTrue(readiness["production_replacement_collection_package_present"])
+                self.assertFalse(readiness["production_replacement_collection_package_ready"])
+                self.assertEqual("blocked", readiness["production_replacement_collection_package_summary"]["collection_status"])
+                self.assertEqual(72, readiness["production_replacement_collection_package_summary"]["blocked_task_count"])
+                self.assertEqual(72, readiness["production_replacement_collection_package_summary"]["placeholder_source_uri_count"])
+                self.assertEqual(72, readiness["production_replacement_collection_package_summary"]["blocked_task_total"])
+                self.assertIn(
+                    "release engineering",
+                    readiness["production_replacement_collection_package_summary"]["blocked_task_counts_by_owner"],
+                )
                 self.assertTrue(readiness["production_replacement_closure_present"])
                 self.assertFalse(readiness["production_replacement_closure_closed"])
                 self.assertEqual(72, readiness["production_replacement_closure_summary"]["blocked_task_count"])
@@ -1328,6 +1338,9 @@ class ControlPlaneTests(unittest.TestCase):
                     any("external authority evidence incomplete" in blocker for blocker in readiness["blockers"])
                 )
                 self.assertTrue(
+                    any("production replacement collection package is not ready" in blocker for blocker in readiness["blockers"])
+                )
+                self.assertTrue(
                     any("production replacement closure is not closed" in blocker for blocker in readiness["blockers"])
                 )
                 self.assertTrue(
@@ -1356,6 +1369,20 @@ class ControlPlaneTests(unittest.TestCase):
                 self.assertEqual(72, len(lifecycle_by_kind["submission-review"]["tasks"]))
                 self.assertEqual("blocked", lifecycle_by_kind["collection-package"]["status"])
                 self.assertEqual(72, lifecycle_by_kind["collection-package"]["blocked_task_count"])
+                production_replacement_worklist = control.production_replacement_worklist(limit=3)
+                self.assertEqual("blocked", production_replacement_worklist["collection_status"])
+                self.assertFalse(production_replacement_worklist["collection_package_ready"])
+                self.assertEqual(72, production_replacement_worklist["blocked_task_count"])
+                self.assertEqual(72, production_replacement_worklist["blocked_task_total"])
+                self.assertEqual(3, len(production_replacement_worklist["blocked_tasks"]))
+                self.assertEqual("oss-verifier-and-public-spec", production_replacement_worklist["blocked_tasks"][0]["requirement_id"])
+                self.assertEqual("ci-run", production_replacement_worklist["blocked_tasks"][0]["authority_kind"])
+                self.assertEqual("placeholder", production_replacement_worklist["blocked_tasks"][0]["source_uri_status"])
+                self.assertEqual(72, sum(production_replacement_worklist["blocked_task_counts_by_owner"].values()))
+                self.assertEqual(72, sum(production_replacement_worklist["blocked_task_counts_by_authority_kind"].values()))
+                self.assertIsNotNone(production_replacement_worklist["latest_closure"])
+                with self.assertRaises(ValueError):
+                    control.production_replacement_worklist(limit=0)
                 production_replacement_closures = control.recent_external_evidence_production_replacement_closures()
                 self.assertEqual(1, len(production_replacement_closures))
                 self.assertEqual("blocked", production_replacement_closures[0]["summary"]["closure_status"])

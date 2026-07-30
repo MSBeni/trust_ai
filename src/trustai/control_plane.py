@@ -7462,6 +7462,87 @@ class ControlPlane:
             item["body"] = _decode_json_object(item.pop("body_json", None))
             items.append(item)
         return items
+
+    def production_replacement_worklist(self, limit: int = 20) -> dict[str, Any]:
+        if limit < 1:
+            raise ValueError("limit must be a positive integer")
+        lifecycle = self.recent_external_evidence_production_replacement_lifecycle(limit=100)
+        collection_package = next(
+            (item for item in lifecycle if item.get("artifact_kind") == "collection-package"),
+            None,
+        )
+        closures = self.recent_external_evidence_production_replacement_closures(limit=1)
+        package_body = collection_package.get("body") if collection_package else {}
+        if not isinstance(package_body, dict):
+            package_body = {}
+        summary = collection_package.get("summary") if collection_package else {}
+        if not isinstance(summary, dict):
+            summary = {}
+        tasks = package_body.get("blocked_tasks")
+        if not isinstance(tasks, list):
+            tasks = collection_package.get("tasks") if collection_package else []
+        if not isinstance(tasks, list):
+            tasks = []
+        blocked_tasks = [
+            {
+                "task": task.get("task"),
+                "task_ref": task.get("task_ref"),
+                "requirement_id": task.get("requirement_id"),
+                "authority_kind": task.get("authority_kind"),
+                "owner_hint": task.get("owner_hint"),
+                "source_uri": task.get("source_uri"),
+                "source_uri_status": task.get("source_uri_status"),
+                "review_status": task.get("review_status"),
+                "blocking_reasons": task.get("blocking_reasons") if isinstance(task.get("blocking_reasons"), list) else [],
+                "snapshot_out": task.get("snapshot_out"),
+                "intake_out": task.get("intake_out"),
+            }
+            for task in tasks
+            if isinstance(task, dict)
+        ]
+        by_owner: dict[str, int] = {}
+        by_authority_kind: dict[str, int] = {}
+        by_requirement: dict[str, int] = {}
+        for task in blocked_tasks:
+            owner = str(task.get("owner_hint") or "unassigned")
+            authority_kind = str(task.get("authority_kind") or "unknown")
+            requirement_id = str(task.get("requirement_id") or "unknown")
+            by_owner[owner] = by_owner.get(owner, 0) + 1
+            by_authority_kind[authority_kind] = by_authority_kind.get(authority_kind, 0) + 1
+            by_requirement[requirement_id] = by_requirement.get(requirement_id, 0) + 1
+        collection_status = summary.get("collection_status") or (collection_package.get("status") if collection_package else None)
+        next_actions = collection_package.get("next_actions") if collection_package else []
+        if not isinstance(next_actions, list):
+            next_actions = []
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "collection_package_present": collection_package is not None,
+            "collection_package_ready": bool(
+                collection_package
+                and collection_status == "ready-to-collect"
+                and int(summary.get("blocked_task_count") or 0) == 0
+                and int(summary.get("placeholder_source_uri_count") or 0) == 0
+            ),
+            "collection_status": collection_status,
+            "artifact_id": collection_package.get("artifact_id") if collection_package else None,
+            "artifact_hash": collection_package.get("artifact_hash") if collection_package else None,
+            "task_count": int(summary.get("task_count") or 0),
+            "ready_task_count": int(summary.get("ready_task_count") or 0),
+            "blocked_task_count": int(summary.get("blocked_task_count") or len(blocked_tasks)),
+            "placeholder_source_uri_count": int(summary.get("placeholder_source_uri_count") or 0),
+            "live_source_uri_count": int(summary.get("live_source_uri_count") or 0),
+            "snapshot_dir": summary.get("snapshot_dir"),
+            "intake_dir": summary.get("intake_dir"),
+            "blocked_task_counts_by_owner": dict(sorted(by_owner.items())),
+            "blocked_task_counts_by_authority_kind": dict(sorted(by_authority_kind.items())),
+            "blocked_task_counts_by_requirement": dict(sorted(by_requirement.items())),
+            "blocked_tasks": blocked_tasks[:limit],
+            "blocked_task_limit": limit,
+            "blocked_task_total": len(blocked_tasks),
+            "next_actions": next_actions,
+            "latest_closure": closures[0] if closures else None,
+        }
+
     def external_authority_gaps(
         self,
         *,
@@ -8827,6 +8908,35 @@ class ControlPlane:
             if not collection_run_strict:
                 blockers.append("latest external-evidence collection run was not collected with strict source snapshot and freshness checks")
 
+        production_replacement_worklist = self.production_replacement_worklist(limit=10)
+        production_replacement_collection_package_present = bool(
+            production_replacement_worklist.get("collection_package_present")
+        )
+        production_replacement_collection_package_ready = bool(
+            production_replacement_worklist.get("collection_package_ready")
+        )
+        production_replacement_collection_package_summary = {
+            "present": production_replacement_collection_package_present,
+            "collection_status": production_replacement_worklist.get("collection_status"),
+            "task_count": int(production_replacement_worklist.get("task_count") or 0),
+            "ready_task_count": int(production_replacement_worklist.get("ready_task_count") or 0),
+            "blocked_task_count": int(production_replacement_worklist.get("blocked_task_count") or 0),
+            "placeholder_source_uri_count": int(production_replacement_worklist.get("placeholder_source_uri_count") or 0),
+            "live_source_uri_count": int(production_replacement_worklist.get("live_source_uri_count") or 0),
+            "blocked_task_total": int(production_replacement_worklist.get("blocked_task_total") or 0),
+            "blocked_task_counts_by_owner": production_replacement_worklist.get("blocked_task_counts_by_owner") or {},
+            "blocked_task_counts_by_authority_kind": production_replacement_worklist.get("blocked_task_counts_by_authority_kind") or {},
+        }
+        if not production_replacement_collection_package_present:
+            blockers.append("no production replacement collection package indexed")
+        elif not production_replacement_collection_package_ready:
+            blockers.append(
+                "production replacement collection package is not ready: "
+                f"status={production_replacement_worklist.get('collection_status')}, "
+                f"blocked-tasks={production_replacement_collection_package_summary['blocked_task_count']}, "
+                f"placeholder-source-uris="
+                f"{production_replacement_collection_package_summary['placeholder_source_uri_count']}"
+            )
 
         latest_production_replacement_closure = summary.get("latest_external_evidence_production_replacement_closure")
         production_replacement_closure_present = latest_production_replacement_closure is not None
@@ -9094,6 +9204,7 @@ class ControlPlane:
                 local_reference_complete,
                 external_authority_complete,
                 collection_run_complete,
+                production_replacement_collection_package_ready,
                 production_replacement_closure_closed,
                 production_authority_ready,
                 phase_scoreboard_ready,
@@ -9114,6 +9225,8 @@ class ControlPlane:
             "external_authority_complete": external_authority_complete,
             "collection_run_present": collection_run_present,
             "collection_run_complete": collection_run_complete,
+            "production_replacement_collection_package_present": production_replacement_collection_package_present,
+            "production_replacement_collection_package_ready": production_replacement_collection_package_ready,
             "production_replacement_closure_present": production_replacement_closure_present,
             "production_replacement_closure_closed": production_replacement_closure_closed,
             "production_authority_ready": production_authority_ready,
@@ -9130,6 +9243,7 @@ class ControlPlane:
             "latest_roadmap_audit": latest_roadmap_audit,
             "latest_external_evidence_manifest": latest_external_manifest,
             "latest_external_evidence_collection_run": latest_collection_run,
+            "production_replacement_worklist": production_replacement_worklist,
             "latest_external_evidence_production_replacement_closure": latest_production_replacement_closure,
             "latest_authority_dossier": summary.get("latest_authority_dossier"),
             "latest_phase_scoreboard": latest_phase_scoreboard,
@@ -9144,6 +9258,7 @@ class ControlPlane:
             "product_scope_summary": product_scope_summary,
             "vertical_pack_summary": vertical_pack_summary,
             "reliability_report_summary": reliability_report_summary,
+            "production_replacement_collection_package_summary": production_replacement_collection_package_summary,
             "production_replacement_closure_summary": production_replacement_closure_summary,
             "authority_dossier_summary": authority_dossier_summary,
             "external_authority_gap_summary": external_gap_summary,

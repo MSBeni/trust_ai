@@ -449,6 +449,22 @@ class TrustAIHandler(BaseHTTPRequestHandler):
             finally:
                 control.close()
             return
+        if parsed.path in ("/v0/production-replacement-worklist", "/v0/control/production-replacement-worklist"):
+            query = parse_qs(parsed.query)
+            raw_limit = (query.get("limit") or ["20"])[0]
+            try:
+                limit = int(raw_limit)
+            except ValueError:
+                self._json_response(422, {"error": "limit must be a positive integer"})
+                return
+            control = self._control()
+            try:
+                self._json_response(200, control.production_replacement_worklist(limit=limit))
+            except ValueError as exc:
+                self._json_response(422, {"error": str(exc)})
+            finally:
+                control.close()
+            return
         if parsed.path in ("/v0/production-replacement-closures", "/v0/control/production-replacement-closures"):
             control = self._control()
             try:
