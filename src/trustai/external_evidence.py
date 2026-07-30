@@ -39,6 +39,7 @@ EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_INTAKE_TEMPLATE_SCHEMA = "trustai.exter
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_SCHEMA = "trustai.external-evidence-production-replacement-submission/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA = "trustai.external-evidence-production-replacement-submission-review/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_QUEUE_SCHEMA = "trustai.external-evidence-production-replacement-remediation-queue/0.1"
+EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_PACKET_SCHEMA = "trustai.external-evidence-production-replacement-remediation-owner-packet-bundle/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_COLLECTION_PACKAGE_SCHEMA = "trustai.external-evidence-production-replacement-collection-package/0.1"
 EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA = "trustai.external-evidence-production-replacement-closure/0.1"
 EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA = "trustai.external-evidence-git-remote-ref-export/0.1"
@@ -316,6 +317,13 @@ class ExternalEvidenceProductionReplacementSubmissionReviewVerification:
 
 @dataclass
 class ExternalEvidenceProductionReplacementRemediationQueueVerification:
+    ok: bool
+    errors: list[str]
+    warnings: list[str]
+
+
+@dataclass
+class ExternalEvidenceProductionReplacementRemediationOwnerPacketVerification:
     ok: bool
     errors: list[str]
     warnings: list[str]
@@ -4797,6 +4805,143 @@ def verify_external_evidence_production_replacement_remediation_queue(
 
 
 
+def _external_evidence_production_replacement_remediation_packet_values(items: list[dict[str, Any]], field: str) -> list[str]:
+    return sorted({str(item.get(field) or "unknown") for item in items if str(item.get(field) or "").strip()})
+
+
+def build_external_evidence_production_replacement_remediation_owner_packets(
+    queue: dict[str, Any],
+    *,
+    generated_at: str | None = None,
+) -> dict[str, Any]:
+    if queue.get("schema") != EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_QUEUE_SCHEMA:
+        raise ValueError(f"unsupported external evidence production replacement remediation queue schema: {queue.get('schema')}")
+    if queue.get("production_replacement_remediation_queue_id") != content_hash(without_keys(queue, "production_replacement_remediation_queue_id")):
+        raise ValueError("production_replacement_remediation_queue_id does not match canonical production replacement remediation queue body")
+    remediation_items = queue.get("remediation_items")
+    if not isinstance(remediation_items, list):
+        raise ValueError("production replacement remediation queue remediation_items must be a list")
+
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for item in remediation_items:
+        if not isinstance(item, dict):
+            continue
+        owner = str(item.get("owner_hint") or "unassigned").strip() or "unassigned"
+        grouped.setdefault(owner, []).append(item)
+
+    packets: list[dict[str, Any]] = []
+    for owner in sorted(grouped):
+        packet_items = sorted(
+            grouped[owner],
+            key=lambda item: (
+                str(item.get("requirement_id") or ""),
+                str(item.get("authority_kind") or ""),
+                str(item.get("task") or ""),
+            ),
+        )
+        packet_body = {
+            "packet_ref": f"production-replacement-remediation-owner-packet:owner_hint:{_source_map_path_segment(owner)}",
+            "owner_hint": owner,
+            "remediation_task_count": len(packet_items),
+            "blocked_task_count": len(packet_items),
+            "placeholder_source_uri_count": sum(1 for item in packet_items if item.get("source_uri_status") == "placeholder"),
+            "live_source_uri_count": sum(1 for item in packet_items if item.get("source_uri_status") == "live"),
+            "authority_kinds": _external_evidence_production_replacement_remediation_packet_values(packet_items, "authority_kind"),
+            "requirement_ids": _external_evidence_production_replacement_remediation_packet_values(packet_items, "requirement_id"),
+            "source_uri_statuses": _external_evidence_production_replacement_remediation_packet_values(packet_items, "source_uri_status"),
+            "blocking_reasons": sorted({str(reason) for item in packet_items for reason in (item.get("blocking_reasons") or []) if str(reason).strip()}),
+            "fulfillment_templates": [item.get("fulfillment_template") for item in packet_items if isinstance(item.get("fulfillment_template"), dict)],
+            "handoff": {
+                "completion_gate": "Every remediation item closes only after placeholder authority metadata is replaced with live production authority URI, issuer, subject, freshness window, source snapshot, intake receipt, and a ready production replacement submission review.",
+                "replacement_scope": "production-authority-evidence-remediation",
+                "requires_live_source_uris": True,
+                "requires_source_snapshot_artifacts": True,
+                "requires_verified_intake_receipts": True,
+            },
+            "remediation_items": packet_items,
+        }
+        packets.append({**packet_body, "packet_id": content_hash(packet_body)})
+
+    queue_summary = queue.get("summary") if isinstance(queue.get("summary"), dict) else {}
+    body = {
+        "schema": EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_PACKET_SCHEMA,
+        "generated_at": generated_at or utc_now(),
+        "source_remediation_queue": {
+            "production_replacement_remediation_queue_id": queue.get("production_replacement_remediation_queue_id"),
+            "production_replacement_remediation_queue_hash": content_hash(queue),
+            "schema": queue.get("schema"),
+            "generated_at": queue.get("generated_at"),
+            "queue_status": queue_summary.get("queue_status"),
+        },
+        "summary": {
+            "packet_count": len(packets),
+            "owner_count": len(packets),
+            "queue_status": queue_summary.get("queue_status"),
+            "review_status": queue_summary.get("review_status"),
+            "source_queue_remediation_task_count": queue_summary.get("remediation_task_count", 0),
+            "remediation_task_count": sum(int(packet.get("remediation_task_count") or 0) for packet in packets),
+            "blocked_task_count": sum(int(packet.get("blocked_task_count") or 0) for packet in packets),
+            "placeholder_source_uri_count": sum(int(packet.get("placeholder_source_uri_count") or 0) for packet in packets),
+            "live_source_uri_count": sum(int(packet.get("live_source_uri_count") or 0) for packet in packets),
+            "remediation_count_by_owner_hint": {packet["owner_hint"]: packet["remediation_task_count"] for packet in packets},
+            "remediation_count_by_authority_kind": queue_summary.get("remediation_count_by_authority_kind", {}),
+            "remediation_count_by_requirement": queue_summary.get("remediation_count_by_requirement", {}),
+            "remediation_count_by_blocking_reason": queue_summary.get("remediation_count_by_blocking_reason", {}),
+        },
+        "packets": packets,
+        "commands": {
+            "apply_owner_fulfillment": "python -m trustai external-evidence-production-replacement-submission <intake-template.json> --fulfillment-file <owner-fulfillment.json> --require-submitted-live-source-uris --submitted-template-out <submitted-template.json>",
+            "review_after_owner_fulfillment": "python -m trustai external-evidence-production-replacement-submission-review <submitted-template.json> <status-report.json> <plan-all.json> --require-live-source-uris --require-ready --out <review.json>",
+            "verify_owner_packets": "python -m trustai external-evidence-production-replacement-remediation-owner-packets-verify <owner-packets.json> <queue.json>",
+        },
+        "next_actions": [
+            "Send each packet to its owner_hint and collect the owner-specific fulfillment_templates as live authority metadata.",
+            "Merge owner fulfillments into the production replacement submission only after every packet has live source_uri values.",
+            "Regenerate the remediation queue and verify it with --require-empty before collection-package generation.",
+        ],
+        "limitations": [
+            "These owner packets route remediation work; they do not claim live authority evidence has been collected or accepted.",
+            "A packet remains blocked until its tasks disappear from a regenerated remediation queue derived from a ready submission review.",
+        ],
+    }
+    return {**body, "production_replacement_remediation_owner_packet_bundle_id": content_hash(body)}
+
+
+def verify_external_evidence_production_replacement_remediation_owner_packets(
+    packet_bundle: dict[str, Any],
+    queue: dict[str, Any],
+) -> ExternalEvidenceProductionReplacementRemediationOwnerPacketVerification:
+    errors: list[str] = []
+    warnings: list[str] = []
+    if packet_bundle.get("schema") != EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_PACKET_SCHEMA:
+        errors.append(f"unsupported external evidence production replacement remediation owner packet schema: {packet_bundle.get('schema')}")
+    if packet_bundle.get("production_replacement_remediation_owner_packet_bundle_id") != content_hash(without_keys(packet_bundle, "production_replacement_remediation_owner_packet_bundle_id")):
+        errors.append("production_replacement_remediation_owner_packet_bundle_id does not match canonical production replacement remediation owner packet bundle body")
+    source = packet_bundle.get("source_remediation_queue") if isinstance(packet_bundle.get("source_remediation_queue"), dict) else {}
+    if source.get("production_replacement_remediation_queue_id") != queue.get("production_replacement_remediation_queue_id"):
+        errors.append("production replacement remediation owner packet source queue id does not match supplied queue")
+    if source.get("production_replacement_remediation_queue_hash") != content_hash(queue):
+        errors.append("production replacement remediation owner packet source queue hash does not match supplied queue")
+    try:
+        expected = build_external_evidence_production_replacement_remediation_owner_packets(
+            queue,
+            generated_at=str(packet_bundle.get("generated_at") or ""),
+        )
+    except ValueError as exc:
+        errors.append(str(exc))
+    else:
+        if without_keys(packet_bundle, "production_replacement_remediation_owner_packet_bundle_id") != without_keys(expected, "production_replacement_remediation_owner_packet_bundle_id"):
+            errors.append("production replacement remediation owner packet body does not match supplied remediation queue")
+    summary = packet_bundle.get("summary") if isinstance(packet_bundle.get("summary"), dict) else {}
+    remediation_count = int(summary.get("remediation_task_count") or 0)
+    if remediation_count:
+        warnings.append(f"production replacement remediation owner packets contain {remediation_count} blocked tasks")
+    if summary.get("remediation_task_count") != summary.get("source_queue_remediation_task_count"):
+        warnings.append("production replacement remediation owner packet task count does not match source queue task count")
+    return ExternalEvidenceProductionReplacementRemediationOwnerPacketVerification(ok=not errors, errors=errors, warnings=warnings)
+
+
+
 
 def _external_evidence_production_replacement_collection_status(review: dict[str, Any]) -> str:
     summary = review.get("summary", {}) if isinstance(review.get("summary"), dict) else {}
@@ -6709,6 +6854,22 @@ def write_external_evidence_production_replacement_remediation_queue_markdown(pa
     target.write_text(render_external_evidence_production_replacement_remediation_queue_markdown(queue), encoding="utf-8")
 
 
+def write_external_evidence_production_replacement_remediation_owner_packets(path: str | Path, packet_bundle: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(packet_bundle, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def load_external_evidence_production_replacement_remediation_owner_packets(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def write_external_evidence_production_replacement_remediation_owner_packets_markdown(path: str | Path, packet_bundle: dict[str, Any]) -> None:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_external_evidence_production_replacement_remediation_owner_packets_markdown(packet_bundle), encoding="utf-8")
+
+
 def write_external_evidence_production_replacement_collection_package(path: str | Path, package: dict[str, Any]) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -7872,6 +8033,87 @@ def render_external_evidence_production_replacement_remediation_queue_markdown(q
     else:
         lines.append("- None")
     limitations = queue.get("limitations", []) if isinstance(queue.get("limitations"), list) else []
+    lines.extend(["", "## Limitations", ""])
+    if limitations:
+        lines.extend(f"- {_markdown_cell(item)}" for item in limitations)
+    else:
+        lines.append("- None")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def render_external_evidence_production_replacement_remediation_owner_packets_markdown(packet_bundle: dict[str, Any]) -> str:
+    summary = packet_bundle.get("summary", {}) if isinstance(packet_bundle.get("summary"), dict) else {}
+    source = packet_bundle.get("source_remediation_queue", {}) if isinstance(packet_bundle.get("source_remediation_queue"), dict) else {}
+    lines = [
+        "# External Evidence Production Replacement Remediation Owner Packets",
+        "",
+        f"- Owner packet bundle ID: `{packet_bundle.get('production_replacement_remediation_owner_packet_bundle_id')}`",
+        f"- Generated at: `{packet_bundle.get('generated_at')}`",
+        f"- Source queue ID: `{source.get('production_replacement_remediation_queue_id')}`",
+        f"- Source queue hash: `{source.get('production_replacement_remediation_queue_hash')}`",
+        f"- Queue status: `{summary.get('queue_status')}`",
+        f"- Packets: {summary.get('packet_count', 0)}",
+        f"- Remediation tasks: {summary.get('remediation_task_count', 0)}",
+        f"- Placeholder source URIs: {summary.get('placeholder_source_uri_count', 0)}",
+        "",
+        "## Packets",
+        "",
+    ]
+    packets = packet_bundle.get("packets", []) if isinstance(packet_bundle.get("packets"), list) else []
+    if packets:
+        for packet in packets:
+            if not isinstance(packet, dict):
+                continue
+            lines.append(f"### {_markdown_cell(packet.get('owner_hint'))}")
+            lines.append("")
+            lines.append(f"- Packet ref: `{_markdown_cell(packet.get('packet_ref'))}`")
+            lines.append(f"- Packet ID: `{_markdown_cell(packet.get('packet_id'))}`")
+            lines.append(f"- Remediation tasks: {packet.get('remediation_task_count', 0)}")
+            lines.append(f"- Placeholder source URIs: {packet.get('placeholder_source_uri_count', 0)}")
+            lines.append(f"- Authority kinds: {_markdown_code_list(packet.get('authority_kinds', []))}")
+            lines.append(f"- Requirements: {_markdown_code_list(packet.get('requirement_ids', []))}")
+            handoff = packet.get("handoff", {}) if isinstance(packet.get("handoff"), dict) else {}
+            if handoff.get("completion_gate"):
+                lines.append(f"- Completion gate: {_markdown_cell(handoff.get('completion_gate'))}")
+            lines.extend(["", "| Task | Requirement | Authority | Source URI Status | Blocking Reasons |", "|---|---|---|---|---|"])
+            items = packet.get("remediation_items", []) if isinstance(packet.get("remediation_items"), list) else []
+            if items:
+                for item in items:
+                    if not isinstance(item, dict):
+                        continue
+                    reasons = item.get("blocking_reasons") if isinstance(item.get("blocking_reasons"), list) else []
+                    lines.append(
+                        "| "
+                        + " | ".join(
+                            [
+                                f"`{_markdown_cell(item.get('task'))}`",
+                                f"`{_markdown_cell(item.get('requirement_id'))}`",
+                                f"`{_markdown_cell(item.get('authority_kind'))}`",
+                                _markdown_cell(item.get("source_uri_status")),
+                                _markdown_cell(", ".join(str(reason) for reason in reasons) or "none"),
+                            ]
+                        )
+                        + " |"
+                    )
+            else:
+                lines.append("| - | - | - | - | - |")
+            lines.append("")
+    else:
+        lines.append("No owner remediation packets.")
+    commands = packet_bundle.get("commands", {}) if isinstance(packet_bundle.get("commands"), dict) else {}
+    lines.extend(["", "## Commands", ""])
+    if commands:
+        for key, command in commands.items():
+            lines.append(f"- {key}: `{_markdown_cell(command)}`")
+    else:
+        lines.append("- None")
+    next_actions = packet_bundle.get("next_actions", []) if isinstance(packet_bundle.get("next_actions"), list) else []
+    lines.extend(["", "## Next Actions", ""])
+    if next_actions:
+        lines.extend(f"- {_markdown_cell(action)}" for action in next_actions)
+    else:
+        lines.append("- None")
+    limitations = packet_bundle.get("limitations", []) if isinstance(packet_bundle.get("limitations"), list) else []
     lines.extend(["", "## Limitations", ""])
     if limitations:
         lines.extend(f"- {_markdown_cell(item)}" for item in limitations)

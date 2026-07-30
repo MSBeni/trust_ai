@@ -460,6 +460,17 @@ template so evidence owners can replace placeholder authority metadata without
 changing the review body by hand. `external-evidence-production-replacement-remediation-queue-verify --require-empty` MUST fail while any blocked remediation item remains, making
 the queue a strict pre-collection control for production readiness.
 
+`external-evidence-production-replacement-remediation-owner-packets` emits
+`trustai.external-evidence-production-replacement-remediation-owner-packet-bundle/0.1`
+from a remediation queue. It groups blocked rows by `owner_hint`, preserves the
+per-task fulfillment templates, and gives each owner a deterministic packet ID,
+completion gate, and live-source/snapshot/intake handoff requirements.
+`external-evidence-production-replacement-remediation-owner-packets-verify` MUST
+rebuild the bundle from the source queue and reject stale packet counts, owner
+groupings, task bodies, fulfillment templates, or queue hashes. This is the
+operator dispatch artifact for replacing retained/reference evidence without
+losing the strict queue-to-review derivation.
+
 `external-evidence-production-replacement-collection-package` emits
 `trustai.external-evidence-production-replacement-collection-package/0.1` from a
 submission review, source manifest, and roadmap audit. It is the operator handoff

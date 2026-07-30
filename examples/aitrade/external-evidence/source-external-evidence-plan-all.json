@@ -5,18 +5,18 @@
     "A task is covered only after a matching evidence artifact is supplied to an external evidence manifest and verified.",
     "Freshness and issuer authority remain bounded by the supplied evidence artifact and manifest verification options."
   ],
-  "plan_id": "d13474a3a0ec31c0d2de2775b57258c4af1096c0f3bc8079ac9212e8b37a60ac",
+  "plan_id": "71e7a2746882837a59816ee063bcc952beeeaafa71ecfcfa079c4b4782499ac5",
   "schema": "trustai.external-evidence-collection-plan/0.1",
   "source_manifest": {
     "generated_at": "2026-07-12T00:01:00Z",
-    "manifest_hash": "46e89c708d0428fa84a793f6d7e8da2dae4b58c3158bff12b37d3804bfcdfb6f",
-    "manifest_id": "69132d685a7779810f39aca9a61d2d14e4517ab4eb08cc8d78ffcd14a26d7858",
+    "manifest_hash": "54f2d6480b73191e76b62c804d8674630a98361d53bb316fb0b45af24c82fd0c",
+    "manifest_id": "80f1a173ddf316739fec7996218cc0250cf17c414c1f763e4f9f9660e332b073",
     "manifest_ref": "production-external-evidence",
     "status": "partial"
   },
   "source_roadmap_audit": {
-    "audit_hash": "5cc9c18ba5c306333bddda11b2b6f65dc98abb99865e6d45a06fb0ecf0f0494c",
-    "audit_id": "491528aa22d8d535dc0dbffc4a4fb10a1c15bf67d780e15a04915a1a2f0543d8",
+    "audit_hash": "43990cb66dc52e9a27584ec463421ff73a287c2facc8ba97e804d8e06744758e",
+    "audit_id": "b9f2d45c2ec119e92c1b5102358a9d4f2d6793334d5b3fe2b84e213b7d25d291",
     "completion_position": "local-reference-complete-with-external-authority-deferred"
   },
   "status_filter": "all",

@@ -1202,6 +1202,7 @@ from .external_evidence import (
     build_external_evidence_production_replacement_submission,
     build_external_evidence_production_replacement_submission_review,
     build_external_evidence_production_replacement_remediation_queue,
+    build_external_evidence_production_replacement_remediation_owner_packets,
     build_external_evidence_production_replacement_collection_package,
     build_external_evidence_production_replacement_closure,
     build_external_evidence_source_map_template,
@@ -1233,6 +1234,7 @@ from .external_evidence import (
     load_external_evidence_production_replacement_submission,
     load_external_evidence_production_replacement_submission_review,
     load_external_evidence_production_replacement_remediation_queue,
+    load_external_evidence_production_replacement_remediation_owner_packets,
     load_external_evidence_production_replacement_collection_package,
     load_external_evidence_production_replacement_closure,
     load_external_evidence_collection_plan,
@@ -1263,6 +1265,7 @@ from .external_evidence import (
     verify_external_evidence_production_replacement_submission,
     verify_external_evidence_production_replacement_submission_review,
     verify_external_evidence_production_replacement_remediation_queue,
+    verify_external_evidence_production_replacement_remediation_owner_packets,
     verify_external_evidence_production_replacement_collection_package,
     verify_external_evidence_production_replacement_closure,
     verify_external_evidence_collection_plan,
@@ -1304,6 +1307,8 @@ from .external_evidence import (
     write_external_evidence_production_replacement_submission_review_markdown,
     write_external_evidence_production_replacement_remediation_queue,
     write_external_evidence_production_replacement_remediation_queue_markdown,
+    write_external_evidence_production_replacement_remediation_owner_packets,
+    write_external_evidence_production_replacement_remediation_owner_packets_markdown,
     write_external_evidence_production_replacement_collection_package,
     write_external_evidence_production_replacement_collection_package_markdown,
     write_external_evidence_production_replacement_closure,
@@ -17399,6 +17404,61 @@ def cmd_external_evidence_production_replacement_remediation_queue_verify(args: 
 
 
 
+def cmd_external_evidence_production_replacement_remediation_owner_packets(args: argparse.Namespace) -> int:
+    try:
+        queue = load_external_evidence_production_replacement_remediation_queue(args.queue)
+        packet_bundle = build_external_evidence_production_replacement_remediation_owner_packets(
+            queue,
+            generated_at=args.generated_at,
+        )
+        result = verify_external_evidence_production_replacement_remediation_owner_packets(packet_bundle, queue)
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement remediation owner packets failed: {exc}", file=sys.stderr)
+        return 1
+    if not result.ok:
+        print("external evidence production replacement remediation owner packet verification failed before export", file=sys.stderr)
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
+    write_external_evidence_production_replacement_remediation_owner_packets(args.out, packet_bundle)
+    if args.markdown:
+        write_external_evidence_production_replacement_remediation_owner_packets_markdown(args.markdown, packet_bundle)
+        print(f"external evidence production replacement remediation owner packets markdown: {args.markdown}")
+    summary = packet_bundle["summary"]
+    print(f"external evidence production replacement remediation owner packets: {args.out}")
+    print(f"production replacement remediation owner packet bundle id: {packet_bundle['production_replacement_remediation_owner_packet_bundle_id']}")
+    print(f"packets: {summary['packet_count']}")
+    print(f"remediation tasks: {summary['remediation_task_count']}")
+    for warning in result.warnings:
+        print(f"warning: {warning}")
+    return 0
+
+
+def cmd_external_evidence_production_replacement_remediation_owner_packets_verify(args: argparse.Namespace) -> int:
+    try:
+        packet_bundle = load_external_evidence_production_replacement_remediation_owner_packets(args.packet_bundle)
+        queue = load_external_evidence_production_replacement_remediation_queue(args.queue)
+        result = verify_external_evidence_production_replacement_remediation_owner_packets(packet_bundle, queue)
+    except (OSError, ValueError) as exc:
+        print(f"external evidence production replacement remediation owner packet verification failed: {exc}", file=sys.stderr)
+        return 1
+    if result.ok:
+        summary = packet_bundle.get("summary", {})
+        print(f"verified external evidence production replacement remediation owner packets: {args.packet_bundle}")
+        print(f"production replacement remediation owner packet bundle id: {packet_bundle.get('production_replacement_remediation_owner_packet_bundle_id')}")
+        print(f"packets: {summary.get('packet_count', 0)}")
+        print(f"remediation tasks: {summary.get('remediation_task_count', 0)}")
+        for warning in result.warnings:
+            print(f"warning: {warning}")
+        return 0
+    print(f"external evidence production replacement remediation owner packet verification failed: {args.packet_bundle}", file=sys.stderr)
+    for error in result.errors:
+        print(f"- {error}", file=sys.stderr)
+    return 1
+
+
+
+
 
 def cmd_external_evidence_production_replacement_collection_package(args: argparse.Namespace) -> int:
     try:
@@ -29135,6 +29195,18 @@ def build_parser() -> argparse.ArgumentParser:
     external_evidence_production_replacement_remediation_queue_verify.add_argument("review")
     external_evidence_production_replacement_remediation_queue_verify.add_argument("--require-empty", action="store_true", help="fail unless the remediation queue has no blocked tasks")
     external_evidence_production_replacement_remediation_queue_verify.set_defaults(func=cmd_external_evidence_production_replacement_remediation_queue_verify)
+
+    external_evidence_production_replacement_remediation_owner_packets = subparsers.add_parser("external-evidence-production-replacement-remediation-owner-packets", help="write owner packet bundle from a production replacement remediation queue")
+    external_evidence_production_replacement_remediation_owner_packets.add_argument("queue")
+    external_evidence_production_replacement_remediation_owner_packets.add_argument("--generated-at")
+    external_evidence_production_replacement_remediation_owner_packets.add_argument("--out", default="artifacts/external-evidence-production-replacement-remediation-owner-packets.json")
+    external_evidence_production_replacement_remediation_owner_packets.add_argument("--markdown", default="artifacts/external-evidence-production-replacement-remediation-owner-packets.md")
+    external_evidence_production_replacement_remediation_owner_packets.set_defaults(func=cmd_external_evidence_production_replacement_remediation_owner_packets)
+
+    external_evidence_production_replacement_remediation_owner_packets_verify = subparsers.add_parser("external-evidence-production-replacement-remediation-owner-packets-verify", help="verify a production replacement remediation owner packet bundle against a queue")
+    external_evidence_production_replacement_remediation_owner_packets_verify.add_argument("packet_bundle")
+    external_evidence_production_replacement_remediation_owner_packets_verify.add_argument("queue")
+    external_evidence_production_replacement_remediation_owner_packets_verify.set_defaults(func=cmd_external_evidence_production_replacement_remediation_owner_packets_verify)
 
     external_evidence_production_replacement_collection_package = subparsers.add_parser("external-evidence-production-replacement-collection-package", help="write a collection handoff package from a reviewed production replacement submission")
     external_evidence_production_replacement_collection_package.add_argument("review")

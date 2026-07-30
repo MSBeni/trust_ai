@@ -1354,6 +1354,16 @@ def refresh_retained_artifacts() -> None:
         path("retained-external-evidence-production-replacement-remediation-queue.md"),
     )
     run(
+        "external-evidence-production-replacement-remediation-owner-packets",
+        path("retained-external-evidence-production-replacement-remediation-queue.json"),
+        "--generated-at",
+        COLLECTION_TIME,
+        "--out",
+        path("retained-external-evidence-production-replacement-remediation-owner-packets.json"),
+        "--markdown",
+        path("retained-external-evidence-production-replacement-remediation-owner-packets.md"),
+    )
+    run(
         "external-evidence-production-replacement-collection-package",
         path("retained-external-evidence-production-replacement-submission-review.json"),
         path("retained-external-evidence-manifest.json"),
@@ -1735,6 +1745,11 @@ def verify_retained_artifacts() -> None:
         path("retained-external-evidence-production-replacement-submission-review.json"),
     )
     run(
+        "external-evidence-production-replacement-remediation-owner-packets-verify",
+        path("retained-external-evidence-production-replacement-remediation-owner-packets.json"),
+        path("retained-external-evidence-production-replacement-remediation-queue.json"),
+    )
+    run(
         "external-evidence-production-replacement-collection-package-verify",
         path("retained-external-evidence-production-replacement-collection-package.json"),
         path("retained-external-evidence-production-replacement-submission-review.json"),
@@ -1780,6 +1795,7 @@ def assert_retained_counts() -> None:
     production_replacement_submitted_template = json_load(DIR / "retained-external-evidence-production-replacement-submitted-template.json")
     production_replacement_submission_review = json_load(DIR / "retained-external-evidence-production-replacement-submission-review.json")
     production_replacement_remediation_queue = json_load(DIR / "retained-external-evidence-production-replacement-remediation-queue.json")
+    production_replacement_remediation_owner_packets = json_load(DIR / "retained-external-evidence-production-replacement-remediation-owner-packets.json")
     production_replacement_collection_package = json_load(DIR / "retained-external-evidence-production-replacement-collection-package.json")
     production_replacement_closure = json_load(DIR / "retained-external-evidence-production-replacement-closure.json")
     production_replacement_fulfilled_source_map = json_load(DIR / "retained-external-evidence-production-replacement-fulfilled-source-map.json")
@@ -1852,6 +1868,9 @@ def assert_retained_counts() -> None:
         (production_replacement_remediation_queue["summary"]["queue_status"], "blocked", "production replacement remediation queue status"),
         (production_replacement_remediation_queue["summary"]["remediation_task_count"], expected_non_production_count, "production replacement remediation queue task count"),
         (production_replacement_remediation_queue["summary"]["placeholder_source_uri_count"], expected_non_production_count, "production replacement remediation queue placeholder URI count"),
+        (production_replacement_remediation_owner_packets["summary"]["packet_count"], production_replacement_remediation_queue["summary"]["owner_count"], "production replacement remediation owner packet count"),
+        (production_replacement_remediation_owner_packets["summary"]["remediation_task_count"], expected_non_production_count, "production replacement remediation owner packet task count"),
+        (production_replacement_remediation_owner_packets["summary"]["placeholder_source_uri_count"], expected_non_production_count, "production replacement remediation owner packet placeholder URI count"),
         (production_replacement_collection_package["summary"]["collection_status"], "blocked", "production replacement collection package status"),
         (production_replacement_collection_package["summary"]["ready_task_count"], 0, "production replacement collection package ready task count"),
         (production_replacement_collection_package["summary"]["blocked_task_count"], expected_non_production_count, "production replacement collection package blocked task count"),

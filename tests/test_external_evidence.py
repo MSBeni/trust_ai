@@ -35,6 +35,7 @@ from trustai.external_evidence import (
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_QUEUE_SCHEMA,
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_PACKET_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_COLLECTION_PACKAGE_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA,
     EXTERNAL_EVIDENCE_GIT_REMOTE_REF_EXPORT_SCHEMA,
@@ -62,6 +63,7 @@ from trustai.external_evidence import (
     build_external_evidence_production_replacement_submission,
     build_external_evidence_production_replacement_submission_review,
     build_external_evidence_production_replacement_remediation_queue,
+    build_external_evidence_production_replacement_remediation_owner_packets,
     build_external_evidence_production_replacement_collection_package,
     build_external_evidence_production_replacement_closure,
     build_external_evidence_intake,
@@ -90,6 +92,7 @@ from trustai.external_evidence import (
     load_external_evidence_production_replacement_submission,
     load_external_evidence_production_replacement_submission_review,
     load_external_evidence_production_replacement_remediation_queue,
+    load_external_evidence_production_replacement_remediation_owner_packets,
     load_external_evidence_production_replacement_collection_package,
     load_external_evidence_production_replacement_closure,
     load_external_evidence_intake,
@@ -115,6 +118,7 @@ from trustai.external_evidence import (
     render_external_evidence_production_replacement_submission_markdown,
     render_external_evidence_production_replacement_submission_review_markdown,
     render_external_evidence_production_replacement_remediation_queue_markdown,
+    render_external_evidence_production_replacement_remediation_owner_packets_markdown,
     render_external_evidence_production_replacement_collection_package_markdown,
     render_external_evidence_production_replacement_closure_markdown,
     render_roadmap_evidence_markdown,
@@ -135,6 +139,7 @@ from trustai.external_evidence import (
     verify_external_evidence_production_replacement_submission,
     verify_external_evidence_production_replacement_submission_review,
     verify_external_evidence_production_replacement_remediation_queue,
+    verify_external_evidence_production_replacement_remediation_owner_packets,
     verify_external_evidence_production_replacement_collection_package,
     verify_external_evidence_production_replacement_closure,
     verify_external_evidence_collection_plan,
@@ -1614,6 +1619,17 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             require_empty=True,
         )
         remediation_queue_markdown = render_external_evidence_production_replacement_remediation_queue_markdown(remediation_queue)
+        remediation_owner_packets = build_external_evidence_production_replacement_remediation_owner_packets(
+            remediation_queue,
+            generated_at="2026-07-09T00:09:10Z",
+        )
+        remediation_owner_packets_result = verify_external_evidence_production_replacement_remediation_owner_packets(
+            remediation_owner_packets,
+            remediation_queue,
+        )
+        remediation_owner_packets_markdown = render_external_evidence_production_replacement_remediation_owner_packets_markdown(
+            remediation_owner_packets
+        )
         collection_package = build_external_evidence_production_replacement_collection_package(
             submission_review,
             manifest,
@@ -1664,6 +1680,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual(EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA, submission_review["schema"])
         self.assertEqual(EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_QUEUE_SCHEMA, clear_remediation_queue["schema"])
         self.assertEqual(EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_QUEUE_SCHEMA, remediation_queue["schema"])
+        self.assertEqual(EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_PACKET_SCHEMA, remediation_owner_packets["schema"])
         self.assertEqual(EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_COLLECTION_PACKAGE_SCHEMA, collection_package["schema"])
         self.assertEqual(EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA, production_closure["schema"])
         self.assertTrue(result.ok, result.errors)
@@ -1675,6 +1692,7 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertTrue(submission_review_result.ok, submission_review_result.errors)
         self.assertTrue(clear_remediation_queue_result.ok, clear_remediation_queue_result.errors)
         self.assertTrue(remediation_queue_result.ok, remediation_queue_result.errors)
+        self.assertTrue(remediation_owner_packets_result.ok, remediation_owner_packets_result.errors)
         self.assertTrue(collection_package_result.ok, collection_package_result.errors)
         self.assertTrue(production_closure_result.ok, production_closure_result.errors)
         self.assertFalse(strict_remediation_queue_result.ok)
@@ -1726,6 +1744,24 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertEqual("placeholder-source-uri", remediation_queue["remediation_items"][0]["blocking_reasons"][0])
         self.assertEqual("REPLACE_WITH_LIVE_AUTHORITY_URI", remediation_queue["remediation_items"][0]["fulfillment_template"]["source_uri"])
         self.assertIn("replace source_uri", remediation_queue["remediation_items"][0]["remediation_action"])
+        self.assertEqual("blocked", remediation_owner_packets["summary"]["queue_status"])
+        self.assertEqual(1, remediation_owner_packets["summary"]["packet_count"])
+        self.assertEqual(1, remediation_owner_packets["summary"]["owner_count"])
+        self.assertEqual(1, remediation_owner_packets["summary"]["remediation_task_count"])
+        self.assertEqual(1, remediation_owner_packets["summary"]["blocked_task_count"])
+        self.assertEqual(1, remediation_owner_packets["summary"]["source_queue_remediation_task_count"])
+        self.assertEqual(1, remediation_owner_packets["summary"]["placeholder_source_uri_count"])
+        self.assertEqual(remediation_queue["production_replacement_remediation_queue_id"], remediation_owner_packets["source_remediation_queue"]["production_replacement_remediation_queue_id"])
+        self.assertEqual("release engineering", remediation_owner_packets["packets"][0]["owner_hint"])
+        self.assertEqual(1, remediation_owner_packets["packets"][0]["remediation_task_count"])
+        self.assertEqual(
+            content_hash(without_keys(remediation_owner_packets["packets"][0], "packet_id")),
+            remediation_owner_packets["packets"][0]["packet_id"],
+        )
+        self.assertEqual(
+            "REPLACE_WITH_LIVE_AUTHORITY_URI",
+            remediation_owner_packets["packets"][0]["fulfillment_templates"][0]["source_uri"],
+        )
         self.assertEqual("blocked", collection_package["summary"]["collection_status"])
         self.assertEqual(0, collection_package["summary"]["ready_task_count"])
         self.assertEqual(1, collection_package["summary"]["blocked_task_count"])
@@ -1762,6 +1798,9 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
         self.assertIn("External Evidence Production Replacement Remediation Queue", remediation_queue_markdown)
         self.assertIn("Remediation tasks: 1", remediation_queue_markdown)
         self.assertIn("placeholder-source-uri", remediation_queue_markdown)
+        self.assertIn("External Evidence Production Replacement Remediation Owner Packets", remediation_owner_packets_markdown)
+        self.assertIn("Remediation tasks: 1", remediation_owner_packets_markdown)
+        self.assertIn("release engineering", remediation_owner_packets_markdown)
         self.assertIn("External Evidence Production Replacement Collection Package", collection_package_markdown)
         self.assertIn("Blocked tasks: 1", collection_package_markdown)
         self.assertIn("External Evidence Production Replacement Closure", production_closure_markdown)
@@ -1795,6 +1834,8 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             submission_review_markdown_path = tmp_path / "replacement-submission-review.md"
             remediation_queue_path = tmp_path / "replacement-remediation-queue.json"
             remediation_queue_markdown_path = tmp_path / "replacement-remediation-queue.md"
+            remediation_owner_packets_path = tmp_path / "replacement-remediation-owner-packets.json"
+            remediation_owner_packets_markdown_path = tmp_path / "replacement-remediation-owner-packets.md"
             fulfilled_source_map_path = tmp_path / "replacement-fulfilled-source-map.json"
             collection_package_path = tmp_path / "replacement-collection-package.json"
             collection_package_markdown_path = tmp_path / "replacement-collection-package.md"
@@ -2113,6 +2154,39 @@ class ExternalEvidenceManifestTests(unittest.TestCase):
             )
             self.assertNotEqual(0, queue_not_empty.returncode)
             self.assertIn("not empty", queue_not_empty.stderr)
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-production-replacement-remediation-owner-packets",
+                    str(remediation_queue_path),
+                    "--generated-at",
+                    "2026-07-09T00:09:10Z",
+                    "--out",
+                    str(remediation_owner_packets_path),
+                    "--markdown",
+                    str(remediation_owner_packets_markdown_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
+            cli_remediation_owner_packets = load_external_evidence_production_replacement_remediation_owner_packets(
+                remediation_owner_packets_path
+            )
+            self.assertEqual(remediation_owner_packets, cli_remediation_owner_packets)
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustai",
+                    "external-evidence-production-replacement-remediation-owner-packets-verify",
+                    str(remediation_owner_packets_path),
+                    str(remediation_queue_path),
+                ],
+                cwd=ROOT,
+                check=True,
+            )
             subprocess.run(
                 [
                     sys.executable,
