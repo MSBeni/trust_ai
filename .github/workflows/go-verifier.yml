@@ -12,6 +12,9 @@ permissions:
   id-token: write
   attestations: write
 
+env:
+  PYTHONPATH: ${{ github.workspace }}/src
+
 jobs:
   test:
     name: Test Go verifier source
@@ -277,7 +280,3 @@ jobs:
         uses: actions/attest-build-provenance@v2
         with:
           subject-path: dist/trustai-verify-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
-
-
-
-
