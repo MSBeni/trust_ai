@@ -43,6 +43,7 @@ from .external_evidence import (
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_QUEUE_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_PACKET_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_FULFILLMENT_TEMPLATE_SCHEMA,
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_FULFILLMENT_REVIEW_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_SCHEMA,
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_SUBMISSION_REVIEW_SCHEMA,
 )
@@ -268,6 +269,7 @@ PRODUCTION_REPLACEMENT_ARTIFACTS = {
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_QUEUE_SCHEMA: ("remediation-queue", "production_replacement_remediation_queue_id"),
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_PACKET_SCHEMA: ("remediation-owner-packet-bundle", "production_replacement_remediation_owner_packet_bundle_id"),
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_FULFILLMENT_TEMPLATE_SCHEMA: ("remediation-owner-fulfillment-template", "production_replacement_remediation_owner_fulfillment_template_id"),
+    EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_REMEDIATION_OWNER_FULFILLMENT_REVIEW_SCHEMA: ("remediation-owner-fulfillment-review", "production_replacement_remediation_owner_fulfillment_review_id"),
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_COLLECTION_PACKAGE_SCHEMA: ("collection-package", "production_replacement_collection_package_id"),
     EXTERNAL_EVIDENCE_PRODUCTION_REPLACEMENT_CLOSURE_SCHEMA: ("closure", "production_replacement_closure_id"),
 }
@@ -7500,6 +7502,10 @@ class ControlPlane:
             (item for item in lifecycle if item.get("artifact_kind") == "remediation-owner-fulfillment-template"),
             None,
         )
+        remediation_owner_fulfillment_review = next(
+            (item for item in lifecycle if item.get("artifact_kind") == "remediation-owner-fulfillment-review"),
+            None,
+        )
         collection_package = next(
             (item for item in lifecycle if item.get("artifact_kind") == "collection-package"),
             None,
@@ -7575,6 +7581,9 @@ class ControlPlane:
         if not isinstance(owner_fulfillment_summary, dict):
             owner_fulfillment_summary = {}
         owner_fulfillment_rows = owner_fulfillment_body.get("fulfillments") if isinstance(owner_fulfillment_body.get("fulfillments"), list) else []
+        owner_fulfillment_review_summary = remediation_owner_fulfillment_review.get("summary") if remediation_owner_fulfillment_review else {}
+        if not isinstance(owner_fulfillment_review_summary, dict):
+            owner_fulfillment_review_summary = {}
         remediation_owner_fulfillments = [
             {
                 "task": fulfillment.get("task"),
@@ -7684,6 +7693,15 @@ class ControlPlane:
             and int(submission_review_summary.get("blocked_task_count") or 0) == 0
             and int(submission_review_summary.get("placeholder_source_uri_count") or 0) == 0
         )
+        owner_fulfillment_review_status = owner_fulfillment_review_summary.get("review_status") or (
+            remediation_owner_fulfillment_review.get("status") if remediation_owner_fulfillment_review else None
+        )
+        owner_fulfillment_review_ready = bool(
+            remediation_owner_fulfillment_review
+            and owner_fulfillment_review_status == "ready-to-collect"
+            and int(owner_fulfillment_review_summary.get("blocked_task_count") or 0) == 0
+            and int(owner_fulfillment_review_summary.get("placeholder_source_uri_count") or 0) == 0
+        )
         collection_package_ready = bool(
             collection_package
             and collection_status == "ready-to-collect"
@@ -7723,6 +7741,17 @@ class ControlPlane:
                 "live_source_uri_count": int(submission_review_summary.get("live_source_uri_count") or 0),
             },
             {
+                "stage": "remediation-owner-fulfillment-review",
+                "present": remediation_owner_fulfillment_review is not None,
+                "ready": owner_fulfillment_review_ready,
+                "status": owner_fulfillment_review_status,
+                "task_count": int(owner_fulfillment_review_summary.get("source_map_entry_count") or 0),
+                "ready_task_count": int(owner_fulfillment_review_summary.get("ready_task_count") or 0),
+                "blocked_task_count": int(owner_fulfillment_review_summary.get("blocked_task_count") or 0),
+                "placeholder_source_uri_count": int(owner_fulfillment_review_summary.get("placeholder_source_uri_count") or 0),
+                "live_source_uri_count": int(owner_fulfillment_review_summary.get("live_source_uri_count") or 0),
+            },
+            {
                 "stage": "collection-package",
                 "present": collection_package is not None,
                 "ready": collection_package_ready,
@@ -7749,6 +7778,7 @@ class ControlPlane:
         next_required_action_by_stage = {
             "submission": "replace submitted production replacement placeholder source_uri values with live authority-owned source URIs",
             "submission-review": "rerun submission review with live source URIs and no blocked tasks",
+            "remediation-owner-fulfillment-review": "review owner remediation fulfillment with live source URIs before applying it to submission",
             "collection-package": "collect source snapshots and intake receipts from the ready production replacement source map",
             "closure": "rebuild the manifest and readiness report, then close production replacement tasks",
             "complete": "append the production-ready manifest and closure to the roadmap evidence chain",

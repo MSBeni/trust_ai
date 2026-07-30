@@ -484,6 +484,21 @@ example-domain source URIs MUST count as placeholders.
 MUST rebuild the template from the owner packet bundle and reject stale source
 packet hashes, owner filters, request bodies, or fulfillment rows.
 
+`external-evidence-production-replacement-remediation-owner-fulfillment-review`
+emits
+`trustai.external-evidence-production-replacement-remediation-owner-fulfillment-review/0.1`
+from an owner-filled remediation fulfillment template, the remediation owner
+packet bundle, and the all-authority collection plan. The review MAY accept a
+stale template ID after owner edits, but it MUST preserve source packet hashes,
+owner filters, request context, and the packet-derived task set. The review
+materializes the fulfilled production source map and MUST remain blocked while
+any placeholder source URI remains or while the fulfilled source map fails the
+requested live-source/snapshot checks.
+`external-evidence-production-replacement-remediation-owner-fulfillment-review-verify`
+MUST rebuild the review from those source artifacts and reject stale review IDs,
+source artifact mismatches, verification-option drift, task-context drift, or a
+`--require-ready` review that is not `ready-to-collect`.
+
 `external-evidence-production-replacement-collection-package` emits
 `trustai.external-evidence-production-replacement-collection-package/0.1` from a
 submission review, source manifest, and roadmap audit. It is the operator handoff
