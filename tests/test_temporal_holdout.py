@@ -566,6 +566,55 @@ class TemporalHoldoutTests(unittest.TestCase):
         self.assertIsNone(receipt["records"][0]["previous_export_record_hash"])
         self.assertEqual(receipt["records"][0]["export_record_hash"], receipt["records"][1]["previous_export_record_hash"])
 
+    def test_traffic_holdout_export_binds_dataset_fingerprint(self):
+        base_receipt = self._traffic_export()
+        fingerprint = base_receipt["dataset_fingerprint"]
+        fingerprint_body = without_keys(fingerprint, "fingerprint_id", "declared_fingerprint", "declared_matches")
+
+        self.assertEqual("trustai.shadow-dataset-fingerprint/0.1", fingerprint["schema"])
+        self.assertEqual(content_hash(fingerprint_body), fingerprint["fingerprint_id"])
+        self.assertEqual(base_receipt["records_root"], fingerprint["records_root"])
+        self.assertEqual(base_receipt["record_count"], fingerprint["record_count"])
+        self.assertTrue(fingerprint["declared_matches"])
+
+        replay = self._replay()
+        replay["dataset_fingerprint"] = fingerprint["fingerprint_id"]
+        receipt = build_traffic_holdout_export(
+            self._contract(),
+            replay,
+            export_ref="traffic-export:aitrade/prod-traffic-holdout-20260702",
+            source_ref="collector:aitrade-prod/redpanda/trustai.otel.events",
+            exporter_ref="oidc:trustai.example/traffic-exporter",
+            window_start="2026-07-02T00:00:00Z",
+            window_end="2026-07-03T23:59:59Z",
+            produced_at="2026-07-03T12:20:00Z",
+        )
+        result = verify_traffic_holdout_export(receipt, contract=self._contract(), replay=replay)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(fingerprint["fingerprint_id"], receipt["dataset_fingerprint"]["fingerprint_id"])
+        self.assertEqual(fingerprint["fingerprint_id"], receipt["dataset_fingerprint"]["declared_fingerprint"])
+        self.assertTrue(receipt["dataset_fingerprint"]["declared_matches"])
+
+    def test_traffic_holdout_export_rejects_declared_dataset_fingerprint_mismatch(self):
+        replay = self._replay()
+        replay["dataset_fingerprint"] = "not-the-traffic-holdout-dataset"
+        receipt = build_traffic_holdout_export(
+            self._contract(),
+            replay,
+            export_ref="traffic-export:aitrade/prod-traffic-holdout-20260702",
+            source_ref="collector:aitrade-prod/redpanda/trustai.otel.events",
+            exporter_ref="oidc:trustai.example/traffic-exporter",
+            window_start="2026-07-02T00:00:00Z",
+            window_end="2026-07-03T23:59:59Z",
+            produced_at="2026-07-03T12:20:00Z",
+        )
+        result = verify_traffic_holdout_export(receipt, contract=self._contract(), replay=replay)
+
+        self.assertFalse(result.ok)
+        self.assertFalse(receipt["dataset_fingerprint"]["declared_matches"])
+        self.assertTrue(any("declared dataset_fingerprint mismatch" in error for error in result.errors), result.errors)
+
     def test_traffic_holdout_export_replays_retained_source_bytes(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             replay_path = Path(tmp_dir) / "shadow-replay.json"
@@ -683,6 +732,7 @@ class TemporalHoldoutTests(unittest.TestCase):
             self.assertEqual(TRAFFIC_HOLDOUT_EXPORT_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(receipt["export_id"], entry["payload"]["export_id"])
             self.assertEqual(receipt["replay_source_artifact"], entry["payload"]["replay_source_artifact"])
+            self.assertEqual(receipt["dataset_fingerprint"], entry["payload"]["dataset_fingerprint"])
             self.assertEqual(receipt["records_root"], entry["payload"]["records_root"])
             self.assertTrue(chain.verify_all().ok)
 
@@ -1176,6 +1226,49 @@ class TemporalHoldoutTests(unittest.TestCase):
             manifest["records"][1]["previous_record_node_hash"],
         )
 
+    def test_temporal_holdout_manifest_binds_dataset_fingerprint(self):
+        base_manifest = build_temporal_holdout_manifest(
+            self._contract(),
+            self._replay(),
+            generated_at="2026-07-03T12:30:00Z",
+        )
+        fingerprint = base_manifest["dataset_fingerprint"]
+        fingerprint_body = without_keys(fingerprint, "fingerprint_id", "declared_fingerprint", "declared_matches")
+
+        self.assertEqual("trustai.shadow-dataset-fingerprint/0.1", fingerprint["schema"])
+        self.assertEqual(content_hash(fingerprint_body), fingerprint["fingerprint_id"])
+        self.assertEqual(base_manifest["records_root"], fingerprint["records_root"])
+        self.assertEqual(base_manifest["record_count"], fingerprint["record_count"])
+        self.assertTrue(fingerprint["declared_matches"])
+
+        replay = self._replay()
+        replay["dataset_fingerprint"] = fingerprint["fingerprint_id"]
+        manifest = build_temporal_holdout_manifest(
+            self._contract(),
+            replay,
+            generated_at="2026-07-03T12:30:00Z",
+        )
+        result = verify_temporal_holdout_manifest(manifest, contract=self._contract(), replay=replay)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertEqual(fingerprint["fingerprint_id"], manifest["dataset_fingerprint"]["fingerprint_id"])
+        self.assertEqual(fingerprint["fingerprint_id"], manifest["dataset_fingerprint"]["declared_fingerprint"])
+        self.assertTrue(manifest["dataset_fingerprint"]["declared_matches"])
+
+    def test_temporal_holdout_manifest_rejects_declared_dataset_fingerprint_mismatch(self):
+        replay = self._replay()
+        replay["dataset_fingerprint"] = "not-the-temporal-holdout-dataset"
+        manifest = build_temporal_holdout_manifest(
+            self._contract(),
+            replay,
+            generated_at="2026-07-03T12:30:00Z",
+        )
+        result = verify_temporal_holdout_manifest(manifest, contract=self._contract(), replay=replay)
+
+        self.assertFalse(result.ok)
+        self.assertFalse(manifest["dataset_fingerprint"]["declared_matches"])
+        self.assertTrue(any("declared dataset_fingerprint mismatch" in error for error in result.errors), result.errors)
+
     def test_temporal_holdout_manifest_replays_retained_source_bytes(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             replay_path = Path(tmp_dir) / "shadow-replay.json"
@@ -1275,6 +1368,7 @@ class TemporalHoldoutTests(unittest.TestCase):
             self.assertEqual(TEMPORAL_HOLDOUT_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(manifest["manifest_id"], entry["payload"]["manifest_id"])
             self.assertEqual(manifest["records_root"], entry["payload"]["records_root"])
+            self.assertEqual(manifest["dataset_fingerprint"], entry["payload"]["dataset_fingerprint"])
             self.assertTrue(chain.verify_all().ok)
 
     def test_shadow_replay_entry_embeds_temporal_holdout_manifest(self):
@@ -1292,6 +1386,7 @@ class TemporalHoldoutTests(unittest.TestCase):
             self.assertTrue(result.ok, result.errors)
             self.assertEqual(payload["temporal_holdout_manifest"]["manifest_id"], payload["temporal_holdout"]["manifest_id"])
             self.assertEqual(payload["temporal_holdout_manifest"]["records_root"], payload["temporal_holdout"]["records_root"])
+            self.assertEqual(payload["temporal_holdout_manifest"]["dataset_fingerprint"], payload["temporal_holdout"]["dataset_fingerprint"])
             self.assertTrue(payload["temporal_holdout"]["passed"])
 
     def test_temporal_holdout_manifest_records_boundary_violations(self):

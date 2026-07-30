@@ -5,28 +5,28 @@
     "A closed task still requires rebuilt manifest verification and readiness verification before external authority coverage is accepted.",
     "Placeholder source URIs keep tasks blocked even when a local intake artifact is present."
   ],
-  "owner_packet_status_id": "9faabb80d937778a104046e8db5390ef7fe7b3bcffdea75800e1fa5feac85af8",
+  "owner_packet_status_id": "8472e0f0545ca1662f6f26092cc1716618d0372de322fc48e49c2ce3885436eb",
   "packets": [],
   "schema": "trustai.external-evidence-owner-packet-status/0.1",
   "sources": {
     "intake_hashes": [],
     "owner_packet_bundle": {
       "generated_at": "2026-07-12T00:01:00Z",
-      "owner_packet_bundle_hash": "ebb77be0c1a2c097b9926b788289ddbefcd7b0861714ea0791c42e5a9196b254",
-      "owner_packet_bundle_id": "51d89cbc9eb16955884311b2056382eafb5c688e99101bde9a14f6aae4852966",
+      "owner_packet_bundle_hash": "4cef3d349b163d7bcf728cf2a85c317f2f594c0c02dc326d4e185cc05ecca4ec",
+      "owner_packet_bundle_id": "200543a6dd2789f3ee6bce63a7224676b8e7018b550c7ff32be775cf7edc8af3",
       "schema": "trustai.external-evidence-owner-packet-bundle/0.1"
     },
     "source_map": {
       "generated_at": "2026-07-12T01:00:00Z",
       "schema": "trustai.external-evidence-source-map/0.1",
-      "source_map_hash": "6bb076114f374717d7007e99a180ac3455d5ad5f26698cf096d9c0a72207beb2",
-      "source_map_id": "ee5f30949d5ccb6a462bfde7c59a664e4dc9797a05e34a8b91fd4a0e876ee264"
+      "source_map_hash": "61cbab61ced9d9f084421b8ede3fad1252025478ba29cee1be7c383da6110f97",
+      "source_map_id": "2692575b111d5bf8fc97a494685f4874d3a48839778ac910900e94e161ad7261"
     },
     "work_package": {
       "generated_at": "2026-07-12T00:01:00Z",
       "schema": "trustai.external-evidence-work-package/0.1",
-      "work_package_hash": "c78b670d43ccdd931f798aff82b9e5b62d5c15cf6953ed06ea3d4be4e7c95c6e",
-      "work_package_id": "0549f52fd8c5eace370d64859ec1af37c4bb12500f44d5f13a6568dce6439032"
+      "work_package_hash": "a80792c366ccda5b438892e755cf998bf88e70f3f80090ef900d55b5bbe3ea84",
+      "work_package_id": "980f7b38fe3700a9c604f523dd69d5891f56b295187d9de2edd3513be8e45939"
     }
   },
   "summary": {

@@ -11,6 +11,7 @@ The manifest uses schema `trustai.temporal-holdout-manifest/0.1` and records:
 - contract ID, contract hash, freeze timestamp, and holdout minimum timestamp;
 - replay run ID, dataset ID, candidate version, replay payload hash, and optional retained replay source artifact byte binding;
 - first, last, earliest, and latest replay record timestamps;
+- `dataset_fingerprint`, a canonical dataset-level fingerprint over dataset ID, replay run ID, candidate version, record count, records root, root kind, and timestamp bounds, plus any replay-declared fingerprint match status;
 - a hash-chained record list with sequence, unique record ID, timestamp, record
   hash, previous node hash, and node hash;
 - a `records_root` equal to the final record node hash;
@@ -21,13 +22,15 @@ The per-record node hash uses schema
 `trustai.temporal-holdout-record-chain/0.1` and binds sequence number, total
 record count, record ID, timestamp, canonical record hash, and previous node
 hash. Reordering, truncating, inserting, or editing replay records changes the
-root.
+root and therefore the dataset fingerprint. Relabeling the dataset ID, replay run,
+or candidate version also changes the fingerprint.
 
 ## Verification
 
 `temporal-holdout-verify` recalculates the manifest ID, verifies at least one
 signature, checks the internal record hash chain, recomputes duplicate record-id and
-boundary violations from the frozen contract timestamps, and optionally replays the source
+boundary violations from the frozen contract timestamps, recomputes the dataset fingerprint,
+rejects replay-declared fingerprint mismatches, and optionally replays the source
 contract, replay JSON, and retained replay source bytes to catch source tampering. When
 `replay_source_artifact` is present, verification requires the source replay path so the
 SHA-256 bytes, canonical content hash, replay hash, record count, record hash root, and
