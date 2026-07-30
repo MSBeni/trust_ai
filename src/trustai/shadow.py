@@ -1178,6 +1178,9 @@ def verify_traffic_completeness_receipt(
         errors.append("traffic completeness violations do not match source completeness checks")
     if receipt.get("passed") is not (not expected_violations):
         errors.append("traffic completeness passed flag does not match violations")
+    expected_production_claim = _traffic_completeness_production_claim(str(receipt.get("mode") or ""), expected_violations)
+    if receipt.get("production_claim") != expected_production_claim:
+        errors.append("traffic completeness production_claim mismatch")
     if expected_violations:
         warnings.append("traffic completeness receipt contains provider coverage violations")
 
@@ -1283,6 +1286,7 @@ def append_traffic_completeness_receipt(
         "provider_exchange": receipt.get("provider_exchange"),
         "violation_count": len(receipt.get("violations", [])),
         "passed": receipt.get("passed"),
+        "production_claim": receipt.get("production_claim"),
         "privacy": receipt.get("privacy"),
     }
     return chain.append(TRAFFIC_COMPLETENESS_ENTRY_TYPE, payload, key=key, timestamp=receipt.get("produced_at"))
@@ -1650,6 +1654,7 @@ def _build_traffic_completeness_body(
         "actor_ref": actor_ref,
     }
     violations = _traffic_completeness_violations_from_coverage(coverage, provider_exchange)
+    production_claim = _traffic_completeness_production_claim(mode, violations)
     body = {
         "schema": TRAFFIC_COMPLETENESS_SCHEMA,
         "mode": mode,
@@ -1665,6 +1670,7 @@ def _build_traffic_completeness_body(
         "controls": _traffic_completeness_controls(coverage, provider_exchange, mode, provider_artifact),
         "violations": violations,
         "passed": not violations,
+        "production_claim": production_claim,
         "privacy": {
             "raw_payloads_embedded": False,
             "record_material": "traffic export hashes, provider stream cursors, provider export hashes, and audit roots only",
@@ -1915,6 +1921,19 @@ def _traffic_completeness_controls(coverage: dict[str, Any], provider_exchange: 
         {"id": "provider-exchange-success", "status": "passed" if provider_exchange.get("success") else "failed", "description": "Provider export API exchange returned a successful status."},
         {"id": "production-export-mode", "status": "passed" if mode == "production-export" else "deferred", "description": "Production completeness claims require provider-owned production export mode."},
     ]
+
+
+def _traffic_completeness_production_claim(mode: str, violations: list[dict[str, Any]]) -> dict[str, Any]:
+    claimed = mode == "production-export"
+    return {
+        "claimed": claimed,
+        "passed": claimed and not violations,
+        "mode": mode,
+        "requires_provider_owned_export": True,
+        "non_production_limit": None
+        if claimed
+        else "Receipt may verify local/provider rehearsal completeness, but it is not a live provider-owned production completeness claim.",
+    }
 
 
 def _traffic_export_record_key(record: dict[str, Any]) -> tuple[Any, Any, Any]:

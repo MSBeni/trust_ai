@@ -903,7 +903,78 @@ class TemporalHoldoutTests(unittest.TestCase):
         self.assertEqual(0, receipt["source_completeness"]["extra_provider_record_count"])
         self.assertTrue(receipt["source_completeness"]["records_root_matches"])
         self.assertTrue(receipt["source_completeness"]["audit_records_bound"])
+        self.assertEqual(
+            {
+                "claimed": True,
+                "passed": True,
+                "mode": "production-export",
+                "requires_provider_owned_export": True,
+                "non_production_limit": None,
+            },
+            receipt["production_claim"],
+        )
         self.assertFalse(receipt["privacy"]["raw_payloads_embedded"])
+
+    def test_traffic_completeness_marks_provider_export_as_non_production_claim(self):
+        traffic_export = self._traffic_export()
+        provider_export = self._provider_export(traffic_export)
+        receipt = build_traffic_completeness_receipt(
+            traffic_export,
+            provider_export,
+            mode="provider-export",
+            authority_ref="authority:traffic-completeness/aitrade-dev",
+            endpoint_url="https://provider.example/aitrade/traffic-holdout/export",
+            request_hash="sha256:traffic-completeness-request",
+            response_status=200,
+            response_hash="sha256:traffic-completeness-response",
+            actor_ref="oidc:trustai.example/traffic-completeness-worker",
+            produced_at="2026-07-03T12:25:00Z",
+        )
+        result = verify_traffic_completeness_receipt(receipt, traffic_export=traffic_export, provider_export=provider_export)
+
+        self.assertTrue(result.ok, result.errors)
+        self.assertTrue(receipt["passed"])
+        self.assertEqual("provider-export", receipt["production_claim"]["mode"])
+        self.assertFalse(receipt["production_claim"]["claimed"])
+        self.assertFalse(receipt["production_claim"]["passed"])
+        self.assertIn("not a live provider-owned production completeness claim", receipt["production_claim"]["non_production_limit"])
+        self.assertTrue(any("live provider-owned completeness is not claimed" in warning for warning in result.warnings), result.warnings)
+        controls = {control["id"]: control["status"] for control in receipt["controls"]}
+        self.assertEqual("deferred", controls["production-export-mode"])
+
+    def test_traffic_completeness_rejects_resigned_production_claim_tamper(self):
+        traffic_export = self._traffic_export()
+        provider_export = self._provider_export(traffic_export)
+        receipt = build_traffic_completeness_receipt(
+            traffic_export,
+            provider_export,
+            mode="production-export",
+            authority_ref="authority:traffic-completeness/aitrade-prod",
+            endpoint_url="https://provider.example/aitrade/traffic-holdout/export",
+            request_hash="sha256:traffic-completeness-request",
+            response_status=200,
+            response_hash="sha256:traffic-completeness-response",
+            actor_ref="oidc:trustai.example/traffic-completeness-worker",
+            produced_at="2026-07-03T12:25:00Z",
+        )
+        tampered = copy.deepcopy(receipt)
+        tampered["production_claim"] = {
+            "claimed": False,
+            "passed": False,
+            "mode": "production-export",
+            "requires_provider_owned_export": True,
+            "non_production_limit": "tampered",
+        }
+        body = without_keys(tampered, "completeness_id", "signatures")
+        tampered["completeness_id"] = content_hash(body)
+        tampered["signatures"] = [sign_value({"completeness_id": tampered["completeness_id"], "traffic_completeness": body})]
+
+        result = verify_traffic_completeness_receipt(tampered, traffic_export=traffic_export, provider_export=provider_export)
+
+        self.assertFalse(result.ok)
+        self.assertTrue(any("production_claim mismatch" in error for error in result.errors), result.errors)
+        self.assertFalse(any("completeness_id does not match" in error for error in result.errors), result.errors)
+        self.assertFalse(any("signature verification failed" in error for error in result.errors), result.errors)
 
     def test_traffic_completeness_replays_provider_export_artifact_bytes(self):
         traffic_export = self._traffic_export()
@@ -996,6 +1067,7 @@ class TemporalHoldoutTests(unittest.TestCase):
             self.assertEqual(TRAFFIC_COMPLETENESS_ENTRY_TYPE, entry["entry_type"])
             self.assertEqual(receipt["completeness_id"], entry["payload"]["completeness_id"])
             self.assertTrue(entry["payload"]["source_completeness"]["records_root_matches"])
+            self.assertEqual(receipt["production_claim"], entry["payload"]["production_claim"])
             self.assertTrue(chain.verify_all().ok)
 
     def test_traffic_completeness_detects_provider_export_tamper(self):

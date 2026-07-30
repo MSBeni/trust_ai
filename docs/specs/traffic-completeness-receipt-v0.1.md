@@ -27,6 +27,9 @@ The receipt uses schema `trustai.traffic-completeness-receipt/0.1` and records:
   record hashes;
 - matched audit records that bind the traffic export ID or records root;
 - explicit completeness violations and pass/fail status;
+- `production_claim`, a canonical object that says whether the receipt claims
+  live provider-owned production completeness, whether that claim passed, and
+  the non-production limitation for local/provider rehearsal modes;
 - privacy metadata confirming raw production traffic payloads and provider
   credentials are not embedded.
 
@@ -53,7 +56,9 @@ audit export changes the receipt verification result.
 
 `production-export` is required for production completeness claims. The other
 modes are useful for local and design-partner rehearsal but do not claim live
-provider-owned completeness.
+provider-owned completeness. Verifiers recompute `production_claim` from the mode
+and completeness violations, so a receipt cannot be re-signed to make a local or
+failing provider export look like a passed production completeness claim.
 
 ## Chain Entry
 
@@ -66,7 +71,7 @@ Verified receipts append `traffic_holdout.completeness_attested` entries with:
 - provider export source artifact summary when supplied;
 - source completeness summary;
 - provider exchange evidence;
-- violation count, pass/fail status, and privacy metadata.
+- violation count, pass/fail status, production-claim status, and privacy metadata.
 
 ## CLI
 
